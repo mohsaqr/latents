@@ -393,6 +393,11 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$profile_covariates <- profile_covariates
   result$group_covariates <- group_covariates
   result$variance_model <- variance_model
+  ## Carried so that covariate_inference() can rebuild the likelihood and
+  ## its scores without re-deriving the designs from the data.
+  result$profile_design <- designs$profile_design
+  result$group_design <- designs$w
+  result$center <- designs$center
   result$min_variance <- min_variance
   result$converged <- best$converged
   result$iterations <- best$iterations
