@@ -237,7 +237,10 @@ parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
 #' @noRd
 .multilpa_cov_parameter_names <- function(object) {
   labels <- .multilpa_cov_labels(object)
-  paste(labels$level, labels$outcome, labels$term, sep = ".")
+  ## The kind belongs in the name: a mean and a variance share a level, an
+  ## outcome and a term, so leaving it out makes them indistinguishable and
+  ## gives vcov() duplicate dimnames.
+  paste(labels$level, labels$parameter, labels$outcome, labels$term, sep = ".")
 }
 
 #' Covariance matrix of a covariate fit
@@ -248,7 +251,7 @@ parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
 #' @param vcov_type `"observed"` or `"robust"`.
 #' @param ... Ignored, present for generic compatibility.
 #' @return A square numeric matrix with one row and column per free parameter,
-#'   named `level.outcome.term` and ordered measurement means, measurement
+#'   named `level.parameter.outcome.term` and ordered measurement means, measurement
 #'   variances, profile logits, group logits. Variances are on the log scale,
 #'   which is where they are estimated; [covariate_inference()] returns them and
 #'   their standard errors in natural units.
@@ -337,4 +340,94 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
     block(rownames(object$group_coefficients),
           colnames(object$group_coefficients), "group", "coefficient")
   )
+}
+
+#' Estimated parameters of a covariate fit
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @param ... Ignored, present for generic compatibility.
+#' @return A named numeric vector of every free parameter, in the order
+#'   [parameter_inference()] reports them: measurement means, measurement
+#'   variances, profile logits, then group-class logits. Names are
+#'   `level.parameter.outcome.term`, which is what keeps a mean and a variance
+#'   on the same indicator distinguishable. Variances are in natural units.
+#' @examples
+#' set.seed(5)
+#' school <- rep(seq_len(16), each = 8)
+#' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
+#' x <- rnorm(128)
+#' profile <- ifelse(runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L)
+#' example_data <- data.frame(
+#'   school = school, x = x,
+#'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
+#'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
+#' )
+#' fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
+#'                       n_group_classes = 2, profile_covariates = "x",
+#'                       n_starts = 2, seed = 1)
+#' coef(fit)
+#' @export
+coef.multilpa_covariates <- function(object, ...) {
+  stopifnot("`object` must be a fitted `multilpa_covariates` model" =
+              inherits(object, "multilpa_covariates"))
+  theta <- .multilpa_cov_encode(object)
+  labels <- .multilpa_cov_labels(object)
+  ## Means are stored centred for the likelihood and reported in input units;
+  ## variances are estimated as logs and reported in their own units.
+  theta[labels$parameter == "mean"] <- as.vector(t(object$means))
+  is_variance <- labels$parameter == "variance"
+  theta[is_variance] <- exp(theta[is_variance])
+  stats::setNames(theta, .multilpa_cov_parameter_names(object))
+}
+
+#' Wald confidence intervals for a covariate fit
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @param parm Optional parameter names or indices; defaults to all of them.
+#' @param level Confidence level strictly between zero and one.
+#' @param data The data frame the model was fitted to.
+#' @param ... Passed to [parameter_inference()], so `vcov_type = "robust"` and
+#'   `step` reach it.
+#' @return A two-column matrix of Wald intervals, one row per requested
+#'   parameter, named as [coef()] names them. Bounds are on the natural scale
+#'   and are not constrained to respect a variance's positivity or a
+#'   probability's range.
+#' @examples
+#' set.seed(5)
+#' school <- rep(seq_len(16), each = 8)
+#' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
+#' x <- rnorm(128)
+#' profile <- ifelse(runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L)
+#' example_data <- data.frame(
+#'   school = school, x = x,
+#'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
+#'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
+#' )
+#' fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
+#'                       n_group_classes = 2, profile_covariates = "x",
+#'                       n_starts = 2, seed = 1)
+#' confint(fit, data = example_data)
+#' @export
+confint.multilpa_covariates <- function(object, parm, level = 0.95, data, ...) {
+  stopifnot("`object` must be a fitted `multilpa_covariates` model" =
+              inherits(object, "multilpa_covariates"),
+            "`data` must be supplied; it is needed to rebuild the information" =
+              !missing(data) && is.data.frame(data))
+  inference <- parameter_inference(object, data, level = level, ...)
+  names_all <- .multilpa_cov_parameter_names(object)
+  intervals <- cbind(inference$conf_low, inference$conf_high)
+  dimnames(intervals) <- list(names_all, paste0(
+    format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%"))
+  if (missing(parm)) return(intervals)
+  if (is.numeric(parm)) {
+    if (anyNA(parm) || any(parm < 1) || any(parm > length(names_all)) ||
+        any(parm != floor(parm))) {
+      stop("`parm` must identify existing parameters by name or index.")
+    }
+    parm <- names_all[parm]
+  }
+  if (!is.character(parm) || anyNA(parm) || !all(parm %in% names_all)) {
+    stop("`parm` must identify existing parameters by name or index.")
+  }
+  intervals[parm, , drop = FALSE]
 }

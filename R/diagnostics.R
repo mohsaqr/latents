@@ -72,7 +72,7 @@
 #' information_criteria(fit)
 #' @export
 information_criteria <- function(object) {
-  stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
+  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(object))
   q <- object$n_parameters
   log_likelihood <- object$log_likelihood
   conventions <- data.frame(
@@ -155,7 +155,7 @@ information_criteria <- function(object) {
 #' @export
 classification_table <- function(object, level = c("individuals", "groups", "both"),
                                  detail = FALSE) {
-  stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"),
+  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(object),
             "`detail` must be TRUE or FALSE" =
               isTRUE(detail) || isFALSE(detail))
   level <- match.arg(level)
@@ -246,7 +246,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #' entropy_table(fit)
 #' @export
 entropy_table <- function(object) {
-  stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
+  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(object))
   posteriors <- list(individuals = object$subject_posteriors,
                      groups = object$group_posteriors)
   result <- do.call(rbind, lapply(names(posteriors), function(level) {

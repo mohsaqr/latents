@@ -107,6 +107,10 @@
 #' @param max_iter Maximum EM iterations per start.
 #' @param tol Relative log-likelihood convergence tolerance.
 #' @param min_variance Explicit variance lower bound.
+#' @param time Optional name of a column giving each observation's position
+#'   within its group, stored so that [sequences()] and `plot(what =
+#'   "sequences")` can read the assignments back in order. The model never uses
+#'   it.
 #' @param seed Optional seed; the caller's random state is restored.
 #' @return An `multilpa_covariates` fit with coefficient matrices, priors,
 #'   posteriors, likelihood, information criteria and start diagnostics.
@@ -124,7 +128,8 @@ fit_covariates <- function(data, indicators, group, n_profiles,
                                   group_covariates = character(),
                                   variance_model = c("varying", "equal"),
                                   n_starts = 10L, max_iter = 1000L, tol = 1e-8,
-                                  min_variance = 1e-6, seed = NULL) {
+                                  min_variance = 1e-6, seed = NULL,
+                                  time = NULL) {
   stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
@@ -192,6 +197,14 @@ fit_covariates <- function(data, indicators, group, n_profiles,
     n_group_classes = n_group_classes, group_index = group_index,
     variance_model = variance_model, min_variance = min_variance,
     call = match.call())
+  ## Set here rather than inside the assembler, where the name `time` would
+  ## resolve to stats::time instead of this argument.
+  result$time <- time
+  result$time_values <- .multilpa_time_values(data, time, group)
+  ## The same effective counts the Gaussian fit carries, so the shared
+  ## diagnostics and plot panels need no special case for this class.
+  result$effective_profile_counts <- colSums(result$subject_posteriors)
+  result$effective_group_counts <- colSums(result$group_posteriors)
   if (any(!is.finite(starts$log_likelihood))) warning("Some covariate starts failed; inspect $starts.")
   if (!result$converged) warning("Best covariate fit did not converge.")
   if (result$boundary) warning("A residual variance reached min_variance.")

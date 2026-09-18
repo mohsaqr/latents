@@ -4,7 +4,8 @@
 #' @return The stored time values, in input row order.
 #' @noRd
 .multilpa_require_time <- function(object) {
-  stopifnot("`object` must be a fitted `multilpa` model" = inherits(object, "multilpa"))
+  stopifnot("`object` must be a fitted model of this package" =
+              .multilpa_any_fit(object))
   if (is.null(object$time_values)) {
     stop(errorCondition(
       paste("This fit carries no ordering. Refit with `time =` naming the column",

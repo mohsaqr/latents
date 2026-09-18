@@ -52,7 +52,7 @@ test_that("the group-class contrast matches Mplus through vcov()", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
   covariance <- vcov(fit, fixture$data)
-  rows <- grep("^profile[.]profile_1[.]group_class", rownames(covariance))
+  rows <- grep("^profile[.]coefficient[.]profile_1[.]group_class", rownames(covariance))
   contrast <- c(-1, 1)
   inference <- parameter_inference(fit, fixture$data)
   estimates <- inference$estimate[grepl("^group_class", inference$term) &

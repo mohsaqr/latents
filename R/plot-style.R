@@ -169,7 +169,9 @@
               is.numeric(cex) && length(cex) == 1L && is.finite(cex) && cex > 0)
   if (length(labels) == 0L) return(padding)
   line_height <- graphics::par("csi")
-  width <- max(graphics::strwidth(labels, units = "inches", cex = cex))
+  ## Direct labels are drawn bold, so they must be measured bold; measuring in
+  ## the regular weight under-reserves the margin and clips the last character.
+  width <- max(graphics::strwidth(labels, units = "inches", cex = cex, font = 2L))
   width / line_height + padding
 }
 

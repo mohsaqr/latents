@@ -476,3 +476,64 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
   }
   invisible(NULL)
 }
+
+#' Plot a covariate model
+#'
+#' Draws the parts of a covariate fit that are still fixed quantities. The
+#' measurement model is one set of profile means as usual, and the assignments
+#' can be laid out in sequence order. Profile prevalence cannot be drawn this
+#' way: a covariate model has no single prevalence vector, because prevalence is
+#' a function of each unit's covariates, so asking for it is refused rather than
+#' answered with an average that no unit has.
+#'
+#' @param x A fitted `multilpa_covariates` model.
+#' @param what `"profiles"` (the default) draws the measurement model;
+#'   `"sequences"` draws the assignments in course order and needs a fit made
+#'   with `time =`.
+#' @param scale,labels,main,subtitle,palette,symbols,linetypes,style,... Passed
+#'   through as in [plot.multilpa()].
+#' @return The fitted model, invisibly. Called for the side effect of drawing.
+#' @examples
+#' set.seed(5)
+#' school <- rep(seq_len(16), each = 8)
+#' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
+#' x <- rnorm(128)
+#' profile <- ifelse(runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L)
+#' example_data <- data.frame(
+#'   school = school, x = x,
+#'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
+#'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
+#' )
+#' fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
+#'                       n_group_classes = 2, profile_covariates = "x",
+#'                       n_starts = 2, seed = 1)
+#' plot(fit)
+#' @export
+plot.multilpa_covariates <- function(x, what = c("profiles", "sequences"),
+                                     scale = c("raw", "standardized"),
+                                     labels = TRUE, main = NULL, subtitle = NULL,
+                                     palette = NULL, symbols = NULL,
+                                     linetypes = NULL, style = .multilpa_style(),
+                                     ...) {
+  stopifnot("`x` must be a fitted `multilpa_covariates` model" =
+              inherits(x, "multilpa_covariates"),
+            "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels))
+  if (identical(what, "probabilities")) {
+    stop(errorCondition(
+      paste("A covariate model has no single profile prevalence: it varies with",
+            "each unit's covariates. Use parameter_inference() for the logits."),
+      class = "multilpa_nothing_to_plot", call = NULL))
+  }
+  what <- match.arg(what)
+  scale <- match.arg(scale)
+  style <- utils::modifyList(style, list(...))
+  previous <- graphics::par(no.readonly = TRUE)
+  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
+  graphics::par(xpd = NA)
+  switch(what,
+    profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
+                                       symbols, linetypes, style),
+    sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
+                                         style))
+  invisible(x)
+}

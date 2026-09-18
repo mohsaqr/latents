@@ -17,7 +17,8 @@ fit_covariates(
   max_iter = 1000L,
   tol = 1e-08,
   min_variance = 1e-06,
-  seed = NULL
+  seed = NULL,
+  time = NULL
 )
 }
 \arguments{
@@ -46,6 +47,11 @@ fit_covariates(
 \item{min_variance}{Explicit variance lower bound.}
 
 \item{seed}{Optional seed; the caller's random state is restored.}
+
+\item{time}{Optional name of a column giving each observation's position
+within its group, stored so that [sequences()] and `plot(what =
+"sequences")` can read the assignments back in order. The model never uses
+it.}
 }
 \value{
 An `multilpa_covariates` fit with coefficient matrices, priors,
