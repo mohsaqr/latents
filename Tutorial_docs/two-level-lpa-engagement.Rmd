@@ -165,7 +165,7 @@ likelihoods are multimodal, and a single start reports whichever hill it
 happened to climb.
 
 ```{r fit}
-fit <- multilpa(engagement, indicators = indicators, cluster = "User",
+fit <- multilpa(engagement, indicators = indicators, group = "User",
                   n_profiles = 3, n_group_classes = 3,
                   n_starts = 50, seed = 2026)
 summary(fit)

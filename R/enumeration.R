@@ -6,7 +6,7 @@
 #' boundary, and unreplicated fits are reported, not silently selected.
 #' @param data Data frame.
 #' @param indicators Continuous indicator names.
-#' @param cluster Group identifier column name.
+#' @param group Group identifier column name.
 #' @param profiles Positive integer profile counts to try.
 #' @param group_classes Positive integer group-class counts to try.
 #' @param seed Optional reproducible seed for each fit.
@@ -19,16 +19,16 @@
 #'                               group_classes = 1, n_starts = 2, seed = 1)
 #' candidates$table
 #' @export
-enumerate_classes <- function(data, indicators, cluster, profiles = 1:4,
+enumerate_classes <- function(data, indicators, group, profiles = 1:4,
                               group_classes = 1:3, seed = NULL, ...) {
-  stopifnot(is.data.frame(data), is.character(indicators), is.character(cluster),
+  stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
             is.numeric(profiles), length(profiles) > 0L,
             all(is.finite(profiles)), all(profiles >= 1), all(profiles == as.integer(profiles)),
             is.numeric(group_classes), length(group_classes) > 0L,
             all(is.finite(group_classes)), all(group_classes >= 1),
             all(group_classes == as.integer(group_classes)))
   extra <- list(...)
-  if (any(names(extra) %in% c("n_profiles", "n_group_classes", "data", "indicators", "cluster", "seed"))) {
+  if (any(names(extra) %in% c("n_profiles", "n_group_classes", "data", "indicators", "group", "seed"))) {
     stop("Specify model counts through profiles and group_classes.")
   }
   grid <- expand.grid(n_profiles = unique(profiles), n_group_classes = unique(group_classes))
@@ -36,7 +36,7 @@ enumerate_classes <- function(data, indicators, cluster, profiles = 1:4,
     warnings <- character()
     error_text <- NA_character_
     fit <- tryCatch(withCallingHandlers(do.call(multilpa,
-      c(list(data = data, indicators = indicators, cluster = cluster,
+      c(list(data = data, indicators = indicators, group = group,
              n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed), extra)),
       warning = function(warning) {
         warnings <<- c(warnings, conditionMessage(warning))
@@ -68,7 +68,7 @@ enumerate_classes <- function(data, indicators, cluster, profiles = 1:4,
 
 #' Generate observations from a fitted discrete multilevel model
 #' @param object Fitted model.
-#' @return Simulated data frame with the original cluster layout.
+#' @return Simulated data frame with the original group layout.
 #' @noRd
 .multilpa_simulate <- function(object) {
   stopifnot(inherits(object, "multilpa"), !inherits(object, "multilpa_covariates"))
@@ -89,7 +89,7 @@ enumerate_classes <- function(data, indicators, cluster, profiles = 1:4,
   }
   result <- as.data.frame(values)
   names(result) <- object$indicators
-  result[[object$cluster]] <- object$group_values[object$group_index]
+  result[[object$group]] <- object$group_values[object$group_index]
   result
 }
 
@@ -143,7 +143,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
               rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     set.seed(seed)
   }
-  fields <- c("indicators", "cluster", "group_values", "group_index", "variance_model", "min_variance", "covariance_model")
+  fields <- c("indicators", "group", "group_values", "group_index", "variance_model", "min_variance", "covariance_model")
   if (!all(vapply(fields, function(field) identical(null_model[[field]], alternative_model[[field]]), logical(1)))) {
     stop("Models must use the same observations, group layout and covariance specification.")
   }
@@ -154,10 +154,10 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
     if (!isTRUE(model$converged) || isTRUE(model$boundary)) {
       stop("Original models must be converged with inactive variance bounds.")
     }
-    if (!all(c(model$indicators, model$cluster) %in% names(data)) ||
+    if (!all(c(model$indicators, model$group) %in% names(data)) ||
         nrow(data) != model$n_observations ||
-        !identical(data[[model$cluster]], model$group_values[model$group_index])) {
-      stop("data must preserve the original observations and cluster ordering.")
+        !identical(data[[model$group]], model$group_values[model$group_index])) {
+      stop("data must preserve the original observations and group ordering.")
     }
     x <- as.matrix(data[model$indicators])
     if (!is.numeric(x) || any(!is.finite(x))) stop("Bootstrap currently requires complete finite indicators.")
@@ -177,7 +177,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
     tryCatch(withCallingHandlers({
       simulated <- .multilpa_simulate(null_model)
       models <- lapply(list(null_model, alternative_model), function(model) {
-        multilpa(simulated, model$indicators, model$cluster, model$n_profiles,
+        multilpa(simulated, model$indicators, model$group, model$n_profiles,
                     model$n_group_classes, model$variance_model, n_starts = n_starts,
                     max_iter = max_iter, tol = tol, min_variance = model$min_variance,
                     covariance_model = if (is.null(model$covariance_model)) "diagonal" else model$covariance_model)

@@ -1,6 +1,6 @@
 # Genuine Mplus Demo multilevel LPA comparisons
 
-These are new Mplus VERSION 9 DEMO (Mac) runs, not published Mplus User's Guide results. Both use the existing project synthetic demonstration data: 1,200 individuals in 60 unbalanced groups (16, 20, or 24 people), with two continuous indicators, two individual profiles, and two discrete group classes. Original generation code is `validation/synthetic-demo.R`; `synthetic.dat` preserves the data supplied identically to both estimators, adds numeric cluster and subject IDs, and omits latent truth labels.
+These are new Mplus VERSION 9 DEMO (Mac) runs, not published Mplus User's Guide results. Both use the existing project synthetic demonstration data: 1,200 individuals in 60 unbalanced groups (16, 20, or 24 people), with two continuous indicators, two individual profiles, and two discrete group classes. Original generation code is `validation/synthetic-demo.R`; `synthetic.dat` preserves the data supplied identically to both estimators, adds numeric group and subject IDs, and omits latent truth labels.
 
 The command used in this directory was:
 

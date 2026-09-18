@@ -97,7 +97,7 @@
 #' Only complete data and diagonal residual variances are supported here.
 #' @param data Data frame.
 #' @param indicators Names of continuous indicator columns.
-#' @param cluster Name of group identifier column.
+#' @param group Name of group identifier column.
 #' @param n_profiles Number of individual profiles.
 #' @param n_group_classes Number of discrete group classes.
 #' @param profile_covariates Names of numeric predictors of profile membership.
@@ -118,14 +118,14 @@
 #'                             profile_covariates = "z", n_starts = 2, seed = 1)
 #' fit$profile_coefficients
 #' @export
-fit_covariates <- function(data, indicators, cluster, n_profiles,
+fit_covariates <- function(data, indicators, group, n_profiles,
                                   n_group_classes = 2L,
                                   profile_covariates = character(),
                                   group_covariates = character(),
                                   variance_model = c("varying", "equal"),
                                   n_starts = 10L, max_iter = 1000L, tol = 1e-8,
                                   min_variance = 1e-6, seed = NULL) {
-  stopifnot(is.data.frame(data), is.character(indicators), is.character(cluster),
+  stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
             all(c(profile_covariates, group_covariates) %in% names(data)),
@@ -143,16 +143,16 @@ fit_covariates <- function(data, indicators, cluster, n_profiles,
     set.seed(seed)
   }
   .multilpa_cov_check_covariates(data, profile_covariates, group_covariates,
-                               indicators, cluster)
+                               indicators, group)
   # The base fit validates indicators/model sizes and supplies an initial mode.
-  base <- multilpa(data, indicators, cluster, n_profiles, n_group_classes,
+  base <- multilpa(data, indicators, group, n_profiles, n_group_classes,
                      variance_model, n_starts = 1L, max_iter = max_iter,
                      tol = tol, min_variance = min_variance)
   group_index <- base$group_index
   first_rows <- match(seq_len(base$n_groups), group_index)
   if (length(group_covariates) && any(vapply(group_covariates, function(name) {
     any(data[[name]] != data[[name]][first_rows][group_index])
-  }, logical(1)))) stop("Every group_covariate must be constant within each cluster.")
+  }, logical(1)))) stop("Every group_covariate must be constant within each group.")
   if (n_profiles == 1L && length(profile_covariates)) {
     stop("Profile covariates require at least two profiles.")
   }
@@ -187,7 +187,7 @@ fit_covariates <- function(data, indicators, cluster, n_profiles,
   result <- .multilpa_cov_assemble(
     best = attempts[[best_index]], best_index = best_index, starts = starts,
     designs = designs, base = base, data = data, indicators = indicators,
-    cluster = cluster, profile_covariates = profile_covariates,
+    group = group, profile_covariates = profile_covariates,
     group_covariates = group_covariates, n_profiles = n_profiles,
     n_group_classes = n_group_classes, group_index = group_index,
     variance_model = variance_model, min_variance = min_variance,
@@ -248,15 +248,15 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
 .multilpa_cov_check_covariates <- function(data, profile_covariates,
-                                         group_covariates, indicators, cluster) {
+                                         group_covariates, indicators, group) {
   predictors <- unique(c(profile_covariates, group_covariates))
   if (length(predictors) && !all(vapply(data[predictors], function(column) {
     is.numeric(column) && is.null(dim(column)) && all(is.finite(column))
   }, logical(1)))) {
     stop("Covariates must be finite numeric columns without missing values.")
   }
-  if (any(predictors %in% c(indicators, cluster))) {
-    stop("Covariates must be distinct from indicators and the cluster identifier.")
+  if (any(predictors %in% c(indicators, group))) {
+    stop("Covariates must be distinct from indicators and the group identifier.")
   }
   invisible(NULL)
 }
@@ -265,7 +265,7 @@ nobs.multilpa_covariates <- function(object, ...) {
 #'
 #' The profile design repeats one group-class indicator block per group class,
 #' so that stacking it gives the weighted multinomial regression its rows. The
-#' group design takes one row per cluster, at its first occurrence.
+#' group design takes one row per group, at its first occurrence.
 #'
 #' @return A list with `x`, `center`, `w`, `profile_design` and `stacked_design`.
 #' @noRd
@@ -355,7 +355,7 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' @return An `multilpa_covariates` object.
 #' @noRd
 .multilpa_cov_assemble <- function(best, best_index, starts, designs, base, data,
-                                 indicators, cluster, profile_covariates,
+                                 indicators, group, profile_covariates,
                                  group_covariates, n_profiles, n_group_classes,
                                  group_index, variance_model, min_variance, call) {
   result <- c(best$parameters,
@@ -389,7 +389,7 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$group_index <- group_index
   result$group_values <- base$group_values
   result$indicators <- indicators
-  result$cluster <- cluster
+  result$group <- group
   result$profile_covariates <- profile_covariates
   result$group_covariates <- group_covariates
   result$variance_model <- variance_model

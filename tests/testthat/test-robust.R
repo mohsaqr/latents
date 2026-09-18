@@ -46,7 +46,7 @@ test_that("per-group scores sum to the aggregate gradient in every model family"
                           missing = "fiml")))
   invisible(lapply(specifications, function(specification) {
     fit <- do.call(multilpa, c(list(data = specification$data,
-      indicators = c("a", "b"), cluster = "g", n_profiles = 2,
+      indicators = c("a", "b"), group = "g", n_profiles = 2,
       n_group_classes = 2, n_starts = 5, seed = 5), specification$arguments))
     theta <- centered_theta(fit, specification$data)
     x <- centered_matrix(fit, specification$data)

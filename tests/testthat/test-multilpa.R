@@ -9,7 +9,7 @@ multilpa_fixture <- local({
     runif(length(group_index)) > c(0.9, 0.1)[group_types[group_index]]
   )
   data <- data.frame(
-    cluster = sprintf("school_%03d", group_index),
+    group = sprintf("school_%03d", group_index),
     reading = rnorm(length(profiles), c(-2.3, 2.3)[profiles],
                     c(0.6, 0.8)[profiles]),
     maths = rnorm(length(profiles), c(-1.8, 1.8)[profiles],
@@ -21,7 +21,7 @@ multilpa_fixture <- local({
 })
 
 multilpa_small_data <- data.frame(
-  cluster = c("z", "z", "a", "a", "b", "b"),
+  group = c("z", "z", "a", "a", "b", "b"),
   x = c(-2, -1, 0, 1, 2, 3),
   y = c(0, 2, 1, 4, 3, 5)
 )
@@ -29,7 +29,7 @@ multilpa_small_data <- data.frame(
 test_that("a multilevel Gaussian population is recovered with valid posteriors", {
   data <- multilpa_fixture$data
   original_data <- data
-  fit <- multilpa(data, c("reading", "maths"), "cluster", 2L, 2L,
+  fit <- multilpa(data, c("reading", "maths"), "group", 2L, 2L,
                    n_starts = 4L, max_iter = 600L, seed = 827)
 
   expect_s3_class(fit, "multilpa")
@@ -52,7 +52,7 @@ test_that("a multilevel Gaussian population is recovered with valid posteriors",
   expect_equal(sum(fit$group_probabilities), 1, tolerance = 1e-10)
   expect_true(all(fit$variances > 0))
   expect_false(fit$boundary)
-  expect_identical(as.character(fit$group_ids), unique(data$cluster))
+  expect_identical(as.character(fit$group_ids), unique(data$group))
   expect_equal(fit$subject_profiles, max.col(fit$subject_posteriors),
                ignore_attr = TRUE)
   expect_equal(fit$group_classes, max.col(fit$group_posteriors),
@@ -95,7 +95,7 @@ test_that("a multilevel Gaussian population is recovered with valid posteriors",
 })
 
 test_that("one profile gives the analytic maximum likelihood solution", {
-  fit <- multilpa(multilpa_small_data, c("x", "y"), "cluster", 1L, 1L,
+  fit <- multilpa(multilpa_small_data, c("x", "y"), "group", 1L, 1L,
                    n_starts = 1L, seed = 81)
   expected_means <- vapply(multilpa_small_data[c("x", "y")], mean, numeric(1))
   expected_variances <- vapply(multilpa_small_data[c("x", "y")], function(x) {
@@ -137,7 +137,7 @@ test_that("one profile gives the analytic maximum likelihood solution", {
 })
 
 test_that("equal variances are shared across profiles and counted correctly", {
-  fit <- multilpa(multilpa_fixture$data, c("reading", "maths"), "cluster",
+  fit <- multilpa(multilpa_fixture$data, c("reading", "maths"), "group",
                    2L, 2L, variance_model = "equal", n_starts = 2L, seed = 712)
   expect_equal(fit$variances[1L, ], fit$variances[2L, ], ignore_attr = TRUE)
   expect_equal(fit$n_parameters, 9L)
@@ -161,9 +161,9 @@ test_that("explicit starts give the independently calculated initial likelihood"
       dnorm(multilpa_small_data$y, 4, 1)
   )
   conditional_density <- density %*% t(start$profile_probabilities)
-  likelihood_by_group_type <- t(vapply(unique(multilpa_small_data$cluster),
+  likelihood_by_group_type <- t(vapply(unique(multilpa_small_data$group),
     function(group) {
-      apply(conditional_density[multilpa_small_data$cluster == group, , drop = FALSE],
+      apply(conditional_density[multilpa_small_data$group == group, , drop = FALSE],
             2L, prod)
     }, numeric(2)))
   expected_log_likelihood <- sum(log(as.numeric(
@@ -171,7 +171,7 @@ test_that("explicit starts give the independently calculated initial likelihood"
   )))
 
   expect_warning(
-    fit <- multilpa(multilpa_small_data, c("x", "y"), "cluster", 2L, 2L,
+    fit <- multilpa(multilpa_small_data, c("x", "y"), "group", 2L, 2L,
                      n_starts = 1L, max_iter = 1L, start = start, seed = 92),
     "converg|iteration"
   )
@@ -185,8 +185,8 @@ test_that("explicit starts give the independently calculated initial likelihood"
 
 test_that("group identifiers preserve first occurrence without unused levels", {
   data <- multilpa_small_data[c(5L, 2L, 3L, 6L, 1L, 4L), , drop = FALSE]
-  data$cluster <- factor(data$cluster, levels = c("unused", "a", "b", "z"))
-  fit <- multilpa(data, c("x", "y"), "cluster", 1L, 1L,
+  data$group <- factor(data$group, levels = c("unused", "a", "b", "z"))
+  fit <- multilpa(data, c("x", "y"), "group", 1L, 1L,
                    n_starts = 1L, seed = 42)
   expect_identical(as.character(fit$group_ids), c("b", "z", "a"))
   expect_equal(nrow(fit$group_posteriors), 3L)
@@ -195,9 +195,9 @@ test_that("group identifiers preserve first occurrence without unused levels", {
 
 test_that("nearby numeric group identifiers are not merged during display conversion", {
   data <- multilpa_small_data
-  data$cluster <- rep(c(1 + 1e-15, 1), each = 3L)
-  stopifnot(length(unique(data$cluster)) == 2L)
-  fit <- multilpa(data, c("x", "y"), "cluster", 1L, 1L,
+  data$group <- rep(c(1 + 1e-15, 1), each = 3L)
+  stopifnot(length(unique(data$group)) == 2L)
+  fit <- multilpa(data, c("x", "y"), "group", 1L, 1L,
                    n_starts = 1L, seed = 82)
   expect_equal(fit$n_groups, 2L)
   expect_identical(fit$group_index, rep(1:2, each = 3L))
@@ -208,9 +208,9 @@ test_that("nearby numeric group identifiers are not merged during display conver
 })
 
 test_that("a single group class permits singleton groups and one indicator", {
-  data <- data.frame(cluster = seq_len(12L), x = c(seq(-3, -2, length.out = 6L),
+  data <- data.frame(group = seq_len(12L), x = c(seq(-3, -2, length.out = 6L),
                                                 seq(2, 3, length.out = 6L)))
-  fit <- multilpa(data, "x", "cluster", 2L, 1L,
+  fit <- multilpa(data, "x", "group", 2L, 1L,
                    n_starts = 2L, seed = 62)
   expect_equal(dim(fit$means), c(2L, 1L))
   expect_equal(dim(fit$variances), c(2L, 1L))
@@ -220,8 +220,8 @@ test_that("a single group class permits singleton groups and one indicator", {
 })
 
 test_that("a two-observation one-profile fit does not lose matrix dimensions", {
-  data <- data.frame(cluster = c("a", "a"), score = c(2, 4))
-  fit <- multilpa(data, "score", "cluster", 1L, 1L,
+  data <- data.frame(group = c("a", "a"), score = c(2, 4))
+  fit <- multilpa(data, "score", "group", 1L, 1L,
                    n_starts = 1L, seed = 6)
   expect_equal(dim(fit$means), c(1L, 1L))
   expect_equal(dim(fit$variances), c(1L, 1L))
@@ -231,10 +231,10 @@ test_that("a two-observation one-profile fit does not lose matrix dimensions", {
 })
 
 test_that("large indicator offsets preserve variances and likelihood", {
-  original_fit <- multilpa(multilpa_small_data, c("x", "y"), "cluster", 1L, 1L,
+  original_fit <- multilpa(multilpa_small_data, c("x", "y"), "group", 1L, 1L,
                             n_starts = 1L, seed = 62)
   shifted_data <- transform(multilpa_small_data, x = x + 1e10, y = y - 1e10)
-  shifted_fit <- multilpa(shifted_data, c("x", "y"), "cluster", 1L, 1L,
+  shifted_fit <- multilpa(shifted_data, c("x", "y"), "group", 1L, 1L,
                            n_starts = 1L, seed = 62)
   expect_equal(unname(shifted_fit$means - original_fit$means),
                matrix(c(1e10, -1e10), nrow = 1L))
@@ -246,10 +246,10 @@ test_that("large indicator offsets preserve variances and likelihood", {
 test_that("seeded fitting is repeatable and preserves an existing RNG state", {
   set.seed(198)
   state_before <- .Random.seed
-  fit_one <- multilpa(multilpa_fixture$data, c("reading", "maths"), "cluster", 2L, 2L,
+  fit_one <- multilpa(multilpa_fixture$data, c("reading", "maths"), "group", 2L, 2L,
                        n_starts = 2L, seed = 612)
   expect_identical(.Random.seed, state_before)
-  fit_two <- multilpa(multilpa_fixture$data, c("reading", "maths"), "cluster", 2L, 2L,
+  fit_two <- multilpa(multilpa_fixture$data, c("reading", "maths"), "group", 2L, 2L,
                        n_starts = 2L, seed = 612)
   expect_identical(fit_one$means, fit_two$means)
   expect_identical(fit_one$variances, fit_two$variances)
@@ -267,11 +267,11 @@ test_that("permuting input rows permutes posteriors without changing the fit", {
                                    nrow = 2L, byrow = TRUE),
     group_probabilities = c(0.5, 0.5)
   )
-  fit <- multilpa(data, c("reading", "maths"), "cluster", 2L, 2L,
+  fit <- multilpa(data, c("reading", "maths"), "group", 2L, 2L,
                    n_starts = 1L, start = start, seed = 81)
   row_order <- rev(seq_len(nrow(data)))
   reordered_fit <- multilpa(data[row_order, , drop = FALSE],
-                             c("reading", "maths"), "cluster", 2L, 2L,
+                             c("reading", "maths"), "group", 2L, 2L,
                              n_starts = 1L, start = start, seed = 81)
   expect_equal(reordered_fit$log_likelihood, fit$log_likelihood, tolerance = 1e-9)
   expect_equal(reordered_fit$means, fit$means, tolerance = 1e-8)
@@ -283,7 +283,7 @@ test_that("permuting input rows permutes posteriors without changing the fit", {
                fit$group_posteriors[group_order, , drop = FALSE],
                tolerance = 1e-8, ignore_attr = TRUE)
   expect_identical(as.character(reordered_fit$group_ids),
-                   unique(data$cluster[row_order]))
+                   unique(data$group[row_order]))
 })
 
 test_that("seeded fitting restores the absence of an RNG state", {
@@ -297,7 +297,7 @@ test_that("seeded fitting restores the absence of an RNG state", {
   if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
     rm(".Random.seed", envir = .GlobalEnv)
   }
-  fit <- multilpa(multilpa_small_data, c("x", "y"), "cluster", 1L, 1L,
+  fit <- multilpa(multilpa_small_data, c("x", "y"), "group", 1L, 1L,
                    n_starts = 1L, seed = 27)
   expect_false(exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
   expect_true(is.finite(fit$log_likelihood))
@@ -306,15 +306,15 @@ test_that("seeded fitting restores the absence of an RNG state", {
 test_that("seed restoration also runs when fitting fails", {
   set.seed(481)
   state_before <- .Random.seed
-  data <- data.frame(cluster = c("a", "a"), score = c(-1e200, 1e200))
-  expect_error(multilpa(data, "score", "cluster", 1L, 1L,
+  data <- data.frame(group = c("a", "a"), score = c(-1e200, 1e200))
+  expect_error(multilpa(data, "score", "group", 1L, 1L,
                          n_starts = 1L, seed = 62), "overflow|rescale")
   expect_identical(.Random.seed, state_before)
 })
 
 test_that("invalid data and unidentifiable specifications fail explicitly", {
   args <- list(data = multilpa_small_data, indicators = c("x", "y"),
-               cluster = "cluster", n_profiles = 2L, n_group_classes = 2L,
+               group = "group", n_profiles = 2L, n_group_classes = 2L,
                n_starts = 1L)
   invalid_data <- list(
     transform(multilpa_small_data, x = c(NA, -1, 0, 1, 2, 3)),
@@ -322,7 +322,7 @@ test_that("invalid data and unidentifiable specifications fail explicitly", {
     transform(multilpa_small_data, x = c(NaN, -1, 0, 1, 2, 3)),
     transform(multilpa_small_data, x = as.character(x)),
     transform(multilpa_small_data, x = 1),
-    transform(multilpa_small_data, cluster = c(NA, "z", "a", "a", "b", "b")),
+    transform(multilpa_small_data, group = c(NA, "z", "a", "a", "b", "b")),
     multilpa_small_data[FALSE, , drop = FALSE]
   )
   invisible(lapply(invalid_data, function(data) {
@@ -332,11 +332,11 @@ test_that("invalid data and unidentifiable specifications fail explicitly", {
   }))
   invalid_specs <- list(
     list(indicators = "missing"), list(indicators = character()),
-    list(indicators = c("x", "x")), list(cluster = "missing"),
-    list(cluster = c("cluster", "x")), list(indicators = c("x", "cluster")),
+    list(indicators = c("x", "x")), list(group = "missing"),
+    list(group = c("group", "x")), list(indicators = c("x", "group")),
     list(n_profiles = 7L), list(n_group_classes = 4L),
     list(n_profiles = 1L, n_group_classes = 2L),
-    list(data = transform(multilpa_small_data, cluster = seq_len(nrow(multilpa_small_data))))
+    list(data = transform(multilpa_small_data, group = seq_len(nrow(multilpa_small_data))))
   )
   invisible(lapply(invalid_specs, function(spec) {
     expect_error(do.call(multilpa, utils::modifyList(args, spec)))
@@ -345,7 +345,7 @@ test_that("invalid data and unidentifiable specifications fail explicitly", {
 
 test_that("invalid numeric controls and variance models are rejected", {
   args <- list(data = multilpa_small_data, indicators = c("x", "y"),
-               cluster = "cluster", n_profiles = 2L, n_group_classes = 2L,
+               group = "group", n_profiles = 2L, n_group_classes = 2L,
                n_starts = 1L)
   invalid_specs <- list(
     list(n_profiles = 0L), list(n_profiles = 1.5), list(n_profiles = NA),
@@ -386,19 +386,19 @@ test_that("malformed explicit starting values are rejected", {
     utils::modifyList(start, list(group_probabilities = c(NA, 1)))
   )
   invisible(lapply(invalid_starts, function(invalid_start) {
-    expect_error(multilpa(multilpa_small_data, c("x", "y"), "cluster", 2L, 2L,
+    expect_error(multilpa(multilpa_small_data, c("x", "y"), "group", 2L, 2L,
                            n_starts = 1L, start = invalid_start))
   }))
   start$variances[1L, 1L] <- 2
-  expect_error(multilpa(multilpa_small_data, c("x", "y"), "cluster", 2L, 2L,
+  expect_error(multilpa(multilpa_small_data, c("x", "y"), "group", 2L, 2L,
                          variance_model = "equal", n_starts = 1L, start = start))
 })
 
 test_that("a binding variance floor is reported and uses constrained ML", {
-  data <- data.frame(cluster = c("a", "a", "b", "b"),
+  data <- data.frame(group = c("a", "a", "b", "b"),
                      x = c(-0.001, 0.001, -0.002, 0.002))
   expect_warning(
-    fit <- multilpa(data, "x", "cluster", 1L, 1L, n_starts = 1L,
+    fit <- multilpa(data, "x", "group", 1L, 1L, n_starts = 1L,
                      min_variance = 0.01, seed = 17),
     "variance|boundary|floor"
   )

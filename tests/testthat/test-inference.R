@@ -202,12 +202,12 @@ test_that("diagonal FIML standard errors use each indicator's observed sample si
 
 test_that("full-covariance score and Jacobian match numerical derivatives with missingness", {
   set.seed(481)
-  cluster <- rep(seq_len(40), each = 12)
+  group <- rep(seq_len(40), each = 12)
   group_type <- rep(seq_len(40) %% 2, each = 12)
-  profile <- rbinom(length(cluster), 1, ifelse(group_type == 1, 0.85, 0.15))
-  residual <- rnorm(length(cluster))
-  dat <- data.frame(g = cluster, y1 = 5 * profile + residual,
-    y2 = 4 * profile + residual / 2 + rnorm(length(cluster)))
+  profile <- rbinom(length(group), 1, ifelse(group_type == 1, 0.85, 0.15))
+  residual <- rnorm(length(group))
+  dat <- data.frame(g = group, y1 = 5 * profile + residual,
+    y2 = 4 * profile + residual / 2 + rnorm(length(group)))
   dat$y1[seq(1, nrow(dat), by = 11)] <- NA_real_
   dat$y2[seq(3, nrow(dat), by = 7)] <- NA_real_
   invisible(lapply(c("varying", "equal"), function(variance_model) {

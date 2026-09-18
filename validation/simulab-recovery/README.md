@@ -19,12 +19,12 @@ and `tmp/simulab-recovery-study.rds`.
 
 ## The generating model
 
-Four continuous indicators, three individual profiles, two latent cluster
+Four continuous indicators, three individual profiles, two latent group
 classes. Profile means are `-1.3 / 0.0 / 1.3` on reading and correspondingly
 spaced on maths, science and writing, all with unit standard deviations and no
 within-profile correlation.
 
-The two cluster classes share that measurement model entirely. They differ only
+The two group classes share that measurement model entirely. They differ only
 in profile prevalence:
 
 | | Profile 1 | Profile 2 | Profile 3 |
@@ -32,7 +32,7 @@ in profile prevalence:
 | Class 1 | 0.60 | 0.30 | 0.10 |
 | Class 2 | 0.10 | 0.30 | 0.60 |
 
-The middle profile is equally common in both classes, so the cluster classes are
+The middle profile is equally common in both classes, so the group classes are
 not a relabelled copy of the profiles and cannot be recovered from the
 measurement model alone. Cluster classes are equally likely.
 
@@ -43,7 +43,7 @@ Two conditions, 100 datasets each, 20 EM starts per fit:
 
 Mixture labels are arbitrary, so every fit is matched to the generating model
 before anything is compared: profiles by the permutation of estimated mean
-vectors closest to the true ones, then cluster classes by the permutation of
+vectors closest to the true ones, then group classes by the permutation of
 prevalence rows closest to the true ones, in the profile order just fixed. With
 three profiles and two classes the search is exhaustive and therefore exact.
 
@@ -60,7 +60,7 @@ Every one of the 200 fits converged and none hit the variance bound.
 
 Accuracy is the share of individuals assigned to their generating profile, and
 of clusters assigned to their generating class, after label matching. The
-cluster classes are recovered almost perfectly at the larger size: 81 of 100
+group classes are recovered almost perfectly at the larger size: 81 of 100
 replications placed every one of the 60 clusters correctly, and the worst
 replication still reached 0.967. Individual assignment sits near 0.84 because
 the profiles genuinely overlap -- a relative entropy of 0.69 is what a
@@ -89,7 +89,7 @@ absolute bias in any of the 32 individual terms is 0.016 (on
 `sd[Profile 2, reading]`), and no cell of the prevalence matrix is off by more
 than 0.005. The prevalence and class
 proportion biases are exactly zero to machine precision because both truth and
-estimate sum to one within a cluster class, so the errors must cancel; the RMSE
+estimate sum to one within a group class, so the errors must cancel; the RMSE
 column, not the bias column, is what carries information for those two rows.
 
 At 30 clusters of 10 the picture is the familiar one for mixtures at small n:
@@ -110,9 +110,9 @@ are not evidence that the right solution was found.
 ### Structure selection
 
 `enumerate_classes()` was run on the first 25 datasets of each condition over
-2 to 4 profiles and 1 to 3 cluster classes. The table is the proportion of
+2 to 4 profiles and 1 to 3 group classes. The table is the proportion of
 datasets on which the criterion's minimum fell on the true (3 profiles,
-2 cluster classes).
+2 group classes).
 
 | criterion | 60 clusters x 20 | 30 clusters x 10 |
 |---|---|---|
@@ -123,7 +123,7 @@ datasets on which the criterion's minimum fell on the true (3 profiles,
 | AIC | 0.24 | 0.24 |
 | ICL (individuals) | 0.00 | 0.00 |
 
-Every criterion identified two cluster classes in essentially every dataset;
+Every criterion identified two group classes in essentially every dataset;
 the disagreement is entirely about the number of profiles. At the larger size
 the three BIC-family criteria are exact or near-exact. AIC over-extracts, taking
 four profiles on 11 of 25 datasets in both conditions, which is the expected

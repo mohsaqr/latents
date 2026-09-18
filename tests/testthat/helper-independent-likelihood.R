@@ -4,12 +4,12 @@
 
 #' Enumerate every latent assignment in each small group
 #' @param x Numeric matrix of indicators.
-#' @param cluster Cluster identifiers in row order.
+#' @param group Cluster identifiers in row order.
 #' @param parameters List of means, variances, profile and group probabilities.
 #' @return Independently calculated likelihood, posteriors and joint posteriors.
-enumerate_latent_assignments <- function(x, cluster, parameters) {
+enumerate_latent_assignments <- function(x, group, parameters) {
   stopifnot(is.matrix(x), is.numeric(x), !anyNA(x),
-            length(cluster) == nrow(x), !anyNA(cluster), is.list(parameters),
+            length(group) == nrow(x), !anyNA(group), is.list(parameters),
             all(c("means", "variances", "profile_probabilities",
                   "group_probabilities") %in% names(parameters)))
   means <- parameters$means
@@ -25,9 +25,9 @@ enumerate_latent_assignments <- function(x, cluster, parameters) {
             all(profile_probabilities >= 0), all(group_probabilities >= 0),
             max(abs(rowSums(profile_probabilities) - 1)) < 1e-8,
             abs(sum(group_probabilities) - 1) < 1e-8)
-  group_indices <- lapply(unique(cluster), function(group) {
-    stopifnot(length(group) == 1L)
-    which(cluster == group)
+  group_indices <- lapply(unique(group), function(value) {
+    stopifnot(length(value) == 1L)
+    which(group == value)
   })
   stopifnot(max(lengths(group_indices)) <= 12L)
   group_results <- lapply(group_indices, function(indices) {
@@ -82,17 +82,17 @@ enumerate_latent_assignments <- function(x, cluster, parameters) {
 
 #' Calculate one EM update using exhaustive-assignment posteriors
 #' @param x Numeric indicator matrix.
-#' @param cluster Cluster identifiers.
+#' @param group Cluster identifiers.
 #' @param parameters Starting parameters.
 #' @param variance_model Whether variances vary by profile or are equal.
 #' @param min_variance Positive variance floor.
 #' @return Updated parameter list.
-enumerated_em_update <- function(x, cluster, parameters,
+enumerated_em_update <- function(x, group, parameters,
                                  variance_model = "varying", min_variance = 1e-6) {
-  stopifnot(is.matrix(x), is.numeric(x), length(cluster) == nrow(x),
+  stopifnot(is.matrix(x), is.numeric(x), length(group) == nrow(x),
             is.list(parameters), variance_model %in% c("varying", "equal"),
             length(min_variance) == 1L, min_variance > 0)
-  posterior <- enumerate_latent_assignments(x, cluster, parameters)
+  posterior <- enumerate_latent_assignments(x, group, parameters)
   weights <- posterior$subject_posteriors
   means <- crossprod(weights, x) / colSums(weights)
   squared_residual_sums <- t(matrix(vapply(seq_len(ncol(weights)), function(profile) {
@@ -113,12 +113,12 @@ enumerated_em_update <- function(x, cluster, parameters,
 
 #' Independently optimize a two-profile, two-group, one-indicator likelihood
 #' @param x Numeric single-column indicator matrix.
-#' @param cluster Cluster identifiers.
+#' @param group Cluster identifiers.
 #' @param start Starting model parameters.
 #' @return An optim result and unpacked parameter estimates.
-optim_multilpa_reference <- function(x, cluster, start) {
+optim_multilpa_reference <- function(x, group, start) {
   stopifnot(is.matrix(x), is.numeric(x), ncol(x) == 1L, !anyNA(x),
-            length(cluster) == nrow(x), is.list(start),
+            length(group) == nrow(x), is.list(start),
             identical(dim(start$means), c(2L, 1L)),
             identical(dim(start$variances), c(2L, 1L)),
             identical(dim(start$profile_probabilities), c(2L, 2L)),
@@ -135,9 +135,9 @@ optim_multilpa_reference <- function(x, cluster, start) {
          profile_probabilities = cbind(proportions, 1 - proportions),
          group_probabilities = c(group_probability, 1 - group_probability))
   }
-  indices <- lapply(unique(cluster), function(group) {
-    stopifnot(length(group) == 1L)
-    which(cluster == group)
+  indices <- lapply(unique(group), function(value) {
+    stopifnot(length(value) == 1L)
+    which(group == value)
   })
   objective <- function(theta) {
     stopifnot(is.numeric(theta), length(theta) == 7L)

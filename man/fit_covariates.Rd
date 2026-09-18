@@ -7,7 +7,7 @@
 fit_covariates(
   data,
   indicators,
-  cluster,
+  group,
   n_profiles,
   n_group_classes = 2L,
   profile_covariates = character(),
@@ -25,7 +25,7 @@ fit_covariates(
 
 \item{indicators}{Names of continuous indicator columns.}
 
-\item{cluster}{Name of group identifier column.}
+\item{group}{Name of group identifier column.}
 
 \item{n_profiles}{Number of individual profiles.}
 

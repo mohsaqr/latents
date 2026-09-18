@@ -22,7 +22,7 @@ test_that("exhaustive reference agrees with an analytically solvable model", {
 })
 
 test_that("fitted likelihood and posteriors match exhaustive latent assignments", {
-  synthetic <- data.frame(cluster = c("b", "a", "b", "a"),
+  synthetic <- data.frame(group = c("b", "a", "b", "a"),
                           x = c(-1.8, -0.4, 1.2, 2.1),
                           y = c(0.2, 0.8, 2.8, 3.4))
   start <- list(means = rbind(c(-1, 0.5), c(1.5, 3)),
@@ -31,13 +31,13 @@ test_that("fitted likelihood and posteriors match exhaustive latent assignments"
                 group_probabilities = c(0.45, 0.55))
   expect_warning(
     expect_warning(
-      fit <- multilpa(synthetic, c("x", "y"), "cluster", 2L,
+      fit <- multilpa(synthetic, c("x", "y"), "group", 2L,
                         n_group_classes = 2L, start = start,
                         n_starts = 1L, max_iter = 1L),
       "did not converge"),
     "effective membership")
   reference <- enumerate_latent_assignments(as.matrix(synthetic[c("x", "y")]),
-                               synthetic$cluster, fit)
+                               synthetic$group, fit)
   expect_equal(fit$log_likelihood, reference$log_likelihood, tolerance = 1e-10)
   expect_equal(unname(fit$subject_posteriors), reference$subject_posteriors,
                tolerance = 1e-10)
@@ -48,7 +48,7 @@ test_that("fitted likelihood and posteriors match exhaustive latent assignments"
 })
 
 test_that("one EM update matches an independent exhaustive E-step and M-step", {
-  synthetic <- data.frame(cluster = rep(c("c", "a", "b"), each = 2L),
+  synthetic <- data.frame(group = rep(c("c", "a", "b"), each = 2L),
                           x = c(-2, -1, -0.5, 1.5, 0.8, 2.3),
                           y = c(0.1, 0.7, 1.2, 2.9, 2.4, 3.5))
   invisible(lapply(c("varying", "equal"), function(variance_model) {
@@ -58,9 +58,9 @@ test_that("one EM update matches an independent exhaustive E-step and M-step", {
                   profile_probabilities = rbind(c(0.8, 0.2), c(0.3, 0.7)),
                   group_probabilities = c(0.45, 0.55))
     reference <- enumerated_em_update(as.matrix(synthetic[c("x", "y")]),
-                                       synthetic$cluster, start, variance_model)
+                                       synthetic$group, start, variance_model)
     expect_warning(
-      fit <- multilpa(synthetic, c("x", "y"), "cluster", 2L,
+      fit <- multilpa(synthetic, c("x", "y"), "group", 2L,
                         n_group_classes = 2L, start = start,
                         variance_model = variance_model,
                         n_starts = 1L, max_iter = 1L),
@@ -76,18 +76,18 @@ test_that("one EM update matches an independent exhaustive E-step and M-step", {
 test_that("EM agrees with independent direct numerical maximum likelihood", {
   set.seed(481L)
   n_groups <- 40L
-  cluster <- rep(seq_len(n_groups), each = 5L)
+  group <- rep(seq_len(n_groups), each = 5L)
   group_class <- rep(c(1L, 2L), each = n_groups / 2L)
-  profile <- 1L + (stats::runif(length(cluster)) > c(0.86, 0.16)[group_class[cluster]])
-  synthetic <- data.frame(cluster = cluster,
-                          x = stats::rnorm(length(cluster), c(-2.5, 2.5)[profile],
+  profile <- 1L + (stats::runif(length(group)) > c(0.86, 0.16)[group_class[group]])
+  synthetic <- data.frame(group = group,
+                          x = stats::rnorm(length(group), c(-2.5, 2.5)[profile],
                                            c(0.6, 0.8)[profile]))
   start <- list(means = matrix(c(-2.5, 2.5), 2L, 1L),
                 variances = matrix(c(0.36, 0.64), 2L, 1L),
                 profile_probabilities = rbind(c(0.86, 0.14), c(0.16, 0.84)),
                 group_probabilities = c(0.5, 0.5))
-  reference <- optim_multilpa_reference(as.matrix(synthetic["x"]), cluster, start)
-  fit <- multilpa(synthetic, "x", "cluster", 2L, n_group_classes = 2L,
+  reference <- optim_multilpa_reference(as.matrix(synthetic["x"]), group, start)
+  fit <- multilpa(synthetic, "x", "group", 2L, n_group_classes = 2L,
                     start = start, n_starts = 1L, max_iter = 3000L, tol = 1e-12)
   expect_equal(reference$optim$convergence, 0L)
   expect_true(fit$converged)
@@ -104,7 +104,7 @@ test_that("single group class reproduces mclust diagonal Gaussian mixtures", {
   # Mclust evaluates an unqualified mclustBIC call in its caller's environment.
   mclustBIC <- mclust::mclustBIC
   set.seed(192L)
-  synthetic <- data.frame(cluster = rep(seq_len(30L), each = 4L),
+  synthetic <- data.frame(group = rep(seq_len(30L), each = 4L),
                           x = c(stats::rnorm(60L, -3, 0.6), stats::rnorm(60L, 3, 1)),
                           y = c(stats::rnorm(60L, 0, 0.8), stats::rnorm(60L, 4, 0.5)))
   x <- as.matrix(synthetic[c("x", "y")])
@@ -119,7 +119,7 @@ test_that("single group class reproduces mclust diagonal Gaussian mixtures", {
     start <- list(means = means, variances = variances,
                   profile_probabilities = matrix(reference$parameters$pro, 1L),
                   group_probabilities = 1)
-    fit <- multilpa(synthetic, c("x", "y"), "cluster", 2L,
+    fit <- multilpa(synthetic, c("x", "y"), "group", 2L,
                       n_group_classes = 1L, start = start, n_starts = 1L,
                       variance_model = if (model == "VVI") "varying" else "equal",
                       tol = 1e-12)

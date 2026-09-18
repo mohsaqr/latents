@@ -7,7 +7,7 @@
 enumerate_classes(
   data,
   indicators,
-  cluster,
+  group,
   profiles = 1:4,
   group_classes = 1:3,
   seed = NULL,
@@ -19,7 +19,7 @@ enumerate_classes(
 
 \item{indicators}{Continuous indicator names.}
 
-\item{cluster}{Group identifier column name.}
+\item{group}{Group identifier column name.}
 
 \item{profiles}{Positive integer profile counts to try.}
 

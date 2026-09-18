@@ -473,12 +473,12 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' @noRd
 .multilpa_inference_matrix <- function(object, data) {
   if (nrow(data) != object$n_observations ||
-      !all(c(object$indicators, object$cluster) %in% names(data)) ||
+      !all(c(object$indicators, object$group) %in% names(data)) ||
       anyDuplicated(names(data)) ||
       !all(vapply(data[, object$indicators, drop = FALSE], is.numeric, logical(1)))) {
-    stop("data must contain the original numeric indicators and cluster column.")
+    stop("data must contain the original numeric indicators and group column.")
   }
-  group_index <- match(data[[object$cluster]], object$group_values)
+  group_index <- match(data[[object$group]], object$group_values)
   if (!identical(group_index, object$group_index)) {
     stop("data must retain the original group identifiers and row order.")
   }

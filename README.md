@@ -26,7 +26,7 @@ library(multilpa)
 fit <- multilpa(
   data = students,
   indicators = c("reading", "maths", "engagement"),
-  cluster = "school_id",
+  group = "school_id",
   n_profiles = 3,
   n_group_classes = 2,
   variance_model = "varying",

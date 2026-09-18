@@ -29,8 +29,8 @@ run_public_comparison <- function(example) {
   print(input)
   expected <- parse_public_mplus(readLines(paths[3L]))
   variance_model <- if (example == "7.9") "equal" else "varying"
-  data$cluster <- 1L
-  stopifnot(!anyNA(data), !anyDuplicated(data), all(data$cluster == 1L))
+  data$group <- 1L
+  stopifnot(!anyNA(data), !anyDuplicated(data), all(data$group == 1L))
   fit <- multilpa(data, c("y1", "y2", "y3", "y4"), "cluster", 2L, 1L,
                     variance_model = variance_model, n_starts = 20L, max_iter = 1000L,
                     tol = 1e-12, seed = 912)

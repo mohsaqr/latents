@@ -49,7 +49,7 @@ stopifnot("LMR adjustment disagrees with Mplus" =
 # End-to-end: fit both models natively on the same published data and compare
 # the statistic Mplus computed from its own one- and two-class fits. With one
 # group class the likelihood is the pooled single-level LPA likelihood, so the
-# cluster column carries no information here and only supplies the group layout.
+# group column carries no information here and only supplies the group layout.
 fixture <- readRDS(file.path("tests", "fixtures", "mplus", "public-7.9.rds"))
 indicators <- c("y1", "y2", "y3", "y4")
 # Example 7.9 is the shared-variance specification, which is also the Mplus

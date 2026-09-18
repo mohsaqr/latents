@@ -353,7 +353,7 @@
 #'
 #' @param data A data frame containing indicators and a group identifier.
 #' @param indicators Unique character vector of continuous indicator column names.
-#' @param cluster Name of the observed group identifier column. Character,
+#' @param group Name of the observed group identifier column. Character,
 #'   factor, or numeric identifiers are supported; missing identifiers are not.
 #' @param n_profiles Positive integer number of individual profiles.
 #' @param n_group_classes Positive integer number of latent group classes.
@@ -428,14 +428,14 @@
 #' summary(fit)
 #' @export
 #' @importFrom stats setNames
-multilpa <- function(data, indicators, cluster, n_profiles,
+multilpa <- function(data, indicators, group, n_profiles,
                        n_group_classes = 2L, variance_model = c("varying", "equal"),
                        n_starts = 10L, max_iter = 1000L, tol = 1e-8,
                        min_variance = 1e-6, seed = NULL, start = NULL,
                        missing = c("error", "fiml"),
                        covariance_model = c("diagonal", "full"),
                        categorical = character(), min_probability = 1e-10) {
-  stopifnot(is.data.frame(data), is.character(indicators), is.character(cluster),
+  stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
             "`min_probability` must be a single number in (0, 1)" =
@@ -446,7 +446,7 @@ multilpa <- function(data, indicators, cluster, n_profiles,
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
-  .multilpa_check_arguments(data, indicators, cluster, n_profiles, n_group_classes,
+  .multilpa_check_arguments(data, indicators, group, n_profiles, n_group_classes,
                           n_starts, max_iter, tol, min_variance, min_probability,
                           seed, categorical)
   measurement <- .multilpa_prepare_indicators(data, indicators, categorical,
@@ -457,7 +457,7 @@ multilpa <- function(data, indicators, cluster, n_profiles,
   codes <- measurement$codes
   n_categories <- measurement$n_categories
   x <- measurement$x
-  groups <- .multilpa_prepare_groups(data[[cluster]])
+  groups <- .multilpa_prepare_groups(data[[group]])
   group_values <- groups$values
   group_index <- groups$index
   group_ids <- groups$ids
@@ -551,7 +551,7 @@ multilpa <- function(data, indicators, cluster, n_profiles,
     categorical_levels = encoded$levels, min_probability = min_probability,
     indicator_data = as.matrix(indicator_frame),
     categorical_data = codes,
-    cluster = cluster, group_ids = group_ids,
+    group = group, group_ids = group_ids,
     group_values = group_values, group_index = group_index,
     group_sizes = setNames(group_sizes, group_ids),
     n_observations = nrow(x), n_groups = n_groups, n_profiles = as.integer(n_profiles),
@@ -593,15 +593,15 @@ multilpa <- function(data, indicators, cluster, n_profiles,
 #' Validate the scalar arguments of a fit
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
-.multilpa_check_arguments <- function(data, indicators, cluster, n_profiles,
+.multilpa_check_arguments <- function(data, indicators, group, n_profiles,
                                     n_group_classes, n_starts, max_iter, tol,
                                     min_variance, min_probability, seed,
                                     categorical) {
   if (nrow(data) < 2L || length(indicators) < 1L || anyNA(indicators) ||
       anyDuplicated(indicators) || anyDuplicated(names(data)) ||
-      length(cluster) != 1L || is.na(cluster) || cluster %in% indicators ||
-      !all(c(indicators, cluster) %in% names(data))) {
-    stop("Supply at least two rows, unique existing indicators, and one distinct cluster column.")
+      length(group) != 1L || is.na(group) || group %in% indicators ||
+      !all(c(indicators, group) %in% names(data))) {
+    stop("Supply at least two rows, unique existing indicators, and one distinct group column.")
   }
   counts <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
                  n_starts = n_starts, max_iter = max_iter)
@@ -677,7 +677,7 @@ multilpa <- function(data, indicators, cluster, n_profiles,
   if (!(is.character(raw_groups) || is.factor(raw_groups) || is.numeric(raw_groups)) ||
       !is.null(dim(raw_groups)) || anyNA(raw_groups) ||
       (is.numeric(raw_groups) && any(!is.finite(raw_groups)))) {
-    stop("cluster must contain nonmissing, finite numeric, factor, or character identifiers.")
+    stop("group must contain nonmissing, finite numeric, factor, or character identifiers.")
   }
   values <- unique(raw_groups)
   index <- match(raw_groups, values)

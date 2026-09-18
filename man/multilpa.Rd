@@ -7,7 +7,7 @@
 multilpa(
   data,
   indicators,
-  cluster,
+  group,
   n_profiles,
   n_group_classes = 2L,
   variance_model = c("varying", "equal"),
@@ -28,7 +28,7 @@ multilpa(
 
 \item{indicators}{Unique character vector of continuous indicator column names.}
 
-\item{cluster}{Name of the observed group identifier column. Character,
+\item{group}{Name of the observed group identifier column. Character,
 factor, or numeric identifiers are supported; missing identifiers are not.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}

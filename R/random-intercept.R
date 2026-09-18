@@ -107,7 +107,7 @@
 #'
 #' @param data Data frame with complete numeric indicators.
 #' @param indicators Character vector of indicator names.
-#' @param cluster Name of the group identifier column.
+#' @param group Name of the group identifier column.
 #' @param n_profiles Positive integer number of profiles.
 #' @param variance_model Profile-specific (varying) or shared (equal) residual variances.
 #' @param n_starts Number of independently initialized optimizations.
@@ -134,13 +134,13 @@
 #'                                  n_starts = 1)
 #' print(fit)
 #' @export
-fit_random_intercept <- function(data, indicators, cluster, n_profiles,
+fit_random_intercept <- function(data, indicators, group, n_profiles,
     variance_model = c("varying", "equal"), n_starts = 5L, max_iter = 1000L,
     tol = 1e-8, min_variance = 1e-6, quadrature_nodes = 61L,
     quadrature_check_nodes = 121L, quadrature_tolerance = 1e-3, seed = NULL) {
   stopifnot(is.data.frame(data), is.character(indicators), length(indicators) >= 1L,
-    !anyDuplicated(indicators), is.character(cluster), length(cluster) == 1L,
-    all(c(indicators, cluster) %in% names(data)), !cluster %in% indicators,
+    !anyDuplicated(indicators), is.character(group), length(group) == 1L,
+    all(c(indicators, group) %in% names(data)), !group %in% indicators,
     is.numeric(n_profiles), length(n_profiles) == 1L, is.finite(n_profiles),
     n_profiles >= 1L, n_profiles == as.integer(n_profiles),
     is.numeric(n_starts), length(n_starts) == 1L, is.finite(n_starts),
@@ -158,11 +158,11 @@ fit_random_intercept <- function(data, indicators, cluster, n_profiles,
   stopifnot(all(vapply(data[indicators], is.numeric, logical(1))))
   x <- as.matrix(data[indicators])
   stopifnot(nrow(x) >= 2L, all(is.finite(x)),
-            !anyNA(data[[cluster]]),
-            is.numeric(data[[cluster]]) || is.character(data[[cluster]]) || is.factor(data[[cluster]]))
-  if (is.numeric(data[[cluster]])) stopifnot(all(is.finite(data[[cluster]])))
-  group_values <- unique(data[[cluster]])
-  group_index <- match(data[[cluster]], group_values)
+            !anyNA(data[[group]]),
+            is.numeric(data[[group]]) || is.character(data[[group]]) || is.factor(data[[group]]))
+  if (is.numeric(data[[group]])) stopifnot(all(is.finite(data[[group]])))
+  group_values <- unique(data[[group]])
+  group_index <- match(data[[group]], group_values)
   group_sizes <- tabulate(group_index)
   stopifnot(length(group_values) >= 2L, any(group_sizes > 1L),
             n_profiles <= nrow(unique(x)))
@@ -234,7 +234,7 @@ fit_random_intercept <- function(data, indicators, cluster, n_profiles,
   result <- c(parameters, estimates, list(call = match.call(), n_profiles = k,
     n_observations = nrow(x), n_groups = length(group_values), group_values = group_values,
     group_index = group_index, group_sizes = group_sizes, indicators = indicators,
-    cluster = cluster, variance_model = variance_model, n_parameters = q,
+    group = group, variance_model = variance_model, n_parameters = q,
     aic = -2 * estimates$log_likelihood + 2 * q,
     bic = -2 * estimates$log_likelihood + log(length(group_values)) * q,
     bic_individual = -2 * estimates$log_likelihood + log(nrow(x)) * q,

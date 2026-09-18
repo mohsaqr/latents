@@ -7,7 +7,7 @@
 fit_random_intercept(
   data,
   indicators,
-  cluster,
+  group,
   n_profiles,
   variance_model = c("varying", "equal"),
   n_starts = 5L,
@@ -25,7 +25,7 @@ fit_random_intercept(
 
 \item{indicators}{Character vector of indicator names.}
 
-\item{cluster}{Name of the group identifier column.}
+\item{group}{Name of the group identifier column.}
 
 \item{n_profiles}{Positive integer number of profiles.}
 
