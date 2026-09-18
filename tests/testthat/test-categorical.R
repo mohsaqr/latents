@@ -215,8 +215,21 @@ test_that("unsupported categorical combinations are refused by condition class",
   categorical_inference <- parameter_inference(fit, dat)
   expect_true(all(categorical_inference$standard_error >= 0))
   expect_true("response" %in% categorical_inference$parameter)
-  expect_error(bootstrap_lrt(smaller, fit, dat, n_boot = 3, seed = 1),
-               class = "multilpa_unsupported_bootstrap")
+  # The parametric bootstrap now simulates categorical indicators too. Replicate
+  # validity depends on the fit converging, which this small model does not
+  # always manage, so only the machinery is asserted here.
+  # The bootstrap compares models differing by one class at one level. One
+  # profile with two group classes is unidentifiable, so the step is taken at
+  # the group level instead: two profiles, one class against two.
+  one_class <- multilpa(dat, indicators, "school", 2, 1,
+                        categorical = indicators, n_starts = 3, seed = 2)
+  bootstrap <- suppressWarnings(
+    bootstrap_lrt(one_class, fit, dat, n_boot = 3, n_starts = 3, seed = 1))
+  expect_gt(bootstrap$statistic, 0)
+  expect_equal(bootstrap$n_boot, 3L)
+  expect_true(all(c("replicate", "statistic", "valid") %in%
+                    names(bootstrap$replicates)))
+  expect_equal(nrow(bootstrap$replicates), 3L)
   expect_error(multilpa(dat, indicators, "school", 2, 2, categorical = "absent",
                           n_starts = 2), class = "multilpa_bad_categorical")
   expect_error(multilpa(dat, indicators, "school", 2, 2,
