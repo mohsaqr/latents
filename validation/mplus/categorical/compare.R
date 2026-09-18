@@ -48,7 +48,7 @@ mplus_group_probabilities <- c(stats::plogis(group_logit),
                                1 - stats::plogis(group_logit))
 mplus_log_likelihood <- values[2L * n_parameters + 2L]
 
-fit <- fit_ml_lpa(raw, indicators, "clus", n_profiles = 2, n_group_classes = 2,
+fit <- fit_multilpa(raw, indicators, "clus", n_profiles = 2, n_group_classes = 2,
                   categorical = indicators, n_starts = 40, seed = 20260918,
                   tol = 1e-13, max_iter = 20000)
 stopifnot("the native fit did not converge" = fit$converged,
@@ -59,7 +59,7 @@ stopifnot("the native fit did not converge" = fit$converged,
 # A threshold is qlogis(P(y = lowest category)), which is exactly the Mplus
 # u$1 parameterization, so the two are directly comparable once labels align.
 native_thresholds <- vapply(fit$response_probabilities, function(block) {
-  as.vector(.ml_lpa_categorical_thresholds(block))
+  as.vector(.multilpa_categorical_thresholds(block))
 }, numeric(fit$n_profiles))
 profile_order <- order(native_thresholds[, 1L])[rank(mplus_thresholds[, 1L])]
 group_order <- order(fit$profile_probabilities[, profile_order[1L]])[

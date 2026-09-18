@@ -10,16 +10,16 @@
 #' @param profiles Positive integer profile counts to try.
 #' @param group_classes Positive integer group-class counts to try.
 #' @param seed Optional reproducible seed for each fit.
-#' @param ... Further arguments to [fit_ml_lpa()].
+#' @param ... Further arguments to [fit_multilpa()].
 #' @return A list with `table` (criteria/diagnostics) and `fits` (models or NULL).
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_ml_lpa(d, "y", "g", profiles = 1:2,
+#' candidates <- enumerate_multilpa(d, "y", "g", profiles = 1:2,
 #'                               group_classes = 1, n_starts = 2, seed = 1)
 #' candidates$table
 #' @export
-enumerate_ml_lpa <- function(data, indicators, cluster, profiles = 1:4,
+enumerate_multilpa <- function(data, indicators, cluster, profiles = 1:4,
                               group_classes = 1:3, seed = NULL, ...) {
   stopifnot(is.data.frame(data), is.character(indicators), is.character(cluster),
             is.numeric(profiles), length(profiles) > 0L,
@@ -35,7 +35,7 @@ enumerate_ml_lpa <- function(data, indicators, cluster, profiles = 1:4,
   runs <- lapply(seq_len(nrow(grid)), function(i) {
     warnings <- character()
     error_text <- NA_character_
-    fit <- tryCatch(withCallingHandlers(do.call(fit_ml_lpa,
+    fit <- tryCatch(withCallingHandlers(do.call(fit_multilpa,
       c(list(data = data, indicators = indicators, cluster = cluster,
              n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed), extra)),
       warning = function(warning) {
@@ -48,12 +48,12 @@ enumerate_ml_lpa <- function(data, indicators, cluster, profiles = 1:4,
       data.frame(n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
         log_likelihood = if (is.null(fit)) NA_real_ else fit$log_likelihood,
         n_parameters = if (is.null(fit)) NA_integer_ else fit$n_parameters),
-      .ml_lpa_enumeration_indices(fit),
+      .multilpa_enumeration_indices(fit),
       data.frame(
         profile_entropy = if (is.null(fit)) NA_real_ else
-          .ml_lpa_relative_entropy(fit$subject_posteriors),
+          .multilpa_relative_entropy(fit$subject_posteriors),
         group_entropy = if (is.null(fit)) NA_real_ else
-          .ml_lpa_relative_entropy(fit$group_posteriors),
+          .multilpa_relative_entropy(fit$group_posteriors),
         converged = !is.null(fit) && fit$converged,
         boundary = if (is.null(fit)) NA else fit$boundary,
         n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated,
@@ -62,7 +62,7 @@ enumerate_ml_lpa <- function(data, indicators, cluster, profiles = 1:4,
   })
   result <- list(table = do.call(rbind, lapply(runs, `[[`, "row")),
        fits = lapply(runs, `[[`, "fit"), call = match.call())
-  class(result) <- "ml_lpa_enumeration"
+  class(result) <- "multilpa_enumeration"
   result
 }
 
@@ -70,8 +70,8 @@ enumerate_ml_lpa <- function(data, indicators, cluster, profiles = 1:4,
 #' @param object Fitted model.
 #' @return Simulated data frame with the original cluster layout.
 #' @noRd
-.ml_lpa_simulate <- function(object) {
-  stopifnot(inherits(object, "ml_lpa"), !inherits(object, "ml_lpa_covariates"))
+.multilpa_simulate <- function(object) {
+  stopifnot(inherits(object, "multilpa"), !inherits(object, "multilpa_covariates"))
   group_class <- sample.int(object$n_group_classes, object$n_groups,
                             replace = TRUE, prob = object$group_probabilities)
   profile <- vapply(group_class[object$group_index], function(h) {
@@ -102,7 +102,7 @@ enumerate_ml_lpa <- function(data, indicators, cluster, profiles = 1:4,
 #' parametric bootstrap, not an implementation of Mplus TECH14. It does not use
 #' a chi-square reference distribution. Any failed/nonconverged or reversed
 #' replicate makes the p-value NA, avoiding silent deletion of difficult fits.
-#' @param null_model Smaller, converged [fit_ml_lpa()] model on complete data.
+#' @param null_model Smaller, converged [fit_multilpa()] model on complete data.
 #' @param alternative_model Larger model fitted to exactly the same data.
 #' @param data Original data, used to verify both fitted likelihoods.
 #' @param n_boot Number of simulated datasets (at least two; use many for inference).
@@ -115,12 +115,12 @@ enumerate_ml_lpa <- function(data, indicators, cluster, profiles = 1:4,
 #'   boundary flags and likelihood replication before interpreting results.
 #' @examples
 #' # After fitting nested models on d:
-#' # bootstrap_lrt_ml_lpa(smaller, larger, d, n_boot = 199, seed = 1)
+#' # bootstrap_lrt_multilpa(smaller, larger, d, n_boot = 199, seed = 1)
 #' @export
-bootstrap_lrt_ml_lpa <- function(null_model, alternative_model, data,
+bootstrap_lrt_multilpa <- function(null_model, alternative_model, data,
                                  n_boot = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
-  stopifnot(inherits(null_model, "ml_lpa"), inherits(alternative_model, "ml_lpa"),
+  stopifnot(inherits(null_model, "multilpa"), inherits(alternative_model, "multilpa"),
             is.data.frame(data), is.numeric(n_boot), length(n_boot) == 1L,
             is.finite(n_boot), n_boot >= 2L, n_boot == as.integer(n_boot),
             is.numeric(n_starts), length(n_starts) == 1L, is.finite(n_starts),
@@ -131,7 +131,7 @@ bootstrap_lrt_ml_lpa <- function(null_model, alternative_model, data,
   if (!is.null(null_model$response_probabilities) ||
       !is.null(alternative_model$response_probabilities)) {
     stop(errorCondition("The parametric bootstrap does not yet simulate categorical indicators.",
-                        class = "mllpa_unsupported_bootstrap", call = NULL))
+                        class = "multilpa_unsupported_bootstrap", call = NULL))
   }
   if (!is.null(seed)) {
     stopifnot(is.numeric(seed), length(seed) == 1L, is.finite(seed),
@@ -164,7 +164,7 @@ bootstrap_lrt_ml_lpa <- function(null_model, alternative_model, data,
     if (!is.null(model$indicator_data) && !identical(x, model$indicator_data)) {
       stop("data must reproduce the original indicator data and row order.")
     }
-    likelihood <- .ml_lpa_expectation(x, model$group_index, model)$log_likelihood
+    likelihood <- .multilpa_expectation(x, model$group_index, model)$log_likelihood
     if (abs(likelihood - model$log_likelihood) > 1e-7 * (1 + abs(likelihood))) {
       stop("data do not reproduce the fitted model likelihood.")
     }
@@ -175,9 +175,9 @@ bootstrap_lrt_ml_lpa <- function(null_model, alternative_model, data,
   replicates <- do.call(rbind, lapply(seq_len(n_boot), function(i) {
     warning_text <- character()
     tryCatch(withCallingHandlers({
-      simulated <- .ml_lpa_simulate(null_model)
+      simulated <- .multilpa_simulate(null_model)
       models <- lapply(list(null_model, alternative_model), function(model) {
-        fit_ml_lpa(simulated, model$indicators, model$cluster, model$n_profiles,
+        fit_multilpa(simulated, model$indicators, model$cluster, model$n_profiles,
                     model$n_group_classes, model$variance_model, n_starts = n_starts,
                     max_iter = max_iter, tol = tol, min_variance = model$min_variance,
                     covariance_model = if (is.null(model$covariance_model)) "diagonal" else model$covariance_model)
@@ -208,10 +208,10 @@ bootstrap_lrt_ml_lpa <- function(null_model, alternative_model, data,
 }
 
 #' Spread the information criteria of one candidate into a single row
-#' @param fit A fitted `ml_lpa` model, or `NULL` for a failed candidate.
+#' @param fit A fitted `multilpa` model, or `NULL` for a failed candidate.
 #' @return A one-row `data.frame` of criteria, all `NA_real_` when `fit` is `NULL`.
 #' @noRd
-.ml_lpa_enumeration_indices <- function(fit) {
+.multilpa_enumeration_indices <- function(fit) {
   names_wanted <- c("aic", "bic_groups", "bic_individual", "sabic_groups",
                     "sabic_individual", "caic_groups", "caic_individual",
                     "awe_groups", "awe_individual", "icl_groups", "icl_individual")

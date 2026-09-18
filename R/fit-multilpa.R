@@ -2,7 +2,7 @@
 #' @param log_values Numeric matrix of log weights.
 #' @return Vector of log sums.
 #' @noRd
-.ml_lpa_log_sum_exp <- function(log_values) {
+.multilpa_log_sum_exp <- function(log_values) {
   stopifnot(is.matrix(log_values), is.numeric(log_values),
             nrow(log_values) > 0L, ncol(log_values) > 0L,
             !anyNA(log_values))
@@ -21,13 +21,13 @@
 #' @param codes Optional integer matrix of categorical indicator codes.
 #' @return Log likelihood, posteriors, and conditional class probabilities.
 #' @noRd
-.ml_lpa_expectation <- function(x, group_index, parameters, codes = NULL) {
+.multilpa_expectation <- function(x, group_index, parameters, codes = NULL) {
   stopifnot(is.matrix(x), is.numeric(x), !any(is.infinite(x)),
             length(group_index) == nrow(x), is.list(parameters))
   n_profiles <- nrow(parameters$means)
   n_types <- length(parameters$group_probabilities)
   gaussian <- if (ncol(x) > 0L && (anyNA(x) || !is.null(parameters$covariances))) {
-    .ml_lpa_gaussian_moments(x, parameters)
+    .multilpa_gaussian_moments(x, parameters)
   } else NULL
   log_density <- if (!is.null(gaussian)) gaussian$log_density else vapply(seq_len(n_profiles), function(profile) {
     residuals <- sweep(x, 2L, parameters$means[profile, ], "-")
@@ -40,13 +40,13 @@
   # given the profile, so their log densities simply add.
   if (!is.null(codes)) {
     log_density <- log_density +
-      .ml_lpa_categorical_log_density(codes, parameters$response_probabilities)
+      .multilpa_categorical_log_density(codes, parameters$response_probabilities)
   }
   # Each group type supplies a different prior over the same Gaussian profiles.
   conditional <- lapply(seq_len(n_types), function(group_type) {
     log_joint <- sweep(log_density, 2L,
                        log(parameters$profile_probabilities[group_type, ]), "+")
-    log_marginal <- .ml_lpa_log_sum_exp(log_joint)
+    log_marginal <- .multilpa_log_sum_exp(log_joint)
     list(log_marginal = log_marginal,
          posterior = exp(sweep(log_joint, 1L, log_marginal, "-")))
   })
@@ -55,7 +55,7 @@
                       group_index, reorder = FALSE)) +
       log(parameters$group_probabilities[group_type])
   }, numeric(max(group_index))), nrow = max(group_index), ncol = n_types)
-  group_log_likelihood <- .ml_lpa_log_sum_exp(group_scores)
+  group_log_likelihood <- .multilpa_log_sum_exp(group_scores)
   group_posteriors <- exp(sweep(group_scores, 1L, group_log_likelihood, "-"))
   joint <- lapply(seq_len(n_types), function(group_type) {
     conditional[[group_type]]$posterior * group_posteriors[group_index, group_type]
@@ -80,7 +80,7 @@
 #' @param covariance_model Diagonal or full residual covariance.
 #' @return Updated model parameters.
 #' @noRd
-.ml_lpa_maximization <- function(x, expectation, variance_model, min_variance,
+.multilpa_maximization <- function(x, expectation, variance_model, min_variance,
                                   covariance_model = "diagonal", codes = NULL,
                                   n_categories = NULL, min_probability = 1e-10) {
   stopifnot(is.matrix(x), is.list(expectation),
@@ -91,7 +91,7 @@
     stop("A profile or group class has zero effective membership.")
   }
   gaussian <- if (!is.null(expectation$gaussian_moments)) {
-    .ml_lpa_maximize_moments(x, expectation, variance_model, min_variance, covariance_model)
+    .multilpa_maximize_moments(x, expectation, variance_model, min_variance, covariance_model)
   } else NULL
   if (ncol(x) == 0L) {
     means <- matrix(numeric(0), length(weights), 0L)
@@ -123,7 +123,7 @@
                      group_probabilities = group_weights / sum(group_weights))
   if (!is.null(gaussian$covariances)) parameters$covariances <- gaussian$covariances
   if (!is.null(codes)) {
-    parameters$response_probabilities <- .ml_lpa_categorical_maximize(
+    parameters$response_probabilities <- .multilpa_categorical_maximize(
       codes, expectation$subject_posteriors, n_categories, min_probability)
   }
   if (any(!is.finite(unlist(parameters, use.names = FALSE)))) {
@@ -143,7 +143,7 @@
 #' @param covariance_model Diagonal or full residual covariance.
 #' @return Strictly positive initial mixture probabilities and Gaussian parameters.
 #' @noRd
-.ml_lpa_initialize <- function(x, group_index, n_profiles, n_types,
+.multilpa_initialize <- function(x, group_index, n_profiles, n_types,
                                variance_model, min_variance, start_index,
                                covariance_model = "diagonal", codes = NULL,
                                n_categories = NULL, min_probability = 1e-10) {
@@ -171,7 +171,7 @@
     # Categorical indicators join the clustering as centered dummy columns, so
     # a mixed-mode model is initialized from all of its indicators at once.
     clustering_input <- if (is.null(codes)) standardized else
-      cbind(standardized, .ml_lpa_categorical_design(codes, n_categories))
+      cbind(standardized, .multilpa_categorical_design(codes, n_categories))
     initial_fit <- stats::kmeans(clustering_input, centers = n_profiles,
                                 iter.max = 100L, algorithm = "Lloyd")
     if (!is.null(initial_fit$ifault) && initial_fit$ifault != 0L) {
@@ -210,12 +210,12 @@
        profile_probabilities = profile_probabilities,
        group_probabilities = rep(1 / n_types, n_types))
   if (!is.null(codes)) {
-    result$response_probabilities <- .ml_lpa_categorical_initialize(
+    result$response_probabilities <- .multilpa_categorical_initialize(
       codes, assignments, n_profiles, n_categories, min_probability)
   }
   if (ncol(x) > 0L && covariance_model == "full") {
     residuals <- sweep(x, 2L, overall_means, "-")
-    covariance <- .ml_lpa_bound_covariance(crossprod(residuals) / nrow(x), min_variance)
+    covariance <- .multilpa_bound_covariance(crossprod(residuals) / nrow(x), min_variance)
     result$covariances <- array(rep(covariance, n_profiles), c(ncol(x), ncol(x), n_profiles))
     result$variances <- matrix(diag(covariance), n_profiles, ncol(x), byrow = TRUE)
   }
@@ -232,7 +232,7 @@
 #' @param covariance_model Diagonal or full residual covariance.
 #' @return A validated copy without dimension names.
 #' @noRd
-.ml_lpa_validate_start <- function(start, n_profiles, n_types, n_indicators,
+.multilpa_validate_start <- function(start, n_profiles, n_types, n_indicators,
                                    variance_model, min_variance, covariance_model = "diagonal") {
   stopifnot(is.list(start), n_profiles >= 1L, n_types >= 1L,
             n_indicators >= 1L, min_variance > 0)
@@ -314,21 +314,21 @@
 #' @param covariance_model Diagonal or full residual covariance.
 #' @return Final parameters, posterior calculation, and convergence history.
 #' @noRd
-.ml_lpa_em <- function(x, group_index, parameters, variance_model,
+.multilpa_em <- function(x, group_index, parameters, variance_model,
                         min_variance, max_iter, tol, covariance_model = "diagonal",
                         codes = NULL, n_categories = NULL, min_probability = 1e-10) {
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 1L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
-  expectation <- .ml_lpa_expectation(x, group_index, parameters, codes)
+  expectation <- .multilpa_expectation(x, group_index, parameters, codes)
   history <- expectation$log_likelihood
   converged <- FALSE
   iteration <- 0L
   while (iteration < max_iter && !converged) {
-    parameters <- .ml_lpa_maximization(x, expectation, variance_model, min_variance,
+    parameters <- .multilpa_maximization(x, expectation, variance_model, min_variance,
                                        covariance_model, codes, n_categories,
                                        min_probability)
-    updated <- .ml_lpa_expectation(x, group_index, parameters, codes)
+    updated <- .multilpa_expectation(x, group_index, parameters, codes)
     improvement <- updated$log_likelihood - expectation$log_likelihood
     if (improvement < -1e-10 * (1 + abs(expectation$log_likelihood))) {
       stop("EM likelihood decreased beyond numerical roundoff.")
@@ -390,7 +390,7 @@
 #'   Missing indicators are integrated out, not filled in for likelihood fitting.
 #' @param covariance_model `"diagonal"` assumes conditional independence;
 #'   `"full"` estimates within-profile residual covariances.
-#' @return An `ml_lpa` object containing `means`, `variances`, optional
+#' @return An `multilpa` object containing `means`, `variances`, optional
 #'   `covariances` (indicators by indicators by profiles),
 #'   `profile_probabilities`, `group_probabilities`, posterior matrices,
 #'   classifications, log likelihood, information criteria, restart diagnostics,
@@ -422,13 +422,13 @@
 #'   school = rep(seq_len(10), each = 12),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                  n_profiles = 1, n_group_classes = 1, n_starts = 1,
 #'                  seed = 42)
 #' summary(fit)
 #' @export
 #' @importFrom stats setNames
-fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
+fit_multilpa <- function(data, indicators, cluster, n_profiles,
                        n_group_classes = 2L, variance_model = c("varying", "equal"),
                        n_starts = 10L, max_iter = 1000L, tol = 1e-8,
                        min_variance = 1e-6, seed = NULL, start = NULL,
@@ -446,10 +446,10 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
-  .ml_lpa_check_arguments(data, indicators, cluster, n_profiles, n_group_classes,
+  .multilpa_check_arguments(data, indicators, cluster, n_profiles, n_group_classes,
                           n_starts, max_iter, tol, min_variance, min_probability,
                           seed, categorical)
-  measurement <- .ml_lpa_prepare_indicators(data, indicators, categorical,
+  measurement <- .multilpa_prepare_indicators(data, indicators, categorical,
                                             missing, min_probability)
   continuous <- measurement$continuous
   indicator_frame <- measurement$frame
@@ -457,7 +457,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
   codes <- measurement$codes
   n_categories <- measurement$n_categories
   x <- measurement$x
-  groups <- .ml_lpa_prepare_groups(data[[cluster]])
+  groups <- .multilpa_prepare_groups(data[[cluster]])
   group_values <- groups$values
   group_index <- groups$index
   group_ids <- groups$ids
@@ -475,9 +475,9 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
   if (!is.null(start)) {
     if (!is.null(codes)) {
       stop(errorCondition("Supplying `start` is not yet supported for categorical indicators.",
-                          class = "mllpa_unsupported_start", call = NULL))
+                          class = "multilpa_unsupported_start", call = NULL))
     }
-    start <- .ml_lpa_validate_start(start, n_profiles, n_group_classes,
+    start <- .multilpa_validate_start(start, n_profiles, n_group_classes,
                                     ncol(x), variance_model, min_variance, covariance_model)
   }
   if (!is.null(seed)) {
@@ -500,11 +500,11 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
       initial <- if (start_index == 1L && !is.null(start)) start else {
-        .ml_lpa_initialize(x, group_index, n_profiles, n_group_classes,
+        .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                            variance_model, min_variance, start_index,
                            covariance_model, codes, n_categories, min_probability)
       }
-      .ml_lpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
+      .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
                  tol, covariance_model, codes, n_categories, min_probability)
     }, error = function(error) list(error = conditionMessage(error)))
   })
@@ -522,7 +522,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
   parameters$means <- sweep(parameters$means, 2L, centers, "+")
   profile_names <- paste0("profile_", seq_len(n_profiles))
   type_names <- paste0("group_class_", seq_len(n_group_classes))
-  parameters <- .ml_lpa_label_parameters(parameters, profile_names, continuous,
+  parameters <- .multilpa_label_parameters(parameters, profile_names, continuous,
                                          categorical, encoded$levels)
   dimnames(parameters$profile_probabilities) <- list(type_names, profile_names)
   names(parameters$group_probabilities) <- type_names
@@ -530,7 +530,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
   group_posteriors <- best$expectation$group_posteriors
   dimnames(subject_posteriors) <- list(rownames(data), profile_names)
   dimnames(group_posteriors) <- list(group_ids, type_names)
-  n_parameters <- .ml_lpa_count_parameters(n_profiles, n_group_classes, ncol(x),
+  n_parameters <- .multilpa_count_parameters(n_profiles, n_group_classes, ncol(x),
                                            n_categories, variance_model,
                                            covariance_model)
   log_likelihood <- best$expectation$log_likelihood
@@ -541,9 +541,9 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
                iterations = if (valid[start_index]) attempt$iterations else NA_integer_,
                error = if (valid[start_index]) NA_character_ else attempt$error,
                boundary = if (valid[start_index])
-                 .ml_lpa_covariance_boundary(attempt$parameters, min_variance) else NA)
+                 .multilpa_covariance_boundary(attempt$parameters, min_variance) else NA)
   }))
-  boundary <- .ml_lpa_covariance_boundary(parameters, min_variance)
+  boundary <- .multilpa_covariance_boundary(parameters, min_variance)
   small_classes <- any(colSums(subject_posteriors) < 1) || any(colSums(group_posteriors) < 1)
   result <- c(parameters, list(
     call = call, indicators = indicators, continuous = continuous,
@@ -580,7 +580,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
     n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
                              1e-6 * (1 + abs(log_likelihood))),
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))))
-  class(result) <- "ml_lpa"
+  class(result) <- "multilpa"
   if (any(!valid)) warning(sprintf("%d of %d starts failed; inspect $starts$error.", sum(!valid), n_starts), call. = FALSE)
   if (!best$converged) warning("The best start did not converge; increase max_iter and inspect starts.", call. = FALSE)
   if (boundary) warning(if (covariance_model == "full")
@@ -593,7 +593,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
 #' Validate the scalar arguments of a fit
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
-.ml_lpa_check_arguments <- function(data, indicators, cluster, n_profiles,
+.multilpa_check_arguments <- function(data, indicators, cluster, n_profiles,
                                     n_group_classes, n_starts, max_iter, tol,
                                     min_variance, min_probability, seed,
                                     categorical) {
@@ -622,7 +622,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
       seed > .Machine$integer.max)) stop("seed must be a nonnegative integer or NULL.")
   if (anyDuplicated(categorical) || !all(categorical %in% indicators)) {
     stop(errorCondition("`categorical` must name distinct indicators listed in `indicators`.",
-                        class = "mllpa_bad_categorical", call = NULL))
+                        class = "multilpa_bad_categorical", call = NULL))
   }
   invisible(NULL)
 }
@@ -636,11 +636,11 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
 #' @return A list with `continuous`, `frame`, `x`, `encoded`, `codes` and
 #'   `n_categories`.
 #' @noRd
-.ml_lpa_prepare_indicators <- function(data, indicators, categorical, missing,
+.multilpa_prepare_indicators <- function(data, indicators, categorical, missing,
                                        min_probability) {
   continuous <- setdiff(indicators, categorical)
   encoded <- if (length(categorical) > 0L) {
-    .ml_lpa_encode_categorical(data[, categorical, drop = FALSE])
+    .multilpa_encode_categorical(data[, categorical, drop = FALSE])
   } else NULL
   codes <- encoded$codes
   n_categories <- encoded$n_categories
@@ -648,7 +648,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
     stop(errorCondition(sprintf(
       "`min_probability` of %g leaves no room for an indicator with %d categories.",
       min_probability, max(n_categories)),
-      class = "mllpa_bad_categorical", call = NULL))
+      class = "multilpa_bad_categorical", call = NULL))
   }
   if (!is.null(codes) && missing == "error" && anyNA(codes)) {
     stop("Indicators contain missing or non-finite values.")
@@ -673,7 +673,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
 #' Index the observed groups in first-occurrence order
 #' @return A list with `values`, `index`, `ids`, `n` and `sizes`.
 #' @noRd
-.ml_lpa_prepare_groups <- function(raw_groups) {
+.multilpa_prepare_groups <- function(raw_groups) {
   if (!(is.character(raw_groups) || is.factor(raw_groups) || is.numeric(raw_groups)) ||
       !is.null(dim(raw_groups)) || anyNA(raw_groups) ||
       (is.numeric(raw_groups) && any(!is.finite(raw_groups)))) {
@@ -689,7 +689,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
 #' Attach readable dimension names to the fitted parameters
 #' @return The parameter list, with profiles, indicators and categories named.
 #' @noRd
-.ml_lpa_label_parameters <- function(parameters, profile_names, continuous,
+.multilpa_label_parameters <- function(parameters, profile_names, continuous,
                                      categorical, levels) {
   dimnames(parameters$means) <- dimnames(parameters$variances) <-
     list(profile_names, continuous)
@@ -716,7 +716,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
 #'
 #' @return A single number of free parameters.
 #' @noRd
-.ml_lpa_count_parameters <- function(n_profiles, n_group_classes, n_continuous,
+.multilpa_count_parameters <- function(n_profiles, n_group_classes, n_continuous,
                                      n_categories, variance_model,
                                      covariance_model) {
   covariance_parameters <- if (covariance_model == "full") {
@@ -728,7 +728,7 @@ fit_ml_lpa <- function(data, indicators, cluster, n_profiles,
         covariance_parameters
   }
   categorical <- if (is.null(n_categories)) 0L else
-    .ml_lpa_categorical_parameters(n_profiles, n_categories)
+    .multilpa_categorical_parameters(n_profiles, n_categories)
   (n_group_classes - 1L) + n_group_classes * (n_profiles - 1L) +
     gaussian + categorical
 }

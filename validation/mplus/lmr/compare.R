@@ -56,10 +56,10 @@ indicators <- c("y1", "y2", "y3", "y4")
 # TYPE = MIXTURE default; the TECH11 run above inherited it.
 stopifnot("fixture 7.9 is not the equal-variance example" =
             identical(fixture$variance_model, "equal"))
-fitted_null <- fit_ml_lpa(fixture$data, indicators, "cluster", 1L, 1L,
+fitted_null <- fit_multilpa(fixture$data, indicators, "cluster", 1L, 1L,
                           variance_model = "equal", n_starts = 5L,
                           max_iter = 5000L, tol = 1e-12, seed = 912)
-fitted_alternative <- fit_ml_lpa(fixture$data, indicators, "cluster", 2L, 1L,
+fitted_alternative <- fit_multilpa(fixture$data, indicators, "cluster", 2L, 1L,
                                  variance_model = "equal", n_starts = 30L,
                                  max_iter = 5000L, tol = 1e-12, seed = 912)
 stopifnot("native parameter difference does not match Mplus" =
@@ -67,7 +67,7 @@ stopifnot("native parameter difference does not match Mplus" =
             reference$df[1L])
 stopifnot("native fits did not converge" =
             fitted_null$converged && fitted_alternative$converged)
-native <- lmr_lrt_ml_lpa(fitted_null, fitted_alternative)
+native <- lmr_lrt_multilpa(fitted_null, fitted_alternative)
 print(native, digits = 10, row.names = FALSE)
 stopifnot(
   "native statistic disagrees with Mplus" =

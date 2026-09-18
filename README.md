@@ -1,4 +1,4 @@
-# mllpa
+# multilpa
 
 A dependency-light R package for **two-level latent profile and latent class
 analysis**. All estimation runs in R; Carm, Mplus, and a server are not required.
@@ -21,9 +21,9 @@ R CMD INSTALL .
 Then, with your own data frame:
 
 ```r
-library(mllpa)
+library(multilpa)
 
-fit <- fit_ml_lpa(
+fit <- fit_multilpa(
   data = students,
   indicators = c("reading", "maths", "engagement"),
   cluster = "school_id",
@@ -99,7 +99,7 @@ verb fits two-level LPA, two-level LCA, and mixtures of the two.
 
 ```r
 # Two-level latent class analysis: every indicator categorical.
-lca <- fit_ml_lpa(survey, c("u1", "u2", "u3", "u4", "u5"), "school_id",
+lca <- fit_multilpa(survey, c("u1", "u2", "u3", "u4", "u5"), "school_id",
                   n_profiles = 3, n_group_classes = 2,
                   categorical = c("u1", "u2", "u3", "u4", "u5"),
                   n_starts = 40, seed = 42)
@@ -108,7 +108,7 @@ as.data.frame(lca, what = "responses")   # probabilities and logit thresholds
 plot(lca, what = "responses")            # response curves by profile
 
 # Mixed measurement: name only the categorical ones.
-mixed <- fit_ml_lpa(survey, c("reading", "maths", "u1", "u2"), "school_id",
+mixed <- fit_multilpa(survey, c("reading", "maths", "u1", "u2"), "school_id",
                     n_profiles = 3, n_group_classes = 2,
                     categorical = c("u1", "u2"), n_starts = 40, seed = 42)
 ```
@@ -134,45 +134,45 @@ is applied as the exact constrained solution rather than by rescaling.
 
 ```r
 # Observed-data ML for incomplete indicators; correlated residuals within profiles.
-fit <- fit_ml_lpa(students, c("reading", "maths", "engagement"), "school_id",
+fit <- fit_multilpa(students, c("reading", "maths", "engagement"), "school_id",
                   n_profiles = 3, n_group_classes = 2,
                   covariance_model = "full", missing = "fiml",
                   n_starts = 20, seed = 42)
 
 # Observed-information standard errors and Wald intervals.
-as.data.frame(inference_ml_lpa(fit, data = students))
+as.data.frame(inference_multilpa(fit, data = students))
 confint(fit, data = students)
 
 # MLR robust sandwich errors, accumulating the score over independent groups.
-robust <- inference_ml_lpa(fit, data = students, vcov_type = "robust")
+robust <- inference_multilpa(fit, data = students, vcov_type = "robust")
 as.data.frame(robust)
 vcov(fit, data = students, vcov_type = "robust")
 
 # Likelihood-ratio statistic with the Lo-Mendell-Rubin adjustment.
 # No p-value is returned; use the bootstrap below for a calibrated one.
-lmr_lrt_ml_lpa(smaller_fit, larger_fit)
+lmr_lrt_multilpa(smaller_fit, larger_fit)
 
 # One-step membership regressions (numeric predictors, complete indicators).
-with_predictors <- fit_ml_lpa_covariates(
+with_predictors <- fit_multilpa_covariates(
   students, c("reading", "maths", "engagement"), "school_id", 3, 2,
   profile_covariates = "age", group_covariates = "school_resources", seed = 42)
 with_predictors$profile_coefficients   # covariate models have no tidy accessor yet
 with_predictors$group_coefficients
 
 # Alternative: one continuous group intercept, loading 1 on every indicator.
-random_intercept <- fit_ml_lpa_random_intercept(
+random_intercept <- fit_multilpa_random_intercept(
   students, c("reading", "maths", "engagement"), "school_id", 3, seed = 42)
 random_intercept$quadrature_log_likelihood_difference
 
 # Compare profile/group-class counts; inspect diagnostics in every row.
-candidates <- enumerate_ml_lpa(
+candidates <- enumerate_multilpa(
   students, c("reading", "maths", "engagement"), "school_id",
   profiles = 2:4, group_classes = 1:3, n_starts = 20, seed = 42)
 as.data.frame(candidates)
 plot(candidates, criterion = "sabic_individual")
 
 # Complete-data nested models differing by one class at one level.
-# bootstrap_lrt_ml_lpa(smaller, larger, students, n_boot = 199, seed = 42)
+# bootstrap_lrt_multilpa(smaller, larger, students, n_boot = 199, seed = 42)
 ```
 
 | Capability | Supported scope |
@@ -303,7 +303,7 @@ observations before inference and bootstrap comparisons.
 ```sh
 Rscript -e 'pkgload::load_all("."); testthat::test_dir("tests/testthat")'
 R CMD build .
-R CMD check --no-manual mllpa_0.4.0.tar.gz
+R CMD check --no-manual multilpa_0.4.0.tar.gz
 ```
 
 `pkgload` is only a development convenience. Installed-package testing via

@@ -7,7 +7,7 @@ test_that("failed starts are counted and do not hide a valid restart", {
                     profile_probabilities = matrix(1, 1L, 1L),
                     group_probabilities = 1)
   expect_warning(
-    fit <- fit_ml_lpa(synthetic, c("x", "y"), "group", 1, 1,
+    fit <- fit_multilpa(synthetic, c("x", "y"), "group", 1, 1,
                       n_starts = 2, start = bad_start, seed = 42),
     "1 of 2 starts failed")
   expect_equal(fit$n_failed_starts, 1L)
@@ -15,7 +15,7 @@ test_that("failed starts are counted and do not hide a valid restart", {
   expect_equal(fit$starts$log_likelihood[1L], -Inf)
   expect_equal(fit$best_start, 2L)
   expect_true(fit$converged)
-  expect_error(fit_ml_lpa(synthetic, c("x", "y"), "group", 1, 1,
+  expect_error(fit_multilpa(synthetic, c("x", "y"), "group", 1, 1,
                           n_starts = 1, start = bad_start), "All 1 starts failed")
 })
 
@@ -31,7 +31,7 @@ test_that("three profiles and group classes retain all matrix dimensions", {
   }, integer(1))
   synthetic <- data.frame(group = group_index,
                           score = rnorm(length(profiles), c(-4, 0, 4)[profiles], 0.4))
-  fit <- fit_ml_lpa(synthetic, "score", "group", 3L, 3L,
+  fit <- fit_multilpa(synthetic, "score", "group", 3L, 3L,
                     n_starts = 4L, seed = 998)
   expect_true(fit$converged)
   expect_equal(dim(fit$means), c(3L, 1L))
@@ -57,7 +57,7 @@ test_that("an unbalanced-group update agrees with exhaustive assignments", {
                       group_probabilities = c(0.5, 0.5))
   reference <- enumerated_em_update(as.matrix(data["x"]), data$group, parameters)
   expect_warning(
-    fit <- fit_ml_lpa(data, "x", "group", 2L, 2L, n_starts = 1L,
+    fit <- fit_multilpa(data, "x", "group", 2L, 2L, n_starts = 1L,
                       start = parameters, max_iter = 1L), "did not converge")
   expect_equal(unname(fit$group_probabilities), reference$group_probabilities,
                tolerance = 1e-10)

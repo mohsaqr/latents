@@ -39,7 +39,7 @@ compare two different models.
 
 Mplus reports `u$1` thresholds. For a binary indicator the threshold is
 `qlogis(P(u = lowest category))`, which is exactly the first column of
-`.ml_lpa_categorical_thresholds()`, so the two are directly comparable once
+`.multilpa_categorical_thresholds()`, so the two are directly comparable once
 class labels are aligned.
 
 ```sh

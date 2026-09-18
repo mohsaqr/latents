@@ -16,7 +16,7 @@ stopifnot(nrow(synthetic_data) == 1200L, !anyNA(synthetic_data),
 # Decode the explicitly inspected TECH1 parameter ordering and align both levels.
 comparisons <- lapply(c("varying", "equal"), function(variance_model) {
   stopifnot(is.character(variance_model), length(variance_model) == 1L)
-  fit <- fit_ml_lpa(synthetic_data, c("y1", "y2"), "clus", 2L, 2L,
+  fit <- fit_multilpa(synthetic_data, c("y1", "y2"), "clus", 2L, 2L,
     variance_model = variance_model, n_starts = 30L, max_iter = 5000L,
     tol = 1e-12, seed = 20260917)
   output <- readLines(file.path(artifact_dir, paste0(variance_model, ".out")))

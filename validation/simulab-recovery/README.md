@@ -1,8 +1,8 @@
 # Recovery of a known two-level latent profile model
 
-`recovery-study.R` generates data from the model `fit_ml_lpa()` estimates,
+`recovery-study.R` generates data from the model `fit_multilpa()` estimates,
 refits it, and asks how close the estimates get to the values that produced the
-data. The generator is `simulab::simulate_ml_lpa()`; the comparison is
+data. The generator is `simulab::simulate_multilpa()`; the comparison is
 `simulab::validate_recovery()`. Both are sibling packages, so the study needs no
 machinery of its own beyond matching the arbitrary mixture labels.
 
@@ -12,7 +12,7 @@ Run from the project root:
 Rscript validation/simulab-recovery/recovery-study.R
 ```
 
-It needs `simulab` >= 0.4.3 installed, which is where `simulate_ml_lpa()` was
+It needs `simulab` >= 0.4.3 installed, which is where `simulate_multilpa()` was
 added, and it writes `tmp/simulab-recovery-terms.csv`,
 `tmp/simulab-recovery-diagnostics.csv`, `tmp/simulab-recovery-enumeration.csv`
 and `tmp/simulab-recovery-study.rds`.
@@ -109,7 +109,7 @@ are not evidence that the right solution was found.
 
 ### Structure selection
 
-`enumerate_ml_lpa()` was run on the first 25 datasets of each condition over
+`enumerate_multilpa()` was run on the first 25 datasets of each condition over
 2 to 4 profiles and 1 to 3 cluster classes. The table is the proportion of
 datasets on which the criterion's minimum fell on the true (3 profiles,
 2 cluster classes).

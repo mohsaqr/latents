@@ -5,11 +5,11 @@
 #' The reference distribution of this statistic under a class-count null is not
 #' chi-square, and the package does not reproduce the Vuong-Lo-Mendell-Rubin
 #' reference distribution, so reporting a chi-square tail probability here would
-#' be wrong rather than approximate. Use [bootstrap_lrt_ml_lpa()] for a
+#' be wrong rather than approximate. Use [bootstrap_lrt_multilpa()] for a
 #' calibrated p-value.
 #'
-#' @param null_model The smaller fitted `ml_lpa` model.
-#' @param alternative_model The larger fitted `ml_lpa` model, with strictly more
+#' @param null_model The smaller fitted `multilpa` model.
+#' @param alternative_model The larger fitted `multilpa` model, with strictly more
 #'   free parameters and a log likelihood at least as large.
 #' @param n Sample size entering the adjustment. `"individuals"` uses the
 #'   individual count and matches the convention external mixture software
@@ -43,39 +43,39 @@
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' smaller <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' smaller <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                       n_profiles = 1, n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' larger <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                      n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' lmr_lrt_ml_lpa(smaller, larger)
+#' lmr_lrt_multilpa(smaller, larger)
 #' @export
-lmr_lrt_ml_lpa <- function(null_model, alternative_model,
+lmr_lrt_multilpa <- function(null_model, alternative_model,
                            n = c("individuals", "groups")) {
   stopifnot(
-    "`null_model` must be an `ml_lpa` fit" = inherits(null_model, "ml_lpa"),
-    "`alternative_model` must be an `ml_lpa` fit" =
-      inherits(alternative_model, "ml_lpa"))
+    "`null_model` must be an `multilpa` fit" = inherits(null_model, "multilpa"),
+    "`alternative_model` must be an `multilpa` fit" =
+      inherits(alternative_model, "multilpa"))
   sample_size <- if (is.character(n) || missing(n)) {
     convention <- match.arg(n)
-    .ml_lpa_check_comparable(null_model, alternative_model)
+    .multilpa_check_comparable(null_model, alternative_model)
     if (convention == "individuals") null_model$n_observations else
       null_model$n_groups
   } else {
     stopifnot("`n` must be a single number greater than one" =
                 is.numeric(n) && length(n) == 1L && is.finite(n) && n > 1)
-    .ml_lpa_check_comparable(null_model, alternative_model)
+    .multilpa_check_comparable(null_model, alternative_model)
     n
   }
   df <- alternative_model$n_parameters - null_model$n_parameters
   if (df < 1L) {
     stop(errorCondition("`alternative_model` must have more free parameters than `null_model`.",
-                        class = "mllpa_bad_nesting", call = NULL))
+                        class = "multilpa_bad_nesting", call = NULL))
   }
   statistic <- 2 * (alternative_model$log_likelihood - null_model$log_likelihood)
   if (statistic < 0) {
     stop(errorCondition(sprintf(
       "`alternative_model` has the smaller log likelihood by %.4g; refit with more starts.",
-      -statistic / 2), class = "mllpa_reversed_likelihood", call = NULL))
+      -statistic / 2), class = "multilpa_reversed_likelihood", call = NULL))
   }
   adjustment_factor <- 1 + 1 / (df * log(sample_size))
   data.frame(statistic = statistic, df = df, n = sample_size,
@@ -89,13 +89,13 @@ lmr_lrt_ml_lpa <- function(null_model, alternative_model,
 #' @param alternative_model The larger fitted model.
 #' @return `NULL`, invisibly; raises a classed condition when the fits differ.
 #' @noRd
-.ml_lpa_check_comparable <- function(null_model, alternative_model) {
+.multilpa_check_comparable <- function(null_model, alternative_model) {
   same <- identical(null_model$n_observations, alternative_model$n_observations) &&
     identical(null_model$n_groups, alternative_model$n_groups) &&
     identical(null_model$indicators, alternative_model$indicators)
   if (!same) {
     stop(errorCondition("Both models must be fitted to the same individuals, groups, and indicators.",
-                        class = "mllpa_incomparable_models", call = NULL))
+                        class = "multilpa_incomparable_models", call = NULL))
   }
   invisible(NULL)
 }

@@ -4,7 +4,7 @@ test_that("matched multilevel fits reproduce Mplus on public continuous data", {
     reference <- readRDS(test_path("..", "fixtures", "mplus",
                                    paste0("twolevel-public-", variance_model, ".rds")))
     expected <- reference$expected
-    fit <- fit_ml_lpa(reference$data, reference$indicators, "clus", 2L, 2L,
+    fit <- fit_multilpa(reference$data, reference$indicators, "clus", 2L, 2L,
                       variance_model = variance_model, n_starts = 10L,
                       max_iter = 10000L, tol = 1e-14, seed = 5739)
     profile_order <- order(fit$means[, "y1"])[rank(expected$means[, 1L])]

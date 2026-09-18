@@ -5,7 +5,7 @@
 #' and line type together, and labelled directly, so the plot stays readable in
 #' greyscale and needs no legend.
 #'
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @param what `"profiles"` plots the Gaussian measurement model, one line per
 #'   profile across the continuous indicators. `"responses"` plots the
 #'   categorical measurement model, one line per profile across the categorical
@@ -26,7 +26,7 @@
 #' @param palette,symbols,linetypes Vectors of colours, plotting characters and
 #'   line types, recycled to the number of series. Defaults are the Okabe-Ito
 #'   palette and matched symbol and line-type sequences.
-#' @param style A list of visual constants, as built by `.ml_lpa_style()`;
+#' @param style A list of visual constants, as built by `.multilpa_style()`;
 #'   pass named elements to override individual constants.
 #' @param ... Further named visual constants, merged into `style`.
 #' @return The fitted model, invisibly. Called for the side effect of drawing.
@@ -42,17 +42,17 @@
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' plot(fit)
 #' plot(fit, scale = "standardized")
 #' @export
-plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
+plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities"),
                         scale = c("raw", "standardized"), category = "last",
                         labels = TRUE, main = NULL, subtitle = NULL,
                         palette = NULL, symbols = NULL, linetypes = NULL,
-                        style = .ml_lpa_style(), ...) {
-  stopifnot("`x` must be an `ml_lpa` fit" = inherits(x, "ml_lpa"),
+                        style = .multilpa_style(), ...) {
+  stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
             "`category` must be a single label or index" = length(category) == 1L)
   what <- match.arg(what)
@@ -62,17 +62,17 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
   on.exit(graphics::par(previous), add = TRUE, after = FALSE)
   graphics::par(xpd = NA)
   switch(what,
-    profiles = .ml_lpa_plot_profiles(x, scale, labels, main, subtitle, palette,
+    profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
                                      symbols, linetypes, style),
-    responses = .ml_lpa_plot_responses(x, category, labels, main, subtitle,
+    responses = .multilpa_plot_responses(x, category, labels, main, subtitle,
                                        palette, symbols, linetypes, style),
-    probabilities = .ml_lpa_plot_probabilities(x, labels, main, subtitle,
+    probabilities = .multilpa_plot_probabilities(x, labels, main, subtitle,
                                                palette, symbols, linetypes, style))
   invisible(x)
 }
 
 #' Draw categorical response probabilities across indicators
-#' @param x A fitted `ml_lpa` model with categorical indicators.
+#' @param x A fitted `multilpa` model with categorical indicators.
 #' @param category Which category to plot, as `"last"`, `"first"`, a label, or
 #'   an index.
 #' @param labels Whether to draw direct series labels.
@@ -81,12 +81,12 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
 #' @param style Visual constants.
 #' @return `NULL`, invisibly.
 #' @noRd
-.ml_lpa_plot_responses <- function(x, category, labels, main, subtitle, palette,
+.multilpa_plot_responses <- function(x, category, labels, main, subtitle, palette,
                                    symbols, linetypes, style) {
   blocks <- x$response_probabilities
   if (is.null(blocks) || length(blocks) == 0L) {
     stop(errorCondition("This model has no categorical indicators.",
-                        class = "mllpa_no_categorical", call = NULL))
+                        class = "multilpa_no_categorical", call = NULL))
   }
   indicators <- names(blocks)
   n_profiles <- x$n_profiles
@@ -98,7 +98,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
     if (is.na(index) || index < 1L || index > ncol(block)) {
       stop(errorCondition(sprintf("`category` does not match a category of an indicator with categories %s.",
                                   paste(colnames(block), collapse = ", ")),
-                          class = "mllpa_unknown_category", call = NULL))
+                          class = "multilpa_unknown_category", call = NULL))
     }
     index
   }, integer(1))
@@ -108,15 +108,15 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
   category_labels <- vapply(seq_along(blocks), function(index) {
     colnames(blocks[[index]])[chosen[[index]]]
   }, character(1))
-  colours <- if (is.null(palette)) .ml_lpa_palette(n_profiles) else
+  colours <- if (is.null(palette)) .multilpa_palette(n_profiles) else
     rep(palette, length.out = n_profiles)
-  points <- if (is.null(symbols)) .ml_lpa_symbols(n_profiles) else
+  points <- if (is.null(symbols)) .multilpa_symbols(n_profiles) else
     rep(symbols, length.out = n_profiles)
-  lines <- if (is.null(linetypes)) .ml_lpa_linetypes(n_profiles) else
+  lines <- if (is.null(linetypes)) .multilpa_linetypes(n_profiles) else
     rep(linetypes, length.out = n_profiles)
   share <- x$effective_profile_counts / sum(x$effective_profile_counts)
   label_text <- sprintf("Profile %d (%.0f%%)", seq_len(n_profiles), 100 * share)
-  graphics::par(mar = .ml_lpa_margins(style, if (isTRUE(labels)) label_text else
+  graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
   positions <- seq_along(indicators)
   # The axis names each indicator with the category being plotted, so a mixed
@@ -124,7 +124,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
   shared <- length(unique(category_labels)) == 1L
   axis_labels <- if (shared) indicators else
     sprintf("%s=%s", indicators, category_labels)
-  .ml_lpa_panel(xlim = c(1 - 0.35, length(indicators) + 0.35), ylim = c(0, 1.02),
+  .multilpa_panel(xlim = c(1 - 0.35, length(indicators) + 0.35), ylim = c(0, 1.02),
     xlab = "Categorical indicator",
     ylab = if (shared) sprintf("P(response = %s)", category_labels[[1L]]) else
       "Response probability",
@@ -143,7 +143,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
                      cex = style$point_size, lwd = 1.4)
   }))
   if (isTRUE(labels)) {
-    label_y <- .ml_lpa_spread_labels(values[length(indicators), ], 0.055)
+    label_y <- .multilpa_spread_labels(values[length(indicators), ], 0.055)
     graphics::text(length(indicators) + 0.45, label_y, label_text,
                    adj = c(0, 0.5), col = colours,
                    cex = style$label_text_size, font = 2L)
@@ -152,7 +152,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
 }
 
 #' Draw profile means across indicators
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @param scale Raw or standardized means.
 #' @param labels Whether to draw direct series labels.
 #' @param main,subtitle Panel title and secondary line.
@@ -160,20 +160,20 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
 #' @param style Visual constants.
 #' @return `NULL`, invisibly.
 #' @noRd
-.ml_lpa_plot_profiles <- function(x, scale, labels, main, subtitle, palette,
+.multilpa_plot_profiles <- function(x, scale, labels, main, subtitle, palette,
                                   symbols, linetypes, style) {
-  indicators <- .ml_lpa_continuous_names(x)
+  indicators <- .multilpa_continuous_names(x)
   n_profiles <- x$n_profiles
   means <- x$means
   if (length(indicators) == 0L) {
     stop(errorCondition("This model has no continuous indicators; plot `what = \"responses\"` instead.",
-                        class = "mllpa_no_continuous", call = NULL))
+                        class = "multilpa_no_continuous", call = NULL))
   }
   if (identical(scale, "standardized")) {
     observed <- x$indicator_data
     if (is.null(observed)) {
       stop(errorCondition("This fit did not retain indicator data, so it cannot be standardized.",
-                          class = "mllpa_no_indicator_data", call = NULL))
+                          class = "multilpa_no_indicator_data", call = NULL))
     }
     centre <- colMeans(observed, na.rm = TRUE)
     spread <- vapply(seq_along(indicators), function(index) {
@@ -181,15 +181,15 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
     }, numeric(1))
     if (any(!is.finite(spread)) || any(spread <= 0)) {
       stop(errorCondition("An indicator has zero or undefined standard deviation.",
-                          class = "mllpa_bad_scale", call = NULL))
+                          class = "multilpa_bad_scale", call = NULL))
     }
     means <- sweep(sweep(means, 2L, centre, "-"), 2L, spread, "/")
   }
-  colours <- if (is.null(palette)) .ml_lpa_palette(n_profiles) else
+  colours <- if (is.null(palette)) .multilpa_palette(n_profiles) else
     rep(palette, length.out = n_profiles)
-  points <- if (is.null(symbols)) .ml_lpa_symbols(n_profiles) else
+  points <- if (is.null(symbols)) .multilpa_symbols(n_profiles) else
     rep(symbols, length.out = n_profiles)
-  lines <- if (is.null(linetypes)) .ml_lpa_linetypes(n_profiles) else
+  lines <- if (is.null(linetypes)) .multilpa_linetypes(n_profiles) else
     rep(linetypes, length.out = n_profiles)
   positions <- seq_along(indicators)
   span <- range(means)
@@ -198,7 +198,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
   xlim <- c(1 - 0.35, length(indicators) + 0.35)
   share <- x$effective_profile_counts / sum(x$effective_profile_counts)
   label_text <- sprintf("Profile %d (%.0f%%)", seq_len(n_profiles), 100 * share)
-  graphics::par(mar = .ml_lpa_margins(style, if (isTRUE(labels)) label_text else
+  graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
   default_main <- sprintf("Profile means across %d indicator%s",
                           length(indicators),
@@ -207,7 +207,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
     n_profiles, x$n_group_classes,
     if (x$n_group_classes == 1L) "" else "es",
     if (identical(scale, "standardized")) "standardized" else "input")
-  .ml_lpa_panel(xlim = xlim, ylim = ylim, xlab = "Indicator",
+  .multilpa_panel(xlim = xlim, ylim = ylim, xlab = "Indicator",
                 ylab = if (identical(scale, "standardized"))
                   "Standardized mean" else "Estimated mean",
                 main = if (is.null(main)) default_main else main,
@@ -225,7 +225,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
                      cex = style$point_size, lwd = 1.4)
   }))
   if (isTRUE(labels)) {
-    label_y <- .ml_lpa_spread_labels(means[, length(indicators)],
+    label_y <- .multilpa_spread_labels(means[, length(indicators)],
                                      0.055 * diff(ylim))
     graphics::text(length(indicators) + 0.45, label_y, label_text, adj = c(0, 0.5),
                    col = colours, cex = style$label_text_size, font = 2L)
@@ -234,31 +234,31 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
 }
 
 #' Draw profile prevalence within each group class
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @param labels Whether to draw direct series labels.
 #' @param main,subtitle Panel title and secondary line.
 #' @param palette,symbols,linetypes Series aesthetics, or `NULL` for defaults.
 #' @param style Visual constants.
 #' @return `NULL`, invisibly.
 #' @noRd
-.ml_lpa_plot_probabilities <- function(x, labels, main, subtitle, palette,
+.multilpa_plot_probabilities <- function(x, labels, main, subtitle, palette,
                                        symbols, linetypes, style) {
   n_types <- x$n_group_classes
   n_profiles <- x$n_profiles
   probabilities <- x$profile_probabilities
-  colours <- if (is.null(palette)) .ml_lpa_palette(n_types) else
+  colours <- if (is.null(palette)) .multilpa_palette(n_types) else
     rep(palette, length.out = n_types)
-  points <- if (is.null(symbols)) .ml_lpa_symbols(n_types) else
+  points <- if (is.null(symbols)) .multilpa_symbols(n_types) else
     rep(symbols, length.out = n_types)
-  lines <- if (is.null(linetypes)) .ml_lpa_linetypes(n_types) else
+  lines <- if (is.null(linetypes)) .multilpa_linetypes(n_types) else
     rep(linetypes, length.out = n_types)
   positions <- seq_len(n_profiles)
   xlim <- c(1 - 0.35, n_profiles + 0.35)
   label_text <- sprintf("Class %d (%.0f%%)", seq_len(n_types),
                         100 * x$group_probabilities)
-  graphics::par(mar = .ml_lpa_margins(style, if (isTRUE(labels)) label_text else
+  graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
-  .ml_lpa_panel(xlim = xlim, ylim = c(0, 1.02), xlab = "Profile",
+  .multilpa_panel(xlim = xlim, ylim = c(0, 1.02), xlab = "Profile",
                 ylab = "Probability within group class",
                 main = if (is.null(main)) "Profile prevalence by group class" else main,
                 subtitle = if (is.null(subtitle))
@@ -275,7 +275,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
                      cex = style$point_size, lwd = 1.4)
   }))
   if (isTRUE(labels)) {
-    label_y <- .ml_lpa_spread_labels(probabilities[, n_profiles], 0.055)
+    label_y <- .multilpa_spread_labels(probabilities[, n_profiles], 0.055)
     graphics::text(n_profiles + 0.45, label_y, label_text, adj = c(0, 0.5),
                    col = colours, cex = style$label_text_size, font = 2L)
   }
@@ -289,7 +289,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
 #' marked rather than dropped, so a gap in a line is visible as a failure and
 #' not mistaken for a missing candidate.
 #'
-#' @param x An `ml_lpa_enumeration` result from [enumerate_ml_lpa()].
+#' @param x An `multilpa_enumeration` result from [enumerate_multilpa()].
 #' @param criterion Name of the column to plot, as it appears in
 #'   `as.data.frame(x)`, for example `"bic_individual"` or `"sabic_groups"`.
 #' @param labels `TRUE` prints a direct label at the right end of each series.
@@ -298,7 +298,7 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
 #' @param main,subtitle Panel title and secondary line.
 #' @param palette,symbols,linetypes Series aesthetics, recycled over the number
 #'   of group-class counts.
-#' @param style A list of visual constants, as built by `.ml_lpa_style()`.
+#' @param style A list of visual constants, as built by `.multilpa_style()`.
 #' @param ... Further named visual constants, merged into `style`.
 #' @return The enumeration result, invisibly. Called for its drawing side effect.
 #' @examples
@@ -307,18 +307,18 @@ plot.ml_lpa <- function(x, what = c("profiles", "responses", "probabilities"),
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' candidates <- enumerate_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' candidates <- enumerate_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                                profiles = 1:3, group_classes = 1, n_starts = 2,
 #'                                seed = 1)
 #' plot(candidates)
 #' @export
-plot.ml_lpa_enumeration <- function(x, criterion = "bic_individual",
+plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
                                     labels = TRUE, mark_minimum = TRUE,
                                     main = NULL, subtitle = NULL, palette = NULL,
                                     symbols = NULL, linetypes = NULL,
-                                    style = .ml_lpa_style(), ...) {
-  stopifnot("`x` must be an `ml_lpa_enumeration` result" =
-              inherits(x, "ml_lpa_enumeration"),
+                                    style = .multilpa_style(), ...) {
+  stopifnot("`x` must be an `multilpa_enumeration` result" =
+              inherits(x, "multilpa_enumeration"),
             "`criterion` must be a single column name" =
               is.character(criterion) && length(criterion) == 1L,
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
@@ -328,13 +328,13 @@ plot.ml_lpa_enumeration <- function(x, criterion = "bic_individual",
   if (!criterion %in% names(grid)) {
     stop(errorCondition(sprintf("`%s` is not a column of the enumeration grid.",
                                 criterion),
-                        class = "mllpa_unknown_criterion", call = NULL))
+                        class = "multilpa_unknown_criterion", call = NULL))
   }
   values <- grid[[criterion]]
   if (all(is.na(values))) {
     stop(errorCondition(sprintf("Every candidate has a missing `%s`; nothing to plot.",
                                 criterion),
-                        class = "mllpa_nothing_to_plot", call = NULL))
+                        class = "multilpa_nothing_to_plot", call = NULL))
   }
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
@@ -342,11 +342,11 @@ plot.ml_lpa_enumeration <- function(x, criterion = "bic_individual",
   graphics::par(xpd = NA)
   class_counts <- sort(unique(grid$n_group_classes))
   profile_counts <- sort(unique(grid$n_profiles))
-  colours <- if (is.null(palette)) .ml_lpa_palette(length(class_counts)) else
+  colours <- if (is.null(palette)) .multilpa_palette(length(class_counts)) else
     rep(palette, length.out = length(class_counts))
-  points <- if (is.null(symbols)) .ml_lpa_symbols(length(class_counts)) else
+  points <- if (is.null(symbols)) .multilpa_symbols(length(class_counts)) else
     rep(symbols, length.out = length(class_counts))
-  lines <- if (is.null(linetypes)) .ml_lpa_linetypes(length(class_counts)) else
+  lines <- if (is.null(linetypes)) .multilpa_linetypes(length(class_counts)) else
     rep(linetypes, length.out = length(class_counts))
   span <- range(values, na.rm = TRUE)
   padding <- 0.12 * max(diff(span), .Machine$double.eps)
@@ -354,9 +354,9 @@ plot.ml_lpa_enumeration <- function(x, criterion = "bic_individual",
   failures <- sum(!grid$converged)
   label_text <- sprintf("%d group class%s", class_counts,
                         ifelse(class_counts == 1L, "", "es"))
-  graphics::par(mar = .ml_lpa_margins(style, if (isTRUE(labels)) label_text else
+  graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
-  .ml_lpa_panel(xlim = xlim, ylim = c(span[1L] - padding, span[2L] + padding),
+  .multilpa_panel(xlim = xlim, ylim = c(span[1L] - padding, span[2L] + padding),
     xlab = "Number of profiles", ylab = criterion,
     main = if (is.null(main)) sprintf("%s by candidate model", criterion) else main,
     subtitle = if (is.null(subtitle)) sprintf(
@@ -399,7 +399,7 @@ plot.ml_lpa_enumeration <- function(x, criterion = "bic_individual",
     keep <- !is.na(ends)
     if (any(keep)) {
       graphics::text(max(profile_counts) + 0.45,
-                     .ml_lpa_spread_labels(ends[keep], 0.055 * diff(span)),
+                     .multilpa_spread_labels(ends[keep], 0.055 * diff(span)),
                      label_text[keep],
                      adj = c(0, 0.5), col = colours[keep],
                      cex = style$label_text_size, font = 2L)

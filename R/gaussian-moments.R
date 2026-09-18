@@ -3,7 +3,7 @@
 #' @param parameters Gaussian mixture parameter list.
 #' @return Log densities and conditional first moments and covariance adjustments.
 #' @noRd
-.ml_lpa_gaussian_moments <- function(x, parameters) {
+.multilpa_gaussian_moments <- function(x, parameters) {
   stopifnot(is.matrix(x), is.numeric(x), is.list(parameters),
             !any(is.infinite(x)))
   patterns <- split(seq_len(nrow(x)), apply(!is.na(x), 1L, paste0, collapse = ""))
@@ -51,7 +51,7 @@
 #' @param min_variance Positive eigenvalue lower bound.
 #' @return Symmetric positive definite covariance matrix.
 #' @noRd
-.ml_lpa_bound_covariance <- function(covariance, min_variance) {
+.multilpa_bound_covariance <- function(covariance, min_variance) {
   stopifnot(is.matrix(covariance), is.numeric(covariance), min_variance > 0,
             nrow(covariance) == ncol(covariance), all(is.finite(covariance)))
   decomposition <- eigen((covariance + t(covariance)) / 2, symmetric = TRUE)
@@ -70,7 +70,7 @@
 #' @param covariance_model Diagonal or full covariance.
 #' @return Means, diagonal variances, and optional covariance array.
 #' @noRd
-.ml_lpa_maximize_moments <- function(x, expectation, variance_model,
+.multilpa_maximize_moments <- function(x, expectation, variance_model,
                                      min_variance, covariance_model) {
   stopifnot(is.matrix(x), is.list(expectation), min_variance > 0,
             variance_model %in% c("varying", "equal"),
@@ -94,7 +94,7 @@
   shared <- if (variance_model == "equal") Reduce(`+`, covariance_sums) / sum(weights) else NULL
   covariances <- lapply(seq_along(weights), function(profile) {
     covariance <- shared %||% (covariance_sums[[profile]] / weights[profile])
-    if (covariance_model == "full") .ml_lpa_bound_covariance(covariance, min_variance)
+    if (covariance_model == "full") .multilpa_bound_covariance(covariance, min_variance)
     else diag(pmax(diag(covariance), min_variance), n_indicators)
   })
   result <- list(means = means,
@@ -112,7 +112,7 @@
 #' @param min_variance Variance or eigenvalue lower bound.
 #' @return Whether a variance or covariance eigenvalue is on its lower bound.
 #' @noRd
-.ml_lpa_covariance_boundary <- function(parameters, min_variance) {
+.multilpa_covariance_boundary <- function(parameters, min_variance) {
   stopifnot(is.list(parameters), min_variance > 0)
   if (is.null(parameters$covariances)) {
     return(any(parameters$variances <= min_variance * (1 + 1e-8)))

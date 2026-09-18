@@ -81,7 +81,7 @@
   group_density <- rowsum(density, group_index, reorder = FALSE)
   # rowsum's encounter order matches the contiguous indices created by the fitter.
   log_weight <- sweep(group_density, 2L, log(quadrature$weights), "+")
-  log_likelihood <- .ml_lpa_log_sum_exp(log_weight)
+  log_likelihood <- .multilpa_log_sum_exp(log_weight)
   result <- list(log_likelihood = sum(log_likelihood), group_log_likelihood = log_likelihood)
   if (posterior) {
     node_posterior <- exp(log_weight - log_likelihood)
@@ -118,7 +118,7 @@
 #' @param quadrature_check_nodes Larger number of nodes for diagnostic evaluation.
 #' @param quadrature_tolerance Maximum acceptable absolute log-likelihood discrepancy.
 #' @param seed Optional integer random seed, with caller RNG state restored.
-#' @return An object of class `ml_lpa_random_intercept` containing parameter
+#' @return An object of class `multilpa_random_intercept` containing parameter
 #' estimates, posterior profile probabilities and group intercept moments,
 #' likelihood, information criteria, optimizer starts, and integration diagnostics.
 #' The default BIC uses independent groups; `bic_individual` uses people.
@@ -130,11 +130,11 @@
 #' set.seed(8)
 #' example_data <- data.frame(group = rep(seq_len(10), each = 4),
 #'                            score = rnorm(40))
-#' fit <- fit_ml_lpa_random_intercept(example_data, "score", "group", 1,
+#' fit <- fit_multilpa_random_intercept(example_data, "score", "group", 1,
 #'                                  n_starts = 1)
 #' print(fit)
 #' @export
-fit_ml_lpa_random_intercept <- function(data, indicators, cluster, n_profiles,
+fit_multilpa_random_intercept <- function(data, indicators, cluster, n_profiles,
     variance_model = c("varying", "equal"), n_starts = 5L, max_iter = 1000L,
     tol = 1e-8, min_variance = 1e-6, quadrature_nodes = 61L,
     quadrature_check_nodes = 121L, quadrature_tolerance = 1e-3, seed = NULL) {
@@ -249,13 +249,13 @@ fit_ml_lpa_random_intercept <- function(data, indicators, cluster, n_profiles,
     quadrature_nodes = quadrature_nodes, quadrature_check_nodes = quadrature_check_nodes,
     quadrature_log_likelihood_difference = discrepancy,
     quadrature_check_passed = discrepancy <= quadrature_tolerance))
-  class(result) <- "ml_lpa_random_intercept"
+  class(result) <- "multilpa_random_intercept"
   result
 }
 
 #' @export
-print.ml_lpa_random_intercept <- function(x, ...) {
-  stopifnot(inherits(x, "ml_lpa_random_intercept"))
+print.multilpa_random_intercept <- function(x, ...) {
+  stopifnot(inherits(x, "multilpa_random_intercept"))
   cat(sprintf("Random-intercept LPA: %d profiles, %d people, %d groups\n", x$n_profiles, x$n_observations, x$n_groups))
   cat(sprintf("Log likelihood: %.6f; random-intercept SD: %.6f\n", x$log_likelihood, x$random_sd))
   cat(sprintf("Integration: %s; likelihood check difference: %.3g\n", x$integration, x$quadrature_log_likelihood_difference))
@@ -263,13 +263,13 @@ print.ml_lpa_random_intercept <- function(x, ...) {
 }
 
 #' @export
-logLik.ml_lpa_random_intercept <- function(object, ...) {
-  stopifnot(inherits(object, "ml_lpa_random_intercept"))
+logLik.multilpa_random_intercept <- function(object, ...) {
+  stopifnot(inherits(object, "multilpa_random_intercept"))
   structure(object$log_likelihood, df = object$n_parameters, nobs = object$n_groups, class = "logLik")
 }
 
 #' @export
-nobs.ml_lpa_random_intercept <- function(object, ...) {
-  stopifnot(inherits(object, "ml_lpa_random_intercept"))
+nobs.multilpa_random_intercept <- function(object, ...) {
+  stopifnot(inherits(object, "multilpa_random_intercept"))
   object$n_groups
 }

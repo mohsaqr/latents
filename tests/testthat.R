@@ -1,4 +1,4 @@
 library(testthat)
-library(mllpa)
+library(multilpa)
 
-test_check("mllpa")
+test_check("multilpa")

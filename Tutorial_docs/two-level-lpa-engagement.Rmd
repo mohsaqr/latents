@@ -1,6 +1,6 @@
 ---
 title: "Two levels of engagement: profiles within courses, students across them"
-author: "mllpa"
+author: "multilpa"
 date: "`r format(Sys.Date())`"
 output:
   html_document:
@@ -21,7 +21,7 @@ options(digits = 4)
 
 ## Where this sits
 
-The package README fits `fit_ml_lpa()` to synthetic data to show the syntax, and
+The package README fits `fit_multilpa()` to synthetic data to show the syntax, and
 `validation/simulab-recovery/` establishes that the estimator recovers a model
 whose truth is known. Neither answers the question an analyst actually arrives
 with: what does a two-level latent profile model say about a real course
@@ -70,7 +70,7 @@ often each profile occurs.
 
 | verb | the question it answers |
 |---|---|
-| `fit_ml_lpa()` | estimate the two-level model |
+| `fit_multilpa()` | estimate the two-level model |
 | `summary()` | the whole fit on one screen |
 | `information_criteria()` | what the parameters cost, under both sample-size conventions |
 | `entropy_table()` | how sharply units separate |
@@ -80,7 +80,7 @@ often each profile occurs.
 | `Nestimate::sequence_plot()` | the assignments laid out in course order |
 
 Companion material: `validation/simulab-recovery/README.md` for how well these
-estimates recover a known truth, and `?fit_ml_lpa` for the estimation contract.
+estimates recover a known truth, and `?fit_multilpa` for the estimation contract.
 
 ## 1. Preparing the indicators
 
@@ -98,7 +98,7 @@ removes the course from the comparison: a value of `+1` then means one standard
 deviation above the classmates who sat the same course.
 
 ```{r prepare}
-library(mllpa)
+library(multilpa)
 
 # Point this at your copy of the file.
 data_path <- file.path("~", "My Drive (saqr@saqr.me)", "Git", "Qudent_26",
@@ -159,13 +159,13 @@ names, means a later column added to the export cannot silently join the model.
 
 ## 2. The model as a whole
 
-`fit_ml_lpa()` takes the indicators, the column identifying the second level,
+`fit_multilpa()` takes the indicators, the column identifying the second level,
 and the two class counts. `n_starts` matters more than it looks: mixture
 likelihoods are multimodal, and a single start reports whichever hill it
 happened to climb.
 
 ```{r fit}
-fit <- fit_ml_lpa(engagement, indicators = indicators, cluster = "User",
+fit <- fit_multilpa(engagement, indicators = indicators, cluster = "User",
                   n_profiles = 3, n_group_classes = 3,
                   n_starts = 50, seed = 2026)
 summary(fit)
@@ -289,7 +289,7 @@ library(Nestimate)
 
 #' A student's profile assignments, in course order
 #'
-#' @param fit A fitted `ml_lpa` model.
+#' @param fit A fitted `multilpa` model.
 #' @param data The data frame the model was fitted to.
 #' @param time Name of the column giving the position of each observation in its
 #'   unit's sequence.
@@ -301,7 +301,7 @@ library(Nestimate)
 profile_sequences <- function(fit, data, time = "Sequence", labels = NULL,
                               levels = NULL) {
   stopifnot(
-    "`fit` must be an `ml_lpa` model" = inherits(fit, "ml_lpa"),
+    "`fit` must be an `multilpa` model" = inherits(fit, "multilpa"),
     "`data` must be the data frame the model was fitted to" =
       is.data.frame(data) && time %in% names(data),
     "`labels` must be NULL or one name per profile" =
@@ -326,13 +326,13 @@ profile_sequences <- function(fit, data, time = "Sequence", labels = NULL,
 
 #' The fitted class of each unit, aligned to `profile_sequences()`
 #'
-#' @param fit A fitted `ml_lpa` model.
+#' @param fit A fitted `multilpa` model.
 #' @param sequences The frame returned by [profile_sequences()].
 #' @param labels Optional class names, one per group class, in class order.
 #' @return A factor with one element per row of `sequences`, in that order.
 student_classes <- function(fit, sequences, labels = NULL) {
   stopifnot(
-    "`fit` must be an `ml_lpa` model" = inherits(fit, "ml_lpa"),
+    "`fit` must be an `multilpa` model" = inherits(fit, "multilpa"),
     "`sequences` must be a data frame with unit identifiers as row names" =
       is.data.frame(sequences) && !is.null(row.names(sequences)),
     "`labels` must be NULL or one name per group class" =
@@ -517,7 +517,7 @@ asking who did the most work.
 Use `n_group_classes = 1` when the grouping exists only as a nuisance — the
 model then reduces to an ordinary latent profile analysis that still respects
 the clustering. Raise it above one when the question is about the units rather
-than the observations, as here. Use `fit_ml_lpa_random_intercept()` instead when
+than the observations, as here. Use `fit_multilpa_random_intercept()` instead when
 group differences are better described as a continuum than as types, and compare
 the two on the information criteria rather than assuming.
 

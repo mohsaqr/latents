@@ -7,7 +7,7 @@ test_that("single-level equal and varying LPA reproduce published Mplus examples
     expect_identical(anyDuplicated(fixture$data), 0L)
     expect_equal(length(fixture$provenance$md5), 3L)
     expect_true(all(grepl("^https://www.statmodel.com/", fixture$provenance$urls)))
-    fit <- fit_ml_lpa(fixture$data, c("y1", "y2", "y3", "y4"), "cluster", 2L, 1L,
+    fit <- fit_multilpa(fixture$data, c("y1", "y2", "y3", "y4"), "cluster", 2L, 1L,
                      variance_model = fixture$variance_model, n_starts = 20L,
                      max_iter = 1000L, tol = 1e-12, seed = 912)
     expect_true(fit$converged)

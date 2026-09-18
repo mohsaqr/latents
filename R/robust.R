@@ -8,19 +8,19 @@
 #' @param x Centered numeric indicator matrix, possibly containing NA.
 #' @param object Fitted model defining dimensions and groups.
 #' @return A groups-by-parameters matrix whose column sums equal the gradient of
-#'   the positive observed-data log likelihood, that is `-.ml_lpa_score()`.
+#'   the positive observed-data log likelihood, that is `-.multilpa_score()`.
 #' @noRd
-.ml_lpa_group_scores <- function(theta, x, object) {
+.multilpa_group_scores <- function(theta, x, object) {
   stopifnot("`theta` must be numeric" = is.numeric(theta),
             "`x` must be a numeric matrix" = is.matrix(x) && is.numeric(x),
-            "`object` must be an `ml_lpa` fit" = inherits(object, "ml_lpa"))
-  parameters <- .ml_lpa_decode(theta, object)
+            "`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
+  parameters <- .multilpa_decode(theta, object)
   group_index <- object$group_index
-  expectation <- .ml_lpa_expectation(x, group_index, parameters)
+  expectation <- .multilpa_expectation(x, group_index, parameters)
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
   measurement <- if (identical(object$covariance_model, "full")) {
-    .ml_lpa_full_measurement_group_score(parameters, expectation, object)
+    .multilpa_full_measurement_group_score(parameters, expectation, object)
   } else {
     observed <- !is.na(x)
     blocks <- lapply(seq_len(n_profiles), function(profile) {
@@ -61,9 +61,9 @@
 #' @param object A fitted full-covariance model.
 #' @return Groups-by-parameter mean and log-Cholesky score blocks.
 #' @noRd
-.ml_lpa_full_measurement_group_score <- function(parameters, expectation, object) {
-  stopifnot("`object` must be a full-covariance `ml_lpa` fit" =
-              inherits(object, "ml_lpa") &&
+.multilpa_full_measurement_group_score <- function(parameters, expectation, object) {
+  stopifnot("`object` must be a full-covariance `multilpa` fit" =
+              inherits(object, "multilpa") &&
               identical(object$covariance_model, "full"))
   dimension <- length(object$indicators)
   group_index <- object$group_index
@@ -126,12 +126,12 @@
 #' @param scores Groups-by-parameters score matrix.
 #' @return The summed outer product of the group scores.
 #' @noRd
-.ml_lpa_cross_product <- function(scores) {
+.multilpa_cross_product <- function(scores) {
   stopifnot("`scores` must be a numeric matrix" =
               is.matrix(scores) && is.numeric(scores))
   if (any(!is.finite(scores))) {
     stop(errorCondition("Per-group scores are not finite; robust inference is unavailable.",
-                        class = "mllpa_bad_scores", call = NULL))
+                        class = "multilpa_bad_scores", call = NULL))
   }
   crossprod(scores)
 }

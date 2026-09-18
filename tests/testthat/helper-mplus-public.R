@@ -47,11 +47,11 @@ parse_public_mplus <- function(lines) {
 }
 
 #' Compare a fitted single-level limit against published Mplus estimates
-#' @param fit An ml_lpa fit with two profiles and one group class.
+#' @param fit An multilpa fit with two profiles and one group class.
 #' @param expected Parsed published estimates ordered by first indicator mean.
 #' @return A table of maximum absolute discrepancies and absolute tolerances.
 compare_public_mplus <- function(fit, expected) {
-  stopifnot(inherits(fit, "ml_lpa"), is.list(expected),
+  stopifnot(inherits(fit, "multilpa"), is.list(expected),
             fit$n_profiles == 2L, fit$n_group_classes == 1L)
   ordering <- order(fit$means[, "y1"])
   probabilities <- fit$subject_posteriors

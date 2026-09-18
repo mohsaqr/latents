@@ -13,7 +13,7 @@ make_two_level <- function(seed = 11L, n_groups = 30L, per_group = 8L) {
 
 test_that("information criteria match their documented formulas", {
   dat <- make_two_level()
-  fit <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   indices <- information_criteria(fit)
   expect_s3_class(indices, "data.frame")
   expect_identical(names(indices),
@@ -27,8 +27,8 @@ test_that("information criteria match their documented formulas", {
   log_likelihood <- fit$log_likelihood
   n_individuals <- fit$n_observations
   n_groups <- fit$n_groups
-  entropy_individuals <- .ml_lpa_entropy_sum(fit$subject_posteriors)
-  entropy_groups <- .ml_lpa_entropy_sum(fit$group_posteriors)
+  entropy_individuals <- .multilpa_entropy_sum(fit$subject_posteriors)
+  entropy_groups <- .multilpa_entropy_sum(fit$group_posteriors)
   expect_equal(pick("log_likelihood", "none"), log_likelihood)
   expect_equal(pick("aic", "none"), fit$aic)
   expect_equal(pick("bic", "groups"), fit$bic)
@@ -53,8 +53,8 @@ test_that("information criteria match their documented formulas", {
 
 test_that("information criteria order candidate models sensibly", {
   dat <- make_two_level()
-  one <- fit_ml_lpa(dat, c("a", "b"), "g", 1, 1, n_starts = 3, seed = 5)
-  two <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  one <- fit_multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 3, seed = 5)
+  two <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   criteria <- c("bic", "sabic", "caic", "icl", "awe")
   better <- vapply(criteria, function(criterion) {
     one_value <- information_criteria(one)
@@ -72,7 +72,7 @@ test_that("information criteria order candidate models sensibly", {
 
 test_that("classification diagnostics are internally consistent", {
   dat <- make_two_level()
-  fit <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   summary_table <- classification_table(fit, level = "both")
   expect_identical(nrow(summary_table), 4L)
   expect_true(all(summary_table$average_posterior >= 0 &
@@ -96,7 +96,7 @@ test_that("classification diagnostics are internally consistent", {
 test_that("classification diagnostics handle a class with no modal members", {
   set.seed(3)
   dat <- data.frame(g = rep(seq_len(15L), each = 6L), y = stats::rnorm(90L))
-  fit <- fit_ml_lpa(dat, "y", "g", 1, 1, n_starts = 1, seed = 2)
+  fit <- fit_multilpa(dat, "y", "g", 1, 1, n_starts = 1, seed = 2)
   table <- classification_table(fit)
   expect_identical(nrow(table), 1L)
   expect_equal(table$average_posterior, 1)
@@ -106,23 +106,23 @@ test_that("classification diagnostics handle a class with no modal members", {
 
 test_that("entropy is bounded and undefined for a single class", {
   dat <- make_two_level()
-  fit <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   entropy <- entropy_table(fit)
   expect_identical(nrow(entropy), 2L)
   expect_true(all(entropy$relative_entropy > 0 & entropy$relative_entropy <= 1))
   expect_true(all(entropy$entropy_sum >= 0))
-  single <- fit_ml_lpa(dat, c("a", "b"), "g", 1, 1, n_starts = 1, seed = 5)
+  single <- fit_multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 1, seed = 5)
   expect_true(all(is.na(entropy_table(single)$relative_entropy)))
   # A degenerate, perfectly separated posterior has zero entropy.
-  expect_equal(.ml_lpa_entropy_sum(matrix(c(1, 0, 0, 1), 2L, 2L)), 0)
-  expect_equal(.ml_lpa_relative_entropy(matrix(c(1, 0, 0, 1), 2L, 2L)), 1)
+  expect_equal(.multilpa_entropy_sum(matrix(c(1, 0, 0, 1), 2L, 2L)), 0)
+  expect_equal(.multilpa_relative_entropy(matrix(c(1, 0, 0, 1), 2L, 2L)), 1)
   # A maximally uncertain posterior has zero relative entropy.
-  expect_equal(.ml_lpa_relative_entropy(matrix(0.5, 4L, 2L)), 0)
+  expect_equal(.multilpa_relative_entropy(matrix(0.5, 4L, 2L)), 0)
 })
 
 test_that("tidy accessors return the documented shapes", {
   dat <- make_two_level()
-  fit <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   profiles <- as.data.frame(fit)
   expect_identical(names(profiles),
     c("profile", "indicator", "mean", "variance", "standard_deviation"))
@@ -151,9 +151,9 @@ test_that("tidy accessors return the documented shapes", {
 
 test_that("enumeration and inference tidy and print", {
   dat <- make_two_level()
-  candidates <- enumerate_ml_lpa(dat, c("a", "b"), "g", profiles = 1:2,
+  candidates <- enumerate_multilpa(dat, c("a", "b"), "g", profiles = 1:2,
                                  group_classes = 1:2, n_starts = 3, seed = 3)
-  expect_s3_class(candidates, "ml_lpa_enumeration")
+  expect_s3_class(candidates, "multilpa_enumeration")
   grid <- as.data.frame(candidates)
   expect_identical(nrow(grid), 4L)
   expect_true(all(c("sabic_groups", "sabic_individual", "caic_groups",
@@ -163,9 +163,9 @@ test_that("enumeration and inference tidy and print", {
   failed <- subset(grid, !converged)
   expect_true(all(is.na(failed$sabic_individual)))
   expect_output(print(candidates), "Class enumeration")
-  fit <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
-  information <- inference_ml_lpa(fit, dat)
-  expect_s3_class(information, "ml_lpa_inference")
+  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  information <- inference_multilpa(fit, dat)
+  expect_s3_class(information, "multilpa_inference")
   estimates <- as.data.frame(information)
   expect_identical(nrow(estimates), length(coef(fit)))
   expect_equal(estimates$estimate, unname(coef(fit)))
@@ -179,37 +179,37 @@ test_that("enumeration and inference tidy and print", {
   expect_output(print(information), "Multilevel LPA inference")
 })
 
-test_that("ml_lpa_start round-trips a fitted solution", {
+test_that("multilpa_start round-trips a fitted solution", {
   dat <- make_two_level()
-  fit <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
-  start <- ml_lpa_start(fit)
+  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  start <- multilpa_start(fit)
   expect_setequal(names(start), c("means", "variances",
     "profile_probabilities", "group_probabilities"))
   expect_null(dimnames(start$means))
-  refit <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, start = start, n_starts = 1,
+  refit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, start = start, n_starts = 1,
                       max_iter = 5000, tol = 1e-13)
   # The fitted solution must be a fixed point of the EM engine.
   expect_equal(refit$log_likelihood, fit$log_likelihood, tolerance = 1e-9)
   expect_equal(unname(refit$means), unname(fit$means), tolerance = 1e-6)
-  full <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 2, covariance_model = "full",
+  full <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, covariance_model = "full",
                      n_starts = 4, seed = 5)
-  full_start <- ml_lpa_start(full)
+  full_start <- multilpa_start(full)
   expect_true("covariances" %in% names(full_start))
   expect_null(full_start$variances)
-  expect_false("covariances" %in% names(ml_lpa_start(full, covariance = "drop")))
-  expect_equal(dim(ml_lpa_start(full, covariance = "drop")$variances), c(2L, 2L))
+  expect_false("covariances" %in% names(multilpa_start(full, covariance = "drop")))
+  expect_equal(dim(multilpa_start(full, covariance = "drop")$variances), c(2L, 2L))
 })
 
-test_that("ml_lpa_start rejects incomplete input by condition class", {
-  expect_error(ml_lpa_start(list(means = matrix(0, 2, 2))),
-               class = "mllpa_bad_start")
-  expect_error(ml_lpa_start(list(means = matrix(0, 2, 2),
+test_that("multilpa_start rejects incomplete input by condition class", {
+  expect_error(multilpa_start(list(means = matrix(0, 2, 2))),
+               class = "multilpa_bad_start")
+  expect_error(multilpa_start(list(means = matrix(0, 2, 2),
     profile_probabilities = matrix(0.5, 1, 2), group_probabilities = 1)),
-    class = "mllpa_bad_start")
-  expect_error(ml_lpa_start(list(means = matrix(0, 2, 2),
+    class = "multilpa_bad_start")
+  expect_error(multilpa_start(list(means = matrix(0, 2, 2),
     variances = matrix(1, 2, 2), profile_probabilities = matrix(0.5, 1, 2),
     group_probabilities = 1), covariance = "keep"),
-    class = "mllpa_bad_start")
+    class = "multilpa_bad_start")
 })
 
 test_that("the Lo-Mendell-Rubin adjustment reproduces genuine Mplus TECH11", {
@@ -220,11 +220,11 @@ test_that("the Lo-Mendell-Rubin adjustment reproduces genuine Mplus TECH11", {
   expect_lt(max(abs(adjusted - reference$mplus_adjusted)), 5e-3)
 })
 
-test_that("lmr_lrt_ml_lpa reports a statistic and withholds a p-value", {
+test_that("lmr_lrt_multilpa reports a statistic and withholds a p-value", {
   dat <- make_two_level()
-  smaller <- fit_ml_lpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
-  larger <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 1, n_starts = 5, seed = 5)
-  result <- lmr_lrt_ml_lpa(smaller, larger)
+  smaller <- fit_multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
+  larger <- fit_multilpa(dat, c("a", "b"), "g", 2, 1, n_starts = 5, seed = 5)
+  result <- lmr_lrt_multilpa(smaller, larger)
   expect_s3_class(result, "data.frame")
   expect_identical(nrow(result), 1L)
   expect_equal(result$statistic,
@@ -236,26 +236,26 @@ test_that("lmr_lrt_ml_lpa reports a statistic and withholds a p-value", {
   # The adjustment always shrinks a positive statistic.
   expect_lt(result$adjusted_statistic, result$statistic)
   expect_true(is.na(result$p_value))
-  grouped <- lmr_lrt_ml_lpa(smaller, larger, n = "groups")
+  grouped <- lmr_lrt_multilpa(smaller, larger, n = "groups")
   expect_equal(grouped$n, smaller$n_groups)
   expect_equal(grouped$statistic, result$statistic)
   expect_gt(grouped$adjustment_factor, result$adjustment_factor)
 })
 
-test_that("lmr_lrt_ml_lpa rejects invalid comparisons by condition class", {
+test_that("lmr_lrt_multilpa rejects invalid comparisons by condition class", {
   dat <- make_two_level()
-  smaller <- fit_ml_lpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
-  larger <- fit_ml_lpa(dat, c("a", "b"), "g", 2, 1, n_starts = 5, seed = 5)
-  expect_error(lmr_lrt_ml_lpa(larger, smaller), class = "mllpa_bad_nesting")
-  other <- fit_ml_lpa(make_two_level(seed = 12L, n_groups = 20L),
+  smaller <- fit_multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
+  larger <- fit_multilpa(dat, c("a", "b"), "g", 2, 1, n_starts = 5, seed = 5)
+  expect_error(lmr_lrt_multilpa(larger, smaller), class = "multilpa_bad_nesting")
+  other <- fit_multilpa(make_two_level(seed = 12L, n_groups = 20L),
                       c("a", "b"), "g", 2, 1, n_starts = 3, seed = 5)
-  expect_error(lmr_lrt_ml_lpa(smaller, other),
-               class = "mllpa_incomparable_models")
-  expect_error(lmr_lrt_ml_lpa(smaller, larger, n = 1), "greater than one")
+  expect_error(lmr_lrt_multilpa(smaller, other),
+               class = "multilpa_incomparable_models")
+  expect_error(lmr_lrt_multilpa(smaller, larger, n = 1), "greater than one")
   reversed <- larger
   reversed$log_likelihood <- smaller$log_likelihood - 1
-  expect_error(lmr_lrt_ml_lpa(smaller, reversed),
-               class = "mllpa_reversed_likelihood")
+  expect_error(lmr_lrt_multilpa(smaller, reversed),
+               class = "multilpa_reversed_likelihood")
 })
 
 test_that("every result class has a working tidy accessor", {
@@ -269,7 +269,7 @@ test_that("every result class has a working tidy accessor", {
                     b = stats::rnorm(n, c(-1, 1)[profile]),
                     age = stats::rnorm(n),
                     resources = rep(stats::rnorm(30L), each = 10L))
-  covariate_fit <- suppressWarnings(fit_ml_lpa_covariates(
+  covariate_fit <- suppressWarnings(fit_multilpa_covariates(
     dat, c("a", "b"), "school", 2, 2, profile_covariates = "age",
     group_covariates = "resources", n_starts = 4, seed = 1))
   profiles <- as.data.frame(covariate_fit)
@@ -286,7 +286,7 @@ test_that("every result class has a working tidy accessor", {
   expect_identical(nrow(as.data.frame(covariate_fit, what = "posteriors")), n)
   expect_identical(nrow(as.data.frame(covariate_fit, what = "group_posteriors")),
                    30L)
-  intercept_fit <- fit_ml_lpa_random_intercept(dat, c("a", "b"), "school", 2,
+  intercept_fit <- fit_multilpa_random_intercept(dat, c("a", "b"), "school", 2,
                                                n_starts = 3, seed = 1)
   expect_identical(nrow(as.data.frame(intercept_fit)), 4L)
   intercepts <- as.data.frame(intercept_fit, what = "random_intercepts")
@@ -298,11 +298,11 @@ test_that("every result class has a working tidy accessor", {
 })
 
 test_that("preparation helpers enforce their own contracts", {
-  # Extracted from fit_ml_lpa; they must still reject what it used to reject.
-  expect_error(.ml_lpa_prepare_groups(c(1, NA, 2)), "nonmissing")
-  expect_error(.ml_lpa_prepare_groups(c(1, Inf, 2)), "nonmissing")
-  expect_error(.ml_lpa_prepare_groups(list(1, 2)), "nonmissing")
-  groups <- .ml_lpa_prepare_groups(c("b", "a", "b", "c", "a"))
+  # Extracted from fit_multilpa; they must still reject what it used to reject.
+  expect_error(.multilpa_prepare_groups(c(1, NA, 2)), "nonmissing")
+  expect_error(.multilpa_prepare_groups(c(1, Inf, 2)), "nonmissing")
+  expect_error(.multilpa_prepare_groups(list(1, 2)), "nonmissing")
+  groups <- .multilpa_prepare_groups(c("b", "a", "b", "c", "a"))
   # First-occurrence order, not sorted order.
   expect_identical(groups$values, c("b", "a", "c"))
   expect_identical(groups$index, c(1L, 2L, 1L, 3L, 2L))
@@ -310,20 +310,20 @@ test_that("preparation helpers enforce their own contracts", {
   expect_identical(groups$sizes, c(2L, 2L, 1L))
   dat <- data.frame(g = rep(1:4, each = 3), y = stats::rnorm(12),
                     u = rep(c(1, 2), 6))
-  prepared <- .ml_lpa_prepare_indicators(dat, c("y", "u"), "u", "error", 1e-10)
+  prepared <- .multilpa_prepare_indicators(dat, c("y", "u"), "u", "error", 1e-10)
   expect_identical(prepared$continuous, "y")
   expect_identical(dim(prepared$x), c(12L, 1L))
   expect_identical(unname(prepared$n_categories), 2L)
   # Every indicator categorical leaves a zero-column Gaussian block.
-  all_categorical <- .ml_lpa_prepare_indicators(dat, "u", "u", "error", 1e-10)
+  all_categorical <- .multilpa_prepare_indicators(dat, "u", "u", "error", 1e-10)
   expect_identical(dim(all_categorical$x), c(12L, 0L))
-  expect_error(.ml_lpa_check_arguments(dat, "y", "g", 0, 1, 1, 1, 1e-8, 1e-6,
+  expect_error(.multilpa_check_arguments(dat, "y", "g", 0, 1, 1, 1, 1e-8, 1e-6,
                                        1e-10, NULL, character()),
                "positive integer")
-  expect_error(.ml_lpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, -1, 1e-6,
+  expect_error(.multilpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, -1, 1e-6,
                                        1e-10, NULL, character()),
                "finite positive")
-  expect_error(.ml_lpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, 1e-8, 1e-6,
+  expect_error(.multilpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, 1e-8, 1e-6,
                                        1e-10, -1, character()),
                "nonnegative integer")
 })
@@ -346,19 +346,19 @@ test_that("extracted covariate and inference helpers keep their contracts", {
                     b = stats::rnorm(n, c(-1, 1)[profile]),
                     age = stats::rnorm(n),
                     resources = rep(stats::rnorm(24L), each = 10L))
-  # Covariate column contracts, previously inline in fit_ml_lpa_covariates().
-  expect_error(.ml_lpa_cov_check_covariates(dat, "a", character(),
+  # Covariate column contracts, previously inline in fit_multilpa_covariates().
+  expect_error(.multilpa_cov_check_covariates(dat, "a", character(),
                                             c("a", "b"), "school"),
                "distinct from indicators")
   bad <- dat
   bad$age[3L] <- NA
-  expect_error(.ml_lpa_cov_check_covariates(bad, "age", character(),
+  expect_error(.multilpa_cov_check_covariates(bad, "age", character(),
                                             c("a", "b"), "school"),
                "finite numeric")
-  expect_null(.ml_lpa_cov_check_covariates(dat, "age", "resources",
+  expect_null(.multilpa_cov_check_covariates(dat, "age", "resources",
                                            c("a", "b"), "school"))
   first_rows <- match(seq_len(24L), group)
-  designs <- .ml_lpa_cov_designs(dat, c("a", "b"), "age", "resources",
+  designs <- .multilpa_cov_designs(dat, c("a", "b"), "age", "resources",
                                  first_rows, 2L)
   expect_identical(dim(designs$x), c(n, 2L))
   # Centring is a translation: the centred matrix has zero column means.
@@ -368,34 +368,34 @@ test_that("extracted covariate and inference helpers keep their contracts", {
   expect_identical(nrow(designs$stacked_design), n * 2L)
   collinear <- dat
   collinear$copy <- collinear$age
-  expect_error(.ml_lpa_cov_designs(collinear, c("a", "b"), c("age", "copy"),
+  expect_error(.multilpa_cov_designs(collinear, c("a", "b"), c("age", "copy"),
                                    character(), first_rows, 2L),
                "rank deficient")
 
-  # Inference contracts, previously inline in inference_ml_lpa().
-  fit <- fit_ml_lpa(dat, c("a", "b"), "school", 2, 2, n_starts = 5, seed = 1)
-  prepared <- .ml_lpa_inference_matrix(fit, dat)
+  # Inference contracts, previously inline in inference_multilpa().
+  fit <- fit_multilpa(dat, c("a", "b"), "school", 2, 2, n_starts = 5, seed = 1)
+  prepared <- .multilpa_inference_matrix(fit, dat)
   expect_identical(dim(prepared$x), c(n, 2L))
   expect_equal(unname(colMeans(prepared$x)), c(0, 0))
   expect_equal(prepared$centers, colMeans(as.matrix(dat[, c("a", "b")])))
-  expect_error(.ml_lpa_inference_matrix(fit, dat[-1L, ]), "original numeric")
+  expect_error(.multilpa_inference_matrix(fit, dat[-1L, ]), "original numeric")
   shuffled <- dat[c(2L, 1L, seq(3L, n)), ]
-  expect_error(.ml_lpa_inference_matrix(fit, shuffled), "row order")
-  expect_null(.ml_lpa_check_regularity(fit, "observed"))
+  expect_error(.multilpa_inference_matrix(fit, shuffled), "row order")
+  expect_null(.multilpa_check_regularity(fit, "observed"))
   unconverged <- fit
   unconverged$converged <- FALSE
-  expect_error(.ml_lpa_check_regularity(unconverged, "observed"), "converged fit")
+  expect_error(.multilpa_check_regularity(unconverged, "observed"), "converged fit")
   bounded <- fit
   bounded$boundary <- TRUE
-  expect_error(.ml_lpa_check_regularity(bounded, "observed"), "bound-active")
+  expect_error(.multilpa_check_regularity(bounded, "observed"), "bound-active")
   categorical <- fit
   categorical$response_probabilities <- list(matrix(0.5, 2L, 2L))
-  expect_error(.ml_lpa_check_regularity(categorical, "observed"),
-               class = "mllpa_unsupported_inference")
+  expect_error(.multilpa_check_regularity(categorical, "observed"),
+               class = "multilpa_unsupported_inference")
 
   # A singular information matrix must be refused, not inverted.
   flat <- function(displacement) 0
   flat_gradient <- function(displacement) rep(0, length(displacement))
-  expect_error(.ml_lpa_observed_hessian(flat, flat_gradient, c(1, 1), 1e-4),
+  expect_error(.multilpa_observed_hessian(flat, flat_gradient, c(1, 1), 1e-4),
                "positive definite")
 })

@@ -11,7 +11,7 @@ classification_table(
 )
 }
 \arguments{
-\item{object}{A fitted `ml_lpa` model.}
+\item{object}{A fitted `multilpa` model.}
 
 \item{level}{`"individuals"` for latent profiles, `"groups"` for latent group
 classes, or `"both"` to stack them in one table.}
@@ -56,7 +56,7 @@ example_data <- data.frame(
   school = rep(seq_len(12), each = 10),
   score_a = rnorm(120), score_b = rnorm(120)
 )
-fit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 classification_table(fit)
 }

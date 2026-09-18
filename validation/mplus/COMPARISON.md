@@ -1,6 +1,6 @@
 # Mplus comparison — 2026-09-17
 
-The native R `mllpa` estimator agrees with Mplus in six retained comparisons
+The native R `multilpa` estimator agrees with Mplus in six retained comparisons
 across three datasets. Two comparisons reproduce **published** single-level
 results; four compare against **new, actual Mplus runs** of our exact two-level
 model. The fitting engine was unchanged.

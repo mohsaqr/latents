@@ -1,12 +1,12 @@
 #' Print a fitted multilevel latent profile model
-#' @param x An `ml_lpa` model.
+#' @param x An `multilpa` model.
 #' @param ... Reserved for compatibility with `print()`.
 #' @return The input model, invisibly.
 #' @examples
 #' # Printing a fitted model displays its convergence and information criteria.
 #' @export
-print.ml_lpa <- function(x, ...) {
-  stopifnot(inherits(x, "ml_lpa"))
+print.multilpa <- function(x, ...) {
+  stopifnot(inherits(x, "multilpa"))
   cat(sprintf("Two-level latent profile analysis: %d profiles, %d group classes\n",
               x$n_profiles, x$n_group_classes))
   covariance_model <- x$covariance_model %||% "diagonal"
@@ -22,15 +22,15 @@ print.ml_lpa <- function(x, ...) {
 }
 
 #' Summarize a fitted multilevel latent profile model
-#' @param object An `ml_lpa` model.
+#' @param object An `multilpa` model.
 #' @param ... Reserved for compatibility with `summary()`.
-#' @return A `summary_ml_lpa` list of estimates, effective class counts,
+#' @return A `summary_multilpa` list of estimates, effective class counts,
 #'   information criteria, and restart diagnostics.
 #' @examples
 #' # After fitting: summary(fit)
 #' @export
-summary.ml_lpa <- function(object, ...) {
-  stopifnot(inherits(object, "ml_lpa"))
+summary.multilpa <- function(object, ...) {
+  stopifnot(inherits(object, "multilpa"))
   fields <- c("call", "n_observations", "n_groups", "n_profiles", "n_group_classes",
               "variance_model", "covariance_model", "missing", "covariances",
               "means", "variances", "standard_deviations",
@@ -41,20 +41,20 @@ summary.ml_lpa <- function(object, ...) {
   result <- object[fields]
   result$effective_profile_counts <- colSums(object$subject_posteriors)
   result$effective_group_counts <- colSums(object$group_posteriors)
-  class(result) <- "summary_ml_lpa"
+  class(result) <- "summary_multilpa"
   result
 }
 
 #' Print a multilevel LPA summary
-#' @param x A `summary_ml_lpa` object.
+#' @param x A `summary_multilpa` object.
 #' @param digits Number of printed significant digits.
 #' @param ... Additional arguments passed to matrix printing.
 #' @return The summary, invisibly.
 #' @examples
 #' # After fitting: print(summary(fit), digits = 4)
 #' @export
-print.summary_ml_lpa <- function(x, digits = 4L, ...) {
-  stopifnot(inherits(x, "summary_ml_lpa"), is.numeric(digits),
+print.summary_multilpa <- function(x, digits = 4L, ...) {
+  stopifnot(inherits(x, "summary_multilpa"), is.numeric(digits),
             length(digits) == 1L, is.finite(digits), digits >= 1, digits <= 22)
   cat(sprintf("Multilevel LPA: %d profiles and %d group classes\n",
               x$n_profiles, x$n_group_classes))
@@ -89,7 +89,7 @@ print.summary_ml_lpa <- function(x, digits = 4L, ...) {
 }
 
 #' Extract the multilevel model log likelihood
-#' @param object An `ml_lpa` model.
+#' @param object An `multilpa` model.
 #' @param ... Reserved for compatibility with `logLik()`.
 #' @return A `logLik` object with parameter count `df` and the number of observed
 #'   groups as `nobs`. Thus `stats::BIC()` uses group-count BIC. For the
@@ -99,14 +99,14 @@ print.summary_ml_lpa <- function(x, digits = 4L, ...) {
 #' # After fitting: logLik(fit); AIC(fit); BIC(fit)
 #' @export
 #' @importFrom stats logLik
-logLik.ml_lpa <- function(object, ...) {
-  stopifnot(inherits(object, "ml_lpa"))
+logLik.multilpa <- function(object, ...) {
+  stopifnot(inherits(object, "multilpa"))
   structure(object$log_likelihood, df = object$n_parameters,
             nobs = object$n_groups, class = "logLik")
 }
 
 #' Extract the number of independent groups
-#' @param object An `ml_lpa` model.
+#' @param object An `multilpa` model.
 #' @param ... Reserved for compatibility with `nobs()`.
 #' @return Number of observed groups, which are the independent units of the
 #'   two-level likelihood. For the individual count alongside every other
@@ -115,7 +115,7 @@ logLik.ml_lpa <- function(object, ...) {
 #' # After fitting: nobs(fit)
 #' @export
 #' @importFrom stats nobs
-nobs.ml_lpa <- function(object, ...) {
-  stopifnot(inherits(object, "ml_lpa"))
+nobs.multilpa <- function(object, ...) {
+  stopifnot(inherits(object, "multilpa"))
   object$n_groups
 }

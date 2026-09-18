@@ -1,10 +1,10 @@
 #' Parameterize a fitted mixture
-#' @param object A fitted `ml_lpa` model.
+#' @param object A fitted `multilpa` model.
 #' @param scale Natural estimates or unconstrained fitting coordinates.
 #' @return A named numeric parameter vector.
 #' @noRd
-.ml_lpa_coefficients <- function(object, scale) {
-  stopifnot(inherits(object, "ml_lpa"), scale %in% c("natural", "unconstrained"))
+.multilpa_coefficients <- function(object, scale) {
+  stopifnot(inherits(object, "multilpa"), scale %in% c("natural", "unconstrained"))
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
   n_indicators <- length(object$indicators)
@@ -32,7 +32,7 @@
     group_names <- sub("^group_probability", "group_logit", group_names)
   }
   if (identical(object$covariance_model, "full")) {
-    covariance_coordinates <- .ml_lpa_covariance_coordinates(object, scale)
+    covariance_coordinates <- .multilpa_covariance_coordinates(object, scale)
     variance_values <- unname(covariance_coordinates)
     variance_names <- names(covariance_coordinates)
   }
@@ -46,8 +46,8 @@
 #' @param scale Natural covariance or log-Cholesky coordinates.
 #' @return A named vector of nonredundant covariance parameters.
 #' @noRd
-.ml_lpa_covariance_coordinates <- function(object, scale) {
-  stopifnot(inherits(object, "ml_lpa"), identical(object$covariance_model, "full"),
+.multilpa_covariance_coordinates <- function(object, scale) {
+  stopifnot(inherits(object, "multilpa"), identical(object$covariance_model, "full"),
             scale %in% c("natural", "unconstrained"))
   dimension <- length(object$indicators)
   profiles <- if (object$variance_model == "equal") 1L else seq_len(object$n_profiles)
@@ -75,8 +75,8 @@
 #' @param object A fitted model defining the parameter dimensions.
 #' @return The four parameter blocks used by the expectation step.
 #' @noRd
-.ml_lpa_decode <- function(theta, object) {
-  stopifnot(is.numeric(theta), inherits(object, "ml_lpa"),
+.multilpa_decode <- function(theta, object) {
+  stopifnot(is.numeric(theta), inherits(object, "multilpa"),
             length(theta) == object$n_parameters)
   theta <- unname(theta)
   n_profiles <- object$n_profiles
@@ -110,7 +110,7 @@
   profile_logits <- cbind(matrix(theta[n_means + n_variances + seq_len(n_logits)],
     n_types, n_profiles - 1L, byrow = TRUE), 0)
   profile_probabilities <- exp(sweep(profile_logits, 1L,
-    .ml_lpa_log_sum_exp(profile_logits), "-"))
+    .multilpa_log_sum_exp(profile_logits), "-"))
   group_logits <- c(theta[n_means + n_variances + n_logits + seq_len(n_types - 1L)], 0)
   group_probabilities <- exp(group_logits - max(group_logits))
   parameters <- list(means = means, variances = variances,
@@ -126,12 +126,12 @@
 #' @param object Fitted model defining dimensions and groups.
 #' @return The gradient of the negative observed-data log likelihood.
 #' @noRd
-.ml_lpa_score <- function(theta, x, object) {
-  stopifnot(is.numeric(theta), is.matrix(x), inherits(object, "ml_lpa"))
-  parameters <- .ml_lpa_decode(theta, object)
-  expectation <- .ml_lpa_expectation(x, object$group_index, parameters)
+.multilpa_score <- function(theta, x, object) {
+  stopifnot(is.numeric(theta), is.matrix(x), inherits(object, "multilpa"))
+  parameters <- .multilpa_decode(theta, object)
+  expectation <- .multilpa_expectation(x, object$group_index, parameters)
   if (identical(object$covariance_model, "full")) {
-    measurement <- .ml_lpa_full_measurement_score(parameters, expectation, object)
+    measurement <- .multilpa_full_measurement_score(parameters, expectation, object)
     mean_score <- measurement$means
     variance_score <- measurement$covariances
   } else {
@@ -167,8 +167,8 @@
 #' @param object A fitted full-covariance model.
 #' @return Mean and log-Cholesky score vectors.
 #' @noRd
-.ml_lpa_full_measurement_score <- function(parameters, expectation, object) {
-  stopifnot(is.list(parameters), is.list(expectation), inherits(object, "ml_lpa"),
+.multilpa_full_measurement_score <- function(parameters, expectation, object) {
+  stopifnot(is.list(parameters), is.list(expectation), inherits(object, "multilpa"),
             identical(object$covariance_model, "full"))
   dimension <- length(object$indicators)
   lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
@@ -206,10 +206,10 @@
 #' @param object A fitted model.
 #' @return Jacobian mapping unconstrained to natural coefficients.
 #' @noRd
-.ml_lpa_inference_jacobian <- function(object) {
-  stopifnot(inherits(object, "ml_lpa"))
-  natural <- .ml_lpa_coefficients(object, "natural")
-  theta <- .ml_lpa_coefficients(object, "unconstrained")
+.multilpa_inference_jacobian <- function(object) {
+  stopifnot(inherits(object, "multilpa"))
+  natural <- .multilpa_coefficients(object, "natural")
+  theta <- .multilpa_coefficients(object, "unconstrained")
   n_means <- length(object$means)
   full_covariance <- identical(object$covariance_model, "full")
   dimension <- length(object$indicators)
@@ -263,7 +263,7 @@
 #' not robust sandwich errors and do not account for model selection. Mixture
 #' boundary solutions and unidentified Hessians do not admit this calculation.
 #'
-#' @param object A converged `ml_lpa` fit with inactive variance bounds.
+#' @param object A converged `multilpa` fit with inactive variance bounds.
 #' @param data The original fitting data in the original row order. Stored
 #'   indicator data and group identifiers are checked exactly. For older fits
 #'   without stored indicators, the likelihood provides a weaker consistency check.
@@ -275,7 +275,7 @@
 #'   independent units, so robust errors relax the assumption that the Gaussian
 #'   within-group model is correctly specified. They do not relax the assumption
 #'   that groups are independent.
-#' @return An `ml_lpa_inference` list containing natural `estimates`,
+#' @return An `multilpa_inference` list containing natural `estimates`,
 #'   `standard_errors`, `covariance`, `confidence_intervals`, unconstrained
 #'   estimates and covariance, observed Hessian, score, and its eigenvalue
 #'   condition ratio. All class probabilities are returned; their sum
@@ -288,30 +288,30 @@
 #' @examples
 #' set.seed(42)
 #' dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
-#' fit <- fit_ml_lpa(dat, "y", "group", 1, 1, n_starts = 1)
-#' inference_ml_lpa(fit, dat)$standard_errors
+#' fit <- fit_multilpa(dat, "y", "group", 1, 1, n_starts = 1)
+#' inference_multilpa(fit, dat)$standard_errors
 #' @export
-inference_ml_lpa <- function(object, data, level = 0.95, step = 1e-4,
+inference_multilpa <- function(object, data, level = 0.95, step = 1e-4,
                              vcov_type = c("observed", "robust")) {
-  stopifnot(inherits(object, "ml_lpa"), is.data.frame(data),
+  stopifnot(inherits(object, "multilpa"), is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
             is.numeric(step), length(step) == 1L, is.finite(step), step > 0)
   vcov_type <- match.arg(vcov_type)
-  .ml_lpa_check_regularity(object, vcov_type)
-  theta <- .ml_lpa_coefficients(object, "unconstrained")
-  prepared <- .ml_lpa_inference_matrix(object, data)
+  .multilpa_check_regularity(object, vcov_type)
+  theta <- .multilpa_coefficients(object, "unconstrained")
+  prepared <- .multilpa_inference_matrix(object, data)
   x <- prepared$x
   centered_object <- object
   centered_object$means <- sweep(object$means, 2L, prepared$centers, "-")
-  centered_theta <- .ml_lpa_coefficients(centered_object, "unconstrained")
+  centered_theta <- .multilpa_coefficients(centered_object, "unconstrained")
   objective <- function(parameters) {
     stopifnot(is.numeric(parameters))
-    -.ml_lpa_expectation(x, object$group_index,
-      .ml_lpa_decode(parameters, object))$log_likelihood
+    -.multilpa_expectation(x, object$group_index,
+      .multilpa_decode(parameters, object))$log_likelihood
   }
   score <- function(parameters) {
     stopifnot(is.numeric(parameters))
-    .ml_lpa_score(parameters, x, object)
+    .multilpa_score(parameters, x, object)
   }
   fitted_likelihood <- -objective(centered_theta)
   if (abs(fitted_likelihood - object$log_likelihood) > 1e-8 * (1 + abs(object$log_likelihood))) {
@@ -327,7 +327,7 @@ inference_ml_lpa <- function(object, data, level = 0.95, step = 1e-4,
     stopifnot(is.numeric(displacement))
     score(centered_theta + displacement * parameter_scale) * parameter_scale
   }
-  information <- .ml_lpa_observed_hessian(scaled_objective, scaled_gradient,
+  information <- .multilpa_observed_hessian(scaled_objective, scaled_gradient,
                                           parameter_scale, step)
   scaled_hessian <- information$scaled
   hessian <- information$natural
@@ -336,17 +336,17 @@ inference_ml_lpa <- function(object, data, level = 0.95, step = 1e-4,
   group_scores <- NULL
   scaling_correction <- NA_real_
   if (identical(vcov_type, "robust")) {
-    group_scores <- .ml_lpa_group_scores(centered_theta, x, object)
-    scaled_cross <- .ml_lpa_cross_product(sweep(group_scores, 2L, parameter_scale, "*"))
+    group_scores <- .multilpa_group_scores(centered_theta, x, object)
+    scaled_cross <- .multilpa_cross_product(sweep(group_scores, 2L, parameter_scale, "*"))
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
     scaled_inverse <- scaled_inverse %*% scaled_cross %*% scaled_inverse
   }
   covariance_unconstrained <- scaled_inverse * tcrossprod(parameter_scale)
   dimnames(hessian) <- dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
-  jacobian <- .ml_lpa_inference_jacobian(object)
+  jacobian <- .multilpa_inference_jacobian(object)
   covariance <- jacobian %*% covariance_unconstrained %*% t(jacobian)
   standard_errors <- sqrt(pmax(diag(covariance), 0))
-  estimates <- .ml_lpa_coefficients(object, "natural")
+  estimates <- .multilpa_coefficients(object, "natural")
   critical <- stats::qnorm((1 + level) / 2)
   intervals <- cbind(estimates - critical * standard_errors, estimates + critical * standard_errors)
   colnames(intervals) <- paste0(format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%")
@@ -360,12 +360,12 @@ inference_ml_lpa <- function(object, data, level = 0.95, step = 1e-4,
     condition_ratio = condition_ratio, level = level, step = step,
     vcov_type = vcov_type, group_scores = group_scores,
     scaling_correction = scaling_correction)
-  class(result) <- "ml_lpa_inference"
+  class(result) <- "multilpa_inference"
   result
 }
 
 #' Extract multilevel LPA coefficients
-#' @param object A fitted `ml_lpa` model.
+#' @param object A fitted `multilpa` model.
 #' @param scale Natural coefficients or unconstrained log variances (diagonal),
 #'   log-Cholesky coordinates (full covariance), and baseline-category logits.
 #' @param ... Reserved for generic compatibility.
@@ -375,47 +375,47 @@ inference_ml_lpa <- function(object, data, level = 0.95, step = 1e-4,
 #' # After fitting: coef(fit)
 #' @export
 #' @importFrom stats coef
-coef.ml_lpa <- function(object, scale = c("natural", "unconstrained"), ...) {
-  stopifnot(inherits(object, "ml_lpa"))
-  .ml_lpa_coefficients(object, match.arg(scale))
+coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
+  stopifnot(inherits(object, "multilpa"))
+  .multilpa_coefficients(object, match.arg(scale))
 }
 
 #' Extract multilevel LPA covariance estimates
-#' @param object A fitted `ml_lpa` model.
+#' @param object A fitted `multilpa` model.
 #' @param data Original fitting data, required unless `object$inference` is stored.
 #' @param scale Natural or unconstrained parameter scale.
-#' @param ... Additional arguments passed to [inference_ml_lpa()].
+#' @param ... Additional arguments passed to [inference_multilpa()].
 #' @return The observed-information covariance matrix. On the natural scale,
 #'   probability sum constraints make this matrix singular by construction.
 #' @examples
 #' # After fitting: vcov(fit, data = original_data)
 #' @export
 #' @importFrom stats vcov
-vcov.ml_lpa <- function(object, data = NULL, scale = c("natural", "unconstrained"), ...) {
-  stopifnot(inherits(object, "ml_lpa"))
+vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrained"), ...) {
+  stopifnot(inherits(object, "multilpa"))
   scale <- match.arg(scale)
-  information <- if (is.null(data)) object$inference else inference_ml_lpa(object, data, ...)
-  if (is.null(information)) stop("Supply original data or store inference_ml_lpa() in object$inference.")
+  information <- if (is.null(data)) object$inference else inference_multilpa(object, data, ...)
+  if (is.null(information)) stop("Supply original data or store inference_multilpa() in object$inference.")
   if (scale == "natural") information$covariance else information$covariance_unconstrained
 }
 
 #' Wald confidence intervals for multilevel LPA coefficients
-#' @param object A fitted `ml_lpa` model.
+#' @param object A fitted `multilpa` model.
 #' @param parm Optional coefficient names or indices; defaults to all coefficients.
 #' @param level Confidence level strictly between zero and one.
 #' @param data Original fitting data, required unless `object$inference` is stored.
-#' @param ... Additional arguments passed to [inference_ml_lpa()].
+#' @param ... Additional arguments passed to [inference_multilpa()].
 #' @return A two-column matrix of natural-scale Wald intervals. Bounds are not
 #'   clipped to the probability or variance parameter space.
 #' @examples
 #' # After fitting: confint(fit, data = original_data)
 #' @export
 #' @importFrom stats confint
-confint.ml_lpa <- function(object, parm, level = 0.95, data = NULL, ...) {
-  stopifnot(inherits(object, "ml_lpa"), is.numeric(level), length(level) == 1L,
+confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
+  stopifnot(inherits(object, "multilpa"), is.numeric(level), length(level) == 1L,
             is.finite(level), level > 0, level < 1)
-  estimates <- coef.ml_lpa(object)
-  covariance <- vcov.ml_lpa(object, data = data, ...)
+  estimates <- coef.multilpa(object)
+  covariance <- vcov.multilpa(object, data = data, ...)
   if (missing(parm)) parm <- names(estimates)
   if (is.numeric(parm)) {
     if (anyNA(parm) || any(!is.finite(parm)) || any(parm != floor(parm)) ||
@@ -441,16 +441,16 @@ confint.ml_lpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #'
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
-.ml_lpa_check_regularity <- function(object, vcov_type) {
+.multilpa_check_regularity <- function(object, vcov_type) {
   if (!is.null(object$response_probabilities)) {
     stop(errorCondition("Standard errors are not yet available for categorical indicators; the score functions cover Gaussian measurement only.",
-                        class = "mllpa_unsupported_inference", call = NULL))
+                        class = "multilpa_unsupported_inference", call = NULL))
   }
   if (identical(vcov_type, "robust") && object$n_groups <= object$n_parameters) {
     stop(errorCondition(sprintf(
       "Robust inference needs more groups than parameters; this fit has %d groups and %d parameters.",
       object$n_groups, object$n_parameters),
-      class = "mllpa_too_few_groups", call = NULL))
+      class = "multilpa_too_few_groups", call = NULL))
   }
   if (!isTRUE(object$converged)) stop("Inference requires a converged fit.")
   if (isTRUE(object$boundary)) {
@@ -471,7 +471,7 @@ confint.ml_lpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #'
 #' @return A list with the centred matrix `x` and the `centers` removed from it.
 #' @noRd
-.ml_lpa_inference_matrix <- function(object, data) {
+.multilpa_inference_matrix <- function(object, data) {
   if (nrow(data) != object$n_observations ||
       !all(c(object$indicators, object$cluster) %in% names(data)) ||
       anyDuplicated(names(data)) ||
@@ -502,7 +502,7 @@ confint.ml_lpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' @return A list with the `scaled` and `natural` Hessians, the scaled
 #'   `condition_ratio`, and the `inverse` of the scaled Hessian.
 #' @noRd
-.ml_lpa_observed_hessian <- function(scaled_objective, scaled_gradient,
+.multilpa_observed_hessian <- function(scaled_objective, scaled_gradient,
                                      parameter_scale, step) {
   n_parameters <- length(parameter_scale)
   scaled <- tryCatch(

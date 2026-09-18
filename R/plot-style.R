@@ -7,7 +7,7 @@
 #' @param n Number of colours required.
 #' @return Character vector of `n` hexadecimal colours.
 #' @noRd
-.ml_lpa_palette <- function(n) {
+.multilpa_palette <- function(n) {
   stopifnot("`n` must be a single positive integer" =
               is.numeric(n) && length(n) == 1L && is.finite(n) && n >= 1)
   colours <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442",
@@ -19,7 +19,7 @@
 #' @param n Number of symbols required.
 #' @return Integer vector of `n` plotting characters.
 #' @noRd
-.ml_lpa_symbols <- function(n) {
+.multilpa_symbols <- function(n) {
   stopifnot("`n` must be a single positive integer" =
               is.numeric(n) && length(n) == 1L && is.finite(n) && n >= 1)
   rep(c(21L, 22L, 24L, 23L, 25L, 21L, 22L, 24L, 23L), length.out = n)
@@ -29,7 +29,7 @@
 #' @param n Number of line types required.
 #' @return Integer vector of `n` line types.
 #' @noRd
-.ml_lpa_linetypes <- function(n) {
+.multilpa_linetypes <- function(n) {
   stopifnot("`n` must be a single positive integer" =
               is.numeric(n) && length(n) == 1L && is.finite(n) && n >= 1)
   rep(c(1L, 2L, 4L, 3L, 5L, 6L), length.out = n)
@@ -48,12 +48,12 @@
 #' @param x_at,x_labels Positions and labels for the horizontal axis. When
 #'   `x_at` is `NULL` a numeric axis is drawn.
 #' @param y_at Positions for the vertical axis, or `NULL` for a numeric axis.
-#' @param style A list of visual constants, as built by `.ml_lpa_style()`.
+#' @param style A list of visual constants, as built by `.multilpa_style()`.
 #' @return `NULL`, invisibly. Called for the side effect of drawing.
 #' @noRd
-.ml_lpa_panel <- function(xlim, ylim, xlab, ylab, main = NULL, subtitle = NULL,
+.multilpa_panel <- function(xlim, ylim, xlab, ylab, main = NULL, subtitle = NULL,
                           x_at = NULL, x_labels = NULL, y_at = NULL,
-                          style = .ml_lpa_style()) {
+                          style = .multilpa_style()) {
   stopifnot("`style` must be a list of visual constants" = is.list(style))
   graphics::plot.new()
   graphics::plot.window(xlim = xlim, ylim = ylim, xaxs = "i", yaxs = "i")
@@ -106,7 +106,7 @@
 #' @param ... Further named constants, merged into the result.
 #' @return A named list of visual constants.
 #' @noRd
-.ml_lpa_style <- function(panel_fill = "#FBFBFA", grid_colour = "#E4E4E1",
+.multilpa_style <- function(panel_fill = "#FBFBFA", grid_colour = "#E4E4E1",
                           grid_width = 0.8, text_colour = "#3B3B3B",
                           title_colour = "#1A1A1A", muted_colour = "#6E6E6E",
                           axis_size = 0.82, label_size = 0.88, title_size = 1.0,
@@ -134,7 +134,7 @@
 #' @param minimum_gap Smallest permitted separation between adjacent labels.
 #' @return Numeric vector of adjusted positions, in the input order.
 #' @noRd
-.ml_lpa_spread_labels <- function(y, minimum_gap) {
+.multilpa_spread_labels <- function(y, minimum_gap) {
   stopifnot("`y` must be numeric" = is.numeric(y),
             "`minimum_gap` must be a single nonnegative number" =
               is.numeric(minimum_gap) && length(minimum_gap) == 1L &&
@@ -163,7 +163,7 @@
 #' @param padding Extra margin lines added beyond the measured width.
 #' @return A single number of margin lines.
 #' @noRd
-.ml_lpa_label_margin <- function(labels, cex, padding = 1.6) {
+.multilpa_label_margin <- function(labels, cex, padding = 1.6) {
   stopifnot("`labels` must be character" = is.character(labels),
             "`cex` must be a single positive number" =
               is.numeric(cex) && length(cex) == 1L && is.finite(cex) && cex > 0)
@@ -179,10 +179,10 @@
 #' @param cex Character expansion the labels will be drawn at.
 #' @return A numeric vector of four margin widths, in lines.
 #' @noRd
-.ml_lpa_margins <- function(style, labels, cex) {
+.multilpa_margins <- function(style, labels, cex) {
   stopifnot("`style` must carry four margins" =
               is.list(style) && length(style$margins) == 4L)
   margins <- style$margins
-  margins[4L] <- max(margins[4L], .ml_lpa_label_margin(labels, cex))
+  margins[4L] <- max(margins[4L], .multilpa_label_margin(labels, cex))
   margins
 }

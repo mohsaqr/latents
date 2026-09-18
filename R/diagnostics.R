@@ -2,7 +2,7 @@
 #' @param probabilities Posterior probability matrix, rows summing to one.
 #' @return Sum of `-p log p` over every cell, the classification entropy.
 #' @noRd
-.ml_lpa_entropy_sum <- function(probabilities) {
+.multilpa_entropy_sum <- function(probabilities) {
   stopifnot("`probabilities` must be a numeric matrix" =
               is.matrix(probabilities) && is.numeric(probabilities))
   positive <- probabilities > 0
@@ -13,11 +13,11 @@
 #' @param probabilities Posterior probability matrix, rows summing to one.
 #' @return Entropy on the zero-to-one scale, or `NA_real_` for a single class.
 #' @noRd
-.ml_lpa_relative_entropy <- function(probabilities) {
+.multilpa_relative_entropy <- function(probabilities) {
   stopifnot("`probabilities` must be a numeric matrix" =
               is.matrix(probabilities) && is.numeric(probabilities))
   if (ncol(probabilities) == 1L) return(NA_real_)
-  1 - .ml_lpa_entropy_sum(probabilities) /
+  1 - .multilpa_entropy_sum(probabilities) /
     (nrow(probabilities) * log(ncol(probabilities)))
 }
 
@@ -34,7 +34,7 @@
 #'   rather than folded into this table, so `information_criteria()` stays a
 #'   pure likelihood-penalty summary.
 #'
-#' @param object A fitted `ml_lpa` model.
+#' @param object A fitted `multilpa` model.
 #' @seealso [classification_table()] and [entropy_table()] for the
 #'   classification diagnostics that accompany these criteria.
 #' @return A base `data.frame` with one row per criterion and convention, and
@@ -67,19 +67,19 @@
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' information_criteria(fit)
 #' @export
 information_criteria <- function(object) {
-  stopifnot("`object` must be an `ml_lpa` fit" = inherits(object, "ml_lpa"))
+  stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
   q <- object$n_parameters
   log_likelihood <- object$log_likelihood
   conventions <- data.frame(
     convention = c("groups", "individuals"),
     n = c(object$n_groups, object$n_observations))
-  entropies <- c(groups = .ml_lpa_entropy_sum(object$group_posteriors),
-                 individuals = .ml_lpa_entropy_sum(object$subject_posteriors))
+  entropies <- c(groups = .multilpa_entropy_sum(object$group_posteriors),
+                 individuals = .multilpa_entropy_sum(object$subject_posteriors))
   scale_free <- data.frame(
     criterion = c("log_likelihood", "aic"),
     convention = "none", n = NA_integer_,
@@ -116,7 +116,7 @@ information_criteria <- function(object) {
 #' sizes, average posterior probability in the assigned class, and the odds of
 #' correct classification.
 #'
-#' @param object A fitted `ml_lpa` model.
+#' @param object A fitted `multilpa` model.
 #' @param level `"individuals"` for latent profiles, `"groups"` for latent group
 #'   classes, or `"both"` to stack them in one table.
 #' @param detail `FALSE` returns one row per class. `TRUE` returns the full
@@ -149,13 +149,13 @@ information_criteria <- function(object) {
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' classification_table(fit)
 #' @export
 classification_table <- function(object, level = c("individuals", "groups", "both"),
                                  detail = FALSE) {
-  stopifnot("`object` must be an `ml_lpa` fit" = inherits(object, "ml_lpa"),
+  stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"),
             "`detail` must be TRUE or FALSE" =
               isTRUE(detail) || isFALSE(detail))
   level <- match.arg(level)
@@ -164,7 +164,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
                      groups = object$group_posteriors)
   result <- do.call(rbind, lapply(levels_wanted, function(which_level) {
     probabilities <- posteriors[[which_level]]
-    .ml_lpa_classification_rows(probabilities, which_level, detail)
+    .multilpa_classification_rows(probabilities, which_level, detail)
   }))
   row.names(result) <- NULL
   result
@@ -176,7 +176,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #' @param detail Whether to return the full average-posterior cross-tabulation.
 #' @return A tidy `data.frame` of classification diagnostics.
 #' @noRd
-.ml_lpa_classification_rows <- function(probabilities, level, detail) {
+.multilpa_classification_rows <- function(probabilities, level, detail) {
   stopifnot("`probabilities` must be a numeric matrix" =
               is.matrix(probabilities) && is.numeric(probabilities))
   n_classes <- ncol(probabilities)
@@ -200,7 +200,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
   estimated_n <- colSums(probabilities)
   estimated_proportion <- estimated_n / nrow(probabilities)
   diagonal <- average[cbind(classes, classes)]
-  odds <- .ml_lpa_odds_correct(diagonal, estimated_proportion)
+  odds <- .multilpa_odds_correct(diagonal, estimated_proportion)
   data.frame(level = level, class = classes, n_modal = n_modal,
              proportion_modal = n_modal / nrow(probabilities),
              estimated_n = estimated_n,
@@ -214,7 +214,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #' @param proportion Model-estimated class proportion.
 #' @return Odds ratio, or `NA_real_` where the ratio is undefined.
 #' @noRd
-.ml_lpa_odds_correct <- function(average, proportion) {
+.multilpa_odds_correct <- function(average, proportion) {
   stopifnot("`average` and `proportion` must have equal length" =
               length(average) == length(proportion))
   defined <- !is.na(average) & average > 0 & average < 1 &
@@ -230,7 +230,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #' Reports the zero-to-one relative entropy at each level, alongside the raw
 #' classification entropy the entropy-penalized information criteria use.
 #'
-#' @param object A fitted `ml_lpa` model.
+#' @param object A fitted `multilpa` model.
 #' @return A base `data.frame` with one row per level and columns `level`,
 #'   `n_classes`, `n_units`, `entropy_sum`, and `relative_entropy`.
 #'   `relative_entropy` is `1 - EN / (n log K)` and is `NA_real_` when a level
@@ -241,20 +241,20 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' entropy_table(fit)
 #' @export
 entropy_table <- function(object) {
-  stopifnot("`object` must be an `ml_lpa` fit" = inherits(object, "ml_lpa"))
+  stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
   posteriors <- list(individuals = object$subject_posteriors,
                      groups = object$group_posteriors)
   result <- do.call(rbind, lapply(names(posteriors), function(level) {
     probabilities <- posteriors[[level]]
     data.frame(level = level, n_classes = ncol(probabilities),
                n_units = nrow(probabilities),
-               entropy_sum = .ml_lpa_entropy_sum(probabilities),
-               relative_entropy = .ml_lpa_relative_entropy(probabilities))
+               entropy_sum = .multilpa_entropy_sum(probabilities),
+               relative_entropy = .multilpa_relative_entropy(probabilities))
   }))
   row.names(result) <- NULL
   result

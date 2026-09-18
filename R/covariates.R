@@ -3,11 +3,11 @@
 #' @param coefficients Coefficients for all except the final category.
 #' @return Row probabilities.
 #' @noRd
-.ml_lpa_softmax <- function(design, coefficients) {
+.multilpa_softmax <- function(design, coefficients) {
   stopifnot(is.matrix(design), is.matrix(coefficients),
             ncol(design) == nrow(coefficients))
   scores <- cbind(design %*% coefficients, 0)
-  exp(sweep(scores, 1L, .ml_lpa_log_sum_exp(scores), "-"))
+  exp(sweep(scores, 1L, .multilpa_log_sum_exp(scores), "-"))
 }
 
 #' Fit weighted multinomial logits
@@ -16,7 +16,7 @@
 #' @param initial Initial coefficient matrix.
 #' @return Updated coefficients and optimization diagnostics.
 #' @noRd
-.ml_lpa_weighted_logits <- function(design, counts, initial) {
+.multilpa_weighted_logits <- function(design, counts, initial) {
   stopifnot(is.matrix(design), is.matrix(counts), is.matrix(initial),
             nrow(design) == nrow(counts), all(counts >= 0))
   if (ncol(counts) == 1L) return(list(coefficients = initial, converged = TRUE))
@@ -27,11 +27,11 @@
   objective <- function(values) {
     stopifnot(is.numeric(values))
     scores <- cbind(design %*% unpack(values), 0)
-    sum(rowSums(counts) * .ml_lpa_log_sum_exp(scores) - rowSums(counts * scores))
+    sum(rowSums(counts) * .multilpa_log_sum_exp(scores) - rowSums(counts * scores))
   }
   gradient <- function(values) {
     stopifnot(is.numeric(values))
-    residual <- .ml_lpa_softmax(design, unpack(values)) * rowSums(counts) - counts
+    residual <- .multilpa_softmax(design, unpack(values)) * rowSums(counts) - counts
     as.vector(crossprod(design, residual[, seq_len(ncol(counts) - 1L), drop = FALSE]))
   }
   fit <- stats::optim(as.vector(initial), objective, gradient, method = "BFGS",
@@ -52,7 +52,7 @@
 #' @param gamma Group logit coefficients.
 #' @return Log likelihood and posterior responsibilities.
 #' @noRd
-.ml_lpa_cov_expectation <- function(x, group_index, parameters, profile_design,
+.multilpa_cov_expectation <- function(x, group_index, parameters, profile_design,
                                     group_design, beta, gamma) {
   stopifnot(is.matrix(x), !anyNA(x), is.list(parameters), is.list(profile_design),
             is.matrix(group_design), is.matrix(beta), is.matrix(gamma))
@@ -63,18 +63,18 @@
                            nrow(x), ncol(x), byrow = TRUE))
   }, numeric(nrow(x))), nrow(x))
   conditional <- lapply(profile_design, function(design) {
-    prior <- .ml_lpa_softmax(design, beta)
+    prior <- .multilpa_softmax(design, beta)
     scores <- log_density + log(prior)
-    marginal <- .ml_lpa_log_sum_exp(scores)
+    marginal <- .multilpa_log_sum_exp(scores)
     list(prior = prior, marginal = marginal,
          posterior = exp(sweep(scores, 1L, marginal, "-")))
   })
-  group_prior <- .ml_lpa_softmax(group_design, gamma)
+  group_prior <- .multilpa_softmax(group_design, gamma)
   scores <- matrix(vapply(seq_along(conditional), function(h) {
     as.vector(rowsum(conditional[[h]]$marginal, group_index, reorder = FALSE)) +
       log(group_prior[, h])
   }, numeric(nrow(group_design))), nrow(group_design))
-  group_log_likelihood <- .ml_lpa_log_sum_exp(scores)
+  group_log_likelihood <- .multilpa_log_sum_exp(scores)
   group_posteriors <- exp(sweep(scores, 1L, group_log_likelihood, "-"))
   joint <- lapply(seq_along(conditional), function(h) {
     conditional[[h]]$posterior * group_posteriors[group_index, h]
@@ -108,17 +108,17 @@
 #' @param tol Relative log-likelihood convergence tolerance.
 #' @param min_variance Explicit variance lower bound.
 #' @param seed Optional seed; the caller's random state is restored.
-#' @return An `ml_lpa_covariates` fit with coefficient matrices, priors,
+#' @return An `multilpa_covariates` fit with coefficient matrices, priors,
 #'   posteriors, likelihood, information criteria and start diagnostics.
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(group = rep(1:20, each = 10), z = rnorm(200))
 #' d$y <- rnorm(200, ifelse(runif(200) < plogis(d$z), -3, 3))
-#' fit <- fit_ml_lpa_covariates(d, "y", "group", 2, 1,
+#' fit <- fit_multilpa_covariates(d, "y", "group", 2, 1,
 #'                             profile_covariates = "z", n_starts = 2, seed = 1)
 #' fit$profile_coefficients
 #' @export
-fit_ml_lpa_covariates <- function(data, indicators, cluster, n_profiles,
+fit_multilpa_covariates <- function(data, indicators, cluster, n_profiles,
                                   n_group_classes = 2L,
                                   profile_covariates = character(),
                                   group_covariates = character(),
@@ -142,10 +142,10 @@ fit_ml_lpa_covariates <- function(data, indicators, cluster, n_profiles,
               rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     set.seed(seed)
   }
-  .ml_lpa_cov_check_covariates(data, profile_covariates, group_covariates,
+  .multilpa_cov_check_covariates(data, profile_covariates, group_covariates,
                                indicators, cluster)
   # The base fit validates indicators/model sizes and supplies an initial mode.
-  base <- fit_ml_lpa(data, indicators, cluster, n_profiles, n_group_classes,
+  base <- fit_multilpa(data, indicators, cluster, n_profiles, n_group_classes,
                      variance_model, n_starts = 1L, max_iter = max_iter,
                      tol = tol, min_variance = min_variance)
   group_index <- base$group_index
@@ -159,7 +159,7 @@ fit_ml_lpa_covariates <- function(data, indicators, cluster, n_profiles,
   if (n_group_classes == 1L && length(group_covariates)) {
     stop("Group covariates require at least two group classes.")
   }
-  designs <- .ml_lpa_cov_designs(data, indicators, profile_covariates,
+  designs <- .multilpa_cov_designs(data, indicators, profile_covariates,
                                  group_covariates, first_rows, n_group_classes)
   x <- designs$x
   center <- designs$center
@@ -168,7 +168,7 @@ fit_ml_lpa_covariates <- function(data, indicators, cluster, n_profiles,
                   n_profile_covariates = length(profile_covariates),
                   n_group_covariates = length(group_covariates))
   attempts <- lapply(seq_len(n_starts), function(start_index) {
-    tryCatch(.ml_lpa_cov_start(start_index, x, group_index, n_profiles,
+    tryCatch(.multilpa_cov_start(start_index, x, group_index, n_profiles,
                                n_group_classes, designs, base, control),
              error = function(error) list(error = conditionMessage(error)))
   })
@@ -184,7 +184,7 @@ fit_ml_lpa_covariates <- function(data, indicators, cluster, n_profiles,
     stop(sprintf("All covariate starts failed: %s", paste(unique(starts$error), collapse = "; ")))
   }
   best_index <- which.max(starts$log_likelihood)
-  result <- .ml_lpa_cov_assemble(
+  result <- .multilpa_cov_assemble(
     best = attempts[[best_index]], best_index = best_index, starts = starts,
     designs = designs, base = base, data = data, indicators = indicators,
     cluster = cluster, profile_covariates = profile_covariates,
@@ -206,8 +206,8 @@ fit_ml_lpa_covariates <- function(data, indicators, cluster, n_profiles,
 #' @examples
 #' # print(fit)
 #' @export
-print.ml_lpa_covariates <- function(x, ...) {
-  stopifnot(inherits(x, "ml_lpa_covariates"))
+print.multilpa_covariates <- function(x, ...) {
+  stopifnot(inherits(x, "multilpa_covariates"))
   cat(sprintf("Multilevel LPA with covariates: %d profiles, %d group classes\n",
               x$n_profiles, x$n_group_classes))
   cat(sprintf("Log likelihood %.6f; AIC %.3f; BIC (groups) %.3f; converged %s\n",
@@ -222,8 +222,8 @@ print.ml_lpa_covariates <- function(x, ...) {
 #' @examples
 #' # logLik(fit)
 #' @export
-logLik.ml_lpa_covariates <- function(object, ...) {
-  stopifnot(inherits(object, "ml_lpa_covariates"))
+logLik.multilpa_covariates <- function(object, ...) {
+  stopifnot(inherits(object, "multilpa_covariates"))
   structure(object$log_likelihood, df = object$n_parameters,
             nobs = object$n_groups, class = "logLik")
 }
@@ -235,8 +235,8 @@ logLik.ml_lpa_covariates <- function(object, ...) {
 #' @examples
 #' # nobs(fit)
 #' @export
-nobs.ml_lpa_covariates <- function(object, ...) {
-  stopifnot(inherits(object, "ml_lpa_covariates"))
+nobs.multilpa_covariates <- function(object, ...) {
+  stopifnot(inherits(object, "multilpa_covariates"))
   object$n_groups
 }
 
@@ -247,7 +247,7 @@ nobs.ml_lpa_covariates <- function(object, ...) {
 #'
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
-.ml_lpa_cov_check_covariates <- function(data, profile_covariates,
+.multilpa_cov_check_covariates <- function(data, profile_covariates,
                                          group_covariates, indicators, cluster) {
   predictors <- unique(c(profile_covariates, group_covariates))
   if (length(predictors) && !all(vapply(data[predictors], function(column) {
@@ -269,7 +269,7 @@ nobs.ml_lpa_covariates <- function(object, ...) {
 #'
 #' @return A list with `x`, `center`, `w`, `profile_design` and `stacked_design`.
 #' @noRd
-.ml_lpa_cov_designs <- function(data, indicators, profile_covariates,
+.multilpa_cov_designs <- function(data, indicators, profile_covariates,
                                 group_covariates, first_rows, n_group_classes) {
   x <- as.matrix(data[indicators])
   center <- colMeans(x)
@@ -297,7 +297,7 @@ nobs.ml_lpa_covariates <- function(object, ...) {
 #' @return A list with the fitted parameters, expectation, both coefficient
 #'   matrices, and the convergence diagnostics for this start.
 #' @noRd
-.ml_lpa_cov_start <- function(start_index, x, group_index, n_profiles,
+.multilpa_cov_start <- function(start_index, x, group_index, n_profiles,
                               n_group_classes, designs, base, control) {
   parameters <- if (start_index == 1L) {
     list(means = sweep(base$means, 2L, designs$center, "-"),
@@ -305,7 +305,7 @@ nobs.ml_lpa_covariates <- function(object, ...) {
          profile_probabilities = base$profile_probabilities,
          group_probabilities = base$group_probabilities)
   } else {
-    .ml_lpa_initialize(x, group_index, n_profiles, n_group_classes,
+    .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                        control$variance_model, control$min_variance, start_index)
   }
   beta <- rbind(
@@ -316,22 +316,22 @@ nobs.ml_lpa_covariates <- function(object, ...) {
     matrix(log(parameters$group_probabilities[seq_len(n_group_classes - 1L)] /
                  parameters$group_probabilities[n_group_classes]), 1L),
     matrix(0, control$n_group_covariates, n_group_classes - 1L))
-  expectation <- .ml_lpa_cov_expectation(x, group_index, parameters,
+  expectation <- .multilpa_cov_expectation(x, group_index, parameters,
                                          designs$profile_design, designs$w,
                                          beta, gamma)
   history <- expectation$log_likelihood
   iteration <- 0L
   converged <- FALSE
   while (iteration < control$max_iter && !converged) {
-    parameters <- .ml_lpa_maximization(x, expectation, control$variance_model,
+    parameters <- .multilpa_maximization(x, expectation, control$variance_model,
                                        control$min_variance)
-    profile_update <- .ml_lpa_weighted_logits(designs$stacked_design,
+    profile_update <- .multilpa_weighted_logits(designs$stacked_design,
                                               do.call(rbind, expectation$joint), beta)
-    group_update <- .ml_lpa_weighted_logits(designs$w,
+    group_update <- .multilpa_weighted_logits(designs$w,
                                             expectation$group_posteriors, gamma)
     beta <- profile_update$coefficients
     gamma <- group_update$coefficients
-    updated <- .ml_lpa_cov_expectation(x, group_index, parameters,
+    updated <- .multilpa_cov_expectation(x, group_index, parameters,
                                        designs$profile_design, designs$w,
                                        beta, gamma)
     change <- updated$log_likelihood - expectation$log_likelihood
@@ -352,9 +352,9 @@ nobs.ml_lpa_covariates <- function(object, ...) {
 }
 
 #' Assemble the covariate fit result
-#' @return An `ml_lpa_covariates` object.
+#' @return An `multilpa_covariates` object.
 #' @noRd
-.ml_lpa_cov_assemble <- function(best, best_index, starts, designs, base, data,
+.multilpa_cov_assemble <- function(best, best_index, starts, designs, base, data,
                                  indicators, cluster, profile_covariates,
                                  group_covariates, n_profiles, n_group_classes,
                                  group_index, variance_model, min_variance, call) {
@@ -404,5 +404,5 @@ nobs.ml_lpa_covariates <- function(object, ...) {
   result$boundary <- any(result$variances <= min_variance * (1 + 1e-7))
   result$extreme_logits <- any(abs(c(best$beta, best$gamma)) > 20)
   result$call <- call
-  structure(result, class = "ml_lpa_covariates")
+  structure(result, class = "multilpa_covariates")
 }

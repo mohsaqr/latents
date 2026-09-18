@@ -110,7 +110,7 @@ than assumed; several variants appear in the literature.
   chi-square tail probability is not a valid approximation to it. On the second
   retained TECH11 run the chi-square tail gives 0.153 where Mplus reports 0.582,
   which is why the naive value is withheld rather than shipped with a caveat.
-  Use `bootstrap_lrt_ml_lpa()` for a calibrated class-count p-value.
+  Use `bootstrap_lrt_multilpa()` for a calibrated class-count p-value.
 - Categorical indicators are supported for estimation, classification, tidy
   output and plotting, but **not** for standard errors or the parametric
   bootstrap. Both refuse a categorical fit with a classed condition rather than
@@ -141,5 +141,5 @@ includes the continuous-intercept comparison and independent integration tests.
 ```sh
 Rscript -e 'pkgload::load_all("."); testthat::test_dir("tests/testthat")'
 R CMD build .
-R CMD check --no-manual mllpa_0.3.0.tar.gz
+R CMD check --no-manual multilpa_0.3.0.tar.gz
 ```

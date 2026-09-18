@@ -81,7 +81,7 @@ comparisons <- lapply(c("varying", "equal"), function(variance_model) {
                                  paste0(prefix, "-results.dat"), paste0(prefix, "-posteriors.dat"))))),
       precision = "SAVEDATA RESULTS 8 significant digits; posterior FORMAT F20.12"))
   saveRDS(reference, file.path("tests", "fixtures", "mplus", paste0("twolevel-public-", variance_model, ".rds")))
-  fit <- fit_ml_lpa(data, indicator_names, "clus", 2L, 2L,
+  fit <- fit_multilpa(data, indicator_names, "clus", 2L, 2L,
                     variance_model = variance_model, n_starts = 20L,
                     max_iter = 10000L, tol = 1e-14, seed = 20260917)
   profile_order <- order(fit$means[, "y1"])[rank(mplus_means[, 1L])]

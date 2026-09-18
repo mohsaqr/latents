@@ -4,6 +4,6 @@
 ^HANDOFF\.md$
 ^LEARNINGS\.md$
 ^CHANGES\.md$
-^mllpa_[0-9].*\.tar\.gz$
-^mllpa\.Rcheck$
 ^Tutorial_docs$
+\.tar\.gz$
+\.Rcheck$

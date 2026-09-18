@@ -116,7 +116,7 @@ enumerated_em_update <- function(x, cluster, parameters,
 #' @param cluster Cluster identifiers.
 #' @param start Starting model parameters.
 #' @return An optim result and unpacked parameter estimates.
-optim_ml_lpa_reference <- function(x, cluster, start) {
+optim_multilpa_reference <- function(x, cluster, start) {
   stopifnot(is.matrix(x), is.numeric(x), ncol(x) == 1L, !anyNA(x),
             length(cluster) == nrow(x), is.list(start),
             identical(dim(start$means), c(2L, 1L)),

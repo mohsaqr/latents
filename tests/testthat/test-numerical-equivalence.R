@@ -15,7 +15,7 @@ test_that("exhaustive reference agrees with an analytically solvable model", {
   expect_error(enumerate_latent_assignments(x, "one", parameters))
   expect_error(enumerated_em_update(x, rep("one", 3L), parameters,
                                     variance_model = "invalid"))
-  expect_error(optim_ml_lpa_reference(cbind(x, x), rep("one", 3L), parameters))
+  expect_error(optim_multilpa_reference(cbind(x, x), rep("one", 3L), parameters))
   updated <- enumerated_em_update(x, c("b", "a", "b"), parameters)
   expect_equal(dim(updated$variances), c(2L, 1L))
   expect_equal(updated$variances, matrix(mean((x - mean(x))^2), 2L, 1L))
@@ -31,7 +31,7 @@ test_that("fitted likelihood and posteriors match exhaustive latent assignments"
                 group_probabilities = c(0.45, 0.55))
   expect_warning(
     expect_warning(
-      fit <- fit_ml_lpa(synthetic, c("x", "y"), "cluster", 2L,
+      fit <- fit_multilpa(synthetic, c("x", "y"), "cluster", 2L,
                         n_group_classes = 2L, start = start,
                         n_starts = 1L, max_iter = 1L),
       "did not converge"),
@@ -60,7 +60,7 @@ test_that("one EM update matches an independent exhaustive E-step and M-step", {
     reference <- enumerated_em_update(as.matrix(synthetic[c("x", "y")]),
                                        synthetic$cluster, start, variance_model)
     expect_warning(
-      fit <- fit_ml_lpa(synthetic, c("x", "y"), "cluster", 2L,
+      fit <- fit_multilpa(synthetic, c("x", "y"), "cluster", 2L,
                         n_group_classes = 2L, start = start,
                         variance_model = variance_model,
                         n_starts = 1L, max_iter = 1L),
@@ -86,8 +86,8 @@ test_that("EM agrees with independent direct numerical maximum likelihood", {
                 variances = matrix(c(0.36, 0.64), 2L, 1L),
                 profile_probabilities = rbind(c(0.86, 0.14), c(0.16, 0.84)),
                 group_probabilities = c(0.5, 0.5))
-  reference <- optim_ml_lpa_reference(as.matrix(synthetic["x"]), cluster, start)
-  fit <- fit_ml_lpa(synthetic, "x", "cluster", 2L, n_group_classes = 2L,
+  reference <- optim_multilpa_reference(as.matrix(synthetic["x"]), cluster, start)
+  fit <- fit_multilpa(synthetic, "x", "cluster", 2L, n_group_classes = 2L,
                     start = start, n_starts = 1L, max_iter = 3000L, tol = 1e-12)
   expect_equal(reference$optim$convergence, 0L)
   expect_true(fit$converged)
@@ -119,7 +119,7 @@ test_that("single group class reproduces mclust diagonal Gaussian mixtures", {
     start <- list(means = means, variances = variances,
                   profile_probabilities = matrix(reference$parameters$pro, 1L),
                   group_probabilities = 1)
-    fit <- fit_ml_lpa(synthetic, c("x", "y"), "cluster", 2L,
+    fit <- fit_multilpa(synthetic, c("x", "y"), "cluster", 2L,
                       n_group_classes = 1L, start = start, n_starts = 1L,
                       variance_model = if (model == "VVI") "varying" else "equal",
                       tol = 1e-12)

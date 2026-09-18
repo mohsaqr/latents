@@ -4,7 +4,7 @@
 #' can be printed, joined, and written out without reaching into the fitted
 #' object. Every table is one row per observation of the thing it describes.
 #'
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param what Which table to return. `"profiles"` gives the Gaussian
@@ -41,25 +41,25 @@
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' as.data.frame(fit)
 #' as.data.frame(fit, what = "profile_probabilities")
 #' @export
-as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
+as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
                                  what = c("profiles", "responses",
                                           "profile_probabilities",
                                           "posteriors", "group_posteriors",
                                           "starts", "information_criteria",
                                           "classification", "entropy"), ...) {
-  stopifnot("`x` must be an `ml_lpa` fit" = inherits(x, "ml_lpa"))
+  stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"))
   what <- match.arg(what)
   result <- switch(what,
-    profiles = .ml_lpa_profile_frame(x),
-    responses = .ml_lpa_response_frame(x),
-    profile_probabilities = .ml_lpa_probability_frame(x),
-    posteriors = .ml_lpa_posterior_frame(x),
-    group_posteriors = .ml_lpa_group_posterior_frame(x),
+    profiles = .multilpa_profile_frame(x),
+    responses = .multilpa_response_frame(x),
+    profile_probabilities = .multilpa_probability_frame(x),
+    posteriors = .multilpa_posterior_frame(x),
+    group_posteriors = .multilpa_group_posterior_frame(x),
     starts = x$starts,
     information_criteria = information_criteria(x),
     classification = classification_table(x, ...),
@@ -73,19 +73,19 @@ as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
 #' Fits made before categorical indicators existed carry no `continuous` field,
 #' so their indicators are all Gaussian.
 #'
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @return Character vector of continuous indicator names.
 #' @noRd
-.ml_lpa_continuous_names <- function(x) {
+.multilpa_continuous_names <- function(x) {
   x$continuous %||% x$indicators
 }
 
 #' Measurement parameters as a tidy table
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @return One row per profile and continuous indicator.
 #' @noRd
-.ml_lpa_profile_frame <- function(x) {
-  indicators <- .ml_lpa_continuous_names(x)
+.multilpa_profile_frame <- function(x) {
+  indicators <- .multilpa_continuous_names(x)
   n_profiles <- x$n_profiles
   data.frame(
     profile = rep(seq_len(n_profiles), each = length(indicators)),
@@ -98,11 +98,11 @@ as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
 }
 
 #' Categorical response probabilities as a tidy table
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @return One row per profile, categorical indicator and category.
 #' @noRd
-.ml_lpa_response_frame <- function(x) {
-  stopifnot("`x` must be an `ml_lpa` fit" = inherits(x, "ml_lpa"))
+.multilpa_response_frame <- function(x) {
+  stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"))
   blocks <- x$response_probabilities
   if (is.null(blocks) || length(blocks) == 0L) {
     return(data.frame(profile = integer(), indicator = character(),
@@ -111,7 +111,7 @@ as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
   }
   rows <- lapply(names(blocks), function(indicator) {
     block <- blocks[[indicator]]
-    thresholds <- .ml_lpa_categorical_thresholds(block)
+    thresholds <- .multilpa_categorical_thresholds(block)
     # The final category has cumulative probability one, so its threshold is
     # infinite and is reported as missing rather than as a number.
     thresholds <- cbind(thresholds, NA_real_)
@@ -126,11 +126,11 @@ as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
 }
 
 #' Profile prevalence within group classes as a tidy table
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @return One row per group class and profile.
 #' @noRd
-.ml_lpa_probability_frame <- function(x) {
-  stopifnot("`x` must be an `ml_lpa` fit" = inherits(x, "ml_lpa"))
+.multilpa_probability_frame <- function(x) {
+  stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"))
   n_types <- x$n_group_classes
   n_profiles <- x$n_profiles
   data.frame(
@@ -141,10 +141,10 @@ as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
 }
 
 #' Individual posteriors as a tidy table
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @return One row per input individual, in the original row order.
 #' @noRd
-.ml_lpa_posterior_frame <- function(x) {
+.multilpa_posterior_frame <- function(x) {
   posteriors <- as.data.frame(unname(x$subject_posteriors))
   names(posteriors) <- sprintf("posterior_profile_%d", seq_len(x$n_profiles))
   cbind(data.frame(row = seq_len(x$n_observations),
@@ -155,10 +155,10 @@ as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
 }
 
 #' Group posteriors as a tidy table
-#' @param x A fitted `ml_lpa` model.
+#' @param x A fitted `multilpa` model.
 #' @return One row per observed group, in first-occurrence order.
 #' @noRd
-.ml_lpa_group_posterior_frame <- function(x) {
+.multilpa_group_posterior_frame <- function(x) {
   posteriors <- as.data.frame(unname(x$group_posteriors))
   names(posteriors) <- sprintf("posterior_group_class_%d", seq_len(x$n_group_classes))
   # Sizes and modal classes are derived rather than read from the fit, because
@@ -174,7 +174,7 @@ as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
 
 #' Tidy a class-enumeration grid
 #'
-#' @param x An `ml_lpa_enumeration` result from [enumerate_ml_lpa()].
+#' @param x An `multilpa_enumeration` result from [enumerate_multilpa()].
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param ... Ignored.
@@ -189,15 +189,15 @@ as.data.frame.ml_lpa <- function(x, row.names = NULL, optional = FALSE,
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' candidates <- enumerate_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' candidates <- enumerate_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                                profiles = 1:2, group_classes = 1, n_starts = 2,
 #'                                seed = 1)
 #' as.data.frame(candidates)
 #' @export
-as.data.frame.ml_lpa_enumeration <- function(x, row.names = NULL,
+as.data.frame.multilpa_enumeration <- function(x, row.names = NULL,
                                              optional = FALSE, ...) {
-  stopifnot("`x` must be an `ml_lpa_enumeration` result" =
-              inherits(x, "ml_lpa_enumeration"))
+  stopifnot("`x` must be an `multilpa_enumeration` result" =
+              inherits(x, "multilpa_enumeration"))
   result <- x$table
   row.names(result) <- row.names
   result
@@ -205,7 +205,7 @@ as.data.frame.ml_lpa_enumeration <- function(x, row.names = NULL,
 
 #' Tidy multilevel LPA inference
 #'
-#' @param x An `ml_lpa_inference` result from [inference_ml_lpa()].
+#' @param x An `multilpa_inference` result from [inference_multilpa()].
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param ... Ignored.
@@ -221,18 +221,18 @@ as.data.frame.ml_lpa_enumeration <- function(x, row.names = NULL,
 #' @examples
 #' set.seed(42)
 #' dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
-#' fit <- fit_ml_lpa(dat, "y", "group", 1, 1, n_starts = 1)
-#' as.data.frame(inference_ml_lpa(fit, dat))
+#' fit <- fit_multilpa(dat, "y", "group", 1, 1, n_starts = 1)
+#' as.data.frame(inference_multilpa(fit, dat))
 #' @export
-as.data.frame.ml_lpa_inference <- function(x, row.names = NULL,
+as.data.frame.multilpa_inference <- function(x, row.names = NULL,
                                            optional = FALSE, ...) {
-  stopifnot("`x` must be an `ml_lpa_inference` result" =
-              inherits(x, "ml_lpa_inference"))
+  stopifnot("`x` must be an `multilpa_inference` result" =
+              inherits(x, "multilpa_inference"))
   estimates <- x$estimates
   standard_errors <- x$standard_errors
   # A zero standard error marks a parameter pinned by a sum constraint, and a
   # probability boundary is not a valid Wald null, so neither gets a statistic.
-  testable <- standard_errors > 0 & !.ml_lpa_is_probability(names(estimates))
+  testable <- standard_errors > 0 & !.multilpa_is_probability(names(estimates))
   statistic <- rep(NA_real_, length(estimates))
   statistic[testable] <- estimates[testable] / standard_errors[testable]
   result <- data.frame(
@@ -251,21 +251,21 @@ as.data.frame.ml_lpa_inference <- function(x, row.names = NULL,
 #' @param parameter Character vector of natural-scale parameter names.
 #' @return Logical vector marking probability parameters.
 #' @noRd
-.ml_lpa_is_probability <- function(parameter) {
+.multilpa_is_probability <- function(parameter) {
   stopifnot("`parameter` must be character" = is.character(parameter))
   grepl("^(profile|group)_probability\\[", parameter)
 }
 
 #' Print a class-enumeration grid
-#' @param x An `ml_lpa_enumeration` result.
+#' @param x An `multilpa_enumeration` result.
 #' @param ... Passed to the underlying `data.frame` printing.
 #' @return The input, invisibly.
 #' @examples
 #' # After enumerating: print(candidates)
 #' @export
-print.ml_lpa_enumeration <- function(x, ...) {
-  stopifnot("`x` must be an `ml_lpa_enumeration` result" =
-              inherits(x, "ml_lpa_enumeration"))
+print.multilpa_enumeration <- function(x, ...) {
+  stopifnot("`x` must be an `multilpa_enumeration` result" =
+              inherits(x, "multilpa_enumeration"))
   table <- x$table
   cat(sprintf("Class enumeration: %d candidate models\n", nrow(table)))
   columns <- intersect(c("n_profiles", "n_group_classes", "log_likelihood",
@@ -281,16 +281,16 @@ print.ml_lpa_enumeration <- function(x, ...) {
 }
 
 #' Print multilevel LPA inference
-#' @param x An `ml_lpa_inference` result.
+#' @param x An `multilpa_inference` result.
 #' @param digits Number of printed significant digits.
 #' @param ... Passed to the underlying `data.frame` printing.
 #' @return The input, invisibly.
 #' @examples
 #' # After inference: print(information, digits = 3)
 #' @export
-print.ml_lpa_inference <- function(x, digits = 4L, ...) {
-  stopifnot("`x` must be an `ml_lpa_inference` result" =
-              inherits(x, "ml_lpa_inference"),
+print.multilpa_inference <- function(x, digits = 4L, ...) {
+  stopifnot("`x` must be an `multilpa_inference` result" =
+              inherits(x, "multilpa_inference"),
             "`digits` must be a single positive integer" =
               is.numeric(digits) && length(digits) == 1L &&
               is.finite(digits) && digits >= 1)
@@ -304,13 +304,13 @@ print.ml_lpa_inference <- function(x, digits = 4L, ...) {
 
 #' Build starting values for a multilevel latent profile fit
 #'
-#' Returns the starting-value list [fit_ml_lpa()] accepts, taken from a fitted
+#' Returns the starting-value list [fit_multilpa()] accepts, taken from a fitted
 #' model or from any object that already carries the parameter blocks, such as a
 #' retained reference solution. This exists so that callers never assemble the
 #' list by hand, and so that starting values are validated where they are built
 #' rather than deep inside the fitting loop.
 #'
-#' @param object A fitted `ml_lpa` model, or a list carrying `means`,
+#' @param object A fitted `multilpa` model, or a list carrying `means`,
 #'   `variances` or `covariances`, `profile_probabilities`, and
 #'   `group_probabilities`. Any other elements are ignored.
 #' @param covariance `"auto"` keeps `covariances` when the object carries them,
@@ -319,41 +319,41 @@ print.ml_lpa_inference <- function(x, digits = 4L, ...) {
 #' @return A list with elements `means`, `variances`, `profile_probabilities`,
 #'   and `group_probabilities`, plus `covariances` when the full-covariance
 #'   parameterization is returned. Dimension names are dropped, matching what
-#'   [fit_ml_lpa()] expects of `start`.
+#'   [fit_multilpa()] expects of `start`.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' refit <- fit_ml_lpa(example_data, c("score_a", "score_b"), "school",
+#' refit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
 #'                     n_profiles = 2, n_group_classes = 1, n_starts = 1,
-#'                     start = ml_lpa_start(fit))
+#'                     start = multilpa_start(fit))
 #' logLik(refit)
 #' @export
-ml_lpa_start <- function(object, covariance = c("auto", "drop", "keep")) {
-  stopifnot("`object` must be a list or an `ml_lpa` fit" = is.list(object))
+multilpa_start <- function(object, covariance = c("auto", "drop", "keep")) {
+  stopifnot("`object` must be a list or an `multilpa` fit" = is.list(object))
   covariance <- match.arg(covariance)
   required <- c("means", "profile_probabilities", "group_probabilities")
   missing_fields <- setdiff(required, names(object))
   if (length(missing_fields) > 0L) {
     stop(errorCondition(sprintf("`object` is missing starting values for %s.",
                                 paste(missing_fields, collapse = ", ")),
-                        class = "mllpa_bad_start", call = NULL))
+                        class = "multilpa_bad_start", call = NULL))
   }
   has_covariances <- !is.null(object$covariances)
   if (identical(covariance, "keep") && !has_covariances) {
     stop(errorCondition("`object` carries no covariances to keep.",
-                        class = "mllpa_bad_start", call = NULL))
+                        class = "multilpa_bad_start", call = NULL))
   }
   use_covariances <- has_covariances && !identical(covariance, "drop")
   variances <- object$variances
   if (is.null(variances)) {
     if (!has_covariances) {
       stop(errorCondition("`object` is missing starting values for variances.",
-                          class = "mllpa_bad_start", call = NULL))
+                          class = "multilpa_bad_start", call = NULL))
     }
     dimension <- dim(object$covariances)[1L]
     variances <- t(vapply(seq_len(dim(object$covariances)[3L]), function(profile) {
@@ -373,7 +373,7 @@ ml_lpa_start <- function(object, covariance = c("auto", "drop", "keep")) {
 
 #' Tidy a one-step membership-covariate fit
 #'
-#' @param x An `ml_lpa_covariates` model from [fit_ml_lpa_covariates()].
+#' @param x An `multilpa_covariates` model from [fit_multilpa_covariates()].
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param what Which table to return. `"profiles"` gives the measurement model,
@@ -386,23 +386,23 @@ ml_lpa_start <- function(object, covariance = c("auto", "drop", "keep")) {
 #'   membership coefficient, with columns `level` (`"profile"` or `"group"`),
 #'   `outcome` (the class the coefficient predicts), `term`, and `estimate`;
 #'   these models carry no standard errors, so none is reported. `"posteriors"`
-#'   and `"group_posteriors"` match the corresponding [as.data.frame.ml_lpa()]
+#'   and `"group_posteriors"` match the corresponding [as.data.frame.multilpa()]
 #'   tables.
 #' @examples
 #' # After fitting: as.data.frame(with_predictors, what = "coefficients")
 #' @export
-as.data.frame.ml_lpa_covariates <- function(x, row.names = NULL, optional = FALSE,
+as.data.frame.multilpa_covariates <- function(x, row.names = NULL, optional = FALSE,
                                             what = c("profiles", "coefficients",
                                                      "posteriors",
                                                      "group_posteriors"), ...) {
-  stopifnot("`x` must be an `ml_lpa_covariates` fit" =
-              inherits(x, "ml_lpa_covariates"))
+  stopifnot("`x` must be an `multilpa_covariates` fit" =
+              inherits(x, "multilpa_covariates"))
   what <- match.arg(what)
   result <- switch(what,
-    profiles = .ml_lpa_profile_frame(x),
-    coefficients = .ml_lpa_coefficient_frame(x),
-    posteriors = .ml_lpa_posterior_frame(x),
-    group_posteriors = .ml_lpa_group_posterior_frame(x))
+    profiles = .multilpa_profile_frame(x),
+    coefficients = .multilpa_coefficient_frame(x),
+    posteriors = .multilpa_posterior_frame(x),
+    group_posteriors = .multilpa_group_posterior_frame(x))
   row.names(result) <- row.names
   result
 }
@@ -410,7 +410,7 @@ as.data.frame.ml_lpa_covariates <- function(x, row.names = NULL, optional = FALS
 #' Membership regression coefficients as a tidy table
 #' @return One row per estimated coefficient at either level.
 #' @noRd
-.ml_lpa_coefficient_frame <- function(x) {
+.multilpa_coefficient_frame <- function(x) {
   blocks <- list(profile = x$profile_coefficients, group = x$group_coefficients)
   rows <- lapply(names(blocks), function(level) {
     block <- blocks[[level]]
@@ -430,8 +430,8 @@ as.data.frame.ml_lpa_covariates <- function(x, row.names = NULL, optional = FALS
 
 #' Tidy a continuous group random-intercept fit
 #'
-#' @param x An `ml_lpa_random_intercept` model from
-#'   [fit_ml_lpa_random_intercept()].
+#' @param x An `multilpa_random_intercept` model from
+#'   [fit_multilpa_random_intercept()].
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param what Which table to return. `"profiles"` gives the measurement model,
@@ -448,18 +448,18 @@ as.data.frame.ml_lpa_covariates <- function(x, row.names = NULL, optional = FALS
 #' @examples
 #' # After fitting: as.data.frame(random_intercept, what = "random_intercepts")
 #' @export
-as.data.frame.ml_lpa_random_intercept <- function(x, row.names = NULL,
+as.data.frame.multilpa_random_intercept <- function(x, row.names = NULL,
                                                   optional = FALSE,
                                                   what = c("profiles",
                                                            "posteriors",
                                                            "random_intercepts"),
                                                   ...) {
-  stopifnot("`x` must be an `ml_lpa_random_intercept` fit" =
-              inherits(x, "ml_lpa_random_intercept"))
+  stopifnot("`x` must be an `multilpa_random_intercept` fit" =
+              inherits(x, "multilpa_random_intercept"))
   what <- match.arg(what)
   result <- switch(what,
-    profiles = .ml_lpa_profile_frame(x),
-    posteriors = .ml_lpa_posterior_frame(x),
+    profiles = .multilpa_profile_frame(x),
+    posteriors = .multilpa_posterior_frame(x),
     random_intercepts = data.frame(
       group = x$group_values,
       group_size = unname(x$group_sizes),

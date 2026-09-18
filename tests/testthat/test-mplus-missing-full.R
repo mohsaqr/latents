@@ -3,7 +3,7 @@ test_that("full covariance with missing indicators reproduces genuine two-level 
     stopifnot(is.character(variance_model), length(variance_model) == 1L)
     reference <- readRDS(test_path("..", "fixtures", "mplus",
                                    paste0("twolevel-missing-full-", variance_model, ".rds")))
-    fit <- fit_ml_lpa(reference$data, c("y1", "y2"), "clus", 2, 2,
+    fit <- fit_multilpa(reference$data, c("y1", "y2"), "clus", 2, 2,
                       covariance_model = "full", missing = "fiml",
                       variance_model = variance_model, n_starts = 4, seed = 20260917,
                       tol = 1e-13, max_iter = 10000)

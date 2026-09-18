@@ -34,7 +34,7 @@ Vuong-Lo-Mendell-Rubin reference distribution. None is implemented, and no
 substitute is returned. A chi-square tail probability is not a usable stand-in:
 on the second run it gives 0.153 where Mplus reports 0.582. Moment-matched
 gamma and scaled chi-square approximations were also tested against that value
-and did not reproduce it either. Use `bootstrap_lrt_ml_lpa()` for a calibrated
+and did not reproduce it either. Use `bootstrap_lrt_multilpa()` for a calibrated
 class-count p-value.
 
 ```sh

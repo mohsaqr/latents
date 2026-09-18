@@ -39,7 +39,7 @@ fixture <- list(data = data, expected = target, version = "Mplus VERSION 9 DEMO 
                 md5 = tools::md5sum(file.path(directory, c("covariates.dat", "covariates.inp", "covariates.out",
                                                           "covariates-results.dat", "covariates-posteriors.dat"))))
 saveRDS(fixture, file.path("tests", "fixtures", "mplus", "twolevel-covariates.rds"))
-fit <- fit_ml_lpa_covariates(data, c("y1", "y2"), "g", 2, 2, "z", "w",
+fit <- fit_multilpa_covariates(data, c("y1", "y2"), "g", 2, 2, "z", "w",
                              n_starts = 10, seed = 812, tol = 1e-12)
 p <- order(fit$means[, 1])
 beta_r <- unname(fit$profile_coefficients)
