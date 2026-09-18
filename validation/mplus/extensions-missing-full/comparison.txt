@@ -1,0 +1,36 @@
+'data.frame':	1200 obs. of  4 variables:
+ $ y1  : num  NA 1.71 -2.02 -2.5 -1.28 ...
+ $ y2  : num  -2.34 NA -1.91 -2.53 -2.05 ...
+ $ clus: int  1 1 1 1 1 1 1 1 1 1 ...
+ $ id  : int  1 2 3 4 5 6 7 8 9 10 ...
+         y1        y2 clus id
+1        NA -2.338687    1  1
+2  1.710991        NA    1  2
+3 -2.020648 -1.905903    1  3
+4 -2.497141 -2.530008    1  4
+5 -1.280920 -2.052904    1  5
+6        NA -2.161041    1  6
+       y1                 y2                clus             id        
+ Min.   :-3.78548   Min.   :-4.84801   Min.   : 1.00   Min.   :   1.0  
+ 1st Qu.:-2.00800   1st Qu.:-2.25715   1st Qu.:15.75   1st Qu.: 300.8  
+ Median :-0.57283   Median :-0.60814   Median :30.50   Median : 600.5  
+ Mean   :-0.04414   Mean   :-0.05931   Mean   :30.63   Mean   : 600.5  
+ 3rd Qu.: 1.90582   3rd Qu.: 2.11093   3rd Qu.:45.25   3rd Qu.: 900.2  
+ Max.   : 3.69891   Max.   : 4.68856   Max.   :60.00   Max.   :1200.0  
+ NA's   :240        NA's   :138                                        
+       y1        y2      clus        id 
+"numeric" "numeric" "integer" "integer" 
+[1] "varying"
+       log_likelihood                 means           covariances 
+    2.58260288319e-05     5.25101540028e-08     7.11409198356e-08 
+profile_probabilities   group_probabilities    subject_posteriors 
+    1.16441919440e-08     8.87117046489e-11     1.59706196268e-07 
+     group_posteriors 
+    1.21184461392e-10 
+[1] "equal"
+       log_likelihood                 means           covariances 
+    2.16192211155e-06     2.15157256456e-08     3.61469596338e-08 
+profile_probabilities   group_probabilities    subject_posteriors 
+    1.19527010511e-09     5.84809978221e-12     5.85280350851e-08 
+     group_posteriors 
+    1.90336635342e-12 

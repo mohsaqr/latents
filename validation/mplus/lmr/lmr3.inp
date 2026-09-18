@@ -1,0 +1,16 @@
+TITLE: mllpa validation, single-level LPA, TECH11 LMR reference, three classes;
+DATA: FILE = ex7.9.dat;
+VARIABLE:
+ NAMES = y1-y4 c;
+ USEVARIABLES = y1-y4;
+ CLASSES = c(3);
+ANALYSIS:
+ TYPE = MIXTURE;
+ ESTIMATOR = MLR;
+ STARTS = 200 50;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ MCONVERGENCE = 0.000001;
+OUTPUT: TECH1 TECH11;
+SAVEDATA:
+ RESULTS = lmr3-results.dat;

@@ -1,0 +1,7 @@
+
+     Mplus VERSION 9 DEMO (Mac)
+     MUTHEN & MUTHEN
+
+     Running input file 'mixture.inp'...
+
+ An error has occurred, refer to 'mixture.out'

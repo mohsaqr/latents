@@ -1,0 +1,527 @@
+---
+title: "Two levels of engagement: profiles within courses, students across them"
+author: "mllpa"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    theme: flatly
+    df_print: kable
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE, comment = "#>", fig.width = 7, fig.height = 5,
+  dpi = 150, out.width = "100%", message = FALSE, warning = FALSE
+)
+options(digits = 4)
+```
+
+## Where this sits
+
+The package README fits `fit_ml_lpa()` to synthetic data to show the syntax, and
+`validation/simulab-recovery/` establishes that the estimator recovers a model
+whose truth is known. Neither answers the question an analyst actually arrives
+with: what does a two-level latent profile model say about a real course
+platform, and how much of what it says can be trusted?
+
+This tutorial is that pass. One dataset — 1,393 course enrolments by 106
+students across 31 courses — fitted end to end, with three profiles at the
+enrolment level and three latent classes at the student level.
+
+### Why the second level is not optional
+
+A single-level latent profile analysis of these data treats a student's fifteen
+enrolments as fifteen unrelated people. That is wrong in two separate ways, and
+only one of them is the familiar objection.
+
+The familiar one is that the rows are not independent, so every standard error
+is too small. The second is more interesting: a single-level model cannot
+express the question worth asking. "Which students are consistently disengaged?"
+is not a statement about any one enrolment. It is a statement about the
+*distribution* of enrolments belonging to a student, and a model with only one
+level has nowhere to put it.
+
+Vermunt's (2003) nonparametric formulation puts it in a second set of latent
+classes. Students belong to a class; a class is nothing more than a different
+mix of the same enrolment profiles. The measurement model — what a
+high-engagement enrolment looks like — is shared by everyone, so the classes
+cannot cheat by redefining the profiles for each group. They differ only in how
+often each profile occurs.
+
+### The route
+
+1. **Preparing the indicators** — why engagement has to be measured against
+   classmates rather than against the cohort.
+2. **The model as a whole** — whether it converged, on what, and how many
+   parameters bought how much likelihood.
+3. **The profiles** — what a single enrolment looks like, and why the answer is
+   about level rather than shape.
+4. **The student classes** — what a whole student looks like, and the one
+   asymmetry that carries the finding.
+5. **The sequences themselves** — what a student's career looks like once the
+   assignments are laid out in course order.
+6. **How much to trust the assignments** — entropy and classification quality.
+7. **What this model cannot tell you.**
+
+### The verbs used
+
+| verb | the question it answers |
+|---|---|
+| `fit_ml_lpa()` | estimate the two-level model |
+| `summary()` | the whole fit on one screen |
+| `information_criteria()` | what the parameters cost, under both sample-size conventions |
+| `entropy_table()` | how sharply units separate |
+| `classification_table()` | whether the assignments are trustworthy |
+| `as.data.frame()` | any part of the fit, as a tidy table |
+| `plot()` | the measurement model and the class mixes |
+| `Nestimate::sequence_plot()` | the assignments laid out in course order |
+
+Companion material: `validation/simulab-recovery/README.md` for how well these
+estimates recover a known truth, and `?fit_ml_lpa` for the estimation contract.
+
+## 1. Preparing the indicators
+
+The platform records nine activity counts per enrolment. One of them,
+`Total_events`, is the arithmetic sum of four others — regressing it on those
+four returns an R-squared of 0.99983 with every slope at 1.00, and including all
+nine leaves the correlation matrix with a condition number above sixty thousand.
+It is dropped, leaving eight.
+
+The remaining eight cannot be used in their recorded units either, and the
+reason is substantive rather than technical. A busy course inflates every count
+for everyone enrolled in it, so raw activity confounds "this student worked
+hard" with "this course demanded a lot". Standardising inside each course
+removes the course from the comparison: a value of `+1` then means one standard
+deviation above the classmates who sat the same course.
+
+```{r prepare}
+library(mllpa)
+
+# Point this at your copy of the file.
+data_path <- file.path("~", "My Drive (saqr@saqr.me)", "Git", "Qudent_26",
+                       "lecture_data_with_LCA_labels_percentiles.csv")
+
+#' Course-standardised engagement indicators
+#'
+#' @param path Path to the platform export.
+#' @return A base `data.frame` with one row per enrolment and the columns
+#'   `User`, `Sequence`, `course_id`, and one `*_z` column per indicator, each
+#'   standardised within its course. Enrolments in a course with no second
+#'   student have no reference group and are dropped.
+prepare_engagement <- function(path) {
+  stopifnot("`path` must name a readable file" = file.exists(path))
+  sources <- c(browse = "Frequency_course_browse", lectures = "Frequency_lecture_viewed",
+               forum_read = "Frequency_forum_consume", forum_post = "Frequency_forum_contribute",
+               active_days = "Active_days", sessions = "Session_count",
+               entropy = "Course_browse_entropy", duration = "Total_duration")
+  lecture <- utils::read.csv(path, stringsAsFactors = FALSE)
+  stopifnot(
+    "the export must contain every indicator" = all(sources %in% names(lecture)),
+    "`User` and `Sequence` must identify an enrolment uniquely" =
+      !anyDuplicated(paste(lecture$User, lecture$Sequence, sep = "_"))
+  )
+  # A course whose indicator does not vary gives everyone a deviation of exactly
+  # zero, which is the honest value; a course of one student has no reference
+  # group at all and yields NA, which is dropped rather than filled.
+  scale_within <- function(value, key) {
+    centred <- value - stats::ave(value, key, FUN = mean)
+    spread <- stats::ave(value, key, FUN = stats::sd)
+    ifelse(spread > 0, centred / spread, ifelse(is.na(spread), NA_real_, 0))
+  }
+  scaled <- as.data.frame(lapply(lecture[sources], scale_within, key = lecture$course_id))
+  names(scaled) <- paste0(names(sources), "_z")
+  prepared <- data.frame(lecture[c("User", "Sequence", "course_id")], scaled,
+                         row.names = NULL)
+  prepared <- prepared[stats::complete.cases(prepared), , drop = FALSE]
+  row.names(prepared) <- NULL
+  prepared
+}
+
+engagement <- prepare_engagement(data_path)
+str(engagement)
+```
+
+Eleven columns: the student, the position of the course in that student's
+sequence, the course, and eight standardised indicators. One enrolment was
+dropped — it belonged to the only student in its course, so there was no one to
+compare against.
+
+```{r indicators}
+indicators <- c("browse_z", "lectures_z", "forum_read_z", "forum_post_z",
+                "active_days_z", "sessions_z", "entropy_z", "duration_z")
+```
+
+Naming the indicators explicitly, rather than matching a pattern over the column
+names, means a later column added to the export cannot silently join the model.
+
+## 2. The model as a whole
+
+`fit_ml_lpa()` takes the indicators, the column identifying the second level,
+and the two class counts. `n_starts` matters more than it looks: mixture
+likelihoods are multimodal, and a single start reports whichever hill it
+happened to climb.
+
+```{r fit}
+fit <- fit_ml_lpa(engagement, indicators = indicators, cluster = "User",
+                  n_profiles = 3, n_group_classes = 3,
+                  n_starts = 50, seed = 2026)
+summary(fit)
+```
+
+All 50 starts reached the same maximum, at a log likelihood of -11083.49 with 56
+free parameters. That unanimity is the single most reassuring number on the
+page: where multiple optima exist, starts scatter across them, and a 50-of-50
+replication says the solution is not an artefact of where the search began. No
+variance sits on its lower bound, and no class has an effective membership below
+one, so nothing has collapsed.
+
+```{r criteria}
+information_criteria(fit)
+```
+
+The information criteria are reported under both sample-size conventions
+because, for a multilevel mixture, "n" is genuinely ambiguous — 106 students or
+1,393 enrolments. The BIC penalty is 261 under the group count and 405 under the
+individual count, and the recovery study in `validation/simulab-recovery/` shows
+these two conventions selecting different structures at small sample sizes. They
+are alternatives to be chosen between and declared, not a menu to pick the
+agreeable one from.
+
+## 3. The profiles: what one enrolment looks like
+
+The profiles are the measurement model, and they are shared across every student
+class. A profile describes one enrolment: one student, in one course, for one
+term.
+
+```{r profiles-table}
+as.data.frame(fit)
+```
+
+The table is the whole measurement model: one row per profile and indicator,
+with the estimated mean, variance and standard deviation. Reading down the mean
+column, the three profiles separate on every one of the eight indicators, and
+they separate in the same direction each time.
+
+```{r profiles-plot, fig.width = 9}
+plot(fit)
+```
+
+The picture is a level ordering, not a set of shapes. Profile 1, holding 31% of
+enrolments, sits between 0.65 and 1.06 standard deviations above the course mean
+on all eight indicators at once. Profile 2, 27%, sits between 0.56 and 1.11
+below on all eight. Profile 3, the largest at 42%, runs along the course average
+from -0.24 to +0.18.
+
+That is worth stating plainly, because it is the kind of result that is easy to
+over-read. These data contain no enrolment type that reads the forum heavily
+while skipping lectures, or that browses widely in short bursts. Engagement on
+this platform moves as a block: a student who is above their classmates on
+session count is above them on duration, browsing, forum reading and lecture
+viewing too. Three profiles is the right number here for describing *how much*,
+not *in what way*.
+
+The variances carry a second finding the means do not. Profile 1 is the loose
+one — variances from 0.41 to 1.59, so its enrolments are spread widely around
+those high means. Profile 3 is tight, 0.15 to 0.37. High engagement takes many
+forms and differs in degree; being unremarkable is a narrower condition.
+
+## 4. The student classes: what a whole student looks like
+
+Everything so far could have come from a single-level model. The second level is
+where the enrolments belonging to one student are tied together, and a student
+class is defined by nothing except the mix of profiles its students produce.
+
+```{r probabilities-table}
+as.data.frame(fit, what = "profile_probabilities")
+```
+
+```{r probabilities-plot}
+plot(fit, what = "probabilities")
+```
+
+The three classes are almost the same size — 34%, 34% and 32%, or 36, 37 and 33
+students — and each is dominated by one profile at close to 0.69. Class 1's
+students take high-engagement courses 69% of the time, class 2's take
+low-engagement courses 69% of the time, class 3's are typical 70% of the time.
+
+The interesting number is not the 0.69 that repeats. It is the pair that does
+not: **0.045 and 0.034**. A student in the high-engagement class has a 4.5%
+chance of producing a low-engagement enrolment, and a student in the
+low-engagement class has a 3.4% chance of producing a high-engagement one. The
+two extremes are, for practical purposes, mutually exclusive over a student's
+career.
+
+Consistency therefore runs in both directions, and that is the finding. The
+high-engagement students are not students who happen to have had a good term;
+they almost never have a bad one. The low-engagement students are not students
+waiting for the right course; across up to fifteen courses, the right course
+does not arrive. What both groups do instead, roughly a quarter of the time, is
+fall back to the typical profile — 0.265 for class 1 and 0.279 for class 2,
+which is to say the middle is where everybody's variation happens.
+
+```{r group-posteriors}
+head(as.data.frame(fit, what = "group_posteriors"))
+```
+
+One row per student, with the modal class, the student's own contribution to the
+likelihood, and the posterior probabilities behind the assignment. The posteriors
+are the honest object here: the modal class is a summary of them, not a fact
+about the student.
+
+## 5. The sequences themselves
+
+A student class is a probability mix, and a mix is an average over careers that
+may look nothing like each other. Class 2 says its students take a
+low-engagement course 69% of the time; it does not say whether that means a
+steady run of low-engagement terms or a good start followed by a collapse. The
+assignments have to be laid out in course order before that distinction is
+visible, and the model never looks at course order at all.
+
+The fit stores the assignments and the data stores the ordering, and nothing
+joins them, so two small verbs do it. Both return their rows in the same order,
+which is what lets the second be passed as the grouping for the first.
+
+```{r sequence-verbs}
+library(Nestimate)
+
+#' A student's profile assignments, in course order
+#'
+#' @param fit A fitted `ml_lpa` model.
+#' @param data The data frame the model was fitted to.
+#' @param time Name of the column giving the position of each observation in its
+#'   unit's sequence.
+#' @param labels Optional state names, one per profile, in profile order.
+#' @param levels Optional display order for those names.
+#' @return A base `data.frame` with one row per second-level unit and one column
+#'   per time point, holding the modal profile as a factor and `NA` where the
+#'   unit has no observation at that point. Row names are the unit identifiers.
+profile_sequences <- function(fit, data, time = "Sequence", labels = NULL,
+                              levels = NULL) {
+  stopifnot(
+    "`fit` must be an `ml_lpa` model" = inherits(fit, "ml_lpa"),
+    "`data` must be the data frame the model was fitted to" =
+      is.data.frame(data) && time %in% names(data),
+    "`labels` must be NULL or one name per profile" =
+      is.null(labels) || length(labels) == fit$n_profiles
+  )
+  assignments <- as.data.frame(fit, what = "posteriors")
+  stopifnot("posteriors must be one row per input row, in input order" =
+              nrow(assignments) == nrow(data))
+  if (is.null(labels)) labels <- sprintf("Profile %d", seq_len(fit$n_profiles))
+  if (is.null(levels)) levels <- labels
+  long <- data.frame(unit = assignments$group, time = data[[time]],
+                     state = factor(labels[assignments$profile], levels = levels))
+  wide <- stats::reshape(long, idvar = "unit", timevar = "time",
+                         direction = "wide", v.names = "state")
+  wide <- wide[order(wide$unit), , drop = FALSE]
+  states <- wide[setdiff(names(wide), "unit")]
+  names(states) <- sub("^state[.]", "", names(states))
+  states <- states[order(as.integer(names(states)))]
+  row.names(states) <- wide$unit
+  states
+}
+
+#' The fitted class of each unit, aligned to `profile_sequences()`
+#'
+#' @param fit A fitted `ml_lpa` model.
+#' @param sequences The frame returned by [profile_sequences()].
+#' @param labels Optional class names, one per group class, in class order.
+#' @return A factor with one element per row of `sequences`, in that order.
+student_classes <- function(fit, sequences, labels = NULL) {
+  stopifnot(
+    "`fit` must be an `ml_lpa` model" = inherits(fit, "ml_lpa"),
+    "`sequences` must be a data frame with unit identifiers as row names" =
+      is.data.frame(sequences) && !is.null(row.names(sequences)),
+    "`labels` must be NULL or one name per group class" =
+      is.null(labels) || length(labels) == fit$n_group_classes
+  )
+  assignments <- as.data.frame(fit, what = "group_posteriors")
+  if (is.null(labels)) labels <- sprintf("Class %d", seq_len(fit$n_group_classes))
+  position <- match(row.names(sequences), as.character(assignments$group))
+  stopifnot("every sequence must belong to a fitted group" = !anyNA(position))
+  factor(labels[assignments$group_class[position]], levels = labels)
+}
+```
+
+The profile names below come from the estimated means in section 3, where
+profile 1 was above the course average on all eight indicators, profile 2 below
+on all eight, and profile 3 along the average. The numbering itself is
+arbitrary, so naming the states makes the plot readable and pins the
+interpretation to something checkable.
+
+```{r sequences}
+sequences <- profile_sequences(fit, engagement,
+                               labels = c("High", "Low", "Typical"),
+                               levels = c("Low", "Typical", "High"))
+classes <- student_classes(fit, sequences,
+                           labels = c("Mostly high", "Mostly low", "Mostly typical"))
+dim(sequences)
+head(sequences)
+```
+
+One row per student, fifteen columns, one per position in that student's course
+sequence. `NA` marks a position the student never reached. Of the 1,590 cells,
+1,393 carry an enrolment and 197 are empty.
+
+```{r sequence-index, fig.width = 10, fig.height = 7}
+# sequence_plot() assigns colours to states by POSITION in the alphabetically
+# sorted state names -- High, Low, Typical -- not by the names on this vector.
+# The vector is written in that order so the two agree.
+state_colors <- c(High = "#E69F00", Low = "#56B4E9", Typical = "#009E73")
+
+sequence_plot(sequences, type = "index", group = classes,
+              state_colors = state_colors,
+              main = "Course sequences by student class")
+```
+
+Each row is one student and each column one course in their sequence. The three
+panels are the three classes, and they are the finding from section 4 made
+visible: the top-left panel is overwhelmingly orange with green interruptions
+and almost no blue, the top-right overwhelmingly blue with green interruptions
+and almost no orange. The mutual exclusivity of the extremes is not a subtle
+statistical effect here; it is the dominant visual fact.
+
+The grey is the part the probability table could not show. In the mostly-low
+panel it forms a wedge across the bottom third — those students stopped taking
+courses. Elsewhere it is a few scattered rows.
+
+```{r attrition}
+#' How many courses each class's students actually took
+#'
+#' @param sequences The frame returned by [profile_sequences()].
+#' @param classes The factor returned by [student_classes()].
+#' @return A base `data.frame` with one row per class and the columns `class`,
+#'   `students`, `mean_courses`, `median_courses` and `completing_all`.
+sequence_lengths <- function(sequences, classes) {
+  stopifnot(
+    "`sequences` must be a data frame" = is.data.frame(sequences),
+    "`classes` must have one value per sequence" =
+      length(classes) == nrow(sequences)
+  )
+  taken <- rowSums(!is.na(sequences))
+  positions <- ncol(sequences)
+  data.frame(
+    class = levels(factor(classes)),
+    students = as.vector(tapply(taken, classes, length)),
+    mean_courses = as.vector(tapply(taken, classes, mean)),
+    median_courses = as.vector(tapply(taken, classes, stats::median)),
+    completing_all = as.vector(tapply(taken, classes, function(v) sum(v == positions))),
+    row.names = NULL
+  )
+}
+
+sequence_lengths(sequences, classes)
+```
+
+Mostly-low students took 10.9 courses on average against 14.2 and 14.4 for the
+other two classes, and 21 of 37 completed all fifteen against 63 of the other
+69. That is a gap of 34.5 percentage points in completion, 95% CI [15.2, 53.9],
+and the difference across all three classes is beyond chance (Kruskal-Wallis
+chi-squared = 17.4, df = 2, p = 0.00017, epsilon squared = 0.166).
+
+Read this carefully, because it is partly circular. A student who took one
+course and was disengaged in it has nowhere to be assigned except the
+mostly-low class, so short sequences push themselves into it. What is *not*
+circular is that the short students were disengaged rather than merely brief:
+had leaving early been unrelated to engagement, the 22 students who did not
+finish would have spread across the three classes instead of putting 16 of
+themselves in one.
+
+```{r sequence-distribution, fig.width = 10, fig.height = 6}
+sequence_plot(sequences, type = "distribution", group = classes,
+              state_colors = state_colors,
+              main = "Profile prevalence across the course sequence")
+```
+
+The same data as prevalence rather than as individual rows, and the question it
+answers is whether a class is a standing disposition or a stage students pass
+through. Regressing "is this enrolment on the class's dominant profile" on
+course position gives a slope per course of -0.035 for mostly-high
+(95% CI [-0.079, 0.009]), -0.025 for mostly-low ([-0.073, 0.023]) and -0.017 for
+mostly-typical ([-0.063, 0.028]). Every interval spans zero, so no class drifts
+detectably: a mostly-high student is about as likely to be high-engagement in
+their twelfth course as in their second.
+
+That is a null result, not a demonstration of constancy. All three point
+estimates lean slightly negative, and with roughly 35 students per class the
+data could not distinguish a weak dilution over time from none at all. The
+position-by-position shares also bounce between 0.44 and 0.91, which is what
+sampling noise looks like at this size. The defensible reading is that these
+classes describe a disposition rather than a trajectory, and that a study
+designed to detect drift would need far more students.
+
+A caveat on the encoding: a sequence carpet has only one channel, so state is
+shown by colour alone with no shape or linetype to back it up. The palette is
+Okabe-Ito, which stays distinguishable under the common colour-vision
+deficiencies, but the plot cannot be read in greyscale.
+
+## 6. How much to trust the assignments
+
+A profile solution can be well estimated and still be too blurred to act on. Two
+diagnostics separate those cases, and they should be read before any assignment
+is used for anything.
+
+```{r entropy}
+entropy_table(fit)
+```
+
+Relative entropy is 0.906 for enrolments and 0.854 for students. Both are high
+enough that the modal assignments mean something; the enrolment figure being the
+higher of the two is expected, since a single enrolment is classified from eight
+indicators while a student is classified from a mix of profile memberships that
+is itself uncertain.
+
+```{r classification}
+classification_table(fit, level = "both")
+```
+
+The average posterior probability is between 0.947 and 0.965 for the enrolment
+profiles and between 0.920 and 0.943 for the student classes — every class is
+assigned with high confidence on average. The odds of correct classification
+range from 25.0 to 72.0 for enrolments and 24.4 to 32.9 for students, all far
+above the value of 1 that a useless classifier would give.
+
+Note also that `n_modal` and `estimated_n` agree closely — 434 against 432 for
+profile 1, 378 against 383 for profile 2. Where a model separates poorly these
+two diverge, because the modal count claims a certainty the posteriors do not
+support. Here they do not diverge.
+
+## 7. What this model cannot tell you
+
+Three limits are worth naming, because each is invisible in the output above.
+
+**The labels are arbitrary.** "Profile 1" is high-engagement in this fit with
+this seed. Refitting can permute the numbering without changing the model at
+all. Any comparison between two fits has to align the labels first.
+
+**Sequence was not used.** The data carry each student's course order, and the
+model ignores it: an enrolment's profile is estimated the same way whether it
+was that student's first course or their fifteenth. So the classes describe a
+student's overall mix, not a trajectory, and "students who start strong and
+fade" could in principle land in the same class as "students who are
+consistently middling". Section 5 plots the order after the fact and finds no
+drift, so nothing was lost here — but that is a property of this dataset, found
+by looking, not a guarantee of the method.
+
+**Standardising within course removes a real comparison.** Every value is
+relative to classmates, so a student in a uniformly disengaged course can reach
+profile 1 with activity that would be unremarkable elsewhere. That was the right
+choice for asking who stands out among their peers. It is the wrong basis for
+asking who did the most work.
+
+### When to use which
+
+Use `n_group_classes = 1` when the grouping exists only as a nuisance — the
+model then reduces to an ordinary latent profile analysis that still respects
+the clustering. Raise it above one when the question is about the units rather
+than the observations, as here. Use `fit_ml_lpa_random_intercept()` instead when
+group differences are better described as a continuum than as types, and compare
+the two on the information criteria rather than assuming.
+
+## References
+
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213–239.

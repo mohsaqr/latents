@@ -1,0 +1,43 @@
+TITLE: Native R mllpa validation, synthetic data, two discrete levels;
+DATA: FILE = synthetic.dat;
+VARIABLE:
+ NAMES = y1 y2 clus id;
+ USEVARIABLES = y1 y2;
+ CLUSTER = clus;
+ IDVARIABLE = id;
+ MISSING = ALL(-999);
+ WITHIN = y1 y2;
+ CLASSES = cb(2) cw(2);
+ BETWEEN = cb;
+ANALYSIS:
+ TYPE = TWOLEVEL MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 100 20;
+ STITERATIONS = 30;
+ STSEED = 20260917;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %WITHIN%
+ %OVERALL%
+ %BETWEEN%
+ %OVERALL%
+ cw#1 ON cb;
+MODEL cw:
+ %WITHIN%
+ %cw#1%
+ [y1 y2];
+ y1 y2;
+ y1 WITH y2;
+ %cw#2%
+ [y1 y2];
+ y1 y2;
+ y1 WITH y2;
+OUTPUT: TECH1 TECH15 SVALUES;
+SAVEDATA:
+ FILE = full-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = full-results.dat;

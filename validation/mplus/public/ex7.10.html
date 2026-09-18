@@ -1,0 +1,382 @@
+<HTML>
+<HEAD>
+   <TITLE>Mplus User's Guide Examples</TITLE>
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+<PRE>
+Mplus VERSION 8.8
+MUTHEN & MUTHEN
+04/19/2022  11:12 PM
+
+INPUT INSTRUCTIONS
+
+  TITLE:	this is an example of a LCA with
+  	continuous latent class indicators using
+  	user-specified starting values without
+  	random starts
+  DATA:	FILE IS ex7.10.dat;
+  VARIABLE:	NAMES ARE y1-y4 c;
+  	USEVARIABLES ARE y1-y4;
+  	CLASSES = c (2);
+  ANALYSIS:	TYPE = MIXTURE;
+  	STARTS = 0;
+  MODEL:	
+  	%OVERALL%
+  	%c#1%
+  	[y1-y4*1];
+  	y1-y4;
+  	%c#2%
+  	[y1-y4*-1];
+  	y1-y4;
+  OUTPUT:	TECH1 TECH8;
+
+
+
+*** WARNING in MODEL command
+  All variables are uncorrelated with all other variables within class.
+  Check that this is what is intended.
+   1 WARNING(S) FOUND IN THE INPUT INSTRUCTIONS
+
+
+
+this is an example of a LCA with
+continuous latent class indicators using
+user-specified starting values without
+random starts
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                         500
+
+Number of dependent variables                                    4
+Number of independent variables                                  0
+Number of continuous latent variables                            0
+Number of categorical latent variables                           1
+
+Observed dependent variables
+
+  Continuous
+   Y1          Y2          Y3          Y4
+
+Categorical latent variables
+   C
+
+
+Estimator                                                      MLR
+Information matrix                                        OBSERVED
+Optimization Specifications for the Quasi-Newton Algorithm for
+Continuous Outcomes
+  Maximum number of iterations                                 100
+  Convergence criterion                                  0.100D-05
+Optimization Specifications for the EM Algorithm
+  Maximum number of iterations                                 500
+  Convergence criteria
+    Loglikelihood change                                 0.100D-06
+    Relative loglikelihood change                        0.100D-06
+    Derivative                                           0.100D-05
+Optimization Specifications for the M step of the EM Algorithm for
+Categorical Latent variables
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+Optimization Specifications for the M step of the EM Algorithm for
+Censored, Binary or Ordered Categorical (Ordinal), Unordered
+Categorical (Nominal) and Count Outcomes
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-05
+  Basis for M step termination                           ITERATION
+  Maximum value for logit thresholds                            15
+  Minimum value for logit thresholds                           -15
+  Minimum expected cell size for chi-square              0.100D-01
+Optimization algorithm                                         EMA
+
+Input data file(s)
+  ex7.10.dat
+Input data format  FREE
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     Y1                    0.035       0.025      -4.054    0.20%      -1.335     -0.421     -0.003
+             500.000       2.228      -0.495       3.914    0.20%       0.495      1.443
+     Y2                    0.002       0.014      -3.629    0.20%      -1.287     -0.344      0.035
+             500.000       2.066      -0.608       3.515    0.20%       0.396      1.328
+     Y3                   -0.001       0.086      -4.511    0.20%      -1.246     -0.423     -0.057
+             500.000       1.808      -0.283       3.810    0.20%       0.284      1.196
+     Y4                   -0.012      -0.114      -3.505    0.20%      -1.380     -0.358      0.037
+             500.000       2.080      -0.590       3.539    0.20%       0.442      1.206
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       17
+
+Loglikelihood
+
+          H0 Value                       -3174.564
+          H0 Scaling Correction Factor      0.9595
+            for MLR
+
+Information Criteria
+
+          Akaike (AIC)                    6383.127
+          Bayesian (BIC)                  6454.776
+          Sample-Size Adjusted BIC        6400.817
+            (n* = (n + 2) / 24)
+
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THE ESTIMATED MODEL
+
+    Latent
+   Classes
+
+       1        260.17579          0.52035
+       2        239.82421          0.47965
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+    Latent
+   Classes
+
+       1        260.17579          0.52035
+       2        239.82421          0.47965
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THEIR MOST LIKELY LATENT CLASS MEMBERSHIP
+
+Class Counts and Proportions
+
+    Latent
+   Classes
+
+       1              261          0.52200
+       2              239          0.47800
+
+
+CLASSIFICATION QUALITY
+
+     Entropy                         0.909
+
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.975    0.025
+    2   0.024    0.976
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   0.978    0.022
+    2   0.027    0.973
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1      3.796    0.000
+    2     -3.574    0.000
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Latent Class 1
+
+ Means
+    Y1                 1.040      0.071     14.744      0.000
+    Y2                 1.006      0.064     15.781      0.000
+    Y3                 0.867      0.068     12.771      0.000
+    Y4                 0.980      0.060     16.201      0.000
+
+ Variances
+    Y1                 1.154      0.100     11.513      0.000
+    Y2                 0.979      0.079     12.387      0.000
+    Y3                 1.085      0.087     12.488      0.000
+    Y4                 0.909      0.077     11.741      0.000
+
+Latent Class 2
+
+ Means
+    Y1                -1.055      0.070    -15.035      0.000
+    Y2                -1.087      0.067    -16.140      0.000
+    Y3                -0.942      0.063    -15.062      0.000
+    Y4                -1.089      0.075    -14.605      0.000
+
+ Variances
+    Y1                 1.110      0.101     10.970      0.000
+    Y2                 0.965      0.098      9.878      0.000
+    Y3                 0.888      0.090      9.876      0.000
+    Y4                 1.124      0.103     10.900      0.000
+
+Categorical Latent Variables
+
+ Means
+    C#1                0.081      0.095      0.853      0.393
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.179E+00
+       (ratio of smallest to largest eigenvalue)
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS 1
+
+
+           NU
+              Y1            Y2            Y3            Y4
+              ________      ________      ________      ________
+                    1             2             3             4
+
+
+           THETA
+              Y1            Y2            Y3            Y4
+              ________      ________      ________      ________
+ Y1                 5
+ Y2                 0             6
+ Y3                 0             0             7
+ Y4                 0             0             0             8
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS 2
+
+
+           NU
+              Y1            Y2            Y3            Y4
+              ________      ________      ________      ________
+                    9            10            11            12
+
+
+           THETA
+              Y1            Y2            Y3            Y4
+              ________      ________      ________      ________
+ Y1                13
+ Y2                 0            14
+ Y3                 0             0            15
+ Y4                 0             0             0            16
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                   17             0
+
+
+     STARTING VALUES FOR LATENT CLASS 1
+
+
+           NU
+              Y1            Y2            Y3            Y4
+              ________      ________      ________      ________
+                1.000         1.000         1.000         1.000
+
+
+           THETA
+              Y1            Y2            Y3            Y4
+              ________      ________      ________      ________
+ Y1             1.114
+ Y2             0.000         1.033
+ Y3             0.000         0.000         0.904
+ Y4             0.000         0.000         0.000         1.040
+
+
+     STARTING VALUES FOR LATENT CLASS 2
+
+
+           NU
+              Y1            Y2            Y3            Y4
+              ________      ________      ________      ________
+               -1.000        -1.000        -1.000        -1.000
+
+
+           THETA
+              Y1            Y2            Y3            Y4
+              ________      ________      ________      ________
+ Y1             1.114
+ Y2             0.000         1.033
+ Y3             0.000         0.000         0.904
+ Y4             0.000         0.000         0.000         1.040
+
+
+     STARTING VALUES FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                0.000         0.000
+
+
+TECHNICAL 8 OUTPUT
+
+
+   E STEP  ITER  LOGLIKELIHOOD    ABS CHANGE   REL CHANGE  ALGORITHM
+              1 -0.31831778D+04    0.0000000    0.0000000  EM
+              2 -0.31748131D+04    8.3646798    0.0026278  EM
+              3 -0.31746072D+04    0.2059063    0.0000649  EM
+              4 -0.31745735D+04    0.0336986    0.0000106  EM
+              5 -0.31745660D+04    0.0075237    0.0000024  EM
+              6 -0.31745643D+04    0.0017591    0.0000006  EM
+              7 -0.31745638D+04    0.0004155    0.0000001  EM
+              8 -0.31745637D+04    0.0000983    0.0000000  EM
+              9 -0.31745637D+04    0.0000234    0.0000000  EM
+             10 -0.31745637D+04    0.0000056    0.0000000  EM
+             11 -0.31745637D+04    0.0000013    0.0000000  EM
+             12 -0.31745637D+04    0.0000003    0.0000000  EM
+             13 -0.31745637D+04    0.0000001    0.0000000  EM
+             14 -0.31745637D+04    0.0000000    0.0000000  EM
+
+
+     Beginning Time:  23:12:55
+        Ending Time:  23:12:55
+       Elapsed Time:  00:00:00
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2022 Muthen & Muthen
+</PRE>
+<P><A HREF="http://www.statmodel.com/ugexcerpts.shtml">Back to examples</A>
+</BODY>
+</HTML>

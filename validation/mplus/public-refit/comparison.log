@@ -1,0 +1,45 @@
+'data.frame':	1000 obs. of  7 variables:
+ $ y1  : num  0.1031 1.1134 0.0908 0.8214 0.5341 ...
+ $ y2  : num  -0.33 2.032 0.182 1.414 0.596 ...
+ $ y3  : num  -0.667 1.445 0.304 1.575 -0.419 ...
+ $ y4  : num  0.121 1.907 0.228 0.868 -0.134 ...
+ $ y5  : num  0.511 2.45 0.494 1.772 -0.856 ...
+ $ clus: int  1 1 1 1 1 2 2 2 2 2 ...
+ $ id  : int  1 2 3 4 5 6 7 8 9 10 ...
+         y1        y2        y3        y4        y5 clus id
+1  0.103062 -0.330050 -0.667228  0.121358  0.511049    1  1
+2  1.113401  2.031895  1.444594  1.907425  2.450097    1  2
+3  0.090813  0.181742  0.304470  0.227832  0.493869    1  3
+4  0.821405  1.413656  1.575386  0.867735  1.772341    1  4
+5  0.534117  0.596198 -0.418588 -0.133740 -0.856114    1  5
+6 -2.467778 -2.245303 -1.400415 -1.187502 -2.093966    2  6
+       y1                 y2                y3                y4         
+ Min.   :-3.44073   Min.   :-2.7556   Min.   :-3.2090   Min.   :-3.0878  
+ 1st Qu.:-0.05961   1st Qu.:-0.1131   1st Qu.:-0.1121   1st Qu.:-0.1028  
+ Median : 1.06954   Median : 0.8498   Median : 0.8418   Median : 0.8669  
+ Mean   : 1.08064   Mean   : 0.8356   Mean   : 0.8329   Mean   : 0.8565  
+ 3rd Qu.: 2.15946   3rd Qu.: 1.7751   3rd Qu.: 1.8060   3rd Qu.: 1.7881  
+ Max.   : 5.53498   Max.   : 4.3501   Max.   : 4.2956   Max.   : 4.5820  
+       y5               clus              id        
+ Min.   :-3.1651   Min.   :  1.00   Min.   :   1.0  
+ 1st Qu.:-0.1368   1st Qu.: 45.75   1st Qu.: 250.8  
+ Median : 0.7999   Median : 70.50   Median : 500.5  
+ Mean   : 0.8203   Mean   : 67.00   Mean   : 500.5  
+ 3rd Qu.: 1.7649   3rd Qu.: 94.00   3rd Qu.: 750.2  
+ Max.   : 4.6488   Max.   :110.00   Max.   :1000.0  
+       y1        y2        y3        y4        y5      clus        id 
+"numeric" "numeric" "numeric" "numeric" "numeric" "integer" "integer" 
+[1] "varying"
+       log_likelihood                   aic        bic_individual 
+      8.162676750e-06       1.836746469e-04       1.877419436e-04 
+                means             variances profile_probabilities 
+      1.853174091e-06       1.440853970e-06       3.841819517e-06 
+  group_probabilities    subject_posteriors      group_posteriors 
+      1.015858030e-05       1.147588554e-05       2.951018411e-05 
+[1] "equal"
+       log_likelihood                   aic        bic_individual 
+      1.414672533e-05       1.717065497e-04       2.332717722e-04 
+                means             variances profile_probabilities 
+      1.783783026e-06       1.906000442e-07       1.121678047e-06 
+  group_probabilities    subject_posteriors      group_posteriors 
+      3.436553723e-06       7.365577957e-06       1.058777833e-05 

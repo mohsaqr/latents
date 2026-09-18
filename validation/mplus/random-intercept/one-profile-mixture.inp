@@ -1,0 +1,29 @@
+TITLE: Scalar random intercept using direct mixture likelihood;
+DATA: FILE = one-profile.dat;
+VARIABLE: NAMES = y1 y2 group;
+  USEVARIABLES = y1 y2;
+  CLUSTER = group;
+  CLASSES = c(1);
+ANALYSIS: TYPE = TWOLEVEL MIXTURE;
+  ESTIMATOR = ML;
+  ALGORITHM = INTEGRATION;
+  INTEGRATION = 101;
+  STARTS = 0;
+  MITERATIONS = 10000;
+  LOGCRITERION = 0.000000001;
+  RLOGCRITERION = 0.000000001;
+  MCONVERGENCE = 0.000001;
+MODEL:
+  %WITHIN%
+  %OVERALL%
+  y1 y2;
+  y1 WITH y2@0;
+  %BETWEEN%
+  %OVERALL%
+  b BY y1@1 y2@1;
+  y1@0 y2@0;
+  [y1 y2];
+  [b@0];
+  b;
+OUTPUT: TECH1;
+SAVEDATA: RESULTS = one-profile-mixture-results.dat;

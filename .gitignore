@@ -1,0 +1,26 @@
+# Session artifacts — local only, never committed
+HANDOFF.md
+LEARNINGS.md
+CHANGES.md
+CLAUDE.md
+AGENTS.md
+AGENT-NOTE-*.md
+cran-comments.md
+README.html
+
+# Build and check output
+*.tar.gz
+*.Rcheck/
+..Rcheck/
+
+# Scratch
+tmp/
+
+# R session
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# macOS
+.DS_Store

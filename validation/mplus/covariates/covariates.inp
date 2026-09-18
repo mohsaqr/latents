@@ -1,0 +1,42 @@
+TITLE: Shared profile slopes and group membership covariate;
+DATA: FILE=covariates.dat;
+VARIABLE:
+ NAMES=y1 y2 z w clus id;
+ USEVARIABLES=y1 y2 z w;
+ CLUSTER=clus;
+ IDVARIABLE=id;
+ WITHIN=y1 y2 z;
+ CLASSES=cb(2) cw(2);
+ BETWEEN=cb w;
+ANALYSIS:
+ TYPE=TWOLEVEL MIXTURE;
+ ESTIMATOR=ML;
+ STARTS=100 20;
+ STITERATIONS=30;
+ STSEED=20260917;
+ MITERATIONS=10000;
+ LOGCRITERION=0.00000001;
+ RLOGCRITERION=0.000000001;
+ MCONVERGENCE=0.000001;
+MODEL:
+ %WITHIN%
+ %OVERALL%
+ cw#1 ON z;
+ %BETWEEN%
+ %OVERALL%
+ cw#1 ON cb;
+ cb#1 ON w;
+MODEL cw:
+ %WITHIN%
+ %cw#1%
+ [y1 y2];
+ y1 y2;
+ %cw#2%
+ [y1 y2];
+ y1 y2;
+OUTPUT: TECH1 TECH15 SVALUES;
+SAVEDATA:
+ FILE=covariates-posteriors.dat;
+ SAVE=CPROBABILITIES;
+ FORMAT=F20.12;
+ RESULTS=covariates-results.dat;

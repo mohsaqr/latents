@@ -1,0 +1,21 @@
+TITLE: One indicator Gaussian scalar group random intercept;
+DATA: FILE = one-profile.dat;
+VARIABLE: NAMES = y1 y2 group;
+  USEVARIABLES = y1;
+  CLUSTER = group;
+ANALYSIS: TYPE = TWOLEVEL;
+  ESTIMATOR = ML;
+  ITERATIONS = 10000;
+  CONVERGENCE = 0.000000001;
+  LOGCRITERION = 0.000000001;
+  RLOGCRITERION = 0.000000001;
+  MCONVERGENCE = 0.00000001;
+  MITERATIONS = 10000;
+MODEL:
+  %WITHIN%
+  y1;
+  %BETWEEN%
+  y1;
+  [y1];
+OUTPUT: TECH1;
+SAVEDATA: RESULTS = univariate-results.dat;

@@ -1,0 +1,26 @@
+Package: mllpa
+Title: Two-Level Latent Profile Analysis
+Version: 0.4.3
+Authors@R: person("Mohammed", "Saqr", role = c("aut", "cre"),
+    email = "saqr@saqr.me")
+Description: Fits two-level latent profile and latent class models using a
+    nested expectation-maximization algorithm. Indicators may be continuous,
+    categorical, or a mixture of the two. Individual profiles share measurement
+    parameters across discrete group classes, which differ in their profile
+    proportions. Supports observed-data likelihood
+    for missing indicators, diagonal or full residual covariance, observed
+    information and robust sandwich inference, class-membership covariates, a
+    continuous Gaussian group random-intercept alternative, class enumeration,
+    and parametric bootstrap comparisons. Includes multiple starts, posterior
+    classification, explicit variance constraints, tidy accessors, information
+    criteria under both multilevel sample-size conventions, classification
+    quality diagnostics, and entropy summaries.
+    The nonparametric multilevel mixture formulation follows Vermunt (2003)
+    <doi:10.1111/j.0081-1750.2003.t01-1-00131.x>.
+License: GPL-3
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: stats, graphics, utils
+Suggests: testthat (>= 3.0.0), mclust
+Config/testthat/edition: 3
+RoxygenNote: 7.3.3

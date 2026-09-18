@@ -1,0 +1,39 @@
+TITLE: mllpa validation, two-level latent class analysis, binary indicators;
+DATA: FILE = categorical.dat;
+VARIABLE:
+ NAMES = u1 u2 u3 u4 u5 clus id;
+ USEVARIABLES = u1-u5;
+ CATEGORICAL = u1-u5;
+ CLUSTER = clus;
+ IDVARIABLE = id;
+ WITHIN = u1-u5;
+ CLASSES = cb(2) cw(2);
+ BETWEEN = cb;
+ANALYSIS:
+ TYPE = TWOLEVEL MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 200 50;
+ STITERATIONS = 30;
+ STSEED = 20260918;
+ MITERATIONS = 20000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %WITHIN%
+ %OVERALL%
+ %BETWEEN%
+ %OVERALL%
+ cw#1 ON cb;
+MODEL cw:
+ %WITHIN%
+ %cw#1%
+ [u1$1 u2$1 u3$1 u4$1 u5$1];
+ %cw#2%
+ [u1$1 u2$1 u3$1 u4$1 u5$1];
+OUTPUT: TECH1 SVALUES;
+SAVEDATA:
+ FILE = categorical-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = categorical-results.dat;

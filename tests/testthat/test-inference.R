@@ -1,0 +1,264 @@
+test_that("observed information reproduces analytic Gaussian standard errors", {
+  set.seed(329)
+  dat <- data.frame(group = rep(seq_len(20), each = 10),
+                    y1 = rnorm(200, 2, 0.7), y2 = rnorm(200, -1, 3))
+  fit <- fit_ml_lpa(dat, c("y1", "y2"), "group", 1, 1, n_starts = 1)
+  information <- inference_ml_lpa(fit, dat)
+  expected <- c(sqrt(fit$variances / 200), sqrt(2 / 200) * fit$variances, 0, 0)
+  expect_equal(unname(information$standard_errors), unname(expected), tolerance = 1e-7)
+  expect_equal(information$covariance, t(information$covariance), tolerance = 1e-12)
+  expect_lt(information$scaled_score, 1e-7)
+  expect_gt(information$condition_ratio, 0.1)
+  expect_equal(coef(fit), information$estimates)
+  expect_length(coef(fit, scale = "unconstrained"), fit$n_parameters)
+  expect_equal(vcov(fit, data = dat), information$covariance)
+  expect_equal(vcov(fit, data = dat, scale = "unconstrained"), information$covariance_unconstrained)
+  expect_equal(confint(fit, data = dat), information$confidence_intervals)
+  fit$inference <- information
+  expect_equal(vcov(fit), information$covariance)
+  expect_equal(confint(fit, parm = 1, level = 0.9),
+    confint(fit, parm = names(coef(fit))[1], level = 0.9))
+  expect_equal(as.numeric(confint(fit, parm = 1, level = 0.9)),
+    coef(fit)[1] + c(-1, 1) * qnorm(0.95) * expected[1], ignore_attr = TRUE)
+  expect_error(confint(fit, parm = "unknown"), "parm")
+  expect_error(confint(fit, parm = -1), "indices")
+  expect_error(confint(fit, level = 1.2))
+})
+
+test_that("score and probability Jacobian agree with independent central differences", {
+  reference <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-synthetic-varying.rds"))
+  fit <- fit_ml_lpa(reference$data, c("y1", "y2"), "clus", 2, 2,
+    n_starts = 1, seed = 12, tol = 1e-12)
+  theta <- coef(fit, scale = "unconstrained")
+  x <- as.matrix(reference$data[, c("y1", "y2")])
+  perturbations <- diag(length(theta)) * 1e-5
+  objective <- function(parameters) {
+    stopifnot(is.numeric(parameters))
+    -.ml_lpa_expectation(x, fit$group_index, .ml_lpa_decode(parameters, fit))$log_likelihood
+  }
+  point <- theta + seq_along(theta) / 100
+  finite_score <- vapply(seq_along(point), function(index) {
+    stopifnot(is.numeric(index))
+    (objective(point + perturbations[, index]) - objective(point - perturbations[, index])) / 2e-5
+  }, numeric(1))
+  expect_equal(.ml_lpa_score(point, x, fit), finite_score, tolerance = 1e-7)
+  decoded <- .ml_lpa_decode(theta, fit)
+  expect_equal(decoded$means, unname(fit$means))
+  expect_equal(decoded$variances, unname(fit$variances))
+  expect_equal(decoded$profile_probabilities, unname(fit$profile_probabilities))
+  expect_equal(decoded$group_probabilities, unname(fit$group_probabilities))
+  natural_transform <- function(parameters) {
+    stopifnot(is.numeric(parameters))
+    transformed_fit <- fit
+    transformed_fit[names(decoded)] <- .ml_lpa_decode(parameters, fit)
+    .ml_lpa_coefficients(transformed_fit, "natural")
+  }
+  numerical_jacobian <- vapply(seq_along(theta), function(index) {
+    stopifnot(is.numeric(index))
+    (natural_transform(theta + perturbations[, index]) -
+       natural_transform(theta - perturbations[, index])) / 2e-5
+  }, numeric(length(coef(fit))))
+  expect_equal(unname(.ml_lpa_inference_jacobian(fit)),
+               unname(numerical_jacobian), tolerance = 1e-8)
+})
+
+test_that("ordinary ML Hessian standard errors reproduce genuine Mplus9 results", {
+  # These are the q standard errors following q estimates in the retained
+  # validation/mplus/generated/{varying,equal}-results.dat files. TECH1 fixes
+  # their ordering; the accompanying RDS fixtures retain file MD5 provenance.
+  mplus_standard_errors <- list(
+    varying = c(0.025488887, 0.033533281, 0.022282673, 0.038562637,
+      0.024286238, 0.030894151, 0.020636523, 0.033392006,
+      0.25820121, 0.11595498, 0.16936181),
+    equal = c(0.02512813, 0.032521195, 0.015157493, 0.025388461,
+      0.024630471, 0.03187695, 0.25820121, 0.1234565, 0.16936146))
+  invisible(lapply(names(mplus_standard_errors), function(variance_model) {
+    stopifnot(is.character(variance_model))
+    reference <- readRDS(test_path("..", "fixtures", "mplus",
+      paste0("twolevel-synthetic-", variance_model, ".rds")))
+    parameters <- reference[c("means", "variances", "profile_probabilities", "group_probabilities")]
+    fit <- fit_ml_lpa(reference$data, c("y1", "y2"), "clus", 2, 2,
+      variance_model = variance_model, start = parameters, n_starts = 1,
+      max_iter = 5000, tol = 1e-13)
+    information <- inference_ml_lpa(fit, reference$data)
+    q <- fit$n_parameters
+    n_measurement <- q - 3L
+    # Natural measurement estimates first; Mplus uses group logit, a CW
+    # intercept at CB=2, and a CW logit contrast CB=1 minus CB=2.
+    jacobian <- matrix(0, q, q)
+    ordering <- if (variance_model == "varying") c(1, 2, 5, 6, 3, 4, 7, 8) else c(1, 2, 5, 6, 3, 4)
+    measurement_derivatives <- c(rep(1, 4), if (variance_model == "varying")
+      as.vector(t(fit$variances)) else fit$variances[1L, ])
+    jacobian[cbind(seq_len(n_measurement), ordering)] <- measurement_derivatives[ordering]
+    jacobian[q - 2L, q] <- 1
+    jacobian[q - 1L, q - 1L] <- 1
+    jacobian[q, c(q - 2L, q - 1L)] <- c(1, -1)
+    mplus_scale_se <- sqrt(diag(jacobian %*% information$covariance_unconstrained %*% t(jacobian)))
+    # Mplus and finite-difference score derivatives differ by < 4e-8 here.
+    expect_lt(max(abs(mplus_scale_se - mplus_standard_errors[[variance_model]])), 1e-6)
+    expect_lt(information$scaled_score, 1e-5)
+    expect_equal(information$standard_errors,
+      inference_ml_lpa(fit, reference$data, step = 5e-5)$standard_errors, tolerance = 1e-6)
+  }))
+})
+
+test_that("full-covariance FIML Hessian standard errors reproduce genuine Mplus9", {
+  invisible(lapply(c("varying", "equal"), function(variance_model) {
+    stopifnot(is.character(variance_model))
+    reference <- readRDS(test_path("..", "fixtures", "mplus",
+      paste0("twolevel-missing-full-", variance_model, ".rds")))
+    start <- reference[c("means", "covariances", "profile_probabilities", "group_probabilities")]
+    fit <- fit_ml_lpa(reference$data, c("y1", "y2"), "clus", 2, 2,
+      variance_model = variance_model, covariance_model = "full", missing = "fiml",
+      start = start, n_starts = 1, tol = 1e-13, max_iter = 5000)
+    information <- inference_ml_lpa(fit, reference$data)
+    q <- fit$n_parameters
+    n_measurement <- q - 3L
+    ordering <- if (variance_model == "varying") c(1, 2, 5, 6, 7, 3, 4, 8, 9, 10) else
+      c(1, 2, 5, 6, 7, 3, 4)
+    jacobian <- matrix(0, q, q)
+    jacobian[seq_len(n_measurement), ] <- .ml_lpa_inference_jacobian(fit)[ordering, ]
+    jacobian[q - 2L, q] <- 1
+    jacobian[q - 1L, q - 1L] <- 1
+    jacobian[q, c(q - 2L, q - 1L)] <- c(1, -1)
+    observed_standard_errors <- sqrt(diag(jacobian %*% information$covariance_unconstrained %*% t(jacobian)))
+    expect_lt(max(abs(observed_standard_errors - reference$mplus_standard_errors)), 1e-6)
+    expect_lt(information$scaled_score, 1e-4)
+  }))
+})
+
+test_that("inference refuses data mismatches and nonregular fits", {
+  set.seed(910)
+  dat <- data.frame(g = rep(seq_len(10), each = 10), y = rnorm(100))
+  fit <- fit_ml_lpa(dat, "y", "g", 1, 1, n_starts = 1)
+  expect_error(vcov(fit), "Supply original data")
+  expect_error(inference_ml_lpa(fit, dat[-1, ]), "original numeric")
+  altered <- dat
+  altered$y[1] <- altered$y[1] + 1
+  expect_error(inference_ml_lpa(fit, altered), "reproduce")
+  if (!is.null(fit$indicator_data)) {
+    altered <- dat
+    altered$y[1:2] <- rev(altered$y[1:2])
+    expect_error(inference_ml_lpa(fit, altered), "original indicator data")
+  }
+  older_fit <- fit
+  older_fit$indicator_data <- NULL
+  expect_equal(inference_ml_lpa(older_fit, dat)$standard_errors,
+    inference_ml_lpa(fit, dat)$standard_errors)
+  expect_error(inference_ml_lpa(fit, dat[100:1, ]), "original group")
+  altered <- dat
+  altered$y[1] <- Inf
+  expect_error(inference_ml_lpa(fit, altered), "non-finite")
+  altered$y[1] <- NA_real_
+  expect_error(inference_ml_lpa(fit, altered), "missing")
+  altered_fit <- fit
+  altered_fit$converged <- FALSE
+  expect_error(inference_ml_lpa(altered_fit, dat), "converged")
+  altered_fit <- fit
+  altered_fit$boundary <- TRUE
+  expect_error(inference_ml_lpa(altered_fit, dat), "bound-active")
+  expect_error(inference_ml_lpa(fit, dat, step = 0))
+  expect_error(inference_ml_lpa(fit, dat, level = 0))
+  # Identical components are an intentionally unidentified mixture.
+  repeated_fit <- fit
+  repeated_fit$n_profiles <- 2L
+  repeated_fit$n_parameters <- 5L
+  repeated_fit$means <- rbind(fit$means, fit$means)
+  repeated_fit$variances <- rbind(fit$variances, fit$variances)
+  repeated_fit$profile_probabilities <- matrix(c(0.5, 0.5), 1L)
+  expect_error(inference_ml_lpa(repeated_fit, dat), "positive definite|singular")
+})
+
+test_that("full-covariance inference matches analytic multivariate Gaussian information", {
+  set.seed(954)
+  dat <- data.frame(g = rep(seq_len(20), each = 20), y1 = rnorm(400), y2 = rnorm(400))
+  dat$y2 <- dat$y2 + 0.8 * dat$y1
+  fit <- fit_ml_lpa(dat, c("y1", "y2"), "g", 1, 1,
+    n_starts = 1, covariance_model = "full")
+  covariance <- fit$covariances[, , 1]
+  expected_covariance_se <- sqrt((covariance^2 + outer(diag(covariance), diag(covariance))) / nrow(dat))
+  expected <- c(sqrt(diag(covariance) / nrow(dat)),
+    expected_covariance_se[lower.tri(covariance, diag = TRUE)], 0, 0)
+  information <- inference_ml_lpa(fit, dat)
+  expect_equal(unname(information$standard_errors), unname(expected), tolerance = 1e-7)
+  expect_equal(unname(information$covariance[1:2, 1:2]), unname(covariance / nrow(dat)), tolerance = 1e-7)
+  expect_lt(information$scaled_score, 1e-6)
+  expect_length(coef(fit, scale = "unconstrained"), fit$n_parameters)
+})
+
+test_that("diagonal FIML standard errors use each indicator's observed sample size", {
+  set.seed(962)
+  dat <- data.frame(g = rep(seq_len(20), each = 10), y1 = rnorm(200), y2 = rnorm(200, 2, 3))
+  dat$y1[seq(1, 200, by = 5)] <- NA_real_
+  dat$y2[seq(2, 200, by = 3)] <- NA_real_
+  fit <- fit_ml_lpa(dat, c("y1", "y2"), "g", 1, 1,
+    n_starts = 1, missing = "fiml", tol = 1e-13)
+  counts <- colSums(!is.na(dat[, c("y1", "y2")]))
+  expected <- c(sqrt(fit$variances[1, ] / counts), sqrt(2 / counts) * fit$variances[1, ], 0, 0)
+  information <- inference_ml_lpa(fit, dat)
+  expect_equal(unname(information$standard_errors), unname(expected), tolerance = 1e-6)
+  expect_lt(information$scaled_score, 1e-3)
+})
+
+test_that("full-covariance score and Jacobian match numerical derivatives with missingness", {
+  set.seed(481)
+  cluster <- rep(seq_len(40), each = 12)
+  group_type <- rep(seq_len(40) %% 2, each = 12)
+  profile <- rbinom(length(cluster), 1, ifelse(group_type == 1, 0.85, 0.15))
+  residual <- rnorm(length(cluster))
+  dat <- data.frame(g = cluster, y1 = 5 * profile + residual,
+    y2 = 4 * profile + residual / 2 + rnorm(length(cluster)))
+  dat$y1[seq(1, nrow(dat), by = 11)] <- NA_real_
+  dat$y2[seq(3, nrow(dat), by = 7)] <- NA_real_
+  invisible(lapply(c("varying", "equal"), function(variance_model) {
+    stopifnot(is.character(variance_model))
+    fit <- fit_ml_lpa(dat, c("y1", "y2"), "g", 2, 2, n_starts = 2,
+      covariance_model = "full", missing = "fiml", variance_model = variance_model,
+      seed = 791, tol = 1e-12)
+    theta <- coef(fit, scale = "unconstrained")
+    decoded <- .ml_lpa_decode(theta, fit)
+    expect_equal(decoded$covariances, unname(fit$covariances), tolerance = 1e-12)
+    expect_equal(decoded$means, unname(fit$means), tolerance = 1e-12)
+    x <- as.matrix(dat[, c("y1", "y2")])
+    perturbations <- diag(length(theta)) * 1e-5
+    objective <- function(parameters) {
+      stopifnot(is.numeric(parameters))
+      -.ml_lpa_expectation(x, fit$group_index, .ml_lpa_decode(parameters, fit))$log_likelihood
+    }
+    point <- theta + seq_along(theta) / 1000
+    finite_score <- vapply(seq_along(point), function(index) {
+      stopifnot(is.numeric(index))
+      (objective(point + perturbations[, index]) - objective(point - perturbations[, index])) / 2e-5
+    }, numeric(1))
+    expect_equal(.ml_lpa_score(point, x, fit), finite_score, tolerance = 1e-7)
+    transform_natural <- function(parameters) {
+      stopifnot(is.numeric(parameters))
+      model <- fit
+      model[names(decoded)] <- .ml_lpa_decode(parameters, model)
+      .ml_lpa_coefficients(model, "natural")
+    }
+    numerical_jacobian <- vapply(seq_along(theta), function(index) {
+      stopifnot(is.numeric(index))
+      (transform_natural(theta + perturbations[, index]) -
+        transform_natural(theta - perturbations[, index])) / 2e-5
+    }, numeric(length(coef(fit))))
+    expect_equal(unname(.ml_lpa_inference_jacobian(fit)), unname(numerical_jacobian), tolerance = 1e-8)
+    information <- inference_ml_lpa(fit, dat)
+    expect_true(all(is.finite(information$standard_errors)))
+    expect_gt(information$condition_ratio, 1e-5)
+  }))
+})
+
+test_that("centered inference is stable for indicators with large location offsets", {
+  set.seed(667)
+  dat <- data.frame(g = rep(seq_len(20), each = 10), y = rnorm(200))
+  fit <- fit_ml_lpa(dat, "y", "g", 1, 1, n_starts = 1)
+  shifted <- transform(dat, y = y + 1e9)
+  shifted_fit <- fit_ml_lpa(shifted, "y", "g", 1, 1, n_starts = 1)
+  expect_equal(unname(inference_ml_lpa(fit, dat)$standard_errors),
+    unname(inference_ml_lpa(shifted_fit, shifted)$standard_errors), tolerance = 1e-7)
+  scaled <- transform(dat, y = y * 1e8)
+  scaled_fit <- fit_ml_lpa(scaled, "y", "g", 1, 1, n_starts = 1)
+  expect_equal(unname(inference_ml_lpa(scaled_fit, scaled)$standard_errors[1:2]) / c(1e8, 1e16),
+    unname(inference_ml_lpa(fit, dat)$standard_errors[1:2]), tolerance = 1e-7)
+})

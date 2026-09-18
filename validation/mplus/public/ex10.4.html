@@ -1,0 +1,834 @@
+<HTML>
+<HEAD>
+   <TITLE>Mplus User's Guide Examples</TITLE>
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+<PRE>
+Mplus VERSION 8.8
+MUTHEN & MUTHEN
+04/19/2022  10:57 PM
+
+INPUT INSTRUCTIONS
+
+  TITLE:	this is an example of a two-level CFA
+  	mixture model with continuous factor
+  	indicators
+  DATA:	FILE IS ex10.4.dat;
+  VARIABLE:	NAMES ARE y1-y5 class clus;
+  	USEVARIABLES = y1-y5;
+  	CLASSES = c (2);
+  	CLUSTER = clus;
+  ANALYSIS:	TYPE = TWOLEVEL MIXTURE;
+  	STARTS = 0;
+  MODEL:	
+  	%WITHIN%
+  	%OVERALL%
+  	fw BY y1-y5;	
+  	%BETWEEN%
+  	%OVERALL%
+  	fb BY y1-y5;
+  	c#1*1;
+  	%c#1%
+  	[fb*2];
+  OUTPUT:	TECH1 TECH8;
+
+
+
+INPUT READING TERMINATED NORMALLY
+
+
+
+this is an example of a two-level CFA
+mixture model with continuous factor
+indicators
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                        1000
+
+Number of dependent variables                                    5
+Number of independent variables                                  0
+Number of continuous latent variables                            2
+Number of categorical latent variables                           1
+
+Observed dependent variables
+
+  Continuous
+   Y1          Y2          Y3          Y4          Y5
+
+Continuous latent variables
+   FW          FB
+
+Categorical latent variables
+   C
+
+Variables with special functions
+
+  Cluster variable      CLUS
+
+Estimator                                                      MLR
+Information matrix                                        OBSERVED
+Optimization Specifications for the Quasi-Newton Algorithm for
+Continuous Outcomes
+  Maximum number of iterations                                 100
+  Convergence criterion                                  0.100D-05
+Optimization Specifications for the EM Algorithm
+  Maximum number of iterations                                 500
+  Convergence criteria
+    Loglikelihood change                                 0.100D-02
+    Relative loglikelihood change                        0.100D-05
+    Derivative                                           0.100D-02
+Optimization Specifications for the M step of the EM Algorithm for
+Categorical Latent variables
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-02
+  Basis for M step termination                           ITERATION
+Optimization Specifications for the M step of the EM Algorithm for
+Censored, Binary or Ordered Categorical (Ordinal), Unordered
+Categorical (Nominal) and Count Outcomes
+  Number of M step iterations                                    1
+  M step convergence criterion                           0.100D-02
+  Basis for M step termination                           ITERATION
+  Maximum value for logit thresholds                            15
+  Minimum value for logit thresholds                           -15
+  Minimum expected cell size for chi-square              0.100D-01
+Optimization algorithm                                         EMA
+Integration Specifications
+  Type                                                    STANDARD
+  Number of integration points                                  15
+  Dimensions of numerical integration                            2
+  Adaptive quadrature                                           ON
+Cholesky                                                       OFF
+
+Input data file(s)
+  ex10.4.dat
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of clusters                        110
+
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     Y1                    1.081       0.005      -3.441    0.10%      -0.342      0.637      1.070
+            1000.000       2.601      -0.351       5.535    0.10%       1.544      2.405
+     Y2                    0.836      -0.042      -2.756    0.10%      -0.333      0.493      0.850
+            1000.000       1.746      -0.417       4.350    0.10%       1.199      1.992
+     Y3                    0.833      -0.027      -3.209    0.10%      -0.341      0.466      0.842
+            1000.000       1.707      -0.422       4.296    0.10%       1.187      2.016
+     Y4                    0.856      -0.002      -3.088    0.10%      -0.293      0.500      0.867
+            1000.000       1.655      -0.366       4.582    0.10%       1.223      2.009
+     Y5                    0.820      -0.027      -3.165    0.10%      -0.360      0.443      0.800
+            1000.000       1.712      -0.372       4.649    0.10%       1.192      1.974
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       23
+
+Loglikelihood
+
+          H0 Value                       -5334.228
+          H0 Scaling Correction Factor      0.9313
+            for MLR
+
+Information Criteria
+
+          Akaike (AIC)                   10714.456
+          Bayesian (BIC)                 10827.334
+          Sample-Size Adjusted BIC       10754.285
+            (n* = (n + 2) / 24)
+
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON ESTIMATED POSTERIOR PROBABILITIES
+
+    Latent
+   Classes
+
+       1        503.78930          0.50379
+       2        496.21070          0.49621
+
+
+FINAL CLASS COUNTS AND PROPORTIONS FOR THE LATENT CLASSES
+BASED ON THEIR MOST LIKELY LATENT CLASS MEMBERSHIP
+
+Class Counts and Proportions
+
+    Latent
+   Classes
+
+       1              505          0.50500
+       2              495          0.49500
+
+
+CLASSIFICATION QUALITY
+
+     Entropy                         0.538
+
+
+Average Latent Class Probabilities for Most Likely Latent Class Membership (Row)
+by Latent Class (Column)
+
+           1        2
+
+    1   0.861    0.139
+    2   0.139    0.861
+
+
+Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+           1        2
+
+    1   0.863    0.137
+    2   0.142    0.858
+
+
+Logits for the Classification Probabilities for the Most Likely Latent Class Membership (Column)
+by Latent Class (Row)
+
+              1        2
+
+    1      1.841    0.000
+    2     -1.803    0.000
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Within Level
+
+Latent Class 1
+
+ FW       BY
+    Y1                 1.000      0.000    999.000    999.000
+    Y2                 0.859      0.045     19.226      0.000
+    Y3                 0.720      0.038     18.919      0.000
+    Y4                 0.794      0.043     18.548      0.000
+    Y5                 0.746      0.041     18.213      0.000
+
+ Variances
+    FW                 0.781      0.096      8.156      0.000
+
+ Residual Variances
+    Y1                 0.263      0.018     14.340      0.000
+    Y2                 0.240      0.015     16.219      0.000
+    Y3                 0.245      0.013     18.948      0.000
+    Y4                 0.242      0.014     17.447      0.000
+    Y5                 0.264      0.013     20.631      0.000
+
+Latent Class 2
+
+ FW       BY
+    Y1                 1.000      0.000    999.000    999.000
+    Y2                 0.859      0.045     19.226      0.000
+    Y3                 0.720      0.038     18.919      0.000
+    Y4                 0.794      0.043     18.548      0.000
+    Y5                 0.746      0.041     18.213      0.000
+
+ Variances
+    FW                 0.781      0.096      8.156      0.000
+
+ Residual Variances
+    Y1                 0.263      0.018     14.340      0.000
+    Y2                 0.240      0.015     16.219      0.000
+    Y3                 0.245      0.013     18.948      0.000
+    Y4                 0.242      0.014     17.447      0.000
+    Y5                 0.264      0.013     20.631      0.000
+
+Between Level
+
+Latent Class 1
+
+ FB       BY
+    Y1                 1.000      0.000    999.000    999.000
+    Y2                 0.773      0.024     31.776      0.000
+    Y3                 0.824      0.024     34.227      0.000
+    Y4                 0.769      0.023     33.965      0.000
+    Y5                 0.807      0.025     31.935      0.000
+
+ Means
+    FB                 2.180      0.119     18.344      0.000
+
+ Intercepts
+    Y1                -0.020      0.116     -0.172      0.864
+    Y2                -0.015      0.092     -0.163      0.871
+    Y3                -0.074      0.095     -0.777      0.437
+    Y4                 0.010      0.089      0.117      0.907
+    Y5                -0.067      0.096     -0.702      0.483
+
+ Variances
+    FB                 0.411      0.097      4.238      0.000
+
+Latent Class 2
+
+ FB       BY
+    Y1                 1.000      0.000    999.000    999.000
+    Y2                 0.773      0.024     31.776      0.000
+    Y3                 0.824      0.024     34.227      0.000
+    Y4                 0.769      0.023     33.965      0.000
+    Y5                 0.807      0.025     31.935      0.000
+
+ Means
+    FB                 0.000      0.000    999.000    999.000
+
+ Intercepts
+    Y1                -0.020      0.116     -0.172      0.864
+    Y2                -0.015      0.092     -0.163      0.871
+    Y3                -0.074      0.095     -0.777      0.437
+    Y4                 0.010      0.089      0.117      0.907
+    Y5                -0.067      0.096     -0.702      0.483
+
+ Variances
+    FB                 0.411      0.097      4.238      0.000
+
+Categorical Latent Variables
+
+Within Level
+
+ Means
+    C#1                0.038      0.206      0.186      0.853
+
+Between Level
+
+ Variances
+    C#1                0.986      0.379      2.600      0.009
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.300E-03
+       (ratio of smallest to largest eigenvalue)
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR WITHIN LEVEL, LATENT CLASS 1
+
+
+           NU
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              FW            C#1           FB
+              ________      ________      ________
+ Y1                 0             0             0
+ Y2                 1             0             0
+ Y3                 2             0             0
+ Y4                 3             0             0
+ Y5                 4             0             0
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+ Y1                 5
+ Y2                 0             6
+ Y3                 0             0             7
+ Y4                 0             0             0             8
+ Y5                 0             0             0             0             9
+
+
+           ALPHA
+              FW            C#1           FB
+              ________      ________      ________
+                    0             0             0
+
+
+           BETA
+              FW            C#1           FB
+              ________      ________      ________
+ FW                 0             0             0
+ C#1                0             0             0
+ FB                 0             0             0
+
+
+           PSI
+              FW            C#1           FB
+              ________      ________      ________
+ FW                10
+ C#1                0             0
+ FB                 0             0             0
+
+
+     PARAMETER SPECIFICATION FOR WITHIN LEVEL, LATENT CLASS 2
+
+
+           NU
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+                    0             0             0             0             0
+
+
+           LAMBDA
+              FW            C#1           FB
+              ________      ________      ________
+ Y1                 0             0             0
+ Y2                 1             0             0
+ Y3                 2             0             0
+ Y4                 3             0             0
+ Y5                 4             0             0
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+ Y1                 5
+ Y2                 0             6
+ Y3                 0             0             7
+ Y4                 0             0             0             8
+ Y5                 0             0             0             0             9
+
+
+           ALPHA
+              FW            C#1           FB
+              ________      ________      ________
+                    0             0             0
+
+
+           BETA
+              FW            C#1           FB
+              ________      ________      ________
+ FW                 0             0             0
+ C#1                0             0             0
+ FB                 0             0             0
+
+
+           PSI
+              FW            C#1           FB
+              ________      ________      ________
+ FW                10
+ C#1                0             0
+ FB                 0             0             0
+
+
+     PARAMETER SPECIFICATION FOR BETWEEN LEVEL, LATENT CLASS 1
+
+
+           NU
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+                   11            12            13            14            15
+
+
+           LAMBDA
+              FW            C#1           FB
+              ________      ________      ________
+ Y1                 0             0             0
+ Y2                 0             0            16
+ Y3                 0             0            17
+ Y4                 0             0            18
+ Y5                 0             0            19
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+ Y1                 0
+ Y2                 0             0
+ Y3                 0             0             0
+ Y4                 0             0             0             0
+ Y5                 0             0             0             0             0
+
+
+           ALPHA
+              FW            C#1           FB
+              ________      ________      ________
+                    0             0            20
+
+
+           BETA
+              FW            C#1           FB
+              ________      ________      ________
+ FW                 0             0             0
+ C#1                0             0             0
+ FB                 0             0             0
+
+
+           PSI
+              FW            C#1           FB
+              ________      ________      ________
+ FW                 0
+ C#1                0            21
+ FB                 0             0            22
+
+
+     PARAMETER SPECIFICATION FOR BETWEEN LEVEL, LATENT CLASS 2
+
+
+           NU
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+                   11            12            13            14            15
+
+
+           LAMBDA
+              FW            C#1           FB
+              ________      ________      ________
+ Y1                 0             0             0
+ Y2                 0             0            16
+ Y3                 0             0            17
+ Y4                 0             0            18
+ Y5                 0             0            19
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+ Y1                 0
+ Y2                 0             0
+ Y3                 0             0             0
+ Y4                 0             0             0             0
+ Y5                 0             0             0             0             0
+
+
+           ALPHA
+              FW            C#1           FB
+              ________      ________      ________
+                    0             0             0
+
+
+           BETA
+              FW            C#1           FB
+              ________      ________      ________
+ FW                 0             0             0
+ C#1                0             0             0
+ FB                 0             0             0
+
+
+           PSI
+              FW            C#1           FB
+              ________      ________      ________
+ FW                 0
+ C#1                0            21
+ FB                 0             0            22
+
+
+     PARAMETER SPECIFICATION FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                   23             0
+
+
+           GAMMA(C)
+              FW            C#1           FB
+              ________      ________      ________
+ C#1                0             0             0
+ C#2                0             0             0
+
+
+     STARTING VALUES FOR WITHIN LEVEL, LATENT CLASS 1
+
+
+           NU
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              FW            C#1           FB
+              ________      ________      ________
+ Y1             1.000         0.000         0.000
+ Y2             1.000         0.000         0.000
+ Y3             1.000         0.000         0.000
+ Y4             1.000         0.000         0.000
+ Y5             1.000         0.000         0.000
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+ Y1             1.301
+ Y2             0.000         0.873
+ Y3             0.000         0.000         0.854
+ Y4             0.000         0.000         0.000         0.827
+ Y5             0.000         0.000         0.000         0.000         0.856
+
+
+           ALPHA
+              FW            C#1           FB
+              ________      ________      ________
+                0.000         0.000         0.000
+
+
+           BETA
+              FW            C#1           FB
+              ________      ________      ________
+ FW             0.000         0.000         0.000
+ C#1            0.000         0.000         0.000
+ FB             0.000         0.000         0.000
+
+
+           PSI
+              FW            C#1           FB
+              ________      ________      ________
+ FW             0.050
+ C#1            0.000         0.000
+ FB             0.000         0.000         0.000
+
+
+     STARTING VALUES FOR WITHIN LEVEL, LATENT CLASS 2
+
+
+           NU
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+                0.000         0.000         0.000         0.000         0.000
+
+
+           LAMBDA
+              FW            C#1           FB
+              ________      ________      ________
+ Y1             1.000         0.000         0.000
+ Y2             1.000         0.000         0.000
+ Y3             1.000         0.000         0.000
+ Y4             1.000         0.000         0.000
+ Y5             1.000         0.000         0.000
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+ Y1             1.301
+ Y2             0.000         0.873
+ Y3             0.000         0.000         0.854
+ Y4             0.000         0.000         0.000         0.827
+ Y5             0.000         0.000         0.000         0.000         0.856
+
+
+           ALPHA
+              FW            C#1           FB
+              ________      ________      ________
+                0.000         0.000         0.000
+
+
+           BETA
+              FW            C#1           FB
+              ________      ________      ________
+ FW             0.000         0.000         0.000
+ C#1            0.000         0.000         0.000
+ FB             0.000         0.000         0.000
+
+
+           PSI
+              FW            C#1           FB
+              ________      ________      ________
+ FW             0.050
+ C#1            0.000         0.000
+ FB             0.000         0.000         0.000
+
+
+     STARTING VALUES FOR BETWEEN LEVEL, LATENT CLASS 1
+
+
+           NU
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+                1.081         0.836         0.833         0.856         0.820
+
+
+           LAMBDA
+              FW            C#1           FB
+              ________      ________      ________
+ Y1             0.000         0.000         1.000
+ Y2             0.000         0.000         1.000
+ Y3             0.000         0.000         1.000
+ Y4             0.000         0.000         1.000
+ Y5             0.000         0.000         1.000
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+ Y1             0.000
+ Y2             0.000         0.000
+ Y3             0.000         0.000         0.000
+ Y4             0.000         0.000         0.000         0.000
+ Y5             0.000         0.000         0.000         0.000         0.000
+
+
+           ALPHA
+              FW            C#1           FB
+              ________      ________      ________
+                0.000         0.000         2.000
+
+
+           BETA
+              FW            C#1           FB
+              ________      ________      ________
+ FW             0.000         0.000         0.000
+ C#1            0.000         0.000         0.000
+ FB             0.000         0.000         0.000
+
+
+           PSI
+              FW            C#1           FB
+              ________      ________      ________
+ FW             0.000
+ C#1            0.000         1.000
+ FB             0.000         0.000         0.050
+
+
+     STARTING VALUES FOR BETWEEN LEVEL, LATENT CLASS 2
+
+
+           NU
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+                1.081         0.836         0.833         0.856         0.820
+
+
+           LAMBDA
+              FW            C#1           FB
+              ________      ________      ________
+ Y1             0.000         0.000         1.000
+ Y2             0.000         0.000         1.000
+ Y3             0.000         0.000         1.000
+ Y4             0.000         0.000         1.000
+ Y5             0.000         0.000         1.000
+
+
+           THETA
+              Y1            Y2            Y3            Y4            Y5
+              ________      ________      ________      ________      ________
+ Y1             0.000
+ Y2             0.000         0.000
+ Y3             0.000         0.000         0.000
+ Y4             0.000         0.000         0.000         0.000
+ Y5             0.000         0.000         0.000         0.000         0.000
+
+
+           ALPHA
+              FW            C#1           FB
+              ________      ________      ________
+                0.000         0.000         0.000
+
+
+           BETA
+              FW            C#1           FB
+              ________      ________      ________
+ FW             0.000         0.000         0.000
+ C#1            0.000         0.000         0.000
+ FB             0.000         0.000         0.000
+
+
+           PSI
+              FW            C#1           FB
+              ________      ________      ________
+ FW             0.000
+ C#1            0.000         1.000
+ FB             0.000         0.000         0.050
+
+
+     STARTING VALUES FOR LATENT CLASS REGRESSION MODEL PART
+
+
+           ALPHA(C)
+              C#1           C#2
+              ________      ________
+                0.000         0.000
+
+
+           GAMMA(C)
+              FW            C#1           FB
+              ________      ________      ________
+ C#1            0.000         0.000         0.000
+ C#2            0.000         0.000         0.000
+
+
+TECHNICAL 8 OUTPUT
+
+
+   E STEP  ITER  LOGLIKELIHOOD    ABS CHANGE   REL CHANGE  ALGORITHM
+              1 -0.71376209D+04    0.0000000    0.0000000  EM
+              2 -0.54016613D+04 1735.9595840    0.2432126  EM
+              3 -0.53657018D+04   35.9595033    0.0066571  EM
+              4 -0.53570703D+04    8.6314690    0.0016086  EM
+              5 -0.53531499D+04    3.9203881    0.0007318  EM
+              6 -0.53504601D+04    2.6898612    0.0005025  EM
+              7 -0.53483168D+04    2.1432859    0.0004006  EM
+              8 -0.53465319D+04    1.7849314    0.0003337  EM
+              9 -0.53450232D+04    1.5086586    0.0002822  EM
+             10 -0.53437392D+04    1.2839616    0.0002402  EM
+             11 -0.53426408D+04    1.0984677    0.0002056  EM
+             12 -0.53416956D+04    0.9451991    0.0001769  EM
+             13 -0.53408766D+04    0.8189280    0.0001533  EM
+             14 -0.53401615D+04    0.7150909    0.0001339  EM
+             15 -0.53395320D+04    0.6295253    0.0001179  EM
+             16 -0.53389736D+04    0.5584696    0.0001046  EM
+             17 -0.53384749D+04    0.4986872    0.0000934  EM
+             18 -0.53380273D+04    0.4475608    0.0000838  EM
+             19 -0.53376241D+04    0.4031849    0.0000755  EM
+             20 -0.53372599D+04    0.3642501    0.0000682  EM
+             21 -0.53369301D+04    0.3297436    0.0000618  EM
+             22 -0.53366314D+04    0.2987719    0.0000560  EM
+             23 -0.53363608D+04    0.2705738    0.0000507  EM
+             24 -0.53361162D+04    0.2445344    0.0000458  EM
+             25 -0.53358961D+04    0.2201562    0.0000413  EM
+             26 -0.53356990D+04    0.1970663    0.0000369  EM
+             27 -0.53355239D+04    0.1750936    0.0000328  EM
+             28 -0.53353695D+04    0.1543946    0.0000289  EM
+             29 -0.53352341D+04    0.1354270    0.0000254  EM
+             30 -0.53351155D+04    0.1186219    0.0000222  EM
+             31 -0.53350114D+04    0.1040453    0.0000195  EM
+             32 -0.53349200D+04    0.0914553    0.0000171  EM
+             33 -0.53348394D+04    0.0805473    0.0000151  EM
+             34 -0.53347684D+04    0.0710655    0.0000133  EM
+             35 -0.53347056D+04    0.0627976    0.0000118  EM
+             36 -0.53346500D+04    0.0555634    0.0000104  EM
+             37 -0.53343622D+04    0.2878291    0.0000540  FS
+             38 -0.53342446D+04    0.1175709    0.0000220  EM
+             39 -0.53342353D+04    0.0092905    0.0000017  EM
+             40 -0.53342316D+04    0.0037283    0.0000007  EM
+             41 -0.53342297D+04    0.0019164    0.0000004  EM
+             42 -0.53342286D+04    0.0011246    0.0000002  EM
+             43 -0.53342278D+04    0.0007126    0.0000001  EM
+
+
+     Beginning Time:  22:57:27
+        Ending Time:  22:57:32
+       Elapsed Time:  00:00:05
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2022 Muthen & Muthen
+</PRE>
+<P><A HREF="http://www.statmodel.com/ugexcerpts.shtml">Back to examples</A>
+</BODY>
+</HTML>

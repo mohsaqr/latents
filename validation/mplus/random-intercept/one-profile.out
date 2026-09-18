@@ -1,0 +1,391 @@
+Mplus VERSION 9 DEMO (Mac)
+MUTHEN & MUTHEN
+09/17/2026  10:55 PM
+
+INPUT INSTRUCTIONS
+
+  TITLE: Gaussian scalar group random intercept, fixed unit loadings;
+  DATA: FILE = one-profile.dat;
+  VARIABLE: NAMES = y1 y2 group;
+    USEVARIABLES = y1 y2;
+    CLUSTER = group;
+  ANALYSIS: TYPE = TWOLEVEL;
+    ESTIMATOR = ML;
+    ITERATIONS = 10000;
+    CONVERGENCE = 0.000000001;
+    LOGCRITERION = 0.000000001;
+    RLOGCRITERION = 0.000000001;
+    MCONVERGENCE = 0.00000001;
+    MITERATIONS = 10000;
+  MODEL:
+    %WITHIN%
+    y1 y2;
+    y1 WITH y2@0;
+    %BETWEEN%
+    b BY y1@1 y2@1;
+    y1@0 y2@0;
+    [y1 y2];
+    [b@0];
+    b;
+  OUTPUT: TECH1;
+  SAVEDATA: RESULTS = one-profile-results.dat;
+    FILE = one-profile-saved.dat;
+    FORMAT = F20.12;
+
+
+
+INPUT READING TERMINATED NORMALLY
+
+
+
+Gaussian scalar group random intercept, fixed unit loadings;
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                         300
+
+Number of dependent variables                                    2
+Number of independent variables                                  0
+Number of continuous latent variables                            1
+
+Observed dependent variables
+
+  Continuous
+   Y1          Y2
+
+Continuous latent variables
+   B
+
+Variables with special functions
+
+  Cluster variable      GROUP
+
+Estimator                                                       ML
+Information matrix                                        OBSERVED
+Maximum number of iterations                                 10000
+Convergence criterion                                    0.100D-08
+Maximum number of EM iterations                              10000
+Convergence criteria for the EM algorithm
+  Loglikelihood change                                   0.100D-08
+  Relative loglikelihood change                          0.100D-08
+  Derivative                                             0.100D-07
+Minimum variance                                         0.100D-03
+Maximum number of steepest descent iterations                   20
+Maximum number of iterations for H1                           2000
+Convergence criterion for H1                             0.100D-03
+Optimization algorithm                                         EMA
+
+Input data file(s)
+  one-profile.dat
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of clusters                         60
+
+     Average cluster size        5.000
+
+     Estimated Intraclass Correlations for the Y Variables
+
+                Intraclass              Intraclass
+     Variable  Correlation   Variable  Correlation
+
+     Y1           0.692      Y2           0.503
+
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     Y1                    1.263       0.232      -0.773    0.33%       0.579      1.014      1.260
+             300.000       0.664      -0.118       3.618    0.33%       1.427      1.951
+     Y2                   -0.426       0.003      -3.316    0.33%      -1.297     -0.733     -0.478
+             300.000       0.993      -0.369       1.944    0.33%      -0.240      0.493
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                        5
+
+Loglikelihood
+
+          H0 Value                        -592.687
+          H1 Value                        -592.484
+
+Information Criteria
+
+          Akaike (AIC)                    1195.374
+          Bayesian (BIC)                  1213.893
+          Sample-Size Adjusted BIC        1198.036
+            (n* = (n + 2) / 24)
+
+Chi-Square Test of Model Fit
+
+          Value                              0.407
+          Degrees of Freedom                     3
+          P-Value                           0.9389
+
+RMSEA (Root Mean Square Error Of Approximation)
+
+          Estimate                           0.000
+
+CFI/TLI
+
+          CFI                                1.000
+          TLI                                1.000
+
+Chi-Square Test of Model Fit for the Baseline Model
+
+          Value                             93.205
+          Degrees of Freedom                     2
+          P-Value                           0.0000
+
+SRMR (Standardized Root Mean Square Residual)
+
+          Value for Within                   0.015
+          Value for Between                  0.028
+
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+Within Level
+
+ Y1       WITH
+    Y2                 0.000      0.000    999.000    999.000
+
+ Variances
+    Y1                 0.203      0.018     11.184      0.000
+    Y2                 0.495      0.042     11.687      0.000
+
+Between Level
+
+ B        BY
+    Y1                 1.000      0.000    999.000    999.000
+    Y2                 1.000      0.000    999.000    999.000
+
+ Means
+    B                  0.000      0.000    999.000    999.000
+
+ Intercepts
+    Y1                 1.263      0.092     13.669      0.000
+    Y2                -0.426      0.098     -4.370      0.000
+
+ Variances
+    B                  0.472      0.091      5.160      0.000
+
+ Residual Variances
+    Y1                 0.000      0.000    999.000    999.000
+    Y2                 0.000      0.000    999.000    999.000
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.179E-01
+       (ratio of smallest to largest eigenvalue)
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION FOR WITHIN
+
+
+           NU
+              Y1            Y2
+              ________      ________
+                    0             0
+
+
+           THETA
+              Y1            Y2
+              ________      ________
+ Y1                 1
+ Y2                 0             2
+
+
+     PARAMETER SPECIFICATION FOR BETWEEN
+
+
+           NU
+              Y1            Y2
+              ________      ________
+                    3             4
+
+
+           LAMBDA
+              B
+              ________
+ Y1                 0
+ Y2                 0
+
+
+           THETA
+              Y1            Y2
+              ________      ________
+ Y1                 0
+ Y2                 0             0
+
+
+           ALPHA
+              B
+              ________
+                    0
+
+
+           BETA
+              B
+              ________
+ B                  0
+
+
+           PSI
+              B
+              ________
+ B                  5
+
+
+     STARTING VALUES FOR WITHIN
+
+
+           NU
+              Y1            Y2
+              ________      ________
+                0.000         0.000
+
+
+           THETA
+              Y1            Y2
+              ________      ________
+ Y1             0.332
+ Y2             0.000         0.497
+
+
+     STARTING VALUES FOR BETWEEN
+
+
+           NU
+              Y1            Y2
+              ________      ________
+                1.263        -0.426
+
+
+           LAMBDA
+              B
+              ________
+ Y1             1.000
+ Y2             1.000
+
+
+           THETA
+              Y1            Y2
+              ________      ________
+ Y1             0.000
+ Y2             0.000         0.000
+
+
+           ALPHA
+              B
+              ________
+                0.000
+
+
+           BETA
+              B
+              ________
+ B              0.000
+
+
+           PSI
+              B
+              ________
+ B              0.050
+
+
+RESULTS SAVING INFORMATION
+
+  Order of data
+
+    Parameter estimates
+     (saved in order shown in Technical 1 output)
+    Standard errors
+     (saved in order shown in Technical 1 output)
+    Number of Free Parameters
+    H0 Loglikelihood
+    H1 Loglikelihood
+    Akaike (AIC)
+    Bayesian (BIC)
+    Sample-Size Adjusted BIC
+    Chi-square : Value
+    Chi-square : Degrees of Freedom
+    Chi-square : P-Value
+    CFI
+    TLI
+    RMSEA : Estimate
+    SRMR : Within level
+    SRMR : Between level
+    Condition Number
+
+  Save file
+    one-profile-results.dat
+
+  Save file format           Free
+
+
+SAVEDATA INFORMATION
+
+
+  Save file
+    one-profile-saved.dat
+
+  Order and format of variables
+
+    Y1             F20.12
+    Y2             F20.12
+    GROUP          I3
+
+  Save file format
+    2F20.12 I3
+
+  Save file record length    10000
+
+  Save missing symbol        *
+
+
+     Beginning Time:  22:55:58
+        Ending Time:  22:55:58
+       Elapsed Time:  00:00:00
+
+
+Mplus VERSION 9 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2025 Muthen & Muthen

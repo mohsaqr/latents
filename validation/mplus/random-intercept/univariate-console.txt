@@ -1,0 +1,58 @@
+
+     Mplus VERSION 9 DEMO (Mac)
+     MUTHEN & MUTHEN
+
+     Running input file 'univariate.inp'...
+
+
+
+  ITER  LOGLIKELIHOOD    ABS CHANGE   REL CHANGE  ALGO  TIME  TOTAL TIME
+     1 -0.27605898D+03    0.0000000    0.0000000  EM    0.00     0.0
+     2 -0.26457992D+03   11.4790624    0.0415819  EM    0.00     0.0
+     3 -0.26352957D+03    1.0503484    0.0039699  EM    0.00     0.0
+     4 -0.26346831D+03    0.0612621    0.0002325  EM    0.00     0.0
+     5 -0.26346525D+03    0.0030562    0.0000116  EM    0.00     0.0
+     6 -0.26346510D+03    0.0001466    0.0000006  EM    0.00     0.0
+     7 -0.26346510D+03    0.0000070    0.0000000  EM    0.00     0.0
+     8 -0.26346509D+03    0.0000003    0.0000000  EM    0.00     0.0
+     9 -0.26346509D+03    0.0000000    0.0000000  EM    0.00     0.0
+    10 -0.26346509D+03    0.0000000    0.0000000  EM    0.00     0.0
+     Parameters           1         3         2
+     Derivatives  -0.13D-05  0.15D-06  0.50D-14
+    11 -0.26346509D+03    0.0000000    0.0000000  EM    0.00     0.0
+     Parameters           1         3         2
+     Derivatives  -0.29D-06  0.33D-07  0.48D-15
+    12 -0.26346509D+03    0.0000000    0.0000000  EM    0.00     0.0
+     Parameters           1         3         2
+     Derivatives  -0.58D-07  0.65D-08 -0.78D-15
+    13 -0.26346509D+03    0.0000000    0.0000000  EM    0.00     0.0
+     Parameters           1         3         2
+     Derivatives  -0.13D-07  0.14D-08  0.00D+00
+    14 -0.26346509D+03    0.0000000    0.0000000  EM    0.00     0.0
+     Parameters           1         3         2
+     Derivatives  -0.27D-08  0.31D-09 -0.19D-15
+
+
+  TECHNICAL 8 OUTPUT FOR THE H1 MODEL
+
+
+  ITER  LOGLIKELIHOOD    ABS CHANGE   REL CHANGE  ALGO  TIME  TOTAL TIME
+     1 -0.26674777D+03    0.0000000    0.0000000  EM    0.00     0.0
+     2 -0.26357614D+03    3.1716365    0.0118900  EM    0.00     0.0
+     3 -0.26346990D+03    0.1062304    0.0004030  EM    0.00     0.0
+     4 -0.26346532D+03    0.0045880    0.0000174  EM    0.00     0.0
+     5 -0.26346511D+03    0.0002113    0.0000008  EM    0.00     0.0
+     6 -0.26346510D+03    0.0000099    0.0000000  EM    0.00     0.0
+
+
+  TECHNICAL 8 OUTPUT FOR THE BASELINE MODEL
+
+
+  ITER  LOGLIKELIHOOD    ABS CHANGE   REL CHANGE  ALGO  TIME  TOTAL TIME
+     1 -0.26346509D+03    0.0000000    0.0000000  EM    0.01     0.0
+     2 -0.26346509D+03    0.0000000    0.0000000  EM    0.00     0.0
+     Beginning Time:  22:57:23
+        Ending Time:  22:57:23
+       Elapsed Time:  00:00:00
+
+     Output saved in 'univariate.out'.

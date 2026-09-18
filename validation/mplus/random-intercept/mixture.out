@@ -1,0 +1,68 @@
+Mplus VERSION 9 DEMO (Mac)
+MUTHEN & MUTHEN
+09/17/2026  10:58 PM
+
+INPUT INSTRUCTIONS
+
+  TITLE: One indicator two-profile LPA with scalar group random intercept;
+  DATA: FILE = mixture.dat;
+  VARIABLE: NAMES = y1 group;
+    USEVARIABLES = y1;
+    CLUSTER = group;
+    CLASSES = cb(1) cw(2);
+    BETWEEN = cb;
+  ANALYSIS: TYPE = TWOLEVEL MIXTURE;
+    ESTIMATOR = ML;
+    ALGORITHM = INTEGRATION;
+    INTEGRATION = 101;
+    STARTS = 50 10;
+    MITERATIONS = 10000;
+    LOGCRITERION = 0.000000001;
+    RLOGCRITERION = 0.000000001;
+    MCONVERGENCE = 0.000001;
+  MODEL:
+    %WITHIN%
+    %OVERALL%
+    y1;
+    %BETWEEN%
+    %OVERALL%
+    y1;
+  MODEL cw:
+    %WITHIN%
+    %cw#1%
+    [y1];
+    y1;
+    %cw#2%
+    [y1];
+    y1;
+  OUTPUT: TECH1;
+  SAVEDATA: RESULTS = mixture-results.dat;
+
+*** ERROR
+  The following MODEL statements are ignored:
+  * Statements in Class %CW#1% of MODEL CW on the WITHIN level:
+    [ Y1 ]
+    Y1
+  * Statements in Class %CW#2% of MODEL CW on the WITHIN level:
+    [ Y1 ]
+    Y1
+*** ERROR
+  One or more MODEL statements were ignored.  These statements may be incorrect.
+
+Mplus VERSION 9 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2025 Muthen & Muthen
