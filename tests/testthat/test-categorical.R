@@ -211,7 +211,10 @@ test_that("unsupported categorical combinations are refused by condition class",
                     n_starts = 8, seed = 2)
   smaller <- multilpa(dat, indicators, "school", 1, 1, categorical = indicators,
                         n_starts = 3, seed = 2)
-  expect_error(parameter_inference(fit, dat), class = "multilpa_unsupported_inference")
+  # Categorical measurement now carries analytic scores, so inference works.
+  categorical_inference <- parameter_inference(fit, dat)
+  expect_true(all(categorical_inference$standard_error >= 0))
+  expect_true("response" %in% categorical_inference$parameter)
   expect_error(bootstrap_lrt(smaller, fit, dat, n_boot = 3, seed = 1),
                class = "multilpa_unsupported_bootstrap")
   expect_error(multilpa(dat, indicators, "school", 2, 2, categorical = "absent",

@@ -7,11 +7,14 @@
   stopifnot(inherits(object, "multilpa"), scale %in% c("natural", "unconstrained"))
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
-  n_indicators <- length(object$indicators)
-  mean_names <- as.vector(t(outer(seq_len(n_profiles), object$indicators,
+  ## Only the Gaussian indicators carry means and variances; a mixed or
+  ## all-categorical fit has fewer of these than it has indicators.
+  continuous <- .multilpa_continuous_names(object)
+  n_indicators <- length(continuous)
+  mean_names <- as.vector(t(outer(seq_len(n_profiles), continuous,
     function(profile, indicator) sprintf("mean[%s,%s]", profile, indicator))))
   variance_names <- if (object$variance_model == "equal") {
-    sprintf("variance[shared,%s]", object$indicators)
+    sprintf("variance[shared,%s]", continuous)
   } else sub("^mean", "variance", mean_names)
   variance_values <- if (object$variance_model == "equal") object$variances[1L, ] else
     as.vector(t(object$variances))
@@ -36,9 +39,69 @@
     variance_values <- unname(covariance_coordinates)
     variance_names <- names(covariance_coordinates)
   }
+  response <- .multilpa_response_coordinates(object, scale)
   stats::setNames(c(as.vector(t(object$means)), variance_values,
-                   profile_values, group_values),
-                 c(mean_names, variance_names, profile_names, group_names))
+                   unname(response), profile_values, group_values),
+                 c(mean_names, variance_names, names(response),
+                   profile_names, group_names))
+}
+
+#' Encode categorical response probabilities
+#'
+#' Natural coordinates are the probabilities themselves; unconstrained
+#' coordinates are multinomial logits against each indicator's last category,
+#' which is the same simplex device the mixing probabilities already use.
+#'
+#' @param object A fitted `multilpa` model.
+#' @param scale `"natural"` or `"unconstrained"`.
+#' @return A named numeric vector, empty when no indicator is categorical.
+#' @noRd
+.multilpa_response_coordinates <- function(object, scale) {
+  blocks <- object$response_probabilities
+  if (is.null(blocks) || length(blocks) == 0L) return(stats::setNames(numeric(0), character(0)))
+  prefix <- if (scale == "natural") "response" else "response_logit"
+  unlist(lapply(names(blocks), function(indicator) {
+    block <- blocks[[indicator]]
+    categories <- colnames(block) %||% as.character(seq_len(ncol(block)))
+    keep <- if (scale == "natural") seq_len(ncol(block)) else seq_len(ncol(block) - 1L)
+    values <- if (scale == "natural") block[, keep, drop = FALSE] else
+      log(block[, keep, drop = FALSE]) - log(block[, ncol(block)])
+    labels <- as.vector(t(outer(seq_len(nrow(block)), categories[keep],
+      function(profile, category) sprintf("%s[%s,%s,%s]", prefix, profile,
+                                          indicator, category))))
+    stats::setNames(as.vector(t(values)), labels)
+  }), use.names = TRUE)
+}
+
+#' Rebuild response probabilities from multinomial logits
+#' @param theta Unconstrained values for the categorical block, in encode order.
+#' @param object The fit supplying the shapes and names.
+#' @return A named list of profiles-by-categories probability matrices.
+#' @noRd
+.multilpa_response_decode <- function(theta, object) {
+  blocks <- object$response_probabilities
+  at <- 0L
+  result <- lapply(blocks, function(block) {
+    n_free <- nrow(block) * (ncol(block) - 1L)
+    logits <- cbind(matrix(theta[at + seq_len(n_free)], nrow(block),
+                           ncol(block) - 1L, byrow = TRUE), 0)
+    at <<- at + n_free
+    probabilities <- exp(sweep(logits, 1L, .multilpa_log_sum_exp(logits), "-"))
+    dimnames(probabilities) <- dimnames(block)
+    probabilities
+  })
+  names(result) <- names(blocks)
+  result
+}
+
+#' How many free parameters the categorical block contributes
+#' @param object A fitted `multilpa` model.
+#' @return A single integer, zero when no indicator is categorical.
+#' @noRd
+.multilpa_response_width <- function(object) {
+  blocks <- object$response_probabilities
+  if (is.null(blocks) || length(blocks) == 0L) return(0L)
+  sum(vapply(blocks, function(block) nrow(block) * (ncol(block) - 1L), numeric(1)))
 }
 
 #' Encode unrestricted Gaussian covariance matrices
@@ -61,7 +124,8 @@
     prefix <- if (scale == "natural") "covariance" else "cholesky"
     labels <- sprintf("%s[%s,%s,%s]", prefix,
       if (object$variance_model == "equal") "shared" else profile,
-      object$indicators[positions[, 1L]], object$indicators[positions[, 2L]])
+      .multilpa_continuous_names(object)[positions[, 1L]],
+      .multilpa_continuous_names(object)[positions[, 2L]])
     if (scale == "unconstrained") {
       labels[positions[, 1L] == positions[, 2L]] <- sub("^cholesky", "log_cholesky",
         labels[positions[, 1L] == positions[, 2L]])
@@ -81,7 +145,7 @@
   theta <- unname(theta)
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
-  n_indicators <- length(object$indicators)
+  n_indicators <- length(.multilpa_continuous_names(object))
   n_means <- n_profiles * n_indicators
   n_covariance <- if (identical(object$covariance_model, "full"))
     n_indicators * (n_indicators + 1L) / 2L else n_indicators
@@ -107,17 +171,64 @@
     variances <- matrix(exp(theta[n_means + seq_len(n_variances)]),
       n_profiles, n_indicators, byrow = TRUE)
   }
-  profile_logits <- cbind(matrix(theta[n_means + n_variances + seq_len(n_logits)],
+  n_response <- .multilpa_response_width(object)
+  response_probabilities <- if (n_response == 0L) NULL else
+    .multilpa_response_decode(theta[n_means + n_variances + seq_len(n_response)],
+                              object)
+  offset <- n_means + n_variances + n_response
+  profile_logits <- cbind(matrix(theta[offset + seq_len(n_logits)],
     n_types, n_profiles - 1L, byrow = TRUE), 0)
   profile_probabilities <- exp(sweep(profile_logits, 1L,
     .multilpa_log_sum_exp(profile_logits), "-"))
-  group_logits <- c(theta[n_means + n_variances + n_logits + seq_len(n_types - 1L)], 0)
+  group_logits <- c(theta[offset + n_logits + seq_len(n_types - 1L)], 0)
   group_probabilities <- exp(group_logits - max(group_logits))
   parameters <- list(means = means, variances = variances,
     profile_probabilities = profile_probabilities,
     group_probabilities = group_probabilities / sum(group_probabilities))
   if (!is.null(covariances)) parameters$covariances <- covariances
+  if (!is.null(response_probabilities)) {
+    parameters$response_probabilities <- response_probabilities
+  }
   parameters
+}
+
+#' Score contributions of the categorical response probabilities
+#'
+#' For one indicator the complete-data score of a multinomial logit is the
+#' posterior-weighted difference between the category actually observed and the
+#' probability the model gives it, exactly as for the mixing weights. Missing
+#' codes contribute nothing.
+#'
+#' @param codes Integer code matrix, one column per categorical indicator.
+#' @param posteriors Individual profile posteriors.
+#' @param blocks The fitted response probabilities, one matrix per indicator.
+#' @param group_index Group indices, or `NULL` for a pooled total.
+#' @return A matrix with one row per group (or one row overall) and one column
+#'   per free response parameter, in [.multilpa_coefficients()] order.
+#' @noRd
+.multilpa_response_scores <- function(codes, posteriors, blocks, group_index = NULL) {
+  if (is.null(blocks) || length(blocks) == 0L) {
+    rows <- if (is.null(group_index)) 1L else max(group_index)
+    return(matrix(numeric(0), rows, 0L))
+  }
+  pieces <- lapply(seq_along(blocks), function(indicator) {
+    block <- blocks[[indicator]]
+    code <- codes[, indicator]
+    observed <- !is.na(code)
+    free <- seq_len(ncol(block) - 1L)
+    columns <- lapply(seq_len(nrow(block)), function(profile) {
+      weight <- posteriors[, profile]
+      vapply(free, function(category) {
+        indicator_value <- as.numeric(observed & code == category)
+        weight * (indicator_value - observed * block[profile, category])
+      }, numeric(length(code)))
+    })
+    do.call(cbind, columns)
+  })
+  contribution <- do.call(cbind, pieces)
+  if (is.null(group_index)) {
+    matrix(colSums(contribution), 1L, ncol(contribution))
+  } else rowsum(contribution, group_index, reorder = FALSE)
 }
 
 #' Differentiate the observed mixture likelihood
@@ -126,10 +237,10 @@
 #' @param object Fitted model defining dimensions and groups.
 #' @return The gradient of the negative observed-data log likelihood.
 #' @noRd
-.multilpa_score <- function(theta, x, object) {
+.multilpa_score <- function(theta, x, object, codes = NULL) {
   stopifnot(is.numeric(theta), is.matrix(x), inherits(object, "multilpa"))
   parameters <- .multilpa_decode(theta, object)
-  expectation <- .multilpa_expectation(x, object$group_index, parameters)
+  expectation <- .multilpa_expectation(x, object$group_index, parameters, codes)
   if (identical(object$covariance_model, "full")) {
     measurement <- .multilpa_full_measurement_score(parameters, expectation, object)
     mean_score <- measurement$means
@@ -158,7 +269,9 @@
   }), use.names = FALSE)
   group_score <- (colSums(expectation$group_posteriors) -
     object$n_groups * parameters$group_probabilities)[seq_len(object$n_group_classes - 1L)]
-  -c(mean_score, variance_score, profile_score, group_score)
+  response_score <- as.vector(.multilpa_response_scores(
+    codes, expectation$subject_posteriors, parameters$response_probabilities))
+  -c(mean_score, variance_score, response_score, profile_score, group_score)
 }
 
 #' Gaussian scores in log-Cholesky coordinates
@@ -212,10 +325,16 @@
   theta <- .multilpa_coefficients(object, "unconstrained")
   n_means <- length(object$means)
   full_covariance <- identical(object$covariance_model, "full")
-  dimension <- length(object$indicators)
+  dimension <- length(.multilpa_continuous_names(object))
   n_covariance <- if (full_covariance) dimension * (dimension + 1L) / 2L else dimension
-  n_variances <- n_covariance * if (object$variance_model == "equal") 1L else object$n_profiles
+  n_variances <- if (dimension == 0L) 0L else
+    n_covariance * if (object$variance_model == "equal") 1L else object$n_profiles
   n_measurement <- n_means + n_variances
+  blocks <- object$response_probabilities %||% list()
+  natural_response <- sum(vapply(blocks, length, numeric(1)))
+  free_response <- .multilpa_response_width(object)
+  natural_offset <- n_measurement + natural_response
+  free_offset <- n_measurement + free_response
   jacobian <- matrix(0, length(natural), length(theta), dimnames = list(names(natural), names(theta)))
   diag(jacobian)[seq_len(n_means)] <- 1
   if (full_covariance) {
@@ -239,18 +358,34 @@
   } else {
     diag(jacobian)[n_means + seq_len(n_variances)] <- natural[n_means + seq_len(n_variances)]
   }
+  ## Each profile-by-indicator row is its own simplex, with the same
+  ## diag(p) - p p' derivative the mixing weights use.
+  natural_at <- n_measurement
+  free_at <- n_measurement
+  invisible(lapply(blocks, function(block) {
+    invisible(lapply(seq_len(nrow(block)), function(profile) {
+      probabilities <- block[profile, ]
+      derivative <- diag(probabilities, nrow = length(probabilities)) -
+        tcrossprod(probabilities)
+      rows <- natural_at + seq_len(ncol(block))
+      columns <- free_at + seq_len(ncol(block) - 1L)
+      jacobian[rows, columns] <<- derivative[, seq_len(ncol(block) - 1L), drop = FALSE]
+      natural_at <<- natural_at + ncol(block)
+      free_at <<- free_at + ncol(block) - 1L
+    }))
+  }))
   invisible(lapply(seq_len(object$n_group_classes), function(group) {
     stopifnot(is.numeric(group), length(group) == 1L)
     probabilities <- object$profile_probabilities[group, ]
     block <- diag(probabilities, nrow = length(probabilities)) - tcrossprod(probabilities)
-    natural_rows <- n_measurement + (group - 1L) * object$n_profiles + seq_len(object$n_profiles)
-    free_columns <- n_measurement + (group - 1L) * (object$n_profiles - 1L) + seq_len(object$n_profiles - 1L)
+    natural_rows <- natural_offset + (group - 1L) * object$n_profiles + seq_len(object$n_profiles)
+    free_columns <- free_offset + (group - 1L) * (object$n_profiles - 1L) + seq_len(object$n_profiles - 1L)
     jacobian[natural_rows, free_columns] <<- block[, seq_len(object$n_profiles - 1L), drop = FALSE]
   }))
   probabilities <- object$group_probabilities
   block <- diag(probabilities, nrow = length(probabilities)) - tcrossprod(probabilities)
-  natural_rows <- n_measurement + object$n_group_classes * object$n_profiles + seq_len(object$n_group_classes)
-  free_columns <- n_measurement + object$n_group_classes * (object$n_profiles - 1L) + seq_len(object$n_group_classes - 1L)
+  natural_rows <- natural_offset + object$n_group_classes * object$n_profiles + seq_len(object$n_group_classes)
+  free_columns <- free_offset + object$n_group_classes * (object$n_profiles - 1L) + seq_len(object$n_group_classes - 1L)
   jacobian[natural_rows, free_columns] <- block[, seq_len(object$n_group_classes - 1L), drop = FALSE]
   jacobian
 }
@@ -311,14 +446,15 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
   centered_object <- object
   centered_object$means <- sweep(object$means, 2L, prepared$centers, "-")
   centered_theta <- .multilpa_coefficients(centered_object, "unconstrained")
+  codes <- prepared$codes
   objective <- function(parameters) {
     stopifnot(is.numeric(parameters))
     -.multilpa_expectation(x, object$group_index,
-      .multilpa_decode(parameters, object))$log_likelihood
+      .multilpa_decode(parameters, object), codes)$log_likelihood
   }
   score <- function(parameters) {
     stopifnot(is.numeric(parameters))
-    .multilpa_score(parameters, x, object)
+    .multilpa_score(parameters, x, object, codes)
   }
   fitted_likelihood <- -objective(centered_theta)
   if (abs(fitted_likelihood - object$log_likelihood) > 1e-8 * (1 + abs(object$log_likelihood))) {
@@ -343,7 +479,7 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
   group_scores <- NULL
   scaling_correction <- NA_real_
   if (identical(vcov_type, "robust")) {
-    group_scores <- .multilpa_group_scores(centered_theta, x, object)
+    group_scores <- .multilpa_group_scores(centered_theta, x, object, codes)
     scaled_cross <- .multilpa_cross_product(sweep(group_scores, 2L, parameter_scale, "*"))
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
     scaled_inverse <- scaled_inverse %*% scaled_cross %*% scaled_inverse
@@ -462,10 +598,6 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
 .multilpa_check_regularity <- function(object, vcov_type) {
-  if (!is.null(object$response_probabilities)) {
-    stop(errorCondition("Standard errors are not yet available for categorical indicators; the score functions cover Gaussian measurement only.",
-                        class = "multilpa_unsupported_inference", call = NULL))
-  }
   if (identical(vcov_type, "robust") && object$n_groups <= object$n_parameters) {
     stop(errorCondition(sprintf(
       "Robust inference needs more groups than parameters; this fit has %d groups and %d parameters.",
@@ -495,23 +627,43 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   if (nrow(data) != object$n_observations ||
       !all(c(object$indicators, object$group) %in% names(data)) ||
       anyDuplicated(names(data)) ||
-      !all(vapply(data[, object$indicators, drop = FALSE], is.numeric, logical(1)))) {
+      !all(vapply(data[, .multilpa_continuous_names(object), drop = FALSE],
+                  is.numeric, logical(1)))) {
     stop("data must contain the original numeric indicators and group column.")
   }
   group_index <- match(data[[object$group]], object$group_values)
   if (!identical(group_index, object$group_index)) {
     stop("data must retain the original group identifiers and row order.")
   }
-  x <- as.matrix(data[, object$indicators, drop = FALSE])
+  ## Only the Gaussian indicators form the numeric matrix; the categorical ones
+  ## are re-encoded from `data` rather than taken from the fit, so that supplying
+  ## the wrong categorical columns is caught rather than silently accepted.
+  continuous <- .multilpa_continuous_names(object)
+  ## as.matrix() of a zero-column frame is logical, and the expectation demands
+  ## a numeric matrix, so an all-categorical fit needs the mode forced.
+  x <- if (length(continuous) == 0L) matrix(numeric(0), nrow(data), 0L) else
+    as.matrix(data[, continuous, drop = FALSE])
   if (any(is.infinite(x)) || any(is.nan(x)) ||
       (anyNA(x) && !identical(object$missing, "fiml"))) {
     stop("data contain unsupported missing or non-finite indicators.")
   }
-  if (!is.null(object$indicator_data) && !identical(x, object$indicator_data)) {
+  if (!is.null(object$indicator_data) && ncol(x) > 0L &&
+      !identical(x, object$indicator_data)) {
     stop("data must reproduce the original indicator data, including row order and names.")
   }
-  centers <- colMeans(x, na.rm = TRUE)
-  list(x = sweep(x, 2L, centers, "-"), centers = centers)
+  codes <- NULL
+  if (length(object$categorical %||% character()) > 0L) {
+    codes <- .multilpa_encode_categorical(
+      data[, object$categorical, drop = FALSE])$codes
+    if (!identical(unname(codes), unname(object$categorical_data))) {
+      stop(errorCondition(
+        "data must reproduce the original categorical indicators, including their categories and row order.",
+        class = "multilpa_bad_inference_data", call = NULL))
+    }
+  }
+  centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
+  list(x = if (ncol(x) > 0L) sweep(x, 2L, centers, "-") else x,
+       centers = centers, codes = codes)
 }
 
 #' Differentiate the observed information and check that it is usable
@@ -574,14 +726,15 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   profile_label <- function(value) ifelse(value == "shared", "shared",
                                           paste0("profile_", value))
   class_label <- function(value) paste0("group_class_", value)
-  measurement <- prefix %in% c("mean", "variance", "covariance")
+  measurement <- prefix %in% c("mean", "variance", "covariance", "response")
   data.frame(
     level = ifelse(measurement, "measurement",
                    ifelse(prefix == "profile_probability", "profile", "group")),
     outcome = ifelse(measurement, profile_label(first),
                      ifelse(prefix == "profile_probability",
                             profile_label(second), class_label(first))),
-    term = ifelse(prefix == "covariance", paste(second, third, sep = ":"),
+    term = ifelse(prefix %in% c("covariance", "response"),
+                  paste(second, third, sep = ":"),
                   ifelse(measurement, second,
                          ifelse(prefix == "profile_probability",
                                 class_label(first), NA_character_))),

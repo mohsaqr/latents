@@ -59,7 +59,7 @@ A base `data.frame` with one row per free parameter and the columns
   the log scale on which they are estimated.
 
 An `multilpa_inference` list containing natural `estimates`,
-  `standard_errors`, `covariance`, `confidence_intervals`, unconstrained
+  `standard_error`, `statistic`, `p_value`, `conf_low` and `conf_high`,
   estimates and covariance, observed Hessian, score, and its eigenvalue
   condition ratio. All class probabilities are returned; their sum
   constraints make the natural covariance singular. Wald intervals on the

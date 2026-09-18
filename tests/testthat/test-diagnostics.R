@@ -391,10 +391,11 @@ test_that("extracted covariate and inference helpers keep their contracts", {
   bounded <- fit
   bounded$boundary <- TRUE
   expect_error(.multilpa_check_regularity(bounded, "observed"), "bound-active")
+  # Categorical measurement is no longer refused; only the genuine regularity
+  # failures below are.
   categorical <- fit
   categorical$response_probabilities <- list(matrix(0.5, 2L, 2L))
-  expect_error(.multilpa_check_regularity(categorical, "observed"),
-               class = "multilpa_unsupported_inference")
+  expect_null(.multilpa_check_regularity(categorical, "observed"))
 
   # A singular information matrix must be refused, not inverted.
   flat <- function(displacement) 0

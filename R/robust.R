@@ -10,13 +10,13 @@
 #' @return A groups-by-parameters matrix whose column sums equal the gradient of
 #'   the positive observed-data log likelihood, that is `-.multilpa_score()`.
 #' @noRd
-.multilpa_group_scores <- function(theta, x, object) {
+.multilpa_group_scores <- function(theta, x, object, codes = NULL) {
   stopifnot("`theta` must be numeric" = is.numeric(theta),
             "`x` must be a numeric matrix" = is.matrix(x) && is.numeric(x),
             "`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
   parameters <- .multilpa_decode(theta, object)
   group_index <- object$group_index
-  expectation <- .multilpa_expectation(x, group_index, parameters)
+  expectation <- .multilpa_expectation(x, group_index, parameters, codes)
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
   measurement <- if (identical(object$covariance_model, "full")) {
@@ -49,7 +49,10 @@
   }))
   group_scores <- sweep(expectation$group_posteriors, 2L,
     parameters$group_probabilities, "-")[, seq_len(n_types - 1L), drop = FALSE]
-  scores <- cbind(measurement$means, measurement$covariances,
+  response_scores <- .multilpa_response_scores(
+    codes, expectation$subject_posteriors, parameters$response_probabilities,
+    group_index)
+  scores <- cbind(measurement$means, measurement$covariances, response_scores,
                   profile_scores, group_scores)
   dimnames(scores) <- list(object$group_ids, names(theta))
   scores
