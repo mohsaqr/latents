@@ -42,7 +42,7 @@
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' plot(fit)
 #' plot(fit, scale = "standardized")
@@ -289,7 +289,7 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities"),
 #' marked rather than dropped, so a gap in a line is visible as a failure and
 #' not mistaken for a missing candidate.
 #'
-#' @param x An `multilpa_enumeration` result from [enumerate_multilpa()].
+#' @param x An `multilpa_enumeration` result from [enumerate_classes()].
 #' @param criterion Name of the column to plot, as it appears in
 #'   `as.data.frame(x)`, for example `"bic_individual"` or `"sabic_groups"`.
 #' @param labels `TRUE` prints a direct label at the right end of each series.
@@ -307,7 +307,7 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities"),
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' candidates <- enumerate_multilpa(example_data, c("score_a", "score_b"), "school",
+#' candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
 #'                                profiles = 1:3, group_classes = 1, n_starts = 2,
 #'                                seed = 1)
 #' plot(candidates)

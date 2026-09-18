@@ -13,7 +13,7 @@
 )
 }
 \arguments{
-\item{x}{An `multilpa_covariates` model from [fit_multilpa_covariates()].}
+\item{x}{An `multilpa_covariates` model from [fit_covariates()].}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 

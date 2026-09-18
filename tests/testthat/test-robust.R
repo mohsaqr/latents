@@ -45,7 +45,7 @@ test_that("per-group scores sum to the aggregate gradient in every model family"
          arguments = list(covariance_model = "full", variance_model = "equal",
                           missing = "fiml")))
   invisible(lapply(specifications, function(specification) {
-    fit <- do.call(fit_multilpa, c(list(data = specification$data,
+    fit <- do.call(multilpa, c(list(data = specification$data,
       indicators = c("a", "b"), cluster = "g", n_profiles = 2,
       n_group_classes = 2, n_starts = 5, seed = 5), specification$arguments))
     theta <- centered_theta(fit, specification$data)
@@ -61,7 +61,7 @@ test_that("per-group scores sum to the aggregate gradient in every model family"
 
 test_that("per-group scores are localized to their own group", {
   dat <- robust_fixture_data()
-  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   theta <- centered_theta(fit, dat)
   # Perturb one group's data only. Centering would spread that change across
   # every group, so the comparison uses the uncentered indicators directly.
@@ -77,10 +77,10 @@ test_that("per-group scores are localized to their own group", {
 test_that("robust standard errors reproduce genuine Mplus MLR results", {
   reference <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-robust.rds"))
   dat <- reference$data
-  fit <- fit_multilpa(dat, c("y1", "y2"), "clus", 2, 2, variance_model = "varying",
-                    start = multilpa_start(reference), n_starts = 1,
+  fit <- multilpa(dat, c("y1", "y2"), "clus", 2, 2, variance_model = "varying",
+                    start = starting_values(reference), n_starts = 1,
                     max_iter = 5000, tol = 1e-13)
-  information <- inference_multilpa(fit, dat, vcov_type = "robust")
+  information <- parameter_inference(fit, dat, vcov_type = "robust")
   expect_identical(information$vcov_type, "robust")
   q <- fit$n_parameters
   n_measurement <- q - 3L
@@ -108,9 +108,9 @@ test_that("robust standard errors reproduce genuine Mplus MLR results", {
 
 test_that("robust and observed covariances differ only through the score product", {
   dat <- robust_fixture_data()
-  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
-  observed <- inference_multilpa(fit, dat)
-  robust <- inference_multilpa(fit, dat, vcov_type = "robust")
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  observed <- parameter_inference(fit, dat)
+  robust <- parameter_inference(fit, dat, vcov_type = "robust")
   expect_identical(observed$vcov_type, "observed")
   expect_null(observed$group_scores)
   expect_true(is.na(observed$scaling_correction))
@@ -138,9 +138,9 @@ test_that("robust inference refuses fits with too few groups", {
   # independent units for the cross-product matrix to have full rank.
   small <- data.frame(g = rep(seq_len(3L), each = 20L),
                       a = stats::rnorm(60L), b = stats::rnorm(60L))
-  fit <- fit_multilpa(small, c("a", "b"), "g", 2, 1, n_starts = 4, seed = 1)
+  fit <- multilpa(small, c("a", "b"), "g", 2, 1, n_starts = 4, seed = 1)
   expect_gt(fit$n_parameters, fit$n_groups)
-  expect_error(inference_multilpa(fit, small, vcov_type = "robust"),
+  expect_error(parameter_inference(fit, small, vcov_type = "robust"),
                class = "multilpa_too_few_groups")
 })
 
@@ -153,17 +153,17 @@ test_that("the cross-product matrix rejects non-finite scores", {
 
 test_that("robust standard errors are invariant to indicator location", {
   dat <- robust_fixture_data()
-  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
-  robust <- inference_multilpa(fit, dat, vcov_type = "robust")
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  robust <- parameter_inference(fit, dat, vcov_type = "robust")
   shifted <- dat
   shifted$a <- shifted$a + 100
-  shifted_fit <- fit_multilpa(shifted, c("a", "b"), "g", 2, 2,
+  shifted_fit <- multilpa(shifted, c("a", "b"), "g", 2, 2,
                             start = local({
-                              start <- multilpa_start(fit)
+                              start <- starting_values(fit)
                               start$means[, 1L] <- start$means[, 1L] + 100
                               start
                             }), n_starts = 1, max_iter = 5000, tol = 1e-13)
-  shifted_robust <- inference_multilpa(shifted_fit, shifted, vcov_type = "robust")
+  shifted_robust <- parameter_inference(shifted_fit, shifted, vcov_type = "robust")
   expect_equal(unname(shifted_robust$standard_errors),
                unname(robust$standard_errors), tolerance = 1e-6)
   expect_equal(shifted_robust$scaling_correction, robust$scaling_correction,

@@ -1,7 +1,7 @@
 test_that("one-step covariate model agrees with genuine multilevel Mplus ML", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   target <- fixture$expected
-  fit <- fit_multilpa_covariates(fixture$data, c("y1", "y2"), "g", 2, 2, "z", "w",
+  fit <- fit_covariates(fixture$data, c("y1", "y2"), "g", 2, 2, "z", "w",
                                n_starts = 5, seed = 812, tol = 1e-12)
   p <- order(fit$means[, 1])
   beta <- unname(fit$profile_coefficients)

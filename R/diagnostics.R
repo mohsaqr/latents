@@ -67,7 +67,7 @@
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' information_criteria(fit)
 #' @export
@@ -149,7 +149,7 @@ information_criteria <- function(object) {
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' classification_table(fit)
 #' @export
@@ -241,7 +241,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' entropy_table(fit)
 #' @export

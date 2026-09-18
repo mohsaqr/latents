@@ -31,7 +31,7 @@ test_that("diagonal FIML single-profile estimates equal available-case Gaussian 
                      x = rnorm(200, 2, 1.4), y = rnorm(200, -1, 0.7))
   data$x[c(1:35, 72)] <- NA_real_
   data$y[c(1, 91:140)] <- NA_real_
-  fit <- fit_multilpa(data, c("x", "y"), "group", 1, 1,
+  fit <- multilpa(data, c("x", "y"), "group", 1, 1,
                     missing = "fiml", n_starts = 1, seed = 8, tol = 1e-13)
   means <- vapply(data[c("x", "y")], mean, numeric(1), na.rm = TRUE)
   variances <- vapply(data[c("x", "y")], function(values) {
@@ -47,14 +47,14 @@ test_that("diagonal FIML single-profile estimates equal available-case Gaussian 
   expect_equal(fit$n_observed_by_indicator, c(x = 164L, y = 149L))
   expect_true(all(diff(fit$log_likelihood_history) >= -1e-9))
   expect_equal(fit$subject_posteriors[1L, 1L], 1)
-  expect_error(fit_multilpa(data, c("x", "y"), "group", 1, 1), "missing")
+  expect_error(multilpa(data, c("x", "y"), "group", 1, 1), "missing")
 })
 
 test_that("full covariance complete-data Gaussian ML has analytic means and covariance", {
   set.seed(415)
   data <- data.frame(group = rep(seq_len(10), each = 12), x = rnorm(120))
   data$y <- 1.5 + 0.8 * data$x + rnorm(120, sd = .6)
-  fit <- fit_multilpa(data, c("x", "y"), "group", 1, 1,
+  fit <- multilpa(data, c("x", "y"), "group", 1, 1,
                     covariance_model = "full", n_starts = 1)
   x <- as.matrix(data[c("x", "y")])
   expect_equal(as.numeric(fit$means), colMeans(x), ignore_attr = TRUE)
@@ -64,7 +64,7 @@ test_that("full covariance complete-data Gaussian ML has analytic means and cova
   expect_equal(fit$n_parameters, 5)
   expect_true(fit$converged)
   expect_false(fit$boundary)
-  one <- fit_multilpa(data, "x", "group", 1, 1,
+  one <- multilpa(data, "x", "group", 1, 1,
                     covariance_model = "full", n_starts = 1)
   expect_equal(dim(one$covariances), c(1L, 1L, 1L))
   expect_equal(as.numeric(one$covariances), mean((data$x - mean(data$x))^2))
@@ -76,7 +76,7 @@ test_that("full covariance FIML agrees with independent direct Gaussian likeliho
   data$y <- 2 + .75 * data$x + rnorm(200, sd = .8)
   data$x[1:40] <- NA_real_
   data$y[c(1:4, 80:120)] <- NA_real_
-  fit <- fit_multilpa(data, c("x", "y"), "group", 1, 1,
+  fit <- multilpa(data, c("x", "y"), "group", 1, 1,
                     covariance_model = "full", missing = "fiml", n_starts = 1,
                     tol = 1e-13)
   # Independent bivariate density plus univariate marginals; no package helpers.
@@ -121,7 +121,7 @@ test_that("full covariance mixture limits reproduce mclust VVV and EEE", {
                    covariances = reference$parameters$variance$sigma,
                    profile_probabilities = matrix(reference$parameters$pro, 1L),
                    group_probabilities = 1)
-    fit <- fit_multilpa(data, c("x", "y"), "group", 2, 1, covariance_model = "full",
+    fit <- multilpa(data, c("x", "y"), "group", 2, 1, covariance_model = "full",
                       variance_model = if (model == "VVV") "varying" else "equal",
                       n_starts = 1, start = start, tol = 1e-13)
     expect_equal(fit$log_likelihood, as.numeric(reference$loglik), tolerance = 1e-7)
@@ -142,7 +142,7 @@ test_that("FIML multilevel rows use their observed group context", {
   data$x[seq(1, nrow(data), 7)] <- NA
   data$y[seq(1, nrow(data), 9)] <- NA
   invisible(lapply(c("equal", "varying"), function(variance_model) {
-    fit <- fit_multilpa(data, c("x", "y"), "group", 2, 2, missing = "fiml",
+    fit <- multilpa(data, c("x", "y"), "group", 2, 2, missing = "fiml",
                       covariance_model = "full", variance_model = variance_model,
                       n_starts = 3, seed = 23, tol = 1e-10)
     expect_true(fit$converged)
@@ -167,18 +167,18 @@ test_that("covariance eigenvalue bounds and invalid missing-data inputs are expl
     covariances = array(bounded, c(2, 2, 1))), .1))
   expect_error(.multilpa_bound_covariance(matrix(NA_real_, 1), .1))
   data <- data.frame(group = rep(1:5, each = 4), x = seq_len(20), y = seq_len(20))
-  expect_warning(fit <- fit_multilpa(data, c("x", "y"), "group", 1, 1,
+  expect_warning(fit <- multilpa(data, c("x", "y"), "group", 1, 1,
     n_starts = 1, covariance_model = "full", min_variance = .1), "bound-active")
   expect_true(fit$boundary)
   expect_true(fit$starts$boundary)
   data$x <- NA_real_
-  expect_error(fit_multilpa(data, c("x", "y"), "group", 1, 1,
+  expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
                           missing = "fiml"), "observed values")
   data$x <- c(Inf, rep(NA_real_, 19))
-  expect_error(fit_multilpa(data, c("x", "y"), "group", 1, 1,
+  expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
                           missing = "fiml"), "non-finite")
   data$x <- c(1, rep(NA_real_, 19))
-  expect_error(fit_multilpa(data, c("x", "y"), "group", 1, 1,
+  expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
                           missing = "fiml"), "Constant")
   start <- list(means = matrix(c(0, 0), 1), covariances = array(diag(2), c(2, 2, 1)),
                 profile_probabilities = matrix(1), group_probabilities = 1)
@@ -194,5 +194,5 @@ test_that("covariance eigenvalue bounds and invalid missing-data inputs are expl
 })
 test_that("FIML rejects NaN consistently with inference", {
   data <- data.frame(group = rep(1:3, each = 2), y = c(1, 2, NaN, 4, 5, 6))
-  expect_error(fit_multilpa(data, "y", "group", 1, 1, missing = "fiml"), "non-finite")
+  expect_error(multilpa(data, "y", "group", 1, 1, missing = "fiml"), "non-finite")
 })

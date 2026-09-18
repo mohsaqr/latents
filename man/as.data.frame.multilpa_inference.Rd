@@ -7,7 +7,7 @@
 \method{as.data.frame}{multilpa_inference}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An `multilpa_inference` result from [inference_multilpa()].}
+\item{x}{An `multilpa_inference` result from [parameter_inference()].}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
@@ -32,6 +32,6 @@ Tidy multilevel LPA inference
 \examples{
 set.seed(42)
 dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
-fit <- fit_multilpa(dat, "y", "group", 1, 1, n_starts = 1)
-as.data.frame(inference_multilpa(fit, dat))
+fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
+as.data.frame(parameter_inference(fit, dat))
 }

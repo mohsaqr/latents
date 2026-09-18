@@ -6,7 +6,7 @@ str(data)
 print(head(data))
 print(summary(data))
 stopifnot(!anyNA(data), all(vapply(data, is.numeric, logical(1))))
-fit <- fit_multilpa_random_intercept(data, "y1", "group", 1L,
+fit <- fit_random_intercept(data, "y1", "group", 1L,
   n_starts = 2L, tol = 1e-11, seed = 983L)
 reference <- scan(file.path(directory, "univariate-results.dat"), quiet = TRUE)
 stopifnot(length(reference) == 21L, reference[7L] == 3L,

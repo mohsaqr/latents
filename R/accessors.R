@@ -41,7 +41,7 @@
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' as.data.frame(fit)
 #' as.data.frame(fit, what = "profile_probabilities")
@@ -174,7 +174,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 
 #' Tidy a class-enumeration grid
 #'
-#' @param x An `multilpa_enumeration` result from [enumerate_multilpa()].
+#' @param x An `multilpa_enumeration` result from [enumerate_classes()].
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param ... Ignored.
@@ -189,7 +189,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' candidates <- enumerate_multilpa(example_data, c("score_a", "score_b"), "school",
+#' candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
 #'                                profiles = 1:2, group_classes = 1, n_starts = 2,
 #'                                seed = 1)
 #' as.data.frame(candidates)
@@ -205,7 +205,7 @@ as.data.frame.multilpa_enumeration <- function(x, row.names = NULL,
 
 #' Tidy multilevel LPA inference
 #'
-#' @param x An `multilpa_inference` result from [inference_multilpa()].
+#' @param x An `multilpa_inference` result from [parameter_inference()].
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param ... Ignored.
@@ -221,8 +221,8 @@ as.data.frame.multilpa_enumeration <- function(x, row.names = NULL,
 #' @examples
 #' set.seed(42)
 #' dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
-#' fit <- fit_multilpa(dat, "y", "group", 1, 1, n_starts = 1)
-#' as.data.frame(inference_multilpa(fit, dat))
+#' fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
+#' as.data.frame(parameter_inference(fit, dat))
 #' @export
 as.data.frame.multilpa_inference <- function(x, row.names = NULL,
                                            optional = FALSE, ...) {
@@ -304,7 +304,7 @@ print.multilpa_inference <- function(x, digits = 4L, ...) {
 
 #' Build starting values for a multilevel latent profile fit
 #'
-#' Returns the starting-value list [fit_multilpa()] accepts, taken from a fitted
+#' Returns the starting-value list [multilpa()] accepts, taken from a fitted
 #' model or from any object that already carries the parameter blocks, such as a
 #' retained reference solution. This exists so that callers never assemble the
 #' list by hand, and so that starting values are validated where they are built
@@ -319,21 +319,21 @@ print.multilpa_inference <- function(x, digits = 4L, ...) {
 #' @return A list with elements `means`, `variances`, `profile_probabilities`,
 #'   and `group_probabilities`, plus `covariances` when the full-covariance
 #'   parameterization is returned. Dimension names are dropped, matching what
-#'   [fit_multilpa()] expects of `start`.
+#'   [multilpa()] expects of `start`.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' refit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' refit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                     n_profiles = 2, n_group_classes = 1, n_starts = 1,
-#'                     start = multilpa_start(fit))
+#'                     start = starting_values(fit))
 #' logLik(refit)
 #' @export
-multilpa_start <- function(object, covariance = c("auto", "drop", "keep")) {
+starting_values <- function(object, covariance = c("auto", "drop", "keep")) {
   stopifnot("`object` must be a list or an `multilpa` fit" = is.list(object))
   covariance <- match.arg(covariance)
   required <- c("means", "profile_probabilities", "group_probabilities")
@@ -373,7 +373,7 @@ multilpa_start <- function(object, covariance = c("auto", "drop", "keep")) {
 
 #' Tidy a one-step membership-covariate fit
 #'
-#' @param x An `multilpa_covariates` model from [fit_multilpa_covariates()].
+#' @param x An `multilpa_covariates` model from [fit_covariates()].
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param what Which table to return. `"profiles"` gives the measurement model,
@@ -431,7 +431,7 @@ as.data.frame.multilpa_covariates <- function(x, row.names = NULL, optional = FA
 #' Tidy a continuous group random-intercept fit
 #'
 #' @param x An `multilpa_random_intercept` model from
-#'   [fit_multilpa_random_intercept()].
+#'   [fit_random_intercept()].
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
 #' @param what Which table to return. `"profiles"` gives the measurement model,

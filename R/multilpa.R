@@ -422,13 +422,13 @@
 #'   school = rep(seq_len(10), each = 12),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                  n_profiles = 1, n_group_classes = 1, n_starts = 1,
 #'                  seed = 42)
 #' summary(fit)
 #' @export
 #' @importFrom stats setNames
-fit_multilpa <- function(data, indicators, cluster, n_profiles,
+multilpa <- function(data, indicators, cluster, n_profiles,
                        n_group_classes = 2L, variance_model = c("varying", "equal"),
                        n_starts = 10L, max_iter = 1000L, tol = 1e-8,
                        min_variance = 1e-6, seed = NULL, start = NULL,

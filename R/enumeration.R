@@ -10,16 +10,16 @@
 #' @param profiles Positive integer profile counts to try.
 #' @param group_classes Positive integer group-class counts to try.
 #' @param seed Optional reproducible seed for each fit.
-#' @param ... Further arguments to [fit_multilpa()].
+#' @param ... Further arguments to [multilpa()].
 #' @return A list with `table` (criteria/diagnostics) and `fits` (models or NULL).
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_multilpa(d, "y", "g", profiles = 1:2,
+#' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
 #'                               group_classes = 1, n_starts = 2, seed = 1)
 #' candidates$table
 #' @export
-enumerate_multilpa <- function(data, indicators, cluster, profiles = 1:4,
+enumerate_classes <- function(data, indicators, cluster, profiles = 1:4,
                               group_classes = 1:3, seed = NULL, ...) {
   stopifnot(is.data.frame(data), is.character(indicators), is.character(cluster),
             is.numeric(profiles), length(profiles) > 0L,
@@ -35,7 +35,7 @@ enumerate_multilpa <- function(data, indicators, cluster, profiles = 1:4,
   runs <- lapply(seq_len(nrow(grid)), function(i) {
     warnings <- character()
     error_text <- NA_character_
-    fit <- tryCatch(withCallingHandlers(do.call(fit_multilpa,
+    fit <- tryCatch(withCallingHandlers(do.call(multilpa,
       c(list(data = data, indicators = indicators, cluster = cluster,
              n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed), extra)),
       warning = function(warning) {
@@ -102,7 +102,7 @@ enumerate_multilpa <- function(data, indicators, cluster, profiles = 1:4,
 #' parametric bootstrap, not an implementation of Mplus TECH14. It does not use
 #' a chi-square reference distribution. Any failed/nonconverged or reversed
 #' replicate makes the p-value NA, avoiding silent deletion of difficult fits.
-#' @param null_model Smaller, converged [fit_multilpa()] model on complete data.
+#' @param null_model Smaller, converged [multilpa()] model on complete data.
 #' @param alternative_model Larger model fitted to exactly the same data.
 #' @param data Original data, used to verify both fitted likelihoods.
 #' @param n_boot Number of simulated datasets (at least two; use many for inference).
@@ -115,9 +115,9 @@ enumerate_multilpa <- function(data, indicators, cluster, profiles = 1:4,
 #'   boundary flags and likelihood replication before interpreting results.
 #' @examples
 #' # After fitting nested models on d:
-#' # bootstrap_lrt_multilpa(smaller, larger, d, n_boot = 199, seed = 1)
+#' # bootstrap_lrt(smaller, larger, d, n_boot = 199, seed = 1)
 #' @export
-bootstrap_lrt_multilpa <- function(null_model, alternative_model, data,
+bootstrap_lrt <- function(null_model, alternative_model, data,
                                  n_boot = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
   stopifnot(inherits(null_model, "multilpa"), inherits(alternative_model, "multilpa"),
@@ -177,7 +177,7 @@ bootstrap_lrt_multilpa <- function(null_model, alternative_model, data,
     tryCatch(withCallingHandlers({
       simulated <- .multilpa_simulate(null_model)
       models <- lapply(list(null_model, alternative_model), function(model) {
-        fit_multilpa(simulated, model$indicators, model$cluster, model$n_profiles,
+        multilpa(simulated, model$indicators, model$cluster, model$n_profiles,
                     model$n_group_classes, model$variance_model, n_starts = n_starts,
                     max_iter = max_iter, tol = tol, min_variance = model$min_variance,
                     covariance_model = if (is.null(model$covariance_model)) "diagonal" else model$covariance_model)

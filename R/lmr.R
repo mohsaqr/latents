@@ -5,7 +5,7 @@
 #' The reference distribution of this statistic under a class-count null is not
 #' chi-square, and the package does not reproduce the Vuong-Lo-Mendell-Rubin
 #' reference distribution, so reporting a chi-square tail probability here would
-#' be wrong rather than approximate. Use [bootstrap_lrt_multilpa()] for a
+#' be wrong rather than approximate. Use [bootstrap_lrt()] for a
 #' calibrated p-value.
 #'
 #' @param null_model The smaller fitted `multilpa` model.
@@ -43,13 +43,13 @@
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' smaller <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' smaller <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                       n_profiles = 1, n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+#' larger <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                      n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' lmr_lrt_multilpa(smaller, larger)
+#' lmr_lrt(smaller, larger)
 #' @export
-lmr_lrt_multilpa <- function(null_model, alternative_model,
+lmr_lrt <- function(null_model, alternative_model,
                            n = c("individuals", "groups")) {
   stopifnot(
     "`null_model` must be an `multilpa` fit" = inherits(null_model, "multilpa"),

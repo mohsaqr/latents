@@ -114,11 +114,11 @@
 #' set.seed(1)
 #' d <- data.frame(group = rep(1:20, each = 10), z = rnorm(200))
 #' d$y <- rnorm(200, ifelse(runif(200) < plogis(d$z), -3, 3))
-#' fit <- fit_multilpa_covariates(d, "y", "group", 2, 1,
+#' fit <- fit_covariates(d, "y", "group", 2, 1,
 #'                             profile_covariates = "z", n_starts = 2, seed = 1)
 #' fit$profile_coefficients
 #' @export
-fit_multilpa_covariates <- function(data, indicators, cluster, n_profiles,
+fit_covariates <- function(data, indicators, cluster, n_profiles,
                                   n_group_classes = 2L,
                                   profile_covariates = character(),
                                   group_covariates = character(),
@@ -145,7 +145,7 @@ fit_multilpa_covariates <- function(data, indicators, cluster, n_profiles,
   .multilpa_cov_check_covariates(data, profile_covariates, group_covariates,
                                indicators, cluster)
   # The base fit validates indicators/model sizes and supplies an initial mode.
-  base <- fit_multilpa(data, indicators, cluster, n_profiles, n_group_classes,
+  base <- multilpa(data, indicators, cluster, n_profiles, n_group_classes,
                      variance_model, n_starts = 1L, max_iter = max_iter,
                      tol = tol, min_variance = min_variance)
   group_index <- base$group_index

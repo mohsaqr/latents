@@ -7,7 +7,7 @@
 \method{as.data.frame}{multilpa_enumeration}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An `multilpa_enumeration` result from [enumerate_multilpa()].}
+\item{x}{An `multilpa_enumeration` result from [enumerate_classes()].}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
@@ -31,7 +31,7 @@ example_data <- data.frame(
   school = rep(seq_len(12), each = 10),
   score_a = rnorm(120), score_b = rnorm(120)
 )
-candidates <- enumerate_multilpa(example_data, c("score_a", "score_b"), "school",
+candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
                                profiles = 1:2, group_classes = 1, n_starts = 2,
                                seed = 1)
 as.data.frame(candidates)

@@ -14,7 +14,7 @@
 }
 \arguments{
 \item{x}{An `multilpa_random_intercept` model from
-[fit_multilpa_random_intercept()].}
+[fit_random_intercept()].}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 

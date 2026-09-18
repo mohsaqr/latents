@@ -51,7 +51,7 @@ test_that("random-intercept estimates recover separated profiles and preserve RN
     y1 = c(-2, 2)[profile] + intercept[group] + stats::rnorm(150L, sd = 0.55),
     y2 = c(-1.5, 1.5)[profile] + intercept[group] + stats::rnorm(150L, sd = 0.65))
   rng_before <- .Random.seed
-  fit <- fit_multilpa_random_intercept(data, c("y1", "y2"), "group", 2L, n_starts = 2L, seed = 3L)
+  fit <- fit_random_intercept(data, c("y1", "y2"), "group", 2L, n_starts = 2L, seed = 3L)
   expect_identical(.Random.seed, rng_before)
   expect_s3_class(fit, "multilpa_random_intercept")
   expect_false(inherits(fit, "multilpa"))
@@ -72,12 +72,12 @@ test_that("random-intercept estimates recover separated profiles and preserve RN
   expect_equal(stats::BIC(fit), fit$bic)
   expect_output(print(fit), "Random-intercept LPA")
   expect_equal(fit$n_parameters, 10L)
-  shared <- fit_multilpa_random_intercept(data, c("y1", "y2"), "group", 2L,
+  shared <- fit_random_intercept(data, c("y1", "y2"), "group", 2L,
     variance_model = "equal", n_starts = 1L, seed = 3L)
   expect_equal(unname(shared$variances[1L, ]), unname(shared$variances[2L, ]))
   expect_equal(shared$n_parameters, 8L)
   expect_lte(shared$log_likelihood, fit$log_likelihood + 1e-6)
-  expect_warning(coarse <- fit_multilpa_random_intercept(data, c("y1", "y2"), "group", 2L,
+  expect_warning(coarse <- fit_random_intercept(data, c("y1", "y2"), "group", 2L,
     quadrature_nodes = 3L, quadrature_check_nodes = 61L, n_starts = 1L, seed = 3L), "Quadrature likelihood check failed")
   expect_false(coarse$quadrature_check_passed)
 })
@@ -86,20 +86,20 @@ test_that("one-profile univariate optimizer recovers a Gaussian random intercept
   set.seed(98)
   group <- rep(seq_len(80L), each = 6L)
   data <- data.frame(group = group, y = 1.7 + stats::rnorm(80L, sd = 0.6)[group] + stats::rnorm(480L, sd = 0.4))
-  fit <- fit_multilpa_random_intercept(data, "y", "group", 1L, n_starts = 1L, seed = 3L)
+  fit <- fit_random_intercept(data, "y", "group", 1L, n_starts = 1L, seed = 3L)
   expect_true(fit$converged)
   expect_identical(fit$integration, "analytic")
   expect_equal(fit$quadrature_log_likelihood_difference, 0)
   expect_equal(unname(fit$means[1L, 1L]), 1.7, tolerance = 0.2)
   expect_equal(fit$random_sd, 0.6, tolerance = 0.15)
   expect_equal(unname(fit$variances[1L, 1L]), 0.16, tolerance = 0.05)
-  expect_error(fit_multilpa_random_intercept(transform(data, y = NA_real_), "y", "group", 1L))
-  expect_error(fit_multilpa_random_intercept(transform(data, group = 1L), "y", "group", 1L))
-  expect_error(fit_multilpa_random_intercept(data, "y", "group", 1L, quadrature_nodes = 21L, quadrature_check_nodes = 11L))
-  expect_error(fit_multilpa_random_intercept(data, "y", "group", 1L, n_starts = 0L))
-  expect_error(fit_multilpa_random_intercept(data, "y", "group", 1L, seed = -1))
-  expect_warning(fit_multilpa_random_intercept(data, "y", "group", 1L, n_starts = 1L, max_iter = 1L), "did not converge")
-  expect_warning(bounded <- fit_multilpa_random_intercept(data, "y", "group", 1L,
+  expect_error(fit_random_intercept(transform(data, y = NA_real_), "y", "group", 1L))
+  expect_error(fit_random_intercept(transform(data, group = 1L), "y", "group", 1L))
+  expect_error(fit_random_intercept(data, "y", "group", 1L, quadrature_nodes = 21L, quadrature_check_nodes = 11L))
+  expect_error(fit_random_intercept(data, "y", "group", 1L, n_starts = 0L))
+  expect_error(fit_random_intercept(data, "y", "group", 1L, seed = -1))
+  expect_warning(fit_random_intercept(data, "y", "group", 1L, n_starts = 1L, max_iter = 1L), "did not converge")
+  expect_warning(bounded <- fit_random_intercept(data, "y", "group", 1L,
     min_variance = 0.5, n_starts = 1L, seed = 3L), "boundary")
   expect_true(bounded$boundary_flags[["residual_variance"]])
   expect_equal(unname(bounded$variances[1L, 1L]), 0.5, tolerance = 1e-6)
@@ -121,7 +121,7 @@ test_that("random-intercept quadrature agrees with analytic Gaussian integration
 
 test_that("one-profile random intercept matches genuine Mplus output", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "random-intercept-one-profile.rds"))
-  fit <- fit_multilpa_random_intercept(fixture$data, "y1", "group", 1L,
+  fit <- fit_random_intercept(fixture$data, "y1", "group", 1L,
     n_starts = 1L, tol = 1e-11, seed = 983L)
   actual <- c(fit$variances, fit$means, fit$random_sd^2)
   expect_lt(max(abs(actual - fixture$mplus$parameters)), 1e-5)

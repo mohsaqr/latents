@@ -27,7 +27,7 @@ draw <- function(expression) {
 
 test_that("plot methods draw and return their input invisibly", {
   dat <- plot_fixture()
-  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   draw({
     expect_invisible(plot(fit))
     expect_identical(plot(fit), fit)
@@ -35,7 +35,7 @@ test_that("plot methods draw and return their input invisibly", {
     expect_identical(plot(fit, scale = "standardized"), fit)
     expect_identical(plot(fit, labels = FALSE), fit)
   })
-  candidates <- enumerate_multilpa(dat, c("a", "b"), "g", profiles = 1:2,
+  candidates <- enumerate_classes(dat, c("a", "b"), "g", profiles = 1:2,
                                  group_classes = 1:2, n_starts = 3, seed = 3)
   draw({
     expect_identical(plot(candidates), candidates)
@@ -47,7 +47,7 @@ test_that("plot methods draw and return their input invisibly", {
 
 test_that("plotting restores the caller's graphical parameters", {
   dat <- plot_fixture()
-  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   draw({
     before <- graphics::par(c("mar", "xpd", "cex"))
     plot(fit)
@@ -58,7 +58,7 @@ test_that("plotting restores the caller's graphical parameters", {
 
 test_that("plot arguments override every visual constant", {
   dat <- plot_fixture()
-  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   draw({
     expect_silent(plot(fit, palette = c("#000000", "#FFFFFF"),
                        symbols = c(1L, 2L), linetypes = c(1L, 3L),
@@ -72,7 +72,7 @@ test_that("plot arguments override every visual constant", {
 
 test_that("standardizing uses the observed indicator scales", {
   dat <- plot_fixture()
-  fit <- fit_multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   observed <- fit$indicator_data
   centre <- colMeans(observed)
   spread <- c(stats::sd(observed[, 1L]), stats::sd(observed[, 2L]))
@@ -91,7 +91,7 @@ test_that("standardizing uses the observed indicator scales", {
 
 test_that("enumeration plotting rejects unusable criteria by condition class", {
   dat <- plot_fixture()
-  candidates <- enumerate_multilpa(dat, c("a", "b"), "g", profiles = 1:2,
+  candidates <- enumerate_classes(dat, c("a", "b"), "g", profiles = 1:2,
                                  group_classes = 1, n_starts = 3, seed = 3)
   draw({
     expect_error(plot(candidates, criterion = "not_a_column"),

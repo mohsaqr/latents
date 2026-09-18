@@ -15,7 +15,7 @@
 
 \item{data}{Original fitting data, required unless `object$inference` is stored.}
 
-\item{...}{Additional arguments passed to [inference_multilpa()].}
+\item{...}{Additional arguments passed to [parameter_inference()].}
 }
 \value{
 A two-column matrix of natural-scale Wald intervals. Bounds are not

@@ -1,7 +1,7 @@
 # Membership covariates: genuine Mplus comparison
 
 The retained Mplus 9 Demo input/output fits the same one-step ML model as
-`fit_multilpa_covariates()`: two individual profiles, two group classes, two
+`fit_covariates()`: two individual profiles, two group classes, two
 conditionally independent Gaussian indicators, individual predictor `z` with
 shared profile-logit slope, and group predictor `w` for group-class membership.
 There are 720 individuals in 60 groups and 13 free parameters. Mplus used

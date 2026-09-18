@@ -19,7 +19,7 @@
 )
 }
 \arguments{
-\item{x}{An `multilpa_enumeration` result from [enumerate_multilpa()].}
+\item{x}{An `multilpa_enumeration` result from [enumerate_classes()].}
 
 \item{criterion}{Name of the column to plot, as it appears in
 `as.data.frame(x)`, for example `"bic_individual"` or `"sabic_groups"`.}
@@ -53,7 +53,7 @@ example_data <- data.frame(
   school = rep(seq_len(12), each = 10),
   score_a = rnorm(120), score_b = rnorm(120)
 )
-candidates <- enumerate_multilpa(example_data, c("score_a", "score_b"), "school",
+candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
                                profiles = 1:3, group_classes = 1, n_starts = 2,
                                seed = 1)
 plot(candidates)

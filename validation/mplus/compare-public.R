@@ -31,7 +31,7 @@ run_public_comparison <- function(example) {
   variance_model <- if (example == "7.9") "equal" else "varying"
   data$cluster <- 1L
   stopifnot(!anyNA(data), !anyDuplicated(data), all(data$cluster == 1L))
-  fit <- fit_multilpa(data, c("y1", "y2", "y3", "y4"), "cluster", 2L, 1L,
+  fit <- multilpa(data, c("y1", "y2", "y3", "y4"), "cluster", 2L, 1L,
                     variance_model = variance_model, n_starts = 20L, max_iter = 1000L,
                     tol = 1e-12, seed = 912)
   comparison <- compare_public_mplus(fit, expected)

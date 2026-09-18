@@ -13,7 +13,7 @@
 
 \item{scale}{Natural or unconstrained parameter scale.}
 
-\item{...}{Additional arguments passed to [inference_multilpa()].}
+\item{...}{Additional arguments passed to [parameter_inference()].}
 }
 \value{
 The observed-information covariance matrix. On the natural scale,

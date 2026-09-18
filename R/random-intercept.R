@@ -130,11 +130,11 @@
 #' set.seed(8)
 #' example_data <- data.frame(group = rep(seq_len(10), each = 4),
 #'                            score = rnorm(40))
-#' fit <- fit_multilpa_random_intercept(example_data, "score", "group", 1,
+#' fit <- fit_random_intercept(example_data, "score", "group", 1,
 #'                                  n_starts = 1)
 #' print(fit)
 #' @export
-fit_multilpa_random_intercept <- function(data, indicators, cluster, n_profiles,
+fit_random_intercept <- function(data, indicators, cluster, n_profiles,
     variance_model = c("varying", "equal"), n_starts = 5L, max_iter = 1000L,
     tol = 1e-8, min_variance = 1e-6, quadrature_nodes = 61L,
     quadrature_check_nodes = 121L, quadrature_tolerance = 1e-3, seed = NULL) {

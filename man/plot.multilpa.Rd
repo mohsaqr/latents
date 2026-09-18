@@ -76,7 +76,7 @@ example_data <- data.frame(
   school = rep(seq_len(12), each = 10),
   score_a = rnorm(120), score_b = rnorm(120)
 )
-fit <- fit_multilpa(example_data, c("score_a", "score_b"), "school",
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 plot(fit)
 plot(fit, scale = "standardized")

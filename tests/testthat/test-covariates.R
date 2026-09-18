@@ -45,7 +45,7 @@ test_that("one-step covariates recover slopes and have consistent diagnostics", 
                   y1 = rnorm(length(group), ifelse(k == 1, -3, 3), .5),
                   y2 = rnorm(length(group), ifelse(k == 1, -2, 2), .6))
   rng <- .Random.seed
-  fit <- fit_multilpa_covariates(d, c("y1", "y2"), "group", 2, 2,
+  fit <- fit_covariates(d, c("y1", "y2"), "group", 2, 2,
                                "z", "w", n_starts = 3, seed = 23, tol = 1e-10)
   expect_identical(.Random.seed, rng)
   expect_true(fit$converged)
@@ -69,26 +69,26 @@ test_that("one-step covariates recover slopes and have consistent diagnostics", 
   expect_lt(abs(fit$profile_coefficients["z", ] - coef(independent)["z"]), .025)
   bad <- d
   bad$w[1] <- 20
-  expect_error(fit_multilpa_covariates(bad, c("y1", "y2"), "group", 2, 2, "z", "w", n_starts = 1), "constant within")
+  expect_error(fit_covariates(bad, c("y1", "y2"), "group", 2, 2, "z", "w", n_starts = 1), "constant within")
   bad$z[1] <- NA_real_
-  expect_error(fit_multilpa_covariates(bad, c("y1", "y2"), "group", 2, 2, "z", "w"), "finite numeric")
+  expect_error(fit_covariates(bad, c("y1", "y2"), "group", 2, 2, "z", "w"), "finite numeric")
   bad$z <- I(cbind(d$z, d$z))
-  expect_error(fit_multilpa_covariates(bad, c("y1", "y2"), "group", 2, 2, "z", "w"), "finite numeric")
-  expect_error(fit_multilpa_covariates(d, c("y1", "y2"), "group", 2, 2, "y1"), "distinct")
+  expect_error(fit_covariates(bad, c("y1", "y2"), "group", 2, 2, "z", "w"), "finite numeric")
+  expect_error(fit_covariates(d, c("y1", "y2"), "group", 2, 2, "y1"), "distinct")
 })
 
 test_that("no predictors agrees with the base model and single-level works", {
   set.seed(25)
   d <- data.frame(g = rep(1:30, each = 10), y = c(rnorm(150, -3), rnorm(150, 3)), z = rnorm(300))
-  base <- fit_multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 2, seed = 42, tol = 1e-10)
-  fit <- fit_multilpa_covariates(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 2, seed = 42, tol = 1e-10)
+  base <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 2, seed = 42, tol = 1e-10)
+  fit <- fit_covariates(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 2, seed = 42, tol = 1e-10)
   expect_equal(fit$log_likelihood, base$log_likelihood, tolerance = 1e-7)
   expect_equal(fit$n_parameters, base$n_parameters)
   expect_equal(ncol(fit$group_coefficients), 0L)
-  single <- fit_multilpa_covariates(d, "y", "g", 1, 1, n_starts = 1, seed = 42)
+  single <- fit_covariates(d, "y", "g", 1, 1, n_starts = 1, seed = 42)
   expect_equal(as.numeric(single$means), mean(d$y), tolerance = 1e-12)
   expect_equal(single$n_parameters, 2L)
-  expect_error(fit_multilpa_covariates(d, "y", "g", 1, 1, "z", n_starts = 1), "at least two profiles")
+  expect_error(fit_covariates(d, "y", "g", 1, 1, "z", n_starts = 1), "at least two profiles")
   d$constant <- 1
-  expect_error(fit_multilpa_covariates(d, "y", "g", 2, 1, "constant", n_starts = 1), "rank deficient")
+  expect_error(fit_covariates(d, "y", "g", 2, 1, "constant", n_starts = 1), "rank deficient")
 })

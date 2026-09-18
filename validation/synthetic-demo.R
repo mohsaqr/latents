@@ -23,7 +23,7 @@ stopifnot(!anyNA(synthetic_data), !anyDuplicated(synthetic_data),
           nrow(synthetic_data) == sum(group_sizes))
 
 elapsed <- system.time({
-  fit <- fit_multilpa(synthetic_data, c("reading", "maths"), "school_id",
+  fit <- multilpa(synthetic_data, c("reading", "maths"), "school_id",
                     n_profiles = 2, n_group_classes = 2,
                     n_starts = 8, seed = 42)
 })

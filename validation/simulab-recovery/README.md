@@ -1,6 +1,6 @@
 # Recovery of a known two-level latent profile model
 
-`recovery-study.R` generates data from the model `fit_multilpa()` estimates,
+`recovery-study.R` generates data from the model `multilpa()` estimates,
 refits it, and asks how close the estimates get to the values that produced the
 data. The generator is `simulab::simulate_multilpa()`; the comparison is
 `simulab::validate_recovery()`. Both are sibling packages, so the study needs no
@@ -109,7 +109,7 @@ are not evidence that the right solution was found.
 
 ### Structure selection
 
-`enumerate_multilpa()` was run on the first 25 datasets of each condition over
+`enumerate_classes()` was run on the first 25 datasets of each condition over
 2 to 4 profiles and 1 to 3 cluster classes. The table is the proportion of
 datasets on which the criterion's minimum fell on the true (3 profiles,
 2 cluster classes).

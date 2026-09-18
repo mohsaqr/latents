@@ -48,7 +48,7 @@ mplus_group_probabilities <- c(stats::plogis(group_logit),
                                1 - stats::plogis(group_logit))
 mplus_log_likelihood <- values[2L * n_parameters + 2L]
 
-fit <- fit_multilpa(raw, indicators, "clus", n_profiles = 2, n_group_classes = 2,
+fit <- multilpa(raw, indicators, "clus", n_profiles = 2, n_group_classes = 2,
                   categorical = indicators, n_starts = 40, seed = 20260918,
                   tol = 1e-13, max_iter = 20000)
 stopifnot("the native fit did not converge" = fit$converged,

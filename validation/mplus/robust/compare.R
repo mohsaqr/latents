@@ -34,10 +34,10 @@ str(dat)
 print(head(dat))
 print(vapply(dat, class, character(1)))
 
-fit <- fit_multilpa(dat, c("y1", "y2"), "clus", 2, 2, variance_model = "varying",
-                  start = multilpa_start(reference), n_starts = 1,
+fit <- multilpa(dat, c("y1", "y2"), "clus", 2, 2, variance_model = "varying",
+                  start = starting_values(reference), n_starts = 1,
                   max_iter = 5000, tol = 1e-13)
-information <- inference_multilpa(fit, dat, vcov_type = "robust")
+information <- parameter_inference(fit, dat, vcov_type = "robust")
 
 # Mplus orders the measurement block by profile then indicator, reports
 # variances rather than log variances, and parameterizes the mixing

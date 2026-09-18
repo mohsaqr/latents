@@ -34,7 +34,7 @@ comparisons <- lapply(c("varying", "equal"), function(variance_model) {
   profile_probability <- plogis(c(intercept + slope, intercept))
   profile_probabilities <- cbind(profile_probability, 1 - profile_probability)
   group_probabilities <- c(plogis(group_logit), 1 - plogis(group_logit))
-  fit <- fit_multilpa(synthetic, c("y1", "y2"), "clus", 2, 2,
+  fit <- multilpa(synthetic, c("y1", "y2"), "clus", 2, 2,
                     covariance_model = "full", missing = "fiml",
                     variance_model = variance_model, n_starts = 20, seed = 20260917,
                     tol = 1e-13, max_iter = 10000)

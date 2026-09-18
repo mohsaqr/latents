@@ -1,6 +1,6 @@
 # Scalar Gaussian group random intercept
 
-`fit_multilpa_random_intercept()` fits continuous Gaussian group heterogeneity by
+`fit_random_intercept()` fits continuous Gaussian group heterogeneity by
 maximum likelihood. One scalar group intercept adds with loading one to every
 indicator. Residual variances may vary across profiles or be shared; profile
 probabilities are constant across groups. The class is intentionally separate

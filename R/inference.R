@@ -288,10 +288,10 @@
 #' @examples
 #' set.seed(42)
 #' dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
-#' fit <- fit_multilpa(dat, "y", "group", 1, 1, n_starts = 1)
-#' inference_multilpa(fit, dat)$standard_errors
+#' fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
+#' parameter_inference(fit, dat)$standard_errors
 #' @export
-inference_multilpa <- function(object, data, level = 0.95, step = 1e-4,
+parameter_inference <- function(object, data, level = 0.95, step = 1e-4,
                              vcov_type = c("observed", "robust")) {
   stopifnot(inherits(object, "multilpa"), is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
@@ -384,7 +384,7 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 #' @param object A fitted `multilpa` model.
 #' @param data Original fitting data, required unless `object$inference` is stored.
 #' @param scale Natural or unconstrained parameter scale.
-#' @param ... Additional arguments passed to [inference_multilpa()].
+#' @param ... Additional arguments passed to [parameter_inference()].
 #' @return The observed-information covariance matrix. On the natural scale,
 #'   probability sum constraints make this matrix singular by construction.
 #' @examples
@@ -394,8 +394,8 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrained"), ...) {
   stopifnot(inherits(object, "multilpa"))
   scale <- match.arg(scale)
-  information <- if (is.null(data)) object$inference else inference_multilpa(object, data, ...)
-  if (is.null(information)) stop("Supply original data or store inference_multilpa() in object$inference.")
+  information <- if (is.null(data)) object$inference else parameter_inference(object, data, ...)
+  if (is.null(information)) stop("Supply original data or store parameter_inference() in object$inference.")
   if (scale == "natural") information$covariance else information$covariance_unconstrained
 }
 
@@ -404,7 +404,7 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
 #' @param parm Optional coefficient names or indices; defaults to all coefficients.
 #' @param level Confidence level strictly between zero and one.
 #' @param data Original fitting data, required unless `object$inference` is stored.
-#' @param ... Additional arguments passed to [inference_multilpa()].
+#' @param ... Additional arguments passed to [parameter_inference()].
 #' @return A two-column matrix of natural-scale Wald intervals. Bounds are not
 #'   clipped to the probability or variance parameter space.
 #' @examples

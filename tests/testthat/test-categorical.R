@@ -89,7 +89,7 @@ test_that("thresholds invert to the cumulative response probabilities", {
 test_that("two-level latent class analysis recovers its generating structure", {
   dat <- categorical_fixture()
   indicators <- paste0("v", 1:5)
-  fit <- fit_multilpa(dat, indicators, "school", n_profiles = 2, n_group_classes = 2,
+  fit <- multilpa(dat, indicators, "school", n_profiles = 2, n_group_classes = 2,
                     categorical = indicators, n_starts = 20, seed = 3)
   expect_identical(fit$measurement_model, "categorical")
   expect_true(fit$converged)
@@ -115,7 +115,7 @@ test_that("two-level latent class analysis recovers its generating structure", {
 test_that("categorical fits reproduce genuine Mplus two-level results", {
   reference <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-categorical.rds"))
   indicators <- paste0("u", 1:5)
-  fit <- fit_multilpa(reference$data, indicators, "clus", n_profiles = 2,
+  fit <- multilpa(reference$data, indicators, "clus", n_profiles = 2,
                     n_group_classes = 2, categorical = indicators,
                     n_starts = 40, seed = 20260918, tol = 1e-13, max_iter = 20000)
   expect_true(fit$converged)
@@ -142,13 +142,13 @@ test_that("ordinal and mixed-mode measurement fit and count parameters correctly
   ordinal$v1 <- ordinal$v1 + ordinal$v2 - 1L
   ordinal$v2 <- NULL
   indicators <- c("v1", "v3", "v4", "v5")
-  fit <- fit_multilpa(ordinal, indicators, "school", 2, 2, categorical = indicators,
+  fit <- multilpa(ordinal, indicators, "school", 2, 2, categorical = indicators,
                     n_starts = 12, seed = 4)
   expect_identical(ncol(fit$response_probabilities$v1), 3L)
   expect_equal(fit$n_parameters, 1 + 2 + 2 * (2 + 1 + 1 + 1))
   mixed <- dat
   mixed$score <- stats::rnorm(nrow(dat))
-  mixed_fit <- fit_multilpa(mixed, c("score", paste0("v", 1:5)), "school", 2, 2,
+  mixed_fit <- multilpa(mixed, c("score", paste0("v", 1:5)), "school", 2, 2,
                           categorical = paste0("v", 1:5), n_starts = 12, seed = 4)
   expect_identical(mixed_fit$measurement_model, "mixed")
   expect_identical(mixed_fit$continuous, "score")
@@ -167,10 +167,10 @@ test_that("categorical indicators support observed-data maximum likelihood", {
   set.seed(12)
   incomplete$v1[sample(nrow(dat), 60L)] <- NA
   incomplete$v4[sample(nrow(dat), 40L)] <- NA
-  expect_error(fit_multilpa(incomplete, indicators, "school", 2, 2,
+  expect_error(multilpa(incomplete, indicators, "school", 2, 2,
                           categorical = indicators, n_starts = 2, seed = 1),
                "missing or non-finite")
-  fit <- fit_multilpa(incomplete, indicators, "school", 2, 2,
+  fit <- multilpa(incomplete, indicators, "school", 2, 2,
                     categorical = indicators, missing = "fiml",
                     n_starts = 12, seed = 1)
   expect_true(fit$converged)
@@ -184,7 +184,7 @@ test_that("categorical indicators support observed-data maximum likelihood", {
 test_that("the responses accessor reports probabilities and thresholds", {
   dat <- categorical_fixture(seed = 15L, n_groups = 25L, per_group = 12L)
   indicators <- paste0("v", 1:5)
-  fit <- fit_multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
+  fit <- multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
                     n_starts = 10, seed = 6)
   responses <- as.data.frame(fit, what = "responses")
   expect_identical(names(responses),
@@ -199,7 +199,7 @@ test_that("the responses accessor reports probabilities and thresholds", {
   first <- subset(responses, responses$category == "1")
   expect_equal(stats::plogis(first$threshold), first$probability)
   # A Gaussian-only fit returns an empty table of the same shape, not an error.
-  gaussian <- fit_multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
+  gaussian <- multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
                          "y", "g", 2, 1, n_starts = 3, seed = 1)
   expect_identical(nrow(as.data.frame(gaussian, what = "responses")), 0L)
 })
@@ -207,19 +207,19 @@ test_that("the responses accessor reports probabilities and thresholds", {
 test_that("unsupported categorical combinations are refused by condition class", {
   dat <- categorical_fixture(seed = 31L, n_groups = 25L, per_group = 12L)
   indicators <- paste0("v", 1:5)
-  fit <- fit_multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
+  fit <- multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
                     n_starts = 8, seed = 2)
-  smaller <- fit_multilpa(dat, indicators, "school", 1, 1, categorical = indicators,
+  smaller <- multilpa(dat, indicators, "school", 1, 1, categorical = indicators,
                         n_starts = 3, seed = 2)
-  expect_error(inference_multilpa(fit, dat), class = "multilpa_unsupported_inference")
-  expect_error(bootstrap_lrt_multilpa(smaller, fit, dat, n_boot = 3, seed = 1),
+  expect_error(parameter_inference(fit, dat), class = "multilpa_unsupported_inference")
+  expect_error(bootstrap_lrt(smaller, fit, dat, n_boot = 3, seed = 1),
                class = "multilpa_unsupported_bootstrap")
-  expect_error(fit_multilpa(dat, indicators, "school", 2, 2, categorical = "absent",
+  expect_error(multilpa(dat, indicators, "school", 2, 2, categorical = "absent",
                           n_starts = 2), class = "multilpa_bad_categorical")
-  expect_error(fit_multilpa(dat, indicators, "school", 2, 2,
+  expect_error(multilpa(dat, indicators, "school", 2, 2,
                           categorical = c("v1", "v1"), n_starts = 2),
                class = "multilpa_bad_categorical")
-  expect_error(fit_multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
+  expect_error(multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
                           n_starts = 1, start = list(a = 1)),
                class = "multilpa_unsupported_start")
 })
@@ -227,7 +227,7 @@ test_that("unsupported categorical combinations are refused by condition class",
 test_that("categorical models plot their response probabilities", {
   dat <- categorical_fixture(seed = 41L, n_groups = 25L, per_group = 12L)
   indicators <- paste0("v", 1:5)
-  fit <- fit_multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
+  fit <- multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
                     n_starts = 8, seed = 2)
   path <- tempfile(fileext = ".png")
   grDevices::png(path, width = 900, height = 600)
@@ -242,7 +242,7 @@ test_that("categorical models plot their response probabilities", {
                class = "multilpa_unknown_category")
   # A model with no continuous indicators cannot draw a profile-means plot.
   expect_error(plot(fit, what = "profiles"), class = "multilpa_no_continuous")
-  gaussian <- fit_multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
+  gaussian <- multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
                          "y", "g", 2, 1, n_starts = 3, seed = 1)
   expect_error(plot(gaussian, what = "responses"), class = "multilpa_no_categorical")
 })
