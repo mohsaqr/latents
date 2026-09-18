@@ -63,8 +63,10 @@ often each profile occurs.
    asymmetry that carries the finding.
 5. **The sequences themselves** — what a student's career looks like once the
    assignments are laid out in course order.
-6. **How much to trust the assignments** — entropy and classification quality.
-7. **What this model cannot tell you.**
+6. **Testing the assumption the model makes** — whether the indicators are
+   really independent inside a profile, and what it costs when they are not.
+7. **How much to trust the assignments** — entropy and classification quality.
+8. **What this model cannot tell you.**
 
 ### The verbs used
 
@@ -79,6 +81,7 @@ often each profile occurs.
 | `plot()` | the measurement model and the class mixes |
 | `sequences()` | the assignments in course order |
 | `sequence_summary()` | how much data each student class contributes |
+| `bivariate_residuals()` | whether the independence assumption holds |
 
 Companion material: `validation/simulab-recovery/README.md` for how well these
 estimates recover a known truth, and `?multilpa` for the estimation contract.
@@ -165,19 +168,31 @@ and the two class counts. `n_starts` matters more than it looks: mixture
 likelihoods are multimodal, and a single start reports whichever hill it
 happened to climb.
 
+`covariance_model = "full"` is not the default and is not cosmetic here. The
+default assumes indicators are independent within a profile, and on these data
+that assumption is false by a wide margin. Section 6 shows the evidence and what
+ignoring it costs; the model is fitted correctly from the start so that every
+number below comes from the model worth reporting.
+
 ```{r fit}
 fit <- multilpa(engagement, indicators = indicators, group = "User",
                 n_profiles = 3, n_group_classes = 3, time = "Sequence",
-                n_starts = 50, seed = 2026)
+                covariance_model = "full", n_starts = 50, seed = 2026)
 summary(fit)
 ```
 
-All 50 starts reached the same maximum, at a log likelihood of -11083.49 with 56
+All 50 starts reached the same maximum, at a log likelihood of -7900.55 with 140
 free parameters. That unanimity is the single most reassuring number on the
 page: where multiple optima exist, starts scatter across them, and a 50-of-50
 replication says the solution is not an artefact of where the search began. No
 variance sits on its lower bound, and no class has an effective membership below
 one, so nothing has collapsed.
+
+The parameter count is large because a full residual covariance costs 36 numbers
+per profile rather than 8. It buys a great deal: the same three profiles fitted
+under the independence assumption reach only -11083.49, so estimating the
+associations is worth 3,183 log-likelihood points for 84 parameters, and the BIC
+on the group count falls from 22428 to 16454.
 
 ```{r criteria}
 information_criteria(fit)
@@ -185,11 +200,17 @@ information_criteria(fit)
 
 The information criteria are reported under both sample-size conventions
 because, for a multilevel mixture, "n" is genuinely ambiguous — 106 students or
-1,393 enrolments. The BIC penalty is 261 under the group count and 405 under the
-individual count, and the recovery study in `validation/simulab-recovery/` shows
-these two conventions selecting different structures at small sample sizes. They
-are alternatives to be chosen between and declared, not a menu to pick the
-agreeable one from.
+1,393 enrolments. The recovery study in `validation/simulab-recovery/` shows the
+two conventions selecting different structures at small sample sizes. They are
+alternatives to be chosen between and declared, not a menu to pick the agreeable
+one from.
+
+Both conventions here prefer more than three profiles: BIC keeps falling at four
+and at five. Neither is used, and the reason is in the restart diagnostics rather
+than the criteria. Fitted from 30 starts, the four-profile solution is found
+once, the five-profile solution is found once and sits on a variance boundary,
+and the three-profile solution is found by every start. A criterion cannot
+prefer a solution the optimiser cannot locate twice.
 
 ## 3. The profiles: what one enrolment looks like
 
@@ -210,11 +231,11 @@ they separate in the same direction each time.
 plot(fit)
 ```
 
-The picture is a level ordering, not a set of shapes. Profile 1, holding 31% of
-enrolments, sits between 0.65 and 1.06 standard deviations above the course mean
-on all eight indicators at once. Profile 2, 27%, sits between 0.56 and 1.11
-below on all eight. Profile 3, the largest at 42%, runs along the course average
-from -0.24 to +0.18.
+The picture is a level ordering, not a set of shapes. Profile 1, holding 27% of
+enrolments, sits between 0.49 and 1.03 standard deviations above the course mean
+on all eight indicators at once. Profile 2, also 27%, sits between 0.58 and 1.01
+below on all eight. Profile 3, the largest at 46%, runs along the course average
+from -0.19 to +0.29.
 
 That is worth stating plainly, because it is the kind of result that is easy to
 over-read. These data contain no enrolment type that reads the forum heavily
@@ -224,10 +245,11 @@ session count is above them on duration, browsing, forum reading and lecture
 viewing too. Three profiles is the right number here for describing *how much*,
 not *in what way*.
 
-The variances carry a second finding the means do not. Profile 1 is the loose
-one — variances from 0.41 to 1.59, so its enrolments are spread widely around
-those high means. Profile 3 is tight, 0.15 to 0.37. High engagement takes many
-forms and differs in degree; being unremarkable is a narrower condition.
+The table reports each profile's variances, but this model also estimates the
+covariances between indicators inside each profile, which is what section 6 is
+about. Those are the numbers the default model fixes at zero, and on these data
+they are large enough that fixing them at zero is not a simplification but a
+misstatement.
 
 ## 4. The student classes: what a whole student looks like
 
@@ -243,25 +265,25 @@ as.data.frame(fit, what = "profile_probabilities")
 plot(fit, what = "probabilities")
 ```
 
-The three classes are almost the same size — 34%, 34% and 32%, or 36, 37 and 33
-students — and each is dominated by one profile at close to 0.69. Class 1's
-students take high-engagement courses 69% of the time, class 2's take
-low-engagement courses 69% of the time, class 3's are typical 70% of the time.
+The three classes are uneven — 39%, 23% and 39%, or 41, 24 and 41 students —
+and each is dominated by one profile. Class 1's students are typical 79% of the
+time, class 2's take high-engagement courses 73% of the time, and class 3's take
+low-engagement courses 71% of the time. The largest class is the unremarkable
+one, and the high-engagement class is the smallest.
 
-The interesting number is not the 0.69 that repeats. It is the pair that does
-not: **0.045 and 0.034**. A student in the high-engagement class has a 4.5%
-chance of producing a low-engagement enrolment, and a student in the
-low-engagement class has a 3.4% chance of producing a high-engagement one. The
-two extremes are, for practical purposes, mutually exclusive over a student's
-career.
+The interesting numbers are the small ones: **0.021 and 0.070**. A student in
+the high-engagement class has a 2.1% chance of producing a low-engagement
+enrolment, and a student in the low-engagement class has a 7.0% chance of
+producing a high-engagement one. The two extremes are, for practical purposes,
+mutually exclusive over a student's career.
 
 Consistency therefore runs in both directions, and that is the finding. The
 high-engagement students are not students who happen to have had a good term;
 they almost never have a bad one. The low-engagement students are not students
 waiting for the right course; across up to fifteen courses, the right course
 does not arrive. What both groups do instead, roughly a quarter of the time, is
-fall back to the typical profile — 0.265 for class 1 and 0.279 for class 2,
-which is to say the middle is where everybody's variation happens.
+fall back to the typical profile — 0.247 for the high class and 0.220 for the
+low one, which is to say the middle is where everybody's variation happens.
 
 ```{r group-posteriors}
 head(as.data.frame(fit, what = "group_posteriors"))
@@ -275,8 +297,8 @@ about the student.
 ## 5. The sequences themselves
 
 A student class is a probability mix, and a mix is an average over careers that
-may look nothing like each other. Class 2 says its students take a
-low-engagement course 69% of the time; it does not say whether that means a
+may look nothing like each other. Class 3 says its students take a
+low-engagement course 71% of the time; it does not say whether that means a
 steady run of low-engagement terms or a good start followed by a collapse.
 
 The model never looks at course order, but the fit can carry it. Passing
@@ -310,11 +332,11 @@ student never reached.
 sequence_summary(fit)
 ```
 
-Class 2 — the low-engagement class of section 4, the one whose students take a
-low-engagement course 69% of the time — averaged 10.9 courses against 14.2 and
-14.4 for the other two, and 21 of their 37 reached the fifteenth against 33 of 36 and 30 of
-33. That is a fact about who leaves, not about who engages, and the prevalence
-matrix had no way to express it.
+Class 3 — the low-engagement class of section 4, the one whose students take a
+low-engagement course 71% of the time — averaged 11.3 courses against 14.2 and
+14.3 for the other two, and 25 of its 41 students reached the fifteenth against
+37 of 41 and 22 of 24. That is a fact about who leaves, not about who engages,
+and the prevalence matrix had no way to express it.
 
 Read it carefully, because it is partly circular. A student who took one course
 and was disengaged in it has nowhere to be assigned except the mostly-low
@@ -324,7 +346,67 @@ early been unrelated to engagement, those who did not finish would have spread
 across the three classes instead of concentrating in one.
 
 
-## 6. How much to trust the assignments
+## 6. Testing the assumption the model makes
+
+Everything above rests on an assumption that has not yet been examined. A
+profile model says that, once you know which profile an enrolment belongs to,
+its indicators are independent of one another: whatever made a student browse
+heavily is the profile, not some separate thing that also made them log many
+sessions. The default `covariance_model = "diagonal"` writes that down as a
+constraint, fixing every within-profile covariance at zero.
+
+Nothing in the fit reports whether that constraint is reasonable. A model can be
+badly wrong in exactly this way and still converge, replicate across every
+start, and return a respectable entropy. `bivariate_residuals()` is the check.
+
+```{r residuals}
+head(bivariate_residuals(fit, engagement), 5)
+```
+
+One row per pair of indicators per profile, worst first. `observed` is the
+residual correlation left inside the profile, `expected` is what the fitted
+covariance model implies for it, and `residual` is the gap. Here the largest gap
+is a few parts in a hundred thousand, because this model estimates those
+correlations rather than assuming them away.
+
+The comparison that matters is with the model that does assume them away.
+
+```{r residuals-diagonal}
+independent <- multilpa(engagement, indicators = indicators, group = "User",
+                        n_profiles = 3, n_group_classes = 3,
+                        n_starts = 20, seed = 2026)
+ignored <- bivariate_residuals(independent, engagement)
+head(ignored, 5)
+```
+
+```{r residuals-count}
+data.frame(pairs = nrow(ignored),
+           above_half = nrow(subset(ignored, abs(residual) > 0.5)),
+           significant_holm = nrow(subset(ignored,
+                                          p.adjust(p_value, "holm") < 0.05)))
+```
+
+Under the default, `active_days_z` and `entropy_z` remain correlated at 0.87
+*within a single profile*, against a model asserting that the correlation is
+exactly zero. Of the 84 pairs, 19 exceed 0.5 and 60 stay significant after a
+Holm correction. That is not a marginal violation; it is the assumption failing
+across most of the instrument. (Which profile carries the worst pair is not
+worth naming: profile labels are arbitrary and move between fits.)
+
+This is worth dwelling on, because of how invisible it was. That diagonal fit
+converged, replicated in 50 starts out of 50, and reported a relative entropy of
+0.91 — every signal the package offers said it was sound. Only a diagnostic
+aimed at the assumption itself could show otherwise.
+
+What it cost is visible in the criteria: the same three profiles and three
+classes, with the covariances estimated instead of fixed, gain 3,183
+log-likelihood points and drop the group-count BIC from 22428 to 16454. The
+profiles keep their shape, and the substance of sections 4 and 5 survives — the
+extremes stay nearly disjoint and the low-engagement class still leaves early —
+but the numbers move, and a model that misstates its own measurement structure
+is not the one to report them from.
+
+## 7. How much to trust the assignments
 
 A profile solution can be well estimated and still be too blurred to act on. Two
 diagnostics separate those cases, and they should be read before any assignment
@@ -334,28 +416,29 @@ is used for anything.
 entropy_table(fit)
 ```
 
-Relative entropy is 0.906 for enrolments and 0.854 for students. Both are high
-enough that the modal assignments mean something; the enrolment figure being the
-higher of the two is expected, since a single enrolment is classified from eight
-indicators while a student is classified from a mix of profile memberships that
-is itself uncertain.
+Relative entropy is 0.839 for enrolments and 0.914 for students. Both are high
+enough that the modal assignments mean something. The ordering is worth noticing:
+students separate more sharply than their individual enrolments do, because a
+student is judged on fifteen observations while an enrolment is judged on one.
+Under the independence assumption the ordering was the other way round, which is
+one more thing that assumption was getting wrong.
 
 ```{r classification}
 classification_table(fit, level = "both")
 ```
 
-The average posterior probability is between 0.947 and 0.965 for the enrolment
-profiles and between 0.920 and 0.943 for the student classes — every class is
+The average posterior probability is between 0.922 and 0.947 for the enrolment
+profiles and between 0.961 and 0.979 for the student classes — every class is
 assigned with high confidence on average. The odds of correct classification
-range from 25.0 to 72.0 for enrolments and 24.4 to 32.9 for students, all far
+range from 13.6 to 49.3 for enrolments and 38.6 to 92.0 for students, all far
 above the value of 1 that a useless classifier would give.
 
-Note also that `n_modal` and `estimated_n` agree closely — 434 against 432 for
-profile 1, 378 against 383 for profile 2. Where a model separates poorly these
+Note also that `n_modal` and `estimated_n` agree closely — 365 against 373 for
+profile 1, 370 against 373 for profile 2. Where a model separates poorly these
 two diverge, because the modal count claims a certainty the posteriors do not
 support. Here they do not diverge.
 
-## 7. What this model cannot tell you
+## 8. What this model cannot tell you
 
 Three limits are worth naming, because each is invisible in the output above.
 
