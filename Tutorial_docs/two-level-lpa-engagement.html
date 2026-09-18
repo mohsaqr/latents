@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="mllpa" />
+<meta name="author" content="multilpa" />
 
 <meta name="date" content="2026-09-18" />
 
@@ -1499,7 +1499,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Two levels of engagement: profiles within
 courses, students across them</h1>
-<h4 class="author">mllpa</h4>
+<h4 class="author">multilpa</h4>
 <h4 class="date">2026-09-18</h4>
 
 </div>
@@ -1507,8 +1507,8 @@ courses, students across them</h1>
 
 <div id="where-this-sits" class="section level2">
 <h2>Where this sits</h2>
-<p>The package README fits <code>fit_ml_lpa()</code> to synthetic data
-to show the syntax, and <code>validation/simulab-recovery/</code>
+<p>The package README fits <code>multilpa()</code> to synthetic data to
+show the syntax, and <code>validation/simulab-recovery/</code>
 establishes that the estimator recovers a model whose truth is known.
 Neither answers the question an analyst actually arrives with: what does
 a two-level latent profile model say about a real course platform, and
@@ -1570,7 +1570,7 @@ classification quality.</li>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>fit_ml_lpa()</code></td>
+<td><code>multilpa()</code></td>
 <td>estimate the two-level model</td>
 </tr>
 <tr class="even">
@@ -1605,7 +1605,7 @@ classification quality.</li>
 </table>
 <p>Companion material:
 <code>validation/simulab-recovery/README.md</code> for how well these
-estimates recover a known truth, and <code>?fit_ml_lpa</code> for the
+estimates recover a known truth, and <code>?multilpa</code> for the
 estimation contract.</p>
 </div>
 </div>
@@ -1624,7 +1624,7 @@ confounds “this student worked hard” with “this course demanded a lot”.
 Standardising inside each course removes the course from the comparison:
 a value of <code>+1</code> then means one standard deviation above the
 classmates who sat the same course.</p>
-<pre class="r"><code>library(mllpa)
+<pre class="r"><code>library(multilpa)
 
 # Point this at your copy of the file.
 data_path &lt;- file.path(&quot;~&quot;, &quot;My Drive (saqr@saqr.me)&quot;, &quot;Git&quot;, &quot;Qudent_26&quot;,
@@ -1692,12 +1692,11 @@ silently join the model.</p>
 </div>
 <div id="the-model-as-a-whole" class="section level2">
 <h2>2. The model as a whole</h2>
-<p><code>fit_ml_lpa()</code> takes the indicators, the column
-identifying the second level, and the two class counts.
-<code>n_starts</code> matters more than it looks: mixture likelihoods
-are multimodal, and a single start reports whichever hill it happened to
-climb.</p>
-<pre class="r"><code>fit &lt;- fit_ml_lpa(engagement, indicators = indicators, cluster = &quot;User&quot;,
+<p><code>multilpa()</code> takes the indicators, the column identifying
+the second level, and the two class counts. <code>n_starts</code>
+matters more than it looks: mixture likelihoods are multimodal, and a
+single start reports whichever hill it happened to climb.</p>
+<pre class="r"><code>fit &lt;- multilpa(engagement, indicators = indicators, group = &quot;User&quot;,
                   n_profiles = 3, n_group_classes = 3,
                   n_starts = 50, seed = 2026)
 summary(fit)</code></pre>
@@ -2350,7 +2349,7 @@ for the first.</p>
 
 #&#39; A student&#39;s profile assignments, in course order
 #&#39;
-#&#39; @param fit A fitted `ml_lpa` model.
+#&#39; @param fit A fitted `multilpa` model.
 #&#39; @param data The data frame the model was fitted to.
 #&#39; @param time Name of the column giving the position of each observation in its
 #&#39;   unit&#39;s sequence.
@@ -2362,7 +2361,7 @@ for the first.</p>
 profile_sequences &lt;- function(fit, data, time = &quot;Sequence&quot;, labels = NULL,
                               levels = NULL) {
   stopifnot(
-    &quot;`fit` must be an `ml_lpa` model&quot; = inherits(fit, &quot;ml_lpa&quot;),
+    &quot;`fit` must be an `multilpa` model&quot; = inherits(fit, &quot;multilpa&quot;),
     &quot;`data` must be the data frame the model was fitted to&quot; =
       is.data.frame(data) &amp;&amp; time %in% names(data),
     &quot;`labels` must be NULL or one name per profile&quot; =
@@ -2387,13 +2386,13 @@ profile_sequences &lt;- function(fit, data, time = &quot;Sequence&quot;, labels 
 
 #&#39; The fitted class of each unit, aligned to `profile_sequences()`
 #&#39;
-#&#39; @param fit A fitted `ml_lpa` model.
+#&#39; @param fit A fitted `multilpa` model.
 #&#39; @param sequences The frame returned by [profile_sequences()].
 #&#39; @param labels Optional class names, one per group class, in class order.
 #&#39; @return A factor with one element per row of `sequences`, in that order.
 student_classes &lt;- function(fit, sequences, labels = NULL) {
   stopifnot(
-    &quot;`fit` must be an `ml_lpa` model&quot; = inherits(fit, &quot;ml_lpa&quot;),
+    &quot;`fit` must be an `multilpa` model&quot; = inherits(fit, &quot;multilpa&quot;),
     &quot;`sequences` must be a data frame with unit identifiers as row names&quot; =
       is.data.frame(sequences) &amp;&amp; !is.null(row.names(sequences)),
     &quot;`labels` must be NULL or one name per group class&quot; =
@@ -2872,9 +2871,9 @@ did the most work.</p>
 a nuisance — the model then reduces to an ordinary latent profile
 analysis that still respects the clustering. Raise it above one when the
 question is about the units rather than the observations, as here. Use
-<code>fit_ml_lpa_random_intercept()</code> instead when group
-differences are better described as a continuum than as types, and
-compare the two on the information criteria rather than assuming.</p>
+<code>fit_random_intercept()</code> instead when group differences are
+better described as a continuum than as types, and compare the two on
+the information criteria rather than assuming.</p>
 </div>
 </div>
 <div id="references" class="section level2">
