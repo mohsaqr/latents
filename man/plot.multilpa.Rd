@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{multilpa}(
   x,
-  what = c("profiles", "responses", "probabilities"),
+  what = c("profiles", "responses", "probabilities", "sequences"),
   scale = c("raw", "standardized"),
   category = "last",
   labels = TRUE,
@@ -26,7 +26,10 @@
 profile across the continuous indicators. `"responses"` plots the
 categorical measurement model, one line per profile across the categorical
 indicators, showing the probability of a chosen category. `"probabilities"`
-plots profile prevalence within each group class, one line per group class.}
+plots profile prevalence within each group class, one line per group class.
+`"sequences"` draws one row per group, one column per position, coloured by
+the assigned profile, with the groups grouped by their latent class; it
+needs a fit made with `time =`.}
 
 \item{scale}{For `what = "profiles"`, `"raw"` plots the estimated means in
 input units, and `"standardized"` divides each indicator's deviation from

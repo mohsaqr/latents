@@ -20,7 +20,8 @@ multilpa(
   missing = c("error", "fiml"),
   covariance_model = c("diagonal", "full"),
   categorical = character(),
-  min_probability = 1e-10
+  min_probability = 1e-10,
+  time = NULL
 )
 }
 \arguments{
@@ -78,6 +79,12 @@ Gaussian, so naming a subset fits a mixed-mode model.}
 \item{min_probability}{Positive lower bound on every categorical response
 probability, defining a constrained maximum-likelihood problem in the same
 way `min_variance` does for Gaussian indicators.}
+
+\item{time}{Optional name of a column giving each observation's position
+within its group, such as a wave, occasion or course number. The model does
+not use it; it is stored so that [sequences()], [sequence_summary()] and
+`plot(what = "sequences")` can read the assignments back in order. Values
+must be complete and unique within each group.}
 }
 \value{
 An `multilpa` object containing `means`, `variances`, optional

@@ -11,6 +11,9 @@
 #'   categorical measurement model, one line per profile across the categorical
 #'   indicators, showing the probability of a chosen category. `"probabilities"`
 #'   plots profile prevalence within each group class, one line per group class.
+#'   `"sequences"` draws one row per group, one column per position, coloured by
+#'   the assigned profile, with the groups grouped by their latent class; it
+#'   needs a fit made with `time =`.
 #' @param scale For `what = "profiles"`, `"raw"` plots the estimated means in
 #'   input units, and `"standardized"` divides each indicator's deviation from
 #'   its grand mean by that indicator's observed standard deviation. Use
@@ -47,7 +50,8 @@
 #' plot(fit)
 #' plot(fit, scale = "standardized")
 #' @export
-plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities"),
+plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
+                                      "sequences"),
                         scale = c("raw", "standardized"), category = "last",
                         labels = TRUE, main = NULL, subtitle = NULL,
                         palette = NULL, symbols = NULL, linetypes = NULL,
@@ -67,7 +71,9 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities"),
     responses = .multilpa_plot_responses(x, category, labels, main, subtitle,
                                        palette, symbols, linetypes, style),
     probabilities = .multilpa_plot_probabilities(x, labels, main, subtitle,
-                                               palette, symbols, linetypes, style))
+                                               palette, symbols, linetypes, style),
+    sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
+                                        style))
   invisible(x)
 }
 
@@ -406,4 +412,67 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
     }
   }
   invisible(x)
+}
+
+#' Draw the assignments in sequence order
+#'
+#' One row per group and one column per position, filled with the assigned
+#' profile. Rows are blocked by latent group class and divided by a rule, so the
+#' picture answers whether a class's groups look alike over time rather than
+#' only how often each profile occurs in them.
+#'
+#' @param x A fitted `multilpa` model made with `time =`.
+#' @param labels Whether to label each class block at the right edge.
+#' @param main,subtitle Panel title and secondary line.
+#' @param palette Colours, one per profile; `NULL` uses the Okabe-Ito palette.
+#' @param style Visual constants, as built by `.multilpa_style()`.
+#' @return `NULL`, invisibly. Called for the side effect of drawing.
+#' @noRd
+.multilpa_plot_sequences <- function(x, labels, main, subtitle, palette, style) {
+  wide <- sequences(x, format = "wide")
+  long <- sequences(x, format = "long")
+  class_of_group <- vapply(split(long$group_class, long$group),
+                           function(v) v[[1L]], numeric(1))
+  ordering <- order(class_of_group, names(class_of_group))
+  codes <- vapply(seq_len(ncol(wide)),
+                  function(column) as.integer(wide[[column]])[ordering],
+                  integer(nrow(wide)))
+  classes <- class_of_group[ordering]
+  colours <- palette %||% .multilpa_palette(x$n_profiles)
+  positions <- as.numeric(names(wide))
+  n_groups <- nrow(codes)
+  class_labels <- sprintf("Class %d", sort(unique(classes)))
+  ## The right side is sized for the class labels by the shared helper; the
+  ## bottom gains room the line panels do not need, for the profile key.
+  margins <- .multilpa_margins(style, if (isTRUE(labels)) class_labels else
+                                 character(), style$label_text_size)
+  if (isTRUE(labels)) margins[1L] <- margins[1L] + 3.2
+  graphics::par(mar = margins)
+
+  .multilpa_panel(
+    xlim = c(min(positions) - 0.5, max(positions) + 0.5),
+    ylim = c(n_groups + 0.5, 0.5),
+    xlab = x$time, ylab = "Group",
+    main = if (is.null(main)) "Assigned profile in sequence order" else main,
+    subtitle = if (is.null(subtitle)) sprintf(
+      "%d groups in %d classes; %d profiles across %d positions",
+      n_groups, x$n_group_classes, x$n_profiles, ncol(codes)) else subtitle,
+    x_at = positions, x_labels = names(wide), style = style)
+  graphics::image(x = positions, y = seq_len(n_groups), z = t(codes), add = TRUE,
+                  col = colours, zlim = c(0.5, x$n_profiles + 0.5))
+  boundaries <- which(diff(classes) != 0) + 0.5
+  if (length(boundaries)) {
+    graphics::abline(h = boundaries, col = style$panel_fill, lwd = 3)
+  }
+  if (isTRUE(labels)) {
+    graphics::text(max(positions) + 0.6,
+                   vapply(split(seq_len(n_groups), classes), mean, numeric(1)),
+                   class_labels, adj = c(0, 0.5),
+                   col = style$text_colour, cex = style$label_text_size, font = 2L)
+    graphics::legend("bottom", horiz = TRUE, bty = "n", inset = c(0, -0.30),
+                     legend = sprintf("Profile %d", seq_len(x$n_profiles)),
+                     fill = colours, border = NA, xpd = NA,
+                     cex = style$label_text_size)
+  }
+  invisible(NULL)
 }

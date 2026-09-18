@@ -342,6 +342,41 @@
        converged = converged, iterations = iteration, history = history)
 }
 
+#' Validate and extract an optional time column
+#'
+#' The model never uses the ordering; it is carried so that the assignments can
+#' be read back in sequence without the caller supplying the data again.
+#'
+#' @param data The data frame passed to the fit.
+#' @param time `NULL`, or the name of a single column giving each observation's
+#'   position within its group.
+#' @param group Name of the group column, used only for the uniqueness check.
+#' @return `NULL` when `time` is `NULL`, otherwise the column in input row order.
+#' @noRd
+.multilpa_time_values <- function(data, time, group) {
+  if (is.null(time)) return(NULL)
+  stopifnot(
+    "`time` must be NULL or a single column name" =
+      is.character(time) && length(time) == 1L && !is.na(time),
+    "`time` must name a column of `data`" = time %in% names(data),
+    "`time` must not be one of the indicators or the group column" =
+      !identical(time, group)
+  )
+  values <- data[[time]]
+  if (anyNA(values)) {
+    stop(errorCondition("`time` must not contain missing values.",
+                        class = "multilpa_bad_time", call = NULL))
+  }
+  duplicated_within <- any(vapply(split(values, data[[group]]),
+                                  function(v) anyDuplicated(v) > 0L, logical(1)))
+  if (duplicated_within) {
+    stop(errorCondition(
+      "`time` must be unique within each group; a position cannot occur twice.",
+      class = "multilpa_bad_time", call = NULL))
+  }
+  values
+}
+
 #' Fit a two-level latent profile model
 #'
 #' Fits individual Gaussian profiles nested within observed groups. A discrete
@@ -382,6 +417,11 @@
 #'   by the same unrestricted parameterization; numeric, integer, logical,
 #'   character and factor columns are accepted. Indicators not named here stay
 #'   Gaussian, so naming a subset fits a mixed-mode model.
+#' @param time Optional name of a column giving each observation's position
+#'   within its group, such as a wave, occasion or course number. The model does
+#'   not use it; it is stored so that [sequences()], [sequence_summary()] and
+#'   `plot(what = "sequences")` can read the assignments back in order. Values
+#'   must be complete and unique within each group.
 #' @param min_probability Positive lower bound on every categorical response
 #'   probability, defining a constrained maximum-likelihood problem in the same
 #'   way `min_variance` does for Gaussian indicators.
@@ -434,7 +474,8 @@ multilpa <- function(data, indicators, group, n_profiles,
                        min_variance = 1e-6, seed = NULL, start = NULL,
                        missing = c("error", "fiml"),
                        covariance_model = c("diagonal", "full"),
-                       categorical = character(), min_probability = 1e-10) {
+                       categorical = character(), min_probability = 1e-10,
+                       time = NULL) {
   stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
@@ -443,6 +484,7 @@ multilpa <- function(data, indicators, group, n_profiles,
               is.finite(min_probability) && min_probability > 0 &&
               min_probability < 1)
   call <- match.call()
+  time_values <- .multilpa_time_values(data, time, group)
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
@@ -552,6 +594,7 @@ multilpa <- function(data, indicators, group, n_profiles,
     indicator_data = as.matrix(indicator_frame),
     categorical_data = codes,
     group = group, group_ids = group_ids,
+    time = time, time_values = time_values,
     group_values = group_values, group_index = group_index,
     group_sizes = setNames(group_sizes, group_ids),
     n_observations = nrow(x), n_groups = n_groups, n_profiles = as.integer(n_profiles),

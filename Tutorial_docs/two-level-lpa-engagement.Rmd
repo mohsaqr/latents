@@ -77,7 +77,8 @@ often each profile occurs.
 | `classification_table()` | whether the assignments are trustworthy |
 | `as.data.frame()` | any part of the fit, as a tidy table |
 | `plot()` | the measurement model and the class mixes |
-| `Nestimate::sequence_plot()` | the assignments laid out in course order |
+| `sequences()` | the assignments in course order |
+| `sequence_summary()` | how much data each student class contributes |
 
 Companion material: `validation/simulab-recovery/README.md` for how well these
 estimates recover a known truth, and `?multilpa` for the estimation contract.
@@ -166,8 +167,8 @@ happened to climb.
 
 ```{r fit}
 fit <- multilpa(engagement, indicators = indicators, group = "User",
-                  n_profiles = 3, n_group_classes = 3,
-                  n_starts = 50, seed = 2026)
+                n_profiles = 3, n_group_classes = 3, time = "Sequence",
+                n_starts = 50, seed = 2026)
 summary(fit)
 ```
 
@@ -276,187 +277,52 @@ about the student.
 A student class is a probability mix, and a mix is an average over careers that
 may look nothing like each other. Class 2 says its students take a
 low-engagement course 69% of the time; it does not say whether that means a
-steady run of low-engagement terms or a good start followed by a collapse. The
-assignments have to be laid out in course order before that distinction is
-visible, and the model never looks at course order at all.
+steady run of low-engagement terms or a good start followed by a collapse.
 
-The fit stores the assignments and the data stores the ordering, and nothing
-joins them, so two small verbs do it. Both return their rows in the same order,
-which is what lets the second be passed as the grouping for the first.
-
-```{r sequence-verbs}
-library(Nestimate)
-
-#' A student's profile assignments, in course order
-#'
-#' @param fit A fitted `multilpa` model.
-#' @param data The data frame the model was fitted to.
-#' @param time Name of the column giving the position of each observation in its
-#'   unit's sequence.
-#' @param labels Optional state names, one per profile, in profile order.
-#' @param levels Optional display order for those names.
-#' @return A base `data.frame` with one row per second-level unit and one column
-#'   per time point, holding the modal profile as a factor and `NA` where the
-#'   unit has no observation at that point. Row names are the unit identifiers.
-profile_sequences <- function(fit, data, time = "Sequence", labels = NULL,
-                              levels = NULL) {
-  stopifnot(
-    "`fit` must be an `multilpa` model" = inherits(fit, "multilpa"),
-    "`data` must be the data frame the model was fitted to" =
-      is.data.frame(data) && time %in% names(data),
-    "`labels` must be NULL or one name per profile" =
-      is.null(labels) || length(labels) == fit$n_profiles
-  )
-  assignments <- as.data.frame(fit, what = "posteriors")
-  stopifnot("posteriors must be one row per input row, in input order" =
-              nrow(assignments) == nrow(data))
-  if (is.null(labels)) labels <- sprintf("Profile %d", seq_len(fit$n_profiles))
-  if (is.null(levels)) levels <- labels
-  long <- data.frame(unit = assignments$group, time = data[[time]],
-                     state = factor(labels[assignments$profile], levels = levels))
-  wide <- stats::reshape(long, idvar = "unit", timevar = "time",
-                         direction = "wide", v.names = "state")
-  wide <- wide[order(wide$unit), , drop = FALSE]
-  states <- wide[setdiff(names(wide), "unit")]
-  names(states) <- sub("^state[.]", "", names(states))
-  states <- states[order(as.integer(names(states)))]
-  row.names(states) <- wide$unit
-  states
-}
-
-#' The fitted class of each unit, aligned to `profile_sequences()`
-#'
-#' @param fit A fitted `multilpa` model.
-#' @param sequences The frame returned by [profile_sequences()].
-#' @param labels Optional class names, one per group class, in class order.
-#' @return A factor with one element per row of `sequences`, in that order.
-student_classes <- function(fit, sequences, labels = NULL) {
-  stopifnot(
-    "`fit` must be an `multilpa` model" = inherits(fit, "multilpa"),
-    "`sequences` must be a data frame with unit identifiers as row names" =
-      is.data.frame(sequences) && !is.null(row.names(sequences)),
-    "`labels` must be NULL or one name per group class" =
-      is.null(labels) || length(labels) == fit$n_group_classes
-  )
-  assignments <- as.data.frame(fit, what = "group_posteriors")
-  if (is.null(labels)) labels <- sprintf("Class %d", seq_len(fit$n_group_classes))
-  position <- match(row.names(sequences), as.character(assignments$group))
-  stopifnot("every sequence must belong to a fitted group" = !anyNA(position))
-  factor(labels[assignments$group_class[position]], levels = labels)
-}
-```
-
-The profile names below come from the estimated means in section 3, where
-profile 1 was above the course average on all eight indicators, profile 2 below
-on all eight, and profile 3 along the average. The numbering itself is
-arbitrary, so naming the states makes the plot readable and pins the
-interpretation to something checkable.
+The model never looks at course order, but the fit can carry it. Passing
+`time =` stores the column, which is what lets the assignments be read back in
+sequence without handing the data over a second time.
 
 ```{r sequences}
-sequences <- profile_sequences(fit, engagement,
-                               labels = c("High", "Low", "Typical"),
-                               levels = c("Low", "Typical", "High"))
-classes <- student_classes(fit, sequences,
-                           labels = c("Mostly high", "Mostly low", "Mostly typical"))
-dim(sequences)
-head(sequences)
+head(sequences(fit), 12)
 ```
 
-One row per student, fifteen columns, one per position in that student's course
-sequence. `NA` marks a position the student never reached. Of the 1,590 cells,
-1,393 carry an enrolment and 197 are empty.
+One row per enrolment, in course order, carrying both the enrolment's profile
+and its student's class — 1,393 rows in all, the same enrolments the model was
+fitted to, now arranged so that a student's career reads left to right. The
+first student shown took a single course; the second took twelve.
 
 ```{r sequence-index, fig.width = 10, fig.height = 7}
-# sequence_plot() assigns colours to states by POSITION in the alphabetically
-# sorted state names -- High, Low, Typical -- not by the names on this vector.
-# The vector is written in that order so the two agree.
-state_colors <- c(High = "#E69F00", Low = "#56B4E9", Typical = "#009E73")
-
-sequence_plot(sequences, type = "index", group = classes,
-              state_colors = state_colors,
-              main = "Course sequences by student class")
+plot(fit, what = "sequences")
 ```
 
-Each row is one student and each column one course in their sequence. The three
-panels are the three classes, and they are the finding from section 4 made
-visible: the top-left panel is overwhelmingly orange with green interruptions
-and almost no blue, the top-right overwhelmingly blue with green interruptions
-and almost no orange. The mutual exclusivity of the extremes is not a subtle
-statistical effect here; it is the dominant visual fact.
+Each row is one student, each column one course in their sequence, coloured by
+the assigned profile, with students blocked by their class. This is section 4's
+finding made visible: the first block is overwhelmingly one colour, the second
+overwhelmingly another, and the two extreme colours almost never appear in each
+other's block. The mutual exclusivity of the extremes is the dominant visual
+fact here, not a subtle statistical effect.
 
-The grey is the part the probability table could not show. In the mostly-low
-panel it forms a wedge across the bottom third — those students stopped taking
-courses. Elsewhere it is a few scattered rows.
+The gaps are what the probability table could not show. They mark positions a
+student never reached.
 
 ```{r attrition}
-#' How many courses each class's students actually took
-#'
-#' @param sequences The frame returned by [profile_sequences()].
-#' @param classes The factor returned by [student_classes()].
-#' @return A base `data.frame` with one row per class and the columns `class`,
-#'   `students`, `mean_courses`, `median_courses` and `completing_all`.
-sequence_lengths <- function(sequences, classes) {
-  stopifnot(
-    "`sequences` must be a data frame" = is.data.frame(sequences),
-    "`classes` must have one value per sequence" =
-      length(classes) == nrow(sequences)
-  )
-  taken <- rowSums(!is.na(sequences))
-  positions <- ncol(sequences)
-  data.frame(
-    class = levels(factor(classes)),
-    students = as.vector(tapply(taken, classes, length)),
-    mean_courses = as.vector(tapply(taken, classes, mean)),
-    median_courses = as.vector(tapply(taken, classes, stats::median)),
-    completing_all = as.vector(tapply(taken, classes, function(v) sum(v == positions))),
-    row.names = NULL
-  )
-}
-
-sequence_lengths(sequences, classes)
+sequence_summary(fit)
 ```
 
-Mostly-low students took 10.9 courses on average against 14.2 and 14.4 for the
-other two classes, and 21 of 37 completed all fifteen against 63 of the other
-69. That is a gap of 34.5 percentage points in completion, 95% CI [15.2, 53.9],
-and the difference across all three classes is beyond chance (Kruskal-Wallis
-chi-squared = 17.4, df = 2, p = 0.00017, epsilon squared = 0.166).
+Class 2 — the low-engagement class of section 4, the one whose students take a
+low-engagement course 69% of the time — averaged 10.9 courses against 14.2 and
+14.4 for the other two, and 21 of their 37 reached the fifteenth against 33 of 36 and 30 of
+33. That is a fact about who leaves, not about who engages, and the prevalence
+matrix had no way to express it.
 
-Read this carefully, because it is partly circular. A student who took one
-course and was disengaged in it has nowhere to be assigned except the
-mostly-low class, so short sequences push themselves into it. What is *not*
-circular is that the short students were disengaged rather than merely brief:
-had leaving early been unrelated to engagement, the 22 students who did not
-finish would have spread across the three classes instead of putting 16 of
-themselves in one.
+Read it carefully, because it is partly circular. A student who took one course
+and was disengaged in it has nowhere to be assigned except the mostly-low
+class, so short sequences push themselves into it. What is not circular is that
+the students who left were disengaged rather than merely brief: had leaving
+early been unrelated to engagement, those who did not finish would have spread
+across the three classes instead of concentrating in one.
 
-```{r sequence-distribution, fig.width = 10, fig.height = 6}
-sequence_plot(sequences, type = "distribution", group = classes,
-              state_colors = state_colors,
-              main = "Profile prevalence across the course sequence")
-```
-
-The same data as prevalence rather than as individual rows, and the question it
-answers is whether a class is a standing disposition or a stage students pass
-through. Regressing "is this enrolment on the class's dominant profile" on
-course position gives a slope per course of -0.035 for mostly-high
-(95% CI [-0.079, 0.009]), -0.025 for mostly-low ([-0.073, 0.023]) and -0.017 for
-mostly-typical ([-0.063, 0.028]). Every interval spans zero, so no class drifts
-detectably: a mostly-high student is about as likely to be high-engagement in
-their twelfth course as in their second.
-
-That is a null result, not a demonstration of constancy. All three point
-estimates lean slightly negative, and with roughly 35 students per class the
-data could not distinguish a weak dilution over time from none at all. The
-position-by-position shares also bounce between 0.44 and 0.91, which is what
-sampling noise looks like at this size. The defensible reading is that these
-classes describe a disposition rather than a trajectory, and that a study
-designed to detect drift would need far more students.
-
-A caveat on the encoding: a sequence carpet has only one channel, so state is
-shown by colour alone with no shape or linetype to back it up. The palette is
-Okabe-Ito, which stays distinguishable under the common colour-vision
-deficiencies, but the plot cannot be read in greyscale.
 
 ## 6. How much to trust the assignments
 
@@ -502,9 +368,8 @@ model ignores it: an enrolment's profile is estimated the same way whether it
 was that student's first course or their fifteenth. So the classes describe a
 student's overall mix, not a trajectory, and "students who start strong and
 fade" could in principle land in the same class as "students who are
-consistently middling". Section 5 plots the order after the fact and finds no
-drift, so nothing was lost here — but that is a property of this dataset, found
-by looking, not a guarantee of the method.
+consistently middling". Section 5 lays the order out after the fact so it can
+be read by eye, but reading it is not the same as modelling it.
 
 **Standardising within course removes a real comparison.** Every value is
 relative to classmates, so a student in a uniformly disengaged course can reach
