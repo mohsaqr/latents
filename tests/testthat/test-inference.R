@@ -5,17 +5,18 @@ test_that("observed information reproduces analytic Gaussian standard errors", {
   fit <- multilpa(dat, c("y1", "y2"), "group", 1, 1, n_starts = 1)
   information <- parameter_inference(fit, dat)
   expected <- c(sqrt(fit$variances / 200), sqrt(2 / 200) * fit$variances, 0, 0)
-  expect_equal(unname(information$standard_errors), unname(expected), tolerance = 1e-7)
-  expect_equal(information$covariance, t(information$covariance), tolerance = 1e-12)
-  expect_lt(information$scaled_score, 1e-7)
-  expect_gt(information$condition_ratio, 0.1)
-  expect_equal(coef(fit), information$estimates)
+  expect_equal(unname(information$standard_error), unname(expected), tolerance = 1e-7)
+  expect_equal(attr(information, "covariance"), t(attr(information, "covariance")), tolerance = 1e-12)
+  expect_lt(attr(information, "scaled_score"), 1e-7)
+  expect_gt(attr(information, "condition_ratio"), 0.1)
+  expect_equal(unname(coef(fit)), information$estimate)
   expect_length(coef(fit, scale = "unconstrained"), fit$n_parameters)
-  expect_equal(vcov(fit, data = dat), information$covariance)
-  expect_equal(vcov(fit, data = dat, scale = "unconstrained"), information$covariance_unconstrained)
-  expect_equal(confint(fit, data = dat), information$confidence_intervals)
+  expect_equal(vcov(fit, data = dat), attr(information, "covariance"))
+  expect_equal(vcov(fit, data = dat, scale = "unconstrained"), attr(information, "covariance_unconstrained"))
+  expect_equal(unname(confint(fit, data = dat)),
+               unname(cbind(information$conf_low, information$conf_high)))
   fit$inference <- information
-  expect_equal(vcov(fit), information$covariance)
+  expect_equal(vcov(fit), attr(information, "covariance"))
   expect_equal(confint(fit, parm = 1, level = 0.9),
     confint(fit, parm = names(coef(fit))[1], level = 0.9))
   expect_equal(as.numeric(confint(fit, parm = 1, level = 0.9)),
@@ -93,12 +94,12 @@ test_that("ordinary ML Hessian standard errors reproduce genuine Mplus9 results"
     jacobian[q - 2L, q] <- 1
     jacobian[q - 1L, q - 1L] <- 1
     jacobian[q, c(q - 2L, q - 1L)] <- c(1, -1)
-    mplus_scale_se <- sqrt(diag(jacobian %*% information$covariance_unconstrained %*% t(jacobian)))
+    mplus_scale_se <- sqrt(diag(jacobian %*% attr(information, "covariance_unconstrained") %*% t(jacobian)))
     # Mplus and finite-difference score derivatives differ by < 4e-8 here.
     expect_lt(max(abs(mplus_scale_se - mplus_standard_errors[[variance_model]])), 1e-6)
-    expect_lt(information$scaled_score, 1e-5)
-    expect_equal(information$standard_errors,
-      parameter_inference(fit, reference$data, step = 5e-5)$standard_errors, tolerance = 1e-6)
+    expect_lt(attr(information, "scaled_score"), 1e-5)
+    expect_equal(information$standard_error,
+      parameter_inference(fit, reference$data, step = 5e-5)$standard_error, tolerance = 1e-6)
   }))
 })
 
@@ -121,9 +122,9 @@ test_that("full-covariance FIML Hessian standard errors reproduce genuine Mplus9
     jacobian[q - 2L, q] <- 1
     jacobian[q - 1L, q - 1L] <- 1
     jacobian[q, c(q - 2L, q - 1L)] <- c(1, -1)
-    observed_standard_errors <- sqrt(diag(jacobian %*% information$covariance_unconstrained %*% t(jacobian)))
+    observed_standard_errors <- sqrt(diag(jacobian %*% attr(information, "covariance_unconstrained") %*% t(jacobian)))
     expect_lt(max(abs(observed_standard_errors - reference$mplus_standard_errors)), 1e-6)
-    expect_lt(information$scaled_score, 1e-4)
+    expect_lt(attr(information, "scaled_score"), 1e-4)
   }))
 })
 
@@ -143,8 +144,8 @@ test_that("inference refuses data mismatches and nonregular fits", {
   }
   older_fit <- fit
   older_fit$indicator_data <- NULL
-  expect_equal(parameter_inference(older_fit, dat)$standard_errors,
-    parameter_inference(fit, dat)$standard_errors)
+  expect_equal(parameter_inference(older_fit, dat)$standard_error,
+    parameter_inference(fit, dat)$standard_error)
   expect_error(parameter_inference(fit, dat[100:1, ]), "original group")
   altered <- dat
   altered$y[1] <- Inf
@@ -180,9 +181,9 @@ test_that("full-covariance inference matches analytic multivariate Gaussian info
   expected <- c(sqrt(diag(covariance) / nrow(dat)),
     expected_covariance_se[lower.tri(covariance, diag = TRUE)], 0, 0)
   information <- parameter_inference(fit, dat)
-  expect_equal(unname(information$standard_errors), unname(expected), tolerance = 1e-7)
-  expect_equal(unname(information$covariance[1:2, 1:2]), unname(covariance / nrow(dat)), tolerance = 1e-7)
-  expect_lt(information$scaled_score, 1e-6)
+  expect_equal(unname(information$standard_error), unname(expected), tolerance = 1e-7)
+  expect_equal(unname(attr(information, "covariance")[1:2, 1:2]), unname(covariance / nrow(dat)), tolerance = 1e-7)
+  expect_lt(attr(information, "scaled_score"), 1e-6)
   expect_length(coef(fit, scale = "unconstrained"), fit$n_parameters)
 })
 
@@ -196,8 +197,8 @@ test_that("diagonal FIML standard errors use each indicator's observed sample si
   counts <- colSums(!is.na(dat[, c("y1", "y2")]))
   expected <- c(sqrt(fit$variances[1, ] / counts), sqrt(2 / counts) * fit$variances[1, ], 0, 0)
   information <- parameter_inference(fit, dat)
-  expect_equal(unname(information$standard_errors), unname(expected), tolerance = 1e-6)
-  expect_lt(information$scaled_score, 1e-3)
+  expect_equal(unname(information$standard_error), unname(expected), tolerance = 1e-6)
+  expect_lt(attr(information, "scaled_score"), 1e-3)
 })
 
 test_that("full-covariance score and Jacobian match numerical derivatives with missingness", {
@@ -244,8 +245,8 @@ test_that("full-covariance score and Jacobian match numerical derivatives with m
     }, numeric(length(coef(fit))))
     expect_equal(unname(.multilpa_inference_jacobian(fit)), unname(numerical_jacobian), tolerance = 1e-8)
     information <- parameter_inference(fit, dat)
-    expect_true(all(is.finite(information$standard_errors)))
-    expect_gt(information$condition_ratio, 1e-5)
+    expect_true(all(is.finite(information$standard_error)))
+    expect_gt(attr(information, "condition_ratio"), 1e-5)
   }))
 })
 
@@ -255,10 +256,10 @@ test_that("centered inference is stable for indicators with large location offse
   fit <- multilpa(dat, "y", "g", 1, 1, n_starts = 1)
   shifted <- transform(dat, y = y + 1e9)
   shifted_fit <- multilpa(shifted, "y", "g", 1, 1, n_starts = 1)
-  expect_equal(unname(parameter_inference(fit, dat)$standard_errors),
-    unname(parameter_inference(shifted_fit, shifted)$standard_errors), tolerance = 1e-7)
+  expect_equal(unname(parameter_inference(fit, dat)$standard_error),
+    unname(parameter_inference(shifted_fit, shifted)$standard_error), tolerance = 1e-7)
   scaled <- transform(dat, y = y * 1e8)
   scaled_fit <- multilpa(scaled, "y", "g", 1, 1, n_starts = 1)
-  expect_equal(unname(parameter_inference(scaled_fit, scaled)$standard_errors[1:2]) / c(1e8, 1e16),
-    unname(parameter_inference(fit, dat)$standard_errors[1:2]), tolerance = 1e-7)
+  expect_equal(unname(parameter_inference(scaled_fit, scaled)$standard_error[1:2]) / c(1e8, 1e16),
+    unname(parameter_inference(fit, dat)$standard_error[1:2]), tolerance = 1e-7)
 })

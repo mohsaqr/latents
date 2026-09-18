@@ -276,7 +276,7 @@
 #'   within-group model is correctly specified. They do not relax the assumption
 #'   that groups are independent.
 #' @return An `multilpa_inference` list containing natural `estimates`,
-#'   `standard_errors`, `covariance`, `confidence_intervals`, unconstrained
+#'   `standard_error`, `statistic`, `p_value`, `conf_low` and `conf_high`,
 #'   estimates and covariance, observed Hessian, score, and its eigenvalue
 #'   condition ratio. All class probabilities are returned; their sum
 #'   constraints make the natural covariance singular. Wald intervals on the
@@ -292,6 +292,13 @@
 #' parameter_inference(fit, dat)$standard_errors
 #' @export
 parameter_inference <- function(object, data, level = 0.95, step = 1e-4,
+                                vcov_type = c("observed", "robust")) {
+  UseMethod("parameter_inference")
+}
+
+#' @rdname parameter_inference
+#' @export
+parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4,
                              vcov_type = c("observed", "robust")) {
   stopifnot(inherits(object, "multilpa"), is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
@@ -353,14 +360,26 @@ parameter_inference <- function(object, data, level = 0.95, step = 1e-4,
   gradient <- stats::setNames(score(centered_theta), names(theta))
   scaled_score <- max(abs(gradient * parameter_scale))
   if (scaled_score > 0.01) warning("The fitted likelihood has a non-negligible score; refit with a tighter tolerance before using Wald inference.", call. = FALSE)
-  result <- list(estimates = estimates, standard_errors = standard_errors, covariance = covariance,
-    confidence_intervals = intervals, coefficients_unconstrained = theta,
-    covariance_unconstrained = covariance_unconstrained, hessian = hessian,
-    gradient = gradient, scaled_score = scaled_score,
+  statistic <- unname(estimates / standard_errors)
+  result <- data.frame(
+    .multilpa_tidy_labels(names(estimates), object),
+    estimate = unname(estimates), standard_error = unname(standard_errors),
+    statistic = statistic, p_value = 2 * stats::pnorm(-abs(statistic)),
+    conf_low = unname(intervals[, 1L]), conf_high = unname(intervals[, 2L]),
+    row.names = NULL, stringsAsFactors = FALSE)
+  ## A Wald test of a variance against zero is not a question worth asking; the
+  ## interval still is.
+  bounded <- result$parameter %in% c("variance", "probability")
+  result$statistic[bounded] <- NA_real_
+  result$p_value[bounded] <- NA_real_
+  ## Diagnostics of the fit, not of any one parameter, so they travel as
+  ## attributes rather than as columns repeated down every row.
+  attributes(result) <- c(attributes(result), list(
+    covariance = covariance, covariance_unconstrained = covariance_unconstrained,
+    hessian = hessian, gradient = gradient, scaled_score = scaled_score,
     condition_ratio = condition_ratio, level = level, step = step,
     vcov_type = vcov_type, group_scores = group_scores,
-    scaling_correction = scaling_correction)
-  class(result) <- "multilpa_inference"
+    scaling_correction = scaling_correction))
   result
 }
 
@@ -396,7 +415,8 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
   scale <- match.arg(scale)
   information <- if (is.null(data)) object$inference else parameter_inference(object, data, ...)
   if (is.null(information)) stop("Supply original data or store parameter_inference() in object$inference.")
-  if (scale == "natural") information$covariance else information$covariance_unconstrained
+  if (scale == "natural") attr(information, "covariance") else
+    attr(information, "covariance_unconstrained")
 }
 
 #' Wald confidence intervals for multilevel LPA coefficients
@@ -525,4 +545,48 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   })
   list(scaled = scaled, natural = natural, condition_ratio = condition_ratio,
        inverse = inverse)
+}
+
+#' Split a generated parameter name into tidy columns
+#'
+#' The names are machine-generated with a strict grammar -- `mean[profile,
+#' indicator]`, `variance[profile,indicator]`, `covariance[profile,a,b]`,
+#' `profile_probability[group_class,profile]`, `group_probability[group_class]`
+#' -- so they can be taken apart reliably. Reporting the pieces as columns means
+#' a caller never has to parse a label to learn which level a parameter belongs
+#' to, which is the whole point of a tidy result.
+#'
+#' @param names Character vector of generated parameter names.
+#' @param object The fit, supplying the profile and group-class counts.
+#' @return A data frame with `level`, `outcome`, `term` and `parameter`, one row
+#'   per name, in the order given.
+#' @noRd
+.multilpa_tidy_labels <- function(names, object) {
+  stopifnot("`names` must be character" = is.character(names))
+  prefix <- sub("\\[.*$", "", names)
+  inside <- sub("^[^\\[]*\\[", "", sub("\\]$", "", names))
+  parts <- strsplit(inside, ",", fixed = TRUE)
+  first <- vapply(parts, function(p) p[[1L]], character(1))
+  second <- vapply(parts, function(p) if (length(p) >= 2L) p[[2L]] else NA_character_,
+                   character(1))
+  third <- vapply(parts, function(p) if (length(p) >= 3L) p[[3L]] else NA_character_,
+                  character(1))
+  profile_label <- function(value) ifelse(value == "shared", "shared",
+                                          paste0("profile_", value))
+  class_label <- function(value) paste0("group_class_", value)
+  measurement <- prefix %in% c("mean", "variance", "covariance")
+  data.frame(
+    level = ifelse(measurement, "measurement",
+                   ifelse(prefix == "profile_probability", "profile", "group")),
+    outcome = ifelse(measurement, profile_label(first),
+                     ifelse(prefix == "profile_probability",
+                            profile_label(second), class_label(first))),
+    term = ifelse(prefix == "covariance", paste(second, third, sep = ":"),
+                  ifelse(measurement, second,
+                         ifelse(prefix == "profile_probability",
+                                class_label(first), NA_character_))),
+    parameter = ifelse(prefix == "profile_probability" |
+                         prefix == "group_probability", "probability", prefix),
+    row.names = NULL, stringsAsFactors = FALSE
+  )
 }

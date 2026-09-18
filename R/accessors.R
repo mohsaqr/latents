@@ -203,49 +203,6 @@ as.data.frame.multilpa_enumeration <- function(x, row.names = NULL,
   result
 }
 
-#' Tidy multilevel LPA inference
-#'
-#' @param x An `multilpa_inference` result from [parameter_inference()].
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Ignored.
-#' @return A base `data.frame` with one row per natural-scale parameter and
-#'   columns `parameter`, `estimate`, `standard_error`, `statistic`,
-#'   `p_value`, `conf_low`, and `conf_high`. The Wald `statistic` is
-#'   `estimate / standard_error` and `p_value` its two-sided normal tail
-#'   probability; both are `NA_real_` where the standard error is zero, which
-#'   happens for parameters fixed by a probability sum constraint. Testing a
-#'   mixing probability against zero is a boundary hypothesis, so those rows
-#'   carry `NA_real_` statistics and p-values by design rather than an invalid
-#'   Wald test.
-#' @examples
-#' set.seed(42)
-#' dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
-#' fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
-#' as.data.frame(parameter_inference(fit, dat))
-#' @export
-as.data.frame.multilpa_inference <- function(x, row.names = NULL,
-                                           optional = FALSE, ...) {
-  stopifnot("`x` must be an `multilpa_inference` result" =
-              inherits(x, "multilpa_inference"))
-  estimates <- x$estimates
-  standard_errors <- x$standard_errors
-  # A zero standard error marks a parameter pinned by a sum constraint, and a
-  # probability boundary is not a valid Wald null, so neither gets a statistic.
-  testable <- standard_errors > 0 & !.multilpa_is_probability(names(estimates))
-  statistic <- rep(NA_real_, length(estimates))
-  statistic[testable] <- estimates[testable] / standard_errors[testable]
-  result <- data.frame(
-    parameter = names(estimates),
-    estimate = unname(estimates),
-    standard_error = unname(standard_errors),
-    statistic = statistic,
-    p_value = 2 * stats::pnorm(-abs(statistic)),
-    conf_low = unname(x$confidence_intervals[, 1L]),
-    conf_high = unname(x$confidence_intervals[, 2L]))
-  row.names(result) <- row.names
-  result
-}
 
 #' Identify mixing-probability coefficient names
 #' @param parameter Character vector of natural-scale parameter names.
@@ -280,27 +237,6 @@ print.multilpa_enumeration <- function(x, ...) {
   invisible(x)
 }
 
-#' Print multilevel LPA inference
-#' @param x An `multilpa_inference` result.
-#' @param digits Number of printed significant digits.
-#' @param ... Passed to the underlying `data.frame` printing.
-#' @return The input, invisibly.
-#' @examples
-#' # After inference: print(information, digits = 3)
-#' @export
-print.multilpa_inference <- function(x, digits = 4L, ...) {
-  stopifnot("`x` must be an `multilpa_inference` result" =
-              inherits(x, "multilpa_inference"),
-            "`digits` must be a single positive integer" =
-              is.numeric(digits) && length(digits) == 1L &&
-              is.finite(digits) && digits >= 1)
-  type <- x$vcov_type %||% "observed"
-  cat(sprintf("Multilevel LPA inference (%s information, %.0f%% Wald intervals)\n",
-              type, 100 * x$level))
-  print(as.data.frame(x), digits = digits, row.names = FALSE, ...)
-  cat(sprintf("Largest scaled score: %.3g\n", x$scaled_score))
-  invisible(x)
-}
 
 #' Build starting values for a multilevel latent profile fit
 #'

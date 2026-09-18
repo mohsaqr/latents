@@ -81,7 +81,7 @@ test_that("robust standard errors reproduce genuine Mplus MLR results", {
                     start = starting_values(reference), n_starts = 1,
                     max_iter = 5000, tol = 1e-13)
   information <- parameter_inference(fit, dat, vcov_type = "robust")
-  expect_identical(information$vcov_type, "robust")
+  expect_identical(attr(information, "vcov_type"), "robust")
   q <- fit$n_parameters
   n_measurement <- q - 3L
   # Mplus reports a group logit, a within-class intercept at cb = 2, and the
@@ -93,10 +93,10 @@ test_that("robust standard errors reproduce genuine Mplus MLR results", {
   jacobian[q - 2L, q] <- 1
   jacobian[q - 1L, q - 1L] <- 1
   jacobian[q, c(q - 2L, q - 1L)] <- c(1, -1)
-  standard_errors <- sqrt(diag(jacobian %*% information$covariance_unconstrained %*%
+  standard_errors <- sqrt(diag(jacobian %*% attr(information, "covariance_unconstrained") %*%
                                  t(jacobian)))
   expect_lt(max(abs(standard_errors - reference$mplus_standard_errors)), 1e-6)
-  expect_lt(abs(information$scaling_correction - reference$mplus_scaling), 1e-6)
+  expect_lt(abs(attr(information, "scaling_correction") - reference$mplus_scaling), 1e-6)
   indices <- information_criteria(fit)
   select <- function(criterion, convention) {
     indices$value[indices$criterion == criterion & indices$convention == convention]
@@ -111,25 +111,25 @@ test_that("robust and observed covariances differ only through the score product
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   observed <- parameter_inference(fit, dat)
   robust <- parameter_inference(fit, dat, vcov_type = "robust")
-  expect_identical(observed$vcov_type, "observed")
+  expect_identical(attr(observed, "vcov_type"), "observed")
   expect_null(observed$group_scores)
-  expect_true(is.na(observed$scaling_correction))
+  expect_true(is.na(attr(observed, "scaling_correction")))
   expect_equal(observed$hessian, robust$hessian)
-  expect_equal(observed$estimates, robust$estimates)
+  expect_equal(observed$estimate, robust$estimate)
   # The sandwich is symmetric and positive semidefinite in free coordinates.
-  free <- robust$covariance_unconstrained
+  free <- attr(robust, "covariance_unconstrained")
   expect_equal(free, t(free))
   expect_gt(min(eigen(free, symmetric = TRUE, only.values = TRUE)$values), 0)
-  expect_true(all(robust$standard_errors >= 0))
-  expect_gt(robust$scaling_correction, 0)
+  expect_true(all(robust$standard_error >= 0))
+  expect_gt(attr(robust, "scaling_correction"), 0)
   # The data are generated from the fitted family, so the sandwich should be
   # close to the observed information; a large ratio would signal a bug.
-  ratio <- robust$standard_errors / observed$standard_errors
+  ratio <- robust$standard_error / observed$standard_error
   expect_true(all(ratio > 0.5 & ratio < 2))
   expect_equal(unname(vcov(fit, data = dat, vcov_type = "robust")),
-               unname(robust$covariance))
-  expect_false(isTRUE(all.equal(unname(observed$covariance),
-                                unname(robust$covariance))))
+               unname(attr(robust, "covariance")))
+  expect_false(isTRUE(all.equal(unname(attr(observed, "covariance")),
+                                unname(attr(robust, "covariance")))))
 })
 
 test_that("robust inference refuses fits with too few groups", {
@@ -164,8 +164,8 @@ test_that("robust standard errors are invariant to indicator location", {
                               start
                             }), n_starts = 1, max_iter = 5000, tol = 1e-13)
   shifted_robust <- parameter_inference(shifted_fit, shifted, vcov_type = "robust")
-  expect_equal(unname(shifted_robust$standard_errors),
-               unname(robust$standard_errors), tolerance = 1e-6)
-  expect_equal(shifted_robust$scaling_correction, robust$scaling_correction,
+  expect_equal(unname(shifted_robust$standard_error),
+               unname(robust$standard_error), tolerance = 1e-6)
+  expect_equal(attr(shifted_robust, "scaling_correction"), attr(robust, "scaling_correction"),
                tolerance = 1e-6)
 })

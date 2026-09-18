@@ -165,8 +165,11 @@ test_that("enumeration and inference tidy and print", {
   expect_output(print(candidates), "Class enumeration")
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   information <- parameter_inference(fit, dat)
-  expect_s3_class(information, "multilpa_inference")
-  estimates <- as.data.frame(information)
+  # The verb returns the tidy table itself; there is no wrapper to unpack.
+  expect_s3_class(information, "data.frame")
+  expect_true(all(c("level", "outcome", "term", "parameter") %in% names(information)))
+  expect_setequal(unique(information$level), c("measurement", "profile", "group"))
+  estimates <- information
   expect_identical(nrow(estimates), length(coef(fit)))
   expect_equal(estimates$estimate, unname(coef(fit)))
   expect_equal(estimates$conf_high - estimates$conf_low,
@@ -176,7 +179,7 @@ test_that("enumeration and inference tidy and print", {
     grepl("probability", estimates$parameter))$p_value)))
   expect_false(any(is.na(subset(estimates,
     grepl("^mean", estimates$parameter))$p_value)))
-  expect_output(print(information), "Multilevel LPA inference")
+  expect_identical(attr(information, "vcov_type"), "observed")
 })
 
 test_that("starting_values round-trips a fitted solution", {

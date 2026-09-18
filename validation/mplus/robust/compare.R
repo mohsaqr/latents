@@ -52,7 +52,7 @@ jacobian[cbind(seq_len(n_measurement), ordering)] <- measurement_derivatives[ord
 jacobian[q - 2L, q] <- 1
 jacobian[q - 1L, q - 1L] <- 1
 jacobian[q, c(q - 2L, q - 1L)] <- c(1, -1)
-native_standard_errors <- sqrt(diag(jacobian %*% information$covariance_unconstrained %*%
+native_standard_errors <- sqrt(diag(jacobian %*% attr(information, "covariance_unconstrained") %*%
                                       t(jacobian)))
 
 indices <- information_criteria(fit)
@@ -63,7 +63,7 @@ native <- function(criterion, convention) {
 differences <- c(
   log_likelihood = abs(fit$log_likelihood - mplus_log_likelihood),
   robust_standard_errors = max(abs(native_standard_errors - mplus_standard_errors)),
-  scaling_correction = abs(information$scaling_correction - mplus_scaling),
+  scaling_correction = abs(attr(information, "scaling_correction") - mplus_scaling),
   aic = abs(native("aic", "none") - mplus_aic),
   bic_individual = abs(native("bic", "individuals") - mplus_bic),
   sabic_individual = abs(native("sabic", "individuals") - mplus_sabic))
@@ -72,7 +72,7 @@ print(differences, digits = 12)
 comparison <- data.frame(
   quantity = c(sprintf("robust_se_%d", seq_len(q)), "scaling_correction",
                "aic", "bic_individual", "sabic_individual"),
-  native = c(native_standard_errors, information$scaling_correction,
+  native = c(native_standard_errors, attr(information, "scaling_correction"),
              native("aic", "none"), native("bic", "individuals"),
              native("sabic", "individuals")),
   mplus = c(mplus_standard_errors, mplus_scaling, mplus_aic, mplus_bic, mplus_sabic))

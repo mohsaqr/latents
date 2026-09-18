@@ -31,10 +31,10 @@ test_that("the analytic scores agree with a numerical gradient", {
 test_that("standard errors reproduce a genuine Mplus covariate run", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
-  inference <- covariate_inference(fit, fixture$data)
+  inference <- parameter_inference(fit, fixture$data)
   membership <- subset(inference, parameter == "coefficient")
   value <- function(term) membership$estimate[membership$term == term]
-  error <- function(term) membership$std_error[membership$term == term]
+  error <- function(term) membership$standard_error[membership$term == term]
 
   # Mplus 9 covariates.out, MODEL RESULTS. Its group-class reference is the
   # opposite of this package's, so the group-level signs are mirrored.
@@ -54,7 +54,7 @@ test_that("the group-class contrast matches Mplus through vcov()", {
   covariance <- vcov(fit, fixture$data)
   rows <- grep("^profile[.]profile_1[.]group_class", rownames(covariance))
   contrast <- c(-1, 1)
-  inference <- covariate_inference(fit, fixture$data)
+  inference <- parameter_inference(fit, fixture$data)
   estimates <- inference$estimate[grepl("^group_class", inference$term) &
                                     inference$level == "profile"]
 
@@ -68,16 +68,16 @@ test_that("the group-class contrast matches Mplus through vcov()", {
 test_that("the table is tidy and covers every level", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
-  inference <- covariate_inference(fit, fixture$data)
+  inference <- parameter_inference(fit, fixture$data)
 
   expect_s3_class(inference, "data.frame")
   expect_named(inference, c("level", "outcome", "term", "parameter", "estimate",
-                            "std_error", "statistic", "p_value", "conf_low",
+                            "standard_error", "statistic", "p_value", "conf_low",
                             "conf_high"))
   expect_setequal(unique(inference$level), c("measurement", "profile", "group"))
   expect_setequal(unique(inference$parameter), c("mean", "variance", "coefficient"))
   expect_equal(nrow(inference), fit$n_parameters)
-  expect_true(all(inference$std_error > 0))
+  expect_true(all(inference$standard_error > 0))
   expect_true(all(is.finite(inference$estimate)))
   # means are reported in input units, not the centred scale used internally
   expect_equal(inference$estimate[inference$parameter == "mean"],
@@ -90,7 +90,7 @@ test_that("the table is tidy and covers every level", {
   # the interval is the estimate plus or minus the usual multiple
   membership <- subset(inference, parameter == "coefficient")
   expect_equal(membership$conf_high - membership$conf_low,
-               2 * stats::qnorm(0.975) * membership$std_error)
+               2 * stats::qnorm(0.975) * membership$standard_error)
 })
 
 test_that("vcov is a named, symmetric matrix over the same parameters", {
@@ -104,9 +104,9 @@ test_that("vcov is a named, symmetric matrix over the same parameters", {
   expect_identical(rownames(covariance), colnames(covariance))
   # log-scale variances there, natural-scale in the tidy table, so the two
   # disagree exactly by the delta-method factor
-  inference <- covariate_inference(fit, fixture$data)
+  inference <- parameter_inference(fit, fixture$data)
   is_variance <- inference$parameter == "variance"
-  expect_equal(inference$std_error[is_variance],
+  expect_equal(inference$standard_error[is_variance],
                unname(sqrt(diag(covariance))[is_variance]) *
                  inference$estimate[is_variance])
 })
@@ -114,12 +114,12 @@ test_that("vcov is a named, symmetric matrix over the same parameters", {
 test_that("the robust sandwich runs and differs from the observed information", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
-  observed <- covariate_inference(fit, fixture$data)
-  robust <- covariate_inference(fit, fixture$data, vcov_type = "robust")
+  observed <- parameter_inference(fit, fixture$data)
+  robust <- parameter_inference(fit, fixture$data, vcov_type = "robust")
 
   expect_equal(robust$estimate, observed$estimate)
-  expect_true(all(robust$std_error > 0))
-  expect_false(isTRUE(all.equal(robust$std_error, observed$std_error)))
+  expect_true(all(robust$standard_error > 0))
+  expect_false(isTRUE(all.equal(robust$standard_error, observed$standard_error)))
   expect_identical(attr(robust, "vcov_type"), "robust")
   expect_identical(attr(observed, "vcov_type"), "observed")
 })
@@ -128,25 +128,25 @@ test_that("a broken contract is refused rather than answered", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
 
-  expect_error(covariate_inference(fit, fixture$data, level = 1),
+  expect_error(parameter_inference(fit, fixture$data, level = 1),
                "`level` must be a single number")
   wrong <- fixture$data
   wrong$y1 <- wrong$y1 + 1
-  expect_error(covariate_inference(fit, wrong),
+  expect_error(parameter_inference(fit, wrong),
                class = "multilpa_bad_inference_data")
-  expect_error(covariate_inference(fit, fixture$data[c("y1", "z", "w", "g")]),
+  expect_error(parameter_inference(fit, fixture$data[c("y1", "z", "w", "g")]),
                class = "multilpa_bad_inference_data")
   stale <- fit
   stale$profile_design <- NULL
-  expect_error(covariate_inference(stale, fixture$data),
+  expect_error(parameter_inference(stale, fixture$data),
                class = "multilpa_unsupported_inference")
 })
 
 test_that("confidence level widens the interval as asked", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
-  narrow <- covariate_inference(fit, fixture$data, level = 0.90)
-  wide <- covariate_inference(fit, fixture$data, level = 0.99)
+  narrow <- parameter_inference(fit, fixture$data, level = 0.90)
+  wide <- parameter_inference(fit, fixture$data, level = 0.99)
 
   expect_true(all(wide$conf_high - wide$conf_low >
                     narrow$conf_high - narrow$conf_low))

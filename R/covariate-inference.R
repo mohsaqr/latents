@@ -132,7 +132,7 @@
 #'   `level` (`"measurement"`, `"profile"` or `"group"`), `outcome` (which
 #'   profile or group class the coefficient predicts, or which profile a
 #'   measurement parameter belongs to), `term`, `parameter` (`"mean"`,
-#'   `"variance"` or `"coefficient"`), `estimate`, `std_error`, `statistic`,
+#'   `"variance"` or `"coefficient"`), `estimate`, `standard_error`, `statistic`,
 #'   `p_value`, `conf_low` and `conf_high`. Variances are reported in their
 #'   natural units, with standard errors carried through the delta method from
 #'   the log scale on which they are estimated.
@@ -157,10 +157,12 @@
 #' fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
 #'                       n_group_classes = 2, profile_covariates = "x",
 #'                       n_starts = 2, seed = 1)
-#' covariate_inference(fit, example_data)
+#' parameter_inference(fit, example_data)
+#' @rdname parameter_inference
 #' @export
-covariate_inference <- function(object, data, level = 0.95, step = 1e-4,
-                                vcov_type = c("observed", "robust")) {
+parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
+                                                    step = 1e-4,
+                                                    vcov_type = c("observed", "robust")) {
   stopifnot(
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
@@ -299,7 +301,7 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
   quantile <- stats::qnorm(1 - (1 - level) / 2)
   statistic <- estimate / errors
   result <- data.frame(
-    labels, estimate = estimate, std_error = errors,
+    labels, estimate = estimate, standard_error = errors,
     statistic = statistic,
     p_value = 2 * stats::pnorm(-abs(statistic)),
     conf_low = estimate - quantile * errors,
