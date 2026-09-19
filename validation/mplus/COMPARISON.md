@@ -117,8 +117,9 @@ We do not equate joint-modal labels with marginal-modal labels.
 
 **BIC convention:** Mplus's BIC uses the individual count here. Comparisons use
 `fit$bic_individual`; the package's default `fit$bic` uses the group count and
-is intentionally different. Standard errors, MLR corrections, and confidence
-intervals are not compared because the R package does not implement them.
+is intentionally different. Standard errors, MLR corrections and confidence
+intervals are not compared. The package does implement them; they have simply
+not been checked against Mplus, so no agreement is claimed for them.
 
 ## Reproduce and inspect
 

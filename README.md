@@ -202,21 +202,24 @@ logLik(evaluated)
 |---|---|
 | Measurement model | Gaussian, categorical, or mixed, via `categorical`; categorical indicators use unrestricted profile-specific response probabilities |
 | Missing indicators | `missing="fiml"`: observed Gaussian marginals and observed categorical responses, ignorable missingness assumption; no missing covariates |
-| Residual covariance | `covariance_model="diagonal"` or `"full"`; shared or profile-specific via `variance_model` |
-| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models, with or without full residual covariance |
-| Robust SEs | `vcov_type="robust"`: Huber-White sandwich over independent groups, plus the MLR scaling correction factor; matches Mplus `ESTIMATOR=MLR` |
+| Residual covariance | `covariance_model="diagonal"` or `"full"`, shared or profile-specific via `variance_model`. These four combinations are mclust's EEI, VVI, EEE and VVV; the other ten mclust parameterizations, which constrain volume, shape and orientation separately, are not available |
+| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models, with or without full residual covariance. Not available for transition fits, random-intercept fits, or covariate fits with categorical indicators, each of which refuses by condition class rather than returning a number |
+| Robust SEs | `vcov_type="robust"`: Huber-White sandwich over independent groups, plus the MLR scaling correction factor. This is the same estimator Mplus `ESTIMATOR=MLR` defines, but the two have not been compared numerically; the retained Mplus comparison covers likelihoods, parameters and criteria only |
 | Membership covariates | Numeric predictors at both levels; shared individual-profile slopes across group classes; Gaussian, categorical or mixed indicators with diagonal or full residual covariance; complete data only |
 | Continuous random effect | One shared Gaussian group intercept with unit indicator loadings; complete diagonal model, no discrete group classes |
 | Class enumeration | Grid of discrete models, every information criterion under both sample-size conventions, entropy, failed-fit and convergence diagnostics |
-| Information criteria | AIC, BIC, SABIC, CAIC, AWE and ICL, each reported under both the group-count and individual-count conventions |
+| Information criteria | AIC, BIC, SABIC, CAIC, AWE and ICL. The five that depend on a sample size are reported under both the group-count and individual-count conventions; AIC does not depend on one and is reported once |
 | Classification quality | Modal and model-estimated class sizes, average posterior probabilities, odds of correct classification, relative entropy |
 | LMR statistic | Likelihood-ratio statistic and the Lo-Mendell-Rubin adjustment; **no p-value**, because the VLMR reference distribution is not reproduced |
 | Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; not Mplus TECH14 |
 | Local dependence | Posterior-weighted bivariate residuals within profile or overall, with approximate unadjusted p-values; apply a multiplicity correction when comparing pairs |
 | Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment; R3STEP membership covariates with observed or cluster-robust errors |
-| Sequences | Profile assignments in long or wide form, with group counts, sequence lengths and completeness by group class |
+| Sequences | Profile assignments in long or wide form, with group counts, sequence lengths and completeness by group class; observed transitions between assignments are not computed |
+| Latent transitions | `fit_transitions()`: first-order homogeneous transition probabilities between profiles, measurement invariant across occasions, per-group-class initial distributions and transition matrices; Gaussian, categorical or mixed indicators, FIML, diagonal or full covariance, ragged sequences; no standard errors, enumeration or bootstrap |
+| Staged estimation | `fit_staged()` and `multilpa(fixed=)`: hold means, variances or response probabilities at supplied values while membership is estimated; both parameter counts reported; first-stage uncertainty is not propagated |
 | Warm starts | `starting_values()` round-trips any fitted solution, including categorical measurement; `max_iter = 0` evaluates a supplied parameter set without moving |
-| Plots | Profile means (raw or standardized), prevalence by group class, profile sequences, and any enumeration criterion; base graphics only |
+| Plots | Profile means (raw or standardized), prevalence by group class, profile sequences, and any enumeration criterion; base graphics only; no method for transition fits |
+| Conditions | Every catchable error carries a stable class; see `?"multilpa-conditions"` |
 
 These are explicit model families, not every combination of Mplus options.
 Random-intercept fits currently do not provide standard errors.
