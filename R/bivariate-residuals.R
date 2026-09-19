@@ -1,11 +1,9 @@
 #' Residual association between pairs of indicators
 #'
-#' Every model in this package assumes that indicators are independent within a
-#' profile: `covariance_model = "diagonal"` says so for Gaussian indicators, and
-#' the categorical measurement model says so by construction. Nothing else in
-#' the package tests that assumption, so a model can fit a dataset whose
-#' indicators remain strongly related inside a profile and report nothing
-#' unusual. This verb looks for exactly that.
+#' Diagonal Gaussian and categorical measurement models assume indicators are
+#' independent within a profile. This diagnostic compares the residual
+#' association with that implied by the fitted measurement model, including
+#' the estimated association under a full Gaussian covariance model.
 #'
 #' A large residual means the pair shares something the profiles do not capture.
 #' The usual remedies are `covariance_model = "full"`, which estimates the
@@ -30,15 +28,21 @@
 #'   absolute cell discrepancy and the table total, and the statistic is the
 #'   bivariate-residual chi-square on `(categories_1 - 1)(categories_2 - 1)`
 #'   degrees of freedom.
-#' @details The tests are approximate in a way worth stating: they treat the
-#'   posterior profile memberships as known rather than estimated, so the
-#'   effective sample size is optimistic and the p-values are anti-conservative.
-#'   Read them as a ranking of which pairs are worst, not as exact levels, and
-#'   apply a multiplicity correction across the pairs before calling any one of
-#'   them significant.
+#' @details The p-values are descriptive approximations: they do not account
+#'   for estimated posterior memberships, fitted measurement parameters, or
+#'   dependence within groups. They are not calibrated significance tests.
+#'   Use the residuals to rank possible model misspecification; a multiplicity
+#'   correction alone does not resolve these calibration limitations.
 #'
 #'   Pairs of different kinds are not assessed and do not appear in the table; a
 #'   mixed fit therefore returns fewer rows than it has pairs.
+#'   Each pair uses only rows observed on both indicators, and `effective_n`
+#'   reports their posterior weight. Gaussian pooling averages within-profile
+#'   second moments, excluding association explained by differences in profile
+#'   means. A categorical profile is compared with its own response distribution;
+#'   overall categorical tables use the posterior-weighted mixture distribution.
+#'   Gaussian p-values are unavailable when the pair has effective size at most
+#'   three or zero residual spread.
 #' @references Vermunt, J. K., & Magidson, J. (2004). Local dependence in
 #'   latent class models. In *The Sage Encyclopedia of Social Science Research
 #'   Methods*.
@@ -64,11 +68,17 @@ bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
     "`data` must have one row per observation of the fit" =
       nrow(data) == object$n_observations
   )
+  if (inherits(object, "multilpa_random_intercept")) {
+    stop("Bivariate residuals require a discrete group-class model.")
+  }
   by <- match.arg(by)
   continuous <- .multilpa_continuous_names(object)
   categorical <- object$categorical %||% character()
   stopifnot("`data` must contain the fitted indicators" =
               all(c(continuous, categorical) %in% names(data)))
+  stopifnot("Gaussian indicators must be numeric and finite when observed" =
+    all(vapply(data[continuous], function(value)
+      is.numeric(value) && all(is.na(value) | is.finite(value)), logical(1))))
   weights <- if (identical(by, "profile")) {
     stats::setNames(lapply(seq_len(object$n_profiles),
                            function(k) object$subject_posteriors[, k]),
@@ -104,40 +114,41 @@ bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
                                          by) {
   if (length(continuous) < 2L) return(NULL)
   x <- as.matrix(data[continuous])
-  ## Centre on the profile's own means when weighting by that profile, and on
-  ## the posterior-weighted mixture mean when pooling, so the residual is always
-  ## what the model has failed to explain rather than what it has explained.
-  centre <- if (identical(by, "profile")) {
-    object$means[as.integer(sub("^profile_", "", label)), ]
-  } else colSums(object$subject_posteriors %*% object$means) / object$n_observations
-  residual <- sweep(x, 2L, centre, "-")
-  effective <- sum(weight)
-  covariance <- crossprod(residual * weight, residual) / effective
-  spread <- sqrt(diag(covariance))
-  correlation <- covariance / outer(spread, spread)
-  implied <- if (identical(object$covariance_model, "full") &&
-                 identical(by, "profile")) {
-    profile <- as.integer(sub("^profile_", "", label))
-    block <- matrix(object$covariances[, , profile], length(continuous))
-    block / outer(sqrt(diag(block)), sqrt(diag(block)))
-  } else diag(length(continuous))
-
   pairs <- utils::combn(seq_along(continuous), 2L)
-  observed <- correlation[t(pairs)]
-  expected <- implied[t(pairs)]
-  difference <- observed - expected
-  ## Fisher's z on the difference of two correlations, with the profile's
-  ## effective size. Approximate: the posteriors are treated as known.
-  statistic <- (atanh(pmin(pmax(observed, -0.999999), 0.999999)) -
-                  atanh(pmin(pmax(expected, -0.999999), 0.999999))) *
-    sqrt(max(effective - 3, 1))
-  data.frame(
-    profile = label, indicator_1 = continuous[pairs[1L, ]],
-    indicator_2 = continuous[pairs[2L, ]], kind = "gaussian",
-    observed = observed, expected = expected, residual = difference,
-    effective_n = effective, statistic = statistic, df = NA_real_,
-    p_value = 2 * stats::pnorm(-abs(statistic)),
-    row.names = NULL, stringsAsFactors = FALSE)
+  profiles <- if (identical(by, "profile"))
+    as.integer(sub("^profile_", "", label)) else seq_len(object$n_profiles)
+  rows <- lapply(seq_len(ncol(pairs)), function(index) {
+    pair <- pairs[, index]
+    observed_rows <- stats::complete.cases(x[, pair, drop = FALSE])
+    effective <- sum(weight[observed_rows])
+    moments <- lapply(profiles, function(profile) {
+      profile_weight <- object$subject_posteriors[observed_rows, profile]
+      residual <- sweep(x[observed_rows, pair, drop = FALSE], 2L,
+                        object$means[profile, pair], "-")
+      covariance <- if (identical(object$covariance_model, "full"))
+        matrix(object$covariances[pair, pair, profile], 2L) else
+        diag(object$variances[profile, pair], 2L)
+      list(observed = crossprod(residual * profile_weight, residual),
+           expected = covariance * sum(profile_weight))
+    })
+    observed_covariance <- Reduce(`+`, lapply(moments, `[[`, "observed"))
+    expected_covariance <- Reduce(`+`, lapply(moments, `[[`, "expected"))
+    observed <- if (all(diag(observed_covariance) > 0))
+      observed_covariance[1L, 2L] / sqrt(prod(diag(observed_covariance))) else NA_real_
+    expected <- if (all(diag(expected_covariance) > 0))
+      expected_covariance[1L, 2L] / sqrt(prod(diag(expected_covariance))) else NA_real_
+    statistic <- if (effective > 3 && is.finite(observed) && is.finite(expected)) {
+      (atanh(pmin(pmax(observed, -0.999999), 0.999999)) -
+         atanh(pmin(pmax(expected, -0.999999), 0.999999))) * sqrt(effective - 3)
+    } else NA_real_
+    data.frame(profile = label, indicator_1 = continuous[pair[1L]],
+      indicator_2 = continuous[pair[2L]], kind = "gaussian",
+      observed = observed, expected = expected, residual = observed - expected,
+      effective_n = effective, statistic = statistic, df = NA_real_,
+      p_value = 2 * stats::pnorm(-abs(statistic)),
+      row.names = NULL, stringsAsFactors = FALSE)
+  })
+  do.call(rbind, rows)
 }
 
 #' Bivariate-residual chi-square for each categorical pair
@@ -154,21 +165,32 @@ bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
     second <- categorical[pairs[2L, index]]
     codes_1 <- match(as.character(data[[first]]), object$categorical_levels[[first]])
     codes_2 <- match(as.character(data[[second]]), object$categorical_levels[[second]])
-    observed <- as.matrix(stats::xtabs(weight ~ codes_1 + codes_2))
-    ## Under local independence the expected table is the posterior-weighted
-    ## product of the two response distributions.
-    expected <- Reduce(`+`, lapply(seq_len(object$n_profiles), function(k) {
-      sum(weight * posteriors[, k]) *
-        outer(blocks[[first]][k, ], blocks[[second]][k, ])
-    }))
-    expected <- expected * sum(observed) / sum(expected)
-    statistic <- sum((observed - expected)^2 / pmax(expected, 1e-10))
+    stopifnot("Categorical indicators contain levels absent from the fit" =
+      !any(is.na(codes_1) & !is.na(data[[first]])) &&
+      !any(is.na(codes_2) & !is.na(data[[second]])))
+    complete <- !is.na(codes_1) & !is.na(codes_2)
+    pair_weight <- weight[complete]
+    category_1 <- factor(codes_1[complete], seq_along(object$categorical_levels[[first]]))
+    category_2 <- factor(codes_2[complete], seq_along(object$categorical_levels[[second]]))
+    observed <- as.matrix(stats::xtabs(pair_weight ~ category_1 + category_2))
+    ## Conditional tables use the profile's own product distribution. The
+    ## pooled table mixes those products with the complete-pair class counts.
+    counts <- if (identical(label, "overall")) colSums(posteriors[complete, , drop = FALSE]) else {
+      profile <- as.integer(sub("^profile_", "", label))
+      replace(numeric(object$n_profiles), profile, sum(pair_weight))
+    }
+    expected <- Reduce(`+`, lapply(seq_len(object$n_profiles), function(k)
+      counts[k] * outer(blocks[[first]][k, ], blocks[[second]][k, ])))
+    positive <- expected > 0
+    statistic <- if (sum(pair_weight) <= 0) NA_real_ else
+      if (any(!positive & observed > 0)) Inf else
+        sum((observed[positive] - expected[positive])^2 / expected[positive])
     degrees <- (nrow(observed) - 1L) * (ncol(observed) - 1L)
     data.frame(
       profile = label, indicator_1 = first, indicator_2 = second,
       kind = "categorical", observed = sum(abs(observed - expected)),
       expected = sum(expected), residual = statistic / max(degrees, 1L),
-      effective_n = sum(weight), statistic = statistic, df = degrees,
+      effective_n = sum(pair_weight), statistic = statistic, df = degrees,
       p_value = stats::pchisq(statistic, degrees, lower.tail = FALSE),
       row.names = NULL, stringsAsFactors = FALSE)
   })

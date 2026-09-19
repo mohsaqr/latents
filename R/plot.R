@@ -108,9 +108,9 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
     }
     index
   }, integer(1))
-  values <- t(vapply(seq_along(blocks), function(index) {
+  values <- t(matrix(vapply(seq_along(blocks), function(index) {
     blocks[[index]][, chosen[[index]]]
-  }, numeric(n_profiles)))
+  }, numeric(n_profiles)), n_profiles, length(blocks)))
   category_labels <- vapply(seq_along(blocks), function(index) {
     colnames(blocks[[index]])[chosen[[index]]]
   }, character(1))
@@ -430,16 +430,19 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
 #' @noRd
 .multilpa_plot_sequences <- function(x, labels, main, subtitle, palette, style) {
   wide <- sequences(x, format = "wide")
-  long <- sequences(x, format = "long")
-  class_of_group <- vapply(split(long$group_class, long$group),
-                           function(v) v[[1L]], numeric(1))
-  ordering <- order(class_of_group, names(class_of_group))
-  codes <- vapply(seq_len(ncol(wide)),
+  # Match by identifier so rows stay aligned even with unused factor levels.
+  group_labels <- make.unique(as.character(x$group_values))
+  class_of_group <- x$group_classes[match(rownames(wide), group_labels)]
+  ordering <- order(class_of_group, rownames(wide))
+  codes <- matrix(vapply(seq_len(ncol(wide)),
                   function(column) as.integer(wide[[column]])[ordering],
-                  integer(nrow(wide)))
+                  integer(nrow(wide))), nrow(wide), ncol(wide))
   classes <- class_of_group[ordering]
-  colours <- palette %||% .multilpa_palette(x$n_profiles)
-  positions <- as.numeric(names(wide))
+  colours <- if (is.null(palette)) .multilpa_palette(x$n_profiles) else
+    rep(palette, length.out = x$n_profiles)
+  time_positions <- sort(unique(x$time_values))
+  positions <- if (is.numeric(time_positions)) as.numeric(time_positions) else
+    seq_along(time_positions)
   n_groups <- nrow(codes)
   class_labels <- sprintf("Class %d", sort(unique(classes)))
   ## The right side is sized for the class labels by the shared helper; the

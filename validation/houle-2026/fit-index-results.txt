@@ -1,0 +1,10 @@
+Houle et al. (2026), supplemental Table S1: arithmetic validation
+Original DOCX fixture verification: 24/24 rows pass
+Joint LL/AIC/BIC/CAIC/ABIC rounding consistency: 24/24 rows pass
+N interval inferred from rounded BIC - AIC: [9999.929613817, 10000.117407689]
+Unique integer N: 10000
+Package information_criteria arithmetic: 96/96 values pass
+Maximum package/formula absolute difference: 0
+Maximum printed/formula absolute difference: 0.00116434112715 (rounding-compatible)
+Package source: current repository R/; individual sample-size convention.
+Scope: arithmetic only; no published-data estimation, entropy, SE, or test replication.

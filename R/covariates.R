@@ -4,10 +4,20 @@
 #' @return Row probabilities.
 #' @noRd
 .multilpa_softmax <- function(design, coefficients) {
+  exp(.multilpa_log_softmax(design, coefficients))
+}
+
+#' Log multinomial probabilities without losing finite rare-class logits
+#' @param design Numeric design matrix.
+#' @param coefficients Coefficients for all except the final category.
+#' @return Matrix of log probabilities, one row per design row.
+#' @noRd
+.multilpa_log_softmax <- function(design, coefficients) {
   stopifnot(is.matrix(design), is.matrix(coefficients),
             ncol(design) == nrow(coefficients))
   scores <- cbind(design %*% coefficients, 0)
-  exp(sweep(scores, 1L, .multilpa_log_sum_exp(scores), "-"))
+  scores <- sweep(scores, 1L, apply(scores, 1L, max), "-")
+  sweep(scores, 1L, log(rowSums(exp(scores))), "-")
 }
 
 #' Fit weighted multinomial logits
@@ -26,8 +36,7 @@
   }
   objective <- function(values) {
     stopifnot(is.numeric(values))
-    scores <- cbind(design %*% unpack(values), 0)
-    sum(rowSums(counts) * .multilpa_log_sum_exp(scores) - rowSums(counts * scores))
+    -sum(counts * .multilpa_log_softmax(design, unpack(values)))
   }
   gradient <- function(values) {
     stopifnot(is.numeric(values))
@@ -62,20 +71,32 @@
                     matrix(log(2 * pi * parameters$variances[k, ]),
                            nrow(x), ncol(x), byrow = TRUE))
   }, numeric(nrow(x))), nrow(x))
+  density_offset <- apply(log_density, 1L, max)
+  log_density <- sweep(log_density, 1L, density_offset, "-")
   conditional <- lapply(profile_design, function(design) {
-    prior <- .multilpa_softmax(design, beta)
-    scores <- log_density + log(prior)
-    marginal <- .multilpa_log_sum_exp(scores)
+    log_prior <- .multilpa_log_softmax(design, beta)
+    prior <- exp(log_prior)
+    scores <- log_density + log_prior
+    offset <- apply(scores, 1L, max)
+    weights <- exp(sweep(scores, 1L, offset, "-"))
+    total <- rowSums(weights)
+    marginal <- offset + log(total)
     list(prior = prior, marginal = marginal,
-         posterior = exp(sweep(scores, 1L, marginal, "-")))
+         posterior = weights / total)
   })
-  group_prior <- .multilpa_softmax(group_design, gamma)
-  scores <- matrix(vapply(seq_along(conditional), function(h) {
-    as.vector(rowsum(conditional[[h]]$marginal, group_index, reorder = FALSE)) +
-      log(group_prior[, h])
+  group_log_prior <- .multilpa_log_softmax(group_design, gamma)
+  group_prior <- exp(group_log_prior)
+  evidence <- matrix(vapply(seq_along(conditional), function(h) {
+    as.vector(rowsum(conditional[[h]]$marginal, group_index, reorder = FALSE))
   }, numeric(nrow(group_design))), nrow(group_design))
-  group_log_likelihood <- .multilpa_log_sum_exp(scores)
-  group_posteriors <- exp(sweep(scores, 1L, group_log_likelihood, "-"))
+  evidence_offset <- apply(evidence, 1L, max)
+  scores <- sweep(evidence, 1L, evidence_offset, "-") + group_log_prior
+  score_offset <- apply(scores, 1L, max)
+  weights <- exp(sweep(scores, 1L, score_offset, "-"))
+  total <- rowSums(weights)
+  group_posteriors <- weights / total
+  group_log_likelihood <- evidence_offset + score_offset + log(total) +
+    as.vector(rowsum(density_offset, group_index, reorder = FALSE))
   joint <- lapply(seq_along(conditional), function(h) {
     conditional[[h]]$posterior * group_posteriors[group_index, h]
   })
@@ -396,6 +417,8 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$bic_individual <- -2 * result$log_likelihood +
     log(nrow(data)) * result$n_parameters
   result$n_observations <- nrow(data)
+  result$n_informative <- base$n_informative
+  result$indicator_data <- as.matrix(data[indicators])
   result$n_groups <- base$n_groups
   result$n_profiles <- n_profiles
   result$n_group_classes <- n_group_classes

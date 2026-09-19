@@ -38,6 +38,9 @@ Let `q` be the number of free parameters, `n` the chosen sample
   convention and individual-level posteriors under the `"individuals"`
   convention. This is a stated per-level choice, not a unique multilevel
   definition; use one convention consistently across compared candidates.
+  Individual sample sizes exclude rows with no observed indicators. For a
+  continuous random-intercept fit, group classification entropy is undefined,
+  so group-level `awe` and `icl` are `NA`.
 }
 \examples{
 set.seed(7)

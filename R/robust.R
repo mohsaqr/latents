@@ -68,9 +68,13 @@
   stopifnot("`object` must be a full-covariance `multilpa` fit" =
               inherits(object, "multilpa") &&
               identical(object$covariance_model, "full"))
-  dimension <- length(object$indicators)
+  dimension <- length(.multilpa_continuous_names(object))
   group_index <- object$group_index
   n_groups <- object$n_groups
+  if (dimension == 0L) {
+    empty <- matrix(numeric(0), n_groups, 0L)
+    return(list(means = empty, covariances = empty))
+  }
   lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
   pairs <- expand.grid(row = seq_len(dimension), column = seq_len(dimension))
   component <- lapply(seq_len(object$n_profiles), function(profile) {

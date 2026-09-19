@@ -114,8 +114,9 @@ Infinite and constant observed indicators are rejected. Each
   indicator must have at least two distinct observed values. No rows are
   silently dropped. In FIML mode, fully missing individuals contribute no
   direct measurement likelihood but receive posterior probabilities from
-  their group's information. Counts and information-criterion penalties
-  retain these individuals and groups. Missing patterns can prevent parameter
+  their group's information. Observation counts retain these individuals;
+  the individual-level BIC excludes them through `n_informative`, while the
+  group-level BIC uses all observed groups. Missing patterns can prevent parameter
   identification; no general identification guarantee is made. Initialization
   alone uses indicator-mean filling. EM uses conditional Gaussian sufficient
   statistics and observed marginal densities. More than one group class requires more than one profile

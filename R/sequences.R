@@ -67,14 +67,16 @@ sequences <- function(object, format = c("long", "wide")) {
 
   positions <- sort(unique(long$time))
   groups <- unique(long$group)
+  group_labels <- make.unique(as.character(object$group_values))[
+    match(groups, object$group_values)]
   cells <- matrix(NA_integer_, length(groups), length(positions),
-                  dimnames = list(as.character(groups), as.character(positions)))
+                  dimnames = list(group_labels, as.character(positions)))
   cells[cbind(match(long$group, groups), match(long$time, positions))] <- long$profile
   wide <- as.data.frame(lapply(seq_along(positions), function(column) {
     factor(cells[, column], levels = seq_len(object$n_profiles))
   }), col.names = as.character(positions), optional = TRUE)
   names(wide) <- as.character(positions)
-  row.names(wide) <- as.character(groups)
+  row.names(wide) <- group_labels
   wide
 }
 
@@ -106,8 +108,10 @@ sequences <- function(object, format = c("long", "wide")) {
 sequence_summary <- function(object) {
   long <- sequences(object, format = "long")
   positions <- length(unique(long$time))
-  lengths_by_group <- tapply(long$time, long$group, length)
-  class_by_group <- tapply(long$group_class, long$group, function(v) v[[1L]])
+  # Native integer indices avoid unused factor levels and character rounding of
+  # distinct numeric group identifiers in tapply().
+  lengths_by_group <- tabulate(object$group_index, nbins = object$n_groups)
+  class_by_group <- object$group_classes
   classes <- seq_len(object$n_group_classes)
   summarize <- function(class) {
     taken <- lengths_by_group[class_by_group == class]

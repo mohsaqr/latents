@@ -4,6 +4,7 @@
 ^HANDOFF\.md$
 ^LEARNINGS\.md$
 ^CHANGES\.md$
+^todo\.MD$
 ^Tutorial_docs$
 \.tar\.gz$
 \.Rcheck$

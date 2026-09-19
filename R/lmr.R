@@ -10,7 +10,9 @@
 #'
 #' @param null_model The smaller fitted `multilpa` model.
 #' @param alternative_model The larger fitted `multilpa` model, with strictly more
-#'   free parameters and a log likelihood at least as large.
+#'   free parameters and a log likelihood at least as large. Both fits must use
+#'   the same data, measurement specification and parameter bounds. Neither
+#'   class count may decrease in the larger model.
 #' @param n Sample size entering the adjustment. `"individuals"` uses the
 #'   individual count and matches the convention external mixture software
 #'   applies; `"groups"` uses the independent group count, which is the
@@ -66,6 +68,15 @@ lmr_lrt <- function(null_model, alternative_model,
     .multilpa_check_comparable(null_model, alternative_model)
     n
   }
+  stopifnot("The sample size entering the adjustment must be greater than one" =
+              length(sample_size) == 1L && is.finite(sample_size) && sample_size > 1)
+  smaller_classes <- c(null_model$n_profiles, null_model$n_group_classes)
+  larger_classes <- c(alternative_model$n_profiles, alternative_model$n_group_classes)
+  if (length(smaller_classes) == 2L && length(larger_classes) == 2L &&
+      (any(larger_classes < smaller_classes) || all(larger_classes == smaller_classes))) {
+    stop(errorCondition("The alternative must add classes without decreasing either class count.",
+                        class = "multilpa_bad_nesting", call = NULL))
+  }
   df <- alternative_model$n_parameters - null_model$n_parameters
   if (df < 1L) {
     stop(errorCondition("`alternative_model` must have more free parameters than `null_model`.",
@@ -90,11 +101,15 @@ lmr_lrt <- function(null_model, alternative_model,
 #' @return `NULL`, invisibly; raises a classed condition when the fits differ.
 #' @noRd
 .multilpa_check_comparable <- function(null_model, alternative_model) {
-  same <- identical(null_model$n_observations, alternative_model$n_observations) &&
-    identical(null_model$n_groups, alternative_model$n_groups) &&
-    identical(null_model$indicators, alternative_model$indicators)
+  fields <- c("n_observations", "n_groups", "indicators", "group", "group_values",
+              "group_index", "continuous", "categorical", "categorical_levels",
+              "indicator_data", "categorical_data", "variance_model",
+              "covariance_model", "min_variance", "min_probability")
+  same <- all(vapply(fields, function(field)
+    identical(null_model[[field]], alternative_model[[field]]), logical(1)))
   if (!same) {
-    stop(errorCondition("Both models must be fitted to the same individuals, groups, and indicators.",
+    stop(errorCondition(paste("Both models must be fitted to the same individuals, groups,",
+                              "indicators, measurement specification, and parameter bounds."),
                         class = "multilpa_incomparable_models", call = NULL))
   }
   invisible(NULL)

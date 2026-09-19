@@ -194,10 +194,34 @@ parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
       "This fit predates covariate inference; refit with the current version.",
       class = "multilpa_unsupported_inference", call = NULL))
   }
-  if (!all(object$indicators %in% names(data))) {
+  .multilpa_check_regularity(object, vcov_type)
+  columns <- unique(c(object$indicators, object$group,
+                      object$profile_covariates, object$group_covariates))
+  if (!all(columns %in% names(data)) || anyDuplicated(names(data)) ||
+      nrow(data) != object$n_observations ||
+      !all(vapply(data[setdiff(columns, object$group)], function(column) {
+        is.numeric(column) && is.null(dim(column)) && all(is.finite(column))
+      }, logical(1))) ||
+      !identical(match(data[[object$group]], object$group_values), object$group_index)) {
     stop(errorCondition(
-      "`data` must contain every indicator the model was fitted to.",
+      "`data` must contain the original finite indicators, covariates and group identifiers in fitting order.",
       class = "multilpa_bad_inference_data", call = NULL))
+  }
+  first_rows <- match(seq_len(object$n_groups), object$group_index)
+  designs <- .multilpa_cov_designs(data, object$indicators,
+    object$profile_covariates, object$group_covariates, first_rows,
+    object$n_group_classes)
+  same <- function(left, right) identical(unname(left), unname(right))
+  if ((!is.null(object$indicator_data) &&
+       !same(as.matrix(data[object$indicators]), object$indicator_data)) ||
+      !all(vapply(seq_along(designs$profile_design), function(index) {
+        same(designs$profile_design[[index]], object$profile_design[[index]])
+      }, logical(1))) || !same(designs$w, object$group_design) ||
+      any(vapply(object$group_covariates, function(name) {
+        any(data[[name]] != data[[name]][first_rows][object$group_index])
+      }, logical(1)))) {
+    stop(errorCondition("`data` must reproduce the original indicators and covariates.",
+                        class = "multilpa_bad_inference_data", call = NULL))
   }
   x <- sweep(as.matrix(data[object$indicators]), 2L, object$center, "-")
   theta <- .multilpa_cov_encode(object)
@@ -217,15 +241,24 @@ parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
   gradient <- function(parameters) {
     -colSums(.multilpa_cov_group_scores(parameters, x, object))
   }
-  scale <- rep(1, length(theta))
+  scale <- c(as.vector(t(sqrt(object$variances))),
+             rep(1, length(theta) - length(object$means)))
+  profile_scale <- 1 / sqrt(colMeans(do.call(rbind, object$profile_design)^2))
+  group_scale <- 1 / sqrt(colMeans(object$group_design^2))
+  membership <- length(theta) - length(object$profile_coefficients) -
+    length(object$group_coefficients)
+  scale[membership + seq_len(length(theta) - membership)] <-
+    c(rep(profile_scale, ncol(object$profile_coefficients)),
+      rep(group_scale, ncol(object$group_coefficients)))
   information <- .multilpa_observed_hessian(
-    function(displacement) objective(theta + displacement),
-    function(displacement) gradient(theta + displacement), scale, step)
+    function(displacement) objective(theta + displacement * scale),
+    function(displacement) gradient(theta + displacement * scale) * scale, scale, step)
   covariance <- information$inverse
   if (identical(vcov_type, "robust")) {
-    scores <- .multilpa_cov_group_scores(theta, x, object)
-    covariance <- covariance %*% crossprod(scores) %*% covariance
+    scores <- sweep(.multilpa_cov_group_scores(theta, x, object), 2L, scale, "*")
+    covariance <- covariance %*% .multilpa_cross_product(scores) %*% covariance
   }
+  covariance <- covariance * tcrossprod(scale)
   dimnames(covariance) <- list(.multilpa_cov_parameter_names(object),
                                .multilpa_cov_parameter_names(object))
   covariance
@@ -329,8 +362,8 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
   variance_rows <- if (identical(object$variance_model, "equal")) "shared" else profiles
   block <- function(term, outcome, level, parameter) {
     grid <- expand.grid(term = term, outcome = outcome, stringsAsFactors = FALSE)
-    data.frame(level = level, outcome = grid$outcome, term = grid$term,
-               parameter = parameter, stringsAsFactors = FALSE)
+    data.frame(level = rep(level, nrow(grid)), outcome = grid$outcome, term = grid$term,
+               parameter = rep(parameter, nrow(grid)), stringsAsFactors = FALSE)
   }
   rbind(
     block(indicators, profiles, "measurement", "mean"),

@@ -36,8 +36,17 @@
                     matrix(log(2 * pi) + log(parameters$variances[profile, ]),
                            nrow(x), ncol(x), byrow = TRUE))
   }, numeric(nrow(x)))
+  # Remove the common measurement offset before adding log priors. Otherwise
+  # a very small density (for example log(f) = -5e15) rounds away the priors,
+  # and subtracting the absolute log marginal can produce posteriors above one.
+  density_offset <- apply(log_density, 1L, max)
+  if (any(!is.finite(density_offset))) {
+    stop("All component densities vanished, or a density overflowed.")
+  }
+  log_density <- sweep(log_density, 1L, density_offset, "-")
   # Categorical indicators are conditionally independent of the continuous ones
-  # given the profile, so their log densities simply add.
+  # given the profile. Add their log densities after removing the Gaussian
+  # offset so that small categorical contributions retain their precision too.
   if (!is.null(codes)) {
     log_density <- log_density +
       .multilpa_categorical_log_density(codes, parameters$response_probabilities)
@@ -47,16 +56,21 @@
     log_joint <- sweep(log_density, 2L,
                        log(parameters$profile_probabilities[group_type, ]), "+")
     log_marginal <- .multilpa_log_sum_exp(log_joint)
+    posterior <- exp(sweep(log_joint, 1L, apply(log_joint, 1L, max), "-"))
     list(log_marginal = log_marginal,
-         posterior = exp(sweep(log_joint, 1L, log_marginal, "-")))
+         posterior = posterior / rowSums(posterior))
   })
   group_scores <- matrix(vapply(seq_len(n_types), function(group_type) {
     as.numeric(rowsum(conditional[[group_type]]$log_marginal,
-                      group_index, reorder = FALSE)) +
-      log(parameters$group_probabilities[group_type])
+                      group_index, reorder = FALSE))
   }, numeric(max(group_index))), nrow = max(group_index), ncol = n_types)
-  group_log_likelihood <- .multilpa_log_sum_exp(group_scores)
-  group_posteriors <- exp(sweep(group_scores, 1L, group_log_likelihood, "-"))
+  group_offset <- apply(group_scores, 1L, max)
+  group_scores <- sweep(sweep(group_scores, 1L, group_offset, "-"), 2L,
+                        log(parameters$group_probabilities), "+")
+  group_log_likelihood <- .multilpa_log_sum_exp(group_scores) + group_offset +
+    as.numeric(rowsum(density_offset, group_index, reorder = FALSE))
+  group_posteriors <- exp(sweep(group_scores, 1L, apply(group_scores, 1L, max), "-"))
+  group_posteriors <- group_posteriors / rowSums(group_posteriors)
   joint <- lapply(seq_len(n_types), function(group_type) {
     conditional[[group_type]]$posterior * group_posteriors[group_index, group_type]
   })
@@ -243,7 +257,7 @@
             "An all-categorical model needs `n_categories`" =
               n_indicators >= 1L || !is.null(n_categories))
   covariances <- NULL
-  if (covariance_model == "full") {
+  if (covariance_model == "full" && n_indicators > 0L) {
     covariances <- start$covariances
     if (!is.numeric(covariances) ||
         !identical(as.integer(dim(covariances)), c(as.integer(n_indicators),
@@ -420,7 +434,10 @@
     stop(errorCondition("`time` must not contain missing values.",
                         class = "multilpa_bad_time", call = NULL))
   }
-  duplicated_within <- any(vapply(split(values, data[[group]]),
+  # split() first converts numeric keys to factor labels, which can collapse
+  # distinct numeric identifiers that print identically. Match the native keys.
+  group_index <- match(data[[group]], unique(data[[group]]))
+  duplicated_within <- any(vapply(split(values, group_index),
                                   function(v) anyDuplicated(v) > 0L, logical(1)))
   if (duplicated_within) {
     stop(errorCondition(
@@ -500,8 +517,9 @@
 #'   indicator must have at least two distinct observed values. No rows are
 #'   silently dropped. In FIML mode, fully missing individuals contribute no
 #'   direct measurement likelihood but receive posterior probabilities from
-#'   their group's information. Counts and information-criterion penalties
-#'   retain these individuals and groups. Missing patterns can prevent parameter
+#'   their group's information. Observation counts retain these individuals;
+#'   the individual-level BIC excludes them through `n_informative`, while the
+#'   group-level BIC uses all observed groups. Missing patterns can prevent parameter
 #'   identification; no general identification guarantee is made. Initialization
 #'   alone uses indicator-mean filling. EM uses conditional Gaussian sufficient
 #'   statistics and observed marginal densities. More than one group class requires more than one profile

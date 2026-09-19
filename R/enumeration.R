@@ -183,6 +183,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
     set.seed(seed)
   }
   fields <- c("indicators", "group", "group_values", "group_index", "variance_model", "min_variance", "covariance_model")
+  fields <- c(fields, "categorical", "categorical_levels", "min_probability")
   if (!all(vapply(fields, function(field) identical(null_model[[field]], alternative_model[[field]]), logical(1)))) {
     stop("Models must use the same observations, group layout and covariance specification.")
   }
@@ -206,8 +207,13 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
         !identical(x, model$indicator_data)) {
       stop("data must reproduce the original indicator data and row order.")
     }
-    codes <- if (length(model$categorical %||% character()) == 0L) NULL else
-      .multilpa_encode_categorical(data[, model$categorical, drop = FALSE])$codes
+    encoded <- if (length(model$categorical %||% character()) == 0L) NULL else
+      .multilpa_encode_categorical(data[, model$categorical, drop = FALSE])
+    codes <- encoded$codes
+    if (anyNA(codes)) stop("Bootstrap currently requires complete finite indicators.")
+    if (!is.null(encoded) && !identical(encoded$levels, model$categorical_levels)) {
+      stop("data must reproduce the original categorical levels and coding.")
+    }
     if (!is.null(codes) && !identical(unname(codes), unname(model$categorical_data))) {
       stop("data must reproduce the original categorical indicators and row order.")
     }
@@ -229,7 +235,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
                     model$n_group_classes, model$variance_model, n_starts = n_starts,
                     max_iter = max_iter, tol = tol, min_variance = model$min_variance,
                     covariance_model = if (is.null(model$covariance_model)) "diagonal" else model$covariance_model,
-                    categorical = model$categorical %||% character())
+                    categorical = model$categorical %||% character(),
+                    min_probability = model$min_probability %||% 1e-10)
       })
       statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
       valid <- all(vapply(models, `[[`, logical(1), "converged")) && statistic >= -1e-5

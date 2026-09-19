@@ -112,7 +112,8 @@
 .multilpa_covariance_coordinates <- function(object, scale) {
   stopifnot(inherits(object, "multilpa"), identical(object$covariance_model, "full"),
             scale %in% c("natural", "unconstrained"))
-  dimension <- length(object$indicators)
+  dimension <- length(.multilpa_continuous_names(object))
+  if (dimension == 0L) return(stats::setNames(numeric(0), character(0)))
   profiles <- if (object$variance_model == "equal") 1L else seq_len(object$n_profiles)
   lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
   positions <- which(lower, arr.ind = TRUE)
@@ -153,7 +154,7 @@
   n_logits <- n_types * (n_profiles - 1L)
   means <- matrix(theta[seq_len(n_means)], n_profiles, byrow = TRUE)
   covariances <- NULL
-  if (identical(object$covariance_model, "full")) {
+  if (identical(object$covariance_model, "full") && n_indicators > 0L) {
     lower <- lower.tri(matrix(0, n_indicators, n_indicators), diag = TRUE)
     covariance_list <- lapply(seq_len(n_profiles), function(profile) {
       stopifnot(is.numeric(profile), length(profile) == 1L)
@@ -283,7 +284,8 @@
 .multilpa_full_measurement_score <- function(parameters, expectation, object) {
   stopifnot(is.list(parameters), is.list(expectation), inherits(object, "multilpa"),
             identical(object$covariance_model, "full"))
-  dimension <- length(object$indicators)
+  dimension <- length(.multilpa_continuous_names(object))
+  if (dimension == 0L) return(list(means = numeric(0), covariances = numeric(0)))
   lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
   component_scores <- lapply(seq_len(object$n_profiles), function(profile) {
     stopifnot(is.numeric(profile), length(profile) == 1L)
@@ -337,7 +339,7 @@
   free_offset <- n_measurement + free_response
   jacobian <- matrix(0, length(natural), length(theta), dimnames = list(names(natural), names(theta)))
   diag(jacobian)[seq_len(n_means)] <- 1
-  if (full_covariance) {
+  if (full_covariance && dimension > 0L) {
     lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
     positions <- which(lower, arr.ind = TRUE)
     invisible(lapply(seq_len(n_variances / n_covariance), function(profile) {
@@ -462,6 +464,17 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
   }
   parameter_scale <- c(as.vector(t(sqrt(object$variances))),
                        rep(1, length(theta) - length(object$means)))
+  dimension <- length(.multilpa_continuous_names(object))
+  if (identical(object$covariance_model, "full") && dimension > 0L) {
+    positions <- which(lower.tri(matrix(0, dimension, dimension), diag = TRUE),
+                       arr.ind = TRUE)
+    profiles <- if (object$variance_model == "equal") 1L else seq_len(object$n_profiles)
+    covariance_scale <- unlist(lapply(profiles, function(profile) {
+      ifelse(positions[, 1L] == positions[, 2L], 1,
+             sqrt(object$variances[profile, positions[, 1L]]))
+    }), use.names = FALSE)
+    parameter_scale[length(object$means) + seq_along(covariance_scale)] <- covariance_scale
+  }
   scaled_objective <- function(displacement) {
     stopifnot(is.numeric(displacement))
     objective(centered_theta + displacement * parameter_scale)
@@ -505,7 +518,10 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
     row.names = NULL, stringsAsFactors = FALSE)
   ## A Wald test of a variance against zero is not a question worth asking; the
   ## interval still is.
-  bounded <- result$parameter %in% c("variance", "probability")
+  continuous <- .multilpa_continuous_names(object)
+  bounded <- result$parameter %in% c("variance", "probability", "response") |
+    (result$parameter == "covariance" &
+       result$term %in% paste(continuous, continuous, sep = ":"))
   result$statistic[bounded] <- NA_real_
   result$p_value[bounded] <- NA_real_
   ## Diagnostics of the fit, not of any one parameter, so they travel as
@@ -608,6 +624,11 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   if (isTRUE(object$boundary)) {
     stop("Wald inference is unavailable for a bound-active fit.")
   }
+  response <- unlist(object$response_probabilities, use.names = FALSE)
+  if (length(response) > 0L &&
+      any(response <= (object$min_probability %||% 0) * (1 + 1e-7))) {
+    stop("Wald inference is unavailable for bound-active categorical response probabilities.")
+  }
   if (any(object$profile_probabilities <= 0) || any(object$group_probabilities <= 0)) {
     stop("Wald inference requires strictly positive mixing probabilities.")
   }
@@ -653,9 +674,10 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   }
   codes <- NULL
   if (length(object$categorical %||% character()) > 0L) {
-    codes <- .multilpa_encode_categorical(
-      data[, object$categorical, drop = FALSE])$codes
-    if (!identical(unname(codes), unname(object$categorical_data))) {
+    encoded <- .multilpa_encode_categorical(data[, object$categorical, drop = FALSE])
+    codes <- encoded$codes
+    if (!identical(unname(codes), unname(object$categorical_data)) ||
+        !identical(encoded$levels, object$categorical_levels)) {
       stop(errorCondition(
         "data must reproduce the original categorical indicators, including their categories and row order.",
         class = "multilpa_bad_inference_data", call = NULL))
@@ -688,7 +710,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   scaled_eigenvalues <- eigen(scaled, symmetric = TRUE, only.values = TRUE)$values
   condition_ratio <- min(scaled_eigenvalues) / max(scaled_eigenvalues)
   if (any(!is.finite(eigenvalues)) || !is.finite(condition_ratio) ||
-      condition_ratio <= 1e-10) {
+      min(scaled_eigenvalues) <= 0 || condition_ratio <= 1e-10) {
     stop("Observed information is not positive definite or is numerically singular; Wald inference is unavailable.")
   }
   inverse <- tryCatch(solve(scaled), error = function(error) {

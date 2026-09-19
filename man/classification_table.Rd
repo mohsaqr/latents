@@ -49,6 +49,8 @@ The odds of correct classification for class `k` is
   values of five or more are conventionally read as adequate separation.
   Modal assignment discards classification uncertainty, so `n_modal` and
   `estimated_n` differ whenever entropy is below one.
+  Continuous random-intercept fits have individual profiles but no discrete
+  group classes; `"both"` returns individuals only and `"groups"` is rejected.
 }
 \examples{
 set.seed(7)

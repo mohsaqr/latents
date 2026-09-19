@@ -190,11 +190,12 @@ fit_random_intercept <- function(data, indicators, group, n_profiles,
     tryCatch({
       classification <- if (k == 1L) rep(1L, nrow(x)) else
         stats::kmeans(x, centers = k, algorithm = "Lloyd", iter.max = 100L)$cluster
-      means <- t(vapply(seq_len(k), function(profile) colMeans(x[classification == profile, , drop = FALSE]), numeric(d)))
+      means <- t(matrix(vapply(seq_len(k), function(profile)
+        colMeans(x[classification == profile, , drop = FALSE]), numeric(d)), d, k))
       residual <- x - means[classification, , drop = FALSE]
-      variances <- t(vapply(seq_len(k), function(profile) {
+      variances <- t(matrix(vapply(seq_len(k), function(profile) {
         pmax(colMeans(residual[classification == profile, , drop = FALSE]^2), min_variance * 10)
-      }, numeric(d)))
+      }, numeric(d)), d, k))
       if (variance_model == "equal") variances <- pmax(colMeans(residual^2), min_variance * 10)
       group_average <- rowsum(rowMeans(residual), group_index, reorder = FALSE)[, 1L] / group_sizes
       tau <- max(sqrt(max(stats::var(group_average) - mean(variances) * mean(1 / group_sizes) / d, 0)), scale * 0.05)

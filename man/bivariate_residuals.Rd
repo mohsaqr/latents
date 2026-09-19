@@ -32,27 +32,31 @@ A base `data.frame` with one row per indicator pair and, for
   degrees of freedom.
 }
 \description{
-Every model in this package assumes that indicators are independent within a
-profile: `covariance_model = "diagonal"` says so for Gaussian indicators, and
-the categorical measurement model says so by construction. Nothing else in
-the package tests that assumption, so a model can fit a dataset whose
-indicators remain strongly related inside a profile and report nothing
-unusual. This verb looks for exactly that.
+Diagonal Gaussian and categorical measurement models assume indicators are
+independent within a profile. This diagnostic compares the residual
+association with that implied by the fitted measurement model, including
+the estimated association under a full Gaussian covariance model.
 }
 \details{
 A large residual means the pair shares something the profiles do not capture.
 The usual remedies are `covariance_model = "full"`, which estimates the
 association rather than assuming it away, or another profile.
 
-The tests are approximate in a way worth stating: they treat the
-  posterior profile memberships as known rather than estimated, so the
-  effective sample size is optimistic and the p-values are anti-conservative.
-  Read them as a ranking of which pairs are worst, not as exact levels, and
-  apply a multiplicity correction across the pairs before calling any one of
-  them significant.
+The p-values are descriptive approximations: they do not account
+  for estimated posterior memberships, fitted measurement parameters, or
+  dependence within groups. They are not calibrated significance tests.
+  Use the residuals to rank possible model misspecification; a multiplicity
+  correction alone does not resolve these calibration limitations.
 
   Pairs of different kinds are not assessed and do not appear in the table; a
   mixed fit therefore returns fewer rows than it has pairs.
+  Each pair uses only rows observed on both indicators, and `effective_n`
+  reports their posterior weight. Gaussian pooling averages within-profile
+  second moments, excluding association explained by differences in profile
+  means. A categorical profile is compared with its own response distribution;
+  overall categorical tables use the posterior-weighted mixture distribution.
+  Gaussian p-values are unavailable when the pair has effective size at most
+  three or zero residual spread.
 }
 \examples{
 set.seed(4)

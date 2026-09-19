@@ -6,6 +6,9 @@
 .multilpa_level_assignments <- function(object, level) {
   stopifnot("`object` must be a fitted model of this package" =
               .multilpa_any_fit(object))
+  if (inherits(object, "multilpa_random_intercept")) {
+    stop("Three-step methods require a discrete group-class model.")
+  }
   level <- match.arg(level, c("individuals", "groups"))
   if (identical(level, "individuals")) {
     list(posteriors = object$subject_posteriors, modal = object$subject_profiles,
@@ -202,6 +205,7 @@ three_step <- function(object, data, outcome,
       is.character(outcome) && length(outcome) == 1L && outcome %in% names(data),
     "`outcome` must be numeric" = is.numeric(data[[outcome]]),
     "`outcome` must not be missing" = !anyNA(data[[outcome]]),
+    "`outcome` must be finite" = all(is.finite(data[[outcome]])),
     "`level_ci` must be a single number in (0, 1)" =
       is.numeric(level_ci) && length(level_ci) == 1L && level_ci > 0 && level_ci < 1
   )
@@ -214,6 +218,10 @@ three_step <- function(object, data, outcome,
   rows <- lapply(classes, function(class) {
     weight <- weights[, class]
     total <- sum(weight)
+    if (!is.finite(total) || total <= 0) {
+      stop(errorCondition("A class has no positive total outcome weight.",
+                          class = "multilpa_inseparable_classes", call = NULL))
+    }
     estimate <- sum(weight * values) / total
     ## Cluster-robust variance of a weighted mean: sum the influence
     ## contributions within each independent group, then across groups.
@@ -349,6 +357,8 @@ r3step <- function(object, data, covariates,
     "`covariates` must be numeric" =
       all(vapply(data[covariates], is.numeric, logical(1))),
     "`covariates` must not be missing" = !anyNA(data[covariates]),
+    "`covariates` must be finite" =
+      all(vapply(data[covariates], function(value) all(is.finite(value)), logical(1))),
     "`level_ci` must be a single number in (0, 1)" =
       is.numeric(level_ci) && length(level_ci) == 1L && level_ci > 0 && level_ci < 1
   )

@@ -305,9 +305,9 @@ starting_values <- function(object, covariance = c("auto", "drop", "keep")) {
                           class = "multilpa_bad_start", call = NULL))
     } else {
     dimension <- dim(object$covariances)[1L]
-    variances <- t(vapply(seq_len(dim(object$covariances)[3L]), function(profile) {
+    variances <- t(matrix(vapply(seq_len(dim(object$covariances)[3L]), function(profile) {
       diag(matrix(object$covariances[, , profile], dimension, dimension))
-    }, numeric(dimension)))
+    }, numeric(dimension)), nrow = dimension, ncol = n_profiles))
     }
   }
   start <- list(means = unname(as.matrix(means)),

@@ -51,6 +51,9 @@
 #'   convention and individual-level posteriors under the `"individuals"`
 #'   convention. This is a stated per-level choice, not a unique multilevel
 #'   definition; use one convention consistently across compared candidates.
+#'   Individual sample sizes exclude rows with no observed indicators. For a
+#'   continuous random-intercept fit, group classification entropy is undefined,
+#'   so group-level `awe` and `icl` are `NA`.
 #' @references Schwarz, G. (1978). Estimating the dimension of a model.
 #'   Annals of Statistics, 6, 461--464. Sclove, S. L. (1987). Application of
 #'   model-selection criteria to some problems in multivariate analysis.
@@ -77,8 +80,9 @@ information_criteria <- function(object) {
   log_likelihood <- object$log_likelihood
   conventions <- data.frame(
     convention = c("groups", "individuals"),
-    n = c(object$n_groups, object$n_observations))
-  entropies <- c(groups = .multilpa_entropy_sum(object$group_posteriors),
+    n = c(object$n_groups, object$n_informative %||% object$n_observations))
+  entropies <- c(groups = if (is.null(object$group_posteriors)) NA_real_ else
+                   .multilpa_entropy_sum(object$group_posteriors),
                  individuals = .multilpa_entropy_sum(object$subject_posteriors))
   scale_free <- data.frame(
     criterion = c("log_likelihood", "aic"),
@@ -141,6 +145,8 @@ information_criteria <- function(object) {
 #'   values of five or more are conventionally read as adequate separation.
 #'   Modal assignment discards classification uncertainty, so `n_modal` and
 #'   `estimated_n` differ whenever entropy is below one.
+#'   Continuous random-intercept fits have individual profiles but no discrete
+#'   group classes; `"both"` returns individuals only and `"groups"` is rejected.
 #' @references Nagin, D. S. (2005). Group-Based Modeling of Development.
 #'   Harvard University Press.
 #' @examples
@@ -160,6 +166,10 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
               isTRUE(detail) || isFALSE(detail))
   level <- match.arg(level)
   levels_wanted <- if (level == "both") c("individuals", "groups") else level
+  if (is.null(object$group_posteriors)) {
+    if (level == "groups") stop("This model has no discrete group classes.")
+    levels_wanted <- "individuals"
+  }
   posteriors <- list(individuals = object$subject_posteriors,
                      groups = object$group_posteriors)
   result <- do.call(rbind, lapply(levels_wanted, function(which_level) {
@@ -235,6 +245,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #'   `n_classes`, `n_units`, `entropy_sum`, and `relative_entropy`.
 #'   `relative_entropy` is `1 - EN / (n log K)` and is `NA_real_` when a level
 #'   has a single class, where it is undefined rather than perfect.
+#'   Continuous random-intercept fits return the individual level only.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -249,6 +260,7 @@ entropy_table <- function(object) {
   stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(object))
   posteriors <- list(individuals = object$subject_posteriors,
                      groups = object$group_posteriors)
+  posteriors <- Filter(Negate(is.null), posteriors)
   result <- do.call(rbind, lapply(names(posteriors), function(level) {
     probabilities <- posteriors[[level]]
     data.frame(level = level, n_classes = ncol(probabilities),

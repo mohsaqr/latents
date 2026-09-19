@@ -124,9 +124,9 @@ come from the observed values.
 drops out of that individual's likelihood, which is the observed-data likelihood
 under an ignorable mechanism, with no imputation.
 
-Standard errors and the parametric bootstrap do **not** yet cover categorical
-indicators; both refuse such a fit rather than returning a number from the
-Gaussian score functions. `min_probability` bounds every response probability
+Observed-information and robust standard errors cover categorical and mixed
+indicators, and the parametric bootstrap supports complete categorical and mixed
+data. `min_probability` bounds every response probability
 away from zero, in the same way `min_variance` bounds variances, and the bound
 is applied as the exact constrained solution rather than by rescaling.
 
@@ -195,7 +195,7 @@ logLik(evaluated)
 | Measurement model | Gaussian, categorical, or mixed, via `categorical`; categorical indicators use unrestricted profile-specific response probabilities |
 | Missing indicators | `missing="fiml"`: observed Gaussian marginals and observed categorical responses, ignorable missingness assumption; no missing covariates |
 | Residual covariance | `covariance_model="diagonal"` or `"full"`; shared or profile-specific via `variance_model` |
-| SEs/CIs | Observed-Hessian ML inference for the Gaussian discrete model, including full covariance and FIML; not available for categorical indicators |
+| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models |
 | Robust SEs | `vcov_type="robust"`: Huber-White sandwich over independent groups, plus the MLR scaling correction factor; matches Mplus `ESTIMATOR=MLR` |
 | Membership covariates | Numeric predictors at both levels; shared individual-profile slopes across group classes; complete diagonal model |
 | Continuous random effect | One shared Gaussian group intercept with unit indicator loadings; complete diagonal model, no discrete group classes |
@@ -204,9 +204,9 @@ logLik(evaluated)
 | Classification quality | Modal and model-estimated class sizes, average posterior probabilities, odds of correct classification, relative entropy |
 | LMR statistic | Likelihood-ratio statistic and the Lo-Mendell-Rubin adjustment; **no p-value**, because the VLMR reference distribution is not reproduced |
 | Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; not Mplus TECH14 |
-| Local dependence | Posterior-weighted bivariate residuals within profile or overall, Holm-adjusted |
+| Local dependence | Posterior-weighted bivariate residuals within profile or overall, with approximate unadjusted p-values; apply a multiplicity correction when comparing pairs |
 | Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment; R3STEP membership covariates with observed or cluster-robust errors |
-| Sequences | Per-individual profile sequences in long or wide form, with transition, stability and run-length summaries |
+| Sequences | Profile assignments in long or wide form, with group counts, sequence lengths and completeness by group class |
 | Warm starts | `starting_values()` round-trips any fitted solution, including categorical measurement; `max_iter = 0` evaluates a supplied parameter set without moving |
 | Plots | Profile means (raw or standardized), prevalence by group class, profile sequences, and any enumeration criterion; base graphics only |
 
@@ -231,7 +231,7 @@ fit <- multilpa(students, c("reading", "maths", "engagement"), "student_id",
 
 sequences(fit)                     # one row per individual and time point
 sequences(fit, format = "wide")    # one row per individual, one column per time
-sequence_summary(fit)              # transitions, stability and run lengths
+sequence_summary(fit)              # group counts, sequence lengths and completeness
 plot(fit, what = "sequences")
 ```
 
@@ -342,7 +342,8 @@ obviously unidentified cases but does not certify general identification.
 
 ### Information criteria
 
-Let `J` be the number of observed groups, `N` the number of individuals, and
+Let `J` be the number of observed groups, `N` the number of individuals with at
+least one observed indicator, and
 `q` the number of free parameters:
 
 | Field | Definition |
@@ -368,7 +369,7 @@ observations before inference and bootstrap comparisons.
 ```sh
 Rscript -e 'pkgload::load_all("."); testthat::test_dir("tests/testthat")'
 R CMD build .
-R CMD check --no-manual multilpa_0.4.0.tar.gz
+R CMD check --no-manual multilpa_0.5.2.tar.gz
 ```
 
 `pkgload` is only a development convenience. Installed-package testing via
@@ -390,6 +391,9 @@ The `mclust` limit checks initialize at the reference solution to test that it
 is a fixed point of the new engine; they do not compare global searches.
 Independent likelihood enumeration and direct optimization validate the
 multilevel calculations on tested examples.
+
+The [mathematical audit](validation/MATH_AUDIT.md) documents numerical fixes,
+independent regression checks, and the results of the latest full validation.
 
 ### Direct Mplus comparisons
 

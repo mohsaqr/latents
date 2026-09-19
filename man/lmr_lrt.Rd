@@ -10,7 +10,9 @@ lmr_lrt(null_model, alternative_model, n = c("individuals", "groups"))
 \item{null_model}{The smaller fitted `multilpa` model.}
 
 \item{alternative_model}{The larger fitted `multilpa` model, with strictly more
-free parameters and a log likelihood at least as large.}
+free parameters and a log likelihood at least as large. Both fits must use
+the same data, measurement specification and parameter bounds. Neither
+class count may decrease in the larger model.}
 
 \item{n}{Sample size entering the adjustment. `"individuals"` uses the
 individual count and matches the convention external mixture software

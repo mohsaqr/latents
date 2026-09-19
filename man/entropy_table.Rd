@@ -14,6 +14,7 @@ A base `data.frame` with one row per level and columns `level`,
   `n_classes`, `n_units`, `entropy_sum`, and `relative_entropy`.
   `relative_entropy` is `1 - EN / (n log K)` and is `NA_real_` when a level
   has a single class, where it is undefined rather than perfect.
+  Continuous random-intercept fits return the individual level only.
 }
 \description{
 Reports the zero-to-one relative entropy at each level, alongside the raw
