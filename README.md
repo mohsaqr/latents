@@ -468,6 +468,21 @@ For full covariance, the variance constraint applies to every covariance
 eigenvalue. New discrete fits retain `indicator_data` to verify the original
 observations before inference and bootstrap comparisons.
 
+## Vignette
+
+`vignette("multilpa")` fits one simulated dataset end to end and prints every
+diagnostic exactly as the package returns it: measurement model with standard
+errors, prevalence by group class, all eight information criteria under both
+conventions, classification quality, entropy, enumeration, Wald and robust
+inference, bivariate residuals, classification error and BCH weights, mixed
+indicators, membership covariates, staged estimation, sequences and latent
+transitions. Because the data are simulated, every estimate can be read against
+the value that generated it.
+
+```r
+vignette("multilpa")
+```
+
 ## Verification
 
 ```sh

@@ -1,0 +1,293 @@
+---
+title: "Two-level latent profiles, end to end"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Two-level latent profiles, end to end}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = FALSE, comment = "#>")
+options(digits = 4, width = 100)
+```
+
+Every table below is printed exactly as the package returns it. Nothing is
+reshaped, subsetted or reformatted on the way out: if a verb does not already
+return what a reader needs, that is a defect in the verb rather than something
+for the caller to patch afterwards.
+
+```{r library}
+library(multilpa)
+```
+
+## Data with a known answer
+
+Students are nested in schools. Each student belongs to one of two engagement
+profiles, and each school belongs to one of two classes that differ in how its
+students are distributed across those profiles. Simulating it means the truth
+is known, so every estimate below can be read against something.
+
+```{r simulate}
+set.seed(2024)
+
+n_schools <- 60
+students_per_school <- 12
+
+school_class <- rep(1:2, length.out = n_schools)
+high_engagement_share <- ifelse(school_class == 1L, 0.75, 0.25)
+
+students <- data.frame(
+  school = rep(seq_len(n_schools), each = students_per_school),
+  term = rep(seq_len(students_per_school), times = n_schools)
+)
+students$true_school_class <- rep(school_class, each = students_per_school)
+students$true_profile <- 1L + as.integer(
+  runif(nrow(students)) > rep(high_engagement_share, each = students_per_school)
+)
+
+engaged <- students$true_profile == 1L
+students$reading    <- rnorm(nrow(students), ifelse(engaged,  1.2, -1.2), 0.8)
+students$maths      <- rnorm(nrow(students), ifelse(engaged,  0.9, -0.9), 0.8)
+students$engagement <- rnorm(nrow(students), ifelse(engaged,  1.5, -1.5), 0.9)
+students$passed     <- ifelse(runif(nrow(students)) < ifelse(engaged, 0.85, 0.3),
+                              "yes", "no")
+
+str(students)
+```
+
+True profile prevalence is 0.75 and 0.25 in the two kinds of school, and the
+measurement means are 1.2, 0.9 and 1.5 against their negatives.
+
+## Fitting
+
+```{r fit}
+indicators <- c("reading", "maths", "engagement")
+
+fit <- multilpa(students, indicators, group = "school",
+                n_profiles = 2, n_group_classes = 2,
+                n_starts = 10, seed = 1)
+fit
+```
+
+## The measurement model
+
+`as.data.frame()` gives the Gaussian measurement model, one row per profile and
+indicator.
+
+```{r measurement}
+as.data.frame(fit)
+```
+
+Profile labels are arbitrary: nothing in the likelihood distinguishes "profile 1"
+from "profile 2", so a fit may recover the simulated profiles in either order.
+Read the estimates against the values that generated them rather than against
+the labels, and align labels explicitly before comparing two fits.
+
+Passing the fitting data adds a standard error beside every estimate, so the
+measurement model reads complete from one call rather than a join against
+`parameter_inference()`.
+
+```{r measurement-errors}
+as.data.frame(fit, data = students)
+```
+
+## Where the second level shows up
+
+Profile prevalence differs by school class. This is the quantity the second
+level exists to estimate, and the one a single-level model cannot report at all.
+
+```{r prevalence}
+as.data.frame(fit, what = "profile_probabilities")
+```
+
+## Fit statistics
+
+Every information criterion the package computes, in one table. The five that
+depend on a sample size appear under both conventions, because a two-level model
+has two defensible sample sizes and neither is privileged. `aic` and `kic` depend
+on none. `clc` depends on no sample size either, but its convention selects which
+level's classification uncertainty it penalizes.
+
+```{r criteria}
+information_criteria(fit)
+```
+
+## Classification quality
+
+```{r classification}
+classification_table(fit, level = "both")
+```
+
+```{r entropy}
+entropy_table(fit)
+```
+
+## Standard errors
+
+```{r inference}
+parameter_inference(fit, data = students)
+```
+
+Robust errors accumulate the score over independent groups, which is the
+appropriate choice when the measurement model may be misspecified.
+
+```{r robust}
+parameter_inference(fit, data = students, vcov_type = "robust")
+```
+
+## Is two the right number of classes?
+
+```{r enumerate}
+candidates <- enumerate_classes(students, indicators, group = "school",
+                                profiles = 1:3, group_classes = 1:2,
+                                n_starts = 4, seed = 1)
+as.data.frame(candidates)
+```
+
+## Does conditional independence hold?
+
+Bivariate residuals report where the assumption fails. The p-values are
+approximate and unadjusted; a multiplicity correction belongs on top of them
+when several pairs are compared.
+
+```{r residuals}
+bivariate_residuals(fit, data = students)
+```
+
+## Relating classes to variables that did not define them
+
+The classification carries error, and the three-step verbs carry it forward
+rather than pretending modal assignment is the truth.
+
+```{r errors}
+classification_errors(fit)
+```
+
+```{r bch}
+bch_weights(fit)
+```
+
+## Mixed indicators
+
+Naming a subset of the indicators as categorical fits a mixed measurement model.
+Everything above works on it unchanged.
+
+```{r mixed}
+mixed_fit <- multilpa(students, c(indicators, "passed"), group = "school",
+                      n_profiles = 2, n_group_classes = 2,
+                      categorical = "passed", n_starts = 6, seed = 1)
+as.data.frame(mixed_fit, what = "responses", data = students)
+```
+
+## Membership covariates
+
+```{r covariates}
+students$prior_attainment <- rnorm(nrow(students))
+
+covariate_fit <- fit_covariates(students, indicators, group = "school",
+                                n_profiles = 2, n_group_classes = 2,
+                                profile_covariates = "prior_attainment",
+                                n_starts = 6, seed = 1)
+as.data.frame(covariate_fit, what = "coefficients")
+```
+
+## Staged estimation
+
+`fit_staged()` estimates the measurement model on its own, then the group-class
+structure with that measurement held fixed, so adding group classes cannot move
+the profiles they are meant to describe.
+
+```{r staged}
+staged <- fit_staged(students, indicators, group = "school",
+                     n_profiles = 2, n_group_classes = 2,
+                     n_starts = 6, seed = 1)
+as.data.frame(staged, what = "stages")
+```
+
+Both parameter counts are reported. Compare staged fits with one another using
+`parameters`; compare a staged fit against a jointly estimated one using
+`parameters_with_measurement`, remembering that the staged likelihood is not the
+joint maximum and first-stage uncertainty is not propagated.
+
+## Profiles over time
+
+Sequences and transitions ask about the same unit measured repeatedly, which the
+data above are not: there `term` merely indexes students within a school, and a
+move from one student to the next means nothing. So this section uses a second
+dataset, where the same students are measured across six terms and mostly stay
+where they are.
+
+```{r panel}
+set.seed(11)
+
+n_students <- 80
+n_terms <- 6
+persistence <- 0.8
+
+paths <- lapply(seq_len(n_students), function(student) {
+  state <- Reduce(function(previous, step) {
+    if (runif(1) < persistence) previous else 3L - previous
+  }, seq_len(n_terms - 1L), init = 1L + student %% 2L, accumulate = TRUE)
+  data.frame(student = student, term = seq_len(n_terms), state = unlist(state))
+})
+
+panel <- do.call(rbind, paths)
+engaged_now <- panel$state == 1L
+panel$reading    <- rnorm(nrow(panel), ifelse(engaged_now,  1.2, -1.2), 0.7)
+panel$maths      <- rnorm(nrow(panel), ifelse(engaged_now,  0.9, -0.9), 0.7)
+panel$engagement <- rnorm(nrow(panel), ifelse(engaged_now,  1.5, -1.5), 0.7)
+
+str(panel)
+```
+
+Fitting the cross-sectional model with `time` records the ordering without using
+it, so the assignments can be read back in sequence.
+
+```{r sequences}
+timed <- multilpa(panel, indicators, group = "student",
+                  n_profiles = 2, n_group_classes = 1,
+                  time = "term", n_starts = 6, seed = 1)
+head(sequences(timed))
+```
+
+```{r sequence-summary}
+sequence_summary(timed)
+```
+
+## Latent transitions
+
+`sequences()` reports where the model put each observation. It does not estimate
+how observations move. `fit_transitions()` does: the diagonal below is the
+probability of staying, against the 0.8 that generated the data.
+
+```{r transitions}
+moves <- fit_transitions(panel, indicators, group = "student",
+                         n_profiles = 2, time = "term",
+                         n_starts = 6, seed = 1)
+transitions(moves)
+```
+
+```{r transitions-initial}
+as.data.frame(moves, what = "initial")
+```
+
+## What the package refuses
+
+Standard errors are not available for every model family. Where they are not,
+the request raises a condition with a stable class rather than returning a
+number that would be wrong. `?"multilpa-conditions"` lists all of them.
+
+```{r refusal}
+tryCatch(parameter_inference(moves, students),
+         multilpa_no_inference = function(condition) conditionMessage(condition))
+```
+
+## Session
+
+```{r session}
+sessionInfo()
+```
