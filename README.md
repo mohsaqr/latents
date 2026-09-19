@@ -156,8 +156,8 @@ lmr_lrt(smaller_fit, larger_fit)
 with_predictors <- fit_covariates(
   students, c("reading", "maths", "engagement"), "school_id", 3, 2,
   profile_covariates = "age", group_covariates = "school_resources", seed = 42)
-with_predictors$profile_coefficients   # covariate models have no tidy accessor yet
-with_predictors$group_coefficients
+as.data.frame(with_predictors, what = "coefficients")   # both levels, one row per term
+parameter_inference(with_predictors, data = students)   # with standard errors and intervals
 
 # Alternative: one continuous group intercept, loading 1 on every indicator.
 random_intercept <- fit_random_intercept(
@@ -173,6 +173,21 @@ plot(candidates, criterion = "sabic_individual")
 
 # Complete-data nested models differing by one class at one level.
 # bootstrap_lrt(smaller, larger, students, n_boot = 199, seed = 42)
+
+# Where conditional independence fails: residual association within profiles.
+bivariate_residuals(fit, data = students)
+bivariate_residuals(fit, data = students, by = "overall")
+
+# Resume from a fitted solution, or score parameters produced elsewhere.
+refit <- multilpa(students, c("reading", "maths", "engagement"), "school_id",
+                    n_profiles = 3, n_group_classes = 2, n_starts = 1,
+                    start = starting_values(fit))
+
+# max_iter = 0 performs no update, so logLik() evaluates the supplied start.
+evaluated <- multilpa(students, c("reading", "maths", "engagement"), "school_id",
+                        n_profiles = 3, n_group_classes = 2, n_starts = 1,
+                        start = starting_values(fit), max_iter = 0)
+logLik(evaluated)
 ```
 
 | Capability | Supported scope |
@@ -189,16 +204,66 @@ plot(candidates, criterion = "sabic_individual")
 | Classification quality | Modal and model-estimated class sizes, average posterior probabilities, odds of correct classification, relative entropy |
 | LMR statistic | Likelihood-ratio statistic and the Lo-Mendell-Rubin adjustment; **no p-value**, because the VLMR reference distribution is not reproduced |
 | Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; not Mplus TECH14 |
-| Plots | Profile means (raw or standardized), prevalence by group class, and any enumeration criterion; base graphics only |
+| Local dependence | Posterior-weighted bivariate residuals within profile or overall, Holm-adjusted |
+| Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment; R3STEP membership covariates with observed or cluster-robust errors |
+| Sequences | Per-individual profile sequences in long or wide form, with transition, stability and run-length summaries |
+| Warm starts | `starting_values()` round-trips any fitted solution, including categorical measurement; `max_iter = 0` evaluates a supplied parameter set without moving |
+| Plots | Profile means (raw or standardized), prevalence by group class, profile sequences, and any enumeration criterion; base graphics only |
 
 These are explicit model families, not every combination of Mplus options.
-Covariate and random-intercept fits currently do not provide standard errors.
+Random-intercept fits currently do not provide standard errors.
 Random-intercept mixtures use Gaussian quadrature; increase node counts and
 refit if the higher-order likelihood check fails. Inference rejects variance
 boundaries and nonpositive information matrices. Natural-scale Wald intervals
 can extend beyond parameter bounds; log-variance/logit coordinates are also
 available. A bootstrap p-value is withheld if any replicate fails convergence
 or has a reversed likelihood. Enumeration never automatically declares a winner.
+
+## Profiles over time
+
+Passing `time` records where each individual sits in an ordered sequence, so a
+person measured repeatedly can be followed across profiles rather than reduced
+to one assignment.
+
+```r
+fit <- multilpa(students, c("reading", "maths", "engagement"), "student_id",
+                  n_profiles = 3, n_group_classes = 2, time = "term", seed = 42)
+
+sequences(fit)                     # one row per individual and time point
+sequences(fit, format = "wide")    # one row per individual, one column per time
+sequence_summary(fit)              # transitions, stability and run lengths
+plot(fit, what = "sequences")
+```
+
+## Relating classes to variables that did not define them
+
+A covariate or outcome added to the measurement model can change the classes it
+was meant to describe. The three-step approach fits the measurement model first,
+then carries the classification and its error into a second stage, so the
+classes stay fixed.
+
+```r
+# The classification error matrix, P(assigned | true), at either level.
+classification_errors(fit)
+classification_errors(fit, level = "groups")
+
+# Bolck-Croon-Hagenaars weights, the inverse of that matrix by modal class.
+bch_weights(fit)
+
+# A distal outcome the classes did not define, corrected for misclassification.
+three_step(fit, data = students, outcome = "exam_score")
+three_step(fit, data = students, outcome = "exam_score", method = "modal")
+
+# Covariates predicting class membership (Vermunt 2010 R3STEP), errors fixed.
+r3step(fit, data = students, covariates = c("age", "prior_attainment"))
+r3step(fit, data = students, covariates = "school_resources", level = "groups")
+```
+
+`three_step()` defaults to `method = "bch"`, which is robust to the outcome
+being unrelated to class membership. `"modal"` ignores classification error and
+is biased toward the null; `"proportional"` weights by the posterior. `r3step()`
+returns the multinomial logits with standard errors, and accepts
+`vcov_type = "robust"` for cluster-robust errors over groups.
 
 ## Plots
 
