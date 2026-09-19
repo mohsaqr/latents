@@ -12,8 +12,11 @@ information_criteria(object)
 \value{
 A base `data.frame` with one row per criterion and convention, and
   columns `criterion`, `convention`, `n`, `value`, `penalty`, and
-  `definition`. `log_likelihood` and `aic` do not depend on a sample size and
-  carry convention `"none"` with `n` equal to `NA_integer_`. Lower values
+  `definition`. `log_likelihood`, `aic` and `kic` do not depend on a sample
+  size and carry convention `"none"` with `n` equal to `NA_integer_`. `clc`
+  does not depend on one either, but its convention selects which level's
+  classification uncertainty it penalizes, so it is reported once per
+  convention. Lower values
   indicate a preferred model for every criterion except `log_likelihood`.
 }
 \description{
@@ -33,7 +36,11 @@ Let `q` be the number of free parameters, `n` the chosen sample
   size, and `EN` the classification entropy of the level matching that
   convention. The criteria are `aic = -2L + 2q`, `bic = -2L + q log(n)`,
   `sabic = -2L + q log((n + 2) / 24)`, `caic = -2L + q (log(n) + 1)`,
-  `awe = -2(L - EN) + 2q (1.5 + log(n))`, and `icl = -2L + q log(n) + 2 EN`.
+  `awe = -2(L - EN) + 2q (1.5 + log(n))`, `icl = -2L + q log(n) + 2 EN`,
+  `kic = -2L + 3(q + 1)`, and `clc = -2L + 2 EN`. Note that `clc` uses the
+  entropy sum, as `icl` and `awe` here do; `tidyLPA` reports a `CLC` built
+  from relative entropy instead, which is bounded by one and so penalizes
+  almost nothing, and the two numbers are not comparable.
   The entropy-based criteria use group-level posteriors under the `"groups"`
   convention and individual-level posteriors under the `"individuals"`
   convention. This is a stated per-level choice, not a unique multilevel
@@ -62,7 +69,11 @@ Schwarz, G. (1978). Estimating the dimension of a model.
   non-Gaussian clustering. Biometrics, 49, 803--821. Biernacki, C., Celeux,
   G., & Govaert, G. (2000). Assessing a mixture model for clustering with the
   integrated completed likelihood. IEEE Transactions on Pattern Analysis and
-  Machine Intelligence, 22, 719--725.
+  Machine Intelligence, 22, 719--725. Biernacki, C., & Govaert, G. (1997).
+  Using the classification likelihood to choose the number of clusters.
+  Computing Science and Statistics, 29, 451--457. Cavanaugh, J. E. (1999).
+  A large-sample model selection criterion based on Kullback's symmetric
+  divergence. Statistics and Probability Letters, 42, 333--343.
 }
 \seealso{
 [classification_table()] and [entropy_table()] for the

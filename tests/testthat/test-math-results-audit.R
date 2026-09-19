@@ -5,7 +5,7 @@ test_that("missing-row information criteria agree across all result accessors", 
   fit <- multilpa(d, "y", "g", 1, 1, missing = "fiml", n_starts = 1)
   criteria <- information_criteria(fit)
   individual <- subset(criteria, convention == "individuals")
-  expect_equal(individual$n, rep(45, 5))
+  expect_equal(individual$n, rep(45, 6))
   # One normal population: independently calculate its maximized likelihood.
   y <- na.omit(d$y)
   ll <- sum(dnorm(y, mean(y), sqrt(mean((y - mean(y))^2)), log = TRUE))

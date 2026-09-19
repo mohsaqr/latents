@@ -39,14 +39,21 @@
 #'   classification diagnostics that accompany these criteria.
 #' @return A base `data.frame` with one row per criterion and convention, and
 #'   columns `criterion`, `convention`, `n`, `value`, `penalty`, and
-#'   `definition`. `log_likelihood` and `aic` do not depend on a sample size and
-#'   carry convention `"none"` with `n` equal to `NA_integer_`. Lower values
+#'   `definition`. `log_likelihood`, `aic` and `kic` do not depend on a sample
+#'   size and carry convention `"none"` with `n` equal to `NA_integer_`. `clc`
+#'   does not depend on one either, but its convention selects which level's
+#'   classification uncertainty it penalizes, so it is reported once per
+#'   convention. Lower values
 #'   indicate a preferred model for every criterion except `log_likelihood`.
 #' @details Let `q` be the number of free parameters, `n` the chosen sample
 #'   size, and `EN` the classification entropy of the level matching that
 #'   convention. The criteria are `aic = -2L + 2q`, `bic = -2L + q log(n)`,
 #'   `sabic = -2L + q log((n + 2) / 24)`, `caic = -2L + q (log(n) + 1)`,
-#'   `awe = -2(L - EN) + 2q (1.5 + log(n))`, and `icl = -2L + q log(n) + 2 EN`.
+#'   `awe = -2(L - EN) + 2q (1.5 + log(n))`, `icl = -2L + q log(n) + 2 EN`,
+#'   `kic = -2L + 3(q + 1)`, and `clc = -2L + 2 EN`. Note that `clc` uses the
+#'   entropy sum, as `icl` and `awe` here do; `tidyLPA` reports a `CLC` built
+#'   from relative entropy instead, which is bounded by one and so penalizes
+#'   almost nothing, and the two numbers are not comparable.
 #'   The entropy-based criteria use group-level posteriors under the `"groups"`
 #'   convention and individual-level posteriors under the `"individuals"`
 #'   convention. This is a stated per-level choice, not a unique multilevel
@@ -63,7 +70,11 @@
 #'   non-Gaussian clustering. Biometrics, 49, 803--821. Biernacki, C., Celeux,
 #'   G., & Govaert, G. (2000). Assessing a mixture model for clustering with the
 #'   integrated completed likelihood. IEEE Transactions on Pattern Analysis and
-#'   Machine Intelligence, 22, 719--725.
+#'   Machine Intelligence, 22, 719--725. Biernacki, C., & Govaert, G. (1997).
+#'   Using the classification likelihood to choose the number of clusters.
+#'   Computing Science and Statistics, 29, 451--457. Cavanaugh, J. E. (1999).
+#'   A large-sample model selection criterion based on Kullback's symmetric
+#'   divergence. Statistics and Probability Letters, 42, 333--343.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -85,11 +96,13 @@ information_criteria <- function(object) {
                    .multilpa_entropy_sum(object$group_posteriors),
                  individuals = .multilpa_entropy_sum(object$subject_posteriors))
   scale_free <- data.frame(
-    criterion = c("log_likelihood", "aic"),
+    criterion = c("log_likelihood", "aic", "kic"),
     convention = "none", n = NA_integer_,
-    value = c(log_likelihood, -2 * log_likelihood + 2 * q),
-    penalty = c(NA_real_, 2 * q),
-    definition = c("maximized observed-data log likelihood", "-2L + 2q"))
+    value = c(log_likelihood, -2 * log_likelihood + 2 * q,
+              -2 * log_likelihood + 3 * (q + 1)),
+    penalty = c(NA_real_, 2 * q, 3 * (q + 1)),
+    definition = c("maximized observed-data log likelihood", "-2L + 2q",
+                   "-2L + 3(q + 1)"))
   scaled <- do.call(rbind, lapply(seq_len(nrow(conventions)), function(row) {
     convention <- conventions$convention[row]
     n <- conventions$n[row]
@@ -98,14 +111,19 @@ information_criteria <- function(object) {
                    sabic = q * log((n + 2) / 24),
                    caic = q * (log(n) + 1),
                    awe = 2 * q * (1.5 + log(n)) + 2 * entropy_sum,
-                   icl = q * log(n) + 2 * entropy_sum)
+                   icl = q * log(n) + 2 * entropy_sum,
+                   # The only criterion here that does not use the sample size.
+                   # Its convention still matters, because it decides which
+                   # level's classification uncertainty is being penalized.
+                   clc = 2 * entropy_sum)
     data.frame(criterion = names(penalties), convention = convention, n = n,
                value = -2 * log_likelihood + penalties,
                penalty = unname(penalties),
                definition = c("-2L + q log(n)", "-2L + q log((n + 2) / 24)",
                               "-2L + q (log(n) + 1)",
                               "-2(L - EN) + 2q (1.5 + log(n))",
-                              "-2L + q log(n) + 2 EN"))
+                              "-2L + q log(n) + 2 EN",
+                              "-2L + 2 EN"))
   }))
   result <- rbind(scale_free, scaled)
   row.names(result) <- NULL

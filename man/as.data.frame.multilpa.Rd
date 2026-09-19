@@ -30,14 +30,21 @@ posteriors, `"starts"` the restart diagnostics,
 `"information_criteria"` the information criteria, `"classification"` the
 classification quality, and `"entropy"` the entropy summary.}
 
-\item{...}{Passed to the underlying accessor; `classification` accepts
-`level` and `detail`.}
+\item{...}{Passed to the underlying accessor. `classification` accepts
+`level` and `detail`. `profiles` and `responses` accept `data`, the data
+frame the model was fitted to, which adds a standard error beside every
+estimate so the measurement model can be read complete from one call
+rather than joined to [parameter_inference()] by hand.}
 }
 \value{
 A base `data.frame` whose columns depend on `what`.
   `"profiles"` has one row per profile and continuous indicator, with columns
   `profile`, `indicator`, `mean`, `variance`, and `standard_deviation`; it has
-  zero rows when every indicator is categorical.
+  zero rows when every indicator is categorical. Given `data`, it also carries
+  `mean_standard_error` and `variance_standard_error`, and `"responses"`
+  carries `probability_standard_error`. Supplying `data` runs
+  [parameter_inference()], so it raises whatever that would raise for a fit
+  whose standard errors are unavailable, rather than returning empty columns.
   `"responses"` has one row per profile, categorical indicator and category,
   with columns `profile`, `indicator`, `category`, `probability`, and
   `threshold`. The threshold is `qlogis(P(y <= category))`, the cumulative

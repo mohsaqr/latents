@@ -18,7 +18,9 @@ test_that("information criteria match their documented formulas", {
   expect_s3_class(indices, "data.frame")
   expect_identical(names(indices),
     c("criterion", "convention", "n", "value", "penalty", "definition"))
-  expect_identical(nrow(indices), 12L)
+  # 3 without a convention (log likelihood, aic, kic) and 6 per convention
+  # (bic, sabic, caic, awe, icl, clc) at two conventions.
+  expect_identical(nrow(indices), 15L)
   pick <- function(criterion_name, convention_name) {
     indices$value[indices$criterion == criterion_name &
                     indices$convention == convention_name]

@@ -15,12 +15,19 @@
 #'   `"stages"` the estimation stages and what each held fixed,
 #'   `"information_criteria"` the information criteria, `"classification"` the
 #'   classification quality, and `"entropy"` the entropy summary.
-#' @param ... Passed to the underlying accessor; `classification` accepts
-#'   `level` and `detail`.
+#' @param ... Passed to the underlying accessor. `classification` accepts
+#'   `level` and `detail`. `profiles` and `responses` accept `data`, the data
+#'   frame the model was fitted to, which adds a standard error beside every
+#'   estimate so the measurement model can be read complete from one call
+#'   rather than joined to [parameter_inference()] by hand.
 #' @return A base `data.frame` whose columns depend on `what`.
 #'   `"profiles"` has one row per profile and continuous indicator, with columns
 #'   `profile`, `indicator`, `mean`, `variance`, and `standard_deviation`; it has
-#'   zero rows when every indicator is categorical.
+#'   zero rows when every indicator is categorical. Given `data`, it also carries
+#'   `mean_standard_error` and `variance_standard_error`, and `"responses"`
+#'   carries `probability_standard_error`. Supplying `data` runs
+#'   [parameter_inference()], so it raises whatever that would raise for a fit
+#'   whose standard errors are unavailable, rather than returning empty columns.
 #'   `"responses"` has one row per profile, categorical indicator and category,
 #'   with columns `profile`, `indicator`, `category`, `probability`, and
 #'   `threshold`. The threshold is `qlogis(P(y <= category))`, the cumulative
@@ -61,8 +68,8 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
   stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"))
   what <- match.arg(what)
   result <- switch(what,
-    profiles = .multilpa_profile_frame(x),
-    responses = .multilpa_response_frame(x),
+    profiles = .multilpa_profile_frame(x, ...),
+    responses = .multilpa_response_frame(x, ...),
     profile_probabilities = .multilpa_probability_frame(x),
     posteriors = .multilpa_posterior_frame(x),
     group_posteriors = .multilpa_group_posterior_frame(x),
@@ -118,10 +125,10 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 #' @param x A fitted `multilpa` model.
 #' @return One row per profile and continuous indicator.
 #' @noRd
-.multilpa_profile_frame <- function(x) {
+.multilpa_profile_frame <- function(x, data = NULL) {
   indicators <- .multilpa_continuous_names(x)
   n_profiles <- x$n_profiles
-  data.frame(
+  frame <- data.frame(
     profile = rep(seq_len(n_profiles), each = length(indicators)),
     indicator = rep(indicators, times = n_profiles),
     mean = as.vector(t(x$means)),
@@ -129,13 +136,50 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
     # Derived rather than read from the fit, because not every result class
     # stores a standard-deviation matrix.
     standard_deviation = sqrt(as.vector(t(x$variances))))
+  if (is.null(data)) return(frame)
+  errors <- .multilpa_measurement_errors(x, data)
+  frame$mean_standard_error <- .multilpa_match_error(errors, "mean",
+    frame$profile, frame$indicator)
+  frame$variance_standard_error <- .multilpa_match_error(errors, "variance",
+    frame$profile, frame$indicator)
+  frame
+}
+
+#' Standard errors for the measurement parameters of a fit
+#'
+#' [parameter_inference()] reports one row per free parameter, which is the
+#' right shape for reading coefficients and the wrong one for reading a
+#' measurement model. This fetches them so the measurement tables can carry
+#' their own errors in the shape they already have.
+#'
+#' @param x A fitted model of this package.
+#' @param data The data frame the model was fitted to.
+#' @return The inference table, restricted to measurement parameters.
+#' @noRd
+.multilpa_measurement_errors <- function(x, data) {
+  inference <- parameter_inference(x, data)
+  inference[inference$level == "measurement", , drop = FALSE]
+}
+
+#' Look up one measurement standard error per requested cell
+#' @param errors Measurement rows of an inference table.
+#' @param parameter Which kind of parameter to take.
+#' @param profile Integer profile indices wanted, one per output row.
+#' @param term Term labels wanted, one per output row.
+#' @return A numeric vector, `NA_real_` where the fit reports no such parameter.
+#' @noRd
+.multilpa_match_error <- function(errors, parameter, profile, term) {
+  wanted <- errors[errors$parameter == parameter, , drop = FALSE]
+  if (nrow(wanted) == 0L) return(rep(NA_real_, length(profile)))
+  key <- paste(sub("^profile_", "", wanted$outcome), wanted$term, sep = "\r")
+  wanted$standard_error[match(paste(profile, term, sep = "\r"), key)]
 }
 
 #' Categorical response probabilities as a tidy table
 #' @param x A fitted `multilpa` model.
 #' @return One row per profile, categorical indicator and category.
 #' @noRd
-.multilpa_response_frame <- function(x) {
+.multilpa_response_frame <- function(x, data = NULL) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
   blocks <- x$response_probabilities
   if (is.null(blocks) || length(blocks) == 0L) {
@@ -156,7 +200,12 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
       probability = as.vector(block),
       threshold = as.vector(thresholds))
   })
-  do.call(rbind, rows)
+  frame <- do.call(rbind, rows)
+  if (is.null(data)) return(frame)
+  errors <- .multilpa_measurement_errors(x, data)
+  frame$probability_standard_error <- .multilpa_match_error(errors, "response",
+    frame$profile, paste(frame$indicator, frame$category, sep = ":"))
+  frame
 }
 
 #' Profile prevalence within group classes as a tidy table

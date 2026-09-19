@@ -208,8 +208,9 @@ logLik(evaluated)
 | Membership covariates | Numeric predictors at both levels; shared individual-profile slopes across group classes; Gaussian, categorical or mixed indicators with diagonal or full residual covariance; complete data only |
 | Continuous random effect | One shared Gaussian group intercept with unit indicator loadings; complete diagonal model, no discrete group classes |
 | Class enumeration | Grid of discrete models, every information criterion under both sample-size conventions, entropy, failed-fit and convergence diagnostics |
-| Information criteria | AIC, BIC, SABIC, CAIC, AWE and ICL. The five that depend on a sample size are reported under both the group-count and individual-count conventions; AIC does not depend on one and is reported once |
+| Information criteria | AIC, BIC, SABIC, CAIC, AWE, ICL, CLC and KIC. The five that depend on a sample size are reported under both the group-count and individual-count conventions; AIC and KIC depend on none and are reported once; CLC is reported once per convention because its convention selects which level's classification uncertainty it penalizes |
 | Classification quality | Modal and model-estimated class sizes, average posterior probabilities, odds of correct classification, relative entropy |
+| Measurement estimates | `as.data.frame(fit, data = )` returns the measurement model with a standard error beside every estimate, in one call |
 | LMR statistic | Likelihood-ratio statistic and the Lo-Mendell-Rubin adjustment; **no p-value**, because the VLMR reference distribution is not reproduced |
 | Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; not Mplus TECH14 |
 | Local dependence | Posterior-weighted bivariate residuals within profile or overall, with approximate unadjusted p-values; apply a multiplicity correction when comparing pairs |
