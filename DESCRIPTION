@@ -21,6 +21,6 @@ License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: stats, graphics, utils
-Suggests: testthat (>= 3.0.0), mclust
+Suggests: testthat (>= 3.0.0), mclust, tidySEM
 Config/testthat/edition: 3
 RoxygenNote: 7.3.3

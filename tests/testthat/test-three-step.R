@@ -161,3 +161,66 @@ test_that("a one-class level is degenerate but does not error", {
   expect_equal(errors$probability, 1)
   expect_equal(nrow(bch_weights(fit, level = "groups")), fit$n_groups)
 })
+
+test_that("the weights satisfy the identities that define the BCH method", {
+  data <- .step_data()
+  fit <- .step_fit(data)
+  pieces <- .multilpa_level_assignments(fit, "individuals")
+  errors <- .multilpa_error_matrix(pieces)
+  inverse <- solve(errors)
+  weights <- bch_weights(fit)
+  matrix_form <- as.matrix(subset(weights,
+    select = grep("^weight_class_", names(weights))))
+
+  # Bolck, Croon & Hagenaars (2004): the weights are the inverse of the
+  # misclassification matrix applied to assigned class membership.
+  expect_equal(unname(rowSums(errors)), rep(1, nrow(errors)))
+  expect_equal(unname(errors %*% inverse), diag(nrow(errors)))
+  expect_equal(unname(rowSums(matrix_form)), rep(1, nrow(matrix_form)))
+
+  # The property that makes the third step unbiased: the weighted class sizes
+  # reproduce the model's own estimated class sizes.
+  expect_equal(unname(colSums(matrix_form)),
+               unname(colSums(pieces$posteriors)))
+})
+
+test_that("the per-unit weights agree with the original table formulation", {
+  data <- .step_data()
+  fit <- .step_fit(data)
+  pieces <- .multilpa_level_assignments(fit, "individuals")
+  inverse <- solve(.multilpa_error_matrix(pieces))
+  weights <- bch_weights(fit)
+  matrix_form <- as.matrix(subset(weights,
+    select = grep("^weight_class_", names(weights))))
+
+  # Bolck et al. correct the assigned-by-external contingency table directly;
+  # this package carries per-unit weights. They are the same method.
+  bins <- cut(data$y, breaks = stats::quantile(data$y, c(0, 0.5, 1)),
+              include.lowest = TRUE)
+  from_table <- t(inverse) %*% table(pieces$modal, bins)
+  from_weights <- vapply(seq_len(fit$n_profiles), function(class) {
+    vapply(levels(bins), function(bin) sum(matrix_form[bins == bin, class]),
+           numeric(1))
+  }, numeric(nlevels(bins)))
+  expect_equal(unname(from_table), unname(t(from_weights)))
+})
+
+test_that("the correction agrees with an independent implementation", {
+  skip_if_not_installed("tidySEM")
+  data <- .step_data()
+  fit <- .step_fit(data)
+  posteriors <- fit$subject_posteriors
+
+  # tidySEM builds the same matrix from the posteriors alone, so the two
+  # implementations can be compared exactly rather than approximately.
+  mine <- .multilpa_error_matrix(.multilpa_level_assignments(fit, "individuals"))
+  theirs <- as.matrix(tidySEM:::classification_probs_mostlikely(posteriors))
+  expect_equal(unname(mine), unname(theirs))
+
+  weights_theirs <- solve(theirs)[apply(posteriors, 1L, which.max), ]
+  estimate_theirs <- vapply(seq_len(2), function(class) {
+    sum(weights_theirs[, class] * data$y) / sum(weights_theirs[, class])
+  }, numeric(1))
+  expect_equal(three_step(fit, data, "y", method = "bch")$estimate,
+               estimate_theirs)
+})
