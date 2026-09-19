@@ -18,7 +18,10 @@ fit_covariates(
   tol = 1e-08,
   min_variance = 1e-06,
   seed = NULL,
-  time = NULL
+  time = NULL,
+  covariance_model = c("diagonal", "full"),
+  categorical = character(),
+  min_probability = 1e-10
 )
 }
 \arguments{
@@ -52,19 +55,43 @@ fit_covariates(
 within its group, stored so that [sequences()] and `plot(what =
 "sequences")` can read the assignments back in order. The model never uses
 it.}
+
+\item{covariance_model}{`"diagonal"` assumes indicators are independent
+given the profile; `"full"` estimates unrestricted within-profile residual
+covariances, as in [multilpa()].}
+
+\item{categorical}{Character vector naming indicators to treat as
+categorical, modelled by unrestricted profile-specific response
+probabilities. Indicators not named here stay Gaussian, so naming a subset
+fits a mixed-mode measurement model.}
+
+\item{min_probability}{Positive lower bound on every categorical response
+probability, defining a constrained maximum-likelihood problem in the same
+way `min_variance` does for Gaussian indicators.}
 }
 \value{
 An `multilpa_covariates` fit with coefficient matrices, priors,
-  posteriors, likelihood, information criteria and start diagnostics.
+  posteriors, likelihood, information criteria and start diagnostics, plus
+  whichever measurement blocks the model has: `means` and `variances`,
+  optional `covariances`, and optional `response_probabilities`.
 }
 \description{
 Numeric covariates predict individual-profile and group-class membership via
 multinomial logits, using the final class as reference. Individual-profile
 slopes are shared across group classes; profile intercepts differ by group
-class. Measurement means and diagonal variances remain invariant. This is
-one-step maximum likelihood, not regression on assigned classes. Covariates
-are used in their supplied units; center/scale them beforehand if desired.
-Only complete data and diagonal residual variances are supported here.
+class. The measurement model is the one [multilpa()] fits and stays
+invariant across group classes: Gaussian, categorical or mixed indicators,
+with diagonal or unrestricted residual covariance. This is one-step maximum
+likelihood, not regression on assigned classes. Covariates are used in their
+supplied units; center or scale them beforehand if desired. Only complete
+data are supported here; missing indicators are not integrated out.
+}
+\details{
+[parameter_inference()], [vcov()] and [confint()] cover Gaussian
+  and full-covariance fits. They refuse a fit with categorical indicators
+  with a `multilpa_unsupported_inference` condition, because no score is
+  implemented for the response probabilities and reporting the other blocks
+  alone would understate the parameter count.
 }
 \examples{
 set.seed(1)

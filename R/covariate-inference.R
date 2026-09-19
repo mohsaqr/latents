@@ -15,8 +15,67 @@
   ## centred indicators, so the centre comes off here and goes back on in the
   ## reported estimates. A location shift leaves the standard errors alone.
   centred_means <- sweep(object$means, 2L, object$center, "-")
-  c(as.vector(t(centred_means)), as.vector(t(log(variances))),
+  spread <- if (.multilpa_cov_is_full(object)) {
+    .multilpa_cov_cholesky_coordinates(object)
+  } else as.vector(t(log(variances)))
+  c(as.vector(t(centred_means)), spread,
     as.vector(object$profile_coefficients), as.vector(object$group_coefficients))
+}
+
+#' Does this covariate fit carry unrestricted residual covariances?
+#' @param object A fitted `multilpa_covariates` model.
+#' @return A single logical.
+#' @noRd
+.multilpa_cov_is_full <- function(object) {
+  identical(object$covariance_model %||% "diagonal", "full")
+}
+
+#' Which rows of the spread block are estimated separately
+#' @param object A fitted `multilpa_covariates` model.
+#' @return Integer profile indices, or `1L` when the spread is shared.
+#' @noRd
+.multilpa_cov_spread_rows <- function(object) {
+  if (identical(object$variance_model, "equal")) 1L else seq_len(object$n_profiles)
+}
+
+#' Residual covariances as log-Cholesky coordinates
+#'
+#' The same parameterization the covariate-free model uses: the lower triangle
+#' of the Cholesky factor, with its diagonal logged so the parameter is
+#' unconstrained and the covariance it implies is positive definite by
+#' construction.
+#'
+#' @param object A fitted full-covariance `multilpa_covariates` model.
+#' @return A numeric vector, one block per estimated profile.
+#' @noRd
+.multilpa_cov_cholesky_coordinates <- function(object) {
+  dimension <- ncol(object$means)
+  lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
+  unlist(lapply(.multilpa_cov_spread_rows(object), function(profile) {
+    factor <- t(chol(matrix(object$covariances[, , profile], dimension, dimension)))
+    diag(factor) <- log(diag(factor))
+    factor[lower]
+  }), use.names = FALSE)
+}
+
+#' Rebuild a covariance array from log-Cholesky coordinates
+#' @param values Numeric vector of coordinates, one block per estimated profile.
+#' @param dimension Number of continuous indicators.
+#' @param n_profiles Number of profiles the array must carry.
+#' @param shared Whether one block is shared across profiles.
+#' @return An indicators-by-indicators-by-profiles array.
+#' @noRd
+.multilpa_cov_cholesky_decode <- function(values, dimension, n_profiles, shared) {
+  lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
+  width <- sum(lower)
+  blocks <- lapply(seq_len(if (shared) 1L else n_profiles), function(index) {
+    factor <- matrix(0, dimension, dimension)
+    factor[lower] <- values[(index - 1L) * width + seq_len(width)]
+    diag(factor) <- exp(diag(factor))
+    tcrossprod(factor)
+  })
+  if (shared) blocks <- rep(blocks, n_profiles)
+  array(unlist(blocks, use.names = FALSE), c(dimension, dimension, n_profiles))
 }
 
 #' Unpack a parameter vector for a covariate fit
@@ -26,7 +85,7 @@
 #' @noRd
 .multilpa_cov_decode <- function(theta, object) {
   n_profiles <- object$n_profiles
-  n_indicators <- length(object$indicators)
+  n_indicators <- length(.multilpa_continuous_names(object))
   n_variance_rows <- if (identical(object$variance_model, "equal")) 1L else n_profiles
   at <- 0L
   take <- function(n) {
@@ -36,17 +95,29 @@
   }
   means <- matrix(take(n_profiles * n_indicators), n_profiles, n_indicators,
                   byrow = TRUE)
-  variances <- exp(matrix(take(n_variance_rows * n_indicators), n_variance_rows,
-                          n_indicators, byrow = TRUE))
-  if (n_variance_rows == 1L) {
-    variances <- matrix(variances, n_profiles, n_indicators, byrow = TRUE)
+  covariances <- NULL
+  if (.multilpa_cov_is_full(object)) {
+    width <- n_indicators * (n_indicators + 1L) / 2L
+    covariances <- .multilpa_cov_cholesky_decode(
+      take(length(.multilpa_cov_spread_rows(object)) * width), n_indicators,
+      n_profiles, n_variance_rows == 1L)
+    variances <- t(matrix(vapply(seq_len(n_profiles), function(profile) {
+      diag(matrix(covariances[, , profile], n_indicators, n_indicators))
+    }, numeric(n_indicators)), n_indicators, n_profiles))
+  } else {
+    variances <- exp(matrix(take(n_variance_rows * n_indicators), n_variance_rows,
+                            n_indicators, byrow = TRUE))
+    if (n_variance_rows == 1L) {
+      variances <- matrix(variances, n_profiles, n_indicators, byrow = TRUE)
+    }
   }
   beta <- matrix(take(length(object$profile_coefficients)),
                  nrow(object$profile_coefficients), ncol(object$profile_coefficients))
   gamma <- matrix(take(length(object$group_coefficients)),
                   nrow(object$group_coefficients), ncol(object$group_coefficients))
-  list(parameters = list(means = means, variances = variances),
-       beta = beta, gamma = gamma)
+  parameters <- list(means = means, variances = variances)
+  if (!is.null(covariances)) parameters$covariances <- covariances
+  list(parameters = parameters, beta = beta, gamma = gamma)
 }
 
 #' Per-group score contributions for a covariate fit
@@ -73,7 +144,12 @@
   posteriors <- expectation$subject_posteriors
   equal <- identical(object$variance_model, "equal")
 
-  ## Measurement: means, then log variances.
+  ## Measurement: means, then the spread on the scale it is estimated on.
+  if (.multilpa_cov_is_full(object)) {
+    measurement <- .multilpa_cov_full_scores(x, pieces$parameters, posteriors, object)
+    mean_block <- measurement$means
+    variance_block <- measurement$covariances
+  } else {
   mean_block <- do.call(cbind, lapply(seq_len(n_profiles), function(k) {
     residual <- sweep(x, 2L, pieces$parameters$means[k, ], "-")
     weighted <- residual * posteriors[, k]
@@ -88,6 +164,7 @@
   })
   variance_block <- if (equal) Reduce(`+`, variance_pieces) else
     do.call(cbind, variance_pieces)
+  }
 
   ## Profile logits: the design row depends on the group class, so the
   ## contribution is summed over classes weighted by the group's posterior.
@@ -111,6 +188,64 @@
   stopifnot("scores must be one row per group" = nrow(scores) == n_groups,
             "scores must be one column per parameter" = ncol(scores) == length(theta))
   scores
+}
+
+#' Per-group measurement scores in log-Cholesky coordinates
+#'
+#' The same quantities the covariate-free model forms, but kept one row per
+#' group rather than summed, because groups are the independent units the
+#' sandwich resamples over. Covariate fits are complete-data only, so the
+#' conditional-moment corrections the missing-data model needs are all zero and
+#' the scatter is formed directly from the residuals.
+#'
+#' @param x Centred continuous indicator matrix.
+#' @param parameters Decoded means and covariances.
+#' @param posteriors Observation-by-profile responsibilities.
+#' @param object The fit, supplying the group index and shapes.
+#' @return A list with `means` and `covariances`, each a groups-by-parameters
+#'   matrix in encode order.
+#' @noRd
+.multilpa_cov_full_scores <- function(x, parameters, posteriors, object) {
+  dimension <- ncol(x)
+  n_groups <- nrow(object$group_design)
+  lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
+  index <- object$group_index
+  per_profile <- lapply(seq_len(object$n_profiles), function(k) {
+    covariance <- matrix(parameters$covariances[, , k], dimension, dimension)
+    precision <- chol2inv(chol(covariance))
+    weights <- posteriors[, k]
+    residual <- sweep(x, 2L, parameters$means[k, ], "-")
+    mean_score <- rowsum(residual * weights, index, reorder = FALSE) %*% precision
+    # Every entry of the per-group scatter is a weighted sum of a product of
+    # two residual columns, so all of them come from one rowsum.
+    pairs <- residual[, rep(seq_len(dimension), each = dimension), drop = FALSE] *
+      residual[, rep(seq_len(dimension), times = dimension), drop = FALSE]
+    scatter <- rowsum(pairs * weights, index, reorder = FALSE)
+    totals <- as.vector(rowsum(weights, index, reorder = FALSE))
+    list(means = mean_score, scatter = scatter, totals = totals,
+         precision = precision, covariance = covariance)
+  })
+  spread_rows <- .multilpa_cov_spread_rows(object)
+  covariance_block <- do.call(cbind, lapply(spread_rows, function(profile) {
+    factor <- t(chol(matrix(parameters$covariances[, , profile], dimension, dimension)))
+    contributors <- if (identical(object$variance_model, "equal"))
+      seq_len(object$n_profiles) else profile
+    rows <- lapply(seq_len(n_groups), function(g) {
+      gradient <- Reduce(`+`, lapply(contributors, function(k) {
+        piece <- per_profile[[k]]
+        scatter <- matrix(piece$scatter[g, ], dimension, dimension)
+        0.5 * (piece$precision %*% scatter %*% piece$precision -
+                 piece$totals[g] * piece$precision)
+      }))
+      # Chain from the covariance to the factor, then to its logged diagonal.
+      factor_score <- 2 * gradient %*% factor
+      diag(factor_score) <- diag(factor_score) * diag(factor)
+      factor_score[lower]
+    })
+    matrix(unlist(rows, use.names = FALSE), n_groups, sum(lower), byrow = TRUE)
+  }))
+  list(means = do.call(cbind, lapply(per_profile, `[[`, "means")),
+       covariances = covariance_block)
 }
 
 #' Tidy inference for a covariate fit
@@ -192,6 +327,14 @@ parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
   if (is.null(object$profile_design) || is.null(object$group_design)) {
     stop(errorCondition(
       "This fit predates covariate inference; refit with the current version.",
+      class = "multilpa_unsupported_inference", call = NULL))
+  }
+  if (!is.null(object$categorical) && length(object$categorical) > 0L) {
+    stop(errorCondition(paste(
+      "Standard errors are not available for a covariate fit with categorical",
+      "indicators. The measurement block has no score implemented for its",
+      "response probabilities, and reporting the other blocks alone would",
+      "understate the parameter count."),
       class = "multilpa_unsupported_inference", call = NULL))
   }
   .multilpa_check_regularity(object, vcov_type)
@@ -328,11 +471,32 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
   ## Variances are estimated as logs; the delta method returns them and their
   ## errors to natural units, where a reader can compare them with the data.
   is_variance <- labels$parameter == "variance"
+  is_covariance <- labels$parameter == "covariance"
   is_mean <- labels$parameter == "mean"
   estimate <- theta
   estimate[is_mean] <- estimate[is_mean] + rep(object$center, times = object$n_profiles)
   estimate[is_variance] <- exp(theta[is_variance])
   errors[is_variance] <- errors[is_variance] * estimate[is_variance]
+  if (any(is_covariance)) {
+    ## Covariances are estimated as log-Cholesky coordinates. A scalar
+    ## derivative will not do here: every covariance entry depends on several
+    ## coordinates, so the whole block goes through one Jacobian.
+    dimension <- length(.multilpa_continuous_names(object))
+    jacobian <- diag(1, length(theta))
+    width <- dimension * (dimension + 1L) / 2L
+    starts <- which(is_covariance)[seq(1L, sum(is_covariance), by = width)]
+    invisible(lapply(starts, function(first) {
+      at <- first + seq_len(width) - 1L
+      jacobian[at, at] <<- .multilpa_cov_cholesky_jacobian(theta[at], dimension)
+    }))
+    transformed <- jacobian %*% covariance %*% t(jacobian)
+    errors <- sqrt(pmax(diag(transformed), 0))
+    natural <- unlist(lapply(starts, function(first) {
+      at <- first + seq_len(width) - 1L
+      .multilpa_cov_cholesky_natural(theta[at], dimension)
+    }), use.names = FALSE)
+    estimate[is_covariance] <- natural
+  }
 
   quantile <- stats::qnorm(1 - (1 - level) / 2)
   statistic <- estimate / errors
@@ -345,11 +509,54 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
     row.names = NULL, stringsAsFactors = FALSE
   )
   ## A Wald test of a variance against zero is meaningless; the interval is not.
-  result$statistic[is_variance] <- NA_real_
-  result$p_value[is_variance] <- NA_real_
+  ## The same applies to a covariance on the diagonal, which is a variance; an
+  ## off-diagonal covariance is a real hypothesis and keeps its test.
+  on_diagonal <- is_covariance &
+    vapply(strsplit(labels$term, ":", fixed = TRUE), function(pair) {
+      length(pair) == 2L && identical(pair[1L], pair[2L])
+    }, logical(1))
+  result$statistic[is_variance | on_diagonal] <- NA_real_
+  result$p_value[is_variance | on_diagonal] <- NA_real_
   attr(result, "vcov_type") <- vcov_type
   attr(result, "level") <- level
   result
+}
+
+#' The covariance a log-Cholesky block implies, in vech order
+#' @param values Log-Cholesky coordinates for one profile.
+#' @param dimension Number of continuous indicators.
+#' @return The lower triangle of the implied covariance matrix.
+#' @noRd
+.multilpa_cov_cholesky_natural <- function(values, dimension) {
+  lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
+  factor <- matrix(0, dimension, dimension)
+  factor[lower] <- values
+  diag(factor) <- exp(diag(factor))
+  tcrossprod(factor)[lower]
+}
+
+#' Jacobian of the log-Cholesky to covariance map
+#'
+#' Computed by central differences on an explicit, cheap and smooth map, rather
+#' than derived by hand: the derivative of a matrix product through a logged
+#' diagonal is easy to get subtly wrong, and the map costs one small
+#' multiplication to evaluate.
+#'
+#' @param values Log-Cholesky coordinates for one profile.
+#' @param dimension Number of continuous indicators.
+#' @return A square matrix of derivatives of the covariance entries with
+#'   respect to the coordinates, both in vech order.
+#' @noRd
+.multilpa_cov_cholesky_jacobian <- function(values, dimension) {
+  step <- 1e-6
+  columns <- lapply(seq_along(values), function(index) {
+    up <- values; down <- values
+    up[index] <- up[index] + step
+    down[index] <- down[index] - step
+    (.multilpa_cov_cholesky_natural(up, dimension) -
+       .multilpa_cov_cholesky_natural(down, dimension)) / (2 * step)
+  })
+  matrix(unlist(columns, use.names = FALSE), length(values), length(values))
 }
 
 #' Level, outcome, term and kind for every free parameter
@@ -365,9 +572,16 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
     data.frame(level = rep(level, nrow(grid)), outcome = grid$outcome, term = grid$term,
                parameter = rep(parameter, nrow(grid)), stringsAsFactors = FALSE)
   }
+  continuous <- .multilpa_continuous_names(object)
+  spread <- if (.multilpa_cov_is_full(object)) {
+    positions <- which(lower.tri(matrix(0, length(continuous), length(continuous)),
+                                 diag = TRUE), arr.ind = TRUE)
+    pairs <- sprintf("%s:%s", continuous[positions[, 1L]], continuous[positions[, 2L]])
+    block(pairs, variance_rows, "measurement", "covariance")
+  } else block(continuous, variance_rows, "measurement", "variance")
   rbind(
-    block(indicators, profiles, "measurement", "mean"),
-    block(indicators, variance_rows, "measurement", "variance"),
+    block(continuous, profiles, "measurement", "mean"),
+    spread,
     block(rownames(object$profile_coefficients),
           colnames(object$profile_coefficients), "profile", "coefficient"),
     block(rownames(object$group_coefficients),

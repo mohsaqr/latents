@@ -152,12 +152,20 @@ vcov(fit, data = students, vcov_type = "robust")
 # No p-value is returned; use the bootstrap below for a calibrated one.
 lmr_lrt(smaller_fit, larger_fit)
 
-# One-step membership regressions (numeric predictors, complete indicators).
+# One-step membership regressions. The measurement model is the one multilpa()
+# fits: Gaussian, categorical or mixed, diagonal or full covariance, complete
+# data. Standard errors cover the Gaussian and full-covariance cases; a
+# categorical fit refuses them rather than understating its parameter count.
 with_predictors <- fit_covariates(
   students, c("reading", "maths", "engagement"), "school_id", 3, 2,
   profile_covariates = "age", group_covariates = "school_resources", seed = 42)
 as.data.frame(with_predictors, what = "coefficients")   # both levels, one row per term
 parameter_inference(with_predictors, data = students)   # with standard errors and intervals
+
+fit_covariates(students, c("reading", "maths", "engagement"), "school_id", 3, 2,
+               profile_covariates = "age", covariance_model = "full")
+fit_covariates(students, c("reading", "passed", "engagement"), "school_id", 3, 2,
+               profile_covariates = "age", categorical = "passed")
 
 # Alternative: one continuous group intercept, loading 1 on every indicator.
 random_intercept <- fit_random_intercept(
@@ -195,9 +203,9 @@ logLik(evaluated)
 | Measurement model | Gaussian, categorical, or mixed, via `categorical`; categorical indicators use unrestricted profile-specific response probabilities |
 | Missing indicators | `missing="fiml"`: observed Gaussian marginals and observed categorical responses, ignorable missingness assumption; no missing covariates |
 | Residual covariance | `covariance_model="diagonal"` or `"full"`; shared or profile-specific via `variance_model` |
-| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models |
+| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models, with or without full residual covariance |
 | Robust SEs | `vcov_type="robust"`: Huber-White sandwich over independent groups, plus the MLR scaling correction factor; matches Mplus `ESTIMATOR=MLR` |
-| Membership covariates | Numeric predictors at both levels; shared individual-profile slopes across group classes; complete diagonal model |
+| Membership covariates | Numeric predictors at both levels; shared individual-profile slopes across group classes; Gaussian, categorical or mixed indicators with diagonal or full residual covariance; complete data only |
 | Continuous random effect | One shared Gaussian group intercept with unit indicator loadings; complete diagonal model, no discrete group classes |
 | Class enumeration | Grid of discrete models, every information criterion under both sample-size conventions, entropy, failed-fit and convergence diagnostics |
 | Information criteria | AIC, BIC, SABIC, CAIC, AWE and ICL, each reported under both the group-count and individual-count conventions |

@@ -62,17 +62,33 @@
 #' @return Log likelihood and posterior responsibilities.
 #' @noRd
 .multilpa_cov_expectation <- function(x, group_index, parameters, profile_design,
-                                    group_design, beta, gamma) {
+                                    group_design, beta, gamma, codes = NULL) {
   stopifnot(is.matrix(x), !anyNA(x), is.list(parameters), is.list(profile_design),
             is.matrix(group_design), is.matrix(beta), is.matrix(gamma))
-  log_density <- matrix(vapply(seq_len(nrow(parameters$means)), function(k) {
-    residual <- sweep(x, 2L, parameters$means[k, ], "-")
-    -0.5 * rowSums(sweep(residual^2, 2L, parameters$variances[k, ], "/") +
-                    matrix(log(2 * pi * parameters$variances[k, ]),
-                           nrow(x), ncol(x), byrow = TRUE))
-  }, numeric(nrow(x))), nrow(x))
+  n_profiles <- nrow(parameters$means)
+  # The measurement model is the covariate-free one; only the mixing weights
+  # differ here. Residual covariances need the conditional moments, which the
+  # maximization step then reuses, so they are computed once and carried.
+  gaussian <- if (ncol(x) > 0L && !is.null(parameters$covariances)) {
+    .multilpa_gaussian_moments(x, parameters)
+  } else NULL
+  log_density <- if (!is.null(gaussian)) gaussian$log_density else {
+    matrix(vapply(seq_len(n_profiles), function(k) {
+      residual <- sweep(x, 2L, parameters$means[k, ], "-")
+      -0.5 * rowSums(sweep(residual^2, 2L, parameters$variances[k, ], "/") +
+                      matrix(log(2 * pi * parameters$variances[k, ]),
+                             nrow(x), ncol(x), byrow = TRUE))
+    }, numeric(nrow(x))), nrow(x), n_profiles)
+  }
   density_offset <- apply(log_density, 1L, max)
   log_density <- sweep(log_density, 1L, density_offset, "-")
+  # Categorical indicators are conditionally independent of the continuous ones
+  # given the profile, and are added after the Gaussian offset comes off so
+  # their contribution keeps its precision.
+  if (!is.null(codes)) {
+    log_density <- log_density +
+      .multilpa_categorical_log_density(codes, parameters$response_probabilities)
+  }
   conditional <- lapply(profile_design, function(design) {
     log_prior <- .multilpa_log_softmax(design, beta)
     prior <- exp(log_prior)
@@ -104,7 +120,8 @@
        group_log_likelihood = group_log_likelihood,
        group_posteriors = group_posteriors, subject_posteriors = Reduce(`+`, joint),
        joint = joint, group_priors = group_prior,
-       profile_priors = lapply(conditional, `[[`, "prior"))
+       profile_priors = lapply(conditional, `[[`, "prior"),
+       gaussian_moments = gaussian$moments)
 }
 
 #' Fit multilevel LPA with class-membership covariates
@@ -112,10 +129,12 @@
 #' Numeric covariates predict individual-profile and group-class membership via
 #' multinomial logits, using the final class as reference. Individual-profile
 #' slopes are shared across group classes; profile intercepts differ by group
-#' class. Measurement means and diagonal variances remain invariant. This is
-#' one-step maximum likelihood, not regression on assigned classes. Covariates
-#' are used in their supplied units; center/scale them beforehand if desired.
-#' Only complete data and diagonal residual variances are supported here.
+#' class. The measurement model is the one [multilpa()] fits and stays
+#' invariant across group classes: Gaussian, categorical or mixed indicators,
+#' with diagonal or unrestricted residual covariance. This is one-step maximum
+#' likelihood, not regression on assigned classes. Covariates are used in their
+#' supplied units; center or scale them beforehand if desired. Only complete
+#' data are supported here; missing indicators are not integrated out.
 #' @param data Data frame.
 #' @param indicators Names of continuous indicator columns.
 #' @param group Name of group identifier column.
@@ -133,8 +152,25 @@
 #'   "sequences")` can read the assignments back in order. The model never uses
 #'   it.
 #' @param seed Optional seed; the caller's random state is restored.
+#' @param covariance_model `"diagonal"` assumes indicators are independent
+#'   given the profile; `"full"` estimates unrestricted within-profile residual
+#'   covariances, as in [multilpa()].
+#' @param categorical Character vector naming indicators to treat as
+#'   categorical, modelled by unrestricted profile-specific response
+#'   probabilities. Indicators not named here stay Gaussian, so naming a subset
+#'   fits a mixed-mode measurement model.
+#' @param min_probability Positive lower bound on every categorical response
+#'   probability, defining a constrained maximum-likelihood problem in the same
+#'   way `min_variance` does for Gaussian indicators.
 #' @return An `multilpa_covariates` fit with coefficient matrices, priors,
-#'   posteriors, likelihood, information criteria and start diagnostics.
+#'   posteriors, likelihood, information criteria and start diagnostics, plus
+#'   whichever measurement blocks the model has: `means` and `variances`,
+#'   optional `covariances`, and optional `response_probabilities`.
+#' @details [parameter_inference()], [vcov()] and [confint()] cover Gaussian
+#'   and full-covariance fits. They refuse a fit with categorical indicators
+#'   with a `multilpa_unsupported_inference` condition, because no score is
+#'   implemented for the response probabilities and reporting the other blocks
+#'   alone would understate the parameter count.
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(group = rep(1:20, each = 10), z = rnorm(200))
@@ -150,7 +186,10 @@ fit_covariates <- function(data, indicators, group, n_profiles,
                                   variance_model = c("varying", "equal"),
                                   n_starts = 10L, max_iter = 1000L, tol = 1e-8,
                                   min_variance = 1e-6, seed = NULL,
-                                  time = NULL) {
+                                  time = NULL,
+                                  covariance_model = c("diagonal", "full"),
+                                  categorical = character(),
+                                  min_probability = 1e-10) {
   stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
@@ -158,6 +197,13 @@ fit_covariates <- function(data, indicators, group, n_profiles,
             is.numeric(n_starts), length(n_starts) == 1L,
             is.finite(n_starts), n_starts >= 1, n_starts == as.integer(n_starts))
   variance_model <- match.arg(variance_model)
+  covariance_model <- match.arg(covariance_model)
+  stopifnot(
+    "`categorical` must be a character vector of indicator names" =
+      is.character(categorical) && !anyNA(categorical),
+    "`min_probability` must be a single number in (0, 1)" =
+      is.numeric(min_probability) && length(min_probability) == 1L &&
+      is.finite(min_probability) && min_probability > 0 && min_probability < 1)
   if (!is.null(seed)) {
     stopifnot(is.numeric(seed), length(seed) == 1L, is.finite(seed),
               seed >= 0, seed <= .Machine$integer.max, seed == as.integer(seed))
@@ -173,7 +219,10 @@ fit_covariates <- function(data, indicators, group, n_profiles,
   # The base fit validates indicators/model sizes and supplies an initial mode.
   base <- multilpa(data, indicators, group, n_profiles, n_group_classes,
                      variance_model, n_starts = 1L, max_iter = max_iter,
-                     tol = tol, min_variance = min_variance)
+                     tol = tol, min_variance = min_variance,
+                     covariance_model = covariance_model,
+                     categorical = categorical,
+                     min_probability = min_probability)
   group_index <- base$group_index
   first_rows <- match(seq_len(base$n_groups), group_index)
   if (length(group_covariates) && any(vapply(group_covariates, function(name) {
@@ -186,11 +235,14 @@ fit_covariates <- function(data, indicators, group, n_profiles,
     stop("Group covariates require at least two group classes.")
   }
   designs <- .multilpa_cov_designs(data, indicators, profile_covariates,
-                                 group_covariates, first_rows, n_group_classes)
+                                 group_covariates, first_rows, n_group_classes,
+                                 categorical, min_probability)
   x <- designs$x
   center <- designs$center
   control <- list(variance_model = variance_model, min_variance = min_variance,
                   max_iter = max_iter, tol = tol,
+                  covariance_model = covariance_model,
+                  min_probability = min_probability,
                   n_profile_covariates = length(profile_covariates),
                   n_group_covariates = length(group_covariates))
   attempts <- lapply(seq_len(n_starts), function(start_index) {
@@ -217,6 +269,7 @@ fit_covariates <- function(data, indicators, group, n_profiles,
     group_covariates = group_covariates, n_profiles = n_profiles,
     n_group_classes = n_group_classes, group_index = group_index,
     variance_model = variance_model, min_variance = min_variance,
+    covariance_model = covariance_model, categorical = categorical,
     call = match.call())
   ## Set here rather than inside the assembler, where the name `time` would
   ## resolve to stats::time instead of this argument.
@@ -304,9 +357,13 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' @return A list with `x`, `center`, `w`, `profile_design` and `stacked_design`.
 #' @noRd
 .multilpa_cov_designs <- function(data, indicators, profile_covariates,
-                                group_covariates, first_rows, n_group_classes) {
-  x <- as.matrix(data[indicators])
-  center <- colMeans(x)
+                                group_covariates, first_rows, n_group_classes,
+                                categorical = character(),
+                                min_probability = 1e-10) {
+  measurement <- .multilpa_prepare_indicators(data, indicators, categorical,
+                                              "error", min_probability)
+  x <- measurement$x
+  center <- if (ncol(x) > 0L) colMeans(x) else numeric(0)
   z <- as.matrix(data[profile_covariates])
   w <- cbind(`(Intercept)` = 1,
              as.matrix(data[first_rows, group_covariates, drop = FALSE]))
@@ -319,7 +376,10 @@ nobs.multilpa_covariates <- function(object, ...) {
     stop("Covariate design is rank deficient; remove constant or collinear predictors.")
   }
   list(x = sweep(x, 2L, center, "-"), center = center, w = w,
-       profile_design = profile_design, stacked_design = stacked_design)
+       profile_design = profile_design, stacked_design = stacked_design,
+       continuous = measurement$continuous, codes = measurement$codes,
+       n_categories = measurement$n_categories,
+       categorical_levels = measurement$encoded$levels)
 }
 
 #' Run one covariate EM start to convergence
@@ -334,13 +394,24 @@ nobs.multilpa_covariates <- function(object, ...) {
 .multilpa_cov_start <- function(start_index, x, group_index, n_profiles,
                               n_group_classes, designs, base, control) {
   parameters <- if (start_index == 1L) {
-    list(means = sweep(base$means, 2L, designs$center, "-"),
-         variances = base$variances,
-         profile_probabilities = base$profile_probabilities,
-         group_probabilities = base$group_probabilities)
+    resumed <- list(means = sweep(unname(as.matrix(base$means)), 2L,
+                                  designs$center, "-"),
+                    variances = unname(as.matrix(base$variances)),
+                    profile_probabilities = unname(as.matrix(base$profile_probabilities)),
+                    group_probabilities = unname(base$group_probabilities))
+    # The covariate-free fit already carries whichever measurement blocks the
+    # model has; resuming from it must not silently drop them.
+    if (!is.null(base$covariances)) resumed$covariances <- unname(base$covariances)
+    if (!is.null(base$response_probabilities)) {
+      resumed$response_probabilities <- unname(lapply(base$response_probabilities,
+                                                      function(block) unname(as.matrix(block))))
+    }
+    resumed
   } else {
     .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
-                       control$variance_model, control$min_variance, start_index)
+                       control$variance_model, control$min_variance, start_index,
+                       control$covariance_model, designs$codes,
+                       designs$n_categories, control$min_probability)
   }
   beta <- rbind(
     log(parameters$profile_probabilities[, seq_len(n_profiles - 1L), drop = FALSE] /
@@ -352,13 +423,16 @@ nobs.multilpa_covariates <- function(object, ...) {
     matrix(0, control$n_group_covariates, n_group_classes - 1L))
   expectation <- .multilpa_cov_expectation(x, group_index, parameters,
                                          designs$profile_design, designs$w,
-                                         beta, gamma)
+                                         beta, gamma, designs$codes)
   history <- expectation$log_likelihood
   iteration <- 0L
   converged <- FALSE
   while (iteration < control$max_iter && !converged) {
     parameters <- .multilpa_maximization(x, expectation, control$variance_model,
-                                       control$min_variance)
+                                       control$min_variance,
+                                       control$covariance_model, designs$codes,
+                                       designs$n_categories,
+                                       control$min_probability)
     profile_update <- .multilpa_weighted_logits(designs$stacked_design,
                                               do.call(rbind, expectation$joint), beta)
     group_update <- .multilpa_weighted_logits(designs$w,
@@ -367,7 +441,7 @@ nobs.multilpa_covariates <- function(object, ...) {
     gamma <- group_update$coefficients
     updated <- .multilpa_cov_expectation(x, group_index, parameters,
                                        designs$profile_design, designs$w,
-                                       beta, gamma)
+                                       beta, gamma, designs$codes)
     change <- updated$log_likelihood - expectation$log_likelihood
     if (change < -1e-9 * (1 + abs(expectation$log_likelihood))) {
       stop("Covariate EM decreased the observed log likelihood.")
@@ -391,7 +465,9 @@ nobs.multilpa_covariates <- function(object, ...) {
 .multilpa_cov_assemble <- function(best, best_index, starts, designs, base, data,
                                  indicators, group, profile_covariates,
                                  group_covariates, n_profiles, n_group_classes,
-                                 group_index, variance_model, min_variance, call) {
+                                 group_index, variance_model, min_variance,
+                                 covariance_model = "diagonal",
+                                 categorical = character(), call) {
   result <- c(best$parameters,
               best$expectation[c("log_likelihood", "group_log_likelihood",
                                  "group_posteriors", "subject_posteriors",
@@ -409,9 +485,15 @@ nobs.multilpa_covariates <- function(object, ...) {
   # Mixing probabilities from the Gaussian M-step are not constant priors here.
   result$profile_probabilities <- NULL
   result$group_probabilities <- NULL
+  # The membership logits replace the mixing probabilities the covariate-free
+  # count includes, so the measurement half is taken from the shared counter and
+  # the two coefficient matrices are added in their place.
+  measurement_parameters <- .multilpa_count_parameters(
+    n_profiles, n_group_classes, n_indicators, designs$n_categories,
+    variance_model, covariance_model) -
+    ((n_group_classes - 1L) + n_group_classes * (n_profiles - 1L))
   result$n_parameters <- length(best$beta) + length(best$gamma) +
-    n_profiles * n_indicators +
-    if (variance_model == "varying") n_profiles * n_indicators else n_indicators
+    measurement_parameters
   result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
   result$bic <- -2 * result$log_likelihood + log(base$n_groups) * result$n_parameters
   result$bic_individual <- -2 * result$log_likelihood +
@@ -429,6 +511,25 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$profile_covariates <- profile_covariates
   result$group_covariates <- group_covariates
   result$variance_model <- variance_model
+  result$covariance_model <- covariance_model
+  result$categorical <- categorical
+  result$continuous <- designs$continuous
+  result$categorical_levels <- designs$categorical_levels
+  result$categorical_data <- designs$codes
+  result$n_categories <- designs$n_categories
+  result$measurement_model <- if (is.null(designs$codes)) "gaussian" else
+    if (n_indicators == 0L) "categorical" else "mixed"
+  result$standard_deviations <- sqrt(result$variances)
+  if (!is.null(result$response_probabilities)) {
+    names(result$response_probabilities) <- categorical
+    result$response_probabilities <- stats::setNames(
+      lapply(seq_along(categorical), function(i) {
+        block <- result$response_probabilities[[i]]
+        dimnames(block) <- list(paste0("profile_", seq_len(n_profiles)),
+                                designs$categorical_levels[[i]])
+        block
+      }), categorical)
+  }
   ## Carried so that covariate_inference() can rebuild the likelihood and
   ## its scores without re-deriving the designs from the data.
   result$profile_design <- designs$profile_design
@@ -442,7 +543,9 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$log_likelihood_history <- best$history
   result$subject_profiles <- max.col(result$subject_posteriors, ties.method = "first")
   result$group_classes <- max.col(result$group_posteriors, ties.method = "first")
-  result$boundary <- any(result$variances <= min_variance * (1 + 1e-7))
+  result$boundary <- .multilpa_covariance_boundary(
+    list(means = result$means, variances = result$variances,
+         covariances = result$covariances), min_variance)
   result$extreme_logits <- any(abs(c(best$beta, best$gamma)) > 20)
   result$call <- call
   structure(result, class = "multilpa_covariates")
