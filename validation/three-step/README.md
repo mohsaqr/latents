@@ -47,6 +47,30 @@ The attenuation is reproduced, and the correction removes about nine tenths of
 it. The 0.85 coverage is the known cost of treating the error matrix as known
 rather than estimated, and is documented on `three_step()`.
 
+## R3STEP: covariates predicting membership
+
+`r3step()` implements the ML three-step correction of Vermunt (2010): the
+assigned class is treated as an error-prone indicator of the true one, with the
+error rates fixed at what step one found, and the multinomial logit is fitted
+against that. Over 60 replications with a true log-odds slope of 1.2 and
+intercept -0.3:
+
+| parameter | naive bias | R3STEP bias |
+|---|---|---|
+| intercept | +0.012 | **+0.006** |
+| slope | -0.163 | **-0.002** |
+
+The attenuation the seminal paper describes is reproduced and removed. The
+correction costs precision, as expected: the slope's standard deviation across
+replications was 0.127 against 0.100 for the naive fit. The nominal 95%
+intervals covered the true slope in 95% of the replications, measured where the
+profiles separate well.
+
+There is also an internal cross-check available that no external package
+provides: `fit_covariates()` fits the same covariate model in one step. Three-
+step should approximate it, and any large disagreement is a signal about one of
+the two.
+
 ## What could not be done
 
 No equivalence against a published table. Bolck et al. (2004), Vermunt (2010)

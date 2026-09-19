@@ -224,3 +224,110 @@ test_that("the correction agrees with an independent implementation", {
   expect_equal(three_step(fit, data, "y", method = "bch")$estimate,
                estimate_theirs)
 })
+
+.r3step_data <- function(seed = 21L, slope = 1.2, intercept = -0.3) {
+  set.seed(seed)
+  g <- rep(seq_len(50), each = 12L)
+  n <- length(g)
+  x <- stats::rnorm(n)
+  truth <- 1L + as.integer(stats::runif(n) < stats::plogis(intercept + slope * x))
+  data.frame(g = g, x = x, truth = truth,
+             a = stats::rnorm(n, ifelse(truth == 2L, 1.2, -1.2)),
+             b = stats::rnorm(n, ifelse(truth == 2L, 1.2, -1.2)))
+}
+
+test_that("R3STEP recovers a covariate effect the naive regression attenuates", {
+  data <- .r3step_data()
+  fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
+                  n_starts = 5, seed = 1)
+  corrected <- r3step(fit, data, "x")
+  # r3step contrasts class 1 against the final class; orient to the generator.
+  sign <- if (which.max(fit$means[, 1L]) != 1L) -1 else 1
+  slope <- sign * corrected$estimate[corrected$term == "x"]
+  assigned <- fit$subject_profiles
+  naive <- sign * stats::coef(
+    stats::glm(I(assigned == 1L) ~ x, data = data, family = stats::binomial()))[2L]
+
+  expect_lt(naive, 1.2)
+  expect_gt(slope, naive)
+  expect_lt(abs(slope - 1.2), abs(naive - 1.2))
+  expect_lt(abs(slope - 1.2), 0.25)
+})
+
+test_that("the R3STEP table is tidy and its intervals are consistent", {
+  data <- .r3step_data()
+  fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
+                  n_starts = 5, seed = 1)
+  result <- r3step(fit, data, "x")
+
+  expect_named(result, c("level", "outcome", "term", "estimate",
+                         "standard_error", "statistic", "p_value",
+                         "conf_low", "conf_high"))
+  # one non-reference class, two terms
+  expect_equal(nrow(result), 2L)
+  expect_setequal(result$term, c("(Intercept)", "x"))
+  expect_identical(attr(result, "reference_class"), 2L)
+  expect_true(all(result$standard_error > 0))
+  expect_equal(result$conf_high - result$conf_low,
+               2 * stats::qnorm(0.975) * result$standard_error)
+  expect_equal(result$statistic, result$estimate / result$standard_error)
+})
+
+test_that("the robust sandwich runs and more covariates are supported", {
+  data <- .r3step_data()
+  data$w <- stats::rnorm(nrow(data))
+  fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
+                  n_starts = 5, seed = 1)
+  observed <- r3step(fit, data, c("x", "w"))
+  robust <- r3step(fit, data, c("x", "w"), vcov_type = "robust")
+
+  expect_equal(nrow(observed), 3L)
+  expect_setequal(observed$term, c("(Intercept)", "x", "w"))
+  expect_equal(robust$estimate, observed$estimate)
+  expect_true(all(robust$standard_error > 0))
+  expect_identical(attr(robust, "vcov_type"), "robust")
+  # the irrelevant covariate is not significant
+  expect_gt(observed$p_value[observed$term == "w"], 0.05)
+})
+
+test_that("R3STEP works at the group level and refuses a varying covariate", {
+  set.seed(5)
+  n_groups <- 60L
+  g <- rep(seq_len(n_groups), each = 10L)
+  n <- length(g)
+  w <- rep(stats::rnorm(n_groups), each = 10L)
+  group_class <- 1L + as.integer(
+    stats::runif(n_groups) < stats::plogis(1.5 * w[!duplicated(g)]))
+  expanded <- rep(group_class, each = 10L)
+  profile <- 1L + as.integer(stats::runif(n) <
+                               ifelse(expanded == 2L, 0.85, 0.15))
+  data <- data.frame(g = g, w = w, varying = stats::rnorm(n),
+                     a = stats::rnorm(n, ifelse(profile == 2L, 1.6, -1.6)),
+                     b = stats::rnorm(n, ifelse(profile == 2L, 1.6, -1.6)))
+  fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 2,
+                  n_starts = 6, seed = 2)
+
+  result <- r3step(fit, data, "w", level = "groups")
+  expect_equal(nrow(result), 2L)
+  expect_identical(result$level[1L], "groups")
+  expect_lt(result$p_value[result$term == "w"], 0.05)
+  expect_error(r3step(fit, data, "varying", level = "groups"),
+               class = "multilpa_bad_outcome")
+})
+
+test_that("a broken contract is refused", {
+  data <- .r3step_data()
+  fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
+                  n_starts = 4, seed = 1)
+
+  expect_error(r3step(fit, data, "absent"), "must name columns")
+  expect_error(r3step(fit, data, "truth", level_ci = 1), "`level_ci` must be")
+  missing_covariate <- data
+  missing_covariate$x[1L] <- NA
+  expect_error(r3step(fit, missing_covariate, "x"), "must not be missing")
+  data$copy <- data$x
+  expect_error(r3step(fit, data, c("x", "copy")),
+               class = "multilpa_bad_inference_data")
+  expect_error(r3step(fit, data, "x", level = "groups"),
+               class = "multilpa_inseparable_classes")
+})
