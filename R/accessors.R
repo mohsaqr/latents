@@ -102,7 +102,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 #' @return One row per profile, categorical indicator and category.
 #' @noRd
 .multilpa_response_frame <- function(x) {
-  stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"))
+  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
   blocks <- x$response_probabilities
   if (is.null(blocks) || length(blocks) == 0L) {
     return(data.frame(profile = integer(), indicator = character(),

@@ -235,6 +235,50 @@ sequence_summary(fit)              # group counts, sequence lengths and complete
 plot(fit, what = "sequences")
 ```
 
+## Latent transitions
+
+`sequences()` reports where the model put each observation. It does not
+estimate how observations move. `fit_transitions()` does: it fits the same
+measurement model and, on top of it, the probability of moving from each
+profile to each profile between consecutive occasions.
+
+```r
+moves <- fit_transitions(students, c("reading", "maths", "engagement"),
+                         "student_id", n_profiles = 3, time = "term", seed = 42)
+
+transitions(moves)                          # one row per ordered pair of profiles
+as.data.frame(moves, what = "initial")      # where sequences start
+as.data.frame(moves, what = "sequence_lengths")
+```
+
+Profiles keep the same meaning at every occasion, because the measurement
+parameters are shared across occasions, so a change of profile is a change of
+state rather than a change of definition. Transitions are first order and
+homogeneous: the probability of moving does not depend on the occasion or on
+earlier profiles.
+
+`n_group_classes` above one gives every group class its own initial
+distribution and its own transition matrix, which separates groups that differ
+in how they move from groups that differ only in where they start.
+
+```r
+mixture <- fit_transitions(students, c("reading", "maths", "engagement"),
+                           "student_id", n_profiles = 3, n_group_classes = 2,
+                           time = "term", seed = 42)
+transitions(mixture)
+```
+
+Groups need not be observed at every occasion. `occasions = "observed"`, the
+default, links each group's own consecutive observations. `occasions = "grid"`
+places them on the grid of every position seen in the data, so a group that
+skips a wave spends a transition crossing the gap and contributes no
+measurement information at it. The two agree whenever every group is observed
+at every position, which `moves$balanced` reports.
+
+Standard errors, likelihood-ratio tests and class enumeration are not available
+for this model family; `logLik()`, `information_criteria()`,
+`classification_table()`, `entropy_table()` and `sequences()` are.
+
 ## Relating classes to variables that did not define them
 
 A covariate or outcome added to the measurement model can change the classes it
@@ -385,6 +429,8 @@ Verification includes:
 | Direct `stats::optim()` BFGS likelihood optimization | likelihood difference `7.82e-11`; parameter differences below `6e-7` |
 | `mclust` single-level VVI and EEI limits | likelihood differences below `6e-14` |
 | Simulated parameter/class recovery | tested after aligning arbitrary labels |
+| Latent transition likelihood against enumeration of every state path | differences below `3e-14` |
+| Latent transitions against `depmixS4` | likelihood function `6.24e-16`; independently maximized likelihood `8.30e-15` |
 | Input, dimension, numerical, restart, and RNG edge cases | covered by regression tests |
 
 The `mclust` limit checks initialize at the reference solution to test that it

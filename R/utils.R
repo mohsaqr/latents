@@ -10,13 +10,17 @@
 #'
 #' `multilpa_covariates` deliberately does not inherit from `multilpa`, because
 #' most methods for the latter assume fixed mixing weights that a covariate
-#' model does not have. The diagnostics are the exception: they read only
-#' posteriors and counts, which both fits carry, so they accept either.
+#' model does not have. `multilpa_transitions` is kept separate for the same
+#' reason: its mixing weights are an initial distribution and a transition
+#' matrix, not one prevalence vector. The diagnostics are the exception: they
+#' read only posteriors and counts, which every fit carries, so they accept any
+#' of them.
 #'
 #' @param object Any object.
-#' @return `TRUE` for a fitted model of either class.
+#' @return `TRUE` for a fitted model of any of these classes.
 #' @noRd
 .multilpa_any_fit <- function(object) {
   inherits(object, "multilpa") || inherits(object, "multilpa_covariates") ||
-    inherits(object, "multilpa_random_intercept")
+    inherits(object, "multilpa_random_intercept") ||
+    inherits(object, "multilpa_transitions")
 }
