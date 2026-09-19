@@ -12,12 +12,38 @@
 \item{...}{Reserved for compatibility with `summary()`.}
 }
 \value{
-A `summary_multilpa` list of estimates, effective class counts,
-  information criteria, and restart diagnostics.
+A `summary_multilpa` object: a named list, never carrying an `NA`
+  name, with the fit's dimensions (`n_observations`, `n_informative`,
+  `n_groups`, `n_profiles`, `n_group_classes`), its specification
+  (`variance_model`, `covariance_model`, `missing`, `continuous`, `fixed`,
+  `staged`), its estimates (`means`, `variances`, `standard_deviations`,
+  `covariances`, `response_probabilities`, `profile_probabilities`,
+  `group_probabilities`), the effective class counts at both levels, the
+  likelihood, parameter counts and information criteria, and the restart
+  diagnostics. `covariances` is `NULL` under the diagonal parameterization
+  and `response_probabilities` is `NULL` when no indicator is categorical;
+  both keep their names in either case. Use
+  [as.data.frame.summary_multilpa()] rather than reading the fields.
 }
 \description{
-Summarize a fitted multilevel latent profile model
+The summary collects the estimates, the effective class counts, the
+information criteria and the restart diagnostics of a fit. Every field is
+built explicitly, and a field the fit does not carry takes its documented
+default rather than being silently absent, so the summary of a diagonal fit
+and the summary of a staged full-covariance fit have exactly the same names.
+Read the numbers with [as.data.frame()], which returns them as tidy tables;
+the printed form is a human-facing report.
 }
 \examples{
-# After fitting: summary(fit)
+set.seed(7)
+example_data <- data.frame(
+  school = rep(seq_len(12), each = 10),
+  score_a = rnorm(120), score_b = rnorm(120)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+summary(fit)
+}
+\seealso{
+[as.data.frame.summary_multilpa()] for the tidy tables.
 }

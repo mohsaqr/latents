@@ -29,11 +29,16 @@ into a staged fit that changes the number of group classes. Pass the
 result as `start` alongside `fixed` in [multilpa()].}
 }
 \value{
-A list with elements `means`, `variances`, `profile_probabilities`,
-  and `group_probabilities`, plus `covariances` when the full-covariance
+An object of class `multilpa_start`: the list [multilpa()] accepts as
+  `start`, with elements `means`, `variances`, `profile_probabilities`, and
+  `group_probabilities`, plus `covariances` when the full-covariance
   parameterization is returned and `response_probabilities` when the object
-  carries a categorical measurement model. Dimension names are dropped,
-  matching what [multilpa()] expects of `start`.
+  carries a categorical measurement model. `what = "measurement"` drops
+  `profile_probabilities` and `group_probabilities`. Dimension names are
+  dropped, matching what [multilpa()] expects of `start`, so the values are
+  indexed by position; read them with [as.data.frame()], which labels the
+  positions, rather than out of the list. The list payload is unchanged by
+  the class, so a `multilpa_start` can be passed straight back as `start`.
 }
 \description{
 Returns the starting-value list [multilpa()] accepts, taken from a fitted
@@ -50,8 +55,13 @@ example_data <- data.frame(
 )
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+starting_values(fit)
+as.data.frame(starting_values(fit))
 refit <- multilpa(example_data, c("score_a", "score_b"), "school",
                     n_profiles = 2, n_group_classes = 1, n_starts = 1,
                     start = starting_values(fit))
 logLik(refit)
+}
+\seealso{
+[as.data.frame.multilpa_start()] for the values as tidy tables.
 }

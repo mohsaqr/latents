@@ -21,7 +21,8 @@ convention this package's default BIC uses. A single positive number is
 also accepted.}
 }
 \value{
-A one-row base `data.frame` with columns `statistic` (twice the log
+A base `data.frame` with one row per comparison, so a single call
+  returns one row. Its columns are `statistic` (twice the log
   likelihood difference), `df` (the difference in free parameters), `n`,
   `adjustment_factor`, `adjusted_statistic`, and `p_value`. `p_value` is
   always `NA_real_`, for the reason given above; the column exists so that

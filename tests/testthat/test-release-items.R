@@ -21,7 +21,9 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
 
   kic <- criteria[criteria$criterion == "kic", ]
   expect_identical(nrow(kic), 1L)
-  expect_identical(kic$convention, "none")
+  # "not applicable" is NA, not a sentinel level that would become a third value
+  # of a two-level variable and silently survive a convention filter.
+  expect_true(is.na(kic$convention))
   expect_true(is.na(kic$n))
   expect_equal(kic$value, -2 * log_likelihood + 3 * (q + 1))
 
@@ -35,7 +37,11 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
   expect_equal(clc$value, -2 * log_likelihood + 2 * entropies)
   # It must not vary with n, unlike every other row that carries a convention.
   expect_equal(clc$value[1L] - clc$value[2L], 2 * (entropies[1L] - entropies[2L]))
-  expect_identical(clc$definition, rep("-2L + 2 EN", 2L))
+  # The formula is documentation, so it is off by default and arrives on request.
+  annotated <- subset(information_criteria(fit, definitions = TRUE),
+                      criterion == "clc")
+  expect_identical(annotated$definition, rep("-2L + 2 EN", 2L))
+  expect_false("definition" %in% names(criteria))
 })
 
 test_that("the criteria table keeps its shape as criteria are added", {
@@ -43,19 +49,21 @@ test_that("the criteria table keeps its shape as criteria are added", {
   fit <- suppressWarnings(multilpa(data, c("a", "b"), "g", 2L, 2L,
                                    n_starts = 2, seed = 1))
   criteria <- information_criteria(fit)
-  expect_named(criteria, c("criterion", "convention", "n", "value", "penalty",
-                           "definition"))
+  expect_named(criteria, c("criterion", "convention", "n", "value", "penalty"))
   expect_setequal(unique(criteria$criterion),
-                  c("log_likelihood", "aic", "kic", "bic", "sabic", "caic",
+                  c("deviance", "aic", "kic", "bic", "sabic", "caic",
                     "awe", "icl", "clc"))
   expect_false(anyNA(criteria$value))
-  # Every criterion but the likelihood is the deviance plus its own penalty.
+  # Reporting the deviance rather than the log likelihood makes one identity hold
+  # on EVERY row, with no row carved out: lower is better throughout, and the
+  # deviance row is simply the one whose penalty is zero.
+  deviance <- -2 * fit$log_likelihood
+  expect_equal(criteria$value, deviance + criteria$penalty)
+  expect_equal(subset(criteria, criterion == "deviance")$value, deviance)
+  expect_identical(subset(criteria, criterion == "deviance")$penalty, 0)
   # The penalty is not always positive: sabic subtracts when the sample size
   # is below 22, because log((n + 2) / 24) is then negative.
-  deviance <- -2 * fit$log_likelihood
-  penalized <- criteria[criteria$criterion != "log_likelihood", ]
-  expect_equal(penalized$value, deviance + penalized$penalty)
-  expect_true(any(penalized$penalty < 0))
+  expect_true(any(criteria$penalty < 0))
 })
 
 test_that("the measurement tables carry their own standard errors when asked", {

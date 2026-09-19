@@ -16,6 +16,7 @@
   symbols = NULL,
   linetypes = NULL,
   style = .multilpa_style(),
+  cell_labels = TRUE,
   ...
 )
 }
@@ -27,9 +28,9 @@ profile across the continuous indicators. `"responses"` plots the
 categorical measurement model, one line per profile across the categorical
 indicators, showing the probability of a chosen category. `"probabilities"`
 plots profile prevalence within each group class, one line per group class.
-`"sequences"` draws one row per group, one column per position, coloured by
-the assigned profile, with the groups grouped by their latent class; it
-needs a fit made with `time =`.}
+`"sequences"` draws one row per group, one column per position, coloured
+and numbered by the assigned profile, with the groups grouped by their
+latent class; it needs a fit made with `time =`.}
 
 \item{scale}{For `what = "profiles"`, `"raw"` plots the estimated means in
 input units, and `"standardized"` divides each indicator's deviation from
@@ -44,8 +45,8 @@ category label or index used for every indicator.}
 
 \item{labels}{`TRUE` prints a direct label at the right end of each series.}
 
-\item{main, subtitle}{Panel title and secondary line. `NULL` for none,
-`waiver` is not used; pass `""` to reserve the space without text.}
+\item{main, subtitle}{Panel title and secondary line. `NULL` for none; pass
+`""` to reserve the space without text.}
 
 \item{palette, symbols, linetypes}{Vectors of colours, plotting characters and
 line types, recycled to the number of series. Defaults are the Okabe-Ito
@@ -54,6 +55,10 @@ palette and matched symbol and line-type sequences.}
 \item{style}{A list of visual constants, as built by `.multilpa_style()`;
 pass named elements to override individual constants.}
 
+\item{cell_labels}{For `what = "sequences"`, `TRUE` prints the profile number
+inside each cell, so the profile is never carried by colour alone. The
+numbers are drawn only where the cell is wide and tall enough to hold one.}
+
 \item{...}{Further named visual constants, merged into `style`.}
 }
 \value{
@@ -61,9 +66,10 @@ The fitted model, invisibly. Called for the side effect of drawing.
 }
 \description{
 Draws the profile means across indicators, or the profile prevalence within
-each latent group class. Profiles are distinguished by colour, point symbol
-and line type together, and labelled directly, so the plot stays readable in
-greyscale and needs no legend.
+each latent group class. Series are distinguished by colour, point symbol and
+line type together, and labelled directly, so a line plot stays readable in
+greyscale and needs no legend; the sequence grid carries the profile number
+in each cell for the same reason.
 }
 \details{
 The plot shows point estimates only. It carries no standard errors,

@@ -4,20 +4,41 @@
 \alias{information_criteria}
 \title{Information criteria for a fitted multilevel latent profile model}
 \usage{
-information_criteria(object)
+information_criteria(object, definitions = FALSE)
 }
 \arguments{
 \item{object}{A fitted `multilpa` model.}
+
+\item{definitions}{`FALSE`, the default, returns the numbers alone. `TRUE`
+appends a `definition` column carrying each criterion's formula, which is
+the same text as the Details section below.}
 }
 \value{
-A base `data.frame` with one row per criterion and convention, and
-  columns `criterion`, `convention`, `n`, `value`, `penalty`, and
-  `definition`. `log_likelihood`, `aic` and `kic` do not depend on a sample
-  size and carry convention `"none"` with `n` equal to `NA_integer_`. `clc`
+A base `data.frame` of class `data.frame`, one row per criterion and
+  sample-size convention, with the columns
+  \describe{
+    \item{`criterion`}{character: `"deviance"`, `"aic"`, `"kic"`, `"bic"`,
+      `"sabic"`, `"caic"`, `"awe"`, `"icl"` or `"clc"`.}
+    \item{`convention`}{character: `"groups"` or `"individuals"`, and
+      `NA_character_` for a criterion that uses no sample size and no
+      level-specific entropy.}
+    \item{`n`}{integer: the sample size that convention supplies, and
+      `NA_integer_` where no sample size enters.}
+    \item{`value`}{numeric: the criterion. **Lower is better on every row.**}
+    \item{`penalty`}{numeric: what the criterion adds to the deviance, so
+      `value == deviance + penalty` holds on every row, and `0` on the
+      `"deviance"` row itself.}
+    \item{`definition`}{character, present only when
+      `definitions = TRUE`: the criterion's formula.}
+  }
+  The table reports the deviance `-2L` rather than the log likelihood `L`, so
+  that the `value` column points one way throughout; `logLik(object)` returns
+  the log likelihood. `deviance`, `aic` and `kic` do not depend on a sample
+  size and carry `convention = NA_character_` with `n = NA_integer_`. `clc`
   does not depend on one either, but its convention selects which level's
   classification uncertainty it penalizes, so it is reported once per
-  convention. Lower values
-  indicate a preferred model for every criterion except `log_likelihood`.
+  convention. `value` is `NA_real_` where the entropy a criterion needs is
+  undefined, which is the group level of a continuous random-intercept fit.
 }
 \description{
 Returns every information criterion the package computes, in one tidy table,
@@ -34,7 +55,8 @@ The verb is named for what it returns. Classification sharpness and class
 
 Let `q` be the number of free parameters, `n` the chosen sample
   size, and `EN` the classification entropy of the level matching that
-  convention. The criteria are `aic = -2L + 2q`, `bic = -2L + q log(n)`,
+  convention. The criteria are `deviance = -2L`, `aic = -2L + 2q`,
+  `bic = -2L + q log(n)`,
   `sabic = -2L + q log((n + 2) / 24)`, `caic = -2L + q (log(n) + 1)`,
   `awe = -2(L - EN) + 2q (1.5 + log(n))`, `icl = -2L + q log(n) + 2 EN`,
   `kic = -2L + 3(q + 1)`, and `clc = -2L + 2 EN`. Note that `clc` uses the
@@ -58,6 +80,7 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 information_criteria(fit)
+information_criteria(fit, definitions = TRUE)
 }
 \references{
 Schwarz, G. (1978). Estimating the dimension of a model.
@@ -77,5 +100,6 @@ Schwarz, G. (1978). Estimating the dimension of a model.
 }
 \seealso{
 [classification_table()] and [entropy_table()] for the
-  classification diagnostics that accompany these criteria.
+  classification diagnostics that accompany these criteria. [logLik()] for
+  the maximized log likelihood itself.
 }

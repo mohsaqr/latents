@@ -4,7 +4,7 @@
 \alias{confint.multilpa_covariates}
 \title{Wald confidence intervals for a covariate fit}
 \usage{
-\method{confint}{multilpa_covariates}(object, parm, level = 0.95, data, ...)
+\method{confint}{multilpa_covariates}(object, parm, level = 0.95, data = NULL, ...)
 }
 \arguments{
 \item{object}{A fitted `multilpa_covariates` model.}
@@ -13,7 +13,9 @@
 
 \item{level}{Confidence level strictly between zero and one.}
 
-\item{data}{The data frame the model was fitted to.}
+\item{data}{Optional. The data frame the model was fitted to; when omitted
+it is rebuilt from the indicators, group index and designs the fit stores.
+Supplying it is the stronger check that the caller still holds that frame.}
 
 \item{...}{Passed to [parameter_inference()], so `vcov_type = "robust"` and
 `step` reach it.}

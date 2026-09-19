@@ -19,6 +19,7 @@ test_that("starting_values round-trips a categorical fit exactly", {
                   categorical = items, n_starts = 4, seed = 1)
 
   start <- starting_values(fit)
+  expect_s3_class(start, "multilpa_start")
   expect_true("response_probabilities" %in% names(start))
   expect_length(start$response_probabilities, length(items))
   expect_equal(dim(start$response_probabilities[[1L]]), c(2L, 2L))
@@ -117,7 +118,8 @@ test_that("rows with no observed indicator are excluded from the BIC sample size
                              n_group_classes = 1, categorical = items,
                              n_starts = 1, seed = 1, missing = "fiml"))
   expect_output(print(sparse), "carry no observed indicator")
-  expect_identical(summary(sparse)$n_informative, sparse$n_informative)
+  expect_identical(as.data.frame(summary(sparse), what = "fit")$n_informative,
+                   sparse$n_informative)
   expect_identical(sparse$n_observations, nrow(blanked))
   expect_identical(sparse$n_informative, nrow(blanked) - 3L)
   # An uninformative row changes neither the likelihood nor the penalty basis.

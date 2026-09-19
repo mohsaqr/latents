@@ -8,10 +8,11 @@
 \usage{
 \method{parameter_inference}{multilpa_covariates}(
   object,
-  data,
+  data = NULL,
   level = 0.95,
   step = 1e-04,
-  vcov_type = c("observed", "robust")
+  vcov_type = c("observed", "robust"),
+  p_adjust = .multilpa_p_adjust_methods
 )
 
 parameter_inference(
@@ -19,7 +20,8 @@ parameter_inference(
   data,
   level = 0.95,
   step = 1e-04,
-  vcov_type = c("observed", "robust")
+  vcov_type = c("observed", "robust"),
+  p_adjust = .multilpa_p_adjust_methods
 )
 
 \method{parameter_inference}{multilpa}(
@@ -27,7 +29,8 @@ parameter_inference(
   data,
   level = 0.95,
   step = 1e-04,
-  vcov_type = c("observed", "robust")
+  vcov_type = c("observed", "robust"),
+  p_adjust = .multilpa_p_adjust_methods
 )
 }
 \arguments{
@@ -47,27 +50,47 @@ accumulates the outer product of the per-group scores. Groups are the
 independent units, so robust errors relax the assumption that the Gaussian
 within-group model is correctly specified. They do not relax the assumption
 that groups are independent.}
+
+\item{p_adjust}{Multiplicity correction applied to `p_value` to produce
+`p_adjusted`, one of the methods [stats::p.adjust()] accepts. The default
+`"none"` leaves the two columns equal: a correction changes what a p-value
+means, so it is applied only when it is asked for, and the method that was
+applied is recorded in the `p_adjust` attribute. The correction is taken
+over the tests the table actually reports; bounded parameters carry no test
+and do not count towards the family.}
 }
 \value{
-A base `data.frame` with one row per free parameter and the columns
-  `level` (`"measurement"`, `"profile"` or `"group"`), `outcome` (which
-  profile or group class the coefficient predicts, or which profile a
-  measurement parameter belongs to), `term`, `parameter` (`"mean"`,
-  `"variance"` or `"coefficient"`), `estimate`, `standard_error`, `statistic`,
-  `p_value`, `conf_low` and `conf_high`. Variances are reported in their
-  natural units, with standard errors carried through the delta method from
-  the log scale on which they are estimated.
+A base `data.frame` with one row per free parameter and the same
+  columns, in the same order, that [parameter_inference()] returns for every
+  other fitted class: `level` (`"measurement"`, `"profile"` or `"group"`),
+  `outcome` (which profile or group class the coefficient predicts, or which
+  profile a measurement parameter belongs to), `term`, `parameter`
+  (`"mean"`, `"variance"`, `"covariance"` or `"coefficient"`), `estimate`,
+  `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
+  `conf_high`. Variances and covariances are reported in their natural units,
+  with standard errors carried through the delta method from the log and
+  log-Cholesky coordinates on which they are estimated.
 
-An `multilpa_inference` list containing natural `estimates`,
-  `standard_error`, `statistic`, `p_value`, `conf_low` and `conf_high`,
-  estimates and covariance, observed Hessian, score, and its eigenvalue
-  condition ratio. All class probabilities are returned; their sum
-  constraints make the natural covariance singular. Wald intervals on the
-  natural scale are not clipped to parameter bounds. `vcov_type` records
-  which covariance was returned. When it is `"robust"`, `group_scores` holds
-  the groups-by-parameters score matrix and `scaling_correction` the MLR
-  scaling correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
-  difference tests. Use [as.data.frame()] for a tidy estimate table.
+A base `data.frame` with one row per reported parameter and the
+  columns `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`,
+  `term`, `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
+  `p_adjusted`, `conf_low` and `conf_high`. Estimates are on the natural
+  scale: variances in their own units, probabilities as probabilities. A
+  parameter whose null value is on the boundary of its space -- a variance, a
+  probability, a residual variance on the covariance diagonal -- carries `NA`
+  for `statistic`, `p_value` and `p_adjusted`, because a Wald test against
+  that boundary is not a question worth asking; the interval still is. All
+  class probabilities are reported; their sum constraints make the natural
+  covariance singular. Wald intervals are not clipped to parameter bounds.
+
+  Diagnostics of the fit as a whole travel as attributes rather than as
+  columns repeated down every row: `covariance` and `covariance_unconstrained`
+  (natural and estimation-scale covariance of the estimates), `hessian`,
+  `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`
+  and `p_adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
+  groups-by-parameters score matrix and `scaling_correction` the MLR scaling
+  correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
+  difference tests.
 }
 \description{
 Standard errors, tests and intervals for every free parameter of
@@ -109,5 +132,8 @@ parameter_inference(fit, example_data)
 set.seed(42)
 dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
 fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
-parameter_inference(fit, dat)$standard_errors
+parameter_inference(fit, dat)
+
+# Many tests in one table: name the correction, do not apply one by stealth.
+parameter_inference(fit, dat, p_adjust = "BH")
 }

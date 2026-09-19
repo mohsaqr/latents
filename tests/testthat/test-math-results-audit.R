@@ -110,8 +110,11 @@ test_that("sequence outputs keep distinct numeric groups with identical printed 
   fit$time_values <- d$time
   fit$time <- "time"
   wide <- sequences(fit, "wide")
-  expect_equal(dim(wide), c(2L, 3L))
-  expect_equal(anyDuplicated(rownames(wide)), 0L)
+  expect_equal(dim(wide), c(2L, 5L))
+  # The point of this test: two groups that PRINT identically must stay distinct.
+  # They now survive as native doubles in a real column, which is stronger than the
+  # make.unique()'d row names this replaced - those kept them apart only as strings.
+  expect_identical(wide$group, unique(d$g))
   expect_equal(sequence_summary(fit)$groups, 2L)
   expect_equal(sequence_summary(fit)$observations, 6L)
 })

@@ -72,8 +72,8 @@ test_that("the table is tidy and covers every level", {
 
   expect_s3_class(inference, "data.frame")
   expect_named(inference, c("level", "outcome", "term", "parameter", "estimate",
-                            "standard_error", "statistic", "p_value", "conf_low",
-                            "conf_high"))
+                            "standard_error", "statistic", "p_value",
+                            "p_adjusted", "conf_low", "conf_high"))
   expect_setequal(unique(inference$level), c("measurement", "profile", "group"))
   expect_setequal(unique(inference$parameter), c("mean", "variance", "coefficient"))
   expect_equal(nrow(inference), fit$n_parameters)
@@ -102,13 +102,45 @@ test_that("vcov is a named, symmetric matrix over the same parameters", {
   expect_equal(covariance, t(covariance))
   expect_true(all(diag(covariance) > 0))
   expect_identical(rownames(covariance), colnames(covariance))
-  # log-scale variances there, natural-scale in the tidy table, so the two
-  # disagree exactly by the delta-method factor
+  expect_identical(rownames(covariance), names(coef(fit)))
+})
+
+test_that("vcov agrees with the tidy table on whichever scale is asked for", {
+  fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
+  fit <- .covariate_fit(fixture$data)
   inference <- parameter_inference(fit, fixture$data)
+  natural <- vcov(fit, fixture$data)
+  estimation <- vcov(fit, fixture$data, scale = "unconstrained")
+
+  # The default is the scale the tidy table reports on, so the two agree
+  # exactly; that is what makes confint() and vcov() mean the same thing.
+  expect_equal(inference$standard_error, unname(sqrt(diag(natural))))
+  # On the estimation scale variances are logs, so they differ from the tidy
+  # table by exactly the delta-method factor and nothing else does.
   is_variance <- inference$parameter == "variance"
   expect_equal(inference$standard_error[is_variance],
-               unname(sqrt(diag(covariance))[is_variance]) *
+               unname(sqrt(diag(estimation))[is_variance]) *
                  inference$estimate[is_variance])
+  expect_equal(diag(natural)[!is_variance], diag(estimation)[!is_variance])
+})
+
+test_that("a named multiplicity correction is applied and nothing is corrected by stealth", {
+  fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
+  fit <- .covariate_fit(fixture$data)
+  plain <- parameter_inference(fit, fixture$data)
+  corrected <- parameter_inference(fit, fixture$data, p_adjust = "BH")
+
+  expect_identical(attr(plain, "p_adjust"), "none")
+  expect_equal(plain$p_adjusted, plain$p_value)
+  expect_identical(attr(corrected, "p_adjust"), "BH")
+  expect_equal(corrected$p_value, plain$p_value)
+  # The family is the tests the table reports, not its rows: a variance has no
+  # test and must not inflate the correction.
+  tested <- !is.na(plain$p_value)
+  expect_equal(corrected$p_adjusted[tested],
+               stats::p.adjust(plain$p_value[tested], method = "BH"))
+  expect_true(all(is.na(corrected$p_adjusted[!tested])))
+  expect_true(all(corrected$p_adjusted[tested] >= plain$p_value[tested]))
 })
 
 test_that("the robust sandwich runs and differs from the observed information", {

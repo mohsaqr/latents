@@ -97,7 +97,8 @@ A `multilpa_transitions` object containing `means`, `variances`,
   indexing the profile moved from), `group_probabilities`, posterior
   matrices, classifications, log likelihood, information criteria, restart
   diagnostics and convergence history. Use [transitions()] for the tidy
-  transition table and [as.data.frame()] for the other tables. No standard
+  transition table and [as.data.frame.multilpa_transitions()] for the other
+  tables. No standard
   errors, likelihood-ratio tests or guarantees of global optimality are
   given for this model family.
 }
@@ -118,8 +119,10 @@ Transitions are first order and homogeneous over occasions: the
   occasion or on earlier profiles. Measurement parameters are shared across
   occasions and across group classes. A profile that no group occupies before
   its final occasion leaves its transition row without information; the row
-  is then uniform by construction rather than estimated, and is reported in
-  `empty_transition_rows` and warned about. Profile labels are arbitrary and
+  is then uniform by construction rather than estimated. Such a row is warned
+  about when the model is fitted, is flagged by the `estimated` column of
+  [transitions()] and is listed by `transitions(fit, estimated = FALSE)`.
+  Profile labels are arbitrary and
   are not comparable across fits without alignment.
 }
 \examples{

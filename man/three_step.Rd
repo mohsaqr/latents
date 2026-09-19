@@ -10,7 +10,9 @@ three_step(
   outcome,
   level = c("individuals", "groups"),
   method = c("bch", "proportional", "modal"),
-  level_ci = 0.95
+  level_ci = 0.95,
+  contrast = c("none", "pairs"),
+  p_adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
 )
 }
 \arguments{
@@ -29,13 +31,34 @@ group classes.}
 attenuated; `"modal"` is the naive assignment, shown for comparison.}
 
 \item{level_ci}{Confidence level for the intervals.}
+
+\item{contrast}{`"none"` (the default) reports one outcome mean per class.
+`"pairs"` reports the difference between every pair of classes instead,
+which is the quantity a three-step analysis is usually run to test, with a
+statistic and a p-value against a difference of zero.}
+
+\item{p_adjust}{Multiplicity correction applied across the pairwise
+differences, passed to [stats::p.adjust()]. `"BH"` by default; `"none"`
+leaves the p-values uncorrected. Ignored for `contrast = "none"`, which
+tests nothing.}
 }
 \value{
-A base `data.frame` with one row per class and the columns `class`,
-  `estimate`, `standard_error`, `conf_low`, `conf_high` and `effective_n`.
-  Standard errors are cluster-robust, taking the fit's groups as the
-  independent units, so they remain honest when the outcome is measured on
-  observations nested inside those groups.
+A base `data.frame`. For `contrast = "none"` it has one row per class
+  and the columns `level`, `method`, `class`, `estimate`, `standard_error`,
+  `conf_low`, `conf_high` and `effective_n`. It carries no `statistic` or
+  `p_value`, unlike [r3step()]: an outcome mean has no meaningful null value
+  to be tested against, and a p-value for "this class's mean is zero" would
+  answer a question nobody asked. The comparison that does have a null is the
+  difference between two classes, and that is what `contrast = "pairs"`
+  returns: one row per pair with the columns `level`, `method`, `class`,
+  `reference_class`, `estimate` (the mean of `class` minus the mean of
+  `reference_class`), `standard_error`, `statistic`, `p_value`,
+  `p_value_adjusted`, `conf_low` and `conf_high`, matching [r3step()].
+
+  Standard errors are cluster-robust in both shapes, taking the fit's groups
+  as the independent units, so they remain honest when the outcome is
+  measured on observations nested inside those groups. The correction applied
+  to `p_value_adjusted` is recorded in the result's `p_adjust` attribute.
 }
 \description{
 The three-step approach: the measurement model is fitted first, units are
@@ -70,6 +93,7 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
 three_step(fit, example_data, "y")
+three_step(fit, example_data, "y", contrast = "pairs")
 }
 \references{
 Vermunt, J. K. (2010). Latent class modeling with covariates: two

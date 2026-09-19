@@ -70,10 +70,14 @@ probability, defining a constrained maximum-likelihood problem in the same
 way `min_variance` does for Gaussian indicators.}
 }
 \value{
-An `multilpa_covariates` fit with coefficient matrices, priors,
-  posteriors, likelihood, information criteria and start diagnostics, plus
-  whichever measurement blocks the model has: `means` and `variances`,
-  optional `covariances`, and optional `response_probabilities`.
+An object of class `multilpa_covariates`. Read it with the verbs
+  that describe it rather than by reaching into it: [as.data.frame()] gives
+  the measurement model, the membership coefficients, and either set of
+  posteriors, one row per profile-indicator, coefficient, individual or
+  group; [summary()] gives the model-level fit summary and the restart
+  diagnostics; [plot()] draws the measurement model; and
+  [parameter_inference()] gives one row per free parameter with a standard
+  error and an interval.
 }
 \description{
 Numeric covariates predict individual-profile and group-class membership via
@@ -99,5 +103,5 @@ d <- data.frame(group = rep(1:20, each = 10), z = rnorm(200))
 d$y <- rnorm(200, ifelse(runif(200) < plogis(d$z), -3, 3))
 fit <- fit_covariates(d, "y", "group", 2, 1,
                             profile_covariates = "z", n_starts = 2, seed = 1)
-fit$profile_coefficients
+as.data.frame(fit, what = "coefficients")
 }

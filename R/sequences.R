@@ -15,6 +15,60 @@
   object$time_values
 }
 
+#' Name of the column the ordering came from
+#'
+#' Used to build self-describing occasion column names. A fit always stores the
+#' name beside the values, but a hand-assembled fixture may carry only the
+#' values, so a neutral fallback keeps the names syntactic either way.
+#'
+#' @param object A fitted model carrying an ordering.
+#' @return A single character string.
+#' @noRd
+.multilpa_time_name <- function(object) {
+  if (is.null(object$time) || !is.character(object$time) ||
+      length(object$time) != 1L || is.na(object$time)) "time" else object$time
+}
+
+#' Assigned profiles as a groups-by-occasions integer matrix
+#'
+#' The rectangular layout the drawing code needs. A matrix is the right
+#' structure inside a function body and the wrong one to return to a caller,
+#' so this stays internal and [sequences()] returns a data frame instead.
+#'
+#' @param object A fitted model carrying an ordering.
+#' @param long The long form, if the caller already has it; recomputed
+#'   otherwise, so that an outside caller needs only the fit.
+#' @return An integer matrix with one row per group and one column per position
+#'   seen anywhere in the data, holding the assigned profile or `NA`. Row names
+#'   are the group identifiers made unique, in increasing group order; column
+#'   names are `<time>_<position>`.
+#' @noRd
+.multilpa_sequence_matrix <- function(object,
+                                      long = sequences(object,
+                                                       format = "long")) {
+  positions <- sort(unique(long$time))
+  groups <- unique(long$group)
+  group_labels <- make.unique(as.character(object$group_values))[
+    match(groups, object$group_values)]
+  cells <- matrix(
+    NA_integer_, length(groups), length(positions),
+    dimnames = list(group_labels, .multilpa_occasion_names(object, positions)))
+  cells[cbind(match(long$group, groups), match(long$time, positions))] <-
+    long$profile
+  cells
+}
+
+#' Syntactic, self-describing names for the occasion columns
+#'
+#' @param object A fitted model carrying an ordering.
+#' @param positions The distinct positions, in increasing order.
+#' @return A character vector of syntactic, unique column names.
+#' @noRd
+.multilpa_occasion_names <- function(object, positions) {
+  make.unique(make.names(paste0(.multilpa_time_name(object), "_",
+                                as.character(positions))))
+}
+
 #' Assignments in sequence order
 #'
 #' Returns which profile the model gave each observation, laid out in the order
@@ -26,14 +80,21 @@
 #' @param object A fitted `multilpa` model, fitted with `time =`.
 #' @param format `"long"` (the default) gives one row per observation.
 #'   `"wide"` gives one row per group and one column per position, which is the
-#'   shape sequence-plotting functions expect.
+#'   shape sequence-plotting packages expect. Both forms carry the same
+#'   information: the wide form is a reshape of the long one, not a subset of
+#'   it.
 #' @return For `format = "long"`, a base `data.frame` with one row per
 #'   observation and the columns `group`, `group_class`, `time` and `profile`,
-#'   ordered by group and then by time. For `format = "wide"`, a base
-#'   `data.frame` with one row per group and one column per distinct position,
-#'   holding the profile as a factor and `NA` where the group has no observation
-#'   at that position; row names are the group identifiers and the columns are
-#'   in increasing time order.
+#'   ordered by group and then by time.
+#'
+#'   For `format = "wide"`, a base `data.frame` with one row per group, in
+#'   increasing group order, and the columns `group` (the group identifier, in
+#'   the type it has in the data), `group_class`, and one column per distinct
+#'   position seen anywhere in the data. The occasion columns are named after
+#'   the `time` column and the position it holds, for example `wave_1`, and
+#'   hold the assigned profile as a factor with one level per profile and `NA`
+#'   where the group has no observation at that position. Row names are the
+#'   default integers, because the group identifier is a column.
 #' @details Profile and group-class labels are arbitrary and are returned as
 #'   integers; two fits must have their labels aligned before their sequences
 #'   are compared.
@@ -42,14 +103,14 @@
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10), wave = rep(seq_len(10), times = 12),
-#'   score_a = rnorm(120), score_b = rnorm(120)
+#'   school = rep(seq_len(6), each = 5), wave = rep(seq_len(5), times = 6),
+#'   score_a = rnorm(30), score_b = rnorm(30)
 #' )
 #' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                 n_profiles = 2, n_group_classes = 2, n_starts = 2,
 #'                 seed = 1, time = "wave")
 #' head(sequences(fit))
-#' head(sequences(fit, format = "wide"))
+#' sequences(fit, format = "wide")
 #' @export
 sequences <- function(object, format = c("long", "wide")) {
   time_values <- .multilpa_require_time(object)
@@ -65,19 +126,19 @@ sequences <- function(object, format = c("long", "wide")) {
   row.names(long) <- NULL
   if (identical(format, "long")) return(long)
 
-  positions <- sort(unique(long$time))
+  cells <- .multilpa_sequence_matrix(object, long)
   groups <- unique(long$group)
-  group_labels <- make.unique(as.character(object$group_values))[
-    match(groups, object$group_values)]
-  cells <- matrix(NA_integer_, length(groups), length(positions),
-                  dimnames = list(group_labels, as.character(positions)))
-  cells[cbind(match(long$group, groups), match(long$time, positions))] <- long$profile
-  wide <- as.data.frame(lapply(seq_along(positions), function(column) {
+  occasions <- as.data.frame(lapply(seq_len(ncol(cells)), function(column) {
     factor(cells[, column], levels = seq_len(object$n_profiles))
-  }), col.names = as.character(positions), optional = TRUE)
-  names(wide) <- as.character(positions)
-  row.names(wide) <- group_labels
-  wide
+  }), optional = TRUE)
+  names(occasions) <- colnames(cells)
+  # The group identifier is a column, not a row name: row names coerce to
+  # character and would silently merge two groups that print alike.
+  data.frame(
+    group = groups,
+    group_class = object$group_classes[match(groups, object$group_values)],
+    occasions,
+    row.names = NULL, stringsAsFactors = FALSE, check.names = FALSE)
 }
 
 #' Sequence lengths by group class
@@ -88,17 +149,26 @@ sequences <- function(object, format = c("long", "wide")) {
 #' cannot show it.
 #'
 #' @param object A fitted `multilpa` model, fitted with `time =`.
-#' @return A base `data.frame` with one row per group class and the columns
-#'   `group_class`, `groups` (how many groups are assigned to it),
-#'   `observations` (their total number of observations), `mean_length`,
-#'   `median_length`, `shortest` and `complete` (how many of its groups are
-#'   observed at every position seen anywhere in the data).
+#' @return A base `data.frame` with one row per group class, including any class
+#'   no group was assigned to, and the columns `group_class`, `groups` (how many
+#'   groups are assigned to it), `observations` (their total number of
+#'   observations), `mean_length`, `median_length`, `shortest`, `longest`,
+#'   `complete` (how many of its groups are observed at every position seen
+#'   anywhere in the data) and `gaps` (how many of its groups skip a position
+#'   inside their own first-to-last span).
+#'
+#'   A group's *length* is its number of observations, which is what the model
+#'   was fitted on. It is not the group's span: a group observed at positions
+#'   1, 2 and 4 has length 3 and span 4, and is counted in `gaps`. A class whose
+#'   `gaps` is above zero is an unbalanced class with holes inside it, not
+#'   merely a class with short groups. The length columns are `NA` and the
+#'   count columns are `0` for a class with no groups.
 #' @seealso [sequences()].
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10), wave = rep(seq_len(10), times = 12),
-#'   score_a = rnorm(120), score_b = rnorm(120)
+#'   school = rep(seq_len(6), each = 5), wave = rep(seq_len(5), times = 6),
+#'   score_a = rnorm(30), score_b = rnorm(30)
 #' )
 #' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                 n_profiles = 2, n_group_classes = 2, n_starts = 2,
@@ -106,15 +176,23 @@ sequences <- function(object, format = c("long", "wide")) {
 #' sequence_summary(fit)
 #' @export
 sequence_summary <- function(object) {
-  long <- sequences(object, format = "long")
-  positions <- length(unique(long$time))
+  time_values <- .multilpa_require_time(object)
+  positions <- sort(unique(time_values))
+  n_positions <- length(positions)
   # Native integer indices avoid unused factor levels and character rounding of
   # distinct numeric group identifiers in tapply().
   lengths_by_group <- tabulate(object$group_index, nbins = object$n_groups)
+  position_index <- match(time_values, positions)
+  first <- as.integer(tapply(position_index, object$group_index, min))
+  last <- as.integer(tapply(position_index, object$group_index, max))
+  # A group whose observations fall short of its own span skipped a position
+  # inside it; a group that simply stopped early does not count as a gap.
+  has_gap <- lengths_by_group < (last - first + 1L)
   class_by_group <- object$group_classes
   classes <- seq_len(object$n_group_classes)
   summarize <- function(class) {
-    taken <- lengths_by_group[class_by_group == class]
+    in_class <- class_by_group == class
+    taken <- lengths_by_group[in_class]
     data.frame(
       group_class = class,
       groups = length(taken),
@@ -122,7 +200,9 @@ sequence_summary <- function(object) {
       mean_length = if (length(taken)) mean(taken) else NA_real_,
       median_length = if (length(taken)) stats::median(taken) else NA_real_,
       shortest = if (length(taken)) min(taken) else NA_integer_,
-      complete = sum(taken == positions),
+      longest = if (length(taken)) max(taken) else NA_integer_,
+      complete = sum(taken == n_positions),
+      gaps = sum(has_gap[in_class]),
       row.names = NULL
     )
   }

@@ -33,8 +33,13 @@ bootstrap_lrt(
 \item{seed}{Optional seed, with caller RNG state restored.}
 }
 \value{
-Observed statistic, finite-simulation corrected p-value, Monte Carlo
-  standard error, replicate diagnostics and counts. Inspect failed starts,
+An object of class `multilpa_bootstrap_lrt`, carrying the observed
+  statistic, the finite-simulation corrected p-value, its Monte Carlo
+  standard error, and one record per replicate. Read it with the verbs that
+  describe it: [as.data.frame()] gives one row per simulated replicate,
+  `as.data.frame(what = "test")` the single-row test result, [summary()] the
+  test beside the replicate diagnostics, and [plot()] the simulated null
+  distribution with the observed statistic marked. Inspect failed starts,
   boundary flags and likelihood replication before interpreting results.
 }
 \description{

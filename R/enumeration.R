@@ -11,13 +11,21 @@
 #' @param group_classes Positive integer group-class counts to try.
 #' @param seed Optional reproducible seed for each fit.
 #' @param ... Further arguments to [multilpa()].
-#' @return A list with `table` (criteria/diagnostics) and `fits` (models or NULL).
+#' @return An object of class `multilpa_enumeration`. Read it with the verbs
+#'   that describe it rather than by reaching into it: [as.data.frame()] gives
+#'   one row per candidate model with every criterion and diagnostic,
+#'   [summary()] gives one row per information criterion naming the candidate
+#'   that minimises it, [plot()] draws one criterion across the grid, and
+#'   [candidate_fit()] returns the fitted model for one cell of the grid.
+#' @seealso [candidate_fit()] to take one fitted model out of the grid,
+#'   [summary.multilpa_enumeration()] for the criterion-by-criterion comparison.
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
 #' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
 #'                               group_classes = 1, n_starts = 2, seed = 1)
-#' candidates$table
+#' as.data.frame(candidates)
+#' summary(candidates)
 #' @export
 enumerate_classes <- function(data, indicators, group, profiles = 1:4,
                               group_classes = 1:3, seed = NULL, ...) {
@@ -63,6 +71,182 @@ enumerate_classes <- function(data, indicators, group, profiles = 1:4,
   result <- list(table = do.call(rbind, lapply(runs, `[[`, "row")),
        fits = lapply(runs, `[[`, "fit"), call = match.call())
   class(result) <- "multilpa_enumeration"
+  result
+}
+
+#' Take one fitted model out of an enumeration grid
+#'
+#' An enumeration keeps every candidate it fitted. This returns one of them, so
+#' that a caller who wants to plot, summarise or test a particular candidate
+#' names it by its class counts instead of indexing the grid by position.
+#'
+#' @param x An `multilpa_enumeration` result from [enumerate_classes()].
+#' @param n_profiles Number of individual profiles identifying the candidate.
+#' @param n_group_classes Number of group classes identifying the candidate.
+#' @return The fitted [multilpa()] model for that cell of the grid.
+#' @section Conditions:
+#'   `multilpa_unknown_candidate` when the requested class counts are not in
+#'   the grid, and `multilpa_failed_candidate` when they are in the grid but
+#'   that fit raised an error, so no model exists to return. Neither situation
+#'   returns `NULL`, because a `NULL` would flow silently into whatever the
+#'   caller did next.
+#' @examples
+#' set.seed(1)
+#' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
+#' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
+#'                               group_classes = 1, n_starts = 2, seed = 1)
+#' candidate_fit(candidates, n_profiles = 2, n_group_classes = 1)
+#' @export
+candidate_fit <- function(x, n_profiles, n_group_classes = 1L) {
+  stopifnot(
+    "`x` must be an `multilpa_enumeration` result" =
+      inherits(x, "multilpa_enumeration"),
+    "`n_profiles` must be a single positive integer" =
+      is.numeric(n_profiles) && length(n_profiles) == 1L &&
+      is.finite(n_profiles) && n_profiles >= 1,
+    "`n_group_classes` must be a single positive integer" =
+      is.numeric(n_group_classes) && length(n_group_classes) == 1L &&
+      is.finite(n_group_classes) && n_group_classes >= 1)
+  grid <- x$table
+  at <- which(grid$n_profiles == n_profiles &
+                grid$n_group_classes == n_group_classes)
+  if (length(at) != 1L) {
+    stop(errorCondition(sprintf(
+      "No candidate with %d profiles and %d group classes was enumerated.",
+      as.integer(n_profiles), as.integer(n_group_classes)),
+      class = "multilpa_unknown_candidate", call = NULL))
+  }
+  fit <- x$fits[[at]]
+  if (is.null(fit)) {
+    stop(errorCondition(sprintf(
+      "The candidate with %d profiles and %d group classes could not be fitted: %s",
+      as.integer(n_profiles), as.integer(n_group_classes), grid$error[at]),
+      class = "multilpa_failed_candidate", call = NULL))
+  }
+  fit
+}
+
+#' Summarise a class-enumeration grid
+#'
+#' Reports, for every information criterion the grid carries, which candidate
+#' minimises it. Criteria disagree by construction: they differ in how they
+#' penalise parameters and in whether they count individuals or independent
+#' groups. Laying the minima side by side shows that disagreement instead of
+#' hiding it behind one default. Nothing here selects a model.
+#'
+#' @param object An `multilpa_enumeration` result from [enumerate_classes()].
+#' @param ... Reserved for compatibility with `summary()`.
+#' @return An object of class `summary_multilpa_enumeration`, with a `print`
+#'   method and an [as.data.frame()] accessor. `as.data.frame()` returns one
+#'   row per information criterion, with columns `criterion`, `convention`
+#'   (`"groups"`, `"individuals"` or `NA` when the criterion uses no sample
+#'   size), `n_profiles` and `n_group_classes` of the minimising candidate, and
+#'   its `value`. Only converged candidates are eligible; a criterion with no
+#'   converged candidate has `NA` in every remaining column. Pass
+#'   `what = "candidates"` for the full grid instead.
+#' @examples
+#' set.seed(1)
+#' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
+#' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
+#'                               group_classes = 1, n_starts = 2, seed = 1)
+#' summary(candidates)
+#' as.data.frame(summary(candidates))
+#' @export
+summary.multilpa_enumeration <- function(object, ...) {
+  stopifnot("`object` must be an `multilpa_enumeration` result" =
+              inherits(object, "multilpa_enumeration"))
+  grid <- object$table
+  result <- list(criteria = .multilpa_enumeration_minima(grid),
+                 candidates = grid,
+                 n_candidates = nrow(grid),
+                 n_converged = sum(grid$converged),
+                 n_failed = sum(is.na(grid$log_likelihood)),
+                 n_boundary = sum(grid$boundary %in% TRUE),
+                 call = object$call)
+  class(result) <- "summary_multilpa_enumeration"
+  result
+}
+
+#' Which candidate minimises each information criterion
+#' @param grid The enumeration table.
+#' @return One row per criterion carried by the grid.
+#' @noRd
+.multilpa_enumeration_minima <- function(grid) {
+  present <- intersect(.multilpa_enumeration_criteria(), names(grid))
+  eligible <- grid$converged %in% TRUE
+  rows <- lapply(present, function(name) {
+    values <- grid[[name]]
+    values[!eligible] <- NA_real_
+    best <- if (all(is.na(values))) NA_integer_ else which.min(values)
+    data.frame(
+      criterion = sub("_(groups|individual)$", "", name),
+      convention = if (grepl("_groups$", name)) "groups" else
+        if (grepl("_individual$", name)) "individuals" else NA_character_,
+      n_profiles = if (is.na(best)) NA_integer_ else
+        as.integer(grid$n_profiles[best]),
+      n_group_classes = if (is.na(best)) NA_integer_ else
+        as.integer(grid$n_group_classes[best]),
+      value = if (is.na(best)) NA_real_ else values[best],
+      row.names = NULL, stringsAsFactors = FALSE)
+  })
+  do.call(rbind, rows)
+}
+
+#' Print an enumeration summary
+#' @param x A `summary_multilpa_enumeration` object.
+#' @param digits Number of printed significant digits.
+#' @param ... Passed to the underlying `data.frame` printing.
+#' @return The summary, invisibly.
+#' @examples
+#' # After enumerating: print(summary(candidates))
+#' @export
+print.summary_multilpa_enumeration <- function(x, digits = 4L, ...) {
+  stopifnot("`x` must be a `summary_multilpa_enumeration` object" =
+              inherits(x, "summary_multilpa_enumeration"),
+            "`digits` must be a single number between 1 and 22" =
+              is.numeric(digits) && length(digits) == 1L && is.finite(digits) &&
+              digits >= 1 && digits <= 22)
+  cat(sprintf("Class enumeration: %d candidates, %d converged, %d failed to fit\n",
+              x$n_candidates, x$n_converged, x$n_failed))
+  cat("\nCandidate minimising each information criterion:\n")
+  print(x$criteria, digits = digits, row.names = FALSE, ...)
+  disagreement <- unique(x$criteria[stats::complete.cases(
+    x$criteria[c("n_profiles", "n_group_classes")]), c("n_profiles", "n_group_classes")])
+  cat(sprintf("\n%d distinct candidate(s) are minimal under some criterion.\n",
+              nrow(disagreement)))
+  cat("No candidate is selected automatically. Choose one convention and keep it.\n")
+  invisible(x)
+}
+
+#' Tidy an enumeration summary
+#' @param x A `summary_multilpa_enumeration` object.
+#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
+#' @param optional Ignored, present for generic compatibility.
+#' @param what `"criteria"` returns one row per information criterion with the
+#'   candidate that minimises it; `"candidates"` returns the full grid, exactly
+#'   as [as.data.frame.multilpa_enumeration()] returns it.
+#' @param ... Ignored.
+#' @return A base `data.frame`. For `"criteria"`, one row per information
+#'   criterion, with columns `criterion`, `convention`, `n_profiles`,
+#'   `n_group_classes` and `value`. For `"candidates"`, one row per candidate
+#'   model in the grid.
+#' @examples
+#' set.seed(1)
+#' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
+#' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
+#'                               group_classes = 1, n_starts = 2, seed = 1)
+#' as.data.frame(summary(candidates))
+#' @export
+as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
+                                                       optional = FALSE,
+                                                       what = c("criteria",
+                                                                "candidates"),
+                                                       ...) {
+  stopifnot("`x` must be a `summary_multilpa_enumeration` object" =
+              inherits(x, "summary_multilpa_enumeration"))
+  what <- match.arg(what)
+  result <- switch(what, criteria = x$criteria, candidates = x$candidates)
+  row.names(result) <- row.names
   result
 }
 
@@ -154,8 +338,13 @@ enumerate_classes <- function(data, indicators, group, profiles = 1:4,
 #' @param max_iter Maximum EM iterations for each simulated fit.
 #' @param tol Relative likelihood convergence tolerance.
 #' @param seed Optional seed, with caller RNG state restored.
-#' @return Observed statistic, finite-simulation corrected p-value, Monte Carlo
-#'   standard error, replicate diagnostics and counts. Inspect failed starts,
+#' @return An object of class `multilpa_bootstrap_lrt`, carrying the observed
+#'   statistic, the finite-simulation corrected p-value, its Monte Carlo
+#'   standard error, and one record per replicate. Read it with the verbs that
+#'   describe it: [as.data.frame()] gives one row per simulated replicate,
+#'   `as.data.frame(what = "test")` the single-row test result, [summary()] the
+#'   test beside the replicate diagnostics, and [plot()] the simulated null
+#'   distribution with the observed statistic marked. Inspect failed starts,
 #'   boundary flags and likelihood replication before interpreting results.
 #' @examples
 #' # After fitting nested models on d:
@@ -256,11 +445,206 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
   }))
   valid <- all(replicates$valid)
   p_value <- if (valid) (1 + sum(replicates$statistic >= observed)) / (n_boot + 1) else NA_real_
-  if (!valid) warning("Some bootstrap fits failed validation; p_value is NA. Inspect $replicates and improve fitting.")
-  list(statistic = observed, p_value = p_value,
+  if (!valid) {
+    warning(warningCondition(paste(
+      "Some bootstrap fits failed validation, so p_value is NA.",
+      "summary() reports every replicate; improve fitting and rerun."),
+      class = "multilpa_failed_replicates"))
+  }
+  result <- list(statistic = observed, p_value = p_value,
        monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (n_boot + 1)) else NA_real_,
        n_boot = n_boot, n_valid = sum(replicates$valid), replicates = replicates,
+       null_profiles = null_model$n_profiles,
+       null_group_classes = null_model$n_group_classes,
+       alternative_profiles = alternative_model$n_profiles,
+       alternative_group_classes = alternative_model$n_group_classes,
        call = match.call())
+  class(result) <- "multilpa_bootstrap_lrt"
+  result
+}
+
+#' Print a parametric bootstrap likelihood-ratio comparison
+#' @param x An `multilpa_bootstrap_lrt` result.
+#' @param ... Reserved for compatibility with `print()`.
+#' @return The input, invisibly.
+#' @examples
+#' # After bootstrapping: print(comparison)
+#' @export
+print.multilpa_bootstrap_lrt <- function(x, ...) {
+  stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
+              inherits(x, "multilpa_bootstrap_lrt"))
+  cat(sprintf("Parametric bootstrap likelihood-ratio comparison\n"))
+  cat(sprintf("Null: %d profiles, %d group classes; alternative: %d profiles, %d group classes\n",
+              x$null_profiles, x$null_group_classes,
+              x$alternative_profiles, x$alternative_group_classes))
+  cat(sprintf("Observed statistic: %.6f\n", x$statistic))
+  cat(sprintf("p-value: %s (Monte Carlo SE %s) from %d of %d valid replicates\n",
+              format(x$p_value, digits = 4L), format(x$monte_carlo_se, digits = 3L),
+              x$n_valid, x$n_boot))
+  if (is.na(x$p_value)) {
+    cat("The p-value is withheld because not every replicate was valid; summary() lists them.\n")
+  }
+  invisible(x)
+}
+
+#' Summarise a parametric bootstrap likelihood-ratio comparison
+#' @param object An `multilpa_bootstrap_lrt` result.
+#' @param ... Reserved for compatibility with `summary()`.
+#' @return An object of class `summary_multilpa_bootstrap_lrt`, with a `print`
+#'   method and an [as.data.frame()] accessor. `as.data.frame()` returns the
+#'   one-row test table by default and one row per replicate with
+#'   `what = "replicates"`.
+#' @examples
+#' # After bootstrapping: summary(comparison)
+#' @export
+summary.multilpa_bootstrap_lrt <- function(object, ...) {
+  stopifnot("`object` must be an `multilpa_bootstrap_lrt` result" =
+              inherits(object, "multilpa_bootstrap_lrt"))
+  result <- list(test = .multilpa_bootstrap_test_frame(object),
+                 replicates = object$replicates,
+                 n_boundary = sum(object$replicates$boundary %in% TRUE),
+                 n_errors = sum(!is.na(object$replicates$error)),
+                 call = object$call)
+  class(result) <- "summary_multilpa_bootstrap_lrt"
+  result
+}
+
+#' The bootstrap test as a single tidy row
+#' @param x An `multilpa_bootstrap_lrt` result.
+#' @return A one-row `data.frame` describing the comparison.
+#' @noRd
+.multilpa_bootstrap_test_frame <- function(x) {
+  data.frame(null_profiles = x$null_profiles,
+             null_group_classes = x$null_group_classes,
+             alternative_profiles = x$alternative_profiles,
+             alternative_group_classes = x$alternative_group_classes,
+             statistic = x$statistic, p_value = x$p_value,
+             monte_carlo_se = x$monte_carlo_se,
+             n_boot = x$n_boot, n_valid = x$n_valid,
+             row.names = NULL)
+}
+
+#' Print a bootstrap likelihood-ratio summary
+#' @param x A `summary_multilpa_bootstrap_lrt` object.
+#' @param digits Number of printed significant digits.
+#' @param ... Passed to the underlying `data.frame` printing.
+#' @return The summary, invisibly.
+#' @examples
+#' # After bootstrapping: print(summary(comparison))
+#' @export
+print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, ...) {
+  stopifnot("`x` must be a `summary_multilpa_bootstrap_lrt` object" =
+              inherits(x, "summary_multilpa_bootstrap_lrt"),
+            "`digits` must be a single number between 1 and 22" =
+              is.numeric(digits) && length(digits) == 1L && is.finite(digits) &&
+              digits >= 1 && digits <= 22)
+  cat("Parametric bootstrap likelihood-ratio comparison\n\n")
+  print(x$test, digits = digits, row.names = FALSE, ...)
+  cat(sprintf("\n%d replicate(s) reached a parameter boundary; %d raised an error.\n",
+              x$n_boundary, x$n_errors))
+  cat("The reference distribution is simulated, not chi-square.\n")
+  invisible(x)
+}
+
+#' Tidy a parametric bootstrap likelihood-ratio comparison
+#' @param x An `multilpa_bootstrap_lrt` result, or its summary.
+#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
+#' @param optional Ignored, present for generic compatibility.
+#' @param what `"test"` returns the single-row test result; `"replicates"`
+#'   returns one row per simulated replicate.
+#' @param ... Ignored.
+#' @return A base `data.frame`. `"test"` has one row, with columns
+#'   `null_profiles`, `null_group_classes`, `alternative_profiles`,
+#'   `alternative_group_classes`, `statistic`, `p_value`, `monte_carlo_se`,
+#'   `n_boot` and `n_valid`. `"replicates"` has one row per simulated dataset,
+#'   with columns `replicate`, `statistic`, `valid`, `boundary`,
+#'   `null_replications`, `alternative_replications`, `warnings` and `error`.
+#' @examples
+#' # After bootstrapping: as.data.frame(comparison, what = "replicates")
+#' @export
+as.data.frame.multilpa_bootstrap_lrt <- function(x, row.names = NULL,
+                                                 optional = FALSE,
+                                                 what = c("test", "replicates"),
+                                                 ...) {
+  stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
+              inherits(x, "multilpa_bootstrap_lrt"))
+  what <- match.arg(what)
+  result <- switch(what, test = .multilpa_bootstrap_test_frame(x),
+                   replicates = x$replicates)
+  row.names(result) <- row.names
+  result
+}
+
+#' @rdname as.data.frame.multilpa_bootstrap_lrt
+#' @export
+as.data.frame.summary_multilpa_bootstrap_lrt <- function(x, row.names = NULL,
+                                                         optional = FALSE,
+                                                         what = c("test",
+                                                                  "replicates"),
+                                                         ...) {
+  stopifnot("`x` must be a `summary_multilpa_bootstrap_lrt` object" =
+              inherits(x, "summary_multilpa_bootstrap_lrt"))
+  what <- match.arg(what)
+  result <- switch(what, test = x$test, replicates = x$replicates)
+  row.names(result) <- row.names
+  result
+}
+
+#' Plot a simulated bootstrap null distribution
+#'
+#' Draws the replicate likelihood-ratio statistics as a histogram with the
+#' observed statistic marked, so that the p-value can be read as a tail area of
+#' the distribution that was actually simulated. Invalid replicates carry no
+#' statistic and are counted in the subtitle rather than dropped silently.
+#'
+#' @param x An `multilpa_bootstrap_lrt` result.
+#' @param main,subtitle Panel title and secondary line, or `NULL` for defaults.
+#' @param palette A vector of at least two colours: the histogram fill and the
+#'   observed-statistic marker. `NULL` uses the package palette.
+#' @param style A list of visual constants, as built by `.multilpa_style()`.
+#' @param ... Further named visual constants, merged into `style`.
+#' @return The input, invisibly. Called for the side effect of drawing.
+#' @section Conditions:
+#'   `multilpa_nothing_to_plot` when no replicate produced a finite statistic.
+#' @examples
+#' # After bootstrapping: plot(comparison)
+#' @export
+plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
+                                        palette = NULL,
+                                        style = .multilpa_style(), ...) {
+  stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
+              inherits(x, "multilpa_bootstrap_lrt"))
+  values <- x$replicates$statistic
+  values <- values[is.finite(values)]
+  if (length(values) == 0L) {
+    stop(errorCondition(
+      "No replicate produced a finite statistic; there is nothing to plot.",
+      class = "multilpa_nothing_to_plot", call = NULL))
+  }
+  style <- utils::modifyList(style, list(...))
+  colours <- if (is.null(palette)) .multilpa_palette(2L) else
+    rep(palette, length.out = 2L)
+  previous <- graphics::par(no.readonly = TRUE)
+  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
+  graphics::par(xpd = NA, mar = style$margins)
+  breaks <- pretty(range(c(values, x$statistic, 0)), n = 12L)
+  counts <- graphics::hist(values, breaks = breaks, plot = FALSE)
+  .multilpa_panel(xlim = range(breaks), ylim = c(0, max(counts$counts) * 1.12),
+    xlab = "Simulated likelihood-ratio statistic", ylab = "Replicates",
+    main = if (is.null(main)) "Simulated null distribution" else main,
+    subtitle = if (is.null(subtitle)) sprintf(
+      "%d of %d replicates valid; observed %.3f, p = %s", x$n_valid, x$n_boot,
+      x$statistic, format(x$p_value, digits = 3L)) else subtitle,
+    style = style)
+  graphics::rect(counts$breaks[-length(counts$breaks)], 0,
+                 counts$breaks[-1L], counts$counts, col = colours[1L],
+                 border = style$panel_fill, lwd = 1.2)
+  graphics::abline(v = x$statistic, col = colours[2L], lwd = style$line_width,
+                   lty = 2L)
+  graphics::text(x$statistic, max(counts$counts) * 1.06, " observed",
+                 adj = c(0, 0.5), col = colours[2L],
+                 cex = style$label_text_size, font = 2L)
+  invisible(x)
 }
 
 #' Spread the information criteria of one candidate into a single row
@@ -268,18 +652,44 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
 #' @return A one-row `data.frame` of criteria, all `NA_real_` when `fit` is `NULL`.
 #' @noRd
 .multilpa_enumeration_indices <- function(fit) {
-  names_wanted <- c("aic", "bic_groups", "bic_individual", "sabic_groups",
-                    "sabic_individual", "caic_groups", "caic_individual",
-                    "awe_groups", "awe_individual", "icl_groups", "icl_individual")
+  names_wanted <- .multilpa_enumeration_criteria()
   if (is.null(fit)) {
     return(as.data.frame(stats::setNames(
       rep(list(NA_real_), length(names_wanted)), names_wanted)))
   }
   indices <- information_criteria(fit)
-  labels <- ifelse(indices$convention == "none", indices$criterion,
+  ## A criterion that uses no sample size carries `NA` as its convention. The
+  ## old test compared it with the string "none", so `ifelse()` saw an `NA`
+  ## condition and returned `NA` for every such criterion, silently producing
+  ## an all-missing column named `NA.` where `aic` was meant to be. Both
+  ## encodings are accepted so the grid survives either spelling upstream.
+  no_convention <- is.na(indices$convention) | indices$convention %in% "none"
+  labels <- ifelse(no_convention, indices$criterion,
                    paste(indices$criterion,
                          sub("individuals", "individual", indices$convention),
                          sep = "_"))
+  missing_labels <- setdiff(names_wanted, labels)
+  if (length(missing_labels) > 0L) {
+    stop(errorCondition(sprintf(
+      "information_criteria() no longer reports %s, so the enumeration grid cannot be built.",
+      paste(missing_labels, collapse = ", ")),
+      class = "multilpa_unknown_criterion", call = NULL))
+  }
   values <- stats::setNames(indices$value, labels)
   as.data.frame(as.list(values[names_wanted]))
+}
+
+#' The information criteria an enumeration grid carries
+#'
+#' Named once so that the failed-candidate row and the fitted row cannot drift
+#' apart, and so that a renamed criterion is caught rather than silently
+#' turned into a missing column.
+#'
+#' @return A character vector of grid column names, in grid order.
+#' @noRd
+.multilpa_enumeration_criteria <- function() {
+  c("aic", "kic", "bic_groups", "bic_individual", "sabic_groups",
+    "sabic_individual", "caic_groups", "caic_individual", "awe_groups",
+    "awe_individual", "icl_groups", "icl_individual", "clc_groups",
+    "clc_individual")
 }

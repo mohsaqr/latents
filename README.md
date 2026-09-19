@@ -37,8 +37,9 @@ fit <- multilpa(
 summary(fit)
 as.data.frame(fit)                                   # one row per profile and indicator
 as.data.frame(fit, what = "profile_probabilities")   # one row per group class and profile
-as.data.frame(fit, what = "posteriors")              # one row per input individual
-as.data.frame(fit, what = "group_posteriors")        # one row per observed group
+as.data.frame(fit, what = "posteriors")              # one row per individual and profile
+as.data.frame(fit, what = "posteriors", format = "wide")  # one row per individual
+as.data.frame(fit, what = "group_posteriors")        # one row per group and group class
 as.data.frame(fit, what = "starts")                  # one row per EM start
 information_criteria(fit)                            # every information criterion
 classification_table(fit, level = "both")            # classification quality
@@ -170,13 +171,16 @@ fit_covariates(students, c("reading", "passed", "engagement"), "school_id", 3, 2
 # Alternative: one continuous group intercept, loading 1 on every indicator.
 random_intercept <- fit_random_intercept(
   students, c("reading", "maths", "engagement"), "school_id", 3, seed = 42)
-random_intercept$quadrature_log_likelihood_difference
+summary(random_intercept)                            # includes the quadrature check
+as.data.frame(summary(random_intercept), what = "model")
 
 # Compare profile/group-class counts; inspect diagnostics in every row.
 candidates <- enumerate_classes(
   students, c("reading", "maths", "engagement"), "school_id",
   profiles = 2:4, group_classes = 1:3, n_starts = 20, seed = 42)
-as.data.frame(candidates)
+as.data.frame(candidates)                            # one row per candidate model
+summary(candidates)                                  # the best model on each criterion
+candidate_fit(candidates, n_profiles = 3, n_group_classes = 2)
 plot(candidates, criterion = "sabic_individual")
 
 # Complete-data nested models differing by one class at one level.
@@ -242,7 +246,7 @@ fit <- multilpa(students, c("reading", "maths", "engagement"), "student_id",
                   n_profiles = 3, n_group_classes = 2, time = "term", seed = 42)
 
 sequences(fit)                     # one row per individual and time point
-sequences(fit, format = "wide")    # one row per individual, one column per time
+sequences(fit, format = "wide")    # one row per individual, carrying its identifier
 sequence_summary(fit)              # group counts, sequence lengths and completeness
 plot(fit, what = "sequences")
 ```
@@ -333,7 +337,8 @@ default, links each group's own consecutive observations. `occasions = "grid"`
 places them on the grid of every position seen in the data, so a group that
 skips a wave spends a transition crossing the gap and contributes no
 measurement information at it. The two agree whenever every group is observed
-at every position, which `moves$balanced` reports.
+at every position, which `sequence_summary(moves)` reports as a `gaps` count of
+zero for every group class.
 
 Standard errors, likelihood-ratio tests and class enumeration are not available
 for this model family; `logLik()`, `information_criteria()`,
@@ -352,10 +357,11 @@ classification_errors(fit)
 classification_errors(fit, level = "groups")
 
 # Bolck-Croon-Hagenaars weights, the inverse of that matrix by modal class.
-bch_weights(fit)
+bch_weights(fit)                                     # one row per unit and class
 
 # A distal outcome the classes did not define, corrected for misclassification.
 three_step(fit, data = students, outcome = "exam_score")
+three_step(fit, data = students, outcome = "exam_score", contrast = "pairs")
 three_step(fit, data = students, outcome = "exam_score", method = "modal")
 
 # Covariates predicting class membership (Vermunt 2010 R3STEP), errors fixed.

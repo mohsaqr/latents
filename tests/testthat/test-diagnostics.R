@@ -17,13 +17,17 @@ test_that("information criteria match their documented formulas", {
   indices <- information_criteria(fit)
   expect_s3_class(indices, "data.frame")
   expect_identical(names(indices),
-    c("criterion", "convention", "n", "value", "penalty", "definition"))
-  # 3 without a convention (log likelihood, aic, kic) and 6 per convention
+    c("criterion", "convention", "n", "value", "penalty"))
+  # 3 without a convention (deviance, aic, kic) and 6 per convention
   # (bic, sabic, caic, awe, icl, clc) at two conventions.
   expect_identical(nrow(indices), 15L)
   pick <- function(criterion_name, convention_name) {
-    indices$value[indices$criterion == criterion_name &
-                    indices$convention == convention_name]
+    rows <- if (is.na(convention_name)) {
+      subset(indices, criterion == criterion_name & is.na(convention))
+    } else {
+      subset(indices, criterion == criterion_name & convention == convention_name)
+    }
+    rows$value
   }
   q <- fit$n_parameters
   log_likelihood <- fit$log_likelihood
@@ -31,8 +35,10 @@ test_that("information criteria match their documented formulas", {
   n_groups <- fit$n_groups
   entropy_individuals <- .multilpa_entropy_sum(fit$subject_posteriors)
   entropy_groups <- .multilpa_entropy_sum(fit$group_posteriors)
-  expect_equal(pick("log_likelihood", "none"), log_likelihood)
-  expect_equal(pick("aic", "none"), fit$aic)
+  # The table reports the deviance, not the log likelihood, so that every row
+  # of `value` points the same way; logLik() still carries L itself.
+  expect_equal(pick("deviance", NA_character_), -2 * log_likelihood)
+  expect_equal(pick("aic", NA_character_), fit$aic)
   expect_equal(pick("bic", "groups"), fit$bic)
   expect_equal(pick("bic", "individuals"), fit$bic_individual)
   expect_equal(pick("sabic", "individuals"),
@@ -48,9 +54,12 @@ test_that("information criteria match their documented formulas", {
   expect_equal(pick("awe", "individuals"),
                -2 * (log_likelihood - entropy_individuals) +
                  2 * q * (1.5 + log(n_individuals)))
-  # Every penalty is nonnegative here and the criteria exceed -2L accordingly.
-  penalties <- indices$penalty[!is.na(indices$penalty)]
+  # Every penalty is positive here and the criteria exceed -2L accordingly.
+  penalties <- subset(indices, criterion != "deviance")$penalty
   expect_true(all(penalties > 0))
+  # The deviance is the baseline every penalty is added to, so it carries none.
+  expect_equal(subset(indices, criterion == "deviance")$penalty, 0)
+  expect_equal(indices$value, -2 * log_likelihood + indices$penalty)
 })
 
 test_that("information criteria order candidate models sensibly", {
@@ -58,12 +67,12 @@ test_that("information criteria order candidate models sensibly", {
   one <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 3, seed = 5)
   two <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   criteria <- c("bic", "sabic", "caic", "icl", "awe")
-  better <- vapply(criteria, function(criterion) {
+  better <- vapply(criteria, function(criterion_name) {
     one_value <- information_criteria(one)
     two_value <- information_criteria(two)
     select <- function(indices) {
-      indices$value[indices$criterion == criterion &
-                      indices$convention == "individuals"]
+      subset(indices, criterion == criterion_name &
+               convention == "individuals")$value
     }
     select(two_value) < select(one_value)
   }, logical(1))
@@ -88,10 +97,12 @@ test_that("classification diagnostics are internally consistent", {
   expect_equal(sum(groups$estimated_n), fit$n_groups)
   # Well-separated profiles must classify far better than chance.
   expect_true(all(individuals$odds_correct_classification > 5))
-  detail <- classification_table(fit, level = "individuals", detail = TRUE)
-  expect_identical(nrow(detail), 4L)
+  # The cross-tabulation is its own verb now, not a flag that changes the
+  # columns of this one.
+  cross <- average_posteriors(fit, level = "individuals")
+  expect_identical(nrow(cross), 4L)
   # Average posteriors within each modal group are a probability distribution.
-  totals <- tapply(detail$average_posterior, detail$assigned_class, sum)
+  totals <- tapply(cross$average_posterior, cross$assigned_class, sum)
   expect_equal(unname(as.vector(totals)), rep(1, 2))
 })
 
@@ -135,14 +146,23 @@ test_that("tidy accessors return the documented shapes", {
   expect_identical(nrow(probabilities), 4L)
   totals <- tapply(probabilities$probability, probabilities$group_class, sum)
   expect_equal(unname(as.vector(totals)), rep(1, 2))
+  # One row per individual and profile. The wide form is still available, and
+  # carries the same numbers.
   posteriors <- as.data.frame(fit, what = "posteriors")
-  expect_identical(nrow(posteriors), fit$n_observations)
-  expect_identical(posteriors$row, seq_len(fit$n_observations))
-  expect_equal(posteriors$group, dat$g)
+  expect_identical(nrow(posteriors), fit$n_observations * fit$n_profiles)
+  expect_equal(as.vector(tapply(posteriors$posterior, posteriors$row, sum)),
+               rep(1, fit$n_observations))
+  wide <- as.data.frame(fit, what = "posteriors", format = "wide")
+  expect_identical(nrow(wide), fit$n_observations)
+  expect_identical(wide$row, seq_len(fit$n_observations))
+  expect_equal(wide$group, dat$g)
   group_posteriors <- as.data.frame(fit, what = "group_posteriors")
-  expect_identical(nrow(group_posteriors), fit$n_groups)
-  expect_equal(sum(group_posteriors$group_size), fit$n_observations)
-  expect_equal(sum(group_posteriors$log_likelihood), fit$log_likelihood)
+  expect_identical(nrow(group_posteriors),
+                   fit$n_groups * fit$n_group_classes)
+  wide_groups <- as.data.frame(fit, what = "group_posteriors", format = "wide")
+  expect_identical(nrow(wide_groups), fit$n_groups)
+  expect_equal(sum(wide_groups$group_size), fit$n_observations)
+  expect_equal(sum(wide_groups$log_likelihood), fit$log_likelihood)
   expect_identical(nrow(as.data.frame(fit, what = "starts")), 6L)
   expect_identical(as.data.frame(fit, what = "information_criteria"),
                    information_criteria(fit))
@@ -284,13 +304,16 @@ test_that("every result class has a working tidy accessor", {
   expect_equal(profiles$standard_deviation, sqrt(profiles$variance))
   coefficients <- as.data.frame(covariate_fit, what = "coefficients")
   expect_identical(names(coefficients),
-    c("level", "outcome", "term", "estimate"))
+    c("level", "outcome", "term", "parameter", "estimate"))
+  # The estimates are multinomial logits; the table has to say so.
+  expect_identical(unique(coefficients$parameter), "logit")
   expect_setequal(unique(coefficients$level), c("profile", "group"))
   expect_true("age" %in% coefficients$term)
   expect_true("resources" %in% coefficients$term)
-  expect_identical(nrow(as.data.frame(covariate_fit, what = "posteriors")), n)
+  expect_identical(nrow(as.data.frame(covariate_fit, what = "posteriors")),
+                   n * covariate_fit$n_profiles)
   expect_identical(nrow(as.data.frame(covariate_fit, what = "group_posteriors")),
-                   30L)
+                   30L * covariate_fit$n_group_classes)
   intercept_fit <- fit_random_intercept(dat, c("a", "b"), "school", 2,
                                                n_starts = 3, seed = 1)
   expect_identical(nrow(as.data.frame(intercept_fit)), 4L)
@@ -299,7 +322,8 @@ test_that("every result class has a working tidy accessor", {
   expect_identical(nrow(intercepts), 30L)
   expect_equal(sum(intercepts$group_size), n)
   expect_true(all(intercepts$sd > 0))
-  expect_identical(nrow(as.data.frame(intercept_fit, what = "posteriors")), n)
+  expect_identical(nrow(as.data.frame(intercept_fit, what = "posteriors")),
+                   n * intercept_fit$n_profiles)
 })
 
 test_that("preparation helpers enforce their own contracts", {

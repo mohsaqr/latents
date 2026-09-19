@@ -443,7 +443,8 @@
 #'   indexing the profile moved from), `group_probabilities`, posterior
 #'   matrices, classifications, log likelihood, information criteria, restart
 #'   diagnostics and convergence history. Use [transitions()] for the tidy
-#'   transition table and [as.data.frame()] for the other tables. No standard
+#'   transition table and [as.data.frame.multilpa_transitions()] for the other
+#'   tables. No standard
 #'   errors, likelihood-ratio tests or guarantees of global optimality are
 #'   given for this model family.
 #' @details Transitions are first order and homogeneous over occasions: the
@@ -451,8 +452,10 @@
 #'   occasion or on earlier profiles. Measurement parameters are shared across
 #'   occasions and across group classes. A profile that no group occupies before
 #'   its final occasion leaves its transition row without information; the row
-#'   is then uniform by construction rather than estimated, and is reported in
-#'   `empty_transition_rows` and warned about. Profile labels are arbitrary and
+#'   is then uniform by construction rather than estimated. Such a row is warned
+#'   about when the model is fitted, is flagged by the `estimated` column of
+#'   [transitions()] and is listed by `transitions(fit, estimated = FALSE)`.
+#'   Profile labels are arbitrary and
 #'   are not comparable across fits without alignment.
 #' @references Collins, L. M., & Lanza, S. T. (2010). Latent class and latent
 #'   transition analysis. Wiley.
@@ -503,10 +506,13 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
   occasions <- match.arg(occasions)
-  time_values <- .multilpa_time_values(data, time, group)
+  # The data contract is checked BEFORE the ordering column. Reversed, a missing
+  # group column surfaced as an internal `split()` failure ("group length is 0
+  # but data length > 0") instead of this package's own classed error.
   .multilpa_check_arguments(data, indicators, group, n_profiles, n_group_classes,
                             n_starts, max_iter, tol, min_variance,
                             min_probability, seed, categorical)
+  time_values <- .multilpa_time_values(data, time, group, indicators)
   if (n_profiles < 2L) {
     stop(errorCondition(
       "`n_profiles` must be at least two; a single profile has nothing to move between.",
@@ -663,7 +669,8 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))))
   class(result) <- "multilpa_transitions"
   if (any(!valid)) {
-    warning(sprintf("%d of %d starts failed; inspect $starts$error.",
+    warning(sprintf(paste("%d of %d starts failed; read their messages with",
+                          "as.data.frame(fit, what = \"starts\")."),
                     sum(!valid), n_starts), call. = FALSE)
   }
   if (!best$converged && max_iter > 0L) {
@@ -677,7 +684,10 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
       call. = FALSE)
   }
   if (empty_rows) {
-    warning("A profile is never occupied before a final occasion; its transition row is uniform by construction, not estimated.",
+    warning(paste("A profile is never occupied before a final occasion; its",
+                  "transition row is uniform by construction, not estimated.",
+                  "List the affected rows with",
+                  "transitions(fit, estimated = FALSE)."),
             call. = FALSE)
   }
   if (small_classes) {
@@ -697,13 +707,31 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
 #' prevalences.
 #'
 #' @param object A fitted `multilpa_transitions` model.
+#' @param estimated Keep only the rows the data could estimate (`TRUE`), only
+#'   the rows that are uniform by construction (`FALSE`), or all of them
+#'   (`NULL`, the default).
+#' @param stable Keep only the probabilities of staying in a profile (`TRUE`),
+#'   only the probabilities of moving to a different one (`FALSE`), or all of
+#'   them (`NULL`, the default). The two arguments combine, so
+#'   `transitions(fit, estimated = TRUE, stable = FALSE)` is every estimated
+#'   move out of a profile.
 #' @return A base `data.frame` with one row per group class and ordered pair of
 #'   profiles, and the columns `group_class`, `from`, `to`, `probability`, the
-#'   `expected_count` of such transitions, `stable` (whether the row and column
-#'   are the same profile), `estimated` (`FALSE` where the profile moved from
-#'   is never occupied before a final occasion, so the row is uniform by
-#'   construction) and `group_class_probability`. Rows are ordered by group
-#'   class, then by the profile moved from, then by the profile moved to.
+#'   `expected_count` of such transitions, `stable` (`TRUE` where `from` and
+#'   `to` are the same profile, so the probability is one of staying),
+#'   `estimated` (`FALSE` where the profile moved from is never occupied before
+#'   a final occasion, so nothing was ever observed leaving it and the whole row
+#'   is uniform by construction rather than estimated) and
+#'   `group_class_probability`. `stable` and `estimated` are logical and never
+#'   `NA`. Rows are ordered by group class, then by the profile moved from, then
+#'   by the profile moved to; `estimated` and `stable` drop rows without
+#'   reordering the ones they keep.
+#'
+#'   `group_class_probability` is the fitted share of groups in `group_class`,
+#'   so it is constant within a group class and repeats down its rows. It is
+#'   carried here because the overall transition matrix is the class-weighted
+#'   average of the per-class ones, and that weight would otherwise have to be
+#'   fetched out of the fitted object by hand.
 #' @seealso [fit_transitions()] to fit the model, and [sequences()] for the
 #'   assignments the transitions are estimated from.
 #' @examples
@@ -716,23 +744,67 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
 #' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 #' transitions(fit)
+#' transitions(fit, stable = FALSE)
 #' @export
-transitions <- function(object) {
-  stopifnot("`object` must be a fitted `multilpa_transitions` model" =
-              inherits(object, "multilpa_transitions"))
-  n_profiles <- object$n_profiles
-  n_types <- object$n_group_classes
+transitions <- function(object, estimated = NULL, stable = NULL) {
+  stopifnot(
+    "`object` must be a fitted `multilpa_transitions` model" =
+      inherits(object, "multilpa_transitions"),
+    "`estimated` must be NULL, TRUE or FALSE" =
+      .multilpa_optional_flag(estimated),
+    "`stable` must be NULL, TRUE or FALSE" = .multilpa_optional_flag(stable))
+  .multilpa_restrict_transitions(.multilpa_transition_frame(object),
+                                 estimated = estimated, stable = stable)
+}
+
+#' Is a value absent, or a single non-missing logical?
+#'
+#' @param value The argument to check.
+#' @return A single logical.
+#' @noRd
+.multilpa_optional_flag <- function(value) {
+  is.null(value) ||
+    (is.logical(value) && length(value) == 1L && !is.na(value))
+}
+
+#' Transition probabilities of a fit or of its summary
+#'
+#' Both a fitted model and its summary carry the arrays this table is built
+#' from under the same names, so both get the same table from one definition.
+#'
+#' @param x A fitted `multilpa_transitions` model or its summary.
+#' @return One row per group class and ordered pair of profiles.
+#' @noRd
+.multilpa_transition_frame <- function(x) {
+  n_profiles <- x$n_profiles
+  n_types <- x$n_group_classes
   cells <- n_profiles * n_profiles
   data.frame(
     group_class = rep(seq_len(n_types), each = cells),
     from = rep(rep(seq_len(n_profiles), each = n_profiles), times = n_types),
     to = rep(seq_len(n_profiles), times = n_profiles * n_types),
-    probability = as.vector(aperm(object$transition_probabilities, c(2L, 1L, 3L))),
-    expected_count = as.vector(aperm(object$transition_counts, c(2L, 1L, 3L))),
+    probability = as.vector(aperm(x$transition_probabilities, c(2L, 1L, 3L))),
+    expected_count = as.vector(aperm(x$transition_counts, c(2L, 1L, 3L))),
     stable = rep(as.vector(t(diag(TRUE, n_profiles))), times = n_types),
-    estimated = rep(!as.vector(object$empty_transition_rows), each = n_profiles),
-    group_class_probability = rep(unname(object$group_probabilities), each = cells),
+    estimated = rep(!as.vector(x$empty_transition_rows), each = n_profiles),
+    group_class_probability = rep(unname(x$group_probabilities), each = cells),
     row.names = NULL)
+}
+
+#' Keep the transition rows a caller asked for
+#'
+#' @param frame A transition table, as built by `.multilpa_transition_frame()`.
+#' @param estimated,stable `NULL` to keep every row, or a single logical to keep
+#'   the rows whose column equals it.
+#' @return The table, with row names renumbered.
+#' @noRd
+.multilpa_restrict_transitions <- function(frame, estimated, stable) {
+  keep <- rep(TRUE, nrow(frame))
+  if (!is.null(estimated)) keep <- keep & frame$estimated == estimated
+  if (!is.null(stable)) keep <- keep & frame$stable == stable
+  frame <- frame[keep, , drop = FALSE]
+  row.names(frame) <- NULL
+  frame
 }
 
 #' Initial profile probabilities as a tidy table
@@ -770,8 +842,17 @@ transitions <- function(object) {
 #'   diagnostics, and `"information_criteria"`, `"classification"` and
 #'   `"entropy"` exactly [information_criteria()], [classification_table()] and
 #'   [entropy_table()].
-#' @param ... Passed to the underlying accessor; `classification` accepts
-#'   `level` and `detail`.
+#' @param format For the posterior tables, `"long"` (the default) gives one row
+#'   per unit and class, and `"wide"` gives one row per unit with one column per
+#'   class. The wide column set grows with the number of classes, so no caller
+#'   can address it generically; it stays available because joining posteriors
+#'   back onto the fitting data wants one row per unit. Supplying it with any
+#'   other `what` is an error rather than a silent no-op.
+#' @param ... Passed to the underlying accessor; `"transitions"` accepts
+#'   `estimated` and `stable`, `"classification"` accepts `level`, and
+#'   `"information_criteria"` accepts `definitions`. The per-assigned-class
+#'   breakdown that `classification_table(detail = TRUE)` used to return is now
+#'   its own verb, [average_posteriors()].
 #' @return A base `data.frame` whose columns depend on `what`. `"initial"` has
 #'   one row per group class and profile, with columns `group_class`,
 #'   `profile`, `probability`, `prevalence` and `group_class_probability`.
@@ -803,17 +884,22 @@ as.data.frame.multilpa_transitions <- function(x, row.names = NULL,
                                                         "starts",
                                                         "information_criteria",
                                                         "classification",
-                                                        "entropy"), ...) {
+                                                        "entropy"),
+                                               format = c("long", "wide"), ...) {
   stopifnot("`x` must be a `multilpa_transitions` fit" =
               inherits(x, "multilpa_transitions"))
   what <- match.arg(what)
+  format <- match.arg(format)
+  stopifnot("`format` applies only to the posterior tables" =
+              identical(format, "long") ||
+              what %in% c("posteriors", "group_posteriors"))
   result <- switch(what,
-    transitions = transitions(x),
+    transitions = transitions(x, ...),
     initial = .multilpa_initial_frame(x),
     profiles = .multilpa_profile_frame(x, ...),
     responses = .multilpa_response_frame(x, ...),
-    posteriors = .multilpa_posterior_frame(x),
-    group_posteriors = .multilpa_group_posterior_frame(x),
+    posteriors = .multilpa_posterior_frame(x, format),
+    group_posteriors = .multilpa_group_posterior_frame(x, format),
     sequence_lengths = data.frame(
       group = x$group_values, group_class = x$group_classes,
       occasions = unname(x$sequence_lengths),
@@ -821,7 +907,7 @@ as.data.frame.multilpa_transitions <- function(x, row.names = NULL,
       complete = unname(x$sequence_lengths) == x$n_occasions,
       row.names = NULL),
     starts = x$starts,
-    information_criteria = information_criteria(x),
+    information_criteria = information_criteria(x, ...),
     classification = classification_table(x, ...),
     entropy = entropy_table(x))
   row.names(result) <- row.names
@@ -916,9 +1002,11 @@ nobs.multilpa_transitions <- function(object, ...) {
 #'
 #' @param object A fitted `multilpa_transitions` model.
 #' @param ... Reserved for compatibility with `summary()`.
-#' @return A `summary_multilpa_transitions` list carrying the measurement
-#'   parameters, the initial and transition probabilities, the effective class
-#'   counts, the fit statistics and the restart diagnostics.
+#' @return A `summary_multilpa_transitions` object carrying the measurement
+#'   parameters, the initial and transition probabilities and counts, the
+#'   effective class counts, the fit statistics and the restart diagnostics.
+#'   Its tables are read with [as.data.frame.summary_multilpa_transitions()];
+#'   `print()` reports the whole model.
 #' @seealso [transitions()] for the transition probabilities as a tidy table.
 #' @examples
 #' set.seed(7)
@@ -938,15 +1026,80 @@ summary.multilpa_transitions <- function(object, ...) {
               "variance_model", "covariance_model", "missing", "means",
               "variances", "standard_deviations", "covariances",
               "response_probabilities", "initial_probabilities",
-              "transition_probabilities", "profile_prevalence",
+              "transition_probabilities", "transition_counts",
+              "profile_prevalence",
               "empty_transition_rows", "group_probabilities", "log_likelihood",
               "n_parameters", "aic", "bic", "bic_individual", "converged",
               "iterations", "boundary", "min_variance", "small_classes",
               "starts", "best_start", "n_best_replicated",
               "replication_tolerance", "effective_profile_counts",
               "effective_group_counts")
-  result <- object[fields]
+  # `covariances` exists only under a full covariance model and
+  # `response_probabilities` only with categorical indicators. Every other
+  # field is mandatory: subsetting a list by an absent name yields a NULL
+  # element keyed NA rather than an error, so an absent field is caught here
+  # instead of surfacing later as an `NA`-named hole in the summary.
+  optional <- c("covariances", "response_probabilities")
+  absent <- setdiff(setdiff(fields, optional), names(object))
+  if (length(absent) > 0L) {
+    stop(errorCondition(
+      sprintf("The fit is missing fields the summary requires: %s.",
+              paste(absent, collapse = ", ")),
+      class = "multilpa_incomplete_fit", call = NULL))
+  }
+  result <- object[intersect(fields, names(object))]
   class(result) <- "summary_multilpa_transitions"
+  result
+}
+
+#' Tables of a latent transition summary
+#'
+#' Returns the summary's own estimates as tidy `data.frame`s, so that a summary
+#' can be printed, joined and written out without reaching into it.
+#'
+#' @param x A `summary_multilpa_transitions` object.
+#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
+#' @param optional Ignored, present for generic compatibility.
+#' @param what Which table to return. `"transitions"` (the default) gives the
+#'   same table as [transitions()] on the fit it summarizes, `"initial"` the
+#'   initial profile probabilities and implied prevalences, and `"starts"` the
+#'   restart diagnostics.
+#' @param estimated,stable Passed to the same arguments of [transitions()] when
+#'   `what = "transitions"`, and ignored otherwise.
+#' @param ... Ignored.
+#' @return A base `data.frame` whose columns depend on `what`: one row per group
+#'   class and ordered pair of profiles for `"transitions"`, one row per group
+#'   class and profile for `"initial"`, and one row per start for `"starts"`.
+#' @seealso [summary.multilpa_transitions()], [transitions()].
+#' @examples
+#' set.seed(7)
+#' example_data <- data.frame(
+#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
+#' )
+#' example_data$score_a <- stats::rnorm(nrow(example_data))
+#' example_data$score_b <- stats::rnorm(nrow(example_data))
+#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' as.data.frame(summary(fit))
+#' as.data.frame(summary(fit), what = "initial")
+#' @export
+as.data.frame.summary_multilpa_transitions <- function(
+    x, row.names = NULL, optional = FALSE,
+    what = c("transitions", "initial", "starts"),
+    estimated = NULL, stable = NULL, ...) {
+  stopifnot(
+    "`x` must be a `summary_multilpa_transitions` object" =
+      inherits(x, "summary_multilpa_transitions"),
+    "`estimated` must be NULL, TRUE or FALSE" =
+      .multilpa_optional_flag(estimated),
+    "`stable` must be NULL, TRUE or FALSE" = .multilpa_optional_flag(stable))
+  what <- match.arg(what)
+  result <- switch(what,
+    transitions = .multilpa_restrict_transitions(
+      .multilpa_transition_frame(x), estimated = estimated, stable = stable),
+    initial = .multilpa_initial_frame(x),
+    starts = x$starts)
+  row.names(result) <- row.names
   result
 }
 
@@ -1006,7 +1159,7 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, ...) {
     cat("WARNING: a transition row is uniform by construction, not estimated.\n")
   }
   if (x$small_classes) cat("WARNING: an effective class membership is below one.\n")
-  cat("\nTransition probabilities as a tidy table: transitions(fit)\n")
+  cat("\nEstimates as tidy tables: as.data.frame(summary(fit))\n")
   invisible(x)
 }
 
@@ -1017,10 +1170,21 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, ...) {
 #' @return A named numeric vector of every free parameter on its natural scale:
 #'   profile means and variances, categorical response probabilities where
 #'   present, each group class's initial profile probabilities, its transition
-#'   probabilities named `from > to`, and the group-class probabilities. No
-#'   standard errors accompany these; [vcov()] is not defined for this model
-#'   family. [transitions()] and [as.data.frame()] give the same quantities as
-#'   tidy tables, which is the form to prefer.
+#'   probabilities, and the group-class probabilities.
+#'
+#'   Names follow the package-wide `level.parameter.outcome.term` grammar shared
+#'   with [coef.multilpa()], so one pattern matches across fit classes: for
+#'   example `measurement.mean.profile_1.reading` and
+#'   `profile.transition_probability.profile_2.group_class_1:profile_1`, whose
+#'   term names the origin the move is from. `level`, `parameter` and `outcome`
+#'   never contain a dot, so everything after the third dot is the term and the
+#'   name parses back into the columns [parameter_inference()] reports even when
+#'   an indicator name itself contains a dot.
+#'
+#'   No standard errors accompany these: [vcov.multilpa_transitions()] refuses
+#'   rather than returning an invalid matrix. [transitions()] and
+#'   [as.data.frame.multilpa_transitions()] give the same quantities as tidy
+#'   tables, which is the form to prefer.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -1034,57 +1198,70 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, ...) {
 #' @export
 coef.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
-  label <- function(values, prefix) {
-    stats::setNames(as.vector(values), paste0(prefix, seq_along(values)))
-  }
+  # Names follow the package-wide `level.parameter.outcome.term` grammar, which is
+  # parameter_inference()'s tidy decomposition written on one line. level, parameter
+  # and outcome never contain a dot, so everything after the third dot is the term
+  # and the name parses back even when an indicator name contains a dot.
   measurement <- c(
     stats::setNames(as.vector(t(object$means)),
-                    sprintf("mean.%s.%s", rep(rownames(object$means),
-                                              each = ncol(object$means)),
+                    sprintf("measurement.mean.%s.%s",
+                            rep(rownames(object$means), each = ncol(object$means)),
                             rep(colnames(object$means), nrow(object$means)))),
     stats::setNames(as.vector(t(object$variances)),
-                    sprintf("variance.%s.%s", rep(rownames(object$variances),
-                                                  each = ncol(object$variances)),
+                    sprintf("measurement.variance.%s.%s",
+                            rep(rownames(object$variances), each = ncol(object$variances)),
                             rep(colnames(object$variances), nrow(object$variances)))))
   responses <- unlist(lapply(names(object$response_probabilities), function(indicator) {
     block <- object$response_probabilities[[indicator]]
     stats::setNames(as.vector(t(block)),
-                    sprintf("response.%s.%s.%s",
+                    sprintf("measurement.response.%s.%s:%s",
                             rep(rownames(block), each = ncol(block)), indicator,
                             rep(colnames(block), nrow(block))))
   }), use.names = TRUE)
   moves <- transitions(object)
   c(measurement, responses,
     stats::setNames(as.vector(t(object$initial_probabilities)),
-                    sprintf("initial.%s.%s",
-                            rep(rownames(object$initial_probabilities),
-                                each = object$n_profiles),
+                    sprintf("profile.initial_probability.%s.%s",
                             rep(colnames(object$initial_probabilities),
-                                object$n_group_classes))),
+                                object$n_group_classes),
+                            rep(rownames(object$initial_probabilities),
+                                each = object$n_profiles))),
     stats::setNames(moves$probability,
-                    sprintf("transition.group_class_%d.profile_%d>profile_%d",
-                            moves$group_class, moves$from, moves$to)),
-    label(object$group_probabilities, "group_class_probability."))
+                    sprintf("profile.transition_probability.profile_%d.group_class_%d:profile_%d",
+                            moves$to, moves$group_class, moves$from)),
+    stats::setNames(object$group_probabilities,
+                    sprintf("group.probability.group_class_%d",
+                            seq_along(object$group_probabilities))))
 }
 
 #' Standard errors are not available for a latent transition model
 #'
 #' @param object A fitted `multilpa_transitions` model.
 #' @param ... Ignored.
-#' @return Nothing; always raises a `multilpa_no_inference` condition. The
+#' @return Nothing; `vcov()`, `confint()` and `parameter_inference()` all raise
+#'   a `multilpa_no_inference` condition on a latent transition fit. The
 #'   analytic score and Jacobian this package uses for observed-information and
 #'   sandwich standard errors do not yet cover the initial and transition
 #'   multinomial logits, so no interval is reported rather than an invalid one.
+#'   `confint()` refuses explicitly instead of letting `confint.default()`
+#'   reach `vcov()` and refuse by accident.
 #' @examples
-#' # vcov() on a transition fit raises multilpa_no_inference by design.
+#' set.seed(7)
+#' example_data <- data.frame(
+#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
+#' )
+#' example_data$score_a <- stats::rnorm(nrow(example_data))
+#' example_data$score_b <- stats::rnorm(nrow(example_data))
+#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' tryCatch(confint(fit), multilpa_no_inference = function(condition) {
+#'   conditionMessage(condition)
+#' })
 #' @export
 #' @importFrom stats vcov
 vcov.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
-  stop(errorCondition(
-    paste("Standard errors are not available for a latent transition model.",
-          "Read the estimates with transitions() and as.data.frame()."),
-    class = "multilpa_no_inference", call = NULL))
+  .multilpa_refuse_transition_inference()
 }
 
 #' @rdname vcov.multilpa_transitions
@@ -1092,6 +1269,27 @@ vcov.multilpa_transitions <- function(object, ...) {
 #' @export
 parameter_inference.multilpa_transitions <- function(object, data, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
+  .multilpa_refuse_transition_inference()
+}
+
+#' @rdname vcov.multilpa_transitions
+#' @param parm Ignored; present for compatibility with the generic.
+#' @param level Ignored; present for compatibility with the generic.
+#' @export
+#' @importFrom stats confint
+confint.multilpa_transitions <- function(object, parm, level = 0.95, ...) {
+  stopifnot(inherits(object, "multilpa_transitions"))
+  .multilpa_refuse_transition_inference()
+}
+
+#' Refuse to report standard errors for a latent transition model
+#'
+#' One definition so that `vcov()`, `confint()` and `parameter_inference()`
+#' cannot drift apart in what they say or in the class they raise.
+#'
+#' @return Nothing; always raises `multilpa_no_inference`.
+#' @noRd
+.multilpa_refuse_transition_inference <- function() {
   stop(errorCondition(
     paste("Standard errors are not available for a latent transition model.",
           "Read the estimates with transitions() and as.data.frame()."),

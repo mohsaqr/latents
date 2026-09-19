@@ -15,6 +15,7 @@
   symbols = NULL,
   linetypes = NULL,
   style = .multilpa_style(),
+  cell_labels = TRUE,
   ...
 )
 }
@@ -25,8 +26,7 @@
 `"sequences"` draws the assignments in course order and needs a fit made
 with `time =`.}
 
-\item{scale, labels, main, subtitle, palette, symbols, linetypes, style, ...}{Passed
-through as in [plot.multilpa()].}
+\item{scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, ...}{Passed through as in [plot.multilpa()].}
 }
 \value{
 The fitted model, invisibly. Called for the side effect of drawing.

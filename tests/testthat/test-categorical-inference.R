@@ -53,7 +53,10 @@ test_that("thresholds and their standard errors reproduce a genuine Mplus run", 
   fit <- .categorical_fit(fixture$data)
   inference <- parameter_inference(fit, fixture$data)
   theta <- multilpa:::.multilpa_coefficients(fit, "unconstrained")
-  logits <- grep("^response_logit", names(theta))
+  # The tidy decomposition is the canonical one, so the block is selected by
+  # its `parameter` column rather than by parsing a name back apart.
+  labels <- multilpa:::.multilpa_coefficient_labels(fit, "unconstrained")
+  logits <- which(labels$parameter == "response_logit")
   errors <- sqrt(diag(attr(inference, "covariance_unconstrained")))[logits]
 
   # For a binary indicator the unconstrained coordinate log(p0 / p1) is exactly
@@ -63,9 +66,8 @@ test_that("thresholds and their standard errors reproduce a genuine Mplus run", 
                        -1.944, -1.508, -1.153, 1.129, 1.792)
   mplus_error <- c(0.118, 0.101, 0.112, 0.116, 0.131,
                    0.145, 0.117, 0.105, 0.104, 0.139)
-  profile <- as.integer(sub("^response_logit\\[([0-9]+),.*$", "\\1",
-                            names(theta)[logits]))
-  indicator <- sub("^.*,(u[0-9]),.*$", "\\1", names(theta)[logits])
+  profile <- as.integer(sub("^profile_", "", labels$outcome[logits]))
+  indicator <- sub(":.*$", "", labels$term[logits])
   key <- paste(match(profile, order_by_first), indicator)
   expected_key <- paste(rep(c(1L, 2L), each = 5), .categorical_indicators())
 

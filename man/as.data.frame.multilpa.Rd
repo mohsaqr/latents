@@ -11,6 +11,8 @@
   what = c("profiles", "responses", "profile_probabilities", "posteriors",
     "group_posteriors", "starts", "stages", "information_criteria", "classification",
     "entropy"),
+  scale = c("raw", "standardized"),
+  format = c("long", "wide"),
   ...
 )
 }
@@ -30,8 +32,23 @@ posteriors, `"starts"` the restart diagnostics,
 `"information_criteria"` the information criteria, `"classification"` the
 classification quality, and `"entropy"` the entropy summary.}
 
+\item{scale}{For `what = "profiles"`, `"raw"` reports the estimates in input
+units and `"standardized"` divides each indicator's deviation from its
+grand mean by that indicator's observed standard deviation, which is what
+`plot(x, scale = "standardized")` draws. Supplying it with any other
+`what` is an error rather than a silent no-op.}
+
+\item{format}{For the posterior tables, `"long"` (the default) gives one row
+per unit and class, and `"wide"` gives one row per unit with one column per
+class. The wide column set grows with the number of classes, so no caller
+can address it generically; it stays available because joining posteriors
+back onto the fitting data wants one row per unit. Supplying it with any
+other `what` is an error rather than a silent no-op.}
+
 \item{...}{Passed to the underlying accessor. `classification` accepts
-`level` and `detail`. `profiles` and `responses` accept `data`, the data
+`level`, and `information_criteria` accepts `definitions`. The
+per-assigned-class breakdown that `classification_table(detail = TRUE)`
+once returned is now its own verb, [average_posteriors()]. `profiles` and `responses` accept `data`, the data
 frame the model was fitted to, which adds a standard error beside every
 estimate so the measurement model can be read complete from one call
 rather than joined to [parameter_inference()] by hand.}
@@ -45,6 +62,11 @@ A base `data.frame` whose columns depend on `what`.
   carries `probability_standard_error`. Supplying `data` runs
   [parameter_inference()], so it raises whatever that would raise for a fit
   whose standard errors are unavailable, rather than returning empty columns.
+  With `scale = "standardized"` every estimate in that table, and every
+  standard error beside it, is divided by the indicator's observed standard
+  deviation, so the whole row is on one scale; it raises
+  `multilpa_no_indicator_data` for a fit that kept no indicators and
+  `multilpa_bad_scale` for an indicator with no spread.
   `"responses"` has one row per profile, categorical indicator and category,
   with columns `profile`, `indicator`, `category`, `probability`, and
   `threshold`. The threshold is `qlogis(P(y <= category))`, the cumulative
@@ -57,11 +79,16 @@ A base `data.frame` whose columns depend on `what`.
   `posterior_profile_*` column per profile. `"group_posteriors"` has one row
   per observed group, with columns `group`, `group_size`, `group_class`, the
   group's `log_likelihood`, and one `posterior_group_class_*` column per
-  group class. `"starts"` has one row per EM start. `"stages"` has one
-  row per estimation stage, with columns `stage`, `group_classes`, `fixed`,
-  `log_likelihood`, `parameters`, `parameters_with_measurement` and
-  `converged`; an ordinary fit has a single `"joint"` row and a
-  [fit_staged()] result has two. The remaining values
+  group class. `"starts"` has one row per EM start, with columns `start`,
+  `log_likelihood`, `converged`, `iterations`, `error` and `boundary`.
+  `"stages"` has one row per estimation stage, with columns `stage`,
+  `group_classes`, `fixed`, `log_likelihood`, `parameters`,
+  `parameters_with_measurement` and `converged`; an ordinary fit has a single
+  `"joint"` row and a [fit_staged()] result has two. `fixed` names the blocks
+  that stage held fixed, comma separated, and is `NA_character_` when the
+  stage estimated every block, which is the case for an ordinary fit and for
+  the measurement stage of a staged one; it is never a sentinel such as
+  `"none"`. The remaining values
   return exactly [information_criteria()], [classification_table()], and
   [entropy_table()].
 }
@@ -79,5 +106,6 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(fit)
+as.data.frame(fit, scale = "standardized")
 as.data.frame(fit, what = "profile_probabilities")
 }

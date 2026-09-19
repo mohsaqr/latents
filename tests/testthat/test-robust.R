@@ -98,10 +98,15 @@ test_that("robust standard errors reproduce genuine Mplus MLR results", {
   expect_lt(max(abs(standard_errors - reference$mplus_standard_errors)), 1e-6)
   expect_lt(abs(attr(information, "scaling_correction") - reference$mplus_scaling), 1e-6)
   indices <- information_criteria(fit)
+  # A criterion that has no sample-size convention -- AIC counts parameters, not
+  # units -- carries NA there rather than a sentinel level, so it is selected
+  # by NA and not by a magic string.
   select <- function(criterion, convention) {
-    indices$value[indices$criterion == criterion & indices$convention == convention]
+    wanted <- if (is.na(convention)) is.na(indices$convention) else
+      !is.na(indices$convention) & indices$convention == convention
+    indices$value[indices$criterion == criterion & wanted]
   }
-  expect_lt(abs(select("aic", "none") - reference$mplus_aic), 1e-3)
+  expect_lt(abs(select("aic", NA_character_) - reference$mplus_aic), 1e-3)
   expect_lt(abs(select("bic", "individuals") - reference$mplus_bic), 1e-3)
   expect_lt(abs(select("sabic", "individuals") - reference$mplus_sabic), 1e-3)
 })
@@ -112,9 +117,13 @@ test_that("robust and observed covariances differ only through the score product
   observed <- parameter_inference(fit, dat)
   robust <- parameter_inference(fit, dat, vcov_type = "robust")
   expect_identical(attr(observed, "vcov_type"), "observed")
-  expect_null(observed$group_scores)
+  # These are diagnostics of the fit and travel as attributes, so they are
+  # checked as attributes; reading them off the frame with `$` would silently
+  # compare NULL with NULL and pass whatever the code did.
+  expect_null(attr(observed, "group_scores"))
+  expect_true(is.matrix(attr(robust, "group_scores")))
   expect_true(is.na(attr(observed, "scaling_correction")))
-  expect_equal(observed$hessian, robust$hessian)
+  expect_equal(attr(observed, "hessian"), attr(robust, "hessian"))
   expect_equal(observed$estimate, robust$estimate)
   # The sandwich is symmetric and positive semidefinite in free coordinates.
   free <- attr(robust, "covariance_unconstrained")

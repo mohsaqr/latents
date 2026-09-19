@@ -125,10 +125,15 @@ test_that("one profile gives the analytic maximum likelihood solution", {
   expect_identical(printed_fit$value, fit)
   summary_fit <- summary(fit)
   expect_s3_class(summary_fit, "summary_multilpa")
-  expect_identical(summary_fit$means, fit$means)
-  expect_equal(summary_fit$effective_profile_counts,
-               colSums(fit$subject_posteriors))
-  expect_equal(summary_fit$effective_group_counts, colSums(fit$group_posteriors))
+  # A field the fit does not carry must take its documented default, not leave
+  # an unnamed hole in the summary.
+  expect_false(anyNA(names(summary_fit)))
+  expect_equal(as.data.frame(summary_fit)$mean, as.vector(t(fit$means)))
+  counts <- as.data.frame(summary_fit, what = "counts")
+  expect_equal(subset(counts, level == "individuals")$effective_count,
+               colSums(fit$subject_posteriors), ignore_attr = TRUE)
+  expect_equal(subset(counts, level == "groups")$effective_count,
+               colSums(fit$group_posteriors), ignore_attr = TRUE)
   expect_output(printed_summary <- withVisible(print(summary_fit)),
                 "Effective individual memberships")
   expect_false(printed_summary$visible)

@@ -12,11 +12,12 @@ bch_weights(object, level = c("individuals", "groups"))
 \item{level}{`"individuals"` for profiles, `"groups"` for group classes.}
 }
 \value{
-A base `data.frame` with one row per unit and the columns `unit`,
-  `assigned_class`, and one `weight_class_*` column per class. Weights are
-  not probabilities: they are signed, and a unit assigned to one class
-  ordinarily carries a negative weight for the others. They sum to one across
-  the classes within a unit.
+A base `data.frame` with one row per unit and class, and the columns
+  `level`, `unit`, `assigned_class`, `class` and `weight`, ordered by unit and
+  then by class. This is the expanded layout the method is defined on: one
+  weighted record per unit per class. Weights are not probabilities: they are
+  signed, and a unit assigned to one class ordinarily carries a negative
+  weight for the others. Within a unit they sum to one across the classes.
 }
 \description{
 The Bolck-Croon-Hagenaars weights. Analysing an outcome by modal class

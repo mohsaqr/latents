@@ -132,6 +132,86 @@ test_that("direct labels are spread apart but keep their order and centre", {
   expect_equal(.multilpa_spread_labels(7, 1), 7)
 })
 
+.sequence_plot_fixture <- function(n_groups = 12L, n_waves = 10L) {
+  set.seed(7)
+  n <- n_groups * n_waves
+  data.frame(school = rep(seq_len(n_groups), each = n_waves),
+             wave = rep(seq_len(n_waves), times = n_groups),
+             score_a = stats::rnorm(n), score_b = stats::rnorm(n))
+}
+
+test_that("the sequence plot draws and returns its fit invisibly", {
+  data <- .sequence_plot_fixture()
+  fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
+                  n_group_classes = 2, n_starts = 3, seed = 1, time = "wave")
+  draw({
+    expect_invisible(plot(fit, what = "sequences"))
+    expect_identical(plot(fit, what = "sequences"), fit)
+    expect_identical(plot(fit, what = "sequences", cell_labels = FALSE), fit)
+    expect_identical(plot(fit, what = "sequences", labels = FALSE), fit)
+  })
+  expect_error(plot(fit, what = "sequences", cell_labels = "yes"),
+               "`cell_labels` must be TRUE or FALSE")
+})
+
+test_that("every plot's data is reachable through a tidy verb", {
+  data <- .sequence_plot_fixture()
+  fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
+                  n_group_classes = 2, n_starts = 3, seed = 1, time = "wave")
+  candidates <- enumerate_classes(data, c("score_a", "score_b"), "school",
+                                  profiles = 1:2, group_classes = 1,
+                                  n_starts = 2, seed = 3)
+
+  # No plot is the only way to see what it draws: the reader can always get the
+  # numbers as a data frame instead of measuring them off the picture.
+  expect_s3_class(as.data.frame(fit, what = "profiles"), "data.frame")
+  expect_s3_class(as.data.frame(fit, what = "profile_probabilities"),
+                  "data.frame")
+  expect_s3_class(sequences(fit), "data.frame")
+  expect_s3_class(as.data.frame(candidates), "data.frame")
+  expect_true(all(c("profile", "indicator", "mean") %in%
+                    names(as.data.frame(fit, what = "profiles"))))
+  expect_true(all(c("group", "group_class", "time", "profile") %in%
+                    names(sequences(fit))))
+})
+
+test_that("a filled grid carries its code as text, not by colour alone", {
+  draw({
+    codes <- matrix(rep(1:2, length.out = 120L), 12L, 10L)
+    style <- .multilpa_style()
+    graphics::plot.new()
+    graphics::plot.window(c(0.5, 10.5), c(12.5, 0.5))
+    expect_true(.multilpa_cell_labels(codes, seq_len(10L),
+                                      .multilpa_palette(2L), style))
+    expect_false(.multilpa_cell_labels(codes, seq_len(10L),
+                                       .multilpa_palette(2L), style,
+                                       draw = FALSE))
+    # An empty grid has nothing to stamp, and a grid too dense to hold a digit
+    # says so rather than smearing the numbers over each other.
+    empty <- matrix(NA_integer_, 4L, 4L)
+    expect_false(.multilpa_cell_labels(empty, seq_len(4L),
+                                       .multilpa_palette(2L), style))
+    graphics::plot.new()
+    graphics::plot.window(c(0.5, 400.5), c(400.5, 0.5))
+    dense <- matrix(rep(1:2, length.out = 160000L), 400L, 400L)
+    expect_false(.multilpa_cell_labels(dense, seq_len(400L),
+                                       .multilpa_palette(2L), style))
+  })
+})
+
+test_that("cell ink is chosen for contrast against its background", {
+  # Light fills take black ink and dark fills take white, so a label inside a
+  # cell is legible whichever palette colour the cell got.
+  expect_identical(.multilpa_ink(c("#F0E442", "#FFFFFF")),
+                   c("#000000", "#000000"))
+  expect_identical(.multilpa_ink(c("#000000", "#0072B2", "#D55E00")),
+                   c("#FFFFFF", "#FFFFFF", "#FFFFFF"))
+  expect_length(.multilpa_ink(.multilpa_palette(9L)), 9L)
+  expect_identical(.multilpa_ink(character()), character())
+  expect_true(all(.multilpa_ink(.multilpa_palette(9L)) %in%
+                    c("#000000", "#FFFFFF")))
+})
+
 test_that("the label margin grows with the widest label", {
   draw({
     narrow <- .multilpa_label_margin("ab", 0.78)

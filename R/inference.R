@@ -1,9 +1,62 @@
+#' Serialise a tidy parameter decomposition into one name per parameter
+#'
+#' Every class in this package decomposes a parameter the same way --
+#' `level`, `parameter`, `outcome`, `term` -- and those four columns are what
+#' [parameter_inference()] reports. A `coef()` name is that decomposition
+#' written on one line, dot separated and in that order, so a name can always be
+#' read back into the columns and two fits of different families spell the same
+#' concept the same way. `level`, `parameter` and `outcome` never contain a dot,
+#' so the first three separators are unambiguous and everything after the third
+#' is the term. A term that does not apply -- a group-class probability has no
+#' term -- is left off rather than spelled `NA`.
+#'
+#' @param labels A data frame with `level`, `parameter`, `outcome` and `term`.
+#' @return A character vector, one name per row of `labels`.
+#' @noRd
+.multilpa_parameter_names <- function(labels) {
+  stopifnot(
+    "`labels` must carry level, parameter, outcome and term" =
+      is.data.frame(labels) &&
+      all(c("level", "parameter", "outcome", "term") %in% names(labels))
+  )
+  stem <- paste(labels$level, labels$parameter, labels$outcome, sep = ".")
+  ifelse(is.na(labels$term), stem, paste(stem, labels$term, sep = "."))
+}
+
+#' The tidy decomposition of every coefficient of a fitted mixture
+#' @param object A fitted `multilpa` model.
+#' @param scale Natural estimates or unconstrained fitting coordinates.
+#' @return A data frame with `level`, `outcome`, `term` and `parameter`, one row
+#'   per coefficient, in the order [.multilpa_coefficients()] returns them.
+#' @noRd
+.multilpa_coefficient_labels <- function(object, scale) {
+  .multilpa_tidy_labels(names(.multilpa_coefficients_raw(object, scale)), object)
+}
+
 #' Parameterize a fitted mixture
+#' @param object A fitted `multilpa` model.
+#' @param scale Natural estimates or unconstrained fitting coordinates.
+#' @return A named numeric parameter vector, named as
+#'   [.multilpa_parameter_names()] spells them.
+#' @noRd
+.multilpa_coefficients <- function(object, scale) {
+  values <- .multilpa_coefficients_raw(object, scale)
+  stats::setNames(unname(values),
+                  .multilpa_parameter_names(.multilpa_tidy_labels(names(values), object)))
+}
+
+#' Parameterize a fitted mixture, in the internal generation grammar
+#'
+#' The generated `kind[index,...]` labels are an implementation detail: they are
+#' compact to build alongside the values and they are parsed straight back into
+#' tidy columns by [.multilpa_tidy_labels()]. Nothing user facing sees them;
+#' [.multilpa_coefficients()] renames them before they leave the package.
+#'
 #' @param object A fitted `multilpa` model.
 #' @param scale Natural estimates or unconstrained fitting coordinates.
 #' @return A named numeric parameter vector.
 #' @noRd
-.multilpa_coefficients <- function(object, scale) {
+.multilpa_coefficients_raw <- function(object, scale) {
   stopifnot(inherits(object, "multilpa"), scale %in% c("natural", "unconstrained"))
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
@@ -412,35 +465,58 @@
 #'   independent units, so robust errors relax the assumption that the Gaussian
 #'   within-group model is correctly specified. They do not relax the assumption
 #'   that groups are independent.
-#' @return An `multilpa_inference` list containing natural `estimates`,
-#'   `standard_error`, `statistic`, `p_value`, `conf_low` and `conf_high`,
-#'   estimates and covariance, observed Hessian, score, and its eigenvalue
-#'   condition ratio. All class probabilities are returned; their sum
-#'   constraints make the natural covariance singular. Wald intervals on the
-#'   natural scale are not clipped to parameter bounds. `vcov_type` records
-#'   which covariance was returned. When it is `"robust"`, `group_scores` holds
-#'   the groups-by-parameters score matrix and `scaling_correction` the MLR
-#'   scaling correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
-#'   difference tests. Use [as.data.frame()] for a tidy estimate table.
+#' @param p_adjust Multiplicity correction applied to `p_value` to produce
+#'   `p_adjusted`, one of the methods [stats::p.adjust()] accepts. The default
+#'   `"none"` leaves the two columns equal: a correction changes what a p-value
+#'   means, so it is applied only when it is asked for, and the method that was
+#'   applied is recorded in the `p_adjust` attribute. The correction is taken
+#'   over the tests the table actually reports; bounded parameters carry no test
+#'   and do not count towards the family.
+#' @return A base `data.frame` with one row per reported parameter and the
+#'   columns `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`,
+#'   `term`, `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
+#'   `p_adjusted`, `conf_low` and `conf_high`. Estimates are on the natural
+#'   scale: variances in their own units, probabilities as probabilities. A
+#'   parameter whose null value is on the boundary of its space -- a variance, a
+#'   probability, a residual variance on the covariance diagonal -- carries `NA`
+#'   for `statistic`, `p_value` and `p_adjusted`, because a Wald test against
+#'   that boundary is not a question worth asking; the interval still is. All
+#'   class probabilities are reported; their sum constraints make the natural
+#'   covariance singular. Wald intervals are not clipped to parameter bounds.
+#'
+#'   Diagnostics of the fit as a whole travel as attributes rather than as
+#'   columns repeated down every row: `covariance` and `covariance_unconstrained`
+#'   (natural and estimation-scale covariance of the estimates), `hessian`,
+#'   `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`
+#'   and `p_adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
+#'   groups-by-parameters score matrix and `scaling_correction` the MLR scaling
+#'   correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
+#'   difference tests.
 #' @examples
 #' set.seed(42)
 #' dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
 #' fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
-#' parameter_inference(fit, dat)$standard_errors
+#' parameter_inference(fit, dat)
+#'
+#' # Many tests in one table: name the correction, do not apply one by stealth.
+#' parameter_inference(fit, dat, p_adjust = "BH")
 #' @export
 parameter_inference <- function(object, data, level = 0.95, step = 1e-4,
-                                vcov_type = c("observed", "robust")) {
+                                vcov_type = c("observed", "robust"),
+                                p_adjust = .multilpa_p_adjust_methods) {
   UseMethod("parameter_inference")
 }
 
 #' @rdname parameter_inference
 #' @export
 parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4,
-                             vcov_type = c("observed", "robust")) {
+                             vcov_type = c("observed", "robust"),
+                             p_adjust = .multilpa_p_adjust_methods) {
   stopifnot(inherits(object, "multilpa"), is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
             is.numeric(step), length(step) == 1L, is.finite(step), step > 0)
   vcov_type <- match.arg(vcov_type)
+  p_adjust <- match.arg(p_adjust)
   .multilpa_check_regularity(object, vcov_type)
   theta <- .multilpa_coefficients(object, "unconstrained")
   prepared <- .multilpa_inference_matrix(object, data)
@@ -460,7 +536,9 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
   }
   fitted_likelihood <- -objective(centered_theta)
   if (abs(fitted_likelihood - object$log_likelihood) > 1e-8 * (1 + abs(object$log_likelihood))) {
-    stop("data do not reproduce the fitted log likelihood; supply the original fitting data.")
+    stop(errorCondition(
+      "data do not reproduce the fitted log likelihood; supply the original fitting data.",
+      class = "multilpa_bad_inference_data", call = NULL))
   }
   parameter_scale <- c(as.vector(t(sqrt(object$variances))),
                        rep(1, length(theta) - length(object$means)))
@@ -511,7 +589,7 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
   if (scaled_score > 0.01) warning("The fitted likelihood has a non-negligible score; refit with a tighter tolerance before using Wald inference.", call. = FALSE)
   statistic <- unname(estimates / standard_errors)
   result <- data.frame(
-    .multilpa_tidy_labels(names(estimates), object),
+    .multilpa_coefficient_labels(object, "natural"),
     estimate = unname(estimates), standard_error = unname(standard_errors),
     statistic = statistic, p_value = 2 * stats::pnorm(-abs(statistic)),
     conf_low = unname(intervals[, 1L]), conf_high = unname(intervals[, 2L]),
@@ -524,6 +602,7 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
        result$term %in% paste(continuous, continuous, sep = ":"))
   result$statistic[bounded] <- NA_real_
   result$p_value[bounded] <- NA_real_
+  result <- .multilpa_adjust_p(result, p_adjust)
   ## Diagnostics of the fit, not of any one parameter, so they travel as
   ## attributes rather than as columns repeated down every row.
   attributes(result) <- c(attributes(result), list(
@@ -540,10 +619,23 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
 #' @param scale Natural coefficients or unconstrained log variances (diagonal),
 #'   log-Cholesky coordinates (full covariance), and baseline-category logits.
 #' @param ... Reserved for generic compatibility.
-#' @return A named vector. Natural coefficients include all mixing probabilities;
-#'   unconstrained coefficients exclude their reference categories.
+#' @return A named numeric vector. Natural coefficients include all mixing
+#'   probabilities; unconstrained coefficients exclude their reference
+#'   categories. Names are `level.parameter.outcome.term`, the same four-part
+#'   decomposition [parameter_inference()] reports as columns and the same
+#'   spelling every fitted class in this package uses, so a name written for one
+#'   fit means the same thing for another. A parameter with no term -- a
+#'   group-class probability -- carries the first three parts only.
+#'   [parameter_inference()] is the tidy form and the one to prefer.
 #' @examples
-#' # After fitting: coef(fit)
+#' set.seed(3)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 8),
+#'   score_a = stats::rnorm(80), score_b = stats::rnorm(80)
+#' )
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#' coef(fit)
 #' @export
 #' @importFrom stats coef
 coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
@@ -553,20 +645,44 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 
 #' Extract multilevel LPA covariance estimates
 #' @param object A fitted `multilpa` model.
-#' @param data Original fitting data, required unless `object$inference` is stored.
-#' @param scale Natural or unconstrained parameter scale.
+#' @param data The original fitting data. It is required: the observed
+#'   information is evaluated at the estimates and can only be rebuilt from the
+#'   data that produced them.
+#' @param scale Which parameter scale the covariance is on. `"natural"`, the
+#'   default, is the covariance of the estimates [coef()] reports -- variances
+#'   in their own units and probabilities as probabilities -- carried from the
+#'   estimation scale by the delta method with
+#'   `.multilpa_inference_jacobian()`. `"unconstrained"` is the covariance on
+#'   the scale the model is actually estimated on: log variances for a diagonal
+#'   fit, log-Cholesky coordinates for a full-covariance fit, and
+#'   baseline-category logits for the mixing and response probabilities.
 #' @param ... Additional arguments passed to [parameter_inference()].
-#' @return The observed-information covariance matrix. On the natural scale,
-#'   probability sum constraints make this matrix singular by construction.
+#' @return A square numeric matrix with one row and column per coefficient,
+#'   named as [coef()] names them, on the scale `scale` asks for. On the natural
+#'   scale it is singular by construction, because each set of probabilities
+#'   sums to one; the unconstrained matrix is not. [confint()] and the
+#'   `conf_low`/`conf_high` columns of [parameter_inference()] are built from
+#'   the natural-scale matrix.
 #' @examples
-#' # After fitting: vcov(fit, data = original_data)
+#' set.seed(3)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 8),
+#'   score_a = stats::rnorm(80), score_b = stats::rnorm(80)
+#' )
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#' vcov(fit, data = example_data, scale = "unconstrained")
 #' @export
 #' @importFrom stats vcov
 vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrained"), ...) {
   stopifnot(inherits(object, "multilpa"))
   scale <- match.arg(scale)
-  information <- if (is.null(data)) object$inference else parameter_inference(object, data, ...)
-  if (is.null(information)) stop("Supply original data or store parameter_inference() in object$inference.")
+  if (is.null(data)) {
+    stop(errorCondition(
+      "`data` is required: pass the data frame this model was fitted to.",
+      class = "multilpa_data_required", call = NULL))
+  }
+  information <- parameter_inference(object, data, ...)
   if (scale == "natural") attr(information, "covariance") else
     attr(information, "covariance_unconstrained")
 }
@@ -575,12 +691,21 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
 #' @param object A fitted `multilpa` model.
 #' @param parm Optional coefficient names or indices; defaults to all coefficients.
 #' @param level Confidence level strictly between zero and one.
-#' @param data Original fitting data, required unless `object$inference` is stored.
+#' @param data The original fitting data, required for the same reason
+#'   [vcov()] requires it.
 #' @param ... Additional arguments passed to [parameter_inference()].
-#' @return A two-column matrix of natural-scale Wald intervals. Bounds are not
+#' @return A two-column matrix of Wald intervals on the natural scale, one row
+#'   per requested coefficient and named as [coef()] names them. Bounds are not
 #'   clipped to the probability or variance parameter space.
 #' @examples
-#' # After fitting: confint(fit, data = original_data)
+#' set.seed(3)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 8),
+#'   score_a = stats::rnorm(80), score_b = stats::rnorm(80)
+#' )
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#' confint(fit, data = example_data)
 #' @export
 #' @importFrom stats confint
 confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
@@ -620,17 +745,25 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       object$n_groups, object$n_parameters),
       class = "multilpa_too_few_groups", call = NULL))
   }
-  if (!isTRUE(object$converged)) stop("Inference requires a converged fit.")
+  if (!isTRUE(object$converged)) {
+    stop(errorCondition("Inference requires a converged fit.",
+                        class = "multilpa_no_converge", call = NULL))
+  }
   if (isTRUE(object$boundary)) {
-    stop("Wald inference is unavailable for a bound-active fit.")
+    stop(errorCondition("Wald inference is unavailable for a bound-active fit.",
+                        class = "multilpa_boundary_fit", call = NULL))
   }
   response <- unlist(object$response_probabilities, use.names = FALSE)
   if (length(response) > 0L &&
       any(response <= (object$min_probability %||% 0) * (1 + 1e-7))) {
-    stop("Wald inference is unavailable for bound-active categorical response probabilities.")
+    stop(errorCondition(
+      "Wald inference is unavailable for bound-active categorical response probabilities.",
+      class = "multilpa_boundary_fit", call = NULL))
   }
   if (any(object$profile_probabilities <= 0) || any(object$group_probabilities <= 0)) {
-    stop("Wald inference requires strictly positive mixing probabilities.")
+    stop(errorCondition(
+      "Wald inference requires strictly positive mixing probabilities.",
+      class = "multilpa_boundary_fit", call = NULL))
   }
   invisible(NULL)
 }
@@ -650,11 +783,15 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       anyDuplicated(names(data)) ||
       !all(vapply(data[, .multilpa_continuous_names(object), drop = FALSE],
                   is.numeric, logical(1)))) {
-    stop("data must contain the original numeric indicators and group column.")
+    stop(errorCondition(
+      "data must contain the original numeric indicators and group column.",
+      class = "multilpa_bad_inference_data", call = NULL))
   }
   group_index <- match(data[[object$group]], object$group_values)
   if (!identical(group_index, object$group_index)) {
-    stop("data must retain the original group identifiers and row order.")
+    stop(errorCondition(
+      "data must retain the original group identifiers and row order.",
+      class = "multilpa_bad_inference_data", call = NULL))
   }
   ## Only the Gaussian indicators form the numeric matrix; the categorical ones
   ## are re-encoded from `data` rather than taken from the fit, so that supplying
@@ -666,11 +803,15 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
     as.matrix(data[, continuous, drop = FALSE])
   if (any(is.infinite(x)) || any(is.nan(x)) ||
       (anyNA(x) && !identical(object$missing, "fiml"))) {
-    stop("data contain unsupported missing or non-finite indicators.")
+    stop(errorCondition(
+      "data contain unsupported missing or non-finite indicators.",
+      class = "multilpa_bad_inference_data", call = NULL))
   }
   if (!is.null(object$indicator_data) && ncol(x) > 0L &&
       !identical(x, object$indicator_data)) {
-    stop("data must reproduce the original indicator data, including row order and names.")
+    stop(errorCondition(
+      "data must reproduce the original indicator data, including row order and names.",
+      class = "multilpa_bad_inference_data", call = NULL))
   }
   codes <- NULL
   if (length(object$categorical %||% character()) > 0L) {
@@ -711,7 +852,9 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   condition_ratio <- min(scaled_eigenvalues) / max(scaled_eigenvalues)
   if (any(!is.finite(eigenvalues)) || !is.finite(condition_ratio) ||
       min(scaled_eigenvalues) <= 0 || condition_ratio <= 1e-10) {
-    stop("Observed information is not positive definite or is numerically singular; Wald inference is unavailable.")
+    stop(errorCondition(
+      "Observed information is not positive definite or is numerically singular; Wald inference is unavailable.",
+      class = "multilpa_singular_information", call = NULL))
   }
   inverse <- tryCatch(solve(scaled), error = function(error) {
     stop(sprintf("Observed information could not be inverted: %s",
@@ -725,9 +868,11 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #'
 #' The names are machine-generated with a strict grammar -- `mean[profile,
 #' indicator]`, `variance[profile,indicator]`, `covariance[profile,a,b]`,
-#' `profile_probability[group_class,profile]`, `group_probability[group_class]`
-#' -- so they can be taken apart reliably. Reporting the pieces as columns means
-#' a caller never has to parse a label to learn which level a parameter belongs
+#' `profile_probability[group_class,profile]`, `group_probability[group_class]`,
+#' and their unconstrained counterparts `log_variance`, `cholesky`,
+#' `log_cholesky`, `response_logit`, `profile_logit` and `group_logit` -- so
+#' they can be taken apart reliably. Reporting the pieces as columns means a
+#' caller never has to parse a label to learn which level a parameter belongs
 #' to, which is the whole point of a tidy result.
 #'
 #' @param names Character vector of generated parameter names.
@@ -738,6 +883,10 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 .multilpa_tidy_labels <- function(names, object) {
   stopifnot("`names` must be character" = is.character(names))
   prefix <- sub("\\[.*$", "", names)
+  unknown <- setdiff(prefix, c(.multilpa_measurement_kinds,
+                               "profile_probability", "profile_logit",
+                               "group_probability", "group_logit"))
+  stopifnot("every parameter name must use a known kind" = length(unknown) == 0L)
   inside <- sub("^[^\\[]*\\[", "", sub("\\]$", "", names))
   parts <- strsplit(inside, ",", fixed = TRUE)
   first <- vapply(parts, function(p) p[[1L]], character(1))
@@ -748,20 +897,68 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   profile_label <- function(value) ifelse(value == "shared", "shared",
                                           paste0("profile_", value))
   class_label <- function(value) paste0("group_class_", value)
-  measurement <- prefix %in% c("mean", "variance", "covariance", "response")
+  measurement <- prefix %in% .multilpa_measurement_kinds
+  within_profile <- prefix %in% c("profile_probability", "profile_logit")
   data.frame(
     level = ifelse(measurement, "measurement",
-                   ifelse(prefix == "profile_probability", "profile", "group")),
+                   ifelse(within_profile, "profile", "group")),
     outcome = ifelse(measurement, profile_label(first),
-                     ifelse(prefix == "profile_probability",
+                     ifelse(within_profile,
                             profile_label(second), class_label(first))),
-    term = ifelse(prefix %in% c("covariance", "response"),
+    term = ifelse(prefix %in% .multilpa_paired_kinds,
                   paste(second, third, sep = ":"),
                   ifelse(measurement, second,
-                         ifelse(prefix == "profile_probability",
+                         ifelse(within_profile,
                                 class_label(first), NA_character_))),
-    parameter = ifelse(prefix == "profile_probability" |
-                         prefix == "group_probability", "probability", prefix),
+    parameter = ifelse(prefix %in% c("profile_probability", "group_probability"),
+                       "probability",
+                       ifelse(prefix %in% c("profile_logit", "group_logit"),
+                              "logit", prefix)),
     row.names = NULL, stringsAsFactors = FALSE
   )
+}
+
+#' Parameter kinds that belong to the measurement model
+#' @noRd
+.multilpa_measurement_kinds <- c("mean", "variance", "log_variance",
+                                 "covariance", "cholesky", "log_cholesky",
+                                 "response", "response_logit")
+
+#' Parameter kinds whose term names a pair, written `a:b`
+#' @noRd
+.multilpa_paired_kinds <- c("covariance", "cholesky", "log_cholesky",
+                            "response", "response_logit")
+
+#' Multiplicity corrections an inference verb accepts
+#'
+#' The same methods [stats::p.adjust()] knows, with `"none"` first so that
+#' `match.arg()` makes the uncorrected column the default. Applying a correction
+#' silently would change what every p-value in the table means.
+#'
+#' @noRd
+.multilpa_p_adjust_methods <- c("none",
+                                setdiff(stats::p.adjust.methods, "none"))
+
+#' Add the adjusted p-value column an inference table reports
+#'
+#' The family is the tests the table actually carries: a bounded parameter has
+#' no test, is `NA` in `p_value`, and must not inflate the correction for the
+#' parameters that do.
+#'
+#' @param result An inference table carrying `statistic` and `p_value`.
+#' @param p_adjust One of [.multilpa_p_adjust_methods].
+#' @return `result` with `p_adjusted` inserted after `p_value` and the
+#'   `p_adjust` attribute recorded.
+#' @noRd
+.multilpa_adjust_p <- function(result, p_adjust) {
+  stopifnot("`result` must carry a `p_value` column" = "p_value" %in% names(result))
+  result$p_adjusted <- stats::p.adjust(result$p_value, method = p_adjust)
+  ordered <- c("level", "outcome", "term", "parameter", "estimate",
+               "standard_error", "statistic", "p_value", "p_adjusted",
+               "conf_low", "conf_high")
+  stopifnot("the inference table must carry exactly the documented columns" =
+              setequal(names(result), ordered))
+  result <- result[, ordered, drop = FALSE]
+  attr(result, "p_adjust") <- p_adjust
+  result
 }

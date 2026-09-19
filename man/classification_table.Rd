@@ -7,7 +7,7 @@
 classification_table(
   object,
   level = c("individuals", "groups", "both"),
-  detail = FALSE
+  detail
 )
 }
 \arguments{
@@ -16,23 +16,32 @@ classification_table(
 \item{level}{`"individuals"` for latent profiles, `"groups"` for latent group
 classes, or `"both"` to stack them in one table.}
 
-\item{detail}{`FALSE` returns one row per class. `TRUE` returns the full
-cross-tabulation, one row per assigned class and class, which is the
-average-posterior matrix reported by mixture software.}
+\item{detail}{Removed. It used to change the columns this verb returns, which
+made one verb answer with two incompatible shapes. The cross-tabulation it
+produced is now the separate verb [average_posteriors()]. Supplying it
+raises an error of class `multilpa_removed_argument`.}
 }
 \value{
-A base `data.frame`. With `detail = FALSE` there is one row per class
-  and level, with columns `level`, `class`, `n_modal`, `proportion_modal`,
-  `estimated_n`, `estimated_proportion`, `average_posterior`, and
-  `odds_correct_classification`. With `detail = TRUE` there is one row per
-  `level`, `assigned_class`, and `class`, with columns `n_assigned` and
-  `average_posterior`. `average_posterior` is the mean posterior probability
-  of `class` among individuals or groups whose modal class is
-  `assigned_class`; the diagonal of that matrix is the summary column of the
-  same name. Rows for classes with no modal members carry `NA_real_`
-  averages, and `odds_correct_classification` is `NA_real_` when it is not
-  defined, that is when the average posterior or the estimated proportion is
-  zero or one.
+A base `data.frame`, one row per level and class, with the columns
+  \describe{
+    \item{`level`}{character: `"individuals"` or `"groups"`.}
+    \item{`class`}{integer: the class index within that level.}
+    \item{`n_modal`}{integer: units whose modal class is this one.}
+    \item{`proportion_modal`}{numeric: `n_modal` over the units at that level.}
+    \item{`estimated_n`}{numeric: the model-estimated class size, the column
+      sum of the posteriors.}
+    \item{`estimated_proportion`}{numeric: `estimated_n` over the units.}
+    \item{`average_posterior`}{numeric: mean posterior probability of this
+      class among the units assigned to it, so higher is better.}
+    \item{`odds_correct_classification`}{numeric: see Details, so higher is
+      better.}
+  }
+  `average_posterior` is `NA_real_` for a class with no modal members, where
+  the mean is taken over nothing and is undefined rather than zero.
+  `odds_correct_classification` is `NA_real_` wherever it is undefined, that
+  is whenever `average_posterior` is missing, or it or
+  `estimated_proportion` is zero or one; a single-class solution therefore
+  always reports `NA_real_` odds.
 }
 \description{
 Summarizes how sharply the posterior probabilities separate classes, at the
@@ -50,7 +59,8 @@ The odds of correct classification for class `k` is
   Modal assignment discards classification uncertainty, so `n_modal` and
   `estimated_n` differ whenever entropy is below one.
   Continuous random-intercept fits have individual profiles but no discrete
-  group classes; `"both"` returns individuals only and `"groups"` is rejected.
+  group classes; `"both"` returns individuals only and `"groups"` raises an
+  error of class `multilpa_no_group_classes`.
 }
 \examples{
 set.seed(7)
@@ -65,4 +75,10 @@ classification_table(fit)
 \references{
 Nagin, D. S. (2005). Group-Based Modeling of Development.
   Harvard University Press.
+}
+\seealso{
+[average_posteriors()] for the full average-posterior
+  cross-tabulation these diagonals come from, [classification_errors()] for
+  the complementary table conditioned on the true class, and
+  [entropy_table()] for entropy at each level.
 }

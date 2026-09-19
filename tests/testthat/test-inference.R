@@ -15,15 +15,13 @@ test_that("observed information reproduces analytic Gaussian standard errors", {
   expect_equal(vcov(fit, data = dat, scale = "unconstrained"), attr(information, "covariance_unconstrained"))
   expect_equal(unname(confint(fit, data = dat)),
                unname(cbind(information$conf_low, information$conf_high)))
-  fit$inference <- information
-  expect_equal(vcov(fit), attr(information, "covariance"))
-  expect_equal(confint(fit, parm = 1, level = 0.9),
-    confint(fit, parm = names(coef(fit))[1], level = 0.9))
-  expect_equal(as.numeric(confint(fit, parm = 1, level = 0.9)),
+  expect_equal(confint(fit, parm = 1, level = 0.9, data = dat),
+    confint(fit, parm = names(coef(fit))[1], level = 0.9, data = dat))
+  expect_equal(as.numeric(confint(fit, parm = 1, level = 0.9, data = dat)),
     coef(fit)[1] + c(-1, 1) * qnorm(0.95) * expected[1], ignore_attr = TRUE)
-  expect_error(confint(fit, parm = "unknown"), "parm")
-  expect_error(confint(fit, parm = -1), "indices")
-  expect_error(confint(fit, level = 1.2))
+  expect_error(confint(fit, parm = "unknown", data = dat), "parm")
+  expect_error(confint(fit, parm = -1, data = dat), "indices")
+  expect_error(confint(fit, level = 1.2, data = dat))
 })
 
 test_that("score and probability Jacobian agree with independent central differences", {
@@ -132,32 +130,40 @@ test_that("inference refuses data mismatches and nonregular fits", {
   set.seed(910)
   dat <- data.frame(g = rep(seq_len(10), each = 10), y = rnorm(100))
   fit <- multilpa(dat, "y", "g", 1, 1, n_starts = 1)
-  expect_error(vcov(fit), "Supply original data")
-  expect_error(parameter_inference(fit, dat[-1, ]), "original numeric")
+  expect_error(vcov(fit), class = "multilpa_data_required")
+  expect_error(parameter_inference(fit, dat[-1, ]),
+               class = "multilpa_bad_inference_data")
   altered <- dat
   altered$y[1] <- altered$y[1] + 1
-  expect_error(parameter_inference(fit, altered), "reproduce")
+  expect_error(parameter_inference(fit, altered),
+               class = "multilpa_bad_inference_data")
   if (!is.null(fit$indicator_data)) {
     altered <- dat
     altered$y[1:2] <- rev(altered$y[1:2])
-    expect_error(parameter_inference(fit, altered), "original indicator data")
+    expect_error(parameter_inference(fit, altered),
+                 class = "multilpa_bad_inference_data")
   }
   older_fit <- fit
   older_fit$indicator_data <- NULL
   expect_equal(parameter_inference(older_fit, dat)$standard_error,
     parameter_inference(fit, dat)$standard_error)
-  expect_error(parameter_inference(fit, dat[100:1, ]), "original group")
+  expect_error(parameter_inference(fit, dat[100:1, ]),
+               class = "multilpa_bad_inference_data")
   altered <- dat
   altered$y[1] <- Inf
-  expect_error(parameter_inference(fit, altered), "non-finite")
+  expect_error(parameter_inference(fit, altered),
+               class = "multilpa_bad_inference_data")
   altered$y[1] <- NA_real_
-  expect_error(parameter_inference(fit, altered), "missing")
+  expect_error(parameter_inference(fit, altered),
+               class = "multilpa_bad_inference_data")
   altered_fit <- fit
   altered_fit$converged <- FALSE
-  expect_error(parameter_inference(altered_fit, dat), "converged")
+  expect_error(parameter_inference(altered_fit, dat),
+               class = "multilpa_no_converge")
   altered_fit <- fit
   altered_fit$boundary <- TRUE
-  expect_error(parameter_inference(altered_fit, dat), "bound-active")
+  expect_error(parameter_inference(altered_fit, dat),
+               class = "multilpa_boundary_fit")
   expect_error(parameter_inference(fit, dat, step = 0))
   expect_error(parameter_inference(fit, dat, level = 0))
   # Identical components are an intentionally unidentified mixture.
@@ -167,7 +173,8 @@ test_that("inference refuses data mismatches and nonregular fits", {
   repeated_fit$means <- rbind(fit$means, fit$means)
   repeated_fit$variances <- rbind(fit$variances, fit$variances)
   repeated_fit$profile_probabilities <- matrix(c(0.5, 0.5), 1L)
-  expect_error(parameter_inference(repeated_fit, dat), "positive definite|singular")
+  expect_error(parameter_inference(repeated_fit, dat),
+               class = "multilpa_singular_information")
 })
 
 test_that("full-covariance inference matches analytic multivariate Gaussian information", {

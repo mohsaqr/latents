@@ -11,16 +11,23 @@ sequences(object, format = c("long", "wide"))
 
 \item{format}{`"long"` (the default) gives one row per observation.
 `"wide"` gives one row per group and one column per position, which is the
-shape sequence-plotting functions expect.}
+shape sequence-plotting packages expect. Both forms carry the same
+information: the wide form is a reshape of the long one, not a subset of
+it.}
 }
 \value{
 For `format = "long"`, a base `data.frame` with one row per
   observation and the columns `group`, `group_class`, `time` and `profile`,
-  ordered by group and then by time. For `format = "wide"`, a base
-  `data.frame` with one row per group and one column per distinct position,
-  holding the profile as a factor and `NA` where the group has no observation
-  at that position; row names are the group identifiers and the columns are
-  in increasing time order.
+  ordered by group and then by time.
+
+  For `format = "wide"`, a base `data.frame` with one row per group, in
+  increasing group order, and the columns `group` (the group identifier, in
+  the type it has in the data), `group_class`, and one column per distinct
+  position seen anywhere in the data. The occasion columns are named after
+  the `time` column and the position it holds, for example `wave_1`, and
+  hold the assigned profile as a factor with one level per profile and `NA`
+  where the group has no observation at that position. Row names are the
+  default integers, because the group identifier is a column.
 }
 \description{
 Returns which profile the model gave each observation, laid out in the order
@@ -37,14 +44,14 @@ Profile and group-class labels are arbitrary and are returned as
 \examples{
 set.seed(7)
 example_data <- data.frame(
-  school = rep(seq_len(12), each = 10), wave = rep(seq_len(10), times = 12),
-  score_a = rnorm(120), score_b = rnorm(120)
+  school = rep(seq_len(6), each = 5), wave = rep(seq_len(5), times = 6),
+  score_a = rnorm(30), score_b = rnorm(30)
 )
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 2, n_starts = 2,
                 seed = 1, time = "wave")
 head(sequences(fit))
-head(sequences(fit, format = "wide"))
+sequences(fit, format = "wide")
 }
 \seealso{
 [sequence_summary()] for one row per group class, and

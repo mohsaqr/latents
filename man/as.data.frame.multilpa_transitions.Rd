@@ -11,6 +11,7 @@
   what = c("transitions", "initial", "profiles", "responses", "posteriors",
     "group_posteriors", "sequence_lengths", "starts", "information_criteria",
     "classification", "entropy"),
+  format = c("long", "wide"),
   ...
 )
 }
@@ -31,8 +32,18 @@ diagnostics, and `"information_criteria"`, `"classification"` and
 `"entropy"` exactly [information_criteria()], [classification_table()] and
 [entropy_table()].}
 
-\item{...}{Passed to the underlying accessor; `classification` accepts
-`level` and `detail`.}
+\item{format}{For the posterior tables, `"long"` (the default) gives one row
+per unit and class, and `"wide"` gives one row per unit with one column per
+class. The wide column set grows with the number of classes, so no caller
+can address it generically; it stays available because joining posteriors
+back onto the fitting data wants one row per unit. Supplying it with any
+other `what` is an error rather than a silent no-op.}
+
+\item{...}{Passed to the underlying accessor; `"transitions"` accepts
+`estimated` and `stable`, `"classification"` accepts `level`, and
+`"information_criteria"` accepts `definitions`. The per-assigned-class
+breakdown that `classification_table(detail = TRUE)` used to return is now
+its own verb, [average_posteriors()].}
 }
 \value{
 A base `data.frame` whose columns depend on `what`. `"initial"` has

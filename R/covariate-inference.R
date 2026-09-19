@@ -257,20 +257,26 @@
 #' from separation.
 #'
 #' @param object A fitted `multilpa_covariates` model.
-#' @param data The data frame the model was fitted to.
+#' @param data Optional. The data frame the model was fitted to; when omitted
+#'   it is rebuilt from the indicators, group index and designs the fit stores.
+#'   Supplying it is the stronger check that the caller still holds that frame.
 #' @param level Confidence level for the intervals, between 0 and 1.
 #' @param step Finite-difference step for the observed information.
 #' @param vcov_type `"observed"` uses the observed information;
 #'   `"robust"` uses the group-clustered sandwich, which is the appropriate
 #'   choice when the measurement model may be misspecified.
-#' @return A base `data.frame` with one row per free parameter and the columns
-#'   `level` (`"measurement"`, `"profile"` or `"group"`), `outcome` (which
-#'   profile or group class the coefficient predicts, or which profile a
-#'   measurement parameter belongs to), `term`, `parameter` (`"mean"`,
-#'   `"variance"` or `"coefficient"`), `estimate`, `standard_error`, `statistic`,
-#'   `p_value`, `conf_low` and `conf_high`. Variances are reported in their
-#'   natural units, with standard errors carried through the delta method from
-#'   the log scale on which they are estimated.
+#' @param p_adjust Multiplicity correction applied to `p_value` to produce
+#'   `p_adjusted`, defaulting to `"none"`; see [parameter_inference()].
+#' @return A base `data.frame` with one row per free parameter and the same
+#'   columns, in the same order, that [parameter_inference()] returns for every
+#'   other fitted class: `level` (`"measurement"`, `"profile"` or `"group"`),
+#'   `outcome` (which profile or group class the coefficient predicts, or which
+#'   profile a measurement parameter belongs to), `term`, `parameter`
+#'   (`"mean"`, `"variance"`, `"covariance"` or `"coefficient"`), `estimate`,
+#'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
+#'   `conf_high`. Variances and covariances are reported in their natural units,
+#'   with standard errors carried through the delta method from the log and
+#'   log-Cholesky coordinates on which they are estimated.
 #' @details Class-membership coefficients are on the multinomial logit scale
 #'   with the final profile and the final group class as references, so a
 #'   coefficient is a log odds against that reference. The tests are Wald tests
@@ -295,31 +301,41 @@
 #' parameter_inference(fit, example_data)
 #' @rdname parameter_inference
 #' @export
-parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
+parameter_inference.multilpa_covariates <- function(object, data = NULL, level = 0.95,
                                                     step = 1e-4,
-                                                    vcov_type = c("observed", "robust")) {
+                                                    vcov_type = c("observed", "robust"),
+                                                    p_adjust = .multilpa_p_adjust_methods) {
   stopifnot(
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1
   )
   vcov_type <- match.arg(vcov_type)
+  p_adjust <- match.arg(p_adjust)
   covariance <- .multilpa_cov_covariance(object, data, step, vcov_type)
   .multilpa_cov_inference_frame(object, .multilpa_cov_encode(object), covariance,
-                                level, vcov_type)
+                                level, vcov_type, p_adjust)
 }
 
 #' Covariance of a covariate fit's free parameters
 #' @param object A fitted `multilpa_covariates` model.
-#' @param data The data frame the model was fitted to.
+#' @param data Optional. The data frame the model was fitted to; when omitted
+#'   it is rebuilt from the indicators, group index and designs the fit stores.
+#'   Supplying it is the stronger check that the caller still holds that frame.
 #' @param step Finite-difference step for the observed information.
 #' @param vcov_type `"observed"` or `"robust"`.
 #' @return A square matrix, ordered as [.multilpa_cov_encode()].
 #' @noRd
-.multilpa_cov_covariance <- function(object, data, step, vcov_type) {
+.multilpa_cov_covariance <- function(object, data = NULL, step, vcov_type) {
   stopifnot(
     "`object` must be a fitted `multilpa_covariates` model" =
-      inherits(object, "multilpa_covariates"),
+      inherits(object, "multilpa_covariates"))
+  # A verb must not demand what the object already owns. The fit stores the
+  # indicator matrix, the group index and both designs, which is everything the
+  # observed information is rebuilt from; passing `data` remains the stronger
+  # check that the caller still holds the frame that produced the estimates.
+  if (is.null(data)) data <- .multilpa_cov_stored_data(object)
+  stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`step` must be a single positive number" =
       is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0
@@ -412,25 +428,33 @@ parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
 #' @return A character vector, ordered as [.multilpa_cov_encode()].
 #' @noRd
 .multilpa_cov_parameter_names <- function(object) {
-  labels <- .multilpa_cov_labels(object)
-  ## The kind belongs in the name: a mean and a variance share a level, an
-  ## outcome and a term, so leaving it out makes them indistinguishable and
-  ## gives vcov() duplicate dimnames.
-  paste(labels$level, labels$parameter, labels$outcome, labels$term, sep = ".")
+  ## One spelling for every class in the package: the same four tidy columns,
+  ## in the same order, serialised by the same helper. The kind belongs in the
+  ## name because a mean and a variance share a level, an outcome and a term,
+  ## so leaving it out makes them indistinguishable and gives vcov() duplicate
+  ## dimnames.
+  .multilpa_parameter_names(.multilpa_cov_labels(object))
 }
 
 #' Covariance matrix of a covariate fit
 #'
 #' @param object A fitted `multilpa_covariates` model.
-#' @param data The data frame the model was fitted to.
+#' @param data Optional. The data frame the model was fitted to; when omitted
+#'   it is rebuilt from the indicators, group index and designs the fit stores.
+#'   Supplying it is the stronger check that the caller still holds that frame.
 #' @param step Finite-difference step for the observed information.
 #' @param vcov_type `"observed"` or `"robust"`.
+#' @param scale Which parameter scale the covariance is on, matching
+#'   [vcov.multilpa()]. `"natural"`, the default, is the covariance of the
+#'   estimates [coef()] and [parameter_inference()] report: variances and
+#'   residual covariances in their own units, carried from the estimation scale
+#'   by the delta method. `"unconstrained"` is the covariance on the scale the
+#'   model is estimated on, with log variances and log-Cholesky coordinates.
+#'   Means and membership coefficients are the same on both scales.
 #' @param ... Ignored, present for generic compatibility.
 #' @return A square numeric matrix with one row and column per free parameter,
-#'   named `level.parameter.outcome.term` and ordered measurement means, measurement
-#'   variances, profile logits, group logits. Variances are on the log scale,
-#'   which is where they are estimated; [covariate_inference()] returns them and
-#'   their standard errors in natural units.
+#'   named as [coef()] names them and ordered measurement means, measurement
+#'   variances or covariances, profile logits, group logits.
 #' @examples
 #' set.seed(5)
 #' school <- rep(seq_len(16), each = 8)
@@ -445,11 +469,49 @@ parameter_inference.multilpa_covariates <- function(object, data, level = 0.95,
 #' fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
 #'                       n_group_classes = 2, profile_covariates = "x",
 #'                       n_starts = 2, seed = 1)
-#' dim(vcov(fit, example_data))
+#' vcov(fit, example_data, scale = "unconstrained")
 #' @export
-vcov.multilpa_covariates <- function(object, data, step = 1e-4,
-                                     vcov_type = c("observed", "robust"), ...) {
-  .multilpa_cov_covariance(object, data, step, match.arg(vcov_type))
+vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
+                                     vcov_type = c("observed", "robust"),
+                                     scale = c("natural", "unconstrained"), ...) {
+  scale <- match.arg(scale)
+  covariance <- .multilpa_cov_covariance(object, data, step, match.arg(vcov_type))
+  if (identical(scale, "unconstrained")) {
+    ## The kind in the name has to name the scale, or a log variance is served
+    ## under a name that says `variance`.
+    names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
+    dimnames(covariance) <- list(names, names)
+    return(covariance)
+  }
+  theta <- .multilpa_cov_encode(object)
+  jacobian <- .multilpa_cov_natural_jacobian(object, theta,
+                                             .multilpa_cov_labels(object))
+  natural <- jacobian %*% covariance %*% t(jacobian)
+  dimnames(natural) <- dimnames(covariance)
+  natural
+}
+
+#' Tidy labels of a covariate fit on the scale it is estimated on
+#'
+#' The same rows as [.multilpa_cov_labels()], with the spread block renamed to
+#' the coordinate it really is: a log variance, or a Cholesky entry whose
+#' diagonal is logged. This is the vocabulary [coef.multilpa()] already uses for
+#' the covariate-free model, so both classes spell an estimation-scale
+#' coordinate the same way.
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @return A data frame with `level`, `outcome`, `term` and `parameter`.
+#' @noRd
+.multilpa_cov_estimation_labels <- function(object) {
+  labels <- .multilpa_cov_labels(object)
+  on_diagonal <- vapply(strsplit(labels$term, ":", fixed = TRUE), function(pair) {
+    length(pair) == 2L && identical(pair[[1L]], pair[[2L]])
+  }, logical(1))
+  labels$parameter <- ifelse(
+    labels$parameter == "variance", "log_variance",
+    ifelse(labels$parameter == "covariance",
+           ifelse(on_diagonal, "log_cholesky", "cholesky"), labels$parameter))
+  labels
 }
 
 #' Assemble the tidy inference table
@@ -458,45 +520,18 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
 #' @return One row per free parameter, at every level.
 #' @noRd
 .multilpa_cov_inference_frame <- function(object, theta, covariance, level,
-                                          vcov_type) {
-  errors <- sqrt(pmax(diag(covariance), 0))
-  indicators <- object$indicators
-  profiles <- paste0("profile_", seq_len(object$n_profiles))
-  equal <- identical(object$variance_model, "equal")
-  variance_rows <- if (equal) "shared" else profiles
-
+                                          vcov_type, p_adjust) {
   labels <- .multilpa_cov_labels(object)
   stopifnot("every parameter must be labelled" = nrow(labels) == length(theta))
 
-  ## Variances are estimated as logs; the delta method returns them and their
-  ## errors to natural units, where a reader can compare them with the data.
+  ## Variances and covariances are estimated as logs and log-Cholesky
+  ## coordinates; one Jacobian returns every block, and the covariance it
+  ## implies, to the natural units a reader can compare with the data.
+  estimate <- .multilpa_cov_natural_estimate(object, theta, labels)
+  jacobian <- .multilpa_cov_natural_jacobian(object, theta, labels)
+  errors <- sqrt(pmax(diag(jacobian %*% covariance %*% t(jacobian)), 0))
   is_variance <- labels$parameter == "variance"
   is_covariance <- labels$parameter == "covariance"
-  is_mean <- labels$parameter == "mean"
-  estimate <- theta
-  estimate[is_mean] <- estimate[is_mean] + rep(object$center, times = object$n_profiles)
-  estimate[is_variance] <- exp(theta[is_variance])
-  errors[is_variance] <- errors[is_variance] * estimate[is_variance]
-  if (any(is_covariance)) {
-    ## Covariances are estimated as log-Cholesky coordinates. A scalar
-    ## derivative will not do here: every covariance entry depends on several
-    ## coordinates, so the whole block goes through one Jacobian.
-    dimension <- length(.multilpa_continuous_names(object))
-    jacobian <- diag(1, length(theta))
-    width <- dimension * (dimension + 1L) / 2L
-    starts <- which(is_covariance)[seq(1L, sum(is_covariance), by = width)]
-    invisible(lapply(starts, function(first) {
-      at <- first + seq_len(width) - 1L
-      jacobian[at, at] <<- .multilpa_cov_cholesky_jacobian(theta[at], dimension)
-    }))
-    transformed <- jacobian %*% covariance %*% t(jacobian)
-    errors <- sqrt(pmax(diag(transformed), 0))
-    natural <- unlist(lapply(starts, function(first) {
-      at <- first + seq_len(width) - 1L
-      .multilpa_cov_cholesky_natural(theta[at], dimension)
-    }), use.names = FALSE)
-    estimate[is_covariance] <- natural
-  }
 
   quantile <- stats::qnorm(1 - (1 - level) / 2)
   statistic <- estimate / errors
@@ -517,9 +552,70 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
     }, logical(1))
   result$statistic[is_variance | on_diagonal] <- NA_real_
   result$p_value[is_variance | on_diagonal] <- NA_real_
+  result <- .multilpa_adjust_p(result, p_adjust)
   attr(result, "vcov_type") <- vcov_type
   attr(result, "level") <- level
   result
+}
+
+#' Natural-unit estimates of a covariate fit's free parameters
+#'
+#' Means come back to input units, variances out of logs and covariances out of
+#' log-Cholesky coordinates; the membership coefficients are already the logits
+#' they are reported as.
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @param theta The estimation-scale parameter vector.
+#' @param labels The tidy labels of `theta`, in the same order.
+#' @return A numeric vector the same length as `theta`.
+#' @noRd
+.multilpa_cov_natural_estimate <- function(object, theta, labels) {
+  estimate <- theta
+  is_mean <- labels$parameter == "mean"
+  is_variance <- labels$parameter == "variance"
+  is_covariance <- labels$parameter == "covariance"
+  estimate[is_mean] <- estimate[is_mean] +
+    rep(object$center, times = object$n_profiles)
+  estimate[is_variance] <- exp(theta[is_variance])
+  if (any(is_covariance)) {
+    dimension <- length(.multilpa_continuous_names(object))
+    width <- dimension * (dimension + 1L) / 2L
+    starts <- which(is_covariance)[seq(1L, sum(is_covariance), by = width)]
+    estimate[is_covariance] <- unlist(lapply(starts, function(first) {
+      .multilpa_cov_cholesky_natural(theta[first + seq_len(width) - 1L], dimension)
+    }), use.names = FALSE)
+  }
+  estimate
+}
+
+#' Delta-method Jacobian from estimation to natural coordinates
+#'
+#' A mean is a location shift and a membership coefficient is reported as
+#' estimated, so both differentiate to one. A variance is `exp()` of its
+#' coordinate. A covariance block needs a whole matrix rather than a scalar
+#' derivative, because every entry depends on several log-Cholesky coordinates.
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @param theta The estimation-scale parameter vector.
+#' @param labels The tidy labels of `theta`, in the same order.
+#' @return A square matrix, rows natural coordinates and columns estimation
+#'   coordinates, in the order [.multilpa_cov_encode()] packs them.
+#' @noRd
+.multilpa_cov_natural_jacobian <- function(object, theta, labels) {
+  jacobian <- diag(1, length(theta))
+  is_variance <- labels$parameter == "variance"
+  is_covariance <- labels$parameter == "covariance"
+  diag(jacobian)[is_variance] <- exp(theta[is_variance])
+  if (any(is_covariance)) {
+    dimension <- length(.multilpa_continuous_names(object))
+    width <- dimension * (dimension + 1L) / 2L
+    starts <- which(is_covariance)[seq(1L, sum(is_covariance), by = width)]
+    invisible(lapply(starts, function(first) {
+      at <- first + seq_len(width) - 1L
+      jacobian[at, at] <<- .multilpa_cov_cholesky_jacobian(theta[at], dimension)
+    }))
+  }
+  jacobian
 }
 
 #' The covariance a log-Cholesky block implies, in vech order
@@ -592,12 +688,21 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
 #' Estimated parameters of a covariate fit
 #'
 #' @param object A fitted `multilpa_covariates` model.
+#' @param scale Natural coefficients, or the unconstrained coordinates the model
+#'   is estimated on: log variances for a diagonal fit and log-Cholesky
+#'   coordinates for a full-covariance fit. Matches [coef.multilpa()].
 #' @param ... Ignored, present for generic compatibility.
 #' @return A named numeric vector of every free parameter, in the order
 #'   [parameter_inference()] reports them: measurement means, measurement
-#'   variances, profile logits, then group-class logits. Names are
-#'   `level.parameter.outcome.term`, which is what keeps a mean and a variance
-#'   on the same indicator distinguishable. Variances are in natural units.
+#'   variances or residual covariances, profile logits, then group-class logits.
+#'   Names are `level.parameter.outcome.term`, the same four-part decomposition
+#'   [parameter_inference()] reports as columns and the same spelling every
+#'   fitted class in this package uses; it is what keeps a mean and a variance
+#'   on the same indicator distinguishable, and the `parameter` part names the
+#'   scale, so a log variance is never served under a name that says
+#'   `variance`. On the natural scale variances and residual covariances are in
+#'   their own units and agree with [parameter_inference()]'s `estimate` column
+#'   exactly.
 #' @examples
 #' set.seed(5)
 #' school <- rep(seq_len(16), each = 8)
@@ -614,17 +719,23 @@ vcov.multilpa_covariates <- function(object, data, step = 1e-4,
 #'                       n_starts = 2, seed = 1)
 #' coef(fit)
 #' @export
-coef.multilpa_covariates <- function(object, ...) {
+coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained"),
+                                     ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
               inherits(object, "multilpa_covariates"))
+  scale <- match.arg(scale)
   theta <- .multilpa_cov_encode(object)
-  labels <- .multilpa_cov_labels(object)
+  if (identical(scale, "unconstrained")) {
+    return(stats::setNames(
+      theta, .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))))
+  }
   ## Means are stored centred for the likelihood and reported in input units;
-  ## variances are estimated as logs and reported in their own units.
-  theta[labels$parameter == "mean"] <- as.vector(t(object$means))
-  is_variance <- labels$parameter == "variance"
-  theta[is_variance] <- exp(theta[is_variance])
-  stats::setNames(theta, .multilpa_cov_parameter_names(object))
+  ## the spread block is estimated as logs or log-Cholesky coordinates and comes
+  ## back through the same map [parameter_inference()] reports it through, so
+  ## the two can never disagree.
+  stats::setNames(
+    .multilpa_cov_natural_estimate(object, theta, .multilpa_cov_labels(object)),
+    .multilpa_cov_parameter_names(object))
 }
 
 #' Wald confidence intervals for a covariate fit
@@ -632,7 +743,9 @@ coef.multilpa_covariates <- function(object, ...) {
 #' @param object A fitted `multilpa_covariates` model.
 #' @param parm Optional parameter names or indices; defaults to all of them.
 #' @param level Confidence level strictly between zero and one.
-#' @param data The data frame the model was fitted to.
+#' @param data Optional. The data frame the model was fitted to; when omitted
+#'   it is rebuilt from the indicators, group index and designs the fit stores.
+#'   Supplying it is the stronger check that the caller still holds that frame.
 #' @param ... Passed to [parameter_inference()], so `vcov_type = "robust"` and
 #'   `step` reach it.
 #' @return A two-column matrix of Wald intervals, one row per requested
@@ -655,11 +768,12 @@ coef.multilpa_covariates <- function(object, ...) {
 #'                       n_starts = 2, seed = 1)
 #' confint(fit, data = example_data)
 #' @export
-confint.multilpa_covariates <- function(object, parm, level = 0.95, data, ...) {
+confint.multilpa_covariates <- function(object, parm, level = 0.95, data = NULL,
+                                        ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
               inherits(object, "multilpa_covariates"),
-            "`data` must be supplied; it is needed to rebuild the information" =
-              !missing(data) && is.data.frame(data))
+            "`data` must be a data frame when supplied" =
+              is.null(data) || is.data.frame(data))
   inference <- parameter_inference(object, data, level = level, ...)
   names_all <- .multilpa_cov_parameter_names(object)
   intervals <- cbind(inference$conf_low, inference$conf_high)

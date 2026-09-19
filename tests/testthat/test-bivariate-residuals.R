@@ -16,7 +16,7 @@ test_that("a planted dependence is found and the innocent pairs are not", {
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
                   n_group_classes = 1, n_starts = 4, seed = 1)
   residuals <- bivariate_residuals(fit, data)
-  worst <- residuals[1L, ]
+  worst <- head(residuals, 1L)
 
   # ordered worst first, and the worst pair is the one that shares a term
   expect_equal(worst$indicator_1, "a")
@@ -25,8 +25,8 @@ test_that("a planted dependence is found and the innocent pairs are not", {
   expect_lt(worst$p_value, 1e-6)
   innocent <- subset(residuals, !(indicator_1 == "a" & indicator_2 == "b"))
   expect_lt(max(abs(innocent$residual)), 0.25)
-  expect_true(all(abs(residuals$residual) == sort(abs(residuals$residual),
-                                                  decreasing = TRUE)))
+  expect_equal(abs(residuals$residual),
+               sort(abs(residuals$residual), decreasing = TRUE))
 })
 
 test_that("estimating the association makes the residual vanish", {
@@ -105,7 +105,7 @@ test_that("categorical pairs are assessed with a chi-square", {
   expect_true(all(pooled$kind == "categorical"))
   expect_true(all(pooled$df == 1L))
   expect_equal(nrow(pooled), 10L)
-  worst <- pooled[1L, ]
+  worst <- head(pooled, 1L)
   expect_setequal(c(worst$indicator_1, worst$indicator_2), c("u1", "u2"))
   expect_lt(worst$p_value, 0.01)
   # the pairs with no planted dependence are not flagged

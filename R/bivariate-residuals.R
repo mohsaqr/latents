@@ -14,20 +14,51 @@
 #' @param by `"profile"` (the default) assesses each profile separately, which
 #'   is where the assumption is actually made. `"overall"` pools the profiles
 #'   into one posterior-weighted table per pair.
-#' @return A base `data.frame` with one row per indicator pair and, for
-#'   `by = "profile"`, per profile. Columns are `profile` (`"overall"` when
-#'   pooled), `indicator_1`, `indicator_2`, `kind` (`"gaussian"` or
-#'   `"categorical"`), `observed`, `expected`, `residual`, `effective_n`,
-#'   `statistic`, `df` and `p_value`, ordered by decreasing absolute residual so
-#'   the worst pair is the first row.
+#' @return A base `data.frame`, one row per indicator pair and, for
+#'   `by = "profile"`, per profile, with the columns
+#'   \describe{
+#'     \item{`profile`}{character: `"profile_k"`, or `"overall"` when pooled.}
+#'     \item{`indicator_1`, `indicator_2`}{character: the pair, in the order the
+#'       indicators were fitted.}
+#'     \item{`kind`}{character: `"gaussian"` or `"categorical"`, the measurement
+#'       model both indicators share.}
+#'     \item{`observed`}{numeric: the observed residual association, on the
+#'       correlation scale. A Gaussian pair uses the posterior-weighted residual
+#'       correlation, signed; a categorical pair uses Cramer's V of the
+#'       posterior-weighted contingency table, which is unsigned.}
+#'     \item{`expected`}{numeric: the association the fitted measurement model
+#'       implies for that pair, on the same scale as `observed`. It is zero
+#'       within a profile under local independence, and nonzero when the model
+#'       estimates the association (`covariance_model = "full"`) or when pooling
+#'       mixes profiles whose distributions differ.}
+#'     \item{`residual`}{numeric: `observed - expected`, on every row. This is
+#'       the column the table is ranked by.}
+#'     \item{`effective_n`}{numeric: posterior weight of the rows observed on
+#'       both indicators.}
+#'     \item{`statistic`}{numeric: the test statistic, which depends on `kind`.
+#'       A Gaussian pair carries a Fisher z, a standard normal deviate; a
+#'       categorical pair carries the bivariate-residual chi-square.}
+#'     \item{`df`}{integer: degrees of freedom of `statistic`. A categorical pair
+#'       carries `(categories_1 - 1)(categories_2 - 1)`. A Gaussian pair carries
+#'       `NA_integer_`, because a standard normal deviate has no degrees of
+#'       freedom; this is a column that does not apply to that `kind`, not a
+#'       missing value.}
+#'     \item{`p_value`}{numeric: the two-sided normal tail for a Gaussian pair,
+#'       the upper chi-square tail for a categorical one. Descriptive only, see
+#'       Details.}
+#'   }
+#'   Rows are ordered by decreasing `abs(residual)`, so the worst pair is the
+#'   first row, with `indicator_1`, `indicator_2` and `profile` as deterministic
+#'   secondary keys. `observed`, `expected` and `residual` are on one scale for
+#'   both kinds, so that ordering is meaningful in a mixed fit.
 #'
-#'   For a Gaussian pair, `observed` is the posterior-weighted residual
-#'   correlation within the profile, `expected` is what the fitted covariance
-#'   model implies for it (zero under `"diagonal"`), and the statistic is a
-#'   Fisher z. For a categorical pair, `observed` and `expected` are the summed
-#'   absolute cell discrepancy and the table total, and the statistic is the
-#'   bivariate-residual chi-square on `(categories_1 - 1)(categories_2 - 1)`
-#'   degrees of freedom.
+#'   `observed`, `expected` and therefore `residual` are `NA_real_` when the
+#'   association is undefined: a Gaussian pair with no residual spread, or a
+#'   pair with no effective weight. `statistic` and `p_value` are `NA_real_` for
+#'   a Gaussian pair with effective size at most three or no residual spread,
+#'   and for a categorical pair with no effective weight. The classic
+#'   Vermunt-Magidson bivariate residual for a categorical pair is
+#'   `statistic / df`.
 #' @details The p-values are descriptive approximations: they do not account
 #'   for estimated posterior memberships, fitted measurement parameters, or
 #'   dependence within groups. They are not calibrated significance tests.
@@ -41,11 +72,17 @@
 #'   second moments, excluding association explained by differences in profile
 #'   means. A categorical profile is compared with its own response distribution;
 #'   overall categorical tables use the posterior-weighted mixture distribution.
-#'   Gaussian p-values are unavailable when the pair has effective size at most
-#'   three or zero residual spread.
+#'   Cramer's V of a two-way table with total `N` is
+#'   `sqrt(X^2 / (N min(rows - 1, columns - 1)))`, where `X^2` is that table's
+#'   own chi-square against independence; applied to the model-implied table it
+#'   measures exactly the association the measurement model accounts for, and is
+#'   zero within a profile, where the model is a product of margins.
+#'   A model raising the error condition `multilpa_no_group_classes` has no
+#'   discrete group classes and cannot be assessed this way.
 #' @references Vermunt, J. K., & Magidson, J. (2004). Local dependence in
 #'   latent class models. In *The Sage Encyclopedia of Social Science Research
-#'   Methods*.
+#'   Methods*. Cramer, H. (1946). *Mathematical Methods of Statistics*.
+#'   Princeton University Press.
 #' @examples
 #' set.seed(4)
 #' school <- rep(seq_len(20), each = 10)
@@ -60,6 +97,7 @@
 #' fit <- multilpa(example_data, c("a", "b", "c"), "school", n_profiles = 2,
 #'                 n_group_classes = 1, n_starts = 3, seed = 1)
 #' bivariate_residuals(fit, example_data)
+#' bivariate_residuals(fit, example_data, by = "overall")
 #' @export
 bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
   stopifnot(
@@ -69,7 +107,8 @@ bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
       nrow(data) == object$n_observations
   )
   if (inherits(object, "multilpa_random_intercept")) {
-    stop("Bivariate residuals require a discrete group-class model.")
+    stop(errorCondition("Bivariate residuals require a discrete group-class model.",
+                        class = "multilpa_no_group_classes", call = NULL))
   }
   by <- match.arg(by)
   continuous <- .multilpa_continuous_names(object)
@@ -97,11 +136,39 @@ bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
                       indicator_2 = character(), kind = character(),
                       observed = numeric(), expected = numeric(),
                       residual = numeric(), effective_n = numeric(),
-                      statistic = numeric(), df = numeric(), p_value = numeric()))
+                      statistic = numeric(), df = integer(), p_value = numeric()))
   }
-  result <- result[order(-abs(result$residual)), , drop = FALSE]
+  # Worst pair first. The indicator names and the profile label are explicit
+  # secondary keys, so ties do not fall back on construction order.
+  result <- result[order(-abs(result$residual), result$indicator_1,
+                         result$indicator_2, result$profile), , drop = FALSE]
   row.names(result) <- NULL
   result
+}
+
+#' Cramer's V of a weighted two-way table
+#'
+#' The association in a contingency table on the zero-to-one scale, comparable
+#' with a correlation magnitude and zero for a table that is a product of its
+#' own margins.
+#'
+#' @param counts A numeric matrix of (possibly fractional) cell counts.
+#' @return A single numeric, or `NA_real_` when the table has no weight or has
+#'   a dimension of one and the association is undefined.
+#' @noRd
+.multilpa_cramers_v <- function(counts) {
+  stopifnot("`counts` must be a numeric matrix" =
+              is.matrix(counts) && is.numeric(counts))
+  total <- sum(counts)
+  smaller <- min(nrow(counts), ncol(counts)) - 1L
+  if (!is.finite(total) || total <= 0 || smaller < 1L) return(NA_real_)
+  independent <- outer(rowSums(counts), colSums(counts)) / total
+  # A zero cell of `independent` sits in a zero margin, so its `counts` cell is
+  # zero too and contributes nothing; masking it avoids a 0/0.
+  positive <- independent > 0
+  chi_square <- sum((counts[positive] - independent[positive])^2 /
+                      independent[positive])
+  sqrt(chi_square / (total * smaller))
 }
 
 #' Residual correlation for each Gaussian pair
@@ -144,7 +211,7 @@ bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
     data.frame(profile = label, indicator_1 = continuous[pair[1L]],
       indicator_2 = continuous[pair[2L]], kind = "gaussian",
       observed = observed, expected = expected, residual = observed - expected,
-      effective_n = effective, statistic = statistic, df = NA_real_,
+      effective_n = effective, statistic = statistic, df = NA_integer_,
       p_value = 2 * stats::pnorm(-abs(statistic)),
       row.names = NULL, stringsAsFactors = FALSE)
   })
@@ -186,11 +253,19 @@ bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
       if (any(!positive & observed > 0)) Inf else
         sum((observed[positive] - expected[positive])^2 / expected[positive])
     degrees <- (nrow(observed) - 1L) * (ncol(observed) - 1L)
+    ## Both tables are summarised by the same association measure, so that
+    ## `observed`, `expected` and `residual` mean one thing across both kinds
+    ## of pair. The model-implied table is a product of margins within a
+    ## profile, so its V is zero there, exactly as the Gaussian `expected` is.
+    observed_association <- .multilpa_cramers_v(observed)
+    expected_association <- .multilpa_cramers_v(expected)
     data.frame(
       profile = label, indicator_1 = first, indicator_2 = second,
-      kind = "categorical", observed = sum(abs(observed - expected)),
-      expected = sum(expected), residual = statistic / max(degrees, 1L),
-      effective_n = sum(pair_weight), statistic = statistic, df = degrees,
+      kind = "categorical", observed = observed_association,
+      expected = expected_association,
+      residual = observed_association - expected_association,
+      effective_n = sum(pair_weight), statistic = statistic,
+      df = as.integer(degrees),
       p_value = stats::pchisq(statistic, degrees, lower.tail = FALSE),
       row.names = NULL, stringsAsFactors = FALSE)
   })

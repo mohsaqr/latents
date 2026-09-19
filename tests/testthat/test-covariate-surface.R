@@ -54,7 +54,9 @@ test_that("confint matches the tidy interval and honours parm", {
   expect_equal(confint(fit, parm = c(1L, 9L), data = data),
                intervals[c(1L, 9L), , drop = FALSE])
   expect_error(confint(fit, parm = "absent", data = data), "must identify")
-  expect_error(confint(fit), "`data` must be supplied")
+  # `data` is optional: the fit stores the indicators, group index and designs
+  # the information is rebuilt from, so the verb must not demand them back.
+  expect_identical(confint(fit), confint(fit, data = data))
   # a wider level gives a wider interval
   wide <- confint(fit, data = data, level = 0.99)
   expect_true(all(wide[, 2L] - wide[, 1L] > intervals[, 2L] - intervals[, 1L]))
@@ -70,8 +72,8 @@ test_that("the shared diagnostics accept a covariate fit", {
 
   criteria <- information_criteria(fit)
   expect_true(all(c("aic", "bic") %in% criteria$criterion))
-  expect_equal(criteria$value[criteria$criterion == "log_likelihood"],
-               fit$log_likelihood)
+  expect_equal(subset(criteria, criterion == "deviance")$value,
+               -2 * fit$log_likelihood)
 
   classification <- classification_table(fit, level = "both")
   expect_setequal(unique(classification$level), c("individuals", "groups"))
@@ -96,7 +98,10 @@ test_that("a covariate fit can carry and report its ordering", {
   long <- sequences(timed)
   expect_named(long, c("group", "group_class", "time", "profile"))
   expect_equal(nrow(long), nrow(data))
-  expect_equal(dim(sequences(timed, format = "wide")), c(16L, 8L))
+  # The wide form carries the identifier as a column rather than as a row name,
+  # so assert the contract by name instead of by width.
+  expect_named(sequences(timed, format = "wide"),
+               c("group", "group_class", paste0("wave_", 1:8)))
   summary_table <- sequence_summary(timed)
   expect_equal(sum(summary_table$groups), timed$n_groups)
   expect_equal(sum(summary_table$observations), nrow(data))

@@ -16,20 +16,51 @@ is where the assumption is actually made. `"overall"` pools the profiles
 into one posterior-weighted table per pair.}
 }
 \value{
-A base `data.frame` with one row per indicator pair and, for
-  `by = "profile"`, per profile. Columns are `profile` (`"overall"` when
-  pooled), `indicator_1`, `indicator_2`, `kind` (`"gaussian"` or
-  `"categorical"`), `observed`, `expected`, `residual`, `effective_n`,
-  `statistic`, `df` and `p_value`, ordered by decreasing absolute residual so
-  the worst pair is the first row.
+A base `data.frame`, one row per indicator pair and, for
+  `by = "profile"`, per profile, with the columns
+  \describe{
+    \item{`profile`}{character: `"profile_k"`, or `"overall"` when pooled.}
+    \item{`indicator_1`, `indicator_2`}{character: the pair, in the order the
+      indicators were fitted.}
+    \item{`kind`}{character: `"gaussian"` or `"categorical"`, the measurement
+      model both indicators share.}
+    \item{`observed`}{numeric: the observed residual association, on the
+      correlation scale. A Gaussian pair uses the posterior-weighted residual
+      correlation, signed; a categorical pair uses Cramer's V of the
+      posterior-weighted contingency table, which is unsigned.}
+    \item{`expected`}{numeric: the association the fitted measurement model
+      implies for that pair, on the same scale as `observed`. It is zero
+      within a profile under local independence, and nonzero when the model
+      estimates the association (`covariance_model = "full"`) or when pooling
+      mixes profiles whose distributions differ.}
+    \item{`residual`}{numeric: `observed - expected`, on every row. This is
+      the column the table is ranked by.}
+    \item{`effective_n`}{numeric: posterior weight of the rows observed on
+      both indicators.}
+    \item{`statistic`}{numeric: the test statistic, which depends on `kind`.
+      A Gaussian pair carries a Fisher z, a standard normal deviate; a
+      categorical pair carries the bivariate-residual chi-square.}
+    \item{`df`}{integer: degrees of freedom of `statistic`. A categorical pair
+      carries `(categories_1 - 1)(categories_2 - 1)`. A Gaussian pair carries
+      `NA_integer_`, because a standard normal deviate has no degrees of
+      freedom; this is a column that does not apply to that `kind`, not a
+      missing value.}
+    \item{`p_value`}{numeric: the two-sided normal tail for a Gaussian pair,
+      the upper chi-square tail for a categorical one. Descriptive only, see
+      Details.}
+  }
+  Rows are ordered by decreasing `abs(residual)`, so the worst pair is the
+  first row, with `indicator_1`, `indicator_2` and `profile` as deterministic
+  secondary keys. `observed`, `expected` and `residual` are on one scale for
+  both kinds, so that ordering is meaningful in a mixed fit.
 
-  For a Gaussian pair, `observed` is the posterior-weighted residual
-  correlation within the profile, `expected` is what the fitted covariance
-  model implies for it (zero under `"diagonal"`), and the statistic is a
-  Fisher z. For a categorical pair, `observed` and `expected` are the summed
-  absolute cell discrepancy and the table total, and the statistic is the
-  bivariate-residual chi-square on `(categories_1 - 1)(categories_2 - 1)`
-  degrees of freedom.
+  `observed`, `expected` and therefore `residual` are `NA_real_` when the
+  association is undefined: a Gaussian pair with no residual spread, or a
+  pair with no effective weight. `statistic` and `p_value` are `NA_real_` for
+  a Gaussian pair with effective size at most three or no residual spread,
+  and for a categorical pair with no effective weight. The classic
+  Vermunt-Magidson bivariate residual for a categorical pair is
+  `statistic / df`.
 }
 \description{
 Diagonal Gaussian and categorical measurement models assume indicators are
@@ -55,8 +86,13 @@ The p-values are descriptive approximations: they do not account
   second moments, excluding association explained by differences in profile
   means. A categorical profile is compared with its own response distribution;
   overall categorical tables use the posterior-weighted mixture distribution.
-  Gaussian p-values are unavailable when the pair has effective size at most
-  three or zero residual spread.
+  Cramer's V of a two-way table with total `N` is
+  `sqrt(X^2 / (N min(rows - 1, columns - 1)))`, where `X^2` is that table's
+  own chi-square against independence; applied to the model-implied table it
+  measures exactly the association the measurement model accounts for, and is
+  zero within a profile, where the model is a product of margins.
+  A model raising the error condition `multilpa_no_group_classes` has no
+  discrete group classes and cannot be assessed this way.
 }
 \examples{
 set.seed(4)
@@ -72,9 +108,11 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("a", "b", "c"), "school", n_profiles = 2,
                 n_group_classes = 1, n_starts = 3, seed = 1)
 bivariate_residuals(fit, example_data)
+bivariate_residuals(fit, example_data, by = "overall")
 }
 \references{
 Vermunt, J. K., & Magidson, J. (2004). Local dependence in
   latent class models. In *The Sage Encyclopedia of Social Science Research
-  Methods*.
+  Methods*. Cramer, H. (1946). *Mathematical Methods of Statistics*.
+  Princeton University Press.
 }

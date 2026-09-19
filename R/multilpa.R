@@ -271,23 +271,29 @@
     if (!is.numeric(covariances) ||
         !identical(as.integer(dim(covariances)), c(as.integer(n_indicators),
           as.integer(n_indicators), as.integer(n_profiles))) || any(!is.finite(covariances))) {
-      stop("start$covariances must be a finite indicators x indicators x profiles array.")
+      stop(errorCondition(
+      "start$covariances must be a finite indicators x indicators x profiles array.",
+      class = "multilpa_bad_start", call = NULL))
     }
     invisible(lapply(seq_len(n_profiles), function(profile) {
       covariance <- matrix(covariances[, , profile], n_indicators, n_indicators)
       if (max(abs(covariance - t(covariance))) > 1e-12 ||
           min(eigen(covariance, symmetric = TRUE, only.values = TRUE)$values) < min_variance * (1 - 1e-8)) {
-        stop("Starting covariances must be symmetric with eigenvalues at least min_variance.")
+        stop(errorCondition(
+          "Starting covariances must be symmetric with eigenvalues at least min_variance.",
+          class = "multilpa_bad_start", call = NULL))
       }
       if (variance_model == "equal" && max(abs(covariance - covariances[, , 1L])) > 1e-12) {
-        stop("Starting covariances must be equal across profiles.")
+        stop(errorCondition("Starting covariances must be equal across profiles.",
+                            class = "multilpa_bad_start", call = NULL))
       }
     }))
     variances <- t(matrix(vapply(seq_len(n_profiles), function(profile) {
       diag(matrix(covariances[, , profile], n_indicators, n_indicators))
     }, numeric(n_indicators)), n_indicators, n_profiles))
     if (!is.null(start$variances) && !isTRUE(all.equal(unname(start$variances), variances, tolerance = 1e-12))) {
-      stop("Starting variances must agree with covariance diagonals.")
+      stop(errorCondition("Starting variances must agree with covariance diagonals.",
+                          class = "multilpa_bad_start", call = NULL))
     }
     start$variances <- variances
     start$covariances <- NULL
@@ -301,8 +307,9 @@
   required <- c("means", "variances", "profile_probabilities", "group_probabilities")
   if (!is.null(n_categories)) required <- c(required, "response_probabilities")
   if (!setequal(names(start), required) || anyDuplicated(names(start))) {
-    stop(sprintf("start must contain exactly %s.",
-                 paste(required, collapse = ", ")))
+    stop(errorCondition(sprintf("start must contain exactly %s.",
+                                paste(required, collapse = ", ")),
+                        class = "multilpa_bad_start", call = NULL))
   }
   dimensions <- list(means = c(n_profiles, n_indicators),
                      variances = c(n_profiles, n_indicators),
@@ -312,16 +319,21 @@
     if (!is.matrix(value) || !is.numeric(value) ||
         !identical(as.integer(dim(value)), as.integer(dimensions[[field]])) ||
         any(!is.finite(value))) {
-      stop(sprintf("start$%s must be a finite numeric matrix with dimensions %s.",
-                   field, paste(dimensions[[field]], collapse = " x ")))
+      stop(errorCondition(sprintf(
+        "start$%s must be a finite numeric matrix with dimensions %s.",
+        field, paste(dimensions[[field]], collapse = " x ")),
+        class = "multilpa_bad_start", call = NULL))
     }
   }))
   if (any(start$variances < min_variance)) {
-    stop("start$variances must be at least min_variance.")
+    stop(errorCondition("start$variances must be at least min_variance.",
+                        class = "multilpa_bad_start", call = NULL))
   }
   if (variance_model == "equal" &&
       any(abs(sweep(start$variances, 2L, start$variances[1L, ], "-")) > 1e-12)) {
-    stop("start$variances must be equal across profiles for variance_model = 'equal'.")
+    stop(errorCondition(
+      "start$variances must be equal across profiles for variance_model = 'equal'.",
+      class = "multilpa_bad_start", call = NULL))
   }
   group_probabilities <- start$group_probabilities
   if (!is.numeric(group_probabilities) || !is.null(dim(group_probabilities)) ||
@@ -329,7 +341,9 @@
       any(group_probabilities <= 0) || abs(sum(group_probabilities) - 1) > 1e-8 ||
       any(start$profile_probabilities <= 0) ||
       any(abs(rowSums(start$profile_probabilities) - 1) > 1e-8)) {
-    stop("Starting probabilities must be strictly positive and sum to one (within each profile-probability row).")
+    stop(errorCondition(
+      "Starting probabilities must be strictly positive and sum to one (within each profile-probability row).",
+      class = "multilpa_bad_start", call = NULL))
   }
   # Normalize only roundoff admitted by the validation tolerance.
   result <- list(means = unname(start$means), variances = unname(start$variances),
@@ -357,8 +371,9 @@
                                             n_categories, min_probability) {
   if (!is.list(response_probabilities) ||
       length(response_probabilities) != length(n_categories)) {
-    stop(sprintf("start$response_probabilities must be a list of %d matrices, one per categorical indicator.",
-                 length(n_categories)))
+    stop(errorCondition(sprintf(
+      "start$response_probabilities must be a list of %d matrices, one per categorical indicator.",
+      length(n_categories)), class = "multilpa_bad_start", call = NULL))
   }
   unname(lapply(seq_along(n_categories), function(indicator) {
     block <- response_probabilities[[indicator]]
@@ -366,12 +381,15 @@
         !identical(as.integer(dim(block)),
                    c(as.integer(n_profiles), as.integer(n_categories[[indicator]]))) ||
         any(!is.finite(block))) {
-      stop(sprintf("start$response_probabilities[[%d]] must be a finite numeric %d x %d matrix.",
-                   indicator, n_profiles, n_categories[[indicator]]))
+      stop(errorCondition(sprintf(
+        "start$response_probabilities[[%d]] must be a finite numeric %d x %d matrix.",
+        indicator, n_profiles, n_categories[[indicator]]),
+        class = "multilpa_bad_start", call = NULL))
     }
     if (any(block < 0) || any(abs(rowSums(block) - 1) > 1e-8)) {
-      stop(sprintf("start$response_probabilities[[%d]] rows must be nonnegative and sum to one.",
-                   indicator))
+      stop(errorCondition(sprintf(
+        "start$response_probabilities[[%d]] rows must be nonnegative and sum to one.",
+        indicator), class = "multilpa_bad_start", call = NULL))
     }
     bounded <- t(apply(block / rowSums(block), 1L, .multilpa_bound_probabilities,
                        min_probability = min_probability))
@@ -427,17 +445,22 @@
 #' @param data The data frame passed to the fit.
 #' @param time `NULL`, or the name of a single column giving each observation's
 #'   position within its group.
-#' @param group Name of the group column, used only for the uniqueness check.
+#' @param group Name of the group column, used for the exclusion and the
+#'   uniqueness check. It is known to name a column of `data` by the time this
+#'   is called, because the data contract is checked first.
+#' @param indicators The indicator column names, which `time` may not name.
+#'   Defaults to none so that callers which have not yet been updated keep
+#'   working; `multilpa()` passes them.
 #' @return `NULL` when `time` is `NULL`, otherwise the column in input row order.
 #' @noRd
-.multilpa_time_values <- function(data, time, group) {
+.multilpa_time_values <- function(data, time, group, indicators = character()) {
   if (is.null(time)) return(NULL)
   stopifnot(
     "`time` must be NULL or a single column name" =
       is.character(time) && length(time) == 1L && !is.na(time),
     "`time` must name a column of `data`" = time %in% names(data),
     "`time` must not be one of the indicators or the group column" =
-      !identical(time, group)
+      !identical(time, group) && !time %in% indicators
   )
   values <- data[[time]]
   if (anyNA(values)) {
@@ -532,8 +555,12 @@
 #'   count; `bic_individual` uses `n_informative`, the number of rows carrying at
 #'   least one observed indicator. These are alternative
 #'   conventions, not interchangeable criteria. `boundary` identifies variance
-#'   bounds; `small_classes` flags effective memberships below one. No standard
-#'   errors, likelihood-ratio tests, or guarantees of global optimality are given.
+#'   bounds; `small_classes` flags effective memberships below one. The fit
+#'   itself carries no standard errors: [parameter_inference()] computes them
+#'   from the fit and the data it was fitted to, and [lmr_lrt()] and
+#'   [bootstrap_lrt()] test nested models. No guarantee of global optimality is
+#'   given, whatever `n_starts` is used.
+#'   Read the tidy form with `as.data.frame()`; `what` selects which table.
 #' @details Infinite and constant observed indicators are rejected. Each
 #'   indicator must have at least two distinct observed values. No rows are
 #'   silently dropped. In FIML mode, fully missing individuals contribute no
@@ -553,14 +580,22 @@
 #'   doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 #' @examples
 #' set.seed(7)
+#' # Two kinds of school, differing only in how often a pupil scores highly.
 #' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 12),
-#'   score_a = rnorm(120), score_b = rnorm(120)
+#'   school = rep(seq_len(24), each = 10),
+#'   school_type = rep(c("mixed", "high"), each = 120)
 #' )
+#' example_data$high <- rbinom(240, 1L,
+#'   ifelse(example_data$school_type == "high", 0.8, 0.2))
+#' example_data$score_a <- rnorm(240, mean = 2 * example_data$high)
+#' example_data$score_b <- rnorm(240, mean = 2 * example_data$high)
+#'
 #' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                  n_profiles = 1, n_group_classes = 1, n_starts = 1,
-#'                  seed = 42)
+#'                 n_profiles = 2, n_group_classes = 2, n_starts = 4,
+#'                 seed = 42)
 #' summary(fit)
+#' as.data.frame(fit)
+#' as.data.frame(fit, what = "profile_probabilities")
 #' @export
 #' @importFrom stats setNames
 multilpa <- function(data, indicators, group, n_profiles,
@@ -571,21 +606,28 @@ multilpa <- function(data, indicators, group, n_profiles,
                        covariance_model = c("diagonal", "full"),
                        categorical = character(), min_probability = 1e-10,
                        time = NULL, fixed = character()) {
-  stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
-            "`categorical` must be a character vector of indicator names" =
-              is.character(categorical) && !anyNA(categorical),
-            "`min_probability` must be a single number in (0, 1)" =
-              is.numeric(min_probability) && length(min_probability) == 1L &&
-              is.finite(min_probability) && min_probability > 0 &&
-              min_probability < 1)
+  stopifnot(
+    "`data` must be a data frame" = is.data.frame(data),
+    "`indicators` must be a character vector of column names" =
+      is.character(indicators),
+    "`group` must be a single column name" = is.character(group),
+    "`categorical` must be a character vector of indicator names" =
+      is.character(categorical) && !anyNA(categorical),
+    "`min_probability` must be a single number in (0, 1)" =
+      is.numeric(min_probability) && length(min_probability) == 1L &&
+      is.finite(min_probability) && min_probability > 0 &&
+      min_probability < 1)
   call <- match.call()
-  time_values <- .multilpa_time_values(data, time, group)
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
+  # The data contract comes first: `time` is checked against the group column,
+  # so a `group` that does not name a column of `data` must be reported as
+  # that, not as an opaque failure inside the time check.
   .multilpa_check_arguments(data, indicators, group, n_profiles, n_group_classes,
                           n_starts, max_iter, tol, min_variance, min_probability,
                           seed, categorical)
+  time_values <- .multilpa_time_values(data, time, group, indicators)
   measurement <- .multilpa_prepare_indicators(data, indicators, categorical,
                                             missing, min_probability)
   continuous <- measurement$continuous
@@ -603,11 +645,18 @@ multilpa <- function(data, indicators, group, n_profiles,
   distinct_rows <- if (is.null(codes)) nrow(unique(x)) else
     nrow(unique(cbind(x, codes)))
   if (n_profiles > distinct_rows) {
-    stop("n_profiles cannot exceed the number of distinct observed indicator rows.")
+    stop(errorCondition(
+      "n_profiles cannot exceed the number of distinct observed indicator rows.",
+      class = "multilpa_unidentified", call = NULL))
   }
-  if (n_group_classes > n_groups) stop("n_group_classes cannot exceed the number of groups.")
+  if (n_group_classes > n_groups) {
+    stop(errorCondition("n_group_classes cannot exceed the number of groups.",
+                        class = "multilpa_unidentified", call = NULL))
+  }
   if (n_group_classes > 1L && (n_profiles == 1L || all(group_sizes == 1L))) {
-    stop("Multiple group classes are not identifiable with one profile or only singleton groups.")
+    stop(errorCondition(
+      "Multiple group classes are not identifiable with one profile or only singleton groups.",
+      class = "multilpa_unidentified", call = NULL))
   }
   if (length(fixed) > 0L) {
     start <- .multilpa_complete_start(start, n_profiles, n_group_classes)
@@ -637,7 +686,11 @@ multilpa <- function(data, indicators, group, n_profiles,
   # offsets. This is a translation, with no density Jacobian or scale change.
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
   x <- sweep(x, 2L, centers, "-")
-  if (any(!is.finite(x[!is.na(x)]^2))) stop("Indicator scales overflow squared residuals; rescale the data.")
+  if (any(!is.finite(x[!is.na(x)]^2))) {
+    stop(errorCondition(
+      "Indicator scales overflow squared residuals; rescale the data.",
+      class = "multilpa_bad_data", call = NULL))
+  }
   if (!is.null(start)) start$means <- sweep(start$means, 2L, centers, "-")
   held <- .multilpa_held_parameters(start, fixed, covariance_model)
   attempts <- lapply(seq_len(n_starts), function(start_index) {
@@ -656,8 +709,10 @@ multilpa <- function(data, indicators, group, n_profiles,
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
   if (!any(valid)) {
-    stop(sprintf("All %d starts failed: %s", n_starts,
-                 paste(unique(vapply(attempts, `[[`, character(1), "error")), collapse = "; ")))
+    stop(errorCondition(sprintf(
+      "All %d starts failed: %s", n_starts,
+      paste(unique(vapply(attempts, `[[`, character(1), "error")), collapse = "; ")),
+      class = "multilpa_all_starts_failed", call = NULL))
   }
   scores <- vapply(attempts, function(attempt) {
     if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
@@ -740,16 +795,29 @@ multilpa <- function(data, indicators, group, n_profiles,
                              1e-6 * (1 + abs(log_likelihood))),
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))))
   class(result) <- "multilpa"
-  if (any(!valid)) warning(sprintf("%d of %d starts failed; inspect $starts$error.", sum(!valid), n_starts), call. = FALSE)
+  if (any(!valid)) {
+    warning(warningCondition(sprintf(
+      "%d of %d starts failed; see as.data.frame(fit, what = \"starts\").",
+      sum(!valid), n_starts), class = "multilpa_failed_starts", call = NULL))
+  }
   # max_iter = 0 is a deliberate evaluate-only call, so non-convergence is
   # expected rather than an anomaly worth reporting.
   if (!best$converged && max_iter > 0L) {
-    warning("The best start did not converge; increase max_iter and inspect starts.", call. = FALSE)
+    warning(warningCondition(
+      "The best start did not converge; increase max_iter and see as.data.frame(fit, what = \"starts\").",
+      class = "multilpa_unconverged", call = NULL))
   }
-  if (boundary) warning(if (covariance_model == "full")
-    "A covariance eigenvalue reached min_variance; this is a bound-active constrained fit." else
-    "A variance reached min_variance; this is a bound-active constrained fit.", call. = FALSE)
-  if (small_classes) warning("A profile or group class has effective membership below one.", call. = FALSE)
+  if (boundary) {
+    warning(warningCondition(if (covariance_model == "full")
+      "A covariance eigenvalue reached min_variance; this is a bound-active constrained fit." else
+      "A variance reached min_variance; this is a bound-active constrained fit.",
+      class = "multilpa_boundary", call = NULL))
+  }
+  if (small_classes) {
+    warning(warningCondition(
+      "A profile or group class has effective membership below one.",
+      class = "multilpa_small_classes", call = NULL))
+  }
   result
 }
 
@@ -764,7 +832,9 @@ multilpa <- function(data, indicators, group, n_profiles,
       anyDuplicated(indicators) || anyDuplicated(names(data)) ||
       length(group) != 1L || is.na(group) || group %in% indicators ||
       !all(c(indicators, group) %in% names(data))) {
-    stop("Supply at least two rows, unique existing indicators, and one distinct group column.")
+    stop(errorCondition(
+      "Supply at least two rows, unique existing indicators, and one distinct group column.",
+      class = "multilpa_bad_data", call = NULL))
   }
   counts <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
                  n_starts = n_starts)
@@ -772,23 +842,29 @@ multilpa <- function(data, indicators, group, n_profiles,
     value <- counts[[field]]
     if (!is.numeric(value) || length(value) != 1L || !is.finite(value) ||
         value < 1 || value != floor(value) || value > .Machine$integer.max) {
-      stop(sprintf("%s must be a positive integer.", field))
+      stop(errorCondition(sprintf("%s must be a positive integer.", field),
+                          class = "multilpa_bad_argument", call = NULL))
     }
   }))
   # max_iter = 0 evaluates the likelihood at the supplied start without moving.
   if (!is.numeric(max_iter) || length(max_iter) != 1L || !is.finite(max_iter) ||
       max_iter < 0 || max_iter != floor(max_iter) ||
       max_iter > .Machine$integer.max) {
-    stop("max_iter must be a nonnegative integer.")
+    stop(errorCondition("max_iter must be a nonnegative integer.",
+                        class = "multilpa_bad_argument", call = NULL))
   }
   if (!is.numeric(tol) || length(tol) != 1L || !is.finite(tol) || tol <= 0 ||
       !is.numeric(min_variance) || length(min_variance) != 1L ||
       !is.finite(min_variance) || min_variance <= 0) {
-    stop("tol and min_variance must be finite positive numbers.")
+    stop(errorCondition("tol and min_variance must be finite positive numbers.",
+                        class = "multilpa_bad_argument", call = NULL))
   }
   if (!is.null(seed) && (!is.numeric(seed) || length(seed) != 1L ||
       !is.finite(seed) || seed < 0 || seed != floor(seed) ||
-      seed > .Machine$integer.max)) stop("seed must be a nonnegative integer or NULL.")
+      seed > .Machine$integer.max)) {
+    stop(errorCondition("seed must be a nonnegative integer or NULL.",
+                        class = "multilpa_bad_argument", call = NULL))
+  }
   if (anyDuplicated(categorical) || !all(categorical %in% indicators)) {
     stop(errorCondition("`categorical` must name distinct indicators listed in `indicators`.",
                         class = "multilpa_bad_categorical", call = NULL))
@@ -820,21 +896,31 @@ multilpa <- function(data, indicators, group, n_profiles,
       class = "multilpa_bad_categorical", call = NULL))
   }
   if (!is.null(codes) && missing == "error" && anyNA(codes)) {
-    stop("Indicators contain missing or non-finite values.")
+    stop(errorCondition("Indicators contain missing or non-finite values.",
+                        class = "multilpa_bad_data", call = NULL))
   }
   frame <- data[, continuous, drop = FALSE]
   if (!all(vapply(frame, is.numeric, logical(1))) ||
       any(vapply(frame, function(value) !is.null(dim(value)), logical(1)))) {
-    stop("Every indicator must be a numeric vector; factors are not continuous indicators.")
+    stop(errorCondition(
+      "Every indicator must be a numeric vector; factors are not continuous indicators.",
+      class = "multilpa_bad_data", call = NULL))
   }
   x <- matrix(as.matrix(frame), nrow = nrow(data), ncol = length(continuous),
               dimnames = list(NULL, continuous))
   if (any(is.infinite(x)) || any(is.nan(x)) || (missing == "error" && anyNA(x))) {
-    stop("Indicators contain missing or non-finite values.")
+    stop(errorCondition("Indicators contain missing or non-finite values.",
+                        class = "multilpa_bad_data", call = NULL))
   }
-  if (any(colSums(!is.na(x)) == 0L)) stop("Every indicator must have observed values.")
+  if (any(colSums(!is.na(x)) == 0L)) {
+    stop(errorCondition("Every indicator must have observed values.",
+                        class = "multilpa_bad_data", call = NULL))
+  }
   if (any(vapply(frame, function(value) length(unique(value[!is.na(value)])) < 2L,
-                 logical(1)))) stop("Constant indicators cannot identify Gaussian profiles.")
+                 logical(1)))) {
+    stop(errorCondition("Constant indicators cannot identify Gaussian profiles.",
+                        class = "multilpa_bad_data", call = NULL))
+  }
   list(continuous = continuous, frame = frame, x = x, encoded = encoded,
        codes = codes, n_categories = n_categories)
 }
@@ -846,7 +932,9 @@ multilpa <- function(data, indicators, group, n_profiles,
   if (!(is.character(raw_groups) || is.factor(raw_groups) || is.numeric(raw_groups)) ||
       !is.null(dim(raw_groups)) || anyNA(raw_groups) ||
       (is.numeric(raw_groups) && any(!is.finite(raw_groups)))) {
-    stop("group must contain nonmissing, finite numeric, factor, or character identifiers.")
+    stop(errorCondition(
+      "group must contain nonmissing, finite numeric, factor, or character identifiers.",
+      class = "multilpa_bad_data", call = NULL))
   }
   values <- unique(raw_groups)
   index <- match(raw_groups, values)

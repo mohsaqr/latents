@@ -109,11 +109,22 @@ as.data.frame(fit, what = "profile_probabilities")
 Every information criterion the package computes, in one table. The five that
 depend on a sample size appear under both conventions, because a two-level model
 has two defensible sample sizes and neither is privileged. `aic` and `kic` depend
-on none. `clc` depends on no sample size either, but its convention selects which
-level's classification uncertainty it penalizes.
+on none, so their `convention` is `NA` rather than a sentinel string that would
+quietly survive a filter on the column. `clc` depends on no sample size either,
+but its convention selects which level's classification uncertainty it penalizes.
+
+The first row is the *deviance*, not the log likelihood, so lower is better on
+every row and one identity holds throughout: `value == deviance + penalty`.
 
 ```{r criteria}
 information_criteria(fit)
+```
+
+Each criterion's formula is documentation rather than data, so it lives on the
+help page and arrives only when asked for.
+
+```{r criteria-definitions}
+information_criteria(fit, definitions = TRUE)
 ```
 
 ## Classification quality
@@ -168,7 +179,20 @@ classification_errors(fit)
 ```
 
 ```{r bch}
-bch_weights(fit)
+head(bch_weights(fit))
+```
+
+The weights are long: one row per unit and class, so the column set does not grow
+with the number of classes.
+
+A distal outcome, with the classes compared to each other rather than left for
+the reader to difference by hand:
+
+```{r three-step}
+students$prior_attainment <- rnorm(nrow(students))
+
+three_step(fit, data = students, outcome = "prior_attainment")
+three_step(fit, data = students, outcome = "prior_attainment", contrast = "pairs")
 ```
 
 ## Mixed indicators
@@ -186,8 +210,6 @@ as.data.frame(mixed_fit, what = "responses", data = students)
 ## Membership covariates
 
 ```{r covariates}
-students$prior_attainment <- rnorm(nrow(students))
-
 covariate_fit <- fit_covariates(students, indicators, group = "school",
                                 n_profiles = 2, n_group_classes = 2,
                                 profile_covariates = "prior_attainment",

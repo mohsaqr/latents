@@ -35,27 +35,32 @@ test_that("BCH weights sum to one within a unit and are signed", {
   data <- .step_data()
   fit <- .step_fit(data)
   weights <- bch_weights(fit)
-  columns <- grep("^weight_class_", names(weights), value = TRUE)
 
-  expect_equal(nrow(weights), fit$n_observations)
-  expect_equal(length(columns), fit$n_profiles)
-  expect_equal(unname(rowSums(weights[columns])), rep(1, nrow(weights)))
+  # one row per unit and class, not one column per class
+  expect_named(weights, c("level", "unit", "assigned_class", "class", "weight"))
+  expect_equal(nrow(weights), fit$n_observations * fit$n_profiles)
+  expect_setequal(weights$class, seq_len(fit$n_profiles))
+  within_unit <- tapply(weights$weight, weights$unit, sum)
+  expect_equal(as.vector(within_unit), rep(1, fit$n_observations))
   # unlike posteriors, they are not probabilities
-  expect_true(any(unlist(weights[columns]) < 0))
-  expect_true(any(unlist(weights[columns]) > 1))
+  expect_true(any(weights$weight < 0))
+  expect_true(any(weights$weight > 1))
   # a unit's own class carries its largest weight
-  own <- vapply(seq_len(nrow(weights)), function(i)
-    which.max(as.numeric(weights[i, columns])), integer(1))
-  expect_equal(own, weights$assigned_class)
+  heaviest <- tapply(seq_len(nrow(weights)), weights$unit,
+                     function(rows) weights$class[rows][which.max(weights$weight[rows])])
+  expect_equal(as.vector(heaviest),
+               as.vector(tapply(weights$assigned_class, weights$unit, unique)))
 })
 
 test_that("BCH removes the attenuation that modal assignment creates", {
   data <- .step_data()
   fit <- .step_fit(data)
-  high <- which.max(fit$means[, 1L])
+  # `contrast = "pairs"` reports class 2 minus class 1; orient it so the gap is
+  # the high-outcome class minus the other, whichever way the labels fell.
+  orientation <- if (which.max(fit$means[, 1L]) == 2L) 1 else -1
   gap <- function(method) {
-    estimates <- three_step(fit, data, "y", method = method)$estimate
-    estimates[high] - estimates[-high]
+    orientation * three_step(fit, data, "y", method = method,
+                             contrast = "pairs")$estimate
   }
 
   # The generating difference is 10. Modal assignment shrinks it; so does
@@ -72,14 +77,18 @@ test_that("the result is tidy, with cluster-robust intervals", {
   fit <- .step_fit(data)
   result <- three_step(fit, data, "y")
 
-  expect_named(result, c("class", "estimate", "standard_error", "conf_low",
-                         "conf_high", "effective_n"))
+  expect_named(result, c("level", "method", "class", "estimate",
+                         "standard_error", "conf_low", "conf_high",
+                         "effective_n"))
   expect_equal(nrow(result), fit$n_profiles)
   expect_true(all(result$standard_error > 0))
   expect_equal(result$conf_high - result$conf_low,
                2 * stats::qnorm(0.975) * result$standard_error)
-  expect_identical(attr(result, "method"), "bch")
-  expect_identical(attr(result, "level"), "individuals")
+  # the call is described by columns, not by attributes the caller must reach for
+  expect_identical(unique(result$method), "bch")
+  expect_identical(unique(result$level), "individuals")
+  expect_identical(unique(three_step(fit, data, "y", method = "modal")$method),
+                   "modal")
   # a wider level gives a wider interval
   wide <- three_step(fit, data, "y", level_ci = 0.99)
   expect_true(all(wide$conf_high - wide$conf_low >
@@ -104,10 +113,13 @@ test_that("a group-level outcome is related to the group classes", {
   result <- three_step(fit, data, "z", level = "groups")
 
   expect_equal(nrow(result), fit$n_group_classes)
-  expect_identical(attr(result, "level"), "groups")
-  expect_gt(abs(diff(result$estimate)), 3)
+  expect_identical(unique(result$level), "groups")
+  difference <- three_step(fit, data, "z", level = "groups", contrast = "pairs")
+  expect_gt(abs(difference$estimate), 3)
+  expect_lt(difference$p_value, 0.05)
   expect_equal(nrow(classification_errors(fit, level = "groups")), 4L)
-  expect_equal(nrow(bch_weights(fit, level = "groups")), fit$n_groups)
+  expect_equal(nrow(bch_weights(fit, level = "groups")),
+               fit$n_groups * fit$n_group_classes)
 })
 
 test_that("a broken contract is refused", {
@@ -169,18 +181,17 @@ test_that("the weights satisfy the identities that define the BCH method", {
   errors <- .multilpa_error_matrix(pieces)
   inverse <- solve(errors)
   weights <- bch_weights(fit)
-  matrix_form <- as.matrix(subset(weights,
-    select = grep("^weight_class_", names(weights))))
 
   # Bolck, Croon & Hagenaars (2004): the weights are the inverse of the
   # misclassification matrix applied to assigned class membership.
   expect_equal(unname(rowSums(errors)), rep(1, nrow(errors)))
   expect_equal(unname(errors %*% inverse), diag(nrow(errors)))
-  expect_equal(unname(rowSums(matrix_form)), rep(1, nrow(matrix_form)))
+  expect_equal(as.vector(tapply(weights$weight, weights$unit, sum)),
+               rep(1, fit$n_observations))
 
   # The property that makes the third step unbiased: the weighted class sizes
   # reproduce the model's own estimated class sizes.
-  expect_equal(unname(colSums(matrix_form)),
+  expect_equal(as.vector(tapply(weights$weight, weights$class, sum)),
                unname(colSums(pieces$posteriors)))
 })
 
@@ -189,20 +200,17 @@ test_that("the per-unit weights agree with the original table formulation", {
   fit <- .step_fit(data)
   pieces <- .multilpa_level_assignments(fit, "individuals")
   inverse <- solve(.multilpa_error_matrix(pieces))
-  weights <- bch_weights(fit)
-  matrix_form <- as.matrix(subset(weights,
-    select = grep("^weight_class_", names(weights))))
 
   # Bolck et al. correct the assigned-by-external contingency table directly;
   # this package carries per-unit weights. They are the same method.
   bins <- cut(data$y, breaks = stats::quantile(data$y, c(0, 0.5, 1)),
               include.lowest = TRUE)
+  weights <- merge(bch_weights(fit),
+                   data.frame(unit = seq_along(bins), bin = bins),
+                   by = "unit")
   from_table <- t(inverse) %*% table(pieces$modal, bins)
-  from_weights <- vapply(seq_len(fit$n_profiles), function(class) {
-    vapply(levels(bins), function(bin) sum(matrix_form[bins == bin, class]),
-           numeric(1))
-  }, numeric(nlevels(bins)))
-  expect_equal(unname(from_table), unname(t(from_weights)))
+  from_weights <- tapply(weights$weight, list(weights$class, weights$bin), sum)
+  expect_equal(unname(from_table), unname(from_weights))
 })
 
 test_that("the correction agrees with an independent implementation", {
@@ -262,7 +270,7 @@ test_that("the R3STEP table is tidy and its intervals are consistent", {
 
   expect_named(result, c("level", "outcome", "term", "estimate",
                          "standard_error", "statistic", "p_value",
-                         "conf_low", "conf_high"))
+                         "p_value_adjusted", "conf_low", "conf_high"))
   # one non-reference class, two terms
   expect_equal(nrow(result), 2L)
   expect_setequal(result$term, c("(Intercept)", "x"))

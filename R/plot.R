@@ -1,9 +1,10 @@
 #' Plot a fitted multilevel latent profile model
 #'
 #' Draws the profile means across indicators, or the profile prevalence within
-#' each latent group class. Profiles are distinguished by colour, point symbol
-#' and line type together, and labelled directly, so the plot stays readable in
-#' greyscale and needs no legend.
+#' each latent group class. Series are distinguished by colour, point symbol and
+#' line type together, and labelled directly, so a line plot stays readable in
+#' greyscale and needs no legend; the sequence grid carries the profile number
+#' in each cell for the same reason.
 #'
 #' @param x A fitted `multilpa` model.
 #' @param what `"profiles"` plots the Gaussian measurement model, one line per
@@ -11,9 +12,9 @@
 #'   categorical measurement model, one line per profile across the categorical
 #'   indicators, showing the probability of a chosen category. `"probabilities"`
 #'   plots profile prevalence within each group class, one line per group class.
-#'   `"sequences"` draws one row per group, one column per position, coloured by
-#'   the assigned profile, with the groups grouped by their latent class; it
-#'   needs a fit made with `time =`.
+#'   `"sequences"` draws one row per group, one column per position, coloured
+#'   and numbered by the assigned profile, with the groups grouped by their
+#'   latent class; it needs a fit made with `time =`.
 #' @param scale For `what = "profiles"`, `"raw"` plots the estimated means in
 #'   input units, and `"standardized"` divides each indicator's deviation from
 #'   its grand mean by that indicator's observed standard deviation. Use
@@ -24,8 +25,11 @@
 #'   choice for binary indicators, `"first"` uses the lowest, or give a single
 #'   category label or index used for every indicator.
 #' @param labels `TRUE` prints a direct label at the right end of each series.
-#' @param main,subtitle Panel title and secondary line. `NULL` for none,
-#'   `waiver` is not used; pass `""` to reserve the space without text.
+#' @param cell_labels For `what = "sequences"`, `TRUE` prints the profile number
+#'   inside each cell, so the profile is never carried by colour alone. The
+#'   numbers are drawn only where the cell is wide and tall enough to hold one.
+#' @param main,subtitle Panel title and secondary line. `NULL` for none; pass
+#'   `""` to reserve the space without text.
 #' @param palette,symbols,linetypes Vectors of colours, plotting characters and
 #'   line types, recycled to the number of series. Defaults are the Okabe-Ito
 #'   palette and matched symbol and line-type sequences.
@@ -55,9 +59,11 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
                         scale = c("raw", "standardized"), category = "last",
                         labels = TRUE, main = NULL, subtitle = NULL,
                         palette = NULL, symbols = NULL, linetypes = NULL,
-                        style = .multilpa_style(), ...) {
+                        style = .multilpa_style(), cell_labels = TRUE, ...) {
   stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
+            "`cell_labels` must be TRUE or FALSE" =
+              isTRUE(cell_labels) || isFALSE(cell_labels),
             "`category` must be a single label or index" = length(category) == 1L)
   what <- match.arg(what)
   scale <- match.arg(scale)
@@ -73,7 +79,7 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
     probabilities = .multilpa_plot_probabilities(x, labels, main, subtitle,
                                                palette, symbols, linetypes, style),
     sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
-                                        style))
+                                        style, cell_labels))
   invisible(x)
 }
 
@@ -419,25 +425,29 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
 #' One row per group and one column per position, filled with the assigned
 #' profile. Rows are blocked by latent group class and divided by a rule, so the
 #' picture answers whether a class's groups look alike over time rather than
-#' only how often each profile occurs in them.
+#' only how often each profile occurs in them. Each cell carries its profile
+#' number as well as its colour, so the profile survives greyscale printing and
+#' colour-blind vision; the numbers are dropped only where the grid is too dense
+#' to hold them.
 #'
 #' @param x A fitted `multilpa` model made with `time =`.
 #' @param labels Whether to label each class block at the right edge.
 #' @param main,subtitle Panel title and secondary line.
 #' @param palette Colours, one per profile; `NULL` uses the Okabe-Ito palette.
 #' @param style Visual constants, as built by `.multilpa_style()`.
+#' @param cell_labels Whether to print the profile number inside each cell, so
+#'   that colour is not the only channel carrying it.
 #' @return `NULL`, invisibly. Called for the side effect of drawing.
 #' @noRd
-.multilpa_plot_sequences <- function(x, labels, main, subtitle, palette, style) {
-  wide <- sequences(x, format = "wide")
-  # Match by identifier so rows stay aligned even with unused factor levels.
-  group_labels <- make.unique(as.character(x$group_values))
-  class_of_group <- x$group_classes[match(rownames(wide), group_labels)]
-  ordering <- order(class_of_group, rownames(wide))
-  codes <- matrix(vapply(seq_len(ncol(wide)),
-                  function(column) as.integer(wide[[column]])[ordering],
-                  integer(nrow(wide))), nrow(wide), ncol(wide))
-  classes <- class_of_group[ordering]
+.multilpa_plot_sequences <- function(x, labels, main, subtitle, palette, style,
+                                     cell_labels = TRUE) {
+  ## sequences() owns the reshape, and the same helper supplies the rectangular
+  ## layout here, so the picture cannot drift from the tidy verb behind it. Both
+  ## are in increasing group order, so one ordering serves both.
+  layout <- sequences(x, format = "wide")
+  ordering <- order(layout$group_class, layout$group)
+  codes <- .multilpa_sequence_matrix(x)[ordering, , drop = FALSE]
+  classes <- layout$group_class[ordering]
   colours <- if (is.null(palette)) .multilpa_palette(x$n_profiles) else
     rep(palette, length.out = x$n_profiles)
   time_positions <- sort(unique(x$time_values))
@@ -460,9 +470,13 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
     subtitle = if (is.null(subtitle)) sprintf(
       "%d groups in %d classes; %d profiles across %d positions",
       n_groups, x$n_group_classes, x$n_profiles, ncol(codes)) else subtitle,
-    x_at = positions, x_labels = names(wide), style = style)
-  graphics::image(x = positions, y = seq_len(n_groups), z = t(codes), add = TRUE,
-                  col = colours, zlim = c(0.5, x$n_profiles + 0.5))
+    x_at = positions, x_labels = as.character(time_positions), style = style)
+  # image() indexes z positionally and ignores its dimnames, so the group and
+  # occasion names carried by .multilpa_sequence_matrix() are dropped here rather
+  # than handed to a callee that would silently discard them.
+  graphics::image(x = positions, y = seq_len(n_groups), z = unname(t(codes)),
+                  add = TRUE, col = colours, zlim = c(0.5, x$n_profiles + 0.5))
+  .multilpa_cell_labels(codes, positions, colours, style, cell_labels)
   boundaries <- which(diff(classes) != 0) + 0.5
   if (length(boundaries)) {
     graphics::abline(h = boundaries, col = style$panel_fill, lwd = 3)
@@ -493,8 +507,8 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
 #' @param what `"profiles"` (the default) draws the measurement model;
 #'   `"sequences"` draws the assignments in course order and needs a fit made
 #'   with `time =`.
-#' @param scale,labels,main,subtitle,palette,symbols,linetypes,style,... Passed
-#'   through as in [plot.multilpa()].
+#' @param scale,labels,cell_labels,main,subtitle,palette,symbols,linetypes,style,...
+#'   Passed through as in [plot.multilpa()].
 #' @return The fitted model, invisibly. Called for the side effect of drawing.
 #' @examples
 #' set.seed(5)
@@ -517,10 +531,12 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences"),
                                      labels = TRUE, main = NULL, subtitle = NULL,
                                      palette = NULL, symbols = NULL,
                                      linetypes = NULL, style = .multilpa_style(),
-                                     ...) {
+                                     cell_labels = TRUE, ...) {
   stopifnot("`x` must be a fitted `multilpa_covariates` model" =
               inherits(x, "multilpa_covariates"),
-            "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels))
+            "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
+            "`cell_labels` must be TRUE or FALSE" =
+              isTRUE(cell_labels) || isFALSE(cell_labels))
   if (identical(what, "probabilities")) {
     stop(errorCondition(
       paste("A covariate model has no single profile prevalence: it varies with",
@@ -537,6 +553,6 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences"),
     profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
                                        symbols, linetypes, style),
     sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
-                                         style))
+                                         style, cell_labels))
   invisible(x)
 }

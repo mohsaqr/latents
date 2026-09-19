@@ -30,7 +30,12 @@ enumerate_classes(
 \item{...}{Further arguments to [multilpa()].}
 }
 \value{
-A list with `table` (criteria/diagnostics) and `fits` (models or NULL).
+An object of class `multilpa_enumeration`. Read it with the verbs
+  that describe it rather than by reaching into it: [as.data.frame()] gives
+  one row per candidate model with every criterion and diagnostic,
+  [summary()] gives one row per information criterion naming the candidate
+  that minimises it, [plot()] draws one criterion across the grid, and
+  [candidate_fit()] returns the fitted model for one cell of the grid.
 }
 \description{
 Fits every requested combination and retains errors and warnings alongside
@@ -43,5 +48,10 @@ set.seed(1)
 d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
 candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
                               group_classes = 1, n_starts = 2, seed = 1)
-candidates$table
+as.data.frame(candidates)
+summary(candidates)
+}
+\seealso{
+[candidate_fit()] to take one fitted model out of the grid,
+  [summary.multilpa_enumeration()] for the criterion-by-criterion comparison.
 }

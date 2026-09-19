@@ -118,11 +118,18 @@
 #' @param quadrature_check_nodes Larger number of nodes for diagnostic evaluation.
 #' @param quadrature_tolerance Maximum acceptable absolute log-likelihood discrepancy.
 #' @param seed Optional integer random seed, with caller RNG state restored.
-#' @return An object of class `multilpa_random_intercept` containing parameter
-#' estimates, posterior profile probabilities and group intercept moments,
-#' likelihood, information criteria, optimizer starts, and integration diagnostics.
+#' @return An object of class `multilpa_random_intercept`. Read it with the
+#' verbs that describe it rather than by reaching into it: [as.data.frame()]
+#' gives the measurement model, the individual posteriors or the posterior
+#' group intercepts; [summary()] gives the model-level fit summary, the
+#' integration diagnostics and the restart diagnostics; [plot()] draws the
+#' measurement model or the group intercepts; and [coef()] returns the free
+#' parameters as a named vector.
 #' The default BIC uses independent groups; `bic_individual` uses people.
-#' Standard errors are not provided. A near-zero random variance is a boundary.
+#' Standard errors are not provided: [parameter_inference()], [vcov()] and
+#' [confint()] raise a `multilpa_no_inference` condition on this class rather
+#' than return an interval the package cannot compute.
+#' A near-zero random variance is a boundary.
 #' For numerical search, intercept SD is restricted to data RMS times
 #' `exp(c(-16, 5))`, and profile logits relative to the final profile to
 #' `[-25, 25]`. Fits near those search bounds are flagged as boundaries.
@@ -176,6 +183,9 @@ fit_random_intercept <- function(data, indicators, group, n_profiles,
     set.seed(seed)
   }
   center <- colMeans(x)
+  ## Kept in input units so the shared measurement panel and the tidy
+  ## accessors can standardize against the observed indicators.
+  indicator_data <- x
   x <- sweep(x, 2L, center, "-")
   k <- as.integer(n_profiles)
   d <- ncol(x)
@@ -221,7 +231,11 @@ fit_random_intercept <- function(data, indicators, group, n_profiles,
   discrepancy <- abs(check$log_likelihood - estimates$log_likelihood)
   converged <- best$convergence == 0L
   if (!converged) warning("Best random-intercept start did not converge: ", best$message, call. = FALSE)
-  if (any(!is.finite(values))) warning("Some random-intercept starts failed; inspect $starts.", call. = FALSE)
+  if (any(!is.finite(values))) {
+    warning(warningCondition(
+      "Some random-intercept starts failed; summary() reports every start.",
+      class = "multilpa_failed_starts"))
+  }
   if (discrepancy > quadrature_tolerance) warning("Quadrature likelihood check failed; increase quadrature_nodes and quadrature_check_nodes before interpreting this fit.", call. = FALSE)
   boundary_flags <- c(residual_variance = any(parameters$variances <= min_variance * (1 + 1e-5)),
     random_variance_near_zero = parameters$random_sd <= scale * 1e-5,
@@ -235,6 +249,8 @@ fit_random_intercept <- function(data, indicators, group, n_profiles,
   result <- c(parameters, estimates, list(call = match.call(), n_profiles = k,
     n_observations = nrow(x), n_groups = length(group_values), group_values = group_values,
     group_index = group_index, group_sizes = group_sizes, indicators = indicators,
+    continuous = indicators, indicator_data = indicator_data, center = center,
+    effective_profile_counts = colSums(estimates$subject_posteriors),
     group = group, variance_model = variance_model, n_parameters = q,
     aic = -2 * estimates$log_likelihood + 2 * q,
     bic = -2 * estimates$log_likelihood + log(length(group_values)) * q,
@@ -254,6 +270,12 @@ fit_random_intercept <- function(data, indicators, group, n_profiles,
   result
 }
 
+#' Print a continuous group random-intercept fit
+#' @param x A fitted `multilpa_random_intercept` model.
+#' @param ... Reserved for compatibility with `print()`.
+#' @return The input model, invisibly.
+#' @examples
+#' # After fitting: print(random_intercept)
 #' @export
 print.multilpa_random_intercept <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_random_intercept"))
@@ -263,12 +285,367 @@ print.multilpa_random_intercept <- function(x, ...) {
   invisible(x)
 }
 
+#' Summarize a continuous group random-intercept fit
+#'
+#' Collects the model-level fit, the measurement model, the posterior group
+#' intercepts, the integration diagnostics and the restart diagnostics into one
+#' object, so that none of them has to be read out of the fit by hand.
+#'
+#' @param object A fitted `multilpa_random_intercept` model.
+#' @param ... Reserved for compatibility with `summary()`.
+#' @return An object of class `summary_multilpa_random_intercept`, with a
+#'   `print` method and an [as.data.frame()] accessor. `as.data.frame()`
+#'   returns the one-row model summary by default; `what = "profiles"`,
+#'   `"random_intercepts"` and `"starts"` return the measurement model, the
+#'   posterior group intercepts and the optimizer starts.
+#' @examples
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
+#'                             2, n_starts = 2, seed = 1)
+#' summary(fit)
+#' as.data.frame(summary(fit), what = "random_intercepts")
+#' @export
+summary.multilpa_random_intercept <- function(object, ...) {
+  stopifnot("`object` must be a fitted `multilpa_random_intercept` model" =
+              inherits(object, "multilpa_random_intercept"))
+  ## Built field by field rather than by subsetting the fit by a name vector,
+  ## which yields a silent NULL keyed `NA` for any name the fit does not carry.
+  model <- data.frame(
+    n_observations = object$n_observations,
+    n_groups = object$n_groups,
+    n_profiles = object$n_profiles,
+    variance_model = object$variance_model,
+    n_parameters = object$n_parameters,
+    random_intercept_sd = object$random_sd,
+    log_likelihood = object$log_likelihood,
+    aic = object$aic,
+    bic_groups = object$bic,
+    bic_individual = object$bic_individual,
+    converged = object$converged,
+    boundary = object$boundary,
+    integration = object$integration,
+    quadrature_nodes = object$quadrature_nodes,
+    quadrature_log_likelihood_difference =
+      object$quadrature_log_likelihood_difference,
+    quadrature_check_passed = object$quadrature_check_passed,
+    n_starts = nrow(object$starts),
+    row.names = NULL, stringsAsFactors = FALSE)
+  result <- list(
+    model = model,
+    profiles = as.data.frame(object, what = "profiles"),
+    random_intercepts = as.data.frame(object, what = "random_intercepts"),
+    starts = object$starts,
+    profile_probabilities = object$profile_probabilities,
+    effective_profile_counts = object$effective_profile_counts,
+    boundary_flags = object$boundary_flags,
+    call = object$call)
+  class(result) <- "summary_multilpa_random_intercept"
+  result
+}
+
+#' Print a random-intercept LPA summary
+#' @param x A `summary_multilpa_random_intercept` object.
+#' @param digits Number of printed significant digits.
+#' @param ... Passed to the underlying `data.frame` printing.
+#' @return The summary, invisibly.
+#' @examples
+#' # After fitting: print(summary(random_intercept), digits = 3)
+#' @export
+print.summary_multilpa_random_intercept <- function(x, digits = 4L, ...) {
+  stopifnot("`x` must be a `summary_multilpa_random_intercept` object" =
+              inherits(x, "summary_multilpa_random_intercept"),
+            "`digits` must be a single number between 1 and 22" =
+              is.numeric(digits) && length(digits) == 1L && is.finite(digits) &&
+              digits >= 1 && digits <= 22)
+  model <- x$model
+  cat(sprintf("Random-intercept LPA: %d profiles, %d people, %d groups\n",
+              model$n_profiles, model$n_observations, model$n_groups))
+  cat(sprintf("Parameters: %d; converged: %s; group random-intercept SD: %.6f\n",
+              model$n_parameters, model$converged, model$random_intercept_sd))
+  cat("\nMeasurement model:\n")
+  print(x$profiles, digits = digits, row.names = FALSE, ...)
+  cat("\nProfile probabilities:\n")
+  print(x$profile_probabilities, digits = digits, ...)
+  cat("\nEffective individual memberships:\n")
+  print(x$effective_profile_counts, digits = digits, ...)
+  cat(sprintf("\nLog likelihood: %.6f; AIC: %.3f\nBIC (groups): %.3f; BIC (individuals): %.3f\n",
+              model$log_likelihood, model$aic, model$bic_groups,
+              model$bic_individual))
+  cat(sprintf("Integration: %s with %d nodes; likelihood check difference %.3g (%s).\n",
+              model$integration, model$quadrature_nodes,
+              model$quadrature_log_likelihood_difference,
+              if (isTRUE(model$quadrature_check_passed)) "passed" else "FAILED"))
+  if (!model$converged) cat("WARNING: the best start did not converge.\n")
+  if (model$boundary) {
+    cat(sprintf("WARNING: at a boundary (%s).\n",
+                paste(names(x$boundary_flags)[x$boundary_flags], collapse = ", ")))
+  }
+  cat("Standard errors are not available for this model family.\n")
+  cat("\nStart diagnostics:\n")
+  print(x$starts, digits = digits, row.names = FALSE, ...)
+  invisible(x)
+}
+
+#' Tidy a random-intercept LPA summary
+#' @param x A `summary_multilpa_random_intercept` object.
+#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
+#' @param optional Ignored, present for generic compatibility.
+#' @param what Which table to return: `"model"`, `"profiles"`,
+#'   `"random_intercepts"` or `"starts"`.
+#' @param ... Ignored.
+#' @return A base `data.frame`. `"model"` has exactly one row describing the
+#'   fit, with columns `n_observations`, `n_groups`, `n_profiles`,
+#'   `variance_model`, `n_parameters`, `random_intercept_sd`,
+#'   `log_likelihood`, `aic`, `bic_groups`, `bic_individual`, `converged`,
+#'   `boundary`, `integration`, `quadrature_nodes`,
+#'   `quadrature_log_likelihood_difference`, `quadrature_check_passed` and
+#'   `n_starts`. `"profiles"`, `"random_intercepts"` and `"starts"` have one
+#'   row per profile-indicator, per observed group, and per optimizer start.
+#' @examples
+#' # After fitting: as.data.frame(summary(random_intercept), what = "starts")
+#' @export
+as.data.frame.summary_multilpa_random_intercept <- function(
+    x, row.names = NULL, optional = FALSE,
+    what = c("model", "profiles", "random_intercepts", "starts"), ...) {
+  stopifnot("`x` must be a `summary_multilpa_random_intercept` object" =
+              inherits(x, "summary_multilpa_random_intercept"))
+  what <- match.arg(what)
+  result <- switch(what, model = x$model, profiles = x$profiles,
+                   random_intercepts = x$random_intercepts, starts = x$starts)
+  row.names(result) <- row.names
+  result
+}
+
+#' Plot a continuous group random-intercept fit
+#'
+#' Draws either the measurement model, exactly as [plot.multilpa()] draws it,
+#' or the posterior group intercepts with their posterior standard deviations.
+#' The intercept panel is the one thing this model family has that a discrete
+#' group-class model does not, so it is available here and nowhere else.
+#'
+#' @param x A fitted `multilpa_random_intercept` model.
+#' @param what `"profiles"` (the default) draws the Gaussian measurement model,
+#'   one line per profile across the indicators. `"random_intercepts"` draws
+#'   one interval per group: its posterior mean intercept plus and minus one
+#'   posterior standard deviation, with the groups ordered by that mean.
+#' @param scale For `what = "profiles"`, `"raw"` or `"standardized"`, as in
+#'   [plot.multilpa()].
+#' @param labels `TRUE` prints a direct label at the right end of each series.
+#' @param main,subtitle Panel title and secondary line, or `NULL` for defaults.
+#' @param palette,symbols,linetypes Series aesthetics, or `NULL` for the
+#'   package defaults.
+#' @param style A list of visual constants, as built by `.multilpa_style()`.
+#' @param ... Further named visual constants, merged into `style`.
+#' @return The fitted model, invisibly. Called for the side effect of drawing.
+#' @examples
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
+#'                             2, n_starts = 2, seed = 1)
+#' plot(fit)
+#' plot(fit, what = "random_intercepts")
+#' @export
+plot.multilpa_random_intercept <- function(x, what = c("profiles",
+                                                       "random_intercepts"),
+                                           scale = c("raw", "standardized"),
+                                           labels = TRUE, main = NULL,
+                                           subtitle = NULL, palette = NULL,
+                                           symbols = NULL, linetypes = NULL,
+                                           style = .multilpa_style(), ...) {
+  stopifnot("`x` must be a fitted `multilpa_random_intercept` model" =
+              inherits(x, "multilpa_random_intercept"),
+            "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels))
+  what <- match.arg(what)
+  scale <- match.arg(scale)
+  style <- utils::modifyList(style, list(...))
+  previous <- graphics::par(no.readonly = TRUE)
+  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
+  graphics::par(xpd = NA)
+  if (identical(what, "profiles")) {
+    ## The shared measurement panel reads `n_group_classes` only to build a
+    ## default subtitle. This family has a continuous group effect instead of
+    ## discrete classes, so the adapter supplies that field and this method
+    ## always replaces the subtitle it would produce.
+    panel_input <- x
+    panel_input$n_group_classes <- 1L
+    .multilpa_plot_profiles(panel_input, scale, labels, main,
+      if (is.null(subtitle)) sprintf(
+        "%d profiles; continuous group random intercept (SD %.3g); %s scale",
+        x$n_profiles, x$random_sd,
+        if (identical(scale, "standardized")) "standardized" else "input")
+      else subtitle,
+      palette, symbols, linetypes, style)
+  } else {
+    .multilpa_plot_random_intercepts(x, main, subtitle, palette, style)
+  }
+  invisible(x)
+}
+
+#' Draw the posterior group intercepts
+#' @param x A fitted `multilpa_random_intercept` model.
+#' @param main,subtitle Panel title and secondary line.
+#' @param palette Series aesthetics, or `NULL` for defaults.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_random_intercepts <- function(x, main, subtitle, palette, style) {
+  frame <- as.data.frame(x, what = "random_intercepts")
+  order_by_mean <- order(frame$mean, frame$group)
+  centre <- frame$mean[order_by_mean]
+  spread <- frame$sd[order_by_mean]
+  colours <- if (is.null(palette)) .multilpa_palette(2L) else
+    rep(palette, length.out = 2L)
+  positions <- seq_along(centre)
+  span <- range(c(centre - spread, centre + spread, 0))
+  padding <- 0.12 * max(diff(span), .Machine$double.eps)
+  graphics::par(mar = style$margins)
+  .multilpa_panel(xlim = c(0.4, length(centre) + 0.6),
+    ylim = c(span[1L] - padding, span[2L] + padding),
+    xlab = "Group, ordered by posterior mean intercept",
+    ylab = "Posterior group intercept",
+    main = if (is.null(main)) "Posterior group random intercepts" else main,
+    subtitle = if (is.null(subtitle)) sprintf(
+      "%d groups; estimated intercept SD %.3g; bars are +/- one posterior SD",
+      length(centre), x$random_sd) else subtitle,
+    x_at = positions, x_labels = as.character(frame$group[order_by_mean]),
+    style = style)
+  graphics::abline(h = 0, col = style$muted_colour, lwd = 1, lty = 3L)
+  graphics::segments(positions, centre - spread, positions, centre + spread,
+                     col = colours[1L], lwd = style$line_width)
+  graphics::points(positions, centre, pch = 21L, bg = colours[1L],
+                   col = style$panel_fill, cex = style$point_size, lwd = 1.4)
+  invisible(NULL)
+}
+
+#' Free parameters of a random-intercept fit
+#'
+#' @param object A fitted `multilpa_random_intercept` model.
+#' @param ... Reserved for compatibility with `coef()`.
+#' @return A named numeric vector with one element per free parameter. Names
+#'   follow the package-wide `level.parameter.outcome.term` grammar, which is
+#'   the tidy decomposition [parameter_inference()] reports written on one
+#'   line, so a name reads back into those columns:
+#'   `measurement.mean.profile_k.indicator` for every profile mean,
+#'   `measurement.variance.profile_k.indicator` (or
+#'   `measurement.variance.shared.indicator` when `variance_model = "equal"`,
+#'   where one spread is shared across profiles) for every residual variance,
+#'   `group.standard_deviation.random_intercept` for the group intercept
+#'   standard deviation, and `profile.logit.profile_k` for each profile logit
+#'   relative to the final profile. Means, variances and the intercept standard
+#'   deviation are in input units; a logit is named as a logit because that is
+#'   the scale it is estimated and reported on. It has one element per free
+#'   parameter the fit reports, so its length is the parameter count
+#'   `summary()` prints. This is the base generic's contract, a plain named
+#'   vector; for a tidy table of the measurement model use
+#'   `as.data.frame(object)`.
+#' @examples
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
+#'                             2, n_starts = 2, seed = 1)
+#' coef(fit)
+#' @export
+coef.multilpa_random_intercept <- function(object, ...) {
+  stopifnot("`object` must be a fitted `multilpa_random_intercept` model" =
+              inherits(object, "multilpa_random_intercept"))
+  indicators <- object$indicators
+  n_profiles <- object$n_profiles
+  profiles <- paste0("profile_", seq_len(n_profiles))
+  probabilities <- object$profile_probabilities
+  ## An equal-variance fit estimates one variance per indicator, shared across
+  ## profiles; naming every profile's copy would report it several times and
+  ## overstate the free parameter count.
+  shared_variance <- identical(object$variance_model, "equal")
+  values <- c(
+    as.vector(t(object$means)),
+    if (shared_variance) object$variances[1L, ] else as.vector(t(object$variances)),
+    object$random_sd,
+    if (n_profiles > 1L)
+      log(probabilities[seq_len(n_profiles - 1L)] / probabilities[n_profiles])
+    else numeric())
+  labels <- rbind(
+    data.frame(level = "measurement", parameter = "mean",
+               outcome = rep(profiles, each = length(indicators)),
+               term = rep(indicators, times = n_profiles)),
+    data.frame(level = "measurement", parameter = "variance",
+               outcome = if (shared_variance) "shared" else
+                 rep(profiles, each = length(indicators)),
+               term = if (shared_variance) indicators else
+                 rep(indicators, times = n_profiles)),
+    data.frame(level = "group", parameter = "standard_deviation",
+               outcome = "random_intercept", term = NA_character_),
+    ## A single-profile fit estimates no logit at all, so it contributes no
+    ## row rather than a zero-length column that `data.frame()` cannot build.
+    if (n_profiles > 1L) data.frame(level = "profile", parameter = "logit",
+               outcome = profiles[seq_len(n_profiles - 1L)],
+               term = NA_character_) else NULL)
+  stopifnot("every free parameter must be labelled" =
+              nrow(labels) == length(values))
+  ## The shared serialiser is the single point of truth for this grammar, so
+  ## the classes of this package cannot drift into separate naming schemes.
+  stats::setNames(unname(values), .multilpa_parameter_names(labels))
+}
+
+#' Standard errors are not available for a random-intercept fit
+#'
+#' @param object A fitted `multilpa_random_intercept` model.
+#' @param ... Ignored.
+#' @return Nothing; always raises a `multilpa_no_inference` condition. The
+#'   observed-information and sandwich machinery this package uses differentiates
+#'   the discrete two-level likelihood analytically. That score does not cover
+#'   the quadrature integral over a continuous group intercept, so no standard
+#'   error is reported rather than one that is not the model's.
+#' @examples
+#' # vcov() on a random-intercept fit raises multilpa_no_inference by design.
+#' @export
+#' @importFrom stats vcov
+vcov.multilpa_random_intercept <- function(object, ...) {
+  stopifnot(inherits(object, "multilpa_random_intercept"))
+  stop(errorCondition(paste(
+    "Standard errors are not available for a continuous group random-intercept",
+    "model. Read the estimates with coef() and as.data.frame()."),
+    class = "multilpa_no_inference", call = NULL))
+}
+
+#' @rdname vcov.multilpa_random_intercept
+#' @param data Ignored; present for compatibility with the generic.
+#' @export
+parameter_inference.multilpa_random_intercept <- function(object, data, ...) {
+  vcov(object)
+}
+
+#' @rdname vcov.multilpa_random_intercept
+#' @param parm Ignored; present for compatibility with the generic.
+#' @param level Ignored; present for compatibility with the generic.
+#' @export
+#' @importFrom stats confint
+confint.multilpa_random_intercept <- function(object, parm, level = 0.95, ...) {
+  vcov(object)
+}
+
+#' Extract a random-intercept LPA log likelihood
+#' @param object A fitted `multilpa_random_intercept` model.
+#' @param ... Reserved for compatibility with `logLik()`.
+#' @return A `logLik` object with parameter count `df` and the number of
+#'   observed groups as `nobs`, so `stats::BIC()` uses the group-count BIC.
+#' @examples
+#' # After fitting: logLik(random_intercept)
 #' @export
 logLik.multilpa_random_intercept <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_random_intercept"))
   structure(object$log_likelihood, df = object$n_parameters, nobs = object$n_groups, class = "logLik")
 }
 
+#' Count independent groups in a random-intercept LPA fit
+#' @param object A fitted `multilpa_random_intercept` model.
+#' @param ... Reserved for compatibility with `nobs()`.
+#' @return The number of observed groups, as an integer.
+#' @examples
+#' # After fitting: nobs(random_intercept)
 #' @export
 nobs.multilpa_random_intercept <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_random_intercept"))

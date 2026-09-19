@@ -35,6 +35,66 @@
   rep(c(1L, 2L, 4L, 3L, 5L, 6L), length.out = n)
 }
 
+#' Ink that stays legible on a given background
+#'
+#' Chooses black or white text for each background colour by its relative
+#' luminance, so a label drawn inside a filled cell is readable whether the fill
+#' is the palette's yellow or its black.
+#'
+#' @param background Character vector of background colours.
+#' @return Character vector of the same length, each `"#000000"` or `"#FFFFFF"`.
+#' @noRd
+.multilpa_ink <- function(background) {
+  stopifnot("`background` must be a character vector of colours" =
+              is.character(background))
+  if (length(background) == 0L) return(character())
+  channels <- grDevices::col2rgb(background) / 255
+  # Relative luminance, ITU-R BT.709 coefficients; the linearisation is skipped
+  # because only the side of the threshold matters here, not the exact value.
+  luminance <- as.vector(c(0.2126, 0.7152, 0.0722) %*% channels)
+  ifelse(luminance > 0.55, "#000000", "#FFFFFF")
+}
+
+#' Print the code carried by each cell of a filled grid
+#'
+#' A grid of coloured cells would otherwise encode its series by colour alone.
+#' This stamps each cell with the integer it stands for, in ink chosen to stay
+#' legible on that cell, but only when the cell is large enough to hold the
+#' text: the fit is measured rather than guessed, because a grid of overlapping
+#' digits reads worse than the colours on their own.
+#'
+#' @param codes Integer matrix of codes, one row per grid row and one column per
+#'   grid column, `NA` where a cell is empty.
+#' @param positions Numeric positions of the grid columns on the horizontal axis.
+#' @param colours The fill colour of each code, in code order.
+#' @param style Visual constants, supplying the text size.
+#' @param draw `FALSE` skips the labels entirely.
+#' @return `TRUE` if the labels were drawn and `FALSE` if they were not,
+#'   invisibly.
+#' @noRd
+.multilpa_cell_labels <- function(codes, positions, colours, style,
+                                  draw = TRUE) {
+  stopifnot("`codes` must be a matrix of codes" = is.matrix(codes),
+            "`draw` must be TRUE or FALSE" = isTRUE(draw) || isFALSE(draw))
+  if (!isTRUE(draw)) return(invisible(FALSE))
+  filled <- !is.na(codes)
+  if (!any(filled)) return(invisible(FALSE))
+  text <- as.character(codes[filled])
+  size <- style$label_text_size
+  cell_width <- if (length(positions) > 1L) min(diff(positions)) else 1
+  widest <- max(graphics::strwidth(text, units = "user", cex = size, font = 2L))
+  tallest <- max(abs(graphics::strheight(text, units = "user", cex = size,
+                                         font = 2L)))
+  if (widest > 0.7 * cell_width || tallest > 0.7) return(invisible(FALSE))
+  # which() and matrix indexing both walk the matrix by column, so the cells and
+  # their codes stay aligned without a join.
+  cells <- which(filled, arr.ind = TRUE)
+  graphics::text(positions[cells[, 2L]], cells[, 1L], text,
+                 col = .multilpa_ink(colours[codes[filled]]), cex = size,
+                 font = 2L, adj = c(0.5, 0.5))
+  invisible(TRUE)
+}
+
 #' Open a styled plotting panel
 #'
 #' Draws the background, horizontal reference grid and axes shared by every

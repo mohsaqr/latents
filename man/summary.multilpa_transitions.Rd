@@ -12,9 +12,11 @@
 \item{...}{Reserved for compatibility with `summary()`.}
 }
 \value{
-A `summary_multilpa_transitions` list carrying the measurement
-  parameters, the initial and transition probabilities, the effective class
-  counts, the fit statistics and the restart diagnostics.
+A `summary_multilpa_transitions` object carrying the measurement
+  parameters, the initial and transition probabilities and counts, the
+  effective class counts, the fit statistics and the restart diagnostics.
+  Its tables are read with [as.data.frame.summary_multilpa_transitions()];
+  `print()` reports the whole model.
 }
 \description{
 Summarize a fitted latent transition model

@@ -10,11 +10,20 @@ entropy_table(object)
 \item{object}{A fitted `multilpa` model.}
 }
 \value{
-A base `data.frame` with one row per level and columns `level`,
-  `n_classes`, `n_units`, `entropy_sum`, and `relative_entropy`.
-  `relative_entropy` is `1 - EN / (n log K)` and is `NA_real_` when a level
-  has a single class, where it is undefined rather than perfect.
-  Continuous random-intercept fits return the individual level only.
+A base `data.frame`, one row per level the fit has, with the columns
+  \describe{
+    \item{`level`}{character: `"individuals"`, and `"groups"` when the fit
+      has discrete group classes.}
+    \item{`n_classes`}{integer: classes at that level.}
+    \item{`n_units`}{integer: units at that level.}
+    \item{`entropy_sum`}{numeric: the classification entropy `EN`, the
+      quantity `awe`, `icl` and `clc` penalize, so lower is sharper.}
+    \item{`relative_entropy`}{numeric: `1 - EN / (n log K)`, on the zero-to-one
+      scale, so higher is sharper.}
+  }
+  `relative_entropy` is `NA_real_` when a level has a single class, where it
+  is undefined rather than perfect. Continuous random-intercept fits have no
+  discrete group classes and return the individual level only.
 }
 \description{
 Reports the zero-to-one relative entropy at each level, alongside the raw
@@ -29,4 +38,8 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 entropy_table(fit)
+}
+\seealso{
+[classification_table()] for per-class classification quality and
+  [information_criteria()] for the criteria that use `entropy_sum`.
 }

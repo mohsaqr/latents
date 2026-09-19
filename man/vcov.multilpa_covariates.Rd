@@ -4,25 +4,40 @@
 \alias{vcov.multilpa_covariates}
 \title{Covariance matrix of a covariate fit}
 \usage{
-\method{vcov}{multilpa_covariates}(object, data, step = 1e-04, vcov_type = c("observed", "robust"), ...)
+\method{vcov}{multilpa_covariates}(
+  object,
+  data = NULL,
+  step = 1e-04,
+  vcov_type = c("observed", "robust"),
+  scale = c("natural", "unconstrained"),
+  ...
+)
 }
 \arguments{
 \item{object}{A fitted `multilpa_covariates` model.}
 
-\item{data}{The data frame the model was fitted to.}
+\item{data}{Optional. The data frame the model was fitted to; when omitted
+it is rebuilt from the indicators, group index and designs the fit stores.
+Supplying it is the stronger check that the caller still holds that frame.}
 
 \item{step}{Finite-difference step for the observed information.}
 
 \item{vcov_type}{`"observed"` or `"robust"`.}
 
+\item{scale}{Which parameter scale the covariance is on, matching
+[vcov.multilpa()]. `"natural"`, the default, is the covariance of the
+estimates [coef()] and [parameter_inference()] report: variances and
+residual covariances in their own units, carried from the estimation scale
+by the delta method. `"unconstrained"` is the covariance on the scale the
+model is estimated on, with log variances and log-Cholesky coordinates.
+Means and membership coefficients are the same on both scales.}
+
 \item{...}{Ignored, present for generic compatibility.}
 }
 \value{
 A square numeric matrix with one row and column per free parameter,
-  named `level.parameter.outcome.term` and ordered measurement means, measurement
-  variances, profile logits, group logits. Variances are on the log scale,
-  which is where they are estimated; [covariate_inference()] returns them and
-  their standard errors in natural units.
+  named as [coef()] names them and ordered measurement means, measurement
+  variances or covariances, profile logits, group logits.
 }
 \description{
 Covariance matrix of a covariate fit
@@ -41,5 +56,5 @@ example_data <- data.frame(
 fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
                       n_group_classes = 2, profile_covariates = "x",
                       n_starts = 2, seed = 1)
-dim(vcov(fit, example_data))
+vcov(fit, example_data, scale = "unconstrained")
 }

@@ -4,19 +4,39 @@
 \alias{transitions}
 \title{Fitted transition probabilities}
 \usage{
-transitions(object)
+transitions(object, estimated = NULL, stable = NULL)
 }
 \arguments{
 \item{object}{A fitted `multilpa_transitions` model.}
+
+\item{estimated}{Keep only the rows the data could estimate (`TRUE`), only
+the rows that are uniform by construction (`FALSE`), or all of them
+(`NULL`, the default).}
+
+\item{stable}{Keep only the probabilities of staying in a profile (`TRUE`),
+only the probabilities of moving to a different one (`FALSE`), or all of
+them (`NULL`, the default). The two arguments combine, so
+`transitions(fit, estimated = TRUE, stable = FALSE)` is every estimated
+move out of a profile.}
 }
 \value{
 A base `data.frame` with one row per group class and ordered pair of
   profiles, and the columns `group_class`, `from`, `to`, `probability`, the
-  `expected_count` of such transitions, `stable` (whether the row and column
-  are the same profile), `estimated` (`FALSE` where the profile moved from
-  is never occupied before a final occasion, so the row is uniform by
-  construction) and `group_class_probability`. Rows are ordered by group
-  class, then by the profile moved from, then by the profile moved to.
+  `expected_count` of such transitions, `stable` (`TRUE` where `from` and
+  `to` are the same profile, so the probability is one of staying),
+  `estimated` (`FALSE` where the profile moved from is never occupied before
+  a final occasion, so nothing was ever observed leaving it and the whole row
+  is uniform by construction rather than estimated) and
+  `group_class_probability`. `stable` and `estimated` are logical and never
+  `NA`. Rows are ordered by group class, then by the profile moved from, then
+  by the profile moved to; `estimated` and `stable` drop rows without
+  reordering the ones they keep.
+
+  `group_class_probability` is the fitted share of groups in `group_class`,
+  so it is constant within a group class and repeats down its rows. It is
+  carried here because the overall transition matrix is the class-weighted
+  average of the per-class ones, and that weight would otherwise have to be
+  fetched out of the fitted object by hand.
 }
 \description{
 Returns the estimated probability of moving from each profile to each
@@ -36,6 +56,7 @@ example_data$score_b <- stats::rnorm(nrow(example_data))
 fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 transitions(fit)
+transitions(fit, stable = FALSE)
 }
 \seealso{
 [fit_transitions()] to fit the model, and [sequences()] for the

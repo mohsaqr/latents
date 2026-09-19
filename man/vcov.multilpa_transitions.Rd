@@ -3,11 +3,14 @@
 \name{vcov.multilpa_transitions}
 \alias{vcov.multilpa_transitions}
 \alias{parameter_inference.multilpa_transitions}
+\alias{confint.multilpa_transitions}
 \title{Standard errors are not available for a latent transition model}
 \usage{
 \method{vcov}{multilpa_transitions}(object, ...)
 
 \method{parameter_inference}{multilpa_transitions}(object, data, ...)
+
+\method{confint}{multilpa_transitions}(object, parm, level = 0.95, ...)
 }
 \arguments{
 \item{object}{A fitted `multilpa_transitions` model.}
@@ -15,16 +18,33 @@
 \item{...}{Ignored.}
 
 \item{data}{Ignored; present for compatibility with the generic.}
+
+\item{parm}{Ignored; present for compatibility with the generic.}
+
+\item{level}{Ignored; present for compatibility with the generic.}
 }
 \value{
-Nothing; always raises a `multilpa_no_inference` condition. The
+Nothing; `vcov()`, `confint()` and `parameter_inference()` all raise
+  a `multilpa_no_inference` condition on a latent transition fit. The
   analytic score and Jacobian this package uses for observed-information and
   sandwich standard errors do not yet cover the initial and transition
   multinomial logits, so no interval is reported rather than an invalid one.
+  `confint()` refuses explicitly instead of letting `confint.default()`
+  reach `vcov()` and refuse by accident.
 }
 \description{
 Standard errors are not available for a latent transition model
 }
 \examples{
-# vcov() on a transition fit raises multilpa_no_inference by design.
+set.seed(7)
+example_data <- data.frame(
+  person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
+)
+example_data$score_a <- stats::rnorm(nrow(example_data))
+example_data$score_b <- stats::rnorm(nrow(example_data))
+fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+                       n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+tryCatch(confint(fit), multilpa_no_inference = function(condition) {
+  conditionMessage(condition)
+})
 }

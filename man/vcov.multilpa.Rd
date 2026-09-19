@@ -9,19 +9,39 @@
 \arguments{
 \item{object}{A fitted `multilpa` model.}
 
-\item{data}{Original fitting data, required unless `object$inference` is stored.}
+\item{data}{The original fitting data. It is required: the observed
+information is evaluated at the estimates and can only be rebuilt from the
+data that produced them.}
 
-\item{scale}{Natural or unconstrained parameter scale.}
+\item{scale}{Which parameter scale the covariance is on. `"natural"`, the
+default, is the covariance of the estimates [coef()] reports -- variances
+in their own units and probabilities as probabilities -- carried from the
+estimation scale by the delta method with
+`.multilpa_inference_jacobian()`. `"unconstrained"` is the covariance on
+the scale the model is actually estimated on: log variances for a diagonal
+fit, log-Cholesky coordinates for a full-covariance fit, and
+baseline-category logits for the mixing and response probabilities.}
 
 \item{...}{Additional arguments passed to [parameter_inference()].}
 }
 \value{
-The observed-information covariance matrix. On the natural scale,
-  probability sum constraints make this matrix singular by construction.
+A square numeric matrix with one row and column per coefficient,
+  named as [coef()] names them, on the scale `scale` asks for. On the natural
+  scale it is singular by construction, because each set of probabilities
+  sums to one; the unconstrained matrix is not. [confint()] and the
+  `conf_low`/`conf_high` columns of [parameter_inference()] are built from
+  the natural-scale matrix.
 }
 \description{
 Extract multilevel LPA covariance estimates
 }
 \examples{
-# After fitting: vcov(fit, data = original_data)
+set.seed(3)
+example_data <- data.frame(
+  school = rep(seq_len(10), each = 8),
+  score_a = stats::rnorm(80), score_b = stats::rnorm(80)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+vcov(fit, data = example_data, scale = "unconstrained")
 }

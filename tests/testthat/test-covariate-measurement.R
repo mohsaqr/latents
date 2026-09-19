@@ -165,7 +165,10 @@ test_that("full-covariance standard errors match an independent information matr
                                pieces$beta, pieces$gamma)$log_likelihood
   }
   independent <- solve(stats::optimHess(theta, negative))
-  package <- vcov(fit, data)
+  # `theta` is the estimation-scale encoding, so the comparison must ask for
+  # that scale. `vcov()` now defaults to natural units, agreeing with
+  # `confint()` and `parameter_inference()` on the same fit.
+  package <- vcov(fit, data, scale = "unconstrained")
   expect_equal(sqrt(diag(package)), sqrt(diag(independent)),
                tolerance = 1e-5, ignore_attr = TRUE)
   expect_true(isTRUE(all.equal(package, t(package))))

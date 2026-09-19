@@ -10,11 +10,20 @@ sequence_summary(object)
 \item{object}{A fitted `multilpa` model, fitted with `time =`.}
 }
 \value{
-A base `data.frame` with one row per group class and the columns
-  `group_class`, `groups` (how many groups are assigned to it),
-  `observations` (their total number of observations), `mean_length`,
-  `median_length`, `shortest` and `complete` (how many of its groups are
-  observed at every position seen anywhere in the data).
+A base `data.frame` with one row per group class, including any class
+  no group was assigned to, and the columns `group_class`, `groups` (how many
+  groups are assigned to it), `observations` (their total number of
+  observations), `mean_length`, `median_length`, `shortest`, `longest`,
+  `complete` (how many of its groups are observed at every position seen
+  anywhere in the data) and `gaps` (how many of its groups skip a position
+  inside their own first-to-last span).
+
+  A group's *length* is its number of observations, which is what the model
+  was fitted on. It is not the group's span: a group observed at positions
+  1, 2 and 4 has length 3 and span 4, and is counted in `gaps`. A class whose
+  `gaps` is above zero is an unbalanced class with holes inside it, not
+  merely a class with short groups. The length columns are `NA` and the
+  count columns are `0` for a class with no groups.
 }
 \description{
 Summarizes how much data each latent group class actually contributes. A
@@ -25,8 +34,8 @@ cannot show it.
 \examples{
 set.seed(7)
 example_data <- data.frame(
-  school = rep(seq_len(12), each = 10), wave = rep(seq_len(10), times = 12),
-  score_a = rnorm(120), score_b = rnorm(120)
+  school = rep(seq_len(6), each = 5), wave = rep(seq_len(5), times = 6),
+  score_a = rnorm(30), score_b = rnorm(30)
 )
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 2, n_starts = 2,

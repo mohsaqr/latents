@@ -13,17 +13,26 @@
 
 \item{level}{Confidence level strictly between zero and one.}
 
-\item{data}{Original fitting data, required unless `object$inference` is stored.}
+\item{data}{The original fitting data, required for the same reason
+[vcov()] requires it.}
 
 \item{...}{Additional arguments passed to [parameter_inference()].}
 }
 \value{
-A two-column matrix of natural-scale Wald intervals. Bounds are not
+A two-column matrix of Wald intervals on the natural scale, one row
+  per requested coefficient and named as [coef()] names them. Bounds are not
   clipped to the probability or variance parameter space.
 }
 \description{
 Wald confidence intervals for multilevel LPA coefficients
 }
 \examples{
-# After fitting: confint(fit, data = original_data)
+set.seed(3)
+example_data <- data.frame(
+  school = rep(seq_len(10), each = 8),
+  score_a = stats::rnorm(80), score_b = stats::rnorm(80)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+confint(fit, data = example_data)
 }

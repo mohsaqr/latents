@@ -271,9 +271,17 @@ test_that("the accessors return the tidy tables they promise", {
                         "group_class_probability"))
   expect_identical(nrow(moves), 8L)
   expect_identical(moves$stable, moves$from == moves$to)
+  expect_true(is.logical(moves$stable) && !anyNA(moves$stable))
+  expect_true(is.logical(moves$estimated) && !anyNA(moves$estimated))
   expect_equal(moves$probability,
                as.vector(aperm(fit$transition_probabilities, c(2L, 1L, 3L))))
   expect_identical(as.data.frame(fit), moves)
+  # group_class_probability is a group-class attribute repeated down its rows:
+  # it must be constant within a class and sum to one over the classes.
+  shares <- split(moves$group_class_probability, moves$group_class)
+  expect_true(all(vapply(shares, function(share) length(unique(share)),
+                         integer(1)) == 1L))
+  expect_equal(sum(vapply(shares, `[[`, numeric(1), 1L)), 1)
 
   initial <- as.data.frame(fit, what = "initial")
   expect_named(initial, c("group_class", "profile", "probability", "prevalence",
@@ -291,12 +299,79 @@ test_that("the accessors return the tidy tables they promise", {
 
   expect_identical(nrow(as.data.frame(fit, what = "profiles")), 4L)
   expect_identical(nrow(as.data.frame(fit, what = "responses")), 4L)
-  expect_identical(nrow(as.data.frame(fit, what = "posteriors")), nrow(data))
-  expect_identical(nrow(as.data.frame(fit, what = "group_posteriors")), 9L)
+  expect_identical(nrow(as.data.frame(fit, what = "posteriors")),
+                   nrow(data) * fit$n_profiles)
+  expect_identical(nrow(as.data.frame(fit, what = "posteriors", format = "wide")),
+                   nrow(data))
+  expect_identical(nrow(as.data.frame(fit, what = "group_posteriors")),
+                   9L * fit$n_group_classes)
   expect_s3_class(as.data.frame(fit, what = "information_criteria"), "data.frame")
   expect_s3_class(as.data.frame(fit, what = "entropy"), "data.frame")
   expect_s3_class(as.data.frame(fit, what = "classification"), "data.frame")
   expect_output(print(fit), "Latent transition model")
+})
+
+test_that("transitions() restricts by argument instead of by bracket", {
+  data <- .transition_fixture()
+  fit <- suppressWarnings(fit_transitions(
+    data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
+    n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 30))
+
+  every <- transitions(fit)
+  moves <- transitions(fit, stable = FALSE)
+  stays <- transitions(fit, stable = TRUE)
+
+  expect_named(moves, names(every))
+  expect_false(any(moves$stable))
+  expect_true(all(stays$stable))
+  expect_identical(nrow(moves) + nrow(stays), nrow(every))
+  # the kept rows keep their order and their values, and are renumbered
+  expect_identical(row.names(stays), as.character(seq_len(nrow(stays))))
+  expect_equal(stays$probability, every$probability[every$stable])
+  # a staying probability per group class and profile
+  expect_identical(nrow(stays), fit$n_group_classes * fit$n_profiles)
+
+  # every fitted row is estimated here, and the arguments combine
+  expect_true(all(transitions(fit, estimated = TRUE)$estimated))
+  expect_identical(nrow(transitions(fit, estimated = TRUE)), nrow(every))
+  expect_identical(nrow(transitions(fit, estimated = FALSE)), 0L)
+  expect_identical(transitions(fit, estimated = TRUE, stable = FALSE), moves)
+  # and the same restriction reaches through as.data.frame()
+  expect_identical(as.data.frame(fit, stable = FALSE), moves)
+
+  expect_error(transitions(fit, stable = NA),
+               "`stable` must be NULL, TRUE or FALSE")
+  expect_error(transitions(fit, estimated = c(TRUE, FALSE)),
+               "`estimated` must be NULL, TRUE or FALSE")
+})
+
+test_that("the summary keeps named fields only, and reports its own tables", {
+  data <- .transition_fixture()
+  fit <- suppressWarnings(fit_transitions(
+    data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
+    n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 30))
+  digest <- summary(fit)
+
+  # A Gaussian, diagonal-covariance fit has neither `covariances` nor
+  # `response_probabilities`; selecting them by name must not leave NA-named
+  # NULL holes in the summary.
+  expect_false(anyNA(names(digest)))
+  expect_false(any(vapply(digest, is.null, logical(1))))
+  expect_false("response_probabilities" %in% names(digest))
+
+  tidy <- as.data.frame(digest)
+  expect_identical(tidy, transitions(fit))
+  expect_identical(as.data.frame(digest, stable = TRUE),
+                   transitions(fit, stable = TRUE))
+  expect_identical(as.data.frame(digest, what = "initial"),
+                   as.data.frame(fit, what = "initial"))
+  expect_identical(as.data.frame(digest, what = "starts"), fit$starts)
+  expect_error(as.data.frame(digest, what = "posteriors"), "arg")
+
+  # a fit missing a mandatory field is refused, not summarized with a hole
+  broken <- fit
+  broken$aic <- NULL
+  expect_error(summary(broken), class = "multilpa_incomplete_fit")
 })
 
 test_that("the shared sequence and diagnostic verbs accept a transition fit", {
@@ -395,13 +470,24 @@ test_that("the generics either answer or refuse, and never answer emptily", {
   expect_false(anyNA(estimates))
   # Every free quantity is present: means, variances, responses, initial
   # probabilities, transitions and the group-class share.
-  expect_identical(sum(grepl("^mean[.]", names(estimates))), 4L)
-  expect_identical(sum(grepl("^variance[.]", names(estimates))), 4L)
-  expect_identical(sum(grepl("^response[.]", names(estimates))), 4L)
-  expect_identical(sum(grepl("^initial[.]", names(estimates))), 2L)
-  expect_identical(sum(grepl("^transition[.]", names(estimates))), 4L)
-  expect_equal(unname(estimates[grepl("^transition[.]", names(estimates))]),
-               transitions(fit)$probability)
+  # Names follow the package-wide `level.parameter.outcome.term` grammar, shared
+  # with coef.multilpa() and coef.multilpa_covariates(), so one regex works on
+  # every fit class.
+  expect_identical(sum(grepl("^measurement[.]mean[.]", names(estimates))), 4L)
+  expect_identical(sum(grepl("^measurement[.]variance[.]", names(estimates))), 4L)
+  expect_identical(sum(grepl("^measurement[.]response[.]", names(estimates))), 4L)
+  expect_identical(
+    sum(grepl("^profile[.]initial_probability[.]", names(estimates))), 2L)
+  expect_identical(
+    sum(grepl("^profile[.]transition_probability[.]", names(estimates))), 4L)
+  expect_equal(
+    unname(estimates[grepl("^profile[.]transition_probability[.]", names(estimates))]),
+    transitions(fit)$probability)
+  expect_identical(sum(grepl("^group[.]probability[.]", names(estimates))), 1L)
+  # Every name parses back into the four tidy fields: level, parameter, outcome
+  # and a term that may itself contain dots or colons.
+  expect_true(all(lengths(regmatches(names(estimates),
+                                     gregexpr("[.]", names(estimates)))) >= 2L))
 
   digest <- summary(fit)
   expect_s3_class(digest, "summary_multilpa_transitions")

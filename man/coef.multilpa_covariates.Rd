@@ -4,19 +4,29 @@
 \alias{coef.multilpa_covariates}
 \title{Estimated parameters of a covariate fit}
 \usage{
-\method{coef}{multilpa_covariates}(object, ...)
+\method{coef}{multilpa_covariates}(object, scale = c("natural", "unconstrained"), ...)
 }
 \arguments{
 \item{object}{A fitted `multilpa_covariates` model.}
+
+\item{scale}{Natural coefficients, or the unconstrained coordinates the model
+is estimated on: log variances for a diagonal fit and log-Cholesky
+coordinates for a full-covariance fit. Matches [coef.multilpa()].}
 
 \item{...}{Ignored, present for generic compatibility.}
 }
 \value{
 A named numeric vector of every free parameter, in the order
   [parameter_inference()] reports them: measurement means, measurement
-  variances, profile logits, then group-class logits. Names are
-  `level.parameter.outcome.term`, which is what keeps a mean and a variance
-  on the same indicator distinguishable. Variances are in natural units.
+  variances or residual covariances, profile logits, then group-class logits.
+  Names are `level.parameter.outcome.term`, the same four-part decomposition
+  [parameter_inference()] reports as columns and the same spelling every
+  fitted class in this package uses; it is what keeps a mean and a variance
+  on the same indicator distinguishable, and the `parameter` part names the
+  scale, so a log variance is never served under a name that says
+  `variance`. On the natural scale variances and residual covariances are in
+  their own units and agree with [parameter_inference()]'s `estimate` column
+  exactly.
 }
 \description{
 Estimated parameters of a covariate fit

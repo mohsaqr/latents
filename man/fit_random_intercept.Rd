@@ -48,11 +48,18 @@ fit_random_intercept(
 \item{seed}{Optional integer random seed, with caller RNG state restored.}
 }
 \value{
-An object of class `multilpa_random_intercept` containing parameter
-estimates, posterior profile probabilities and group intercept moments,
-likelihood, information criteria, optimizer starts, and integration diagnostics.
+An object of class `multilpa_random_intercept`. Read it with the
+verbs that describe it rather than by reaching into it: [as.data.frame()]
+gives the measurement model, the individual posteriors or the posterior
+group intercepts; [summary()] gives the model-level fit summary, the
+integration diagnostics and the restart diagnostics; [plot()] draws the
+measurement model or the group intercepts; and [coef()] returns the free
+parameters as a named vector.
 The default BIC uses independent groups; `bic_individual` uses people.
-Standard errors are not provided. A near-zero random variance is a boundary.
+Standard errors are not provided: [parameter_inference()], [vcov()] and
+[confint()] raise a `multilpa_no_inference` condition on this class rather
+than return an interval the package cannot compute.
+A near-zero random variance is a boundary.
 For numerical search, intercept SD is restricted to data RMS times
 `exp(c(-16, 5))`, and profile logits relative to the final profile to
 `[-25, 25]`. Fits near those search bounds are flagged as boundaries.

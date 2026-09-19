@@ -3,16 +3,23 @@ test_that("enumeration retains failures and both BIC conventions", {
   d <- data.frame(g = rep(1:30, each = 10), y = c(rnorm(150, -2), rnorm(150, 2)))
   result <- enumerate_classes(d, "y", "g", profiles = 1:2, group_classes = 1:2,
                              n_starts = 2, seed = 12)
-  expect_equal(nrow(result$table), 4L)
-  expect_length(result$fits, 4L)
-  expect_null(result$fits[[3]])
-  expect_match(result$table$error[3], "profile")
-  expect_true(all(is.finite(result$table$aic[c(1, 2, 4)])))
-  expect_equal(result$table$bic_groups[1], result$fits[[1]]$bic)
-  expect_equal(result$table$bic_individual[1], result$fits[[1]]$bic_individual)
-  expect_true(is.na(result$table$profile_entropy[1]))
-  expect_gt(result$table$profile_entropy[2], 0)
-  expect_lte(result$table$profile_entropy[2], 1)
+  grid <- as.data.frame(result)
+  expect_equal(nrow(grid), 4L)
+  expect_match(grid$error[3], "profile")
+  expect_error(candidate_fit(result, n_profiles = 1, n_group_classes = 2),
+               class = "multilpa_failed_candidate")
+  # Every criterion the grid names must actually carry numbers. `aic` was
+  # silently an all-missing column named `NA.`, so a finiteness assertion on
+  # `grid$aic` passed vacuously against a column that did not exist.
+  expect_true("aic" %in% names(grid))
+  expect_true(all(is.finite(grid$aic[c(1, 2, 4)])))
+  expect_true(all(c("kic", "clc_groups", "clc_individual") %in% names(grid)))
+  one_profile <- candidate_fit(result, n_profiles = 1, n_group_classes = 1)
+  expect_equal(grid$bic_groups[1], one_profile$bic)
+  expect_equal(grid$bic_individual[1], one_profile$bic_individual)
+  expect_true(is.na(grid$profile_entropy[1]))
+  expect_gt(grid$profile_entropy[2], 0)
+  expect_lte(grid$profile_entropy[2], 1)
   expect_error(enumerate_classes(d, "y", "g", profiles = 0), "profiles")
   expect_error(enumerate_classes(d, "y", "g", n_profiles = 2), "model counts")
 })
@@ -40,10 +47,20 @@ test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
   small <- multilpa(d, "y", "g", 1, 1, n_starts = 2, seed = 12)
   large <- multilpa(d, "y", "g", 2, 1, n_starts = 2, seed = 12)
   testthat::local_mocked_bindings(multilpa = function(...) stop("test optimization failure"))
-  expect_warning(result <- bootstrap_lrt(small, large, d, n_boot = 2, seed = 1), "p_value is NA")
-  expect_true(is.na(result$p_value))
-  expect_equal(result$n_valid, 0L)
-  expect_true(all(result$replicates$error == "test optimization failure"))
+  expect_warning(result <- bootstrap_lrt(small, large, d, n_boot = 2, seed = 1),
+                 class = "multilpa_failed_replicates")
+  expect_s3_class(result, "multilpa_bootstrap_lrt")
+  ## Methods added in this sweep reach the generic only after the NAMESPACE is
+  ## regenerated, so they are exercised by explicit call here. Dispatch itself
+  ## is asserted in test-tidy-classes.R.
+  test <- as.data.frame.multilpa_bootstrap_lrt(result)
+  expect_identical(nrow(test), 1L)
+  expect_true(is.na(test$p_value))
+  expect_equal(test$n_valid, 0L)
+  replicates <- as.data.frame.multilpa_bootstrap_lrt(result, what = "replicates")
+  expect_true(all(replicates$error == "test optimization failure"))
+  expect_error(plot.multilpa_bootstrap_lrt(result),
+               class = "multilpa_nothing_to_plot")
 })
 
 test_that("bootstrap refits generated data and reports finite simulation correction", {
@@ -56,12 +73,18 @@ test_that("bootstrap refits generated data and reports finite simulation correct
   result <- bootstrap_lrt(small, large, d, n_boot = 3, n_starts = 3,
                                   max_iter = 3000, tol = 1e-7, seed = 42)
   expect_identical(.Random.seed, rng)
-  expect_equal(result$n_valid, 3L)
-  expect_equal(result$statistic, max(0, 2 * (large$log_likelihood - small$log_likelihood)))
-  expect_equal(result$p_value, (1 + sum(result$replicates$statistic >= result$statistic)) / 4)
-  expect_equal(nrow(result$replicates), 3L)
-  expect_true(all(is.na(result$replicates$error)))
-  expect_true(is.finite(result$monte_carlo_se))
+  test <- as.data.frame.multilpa_bootstrap_lrt(result)
+  replicates <- as.data.frame.multilpa_bootstrap_lrt(result, what = "replicates")
+  expect_identical(nrow(test), 1L)
+  expect_equal(test$n_valid, 3L)
+  expect_equal(test$statistic, max(0, 2 * (large$log_likelihood - small$log_likelihood)))
+  expect_equal(test$p_value, (1 + sum(replicates$statistic >= test$statistic)) / 4)
+  expect_equal(nrow(replicates), 3L)
+  expect_true(all(is.na(replicates$error)))
+  expect_true(is.finite(test$monte_carlo_se))
+  expect_output(print.multilpa_bootstrap_lrt(result), "Parametric bootstrap")
+  expect_output(print.summary_multilpa_bootstrap_lrt(
+    summary.multilpa_bootstrap_lrt(result)), "simulated, not chi-square")
   expect_error(bootstrap_lrt(small, small, d, n_boot = 2), "one class")
   changed <- d
   changed$y <- d$y + 1

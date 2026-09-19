@@ -15,10 +15,21 @@
 A named numeric vector of every free parameter on its natural scale:
   profile means and variances, categorical response probabilities where
   present, each group class's initial profile probabilities, its transition
-  probabilities named `from > to`, and the group-class probabilities. No
-  standard errors accompany these; [vcov()] is not defined for this model
-  family. [transitions()] and [as.data.frame()] give the same quantities as
-  tidy tables, which is the form to prefer.
+  probabilities, and the group-class probabilities.
+
+  Names follow the package-wide `level.parameter.outcome.term` grammar shared
+  with [coef.multilpa()], so one pattern matches across fit classes: for
+  example `measurement.mean.profile_1.reading` and
+  `profile.transition_probability.profile_2.group_class_1:profile_1`, whose
+  term names the origin the move is from. `level`, `parameter` and `outcome`
+  never contain a dot, so everything after the third dot is the term and the
+  name parses back into the columns [parameter_inference()] reports even when
+  an indicator name itself contains a dot.
+
+  No standard errors accompany these: [vcov.multilpa_transitions()] refuses
+  rather than returning an invalid matrix. [transitions()] and
+  [as.data.frame.multilpa_transitions()] give the same quantities as tidy
+  tables, which is the form to prefer.
 }
 \description{
 Fitted parameters of a latent transition model

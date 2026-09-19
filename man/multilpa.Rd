@@ -111,8 +111,12 @@ An `multilpa` object containing `means`, `variances`, optional
   count; `bic_individual` uses `n_informative`, the number of rows carrying at
   least one observed indicator. These are alternative
   conventions, not interchangeable criteria. `boundary` identifies variance
-  bounds; `small_classes` flags effective memberships below one. No standard
-  errors, likelihood-ratio tests, or guarantees of global optimality are given.
+  bounds; `small_classes` flags effective memberships below one. The fit
+  itself carries no standard errors: [parameter_inference()] computes them
+  from the fit and the data it was fitted to, and [lmr_lrt()] and
+  [bootstrap_lrt()] test nested models. No guarantee of global optimality is
+  given, whatever `n_starts` is used.
+  Read the tidy form with `as.data.frame()`; `what` selects which table.
 }
 \description{
 Fits individual Gaussian profiles nested within observed groups. A discrete
@@ -140,14 +144,22 @@ Infinite and constant observed indicators are rejected. Each
 }
 \examples{
 set.seed(7)
+# Two kinds of school, differing only in how often a pupil scores highly.
 example_data <- data.frame(
-  school = rep(seq_len(10), each = 12),
-  score_a = rnorm(120), score_b = rnorm(120)
+  school = rep(seq_len(24), each = 10),
+  school_type = rep(c("mixed", "high"), each = 120)
 )
+example_data$high <- rbinom(240, 1L,
+  ifelse(example_data$school_type == "high", 0.8, 0.2))
+example_data$score_a <- rnorm(240, mean = 2 * example_data$high)
+example_data$score_b <- rnorm(240, mean = 2 * example_data$high)
+
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                 n_profiles = 1, n_group_classes = 1, n_starts = 1,
-                 seed = 42)
+                n_profiles = 2, n_group_classes = 2, n_starts = 4,
+                seed = 42)
 summary(fit)
+as.data.frame(fit)
+as.data.frame(fit, what = "profile_probabilities")
 }
 \references{
 Vermunt, J. K. (2003). Multilevel latent class models.

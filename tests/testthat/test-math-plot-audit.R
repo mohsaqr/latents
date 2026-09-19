@@ -37,9 +37,12 @@ test_that("sequence images align profile rows and group classes with factor iden
   expect_no_error(plot(fit, what = "sequences", palette = "black"))
   expect_equal(captured$x, 1:4)
   expect_equal(captured$y, 1:3)
-  # Class 1 contains a then z; class 2 contains m. The unused factor level is
-  # not an observed group and must not acquire an image row.
-  expect_equal(captured$z, cbind(rep(1L, 4), c(1L, 1L, 2L, 2L), rep(2L, 4)))
+  # Groups sort by their DECLARED factor level order (m, z, a), not alphabetically:
+  # class 1 holds z then a, class 2 holds m. Alphabetising would discard the order
+  # the caller declared, and the character sort this replaced also put group "10"
+  # before group "2" on numeric identifiers.
+  # The unused factor level is not an observed group and must not acquire a row.
+  expect_equal(captured$z, cbind(c(1L, 1L, 2L, 2L), rep(1L, 4), rep(2L, 4)))
   expect_identical(captured$extras$col, c("black", "black"))
 })
 

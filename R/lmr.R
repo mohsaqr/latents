@@ -18,7 +18,8 @@
 #'   applies; `"groups"` uses the independent group count, which is the
 #'   convention this package's default BIC uses. A single positive number is
 #'   also accepted.
-#' @return A one-row base `data.frame` with columns `statistic` (twice the log
+#' @return A base `data.frame` with one row per comparison, so a single call
+#'   returns one row. Its columns are `statistic` (twice the log
 #'   likelihood difference), `df` (the difference in free parameters), `n`,
 #'   `adjustment_factor`, `adjusted_statistic`, and `p_value`. `p_value` is
 #'   always `NA_real_`, for the reason given above; the column exists so that

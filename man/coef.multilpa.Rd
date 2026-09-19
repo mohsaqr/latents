@@ -15,12 +15,25 @@ log-Cholesky coordinates (full covariance), and baseline-category logits.}
 \item{...}{Reserved for generic compatibility.}
 }
 \value{
-A named vector. Natural coefficients include all mixing probabilities;
-  unconstrained coefficients exclude their reference categories.
+A named numeric vector. Natural coefficients include all mixing
+  probabilities; unconstrained coefficients exclude their reference
+  categories. Names are `level.parameter.outcome.term`, the same four-part
+  decomposition [parameter_inference()] reports as columns and the same
+  spelling every fitted class in this package uses, so a name written for one
+  fit means the same thing for another. A parameter with no term -- a
+  group-class probability -- carries the first three parts only.
+  [parameter_inference()] is the tidy form and the one to prefer.
 }
 \description{
 Extract multilevel LPA coefficients
 }
 \examples{
-# After fitting: coef(fit)
+set.seed(3)
+example_data <- data.frame(
+  school = rep(seq_len(10), each = 8),
+  score_a = stats::rnorm(80), score_b = stats::rnorm(80)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+coef(fit)
 }

@@ -17,8 +17,19 @@
 The summary, invisibly.
 }
 \description{
-Print a multilevel LPA summary
+A human-facing report of the fit. The same content is available as tidy
+tables from [as.data.frame.summary_multilpa()].
 }
 \examples{
-# After fitting: print(summary(fit), digits = 4)
+set.seed(7)
+example_data <- data.frame(
+  school = rep(seq_len(12), each = 10),
+  score_a = rnorm(120), score_b = rnorm(120)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+print(summary(fit), digits = 3)
+}
+\seealso{
+[as.data.frame.summary_multilpa()] for the same content as data.
 }

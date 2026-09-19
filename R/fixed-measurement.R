@@ -242,10 +242,14 @@ fit_staged <- function(data, indicators, group, n_profiles,
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
+  # The data contract itself is checked once, by multilpa(), which both stages
+  # call; only what is specific to staging is checked here. `is.numeric` is
+  # explicit because `"3" >= 2L` compares as strings and would pass silently.
   stopifnot(
     "`n_group_classes` must be at least two; staging one leaves nothing to estimate" =
-      length(n_group_classes) == 1L && !is.na(n_group_classes) &&
-      n_group_classes >= 2L,
+      is.numeric(n_group_classes) && length(n_group_classes) == 1L &&
+      is.finite(n_group_classes) && n_group_classes >= 2L &&
+      n_group_classes == floor(n_group_classes),
     "`measurement` must be NULL or a fitted `multilpa` model" =
       is.null(measurement) || inherits(measurement, "multilpa"))
   call <- match.call()

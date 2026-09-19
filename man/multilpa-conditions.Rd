@@ -15,6 +15,14 @@ stable, the messages are not.
 \section{Input and data contracts}{
 
 \describe{
+  \item{`multilpa_bad_data`}{The data frame, the indicator columns or the
+    group column break the input contract: too few rows, a duplicated or
+    absent column name, an indicator that is not a numeric vector, an
+    indicator that is constant or wholly unobserved, missing or non-finite
+    values under `missing = "error"`, or a missing group identifier.}
+  \item{`multilpa_bad_argument`}{A scalar argument is outside its contract:
+    `n_profiles`, `n_group_classes`, `n_starts`, `max_iter`, `tol`,
+    `min_variance` or `seed`.}
   \item{`multilpa_bad_time`}{`time` is missing, or repeats a position within
     a group, so the ordering it is supposed to supply does not exist.}
   \item{`multilpa_bad_categorical`}{A categorical indicator cannot be
@@ -31,15 +39,35 @@ stable, the messages are not.
     fewer than two profiles, or with no group observed at two occasions.}
   \item{`multilpa_bad_inference_data`}{The data passed to an inference verb
     do not reproduce the fit: different rows, different values, or a
-    different group ordering.}
+    different group ordering. Raised for a plain `multilpa` fit and for a
+    covariate fit alike.}
   \item{`multilpa_no_indicator_data`}{A fit carries no stored indicators, so
     the request cannot be answered without the original data.}
+  \item{`multilpa_data_required`}{An inference verb was called without
+    `data`. The observed information is evaluated at the estimates and can
+    only be rebuilt from the data that produced them, so there is nothing
+    sensible to default to.}
+  \item{`multilpa_incomplete_fit`}{A fit is missing fields the request
+    needs, usually because it was made by an older version. Raised instead
+    of letting a list subset by an absent name yield a `NULL` element keyed
+    `NA`, which would leave a hole in the result.}
+  \item{`multilpa_removed_argument`}{An argument that no longer exists was
+    supplied, such as `classification_table(detail = )`. The argument is
+    kept as a formal only so that this message can name the verb that
+    replaced it, here [average_posteriors()], instead of R's bare
+    \dQuote{unused argument}.}
 }
 }
 
 \section{Estimation and identification}{
 
 \describe{
+  \item{`multilpa_unidentified`}{The requested model cannot be identified
+    from these data: more profiles than distinct observed indicator rows,
+    more group classes than groups, or more than one group class with only
+    one profile or only singleton groups.}
+  \item{`multilpa_all_starts_failed`}{Every EM start raised, so no fit was
+    produced. The message carries the distinct start errors.}
   \item{`multilpa_empty_profile`}{A profile has no observed responses for an
     indicator, so its response probabilities are not identified.}
   \item{`multilpa_too_few_groups`}{Fewer independent groups than parameters,
@@ -47,7 +75,24 @@ stable, the messages are not.
   \item{`multilpa_inseparable_classes`}{Classes cannot be separated well
     enough for the requested three-step correction.}
   \item{`multilpa_no_converge`}{A fit required by the request did not
-    converge, and using it would report an unconverged estimate as final.}
+    converge, and using it would report an unconverged estimate as final.
+    Raised for a plain `multilpa` fit and for a covariate fit alike.}
+  \item{`multilpa_boundary_fit`}{A variance or a response probability sits
+    at its bound, or a mixing probability is zero, so the parameter is on
+    the edge of its space and the asymptotic normal approximation Wald
+    inference relies on does not hold. The standard error is refused rather
+    than reported.}
+  \item{`multilpa_singular_information`}{The observed information is not
+    positive definite, or is numerically singular, so it cannot be inverted
+    and no standard error can be formed.}
+  \item{`multilpa_unknown_candidate`}{The requested profile and group-class
+    combination was never enumerated.}
+  \item{`multilpa_failed_candidate`}{An enumerated candidate could not be
+    fitted. The message carries that candidate's error.}
+  \item{`multilpa_no_group_classes`}{A verb that needs discrete group
+    classes was called on a model that has none, such as
+    [bivariate_residuals()] or a group-level diagnostic on a continuous
+    random-intercept fit.}
 }
 }
 
@@ -95,6 +140,26 @@ of returning a number that would be wrong.
   \item{`multilpa_unknown_category`, `multilpa_unknown_criterion`}{A named
     category or information criterion does not exist in this fit.}
   \item{`multilpa_bad_scale`}{An unrecognised plotting scale was requested.}
+}
+}
+
+\section{Warnings}{
+
+A fit that is returned but qualified warns rather than errors, so that a
+simulation loop can catch the qualification it cares about and let the
+others through.
+\describe{
+  \item{`multilpa_failed_starts`}{Some, but not all, EM starts raised. The
+    surviving starts are in `as.data.frame(fit, what = "starts")`.}
+  \item{`multilpa_unconverged`}{The best start had not converged when
+    `max_iter` was reached, so the returned estimate is not a maximum.}
+  \item{`multilpa_boundary`}{A variance, or a covariance eigenvalue, sits at
+    `min_variance`, so the fit is bound-active and its standard errors are
+    not valid at that parameter.}
+  \item{`multilpa_small_classes`}{A profile or group class has effective
+    membership below one, so it is supported by less than one observation.}
+  \item{`multilpa_failed_replicates`}{Some bootstrap replicates failed
+    validation, so the bootstrap p-value is `NA`.}
 }
 }
 

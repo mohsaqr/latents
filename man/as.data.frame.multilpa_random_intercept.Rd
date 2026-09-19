@@ -8,7 +8,9 @@
   x,
   row.names = NULL,
   optional = FALSE,
-  what = c("profiles", "posteriors", "random_intercepts"),
+  what = c("profiles", "posteriors", "random_intercepts", "starts"),
+  scale = c("raw", "standardized"),
+  format = c("long", "wide"),
   ...
 )
 }
@@ -23,6 +25,17 @@
 \item{what}{Which table to return. `"profiles"` gives the measurement model,
 `"posteriors"` the individual posteriors, and `"random_intercepts"` the
 posterior group effects.}
+
+\item{scale}{For `what = "profiles"`, `"raw"` reports the estimates in input
+units and `"standardized"` divides each indicator's deviation from its
+grand mean by that indicator's observed standard deviation.}
+
+\item{format}{For the posterior tables, `"long"` (the default) gives one row
+per unit and class, and `"wide"` gives one row per unit with one column per
+class. The wide column set grows with the number of classes, so no caller
+can address it generically; it stays available because joining posteriors
+back onto the fitting data wants one row per unit. Supplying it with any
+other `what` is an error rather than a silent no-op.}
 
 \item{...}{Ignored.}
 }
