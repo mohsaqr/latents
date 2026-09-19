@@ -20,6 +20,14 @@ print.multilpa <- function(x, ...) {
     cat(sprintf("%d row(s) carry no observed indicator; the individual-level BIC uses %d.\n",
                 x$n_observations - x$n_informative, x$n_informative))
   }
+  if (length(x$fixed %||% character()) > 0L) {
+    cat(sprintf("Held fixed, not estimated here: %s%s\n",
+                paste(x$fixed, collapse = ", "),
+                if (isTRUE(x$staged)) " (first stage)" else ""))
+    cat(sprintf("Parameters estimated here: %d; with the held measurement: %d\n",
+                x$n_parameters,
+                x$n_parameters_with_measurement %||% x$n_parameters))
+  }
   if (x$boundary) cat("A variance is at its specified lower bound.\n")
   if (x$small_classes) cat("An effective class membership is below one.\n")
   invisible(x)
@@ -42,7 +50,8 @@ summary.multilpa <- function(object, ...) {
               "profile_probabilities", "group_probabilities", "log_likelihood",
               "n_parameters", "aic", "bic", "bic_individual", "converged",
               "iterations", "boundary", "min_variance", "small_classes", "starts",
-              "best_start", "n_best_replicated", "replication_tolerance")
+              "best_start", "n_best_replicated", "replication_tolerance",
+              "fixed", "staged", "n_parameters_with_measurement")
   result <- object[fields]
   result$effective_profile_counts <- colSums(object$subject_posteriors)
   result$effective_group_counts <- colSums(object$group_posteriors)
@@ -65,6 +74,12 @@ print.summary_multilpa <- function(x, digits = 4L, ...) {
               x$n_profiles, x$n_group_classes))
   cat(sprintf("Individuals: %d; groups: %d; parameters: %d; converged: %s\n",
               x$n_observations, x$n_groups, x$n_parameters, x$converged))
+  if (length(x$fixed %||% character()) > 0L) {
+    cat(sprintf("Held fixed%s: %s; parameters with the held measurement: %d\n",
+                if (isTRUE(x$staged)) " from the first stage" else "",
+                paste(x$fixed, collapse = ", "),
+                x$n_parameters_with_measurement %||% x$n_parameters))
+  }
   cat("\nProfile means:\n")
   print(x$means, digits = digits, ...)
   cat("\nProfile standard deviations:\n")

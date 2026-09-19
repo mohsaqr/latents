@@ -68,19 +68,29 @@
 #' @param variance_model Equal or varying covariance across profiles.
 #' @param min_variance Variance or eigenvalue lower bound.
 #' @param covariance_model Diagonal or full covariance.
-#' @return Means, diagonal variances, and optional covariance array.
+#' @param held Parameters to hold at supplied values, or `NULL` to estimate
+#'   every one of them. Only `means`, `variances` and `covariances` are read.
+#' @return Means, diagonal variances, and optional covariance array. A held
+#'   block is returned as supplied.
 #' @noRd
 .multilpa_maximize_moments <- function(x, expectation, variance_model,
-                                     min_variance, covariance_model) {
+                                     min_variance, covariance_model,
+                                     held = NULL) {
   stopifnot(is.matrix(x), is.list(expectation), min_variance > 0,
             variance_model %in% c("varying", "equal"),
-            covariance_model %in% c("diagonal", "full"))
+            covariance_model %in% c("diagonal", "full"),
+            is.null(held) || is.list(held))
   weights <- colSums(expectation$subject_posteriors)
   n_indicators <- ncol(x)
   components <- lapply(seq_along(weights), function(profile) {
     moments <- expectation$gaussian_moments[[profile]]
     responsibility <- expectation$subject_posteriors[, profile]
-    means <- colSums(moments$expected * responsibility) / weights[profile]
+    # A held mean is the point the spread is measured around. Estimating the
+    # mean first and substituting afterwards would centre the residuals on the
+    # free weighted mean and report a spread that is too small.
+    means <- if (is.null(held$means)) {
+      colSums(moments$expected * responsibility) / weights[profile]
+    } else held$means[profile, ]
     residuals <- sweep(moments$expected, 2L, means, "-")
     covariance_sum <- crossprod(residuals, residuals * responsibility) +
       Reduce(`+`, lapply(moments$adjustments, function(adjustment) {
@@ -93,6 +103,12 @@
   covariance_sums <- lapply(components, `[[`, "covariance_sum")
   shared <- if (variance_model == "equal") Reduce(`+`, covariance_sums) / sum(weights) else NULL
   covariances <- lapply(seq_along(weights), function(profile) {
+    held_covariance <- if (!is.null(held$covariances)) {
+      matrix(held$covariances[, , profile], n_indicators, n_indicators)
+    } else if (!is.null(held$variances)) {
+      diag(held$variances[profile, ], n_indicators)
+    } else NULL
+    if (!is.null(held_covariance)) return(held_covariance)
     covariance <- shared %||% (covariance_sums[[profile]] / weights[profile])
     if (covariance_model == "full") .multilpa_bound_covariance(covariance, min_variance)
     else diag(pmax(diag(covariance), min_variance), n_indicators)

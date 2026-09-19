@@ -4,7 +4,11 @@
 \alias{starting_values}
 \title{Build starting values for a multilevel latent profile fit}
 \usage{
-starting_values(object, covariance = c("auto", "drop", "keep"))
+starting_values(
+  object,
+  covariance = c("auto", "drop", "keep"),
+  what = c("all", "measurement")
+)
 }
 \arguments{
 \item{object}{A fitted `multilpa` model, or a list carrying
@@ -17,6 +21,12 @@ ignored.}
 \item{covariance}{`"auto"` keeps `covariances` when the object carries them,
 `"drop"` always returns the diagonal parameterization, and `"keep"`
 requires `covariances` and fails when they are absent.}
+
+\item{what}{`"all"` returns the measurement and mixing blocks.
+`"measurement"` omits `profile_probabilities` and `group_probabilities`,
+which are sized for the model that produced them and must not be carried
+into a staged fit that changes the number of group classes. Pass the
+result as `start` alongside `fixed` in [multilpa()].}
 }
 \value{
 A list with elements `means`, `variances`, `profile_probabilities`,

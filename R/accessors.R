@@ -12,6 +12,7 @@
 #'   `"profile_probabilities"` the profile prevalence within each group class,
 #'   `"posteriors"` the individual posteriors, `"group_posteriors"` the group
 #'   posteriors, `"starts"` the restart diagnostics,
+#'   `"stages"` the estimation stages and what each held fixed,
 #'   `"information_criteria"` the information criteria, `"classification"` the
 #'   classification quality, and `"entropy"` the entropy summary.
 #' @param ... Passed to the underlying accessor; `classification` accepts
@@ -32,7 +33,11 @@
 #'   `posterior_profile_*` column per profile. `"group_posteriors"` has one row
 #'   per observed group, with columns `group`, `group_size`, `group_class`, the
 #'   group's `log_likelihood`, and one `posterior_group_class_*` column per
-#'   group class. `"starts"` has one row per EM start. The remaining values
+#'   group class. `"starts"` has one row per EM start. `"stages"` has one
+#'   row per estimation stage, with columns `stage`, `group_classes`, `fixed`,
+#'   `log_likelihood`, `parameters`, `parameters_with_measurement` and
+#'   `converged`; an ordinary fit has a single `"joint"` row and a
+#'   [fit_staged()] result has two. The remaining values
 #'   return exactly [information_criteria()], [classification_table()], and
 #'   [entropy_table()].
 #' @examples
@@ -50,7 +55,8 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
                                  what = c("profiles", "responses",
                                           "profile_probabilities",
                                           "posteriors", "group_posteriors",
-                                          "starts", "information_criteria",
+                                          "starts", "stages",
+                                          "information_criteria",
                                           "classification", "entropy"), ...) {
   stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"))
   what <- match.arg(what)
@@ -61,11 +67,39 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
     posteriors = .multilpa_posterior_frame(x),
     group_posteriors = .multilpa_group_posterior_frame(x),
     starts = x$starts,
+    stages = .multilpa_stage_frame(x),
     information_criteria = information_criteria(x),
     classification = classification_table(x, ...),
     entropy = entropy_table(x))
   row.names(result) <- row.names
   result
+}
+
+#' The stages of a fit as a tidy table
+#'
+#' An ordinary fit has one stage, estimated jointly; a staged fit has two, the
+#' second holding the first's measurement solution fixed. Both are described by
+#' the same columns, so a caller need not branch on which kind of fit it holds.
+#'
+#' @param x A fitted `multilpa` model.
+#' @return One row per estimation stage.
+#' @noRd
+.multilpa_stage_frame <- function(x) {
+  describe <- function(stage, fit, held) {
+    data.frame(stage = stage, group_classes = fit$n_group_classes,
+               fixed = if (length(held) == 0L) NA_character_ else
+                 paste(held, collapse = ", "),
+               log_likelihood = fit$log_likelihood,
+               parameters = fit$n_parameters,
+               parameters_with_measurement =
+                 fit$n_parameters_with_measurement %||% fit$n_parameters,
+               converged = fit$converged, row.names = NULL)
+  }
+  if (is.null(x$stage_one)) {
+    return(describe("joint", x, x$fixed %||% character()))
+  }
+  rbind(describe("measurement", x$stage_one, character()),
+        describe("membership", x, x$fixed %||% character()))
 }
 
 #' Names of the Gaussian indicators in a fit
@@ -252,6 +286,11 @@ print.multilpa_enumeration <- function(x, ...) {
 #'   continuous indicators, `response_probabilities` for categorical ones. An
 #'   all-categorical model needs no Gaussian block. Any other elements are
 #'   ignored.
+#' @param what `"all"` returns the measurement and mixing blocks.
+#'   `"measurement"` omits `profile_probabilities` and `group_probabilities`,
+#'   which are sized for the model that produced them and must not be carried
+#'   into a staged fit that changes the number of group classes. Pass the
+#'   result as `start` alongside `fixed` in [multilpa()].
 #' @param covariance `"auto"` keeps `covariances` when the object carries them,
 #'   `"drop"` always returns the diagonal parameterization, and `"keep"`
 #'   requires `covariances` and fails when they are absent.
@@ -273,9 +312,11 @@ print.multilpa_enumeration <- function(x, ...) {
 #'                     start = starting_values(fit))
 #' logLik(refit)
 #' @export
-starting_values <- function(object, covariance = c("auto", "drop", "keep")) {
+starting_values <- function(object, covariance = c("auto", "drop", "keep"),
+                            what = c("all", "measurement")) {
   stopifnot("`object` must be a list or an `multilpa` fit" = is.list(object))
   covariance <- match.arg(covariance)
+  what <- match.arg(what)
   has_responses <- !is.null(object$response_probabilities)
   # A model with only categorical indicators carries no Gaussian block.
   required <- c("means", "profile_probabilities", "group_probabilities")
@@ -321,6 +362,11 @@ starting_values <- function(object, covariance = c("auto", "drop", "keep")) {
   if (has_responses) {
     start$response_probabilities <- unname(lapply(object$response_probabilities,
                                                   \(block) unname(as.matrix(block))))
+  }
+  # The mixing blocks are sized for the model that produced them, so a staged
+  # fit that changes the number of group classes must not carry them across.
+  if (identical(what, "measurement")) {
+    start[c("profile_probabilities", "group_probabilities")] <- NULL
   }
   start
 }

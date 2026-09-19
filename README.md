@@ -235,6 +235,54 @@ sequence_summary(fit)              # group counts, sequence lengths and complete
 plot(fit, what = "sequences")
 ```
 
+## Staged estimation: deciding the measurement model first
+
+By default every parameter is estimated jointly, so adding group classes can
+move the profiles those classes are meant to describe. `fit_staged()` estimates
+the measurement model on its own and then estimates the group-class structure
+with that measurement held fixed, so the profiles mean the same thing before
+and after.
+
+```r
+staged <- fit_staged(students, c("reading", "maths", "engagement"),
+                     "student_id", n_profiles = 3, n_group_classes = 2, seed = 42)
+
+as.data.frame(staged, what = "stages")     # what each stage estimated and held
+as.data.frame(staged, what = "profile_probabilities")
+```
+
+The result is an ordinary `multilpa` object, so every accessor, diagnostic and
+method works on it unchanged. A measurement solution already fitted and
+inspected can be carried in rather than refitted:
+
+```r
+measurement <- multilpa(students, c("reading", "maths", "engagement"),
+                        "student_id", n_profiles = 3, n_group_classes = 1, seed = 42)
+staged <- fit_staged(students, c("reading", "maths", "engagement"), "student_id",
+                     n_profiles = 3, n_group_classes = 2, measurement = measurement)
+```
+
+For finer control, `multilpa()` takes `fixed` directly, naming any of `"means"`,
+`"variances"` and `"response_probabilities"`, or `"measurement"` for every block
+the model has. A held block stays exactly as supplied in every restart and stops
+counting towards `n_parameters`, so this is a different model rather than a
+different starting point for the same one.
+
+```r
+multilpa(students, c("reading", "maths", "engagement"), "student_id",
+         n_profiles = 3, n_group_classes = 2,
+         start = starting_values(measurement, what = "measurement"),
+         fixed = "variances")
+```
+
+First-stage uncertainty is **not** propagated: the second stage treats the
+measurement solution as known, so its standard errors and information criteria
+are conditional on that solution and are narrower than a joint fit's. Both
+parameter counts are therefore reported. Compare staged fits with one another
+using `n_parameters`, and compare a staged fit against a jointly estimated one
+using `n_parameters_with_measurement`, remembering that the staged likelihood is
+not the joint maximum.
+
 ## Latent transitions
 
 `sequences()` reports where the model put each observation. It does not
@@ -429,6 +477,7 @@ Verification includes:
 | Direct `stats::optim()` BFGS likelihood optimization | likelihood difference `7.82e-11`; parameter differences below `6e-7` |
 | `mclust` single-level VVI and EEI limits | likelihood differences below `6e-14` |
 | Simulated parameter/class recovery | tested after aligning arbitrary labels |
+| Held measurement parameters against the constrained M-step formula | exact; drift across a fit below `1e-12` |
 | Latent transition likelihood against enumeration of every state path | differences below `3e-14` |
 | Latent transitions against `depmixS4` | likelihood function `6.24e-16`; independently maximized likelihood `8.30e-15` |
 | Input, dimension, numerical, restart, and RNG edge cases | covered by regression tests |

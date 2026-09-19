@@ -9,7 +9,8 @@
   row.names = NULL,
   optional = FALSE,
   what = c("profiles", "responses", "profile_probabilities", "posteriors",
-    "group_posteriors", "starts", "information_criteria", "classification", "entropy"),
+    "group_posteriors", "starts", "stages", "information_criteria", "classification",
+    "entropy"),
   ...
 )
 }
@@ -25,6 +26,7 @@ measurement model, `"responses"` the categorical measurement model,
 `"profile_probabilities"` the profile prevalence within each group class,
 `"posteriors"` the individual posteriors, `"group_posteriors"` the group
 posteriors, `"starts"` the restart diagnostics,
+`"stages"` the estimation stages and what each held fixed,
 `"information_criteria"` the information criteria, `"classification"` the
 classification quality, and `"entropy"` the entropy summary.}
 
@@ -48,7 +50,11 @@ A base `data.frame` whose columns depend on `what`.
   `posterior_profile_*` column per profile. `"group_posteriors"` has one row
   per observed group, with columns `group`, `group_size`, `group_class`, the
   group's `log_likelihood`, and one `posterior_group_class_*` column per
-  group class. `"starts"` has one row per EM start. The remaining values
+  group class. `"starts"` has one row per EM start. `"stages"` has one
+  row per estimation stage, with columns `stage`, `group_classes`, `fixed`,
+  `log_likelihood`, `parameters`, `parameters_with_measurement` and
+  `converged`; an ordinary fit has a single `"joint"` row and a
+  [fit_staged()] result has two. The remaining values
   return exactly [information_criteria()], [classification_table()], and
   [entropy_table()].
 }

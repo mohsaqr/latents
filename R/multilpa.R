@@ -96,35 +96,43 @@
 #' @noRd
 .multilpa_maximization <- function(x, expectation, variance_model, min_variance,
                                   covariance_model = "diagonal", codes = NULL,
-                                  n_categories = NULL, min_probability = 1e-10) {
+                                  n_categories = NULL, min_probability = 1e-10,
+                                  held = NULL) {
   stopifnot(is.matrix(x), is.list(expectation),
-            variance_model %in% c("varying", "equal"), min_variance > 0)
+            variance_model %in% c("varying", "equal"), min_variance > 0,
+            is.null(held) || is.list(held))
   weights <- colSums(expectation$subject_posteriors)
   group_weights <- colSums(expectation$group_posteriors)
   if (any(weights <= 0) || any(group_weights <= 0)) {
     stop("A profile or group class has zero effective membership.")
   }
   gaussian <- if (!is.null(expectation$gaussian_moments)) {
-    .multilpa_maximize_moments(x, expectation, variance_model, min_variance, covariance_model)
+    .multilpa_maximize_moments(x, expectation, variance_model, min_variance,
+                               covariance_model, held)
   } else NULL
   if (ncol(x) == 0L) {
     means <- matrix(numeric(0), length(weights), 0L)
     variances <- matrix(numeric(0), length(weights), 0L)
   } else if (is.null(gaussian)) {
-    means <- sweep(crossprod(expectation$subject_posteriors, x), 1L, weights, "/")
+    # A held mean is the point the spread is measured around, so it replaces the
+    # weighted mean before the residuals are formed rather than afterwards.
+    means <- held$means %||%
+      sweep(crossprod(expectation$subject_posteriors, x), 1L, weights, "/")
     variance_sums <- t(matrix(vapply(seq_along(weights), function(profile) {
       residuals <- sweep(x, 2L, means[profile, ], "-")
       colSums(residuals^2 * expectation$subject_posteriors[, profile])
     }, numeric(ncol(x))), nrow = ncol(x), ncol = length(weights)))
-    variances <- if (variance_model == "varying") {
-      sweep(variance_sums, 1L, weights, "/")
-    } else {
-      matrix(colSums(variance_sums) / nrow(x),
-             length(weights), ncol(x), byrow = TRUE)
-    }
+    variances <- if (!is.null(held$variances)) held$variances else
+      if (variance_model == "varying") {
+        sweep(variance_sums, 1L, weights, "/")
+      } else {
+        matrix(colSums(variance_sums) / nrow(x),
+               length(weights), ncol(x), byrow = TRUE)
+      }
     # This is the exact M-step for the stated variance >= min_variance constraint.
     # It is not a hidden ridge, and bound-active estimates are reported to callers.
-    variances <- pmax(variances, min_variance)
+    # A held variance is returned as supplied, bound or not.
+    if (is.null(held$variances)) variances <- pmax(variances, min_variance)
   } else {
     means <- gaussian$means
     variances <- gaussian$variances
@@ -137,8 +145,9 @@
                      group_probabilities = group_weights / sum(group_weights))
   if (!is.null(gaussian$covariances)) parameters$covariances <- gaussian$covariances
   if (!is.null(codes)) {
-    parameters$response_probabilities <- .multilpa_categorical_maximize(
-      codes, expectation$subject_posteriors, n_categories, min_probability)
+    parameters$response_probabilities <- held$response_probabilities %||%
+      .multilpa_categorical_maximize(codes, expectation$subject_posteriors,
+                                     n_categories, min_probability)
   }
   if (any(!is.finite(unlist(parameters, use.names = FALSE)))) {
     stop("Non-finite parameters in the M-step; check indicator scales.")
@@ -383,7 +392,8 @@
 #' @noRd
 .multilpa_em <- function(x, group_index, parameters, variance_model,
                         min_variance, max_iter, tol, covariance_model = "diagonal",
-                        codes = NULL, n_categories = NULL, min_probability = 1e-10) {
+                        codes = NULL, n_categories = NULL, min_probability = 1e-10,
+                        held = NULL) {
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
@@ -394,7 +404,7 @@
   while (iteration < max_iter && !converged) {
     parameters <- .multilpa_maximization(x, expectation, variance_model, min_variance,
                                        covariance_model, codes, n_categories,
-                                       min_probability)
+                                       min_probability, held)
     updated <- .multilpa_expectation(x, group_index, parameters, codes)
     improvement <- updated$log_likelihood - expectation$log_likelihood
     if (improvement < -1e-10 * (1 + abs(expectation$log_likelihood))) {
@@ -494,6 +504,17 @@
 #'   not use it; it is stored so that [sequences()], [sequence_summary()] and
 #'   `plot(what = "sequences")` can read the assignments back in order. Values
 #'   must be complete and unique within each group.
+#' @param fixed Character vector naming measurement blocks to hold at the
+#'   values `start` supplies, instead of estimating them: any of `"means"`,
+#'   `"variances"` and `"response_probabilities"`, or `"measurement"` for every
+#'   block the model has. Under `covariance_model = "full"`, `"variances"`
+#'   holds the residual covariance matrices. A held block stays exactly as
+#'   supplied, in every restart, and stops counting towards `n_parameters`, so
+#'   this is a different model rather than a different starting point for the
+#'   same one. `start` must carry the named blocks;
+#'   `starting_values(fit, what = "measurement")` produces them, and
+#'   [fit_staged()] wraps the whole two-stage workflow in one call. The mixing
+#'   parameters cannot be held: they are what a fixed-measurement fit is for.
 #' @param min_probability Positive lower bound on every categorical response
 #'   probability, defining a constrained maximum-likelihood problem in the same
 #'   way `min_variance` does for Gaussian indicators.
@@ -549,7 +570,7 @@ multilpa <- function(data, indicators, group, n_profiles,
                        missing = c("error", "fiml"),
                        covariance_model = c("diagonal", "full"),
                        categorical = character(), min_probability = 1e-10,
-                       time = NULL) {
+                       time = NULL, fixed = character()) {
   stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
@@ -588,6 +609,14 @@ multilpa <- function(data, indicators, group, n_profiles,
   if (n_group_classes > 1L && (n_profiles == 1L || all(group_sizes == 1L))) {
     stop("Multiple group classes are not identifiable with one profile or only singleton groups.")
   }
+  if (length(fixed) > 0L) {
+    start <- .multilpa_complete_start(start, n_profiles, n_group_classes)
+  }
+  # `fixed` is checked against the start before the start's own shape is, so
+  # that a request to hold a block the start does not carry is reported as
+  # that, rather than as a generic complaint about the start's contents.
+  fixed <- .multilpa_validate_fixed(fixed, start, covariance_model, ncol(x),
+                                    n_categories)
   if (!is.null(start)) {
     start <- .multilpa_validate_start(start, n_profiles, n_group_classes,
                                     ncol(x), variance_model, min_variance,
@@ -610,6 +639,7 @@ multilpa <- function(data, indicators, group, n_profiles,
   x <- sweep(x, 2L, centers, "-")
   if (any(!is.finite(x[!is.na(x)]^2))) stop("Indicator scales overflow squared residuals; rescale the data.")
   if (!is.null(start)) start$means <- sweep(start$means, 2L, centers, "-")
+  held <- .multilpa_held_parameters(start, fixed, covariance_model)
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
       initial <- if (start_index == 1L && !is.null(start)) start else {
@@ -617,8 +647,11 @@ multilpa <- function(data, indicators, group, n_profiles,
                            variance_model, min_variance, start_index,
                            covariance_model, codes, n_categories, min_probability)
       }
+      # Every restart begins from the held values, so a random start cannot
+      # report a measurement solution that was neither estimated nor supplied.
+      initial <- .multilpa_apply_held(initial, held)
       .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
-                 tol, covariance_model, codes, n_categories, min_probability)
+                 tol, covariance_model, codes, n_categories, min_probability, held)
     }, error = function(error) list(error = conditionMessage(error)))
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
@@ -645,7 +678,9 @@ multilpa <- function(data, indicators, group, n_profiles,
   dimnames(group_posteriors) <- list(group_ids, type_names)
   n_parameters <- .multilpa_count_parameters(n_profiles, n_group_classes, ncol(x),
                                            n_categories, variance_model,
-                                           covariance_model)
+                                           covariance_model) -
+    .multilpa_fixed_parameters(fixed, n_profiles, ncol(x), n_categories,
+                               variance_model, covariance_model)
   log_likelihood <- best$expectation$log_likelihood
   starts <- do.call(rbind, lapply(seq_along(attempts), function(start_index) {
     attempt <- attempts[[start_index]]
@@ -684,6 +719,7 @@ multilpa <- function(data, indicators, group, n_profiles,
       c(colSums(!is.na(x)), if (is.null(codes)) NULL else colSums(!is.na(codes))),
       c(continuous, categorical)),
     min_variance = min_variance, standard_deviations = sqrt(parameters$variances),
+    fixed = fixed,
     measurement_model = if (is.null(codes)) "gaussian" else
       if (ncol(x) == 0L) "categorical" else "mixed",
     subject_posteriors = subject_posteriors, group_posteriors = group_posteriors,

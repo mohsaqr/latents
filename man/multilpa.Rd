@@ -21,7 +21,8 @@ multilpa(
   covariance_model = c("diagonal", "full"),
   categorical = character(),
   min_probability = 1e-10,
-  time = NULL
+  time = NULL,
+  fixed = character()
 )
 }
 \arguments{
@@ -87,6 +88,18 @@ within its group, such as a wave, occasion or course number. The model does
 not use it; it is stored so that [sequences()], [sequence_summary()] and
 `plot(what = "sequences")` can read the assignments back in order. Values
 must be complete and unique within each group.}
+
+\item{fixed}{Character vector naming measurement blocks to hold at the
+values `start` supplies, instead of estimating them: any of `"means"`,
+`"variances"` and `"response_probabilities"`, or `"measurement"` for every
+block the model has. Under `covariance_model = "full"`, `"variances"`
+holds the residual covariance matrices. A held block stays exactly as
+supplied, in every restart, and stops counting towards `n_parameters`, so
+this is a different model rather than a different starting point for the
+same one. `start` must carry the named blocks;
+`starting_values(fit, what = "measurement")` produces them, and
+[fit_staged()] wraps the whole two-stage workflow in one call. The mixing
+parameters cannot be held: they are what a fixed-measurement fit is for.}
 }
 \value{
 An `multilpa` object containing `means`, `variances`, optional
