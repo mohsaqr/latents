@@ -16,6 +16,10 @@ print.multilpa <- function(x, ...) {
               x$log_likelihood, x$aic, x$bic))
   cat(sprintf("Converged: %s | iterations: %d | best start: %d/%d\n",
               x$converged, x$iterations, x$best_start, nrow(x$starts)))
+  if (!is.null(x$n_informative) && x$n_informative < x$n_observations) {
+    cat(sprintf("%d row(s) carry no observed indicator; the individual-level BIC uses %d.\n",
+                x$n_observations - x$n_informative, x$n_informative))
+  }
   if (x$boundary) cat("A variance is at its specified lower bound.\n")
   if (x$small_classes) cat("An effective class membership is below one.\n")
   invisible(x)
@@ -31,7 +35,8 @@ print.multilpa <- function(x, ...) {
 #' @export
 summary.multilpa <- function(object, ...) {
   stopifnot(inherits(object, "multilpa"))
-  fields <- c("call", "n_observations", "n_groups", "n_profiles", "n_group_classes",
+  fields <- c("call", "n_observations", "n_informative", "n_groups",
+              "n_profiles", "n_group_classes",
               "variance_model", "covariance_model", "missing", "covariances",
               "means", "variances", "standard_deviations",
               "profile_probabilities", "group_probabilities", "log_likelihood",

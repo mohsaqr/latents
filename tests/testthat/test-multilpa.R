@@ -351,7 +351,7 @@ test_that("invalid numeric controls and variance models are rejected", {
     list(n_profiles = 0L), list(n_profiles = 1.5), list(n_profiles = NA),
     list(n_group_classes = 0L), list(n_group_classes = 1.5),
     list(n_starts = 0L), list(n_starts = 1.5), list(n_starts = Inf),
-    list(max_iter = 0L), list(max_iter = 1.5), list(max_iter = NA),
+    list(max_iter = -1L), list(max_iter = 1.5), list(max_iter = NA),
     list(tol = 0), list(tol = -1), list(tol = Inf),
     list(min_variance = 0), list(min_variance = -1), list(min_variance = NA),
     list(seed = NA), list(seed = c(1, 2)), list(variance_model = "full")

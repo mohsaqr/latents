@@ -43,7 +43,9 @@ covariance matrices) or `"equal"` (shared across profiles).}
 \item{n_starts}{Positive integer number of EM starts. When `start` is supplied,
 it supplies the first start; remaining starts are random initializations.}
 
-\item{max_iter}{Positive integer maximum number of EM updates per start.}
+\item{max_iter}{Nonnegative integer maximum number of EM updates per start.
+`max_iter = 0` performs no update and returns the model evaluated at
+`start`, so that `logLik()` scores a parameter set supplied from elsewhere.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
 absolute change no greater than `tol * (1 + abs(previous log likelihood))`.}
@@ -93,7 +95,8 @@ An `multilpa` object containing `means`, `variances`, optional
   classifications, log likelihood, information criteria, restart diagnostics,
   and convergence history. Individual rows retain their input order; groups
   retain first-occurrence order. `bic` and `bic_groups` use the observed group
-  count; `bic_individual` uses the individual count. These are alternative
+  count; `bic_individual` uses `n_informative`, the number of rows carrying at
+  least one observed indicator. These are alternative
   conventions, not interchangeable criteria. `boundary` identifies variance
   bounds; `small_classes` flags effective memberships below one. No standard
   errors, likelihood-ratio tests, or guarantees of global optimality are given.

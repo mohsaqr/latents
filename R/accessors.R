@@ -246,16 +246,20 @@ print.multilpa_enumeration <- function(x, ...) {
 #' list by hand, and so that starting values are validated where they are built
 #' rather than deep inside the fitting loop.
 #'
-#' @param object A fitted `multilpa` model, or a list carrying `means`,
-#'   `variances` or `covariances`, `profile_probabilities`, and
-#'   `group_probabilities`. Any other elements are ignored.
+#' @param object A fitted `multilpa` model, or a list carrying
+#'   `profile_probabilities`, `group_probabilities`, and whichever measurement
+#'   blocks the model uses: `means` with `variances` or `covariances` for
+#'   continuous indicators, `response_probabilities` for categorical ones. An
+#'   all-categorical model needs no Gaussian block. Any other elements are
+#'   ignored.
 #' @param covariance `"auto"` keeps `covariances` when the object carries them,
 #'   `"drop"` always returns the diagonal parameterization, and `"keep"`
 #'   requires `covariances` and fails when they are absent.
 #' @return A list with elements `means`, `variances`, `profile_probabilities`,
 #'   and `group_probabilities`, plus `covariances` when the full-covariance
-#'   parameterization is returned. Dimension names are dropped, matching what
-#'   [multilpa()] expects of `start`.
+#'   parameterization is returned and `response_probabilities` when the object
+#'   carries a categorical measurement model. Dimension names are dropped,
+#'   matching what [multilpa()] expects of `start`.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -272,7 +276,12 @@ print.multilpa_enumeration <- function(x, ...) {
 starting_values <- function(object, covariance = c("auto", "drop", "keep")) {
   stopifnot("`object` must be a list or an `multilpa` fit" = is.list(object))
   covariance <- match.arg(covariance)
+  has_responses <- !is.null(object$response_probabilities)
+  # A model with only categorical indicators carries no Gaussian block.
   required <- c("means", "profile_probabilities", "group_probabilities")
+  if (has_responses && is.null(object$means)) {
+    required <- setdiff(required, "means")
+  }
   missing_fields <- setdiff(required, names(object))
   if (length(missing_fields) > 0L) {
     stop(errorCondition(sprintf("`object` is missing starting values for %s.",
@@ -285,24 +294,33 @@ starting_values <- function(object, covariance = c("auto", "drop", "keep")) {
                         class = "multilpa_bad_start", call = NULL))
   }
   use_covariances <- has_covariances && !identical(covariance, "drop")
+  n_profiles <- ncol(as.matrix(object$profile_probabilities))
+  means <- object$means %||% matrix(0, n_profiles, 0L)
   variances <- object$variances
   if (is.null(variances)) {
-    if (!has_covariances) {
+    if (has_responses && ncol(as.matrix(means)) == 0L) {
+      variances <- matrix(0, n_profiles, 0L)
+    } else if (!has_covariances) {
       stop(errorCondition("`object` is missing starting values for variances.",
                           class = "multilpa_bad_start", call = NULL))
-    }
+    } else {
     dimension <- dim(object$covariances)[1L]
     variances <- t(vapply(seq_len(dim(object$covariances)[3L]), function(profile) {
       diag(matrix(object$covariances[, , profile], dimension, dimension))
     }, numeric(dimension)))
+    }
   }
-  start <- list(means = unname(as.matrix(object$means)),
+  start <- list(means = unname(as.matrix(means)),
                 variances = unname(as.matrix(variances)),
                 profile_probabilities = unname(as.matrix(object$profile_probabilities)),
                 group_probabilities = unname(as.vector(object$group_probabilities)))
   if (use_covariances) {
     start$covariances <- unname(object$covariances)
     start$variances <- NULL
+  }
+  if (has_responses) {
+    start$response_probabilities <- unname(lapply(object$response_probabilities,
+                                                  \(block) unname(as.matrix(block))))
   }
   start
 }

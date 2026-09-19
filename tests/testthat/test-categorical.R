@@ -235,9 +235,11 @@ test_that("unsupported categorical combinations are refused by condition class",
   expect_error(multilpa(dat, indicators, "school", 2, 2,
                           categorical = c("v1", "v1"), n_starts = 2),
                class = "multilpa_bad_categorical")
+  # Categorical starts are supported; a start that names nothing the model uses
+  # is rejected on its contents rather than refused outright.
   expect_error(multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
                           n_starts = 1, start = list(a = 1)),
-               class = "multilpa_unsupported_start")
+               "response_probabilities")
 })
 
 test_that("categorical models plot their response probabilities", {

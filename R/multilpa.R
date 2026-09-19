@@ -230,12 +230,18 @@
 #' @param variance_model Variance constraint.
 #' @param min_variance Variance lower bound.
 #' @param covariance_model Diagonal or full residual covariance.
+#' @param n_categories Integer vector of category counts, one per categorical
+#'   indicator, or `NULL` when every indicator is continuous.
+#' @param min_probability Lower bound applied to response probabilities.
 #' @return A validated copy without dimension names.
 #' @noRd
 .multilpa_validate_start <- function(start, n_profiles, n_types, n_indicators,
-                                   variance_model, min_variance, covariance_model = "diagonal") {
+                                   variance_model, min_variance, covariance_model = "diagonal",
+                                   n_categories = NULL, min_probability = 1e-10) {
   stopifnot(is.list(start), n_profiles >= 1L, n_types >= 1L,
-            n_indicators >= 1L, min_variance > 0)
+            n_indicators >= 0L, min_variance > 0,
+            "An all-categorical model needs `n_categories`" =
+              n_indicators >= 1L || !is.null(n_categories))
   covariances <- NULL
   if (covariance_model == "full") {
     covariances <- start$covariances
@@ -263,9 +269,17 @@
     start$variances <- variances
     start$covariances <- NULL
   }
+  # An all-categorical model has no Gaussian block; accept its absence rather
+  # than making the caller assemble empty matrices.
+  if (n_indicators == 0L) {
+    if (is.null(start$means)) start$means <- matrix(0, n_profiles, 0L)
+    if (is.null(start$variances)) start$variances <- matrix(0, n_profiles, 0L)
+  }
   required <- c("means", "variances", "profile_probabilities", "group_probabilities")
+  if (!is.null(n_categories)) required <- c(required, "response_probabilities")
   if (!setequal(names(start), required) || anyDuplicated(names(start))) {
-    stop("start must contain exactly means, variances, profile_probabilities, and group_probabilities.")
+    stop(sprintf("start must contain exactly %s.",
+                 paste(required, collapse = ", ")))
   }
   dimensions <- list(means = c(n_profiles, n_indicators),
                      variances = c(n_profiles, n_indicators),
@@ -300,7 +314,46 @@
                                        rowSums(start$profile_probabilities)),
        group_probabilities = unname(group_probabilities / sum(group_probabilities)))
   if (!is.null(covariances)) result$covariances <- unname(covariances)
+  if (!is.null(n_categories)) {
+    result$response_probabilities <- .multilpa_validate_response_start(
+      start$response_probabilities, n_profiles, n_categories, min_probability)
+  }
   result
+}
+
+#' Validate a user-supplied item-response starting block
+#'
+#' @param response_probabilities List of profiles-by-categories matrices, one
+#'   per categorical indicator.
+#' @param n_profiles Number of profiles.
+#' @param n_categories Integer vector of category counts per indicator.
+#' @param min_probability Lower bound applied to every cell.
+#' @return The validated list, unnamed, with rows renormalized to sum to one.
+#' @noRd
+.multilpa_validate_response_start <- function(response_probabilities, n_profiles,
+                                            n_categories, min_probability) {
+  if (!is.list(response_probabilities) ||
+      length(response_probabilities) != length(n_categories)) {
+    stop(sprintf("start$response_probabilities must be a list of %d matrices, one per categorical indicator.",
+                 length(n_categories)))
+  }
+  unname(lapply(seq_along(n_categories), function(indicator) {
+    block <- response_probabilities[[indicator]]
+    if (!is.matrix(block) || !is.numeric(block) ||
+        !identical(as.integer(dim(block)),
+                   c(as.integer(n_profiles), as.integer(n_categories[[indicator]]))) ||
+        any(!is.finite(block))) {
+      stop(sprintf("start$response_probabilities[[%d]] must be a finite numeric %d x %d matrix.",
+                   indicator, n_profiles, n_categories[[indicator]]))
+    }
+    if (any(block < 0) || any(abs(rowSums(block) - 1) > 1e-8)) {
+      stop(sprintf("start$response_probabilities[[%d]] rows must be nonnegative and sum to one.",
+                   indicator))
+    }
+    bounded <- t(apply(block / rowSums(block), 1L, .multilpa_bound_probabilities,
+                       min_probability = min_probability))
+    matrix(bounded, n_profiles, n_categories[[indicator]])
+  }))
 }
 
 #' Run one nested EM optimization
@@ -317,7 +370,7 @@
 .multilpa_em <- function(x, group_index, parameters, variance_model,
                         min_variance, max_iter, tol, covariance_model = "diagonal",
                         codes = NULL, n_categories = NULL, min_probability = 1e-10) {
-  stopifnot(is.matrix(x), is.list(parameters), max_iter >= 1L, tol > 0,
+  stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
   expectation <- .multilpa_expectation(x, group_index, parameters, codes)
@@ -397,7 +450,9 @@
 #'   covariance matrices) or `"equal"` (shared across profiles).
 #' @param n_starts Positive integer number of EM starts. When `start` is supplied,
 #'   it supplies the first start; remaining starts are random initializations.
-#' @param max_iter Positive integer maximum number of EM updates per start.
+#' @param max_iter Nonnegative integer maximum number of EM updates per start.
+#'   `max_iter = 0` performs no update and returns the model evaluated at
+#'   `start`, so that `logLik()` scores a parameter set supplied from elsewhere.
 #' @param tol Positive relative log-likelihood tolerance. Convergence requires
 #'   absolute change no greater than `tol * (1 + abs(previous log likelihood))`.
 #' @param min_variance Positive lower bound on each variance, or each covariance
@@ -436,7 +491,8 @@
 #'   classifications, log likelihood, information criteria, restart diagnostics,
 #'   and convergence history. Individual rows retain their input order; groups
 #'   retain first-occurrence order. `bic` and `bic_groups` use the observed group
-#'   count; `bic_individual` uses the individual count. These are alternative
+#'   count; `bic_individual` uses `n_informative`, the number of rows carrying at
+#'   least one observed indicator. These are alternative
 #'   conventions, not interchangeable criteria. `boundary` identifies variance
 #'   bounds; `small_classes` flags effective memberships below one. No standard
 #'   errors, likelihood-ratio tests, or guarantees of global optimality are given.
@@ -515,12 +571,9 @@ multilpa <- function(data, indicators, group, n_profiles,
     stop("Multiple group classes are not identifiable with one profile or only singleton groups.")
   }
   if (!is.null(start)) {
-    if (!is.null(codes)) {
-      stop(errorCondition("Supplying `start` is not yet supported for categorical indicators.",
-                          class = "multilpa_unsupported_start", call = NULL))
-    }
     start <- .multilpa_validate_start(start, n_profiles, n_group_classes,
-                                    ncol(x), variance_model, min_variance, covariance_model)
+                                    ncol(x), variance_model, min_variance,
+                                    covariance_model, n_categories, min_probability)
   }
   if (!is.null(seed)) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
@@ -585,6 +638,14 @@ multilpa <- function(data, indicators, group, n_profiles,
                boundary = if (valid[start_index])
                  .multilpa_covariance_boundary(attempt$parameters, min_variance) else NA)
   }))
+  # A row with no observed indicator contributes nothing to the likelihood and
+  # nothing to any estimate, so it must not enlarge the sample size the
+  # individual-level BIC penalizes against.
+  observed_per_row <- rowSums(!is.na(x)) +
+    if (is.null(codes)) 0L else rowSums(!is.na(codes))
+  # Reported by print() and summary() rather than warned about: resampling verbs
+  # refit the same data many times, and a warning would fire once per replicate.
+  n_informative <- sum(observed_per_row > 0L)
   boundary <- .multilpa_covariance_boundary(parameters, min_variance)
   small_classes <- any(colSums(subject_posteriors) < 1) || any(colSums(group_posteriors) < 1)
   result <- c(parameters, list(
@@ -597,7 +658,8 @@ multilpa <- function(data, indicators, group, n_profiles,
     time = time, time_values = time_values,
     group_values = group_values, group_index = group_index,
     group_sizes = setNames(group_sizes, group_ids),
-    n_observations = nrow(x), n_groups = n_groups, n_profiles = as.integer(n_profiles),
+    n_observations = nrow(x), n_informative = n_informative,
+    n_groups = n_groups, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes), variance_model = variance_model,
     covariance_model = covariance_model, missing = missing,
     n_observed_by_indicator = setNames(
@@ -614,7 +676,7 @@ multilpa <- function(data, indicators, group, n_profiles,
     n_parameters = n_parameters, aic = -2 * log_likelihood + 2 * n_parameters,
     bic = -2 * log_likelihood + log(n_groups) * n_parameters,
     bic_groups = -2 * log_likelihood + log(n_groups) * n_parameters,
-    bic_individual = -2 * log_likelihood + log(nrow(x)) * n_parameters,
+    bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,
     converged = best$converged, iterations = best$iterations,
     log_likelihood_history = best$history, starts = starts, best_start = best_start,
     n_failed_starts = sum(!valid), boundary = boundary, small_classes = small_classes,
@@ -625,7 +687,11 @@ multilpa <- function(data, indicators, group, n_profiles,
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))))
   class(result) <- "multilpa"
   if (any(!valid)) warning(sprintf("%d of %d starts failed; inspect $starts$error.", sum(!valid), n_starts), call. = FALSE)
-  if (!best$converged) warning("The best start did not converge; increase max_iter and inspect starts.", call. = FALSE)
+  # max_iter = 0 is a deliberate evaluate-only call, so non-convergence is
+  # expected rather than an anomaly worth reporting.
+  if (!best$converged && max_iter > 0L) {
+    warning("The best start did not converge; increase max_iter and inspect starts.", call. = FALSE)
+  }
   if (boundary) warning(if (covariance_model == "full")
     "A covariance eigenvalue reached min_variance; this is a bound-active constrained fit." else
     "A variance reached min_variance; this is a bound-active constrained fit.", call. = FALSE)
@@ -647,7 +713,7 @@ multilpa <- function(data, indicators, group, n_profiles,
     stop("Supply at least two rows, unique existing indicators, and one distinct group column.")
   }
   counts <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
-                 n_starts = n_starts, max_iter = max_iter)
+                 n_starts = n_starts)
   invisible(lapply(names(counts), function(field) {
     value <- counts[[field]]
     if (!is.numeric(value) || length(value) != 1L || !is.finite(value) ||
@@ -655,6 +721,12 @@ multilpa <- function(data, indicators, group, n_profiles,
       stop(sprintf("%s must be a positive integer.", field))
     }
   }))
+  # max_iter = 0 evaluates the likelihood at the supplied start without moving.
+  if (!is.numeric(max_iter) || length(max_iter) != 1L || !is.finite(max_iter) ||
+      max_iter < 0 || max_iter != floor(max_iter) ||
+      max_iter > .Machine$integer.max) {
+    stop("max_iter must be a nonnegative integer.")
+  }
   if (!is.numeric(tol) || length(tol) != 1L || !is.finite(tol) || tol <= 0 ||
       !is.numeric(min_variance) || length(min_variance) != 1L ||
       !is.finite(min_variance) || min_variance <= 0) {

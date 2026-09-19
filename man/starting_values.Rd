@@ -7,9 +7,12 @@
 starting_values(object, covariance = c("auto", "drop", "keep"))
 }
 \arguments{
-\item{object}{A fitted `multilpa` model, or a list carrying `means`,
-`variances` or `covariances`, `profile_probabilities`, and
-`group_probabilities`. Any other elements are ignored.}
+\item{object}{A fitted `multilpa` model, or a list carrying
+`profile_probabilities`, `group_probabilities`, and whichever measurement
+blocks the model uses: `means` with `variances` or `covariances` for
+continuous indicators, `response_probabilities` for categorical ones. An
+all-categorical model needs no Gaussian block. Any other elements are
+ignored.}
 
 \item{covariance}{`"auto"` keeps `covariances` when the object carries them,
 `"drop"` always returns the diagonal parameterization, and `"keep"`
@@ -18,8 +21,9 @@ requires `covariances` and fails when they are absent.}
 \value{
 A list with elements `means`, `variances`, `profile_probabilities`,
   and `group_probabilities`, plus `covariances` when the full-covariance
-  parameterization is returned. Dimension names are dropped, matching what
-  [multilpa()] expects of `start`.
+  parameterization is returned and `response_probabilities` when the object
+  carries a categorical measurement model. Dimension names are dropped,
+  matching what [multilpa()] expects of `start`.
 }
 \description{
 Returns the starting-value list [multilpa()] accepts, taken from a fitted
