@@ -4,7 +4,12 @@
 \alias{bivariate_residuals}
 \title{Residual association between pairs of indicators}
 \usage{
-bivariate_residuals(x, data = NULL, by = c("profile", "overall"))
+bivariate_residuals(
+  x,
+  data = NULL,
+  by = c("profile", "overall"),
+  adjust = .multilpa_p_adjust_methods
+)
 }
 \arguments{
 \item{x}{A fitted model of this package that has discrete group classes: a
@@ -23,6 +28,13 @@ than pairing each row with another observation's posterior.}
 \item{by}{`"profile"` (the default) assesses each profile separately, which
 is where the assumption is actually made. `"overall"` pools the profiles
 into one posterior-weighted table per pair.}
+
+\item{adjust}{How to correct `p_value` for the number of pairs tested, one of
+the methods [stats::p.adjust()] accepts. Every pair of indicators is a
+separate test, so a five-indicator fit asks ten questions at
+`by = "overall"` and ten per profile otherwise. The default is `"none"`,
+which leaves `p_adjusted` equal to `p_value`; `"BH"` is the usual choice
+when the whole table is being scanned for the worst pair.}
 }
 \value{
 A base `data.frame`, one row per indicator pair and, for
@@ -57,6 +69,9 @@ A base `data.frame`, one row per indicator pair and, for
     \item{`p_value`}{numeric: the two-sided normal tail for a Gaussian pair,
       the upper chi-square tail for a categorical one. Descriptive only, see
       Details.}
+    \item{`p_adjusted`}{numeric: `p_value` corrected for the number of pairs
+      tested, by the method `adjust` names. Equal to `p_value` under the
+      default `"none"`.}
   }
   Rows are ordered by decreasing `abs(residual)`, so the worst pair is the
   first row, with `indicator_1`, `indicator_2` and `profile` as deterministic

@@ -51,16 +51,18 @@ model never saw is its own verb.
 }
 
 \examples{
-fit <- multilpa(school_engagement,
-                c("homework_hours", "participation", "interest"),
-                id = "school", n_profiles = 2, n_group_classes = 2,
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit <- multilpa(course_engagement, vars = activity, id = "student",
+                n_profiles = 2, n_group_classes = 2,
                 n_starts = 4, seed = 1)
 head(assignments(fit))
 
-# `engaged` is the kind each student was simulated from, which the model
-# never saw. Bringing it alongside is what the `data` argument is for.
-labelled <- assignments(fit, data = school_engagement)
-xtabs(~ profile + engaged, data = labelled)
+# `engagement` and `student_type` are the kinds each row was simulated from,
+# which the model never saw. Bringing them alongside is what `data` is for,
+# and it is why the dataset's truth column is not itself called `profile`.
+labelled <- assignments(fit, data = course_engagement)
+xtabs(~ profile + engagement, data = labelled)
+xtabs(~ group_class + student_type, data = labelled)
 }
 \seealso{
 [as.data.frame()] with `what = "posteriors"` for the posteriors

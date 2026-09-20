@@ -44,9 +44,9 @@
 #' @seealso [descriptives()] for the before-the-fit counterpart, [summary()]
 #'   for what the model estimated rather than whether to trust it.
 #' @examples
-#' fit <- multilpa(school_engagement,
-#'                 c("homework_hours", "participation", "interest"),
-#'                 id = "school", n_profiles = 2, n_group_classes = 2,
+#' activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+#' fit <- multilpa(course_engagement, vars = activity, id = "student",
+#'                 n_profiles = 2, n_group_classes = 2,
 #'                 n_starts = 4, seed = 1)
 #' quality <- diagnostics(fit)
 #' quality
@@ -208,9 +208,9 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #' @seealso [summary()], [diagnostics()], [descriptives()],
 #'   [multilpa_plot_types()].
 #' @examples
-#' fit <- multilpa(school_engagement,
-#'                 c("homework_hours", "participation", "interest"),
-#'                 id = "school", n_profiles = 2, n_group_classes = 2,
+#' activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+#' fit <- multilpa(course_engagement, vars = activity, id = "student",
+#'                 n_profiles = 2, n_group_classes = 2,
 #'                 n_starts = 4, seed = 1)
 #' report(fit, plots = FALSE)
 #' @export

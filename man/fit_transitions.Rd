@@ -139,20 +139,13 @@ Transitions are first order and homogeneous over occasions: the
   read off that single expectation.
 }
 \examples{
-# Forty people measured on six occasions, mostly staying where they are.
-set.seed(7)
-example_data <- do.call(rbind, lapply(seq_len(40), function(person) {
-  path <- Reduce(function(previous, step) {
-    if (stats::runif(1) < 0.8) previous else 3L - previous
-  }, seq_len(5), init = 1L + person \%\% 2L, accumulate = TRUE)
-  data.frame(person = person, wave = seq_len(6), state = unlist(path))
-}))
-centre <- ifelse(example_data$state == 1L, -2, 2)
-example_data$score_a <- stats::rnorm(nrow(example_data), centre, 0.7)
-example_data$score_b <- stats::rnorm(nrow(example_data), 0.75 * centre, 0.7)
-
-fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
-                       n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+# Students take their courses in their own order, which `sequence` records,
+# so the same enrolments that fit a cross-sectional model fit a transition
+# one. Engagement mostly persists from one course to the next.
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit <- fit_transitions(course_engagement, vars = activity, id = "student",
+                       n_profiles = 2, time = "sequence",
+                       n_starts = 2, seed = 1)
 transitions(fit)
 summary(fit)
 }

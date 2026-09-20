@@ -23,6 +23,12 @@
 #' @param by `"profile"` (the default) assesses each profile separately, which
 #'   is where the assumption is actually made. `"overall"` pools the profiles
 #'   into one posterior-weighted table per pair.
+#' @param adjust How to correct `p_value` for the number of pairs tested, one of
+#'   the methods [stats::p.adjust()] accepts. Every pair of indicators is a
+#'   separate test, so a five-indicator fit asks ten questions at
+#'   `by = "overall"` and ten per profile otherwise. The default is `"none"`,
+#'   which leaves `p_adjusted` equal to `p_value`; `"BH"` is the usual choice
+#'   when the whole table is being scanned for the worst pair.
 #' @return A base `data.frame`, one row per indicator pair and, for
 #'   `by = "profile"`, per profile, with the columns
 #'   \describe{
@@ -55,6 +61,9 @@
 #'     \item{`p_value`}{numeric: the two-sided normal tail for a Gaussian pair,
 #'       the upper chi-square tail for a categorical one. Descriptive only, see
 #'       Details.}
+#'     \item{`p_adjusted`}{numeric: `p_value` corrected for the number of pairs
+#'       tested, by the method `adjust` names. Equal to `p_value` under the
+#'       default `"none"`.}
 #'   }
 #'   Rows are ordered by decreasing `abs(residual)`, so the worst pair is the
 #'   first row, with `indicator_1`, `indicator_2` and `profile` as deterministic
@@ -108,7 +117,8 @@
 #' bivariate_residuals(fit, example_data)
 #' bivariate_residuals(fit, example_data, by = "overall")
 #' @export
-bivariate_residuals <- function(x, data = NULL, by = c("profile", "overall")) {
+bivariate_residuals <- function(x, data = NULL, by = c("profile", "overall"),
+                               adjust = .multilpa_p_adjust_methods) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
   data <- .multilpa_resolve_data(x, data)
   stopifnot(
@@ -121,6 +131,7 @@ bivariate_residuals <- function(x, data = NULL, by = c("profile", "overall")) {
                         class = "multilpa_no_group_classes", call = NULL))
   }
   by <- match.arg(by)
+  adjust <- match.arg(adjust)
   continuous <- .multilpa_continuous_names(x)
   categorical <- x$categorical %||% character()
   stopifnot("`data` must contain the fitted indicators" =
@@ -150,12 +161,18 @@ bivariate_residuals <- function(x, data = NULL, by = c("profile", "overall")) {
                       indicator_2 = character(), kind = character(),
                       observed = numeric(), expected = numeric(),
                       residual = numeric(), effective_n = numeric(),
-                      statistic = numeric(), df = integer(), p_value = numeric()))
+                      statistic = numeric(), df = integer(),
+                      p_value = numeric(), p_adjusted = numeric()))
   }
   # Worst pair first. The indicator names and the profile label are explicit
   # secondary keys, so ties do not fall back on construction order.
   result <- result[order(-abs(result$residual), result$indicator_1,
                          result$indicator_2, result$profile), , drop = FALSE]
+  # Every pair of indicators is a separate test, so a fit with five indicators
+  # asks ten questions at `by = "overall"` and ten per profile otherwise. The
+  # family is the verb's to declare, not the reader's to reconstruct, so the
+  # adjusted column travels beside the raw one.
+  result$p_adjusted <- stats::p.adjust(result$p_value, method = adjust)
   row.names(result) <- NULL
   result
 }

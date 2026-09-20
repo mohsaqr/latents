@@ -1,18 +1,18 @@
+.activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+
 .convenience_fit <- function(...) {
-  multilpa(school_engagement,
-           c("homework_hours", "participation", "interest"),
-           id = "school", n_profiles = 2, n_group_classes = 2,
+  multilpa(course_engagement, .activity,
+           id = "student", n_profiles = 2, n_group_classes = 2,
            n_starts = 4, seed = 1, ...)
 }
 
 test_that("a fit carries the data it was built from, exactly", {
   fit <- .convenience_fit()
   rebuilt <- as.data.frame(fit, what = "data")
-  expect_identical(rebuilt,
-                   school_engagement[c("school", "homework_hours",
-                                       "participation", "interest")])
+  expect_identical(rebuilt, course_engagement[c("student", .activity)])
   # Columns the model never saw are not invented.
-  expect_false("engaged" %in% names(rebuilt))
+  expect_false(any(c("course", "previous_grade", "engagement", "student_type") %in%
+                     names(rebuilt)))
 })
 
 test_that("the round trip is exact for every model family", {
@@ -47,36 +47,33 @@ test_that("the round trip is exact for every model family", {
 test_that("inference no longer has to be handed data it already holds", {
   fit <- .convenience_fit()
   expect_equal(quietly(parameter_inference(fit)),
-               quietly(parameter_inference(fit, school_engagement)))
+               quietly(parameter_inference(fit, course_engagement)))
   expect_identical(bivariate_residuals(fit),
-                   bivariate_residuals(fit, school_engagement))
+                   bivariate_residuals(fit, course_engagement))
   expect_equal(quietly(vcov(fit)),
-               quietly(vcov(fit, school_engagement)))
+               quietly(vcov(fit, course_engagement)))
   expect_equal(quietly(confint(fit)),
-               quietly(confint(fit, data = school_engagement)))
+               quietly(confint(fit, data = course_engagement)))
   # A supplied frame is still validated against the fit, so the guard that
   # catches the wrong data has not been traded away for the convenience.
-  wrong <- transform(school_engagement, homework_hours = homework_hours + 1)
+  wrong <- transform(course_engagement, browse = browse + 1)
   expect_error(quietly(parameter_inference(fit, wrong)),
                class = "multilpa_bad_inference_data")
 })
 
 test_that("descriptives describes what is there and says how it is nested", {
-  described <- descriptives(school_engagement,
-                            vars = c("homework_hours", "participation", "interest"),
-                            id = "school")
+  described <- descriptives(course_engagement, vars = .activity, id = "student")
   expect_s3_class(described, "data.frame")
-  expect_identical(described$variable,
-                   c("homework_hours", "participation", "interest"))
+  expect_identical(described$variable, .activity)
   expect_identical(names(described),
                    c("variable", "n", "n_missing", "mean", "sd", "min", "max",
                      "n_distinct", "n_groups", "icc"))
-  expect_true(all(described$n == 720L))
-  expect_true(all(described$n_groups == 60L))
+  expect_true(all(described$n == 1422L))
+  expect_true(all(described$n_groups == 106L))
   # Without an id there is nothing to report an icc against.
-  plain <- descriptives(school_engagement, vars = "homework_hours")
+  plain <- descriptives(course_engagement, vars = "browse")
   expect_false(any(c("n_groups", "icc") %in% names(plain)))
-  expect_error(descriptives(school_engagement, vars = "not_a_column"))
+  expect_error(descriptives(course_engagement, vars = "not_a_column"))
 })
 
 test_that("the icc reports group structure where there is some, and none where there is not", {
@@ -94,8 +91,8 @@ test_that("the icc reports group structure where there is some, and none where t
 
   # And the real data sit in between, which is why a two-level model is worth
   # fitting to them at all.
-  expect_gt(descriptives(school_engagement, vars = "homework_hours",
-                         id = "school")$icc, 0.05)
+  expect_gt(descriptives(course_engagement, vars = "browse",
+                         id = "student")$icc, 0.05)
 })
 
 test_that("splitting by profile shows the grouping the model claims to explain", {
@@ -103,17 +100,18 @@ test_that("splitting by profile shows the grouping the model claims to explain",
   overall <- descriptives(fit)
   by_profile <- descriptives(fit, by = "profile")
   expect_identical(names(by_profile)[1L], "profile")
-  expect_identical(nrow(by_profile), 6L)
+  # One row per indicator per profile: five indicators, two profiles.
+  expect_identical(nrow(by_profile), 10L)
   expect_setequal(unique(by_profile$profile), c(1L, 2L))
   expect_identical(sum(by_profile$n), sum(overall$n))
-  # The model's claim is that schools differ in their MIX, not in their
-  # students. If that holds, conditioning on the profile leaves almost no
-  # between-school variance behind.
+  # The model's claim is that students differ in their MIX, not in the courses
+  # they take. If that holds, conditioning on the profile leaves almost no
+  # between-student variance behind.
   expect_gt(min(overall$icc), 0.05)
   # Every within-profile figure falls below the smallest overall one. Stated
   # that way rather than against a fixed threshold, because what is left inside
-  # a profile is sampling noise around zero -- with 60 groups its standard error
-  # is around 0.18 -- and its exact size is not the claim being made.
+  # a profile is sampling noise around zero -- it is free to come out slightly
+  # negative -- and its exact size is not the claim being made.
   expect_lt(max(abs(by_profile$icc)), min(overall$icc))
   expect_error(descriptives(fit, by = "nonsense"))
 })
@@ -135,9 +133,14 @@ test_that("diagnostics gathers the verbs without changing what they return", {
 })
 
 test_that("a model family without residuals says so instead of failing", {
-  fit <- fit_random_intercept(school_engagement,
-                              c("homework_hours", "participation", "interest"),
-                              id = "school", n_profiles = 2, n_starts = 2, seed = 1)
+  # Quadrature over 1422 observations is the slowest fit in this file, so it
+  # runs on three indicators from a single start: the assertions below are
+  # about what `diagnostics()` does with this model family, not about how well
+  # the fit itself recovers anything.
+  skip_on_cran()
+  fit <- fit_random_intercept(course_engagement,
+                              c("browse", "lectures", "forum_read"),
+                              id = "student", n_profiles = 2, n_starts = 1, seed = 1)
   quality <- diagnostics(fit)
   expect_s3_class(as.data.frame(quality, what = "entropy"), "data.frame")
   expect_error(as.data.frame(quality, what = "residuals"),
@@ -167,16 +170,13 @@ test_that("report prints everything and returns the fit", {
     #
     # This previously used the default-tolerance fit above and so pinned a
     # miscalibration: the check cut a fixed 0.01 on the scaled score, which on
-    # 720 observations fires at a displacement of 0.17% of a standard error.
-    # The criterion is now that displacement itself, so the fixture has to be
-    # genuinely loose to trip it.
+    # a sample this size fires at a displacement of a fraction of a percent of
+    # a standard error. The criterion is now that displacement itself, so the
+    # fixture has to be genuinely loose to trip it.
     loose <- .convenience_fit(tol = 1e-4)
     expect_warning(report(loose, plots = TRUE),
                    class = "multilpa_unconverged")
-    tight <- multilpa(school_engagement,
-                      c("homework_hours", "participation", "interest"),
-                      id = "school", n_profiles = 2, n_group_classes = 2,
-                      n_starts = 4, tol = 1e-10, seed = 1)
+    tight <- .convenience_fit(tol = 1e-10)
     # No warning, rather than no noise: report() prints by design, so
     # expect_silent() would fail on its own output.
     expect_warning(utils::capture.output(report(tight, plots = TRUE)),
@@ -197,49 +197,46 @@ test_that("report draws only the views a given fit can supply", {
   expect_true(all(c("profiles", "bars", "heatmap", "probabilities",
                     "entropy", "posteriors") %in%
                     .multilpa_supported_views(gaussian)))
-  timed <- multilpa(engagement_panel, c("homework_hours", "participation"),
+  timed <- multilpa(course_engagement, .activity,
                     id = "student", n_profiles = 2, n_group_classes = 2,
-                    time = "wave", n_starts = 2, seed = 1)
+                    time = "sequence", n_starts = 2, seed = 1)
   expect_true("sequences" %in% .multilpa_supported_views(timed))
 })
 
 test_that("assignments put the estimate and the truth in the same row", {
-  fit <- multilpa(school_engagement,
-                  c("homework_hours", "participation", "interest"),
-                  id = "school", n_profiles = 2, n_group_classes = 2,
-                  n_starts = 4, tol = 1e-10, seed = 1)
+  fit <- .convenience_fit(tol = 1e-10)
   carried <- assignments(fit)
-  expect_identical(nrow(carried), 720L)
+  expect_identical(nrow(carried), 1422L)
   expect_true(all(c("profile", "group_class", "posterior_profile_1",
                     "posterior_profile_2") %in% names(carried)))
   expect_identical(carried$profile, fit$subject_profiles)
   # The rows the model saw come back untouched beside the assignments.
-  expect_identical(carried[c("school", "homework_hours")],
-                   school_engagement[c("school", "homework_hours")])
+  expect_identical(carried[c("student", "browse")],
+                   course_engagement[c("student", "browse")])
 
   # Supplying a frame keeps every column of it, including ones the model never
   # saw, which is the whole point: the comparison needs them in the same row.
-  supplied <- assignments(fit, data = school_engagement)
-  expect_true(all(names(school_engagement) %in% names(supplied)))
-  expect_identical(supplied$engaged, school_engagement$engaged)
+  supplied <- assignments(fit, data = course_engagement)
+  expect_true(all(names(course_engagement) %in% names(supplied)))
+  expect_identical(supplied$engagement, course_engagement$engagement)
   expect_identical(supplied$profile, carried$profile)
 
-  # The recovery check the vignette makes: one student of 720 misassigned.
-  agreement <- xtabs(~ profile + engaged, data = supplied)
-  expect_identical(sum(agreement), 720L)
-  expect_lt(sum(agreement) - sum(diag(agreement[, c("FALSE", "TRUE")])), 5L)
+  # The recovery check the help page makes. Which fitted label lands on which
+  # generated level is the optimiser's business, so the agreement is read off
+  # both diagonals and the better one taken.
+  agreement <- xtabs(~ profile + engagement, data = supplied)
+  expect_identical(sum(agreement), 1422L)
+  matched <- max(sum(diag(agreement)), sum(agreement) - sum(diag(agreement)))
+  expect_gt(matched / sum(agreement), 0.97)
 })
 
 test_that("assignments refuse a frame that cannot be aligned", {
-  fit <- multilpa(school_engagement,
-                  c("homework_hours", "participation", "interest"),
-                  id = "school", n_profiles = 2, n_group_classes = 2,
-                  n_starts = 4, tol = 1e-10, seed = 1)
+  fit <- .convenience_fit(tol = 1e-10)
   # Too few rows: silently recycling or truncating would be the alignment bug
   # this verb exists to prevent.
-  expect_error(assignments(fit, data = school_engagement[seq_len(10L), ]),
+  expect_error(assignments(fit, data = head(course_engagement, 10L)),
                class = "multilpa_bad_inference_data")
   # A column the assignments would overwrite is an error, not a replacement.
-  expect_error(assignments(fit, data = transform(school_engagement, profile = 1L)),
+  expect_error(assignments(fit, data = transform(course_engagement, profile = 1L)),
                class = "multilpa_bad_data")
 })

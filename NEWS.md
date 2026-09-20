@@ -1,4 +1,56 @@
-# multilpa 0.11.0
+# multilpa 0.11.1
+
+## One bundled dataset, covering every model family
+
+`school_engagement` and `engagement_panel` are **removed** and replaced by
+`course_engagement`: 1422 enrolments of 106 students across 32 courses, ordered
+within each student. The same rows now carry every model the package fits.
+
+```r
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+
+multilpa(course_engagement, activity, id = "student",
+         n_profiles = 2, n_group_classes = 2)          # two-level
+fit_transitions(course_engagement, activity, id = "student",
+                time = "sequence", n_profiles = 2)      # the same students, in order
+fit_covariates(course_engagement, activity, id = "student",
+               n_profiles = 2, n_group_classes = 1,
+               profile_covariates = "previous_grade")   # and what predicts it
+```
+
+The old pair could not do this. `school_engagement`'s `term` column was not
+time -- it indexed twelve different students within a school -- so anything
+about order needed the second dataset and a different set of people, and
+neither dataset carried a covariate at all.
+
+Two new columns make that possible. `previous_grade` is the standardised grade
+the student earned in the course *before* this one, so it predicts engagement
+rather than summarising it. `attendance` is the count of days the student was
+active, following the same engagement as the click measures but recorded one
+tick per day rather than one per click, so it carries more noise than they do.
+
+The generating truth still ships beside the observations -- `engagement` for the
+enrolment pattern and `student_type` for the kind of student -- so a fitted
+model can still be checked against what produced it:
+
+```r
+xtabs(~ profile + engagement, data = assignments(fit, data = course_engagement))
+```
+
+The truth column is called `engagement` rather than `profile` because
+`assignments()` adds a column named `profile`, and a dataset already carrying
+that name would make the verb refuse to join its own output onto it.
+
+The data are simulated. The simulation is calibrated to the shape of a real
+learning-analytics export, using only aggregate constants from it: marginal
+means and spreads on the log scale, the separation between an engaged and a
+disengaged pattern, and how persistent that pattern is across a student's
+courses. No row, identifier or value of any real student is present, and the
+source is not distributed. See `data-raw/course-engagement.R`.
+
+The activity indicators are natural-log counts, `log1p(events)`. Raw
+learning-analytics counts are strongly right-skewed and on an unlogged draft the
+skew alone looked like an extra class, exactly as a floor effect does.
 
 This release is a correctness release. An independent review of 0.10.0 found
 that several advertised paths returned plausible numbers that were wrong, rather
@@ -89,10 +141,10 @@ explicitly and refuse any argument they cannot forward.
 order 10^3 to 10^4, while EM stops on a *relative* tolerance, and under the null
 the alternative converges to the null solution -- so every replicate sits at the
 boundary with noise of about `2 * tol * |log likelihood|`. On
-`school_engagement` that is 7.6e-05, seven times the window. Twelve replicates
-that all converged had four of them reported as "Nonconvergence or reversed
-likelihood" and the p-value withheld. The window now scales with `tol` and the
-likelihood, so the same comparison returns 12 of 12 valid and a p-value.
+`course_engagement` that is 1.6e-04, sixteen times the window. Replicates that
+had all converged were reported as "Nonconvergence or reversed likelihood" and
+the p-value withheld. The window now scales with `tol` and the likelihood, so
+the same comparison returns every replicate valid and a p-value.
 
 ### An ordinary converged fit stops being told it has not converged
 
@@ -184,6 +236,11 @@ mismatch; a frame sharing no column with the fit warns
   twice on such a fit; it now reports the two counts it names.
 * `parameter_inference()` results carry `score_displacement` beside
   `scaled_score`, the quantity the convergence warning is judged on.
+* `bivariate_residuals()` gains `adjust`, and its table a `p_adjusted` column.
+  Every pair of indicators is a separate test, so a five-indicator fit asks ten
+  questions at once; the family size is now the verb's to declare rather than
+  the reader's to reconstruct. The default is `"none"`, so `p_adjusted` equals
+  `p_value` unless asked otherwise.
 
 ## Infrastructure
 
@@ -238,8 +295,8 @@ Every observation with the profile it was assigned to, the group class, and its
 posteriors -- optionally with a frame of your own columns kept alongside:
 
 ```r
-labelled <- assignments(fit, data = school_engagement)
-xtabs(~ profile + engaged, data = labelled)
+labelled <- assignments(fit, data = course_engagement)
+xtabs(~ profile + engagement, data = labelled)
 ```
 
 Comparing an assignment with anything else means putting them in the same row,

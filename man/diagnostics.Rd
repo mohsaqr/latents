@@ -79,9 +79,9 @@ differently shaped tables, so the result is an object with a `print()` method
 and an `as.data.frame()` accessor rather than four tables printed at once.
 }
 \examples{
-fit <- multilpa(school_engagement,
-                c("homework_hours", "participation", "interest"),
-                id = "school", n_profiles = 2, n_group_classes = 2,
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit <- multilpa(course_engagement, vars = activity, id = "student",
+                n_profiles = 2, n_group_classes = 2,
                 n_starts = 4, seed = 1)
 quality <- diagnostics(fit)
 quality

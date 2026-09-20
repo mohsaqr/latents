@@ -5,8 +5,8 @@ analysis**. All estimation runs in R; Carm, Mplus, and a server are not required
 
 Indicators may be continuous, categorical, or a mixture of the two. The model
 identifies individual profiles from the indicators and latent group classes from
-differences in profile proportions. For example, students
-have achievement profiles, while schools differ in the prevalence of those
+differences in profile proportions. For example, course enrolments
+have engagement profiles, while students differ in the prevalence of those
 profiles. The implementation uses nested expectation-maximization (EM) with
 multiple starts.
 
@@ -18,31 +18,41 @@ From this project directory:
 R CMD INSTALL .
 ```
 
-The package ships two example datasets, so the first example runs as written.
-`school_engagement` has 720 students in 60 schools; `engagement_panel` has 120
-students over four waves. Both are simulated, and both carry the kind each row
-was generated from (`engaged`, `state`) beside the indicators, so a fit can be
-checked against what produced it.
+The package ships one example dataset, so the first example runs as written.
+`course_engagement` has 1,422 enrolments: 106 students, 32 courses, up to
+fifteen courses per student. It replaces the two datasets earlier versions
+shipped, because one frame now carries what needed two. `student` is the
+nesting unit, `sequence` orders each student's own courses, and
+`previous_grade` is a covariate recorded before each enrolment, so the same
+1,422 rows fit the two-level model (`id = "student"`), the latent transition
+model (`time = "sequence"`) and the membership-covariate model
+(`profile_covariates = "previous_grade"`) without changing dataset.
+
+The data are simulated, and they carry the truth each row was generated from
+beside the indicators — `engagement` for the pattern the row came from,
+`student_type` for the kind of student — so a fit can be checked against what
+produced it. The five indicators are `log1p` counts of learning-analytics
+events.
 
 ```r
 library(multilpa)
 
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+
 # Before fitting: does the nesting carry any signal at all? An ICC near zero
-# says the schools do not differ, so a model built to tell them apart has
+# says the students do not differ, so a model built to tell them apart has
 # nothing to find.
-descriptives(school_engagement,
-             vars = c("homework_hours", "participation", "interest"),
-             id = "school")
+descriptives(course_engagement, vars = activity, id = "student")
 
 fit <- multilpa(
-  data = school_engagement,
-  vars = c("homework_hours", "participation", "interest"),
-  id = "school",
+  data = course_engagement,
+  vars = activity,
+  id = "student",
   n_profiles = 2,
   n_group_classes = 2,
   variance_model = "varying",
-  n_starts = 20,
-  seed = 42
+  n_starts = 10,
+  seed = 1
 )
 
 summary(fit)
@@ -53,7 +63,14 @@ as.data.frame(fit, what = "posteriors", format = "wide")  # one row per individu
 as.data.frame(fit, what = "group_posteriors")        # one row per group and group class
 as.data.frame(fit, what = "starts")                  # one row per EM start
 as.data.frame(fit, what = "data")                    # the columns the model was fitted to
-assignments(fit, data = school_engagement)           # every row with the class it was given
+assignments(fit, data = course_engagement)           # every row with the class it was given
+
+# The generating truth ships beside the indicators, so recovery is one table at
+# each level. Profile and group-class numbers are arbitrary, so read the table,
+# not the diagonal.
+xtabs(~ profile + engagement, data = assignments(fit, data = course_engagement))
+xtabs(~ group_class + student_type, data = assignments(fit, data = course_engagement))
+
 descriptives(fit)                                    # one row per variable, with the ICC
 descriptives(fit, by = "profile")                    # the same, split by assigned profile
 diagnostics(fit)                                     # every classification diagnostic
@@ -75,6 +92,20 @@ plot(fit, what = "probabilities")                    # prevalence by group class
 plot(fit, what = "entropy")                          # where the uncertainty actually sits
 plot(fit, what = "posteriors")                       # modal assignment probabilities
 ```
+
+`descriptives()` answers the question it was asked first: the five indicators
+have ICCs of 0.09 to 0.22 across students, so the nesting carries signal and a
+two-level model has something to find. That fit then converges, all ten starts
+reach the same likelihood, and the two profiles separate cleanly: relative
+entropy is 0.946 at the enrolment level and 0.938 at the student level. The
+`xtabs()` above puts 1,398 of 1,422 enrolments in the profile that generated
+them, 98.3%, with the fitted profile 1 standing
+for the generated `engaged` pattern — label switching is ordinary and is not
+worth reordering anything to hide. The two group classes recover the two kinds
+of student: one is 83% disengaged enrolments, the other 79% engaged. Pooled
+over the whole sample 58.9% of enrolments are engaged, which describes neither
+kind of student. Recovering that split is what the two-level model does and a
+pooled one cannot.
 
 Every result table is a base `data.frame`, so nothing needs to be pulled out of
 the fitted object by hand.
@@ -98,8 +129,11 @@ fit and so cannot be checked at all.
 missing values gets its own labelled `NA` stratum rather than being dropped, so
 the per-stratum counts always add up to the number of rows you passed in.
 
-`students` is a placeholder for your data. For a complete reproducible example
-using simulated data, run:
+Everything below runs on `course_engagement` as written, with one exception:
+the bundled indicators are all continuous, so the categorical examples in the
+next section use `survey`, a placeholder for data with categorical indicators of
+your own. For a complete reproducible example that simulates its own data and
+checks recovery against the values that generated it, run:
 
 ```sh
 Rscript validation/synthetic-demo.R
@@ -158,7 +192,15 @@ plot(lca, what = "responses")            # response curves by profile
 mixed <- multilpa(survey, c("reading", "maths", "u1", "u2"), "school_id",
                     n_profiles = 3, n_group_classes = 2,
                     categorical = c("u1", "u2"), n_starts = 40, seed = 42)
+
+# Membership covariates carry over to a categorical or mixed measurement model.
+fit_covariates(survey, c("reading", "u1", "u2"), "school_id", 3, 2,
+               profile_covariates = "age", categorical = c("u1", "u2"))
 ```
+
+`survey` here is a placeholder: these are the only examples in this README that
+do not run on the bundled data, because `course_engagement` has no categorical
+indicator to name.
 
 Binary, ordinal and unordered indicators all use the same unrestricted
 parameterization, which is what mixture software estimates by default when every
@@ -179,69 +221,76 @@ is applied as the exact constrained solution rather than by rescaling.
 
 ## Additional methods
 
-Below, `students` is your complete frame and `incomplete` is the same study with
-some indicators unobserved, because `missing = "fiml"` is what the first fit is
-there to show and several of these model families are complete-data only.
+Below, `course_engagement` is the complete frame and `incomplete` is the same
+study with one indicator unobserved, because `missing = "fiml"` is what the
+first fit is there to show and several of these model families are
+complete-data only. One `transform()` makes it: suppose `attendance` was only
+logged for a student's first twelve courses, which leaves 161 of the 1,422 rows
+without it.
 
 ```r
+incomplete <- transform(course_engagement,
+                        attendance = ifelse(sequence > 12, NA, attendance))
+
 # Observed-data ML for incomplete indicators; correlated residuals within profiles.
-fit <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
-                  n_profiles = 3, n_group_classes = 2,
-                  covariance_model = "full", missing = "fiml",
-                  n_starts = 20, seed = 42)
+full_fit <- multilpa(incomplete, activity, "student",
+                     n_profiles = 2, n_group_classes = 2,
+                     covariance_model = "full", missing = "fiml",
+                     n_starts = 10, seed = 1)
 
 # Observed-information standard errors and Wald intervals. The fit carries the
 # data it was built from, so `data =` is optional everywhere below.
-parameter_inference(fit)
-confint(fit)
+parameter_inference(full_fit)
+confint(full_fit)
 
 # MLR robust sandwich errors, accumulating the score over independent groups.
-parameter_inference(fit, vcov_type = "robust")
-vcov(fit, vcov_type = "robust")
+parameter_inference(full_fit, vcov_type = "robust")
+vcov(full_fit, vcov_type = "robust")
 
 # Likelihood-ratio statistic with the Lo-Mendell-Rubin adjustment. The
 # `p_value` column is returned as NA on purpose, because the VLMR reference
 # distribution is not reproduced; use the bootstrap below for a calibrated one.
-smaller_fit <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
-                          n_profiles = 2, n_group_classes = 2, missing = "fiml", seed = 1)
-larger_fit <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
-                         n_profiles = 3, n_group_classes = 2, missing = "fiml", seed = 1)
+smaller_fit <- multilpa(incomplete, activity, "student",
+                        n_profiles = 2, n_group_classes = 2, missing = "fiml", seed = 1)
+larger_fit <- multilpa(incomplete, activity, "student",
+                       n_profiles = 3, n_group_classes = 2, missing = "fiml", seed = 1)
 lmr_lrt(smaller_fit, larger_fit)
 
 # One-step membership regressions. The measurement model is the one multilpa()
 # fits: Gaussian, categorical or mixed, diagonal or full covariance. Covariate
-# fits are complete-data only, so they take `students`, not `incomplete`;
-# an incomplete frame raises `multilpa_bad_data`. Standard
+# fits are complete-data only, so they take `course_engagement`, not
+# `incomplete`; an incomplete frame raises `multilpa_bad_data`. Standard
 # errors cover the Gaussian and full-covariance cases; a categorical fit
 # refuses them with `multilpa_unsupported_inference` rather than understating
-# its parameter count.
+# its parameter count. `group_covariates =` takes the same kind of predictor at
+# the student level; `previous_grade` varies course to course, so it belongs at
+# the enrolment level and the bundled data carry no student-constant covariate.
 with_predictors <- fit_covariates(
-  students, c("reading", "maths", "engagement"), "school_id", 3, 2,
-  profile_covariates = "age", group_covariates = "school_resources", seed = 42)
+  course_engagement, activity, "student", 2, 2,
+  profile_covariates = "previous_grade", seed = 1)
 as.data.frame(with_predictors, what = "coefficients")   # both levels, one row per term
 parameter_inference(with_predictors)                    # with standard errors and intervals
 
-fit_covariates(students, c("reading", "maths", "engagement"), "school_id", 3, 2,
-               profile_covariates = "age", covariance_model = "full")
-fit_covariates(students, c("reading", "passed", "engagement"), "school_id", 3, 2,
-               profile_covariates = "age", categorical = "passed")
+fit_covariates(course_engagement, activity, "student", 2, 2,
+               profile_covariates = "previous_grade",
+               covariance_model = "full", seed = 1)
 
 # Alternative: one continuous group intercept, loading 1 on every indicator.
 # Complete data only, like the covariate fits above.
 random_intercept <- fit_random_intercept(
-  students, c("reading", "maths", "engagement"), "school_id", 3, seed = 42)
+  course_engagement, activity, "student", 2, seed = 1)
 summary(random_intercept)                            # includes the quadrature check
 as.data.frame(summary(random_intercept), what = "model")
 
 # Compare profile/group-class counts; inspect diagnostics in every row. Anything
-# enumerate_classes() does not name itself reaches multilpa(), so add
-# `missing = "fiml"` here to enumerate on an incomplete frame.
+# enumerate_classes() does not name itself reaches multilpa(), so
+# `missing = "fiml"` would go here to enumerate on `incomplete` instead.
 candidates <- enumerate_classes(
-  students, c("reading", "maths", "engagement"), "school_id",
-  n_profiles = 2:4, n_group_classes = 1:3, n_starts = 20, seed = 42)
+  course_engagement, activity, "student",
+  n_profiles = 2:4, n_group_classes = 1:3, n_starts = 10, seed = 1)
 as.data.frame(candidates)                            # one row per candidate model
 summary(candidates)                                  # the best model on each criterion
-candidate_fit(candidates, n_profiles = 3, n_group_classes = 2)
+candidate_fit(candidates, n_profiles = 2, n_group_classes = 2)
 plot(candidates, criterion = "sabic_individual")
 
 # Complete-data nested models differing by one class at one level. A held
@@ -250,27 +299,54 @@ plot(candidates, criterion = "sabic_individual")
 # bootstrap_lrt(smaller_fit, larger_fit, iter = 199, seed = 42)
 
 # Where conditional independence fails: residual association within profiles.
+# `fit` is the diagonal model from the first example, which is the one that has
+# something to confess.
 bivariate_residuals(fit)
 bivariate_residuals(fit, by = "overall")
+
+# What those residuals ask for: the same two profiles and two group classes,
+# with the association estimated rather than assumed away.
+dependent <- multilpa(course_engagement, activity, "student",
+                      n_profiles = 2, n_group_classes = 2,
+                      covariance_model = "full", n_starts = 10, seed = 1)
+information_criteria(dependent)
+bivariate_residuals(dependent, by = "overall")
 
 # Resume from a fitted solution, or score parameters produced elsewhere. A start
 # describes one measurement specification, so the refit must be given the same
 # `covariance_model` and `missing` as the fit it came from; use
-# `starting_values(fit, covariance = "drop")` to warm-start a diagonal model
-# from a full-covariance solution instead.
-refit <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
-                    n_profiles = 3, n_group_classes = 2, n_starts = 1,
-                    covariance_model = "full", missing = "fiml",
-                    start = starting_values(fit))
+# `starting_values(full_fit, covariance = "drop")` to warm-start a diagonal
+# model from a full-covariance solution instead.
+refit <- multilpa(incomplete, activity, "student",
+                  n_profiles = 2, n_group_classes = 2, n_starts = 1,
+                  covariance_model = "full", missing = "fiml",
+                  start = starting_values(full_fit))
 
 # max_iter = 0 performs no update, so logLik() evaluates the supplied start
 # and nothing else: `n_starts` is ignored rather than scored and beaten.
-evaluated <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
-                        n_profiles = 3, n_group_classes = 2,
-                        covariance_model = "full", missing = "fiml",
-                        start = starting_values(fit), max_iter = 0)
-logLik(evaluated)   # identical to logLik(fit)
+evaluated <- multilpa(incomplete, activity, "student",
+                      n_profiles = 2, n_group_classes = 2,
+                      covariance_model = "full", missing = "fiml",
+                      start = starting_values(full_fit), max_iter = 0)
+logLik(evaluated)   # identical to logLik(full_fit)
 ```
+
+Those residuals are not decoration on these data. `attendance` counts the days
+a student was active in a course, and a day counts as active *because*
+something was clicked, so `attendance` shares variance with the click measures
+beyond what the profile explains. The diagonal model has no way to say that,
+and `bivariate_residuals(fit, by = "overall")` reports it: the largest residual
+correlation is 0.208 (`forum_read` with `attendance`, p = 1.7e-15), and five of
+the ten pairs are significant at 0.05 — the four that pair `attendance` with a
+click measure, plus `browse` with `forum_read` at p = 0.035. `dependent`, the
+same two profiles and two group classes with `covariance_model = "full"`,
+raises the log likelihood from -7618.51 to -7494.69 for twenty more parameters,
+which AIC (15283.03 to 15075.39) and group-count BIC (15344.29 to 15189.92)
+both pay for, and leaves no residual above 1.5e-05. Local dependence shows up
+in the enumeration above too, where the diagonal criteria keep improving out to
+four profiles and three group classes: unmodelled residual association is one
+of the things extra classes get recruited to absorb. Read the residual table
+before reading the grid.
 
 | Capability | Supported scope |
 |---|---|
@@ -321,14 +397,21 @@ person measured repeatedly can be followed across profiles rather than reduced
 to one assignment.
 
 ```r
-fit <- multilpa(students, c("reading", "maths", "engagement"), "student_id",
-                  n_profiles = 3, n_group_classes = 2, time = "term", seed = 42)
+over_time <- multilpa(course_engagement, activity, "student",
+                      n_profiles = 2, n_group_classes = 2,
+                      time = "sequence", seed = 1)
 
-sequences(fit)                     # one row per individual and time point
-sequences(fit, format = "wide")    # one row per individual, carrying its identifier
-sequence_summary(fit)              # group counts, sequence lengths and completeness
-plot(fit, what = "sequences")
+sequences(over_time)                  # one row per individual and time point
+sequences(over_time, format = "wide") # one row per individual, carrying its identifier
+sequence_summary(over_time)           # group counts, sequence lengths and completeness
+plot(over_time, what = "sequences")
 ```
+
+`sequence` is the position of a course in that student's own order, so no
+argument beyond `time =` is needed and no separate panel dataset is: the rows
+the cross-sectional fit used are already ordered within student. They are
+ragged — the shortest student has ten courses and the longest fifteen, which
+`sequence_summary()` reports per group class.
 
 ## Staged estimation: deciding the measurement model first
 
@@ -339,22 +422,28 @@ with that measurement held fixed, so the profiles mean the same thing before
 and after.
 
 ```r
-staged <- fit_staged(students, c("reading", "maths", "engagement"),
-                     "student_id", n_profiles = 3, n_group_classes = 2, seed = 42)
+staged <- fit_staged(course_engagement, activity, "student",
+                     n_profiles = 2, n_group_classes = 2, seed = 1)
 
 as.data.frame(staged, what = "stages")     # what each stage estimated and held
 as.data.frame(staged, what = "profile_probabilities")
 ```
+
+On these data the two routes nearly agree, which is the reassuring case rather
+than the guaranteed one: the staged fit reaches -7618.67 against the joint
+fit's -7618.51 with the same 23 parameters, so holding the measurement costs
+almost nothing here and the group classes are describing the same two profiles
+either way.
 
 The result is an ordinary `multilpa` object, so every accessor, diagnostic and
 method works on it unchanged. A measurement solution already fitted and
 inspected can be carried in rather than refitted:
 
 ```r
-measurement <- multilpa(students, c("reading", "maths", "engagement"),
-                        "student_id", n_profiles = 3, n_group_classes = 1, seed = 42)
-staged <- fit_staged(students, c("reading", "maths", "engagement"), "student_id",
-                     n_profiles = 3, n_group_classes = 2, measurement = measurement)
+measurement <- multilpa(course_engagement, activity, "student",
+                        n_profiles = 2, n_group_classes = 1, seed = 1)
+staged <- fit_staged(course_engagement, activity, "student",
+                     n_profiles = 2, n_group_classes = 2, measurement = measurement)
 ```
 
 For finer control, `multilpa()` takes `fixed` directly, naming any of `"means"`,
@@ -364,8 +453,8 @@ counting towards `n_parameters`, so this is a different model rather than a
 different starting point for the same one.
 
 ```r
-multilpa(students, c("reading", "maths", "engagement"), "student_id",
-         n_profiles = 3, n_group_classes = 2,
+multilpa(course_engagement, activity, "student",
+         n_profiles = 2, n_group_classes = 2,
          start = starting_values(measurement, what = "measurement"),
          fixed = "variances")
 ```
@@ -401,13 +490,17 @@ measurement model and, on top of it, the probability of moving from each
 profile to each profile between consecutive occasions.
 
 ```r
-moves <- fit_transitions(students, c("reading", "maths", "engagement"),
-                         "student_id", n_profiles = 3, time = "term", seed = 42)
+moves <- fit_transitions(course_engagement, activity, "student",
+                         n_profiles = 2, time = "sequence", seed = 1)
 
 transitions(moves)                          # one row per ordered pair of profiles
 as.data.frame(moves, what = "initial")      # where sequences start
 as.data.frame(moves, what = "sequence_lengths")
 ```
+
+Engagement is sticky in both directions here: an enrolment in the engaged
+profile is followed by another with probability 0.86, and a disengaged one by
+another disengaged with probability 0.81.
 
 Profiles keep the same meaning at every occasion, because the measurement
 parameters are shared across occasions, so a change of profile is a change of
@@ -420,9 +513,9 @@ distribution and its own transition matrix, which separates groups that differ
 in how they move from groups that differ only in where they start.
 
 ```r
-mixture <- fit_transitions(students, c("reading", "maths", "engagement"),
-                           "student_id", n_profiles = 3, n_group_classes = 2,
-                           time = "term", seed = 42)
+mixture <- fit_transitions(course_engagement, activity, "student",
+                           n_profiles = 2, n_group_classes = 2,
+                           time = "sequence", seed = 1)
 transitions(mixture)
 ```
 
@@ -448,6 +541,10 @@ was meant to describe. The three-step approach fits the measurement model first,
 then carries the classification and its error into a second stage, so the
 classes stay fixed.
 
+`previous_grade` is what makes this section runnable on bundled data:
+`multilpa()` never sees it, so it is genuinely a variable the classes did not
+define.
+
 ```r
 # The classification error matrix, P(assigned | true), at either level.
 classification_errors(fit)
@@ -456,23 +553,42 @@ classification_errors(fit, level = "groups")
 # Bolck-Croon-Hagenaars weights, the inverse of that matrix by modal class.
 bch_weights(fit)                                     # one row per unit and class
 
-# A distal outcome the classes did not define, corrected for misclassification.
-three_step(fit, data = students, outcome = "exam_score")
-three_step(fit, data = students, outcome = "exam_score", contrast = "pairs")
-three_step(fit, data = students, outcome = "exam_score", method = "modal")
-three_step(fit, data = students, outcome = "exam_score",
+# A variable the classes did not define, corrected for misclassification.
+three_step(fit, data = course_engagement, outcome = "previous_grade")
+three_step(fit, data = course_engagement, outcome = "previous_grade",
+           contrast = "pairs")
+three_step(fit, data = course_engagement, outcome = "previous_grade",
+           method = "modal")
+three_step(fit, data = course_engagement, outcome = "previous_grade",
            vcov_type = "independent")               # unclustered, and labelled as such
 
 # Covariates predicting class membership (Vermunt 2010 R3STEP), errors fixed.
-r3step(fit, data = students, covariates = c("age", "prior_attainment"))
-r3step(fit, data = students, covariates = "school_resources", level = "groups")
-r3step(fit, data = students, covariates = "age", vcov_type = "robust")
+r3step(fit, data = course_engagement, covariates = "previous_grade")
+r3step(fit, data = course_engagement, covariates = "previous_grade",
+       vcov_type = "robust")
 ```
 
 `three_step()` defaults to `method = "bch"`, which is robust to the outcome
 being unrelated to class membership. `"modal"` ignores classification error and
 is biased toward the null; `"proportional"` weights by the posterior. `r3step()`
 returns the multinomial logits with standard errors.
+
+The two verbs answer different questions about the same column, which is why
+both are shown on it. `three_step()` describes the classes: BCH puts mean
+`previous_grade` at 0.221 in the engaged profile and -0.315 in the disengaged
+one, a gap of 0.536 (SE 0.050). `r3step()` runs the regression the design
+actually supports, because the grade was earned in the course *before* the
+enrolment being classified: a one standard deviation higher previous grade
+raises the log odds of the engaged profile by 0.574 (SE 0.062, 95% CI 0.453 to
+0.695), and 0.574 (SE 0.057) with `vcov_type = "robust"`. The same covariate
+estimated jointly with the measurement model by `fit_covariates()` gives 0.440
+(SE 0.074) — a smaller coefficient, because there the covariate is also allowed
+to move the profiles it is predicting.
+
+`level = "groups"` is available to both verbs and needs a covariate that is
+constant within a group; `previous_grade` varies from course to course, so
+asking for it at the student level is refused with `multilpa_bad_outcome`
+rather than silently averaged.
 
 Both verbs default to a cluster-robust variance over the fit's groups, and both
 **refuse it** with `multilpa_too_few_groups` when there are not more independent
@@ -523,7 +639,7 @@ failed to converge appear as crosses on the baseline rather than being dropped.
 No visual constant is hard-coded. Pass any of them inline:
 
 ```r
-plot(fit, palette = c("#0072B2", "#D55E00", "#CC79A7"),
+plot(fit, palette = c("#0072B2", "#D55E00"),
      panel_fill = "#FFFFFF", point_size = 1.8, line_width = 3,
      main = "My title", subtitle = "My subtitle", labels = FALSE)
 ```
@@ -622,7 +738,7 @@ vignette("multilpa")
 ```sh
 Rscript -e 'pkgload::load_all("."); testthat::test_dir("tests/testthat")'
 R CMD build .
-R CMD check --no-manual multilpa_0.11.0.tar.gz
+R CMD check --no-manual multilpa_0.11.1.tar.gz
 ```
 
 `pkgload` is only a development convenience. Installed-package testing via

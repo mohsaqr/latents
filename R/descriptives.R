@@ -55,18 +55,16 @@
 #' @seealso [multilpa()] to fit, [diagnostics()] for the after-the-fit
 #'   counterpart.
 #' @examples
-#' descriptives(school_engagement,
-#'              vars = c("homework_hours", "participation", "interest"),
-#'              id = "school")
+#' activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+#' descriptives(course_engagement, vars = activity, id = "student")
 #'
 #' # A missing stratifier is a stratum of its own, not a silent loss and not
 #' # missingness invented in a variable that has none.
 #' descriptives(data.frame(cohort = c("A", "A", "B", NA), score = 1:4),
 #'              vars = "score", by = "cohort")
 #'
-#' fit <- multilpa(school_engagement,
-#'                 c("homework_hours", "participation", "interest"),
-#'                 id = "school", n_profiles = 2, n_group_classes = 2,
+#' fit <- multilpa(course_engagement, vars = activity, id = "student",
+#'                 n_profiles = 2, n_group_classes = 2,
 #'                 n_starts = 4, seed = 1)
 #' descriptives(fit)
 #' descriptives(fit, by = "profile")

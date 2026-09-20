@@ -32,9 +32,9 @@ section is what [summary()], [diagnostics()] and [plot()] return, and the
 tables are reachable from those rather than from here.
 }
 \examples{
-fit <- multilpa(school_engagement,
-                c("homework_hours", "participation", "interest"),
-                id = "school", n_profiles = 2, n_group_classes = 2,
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit <- multilpa(course_engagement, vars = activity, id = "student",
+                n_profiles = 2, n_group_classes = 2,
                 n_starts = 4, seed = 1)
 report(fit, plots = FALSE)
 }

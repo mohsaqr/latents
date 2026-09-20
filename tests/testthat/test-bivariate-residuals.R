@@ -56,7 +56,7 @@ test_that("the table is tidy, complete and correctly weighted", {
 
   expect_named(residuals, c("profile", "indicator_1", "indicator_2", "kind",
                             "observed", "expected", "residual", "effective_n",
-                            "statistic", "df", "p_value"))
+                            "statistic", "df", "p_value", "p_adjusted"))
   # three pairs for three indicators, assessed in each of two profiles
   expect_equal(nrow(residuals), 3L * 2L)
   expect_setequal(unique(residuals$profile), c("profile_1", "profile_2"))
@@ -157,5 +157,30 @@ test_that("a single indicator has no pair to assess", {
   expect_equal(nrow(residuals), 0L)
   expect_named(residuals, c("profile", "indicator_1", "indicator_2", "kind",
                             "observed", "expected", "residual", "effective_n",
-                            "statistic", "df", "p_value"))
+                            "statistic", "df", "p_value", "p_adjusted"))
+})
+
+test_that("the residual table corrects for the number of pairs it tests", {
+  skip_on_cran()
+  activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+  fit <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+                  n_group_classes = 2, n_starts = 4, seed = 1)
+
+  # `attendance` is generated from the click measures, so these indicators are
+  # deliberately locally dependent and the table has real findings in it. Ten
+  # pairs are tested at once, which is what `adjust` is for.
+  unadjusted <- bivariate_residuals(fit, by = "overall")
+  expect_true("p_adjusted" %in% names(unadjusted))
+  # The default leaves the column equal to the raw p-value rather than absent,
+  # so a caller reading `p_adjusted` always gets the stated correction.
+  expect_equal(unadjusted$p_adjusted, unadjusted$p_value)
+
+  adjusted <- bivariate_residuals(fit, by = "overall", adjust = "BH")
+  expect_equal(adjusted$p_value, unadjusted$p_value)
+  expect_true(all(adjusted$p_adjusted >= adjusted$p_value))
+  # Correction can only remove findings, never create them.
+  expect_lte(sum(adjusted$p_adjusted < 0.05), sum(adjusted$p_value < 0.05))
+  expect_gt(sum(adjusted$p_adjusted < 0.05), 0L)
+
+  expect_error(bivariate_residuals(fit, adjust = "not_a_method"))
 })
