@@ -13,7 +13,7 @@
 
 test_that("KIC and CLC are the criteria their definitions say they are", {
   data <- .release_fixture()
-  fit <- suppressWarnings(multilpa(data, c("a", "b"), "g", 2L, 2L,
+  fit <- quietly(multilpa(data, c("a", "b"), "g", 2L, 2L,
                                    n_starts = 3, seed = 1))
   criteria <- information_criteria(fit, format = "long")
   q <- fit$n_parameters
@@ -46,7 +46,7 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
 
 test_that("the criteria table keeps its shape as criteria are added", {
   data <- .release_fixture()
-  fit <- suppressWarnings(multilpa(data, c("a", "b"), "g", 2L, 2L,
+  fit <- quietly(multilpa(data, c("a", "b"), "g", 2L, 2L,
                                    n_starts = 2, seed = 1))
   criteria <- information_criteria(fit, format = "long")
   expect_named(criteria, c("criterion", "convention", "n", "value"))
@@ -74,7 +74,7 @@ test_that("the criteria table keeps its shape as criteria are added", {
 
 test_that("the measurement tables carry their own standard errors when asked", {
   data <- .release_fixture()
-  fit <- suppressWarnings(multilpa(data, c("a", "b", "q"), "g", 2L, 1L,
+  fit <- quietly(multilpa(data, c("a", "b", "q"), "g", 2L, 1L,
     categorical = "q", n_starts = 3, seed = 1))
   bare <- as.data.frame(fit)
   with_errors <- as.data.frame(fit, data = data)
@@ -110,7 +110,7 @@ test_that("asking for errors a fit cannot supply raises rather than returning bl
   data <- .release_fixture()
   transitions_data <- data
   transitions_data$t <- rep(seq_len(8), times = 20)
-  transition_fit <- suppressWarnings(fit_transitions(transitions_data,
+  transition_fit <- quietly(fit_transitions(transitions_data,
     c("a", "b"), "g", n_profiles = 2L, time = "t", n_starts = 2, seed = 1))
   # The transition family has no standard errors, so the measurement table
   # must refuse the request instead of filling the columns with NA.

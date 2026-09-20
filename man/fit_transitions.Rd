@@ -46,11 +46,18 @@ a mixture of transition models over groups.}
 covariance matrices) or `"equal"` (shared across profiles).}
 
 \item{n_starts}{Positive integer number of EM starts. When `start` is supplied,
-it supplies the first start; remaining starts are random initializations.}
+it supplies the first start; remaining starts are random initializations.
+It is ignored when `max_iter = 0` and `start` is supplied: that call
+evaluates the supplied parameters and nothing else, so exactly one start is
+run whatever `n_starts` says.}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-`max_iter = 0` performs no update and returns the model evaluated at
-`start`, so that `logLik()` scores a parameter set supplied from elsewhere.}
+`max_iter = 0` performs no update. With `start`, it returns the model
+evaluated at exactly those values, whatever `n_starts` is, so that
+`logLik()` scores a parameter set supplied from elsewhere rather than the
+best of some random initializations that were never asked for. Without
+`start` there is nothing to evaluate at, so the random initializations are
+scored and the highest is returned.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
 absolute change no greater than `tol * (1 + abs(previous log likelihood))`.}
@@ -124,6 +131,12 @@ Transitions are first order and homogeneous over occasions: the
   [transitions()] and is listed by `transitions(fit, estimated = FALSE)`.
   Profile labels are arbitrary and
   are not comparable across fits without alignment.
+
+  `max_iter = 0` updates nothing: the starting values are evaluated and
+  returned with the expectation they imply, and the fit reports
+  `converged = FALSE` after zero iterations. Every reported quantity,
+  including `expected_count` and the implied profile prevalence, is then
+  read off that single expectation.
 }
 \examples{
 # Forty people measured on six occasions, mostly staying where they are.

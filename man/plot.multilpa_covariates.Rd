@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{multilpa_covariates}(
   x,
-  what = c("profiles", "sequences"),
+  what = c("profiles", "sequences", "entropy", "posteriors"),
   scale = c("raw", "standardized"),
   labels = TRUE,
   main = NULL,
@@ -24,7 +24,10 @@
 
 \item{what}{`"profiles"` (the default) draws the measurement model;
 `"sequences"` draws the assignments in course order and needs a fit made
-with `time =`.}
+with `time =`. `"entropy"` and `"posteriors"` draw the two case-level
+classification diagnostics exactly as [plot.multilpa()] draws them: they
+read the individual posteriors, which a covariate fit has, and say nothing
+about prevalence, which it does not.}
 
 \item{scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, ...}{Passed through as in [plot.multilpa()].}
 }

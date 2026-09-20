@@ -28,7 +28,7 @@ set.seed(8)
 example_data <- data.frame(group = rep(seq_len(12), each = 5),
                            score_a = rnorm(60), score_b = rnorm(60))
 fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
-                            2, n_starts = 2, seed = 1)
+                            n_profiles = 2, n_starts = 2, seed = 1)
 summary(fit)
 as.data.frame(summary(fit), what = "random_intercepts")
 }

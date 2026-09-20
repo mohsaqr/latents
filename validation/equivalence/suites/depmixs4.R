@@ -19,9 +19,9 @@
 # only then does agreement say that both found the same maximum.
 
 suite_depmixs4 <- function() {
-  if (!requireNamespace("depmixS4", quietly = TRUE)) {
-    stop("suite 'depmixs4' needs the depmixS4 package")
-  }
+  require_suite_packages(
+    "depmixS4",
+    reason = "the independent hidden-Markov reference this suite compares transitions against")
   cases <- list(
     list(dataset = "gaussian-2-profile", profiles = 2L, categorical = FALSE,
          groups = 80L, occasions = 6L, seed = 101L),
@@ -108,10 +108,14 @@ suite_depmixs4 <- function() {
                            seed, drop = 0) {
   frame <- .depmixs4_data(profiles, groups, occasions, seed, categorical, drop)
   indicators <- c("y1", "y2", if (categorical) "c1")
-  fit <- suppressWarnings(fit_transitions(
+  # Warnings are not suppressed here. The harness counts every warning a suite
+  # raises and records the first one in suites.csv, so a start that hit its
+  # iteration cap is visible in the evidence rather than hidden by the call
+  # that produced it.
+  fit <- fit_transitions(
     frame, indicators, "g", n_profiles = profiles, time = "t",
     categorical = if (categorical) "c1" else character(),
-    n_starts = 8, seed = seed, max_iter = 2000, tol = 1e-12))
+    n_starts = 8, seed = seed, max_iter = 2000, tol = 1e-12)
   formulas <- lapply(indicators, function(name) stats::as.formula(paste(name, "~ 1")))
   families <- c(list(stats::gaussian(), stats::gaussian()),
                 if (categorical) list(depmixS4::multinomial("identity")))
@@ -131,8 +135,8 @@ suite_depmixs4 <- function() {
   # Claim two: the same maximum, found independently. depmixS4 searches from
   # its own start; agreement then says both optimizers reached the same mode.
   set.seed(seed)
-  theirs <- suppressWarnings(depmixS4::fit(model, verbose = FALSE, emcontrol =
-    depmixS4::em.control(maxit = 2000, tol = 1e-12)))
+  theirs <- depmixS4::fit(model, verbose = FALSE, emcontrol =
+    depmixS4::em.control(maxit = 2000, tol = 1e-12))
   their_pars <- depmixS4::getpars(theirs)
   same_maximum <- compare_values(
     quantity = "maximized log likelihood",

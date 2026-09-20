@@ -145,7 +145,7 @@ test_that("a class with no modal members reports undefined, not zero", {
 test_that("Cramer's V matches an independent computation", {
   # Calibration against stats::chisq.test, not against our own arithmetic.
   counts <- matrix(c(30, 10, 5, 55), 2L, 2L)
-  reference <- suppressWarnings(stats::chisq.test(counts, correct = FALSE))
+  reference <- quietly(stats::chisq.test(counts, correct = FALSE))
   expect_equal(.multilpa_cramers_v(counts),
                sqrt(unname(reference$statistic) / sum(counts)))
   # For a two-by-two table Cramer's V is the absolute indicator correlation.
@@ -153,7 +153,7 @@ test_that("Cramer's V matches an independent computation", {
                      b = rep(c(0, 1, 0, 1), c(30, 5, 10, 55)))
   expect_equal(.multilpa_cramers_v(counts), abs(stats::cor(long$a, long$b)))
   three <- matrix(c(20, 5, 3, 4, 18, 25), 3L, 2L)
-  reference_three <- suppressWarnings(stats::chisq.test(three, correct = FALSE))
+  reference_three <- quietly(stats::chisq.test(three, correct = FALSE))
   expect_equal(.multilpa_cramers_v(three),
                sqrt(unname(reference_three$statistic) / (sum(three) * 1L)))
   # A product of its own margins carries no association at all.

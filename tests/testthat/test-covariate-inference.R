@@ -40,8 +40,18 @@ test_that("standard errors reproduce a genuine Mplus covariate run", {
   # opposite of this package's, so the group-level signs are mirrored.
   expect_equal(value("z"), -1.008, tolerance = 5e-4)
   expect_equal(error("z"), 0.117, tolerance = 5e-3)
-  expect_equal(value("group_class_1"), 1.662, tolerance = 5e-4)
-  expect_equal(error("group_class_1"), 0.152, tolerance = 5e-3)
+  # Both group-class labellings are the same maximum: every start reaches it to
+  # within 3e-11, so which label carries which intercept is decided by the last
+  # bits and is not a property of the model. Assert the pair, not the labelling
+  # -- the same reason `w` and `(Intercept)` below are wrapped in `abs()`.
+  group_estimates <- sort(membership$estimate[grepl("^group_class",
+                                                    membership$term)])
+  expect_equal(group_estimates, sort(c(1.662, 1.662 - 3.233)),
+               tolerance = 5e-4)
+  # The intercept Mplus reports carries its standard error whichever label it
+  # lands on, so pair the error with the estimate rather than with the name.
+  reported <- which.min(abs(membership$estimate - 1.662))
+  expect_equal(membership$standard_error[reported], 0.152, tolerance = 5e-3)
   expect_equal(abs(value("w")), 0.740, tolerance = 5e-4)
   expect_equal(error("w"), 0.311, tolerance = 5e-3)
   expect_equal(abs(value("(Intercept)")), 0.214, tolerance = 5e-3)
@@ -60,7 +70,8 @@ test_that("the group-class contrast matches Mplus through vcov()", {
 
   # Mplus reports CW#1 ON CB#1 = -3.233 (S.E. 0.226); this package carries one
   # intercept per group class, whose difference is the same quantity.
-  expect_equal(sum(contrast * estimates), -3.233, tolerance = 1e-3)
+  # Signed only up to the group-class labelling; its magnitude is the quantity.
+  expect_equal(abs(sum(contrast * estimates)), 3.233, tolerance = 1e-3)
   expect_equal(sqrt(drop(contrast %*% covariance[rows, rows] %*% contrast)),
                0.226, tolerance = 5e-3)
 })

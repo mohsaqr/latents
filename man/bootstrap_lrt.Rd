@@ -37,9 +37,11 @@ model stores.}
 \value{
 An object of class `multilpa_bootstrap_lrt`, carrying the observed
   statistic, the finite-simulation corrected p-value, its Monte Carlo
-  standard error, and one record per replicate. Read it with the verbs that
-  describe it: [as.data.frame()] gives one row per simulated replicate,
-  `as.data.frame(what = "test")` the single-row test result, [summary()] the
+  standard error, the measurement blocks held fixed in every fit, and one
+  record per replicate. Read it with the verbs that describe it:
+  [as.data.frame()] gives the single-row test result,
+  `as.data.frame(what = "replicates")` one row per simulated replicate,
+  [summary()] the
   test beside the replicate diagnostics, and [plot()] the simulated null
   distribution with the observed statistic marked. Inspect failed starts,
   boundary flags and likelihood replication before interpreting results.
@@ -53,7 +55,39 @@ parametric bootstrap, not an implementation of Mplus TECH14. It does not use
 a chi-square reference distribution. Any failed/nonconverged or reversed
 replicate makes the p-value NA, avoiding silent deletion of difficult fits.
 }
+\details{
+Models fitted with `fixed`, including those from [fit_staged()], are
+supported: every replicate is refitted with the same blocks held at the same
+values, so the simulated statistics compare the same two constrained models
+as the observed statistic does. The p-value is then conditional on that
+measurement solution, which is treated as known and whose own uncertainty is
+not propagated. A constrained pair whose nesting cannot be established is
+refused rather than given a p-value.
+}
+\section{Conditions}{
+
+  `multilpa_bad_nesting` when only one of the two models holds measurement
+  blocks fixed, when they hold different blocks, when they hold the same
+  blocks at different values, when they hold a measurement fixed while
+  differing in the number of profiles (the held blocks then have different
+  shapes, so the null is not a restriction of the alternative), or when the
+  alternative does not estimate more free parameters than the null.
+  `multilpa_failed_replicates` is warned when some replicate fails
+  validation, and the p-value is `NA`.
+}
+
 \examples{
-# After fitting nested models on d:
-# bootstrap_lrt(smaller, larger, d, iter = 199, seed = 1)
+set.seed(1)
+example_data <- data.frame(
+  school = rep(seq_len(10), each = 10),
+  score = rnorm(100, rep(c(-2, 2), each = 50))
+)
+smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+                    n_group_classes = 1, n_starts = 2, seed = 1)
+larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+                   n_group_classes = 1, n_starts = 2, seed = 1)
+# `iter` is small so the example runs quickly; use many more for inference.
+comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+                            max_iter = 2000, tol = 1e-6, seed = 1)
+comparison
 }

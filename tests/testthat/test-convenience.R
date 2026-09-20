@@ -46,18 +46,18 @@ test_that("the round trip is exact for every model family", {
 
 test_that("inference no longer has to be handed data it already holds", {
   fit <- .convenience_fit()
-  expect_equal(suppressWarnings(parameter_inference(fit)),
-               suppressWarnings(parameter_inference(fit, school_engagement)))
+  expect_equal(quietly(parameter_inference(fit)),
+               quietly(parameter_inference(fit, school_engagement)))
   expect_identical(bivariate_residuals(fit),
                    bivariate_residuals(fit, school_engagement))
-  expect_equal(suppressWarnings(vcov(fit)),
-               suppressWarnings(vcov(fit, school_engagement)))
-  expect_equal(suppressWarnings(confint(fit)),
-               suppressWarnings(confint(fit, data = school_engagement)))
+  expect_equal(quietly(vcov(fit)),
+               quietly(vcov(fit, school_engagement)))
+  expect_equal(quietly(confint(fit)),
+               quietly(confint(fit, data = school_engagement)))
   # A supplied frame is still validated against the fit, so the guard that
   # catches the wrong data has not been traded away for the convenience.
   wrong <- transform(school_engagement, homework_hours = homework_hours + 1)
-  expect_error(suppressWarnings(parameter_inference(fit, wrong)),
+  expect_error(quietly(parameter_inference(fit, wrong)),
                class = "multilpa_bad_inference_data")
 })
 
@@ -158,13 +158,21 @@ test_that("diagnostics draws only when asked", {
 test_that("report prints everything and returns the fit", {
   fit <- .convenience_fit()
   draw({
-    expect_identical(suppressWarnings(report(fit, plots = FALSE)), fit)
+    expect_identical(quietly(report(fit, plots = FALSE)), fit)
     expect_output(report(fit, plots = FALSE), "Classification quality")
     expect_output(report(fit, plots = FALSE), "Profile means")
-    # Drawing the bars now computes intervals from the fit's own data, so a
-    # loosely converged fit is told so even through a convenience verb. The
-    # warning is the package doing its job; it is asserted, not silenced.
-    expect_warning(report(fit, plots = TRUE), "non-negligible score")
+    # Drawing the bars computes intervals from the fit's own data, so a loosely
+    # converged fit is told so even through a convenience verb. The warning is
+    # the package doing its job; it is asserted, not silenced.
+    #
+    # This previously used the default-tolerance fit above and so pinned a
+    # miscalibration: the check cut a fixed 0.01 on the scaled score, which on
+    # 720 observations fires at a displacement of 0.17% of a standard error.
+    # The criterion is now that displacement itself, so the fixture has to be
+    # genuinely loose to trip it.
+    loose <- .convenience_fit(tol = 1e-4)
+    expect_warning(report(loose, plots = TRUE),
+                   class = "multilpa_unconverged")
     tight <- multilpa(school_engagement,
                       c("homework_hours", "participation", "interest"),
                       id = "school", n_profiles = 2, n_group_classes = 2,
@@ -172,6 +180,10 @@ test_that("report prints everything and returns the fit", {
     # No warning, rather than no noise: report() prints by design, so
     # expect_silent() would fail on its own output.
     expect_warning(utils::capture.output(report(tight, plots = TRUE)),
+                   regexp = NA)
+    # And the ordinary default-tolerance fit is quiet too, which is the point of
+    # the recalibration: the happy path must not carry a qualification.
+    expect_warning(utils::capture.output(report(fit, plots = TRUE)),
                    regexp = NA)
   })
 })
@@ -226,7 +238,7 @@ test_that("assignments refuse a frame that cannot be aligned", {
   # Too few rows: silently recycling or truncating would be the alignment bug
   # this verb exists to prevent.
   expect_error(assignments(fit, data = school_engagement[seq_len(10L), ]),
-               class = "multilpa_bad_nesting")
+               class = "multilpa_bad_inference_data")
   # A column the assignments would overwrite is an error, not a replacement.
   expect_error(assignments(fit, data = transform(school_engagement, profile = 1L)),
                class = "multilpa_bad_data")

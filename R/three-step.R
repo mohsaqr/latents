@@ -173,6 +173,14 @@ bch_weights <- function(x, level = c("individuals", "groups")) {
 #'   differences, passed to [stats::p.adjust()]. `"BH"` by default; `"none"`
 #'   leaves the p-values uncorrected. Ignored for `contrast = "none"`, which
 #'   tests nothing.
+#' @param vcov_type `"cluster"`, the default, sums the influence contributions
+#'   within the fit's groups and takes those groups as the independent units,
+#'   which is the honest choice when the outcome is measured on observations
+#'   nested inside them. `"independent"` treats every observation as its own
+#'   independent unit instead. That ignores the nesting the model was fitted to
+#'   and is only defensible when there is no nesting left to ignore, such as a
+#'   fit with a single group; it is never substituted silently, and the choice
+#'   is recorded in the result's `vcov_type` attribute.
 #' @return A base `data.frame`. For `contrast = "none"` it has one row per class
 #'   and the columns `level`, `method`, `class`, `estimate`, `standard_error`,
 #'   `conf_low`, `conf_high` and `effective_n`. It carries no `statistic` or
@@ -185,12 +193,25 @@ bch_weights <- function(x, level = c("individuals", "groups")) {
 #'   `reference_class`), `standard_error`, `statistic`, `p_value`,
 #'   `p_value_adjusted`, `conf_low` and `conf_high`, matching [r3step()].
 #'
-#'   Standard errors are cluster-robust in both shapes, taking the fit's groups
-#'   as the independent units, so they remain honest when the outcome is
-#'   measured on observations nested inside those groups. The correction applied
-#'   to `p_value_adjusted` is recorded in the result's `adjust` attribute.
+#'   Standard errors are cluster-robust in both shapes under the default
+#'   `vcov_type = "cluster"`, taking the fit's groups as the independent units,
+#'   so they remain honest when the outcome is measured on observations nested
+#'   inside those groups; `vcov_type = "independent"` gives the unclustered
+#'   variance instead. The variance that was used is recorded in the result's
+#'   `vcov_type` attribute, and for `contrast = "pairs"` the correction applied
+#'   to `p_value_adjusted` is recorded in its `adjust` attribute. A
+#'   `contrast = "none"` table tests nothing, so it carries no `adjust`
+#'   attribute.
 #' @details The correction assumes the outcome is independent of the assigned
 #'   class given the true one, which is what makes a three-step method valid.
+#'
+#'   A cluster-robust variance is the sum of one outer product per independent
+#'   unit, and those contributions sum to zero at the estimate, so it has rank
+#'   at most one less than the number of units. With a single group it is
+#'   exactly zero and with as many groups as classes it is singular. Both are
+#'   refused with `multilpa_too_few_groups` rather than reported as a very
+#'   small standard error; `vcov_type = "independent"` is the labelled way to
+#'   ask for the unclustered variance instead.
 #'
 #'   The error matrix is treated as known rather than estimated, so the intervals
 #'   are optimistic and the amount is worth stating. Over 60 replications of a
@@ -225,11 +246,13 @@ three_step <- function(x, data, outcome,
                        method = c("bch", "proportional", "modal"),
                        ci_level = 0.95, contrast = c("none", "pairs"),
                        adjust = c("BH", "holm", "hochberg", "hommel",
-                                    "bonferroni", "BY", "none")) {
+                                    "bonferroni", "BY", "none"),
+                       vcov_type = c("cluster", "independent")) {
   level <- match.arg(level)
   method <- match.arg(method)
   contrast <- match.arg(contrast)
   adjust <- match.arg(adjust)
+  vcov_type <- match.arg(vcov_type)
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`outcome` must name a single column of `data`" =
@@ -258,19 +281,33 @@ three_step <- function(x, data, outcome,
   ## given a standard error from the same quantities, rather than assuming the
   ## two means are independent when they share every unit.
   influence <- sweep(weights * outer(values, estimates, "-"), 2L, totals, "/")
-  clustered <- rowsum(influence, pieces$group_index, reorder = FALSE)
+  units <- if (identical(vcov_type, "cluster")) {
+    pieces$group_index
+  } else seq_len(nrow(influence))
+  clustered <- rowsum(influence, units, reorder = FALSE)
+  .multilpa_require_clusters(
+    nrow(clustered), pieces$n_classes,
+    what = "A cluster-robust standard error for the class outcome means",
+    unit = if (identical(vcov_type, "cluster")) "independent groups" else "observations",
+    alternative = if (identical(vcov_type, "cluster")) {
+      paste("`vcov_type = \"independent\"` treats every observation as its own",
+            "unit instead, which ignores the nesting and must be reported as",
+            "having done so.")
+    })
 
   if (identical(contrast, "pairs")) {
     return(.multilpa_step_pairs(estimates, clustered, level, method, quantile,
-                                adjust))
+                                adjust, vcov_type))
   }
   errors <- sqrt(colSums(clustered^2))
-  data.frame(level = level, method = method, class = classes,
-             estimate = estimates, standard_error = errors,
-             conf_low = estimates - quantile * errors,
-             conf_high = estimates + quantile * errors,
-             effective_n = totals^2 / colSums(weights^2),
-             row.names = NULL, stringsAsFactors = FALSE)
+  result <- data.frame(level = level, method = method, class = classes,
+                       estimate = estimates, standard_error = errors,
+                       conf_low = estimates - quantile * errors,
+                       conf_high = estimates + quantile * errors,
+                       effective_n = totals^2 / colSums(weights^2),
+                       row.names = NULL, stringsAsFactors = FALSE)
+  attr(result, "vcov_type") <- vcov_type
+  result
 }
 
 #' Pairwise differences between class outcome means
@@ -280,10 +317,11 @@ three_step <- function(x, data, outcome,
 #' @param level,method The call's level and method, carried into the result.
 #' @param quantile The normal quantile for the interval.
 #' @param adjust A [stats::p.adjust()] method applied across the pairs.
+#' @param vcov_type The variance requested, carried into the result's attribute.
 #' @return One row per unordered pair of classes.
 #' @noRd
 .multilpa_step_pairs <- function(estimates, clustered, level, method, quantile,
-                                 adjust) {
+                                 adjust, vcov_type) {
   n_classes <- length(estimates)
   if (n_classes < 2L) {
     stop(errorCondition(
@@ -305,6 +343,7 @@ three_step <- function(x, data, outcome,
     conf_high = difference + quantile * errors,
     row.names = NULL, stringsAsFactors = FALSE)
   attr(result, "adjust") <- adjust
+  attr(result, "vcov_type") <- vcov_type
   result
 }
 
@@ -370,7 +409,13 @@ three_step <- function(x, data, outcome,
 #' @param ci_level Confidence level for the intervals.
 #' @param vcov_type `"observed"` uses the observed information; `"robust"` uses
 #'   the sandwich clustered on the fit's groups, which is the honest choice when
-#'   the covariates are measured on observations nested inside them.
+#'   the covariates are measured on observations nested inside them. `"robust"`
+#'   needs more independent groups than the regression has coefficients, because
+#'   the group score contributions sum to zero at the estimate and so span at
+#'   most one dimension fewer than there are groups; with too few it is refused
+#'   with `multilpa_too_few_groups` rather than reporting a variance that is
+#'   singular, or, with a single group, numerically zero. `"observed"` remains
+#'   available there and does not allow for the nesting.
 #' @param adjust Multiplicity correction applied across the covariate terms,
 #'   passed to [stats::p.adjust()]. `"BH"` by default; `"none"` leaves the
 #'   p-values uncorrected. The family is every covariate term of every
@@ -383,7 +428,9 @@ three_step <- function(x, data, outcome,
 #'   by `adjust`, which is also recorded in the result's `adjust` attribute;
 #'   it is `NA` on the intercept rows, which are not part of the tested family.
 #'   Coefficients are log odds against the final class, which is the reference,
-#'   matching [fit_covariates()].
+#'   matching [fit_covariates()]; that class is named in the result's
+#'   `reference_class` attribute, and the variance that was used in its
+#'   `vcov_type` attribute.
 #' @details The error matrix is held fixed rather than estimated jointly, which
 #'   is what makes this a three-step method and what keeps the covariates from
 #'   reshaping the classes.
@@ -455,6 +502,15 @@ r3step <- function(x, data, covariates,
   by_assigned <- t(errors)[pieces$modal, , drop = FALSE]
   n_free <- pieces$n_classes - 1L
   shape <- function(theta) matrix(theta, ncol(design), n_free)
+  ## Refuse a sandwich the groups cannot support before paying for the fit.
+  if (identical(vcov_type, "robust")) {
+    .multilpa_require_clusters(
+      length(unique(pieces$group_index)), ncol(design) * n_free,
+      what = "A cluster-robust covariance for the membership regression",
+      alternative = paste("`vcov_type = \"observed\"` uses the model-based",
+                          "information instead, which does not allow for the",
+                          "nesting."))
+  }
 
   objective <- function(theta) {
     prior <- .multilpa_logit_prior(shape(theta), design)
@@ -484,7 +540,7 @@ r3step <- function(x, data, covariates,
   covariance <- information$inverse
   if (identical(vcov_type, "robust")) {
     scores <- rowsum(score_rows(fitted$par), pieces$group_index, reorder = FALSE)
-    covariance <- covariance %*% crossprod(scores) %*% covariance
+    covariance <- covariance %*% .multilpa_cross_product(scores) %*% covariance
   }
   .multilpa_r3step_frame(fitted$par, covariance, colnames(design), n_free,
                          pieces$n_classes, level, ci_level, vcov_type, adjust)

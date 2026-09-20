@@ -34,11 +34,18 @@ An object of class `multilpa_start`: the list [multilpa()] accepts as
   `group_probabilities`, plus `covariances` when the full-covariance
   parameterization is returned and `response_probabilities` when the object
   carries a categorical measurement model. `what = "measurement"` drops
-  `profile_probabilities` and `group_probabilities`. Dimension names are
-  dropped, matching what [multilpa()] expects of `start`, so the values are
-  indexed by position; read them with [as.data.frame()], which labels the
-  positions, rather than out of the list. The list payload is unchanged by
-  the class, so a `multilpa_start` can be passed straight back as `start`.
+  `profile_probabilities` and `group_probabilities`. The Gaussian blocks are
+  unnamed and indexed by position, matching what [multilpa()] expects of
+  `start`; read them with [as.data.frame()], which labels the positions,
+  rather than out of the list. `response_probabilities` is the exception: the
+  list keeps each indicator's name and each block keeps its category names,
+  because those labels are what lets [multilpa()] attach a block to the item
+  it was estimated for rather than to whichever item happens to sit in that
+  position. A fit that names its categorical indicators in another order, or
+  that has other categories, therefore refuses the start with
+  `multilpa_bad_start` instead of reporting a likelihood for a measurement
+  model it never held. The list payload is unchanged by the class, so a
+  `multilpa_start` can be passed straight back as `start`.
 }
 \description{
 Returns the starting-value list [multilpa()] accepts, taken from a fitted

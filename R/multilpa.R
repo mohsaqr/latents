@@ -256,11 +256,17 @@
 #' @param n_categories Integer vector of category counts, one per categorical
 #'   indicator, or `NULL` when every indicator is continuous.
 #' @param min_probability Lower bound applied to response probabilities.
-#' @return A validated copy without dimension names.
+#' @param categorical Indicator names, in the order this fit consumes them, or
+#'   `NULL` when no alignment by label is possible.
+#' @param levels Named list of category labels per categorical indicator, in
+#'   code order, or `NULL`.
+#' @return A validated copy without dimension names, with any labelled
+#'   categorical block aligned to this fit's indicator and category order.
 #' @noRd
 .multilpa_validate_start <- function(start, n_profiles, n_types, n_indicators,
                                    variance_model, min_variance, covariance_model = "diagonal",
-                                   n_categories = NULL, min_probability = 1e-10) {
+                                   n_categories = NULL, min_probability = 1e-10,
+                                   categorical = NULL, levels = NULL) {
   stopifnot(is.list(start), n_profiles >= 1L, n_types >= 1L,
             n_indicators >= 0L, min_variance > 0,
             "An all-categorical model needs `n_categories`" =
@@ -352,10 +358,75 @@
        group_probabilities = unname(group_probabilities / sum(group_probabilities)))
   if (!is.null(covariances)) result$covariances <- unname(covariances)
   if (!is.null(n_categories)) {
+    # Labels first, shape second: a block list carried over from another fit is
+    # attached to the item and the category its labels name, not to whichever
+    # position it happens to occupy here.
     result$response_probabilities <- .multilpa_validate_response_start(
-      start$response_probabilities, n_profiles, n_categories, min_probability)
+      .multilpa_align_response_start(start$response_probabilities,
+                                     categorical, levels),
+      n_profiles, n_categories, min_probability)
   }
   result
+}
+
+#' Align a labelled item-response start with this fit's own encoding
+#'
+#' Response blocks are consumed by position: the first block belongs to the
+#' first `categorical` indicator and its columns to that indicator's categories
+#' in code order. A block list carried over from another fit, or from a first
+#' stage, can therefore be attached to the wrong item, or a category to the
+#' wrong column, and every later number is silently wrong rather than visibly
+#' broken. Whenever the caller supplies labels -- names on the list, column
+#' names on a block -- the labels are the contract: the block is reordered to
+#' this fit's encoding, and a label naming an item or a category this fit does
+#' not have is refused, because there is no alignment to make.
+#'
+#' Unlabelled input keeps the documented positional contract unchanged.
+#'
+#' @param response_probabilities The caller's block list, possibly labelled.
+#' @param categorical Indicator names, in the order this fit consumes them.
+#' @param levels Named list of category labels per indicator, in code order, or
+#'   `NULL` to align the blocks only.
+#' @return The block list, unnamed, in this fit's item order with each block's
+#'   columns in this fit's category order. Raises `multilpa_bad_start` when a
+#'   supplied label cannot be aligned.
+#' @noRd
+.multilpa_align_response_start <- function(response_probabilities, categorical,
+                                           levels = NULL) {
+  # A list of the wrong length, or an object that is not a list at all, is
+  # reported by the shape validation that follows, in its own words.
+  if (!is.list(response_probabilities) || length(categorical) == 0L ||
+      length(response_probabilities) != length(categorical)) {
+    return(response_probabilities)
+  }
+  block_names <- names(response_probabilities)
+  if (!is.null(block_names) && !anyNA(block_names) && all(nzchar(block_names))) {
+    if (anyDuplicated(block_names) > 0L || !setequal(block_names, categorical)) {
+      stop(errorCondition(sprintf(
+        "start$response_probabilities is labelled %s, but this fit's categorical indicators are %s.",
+        paste(sprintf("\"%s\"", block_names), collapse = ", "),
+        paste(sprintf("\"%s\"", categorical), collapse = ", ")),
+        class = "multilpa_bad_start", call = NULL))
+    }
+    response_probabilities <- response_probabilities[categorical]
+  }
+  if (is.null(levels)) return(unname(response_probabilities))
+  unname(lapply(seq_along(categorical), function(index) {
+    block <- response_probabilities[[index]]
+    wanted <- levels[[categorical[[index]]]]
+    observed <- if (is.matrix(block)) colnames(block) else NULL
+    if (is.null(observed) || is.null(wanted)) return(block)
+    if (anyDuplicated(observed) > 0L || !setequal(observed, wanted)) {
+      stop(errorCondition(sprintf(
+        "start$response_probabilities for `%s` is labelled %s, but `%s` has categories %s here.",
+        categorical[[index]],
+        paste(sprintf("\"%s\"", observed), collapse = ", "),
+        categorical[[index]],
+        paste(sprintf("\"%s\"", wanted), collapse = ", ")),
+        class = "multilpa_bad_start", call = NULL))
+    }
+    block[, match(wanted, observed), drop = FALSE]
+  }))
 }
 
 #' Validate a user-supplied item-response starting block
@@ -500,9 +571,16 @@
 #'   covariance matrices) or `"equal"` (shared across profiles).
 #' @param n_starts Positive integer number of EM starts. When `start` is supplied,
 #'   it supplies the first start; remaining starts are random initializations.
+#'   It is ignored when `max_iter = 0` and `start` is supplied: that call
+#'   evaluates the supplied parameters and nothing else, so exactly one start is
+#'   run whatever `n_starts` says.
 #' @param max_iter Nonnegative integer maximum number of EM updates per start.
-#'   `max_iter = 0` performs no update and returns the model evaluated at
-#'   `start`, so that `logLik()` scores a parameter set supplied from elsewhere.
+#'   `max_iter = 0` performs no update. With `start`, it returns the model
+#'   evaluated at exactly those values, whatever `n_starts` is, so that
+#'   `logLik()` scores a parameter set supplied from elsewhere rather than the
+#'   best of some random initializations that were never asked for. Without
+#'   `start` there is nothing to evaluate at, so the random initializations are
+#'   scored and the highest is returned.
 #' @param tol Positive relative log-likelihood tolerance. Convergence requires
 #'   absolute change no greater than `tol * (1 + abs(previous log likelihood))`.
 #' @param min_variance Positive lower bound on each variance, or each covariance
@@ -515,6 +593,15 @@
 #'   `group_probabilities` (vector). Starting probabilities must be positive.
 #'   For full covariance, supply `covariances` (indicators by indicators by
 #'   profiles); `variances` may be omitted or must match their diagonals.
+#'   A categorical model also takes `response_probabilities`, a list of one
+#'   profiles-by-categories matrix per indicator named in `categorical`. That
+#'   list is read by position unless it is labelled: name its elements after the
+#'   indicators, or its columns after the categories, and each block is matched
+#'   to the indicator and category its labels name, so a differently ordered
+#'   `categorical` or a differently ordered set of factor levels cannot attach a
+#'   distribution to the wrong item. A label naming an indicator or a category
+#'   this fit does not have raises `multilpa_bad_start` rather than being
+#'   aligned by position.
 #' @param categorical Character vector naming indicators to treat as
 #'   categorical. Each is modelled by unrestricted, profile-specific response
 #'   probabilities over its observed categories, which is the latent class
@@ -669,7 +756,8 @@ multilpa <- function(data, vars, id, n_profiles,
   if (!is.null(start)) {
     start <- .multilpa_validate_start(start, n_profiles, n_group_classes,
                                     ncol(x), variance_model, min_variance,
-                                    covariance_model, n_categories, min_probability)
+                                    covariance_model, n_categories, min_probability,
+                                    categorical, encoded$levels)
   }
   if (!is.null(seed)) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
@@ -693,6 +781,12 @@ multilpa <- function(data, vars, id, n_profiles,
   }
   if (!is.null(start)) start$means <- sweep(start$means, 2L, centers, "-")
   held <- .multilpa_held_parameters(start, fixed, covariance_model)
+  # `max_iter = 0` performs no update, so a restart cannot improve on anything:
+  # scoring extra random initializations and keeping the highest would return a
+  # parameter set nobody supplied in place of the one the caller asked to have
+  # evaluated. Evaluate-only with a `start` therefore uses that start alone, and
+  # `as.data.frame(fit, what = "starts")` shows the single start that was run.
+  if (max_iter == 0L && !is.null(start)) n_starts <- 1L
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
       initial <- if (start_index == 1L && !is.null(start)) start else {
@@ -731,11 +825,18 @@ multilpa <- function(data, vars, id, n_profiles,
   group_posteriors <- best$expectation$group_posteriors
   dimnames(subject_posteriors) <- list(rownames(data), profile_names)
   dimnames(group_posteriors) <- list(group_ids, type_names)
-  n_parameters <- .multilpa_count_parameters(n_profiles, n_group_classes, ncol(x),
-                                           n_categories, variance_model,
-                                           covariance_model) -
+  n_parameters_unconstrained <- .multilpa_count_parameters(
+    n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
+    covariance_model)
+  n_parameters <- n_parameters_unconstrained -
     .multilpa_fixed_parameters(fixed, n_profiles, ncol(x), n_categories,
                                variance_model, covariance_model)
+  ## A held fit is comparable with other held fits on `n_parameters` and with a
+  ## joint fit on the count that includes the measurement it was handed. Only
+  ## `fit_staged()` used to record the second one, so `print()` fell through
+  ## `%||%` on a `multilpa(fixed = )` fit and reported the same number twice.
+  n_parameters_with_measurement <- if (length(fixed) == 0L) NULL else
+    n_parameters_unconstrained
   log_likelihood <- best$expectation$log_likelihood
   starts <- do.call(rbind, lapply(seq_along(attempts), function(start_index) {
     attempt <- attempts[[start_index]]
@@ -782,7 +883,9 @@ multilpa <- function(data, vars, id, n_profiles,
     group_classes = max.col(group_posteriors, ties.method = "first"),
     log_likelihood = log_likelihood,
     group_log_likelihood = setNames(best$expectation$group_log_likelihood, group_ids),
-    n_parameters = n_parameters, aic = -2 * log_likelihood + 2 * n_parameters,
+    n_parameters = n_parameters,
+    n_parameters_with_measurement = n_parameters_with_measurement,
+    aic = -2 * log_likelihood + 2 * n_parameters,
     bic = -2 * log_likelihood + log(n_groups) * n_parameters,
     bic_groups = -2 * log_likelihood + log(n_groups) * n_parameters,
     bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,

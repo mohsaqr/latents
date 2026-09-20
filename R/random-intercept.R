@@ -123,8 +123,9 @@
 #' gives the measurement model, the individual posteriors or the posterior
 #' group intercepts; [summary()] gives the model-level fit summary, the
 #' integration diagnostics and the restart diagnostics; [plot()] draws the
-#' measurement model or the group intercepts; and [coef()] returns the free
-#' parameters as a named vector.
+#' measurement model, the group intercepts, or the case-level entropy and
+#' posterior panels; and [coef()] returns the free parameters as a named
+#' vector.
 #' The default BIC uses independent groups; `bic_individual` uses people.
 #' Standard errors are not provided: [parameter_inference()], [vcov()] and
 #' [confint()] raise a `multilpa_no_inference` condition on this class rather
@@ -137,8 +138,8 @@
 #' set.seed(8)
 #' example_data <- data.frame(group = rep(seq_len(10), each = 4),
 #'                            score = rnorm(40))
-#' fit <- fit_random_intercept(example_data, "score", "group", 1,
-#'                                  n_starts = 1)
+#' fit <- fit_random_intercept(example_data, "score", "group",
+#'                             n_profiles = 1, n_starts = 1, seed = 1)
 #' print(fit)
 #' @export
 fit_random_intercept <- function(data, vars, id, n_profiles,
@@ -230,19 +231,31 @@ fit_random_intercept <- function(data, vars, id, n_profiles,
   check <- .ri_evaluate(x, group_index, parameters, check_quadrature)
   discrepancy <- abs(check$log_likelihood - estimates$log_likelihood)
   converged <- best$convergence == 0L
-  if (!converged) warning("Best random-intercept start did not converge: ", best$message, call. = FALSE)
+  if (!converged) {
+    warning(warningCondition(
+      paste0("Best random-intercept start did not converge: ", best$message),
+      class = "multilpa_unconverged", call = NULL))
+  }
   if (any(!is.finite(values))) {
     warning(warningCondition(
       "Some random-intercept starts failed; summary() reports every start.",
       class = "multilpa_failed_starts"))
   }
-  if (discrepancy > quadrature_tolerance) warning("Quadrature likelihood check failed; increase quadrature_nodes and quadrature_check_nodes before interpreting this fit.", call. = FALSE)
+  if (discrepancy > quadrature_tolerance) {
+    warning(warningCondition(
+      "Quadrature likelihood check failed; increase quadrature_nodes and quadrature_check_nodes before interpreting this fit.",
+      class = "multilpa_quadrature_check", call = NULL))
+  }
   boundary_flags <- c(residual_variance = any(parameters$variances <= min_variance * (1 + 1e-5)),
     random_variance_near_zero = parameters$random_sd <= scale * 1e-5,
     random_sd_upper = parameters$random_sd >= scale * exp(5) * (1 - 1e-5),
     profile_logit = k > 1L && any(abs(best$par[k * d + n_var + 1L + seq_len(k - 1L)]) >= 25 - 1e-5))
   boundary <- any(boundary_flags)
-  if (boundary) warning("Random-intercept fit is near a variance or numerical search boundary.", call. = FALSE)
+  if (boundary) {
+    warning(warningCondition(
+      "Random-intercept fit is near a variance or numerical search boundary.",
+      class = "multilpa_boundary", call = NULL))
+  }
   parameters$means <- sweep(parameters$means, 2L, center, "+")
   dimnames(parameters$means) <- dimnames(parameters$variances) <- list(paste0("profile_", seq_len(k)), vars)
   q <- length(best$par)
@@ -251,6 +264,11 @@ fit_random_intercept <- function(data, vars, id, n_profiles,
     group_index = group_index, group_sizes = group_sizes, vars = vars,
     continuous = vars, indicator_data = indicator_data, center = center,
     effective_profile_counts = colSums(estimates$subject_posteriors),
+    ## Every other family stores the modal assignment beside the posteriors, and
+    ## `assignments()` and `descriptives(by = "profile")` both document that they
+    ## work here too. Without it the first died with an unclassed `cbind()` error.
+    subject_profiles = max.col(estimates$subject_posteriors,
+                               ties.method = "first"),
     id = id, variance_model = variance_model, n_parameters = q,
     aic = -2 * estimates$log_likelihood + 2 * q,
     bic = -2 * estimates$log_likelihood + log(length(group_values)) * q,
@@ -273,9 +291,18 @@ fit_random_intercept <- function(data, vars, id, n_profiles,
 #' Print a continuous group random-intercept fit
 #' @param x A fitted `multilpa_random_intercept` model.
 #' @param ... Reserved for compatibility with `print()`.
-#' @return The input model, invisibly.
+#' @return The input model, invisibly. Called for the side effect of printing
+#'   the profile count and sample sizes, the log likelihood and the fitted
+#'   random-intercept standard deviation, and the integration diagnostics.
 #' @examples
-#' # After fitting: print(random_intercept)
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' random_intercept <- fit_random_intercept(example_data,
+#'                                          c("score_a", "score_b"), "group",
+#'                                          n_profiles = 2, n_starts = 2,
+#'                                          seed = 1)
+#' print(random_intercept)
 #' @export
 print.multilpa_random_intercept <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_random_intercept"))
@@ -303,7 +330,7 @@ print.multilpa_random_intercept <- function(x, ...) {
 #' example_data <- data.frame(group = rep(seq_len(12), each = 5),
 #'                            score_a = rnorm(60), score_b = rnorm(60))
 #' fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
-#'                             2, n_starts = 2, seed = 1)
+#'                             n_profiles = 2, n_starts = 2, seed = 1)
 #' summary(fit)
 #' as.data.frame(summary(fit), what = "random_intercepts")
 #' @export
@@ -349,9 +376,19 @@ summary.multilpa_random_intercept <- function(object, ...) {
 #' @param x A `summary_multilpa_random_intercept` object.
 #' @param digits Number of printed significant digits.
 #' @param ... Passed to the underlying `data.frame` printing.
-#' @return The summary, invisibly.
+#' @return The summary, invisibly. Called for the side effect of printing the
+#'   model line, the measurement model, the profile probabilities and effective
+#'   memberships, the likelihood and information criteria, the integration
+#'   diagnostics, and the restart diagnostics.
 #' @examples
-#' # After fitting: print(summary(random_intercept), digits = 3)
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' random_intercept <- fit_random_intercept(example_data,
+#'                                          c("score_a", "score_b"), "group",
+#'                                          n_profiles = 2, n_starts = 2,
+#'                                          seed = 1)
+#' print(summary(random_intercept), digits = 3)
 #' @export
 print.summary_multilpa_random_intercept <- function(x, digits = 4L, ...) {
   stopifnot("`x` must be a `summary_multilpa_random_intercept` object" =
@@ -404,7 +441,14 @@ print.summary_multilpa_random_intercept <- function(x, digits = 4L, ...) {
 #'   `n_starts`. `"profiles"`, `"random_intercepts"` and `"starts"` have one
 #'   row per profile-indicator, per observed group, and per optimizer start.
 #' @examples
-#' # After fitting: as.data.frame(summary(random_intercept), what = "starts")
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' random_intercept <- fit_random_intercept(example_data,
+#'                                          c("score_a", "score_b"), "group",
+#'                                          n_profiles = 2, n_starts = 2,
+#'                                          seed = 1)
+#' as.data.frame(summary(random_intercept), what = "starts")
 #' @export
 as.data.frame.summary_multilpa_random_intercept <- function(
     x, row.names = NULL, optional = FALSE,
@@ -420,16 +464,20 @@ as.data.frame.summary_multilpa_random_intercept <- function(
 
 #' Plot a continuous group random-intercept fit
 #'
-#' Draws either the measurement model, exactly as [plot.multilpa()] draws it,
-#' or the posterior group intercepts with their posterior standard deviations.
-#' The intercept panel is the one thing this model family has that a discrete
-#' group-class model does not, so it is available here and nowhere else.
+#' Draws the measurement model exactly as [plot.multilpa()] draws it, the
+#' posterior group intercepts with their posterior standard deviations, or the
+#' case-level classification diagnostics. The intercept panel is the one thing
+#' this model family has that a discrete group-class model does not, so it is
+#' available here and nowhere else.
 #'
 #' @param x A fitted `multilpa_random_intercept` model.
 #' @param what `"profiles"` (the default) draws the Gaussian measurement model,
 #'   one line per profile across the indicators. `"random_intercepts"` draws
 #'   one interval per group: its posterior mean intercept plus and minus one
 #'   posterior standard deviation, with the groups ordered by that mean.
+#'   `"entropy"` and `"posteriors"` draw the case-level classification
+#'   diagnostics, as in [plot.multilpa()]; both need more than one profile and
+#'   raise `multilpa_nothing_to_plot` on a single-profile fit.
 #' @param scale For `what = "profiles"`, `"raw"` or `"standardized"`, as in
 #'   [plot.multilpa()].
 #' @param labels `TRUE` prints a direct label at the right end of each series.
@@ -444,12 +492,14 @@ as.data.frame.summary_multilpa_random_intercept <- function(
 #' example_data <- data.frame(group = rep(seq_len(12), each = 5),
 #'                            score_a = rnorm(60), score_b = rnorm(60))
 #' fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
-#'                             2, n_starts = 2, seed = 1)
+#'                             n_profiles = 2, n_starts = 2, seed = 1)
 #' plot(fit)
 #' plot(fit, what = "random_intercepts")
+#' plot(fit, what = "entropy")
 #' @export
 plot.multilpa_random_intercept <- function(x, what = c("profiles",
-                                                       "random_intercepts"),
+                                                       "random_intercepts",
+                                                       "entropy", "posteriors"),
                                            scale = c("raw", "standardized"),
                                            labels = TRUE, main = NULL,
                                            subtitle = NULL, palette = NULL,
@@ -478,8 +528,14 @@ plot.multilpa_random_intercept <- function(x, what = c("profiles",
         if (identical(scale, "standardized")) "standardized" else "input")
       else subtitle,
       palette, symbols, linetypes, style)
-  } else {
+  } else if (identical(what, "random_intercepts")) {
     .multilpa_plot_random_intercepts(x, main, subtitle, palette, style)
+  } else {
+    ## The case-level diagnostics read only the posteriors and the effective
+    ## profile counts, which this family carries like every other, so they are
+    ## drawn by the shared helper rather than reimplemented here. It refuses a
+    ## single-profile fit, where there is nothing to separate.
+    .multilpa_plot_case_diagnostic(x, what, main, subtitle, palette, style)
   }
   invisible(x)
 }
@@ -546,7 +602,7 @@ plot.multilpa_random_intercept <- function(x, what = c("profiles",
 #' example_data <- data.frame(group = rep(seq_len(12), each = 5),
 #'                            score_a = rnorm(60), score_b = rnorm(60))
 #' fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
-#'                             2, n_starts = 2, seed = 1)
+#'                             n_profiles = 2, n_starts = 2, seed = 1)
 #' coef(fit)
 #' @export
 coef.multilpa_random_intercept <- function(object, ...) {
@@ -603,7 +659,18 @@ coef.multilpa_random_intercept <- function(object, ...) {
 #'   the quadrature integral over a continuous group intercept, so no standard
 #'   error is reported rather than one that is not the model's.
 #' @examples
-#' # vcov() on a random-intercept fit raises multilpa_no_inference by design.
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' random_intercept <- fit_random_intercept(example_data,
+#'                                          c("score_a", "score_b"), "group",
+#'                                          n_profiles = 2, n_starts = 2,
+#'                                          seed = 1)
+#' # The refusal is catchable by class, not by message text.
+#' tryCatch(vcov(random_intercept),
+#'          multilpa_no_inference = function(condition) {
+#'            "no standard errors for this model family"
+#'          })
 #' @export
 #' @importFrom stats vcov
 vcov.multilpa_random_intercept <- function(object, ...) {
@@ -636,7 +703,14 @@ confint.multilpa_random_intercept <- function(object, parm, level = 0.95, ...) {
 #' @return A `logLik` object with parameter count `df` and the number of
 #'   observed groups as `nobs`, so `stats::BIC()` uses the group-count BIC.
 #' @examples
-#' # After fitting: logLik(random_intercept)
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' random_intercept <- fit_random_intercept(example_data,
+#'                                          c("score_a", "score_b"), "group",
+#'                                          n_profiles = 2, n_starts = 2,
+#'                                          seed = 1)
+#' logLik(random_intercept)
 #' @export
 logLik.multilpa_random_intercept <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_random_intercept"))
@@ -646,9 +720,17 @@ logLik.multilpa_random_intercept <- function(object, ...) {
 #' Count independent groups in a random-intercept LPA fit
 #' @param object A fitted `multilpa_random_intercept` model.
 #' @param ... Reserved for compatibility with `nobs()`.
-#' @return The number of observed groups, as an integer.
+#' @return A single integer: the number of observed groups, which are the
+#'   independent units of this likelihood.
 #' @examples
-#' # After fitting: nobs(random_intercept)
+#' set.seed(8)
+#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
+#'                            score_a = rnorm(60), score_b = rnorm(60))
+#' random_intercept <- fit_random_intercept(example_data,
+#'                                          c("score_a", "score_b"), "group",
+#'                                          n_profiles = 2, n_starts = 2,
+#'                                          seed = 1)
+#' nobs(random_intercept)
 #' @export
 nobs.multilpa_random_intercept <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_random_intercept"))

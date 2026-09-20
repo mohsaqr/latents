@@ -1,7 +1,7 @@
 ---
-title: "Two levels of engagement: profiles within courses, students across them"
+title: "Two levels of engagement: kinds of student, and the schools that mix them"
 author: "multilpa"
-date: "`r format(Sys.Date())`"
+date: "2026-09-20"
 output:
   html_document:
     toc: true
@@ -14,248 +14,272 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = FALSE, comment = "#>", fig.width = 7, fig.height = 5,
-  dpi = 150, out.width = "100%", message = FALSE, warning = FALSE
+  dpi = 150, out.width = "100%"
 )
-options(digits = 4)
+options(digits = 4, width = 96)
+set.seed(2026)
 ```
 
 ## Where this sits
 
-The package README fits `multilpa()` to synthetic data to show the syntax, and
-`validation/simulab-recovery/` establishes that the estimator recovers a model
-whose truth is known. Neither answers the question an analyst actually arrives
-with: what does a two-level latent profile model say about a real course
-platform, and how much of what it says can be trusted?
+The README fits `multilpa()` to show the syntax. `vignette("multilpa")` walks
+the argument for the second level from a standing start. Neither is the thing an
+analyst actually arrives wanting: one model, taken end to end, with every claim
+followed by the check that would have caught it if it were wrong.
 
-This tutorial is that pass. One dataset — 1,393 course enrolments by 106
-students across 31 courses — fitted end to end, with three profiles at the
-enrolment level and three latent classes at the student level.
+This tutorial is that pass. It is deliberately a *verification* document. Each
+section states what the model says and then asks what would have to be true for
+that statement to be an artefact — of the optimiser, of a class count nobody
+chose in the open, of an assumption the model makes silently, or of a posterior
+too blurred to act on.
+
+Every number below is computed by this document when it renders, from data that
+ship with the package. Nothing here depends on a file you do not have.
+
+```{r library}
+library(multilpa)
+```
+
+Two datasets carry the whole tutorial.
+
+```{r data}
+str(school_engagement)
+
+str(engagement_panel)
+```
+
+`school_engagement` is the cross-sectional one: 720 students, twelve in each of
+60 schools, with three engagement indicators. `engagement_panel` is the
+repeated-measures counterpart: 120 students seen at four waves. Both are
+simulated, and both ship a column recording the kind or state each row was
+*generated* from — `engaged` and `state`. A real study never has that column.
+Here it exists so that the model's answer can be checked against the thing that
+produced the data, which is the one check no amount of fit statistics can
+substitute for.
 
 ### Why the second level is not optional
 
-A single-level latent profile analysis of these data treats a student's fifteen
-enrolments as fifteen unrelated people. That is wrong in two separate ways, and
-only one of them is the familiar objection.
+A single-level latent profile analysis of `school_engagement` treats the twelve
+students in a school as twelve unrelated people. That is wrong in two separate
+ways, and only one of them is the familiar objection.
 
 The familiar one is that the rows are not independent, so every standard error
 is too small. The second is more interesting: a single-level model cannot
-express the question worth asking. "Which students are consistently disengaged?"
-is not a statement about any one enrolment. It is a statement about the
-*distribution* of enrolments belonging to a student, and a model with only one
+express the question worth asking. "Which schools serve mostly disengaged
+students?" is not a statement about any one student. It is a statement about the
+*distribution* of students belonging to a school, and a model with only one
 level has nowhere to put it.
 
 Vermunt's (2003) nonparametric formulation puts it in a second set of latent
-classes. Students belong to a class; a class is nothing more than a different
-mix of the same enrolment profiles. The measurement model — what a
-high-engagement enrolment looks like — is shared by everyone, so the classes
-cannot cheat by redefining the profiles for each group. They differ only in how
-often each profile occurs.
+classes. Schools belong to a class; a class is nothing more than a different mix
+of the same student profiles. The measurement model — what an engaged student
+looks like — is shared by everyone, so the classes cannot cheat by redefining
+the profiles for each group. They differ only in how often each profile occurs.
 
 ### The route
 
-1. **Preparing the indicators** — why engagement has to be measured against
-   classmates rather than against the cohort.
-2. **The model as a whole** — whether it converged, on what, and how many
-   parameters bought how much likelihood.
-3. **The profiles** — what a single enrolment looks like, and why the answer is
-   about level rather than shape.
-4. **The student classes** — what a whole student looks like, and the one
-   asymmetry that carries the finding.
-5. **The sequences themselves** — what a student's career looks like once the
-   assignments are laid out in course order.
+1. **Before the model** — whether the grouping carries anything at all.
+2. **The model as a whole** — whether it converged, on what, and whether a
+   larger model can be found twice.
+3. **The profiles** — what one student looks like, and whether the model found
+   what made the data.
+4. **The school classes** — what a whole school looks like, and what pooling
+   costs.
+5. **Order** — what these data can and cannot say about *when*, and what
+   ignoring order costs when order exists.
 6. **Testing the assumption the model makes** — whether the indicators are
-   really independent inside a profile, and what it costs when they are not.
-7. **How much to trust the assignments** — entropy and classification quality.
+   really independent inside a profile.
+7. **How much to trust the assignments** — entropy, classification quality, and
+   the one warning this fit raises.
 8. **What this model cannot tell you.**
 
 ### The verbs used
 
 | verb | the question it answers |
 |---|---|
+| `descriptives()` | is there any between-group variance to model |
 | `multilpa()` | estimate the two-level model |
-| `summary()` | the whole fit on one screen |
+| `summary()` | the whole fit on one screen, restarts included |
 | `information_criteria()` | what the parameters cost, under both sample-size conventions |
-| `entropy_table()` | how sharply units separate |
-| `classification_table()` | whether the assignments are trustworthy |
 | `as.data.frame()` | any part of the fit, as a tidy table |
-| `plot()` | the measurement model and the class mixes |
-| `sequences()` | the assignments in course order |
-| `sequence_summary()` | how much data each student class contributes |
+| `plot()` | the measurement model, the class mixes, the diagnostics |
+| `assignments()` | every observation beside a column of your own |
+| `lmr_lrt()` | whether the larger model is worth its parameters |
+| `sequences()` / `sequence_summary()` | the assignments in occasion order |
+| `fit_transitions()` / `transitions()` | movement between profiles over time |
 | `bivariate_residuals()` | whether the independence assumption holds |
+| `diagnostics()` | entropy and classification quality in one call |
+| `parameter_inference()` | standard errors, with the qualification attached |
 
-Companion material: `validation/simulab-recovery/README.md` for how well these
-estimates recover a known truth, and `?multilpa` for the estimation contract.
+## 1. Before the model: does the grouping carry anything?
 
-## 1. Preparing the indicators
+This is the step most often skipped, and it is the one that decides whether the
+rest of the document is worth writing. A two-level model exists to tell groups
+apart. If the groups do not differ, it has nothing to find, and it will still
+return a fit.
 
-The platform records nine activity counts per enrolment. One of them,
-`Total_events`, is the arithmetic sum of four others — regressing it on those
-four returns an R-squared of 0.99983 with every slope at 1.00, and including all
-nine leaves the correlation matrix with a condition number above sixty thousand.
-It is dropped, leaving eight.
+Start with the question the data can answer directly, because they are
+simulated and carry the truth column:
 
-The remaining eight cannot be used in their recorded units either, and the
-reason is substantive rather than technical. A busy course inflates every count
-for everyone enrolled in it, so raw activity confounds "this student worked
-hard" with "this course demanded a lot". Standardising inside each course
-removes the course from the comparison: a value of `+1` then means one standard
-deviation above the classmates who sat the same course.
+```{r hook}
+per_school <- aggregate(engaged ~ school, data = school_engagement, FUN = mean)
 
-```{r prepare}
-library(multilpa)
-
-# Point this at your copy of the file.
-data_path <- file.path("~", "My Drive (saqr@saqr.me)", "Git", "Qudent_26",
-                       "lecture_data_with_LCA_labels_percentiles.csv")
-
-#' Course-standardised engagement indicators
-#'
-#' @param path Path to the platform export.
-#' @return A base `data.frame` with one row per enrolment and the columns
-#'   `User`, `Sequence`, `course_id`, and one `*_z` column per indicator, each
-#'   standardised within its course. Enrolments in a course with no second
-#'   student have no reference group and are dropped.
-prepare_engagement <- function(path) {
-  stopifnot("`path` must name a readable file" = file.exists(path))
-  sources <- c(browse = "Frequency_course_browse", lectures = "Frequency_lecture_viewed",
-               forum_read = "Frequency_forum_consume", forum_post = "Frequency_forum_contribute",
-               active_days = "Active_days", sessions = "Session_count",
-               entropy = "Course_browse_entropy", duration = "Total_duration")
-  lecture <- utils::read.csv(path, stringsAsFactors = FALSE)
-  stopifnot(
-    "the export must contain every indicator" = all(sources %in% names(lecture)),
-    "`User` and `Sequence` must identify an enrolment uniquely" =
-      !anyDuplicated(paste(lecture$User, lecture$Sequence, sep = "_"))
-  )
-  # A course whose indicator does not vary gives everyone a deviation of exactly
-  # zero, which is the honest value; a course of one student has no reference
-  # group at all and yields NA, which is dropped rather than filled.
-  scale_within <- function(value, key) {
-    centred <- value - stats::ave(value, key, FUN = mean)
-    spread <- stats::ave(value, key, FUN = stats::sd)
-    ifelse(spread > 0, centred / spread, ifelse(is.na(spread), NA_real_, 0))
-  }
-  scaled <- as.data.frame(lapply(lecture[sources], scale_within, key = lecture$course_id))
-  names(scaled) <- paste0(names(sources), "_z")
-  prepared <- data.frame(lecture[c("User", "Sequence", "course_id")], scaled,
-                         row.names = NULL)
-  prepared <- prepared[stats::complete.cases(prepared), , drop = FALSE]
-  row.names(prepared) <- NULL
-  prepared
-}
-
-engagement <- prepare_engagement(data_path)
-str(engagement)
+summary(per_school)
 ```
 
-Eleven columns: the student, the position of the course in that student's
-sequence, the course, and eight standardised indicators. One enrolment was
-dropped — it belonged to the only student in its course, so there was no one to
-compare against.
+Pooled across the sample, **`r with(school_engagement, round(100 * mean(engaged)))`%**
+of students are the engaged kind — a tidy headline number. School by school the
+share runs from **`r with(per_school, sprintf("%.2f", min(engaged)))`** to
+**`r with(per_school, sprintf("%.2f", max(engaged)))`**. The sample average
+describes no school in the data. Any analysis that pools the students and reports one
+number has averaged away the thing worth knowing.
 
-```{r indicators}
-indicators <- c("browse_z", "lectures_z", "forum_read_z", "forum_post_z",
-                "active_days_z", "sessions_z", "entropy_z", "duration_z")
+That hook used `engaged`, which a real study would not have. The check that
+works without it is the intraclass correlation — the share of each indicator's
+variance lying *between* schools rather than within them:
+
+```{r descriptives}
+vars <- c("homework_hours", "participation", "interest")
+
+descriptives(school_engagement, vars = vars, id = "school")
 ```
 
-Naming the indicators explicitly, rather than matching a pattern over the column
-names, means a later column added to the export cannot silently join the model.
+Around an eighth of the variance in each indicator sits between schools. That is
+modest, and it is enough: had these come back near zero, the schools would not
+differ and the second level would be estimating noise. One line, before any
+model.
 
 ## 2. The model as a whole
 
-`multilpa()` takes the indicators, the column identifying the second level,
-and the two class counts. `n_starts` matters more than it looks: mixture
-likelihoods are multimodal, and a single start reports whichever hill it
-happened to climb.
-
-`covariance_model = "full"` is not the default and is not cosmetic here. The
-default assumes indicators are independent within a profile, and on these data
-that assumption is false by a wide margin. Section 6 shows the evidence and what
-ignoring it costs; the model is fitted correctly from the start so that every
-number below comes from the model worth reporting.
+`multilpa()` takes the indicators, the column identifying the second level, and
+the two class counts. `n_starts` matters more than it looks: mixture likelihoods
+are multimodal, and a single start reports whichever hill it happened to climb.
 
 ```{r fit}
-fit <- multilpa(engagement, indicators = indicators, group = "User",
-                n_profiles = 3, n_group_classes = 3, time = "Sequence",
-                covariance_model = "full", n_starts = 50, seed = 2026)
+fit <- multilpa(school_engagement, vars = vars, id = "school",
+                n_profiles = 2, n_group_classes = 2,
+                n_starts = 20, seed = 2026)
+
 summary(fit)
 ```
 
-All 50 starts reached the same maximum, at a log likelihood of -7900.55 with 140
-free parameters. That unanimity is the single most reassuring number on the
-page: where multiple optima exist, starts scatter across them, and a 50-of-50
-replication says the solution is not an artefact of where the search began. No
-variance sits on its lower bound, and no class has an effective membership below
-one, so nothing has collapsed.
-
-The parameter count is large because a full residual covariance costs 36 numbers
-per profile rather than 8. It buys a great deal: the same three profiles fitted
-under the independence assumption reach only -11083.49, so estimating the
-associations is worth 3,183 log-likelihood points for 84 parameters, and the BIC
-on the group count falls from 22428 to 16454.
+Every start reached the same maximum. That unanimity is the single most
+reassuring line on the page: where multiple optima exist, starts scatter across
+them, and a clean replication says the solution is not an artefact of where the
+search began. No start hit a variance boundary, no start failed to converge, and
+neither profile nor school class has an effective membership below one, so
+nothing has collapsed.
 
 ```{r criteria}
 information_criteria(fit)
 ```
 
-The information criteria are reported under both sample-size conventions
-because, for a multilevel mixture, "n" is genuinely ambiguous — 106 students or
-1,393 enrolments. The recovery study in `validation/simulab-recovery/` shows the
-two conventions selecting different structures at small sample sizes. They are
-alternatives to be chosen between and declared, not a menu to pick the agreeable
-one from.
+The criteria are reported under both sample-size conventions because, for a
+multilevel mixture, "n" is genuinely ambiguous — 60 schools or 720 students.
+They are alternatives to be chosen between and declared, not a menu to pick the
+agreeable one from. Pick one and keep it for the whole analysis.
 
-Both conventions here prefer more than three profiles: BIC keeps falling at four
-and at five. Neither is used, and the reason is in the restart diagnostics rather
-than the criteria. Fitted from 30 starts, the four-profile solution is found
-once, the five-profile solution is found once and sits on a variance boundary,
-and the three-profile solution is found by every start. A criterion cannot
-prefer a solution the optimiser cannot locate twice.
+### Could a third profile be found twice?
 
-## 3. The profiles: what one enrolment looks like
+Two profiles was a choice, so make the alternative argue for itself.
 
-The profiles are the measurement model, and they are shared across every student
-class. A profile describes one enrolment: one student, in one course, for one
-term.
+```{r three-profiles}
+three <- multilpa(school_engagement, vars = vars, id = "school",
+                  n_profiles = 3, n_group_classes = 2,
+                  n_starts = 20, seed = 2026)
+
+summary(three)
+```
+
+The three-profile solution reaches a higher likelihood, and its AIC is lower.
+Read the rest of the output before believing that.
+
+The best likelihood is found by a minority of the starts; the others settle on
+at least three other optima, and one exhausts its iteration budget without
+converging at all. The third profile it finds is a spike: an effective
+membership of about ten students out of 720, whose participation standard
+deviation is a small fraction of the other two profiles'. That is the classic
+signature of a mixture component fitting a handful of points rather than a kind
+of student.
+
+```{r three-criteria}
+information_criteria(three)
+```
+
+Set that table beside section 2's. AIC, SABIC on the group convention, and CLC
+under both conventions prefer three profiles; KIC, BIC, CAIC, AWE and ICL prefer
+two, and SABIC reverses when the convention changes. This is the familiar
+pattern — AIC under-penalises in mixture models and tends to over-extract, and
+CLC, which charges for classification uncertainty rather than for parameters, is
+rewarding a class that separates cleanly precisely because it is a spike. ICL
+charges for both and keeps two. The disagreement is the normal case, not a
+problem with the data.
+
+The restart column breaks the tie, and it should. A criterion cannot prefer a
+solution the optimiser locates in a minority of attempts. Two profiles is the
+model this document reports, and the reason is the diagnostic, not the
+criterion.
+
+## 3. The profiles: what one student looks like
+
+The profiles are the measurement model, and they are shared across every school
+class. A profile describes one student.
 
 ```{r profiles-table}
 as.data.frame(fit)
 ```
 
-The table is the whole measurement model: one row per profile and indicator,
-with the estimated mean, variance and standard deviation. Reading down the mean
-column, the three profiles separate on every one of the eight indicators, and
-they separate in the same direction each time.
-
-```{r profiles-plot, fig.width = 9}
+```{r profiles-plot}
 plot(fit)
 ```
 
-The picture is a level ordering, not a set of shapes. Profile 1, holding 27% of
-enrolments, sits between 0.49 and 1.03 standard deviations above the course mean
-on all eight indicators at once. Profile 2, also 27%, sits between 0.58 and 1.01
-below on all eight. Profile 3, the largest at 46%, runs along the course average
-from -0.19 to +0.29.
+The picture is a level ordering, not a set of shapes. One profile sits high on
+all three indicators at once; the other sits low on all three, and the gap
+between them is between roughly two and a half and three and a half times the
+within-profile standard deviation on every indicator. They separate in the same
+direction every time.
 
 That is worth stating plainly, because it is the kind of result that is easy to
-over-read. These data contain no enrolment type that reads the forum heavily
-while skipping lectures, or that browses widely in short bursts. Engagement on
-this platform moves as a block: a student who is above their classmates on
-session count is above them on duration, browsing, forum reading and lecture
-viewing too. Three profiles is the right number here for describing *how much*,
-not *in what way*.
+over-read. These data contain no kind of student who does a great deal of
+homework while participating little, or who is highly interested but does
+nothing. Engagement here moves as a block. Two profiles is the right number for
+describing *how much*, not *in what way*.
 
-The table reports each profile's variances, but this model also estimates the
-covariances between indicators inside each profile, which is what section 6 is
-about. Those are the numbers the default model fixes at zero, and on these data
-they are large enough that fixing them at zero is not a simplification but a
-misstatement.
+```{r heatmap, fig.height = 3.4}
+plot(fit, what = "heatmap")
+```
 
-## 4. The student classes: what a whole student looks like
+The heatmap says the same thing in standard deviations from each indicator's
+grand mean, which is the view to use when the indicators are on different
+scales or when there are more of them than a line plot can label.
+
+### Did it find what made the data?
+
+This is the check simulated data exist for. `assignments()` puts each student's
+estimated profile in the same row as the column that generated it, so nothing
+has to be lined up by hand:
+
+```{r recovery}
+xtabs(~ profile + engaged, data = assignments(fit, data = school_engagement))
+```
+
+One student out of 720 on the wrong side. That is not a claim about this
+package's accuracy in general — the profiles here are far apart by construction,
+and real indicators overlap much more. It is a statement that the estimator does
+what it says when the assumptions hold, which is the only thing a simulation can
+establish.
+
+Verbs that bring in a column the model never saw get their own function with its
+own documented arguments, rather than another `as.data.frame(what =)` value.
+`assignments()` owns the alignment: a frame with the wrong number of rows is
+refused, and a column its output would overwrite is an error rather than a
+silent replacement.
+
+## 4. The school classes: what a whole school looks like
 
 Everything so far could have come from a single-level model. The second level is
-where the enrolments belonging to one student are tied together, and a student
-class is defined by nothing except the mix of profiles its students produce.
+where the students belonging to one school are tied together, and a school class
+is defined by nothing except the mix of profiles its students produce.
 
 ```{r probabilities-table}
 as.data.frame(fit, what = "profile_probabilities")
@@ -265,94 +289,215 @@ as.data.frame(fit, what = "profile_probabilities")
 plot(fit, what = "probabilities")
 ```
 
-The three classes are uneven — 39%, 23% and 39%, or 41, 24 and 41 students —
-and each is dominated by one profile. Class 1's students are typical 79% of the
-time, class 2's take high-engagement courses 73% of the time, and class 3's take
-low-engagement courses 71% of the time. The largest class is the unremarkable
-one, and the high-engagement class is the smallest.
+Two kinds of school in roughly equal numbers, and the balance reverses between
+them: the profile that is the clear majority in one kind is the clear minority
+in the other. That reversal is why the lines cross, and it is the quantity a
+single-level model cannot report at all.
 
-The interesting numbers are the small ones: **0.021 and 0.070**. A student in
-the high-engagement class has a 2.1% chance of producing a low-engagement
-enrolment, and a student in the low-engagement class has a 7.0% chance of
-producing a high-engagement one. The two extremes are, for practical purposes,
-mutually exclusive over a student's career.
+Read the size of the minority carefully, because it is the honest limit of the
+finding. Neither kind of school is homogeneous. Roughly three students in ten
+in each kind belong to the *other* profile, and no school class is anywhere near
+pure. These are schools that differ in their mix, not schools that contain only
+one kind of student — which is exactly what the model claims and exactly what
+the data were generated from.
 
-Consistency therefore runs in both directions, and that is the finding. The
-high-engagement students are not students who happen to have had a good term;
-they almost never have a bad one. The low-engagement students are not students
-waiting for the right course; across up to fifteen courses, the right course
-does not arrive. What both groups do instead, roughly a quarter of the time, is
-fall back to the typical profile — 0.247 for the high class and 0.220 for the
-low one, which is to say the middle is where everybody's variation happens.
+To see what pooling costs, fit the same measurement model with a single school
+class. That *is* the single-level model:
+
+```{r flat}
+flat <- multilpa(school_engagement, vars = vars, id = "school",
+                 n_profiles = 2, n_group_classes = 1,
+                 n_starts = 20, seed = 2026)
+
+as.data.frame(flat, what = "profile_probabilities")
+```
+
+One row per profile, one number each, and no way to ask the question. The
+two-level model also fits better by a wide margin:
+
+```{r flat-criteria}
+information_criteria(flat)
+```
+
+Every criterion, under both conventions, prefers the two-class model over this
+one — which is a cleaner verdict than section 2's three-profile comparison
+produced, and the contrast is the point: the criteria agree when the extra
+structure is real.
+
+```{r compare}
+lmr_lrt(flat, fit)
+```
+
+The statistic is reported without a p-value on purpose. The
+Vermunt–Lo–Mendell–Rubin reference distribution is not implemented here, and a
+chi-square approximation to it is not a substitute, so the column is `NA` rather
+than misleading. The statistic and its adjusted version are large against two
+degrees of freedom, which is a reason to take the second level seriously; it is
+not a test, and this document does not report it as one. The criteria above are
+the verdict this document rests on.
+
+### The raw data agree, without being asked to
+
+Section 1 found roughly an eighth of each indicator's variance lying between
+schools. If the model's claim is right — schools differ in the *mix* of students,
+not in the students themselves — then that between-school variance should
+disappear once you condition on the profile. Split the same calculation by
+assigned profile:
+
+```{r descriptives-by-profile}
+descriptives(fit, by = "profile")
+```
+
+The intraclass correlations collapse to zero or below. Within a profile the
+schools no longer differ. The model was never shown this calculation; it is the
+data agreeing with the model on a quantity the model did not fit.
 
 ```{r group-posteriors}
 head(as.data.frame(fit, what = "group_posteriors"))
 ```
 
-One row per student, with the modal class, the student's own contribution to the
-likelihood, and the posterior probabilities behind the assignment. The posteriors
-are the honest object here: the modal class is a summary of them, not a fact
-about the student.
+One row per school, with the modal class, the school's own contribution to the
+likelihood, and the posterior behind the assignment. The posterior is the honest
+object here: the modal class is a summary of it, not a fact about the school.
 
-## 5. The sequences themselves
+## 5. Order: what these data can and cannot say about *when*
 
-A student class is a probability mix, and a mix is an average over careers that
-may look nothing like each other. Class 3 says its students take a
-low-engagement course 71% of the time; it does not say whether that means a
-steady run of low-engagement terms or a good start followed by a collapse.
+A school class is a probability mix, and a mix is an average over careers that
+may look nothing like each other. The obvious next question is whether the mix
+conceals a trajectory.
 
-The model never looks at course order, but the fit can carry it. Passing
-`time =` stores the column, which is what lets the assignments be read back in
-sequence without handing the data over a second time.
+For `school_engagement` the answer is that the question does not apply, and the
+package says so rather than drawing something meaningless:
+
+```{r no-time, error = TRUE}
+sequences(fit)
+```
+
+That refusal is correct. `term` in `school_engagement` indexes twelve *different*
+students within a school, so a "transition" from term 1 to term 2 would be a
+transition between two different people. The column exists; the ordering does
+not. The fit was never given `time =`, and the verb will not invent one.
+
+`engagement_panel` has the structure the question needs: the same 120 students at
+four waves. Two models can be fitted to it, and the difference between them is
+the whole point of this section.
+
+### The model that stores order but does not use it
+
+`multilpa()` with `time =` fits exactly the model of sections 2 to 4 — students
+nested in a unit, the unit's class defined by its mix of profiles — and stores
+the occasion so the assignments can be read back in order afterwards. Here the
+unit is a student and the observations are that student's waves.
+
+```{r panel-fit}
+panel_vars <- c("homework_hours", "participation")
+
+panel_fit <- multilpa(engagement_panel, vars = panel_vars, id = "student",
+                      n_profiles = 2, n_group_classes = 2, time = "wave",
+                      n_starts = 20, seed = 2026)
+
+as.data.frame(panel_fit, what = "profile_probabilities")
+```
+
+Two kinds of student: one mostly in the low profile, one almost always in the
+high one. Now lay the assignments out in wave order:
 
 ```{r sequences}
-head(sequences(fit), 12)
+head(sequences(panel_fit, format = "wide"), 8)
 ```
 
-One row per enrolment, in course order, carrying both the enrolment's profile
-and its student's class — 1,393 rows in all, the same enrolments the model was
-fitted to, now arranged so that a student's career reads left to right. The
-first student shown took a single course; the second took twelve.
-
-```{r sequence-index, fig.width = 10, fig.height = 7}
-plot(fit, what = "sequences")
+```{r sequences-plot, fig.width = 8, fig.height = 7}
+plot(panel_fit, what = "sequences")
 ```
 
-Each row is one student, each column one course in their sequence, coloured by
-the assigned profile, with students blocked by their class. This is section 4's
-finding made visible: the first block is overwhelmingly one colour, the second
-overwhelmingly another, and the two extreme colours almost never appear in each
-other's block. The mutual exclusivity of the extremes is the dominant visual
-fact here, not a subtle statistical effect.
+Each row is one student, each column one wave, with students blocked by their
+class. Read the wide table above rather than the picture if you want to check
+this: the waves within a row come in runs. A student holds a profile for a
+while and then switches, rather than alternating. The model that produced those
+assignments knows nothing about that — it scored wave 4 the same way it scored
+wave 1 — which is precisely the gap the next model closes.
 
-The gaps are what the probability table could not show. They mark positions a
-student never reached.
-
-```{r attrition}
-sequence_summary(fit)
+```{r sequence-summary}
+sequence_summary(panel_fit)
 ```
 
-Class 3 — the low-engagement class of section 4, the one whose students take a
-low-engagement course 71% of the time — averaged 11.3 courses against 14.2 and
-14.3 for the other two, and 25 of its 41 students reached the fifteenth against
-37 of 41 and 22 of 24. That is a fact about who leaves, not about who engages,
-and the prevalence matrix had no way to express it.
+Every student contributes four complete waves with no gaps, so nothing in what
+follows is about attrition.
 
-Read it carefully, because it is partly circular. A student who took one course
-and was disengaged in it has nowhere to be assigned except the mostly-low
-class, so short sequences push themselves into it. What is not circular is that
-the students who left were disengaged rather than merely brief: had leaving
-early been unrelated to engagement, those who did not finish would have spread
-across the three classes instead of concentrating in one.
+### The model that uses order
 
+`fit_transitions()` estimates first-order transition probabilities between
+profiles across the occasions, by a forward–backward EM algorithm. On these data
+it costs exactly the same number of parameters as the mixture above.
+
+```{r transitions}
+moves <- fit_transitions(engagement_panel, vars = panel_vars, id = "student",
+                         time = "wave", n_profiles = 2,
+                         n_starts = 20, seed = 2026)
+
+transitions(moves, stable = TRUE)
+```
+
+`stable = TRUE` marks the diagonal — staying in the same profile from one wave
+to the next. These data were generated with a persistence of 0.85, and both
+diagonal entries land within a few points of it. Close, not exact, which is what
+four waves of 120 students supports.
+
+Now compare the two models on the criteria. Same data, same indicators, same
+number of parameters; the only difference is whether the ordering is used:
+
+```{r panel-criteria}
+information_criteria(panel_fit)
+```
+
+```{r moves-criteria}
+information_criteria(moves)
+```
+
+The ordered model reaches a higher likelihood for the same eleven parameters,
+and every criterion — under either sample-size convention — falls. That is the
+cost of ignoring order, measured rather than asserted. It is also the honest
+answer to the objection people raise about latent profile analysis: the mixture
+is not wrong, it answers a different question, and when order genuinely exists,
+the model that uses it is the better description.
+
+### And the school classes it does not need
+
+A latent transition model can also carry a second level, letting different kinds
+of student have different transition matrices. Ask for one here and watch what
+happens:
+
+```{r transitions-two}
+moves_two <- fit_transitions(engagement_panel, vars = panel_vars, id = "student",
+                             time = "wave", n_profiles = 2, n_group_classes = 2,
+                             n_starts = 20, seed = 2026)
+
+summary(moves_two)
+```
+
+```{r transitions-two-criteria}
+information_criteria(moves_two)
+```
+
+Three things went wrong at once. One estimated persistence is 1 to four decimal
+places — an absorbing state that no student ever leaves — which is a parameter
+sitting on its boundary, not a finding. The likelihood barely moves for the four
+extra parameters, so every criterion but one is worse than the one-class
+model's; the single exception, CLC under the individual convention, is lower by
+about one point, which is noise. And the best solution no longer replicates
+across every start.
+
+The second level is real in `school_engagement` and is not real here. The
+package reports both outcomes the same way, and it is the reader's job to look
+at the restart line and the boundary before reading the transition matrix.
 
 ## 6. Testing the assumption the model makes
 
 Everything above rests on an assumption that has not yet been examined. A
-profile model says that, once you know which profile an enrolment belongs to,
-its indicators are independent of one another: whatever made a student browse
-heavily is the profile, not some separate thing that also made them log many
-sessions. The default `covariance_model = "diagonal"` writes that down as a
+profile model says that, once you know which profile a student belongs to, their
+indicators are independent of one another: whatever made a student do a lot of
+homework is the profile, not some separate thing that also made them
+participate. The default `covariance_model = "diagonal"` writes that down as a
 constraint, fixing every within-profile covariance at zero.
 
 Nothing in the fit reports whether that constraint is reasonable. A model can be
@@ -360,114 +505,214 @@ badly wrong in exactly this way and still converge, replicate across every
 start, and return a respectable entropy. `bivariate_residuals()` is the check.
 
 ```{r residuals}
-head(bivariate_residuals(fit, engagement), 5)
+bivariate_residuals(fit)
 ```
 
 One row per pair of indicators per profile, worst first. `observed` is the
-residual correlation left inside the profile, `expected` is what the fitted
-covariance model implies for it, and `residual` is the gap. Here the largest gap
-is a few parts in a hundred thousand, because this model estimates those
-correlations rather than assuming them away.
+association still present inside the profile, `expected` is what the fitted
+covariance model implies for it, and `residual` is the gap. Both are on the
+correlation scale, so the rows are comparable.
 
-The comparison that matters is with the model that does assume them away.
+The largest gap anywhere is `r with(head(bivariate_residuals(fit), 1), round(abs(residual), 3))`
+in absolute value, and no pair is significant at the conventional level even
+before any correction for the six tests. The assumption holds.
 
-```{r residuals-diagonal}
-independent <- multilpa(engagement, indicators = indicators, group = "User",
-                        n_profiles = 3, n_group_classes = 3,
-                        n_starts = 20, seed = 2026)
-ignored <- bivariate_residuals(independent, engagement)
-head(ignored, 5)
+That is a result, not a non-result, and it is worth saying out loud: this
+diagnostic can acquit. Running it and finding nothing is what licenses the rest
+of the document; skipping it and finding nothing are not the same thing.
+
+The same residuals can be pooled rather than split by profile, which asks
+whether the profile structure as a whole has absorbed the associations:
+
+```{r residuals-overall}
+bivariate_residuals(fit, by = "overall")
 ```
 
-```{r residuals-count}
-data.frame(pairs = nrow(ignored),
-           above_half = nrow(subset(ignored, abs(residual) > 0.5)),
-           significant_holm = nrow(subset(ignored,
-                                          p.adjust(p_value, "holm") < 0.05)))
+### What the unconstrained model buys
+
+The comparison that settles it is with the model that estimates the covariances
+instead of fixing them.
+
+```{r full-covariance}
+full <- multilpa(school_engagement, vars = vars, id = "school",
+                 n_profiles = 2, n_group_classes = 2,
+                 n_starts = 20, covariance_model = "full", seed = 2026)
+
+information_criteria(full)
 ```
 
-Under the default, `active_days_z` and `entropy_z` remain correlated at 0.87
-*within a single profile*, against a model asserting that the correlation is
-exactly zero. Of the 84 pairs, 19 exceed 0.5 and 60 stay significant after a
-Holm correction. That is not a marginal violation; it is the assumption failing
-across most of the instrument. (Which profile carries the worst pair is not
-worth naming: profile labels are arbitrary and move between fits.)
+Six extra parameters, and the likelihood improves by around two points. Set that
+beside section 2's table: every criterion is worse except CLC, which is lower by
+about four points under either convention — and CLC is the criterion that
+rewards clean classification rather than parsimony, so it was never going to
+object to six parameters that change no assignment.
 
-This is worth dwelling on, because of how invisible it was. That diagonal fit
-converged, replicated in 50 starts out of 50, and reported a relative entropy of
-0.91 — every signal the package offers said it was sound. Only a diagnostic
-aimed at the assumption itself could show otherwise.
+Estimating associations that are not there costs parameters and buys nothing,
+which is the mirror image of the usual warning and just as important:
+`covariance_model = "full"` is the right choice when the residuals say so, and
+the wrong choice when they do not.
 
-What it cost is visible in the criteria: the same three profiles and three
-classes, with the covariances estimated instead of fixed, gain 3,183
-log-likelihood points and drop the group-count BIC from 22428 to 16454. The
-profiles keep their shape, and the substance of sections 4 and 5 survives — the
-extremes stay nearly disjoint and the low-engagement class still leaves early —
-but the numbers move, and a model that misstates its own measurement structure
-is not the one to report them from.
+Note one thing in passing, because it will matter in section 8:
+
+```{r full-profiles}
+as.data.frame(full)
+```
+
+The profiles are the same two profiles, and the labels have swapped. Nothing in
+the likelihood distinguishes "profile 1" from "profile 2".
 
 ## 7. How much to trust the assignments
 
-A profile solution can be well estimated and still be too blurred to act on. Two
-diagnostics separate those cases, and they should be read before any assignment
-is used for anything.
+A profile solution can be well estimated and still be too blurred to act on.
+Every classification diagnostic comes back from one call:
+
+```{r diagnostics}
+diagnostics(fit)
+```
+
+That is a summary of four tables. The rest of this section is those tables, plus
+the one qualification this fit raises.
+
+### The warning this fit raises
+
+Ask for standard errors and the package pushes back:
+
+```{r inference}
+head(parameter_inference(fit), 6)
+```
+
+That warning is `multilpa_unconverged`, and it is worth believing rather than
+muffling. The default convergence tolerance is set for the *likelihood*, and the
+likelihood is flat near its maximum: stopping when it stops improving can leave
+the parameters at a point where the score is still appreciably far from zero.
+Wald standard errors are built from the curvature at a point where the score is
+assumed to be zero, so that residual score is exactly the thing that invalidates
+them. The estimates are fine; the intervals around them are what is being
+questioned.
+
+The fix is one argument: a tighter likelihood tolerance, which drives the
+residual score down with it.
+
+```{r precise}
+precise <- multilpa(school_engagement, vars = vars, id = "school",
+                    n_profiles = 2, n_group_classes = 2,
+                    n_starts = 20, tol = 1e-10, seed = 2026)
+
+head(parameter_inference(precise), 6)
+```
+
+No warning — and, this being the point, every estimate, standard error and
+confidence bound is identical to the precision printed above. Only one test
+statistic moves, in its final digit.
+
+That is what makes the warning worth having rather than annoying. It was never a
+claim that the estimates were wrong; it was the package declining to certify an
+interval whose derivation assumed something it could not verify. Compare what
+would have happened had it stayed quiet: the same numbers, no flag, and no way
+for a reader to know the difference between an interval that was checked and one
+that was not.
+
+Robust errors accumulate the score over independent schools rather than
+students, which is the right unit when the measurement model may be
+misspecified:
+
+```{r robust}
+head(parameter_inference(precise, vcov_type = "robust"), 6)
+```
+
+### Entropy and classification quality
 
 ```{r entropy}
 entropy_table(fit)
 ```
 
-Relative entropy is 0.839 for enrolments and 0.914 for students. Both are high
-enough that the modal assignments mean something. The ordering is worth noticing:
-students separate more sharply than their individual enrolments do, because a
-student is judged on fifteen observations while an enrolment is judged on one.
-Under the independence assumption the ordering was the other way round, which is
-one more thing that assumption was getting wrong.
+Relative entropy is
+`r with(subset(entropy_table(fit), level == "individuals"), round(relative_entropy, 3))`
+for students and
+`r with(subset(entropy_table(fit), level == "groups"), round(relative_entropy, 3))`
+for schools. Both are high enough that the modal assignments mean something, and
+the ordering between them is the interesting part.
+
+Students separate more sharply than the schools they sit in — the opposite of
+what one might expect from the usual "more data, sharper answer" intuition, and
+it is not a defect. A student is classified from three indicators measured
+directly on them. A school is classified only from the *mix* of its twelve
+students, and two kinds of school whose mixes are 27% and 71% will produce
+overlapping samples of twelve fairly often. Twelve students is not much evidence
+about a school.
 
 ```{r classification}
 classification_table(fit, level = "both")
 ```
 
-The average posterior probability is between 0.922 and 0.947 for the enrolment
-profiles and between 0.961 and 0.979 for the student classes — every class is
-assigned with high confidence on average. The odds of correct classification
-range from 13.6 to 49.3 for enrolments and 38.6 to 92.0 for students, all far
-above the value of 1 that a useless classifier would give.
+The average posterior for the student profiles is near one, and the odds of
+correct classification are in the hundreds — against the value of 1 that a
+useless classifier would give. For schools the same quantities are lower, and
+consistently so, which is the same story the entropy told.
 
-Note also that `n_modal` and `estimated_n` agree closely — 365 against 373 for
-profile 1, 370 against 373 for profile 2. Where a model separates poorly these
-two diverge, because the modal count claims a certainty the posteriors do not
-support. Here they do not diverge.
+Note also that `n_modal` and `estimated_n` agree closely at the student level.
+Where a model separates poorly these two diverge, because the modal count claims
+a certainty the posteriors do not support. At the school level they diverge a
+little — 30 and 30 by modal assignment against a fractional split — which is
+that weaker separation showing up in a second place.
+
+The two distributions behind the entropy number, which one number cannot show:
+
+```{r plot-entropy, fig.height = 3.6}
+plot(fit, what = "entropy")
+```
+
+```{r plot-posteriors, fig.height = 3.6}
+plot(fit, what = "posteriors")
+```
+
+Each ridge is scaled to its own maximum, which is the usual ridgeline
+convention: it compares *shapes* rather than profile sizes, so prevalence is
+printed in each label instead. A ridge with a long tail towards the middle is
+where a single summary number would have misled you.
 
 ## 8. What this model cannot tell you
 
-Three limits are worth naming, because each is invisible in the output above.
+Four limits are worth naming, because none of them is something the output announces on its own.
 
-**The labels are arbitrary.** "Profile 1" is high-engagement in this fit with
-this seed. Refitting can permute the numbering without changing the model at
-all. Any comparison between two fits has to align the labels first.
+**The labels are arbitrary.** Section 6 showed it happening: the same two
+profiles came back from the full-covariance fit with their numbers swapped.
+Nothing in the likelihood distinguishes them, so any comparison between two fits
+has to align the labels first, and no substantive claim should ever be attached to a profile number.
 
-**Sequence was not used.** The data carry each student's course order, and the
-model ignores it: an enrolment's profile is estimated the same way whether it
-was that student's first course or their fifteenth. So the classes describe a
-student's overall mix, not a trajectory, and "students who start strong and
-fade" could in principle land in the same class as "students who are
-consistently middling". Section 5 lays the order out after the fact so it can
-be read by eye, but reading it is not the same as modelling it.
+**The cross-sectional model has no time in it.** `school_engagement` carries no
+ordering at all — `sequences()` refused in section 5, and it was right to. Where
+an ordering does exist, section 5 measured what ignoring it costs: on
+`engagement_panel`, the same eleven parameters spent on transition
+probabilities instead of a mixture of students bought a better fit on every
+criterion. A mixture model describes an overall mix, not a trajectory, and
+"students who start strong and fade" can land in the same class as "students who
+are consistently middling".
 
-**Standardising within course removes a real comparison.** Every value is
-relative to classmates, so a student in a uniformly disengaged course can reach
-profile 1 with activity that would be unremarkable elsewhere. That was the right
-choice for asking who stands out among their peers. It is the wrong basis for
-asking who did the most work.
+**Twelve students is thin evidence about a school.** Section 7's entropy
+ordering is not a quirk of this fit; it is a structural feature of a two-level
+mixture with small groups. A school's class is inferred only from the mix of its
+members, and small groups give overlapping mixes. Reporting a school's modal
+class without its posterior overstates what is known.
+
+**These data are simulated.** That is what allowed section 3 to check the
+recovery and section 5 to check the persistence against 0.85. It is also the
+reason none of the numbers here is a finding about schools. They are findings
+about the estimator.
 
 ### When to use which
 
 Use `n_group_classes = 1` when the grouping exists only as a nuisance — the
 model then reduces to an ordinary latent profile analysis that still respects
 the clustering. Raise it above one when the question is about the units rather
-than the observations, as here. Use `fit_random_intercept()` instead when
-group differences are better described as a continuum than as types, and compare
-the two on the information criteria rather than assuming.
+than the observations, as in sections 2 to 4. Use `fit_transitions()` when the
+occasions are ordered and the question is about movement. Use
+`fit_random_intercept()` when group differences are better described as a
+continuum than as types, and compare the two on the information criteria rather
+than assuming.
+
+And run `descriptives()` before all of them. A model built to tell groups apart
+will return a fit whether or not the groups differ.
 
 ## References
 

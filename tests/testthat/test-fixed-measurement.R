@@ -117,7 +117,7 @@ test_that("every measurement model can be held, exactly and with the right count
          blocks = "response_probabilities", removed = 6L))
   invisible(lapply(cases, function(case) {
     fit_one <- function(classes, ...) {
-      suppressWarnings(multilpa(data, case$vars, "school", n_profiles = 2L,
+      quietly(multilpa(data, case$vars, "school", n_profiles = 2L,
         n_group_classes = classes, categorical = case$categorical,
         covariance_model = case$covariance_model, n_starts = 3, seed = 1, ...))
     }
@@ -143,9 +143,9 @@ test_that("incomplete indicators can be fitted with the measurement held", {
   data <- .fixed_fixture()
   data$a[c(3L, 9L, 40L)] <- NA
   data$b[c(5L, 9L)] <- NA
-  stage_one <- suppressWarnings(multilpa(data, c("a", "b"), "school",
+  stage_one <- quietly(multilpa(data, c("a", "b"), "school",
     n_profiles = 2L, n_group_classes = 1L, n_starts = 3, seed = 1, missing = "fiml"))
-  held <- suppressWarnings(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
+  held <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
     n_group_classes = 2L, n_starts = 3, seed = 1, missing = "fiml",
     start = starting_values(stage_one, what = "measurement"), fixed = "measurement"))
   expect_equal(held$means, stage_one$means)
@@ -155,7 +155,7 @@ test_that("incomplete indicators can be fitted with the measurement held", {
 
 test_that("a measurement-only start carries no mixing values", {
   data <- .fixed_fixture()
-  fit <- suppressWarnings(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
+  fit <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                                    n_group_classes = 1L, n_starts = 2, seed = 1))
   everything <- starting_values(fit)
   measurement <- starting_values(fit, what = "measurement")
@@ -168,7 +168,7 @@ test_that("a measurement-only start carries no mixing values", {
 
 test_that("a `fixed` request that cannot be met is refused by class", {
   data <- .fixed_fixture()
-  fit <- suppressWarnings(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
+  fit <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                                    n_group_classes = 1L, n_starts = 2, seed = 1))
   start <- starting_values(fit, what = "measurement")
   expect_error(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
@@ -262,16 +262,39 @@ test_that("the stages table describes staged and ordinary fits alike", {
 
 test_that("held values survive a fit that performs no update at all", {
   data <- .fixed_fixture()
-  stage_one <- suppressWarnings(multilpa(data, c("a", "b"), "school",
+  stage_one <- quietly(multilpa(data, c("a", "b"), "school",
     n_profiles = 2L, n_group_classes = 1L, n_starts = 2, seed = 1))
   start <- starting_values(stage_one, what = "measurement")
   # max_iter = 0 runs no maximization, so nothing can put the held values back
-  # afterwards. They must already be in place at every restart, including the
-  # random ones, or this reports a measurement solution nobody chose.
-  evaluated <- suppressWarnings(multilpa(data, c("a", "b"), "school",
-    n_profiles = 2L, n_group_classes = 2L, n_starts = 4, seed = 3,
+  # afterwards. They must already be in place, or this reports a measurement
+  # solution nobody chose. `max_iter = 0` with a `start` now evaluates that
+  # start alone, so `n_starts` is 1 here; the random-restart half of the old
+  # contract moved to the test below, which needs a maximization to exercise it.
+  evaluated <- quietly(multilpa(data, c("a", "b"), "school",
+    n_profiles = 2L, n_group_classes = 2L, n_starts = 1, seed = 3,
     max_iter = 0L, start = start, fixed = "measurement"))
   expect_equal(evaluated$means, stage_one$means)
   expect_equal(evaluated$variances, stage_one$variances)
   expect_identical(evaluated$iterations, 0L)
+  expect_identical(evaluated$best_start, 1L)
+})
+
+test_that("held values survive every random restart when EM does run", {
+  data <- .fixed_fixture()
+  stage_one <- quietly(multilpa(data, c("a", "b"), "school",
+    n_profiles = 2L, n_group_classes = 1L, n_starts = 2, seed = 1))
+  start <- starting_values(stage_one, what = "measurement")
+  # With `max_iter > 0` every one of the `n_starts` restarts runs a real EM
+  # sequence, so the held blocks have to be reinstated at each of them. This is
+  # the half of the contract that `max_iter = 0` can no longer check, now that
+  # it evaluates the supplied start alone.
+  fitted <- quietly(multilpa(data, c("a", "b"), "school",
+    n_profiles = 2L, n_group_classes = 2L, n_starts = 4, seed = 3,
+    max_iter = 25L, start = start, fixed = "measurement"))
+  expect_equal(fitted$means, stage_one$means)
+  expect_equal(fitted$variances, stage_one$variances)
+  expect_gt(fitted$iterations, 0L)
+  # Every restart, not merely the winning one, must report the held solution.
+  starts_table <- as.data.frame(fitted, what = "starts")
+  expect_identical(nrow(starts_table), 4L)
 })

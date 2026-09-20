@@ -52,7 +52,9 @@
 #'   rather than folded into this table, so `information_criteria()` stays a
 #'   pure likelihood-penalty summary.
 #'
-#' @param x A fitted `multilpa` model.
+#' @param x A fitted model of this package: a `multilpa`,
+#'   `multilpa_covariates`, `multilpa_random_intercept` or
+#'   `multilpa_transitions` fit.
 #' @param definitions `FALSE`, the default, returns the numbers alone. `TRUE`
 #'   appends a `definition` column carrying each criterion's formula, which is
 #'   the same text as the Details section below. It describes one criterion per
@@ -117,7 +119,7 @@
 #'   definition; use one convention consistently across compared candidates.
 #'   Individual sample sizes exclude rows with no observed indicators. For a
 #'   continuous random-intercept fit, group classification entropy is undefined,
-#'   so group-level `awe` and `icl` are `NA`.
+#'   so group-level `awe`, `icl` and `clc` are `NA`.
 #' @references Schwarz, G. (1978). Estimating the dimension of a model.
 #'   Annals of Statistics, 6, 461--464. Sclove, S. L. (1987). Application of
 #'   model-selection criteria to some problems in multivariate analysis.
@@ -266,7 +268,9 @@ information_criteria <- function(x, definitions = FALSE,
 #' sizes, average posterior probability in the assigned class, and the odds of
 #' correct classification.
 #'
-#' @param x A fitted `multilpa` model.
+#' @param x A fitted model of this package: a `multilpa`,
+#'   `multilpa_covariates`, `multilpa_random_intercept` or
+#'   `multilpa_transitions` fit.
 #' @param level `"individuals"` for latent profiles, `"groups"` for latent group
 #'   classes, or `"both"` to stack them in one table.
 #' @param detail Removed. It used to change the columns this verb returns, which
@@ -350,7 +354,9 @@ classification_table <- function(x, level = c("individuals", "groups", "both"),
 #' conditions on the *true* class instead, and the two are different numbers,
 #' not two spellings of one table.
 #'
-#' @param x A fitted `multilpa` model.
+#' @param x A fitted model of this package: a `multilpa`,
+#'   `multilpa_covariates`, `multilpa_random_intercept` or
+#'   `multilpa_transitions` fit.
 #' @param level `"individuals"` for latent profiles, `"groups"` for latent group
 #'   classes, or `"both"` to stack them in one table.
 #' @return A base `data.frame`, one row per level, assigned class and class,
@@ -467,7 +473,9 @@ average_posteriors <- function(x, level = c("individuals", "groups", "both")) {
 #' Reports the zero-to-one relative entropy at each level, alongside the raw
 #' classification entropy the entropy-penalized information criteria use.
 #'
-#' @param x A fitted `multilpa` model.
+#' @param x A fitted model of this package: a `multilpa`,
+#'   `multilpa_covariates`, `multilpa_random_intercept` or
+#'   `multilpa_transitions` fit.
 #' @return A base `data.frame`, one row per level the fit has, with the columns
 #'   \describe{
 #'     \item{`level`}{character: `"individuals"`, and `"groups"` when the fit

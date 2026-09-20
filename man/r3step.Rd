@@ -29,7 +29,13 @@ predicts group-class membership.}
 
 \item{vcov_type}{`"observed"` uses the observed information; `"robust"` uses
 the sandwich clustered on the fit's groups, which is the honest choice when
-the covariates are measured on observations nested inside them.}
+the covariates are measured on observations nested inside them. `"robust"`
+needs more independent groups than the regression has coefficients, because
+the group score contributions sum to zero at the estimate and so span at
+most one dimension fewer than there are groups; with too few it is refused
+with `multilpa_too_few_groups` rather than reporting a variance that is
+singular, or, with a single group, numerically zero. `"observed"` remains
+available there and does not allow for the nesting.}
 
 \item{adjust}{Multiplicity correction applied across the covariate terms,
 passed to [stats::p.adjust()]. `"BH"` by default; `"none"` leaves the
@@ -45,7 +51,9 @@ A base `data.frame` with one row per non-reference class and term,
   by `adjust`, which is also recorded in the result's `adjust` attribute;
   it is `NA` on the intercept rows, which are not part of the tested family.
   Coefficients are log odds against the final class, which is the reference,
-  matching [fit_covariates()].
+  matching [fit_covariates()]; that class is named in the result's
+  `reference_class` attribute, and the variance that was used in its
+  `vcov_type` attribute.
 }
 \description{
 The R3STEP approach. A multinomial logit of class membership on covariates,

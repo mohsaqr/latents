@@ -49,8 +49,12 @@ covariance matrices) or `"equal"` (shared across profiles).}
 \item{n_starts}{Number of EM starts, used for both stages.}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-`max_iter = 0` performs no update and returns the model evaluated at
-`start`, so that `logLik()` scores a parameter set supplied from elsewhere.}
+`max_iter = 0` performs no update. With `start`, it returns the model
+evaluated at exactly those values, whatever `n_starts` is, so that
+`logLik()` scores a parameter set supplied from elsewhere rather than the
+best of some random initializations that were never asked for. Without
+`start` there is nothing to evaluate at, so the random initializations are
+scored and the highest is returned.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
 absolute change no greater than `tol * (1 + abs(previous log likelihood))`.}

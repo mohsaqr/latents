@@ -23,7 +23,8 @@
 
 \item{what}{Which table to return. `"profiles"` gives the measurement model,
 `"coefficients"` the membership regressions at both levels, `"posteriors"`
-the individual posteriors, and `"group_posteriors"` the group posteriors.}
+the individual posteriors, `"group_posteriors"` the group posteriors, and
+`"starts"` the restart diagnostics.}
 
 \item{scale}{For `what = "profiles"`, `"raw"` reports the estimates in input
 units and `"standardized"` divides each indicator's deviation from its
@@ -44,14 +45,27 @@ A base `data.frame`. `"profiles"` has one row per profile and
   indicator, with columns `profile`, `indicator`, `mean`, `variance`, and
   `standard_deviation`. `"coefficients"` has one row per estimated
   membership coefficient, with columns `level` (`"profile"` or `"group"`),
-  `outcome` (the class the coefficient predicts), `term`, and `estimate`;
-  these models carry no standard errors, so none is reported. `"posteriors"`
-  and `"group_posteriors"` match the corresponding [as.data.frame.multilpa()]
-  tables.
+  `outcome` (the class the coefficient predicts), `term`, `parameter` (always
+  `"logit"`, because these are multinomial logits and not probabilities), and
+  `estimate`; the standard errors are not in this table, which reports the
+  point estimates the fit stores -- [parameter_inference()] reports them with
+  their standard errors and intervals. `"posteriors"` and
+  `"group_posteriors"` match the corresponding [as.data.frame.multilpa()]
+  tables. `"starts"` has one row per EM start, with columns `start`,
+  `log_likelihood`, `converged`, `iterations` and `error`.
 }
 \description{
 Tidy a one-step membership-covariate fit
 }
 \examples{
-# After fitting: as.data.frame(with_predictors, what = "coefficients")
+set.seed(1)
+example_data <- data.frame(group = rep(seq_len(20), each = 10),
+                           z = rnorm(200))
+example_data$y <- rnorm(200,
+  ifelse(runif(200) < plogis(example_data$z), -3, 3))
+with_predictors <- fit_covariates(example_data, "y", "group",
+                                  n_profiles = 2, n_group_classes = 1,
+                                  profile_covariates = "z", n_starts = 2,
+                                  seed = 1)
+as.data.frame(with_predictors, what = "coefficients")
 }

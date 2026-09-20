@@ -17,9 +17,9 @@
 # is deliberately not the one-step maximum likelihood multilpa computes.
 
 suite_multilevlca <- function() {
-  if (!requireNamespace("multilevLCA", quietly = TRUE)) {
-    stop("suite 'multilevlca' needs the multilevLCA package")
-  }
+  require_suite_packages(
+    "multilevLCA",
+    reason = "the third independent two-level implementation and the dataTOY and dataIEA data")
   rbind(
     .multilevlca_case(3L, 2L), .multilevlca_case(2L, 2L), .multilevlca_case(3L, 3L),
     .multilevlca_published()
@@ -38,7 +38,7 @@ suite_multilevlca <- function() {
   reference <- multilevLCA::multiLCA(observed, Y = items, iT = profiles,
                                      id_high = "id_high", iM = group_classes,
                                      fixedpars = 0, verbose = FALSE)
-  fit <- multilpa(observed, indicators = items, group = "id_high",
+  fit <- multilpa(observed, vars = items, id = "id_high",
                   n_profiles = profiles, n_group_classes = group_classes,
                   categorical = items, n_starts = 30L, seed = 1L,
                   tol = 1e-12, max_iter = 20000L)
@@ -104,9 +104,12 @@ suite_multilevlca <- function() {
   # level order, so category one is the zero response.
   responses <- lapply(seq_along(items), function(item) {
     positive <- as.numeric(reference$mPhi[item, ])
-    cbind(1 - positive, positive)
+    # `cbind()` names the second column after the expression it was given, and
+    # multilpa refuses a start whose response labels do not match the data's
+    # own category levels. The matrix carries no labels.
+    unname(cbind(1 - positive, positive))
   })
-  evaluated <- multilpa(complete, indicators = items, group = "COUNTRY",
+  evaluated <- multilpa(complete, vars = items, id = "COUNTRY",
                         n_profiles = 5L, n_group_classes = 2L, categorical = items,
                         n_starts = 1L, max_iter = 0L,
                         start = starting_values(list(

@@ -248,13 +248,23 @@ test_that("the catalogue lists exactly the views the methods accept", {
   expect_setequal(unique(catalogue$group),
                   c("measurement", "structure", "diagnostics", "selection"))
 
-  # The invariant that matters: a view added to the method but forgotten in the
+  # The invariant that matters: a view added to any method but forgotten in the
   # catalogue, or listed but never implemented, fails here rather than silently
   # going undiscoverable. "enumeration" belongs to the enumeration method.
-  fit_views <- eval(formals(plot.multilpa)$what)
-  expect_setequal(setdiff(catalogue$type, "enumeration"), fit_views)
-  expect_true(all(eval(formals(plot.multilpa_covariates)$what) %in%
-                    catalogue$type))
+  #
+  # This previously compared the catalogue against `plot.multilpa` alone, which
+  # made it enforce the omission it was meant to catch: `"random_intercepts"` is
+  # offered only by the random-intercept method, so anchoring the catalogue to
+  # one method's views required that row to be absent. The catalogue is the
+  # union over every method, so compare it with the union.
+  methods <- list(plot.multilpa, plot.multilpa_covariates,
+                  plot.multilpa_random_intercept)
+  method_views <- unique(unlist(lapply(methods, function(method)
+    eval(formals(method)$what)), use.names = FALSE))
+  expect_setequal(setdiff(catalogue$type, "enumeration"), method_views)
+  invisible(lapply(methods, function(method) {
+    expect_true(all(eval(formals(method)$what) %in% catalogue$type))
+  }))
 })
 
 test_that("every view of a Gaussian fit draws and returns the fit invisibly", {

@@ -14,7 +14,10 @@
 \item{...}{Additional arguments passed to matrix printing.}
 }
 \value{
-The summary, invisibly.
+The summary, invisibly. Called for the side effect of printing the
+  estimates block by block, the effective class memberships at both levels,
+  the likelihood and information criteria, any convergence or boundary
+  warnings, and the restart diagnostics.
 }
 \description{
 A human-facing report of the fit. The same content is available as tidy

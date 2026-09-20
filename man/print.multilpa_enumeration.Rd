@@ -12,11 +12,22 @@
 \item{...}{Passed to the underlying `data.frame` printing.}
 }
 \value{
-The input, invisibly.
+The input, invisibly. Called for the side effect of printing the
+  candidate grid: one line per candidate with its class counts, log
+  likelihood, parameter count, BIC, SABIC, profile entropy and convergence,
+  then a count of the candidates that did not converge.
 }
 \description{
 Print a class-enumeration grid
 }
 \examples{
-# After enumerating: print(candidates)
+set.seed(7)
+example_data <- data.frame(
+  school = rep(seq_len(12), each = 10),
+  score_a = rnorm(120), score_b = rnorm(120)
+)
+candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
+                                n_profiles = 1:2, n_group_classes = 1,
+                                n_starts = 2, seed = 1)
+print(candidates)
 }

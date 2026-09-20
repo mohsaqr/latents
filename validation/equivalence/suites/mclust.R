@@ -34,7 +34,9 @@
 }
 
 suite_mclust <- function() {
-  if (!requireNamespace("mclust", quietly = TRUE)) stop("suite 'mclust' needs mclust")
+  require_suite_packages(
+    "mclust",
+    reason = "the Gaussian-mixture reference and the acidity and thyroid data")
   # Mclust() resolves its model-search function by name, so the namespace has to
   # be attached rather than only loaded.
   attached <- "package:mclust" %in% search()
@@ -109,7 +111,7 @@ suite_mclust <- function() {
   as_published <- mclust::Mclust(model_data, G = g, modelNames = model,
                                  verbose = FALSE)
   covariance <- .mclust_covariance(model)
-  fit <- multilpa(frame, indicators = indicators, group = "unit", n_profiles = g,
+  fit <- multilpa(frame, vars = indicators, id = "unit", n_profiles = g,
                   n_group_classes = 1L, n_starts = 60L, seed = 1L,
                   tol = 1e-13, max_iter = 20000L,
                   covariance_model = covariance$covariance_model,

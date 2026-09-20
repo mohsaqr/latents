@@ -73,7 +73,7 @@ test_that("categorical bootstraps preserve probability constraints and data iden
     bounds <<- c(bounds, min_probability)
     real_fit(..., min_probability = min_probability)
   })
-  result <- suppressWarnings(bootstrap_lrt(small, large, d, iter = 2,
+  result <- quietly(bootstrap_lrt(small, large, d, iter = 2,
                                            n_starts = 1, max_iter = 2000, seed = 5))
   expect_equal(bounds, rep(.1, 4))
   expect_equal(nrow(result$replicates), 2L)

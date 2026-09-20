@@ -116,9 +116,18 @@ test_that("categorical pairs are assessed with a chi-square", {
 test_that("a covariate fit is assessed too", {
   data <- .dependent_data()
   data$x <- stats::rnorm(nrow(data))
-  fit <- fit_covariates(data, c("a", "b", "c"), "school", n_profiles = 2,
-                        n_group_classes = 2, profile_covariates = "x",
-                        n_starts = 4, seed = 1)
+  # This fixture is separated: a membership coefficient drifts towards -Inf, so
+  # the logit step never reaches a stationary point and the fit is genuinely not
+  # a maximum. Earlier versions called it converged because `optim()` returned
+  # code 0. Assert the qualification rather than muffling it -- the residuals
+  # below are still well defined, since they read posteriors, not the logits.
+  fit <- NULL
+  expect_warning(
+    fit <- fit_covariates(data, c("a", "b", "c"), "school", n_profiles = 2,
+                          n_group_classes = 2, profile_covariates = "x",
+                          n_starts = 4, seed = 1),
+    class = "multilpa_unconverged")
+  expect_false(fit$converged)
   residuals <- bivariate_residuals(fit, data)
 
   expect_equal(nrow(residuals), 3L * 2L)

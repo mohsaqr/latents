@@ -21,6 +21,16 @@ options(digits = 4, width = 92)
 library(multilpa)
 ```
 
+Every refusal in this package is a condition with a class, so the examples below
+that show one catch it by class rather than by matching message text. This
+helper only wraps the message to the width of the page:
+
+```{r refusal-helper}
+refusal <- function(condition) {
+  writeLines(strwrap(conditionMessage(condition), width = 88))
+}
+```
+
 ## The question is about schools, not students
 
 Latent profile analysis asks *what kinds of people are there*. This package
@@ -192,6 +202,62 @@ Note also that every sample-size-dependent criterion is reported twice, under
 sizes — 60 schools or 720 students — and neither is privileged. Pick one
 convention and keep it for the whole analysis rather than choosing per table.
 
+### Testing the candidate the criteria disagreed about
+
+The grid kept every model it fitted, so the candidate AIC preferred can be taken
+out of it by name. Nothing has to be indexed by its position in the table:
+
+```{r candidate}
+three_profiles <- candidate_fit(candidates, n_profiles = 3, n_group_classes = 2)
+
+three_profiles
+```
+
+Two of its three profiles are the two we already have. The third pins
+participation near the top of the scale with almost no variance around it, which
+is what a profile looks like when it is absorbing a ceiling rather than
+describing a kind of student. Is it real? A parametric bootstrap answers that
+without a chi-square approximation: it simulates data from the smaller model,
+refits both models to every simulated dataset, and reads the observed statistic
+against the distribution that actually came out.
+
+```{r bootstrap}
+two_profiles <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 2)
+
+comparison <- bootstrap_lrt(two_profiles, three_profiles,
+                            iter = 9, n_starts = 2, max_iter = 2000, seed = 1)
+
+comparison
+```
+
+Nine replicates is far too few to decide anything, and it is what keeps this
+vignette building in seconds. The Monte Carlo standard error printed beside the
+p-value is the honest measure of how coarse the answer is; use several hundred
+replicates in real work. Even at nine the answer is not encouraging for the
+third profile: a dataset simulated from the two-profile model already produced a
+statistic as large as the one observed.
+
+```{r plot-bootstrap, fig.height = 3.8}
+plot(comparison)
+```
+
+A p-value is reported at all only because every replicate was usable. When one
+is not, the p-value is withheld rather than computed from the replicates that
+happened to work, so the per-replicate record is part of the result:
+
+```{r bootstrap-replicates}
+as.data.frame(comparison, what = "replicates")
+```
+
+One more thing the grid will not do: hand back a candidate it never fitted. A
+cell that is not in the grid is an error rather than a `NULL` that would flow
+silently into whatever came next.
+
+```{r candidate-refused}
+tryCatch(candidate_fit(candidates, n_profiles = 4, n_group_classes = 2),
+         multilpa_unknown_candidate = refusal)
+```
+
 The criteria for the chosen model come back in the shape a model-comparison
 table is published in — one row, one column per criterion:
 
@@ -298,6 +364,28 @@ convention: it compares the *shapes* and not the profile sizes, so prevalence
 is printed in each label instead. A ridge with a long tail towards the middle
 is where a single summary number would have misled you.
 
+**How big is each class, and how confidently?** The classification table is one
+row per class at each level. It reports the class size twice — once from modal
+assignment, once as the sum of the posteriors — because the two differ by
+exactly the classification uncertainty entropy summarised. The odds of correct
+classification put that on a scale where five is conventionally adequate:
+
+```{r classification-table}
+classification_table(fit, level = "both")
+```
+
+The `average_posterior` column above is the diagonal of a square table. The
+off-diagonal is which class a unit is confused *with*, and each assigned class's
+row is a distribution summing to one:
+
+```{r average-posteriors}
+average_posteriors(fit, level = "both")
+```
+
+A school assigned to group class 1 carries around eight percent of its posterior
+on the other class, which is the 0.81 group entropy written out per class rather
+than pooled into one number.
+
 **Are the estimates precise?** Standard errors, with the measurement model:
 
 ```{r errors}
@@ -324,6 +412,15 @@ bivariate_residuals(fit, data = school_engagement)
 `residual` is their difference and the rows are comparable. All are small here;
 a large one would argue for `covariance_model = "full"`.
 
+That was one row per profile and pair, which is the default. `by = "overall"`
+pools the profiles into one residual per pair, and `diagnostics()` takes the
+same argument and forwards it, so the summary describes the residuals you asked
+for rather than a different set under the same name:
+
+```{r diagnostics-overall}
+diagnostics(fit, by = "overall")
+```
+
 **Does the profile structure account for the nesting?** The ICCs from the first
 section said roughly an eighth of each indicator's variance lay between schools.
 Split the same calculation by assigned profile:
@@ -336,6 +433,241 @@ The ICCs collapse towards zero. Within a profile the schools no longer differ,
 which is precisely the model's claim: schools differ in the *mix* of students
 they serve, not in the students themselves. The raw data agree with the model
 without being asked to.
+
+Everything printed in this section and the ones before it is also available as a
+single call, which is what to run first and what not to stop at. `report()` is a
+first look; every table it prints is what one of the verbs above returns, and
+those are where the numbers come from when you need them as data:
+
+```{r report}
+report(fit, plots = FALSE)
+```
+
+## Relating the profiles to something the model never saw
+
+A profile earns its keep by predicting something outside the indicators that
+defined it. Two shortcuts are tempting and both distort the answer. Estimating
+the outcome jointly with the measurement model lets the outcome pull the profiles
+towards itself, so the profiles being reported are no longer the ones that were
+inspected. Assigning each student to their modal profile and comparing group
+means instead throws away the fact that some assignments are wrong, and
+attenuates every difference it then reports. The three-step family does neither.
+
+These data carry no outcome, so here is one, drawn with a twelve-point gap
+between the two kinds of student, and a covariate drawn to predict which kind a
+student is. Both are simulated, both are seeded, and neither was available to
+the model that was fitted above:
+
+```{r outcome}
+set.seed(2024)
+with_extra <- transform(school_engagement,
+                        exam = round(55 + 12 * engaged + rnorm(720, sd = 8), 1),
+                        prior_grade = round(rnorm(720, 2 * engaged), 2))
+
+str(with_extra)
+```
+
+The correction starts from how often a student who truly belongs to one profile
+is assigned to the other. This is not the average-posterior table from the last
+section: that conditioned on the profile a student was *assigned* to, this
+conditions on the profile they are actually in, and the correction needs the
+second:
+
+```{r classification-errors}
+classification_errors(fit)
+```
+
+Those probabilities become one weight per student per profile. The weights are
+not probabilities: a student assigned to one profile carries a small *negative*
+weight for the other, which is the arithmetic that undoes the attenuation.
+
+```{r bch}
+head(bch_weights(fit), 4)
+```
+
+`three_step()` applies them. Asked for a contrast, it reports the difference
+between the profiles rather than a mean per profile, because a difference is the
+quantity that has a null worth testing:
+
+```{r three-step}
+three_step(fit, data = with_extra, outcome = "exam", contrast = "pairs")
+```
+
+Close to the twelve points the outcome was drawn with. So is the naive modal
+comparison, shown for contrast:
+
+```{r three-step-modal}
+three_step(fit, data = with_extra, outcome = "exam", contrast = "pairs",
+           method = "modal")
+```
+
+The two agree here, and the reason is in the table two chunks above: under a
+half of one percent of students are misclassified, so there is almost nothing
+for the correction to undo. That is the useful lesson rather than a
+disappointing one. The gap between these two rows is a function of how bad the
+classification is, so `classification_errors()` is what tells you in advance
+whether the correction will matter.
+
+`three_step()` asks what a profile predicts. `r3step()` asks the reverse: what
+predicts the profile. It regresses membership on the covariates with the same
+correction applied, reporting log odds against the last profile as reference:
+
+```{r r3step}
+r3step(fit, data = with_extra, covariates = "prior_grade")
+```
+
+Profile 1 is the low-engagement profile, so a negative slope says a higher prior
+grade makes the low profile less likely, which is the direction the covariate
+was drawn with. Sixty schools are enough to ask for a sandwich clustered on
+schools instead of the model-based information:
+
+```{r r3step-robust}
+r3step(fit, data = with_extra, covariates = "prior_grade",
+       vcov_type = "robust")
+```
+
+### A standard error that cannot exist is refused
+
+A cluster-robust variance is a sum of one contribution per independent group,
+and those contributions sum to zero at the estimate — that sum *is* the
+condition the estimate solves. With too few groups the result is singular, and
+with one group it is exactly zero. Neither is a small standard error. Fit the
+same model to two schools and ask for the clustered version:
+
+```{r refuse-clusters}
+two_schools <- subset(with_extra, school <= 2)
+
+tiny <- multilpa(two_schools, vars, id = "school", n_profiles = 2,
+                 n_group_classes = 1, n_starts = 4, seed = 1)
+
+tryCatch(three_step(tiny, data = two_schools, outcome = "exam"),
+         multilpa_too_few_groups = refusal)
+```
+
+The variance that *can* exist here is the unclustered one, and it
+has to be asked for by name, so that a report of these numbers has to say the
+nesting was ignored:
+
+```{r independent}
+three_step(tiny, data = two_schools, outcome = "exam",
+           vcov_type = "independent")
+```
+
+### The one-step alternative
+
+The three-step methods hold the measurement fixed on purpose. The one-step model
+estimates the covariate effect and the profiles together, so the covariate
+*does* help shape the profiles. That is the trade, and the package offers both
+rather than naming one correct:
+
+```{r covariates}
+covariate_fit <- fit_covariates(with_extra, vars, id = "school",
+                                n_profiles = 2, n_group_classes = 2,
+                                profile_covariates = "prior_grade",
+                                n_starts = 2, seed = 1)
+
+as.data.frame(covariate_fit, what = "coefficients")
+```
+
+The slope has the same sign and nearly the same size as `r3step()` gave it,
+which is what should happen when the profiles are this well separated: there is
+little for the covariate to move. A covariate fit is a fit like any other, so
+the same inference verb works on it. The membership coefficients are the last
+rows it returns, after the measurement model:
+
+```{r covariate-inference}
+tail(parameter_inference(covariate_fit), 4)
+```
+
+The slope's standard error is what the one-step model buys over the coefficient
+table above, which carries the estimate alone.
+
+## Building the same model a different way
+
+### Deciding the measurement before asking about groups
+
+Everything so far estimated the measurement model and the group structure at the
+same time, which means adding a group class can move the profiles it was meant
+to describe. Staging forbids that: the measurement is fitted once, on its own,
+and then held while the group classes are estimated.
+
+```{r staged}
+staged <- fit_staged(school_engagement, vars, id = "school", n_profiles = 2,
+                     n_group_classes = 2, n_starts = 6, tol = 1e-10, seed = 1)
+
+as.data.frame(staged, what = "stages")
+```
+
+One row per stage, and two parameter counts. `parameters` counts what that stage
+estimated, which is what to use when comparing staged fits with one another;
+`parameters_with_measurement` adds the held blocks back, which is what to use
+against a jointly estimated fit. First-stage uncertainty is not propagated into
+the second, so everything the second stage reports is conditional on a
+measurement solution treated as known.
+
+The staged fit is a `multilpa` object, so the answer comes back from the same
+accessor as before:
+
+```{r staged-probabilities}
+as.data.frame(staged, what = "profile_probabilities")
+```
+
+What a stage hands to the next one is a starting-value object. It is also what
+to keep when a solution should be reproduced exactly later, or handed to a fit
+on new data:
+
+```{r starts}
+starting_values(fit, what = "measurement")
+```
+
+Its blocks are indexed by position, because that is what the fitter expects; the
+labelled view is the accessor rather than the list:
+
+```{r starts-table}
+as.data.frame(starting_values(fit))
+```
+
+A staged fit cannot be bootstrapped against a freely estimated one. One holds
+its measurement and the other does not, so the smaller model is not a
+restriction of the larger and the likelihood-ratio statistic would compare two
+parameter counts that do not correspond:
+
+```{r refuse-nesting}
+tryCatch(bootstrap_lrt(flat, staged, iter = 9, seed = 1),
+         multilpa_bad_nesting = refusal)
+```
+
+### When schools differ by degree rather than by kind
+
+Two latent classes of school is one answer to *how do schools differ*. The other
+is that they do not fall into kinds at all: each school simply sits a little
+higher or lower on every indicator. That is a random intercept, and it is a
+different model rather than a variant of this one.
+
+```{r random-intercept}
+shifted <- fit_random_intercept(school_engagement, vars, id = "school",
+                                n_profiles = 2, n_starts = 2, seed = 1)
+
+summary(shifted)
+```
+
+The estimated random-intercept standard deviation is about two hundredths of a
+point on indicators that span roughly ten: the model was given the chance to say
+schools sit at different levels and found essentially nothing. Its BIC is worse
+than the two-class model's, and the whole of this vignette says why. The schools
+in these data do not differ in *where* their students sit, they differ in *which
+students* they contain, and only a model with a second latent variable can put
+that difference anywhere.
+
+The posterior intercept for each school is a table like everything else:
+
+```{r random-intercepts}
+head(as.data.frame(shifted, what = "random_intercepts"))
+```
+
+This family provides no standard errors either, and asking for them raises a
+classed condition rather than returning something that looks like one. The last
+section shows that refusal on another family.
 
 ## When students are measured more than once
 
@@ -355,6 +687,47 @@ str(engagement_panel)
 each row was generated from, with students staying put from one wave to the next
 with probability 0.85.
 
+The first thing to do with repeated measures is to look at them in order. Fitted
+with `time =`, the model stores the ordering without using it, and the
+assignments can then be read back as sequences. Here the grouping variable is
+the student rather than the school, so a latent group class is a kind of
+*trajectory*:
+
+```{r panel-fit}
+panel_fit <- multilpa(engagement_panel, c("homework_hours", "participation"),
+                      id = "student", time = "wave", n_profiles = 2,
+                      n_group_classes = 2, n_starts = 6, seed = 1)
+
+head(sequences(panel_fit))
+```
+
+One row per observation is the shape to compute on. One row per student, one
+column per wave, is the shape to look at, and the shape sequence-analysis
+packages expect:
+
+```{r sequences-wide}
+head(sequences(panel_fit, format = "wide"))
+```
+
+```{r plot-sequences, fig.height = 4.6}
+plot(panel_fit, what = "sequences")
+```
+
+Before reading anything into the picture, check that the two kinds of trajectory
+are built on comparable amounts of data. A class whose students are
+systematically shorter or gappier is a different finding from a class whose
+students simply differ in profile mix, and the prevalence table cannot show it:
+
+```{r sequence-summary}
+sequence_summary(panel_fit)
+```
+
+Every student is observed at every wave and no sequence has a hole in it, so the
+two classes are comparing like with like.
+
+The model above still ignores the ordering it stored. The model that uses it
+estimates where students move:
+
 ```{r transitions}
 moves <- fit_transitions(engagement_panel, c("homework_hours", "participation"),
                          id = "student", time = "wave", n_profiles = 2,
@@ -369,12 +742,16 @@ exact, which is what four waves of 120 students supports.
 
 ## What the package refuses
 
-A model family without standard errors says so, by raising a condition you can
-catch by class rather than by matching message text:
+Three refusals have already appeared in this vignette: a cluster-robust standard
+error with too few groups, a bootstrap comparison whose two models are not
+nested, and a candidate that was never enumerated. Here is the fourth. A model
+family for which no standard error is implemented says so, rather than returning
+a number that would look like one:
 
-```{r refuses, error = TRUE}
-vcov(moves)
+```{r refuses}
+tryCatch(vcov(moves), multilpa_no_inference = refusal)
 ```
 
-Every refusal in the package is a classed condition; `?"multilpa-conditions"`
-lists all of them.
+Every refusal in the package is a classed condition, which is why every
+`tryCatch()` above names the class it is catching instead of matching message
+text. `?"multilpa-conditions"` lists all of them.

@@ -400,10 +400,24 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   gradient <- function(parameters) {
     -colSums(.multilpa_cov_group_scores(parameters, x, object))
   }
+  ## Every block of the parameter vector is put on its own unit before the
+  ## finite-difference Hessian sees it, or the information matrix's condition
+  ## number tracks the units the indicators and covariates happened to arrive
+  ## in and is then declared singular for no other reason.
   scale <- c(as.vector(t(sqrt(object$variances))),
              rep(1, length(theta) - length(object$means)))
-  profile_scale <- 1 / sqrt(colMeans(do.call(rbind, object$profile_design)^2))
-  group_scale <- 1 / sqrt(colMeans(object$group_design^2))
+  ## The off-diagonal Cholesky coordinates carry indicator units; the logged
+  ## diagonal does not. This is the same scaling the covariate-free path in
+  ## `parameter_inference()` applies, shared through one helper.
+  dimension <- length(.multilpa_continuous_names(object))
+  if (.multilpa_cov_is_full(object) && dimension > 0L) {
+    covariance_scale <- .multilpa_covariance_coordinate_scale(
+      object$variances, dimension, .multilpa_cov_spread_rows(object))
+    scale[length(object$means) + seq_along(covariance_scale)] <- covariance_scale
+  }
+  ## A coefficient's unit is the reciprocal of its predictor's.
+  profile_scale <- 1 / .multilpa_design_scale(do.call(rbind, object$profile_design))
+  group_scale <- 1 / .multilpa_design_scale(object$group_design)
   membership <- length(theta) - length(object$profile_coefficients) -
     length(object$group_coefficients)
   scale[membership + seq_len(length(theta) - membership)] <-

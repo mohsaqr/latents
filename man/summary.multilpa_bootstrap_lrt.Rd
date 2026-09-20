@@ -21,5 +21,17 @@ An object of class `summary_multilpa_bootstrap_lrt`, with a `print`
 Summarise a parametric bootstrap likelihood-ratio comparison
 }
 \examples{
-# After bootstrapping: summary(comparison)
+set.seed(1)
+example_data <- data.frame(
+  school = rep(seq_len(10), each = 10),
+  score = rnorm(100, rep(c(-2, 2), each = 50))
+)
+smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+                    n_group_classes = 1, n_starts = 2, seed = 1)
+larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+                   n_group_classes = 1, n_starts = 2, seed = 1)
+# `iter` is small so the example runs quickly; use many more for inference.
+comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+                            max_iter = 2000, tol = 1e-6, seed = 1)
+summary(comparison)
 }

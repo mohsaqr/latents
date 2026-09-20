@@ -14,11 +14,21 @@
 \item{...}{Passed to the underlying `data.frame` printing.}
 }
 \value{
-The summary, invisibly.
+The summary, invisibly. Called for the side effect of printing the
+  model line, the measurement model, the profile probabilities and effective
+  memberships, the likelihood and information criteria, the integration
+  diagnostics, and the restart diagnostics.
 }
 \description{
 Print a random-intercept LPA summary
 }
 \examples{
-# After fitting: print(summary(random_intercept), digits = 3)
+set.seed(8)
+example_data <- data.frame(group = rep(seq_len(12), each = 5),
+                           score_a = rnorm(60), score_b = rnorm(60))
+random_intercept <- fit_random_intercept(example_data,
+                                         c("score_a", "score_b"), "group",
+                                         n_profiles = 2, n_starts = 2,
+                                         seed = 1)
+print(summary(random_intercept), digits = 3)
 }

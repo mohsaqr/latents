@@ -7,7 +7,9 @@
 information_criteria(x, definitions = FALSE, format = c("wide", "long"))
 }
 \arguments{
-\item{x}{A fitted `multilpa` model.}
+\item{x}{A fitted model of this package: a `multilpa`,
+`multilpa_covariates`, `multilpa_random_intercept` or
+`multilpa_transitions` fit.}
 
 \item{definitions}{`FALSE`, the default, returns the numbers alone. `TRUE`
 appends a `definition` column carrying each criterion's formula, which is
@@ -86,7 +88,7 @@ Let `q` be the number of free parameters, `n` the chosen sample
   definition; use one convention consistently across compared candidates.
   Individual sample sizes exclude rows with no observed indicators. For a
   continuous random-intercept fit, group classification entropy is undefined,
-  so group-level `awe` and `icl` are `NA`.
+  so group-level `awe`, `icl` and `clc` are `NA`.
 }
 \examples{
 set.seed(7)

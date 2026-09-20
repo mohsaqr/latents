@@ -51,7 +51,10 @@
   probability of each case's assigned profile the same way. Both ridges are
   scaled to their own maximum, following the usual ridgeline convention, so
   ridge height compares shapes and not profile sizes; prevalence is printed
-  in each profile's label instead.}
+  in each profile's label instead. Both read the individual posteriors alone,
+  so every family of this package can draw them; a one-profile fit refuses
+  them with an error of class `multilpa_nothing_to_plot`, because every case
+  then belongs to the single profile with probability one.}
 
 \item{data}{Optional. The data frame the model was fitted to, used by
 `what = "bars"` to put a 95% interval on every bar and ignored by every

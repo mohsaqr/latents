@@ -15,12 +15,32 @@
 #'   columns it was built from, so this is only needed to override them.
 #' @param plots `TRUE` also draws the classification plots, as a side effect,
 #'   before returning. Equivalent to calling `plot()` on the result.
-#' @param ... Passed to the verbs being gathered.
+#' @param by Passed to [bivariate_residuals()]: `"profile"`, the default,
+#'   assesses each profile separately, `"overall"` pools them. It is the one
+#'   argument of a gathered verb this function forwards, because it is the one
+#'   that changes what a gathered table means rather than which fit it is taken
+#'   from. The `level` the classification tables use is not an argument here: it
+#'   follows from whether the fit has discrete group classes.
+#' @param ... For `diagnostics()`, nothing further is accepted. An argument this
+#'   function cannot forward raises an error of class `multilpa_bad_argument`
+#'   naming it, rather than being dropped on the way to a table that then means
+#'   something other than what was asked for. For `plot()`, style overrides, as
+#'   in [plot.multilpa()].
 #' @return An object of class `multilpa_diagnostics`: a list with the elements
 #'   `entropy`, `classification`, `posteriors` and `residuals`, each a tidy
 #'   base `data.frame` as its own verb returns it, plus `fit` for the plot
 #'   method. Reach the tables with `as.data.frame(result, what = )`, never with
-#'   `$`.
+#'   `$`. `residuals` is `NULL` for a model family that has no bivariate
+#'   residuals, and asking for that table raises `multilpa_no_group_classes`.
+#'
+#'   `as.data.frame()` returns one of those tables: `"entropy"` exactly as
+#'   [entropy_table()] returns it, `"classification"` as
+#'   [classification_table()] does, `"posteriors"` as [average_posteriors()]
+#'   does, and `"residuals"` as [bivariate_residuals()] does.
+#'   `print()` returns the object invisibly, having printed one line per
+#'   diagnostic: relative entropy, smallest class, lowest average posterior and
+#'   largest residual, at each level the fit has. `plot()` returns the object
+#'   invisibly, having drawn the case-level entropy and posterior panels.
 #' @seealso [descriptives()] for the before-the-fit counterpart, [summary()]
 #'   for what the model estimated rather than whether to trust it.
 #' @examples
@@ -31,10 +51,17 @@
 #' quality <- diagnostics(fit)
 #' quality
 #' as.data.frame(quality, what = "classification")
+#' as.data.frame(diagnostics(fit, by = "overall"), what = "residuals")
 #' @export
-diagnostics <- function(x, data = NULL, plots = FALSE, ...) {
+diagnostics <- function(x, data = NULL, plots = FALSE,
+                        by = c("profile", "overall"), ...) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x),
             "`plots` must be TRUE or FALSE" = isTRUE(plots) || isFALSE(plots))
+  .multilpa_reject_extra_arguments(
+    list(...), "diagnostics()",
+    paste("The only argument of a gathered verb it forwards is `by`;",
+          "call that verb directly for anything else."))
+  by <- match.arg(by)
   data <- .multilpa_resolve_data(x, data)
   has_groups <- !is.null(x$group_posteriors)
   level <- if (has_groups) "both" else "individuals"
@@ -44,7 +71,7 @@ diagnostics <- function(x, data = NULL, plots = FALSE, ...) {
     posteriors = average_posteriors(x, level = level),
     # Residuals need a discrete group-class model; a random-intercept fit
     # refuses rather than returning a table of a different meaning.
-    residuals = tryCatch(bivariate_residuals(x, data),
+    residuals = tryCatch(bivariate_residuals(x, data, by = by),
                          multilpa_no_group_classes = function(condition) NULL),
     fit = x)
   class(result) <- "multilpa_diagnostics"
@@ -122,12 +149,41 @@ print.multilpa_diagnostics <- function(x, ...) {
   invisible(x)
 }
 
+#' Refuse arguments a forwarding verb cannot pass on
+#'
+#' A verb that gathers other verbs documents which of their arguments it
+#' forwards. Anything else is named back to the caller instead of being dropped:
+#' a discarded `by =` returns a table that answers a different question from the
+#' one that was asked, and does so without a word.
+#'
+#' @param extra `list(...)` as the forwarding verb received it.
+#' @param verb The verb's name, for the message.
+#' @param advice One sentence saying what the verb does forward.
+#' @return `NULL`, invisibly, when there is nothing to refuse.
+#' @noRd
+.multilpa_reject_extra_arguments <- function(extra, verb, advice) {
+  if (length(extra) == 0L) return(invisible(NULL))
+  supplied <- names(extra)
+  if (is.null(supplied)) supplied <- rep("", length(extra))
+  labels <- ifelse(nzchar(supplied), sprintf("`%s`", supplied), "an unnamed argument")
+  stop(errorCondition(
+    sprintf("%s does not use %s. %s", verb, paste(labels, collapse = ", "), advice),
+    class = "multilpa_bad_argument", call = NULL))
+}
+
 #' @rdname diagnostics
 #' @export
 plot.multilpa_diagnostics <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
-  plot(x$fit, what = "entropy", ...)
-  plot(x$fit, what = "posteriors", ...)
+  # Drawn from the fit's posteriors directly rather than through
+  # `plot(fit, what = )`. The two panels need only the individual posteriors and
+  # the effective profile counts, which every family carries, while not every
+  # family's `plot()` method offers a `what` -- a covariate fit's takes
+  # "profiles" and "sequences", a random-intercept fit's "profiles" and
+  # "random_intercepts" -- so dispatching through the generic asked those fits
+  # for a view their method had never heard of and failed on the match.
+  .multilpa_plot_case_diagnostic(x$fit, what = "entropy", ...)
+  .multilpa_plot_case_diagnostic(x$fit, what = "posteriors", ...)
   invisible(x)
 }
 
@@ -142,7 +198,12 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #' @param data Optional. The data the model was fitted to; a fit carries the
 #'   columns it was built from.
 #' @param plots `TRUE`, the default, draws the plots. `FALSE` prints only.
-#' @param ... Passed to [diagnostics()].
+#' @param by Passed to [diagnostics()], and from there to
+#'   [bivariate_residuals()]: `"profile"`, the default, assesses each profile
+#'   separately, `"overall"` pools them.
+#' @param ... Nothing further is accepted. An argument this function cannot
+#'   forward raises an error of class `multilpa_bad_argument` naming it, before
+#'   anything has been printed, rather than being dropped.
 #' @return The fitted model, invisibly. Called for the printing and drawing.
 #' @seealso [summary()], [diagnostics()], [descriptives()],
 #'   [multilpa_plot_types()].
@@ -153,15 +214,22 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #'                 n_starts = 4, seed = 1)
 #' report(fit, plots = FALSE)
 #' @export
-report <- function(x, data = NULL, plots = TRUE, ...) {
+report <- function(x, data = NULL, plots = TRUE,
+                   by = c("profile", "overall"), ...) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x),
             "`plots` must be TRUE or FALSE" = isTRUE(plots) || isFALSE(plots))
+  # Checked here as well as in diagnostics(), so a refused argument is refused
+  # before three sections have already been printed.
+  .multilpa_reject_extra_arguments(
+    list(...), "report()",
+    "It forwards `by` to diagnostics() and accepts nothing else.")
+  by <- match.arg(by)
   data <- .multilpa_resolve_data(x, data)
   print(summary(x))
   cat("\n")
   print(descriptives(x))
   cat("\n")
-  quality <- diagnostics(x, data = data, plots = FALSE, ...)
+  quality <- diagnostics(x, data = data, plots = FALSE, by = by)
   print(quality)
   if (isTRUE(plots)) {
     views <- .multilpa_supported_views(x)
@@ -217,6 +285,23 @@ report <- function(x, data = NULL, plots = TRUE, ...) {
       return(!is.null(x$means) && ncol(x$means) > 0L)
     }
     if (identical(view, "probabilities")) return(!is.null(x$profile_probabilities))
+    # The two case-level diagnostics separate cases by profile, so a
+    # single-profile fit has nothing for them to separate: every case sits in
+    # the one profile with probability one.
+    if (view %in% c("entropy", "posteriors")) {
+      return(!is.null(x$subject_posteriors) && ncol(x$subject_posteriors) > 1L)
+    }
     TRUE
   }, candidates)
+}
+
+#' The supported views of a fit, phrased for a refusal message
+#'
+#' @param x A fitted model of this package.
+#' @return A single string listing the views, or `"none"`.
+#' @noRd
+.multilpa_available_views_text <- function(x) {
+  views <- .multilpa_supported_views(x)
+  if (length(views) == 0L) return("none")
+  paste(ifelse(is.na(views), "the default plot", views), collapse = ", ")
 }

@@ -57,6 +57,7 @@ assignments(fit, data = school_engagement)           # every row with the class 
 descriptives(fit)                                    # one row per variable, with the ICC
 descriptives(fit, by = "profile")                    # the same, split by assigned profile
 diagnostics(fit)                                     # every classification diagnostic
+diagnostics(fit, by = "overall")                     # residuals pooled rather than per profile
 report(fit)                                          # summary + diagnostics + every plot
 
 information_criteria(fit)                            # one row, the reportable shape
@@ -68,7 +69,7 @@ average_posteriors(fit, level = "individuals")       # mean posterior by assigne
 multilpa_plot_types()                                # every view, with what it answers
 plot(fit)                                            # profile means by indicator
 plot(fit, scale = "standardized")                    # comparable profile shapes
-plot(fit, what = "bars")                             # the same means, with 95% intervals
+plot(fit, what = "bars")                             # the same means, with 95% Wald intervals
 plot(fit, what = "heatmap")                          # which indicators define the profiles
 plot(fit, what = "probabilities")                    # prevalence by group class
 plot(fit, what = "entropy")                          # where the uncertainty actually sits
@@ -78,6 +79,25 @@ plot(fit, what = "posteriors")                       # modal assignment probabil
 Every result table is a base `data.frame`, so nothing needs to be pulled out of
 the fitted object by hand.
 
+`diagnostics()` and `report()` take `by` and nothing else: an argument they
+cannot forward is refused by `multilpa_bad_argument` naming it, rather than
+being dropped, so a `by` that was meant to reach the residual table cannot
+silently answer a different question.
+
+A post-fit verb reads the data the fit already carries, so `data =` is optional
+for `assignments()`, `diagnostics()`, `report()`, `bivariate_residuals()`,
+`parameter_inference()`, `confint()` and `vcov()`. It is still required by
+`three_step()` and `r3step()`, which need the outcome or covariate columns the
+fit never saw. When it is supplied it is checked column by column against the
+fit: `assignments()` and `bivariate_residuals()` raise
+`multilpa_bad_inference_data` on a frame that is not in fitting row order, and
+warn `multilpa_unverified_alignment` on a frame that shares no column with the
+fit and so cannot be checked at all.
+
+`descriptives()` also takes `by` on a plain data frame. A stratifier with
+missing values gets its own labelled `NA` stratum rather than being dropped, so
+the per-stratum counts always add up to the number of rows you passed in.
+
 `students` is a placeholder for your data. For a complete reproducible example
 using simulated data, run:
 
@@ -86,8 +106,9 @@ Rscript validation/synthetic-demo.R
 ```
 
 The script checks recovery, prints the data and fitted structure, and saves
-the data, true classes, and fitted model to `tmp/synthetic-demo.rds`. It sources
-the local implementation, so package installation is optional for this example.
+the data, true classes, and fitted model to `tmp/synthetic-demo.rds`. It loads
+the local sources with `pkgload::load_all()`, so package installation is
+optional for this example.
 
 ## Model
 
@@ -112,9 +133,9 @@ P(Y_j) = sum_h eta_h * product_i [sum_k pi_hk * product_d
 The formulation extends the nonparametric multilevel mixture framework of
 [Vermunt (2003)](https://jeroenvermunt.nl/sm2003.pdf) to Gaussian indicators.
 It assumes measurement invariance across group classes. Full residual covariance,
-membership covariates, and an alternative continuous random-intercept model are
-available through the extensions below. Longitudinal transitions and random
-slopes are not implemented.
+membership covariates, latent transitions over ordered occasions, and an
+alternative continuous random-intercept model are available through the
+extensions below. Random slopes are not implemented.
 
 ## Categorical indicators
 
@@ -158,35 +179,47 @@ is applied as the exact constrained solution rather than by rescaling.
 
 ## Additional methods
 
+Below, `students` is your complete frame and `incomplete` is the same study with
+some indicators unobserved, because `missing = "fiml"` is what the first fit is
+there to show and several of these model families are complete-data only.
+
 ```r
 # Observed-data ML for incomplete indicators; correlated residuals within profiles.
-fit <- multilpa(students, c("reading", "maths", "engagement"), "school_id",
+fit <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
                   n_profiles = 3, n_group_classes = 2,
                   covariance_model = "full", missing = "fiml",
                   n_starts = 20, seed = 42)
 
-# Observed-information standard errors and Wald intervals.
-as.data.frame(parameter_inference(fit, data = students))
-confint(fit, data = students)
+# Observed-information standard errors and Wald intervals. The fit carries the
+# data it was built from, so `data =` is optional everywhere below.
+parameter_inference(fit)
+confint(fit)
 
 # MLR robust sandwich errors, accumulating the score over independent groups.
-robust <- parameter_inference(fit, data = students, vcov_type = "robust")
-as.data.frame(robust)
-vcov(fit, data = students, vcov_type = "robust")
+parameter_inference(fit, vcov_type = "robust")
+vcov(fit, vcov_type = "robust")
 
-# Likelihood-ratio statistic with the Lo-Mendell-Rubin adjustment.
-# No p-value is returned; use the bootstrap below for a calibrated one.
+# Likelihood-ratio statistic with the Lo-Mendell-Rubin adjustment. The
+# `p_value` column is returned as NA on purpose, because the VLMR reference
+# distribution is not reproduced; use the bootstrap below for a calibrated one.
+smaller_fit <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
+                          n_profiles = 2, n_group_classes = 2, missing = "fiml", seed = 1)
+larger_fit <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
+                         n_profiles = 3, n_group_classes = 2, missing = "fiml", seed = 1)
 lmr_lrt(smaller_fit, larger_fit)
 
 # One-step membership regressions. The measurement model is the one multilpa()
-# fits: Gaussian, categorical or mixed, diagonal or full covariance, complete
-# data. Standard errors cover the Gaussian and full-covariance cases; a
-# categorical fit refuses them rather than understating its parameter count.
+# fits: Gaussian, categorical or mixed, diagonal or full covariance. Covariate
+# fits are complete-data only, so they take `students`, not `incomplete`;
+# an incomplete frame raises `multilpa_bad_data`. Standard
+# errors cover the Gaussian and full-covariance cases; a categorical fit
+# refuses them with `multilpa_unsupported_inference` rather than understating
+# its parameter count.
 with_predictors <- fit_covariates(
   students, c("reading", "maths", "engagement"), "school_id", 3, 2,
   profile_covariates = "age", group_covariates = "school_resources", seed = 42)
 as.data.frame(with_predictors, what = "coefficients")   # both levels, one row per term
-parameter_inference(with_predictors, data = students)   # with standard errors and intervals
+parameter_inference(with_predictors)                    # with standard errors and intervals
 
 fit_covariates(students, c("reading", "maths", "engagement"), "school_id", 3, 2,
                profile_covariates = "age", covariance_model = "full")
@@ -194,12 +227,15 @@ fit_covariates(students, c("reading", "passed", "engagement"), "school_id", 3, 2
                profile_covariates = "age", categorical = "passed")
 
 # Alternative: one continuous group intercept, loading 1 on every indicator.
+# Complete data only, like the covariate fits above.
 random_intercept <- fit_random_intercept(
   students, c("reading", "maths", "engagement"), "school_id", 3, seed = 42)
 summary(random_intercept)                            # includes the quadrature check
 as.data.frame(summary(random_intercept), what = "model")
 
-# Compare profile/group-class counts; inspect diagnostics in every row.
+# Compare profile/group-class counts; inspect diagnostics in every row. Anything
+# enumerate_classes() does not name itself reaches multilpa(), so add
+# `missing = "fiml"` here to enumerate on an incomplete frame.
 candidates <- enumerate_classes(
   students, c("reading", "maths", "engagement"), "school_id",
   n_profiles = 2:4, n_group_classes = 1:3, n_starts = 20, seed = 42)
@@ -208,23 +244,32 @@ summary(candidates)                                  # the best model on each cr
 candidate_fit(candidates, n_profiles = 3, n_group_classes = 2)
 plot(candidates, criterion = "sabic_individual")
 
-# Complete-data nested models differing by one class at one level.
-# bootstrap_lrt(smaller, larger, students, iter = 199, seed = 42)
+# Complete-data nested models differing by one class at one level. A held
+# measurement is carried into every refit, and a pair whose constrained nesting
+# cannot be established is refused with `multilpa_bad_nesting`.
+# bootstrap_lrt(smaller_fit, larger_fit, iter = 199, seed = 42)
 
 # Where conditional independence fails: residual association within profiles.
-bivariate_residuals(fit, data = students)
-bivariate_residuals(fit, data = students, by = "overall")
+bivariate_residuals(fit)
+bivariate_residuals(fit, by = "overall")
 
-# Resume from a fitted solution, or score parameters produced elsewhere.
-refit <- multilpa(students, c("reading", "maths", "engagement"), "school_id",
+# Resume from a fitted solution, or score parameters produced elsewhere. A start
+# describes one measurement specification, so the refit must be given the same
+# `covariance_model` and `missing` as the fit it came from; use
+# `starting_values(fit, covariance = "drop")` to warm-start a diagonal model
+# from a full-covariance solution instead.
+refit <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
                     n_profiles = 3, n_group_classes = 2, n_starts = 1,
+                    covariance_model = "full", missing = "fiml",
                     start = starting_values(fit))
 
-# max_iter = 0 performs no update, so logLik() evaluates the supplied start.
-evaluated <- multilpa(students, c("reading", "maths", "engagement"), "school_id",
-                        n_profiles = 3, n_group_classes = 2, n_starts = 1,
+# max_iter = 0 performs no update, so logLik() evaluates the supplied start
+# and nothing else: `n_starts` is ignored rather than scored and beaten.
+evaluated <- multilpa(incomplete, c("reading", "maths", "engagement"), "school_id",
+                        n_profiles = 3, n_group_classes = 2,
+                        covariance_model = "full", missing = "fiml",
                         start = starting_values(fit), max_iter = 0)
-logLik(evaluated)
+logLik(evaluated)   # identical to logLik(fit)
 ```
 
 | Capability | Supported scope |
@@ -232,33 +277,42 @@ logLik(evaluated)
 | Measurement model | Gaussian, categorical, or mixed, via `categorical`; categorical indicators use unrestricted profile-specific response probabilities |
 | Missing indicators | `missing="fiml"`: observed Gaussian marginals and observed categorical responses, ignorable missingness assumption; no missing covariates |
 | Residual covariance | `covariance_model="diagonal"` or `"full"`, shared or profile-specific via `variance_model`. These four combinations are mclust's EEI, VVI, EEE and VVV; the other ten mclust parameterizations, which constrain volume, shape and orientation separately, are not available |
-| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models, with or without full residual covariance. Not available for transition fits, random-intercept fits, or covariate fits with categorical indicators, each of which refuses by condition class rather than returning a number |
+| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models, with or without full residual covariance; and fixed or staged fits, whose standard errors are conditional on the held measurement. Not available for transition fits (`multilpa_no_inference`), random-intercept fits (`multilpa_no_inference`), covariate fits with categorical indicators (`multilpa_unsupported_inference`), or a fit that holds every parameter it has (`multilpa_no_free_parameters`), each of which refuses by condition class rather than returning a number |
 | Robust SEs | `vcov_type="robust"`: Huber-White sandwich over independent groups, plus the MLR scaling correction factor. This is the same estimator Mplus `ESTIMATOR=MLR` defines, but the two have not been compared numerically; the retained Mplus comparison covers likelihoods, parameters and criteria only |
 | Membership covariates | Numeric predictors at both levels; shared individual-profile slopes across group classes; Gaussian, categorical or mixed indicators with diagonal or full residual covariance; complete data only |
 | Continuous random effect | One shared Gaussian group intercept with unit indicator loadings; complete diagonal model, no discrete group classes |
-| Class enumeration | Grid of discrete models, every information criterion under both sample-size conventions, entropy, failed-fit and convergence diagnostics |
+| Class enumeration | Grid of discrete models, every information criterion under every sample-size convention that applies to it, entropy, failed-fit and convergence diagnostics |
 | Information criteria | AIC, BIC, SABIC, CAIC, AWE, ICL, CLC and KIC. The five that depend on a sample size are reported under both the group-count and individual-count conventions; AIC and KIC depend on none and are reported once; CLC is reported once per convention because its convention selects which level's classification uncertainty it penalizes |
 | Classification quality | Modal and model-estimated class sizes, average posterior probabilities, odds of correct classification, relative entropy |
-| Measurement estimates | `as.data.frame(fit, data = )` returns the measurement model with a standard error beside every estimate, in one call |
-| LMR statistic | Likelihood-ratio statistic and the Lo-Mendell-Rubin adjustment; **no p-value**, because the VLMR reference distribution is not reproduced |
-| Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; not Mplus TECH14 |
+| Measurement estimates | `as.data.frame(fit)` returns the measurement model; passing `data =` as well is what asks for it with a standard error beside every estimate, in one call |
+| LMR statistic | Likelihood-ratio statistic and the Lo-Mendell-Rubin adjustment; the `p_value` column is **always `NA`**, because the VLMR reference distribution is not reproduced |
+| Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; held measurement blocks are carried into every refit and reported in a `fixed` column, and a pair whose constrained nesting cannot be established is refused with `multilpa_bad_nesting`; not Mplus TECH14 |
 | Local dependence | Posterior-weighted bivariate residuals within profile or overall, with approximate unadjusted p-values; apply a multiplicity correction when comparing pairs |
-| Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment; R3STEP membership covariates with observed or cluster-robust errors |
+| Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment, with `three_step(vcov_type = "cluster")` or `"independent"`; R3STEP membership covariates with `r3step(vcov_type = "observed")` or `"robust"`. A cluster-robust request is refused with `multilpa_too_few_groups` when there are not more independent groups than reported quantities, because the contributions sum to zero at the estimate and the covariance would be singular |
 | Sequences | Profile assignments in long or wide form, with group counts, sequence lengths and completeness by group class; observed transitions between assignments are not computed |
 | Latent transitions | `fit_transitions()`: first-order homogeneous transition probabilities between profiles, measurement invariant across occasions, per-group-class initial distributions and transition matrices; Gaussian, categorical or mixed indicators, FIML, diagonal or full covariance, ragged sequences; no standard errors, enumeration or bootstrap |
-| Staged estimation | `fit_staged()` and `multilpa(fixed=)`: hold means, variances or response probabilities at supplied values while membership is estimated; both parameter counts reported; first-stage uncertainty is not propagated |
-| Warm starts | `starting_values()` round-trips any fitted solution, including categorical measurement; `max_iter = 0` evaluates a supplied parameter set without moving |
-| Plots | Profile means (raw or standardized), prevalence by group class, profile sequences, and any enumeration criterion; base graphics only; no method for transition fits |
-| Conditions | Every catchable error carries a stable class; see `?"multilpa-conditions"` |
+| Staged estimation | `fit_staged()` and `multilpa(fixed=)`: hold means, variances or response probabilities at supplied values while membership is estimated; `fit_staged()` reports both parameter counts; first-stage uncertainty is not propagated |
+| Warm starts | `starting_values()` round-trips any fitted solution, keeping indicator names and category labels on categorical response blocks, so a stage cannot attach a response distribution to the wrong item; an encoding that cannot be aligned raises `multilpa_bad_start` or `multilpa_bad_stage`. `max_iter = 0` evaluates a supplied parameter set without moving, and `fit_transitions()` accepts it too |
+| Plots | Profile means (raw or standardized), grouped bars with Wald intervals, a standardized heatmap, categorical response curves, prevalence by group class, profile sequences, per-case entropy, modal posteriors, and any enumeration criterion; `multilpa_plot_types()` lists them. Entropy and posterior views also work for covariate and random-intercept fits. Base graphics only; a transition fit has no plot method and refuses with `multilpa_no_plot` |
+| Conditions | The errors and warnings listed in `?"multilpa-conditions"` carry stable classes, so they can be caught by what went wrong. A few internal guards in `bootstrap_lrt()` and `fit_transitions()` still raise unclassed errors; match on class only where the catalogue documents one |
 
 These are explicit model families, not every combination of Mplus options.
 Random-intercept fits currently do not provide standard errors.
 Random-intercept mixtures use Gaussian quadrature; increase node counts and
-refit if the higher-order likelihood check fails. Inference rejects variance
-boundaries and nonpositive information matrices. Natural-scale Wald intervals
+refit if the higher-order likelihood check fails, which warns
+`multilpa_quadrature_check`. Inference rejects variance
+boundaries and nonpositive information matrices. A fit whose likelihood still
+carries a non-negligible score is qualified with a `multilpa_unconverged`
+warning before any Wald quantity is reported, so a warning on
+`parameter_inference()`, `confint()` or `plot(what = "bars")` is the package
+telling you to refit with a tighter `tol` rather than an error.
+Natural-scale Wald intervals
 can extend beyond parameter bounds; log-variance/logit coordinates are also
 available. A bootstrap p-value is withheld if any replicate fails convergence
-or has a reversed likelihood. Enumeration never automatically declares a winner.
+or has a reversed likelihood. A covariate fit whose membership logits are close
+to separated is reported as unconverged, so `parameter_inference()` refuses it
+rather than putting a Wald interval around an unbounded coefficient.
+Enumeration never automatically declares a winner.
 
 ## Profiles over time
 
@@ -316,13 +370,28 @@ multilpa(students, c("reading", "maths", "engagement"), "student_id",
          fixed = "variances")
 ```
 
+A fixed or staged fit is no longer refused by the inference verbs:
+`parameter_inference()`, `vcov()` and `confint()` report the estimated
+parameters only, conditional on the held measurement, which contributes no row
+to the information matrix. A fit that holds *every* parameter it has raises
+`multilpa_no_free_parameters`, and naming a held coordinate in `confint(parm =)`
+raises `multilpa_held_parameter`, because a held value has no sampling
+distribution.
+
+```r
+as.data.frame(staged, what = "stages")    # parameters and parameters_with_measurement
+parameter_inference(staged)               # the estimated parameters, with their errors
+```
+
 First-stage uncertainty is **not** propagated: the second stage treats the
 measurement solution as known, so its standard errors and information criteria
 are conditional on that solution and are narrower than a joint fit's. Both
-parameter counts are therefore reported. Compare staged fits with one another
-using `n_parameters`, and compare a staged fit against a jointly estimated one
-using `n_parameters_with_measurement`, remembering that the staged likelihood is
-not the joint maximum.
+parameter counts are therefore reported by `fit_staged()`: compare staged fits
+with one another on `parameters`, and a staged fit against a jointly estimated
+one on `parameters_with_measurement`, remembering that the staged likelihood is
+not the joint maximum. A fit built with `multilpa(fixed =)` directly reports
+only the count it estimated here, so add the held blocks yourself when comparing
+one of those against a joint fit.
 
 ## Latent transitions
 
@@ -365,9 +434,12 @@ measurement information at it. The two agree whenever every group is observed
 at every position, which `sequence_summary(moves)` reports as a `gaps` count of
 zero for every group class.
 
-Standard errors, likelihood-ratio tests and class enumeration are not available
-for this model family; `logLik()`, `information_criteria()`,
-`classification_table()`, `entropy_table()` and `sequences()` are.
+Standard errors, likelihood-ratio tests, class enumeration and plots are not
+available for this model family — `parameter_inference()` and `vcov()` refuse
+with `multilpa_no_inference`, and `plot()` with `multilpa_no_plot`. `logLik()`,
+`information_criteria()`, `classification_table()`, `entropy_table()`,
+`sequences()` and `sequence_summary()` are. `max_iter = 0` is accepted here too,
+so a supplied parameter set can be scored without being moved.
 
 ## Relating classes to variables that did not define them
 
@@ -388,22 +460,36 @@ bch_weights(fit)                                     # one row per unit and clas
 three_step(fit, data = students, outcome = "exam_score")
 three_step(fit, data = students, outcome = "exam_score", contrast = "pairs")
 three_step(fit, data = students, outcome = "exam_score", method = "modal")
+three_step(fit, data = students, outcome = "exam_score",
+           vcov_type = "independent")               # unclustered, and labelled as such
 
 # Covariates predicting class membership (Vermunt 2010 R3STEP), errors fixed.
 r3step(fit, data = students, covariates = c("age", "prior_attainment"))
 r3step(fit, data = students, covariates = "school_resources", level = "groups")
+r3step(fit, data = students, covariates = "age", vcov_type = "robust")
 ```
 
 `three_step()` defaults to `method = "bch"`, which is robust to the outcome
 being unrelated to class membership. `"modal"` ignores classification error and
 is biased toward the null; `"proportional"` weights by the posterior. `r3step()`
-returns the multinomial logits with standard errors, and accepts
-`vcov_type = "robust"` for cluster-robust errors over groups.
+returns the multinomial logits with standard errors.
+
+Both verbs default to a cluster-robust variance over the fit's groups, and both
+**refuse it** with `multilpa_too_few_groups` when there are not more independent
+groups than the quantities being reported. The cluster contributions sum to zero
+at the estimate — that sum is the stationarity condition — so too few groups
+leave the covariance singular and would hand back a standard error of
+essentially zero. `three_step(vcov_type = "independent")` and
+`r3step(vcov_type = "observed")` are the explicit, labelled alternatives; each
+ignores the nesting, and must be reported as having done so.
 
 ## Plots
 
-`plot()` methods are provided for fitted models and for enumeration grids. They
-use base graphics only; no plotting package is added as a dependency.
+`plot()` methods are provided for fitted models, covariate fits,
+random-intercept fits and enumeration grids. They use base graphics only; no
+plotting package is added as a dependency. `multilpa_plot_types()` returns every
+view with the question it answers; a latent transition fit has no plot method
+and refuses with `multilpa_no_plot`.
 
 Every series is distinguished by **colour, point symbol and line type together**
 and labelled directly at the line end, so the plots stay readable in greyscale,
@@ -413,6 +499,10 @@ for colour-blind readers, and without a legend. Colours are Okabe-Ito.
 plot(fit)                                   # means in input units
 plot(fit, scale = "standardized")           # shapes comparable across indicators
 plot(fit, what = "probabilities")           # profile prevalence per group class
+plot(fit, what = "entropy")                 # where the classification uncertainty sits
+plot(fit, what = "posteriors")              # modal assignment probabilities
+plot(with_predictors, what = "entropy")     # the same two views on a covariate fit
+plot(random_intercept, what = "posteriors") # and on a random-intercept fit
 plot(candidates, criterion = "icl_groups")  # any column of the enumeration grid
 ```
 
@@ -422,8 +512,11 @@ divisor is each indicator's observed standard deviation, not its within-profile
 residual standard deviation, so the values are comparable but are not effect
 sizes.
 
-Plots show point estimates only, carry no standard errors, and profile order is
-arbitrary. In an enumeration plot the ringed point marks the lowest criterion
+Plots show point estimates only and profile order is arbitrary. The one
+exception is `what = "bars"`, which draws 95% Wald intervals and therefore
+inherits the inference qualifications: on a fit whose likelihood still carries a
+non-negligible score it warns `multilpa_unconverged` before drawing. In an
+enumeration plot the ringed point marks the lowest criterion
 value, which identifies an extremum and does not select a model; candidates that
 failed to converge appear as crosses on the baseline rather than being dropped.
 
@@ -449,22 +542,32 @@ row-order invariant given identical starting values; it is the search that
 differs. Fix the row order alongside the seed when a fit must be reproducible,
 and raise `n_starts` until `n_best_replicated` is comfortably above one.
 
-Inspect `converged`, `starts`, `n_best_replicated`, and
-`log_likelihood_history`. The best finite likelihood is returned even when
-that start did not converge, with a warning. Failed starts are recorded with
-their error messages. More starts and replicated best likelihoods improve
+Two tidy tables carry the search diagnostics, so none of this has to be pulled
+out of the fitted object by hand:
+
+```r
+as.data.frame(summary(fit), what = "fit")     # converged, best start, n_best_replicated
+as.data.frame(fit, what = "starts")           # one row per start, with its error if any
+```
+
+The best finite likelihood is returned even when
+that start did not converge, with a `multilpa_unconverged` warning. Failed
+starts are recorded with their error messages and warn `multilpa_failed_starts`.
+More starts and replicated best likelihoods improve
 confidence but do not establish a global maximum. Convergence is based on
 relative likelihood change, not parameter stability or a Hessian test.
 
 `min_variance` is an explicit lower bound in **squared input units**, defaulting
 to `1e-6`. Gaussian mixtures with freely varying variances otherwise allow
 singular solutions. The returned estimates solve a constrained likelihood
-problem; `boundary = TRUE` and a warning identify a variance at the bound.
-Choose a sensible bound for the indicator scales and examine sensitivity.
-`small_classes` flags effective memberships below one; effective class counts
-are also printed by `summary()`.
+problem; the `boundary` column of `as.data.frame(summary(fit), what = "fit")`
+and a `multilpa_boundary` warning identify a variance at the bound.
+Choose a sensible bound for the indicator scales and examine sensitivity. The
+`small_classes` column of the same table flags effective memberships below one,
+warned as `multilpa_small_classes`; effective class counts are also printed by
+`summary()`.
 
-Missing indicators are rejected by default; use `missing="fiml"` to integrate
+Missing indicators are rejected with `multilpa_bad_data` by default; use `missing="fiml"` to integrate
 them out of the likelihood. Completely unobserved rows contribute no indicator
 information, but are retained for posterior prediction. Entirely unobserved
 indicators, infinite values, constant indicators, and missing group IDs are
@@ -503,8 +606,8 @@ observations before inference and bootstrap comparisons.
 
 `vignette("multilpa")` fits one simulated dataset end to end and prints every
 diagnostic exactly as the package returns it: measurement model with standard
-errors, prevalence by group class, all eight information criteria under both
-conventions, classification quality, entropy, enumeration, Wald and robust
+errors, prevalence by group class, all eight information criteria under every
+convention that applies to them, classification quality, entropy, enumeration, Wald and robust
 inference, bivariate residuals, classification error and BCH weights, mixed
 indicators, membership covariates, staged estimation, sequences and latent
 transitions. Because the data are simulated, every estimate can be read against
@@ -519,12 +622,14 @@ vignette("multilpa")
 ```sh
 Rscript -e 'pkgload::load_all("."); testthat::test_dir("tests/testthat")'
 R CMD build .
-R CMD check --no-manual multilpa_0.5.2.tar.gz
+R CMD check --no-manual multilpa_0.11.0.tar.gz
 ```
 
 `pkgload` is only a development convenience. Installed-package testing via
-`R CMD check` does not require it. Estimation uses only base R and `stats`;
-`testthat` and `mclust` are optional testing dependencies.
+`R CMD check` does not require it. The package imports nothing outside base R:
+`stats`, `graphics`, `grDevices` and `utils`. Everything in `Suggests` —
+`testthat`, `mclust`, `tidySEM`, `knitr` and `rmarkdown` — is for testing and
+the vignette, and every use of one is guarded.
 
 Verification includes:
 

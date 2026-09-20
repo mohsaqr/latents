@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{multilpa_random_intercept}(
   x,
-  what = c("profiles", "random_intercepts"),
+  what = c("profiles", "random_intercepts", "entropy", "posteriors"),
   scale = c("raw", "standardized"),
   labels = TRUE,
   main = NULL,
@@ -24,7 +24,10 @@
 \item{what}{`"profiles"` (the default) draws the Gaussian measurement model,
 one line per profile across the indicators. `"random_intercepts"` draws
 one interval per group: its posterior mean intercept plus and minus one
-posterior standard deviation, with the groups ordered by that mean.}
+posterior standard deviation, with the groups ordered by that mean.
+`"entropy"` and `"posteriors"` draw the case-level classification
+diagnostics, as in [plot.multilpa()]; both need more than one profile and
+raise `multilpa_nothing_to_plot` on a single-profile fit.}
 
 \item{scale}{For `what = "profiles"`, `"raw"` or `"standardized"`, as in
 [plot.multilpa()].}
@@ -44,17 +47,19 @@ package defaults.}
 The fitted model, invisibly. Called for the side effect of drawing.
 }
 \description{
-Draws either the measurement model, exactly as [plot.multilpa()] draws it,
-or the posterior group intercepts with their posterior standard deviations.
-The intercept panel is the one thing this model family has that a discrete
-group-class model does not, so it is available here and nowhere else.
+Draws the measurement model exactly as [plot.multilpa()] draws it, the
+posterior group intercepts with their posterior standard deviations, or the
+case-level classification diagnostics. The intercept panel is the one thing
+this model family has that a discrete group-class model does not, so it is
+available here and nowhere else.
 }
 \examples{
 set.seed(8)
 example_data <- data.frame(group = rep(seq_len(12), each = 5),
                            score_a = rnorm(60), score_b = rnorm(60))
 fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
-                            2, n_starts = 2, seed = 1)
+                            n_profiles = 2, n_starts = 2, seed = 1)
 plot(fit)
 plot(fit, what = "random_intercepts")
+plot(fit, what = "entropy")
 }

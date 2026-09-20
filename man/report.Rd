@@ -4,7 +4,7 @@
 \alias{report}
 \title{Everything about a fit, in one call}
 \usage{
-report(x, data = NULL, plots = TRUE, ...)
+report(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
 }
 \arguments{
 \item{x}{A fitted model of this package.}
@@ -14,7 +14,13 @@ columns it was built from.}
 
 \item{plots}{`TRUE`, the default, draws the plots. `FALSE` prints only.}
 
-\item{...}{Passed to [diagnostics()].}
+\item{by}{Passed to [diagnostics()], and from there to
+[bivariate_residuals()]: `"profile"`, the default, assesses each profile
+separately, `"overall"` pools them.}
+
+\item{...}{Nothing further is accepted. An argument this function cannot
+forward raises an error of class `multilpa_bad_argument` naming it, before
+anything has been printed, rather than being dropped.}
 }
 \value{
 The fitted model, invisibly. Called for the printing and drawing.

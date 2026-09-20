@@ -11,3 +11,12 @@
 ^\.DS_Store$
 ^\.claude$
 ^data-raw$
+^\.github$
+^cran-comments\.md$
+^\.lintr$
+^codex_docs$
+^local_testing_and_equivalence$
+^audit$
+^audit\.zip$
+^AGENT-NOTE.*\.md$
+^README\.html$

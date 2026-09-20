@@ -7,7 +7,9 @@
 classification_table(x, level = c("individuals", "groups", "both"), detail)
 }
 \arguments{
-\item{x}{A fitted `multilpa` model.}
+\item{x}{A fitted model of this package: a `multilpa`,
+`multilpa_covariates`, `multilpa_random_intercept` or
+`multilpa_transitions` fit.}
 
 \item{level}{`"individuals"` for latent profiles, `"groups"` for latent group
 classes, or `"both"` to stack them in one table.}

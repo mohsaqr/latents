@@ -39,7 +39,10 @@
 #'   probability of each case's assigned profile the same way. Both ridges are
 #'   scaled to their own maximum, following the usual ridgeline convention, so
 #'   ridge height compares shapes and not profile sizes; prevalence is printed
-#'   in each profile's label instead.
+#'   in each profile's label instead. Both read the individual posteriors alone,
+#'   so every family of this package can draw them; a one-profile fit refuses
+#'   them with an error of class `multilpa_nothing_to_plot`, because every case
+#'   then belongs to the single profile with probability one.
 #' @param scale For `what = "profiles"`, `"raw"` plots the estimated means in
 #'   input units, and `"standardized"` divides each indicator's deviation from
 #'   its grand mean by that indicator's observed standard deviation. Use
@@ -120,9 +123,76 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
     bars = .multilpa_plot_bars(x, scale, .multilpa_mean_error_matrix(x, data),
                                main, subtitle, palette, style),
     heatmap = .multilpa_plot_heatmap(x, main, subtitle, style),
+    entropy = ,
+    posteriors = .multilpa_plot_case_diagnostic(x, what, main, subtitle,
+                                                palette, style))
+  invisible(x)
+}
+
+#' Draw one case-level classification diagnostic, for any fitted family
+#'
+#' The entropy and assignment-probability panels need only the individual
+#' posteriors and the effective profile counts, which every family of this
+#' package carries. They are drawn from here rather than from each family's
+#' `plot()` method so that `plot(diagnostics(fit))` can draw them for a fit
+#' whose own method offers a different set of `what` values.
+#'
+#' @param x A fitted model carrying `subject_posteriors`.
+#' @param what `"entropy"` or `"posteriors"`.
+#' @param main,subtitle Panel title and secondary line.
+#' @param palette Fill colours, or `NULL` for the package palette.
+#' @param style Visual constants.
+#' @param ... Further style constants, merged into `style`.
+#' @return `NULL`, invisibly. Called for the side effect of drawing.
+#' @noRd
+.multilpa_plot_case_diagnostic <- function(x, what = c("entropy", "posteriors"),
+                                           main = NULL, subtitle = NULL,
+                                           palette = NULL,
+                                           style = .multilpa_style(), ...) {
+  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  what <- match.arg(what)
+  .multilpa_require_case_posteriors(x, what)
+  style <- utils::modifyList(style, list(...))
+  previous <- graphics::par(no.readonly = TRUE)
+  # See the note in plot.multilpa(): `mfg` switches `new` on when it is set, so
+  # restoring it on a device nothing has been drawn to both warns and leaves
+  # `new = TRUE` behind.
+  previous$mfg <- NULL
+  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
+  graphics::par(xpd = NA)
+  switch(what,
     entropy = .multilpa_plot_entropy(x, main, subtitle, palette, style),
     posteriors = .multilpa_plot_posteriors(x, main, subtitle, palette, style))
-  invisible(x)
+  invisible(NULL)
+}
+
+#' Refuse a case-level diagnostic panel that has nothing to separate
+#'
+#' Both panels lay the cases of each profile out side by side. With one profile
+#' every case is assigned to it with probability one, so the panel would be a
+#' single spike over a zero-width axis; the drawing code fails on the degenerate
+#' break sequence, which reads as an internal error rather than as a refusal.
+#'
+#' @param x A fitted model of this package.
+#' @param what The view that was asked for, for the message.
+#' @return `NULL`, invisibly, when the view can be drawn.
+#' @noRd
+.multilpa_require_case_posteriors <- function(x, what) {
+  posteriors <- x$subject_posteriors
+  if (is.null(posteriors) || !is.matrix(posteriors)) {
+    stop(errorCondition(sprintf(
+      "This fit carries no individual posteriors, so `what = \"%s\"` has nothing to draw. Views available for this fit: %s.",
+      what, .multilpa_available_views_text(x)),
+      class = "multilpa_nothing_to_plot", call = NULL))
+  }
+  if (ncol(posteriors) < 2L) {
+    stop(errorCondition(sprintf(
+      paste("A single-profile fit assigns every case to that profile with probability one,",
+            "so `what = \"%s\"` has nothing to separate. Views available for this fit: %s."),
+      what, .multilpa_available_views_text(x)),
+      class = "multilpa_nothing_to_plot", call = NULL))
+  }
+  invisible(NULL)
 }
 
 #' Draw categorical response probabilities across indicators
@@ -559,7 +629,10 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
 #' @param x A fitted `multilpa_covariates` model.
 #' @param what `"profiles"` (the default) draws the measurement model;
 #'   `"sequences"` draws the assignments in course order and needs a fit made
-#'   with `time =`.
+#'   with `time =`. `"entropy"` and `"posteriors"` draw the two case-level
+#'   classification diagnostics exactly as [plot.multilpa()] draws them: they
+#'   read the individual posteriors, which a covariate fit has, and say nothing
+#'   about prevalence, which it does not.
 #' @param scale,labels,cell_labels,main,subtitle,palette,symbols,linetypes,style,...
 #'   Passed through as in [plot.multilpa()].
 #' @return The fitted model, invisibly. Called for the side effect of drawing.
@@ -579,7 +652,8 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
 #'                       n_starts = 2, seed = 1)
 #' plot(fit)
 #' @export
-plot.multilpa_covariates <- function(x, what = c("profiles", "sequences"),
+plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
+                                                 "entropy", "posteriors"),
                                      scale = c("raw", "standardized"),
                                      labels = TRUE, main = NULL, subtitle = NULL,
                                      palette = NULL, symbols = NULL,
@@ -611,7 +685,10 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences"),
     profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
                                        symbols, linetypes, style),
     sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
-                                         style, cell_labels))
+                                         style, cell_labels),
+    entropy = ,
+    posteriors = .multilpa_plot_case_diagnostic(x, what, main, subtitle,
+                                                palette, style))
   invisible(x)
 }
 
@@ -790,8 +867,9 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences"),
 multilpa_plot_types <- function() {
   data.frame(
     type = c("profiles", "bars", "heatmap", "responses", "probabilities",
-             "sequences", "entropy", "posteriors", "enumeration"),
-    group = c(rep("measurement", 4L), rep("structure", 2L),
+             "sequences", "random_intercepts", "entropy", "posteriors",
+             "enumeration"),
+    group = c(rep("measurement", 4L), rep("structure", 3L),
               rep("diagnostics", 2L), "selection"),
     description = c(
       "Profile means across indicators, point size showing profile prevalence",
@@ -800,6 +878,7 @@ multilpa_plot_types <- function() {
       "Categorical response probabilities, one line per profile",
       "Profile prevalence within each group class, the two-level quantity",
       "Each group's profile at each occasion, one row per group",
+      "One interval per group: its posterior mean random intercept, plus and minus one posterior standard deviation",
       "Per-case entropy contribution within each profile, as ridges",
       "Posterior probability of the assigned profile, as ridges",
       "Information criteria across a candidate grid (plot an enumeration)"

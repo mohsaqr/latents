@@ -2,7 +2,7 @@
 % Please edit documentation in R/transitions.R
 \name{print.multilpa_transitions}
 \alias{print.multilpa_transitions}
-\title{Summarize a fitted latent transition model}
+\title{Print a fitted latent transition model}
 \usage{
 \method{print}{multilpa_transitions}(x, ...)
 }
@@ -12,7 +12,10 @@
 \item{...}{Ignored.}
 }
 \value{
-`x`, invisibly; called for the summary it prints.
+`x`, invisibly. Called for the side effect of printing the class
+  counts, the occasion layout, the log likelihood with the information
+  criteria, the convergence and restart diagnostics, and the verbs that
+  return the fitted quantities.
 }
 \description{
 Reports the model's size, how the occasions are laid out, its fit and its

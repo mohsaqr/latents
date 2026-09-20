@@ -19,5 +19,16 @@ Nothing; always raises a `multilpa_no_plot` condition, rather than
 No plot method is defined for a latent transition model
 }
 \examples{
-# plot() on a transition fit raises multilpa_no_plot by design.
+set.seed(7)
+example_data <- data.frame(
+  person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
+)
+example_data$score_a <- stats::rnorm(nrow(example_data))
+example_data$score_b <- stats::rnorm(nrow(example_data))
+fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+                       n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+# The refusal is catchable by class, not by message text.
+tryCatch(plot(fit), multilpa_no_plot = function(condition) {
+  "no plot method for this model family"
+})
 }

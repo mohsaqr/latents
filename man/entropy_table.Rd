@@ -7,7 +7,9 @@
 entropy_table(x)
 }
 \arguments{
-\item{x}{A fitted `multilpa` model.}
+\item{x}{A fitted model of this package: a `multilpa`,
+`multilpa_covariates`, `multilpa_random_intercept` or
+`multilpa_transitions` fit.}
 }
 \value{
 A base `data.frame`, one row per level the fit has, with the columns

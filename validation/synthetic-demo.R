@@ -1,7 +1,9 @@
 # Run from the project root: Rscript validation/synthetic-demo.R
-source(file.path("R", "fit-ml-lpa.R"))
-source(file.path("R", "gaussian-moments.R"))
-source(file.path("R", "methods.R"))
+# Load the whole package rather than three files by name. The three names this
+# script used -- R/fit-ml-lpa.R above all -- stopped existing when the sources
+# were reorganised, and sourcing files individually makes a demo depend on the
+# internal file layout.
+suppressMessages(pkgload::load_all(".", quiet = TRUE))
 
 set.seed(20260917)
 n_groups <- 60L

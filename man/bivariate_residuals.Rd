@@ -7,12 +7,18 @@
 bivariate_residuals(x, data = NULL, by = c("profile", "overall"))
 }
 \arguments{
-\item{x}{A fitted `multilpa` or `multilpa_covariates` model.}
+\item{x}{A fitted model of this package that has discrete group classes: a
+`multilpa`, `multilpa_covariates` or `multilpa_transitions` fit. A
+`multilpa_random_intercept` fit raises `multilpa_no_group_classes`.}
 
-\item{data}{Optional. The data frame the model was fitted to; when omitted
-it is rebuilt from the indicators, identifiers and occasions the fit
-stores, which round-trip exactly. Supplying it is the stronger check that
-the caller still holds that frame.}
+\item{data}{Optional. The data frame the model was fitted to, with one row
+per observation and in the order it was fitted in; when omitted it is
+rebuilt from the indicators, identifiers and occasions the fit stores,
+which round-trip exactly. Supplying it is the stronger check that the
+caller still holds that frame: the row count, the indicators, the group
+identifier and the occasion are all compared against the fit row by row,
+and a frame in any other order raises `multilpa_bad_inference_data` rather
+than pairing each row with another observation's posterior.}
 
 \item{by}{`"profile"` (the default) assesses each profile separately, which
 is where the assumption is actually made. `"overall"` pools the profiles

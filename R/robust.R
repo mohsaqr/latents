@@ -140,5 +140,74 @@
     stop(errorCondition("Per-group scores are not finite; robust inference is unavailable.",
                         class = "multilpa_bad_scores", call = NULL))
   }
+  ## A single row cannot support a sandwich: at the estimate the rows sum to
+  ## zero, so one row is itself the zero vector up to rounding and the meat is
+  ## numerical dust rather than a variance.
+  .multilpa_require_clusters(nrow(scores), 1L, "A robust cross-product matrix")
   crossprod(scores)
+}
+
+#' Refuse a cluster-robust variance too few independent units can support
+#'
+#' The meat of a cluster-robust sandwich is the sum of one outer product per
+#' independent unit, formed from that unit's summed estimating-equation
+#' contributions. Those contributions sum to zero across units at the estimate,
+#' because that sum *is* the stationarity condition the estimate solves. The
+#' meat therefore has rank at most `n_units - 1`, whatever the data: with one
+#' unit it is exactly zero, and with `n_units <= n_quantities` it is singular,
+#' so some contrast among the reported quantities is handed a variance of
+#' exactly zero. Neither is a small standard error; both are refused.
+#'
+#' The rule this enforces, `n_units > n_quantities`, is the same one
+#' [parameter_inference()] applies to a robust model vcov through
+#' `.multilpa_check_regularity()`, so every robust path in the package asks for
+#' as many independent units as the covariance it reports has dimensions, plus
+#' one for the constraint that the contributions sum to zero.
+#'
+#' @param n_units Number of independent units the contributions were summed
+#'   within: groups for a clustered variance, observations for an unclustered
+#'   one.
+#' @param n_quantities Number of quantities whose covariance is being reported.
+#' @param what A noun phrase naming that covariance, opening the message.
+#' @param unit What one independent unit is called in the message.
+#' @param alternative A sentence naming a legitimate non-clustered alternative,
+#'   or `NULL` when there is none.
+#' @return `invisible(TRUE)` when the rule holds. Otherwise raises
+#'   `multilpa_too_few_groups`.
+#' @references Cameron, A. C., & Miller, D. L. (2015). A practitioner's guide
+#'   to cluster-robust inference. *Journal of Human Resources*, 50, 317--372.
+#' @noRd
+.multilpa_require_clusters <- function(n_units, n_quantities, what,
+                                       unit = "independent groups",
+                                       alternative = NULL) {
+  stopifnot(
+    "`n_units` must be a single non-negative whole number" =
+      length(n_units) == 1L && is.numeric(n_units) && is.finite(n_units) &&
+      n_units >= 0,
+    "`n_quantities` must be a single positive whole number" =
+      length(n_quantities) == 1L && is.numeric(n_quantities) &&
+      is.finite(n_quantities) && n_quantities >= 1,
+    "`what` must be a single string" = is.character(what) && length(what) == 1L,
+    "`unit` must be a single string" = is.character(unit) && length(unit) == 1L,
+    "`alternative` must be a single string or NULL" =
+      is.null(alternative) || (is.character(alternative) &&
+                                 length(alternative) == 1L))
+  if (n_units > n_quantities) return(invisible(TRUE))
+  plural <- if (n_quantities == 1L) "y" else "ies"
+  reason <- if (n_units <= 1L) {
+    paste("The contributions of a single unit are the estimating equation the",
+          "estimate solves, so they sum to exactly zero and the variance would",
+          "be floating-point noise rather than an estimate.")
+  } else {
+    sprintf(paste("The contributions sum to zero at the estimate, so %d %s leave at",
+                  "most %d independent contributions for %d quantit%s: the",
+                  "covariance is singular and some contrast among them would be",
+                  "given a variance of exactly zero."),
+            n_units, unit, n_units - 1L, n_quantities, plural)
+  }
+  stop(errorCondition(
+    paste(c(sprintf("%s needs more %s than the %d quantit%s it covers; this fit has %d.",
+                    what, unit, n_quantities, plural, n_units),
+            reason, alternative), collapse = " "),
+    class = "multilpa_too_few_groups", call = NULL))
 }

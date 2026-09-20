@@ -14,7 +14,9 @@ candidate_fit(x, n_profiles, n_group_classes = 1L)
 \item{n_group_classes}{Number of group classes identifying the candidate.}
 }
 \value{
-The fitted [multilpa()] model for that cell of the grid.
+The fitted model for that cell of the grid: an object of class
+  `multilpa`, exactly as [multilpa()] returned it, with every verb of this
+  package available on it.
 }
 \description{
 An enumeration keeps every candidate it fitted. This returns one of them, so

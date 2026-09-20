@@ -1,9 +1,10 @@
 # Run from the project root after running the retained Mplus input files.
 # This is a NEW matched LPA analysis on Example 10.4 data, not a reproduction
 # of the original published CFA-mixture model (which this package cannot fit).
-source(file.path("R", "fit-ml-lpa.R"))
-source(file.path("R", "gaussian-moments.R"))
-source(file.path("R", "methods.R"))
+# Load the whole package rather than naming source files. `R/fit-ml-lpa.R`
+# stopped existing when the sources were reorganised, and a comparison script
+# should not depend on the internal file layout.
+suppressMessages(pkgload::load_all(".", quiet = TRUE))
 artifact_dir <- file.path("validation", "mplus", "public-refit")
 public_dir <- file.path("validation", "mplus", "public")
 indicator_names <- paste0("y", seq_len(5L))

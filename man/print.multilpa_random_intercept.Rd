@@ -12,11 +12,20 @@
 \item{...}{Reserved for compatibility with `print()`.}
 }
 \value{
-The input model, invisibly.
+The input model, invisibly. Called for the side effect of printing
+  the profile count and sample sizes, the log likelihood and the fitted
+  random-intercept standard deviation, and the integration diagnostics.
 }
 \description{
 Print a continuous group random-intercept fit
 }
 \examples{
-# After fitting: print(random_intercept)
+set.seed(8)
+example_data <- data.frame(group = rep(seq_len(12), each = 5),
+                           score_a = rnorm(60), score_b = rnorm(60))
+random_intercept <- fit_random_intercept(example_data,
+                                         c("score_a", "score_b"), "group",
+                                         n_profiles = 2, n_starts = 2,
+                                         seed = 1)
+print(random_intercept)
 }

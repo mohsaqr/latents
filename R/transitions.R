@@ -151,8 +151,14 @@
 #' @noRd
 .multilpa_sequence_moments <- function(pass, emission, layout, transition,
                                        weights, n_observations) {
-  stopifnot(is.list(pass), is.numeric(weights),
-            length(weights) == nrow(layout$slot))
+  stopifnot(
+    "`pass` must be the list [.multilpa_forward_backward()] returns" =
+      is.list(pass) && all(c("alpha", "beta", "log_scaled") %in% names(pass)),
+    "`weights` must give one group-class posterior per group" =
+      is.numeric(weights) && length(weights) == nrow(layout$slot),
+    "`transition` must be a square matrix of positive probabilities" =
+      is.matrix(transition) && is.numeric(transition) &&
+      nrow(transition) == ncol(transition) && all(transition > 0))
   n_profiles <- ncol(transition)
   occupancy <- lapply(seq_len(layout$n_occasions), function(occasion) {
     exp(pass$alpha[[occasion]] + pass$beta[[occasion]] - pass$log_scaled) * weights
@@ -167,16 +173,65 @@
   # Every input row occupies exactly one cell of the layout, so the placement
   # is an assignment rather than an accumulation.
   posterior[placed[, 1L], ] <- placed[, -1L, drop = FALSE]
+  # The expected count of a move is a sum of pair posteriors, and a pair
+  # posterior is a probability: its logarithm is never positive, so it
+  # exponentiates without overflow. Its three factors are not probabilities.
+  # On a long sequence the forward term is scaled far above one exactly where
+  # the backward term is far below it, so exponentiating them apart -- as this
+  # did until the complete pair log probability was formed first -- gave
+  # `Inf * 0` and returned NaN counts from a fit whose log likelihood, read off
+  # the scaled forward pass alone, was correct. No per-occasion maximum is
+  # subtracted because none is needed: the exponent is already bounded above by
+  # zero, and any rescaling that kept the three factors apart would carry the
+  # reciprocal of a transition probability and could overflow on its own.
+  n_groups <- nrow(layout$slot)
+  # One column per ordered pair of profiles, laid out column-major exactly as
+  # the transition matrix is, so that the groups are summed out in one pass.
+  origin <- rep(seq_len(n_profiles), times = n_profiles)
+  destination <- rep(seq_len(n_profiles), each = n_profiles)
+  log_transition <- rep(log(transition), each = n_groups)
   counts <- if (layout$n_occasions < 2L) {
     matrix(0, n_profiles, n_profiles)
   } else Reduce(`+`, lapply(seq_len(layout$n_occasions)[-1L], function(occasion) {
     active <- weights * layout$within[, occasion]
-    from <- exp(pass$alpha[[occasion - 1L]] - pass$log_scaled)
-    to <- exp(pass$beta[[occasion]] + emission[[occasion]])
-    transition * crossprod(from * active, to)
+    log_from <- pass$alpha[[occasion - 1L]] - pass$log_scaled
+    log_to <- pass$beta[[occasion]] + emission[[occasion]]
+    joint <- log_from[, origin, drop = FALSE] +
+      log_to[, destination, drop = FALSE] + log_transition
+    matrix(colSums(active * exp(joint)), n_profiles, n_profiles)
   }))
   list(posterior = posterior, initial = colSums(occupancy[[1L]]),
        transition = counts)
+}
+
+#' Profile prevalence implied by a transition expectation
+#'
+#' The prevalence of each profile within a group class is a summary of the
+#' fitted model rather than a free parameter of it, so it is read off the
+#' expectation that is actually reported, exactly as the empty transition rows
+#' are. EM leaves the parameters one M-step behind that expectation, and with
+#' `max_iter = 0` there is no M-step at all, which previously left the field
+#' absent and the assembled fit unusable.
+#'
+#' @param expectation Expected counts from [.multilpa_transition_expectation()].
+#' @return A group-classes-by-profiles numeric matrix whose rows sum to one.
+#' @noRd
+.multilpa_transition_prevalence <- function(expectation) {
+  stopifnot(
+    "`expectation` must carry one joint posterior matrix per group class" =
+      is.list(expectation) && is.list(expectation$joint) &&
+      length(expectation$joint) >= 1L &&
+      all(vapply(expectation$joint, is.matrix, logical(1))))
+  counts <- t(vapply(expectation$joint, colSums,
+                     numeric(ncol(expectation$joint[[1L]]))))
+  totals <- rowSums(counts)
+  if (any(!is.finite(totals)) || any(totals <= 0)) {
+    stop(errorCondition(
+      paste("A group class has no effective membership, so the profile",
+            "prevalence within it is not defined."),
+      class = "multilpa_empty_profile", call = NULL))
+  }
+  counts / totals
 }
 
 #' Nested expectation step for a latent transition model
@@ -229,8 +284,16 @@
   joint <- lapply(sequence, `[[`, "posterior")
   subject_posteriors <- Reduce(`+`, joint)
   log_likelihood <- sum(group_log_likelihood)
-  if (!is.finite(log_likelihood) || any(!is.finite(subject_posteriors))) {
-    stop("Non-finite likelihood or posterior probabilities.")
+  # The expected counts are checked beside the likelihood rather than left to
+  # the M-step. A likelihood formed from the scaled forward pass alone stays
+  # finite when the sequence moments do not, so a fit could otherwise converge
+  # and still report NaN transition counts.
+  sequence_counts <- unlist(lapply(sequence, function(moments) {
+    c(moments$initial, moments$transition)
+  }), use.names = FALSE)
+  if (!is.finite(log_likelihood) || any(!is.finite(subject_posteriors)) ||
+      any(!is.finite(sequence_counts)) || any(sequence_counts < 0)) {
+    stop("Non-finite likelihood, posterior probabilities or sequence counts.")
   }
   list(log_likelihood = log_likelihood,
        group_log_likelihood = group_log_likelihood,
@@ -282,9 +345,12 @@
   empty <- vapply(expectation$sequence, function(moments) {
     rowSums(moments$transition) <= 0
   }, logical(n_profiles))
-  # The prevalence of each profile within a group class is implied by the
-  # initial and transition probabilities; it is carried as a summary, not as a
-  # free parameter of the model.
+  # The prevalence of each profile within a group class is a summary of the
+  # expectation rather than a free parameter of the model. It is carried here
+  # so that a single M-step is self-describing, but the fitted object reports
+  # the one [.multilpa_transition_prevalence()] reads off the final
+  # expectation, which the last M-step never saw -- and which, when `max_iter`
+  # is zero, is the only one there is.
   parameters <- c(parameters[setdiff(names(parameters), "profile_probabilities")],
                   list(initial_probabilities = initial,
                        transition_probabilities = transition,
@@ -457,6 +523,12 @@
 #'   [transitions()] and is listed by `transitions(fit, estimated = FALSE)`.
 #'   Profile labels are arbitrary and
 #'   are not comparable across fits without alignment.
+#'
+#'   `max_iter = 0` updates nothing: the starting values are evaluated and
+#'   returned with the expectation they imply, and the fit reports
+#'   `converged = FALSE` after zero iterations. Every reported quantity,
+#'   including `expected_count` and the implied profile prevalence, is then
+#'   read off that single expectation.
 #' @references Collins, L. M., & Lanza, S. T. (2010). Latent class and latent
 #'   transition analysis. Wiley.
 #'
@@ -534,13 +606,16 @@ fit_transitions <- function(data, vars, id, n_profiles, time,
   distinct_rows <- if (is.null(codes)) nrow(unique(x)) else
     nrow(unique(cbind(x, codes)))
   if (n_profiles > distinct_rows) {
-    stop("n_profiles cannot exceed the number of distinct observed indicator rows.")
+    stop(errorCondition("n_profiles cannot exceed the number of distinct observed indicator rows.",
+        class = "multilpa_unidentified", call = NULL))
   }
   if (n_group_classes > groups$n) {
-    stop("n_group_classes cannot exceed the number of groups.")
+    stop(errorCondition("n_group_classes cannot exceed the number of groups.",
+        class = "multilpa_unidentified", call = NULL))
   }
   if (n_group_classes > 1L && all(groups$sizes == 1L)) {
-    stop("Multiple group classes are not identifiable with only singleton groups.")
+    stop(errorCondition("Multiple group classes are not identifiable with only singleton groups.",
+        class = "multilpa_unidentified", call = NULL))
   }
   if (!is.null(seed)) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
@@ -558,7 +633,8 @@ fit_transitions <- function(data, vars, id, n_profiles, time,
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
   x <- sweep(x, 2L, centers, "-")
   if (any(!is.finite(x[!is.na(x)]^2))) {
-    stop("Indicator scales overflow squared residuals; rescale the data.")
+    stop(errorCondition("Indicator scales overflow squared residuals; rescale the data.",
+        class = "multilpa_bad_data", call = NULL))
   }
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
@@ -589,7 +665,13 @@ fit_transitions <- function(data, vars, id, n_profiles, time,
   parameters <- .multilpa_label_parameters(parameters, profile_names, continuous,
                                            categorical, measurement$encoded$levels)
   dimnames(parameters$initial_probabilities) <- list(type_names, profile_names)
-  dimnames(parameters$profile_prevalence) <- list(type_names, profile_names)
+  # Taken from the expectation that is reported rather than from the M-step,
+  # which saw the previous one -- and which never runs at all when `max_iter`
+  # is zero, where reading the M-step's field left the assembly setting
+  # dimnames on NULL.
+  parameters$profile_prevalence <- matrix(
+    .multilpa_transition_prevalence(best$expectation),
+    n_group_classes, n_profiles, dimnames = list(type_names, profile_names))
   dimnames(parameters$transition_probabilities) <-
     list(profile_names, profile_names, type_names)
   names(parameters$group_probabilities) <- type_names
@@ -668,31 +750,38 @@ fit_transitions <- function(data, vars, id, n_profiles, time,
                               1e-6 * (1 + abs(log_likelihood))),
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))))
   class(result) <- "multilpa_transitions"
+  # Every qualification a caller might branch on carries its catalogued class,
+  # so a simulation loop can muffle the ones it expects and let the rest through.
   if (any(!valid)) {
-    warning(sprintf(paste("%d of %d starts failed; read their messages with",
-                          "as.data.frame(fit, what = \"starts\")."),
-                    sum(!valid), n_starts), call. = FALSE)
+    warning(warningCondition(sprintf(
+      paste("%d of %d starts failed; read their messages with",
+            "as.data.frame(fit, what = \"starts\")."),
+      sum(!valid), n_starts),
+      class = "multilpa_failed_starts", call = NULL))
   }
   if (!best$converged && max_iter > 0L) {
-    warning("The best start did not converge; increase max_iter and inspect starts.",
-            call. = FALSE)
+    warning(warningCondition(
+      "The best start did not converge; increase max_iter and inspect starts.",
+      class = "multilpa_unconverged", call = NULL))
   }
   if (boundary) {
-    warning(if (covariance_model == "full")
+    warning(warningCondition(if (covariance_model == "full")
       "A covariance eigenvalue reached min_variance; this is a bound-active constrained fit." else
       "A variance reached min_variance; this is a bound-active constrained fit.",
-      call. = FALSE)
+      class = "multilpa_boundary", call = NULL))
   }
   if (empty_rows) {
-    warning(paste("A profile is never occupied before a final occasion; its",
-                  "transition row is uniform by construction, not estimated.",
-                  "List the affected rows with",
-                  "transitions(fit, estimated = FALSE)."),
-            call. = FALSE)
+    warning(warningCondition(paste(
+      "A profile is never occupied before a final occasion; its",
+      "transition row is uniform by construction, not estimated.",
+      "List the affected rows with",
+      "transitions(fit, estimated = FALSE)."),
+      class = "multilpa_empty_transition_row", call = NULL))
   }
   if (small_classes) {
-    warning("A profile or group class has effective membership below one.",
-            call. = FALSE)
+    warning(warningCondition(
+      "A profile or group class has effective membership below one.",
+      class = "multilpa_small_classes", call = NULL))
   }
   result
 }
@@ -914,14 +1003,17 @@ as.data.frame.multilpa_transitions <- function(x, row.names = NULL,
   result
 }
 
-#' Summarize a fitted latent transition model
+#' Print a fitted latent transition model
 #'
 #' Reports the model's size, how the occasions are laid out, its fit and its
 #' convergence, and names the verbs that return the fitted quantities.
 #'
 #' @param x A fitted `multilpa_transitions` model.
 #' @param ... Ignored.
-#' @return `x`, invisibly; called for the summary it prints.
+#' @return `x`, invisibly. Called for the side effect of printing the class
+#'   counts, the occasion layout, the log likelihood with the information
+#'   criteria, the convergence and restart diagnostics, and the verbs that
+#'   return the fitted quantities.
 #' @seealso [transitions()], [as.data.frame.multilpa_transitions()].
 #' @examples
 #' set.seed(7)
@@ -980,8 +1072,9 @@ logLik.multilpa_transitions <- function(object, ...) {
 #'
 #' @param object A fitted `multilpa_transitions` model.
 #' @param ... Ignored.
-#' @return The number of observed groups. Occasions within a group are
-#'   dependent by construction, so they are not independent observations.
+#' @return A single integer: the number of observed groups. Occasions within a
+#'   group are dependent by construction, so they are not independent
+#'   observations.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -1306,7 +1399,18 @@ confint.multilpa_transitions <- function(object, parm, level = 0.95, ...) {
 #' @return Nothing; always raises a `multilpa_no_plot` condition, rather than
 #'   letting the fit fall through to the default method and fail obscurely.
 #' @examples
-#' # plot() on a transition fit raises multilpa_no_plot by design.
+#' set.seed(7)
+#' example_data <- data.frame(
+#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
+#' )
+#' example_data$score_a <- stats::rnorm(nrow(example_data))
+#' example_data$score_b <- stats::rnorm(nrow(example_data))
+#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' # The refusal is catchable by class, not by message text.
+#' tryCatch(plot(fit), multilpa_no_plot = function(condition) {
+#'   "no plot method for this model family"
+#' })
 #' @export
 plot.multilpa_transitions <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_transitions"))

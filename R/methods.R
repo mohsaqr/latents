@@ -1,9 +1,19 @@
 #' Print a fitted multilevel latent profile model
 #' @param x An `multilpa` model.
 #' @param ... Reserved for compatibility with `print()`.
-#' @return The input model, invisibly.
+#' @return The input model, invisibly. Called for the side effect of printing
+#'   the class counts, the sample sizes and covariance specification, the log
+#'   likelihood with AIC and group-level BIC, the convergence and restart
+#'   diagnostics, and any blocks the fit held fixed.
 #' @examples
-#' # Printing a fitted model displays its convergence and information criteria.
+#' set.seed(7)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(12), each = 10),
+#'   score_a = rnorm(120), score_b = rnorm(120)
+#' )
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#' print(fit)
 #' @export
 print.multilpa <- function(x, ...) {
   stopifnot(inherits(x, "multilpa"))
@@ -260,7 +270,10 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL,
 #' @param x A `summary_multilpa` object.
 #' @param digits Number of printed significant digits.
 #' @param ... Additional arguments passed to matrix printing.
-#' @return The summary, invisibly.
+#' @return The summary, invisibly. Called for the side effect of printing the
+#'   estimates block by block, the effective class memberships at both levels,
+#'   the likelihood and information criteria, any convergence or boundary
+#'   warnings, and the restart diagnostics.
 #' @seealso [as.data.frame.summary_multilpa()] for the same content as data.
 #' @examples
 #' set.seed(7)
@@ -332,7 +345,16 @@ print.summary_multilpa <- function(x, digits = 4L, ...) {
 #'   individual-count alternative, and every other criterion, call
 #'   [information_criteria()], which reports both conventions side by side.
 #' @examples
-#' # After fitting: logLik(fit); AIC(fit); BIC(fit)
+#' set.seed(7)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(12), each = 10),
+#'   score_a = rnorm(120), score_b = rnorm(120)
+#' )
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#' logLik(fit)
+#' AIC(fit)
+#' BIC(fit)
 #' @export
 #' @importFrom stats logLik
 logLik.multilpa <- function(object, ...) {
@@ -344,11 +366,19 @@ logLik.multilpa <- function(object, ...) {
 #' Extract the number of independent groups
 #' @param object An `multilpa` model.
 #' @param ... Reserved for compatibility with `nobs()`.
-#' @return Number of observed groups, which are the independent units of the
-#'   two-level likelihood. For the individual count alongside every other
-#'   sample-size-dependent quantity, call [information_criteria()].
+#' @return A single integer: the number of observed groups, which are the
+#'   independent units of the two-level likelihood. For the individual count
+#'   alongside every other sample-size-dependent quantity, call
+#'   [information_criteria()].
 #' @examples
-#' # After fitting: nobs(fit)
+#' set.seed(7)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(12), each = 10),
+#'   score_a = rnorm(120), score_b = rnorm(120)
+#' )
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#' nobs(fit)
 #' @export
 #' @importFrom stats nobs
 nobs.multilpa <- function(object, ...) {

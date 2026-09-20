@@ -37,7 +37,9 @@ returns one row per simulated replicate.}
 A base `data.frame`. `"test"` has one row, with columns
   `null_profiles`, `null_group_classes`, `alternative_profiles`,
   `alternative_group_classes`, `statistic`, `p_value`, `monte_carlo_se`,
-  `iter` and `n_valid`. `"replicates"` has one row per simulated dataset,
+  `iter`, `n_valid` and `fixed`, the measurement blocks every fit held at one
+  solution, or `NA` when none was held. `"replicates"` has one row per
+  simulated dataset,
   with columns `replicate`, `statistic`, `valid`, `boundary`,
   `null_replications`, `alternative_replications`, `warnings` and `error`.
 }
@@ -45,5 +47,18 @@ A base `data.frame`. `"test"` has one row, with columns
 Tidy a parametric bootstrap likelihood-ratio comparison
 }
 \examples{
-# After bootstrapping: as.data.frame(comparison, what = "replicates")
+set.seed(1)
+example_data <- data.frame(
+  school = rep(seq_len(10), each = 10),
+  score = rnorm(100, rep(c(-2, 2), each = 50))
+)
+smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+                    n_group_classes = 1, n_starts = 2, seed = 1)
+larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+                   n_group_classes = 1, n_starts = 2, seed = 1)
+# `iter` is small so the example runs quickly; use many more for inference.
+comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+                            max_iter = 2000, tol = 1e-6, seed = 1)
+as.data.frame(comparison)
+head(as.data.frame(comparison, what = "replicates"))
 }

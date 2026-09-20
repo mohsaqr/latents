@@ -223,7 +223,7 @@ test_that("unsupported categorical combinations are refused by condition class",
   # the group level instead: two profiles, one class against two.
   one_class <- multilpa(dat, vars, "school", 2, 1,
                         categorical = vars, n_starts = 3, seed = 2)
-  bootstrap <- suppressWarnings(
+  bootstrap <- quietly(
     bootstrap_lrt(one_class, fit, dat, iter = 3, n_starts = 3, seed = 1))
   expect_gt(bootstrap$statistic, 0)
   expect_equal(bootstrap$iter, 3L)

@@ -87,11 +87,23 @@ A base `data.frame` with one row per reported parameter and the
   class probabilities are reported; their sum constraints make the natural
   covariance singular. Wald intervals are not clipped to parameter bounds.
 
+  A fit made with `fixed` reports only the parameters it estimated: a held
+  measurement block is a constant of this likelihood, so it contributes no
+  row here and no row or column to the information matrix. The table is on
+  the natural scale, where every class probability is reported, so it has one
+  row per estimated natural coefficient: `n_parameters` rows plus one for
+  each set of probabilities whose reference category the estimation scale
+  drops. The held values still enter the likelihood at
+  the values they were held at, so every standard error, interval and p-value
+  is conditional on that measurement solution and does not propagate its
+  uncertainty. See [fit_staged()] for what that conditioning means.
+
   Diagnostics of the fit as a whole travel as attributes rather than as
   columns repeated down every row: `covariance` and `covariance_unconstrained`
   (natural and estimation-scale covariance of the estimates), `hessian`,
-  `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`
-  and `adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
+  `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`,
+  `fixed` (the measurement blocks this fit held, `character()` when none) and
+  `adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
   groups-by-parameters score matrix and `scaling_correction` the MLR scaling
   correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
   difference tests.
@@ -117,6 +129,19 @@ Class-membership coefficients are on the multinomial logit scale
   to the boundary by separation, which the size of the estimate and its
   standard error together will reveal.
 }
+\section{Conditions}{
+
+  `multilpa_no_converge` for an unconverged fit, `multilpa_boundary_fit` when
+  a variance, a response probability or a mixing probability sits at its
+  bound, `multilpa_singular_information` when the observed information cannot
+  be inverted, `multilpa_no_free_parameters` when `fixed` held every
+  parameter, `multilpa_bad_inference_data` when a supplied `data` does not
+  reproduce the fit, and `multilpa_too_few_groups` for `vcov_type = "robust"`
+  with fewer independent groups than reported parameters. A fit whose score
+  is still far from zero is reported with a `multilpa_unconverged` warning
+  rather than refused.
+}
+
 \examples{
 # Two separated profiles, membership driven by `x` and by the group's class.
 set.seed(5)
@@ -134,10 +159,14 @@ fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
                       n_starts = 2, seed = 1)
 parameter_inference(fit, example_data)
 set.seed(42)
-dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
-fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
-parameter_inference(fit, dat)
+example_data <- data.frame(
+  school = rep(seq_len(10), each = 10),
+  score_a = rnorm(100), score_b = rnorm(100)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+parameter_inference(fit)
 
 # Many tests in one table: name the correction, do not apply one by stealth.
-parameter_inference(fit, dat, adjust = "BH")
+parameter_inference(fit, adjust = "BH")
 }

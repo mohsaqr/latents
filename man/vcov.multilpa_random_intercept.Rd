@@ -38,5 +38,16 @@ Nothing; always raises a `multilpa_no_inference` condition. The
 Standard errors are not available for a random-intercept fit
 }
 \examples{
-# vcov() on a random-intercept fit raises multilpa_no_inference by design.
+set.seed(8)
+example_data <- data.frame(group = rep(seq_len(12), each = 5),
+                           score_a = rnorm(60), score_b = rnorm(60))
+random_intercept <- fit_random_intercept(example_data,
+                                         c("score_a", "score_b"), "group",
+                                         n_profiles = 2, n_starts = 2,
+                                         seed = 1)
+# The refusal is catchable by class, not by message text.
+tryCatch(vcov(random_intercept),
+         multilpa_no_inference = function(condition) {
+           "no standard errors for this model family"
+         })
 }

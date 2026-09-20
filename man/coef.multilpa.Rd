@@ -15,9 +15,11 @@ log-Cholesky coordinates (full covariance), and baseline-category logits.}
 \item{...}{Reserved for generic compatibility.}
 }
 \value{
-A named numeric vector. Natural coefficients include all mixing
-  probabilities; unconstrained coefficients exclude their reference
-  categories. Names are `level.parameter.outcome.term`, the same four-part
+A named numeric vector of every coefficient the model has, held ones
+  included: a block `fixed` held is part of the model and is reported here,
+  even though it has no standard error and no interval. Natural coefficients
+  include all mixing probabilities; unconstrained coefficients exclude their
+  reference categories. Names are `level.parameter.outcome.term`, the same four-part
   decomposition [parameter_inference()] reports as columns and the same
   spelling every fitted class in this package uses, so a name written for one
   fit means the same thing for another. A parameter with no term -- a

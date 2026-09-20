@@ -15,9 +15,15 @@
 #'   defaults to every numeric column that is not `id`.
 #' @param id Optional. The column identifying the groups rows are nested in.
 #'   Supplying it adds `n_groups` and `icc`; omitting it leaves them out.
-#' @param by Optional. `"profile"` or `"group_class"` on a fitted model, or a
-#'   column name on a data frame: describe each variable once per level of it,
-#'   rather than once overall.
+#' @param by Optional. `"profile"` or `"group_class"` on a fitted model -- only
+#'   `"profile"` on a `multilpa_random_intercept` fit, which has no discrete
+#'   group classes -- or a column name on a data frame: describe each variable
+#'   once per level of it,
+#'   rather than once overall. Rows whose stratifier is `NA` are neither dropped
+#'   nor folded into another level: they form their own stratum, labelled `NA`
+#'   in the `by` column and reported last, so that the strata account for every
+#'   input row exactly once. The stratifier is never compared with `==`, so a
+#'   missing value cannot select rows it does not belong to.
 #' @param ... Passed between methods.
 #' @return A base `data.frame`, one row per variable, or one row per variable
 #'   and `by` level, with the columns
@@ -34,7 +40,15 @@
 #'       between-group mean square falls below the within-group one; that is the
 #'       estimator reporting no group structure, not an error.}
 #'   }
-#'   A `by` column comes first, named after what it splits on.
+#'   A `by` column comes first, named after what it splits on and holding that
+#'   level's own value, `NA` for the stratum of rows whose stratifier is
+#'   missing. For every variable, `n + n_missing` summed over the strata equals
+#'   the number of input rows; that invariant is asserted before the table is
+#'   returned. Describing by a class the model assigned keeps that assignment
+#'   out of the described frame, so an indicator of the caller's own that is
+#'   named `profile` or `group_class` is summarized as itself, not replaced by
+#'   the assignment. A `by` whose name is one of the summary's own columns
+#'   cannot be told apart from them and raises `multilpa_bad_data`.
 #' @references Bliese, P. D. (2000). Within-group agreement, non-independence,
 #'   and reliability. In K. J. Klein & S. W. J. Kozlowski (Eds.), *Multilevel
 #'   theory, research, and methods in organizations*.
@@ -44,6 +58,11 @@
 #' descriptives(school_engagement,
 #'              vars = c("homework_hours", "participation", "interest"),
 #'              id = "school")
+#'
+#' # A missing stratifier is a stratum of its own, not a silent loss and not
+#' # missingness invented in a variable that has none.
+#' descriptives(data.frame(cohort = c("A", "A", "B", NA), score = 1:4),
+#'              vars = "score", by = "cohort")
 #'
 #' fit <- multilpa(school_engagement,
 #'                 c("homework_hours", "participation", "interest"),
@@ -74,15 +93,7 @@ descriptives.data.frame <- function(x, vars = NULL, id = NULL, by = NULL, ...) {
                         class = "multilpa_nothing_to_describe", call = NULL))
   }
   if (is.null(by)) return(.multilpa_describe(x, vars, id))
-  levels_of <- unique(x[[by]])
-  described <- lapply(levels_of, function(level) {
-    rows <- x[x[[by]] == level, , drop = FALSE]
-    cbind(stats::setNames(data.frame(level, stringsAsFactors = FALSE), by),
-          .multilpa_describe(rows, vars, id))
-  })
-  result <- do.call(rbind, described)
-  row.names(result) <- NULL
-  result
+  .multilpa_describe_by(x, vars, id, x[[by]], by)
 }
 
 #' @rdname descriptives
@@ -92,11 +103,14 @@ descriptives.multilpa <- function(x, by = NULL, ...) {
               is.null(by) || (is.character(by) && length(by) == 1L &&
                                 by %in% c("profile", "group_class")))
   frame <- .multilpa_model_frame(x)
-  if (!is.null(by)) {
-    frame[[by]] <- if (identical(by, "profile")) x$subject_profiles else
-      x$group_classes[x$group_index]
+  if (is.null(by)) {
+    return(descriptives.data.frame(frame, vars = x$vars, id = x$id, ...))
   }
-  descriptives.data.frame(frame, vars = x$vars, id = x$id, by = by, ...)
+  # The assignment is metadata, not a measurement: it is carried beside the
+  # frame rather than written into it, so an indicator the caller named
+  # `profile` or `group_class` keeps its own values.
+  .multilpa_describe_by(frame, x$vars, x$id,
+                        .multilpa_assignment_values(x, by), by)
 }
 
 #' @rdname descriptives
@@ -113,8 +127,95 @@ descriptives.multilpa_random_intercept <- function(x, by = NULL, ...) {
   stopifnot("`by` must be \"profile\"" =
               is.null(by) || identical(by, "profile"))
   frame <- .multilpa_model_frame(x)
-  if (!is.null(by)) frame[[by]] <- x$subject_profiles
-  descriptives.data.frame(frame, vars = x$vars, id = x$id, by = by, ...)
+  if (is.null(by)) {
+    return(descriptives.data.frame(frame, vars = x$vars, id = x$id, ...))
+  }
+  .multilpa_describe_by(frame, x$vars, x$id,
+                        .multilpa_assignment_values(x, by), by)
+}
+
+#' The class a fit assigned to each of its observations
+#'
+#' Read from the fit rather than written into the frame it describes, so that
+#' the assignment can never displace a column of the caller's own.
+#'
+#' @param x A fitted model of this package.
+#' @param by `"profile"` or `"group_class"`.
+#' @return A vector with one element per observation of the fit.
+#' @noRd
+.multilpa_assignment_values <- function(x, by) {
+  values <- if (identical(by, "profile")) x$subject_profiles else
+    x$group_classes[x$group_index]
+  if (is.null(values) || length(values) != x$n_observations) {
+    stop(errorCondition(sprintf(
+      "This fit carries no `%s` assignment for each of its observations.", by),
+      class = "multilpa_incomplete_fit", call = NULL))
+  }
+  values
+}
+
+#' Describe each variable once per stratum
+#'
+#' The stratifier arrives as a vector beside the frame, not as a column of it,
+#' so describing by a class the model assigned cannot overwrite an indicator of
+#' the same name.
+#'
+#' Rows are keyed to their stratum with `match()`, which returns `NA` for a
+#' missing stratifier. Selecting with `which()` on that key therefore drops the
+#' missing rows from every observed stratum instead of turning each selector
+#' into a vector of `NA`s, which is what `x[[by]] == level` did: `NA` selectors
+#' fabricate rows that are missing on every variable and lose the observed
+#' values of the rows that carry them.
+#'
+#' @param data A data frame.
+#' @param vars Column names to describe.
+#' @param id Optional grouping column name.
+#' @param by_values One stratifier value per row of `data`.
+#' @param by_label The name the stratum column takes in the result.
+#' @return A base `data.frame`, one row per stratum and variable, the stratum of
+#'   rows with a missing stratifier last.
+#' @noRd
+.multilpa_describe_by <- function(data, vars, id, by_values, by_label) {
+  summary_columns <- c("variable", "n", "n_missing", "mean", "sd", "min", "max",
+                       "n_distinct", "n_groups", "icc")
+  stopifnot(
+    "`vars` must be column names of the frame being described" =
+      all(vars %in% names(data)),
+    "`by` must have one value for each row described" =
+      length(by_values) == nrow(data))
+  if (by_label %in% summary_columns) {
+    stop(errorCondition(sprintf(
+      "`by` names the column `%s`, which the summary itself uses, so the two could not be told apart in the result.",
+      by_label), class = "multilpa_bad_data", call = NULL))
+  }
+  observed_levels <- unique(by_values[!is.na(by_values)])
+  keys <- match(by_values, observed_levels)
+  missing_stratum <- anyNA(keys)
+  strata <- c(lapply(seq_along(observed_levels), \(index) which(keys == index)),
+              if (missing_stratum) list(which(is.na(keys))))
+  # A length-one vector of the stratifier's own type, so a factor keeps its
+  # levels and a numeric stratifier is not coerced to character by its label.
+  labels <- c(observed_levels, if (missing_stratum) by_values[NA_integer_])
+  if (length(strata) == 0L) {
+    empty <- cbind(stats::setNames(data.frame(by_values[NA_integer_]), by_label),
+                   .multilpa_describe(data, vars, id))
+    return(empty[0L, , drop = FALSE])
+  }
+  described <- lapply(seq_along(strata), function(index) {
+    cbind(stats::setNames(data.frame(labels[index], stringsAsFactors = FALSE),
+                          by_label),
+          .multilpa_describe(data[strata[[index]], , drop = FALSE], vars, id))
+  })
+  result <- do.call(rbind, described)
+  row.names(result) <- NULL
+  accounted <- vapply(split(result$n + result$n_missing, result$variable),
+                      sum, integer(1))
+  stopifnot(
+    "Every described row must fall in exactly one stratum" =
+      identical(sum(lengths(strata)), nrow(data)),
+    "Each variable must be counted once for every described row" =
+      all(accounted == nrow(data)))
+  result
 }
 
 #' Describe each variable of one frame

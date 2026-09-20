@@ -1,7 +1,9 @@
 # Reproduce comparisons and compact fixtures from actual retained Mplus outputs.
 # Run from the project root: Rscript validation/mplus/extensions-missing-full/compare.R
-source(file.path("R", "gaussian-moments.R"))
-source(file.path("R", "fit-ml-lpa.R"))
+# Load the whole package rather than naming source files. `R/fit-ml-lpa.R`
+# stopped existing when the sources were reorganised, and a comparison script
+# should not depend on the internal file layout.
+suppressMessages(pkgload::load_all(".", quiet = TRUE))
 artifact_dir <- file.path("validation", "mplus", "extensions-missing-full")
 synthetic <- read.table(file.path(artifact_dir, "synthetic.dat"),
                         col.names = c("y1", "y2", "clus", "id"), na.strings = "-999")

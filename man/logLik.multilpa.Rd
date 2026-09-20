@@ -21,5 +21,14 @@ A `logLik` object with parameter count `df` and the number of observed
 Extract the multilevel model log likelihood
 }
 \examples{
-# After fitting: logLik(fit); AIC(fit); BIC(fit)
+set.seed(7)
+example_data <- data.frame(
+  school = rep(seq_len(12), each = 10),
+  score_a = rnorm(120), score_b = rnorm(120)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+logLik(fit)
+AIC(fit)
+BIC(fit)
 }

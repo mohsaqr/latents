@@ -9,8 +9,12 @@
 #   Rscript validation/three-step/compare-tidysem.R
 
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
+# A missing external package is a skip with a reason, not a silent absence and
+# not an error that reads like a defect in this package.
 if (!requireNamespace("tidySEM", quietly = TRUE)) {
-  stop("tidySEM is required for this comparison; install it first.", call. = FALSE)
+  cat("SKIPPED: tidySEM is not installed, so the independent BCH weight",
+      "construction this comparison is made against is unavailable.\n")
+  quit(status = 0L, save = "no")
 }
 
 set.seed(11)
@@ -30,8 +34,21 @@ posteriors <- fit$subject_posteriors
 mine <- multilpa:::.multilpa_error_matrix(
   multilpa:::.multilpa_level_assignments(fit, "individuals"))
 theirs <- as.matrix(tidySEM:::classification_probs_mostlikely(posteriors))
-weights_mine <- as.matrix(
-  subset(bch_weights(fit), select = grep("^weight_class_", names(bch_weights(fit)))))
+# `bch_weights()` returns one row per unit and class since the public returns
+# were tidied; it used to return one `weight_class_k` column per class. The
+# comparison is against a unit-by-class matrix, so the long frame is reshaped
+# here rather than the comparison being weakened to fit the new shape.
+#' The BCH weights as a unit-by-class matrix in the fit's own row order
+#' @param frame The long frame returned by `bch_weights()`.
+#' @return A numeric matrix with one row per unit and one column per class.
+.bch_weight_matrix <- function(frame) {
+  wide <- stats::reshape(frame, direction = "wide", idvar = "unit",
+                         timevar = "class", v.names = "weight",
+                         drop = c("level", "assigned_class"))
+  ordered_rows <- wide[order(wide$unit), , drop = FALSE]
+  unname(as.matrix(ordered_rows[, setdiff(names(ordered_rows), "unit"), drop = FALSE]))
+}
+weights_mine <- .bch_weight_matrix(bch_weights(fit))
 weights_theirs <- solve(theirs)[apply(posteriors, 1L, which.max), ]
 estimate_mine <- three_step(fit, data, "y", method = "bch")$estimate
 estimate_theirs <- vapply(seq_len(2), function(class) {

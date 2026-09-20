@@ -82,7 +82,9 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' @param x An `multilpa_enumeration` result from [enumerate_classes()].
 #' @param n_profiles Number of individual profiles identifying the candidate.
 #' @param n_group_classes Number of group classes identifying the candidate.
-#' @return The fitted [multilpa()] model for that cell of the grid.
+#' @return The fitted model for that cell of the grid: an object of class
+#'   `multilpa`, exactly as [multilpa()] returned it, with every verb of this
+#'   package available on it.
 #' @section Conditions:
 #'   `multilpa_unknown_candidate` when the requested class counts are not in
 #'   the grid, and `multilpa_failed_candidate` when they are in the grid but
@@ -195,9 +197,15 @@ summary.multilpa_enumeration <- function(object, ...) {
 #' @param x A `summary_multilpa_enumeration` object.
 #' @param digits Number of printed significant digits.
 #' @param ... Passed to the underlying `data.frame` printing.
-#' @return The summary, invisibly.
+#' @return The summary, invisibly. Called for the side effect of printing the
+#'   candidate counts, the table of which candidate minimises each criterion,
+#'   and how many distinct candidates are minimal under some criterion.
 #' @examples
-#' # After enumerating: print(summary(candidates))
+#' set.seed(1)
+#' d <- data.frame(g = rep(seq_len(10), each = 10), y = rnorm(100))
+#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+#'                                 n_group_classes = 1, n_starts = 2, seed = 1)
+#' print(summary(candidates))
 #' @export
 print.summary_multilpa_enumeration <- function(x, digits = 4L, ...) {
   stopifnot("`x` must be a `summary_multilpa_enumeration` object" =
@@ -290,7 +298,11 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
       ## refit sort "10" before "2", permuting the categories relative to the
       ## fit being bootstrapped, so a numeric level set goes back as numeric.
       levels_observed <- object$categorical_levels[[indicator]]
-      numeric_levels <- suppressWarnings(as.numeric(levels_observed))
+      ## The coercion warning IS the test here: `as.numeric("a")` warns and
+      ## returns NA, and `anyNA()` below is what reads that answer. This is the
+      ## documented exception to the no-suppressWarnings rule -- one specific
+      ## base warning, diagnosed on the next line rather than discarded.
+      numeric_levels <- suppressWarnings(as.numeric(levels_observed)) # nolint: undesirable_function_linter.
       if (!anyNA(numeric_levels)) levels_observed <- numeric_levels
       levels_observed[.multilpa_draw_rows(probabilities)]
     })
@@ -320,6 +332,89 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
   max.col(cumulative >= stats::runif(nrow(probabilities)), ties.method = "first")
 }
 
+#' The measurement constraint both bootstrap refits must carry
+#'
+#' A fit made with `fixed` treats its measurement blocks as known, so its
+#' likelihood is conditional on those values and its free parameters are only
+#' the ones the constraint left. A bootstrap that refits the replicates without
+#' the constraint compares unrestricted models, while the observed statistic
+#' compares constrained ones, and the resulting p-value answers a question
+#' nobody asked. This decides, once, what every refit must be given, and
+#' refuses the pairs whose constrained nesting cannot be established.
+#'
+#' Nesting holds when both models hold the same blocks at the same values and
+#' differ only in the number of group classes: the extra class is a mixing
+#' parameter, and the null is the alternative with that class emptied. It does
+#' not hold when the models differ in the number of profiles, because the held
+#' measurement then has a different shape in each model and the smaller one is
+#' not a restriction of the larger one.
+#'
+#' @param null_model The smaller fitted `multilpa` model.
+#' @param alternative_model The larger fitted `multilpa` model.
+#' @return A list with `start`, the `multilpa_start` carrying the held
+#'   measurement values (`NULL` when nothing is held), and `fixed`, the
+#'   character vector of held block names (`character(0)` when nothing is
+#'   held). Raises `multilpa_bad_nesting` when the two constrained models are
+#'   not nested.
+#' @noRd
+.multilpa_bootstrap_constraint <- function(null_model, alternative_model) {
+  stopifnot("`null_model` must be a fitted `multilpa` model" =
+              inherits(null_model, "multilpa"),
+            "`alternative_model` must be a fitted `multilpa` model" =
+              inherits(alternative_model, "multilpa"))
+  held_null <- null_model$fixed %||% character()
+  held_alternative <- alternative_model$fixed %||% character()
+  if (length(held_null) == 0L && length(held_alternative) == 0L) {
+    return(list(start = NULL, fixed = character()))
+  }
+  if (length(held_null) == 0L || length(held_alternative) == 0L) {
+    stop(errorCondition(paste(
+      "One model holds measurement blocks fixed and the other estimates them,",
+      "so the smaller is not nested in the larger. Fit both with the same",
+      "`fixed` specification, or neither."),
+      class = "multilpa_bad_nesting", call = NULL))
+  }
+  if (!identical(sort(held_null), sort(held_alternative))) {
+    stop(errorCondition(sprintf(paste(
+      "The models hold different measurement blocks fixed (%s against %s), so",
+      "they are not nested. Give both the same `fixed` specification."),
+      paste(sprintf("\"%s\"", sort(held_null)), collapse = ", "),
+      paste(sprintf("\"%s\"", sort(held_alternative)), collapse = ", ")),
+      class = "multilpa_bad_nesting", call = NULL))
+  }
+  if (!identical(null_model$n_profiles, alternative_model$n_profiles)) {
+    stop(errorCondition(sprintf(paste(
+      "A held measurement cannot be compared across %d and %d profiles: the",
+      "held blocks have different shapes, so the null is not a restriction of",
+      "the alternative. Compare models that differ by one group class, or",
+      "refit both without `fixed`."),
+      null_model$n_profiles, alternative_model$n_profiles),
+      class = "multilpa_bad_nesting", call = NULL))
+  }
+  covariance_model <- null_model$covariance_model %||% "diagonal"
+  start <- starting_values(null_model, what = "measurement")
+  values_null <- .multilpa_held_parameters(start, held_null, covariance_model)
+  values_alternative <- .multilpa_held_parameters(
+    starting_values(alternative_model, what = "measurement"), held_alternative,
+    alternative_model$covariance_model %||% "diagonal")
+  agreement <- all.equal(values_null, values_alternative, tolerance = 1e-8)
+  if (!isTRUE(agreement)) {
+    stop(errorCondition(sprintf(paste(
+      "The models hold the same blocks at different values, so they are not",
+      "nested: %s. Hold both at one measurement solution, as fit_staged()",
+      "does."), paste(agreement, collapse = "; ")),
+      class = "multilpa_bad_nesting", call = NULL))
+  }
+  if (alternative_model$n_parameters <= null_model$n_parameters) {
+    stop(errorCondition(sprintf(paste(
+      "The alternative must estimate more free parameters than the null; with",
+      "this constraint it estimates %d against %d."),
+      alternative_model$n_parameters, null_model$n_parameters),
+      class = "multilpa_bad_nesting", call = NULL))
+  }
+  list(start = start, fixed = held_null)
+}
+
 #' Parametric bootstrap likelihood-ratio comparison
 #'
 #' Simulates complete indicators under the null model while preserving observed
@@ -329,6 +424,23 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
 #' parametric bootstrap, not an implementation of Mplus TECH14. It does not use
 #' a chi-square reference distribution. Any failed/nonconverged or reversed
 #' replicate makes the p-value NA, avoiding silent deletion of difficult fits.
+#'
+#' Models fitted with `fixed`, including those from [fit_staged()], are
+#' supported: every replicate is refitted with the same blocks held at the same
+#' values, so the simulated statistics compare the same two constrained models
+#' as the observed statistic does. The p-value is then conditional on that
+#' measurement solution, which is treated as known and whose own uncertainty is
+#' not propagated. A constrained pair whose nesting cannot be established is
+#' refused rather than given a p-value.
+#' @section Conditions:
+#'   `multilpa_bad_nesting` when only one of the two models holds measurement
+#'   blocks fixed, when they hold different blocks, when they hold the same
+#'   blocks at different values, when they hold a measurement fixed while
+#'   differing in the number of profiles (the held blocks then have different
+#'   shapes, so the null is not a restriction of the alternative), or when the
+#'   alternative does not estimate more free parameters than the null.
+#'   `multilpa_failed_replicates` is warned when some replicate fails
+#'   validation, and the p-value is `NA`.
 #' @param null_model Smaller, converged [multilpa()] model on complete data.
 #' @param alternative_model Larger model fitted to exactly the same data.
 #' @param data Optional. The data both models were fitted to, used to verify
@@ -341,15 +453,28 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
 #' @param seed Optional seed, with caller RNG state restored.
 #' @return An object of class `multilpa_bootstrap_lrt`, carrying the observed
 #'   statistic, the finite-simulation corrected p-value, its Monte Carlo
-#'   standard error, and one record per replicate. Read it with the verbs that
-#'   describe it: [as.data.frame()] gives one row per simulated replicate,
-#'   `as.data.frame(what = "test")` the single-row test result, [summary()] the
+#'   standard error, the measurement blocks held fixed in every fit, and one
+#'   record per replicate. Read it with the verbs that describe it:
+#'   [as.data.frame()] gives the single-row test result,
+#'   `as.data.frame(what = "replicates")` one row per simulated replicate,
+#'   [summary()] the
 #'   test beside the replicate diagnostics, and [plot()] the simulated null
 #'   distribution with the observed statistic marked. Inspect failed starts,
 #'   boundary flags and likelihood replication before interpreting results.
 #' @examples
-#' # After fitting nested models on d:
-#' # bootstrap_lrt(smaller, larger, d, iter = 199, seed = 1)
+#' set.seed(1)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 10),
+#'   score = rnorm(100, rep(c(-2, 2), each = 50))
+#' )
+#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+#'                     n_group_classes = 1, n_starts = 2, seed = 1)
+#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+#'                    n_group_classes = 1, n_starts = 2, seed = 1)
+#' # `iter` is small so the example runs quickly; use many more for inference.
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#'                             max_iter = 2000, tol = 1e-6, seed = 1)
+#' comparison
 #' @export
 bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = 10L, max_iter = 1000L,
@@ -378,46 +503,78 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   fields <- c("vars", "id", "group_values", "group_index", "variance_model", "min_variance", "covariance_model")
   fields <- c(fields, "categorical", "categorical_levels", "min_probability")
   if (!all(vapply(fields, function(field) identical(null_model[[field]], alternative_model[[field]]), logical(1)))) {
-    stop("Models must use the same observations, group layout and covariance specification.")
+    stop(errorCondition("Models must use the same observations, group layout and covariance specification.",
+        class = "multilpa_incomparable_models", call = NULL))
   }
   delta <- c(alternative_model$n_profiles - null_model$n_profiles,
              alternative_model$n_group_classes - null_model$n_group_classes)
-  if (!all(delta >= 0) || sum(delta) != 1) stop("Models must differ by exactly one class at one level.")
+  if (!all(delta >= 0) || sum(delta) != 1) stop(errorCondition("Models must differ by exactly one class at one level.",
+        class = "multilpa_bad_nesting", call = NULL))
+  # The observed statistic compares two constrained fits whenever the models
+  # hold measurement blocks fixed, so every replicate must be refitted under
+  # the same constraint or the reference distribution belongs to a different
+  # pair of models than the statistic it is being compared against. Nesting is
+  # a property of the two models, so it is settled before the data are read.
+  constraint <- .multilpa_bootstrap_constraint(null_model, alternative_model)
   invisible(lapply(list(null_model, alternative_model), function(model) {
     if (!isTRUE(model$converged) || isTRUE(model$boundary)) {
-      stop("Original models must be converged with inactive variance bounds.")
+      stop(errorCondition(
+        "Original models must be converged with inactive variance bounds.",
+        class = "multilpa_no_converge", call = NULL))
     }
     if (!all(c(model$vars, model$id) %in% names(data)) ||
         nrow(data) != model$n_observations ||
         !identical(data[[model$id]], model$group_values[model$group_index])) {
-      stop("data must preserve the original observations and group ordering.")
+      stop(errorCondition("data must preserve the original observations and group ordering.",
+        class = "multilpa_bad_inference_data", call = NULL))
     }
     continuous <- .multilpa_continuous_names(model)
     x <- if (length(continuous) == 0L) matrix(numeric(0), nrow(data), 0L) else
       as.matrix(data[continuous])
-    if (!is.numeric(x) || any(!is.finite(x))) stop("Bootstrap currently requires complete finite indicators.")
+    if (!is.numeric(x) || any(!is.finite(x))) stop(errorCondition("Bootstrap currently requires complete finite indicators.",
+        class = "multilpa_bad_data", call = NULL))
     if (!is.null(model$indicator_data) && length(continuous) > 0L &&
         !identical(x, model$indicator_data)) {
-      stop("data must reproduce the original indicator data and row order.")
+      stop(errorCondition("data must reproduce the original indicator data and row order.",
+        class = "multilpa_bad_inference_data", call = NULL))
     }
     encoded <- if (length(model$categorical %||% character()) == 0L) NULL else
       .multilpa_encode_categorical(data[, model$categorical, drop = FALSE])
     codes <- encoded$codes
-    if (anyNA(codes)) stop("Bootstrap currently requires complete finite indicators.")
+    if (anyNA(codes)) stop(errorCondition("Bootstrap currently requires complete finite indicators.",
+        class = "multilpa_bad_data", call = NULL))
     if (!is.null(encoded) && !identical(encoded$levels, model$categorical_levels)) {
-      stop("data must reproduce the original categorical levels and coding.")
+      stop(errorCondition("data must reproduce the original categorical levels and coding.",
+        class = "multilpa_bad_inference_data", call = NULL))
     }
     if (!is.null(codes) && !identical(unname(codes), unname(model$categorical_data))) {
-      stop("data must reproduce the original categorical indicators and row order.")
+      stop(errorCondition("data must reproduce the original categorical indicators and row order.",
+        class = "multilpa_bad_inference_data", call = NULL))
     }
     likelihood <- .multilpa_expectation(x, model$group_index, model,
                                         codes)$log_likelihood
     if (abs(likelihood - model$log_likelihood) > 1e-7 * (1 + abs(likelihood))) {
-      stop("data do not reproduce the fitted model likelihood.")
+      stop(errorCondition("data do not reproduce the fitted model likelihood.",
+        class = "multilpa_bad_inference_data", call = NULL))
     }
   }))
+  # How far below zero a statistic may dip and still be convergence noise rather
+  # than a real reversal. EM stops on a RELATIVE change, so each fit sits within
+  # about `tol * |log_likelihood|` of its optimum and the statistic doubles that.
+  # A fixed absolute window instead rejected healthy replicates on any data whose
+  # likelihood is large: at `tol = 1e-8` on a log likelihood of -3813 the
+  # boundary noise is 7.6e-05, seven times the old fixed -1e-5. The multiplier
+  # allows for the several EM steps that noise accumulates over, and the window
+  # tightens automatically when the caller tightens `tol`.
+  reversal_window <- 100 * tol * (1 + abs(null_model$log_likelihood))
   observed <- 2 * (alternative_model$log_likelihood - null_model$log_likelihood)
-  if (observed < -1e-5) stop("Alternative has lower likelihood; improve its optimization first.")
+  if (observed < -reversal_window) {
+    stop(errorCondition(sprintf(
+      paste("Alternative has lower likelihood by %.3g, beyond the %.3g that",
+            "`tol = %.3g` can explain; improve its optimization first."),
+      -observed, reversal_window, tol),
+      class = "multilpa_reversed_likelihood", call = NULL))
+  }
   observed <- max(0, observed)
   replicates <- do.call(rbind, lapply(seq_len(iter), function(i) {
     warning_text <- character()
@@ -429,15 +586,18 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                     max_iter = max_iter, tol = tol, min_variance = model$min_variance,
                     covariance_model = if (is.null(model$covariance_model)) "diagonal" else model$covariance_model,
                     categorical = model$categorical %||% character(),
-                    min_probability = model$min_probability %||% 1e-10)
+                    min_probability = model$min_probability %||% 1e-10,
+                    start = constraint$start, fixed = constraint$fixed)
       })
       statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
-      valid <- all(vapply(models, `[[`, logical(1), "converged")) && statistic >= -1e-5
+      valid <- all(vapply(models, `[[`, logical(1), "converged")) &&
+        statistic >= -reversal_window
       data.frame(replicate = i, statistic = if (valid) max(0, statistic) else NA_real_,
         valid = valid, boundary = any(vapply(models, `[[`, logical(1), "boundary")),
         null_replications = models[[1L]]$n_best_replicated,
         alternative_replications = models[[2L]]$n_best_replicated,
-        warnings = paste(unique(warning_text), collapse = "; "),
+        warnings = if (length(warning_text) == 0L) NA_character_ else
+          paste(unique(warning_text), collapse = "; "),
         error = if (valid) NA_character_ else "Nonconvergence or reversed likelihood")
     }, warning = function(warning) {
       warning_text <<- c(warning_text, conditionMessage(warning))
@@ -458,6 +618,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   result <- list(statistic = observed, p_value = p_value,
        monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (iter + 1)) else NA_real_,
        iter = iter, n_valid = sum(replicates$valid), replicates = replicates,
+       fixed = constraint$fixed,
        null_profiles = null_model$n_profiles,
        null_group_classes = null_model$n_group_classes,
        alternative_profiles = alternative_model$n_profiles,
@@ -470,9 +631,24 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
 #' Print a parametric bootstrap likelihood-ratio comparison
 #' @param x An `multilpa_bootstrap_lrt` result.
 #' @param ... Reserved for compatibility with `print()`.
-#' @return The input, invisibly.
+#' @return The input, invisibly. Called for the side effect of printing the
+#'   two models compared, the observed statistic, the p-value with its Monte
+#'   Carlo standard error and the number of valid replicates, and the blocks
+#'   held fixed where there are any.
 #' @examples
-#' # After bootstrapping: print(comparison)
+#' set.seed(1)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 10),
+#'   score = rnorm(100, rep(c(-2, 2), each = 50))
+#' )
+#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+#'                     n_group_classes = 1, n_starts = 2, seed = 1)
+#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+#'                    n_group_classes = 1, n_starts = 2, seed = 1)
+#' # `iter` is small so the example runs quickly; use many more for inference.
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#'                             max_iter = 2000, tol = 1e-6, seed = 1)
+#' print(comparison)
 #' @export
 print.multilpa_bootstrap_lrt <- function(x, ...) {
   stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
@@ -485,8 +661,14 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
   cat(sprintf("p-value: %s (Monte Carlo SE %s) from %d of %d valid replicates\n",
               format(x$p_value, digits = 4L), format(x$monte_carlo_se, digits = 3L),
               x$n_valid, x$iter))
+  if (length(x$fixed %||% character()) > 0L) {
+    cat(sprintf(paste("Every fit held %s fixed at one measurement solution,",
+                      "so the p-value is conditional on it.\n"),
+                paste(x$fixed, collapse = ", ")))
+  }
   if (is.na(x$p_value)) {
-    cat("The p-value is withheld because not every replicate was valid; summary() lists them.\n")
+    cat(paste("The p-value is withheld because not every replicate was valid;",
+              "as.data.frame(x, what = \"replicates\") lists them.\n"))
   }
   invisible(x)
 }
@@ -499,7 +681,19 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
 #'   one-row test table by default and one row per replicate with
 #'   `what = "replicates"`.
 #' @examples
-#' # After bootstrapping: summary(comparison)
+#' set.seed(1)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 10),
+#'   score = rnorm(100, rep(c(-2, 2), each = 50))
+#' )
+#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+#'                     n_group_classes = 1, n_starts = 2, seed = 1)
+#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+#'                    n_group_classes = 1, n_starts = 2, seed = 1)
+#' # `iter` is small so the example runs quickly; use many more for inference.
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#'                             max_iter = 2000, tol = 1e-6, seed = 1)
+#' summary(comparison)
 #' @export
 summary.multilpa_bootstrap_lrt <- function(object, ...) {
   stopifnot("`object` must be an `multilpa_bootstrap_lrt` result" =
@@ -525,16 +719,34 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
              statistic = x$statistic, p_value = x$p_value,
              monte_carlo_se = x$monte_carlo_se,
              iter = x$iter, n_valid = x$n_valid,
-             row.names = NULL)
+             # Named rather than flagged, because which blocks were held is what
+             # the conditional p-value is conditional on.
+             fixed = if (length(x$fixed %||% character()) == 0L) NA_character_
+               else paste(x$fixed, collapse = ", "),
+             row.names = NULL, stringsAsFactors = FALSE)
 }
 
 #' Print a bootstrap likelihood-ratio summary
 #' @param x A `summary_multilpa_bootstrap_lrt` object.
 #' @param digits Number of printed significant digits.
 #' @param ... Passed to the underlying `data.frame` printing.
-#' @return The summary, invisibly.
+#' @return The summary, invisibly. Called for the side effect of printing the
+#'   one-row test table, then the number of replicates that reached a parameter
+#'   boundary and the number that raised an error.
 #' @examples
-#' # After bootstrapping: print(summary(comparison))
+#' set.seed(1)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 10),
+#'   score = rnorm(100, rep(c(-2, 2), each = 50))
+#' )
+#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+#'                     n_group_classes = 1, n_starts = 2, seed = 1)
+#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+#'                    n_group_classes = 1, n_starts = 2, seed = 1)
+#' # `iter` is small so the example runs quickly; use many more for inference.
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#'                             max_iter = 2000, tol = 1e-6, seed = 1)
+#' print(summary(comparison))
 #' @export
 print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, ...) {
   stopifnot("`x` must be a `summary_multilpa_bootstrap_lrt` object" =
@@ -560,11 +772,26 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, ...) {
 #' @return A base `data.frame`. `"test"` has one row, with columns
 #'   `null_profiles`, `null_group_classes`, `alternative_profiles`,
 #'   `alternative_group_classes`, `statistic`, `p_value`, `monte_carlo_se`,
-#'   `iter` and `n_valid`. `"replicates"` has one row per simulated dataset,
+#'   `iter`, `n_valid` and `fixed`, the measurement blocks every fit held at one
+#'   solution, or `NA` when none was held. `"replicates"` has one row per
+#'   simulated dataset,
 #'   with columns `replicate`, `statistic`, `valid`, `boundary`,
 #'   `null_replications`, `alternative_replications`, `warnings` and `error`.
 #' @examples
-#' # After bootstrapping: as.data.frame(comparison, what = "replicates")
+#' set.seed(1)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 10),
+#'   score = rnorm(100, rep(c(-2, 2), each = 50))
+#' )
+#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+#'                     n_group_classes = 1, n_starts = 2, seed = 1)
+#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+#'                    n_group_classes = 1, n_starts = 2, seed = 1)
+#' # `iter` is small so the example runs quickly; use many more for inference.
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#'                             max_iter = 2000, tol = 1e-6, seed = 1)
+#' as.data.frame(comparison)
+#' head(as.data.frame(comparison, what = "replicates"))
 #' @export
 as.data.frame.multilpa_bootstrap_lrt <- function(x, row.names = NULL,
                                                  optional = FALSE,
@@ -611,7 +838,19 @@ as.data.frame.summary_multilpa_bootstrap_lrt <- function(x, row.names = NULL,
 #' @section Conditions:
 #'   `multilpa_nothing_to_plot` when no replicate produced a finite statistic.
 #' @examples
-#' # After bootstrapping: plot(comparison)
+#' set.seed(1)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 10),
+#'   score = rnorm(100, rep(c(-2, 2), each = 50))
+#' )
+#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
+#'                     n_group_classes = 1, n_starts = 2, seed = 1)
+#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
+#'                    n_group_classes = 1, n_starts = 2, seed = 1)
+#' # `iter` is small so the example runs quickly; use many more for inference.
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#'                             max_iter = 2000, tol = 1e-6, seed = 1)
+#' plot(comparison)
 #' @export
 plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
                                         palette = NULL,

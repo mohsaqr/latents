@@ -42,11 +42,18 @@ Use one for an ordinary, pooled LPA.}
 covariance matrices) or `"equal"` (shared across profiles).}
 
 \item{n_starts}{Positive integer number of EM starts. When `start` is supplied,
-it supplies the first start; remaining starts are random initializations.}
+it supplies the first start; remaining starts are random initializations.
+It is ignored when `max_iter = 0` and `start` is supplied: that call
+evaluates the supplied parameters and nothing else, so exactly one start is
+run whatever `n_starts` says.}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-`max_iter = 0` performs no update and returns the model evaluated at
-`start`, so that `logLik()` scores a parameter set supplied from elsewhere.}
+`max_iter = 0` performs no update. With `start`, it returns the model
+evaluated at exactly those values, whatever `n_starts` is, so that
+`logLik()` scores a parameter set supplied from elsewhere rather than the
+best of some random initializations that were never asked for. Without
+`start` there is nothing to evaluate at, so the random initializations are
+scored and the highest is returned.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
 absolute change no greater than `tol * (1 + abs(previous log likelihood))`.}
@@ -62,7 +69,16 @@ the caller's random-number state is restored on exit.}
 `profile_probabilities` (group classes by profiles), and
 `group_probabilities` (vector). Starting probabilities must be positive.
 For full covariance, supply `covariances` (indicators by indicators by
-profiles); `variances` may be omitted or must match their diagonals.}
+profiles); `variances` may be omitted or must match their diagonals.
+A categorical model also takes `response_probabilities`, a list of one
+profiles-by-categories matrix per indicator named in `categorical`. That
+list is read by position unless it is labelled: name its elements after the
+indicators, or its columns after the categories, and each block is matched
+to the indicator and category its labels name, so a differently ordered
+`categorical` or a differently ordered set of factor levels cannot attach a
+distribution to the wrong item. A label naming an indicator or a category
+this fit does not have raises `multilpa_bad_start` rather than being
+aligned by position.}
 
 \item{missing}{`"error"` rejects missing indicators; `"fiml"` maximizes the
 observed-data likelihood under an ignorable missingness mechanism (MAR).

@@ -75,7 +75,8 @@ An object of class `multilpa_covariates`. Read it with the verbs
   the measurement model, the membership coefficients, and either set of
   posteriors, one row per profile-indicator, coefficient, individual or
   group; [summary()] gives the model-level fit summary and the restart
-  diagnostics; [plot()] draws the measurement model; and
+  diagnostics; [plot()] draws the measurement model, the assignments in
+  occasion order, or the case-level entropy and posterior panels; and
   [parameter_inference()] gives one row per free parameter with a standard
   error and an interval.
 }
@@ -99,9 +100,12 @@ data are supported here; missing indicators are not integrated out.
 }
 \examples{
 set.seed(1)
-d <- data.frame(group = rep(1:20, each = 10), z = rnorm(200))
-d$y <- rnorm(200, ifelse(runif(200) < plogis(d$z), -3, 3))
-fit <- fit_covariates(d, "y", "group", 2, 1,
-                            profile_covariates = "z", n_starts = 2, seed = 1)
+example_data <- data.frame(group = rep(seq_len(20), each = 10),
+                           z = rnorm(200))
+example_data$y <- rnorm(200,
+  ifelse(runif(200) < plogis(example_data$z), -3, 3))
+fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+                      n_group_classes = 1, profile_covariates = "z",
+                      n_starts = 2, seed = 1)
 as.data.frame(fit, what = "coefficients")
 }

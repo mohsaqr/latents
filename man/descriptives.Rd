@@ -33,9 +33,15 @@ defaults to every numeric column that is not `id`.}
 \item{id}{Optional. The column identifying the groups rows are nested in.
 Supplying it adds `n_groups` and `icc`; omitting it leaves them out.}
 
-\item{by}{Optional. `"profile"` or `"group_class"` on a fitted model, or a
-column name on a data frame: describe each variable once per level of it,
-rather than once overall.}
+\item{by}{Optional. `"profile"` or `"group_class"` on a fitted model -- only
+`"profile"` on a `multilpa_random_intercept` fit, which has no discrete
+group classes -- or a column name on a data frame: describe each variable
+once per level of it,
+rather than once overall. Rows whose stratifier is `NA` are neither dropped
+nor folded into another level: they form their own stratum, labelled `NA`
+in the `by` column and reported last, so that the strata account for every
+input row exactly once. The stratifier is never compared with `==`, so a
+missing value cannot select rows it does not belong to.}
 }
 \value{
 A base `data.frame`, one row per variable, or one row per variable
@@ -53,7 +59,15 @@ A base `data.frame`, one row per variable, or one row per variable
       between-group mean square falls below the within-group one; that is the
       estimator reporting no group structure, not an error.}
   }
-  A `by` column comes first, named after what it splits on.
+  A `by` column comes first, named after what it splits on and holding that
+  level's own value, `NA` for the stratum of rows whose stratifier is
+  missing. For every variable, `n + n_missing` summed over the strata equals
+  the number of input rows; that invariant is asserted before the table is
+  returned. Describing by a class the model assigned keeps that assignment
+  out of the described frame, so an indicator of the caller's own that is
+  named `profile` or `group_class` is summarized as itself, not replaced by
+  the assignment. A `by` whose name is one of the summary's own columns
+  cannot be told apart from them and raises `multilpa_bad_data`.
 }
 \description{
 One row per variable, with the summaries you would look at before fitting and
@@ -70,6 +84,11 @@ cheapest check available and the one most often skipped.
 descriptives(school_engagement,
              vars = c("homework_hours", "participation", "interest"),
              id = "school")
+
+# A missing stratifier is a stratum of its own, not a silent loss and not
+# missingness invented in a variable that has none.
+descriptives(data.frame(cohort = c("A", "A", "B", NA), score = 1:4),
+             vars = "score", by = "cohort")
 
 fit <- multilpa(school_engagement,
                 c("homework_hours", "participation", "interest"),

@@ -31,9 +31,9 @@
 }
 
 suite_polca <- function() {
-  if (!requireNamespace("poLCA", quietly = TRUE)) {
-    stop("suite 'polca' needs the poLCA package")
-  }
+  require_suite_packages(
+    "poLCA",
+    reason = "the single-level categorical reference and its five bundled datasets")
   cases <- list(
     list(dataset = "carcinoma", items = c("A", "B", "C", "D", "E", "F", "G"),
          classes = 2:4),
@@ -78,18 +78,23 @@ suite_polca <- function() {
                             maxiter = 10000L, tol = 1e-10, verbose = FALSE,
                             na.rm = TRUE, calc.se = FALSE)
 
-  fit <- multilpa(frame, indicators = items, group = "unit", n_profiles = k,
+  fit <- multilpa(frame, vars = items, id = "unit", n_profiles = k,
                   n_group_classes = 1L, categorical = items, n_starts = 30L,
                   seed = 20260919L, tol = 1e-12, max_iter = 20000L)
 
   # Score poLCA's own estimates under the multilpa likelihood.
-  at_reference <- multilpa(frame, indicators = items, group = "unit", n_profiles = k,
+  at_reference <- multilpa(frame, vars = items, id = "unit", n_profiles = k,
                            n_group_classes = 1L, categorical = items, n_starts = 1L,
                            max_iter = 0L,
+                           # poLCA labels its response columns "Pr(1)", "Pr(2)";
+                           # multilpa checks a supplied start's labels against
+                           # the data's own category levels and refuses a
+                           # mismatch, so the foreign labels are dropped rather
+                           # than renamed to something they do not mean.
                            start = starting_values(list(
                              profile_probabilities = matrix(reference$P, 1L, k),
                              group_probabilities = 1,
-                             response_probabilities = reference$probs)))
+                             response_probabilities = lapply(reference$probs, unname))))
 
   codes <- vapply(items, function(item) as.integer(factor(observed[[item]])),
                   integer(nrow(observed)))

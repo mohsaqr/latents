@@ -21,34 +21,115 @@
 }
 
 #' Fit weighted multinomial logits
+#'
+#' The search runs on unit-free coordinates, not on the covariates as supplied.
+#' BFGS stops on a relative tolerance measured in the coordinates it is given,
+#' so a covariate held in units a few orders of magnitude away from the rest
+#' stalls the search while the score is still large, and `optim()` still returns
+#' convergence code zero. Because the logit is the same model under any linear
+#' rescaling of a predictor, the entire search is moved onto columns divided by
+#' their root-mean-square (see [.multilpa_design_scale()]) and the coefficients
+#' are divided back afterwards, so the caller receives estimates in the units
+#' the covariates arrived in and the search itself no longer depends on those
+#' units. Convergence is then judged by the score in those unit-free
+#' coordinates rather than by the optimizer's own return code.
+#'
 #' @param design Design matrix.
 #' @param counts Expected category counts in each row.
-#' @param initial Initial coefficient matrix.
-#' @return Updated coefficients and optimization diagnostics.
+#' @param initial Initial coefficient matrix, in the units of `design`.
+#' @param score_tol Relative tolerance for the unit-free score: the step counts
+#'   as solved when the largest absolute scaled score is at most
+#'   `score_tol * (1 + sum(counts))`, which is the total weight the score is
+#'   accumulated over. The default is tight enough that the inner solve is not
+#'   what stops the outer EM iteration; a step that cannot reach it is one whose
+#'   coefficient is drifting towards infinity, and that is reported rather than
+#'   passed off as a maximum.
+#' @param max_restarts How many times BFGS may be restarted from its own
+#'   stopping point before the step is declared unconverged.
+#' @return A list with `coefficients` (in the units of `design`), `converged`,
+#'   and `scaled_score`, the largest absolute unit-free score at the solution.
 #' @noRd
-.multilpa_weighted_logits <- function(design, counts, initial) {
-  stopifnot(is.matrix(design), is.matrix(counts), is.matrix(initial),
-            nrow(design) == nrow(counts), all(counts >= 0))
-  if (ncol(counts) == 1L) return(list(coefficients = initial, converged = TRUE))
+.multilpa_weighted_logits <- function(design, counts, initial,
+                                      score_tol = 1e-8, max_restarts = 10L) {
+  stopifnot(
+    "`design` must be a numeric matrix" =
+      is.matrix(design) && is.numeric(design),
+    "`counts` must be a numeric matrix" =
+      is.matrix(counts) && is.numeric(counts),
+    "`initial` must be a numeric matrix" =
+      is.matrix(initial) && is.numeric(initial),
+    "`design` and `counts` must have the same number of rows" =
+      nrow(design) == nrow(counts),
+    "`counts` must be non-negative" = all(counts >= 0),
+    "`initial` must have one row per design column" =
+      nrow(initial) == ncol(design),
+    "`initial` must have one column per non-reference category" =
+      ncol(initial) == ncol(counts) - 1L,
+    "`score_tol` must be a single positive number" =
+      is.numeric(score_tol) && length(score_tol) == 1L &&
+      is.finite(score_tol) && score_tol > 0,
+    "`max_restarts` must be a single non-negative whole number" =
+      is.numeric(max_restarts) && length(max_restarts) == 1L &&
+      is.finite(max_restarts) && max_restarts >= 0 &&
+      max_restarts == as.integer(max_restarts))
+  ## A non-finite design or count would reach the optimizer as a silent `NaN`
+  ## objective, which BFGS reports as a completed search.
+  if (!all(is.finite(design)) || !all(is.finite(counts))) {
+    stop(errorCondition(paste(
+      "The membership design and the expected class counts must be finite;",
+      "a non-finite entry reaches the multinomial optimizer as an undefined",
+      "objective."), class = "multilpa_bad_data", call = NULL))
+  }
+  if (ncol(counts) == 1L) {
+    return(list(coefficients = initial, converged = TRUE, scaled_score = 0))
+  }
+  scale <- .multilpa_design_scale(design)
+  scaled_design <- sweep(design, 2L, scale, "/")
+  n_free <- ncol(counts) - 1L
   unpack <- function(values) {
     stopifnot(is.numeric(values))
-    matrix(values, ncol(design), ncol(counts) - 1L)
+    matrix(values, ncol(design), n_free)
   }
   objective <- function(values) {
     stopifnot(is.numeric(values))
-    -sum(counts * .multilpa_log_softmax(design, unpack(values)))
+    -sum(counts * .multilpa_log_softmax(scaled_design, unpack(values)))
   }
   gradient <- function(values) {
     stopifnot(is.numeric(values))
-    residual <- .multilpa_softmax(design, unpack(values)) * rowSums(counts) - counts
-    as.vector(crossprod(design, residual[, seq_len(ncol(counts) - 1L), drop = FALSE]))
+    residual <- .multilpa_softmax(scaled_design, unpack(values)) *
+      rowSums(counts) - counts
+    as.vector(crossprod(scaled_design, residual[, seq_len(n_free), drop = FALSE]))
   }
-  fit <- stats::optim(as.vector(initial), objective, gradient, method = "BFGS",
-                      control = list(maxit = 500L, reltol = 1e-11))
-  if (fit$value > objective(as.vector(initial)) + 1e-8) {
-    stop("Multinomial M-step decreased the expected log likelihood.")
+  start <- as.vector(sweep(initial, 1L, scale, "*"))
+  baseline <- objective(start)
+  ## The score is a sum over the expected counts, so the tolerance it is judged
+  ## against scales with them; the `1 +` keeps an empty step well defined.
+  threshold <- score_tol * (1 + sum(counts))
+  current <- start
+  value <- baseline
+  score <- max(abs(gradient(current)))
+  attempt <- 0L
+  # Each restart resets the BFGS curvature approximation, which is what lets the
+  # search move again after it has stopped on its own relative tolerance. This
+  # refines one estimate in sequence, so there is nothing here to vectorize.
+  while (attempt < max_restarts && score > threshold) {
+    fit <- stats::optim(current, objective, gradient, method = "BFGS",
+                        control = list(maxit = 500L, reltol = 1e-11))
+    ## Never move to a worse point: the M-step has to be monotone for EM's
+    ## ascent guarantee to hold.
+    if (!is.finite(fit$value) || fit$value >= value) break
+    current <- fit$par
+    value <- fit$value
+    score <- max(abs(gradient(current)))
+    attempt <- attempt + 1L
   }
-  list(coefficients = unpack(fit$par), converged = fit$convergence == 0L)
+  if (value > baseline + 1e-8) {
+    stop(errorCondition(
+      "Multinomial M-step decreased the expected log likelihood.",
+      class = "multilpa_no_converge", call = NULL))
+  }
+  list(coefficients = sweep(unpack(current), 1L, scale, "/"),
+       converged = score <= threshold, scaled_score = score)
 }
 
 #' Covariate-dependent nested expectation
@@ -167,7 +248,8 @@
 #'   the measurement model, the membership coefficients, and either set of
 #'   posteriors, one row per profile-indicator, coefficient, individual or
 #'   group; [summary()] gives the model-level fit summary and the restart
-#'   diagnostics; [plot()] draws the measurement model; and
+#'   diagnostics; [plot()] draws the measurement model, the assignments in
+#'   occasion order, or the case-level entropy and posterior panels; and
 #'   [parameter_inference()] gives one row per free parameter with a standard
 #'   error and an interval.
 #' @details [parameter_inference()], [vcov()] and [confint()] cover Gaussian
@@ -177,10 +259,13 @@
 #'   alone would understate the parameter count.
 #' @examples
 #' set.seed(1)
-#' d <- data.frame(group = rep(1:20, each = 10), z = rnorm(200))
-#' d$y <- rnorm(200, ifelse(runif(200) < plogis(d$z), -3, 3))
-#' fit <- fit_covariates(d, "y", "group", 2, 1,
-#'                             profile_covariates = "z", n_starts = 2, seed = 1)
+#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
+#'                            z = rnorm(200))
+#' example_data$y <- rnorm(200,
+#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
+#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+#'                       n_group_classes = 1, profile_covariates = "z",
+#'                       n_starts = 2, seed = 1)
 #' as.data.frame(fit, what = "coefficients")
 #' @export
 fit_covariates <- function(data, vars, id, n_profiles,
@@ -265,7 +350,20 @@ fit_covariates <- function(data, vars, id, n_profiles,
   if (!any(is.finite(starts$log_likelihood))) {
     stop(sprintf("All covariate starts failed: %s", paste(unique(starts$error), collapse = "; ")))
   }
-  best_index <- which.max(starts$log_likelihood)
+  ## Restarts of a mixture routinely reach the same optimum under different
+  ## label permutations, and then differ only in the last bits of the
+  ## likelihood. Picking by `which.max()` alone makes the reported labelling
+  ## turn on floating-point noise, so the maximum is taken up to a relative
+  ## tolerance far below any difference that could mean anything, and the
+  ## earliest start attaining it wins. The first start is the one resumed from
+  ## the covariate-free fit, so ties resolve towards the reproducible mode.
+  ## A converged start is preferred over an unconverged one that reached the
+  ## same likelihood, because only the converged one is a maximum.
+  best_likelihood <- max(starts$log_likelihood)
+  tied <- which(starts$log_likelihood >=
+    best_likelihood - 1e-10 * (1 + abs(best_likelihood)))
+  settled <- tied[starts$converged[tied]]
+  best_index <- if (length(settled)) settled[1L] else tied[1L]
   result <- .multilpa_cov_assemble(
     best = attempts[[best_index]], best_index = best_index, starts = starts,
     designs = designs, base = base, data = data, vars = vars,
@@ -291,18 +389,41 @@ fit_covariates <- function(data, vars, id, n_profiles,
       "Some covariate starts failed; summary() reports every start."),
       class = "multilpa_failed_starts"))
   }
-  if (!result$converged) warning("Best covariate fit did not converge.")
-  if (result$boundary) warning("A residual variance reached min_variance.")
-  if (result$extreme_logits) warning("Extreme logit coefficients: inspect scaling, sparse classes and separation.")
+  if (!result$converged) {
+    warning(warningCondition(paste(
+      "The best covariate start had not converged when `max_iter` was reached,",
+      "or its membership logits still carry a non-negligible score, so the",
+      "returned estimate is not a maximum."),
+      class = "multilpa_unconverged"))
+  }
+  if (result$boundary) {
+    warning(warningCondition("A residual variance reached min_variance.",
+                             class = "multilpa_boundary", call = NULL))
+  }
+  if (result$extreme_logits) {
+    warning(warningCondition(
+      "Extreme logit coefficients: inspect scaling, sparse classes and separation.",
+      class = "multilpa_extreme_coefficients", call = NULL))
+  }
   result
 }
 
 #' Print a covariate LPA fit
 #' @param x A covariate LPA fit.
 #' @param ... Reserved.
-#' @return The model invisibly.
+#' @return The model, invisibly. Called for the side effect of printing the
+#'   class counts, the covariate counts, the log likelihood with the
+#'   information criteria, and the convergence diagnostics.
 #' @examples
-#' # print(fit)
+#' set.seed(1)
+#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
+#'                            z = rnorm(200))
+#' example_data$y <- rnorm(200,
+#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
+#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+#'                       n_group_classes = 1, profile_covariates = "z",
+#'                       n_starts = 2, seed = 1)
+#' print(fit)
 #' @export
 print.multilpa_covariates <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_covariates"))
@@ -329,10 +450,13 @@ print.multilpa_covariates <- function(x, ...) {
 #'   errors here; [parameter_inference()] reports those.
 #' @examples
 #' set.seed(1)
-#' d <- data.frame(group = rep(1:20, each = 10), z = rnorm(200))
-#' d$y <- rnorm(200, ifelse(runif(200) < plogis(d$z), -3, 3))
-#' fit <- fit_covariates(d, "y", "group", 2, 1,
-#'                       profile_covariates = "z", n_starts = 2, seed = 1)
+#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
+#'                            z = rnorm(200))
+#' example_data$y <- rnorm(200,
+#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
+#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+#'                       n_group_classes = 1, profile_covariates = "z",
+#'                       n_starts = 2, seed = 1)
 #' summary(fit)
 #' as.data.frame(summary(fit), what = "coefficients")
 #' @export
@@ -376,9 +500,20 @@ summary.multilpa_covariates <- function(object, ...) {
 #' @param x A `summary_multilpa_covariates` object.
 #' @param digits Number of printed significant digits.
 #' @param ... Passed to the underlying `data.frame` printing.
-#' @return The summary, invisibly.
+#' @return The summary, invisibly. Called for the side effect of printing the
+#'   model line, the measurement model, the membership regressions, the
+#'   effective memberships at both levels, the likelihood and information
+#'   criteria, any warnings, and the restart diagnostics.
 #' @examples
-#' # After fitting: print(summary(fit), digits = 3)
+#' set.seed(1)
+#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
+#'                            z = rnorm(200))
+#' example_data$y <- rnorm(200,
+#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
+#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+#'                       n_group_classes = 1, profile_covariates = "z",
+#'                       n_starts = 2, seed = 1)
+#' print(summary(fit), digits = 3)
 #' @export
 print.summary_multilpa_covariates <- function(x, digits = 4L, ...) {
   stopifnot("`x` must be a `summary_multilpa_covariates` object" =
@@ -431,7 +566,15 @@ print.summary_multilpa_covariates <- function(x, digits = 4L, ...) {
 #'   `"starts"` have one row per profile-indicator, per membership coefficient,
 #'   and per EM start respectively.
 #' @examples
-#' # After fitting: as.data.frame(summary(fit), what = "starts")
+#' set.seed(1)
+#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
+#'                            z = rnorm(200))
+#' example_data$y <- rnorm(200,
+#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
+#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+#'                       n_group_classes = 1, profile_covariates = "z",
+#'                       n_starts = 2, seed = 1)
+#' as.data.frame(summary(fit), what = "starts")
 #' @export
 as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL,
                                                       optional = FALSE,
@@ -495,9 +638,19 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL,
 #' Extract a covariate LPA log likelihood
 #' @param object A covariate LPA fit.
 #' @param ... Reserved.
-#' @return A logLik object using independent groups for nobs.
+#' @return A `logLik` object carrying the maximized log likelihood, the free
+#'   parameter count as `df`, and the number of observed groups as `nobs`, so
+#'   `stats::BIC()` uses the group-count BIC.
 #' @examples
-#' # logLik(fit)
+#' set.seed(1)
+#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
+#'                            z = rnorm(200))
+#' example_data$y <- rnorm(200,
+#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
+#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+#'                       n_group_classes = 1, profile_covariates = "z",
+#'                       n_starts = 2, seed = 1)
+#' logLik(fit)
 #' @export
 logLik.multilpa_covariates <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_covariates"))
@@ -508,9 +661,18 @@ logLik.multilpa_covariates <- function(object, ...) {
 #' Count independent groups in a covariate LPA fit
 #' @param object A covariate LPA fit.
 #' @param ... Reserved.
-#' @return Number of observed groups.
+#' @return A single integer: the number of observed groups, which are the
+#'   independent units of this likelihood.
 #' @examples
-#' # nobs(fit)
+#' set.seed(1)
+#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
+#'                            z = rnorm(200))
+#' example_data$y <- rnorm(200,
+#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
+#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+#'                       n_group_classes = 1, profile_covariates = "z",
+#'                       n_starts = 2, seed = 1)
+#' nobs(fit)
 #' @export
 nobs.multilpa_covariates <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_covariates"))
@@ -617,7 +779,13 @@ nobs.multilpa_covariates <- function(object, ...) {
   history <- expectation$log_likelihood
   iteration <- 0L
   converged <- FALSE
-  while (iteration < control$max_iter && !converged) {
+  ## Sweeps spent waiting only on the membership logits are bounded separately
+  ## from `max_iter`: a coefficient drifting to infinity leaves that step
+  ## unsolved for ever while the observed likelihood has stopped moving, and
+  ## sweeping `max_iter` times against it costs a great deal and buys nothing.
+  stalled <- 0L
+  max_stalled <- 20L
+  while (iteration < control$max_iter && !converged && stalled < max_stalled) {
     parameters <- .multilpa_maximization(x, expectation, control$variance_model,
                                        control$min_variance,
                                        control$covariance_model, designs$codes,
@@ -639,8 +807,10 @@ nobs.multilpa_covariates <- function(object, ...) {
     iteration <- iteration + 1L
     # Both the likelihood and the inner logit steps must have settled, so a
     # stalled regression cannot be reported as a converged fit.
-    converged <- abs(change) <= control$tol * (1 + abs(expectation$log_likelihood)) &&
-      profile_update$converged && group_update$converged
+    settled <- abs(change) <= control$tol * (1 + abs(expectation$log_likelihood))
+    logits_solved <- profile_update$converged && group_update$converged
+    converged <- settled && logits_solved
+    stalled <- if (settled && !logits_solved) stalled + 1L else 0L
     expectation <- updated
     history <- c(history, expectation$log_likelihood)
   }

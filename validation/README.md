@@ -15,10 +15,56 @@ Rscript validation/equivalence/run.R              # every suite
 Rscript validation/equivalence/run.R glca mclust  # named suites only
 ```
 
-It writes `equivalence/report.csv`, one row per compared quantity with its
-reference value, the value multilpa produced, the difference and the tolerance,
-and `equivalence/REPORT.md`, the summary table. Both are generated, so no
-number in the documentation is transcribed by hand.
+It writes four generated files, so no number in the documentation is
+transcribed by hand:
+
+| File | Contents |
+|---|---|
+| `equivalence/report.csv` | One row per compared quantity: reference value, the value multilpa produced, the difference, the tolerance, and the multilpa version the row was produced under. |
+| `equivalence/suites.csv` | One row per suite: whether it ran, was skipped or failed, with the reason, how many warnings it raised, and how long it took. |
+| `equivalence/REPORT.md` | The summary table. |
+| `equivalence/SESSION.txt` | The full `sessionInfo()` the run was produced under. |
+
+The run exits non-zero when any quantity disagrees or any suite fails.
+
+### What the harness refuses to let you miss
+
+The external review of 2026-09-20 found that the saved report of 1,012
+agreements could not be reproduced: multilpa 0.8.0 had renamed `indicators` to
+`vars` and `group` to `id`, no validation script had been updated, and a fresh
+run stopped at suite load with a bare `unused arguments` naming neither file
+nor line. The saved report kept being read as evidence for 0.10.0, a version it
+had never been run against. Five things now stand between that and a reader.
+
+1. **A stale call cannot reach a suite.** `check_validation_api()` parses every
+   `.R` file under `validation/` and checks each call to an exported multilpa
+   verb against that verb's current formals, before anything is fitted. An
+   argument that no longer exists is reported with its file, its line and its
+   replacement from the 0.8.0 migration table. `run.R` runs this first and
+   stops if it finds anything.
+2. **A missing external package is a skip with a reason.** A suite calls
+   `require_suite_packages()`, which raises `multilpa_suite_skipped`; the
+   harness records the suite as skipped, says which package was absent and why
+   the suite needed it, and carries on with the rest. `require_suite_files()`
+   does the same for retained program output. Nothing disappears silently and
+   one absent dependency does not abort a run.
+3. **A report carries its own provenance.** The multilpa version, the R
+   version, the platform and every external package version are recorded by the
+   harness, not typed in. The version and an md5 fingerprint of `R/` are taken
+   both before the first suite and after the last: if the package was edited
+   while the run was in progress, the report says so in bold rather than
+   quietly claiming the closing version.
+4. **Every tolerance is explicit.** `compare_values()` has no default
+   tolerance, so a comparison cannot inherit one by accident, and the pinned
+   values live in one place, `.equivalence_tolerances`. The summary table
+   reports the loosest tolerance claimed by each source alongside the worst
+   difference seen.
+5. **A single-seed agreement is not reported as a finding.** The `stability`
+   suite refits three of the models the other suites rely on -- one
+   single-level categorical, one Gaussian, one two-level -- under six seeds
+   each, and reports the spread of the maximised log-likelihood and the number
+   of distinct optima reached. If a comparison's agreement depends on its seed,
+   that shows up here rather than being invisible.
 
 ### Read the two kinds of difference separately
 

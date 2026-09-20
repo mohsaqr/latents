@@ -30,7 +30,8 @@ measurement model, `"responses"` the categorical measurement model,
 posteriors, `"starts"` the restart diagnostics,
 `"stages"` the estimation stages and what each held fixed,
 `"information_criteria"` the information criteria, `"classification"` the
-classification quality, and `"entropy"` the entropy summary.}
+classification quality, `"entropy"` the entropy summary, and `"data"` the
+columns of the original data the model was fitted to.}
 
 \item{scale}{For `what = "profiles"`, `"raw"` reports the estimates in input
 units and `"standardized"` divides each indicator's deviation from its
@@ -42,8 +43,11 @@ grand mean by that indicator's observed standard deviation, which is what
 per unit and class, and `"wide"` gives one row per unit with one column per
 class. The wide column set grows with the number of classes, so no caller
 can address it generically; it stays available because joining posteriors
-back onto the fitting data wants one row per unit. Supplying it with any
-other `what` is an error rather than a silent no-op.}
+back onto the fitting data wants one row per unit. For
+`what = "information_criteria"` it is forwarded to
+[information_criteria()], where `"wide"` is the default one-row reporting
+shape and `"long"` gives one row per criterion and sample-size convention.
+Supplying it with any other `what` is an error rather than a silent no-op.}
 
 \item{...}{Passed to the underlying accessor. `classification` accepts
 `level`, and `information_criteria` accepts `definitions`. The
@@ -74,12 +78,17 @@ A base `data.frame` whose columns depend on `what`.
   category of each indicator, where the cumulative probability is one.
   `"profile_probabilities"` has one row per group class and profile, with
   columns `group_class`, `profile`, `probability`, and
-  `group_class_probability`. `"posteriors"` has one row per input individual,
-  with columns `row`, `group`, `profile` (the modal profile), and one
-  `posterior_profile_*` column per profile. `"group_posteriors"` has one row
-  per observed group, with columns `group`, `group_size`, `group_class`, the
-  group's `log_likelihood`, and one `posterior_group_class_*` column per
-  group class. `"starts"` has one row per EM start, with columns `start`,
+  `group_class_probability`. `"posteriors"` has one row per input individual
+  and profile, with columns `row`, `group`, `profile`, `posterior` and
+  `modal`, the last flagging the profile that individual was assigned to;
+  `format = "wide"` gives one row per individual instead, with columns `row`,
+  `group`, `profile` (the modal profile) and one `posterior_profile_*` column
+  per profile. `"group_posteriors"` has one row per observed group and group
+  class, with columns `group`, `group_size`, `log_likelihood`, `group_class`,
+  `posterior` and `modal`; `format = "wide"` gives one row per group, with
+  columns `group`, `group_size`, `group_class` (the modal class), the group's
+  `log_likelihood`, and one `posterior_group_class_*` column per group class.
+  `"starts"` has one row per EM start, with columns `start`,
   `log_likelihood`, `converged`, `iterations`, `error` and `boundary`.
   `"stages"` has one row per estimation stage, with columns `stage`,
   `group_classes`, `fixed`, `log_likelihood`, `parameters`,
@@ -88,9 +97,12 @@ A base `data.frame` whose columns depend on `what`.
   that stage held fixed, comma separated, and is `NA_character_` when the
   stage estimated every block, which is the case for an ordinary fit and for
   the measurement stage of a staged one; it is never a sentinel such as
-  `"none"`. The remaining values
-  return exactly [information_criteria()], [classification_table()], and
-  [entropy_table()].
+  `"none"`. `"data"` has one row per observation in input order, carrying the
+  identifier, the occasion where the model has one, and the indicators under
+  their original names and in their original order; it raises
+  `multilpa_incomplete_fit` for a fit that kept no indicator data. The
+  remaining values return exactly [information_criteria()],
+  [classification_table()], and [entropy_table()].
 }
 \description{
 Returns any part of a fitted model as a tidy `data.frame`, so that results

@@ -12,11 +12,19 @@
 \item{...}{Reserved for compatibility with `nobs()`.}
 }
 \value{
-The number of observed groups, as an integer.
+A single integer: the number of observed groups, which are the
+  independent units of this likelihood.
 }
 \description{
 Count independent groups in a random-intercept LPA fit
 }
 \examples{
-# After fitting: nobs(random_intercept)
+set.seed(8)
+example_data <- data.frame(group = rep(seq_len(12), each = 5),
+                           score_a = rnorm(60), score_b = rnorm(60))
+random_intercept <- fit_random_intercept(example_data,
+                                         c("score_a", "score_b"), "group",
+                                         n_profiles = 2, n_starts = 2,
+                                         seed = 1)
+nobs(random_intercept)
 }

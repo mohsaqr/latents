@@ -12,7 +12,8 @@ three_step(
   method = c("bch", "proportional", "modal"),
   ci_level = 0.95,
   contrast = c("none", "pairs"),
-  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
+  vcov_type = c("cluster", "independent")
 )
 }
 \arguments{
@@ -41,6 +42,15 @@ statistic and a p-value against a difference of zero.}
 differences, passed to [stats::p.adjust()]. `"BH"` by default; `"none"`
 leaves the p-values uncorrected. Ignored for `contrast = "none"`, which
 tests nothing.}
+
+\item{vcov_type}{`"cluster"`, the default, sums the influence contributions
+within the fit's groups and takes those groups as the independent units,
+which is the honest choice when the outcome is measured on observations
+nested inside them. `"independent"` treats every observation as its own
+independent unit instead. That ignores the nesting the model was fitted to
+and is only defensible when there is no nesting left to ignore, such as a
+fit with a single group; it is never substituted silently, and the choice
+is recorded in the result's `vcov_type` attribute.}
 }
 \value{
 A base `data.frame`. For `contrast = "none"` it has one row per class
@@ -55,10 +65,15 @@ A base `data.frame`. For `contrast = "none"` it has one row per class
   `reference_class`), `standard_error`, `statistic`, `p_value`,
   `p_value_adjusted`, `conf_low` and `conf_high`, matching [r3step()].
 
-  Standard errors are cluster-robust in both shapes, taking the fit's groups
-  as the independent units, so they remain honest when the outcome is
-  measured on observations nested inside those groups. The correction applied
-  to `p_value_adjusted` is recorded in the result's `adjust` attribute.
+  Standard errors are cluster-robust in both shapes under the default
+  `vcov_type = "cluster"`, taking the fit's groups as the independent units,
+  so they remain honest when the outcome is measured on observations nested
+  inside those groups; `vcov_type = "independent"` gives the unclustered
+  variance instead. The variance that was used is recorded in the result's
+  `vcov_type` attribute, and for `contrast = "pairs"` the correction applied
+  to `p_value_adjusted` is recorded in its `adjust` attribute. A
+  `contrast = "none"` table tests nothing, so it carries no `adjust`
+  attribute.
 }
 \description{
 The three-step approach: the measurement model is fitted first, units are
@@ -70,6 +85,14 @@ instead attenuates every difference. This does neither.
 \details{
 The correction assumes the outcome is independent of the assigned
   class given the true one, which is what makes a three-step method valid.
+
+  A cluster-robust variance is the sum of one outer product per independent
+  unit, and those contributions sum to zero at the estimate, so it has rank
+  at most one less than the number of units. With a single group it is
+  exactly zero and with as many groups as classes it is singular. Both are
+  refused with `multilpa_too_few_groups` rather than reported as a very
+  small standard error; `vcov_type = "independent"` is the labelled way to
+  ask for the unclustered variance instead.
 
   The error matrix is treated as known rather than estimated, so the intervals
   are optimistic and the amount is worth stating. Over 60 replications of a

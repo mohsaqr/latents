@@ -29,7 +29,8 @@ stable, the messages are not.
     encoded, or `min_probability` leaves no room for its number of
     categories.}
   \item{`multilpa_bad_start`}{Supplied starting values are missing a block
-    the model needs, or do not have the shape it requires.}
+    the model needs, do not have the shape it requires, or carry labels that
+    name an indicator or a category this fit does not have.}
   \item{`multilpa_bad_fixed`}{A `fixed` request names a block the model does
     not have, or one that `start` does not supply, or `start` is absent.}
   \item{`multilpa_bad_stage`}{A `measurement` fit offered to [fit_staged()]
@@ -65,9 +66,14 @@ stable, the messages are not.
   \item{`multilpa_all_starts_failed`}{Every EM start raised, so no fit was
     produced. The message carries the distinct start errors.}
   \item{`multilpa_empty_profile`}{A profile has no observed responses for an
-    indicator, so its response probabilities are not identified.}
-  \item{`multilpa_too_few_groups`}{Fewer independent groups than parameters,
-    so the information matrix cannot be formed.}
+    indicator, so its response probabilities are not identified; or a group
+    class has no effective membership, so the profile prevalence within it is
+    not defined.}
+  \item{`multilpa_too_few_groups`}{Fewer independent groups than the
+    quantities being reported, so the covariance cannot be formed. Raised by
+    robust [parameter_inference()], and by [three_step()] and [r3step()],
+    whose cluster-robust contributions sum to zero at the estimate and so
+    span at most one dimension fewer than the number of groups.}
   \item{`multilpa_inseparable_classes`}{Classes cannot be separated well
     enough for the requested three-step correction.}
   \item{`multilpa_no_converge`}{A fit required by the request did not
@@ -96,7 +102,9 @@ stable, the messages are not.
 
 \describe{
   \item{`multilpa_bad_nesting`}{Two models are not nested in the way the
-    comparison requires.}
+    comparison requires, including a [bootstrap_lrt()] pair whose held
+    measurement blocks differ, are held at different values, or are held in
+    only one of the two models.}
   \item{`multilpa_incomparable_models`}{Two models were fitted to different
     data, or differ in more than the comparison allows.}
   \item{`multilpa_reversed_likelihood`}{The model with more parameters has
@@ -116,11 +124,17 @@ of returning a number that would be wrong.
 \describe{
   \item{`multilpa_no_inference`}{Standard errors are not available for this
     model family. Raised by [vcov()] and [parameter_inference()] on a
-    `multilpa_transitions` fit.}
+    `multilpa_transitions` fit and on a `multilpa_random_intercept` fit.}
   \item{`multilpa_unsupported_inference`}{Standard errors are not available
     for this particular fit. Raised for a covariate fit with categorical
     indicators, where no score is implemented for the response
     probabilities, and for fits made by an older version.}
+  \item{`multilpa_no_free_parameters`}{The fit holds every parameter it has,
+    so there is no free coordinate to report a standard error for. Raised by
+    [parameter_inference()] and [vcov()] on a fully held fit.}
+  \item{`multilpa_held_parameter`}{A named parameter was held fixed by this
+    fit, so it has no sampling distribution and no confidence interval.
+    Raised by [confint()] when `parm` names a held coordinate.}
   \item{`multilpa_no_plot`}{No plot method is defined for this model family.}
   \item{`multilpa_no_time`}{A sequence verb was called on a fit made without
     `time`, so it carries no ordering.}
@@ -159,6 +173,19 @@ others through.
     membership below one, so it is supported by less than one observation.}
   \item{`multilpa_failed_replicates`}{Some bootstrap replicates failed
     validation, so the bootstrap p-value is `NA`.}
+  \item{`multilpa_extreme_coefficients`}{A membership logit coefficient is
+    large enough that the class is close to separated, so the estimate is
+    driven by scaling, a sparse class or separation rather than by the data.}
+  \item{`multilpa_quadrature_check`}{The random-intercept likelihood computed
+    at the check node count disagrees with the fitted one by more than
+    `quadrature_tolerance`, so the integral is not yet accurate.}
+  \item{`multilpa_empty_transition_row`}{A profile is never occupied before a
+    final occasion, so its transition row is uniform by construction rather
+    than estimated. `transitions(fit, estimated = FALSE)` lists them.}
+  \item{`multilpa_unverified_alignment`}{A supplied `data` frame shares no
+    column with the fit, so the row alignment the verb depends on could not
+    be checked. The result is returned on the caller's assurance that the
+    rows are in fitting order.}
 }
 }
 

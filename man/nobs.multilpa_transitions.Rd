@@ -12,8 +12,9 @@
 \item{...}{Ignored.}
 }
 \value{
-The number of observed groups. Occasions within a group are
-  dependent by construction, so they are not independent observations.
+A single integer: the number of observed groups. Occasions within a
+  group are dependent by construction, so they are not independent
+  observations.
 }
 \description{
 Number of independent units in a fitted latent transition model

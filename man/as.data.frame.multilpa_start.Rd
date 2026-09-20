@@ -33,7 +33,11 @@ A base `data.frame`. `"profiles"` has one row per profile and
   `standard_deviation`, and zero rows when the block is empty. `"responses"`
   has one row per profile, categorical indicator and category, with columns
   `profile`, `indicator`, `category` and `probability`, and zero rows when
-  the object carries no categorical block. `"profile_probabilities"` has one
+  the object carries no categorical block. `indicator` and `category` are
+  positions here too: the list keeps the item and category labels so that
+  [multilpa()] can align a block to the item it was estimated for, but the
+  tidy view indexes them by position, as it does for the Gaussian block.
+  `"profile_probabilities"` has one
   row per group class and profile, with columns `group_class`, `profile`,
   `probability` and `group_class_probability`, and zero rows for a
   measurement-only object, which carries no mixing block. `"covariances"`
@@ -43,9 +47,9 @@ A base `data.frame`. `"profiles"` has one row per profile and
   assumption rather than missing.
 }
 \description{
-[starting_values()] drops dimension names, because that is what [multilpa()]
-expects of `start`. This labels the positions again, so the values can be
-read and compared without indexing the list.
+[starting_values()] indexes the Gaussian blocks by position, because that is
+what [multilpa()] expects of `start`. This labels the positions again, so the
+values can be read and compared without indexing the list.
 }
 \examples{
 set.seed(7)

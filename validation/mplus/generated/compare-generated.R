@@ -1,8 +1,9 @@
 # Compare native R estimation with retained, independently fitted Mplus outputs.
 # Run from the project root: Rscript validation/mplus/generated/compare-generated.R
-source(file.path("R", "fit-ml-lpa.R"))
-source(file.path("R", "gaussian-moments.R"))
-source(file.path("R", "methods.R"))
+# Load the whole package rather than naming source files. `R/fit-ml-lpa.R`
+# stopped existing when the sources were reorganised, and a comparison script
+# should not depend on the internal file layout.
+suppressMessages(pkgload::load_all(".", quiet = TRUE))
 artifact_dir <- file.path("validation", "mplus", "generated")
 synthetic_data <- read.table(file.path(artifact_dir, "synthetic.dat"),
   col.names = c("y1", "y2", "clus", "id"))

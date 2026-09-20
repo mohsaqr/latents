@@ -263,11 +263,12 @@ fit_staged <- function(data, vars, id, n_profiles,
     measurement <- do.call(multilpa, c(shared, list(n_group_classes = 1L)))
   } else {
     .multilpa_check_measurement(measurement, n_profiles, vars, categorical,
-                                covariance_model, variance_model)
+                                covariance_model, variance_model,
+                                .multilpa_requested_levels(data, categorical))
   }
   result <- do.call(multilpa, c(shared, list(
     n_group_classes = n_group_classes,
-    start = starting_values(measurement, what = "measurement"),
+    start = .multilpa_stage_start(measurement),
     fixed = "measurement")))
   result$call <- call
   result$staged <- TRUE
@@ -278,6 +279,49 @@ fit_staged <- function(data, vars, id, n_profiles,
                                variance_model, covariance_model)
   result$stage_one <- measurement
   result
+}
+
+#' The measurement values a stage hands on, with their labels kept
+#'
+#' [starting_values()] drops dimension names, because [multilpa()] reads a start
+#' by position. A staged fit cannot afford that for the categorical block: the
+#' second stage may name `categorical` in a different order, or see the same
+#' factor with its levels declared in a different order, and a positional hand
+#' over would then attach a first-stage response distribution to the wrong item
+#' or the wrong category and report a likelihood for a model nobody asked for.
+#' The labelled blocks are handed over instead, so [multilpa()] aligns them by
+#' indicator name and category label and refuses an encoding it cannot align.
+#'
+#' @param measurement The first-stage fitted `multilpa` model.
+#' @return A `multilpa_start` carrying the measurement blocks, with the
+#'   categorical blocks named by indicator and their columns named by category.
+#' @noRd
+.multilpa_stage_start <- function(measurement) {
+  start <- starting_values(measurement, what = "measurement")
+  if (!is.null(measurement$response_probabilities)) {
+    start$response_probabilities <- measurement$response_probabilities
+  }
+  start
+}
+
+#' The category labels a requested stage will observe
+#'
+#' The second stage encodes its own categorical columns, so the labels it will
+#' use come from the data it is about to be given, not from the first stage.
+#'
+#' @param data The data frame the stage will be fitted to.
+#' @param categorical Requested categorical indicator names.
+#' @return A named list of category labels per indicator, in code order, or
+#'   `NULL` when the request names no categorical indicator or names a column
+#'   `data` does not have, in which case [multilpa()] reports the broken data
+#'   contract in its own words.
+#' @noRd
+.multilpa_requested_levels <- function(data, categorical) {
+  if (length(categorical) == 0L || !is.data.frame(data) ||
+      !all(categorical %in% names(data))) {
+    return(NULL)
+  }
+  .multilpa_encode_categorical(data[, categorical, drop = FALSE])$levels
 }
 
 #' Category counts of a fitted model, or NULL when it has no categorical block
@@ -301,11 +345,16 @@ fit_staged <- function(data, vars, id, n_profiles,
 #' @param categorical Requested categorical indicator names.
 #' @param covariance_model Requested residual covariance structure.
 #' @param variance_model Requested variance constraint.
+#' @param levels Named list of the category labels the requested stage will
+#'   observe, in code order, or `NULL` when there are no categorical
+#'   indicators. The labels, not their order, are what must match: a stage that
+#'   sees the same categories in a different order is aligned by label, while a
+#'   stage that sees a different category cannot be aligned at all.
 #' @return `NULL`, invisibly; raises `multilpa_bad_stage` on the first mismatch.
 #' @noRd
 .multilpa_check_measurement <- function(measurement, n_profiles, vars,
                                         categorical, covariance_model,
-                                        variance_model) {
+                                        variance_model, levels = NULL) {
   mismatch <- function(what, expected, received) {
     stop(errorCondition(sprintf(
       "`measurement` was fitted with %s %s, but %s was requested.",
@@ -322,6 +371,23 @@ fit_staged <- function(data, vars, id, n_profiles,
     mismatch("categorical indicators",
              paste(categorical, collapse = ", ") ,
              paste(measurement$categorical %||% character(), collapse = ", "))
+  }
+  # The indicators are the same ones; the categories within them must be the
+  # same values too, or the held distribution has no meaning on this scale.
+  # Order is not part of the requirement, because the hand over is by label.
+  if (!is.null(levels)) {
+    invisible(lapply(categorical, function(indicator) {
+      held <- measurement$categorical_levels[[indicator]]
+      wanted <- levels[[indicator]]
+      if (is.null(held) || !setequal(held, wanted)) {
+        stop(errorCondition(sprintf(
+          "`measurement` holds categories %s for `%s`, but this stage observes %s.",
+          paste(sprintf("\"%s\"", held %||% character()), collapse = ", "),
+          indicator,
+          paste(sprintf("\"%s\"", wanted), collapse = ", ")),
+          class = "multilpa_bad_stage", call = NULL))
+      }
+    }))
   }
   if (!identical(measurement$covariance_model %||% "diagonal", covariance_model)) {
     mismatch("covariance_model", covariance_model, measurement$covariance_model)

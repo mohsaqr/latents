@@ -24,7 +24,8 @@ The join the caller would otherwise write by hand. Comparing an assignment
 with anything else -- a known label, an outcome, a covariate -- means putting
 them in the same row, and doing that with two separate objects silently
 assumes they share an order. Here the alignment is the verb's, not the
-reader's, and it is checked rather than assumed.
+reader's, and every column of `data` that the fit can recognise is checked
+against what the fit holds for that row.
 }
 \details{
 This is a verb rather than a `what` of [as.data.frame()] because it computes
@@ -32,6 +33,23 @@ a join with a frame the caller supplies. `as.data.frame(fit, what = )`
 represents what the fit already holds; anything that brings in columns the
 model never saw is its own verb.
 }
+\section{What alignment is checked}{
+ The row count must match, and so must
+  every column of `data` the fit recognises: the group identifier, the
+  indicators, and the occasion where there is one. Each is compared value by
+  value against what the fit holds for that row, so a reordered, resorted or
+  otherwise permuted frame raises `multilpa_bad_inference_data` naming the
+  columns that disagree, rather than pairing each assignment with the wrong
+  row. A frame that shares none of those columns with the fit -- an outcome
+  and nothing else -- carries no evidence of its own order; that cannot be
+  checked, so it warns with class `multilpa_unverified_alignment` rather than
+  passing in silence. Supplying the identifier column alongside is what turns
+  the assumption back into a check. A fit that stores no indicators, no
+  identifier and no occasion holds no row-level record to compare anything
+  against; nothing can be verified for such a fit, and its row order is taken
+  on trust.
+}
+
 \examples{
 fit <- multilpa(school_engagement,
                 c("homework_hours", "participation", "interest"),

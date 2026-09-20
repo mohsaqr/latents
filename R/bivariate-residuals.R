@@ -9,11 +9,17 @@
 #' The usual remedies are `covariance_model = "full"`, which estimates the
 #' association rather than assuming it away, or another profile.
 #'
-#' @param x A fitted `multilpa` or `multilpa_covariates` model.
-#' @param data Optional. The data frame the model was fitted to; when omitted
-#'   it is rebuilt from the indicators, identifiers and occasions the fit
-#'   stores, which round-trip exactly. Supplying it is the stronger check that
-#'   the caller still holds that frame.
+#' @param x A fitted model of this package that has discrete group classes: a
+#'   `multilpa`, `multilpa_covariates` or `multilpa_transitions` fit. A
+#'   `multilpa_random_intercept` fit raises `multilpa_no_group_classes`.
+#' @param data Optional. The data frame the model was fitted to, with one row
+#'   per observation and in the order it was fitted in; when omitted it is
+#'   rebuilt from the indicators, identifiers and occasions the fit stores,
+#'   which round-trip exactly. Supplying it is the stronger check that the
+#'   caller still holds that frame: the row count, the indicators, the group
+#'   identifier and the occasion are all compared against the fit row by row,
+#'   and a frame in any other order raises `multilpa_bad_inference_data` rather
+#'   than pairing each row with another observation's posterior.
 #' @param by `"profile"` (the default) assesses each profile separately, which
 #'   is where the assumption is actually made. `"overall"` pools the profiles
 #'   into one posterior-weighted table per pair.
@@ -122,6 +128,10 @@ bivariate_residuals <- function(x, data = NULL, by = c("profile", "overall")) {
   stopifnot("Gaussian indicators must be numeric and finite when observed" =
     all(vapply(data[continuous], function(value)
       is.numeric(value) && all(is.na(value) | is.finite(value)), logical(1))))
+  # Every row is weighted by the posterior the fit holds for that position, so
+  # a frame in any other order pairs each observation with someone else's
+  # posterior and reports a residual for a table that was never observed.
+  .multilpa_check_alignment(x, data)
   weights <- if (identical(by, "profile")) {
     stats::setNames(lapply(seq_len(x$n_profiles),
                            function(k) x$subject_posteriors[, k]),

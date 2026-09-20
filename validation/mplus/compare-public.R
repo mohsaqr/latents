@@ -1,8 +1,10 @@
 # Run from the package root: Rscript validation/mplus/compare-public.R
 # Official examples 7.9 and 7.10 validate ONLY the single-level LPA limit.
 # This script never fits the source column c: it is a generating class label.
-source(file.path("R", "fit-ml-lpa.R"))
-source(file.path("R", "gaussian-moments.R"))
+# Load the whole package rather than naming source files. `R/fit-ml-lpa.R`
+# stopped existing when the sources were reorganised, and a comparison script
+# should not depend on the internal file layout.
+suppressMessages(pkgload::load_all(".", quiet = TRUE))
 source(file.path("tests", "testthat", "helper-mplus-public.R"))
 dir.create(file.path("tests", "fixtures", "mplus"), recursive = TRUE, showWarnings = FALSE)
 
@@ -29,8 +31,11 @@ run_public_comparison <- function(example) {
   print(input)
   expected <- parse_public_mplus(readLines(paths[3L]))
   variance_model <- if (example == "7.9") "equal" else "varying"
-  data$group <- 1L
-  stopifnot(!anyNA(data), !anyDuplicated(data), all(data$group == 1L))
+  # The identifier column has to be the one the fit is told to use. It was
+  # created as `group` while `multilpa()` was passed "cluster", so the fit was
+  # never reached: every run stopped on a column that did not exist.
+  data$cluster <- 1L
+  stopifnot(!anyNA(data), !anyDuplicated(data), all(data$cluster == 1L))
   fit <- multilpa(data, c("y1", "y2", "y3", "y4"), "cluster", 2L, 1L,
                     variance_model = variance_model, n_starts = 20L, max_iter = 1000L,
                     tol = 1e-12, seed = 912)

@@ -1,5 +1,5 @@
 Houle et al. (2026), supplemental Table S1: arithmetic validation
-Original DOCX fixture verification: 24/24 rows pass
+Original DOCX fixture verification: not requested
 Joint LL/AIC/BIC/CAIC/ABIC rounding consistency: 24/24 rows pass
 N interval inferred from rounded BIC - AIC: [9999.929613817, 10000.117407689]
 Unique integer N: 10000

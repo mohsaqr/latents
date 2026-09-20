@@ -19,5 +19,12 @@ A `logLik` object with parameter count `df` and the number of
 Extract a random-intercept LPA log likelihood
 }
 \examples{
-# After fitting: logLik(random_intercept)
+set.seed(8)
+example_data <- data.frame(group = rep(seq_len(12), each = 5),
+                           score_a = rnorm(60), score_b = rnorm(60))
+random_intercept <- fit_random_intercept(example_data,
+                                         c("score_a", "score_b"), "group",
+                                         n_profiles = 2, n_starts = 2,
+                                         seed = 1)
+logLik(random_intercept)
 }

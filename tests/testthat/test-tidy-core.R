@@ -145,7 +145,7 @@ test_that("a repeated or missing position is refused by class", {
 
 test_that("a malformed start is refused by class", {
   data <- .core_fixture()
-  fit <- suppressWarnings(multilpa(data, c("a", "b"), "school", 2L, 1L,
+  fit <- quietly(multilpa(data, c("a", "b"), "school", 2L, 1L,
                                    n_starts = 2, seed = 1))
   start <- starting_values(fit)
   wrong_shape <- start
@@ -194,7 +194,7 @@ test_that("an unconverged fit raises a catchable multilpa_unconverged warning", 
 
 test_that("the starts diagnostics are reachable as a tidy frame, not by $", {
   data <- .core_fixture()
-  fit <- suppressWarnings(multilpa(data, c("a", "b"), "school", 2L, 2L,
+  fit <- quietly(multilpa(data, c("a", "b"), "school", 2L, 2L,
                                    n_starts = 3, seed = 1))
   starts <- as.data.frame(fit, what = "starts")
   expect_s3_class(starts, "data.frame")
@@ -205,7 +205,7 @@ test_that("the starts diagnostics are reachable as a tidy frame, not by $", {
 
 test_that("multilpa() returns a tidy frame for each `what`", {
   data <- .core_fixture()
-  fit <- suppressWarnings(multilpa(data, c("a", "b", "c"), "school", 2L, 2L,
+  fit <- quietly(multilpa(data, c("a", "b", "c"), "school", 2L, 2L,
                                    categorical = "c", n_starts = 3, seed = 1))
   profiles <- as.data.frame(fit)
   expect_s3_class(profiles, "data.frame")
@@ -300,4 +300,25 @@ test_that("every condition class raised in R/ is documented, and every documente
     gregexpr("`multilpa_[A-Za-z0-9_]+`", items)))))
 
   expect_setequal(unique(raised), documented)
+})
+
+test_that("every warning the package raises carries a class", {
+  skip_on_cran()
+  source_dir <- test_path("..", "..", "R")
+  skip_if_not(dir.exists(source_dir), "package sources not available")
+  # `?"multilpa-conditions"` states the classes are the contract and the
+  # messages are not. A bare `warning()` breaks that promise silently: a caller
+  # muffling an expected qualification can only match message text, which
+  # changes between versions, so it ends up muffling every warning instead.
+  # A bare `stop()` remains allowed for one-off internal guards, which no
+  # caller is expected to catch; only warnings are enforced here.
+  offenders <- unlist(lapply(list.files(source_dir, pattern = "\\.R$",
+                                        full.names = TRUE), function(path) {
+    lines <- readLines(path, warn = FALSE)
+    bare <- grepl("(^|[^a-zA-Z._])warning\\s*\\(\\s*[\"']", lines) &
+      !grepl("^\\s*#", lines)
+    if (!any(bare)) return(NULL)
+    sprintf("%s:%d", basename(path), which(bare))
+  }), use.names = FALSE)
+  expect_identical(offenders, NULL)
 })

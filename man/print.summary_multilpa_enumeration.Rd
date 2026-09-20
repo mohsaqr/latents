@@ -14,11 +14,17 @@
 \item{...}{Passed to the underlying `data.frame` printing.}
 }
 \value{
-The summary, invisibly.
+The summary, invisibly. Called for the side effect of printing the
+  candidate counts, the table of which candidate minimises each criterion,
+  and how many distinct candidates are minimal under some criterion.
 }
 \description{
 Print an enumeration summary
 }
 \examples{
-# After enumerating: print(summary(candidates))
+set.seed(1)
+d <- data.frame(g = rep(seq_len(10), each = 10), y = rnorm(100))
+candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+                                n_group_classes = 1, n_starts = 2, seed = 1)
+print(summary(candidates))
 }

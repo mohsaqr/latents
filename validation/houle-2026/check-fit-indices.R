@@ -90,8 +90,12 @@ package_values <- t(vapply(seq_len(nrow(fixture)), function(i) {
     group_posteriors = matrix(1, nrow = 100L, ncol = 1L),
     subject_posteriors = matrix(1, nrow = n_individuals, ncol = 1L)
   ), class = "multilpa")
-  result <- package_env$information_criteria(adapter)
-  selected <- result[result$convention %in% c("none", "individuals"), ]
+  # `format = "long"` since 0.9.0, when the default became one wide row; and a
+  # criterion with no sample-size convention -- aic here -- now carries
+  # NA_character_ rather than "none".
+  result <- package_env$information_criteria(adapter, format = "long")
+  selected <- result[is.na(result$convention) | result$convention == "individuals", ,
+                     drop = FALSE]
   stats::setNames(selected$value[match(colnames(penalties), selected$criterion)],
                   colnames(penalties))
 }, stats::setNames(numeric(ncol(penalties)), colnames(penalties))))

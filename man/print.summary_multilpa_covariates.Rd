@@ -14,11 +14,22 @@
 \item{...}{Passed to the underlying `data.frame` printing.}
 }
 \value{
-The summary, invisibly.
+The summary, invisibly. Called for the side effect of printing the
+  model line, the measurement model, the membership regressions, the
+  effective memberships at both levels, the likelihood and information
+  criteria, any warnings, and the restart diagnostics.
 }
 \description{
 Print a covariate LPA summary
 }
 \examples{
-# After fitting: print(summary(fit), digits = 3)
+set.seed(1)
+example_data <- data.frame(group = rep(seq_len(20), each = 10),
+                           z = rnorm(200))
+example_data$y <- rnorm(200,
+  ifelse(runif(200) < plogis(example_data$z), -3, 3))
+fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
+                      n_group_classes = 1, profile_covariates = "z",
+                      n_starts = 2, seed = 1)
+print(summary(fit), digits = 3)
 }

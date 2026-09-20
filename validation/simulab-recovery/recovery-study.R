@@ -17,9 +17,12 @@
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 library(simulab)
 
+# simulab 0.4.3 exports the generator as `simulate_ml_lpa()`. This script was
+# written against a build that called it `simulate_multilpa()`; the signature is
+# unchanged, only the name.
 stopifnot(
-  "simulab must provide simulate_multilpa(); install the sibling simulab >= 0.4.3" =
-    exists("simulate_multilpa", mode = "function")
+  "simulab must provide simulate_ml_lpa(); install the sibling simulab >= 0.4.3" =
+    exists("simulate_ml_lpa", mode = "function")
 )
 
 # ---------------------------------------------------------------- design ----
@@ -172,25 +175,33 @@ tolerance <- 0.1
   )
 }
 
+## `assignments()` is the verb that owns this alignment: one row per input
+## individual, in input order, carrying the assigned profile and the group
+## class. It replaces reading `what = "posteriors"`, which since the public
+## returns were tidied is one row per individual *and profile* -- three times
+## as many rows as individuals -- and so silently failed the row-count check.
 .classification_accuracy <- function(fit, simulation, alignment) {
-  individuals <- as.data.frame(fit, what = "posteriors")
-  groups <- as.data.frame(fit, what = "group_posteriors")
+  assigned <- assignments(fit)
   data <- as.data.frame(simulation)
   clusters <- as.data.frame(simulation, what = "clusters")
   stopifnot(
-    "posteriors must be one row per input individual, in input order" =
-      nrow(individuals) == nrow(data) && all(individuals$group == data$group),
-    "group posteriors must cover every generated group" =
-      setequal(groups$group, clusters$group)
+    "assignments must be one row per input individual, in input order" =
+      nrow(assigned) == nrow(data) && identical(assigned$cluster, data$cluster),
+    "assignments must cover every generated cluster" =
+      setequal(assigned$cluster, clusters$cluster)
   )
   assigned_profile <- sprintf("Profile %d",
-                              match(individuals$profile, alignment$profile_order))
+                              match(assigned$profile, alignment$profile_order))
   assigned_class <- sprintf("Class %d",
-                            match(groups$group_class, alignment$class_order))
+                            match(assigned$group_class, alignment$class_order))
+  # One row per cluster for the group-level accuracy: the cluster's class is
+  # constant within it, so the first row of each cluster carries it.
+  first_of_cluster <- !duplicated(assigned$cluster)
+  true_class <- clusters$cluster_class[match(assigned$cluster[first_of_cluster],
+                                             clusters$cluster)]
   data.frame(
     individual_accuracy = mean(assigned_profile == data$profile),
-    group_accuracy = mean(assigned_class ==
-                            clusters$cluster_class[match(groups$group, clusters$group)])
+    group_accuracy = mean(assigned_class[first_of_cluster] == true_class)
   )
 }
 
@@ -202,7 +213,7 @@ tolerance <- 0.1
 }
 
 .simulate_condition <- function(replication, condition) {
-  simulate_multilpa(
+  simulate_ml_lpa(
     clusters = condition$clusters, cluster_size = condition$cluster_size,
     means = true_means, profile_probabilities = true_prevalence,
     cluster_class_proportions = true_class_proportions,
@@ -213,7 +224,7 @@ tolerance <- 0.1
 .replicate_recovery <- function(replication, condition) {
   simulation <- .simulate_condition(replication, condition)
   fit <- multilpa(
-    as.data.frame(simulation), indicators = indicator_names, group = "cluster",
+    as.data.frame(simulation), vars = indicator_names, id = "cluster",
     n_profiles = nrow(true_means), n_group_classes = nrow(true_prevalence),
     n_starts = condition$n_starts, seed = condition$fit_seed + replication
   )
@@ -257,8 +268,8 @@ tolerance <- 0.1
 .enumerate_replication <- function(replication, condition) {
   simulation <- .simulate_condition(replication, condition)
   candidates <- enumerate_classes(
-    as.data.frame(simulation), indicators = indicator_names, group = "cluster",
-    profiles = 2:4, group_classes = 1:3, n_starts = 6L,
+    as.data.frame(simulation), vars = indicator_names, id = "cluster",
+    n_profiles = 2:4, n_group_classes = 1:3, n_starts = 6L,
     seed = condition$fit_seed + replication
   )
   table <- as.data.frame(candidates)

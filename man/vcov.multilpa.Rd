@@ -26,10 +26,15 @@ baseline-category logits for the mixing and response probabilities.}
 \item{...}{Additional arguments passed to [parameter_inference()].}
 }
 \value{
-A square numeric matrix with one row and column per coefficient,
-  named as [coef()] names them, on the scale `scale` asks for. On the natural
-  scale it is singular by construction, because each set of probabilities
-  sums to one; the unconstrained matrix is not. [confint()] and the
+A square numeric matrix with one row and column per *estimated*
+  coefficient, named as [coef()] names them, on the scale `scale` asks for. A
+  fit made with `fixed` held part of its measurement model at supplied
+  values; those coefficients were not estimated here, so they carry no row or
+  column. With `scale = "unconstrained"` the matrix is `n_parameters` square,
+  for any fit; on the natural scale it is larger by one row and column for
+  each set of probabilities whose reference category the estimation scale
+  drops, and singular by construction, because each set of probabilities sums
+  to one. [confint()] and the
   `conf_low`/`conf_high` columns of [parameter_inference()] are built from
   the natural-scale matrix.
 }

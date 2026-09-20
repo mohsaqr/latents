@@ -15,18 +15,20 @@
 # observed-data likelihoods agree, not only the complete-data ones.
 
 suite_glca <- function() {
-  if (!requireNamespace("glca", quietly = TRUE)) stop("suite 'glca' needs the glca package")
+  require_suite_packages(
+    "glca",
+    reason = "the independent Vermunt (2003) two-level implementation, and the nyts18 and gss08 data, that this suite compares against")
   cases <- list(
-    list(dataset = "nyts18", group = "SCH_ID",
+    list(dataset = "nyts18", id = "SCH_ID",
          items = c("ECIGT", "ECIGAR", "ESLT", "EELCIGT", "EHOOKAH"),
          profiles = 3L, group_classes = 2L),
-    list(dataset = "nyts18", group = "SCH_ID",
+    list(dataset = "nyts18", id = "SCH_ID",
          items = c("ECIGT", "ECIGAR", "ESLT", "EELCIGT", "EHOOKAH"),
          profiles = 2L, group_classes = 2L),
-    list(dataset = "gss08", group = "REGION",
+    list(dataset = "gss08", id = "REGION",
          items = c("DEFECT", "HLTH", "RAPE", "POOR", "SINGLE", "NOMORE"),
          profiles = 3L, group_classes = 2L),
-    list(dataset = "gss08", group = "REGION",
+    list(dataset = "gss08", id = "REGION",
          items = c("DEFECT", "HLTH", "RAPE", "POOR", "SINGLE", "NOMORE"),
          profiles = 2L, group_classes = 3L)
   )
@@ -37,20 +39,20 @@ suite_glca <- function() {
 
 #' Run one glca comparison
 #' @param dataset Name of a glca dataset.
-#' @param group Name of the level-2 identifier column.
+#' @param id Name of the level-2 identifier column.
 #' @param items Character vector of binary item names.
 #' @param profiles Number of level-1 latent classes.
 #' @param group_classes Number of level-2 latent classes.
 #' @return A `data.frame` of compared quantities.
-.glca_case <- function(dataset, group, items, profiles, group_classes) {
+.glca_case <- function(dataset, id, items, profiles, group_classes) {
   observed <- get(utils::data(list = dataset, package = "glca",
                               envir = environment()), envir = environment())
   formula <- stats::as.formula(sprintf("glca::item(%s) ~ 1", paste(items, collapse = ", ")))
-  reference <- glca::glca(formula, group = observed[[group]], data = observed,
+  reference <- glca::glca(formula, group = observed[[id]], data = observed,
                           nclass = profiles, ncluster = group_classes,
                           n.init = 20L, seed = 1L, maxiter = 20000L,
                           eps = 1e-10, verbose = FALSE)
-  fit <- multilpa(observed, indicators = items, group = group,
+  fit <- multilpa(observed, vars = items, id = id,
                   n_profiles = profiles, n_group_classes = group_classes,
                   categorical = items, n_starts = 30L, seed = 1L,
                   tol = 1e-12, max_iter = 20000L, missing = "fiml")

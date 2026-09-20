@@ -115,6 +115,9 @@
 
 suite_mplus_twolevel_lca <- function() {
   artifacts <- file.path("validation", "mplus", "twolevel-lca")
+  require_suite_files(
+    file.path(artifacts, c("ex10.7.out.gz", "ex10.7.dat.gz")),
+    reason = "the retained Mplus 8.8 run of User's Guide example 10.7 and its data")
   items <- paste0("u", seq_len(10))
   n_profiles <- 4L
   n_group_classes <- 5L
@@ -131,7 +134,7 @@ suite_mplus_twolevel_lca <- function() {
 
   observed <- utils::read.table(gzfile(file.path(artifacts, "ex10.7.dat.gz")),
                                 col.names = c(items, "dumb", "dumw", "clus"))
-  fit <- multilpa(observed, indicators = items, group = "clus",
+  fit <- multilpa(observed, vars = items, id = "clus",
                   n_profiles = n_profiles, n_group_classes = n_group_classes,
                   categorical = items, n_starts = 20L, seed = 20260919L,
                   tol = 1e-12, max_iter = 20000L)
@@ -159,7 +162,7 @@ suite_mplus_twolevel_lca <- function() {
   # separates agreement of the likelihood function from agreement of the
   # optimizer: the published parameters are rounded to three decimals, so
   # evaluating there must fall slightly below Mplus's reported maximum.
-  at_mplus <- multilpa(observed, indicators = items, group = "clus",
+  at_mplus <- multilpa(observed, vars = items, id = "clus",
                        n_profiles = n_profiles, n_group_classes = n_group_classes,
                        categorical = items, n_starts = 1L, max_iter = 0L,
                        start = starting_values(list(

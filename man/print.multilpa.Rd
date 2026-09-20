@@ -12,11 +12,21 @@
 \item{...}{Reserved for compatibility with `print()`.}
 }
 \value{
-The input model, invisibly.
+The input model, invisibly. Called for the side effect of printing
+  the class counts, the sample sizes and covariance specification, the log
+  likelihood with AIC and group-level BIC, the convergence and restart
+  diagnostics, and any blocks the fit held fixed.
 }
 \description{
 Print a fitted multilevel latent profile model
 }
 \examples{
-# Printing a fitted model displays its convergence and information criteria.
+set.seed(7)
+example_data <- data.frame(
+  school = rep(seq_len(12), each = 10),
+  score_a = rnorm(120), score_b = rnorm(120)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+print(fit)
 }

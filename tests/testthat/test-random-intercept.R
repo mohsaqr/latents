@@ -153,3 +153,28 @@ test_that("mixture quadrature agrees with independent adaptive integration", {
   }, numeric(1))
   expect_equal(unname(value$group_log_likelihood), independent, tolerance = 1e-10)
 })
+
+test_that("the random-intercept plot offers the case-level diagnostics", {
+  skip_on_cran()
+  set.seed(8)
+  data <- data.frame(group = rep(seq_len(12), each = 5),
+                     a = stats::rnorm(60), b = stats::rnorm(60))
+  two <- fit_random_intercept(data, c("a", "b"), "group", 2,
+                              n_starts = 2, seed = 1)
+  one <- fit_random_intercept(data, c("a", "b"), "group", 1,
+                              n_starts = 2, seed = 1)
+  # These two views read only the posteriors and the effective profile counts,
+  # which this family carries like every other, so the method must offer them
+  # rather than failing `match.arg()` with a bare error.
+  expect_silent(draw(plot(two, what = "entropy")))
+  expect_silent(draw(plot(two, what = "posteriors")))
+  # The views the family already had must be unaffected.
+  expect_silent(draw(plot(two)))
+  expect_silent(draw(plot(two, what = "random_intercepts")))
+  # A single profile holds every case with probability one, so there is nothing
+  # to separate; that is a refusal by class, not a `breaks` error.
+  expect_error(draw(plot(one, what = "entropy")),
+               class = "multilpa_nothing_to_plot")
+  expect_error(draw(plot(one, what = "posteriors")),
+               class = "multilpa_nothing_to_plot")
+})

@@ -112,3 +112,50 @@ test_that("full covariance print and summary expose residual matrices", {
   expect_equal(summary(fit)$covariances, fit$covariances)
   expect_output(print(summary(fit)), "covariance matrices")
 })
+
+test_that("boundary convergence noise is not mistaken for a reversed likelihood", {
+  skip_on_cran()
+  vars <- c("homework_hours", "participation", "interest")
+  null_fit <- multilpa(school_engagement, vars, "school", n_profiles = 2,
+                       n_group_classes = 1, n_starts = 3, seed = 1, tol = 1e-8)
+  alt_fit <- multilpa(school_engagement, vars, "school", n_profiles = 2,
+                      n_group_classes = 2, n_starts = 3, seed = 1, tol = 1e-8)
+  # Under the null the alternative converges to the null solution, so every
+  # replicate statistic sits at zero plus EM noise. EM stops on a RELATIVE
+  # change, so that noise is about `2 * tol * |log_likelihood|` -- here 7.6e-05,
+  # seven times the fixed -1e-5 window this check used to apply. The result was
+  # that healthy replicates were reported as "Nonconvergence or reversed
+  # likelihood" and a perfectly ordinary comparison withheld its p-value.
+  # A replicate refit on simulated data can land a small class; that warning is
+  # recorded in the replicate table and also propagates, so muffle just it.
+  result <- quietly(bootstrap_lrt(null_fit, alt_fit, iter = 12, n_starts = 2,
+                                  max_iter = 2000, tol = 1e-8, seed = 7))
+  test <- as.data.frame(result, what = "test")
+  expect_identical(test$n_valid, 12L)
+  expect_false(is.na(test$p_value))
+
+  replicates <- as.data.frame(result, what = "replicates")
+  expect_true(all(replicates$valid))
+  expect_true(all(is.na(replicates$error)))
+  # A replicate that raised nothing reports NA, not an empty string sitting
+  # beside an NA-valued error column. Some replicates legitimately do warn, so
+  # the contract is "never empty", not "always absent".
+  expect_false(any(!is.na(replicates$warnings) & !nzchar(replicates$warnings)))
+
+  # An unconverged model is refused before any statistic is formed, by class.
+  # This guard fires ahead of the reversed-likelihood one, and correctly so: a
+  # reversal means the alternative was badly optimised, which is what this
+  # catches. That ordering makes `multilpa_reversed_likelihood` hard to reach
+  # from here, so it is not asserted in this test.
+  poor_start <- list(means = matrix(c(0, 0, 0, 1, 1, 1), nrow = 2, byrow = TRUE),
+                     variances = matrix(1, 2, 3),
+                     profile_probabilities = matrix(0.5, 2, 2),
+                     group_probabilities = c(0.5, 0.5))
+  unconverged <- quietly(multilpa(school_engagement, vars, "school",
+                                  n_profiles = 2, n_group_classes = 2,
+                                  n_starts = 1, seed = 1, max_iter = 0,
+                                  start = poor_start, tol = 1e-8))
+  expect_error(bootstrap_lrt(null_fit, unconverged, iter = 2, n_starts = 1,
+                             seed = 1),
+               class = "multilpa_no_converge")
+})

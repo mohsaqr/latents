@@ -23,8 +23,8 @@
 \item{optional}{Ignored, present for generic compatibility.}
 
 \item{what}{Which table to return. `"profiles"` gives the measurement model,
-`"posteriors"` the individual posteriors, and `"random_intercepts"` the
-posterior group effects.}
+`"posteriors"` the individual posteriors, `"random_intercepts"` the
+posterior group effects, and `"starts"` the restart diagnostics.}
 
 \item{scale}{For `what = "profiles"`, `"raw"` reports the estimates in input
 units and `"standardized"` divides each indicator's deviation from its
@@ -45,12 +45,24 @@ A base `data.frame`. `"profiles"` has one row per profile and
   `standard_deviation`. `"random_intercepts"` has one row per observed group,
   with columns `group`, `group_size`, `mean` and `sd`, the posterior mean and
   standard deviation of that group's scalar intercept. `"posteriors"` has one
-  row per individual, with columns `row`, `group`, `profile`, and one
-  `posterior_profile_*` column per profile.
+  row per individual and profile, with columns `row`, `group`, `profile`,
+  `posterior` and `modal`; `format = "wide"` gives one row per individual
+  instead, with columns `row`, `group`, `profile` (the modal profile) and one
+  `posterior_profile_*` column per profile. `"starts"` has one row per start,
+  with columns `start`, `log_likelihood`, `converged` and `error`.
 }
 \description{
 Tidy a continuous group random-intercept fit
 }
 \examples{
-# After fitting: as.data.frame(random_intercept, what = "random_intercepts")
+set.seed(7)
+example_data <- data.frame(
+  school = rep(seq_len(12), each = 10),
+  score_a = rnorm(120), score_b = rnorm(120)
+)
+random_intercept <- fit_random_intercept(example_data,
+                                         c("score_a", "score_b"), "school",
+                                         n_profiles = 2, n_starts = 1,
+                                         seed = 1)
+head(as.data.frame(random_intercept, what = "random_intercepts"))
 }

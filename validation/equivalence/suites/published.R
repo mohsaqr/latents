@@ -76,15 +76,15 @@
                          envir = environment()), envir = environment())
   frame <- raw[, items, drop = FALSE]
   frame$unit <- factor(seq_len(nrow(frame)))
-  multilpa(frame, indicators = items, group = "unit", n_profiles = k,
+  multilpa(frame, vars = items, id = "unit", n_profiles = k,
            n_group_classes = 1L, categorical = items, n_starts = starts,
            seed = 20260919L, tol = 1e-13, max_iter = 20000L)
 }
 
 suite_published <- function() {
-  if (!requireNamespace("poLCA", quietly = TRUE)) {
-    stop("suite 'published' needs the poLCA package for its bundled datasets")
-  }
+  require_suite_packages(
+    "poLCA",
+    reason = "the bundled carcinoma, cheating, values and gss82 data the published results were computed on")
   rbind(.published_carcinoma(), .published_values(), .published_cheating(),
         .published_gss82())
 }
@@ -134,7 +134,7 @@ suite_published <- function() {
                            envir = environment()), envir = environment())
     frame <- raw[, items, drop = FALSE]
     frame$unit <- factor(seq_len(nrow(frame)))
-    as.numeric(logLik(multilpa(frame, indicators = items, group = "unit",
+    as.numeric(logLik(multilpa(frame, vars = items, id = "unit",
                                n_profiles = 4L, n_group_classes = 1L,
                                categorical = items, n_starts = 1L, seed = seed,
                                tol = 1e-13, max_iter = 20000L)))

@@ -9,7 +9,9 @@
 \arguments{
 \item{object}{A fitted `multilpa` model.}
 
-\item{parm}{Optional coefficient names or indices; defaults to all coefficients.}
+\item{parm}{Optional coefficient names or indices; defaults to every
+coefficient the fit estimated. Naming a coefficient that `fixed` held
+raises `multilpa_held_parameter`, because a held value has no interval.}
 
 \item{level}{Confidence level strictly between zero and one.}
 
@@ -20,7 +22,9 @@
 \value{
 A two-column matrix of Wald intervals on the natural scale, one row
   per requested coefficient and named as [coef()] names them. Bounds are not
-  clipped to the probability or variance parameter space.
+  clipped to the probability or variance parameter space. For a fit made with
+  `fixed`, the default rows are the estimated coefficients only and the
+  intervals are conditional on the held measurement solution.
 }
 \description{
 Wald confidence intervals for multilevel LPA coefficients

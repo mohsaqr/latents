@@ -53,8 +53,9 @@ verbs that describe it rather than by reaching into it: [as.data.frame()]
 gives the measurement model, the individual posteriors or the posterior
 group intercepts; [summary()] gives the model-level fit summary, the
 integration diagnostics and the restart diagnostics; [plot()] draws the
-measurement model or the group intercepts; and [coef()] returns the free
-parameters as a named vector.
+measurement model, the group intercepts, or the case-level entropy and
+posterior panels; and [coef()] returns the free parameters as a named
+vector.
 The default BIC uses independent groups; `bic_individual` uses people.
 Standard errors are not provided: [parameter_inference()], [vcov()] and
 [confint()] raise a `multilpa_no_inference` condition on this class rather
@@ -77,7 +78,7 @@ does not refit the model. Increase both node counts if the check fails.
 set.seed(8)
 example_data <- data.frame(group = rep(seq_len(10), each = 4),
                            score = rnorm(40))
-fit <- fit_random_intercept(example_data, "score", "group", 1,
-                                 n_starts = 1)
+fit <- fit_random_intercept(example_data, "score", "group",
+                            n_profiles = 1, n_starts = 1, seed = 1)
 print(fit)
 }

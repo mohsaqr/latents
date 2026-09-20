@@ -1,0 +1,20 @@
+linters: list(
+    undesirable_function_linter = undesirable_function_linter(fun = c(
+      sapply = "use vapply() with an explicit FUN.VALUE",
+      setwd = "never change the working directory",
+      attach = "never attach",
+      suppressWarnings = "diagnose the warning instead of silencing it",
+      Sys.setenv = "do not mutate the environment from package code"
+    )),
+    T_and_F_symbol_linter(),
+    seq_linter(),
+    equals_na_linter(),
+    any_is_na_linter(),
+    class_equals_linter(),
+    expect_type_linter(),
+    vector_logic_linter(),
+    absolute_path_linter(),
+    object_name_linter(styles = c("snake_case", "dotted.case"))
+  )
+exclusions: list("tests", "validation", "tmp", "data-raw", "Tutorial_docs",
+    "R/utils.R" = list(object_name_linter = 7))

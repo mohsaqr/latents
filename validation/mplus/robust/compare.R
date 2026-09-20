@@ -55,16 +55,23 @@ jacobian[q, c(q - 2L, q - 1L)] <- c(1, -1)
 native_standard_errors <- sqrt(diag(jacobian %*% attr(information, "covariance_unconstrained") %*%
                                       t(jacobian)))
 
-indices <- information_criteria(fit)
+# `format = "long"` since 0.9.0: the default became one wide row, and the
+# `convention` of a criterion that has none -- aic, kic, deviance -- became
+# NA_character_ rather than "none". Both are matched explicitly here.
+indices <- information_criteria(fit, format = "long")
 native <- function(criterion, convention) {
-  indices$value[indices$criterion == criterion & indices$convention == convention]
+  matched <- indices$criterion == criterion &
+    if (is.na(convention)) is.na(indices$convention) else
+      !is.na(indices$convention) & indices$convention == convention
+  stopifnot("exactly one criterion row must match" = sum(matched) == 1L)
+  indices$value[matched]
 }
 
 differences <- c(
   log_likelihood = abs(fit$log_likelihood - mplus_log_likelihood),
   robust_standard_errors = max(abs(native_standard_errors - mplus_standard_errors)),
   scaling_correction = abs(attr(information, "scaling_correction") - mplus_scaling),
-  aic = abs(native("aic", "none") - mplus_aic),
+  aic = abs(native("aic", NA_character_) - mplus_aic),
   bic_individual = abs(native("bic", "individuals") - mplus_bic),
   sabic_individual = abs(native("sabic", "individuals") - mplus_sabic))
 print(differences, digits = 12)
@@ -73,7 +80,7 @@ comparison <- data.frame(
   quantity = c(sprintf("robust_se_%d", seq_len(q)), "scaling_correction",
                "aic", "bic_individual", "sabic_individual"),
   native = c(native_standard_errors, attr(information, "scaling_correction"),
-             native("aic", "none"), native("bic", "individuals"),
+             native("aic", NA_character_), native("bic", "individuals"),
              native("sabic", "individuals")),
   mplus = c(mplus_standard_errors, mplus_scaling, mplus_aic, mplus_bic, mplus_sabic))
 comparison$absolute_difference <- abs(comparison$native - comparison$mplus)

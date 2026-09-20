@@ -297,7 +297,7 @@ test_that("every result class has a working tidy accessor", {
                     b = stats::rnorm(n, c(-1, 1)[profile]),
                     age = stats::rnorm(n),
                     resources = rep(stats::rnorm(30L), each = 10L))
-  covariate_fit <- suppressWarnings(fit_covariates(
+  covariate_fit <- quietly(fit_covariates(
     dat, c("a", "b"), "school", 2, 2, profile_covariates = "age",
     group_covariates = "resources", n_starts = 4, seed = 1))
   profiles <- as.data.frame(covariate_fit)

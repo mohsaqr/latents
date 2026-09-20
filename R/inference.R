@@ -188,14 +188,116 @@
   }), use.names = TRUE)
 }
 
+#' Widths of the coefficient blocks, in the order they are encoded
+#'
+#' [.multilpa_coefficients_raw()] lays a fit out as means, spread, categorical
+#' responses, profile mixing and group mixing, in that order, on either scale.
+#' Counting those widths arithmetically -- rather than encoding the fit and
+#' measuring the result -- is what lets the free-coordinate map below be built
+#' without a Cholesky factorisation on every likelihood evaluation.
+#'
+#' @param object A fitted `multilpa` model.
+#' @param scale `"natural"` or `"unconstrained"`.
+#' @return A named numeric vector with `means`, `variances`,
+#'   `response_probabilities`, `profile` and `group`, whose sum is the length of
+#'   [.multilpa_coefficients()] on that scale.
+#' @noRd
+.multilpa_coordinate_widths <- function(object, scale) {
+  stopifnot("`object` must be a fitted multilpa model" = inherits(object, "multilpa"),
+            "`scale` must be natural or unconstrained" =
+              length(scale) == 1L && scale %in% c("natural", "unconstrained"))
+  n_profiles <- object$n_profiles
+  n_types <- object$n_group_classes
+  n_continuous <- length(.multilpa_continuous_names(object))
+  spread <- if (identical(object$covariance_model, "full")) {
+    n_continuous * (n_continuous + 1L) / 2L
+  } else n_continuous
+  blocks <- object$response_probabilities %||% list()
+  c(means = n_profiles * n_continuous,
+    variances = spread * if (object$variance_model == "equal") 1L else n_profiles,
+    response_probabilities = if (scale == "natural") {
+      sum(vapply(blocks, length, numeric(1)))
+    } else .multilpa_response_width(object),
+    profile = n_types * if (scale == "natural") n_profiles else n_profiles - 1L,
+    group = if (scale == "natural") n_types else n_types - 1L)
+}
+
+#' The coordinates a fit actually estimates
+#'
+#' A `fixed` fit holds whole measurement blocks at the values `start` supplied,
+#' so those coordinates are constants of the likelihood, not parameters. They
+#' must still enter the likelihood -- the model is conditional on them, not
+#' without them -- but they carry no score, no row of the information matrix and
+#' no row of the inference table. Because `fixed` names whole blocks and the
+#' blocks are contiguous in the encoding, the free set is simply the complement
+#' of the held ranges; there is no partially-held block whose free remainder
+#' would need a separate identification argument.
+#'
+#' @param object A fitted `multilpa` model.
+#' @param scale `"natural"` or `"unconstrained"`.
+#' @return An integer vector of positions into [.multilpa_coefficients()] on that
+#'   scale, ascending, naming the coordinates this fit estimated.
+#' @noRd
+.multilpa_free_index <- function(object, scale) {
+  widths <- .multilpa_coordinate_widths(object, scale)
+  total <- as.integer(sum(widths))
+  held <- object$fixed %||% character()
+  if (length(held) == 0L) return(seq_len(total))
+  measurement <- c("means", "variances", "response_probabilities")
+  unknown <- setdiff(held, measurement)
+  if (length(unknown) > 0L) {
+    stop(errorCondition(sprintf(
+      "This fit holds %s, which is not a measurement block inference can restore.",
+      paste(sprintf("`%s`", unknown), collapse = " or ")),
+      class = "multilpa_bad_fixed", call = NULL))
+  }
+  offsets <- cumsum(c(0, widths[measurement]))
+  frozen <- unlist(lapply(seq_along(measurement), function(position) {
+    if (measurement[[position]] %in% held) {
+      offsets[[position]] + seq_len(widths[[measurement[[position]]]])
+    } else integer(0)
+  }), use.names = FALSE)
+  setdiff(seq_len(total), as.integer(frozen))
+}
+
+#' Restore the held coordinates around a free parameter vector
+#'
+#' The returned closure scatters free values into a template taken from the fit
+#' itself, so a held block enters every likelihood, score and Hessian evaluation
+#' at exactly the value it was held at.
+#'
+#' @param template Full-length unconstrained coordinates of the fit whose held
+#'   values are to be restored; the centred fit, when the likelihood is
+#'   evaluated on centred indicators.
+#' @param free Positions of the free coordinates within `template`.
+#' @return A function of the free values returning the full coordinate vector.
+#' @noRd
+.multilpa_restore_held <- function(template, free) {
+  stopifnot("`template` must be numeric" = is.numeric(template),
+            "`free` must index `template`" = is.numeric(free) &&
+              length(free) <= length(template) &&
+              (length(free) == 0L || (min(free) >= 1L && max(free) <= length(template))))
+  template <- unname(template)
+  function(values) {
+    stopifnot("free values must match the free coordinate count" =
+                is.numeric(values) && length(values) == length(free))
+    full <- template
+    full[free] <- values
+    full
+  }
+}
+
 #' Decode unconstrained mixture coordinates
-#' @param theta Parameter vector with log variances and baseline-category logits.
+#' @param theta Parameter vector with log variances and baseline-category
+#'   logits, carrying every coordinate of the model including any held block.
 #' @param object A fitted model defining the parameter dimensions.
 #' @return The four parameter blocks used by the expectation step.
 #' @noRd
 .multilpa_decode <- function(theta, object) {
   stopifnot(is.numeric(theta), inherits(object, "multilpa"),
-            length(theta) == object$n_parameters)
+            "`theta` must carry one value per model coordinate, held blocks included" =
+              length(theta) ==
+              sum(.multilpa_coordinate_widths(object, "unconstrained")))
   theta <- unname(theta)
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
@@ -488,22 +590,48 @@
 #'   class probabilities are reported; their sum constraints make the natural
 #'   covariance singular. Wald intervals are not clipped to parameter bounds.
 #'
+#'   A fit made with `fixed` reports only the parameters it estimated: a held
+#'   measurement block is a constant of this likelihood, so it contributes no
+#'   row here and no row or column to the information matrix. The table is on
+#'   the natural scale, where every class probability is reported, so it has one
+#'   row per estimated natural coefficient: `n_parameters` rows plus one for
+#'   each set of probabilities whose reference category the estimation scale
+#'   drops. The held values still enter the likelihood at
+#'   the values they were held at, so every standard error, interval and p-value
+#'   is conditional on that measurement solution and does not propagate its
+#'   uncertainty. See [fit_staged()] for what that conditioning means.
+#'
 #'   Diagnostics of the fit as a whole travel as attributes rather than as
 #'   columns repeated down every row: `covariance` and `covariance_unconstrained`
 #'   (natural and estimation-scale covariance of the estimates), `hessian`,
-#'   `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`
-#'   and `adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
+#'   `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`,
+#'   `fixed` (the measurement blocks this fit held, `character()` when none) and
+#'   `adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
 #'   groups-by-parameters score matrix and `scaling_correction` the MLR scaling
 #'   correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
 #'   difference tests.
+#' @section Conditions:
+#'   `multilpa_no_converge` for an unconverged fit, `multilpa_boundary_fit` when
+#'   a variance, a response probability or a mixing probability sits at its
+#'   bound, `multilpa_singular_information` when the observed information cannot
+#'   be inverted, `multilpa_no_free_parameters` when `fixed` held every
+#'   parameter, `multilpa_bad_inference_data` when a supplied `data` does not
+#'   reproduce the fit, and `multilpa_too_few_groups` for `vcov_type = "robust"`
+#'   with fewer independent groups than reported parameters. A fit whose score
+#'   is still far from zero is reported with a `multilpa_unconverged` warning
+#'   rather than refused.
 #' @examples
 #' set.seed(42)
-#' dat <- data.frame(group = rep(1:10, each = 10), y = rnorm(100))
-#' fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
-#' parameter_inference(fit, dat)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(10), each = 10),
+#'   score_a = rnorm(100), score_b = rnorm(100)
+#' )
+#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#' parameter_inference(fit)
 #'
 #' # Many tests in one table: name the correction, do not apply one by stealth.
-#' parameter_inference(fit, dat, adjust = "BH")
+#' parameter_inference(fit, adjust = "BH")
 #' @export
 parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
                                 vcov_type = c("observed", "robust"),
@@ -524,21 +652,36 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
   .multilpa_check_regularity(x, vcov_type)
-  theta <- .multilpa_coefficients(x, "unconstrained")
+  free <- .multilpa_free_index(x, "unconstrained")
+  free_natural <- .multilpa_free_index(x, "natural")
+  if (length(free) == 0L) {
+    stop(errorCondition(
+      "This fit holds every parameter it has, so there is nothing to report a standard error for.",
+      class = "multilpa_no_free_parameters", call = NULL))
+  }
+  stopifnot("the free coordinates must match the parameters the fit counts" =
+              length(free) == x$n_parameters)
+  full_theta <- .multilpa_coefficients(x, "unconstrained")
+  theta <- full_theta[free]
   prepared <- .multilpa_inference_matrix(x, data)
   observed <- prepared$x
   centered_object <- x
   centered_object$means <- sweep(x$means, 2L, prepared$centers, "-")
-  centered_theta <- .multilpa_coefficients(centered_object, "unconstrained")
+  centered_full <- .multilpa_coefficients(centered_object, "unconstrained")
+  ## A held block is a constant of this likelihood, not a parameter: it is put
+  ## back at its held value on every evaluation, so the model is conditional on
+  ## the measurement rather than fitted without it.
+  restore <- .multilpa_restore_held(centered_full, free)
+  centered_theta <- unname(centered_full)[free]
   codes <- prepared$codes
   objective <- function(parameters) {
     stopifnot(is.numeric(parameters))
     -.multilpa_expectation(observed, x$group_index,
-      .multilpa_decode(parameters, x), codes)$log_likelihood
+      .multilpa_decode(restore(parameters), x), codes)$log_likelihood
   }
   score <- function(parameters) {
     stopifnot(is.numeric(parameters))
-    .multilpa_score(parameters, observed, x, codes)
+    .multilpa_score(restore(parameters), observed, x, codes)[free]
   }
   fitted_likelihood <- -objective(centered_theta)
   if (abs(fitted_likelihood - x$log_likelihood) > 1e-8 * (1 + abs(x$log_likelihood))) {
@@ -547,18 +690,17 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
       class = "multilpa_bad_inference_data", call = NULL))
   }
   parameter_scale <- c(as.vector(t(sqrt(x$variances))),
-                       rep(1, length(theta) - length(x$means)))
+                       rep(1, length(full_theta) - length(x$means)))
   dimension <- length(.multilpa_continuous_names(x))
   if (identical(x$covariance_model, "full") && dimension > 0L) {
-    positions <- which(lower.tri(matrix(0, dimension, dimension), diag = TRUE),
-                       arr.ind = TRUE)
-    profiles <- if (x$variance_model == "equal") 1L else seq_len(x$n_profiles)
-    covariance_scale <- unlist(lapply(profiles, function(profile) {
-      ifelse(positions[, 1L] == positions[, 2L], 1,
-             sqrt(x$variances[profile, positions[, 1L]]))
-    }), use.names = FALSE)
+    # Shared with the covariate path, which lacked this scaling and reported a
+    # singular information for an indicator in large units. One rule, one place.
+    covariance_scale <- .multilpa_covariance_coordinate_scale(
+      x$variances, dimension,
+      if (x$variance_model == "equal") 1L else seq_len(x$n_profiles))
     parameter_scale[length(x$means) + seq_along(covariance_scale)] <- covariance_scale
   }
+  parameter_scale <- parameter_scale[free]
   scaled_objective <- function(displacement) {
     stopifnot(is.numeric(displacement))
     objective(centered_theta + displacement * parameter_scale)
@@ -576,26 +718,49 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   group_scores <- NULL
   scaling_correction <- NA_real_
   if (identical(vcov_type, "robust")) {
-    group_scores <- .multilpa_group_scores(centered_theta, observed, x, codes)
+    group_scores <- .multilpa_group_scores(restore(centered_theta), observed,
+                                           x, codes)[, free, drop = FALSE]
     scaled_cross <- .multilpa_cross_product(sweep(group_scores, 2L, parameter_scale, "*"))
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
     scaled_inverse <- scaled_inverse %*% scaled_cross %*% scaled_inverse
   }
   covariance_unconstrained <- scaled_inverse * tcrossprod(parameter_scale)
   dimnames(hessian) <- dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
-  jacobian <- .multilpa_inference_jacobian(x)
+  ## The natural coordinates of a held block depend only on the held
+  ## unconstrained ones, so restricting the Jacobian to the free rows and
+  ## columns is the delta method for the free parameters, not an approximation
+  ## of it.
+  jacobian <- .multilpa_inference_jacobian(x)[free_natural, free, drop = FALSE]
   covariance <- jacobian %*% covariance_unconstrained %*% t(jacobian)
   standard_errors <- sqrt(pmax(diag(covariance), 0))
-  estimates <- .multilpa_coefficients(x, "natural")
+  estimates <- .multilpa_coefficients(x, "natural")[free_natural]
   critical <- stats::qnorm((1 + level) / 2)
   intervals <- cbind(estimates - critical * standard_errors, estimates + critical * standard_errors)
   colnames(intervals) <- paste0(format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%")
   gradient <- stats::setNames(score(centered_theta), names(theta))
   scaled_score <- max(abs(gradient * parameter_scale))
-  if (scaled_score > 0.01) warning("The fitted likelihood has a non-negligible score; refit with a tighter tolerance before using Wald inference.", call. = FALSE)
+  ## How far the reported estimate sits from the stationary point, measured in
+  ## its own standard errors: a score `g` against information `I` displaces the
+  ## estimate by `g / I`, and the standard error is `sqrt(1 / I)`, so `g * SE`
+  ## is that displacement in standard-error units. It is dimensionless and it
+  ## accounts for the sample size, which a fixed cut on the scaled score does
+  ## not -- at the default `tol = 1e-8` on 720 observations the scaled score is
+  ## 1.19e-02 and used to warn, while the displacement it implies is 1.7e-03,
+  ## under a fifth of one percent of a standard error and unable to move any
+  ## reported figure. A genuinely loose fit still trips it: `tol = 1e-4` on the
+  ## same data gives 5.0e-02, five percent of a standard error.
+  standard_errors_unconstrained <- sqrt(pmax(diag(covariance_unconstrained), 0))
+  score_displacement <- max(abs(gradient) * standard_errors_unconstrained)
+  if (is.finite(score_displacement) && score_displacement > 0.01) {
+    warning(warningCondition(sprintf(
+      paste("The fitted likelihood still carries a score worth %.1f%% of a",
+            "standard error; refit with a tighter `tol` before using Wald",
+            "inference."), 100 * score_displacement),
+      class = "multilpa_unconverged", call = NULL))
+  }
   statistic <- unname(estimates / standard_errors)
   result <- data.frame(
-    .multilpa_coefficient_labels(x, "natural"),
+    .multilpa_coefficient_labels(x, "natural")[free_natural, , drop = FALSE],
     estimate = unname(estimates), standard_error = unname(standard_errors),
     statistic = statistic, p_value = 2 * stats::pnorm(-abs(statistic)),
     conf_low = unname(intervals[, 1L]), conf_high = unname(intervals[, 2L]),
@@ -614,9 +779,11 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   attributes(result) <- c(attributes(result), list(
     covariance = covariance, covariance_unconstrained = covariance_unconstrained,
     hessian = hessian, gradient = gradient, scaled_score = scaled_score,
+    score_displacement = score_displacement,
     condition_ratio = condition_ratio, level = level, step = step,
     vcov_type = vcov_type, group_scores = group_scores,
-    scaling_correction = scaling_correction))
+    scaling_correction = scaling_correction,
+    fixed = x$fixed %||% character()))
   result
 }
 
@@ -625,9 +792,11 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
 #' @param scale Natural coefficients or unconstrained log variances (diagonal),
 #'   log-Cholesky coordinates (full covariance), and baseline-category logits.
 #' @param ... Reserved for generic compatibility.
-#' @return A named numeric vector. Natural coefficients include all mixing
-#'   probabilities; unconstrained coefficients exclude their reference
-#'   categories. Names are `level.parameter.outcome.term`, the same four-part
+#' @return A named numeric vector of every coefficient the model has, held ones
+#'   included: a block `fixed` held is part of the model and is reported here,
+#'   even though it has no standard error and no interval. Natural coefficients
+#'   include all mixing probabilities; unconstrained coefficients exclude their
+#'   reference categories. Names are `level.parameter.outcome.term`, the same four-part
 #'   decomposition [parameter_inference()] reports as columns and the same
 #'   spelling every fitted class in this package uses, so a name written for one
 #'   fit means the same thing for another. A parameter with no term -- a
@@ -664,10 +833,15 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 #'   fit, log-Cholesky coordinates for a full-covariance fit, and
 #'   baseline-category logits for the mixing and response probabilities.
 #' @param ... Additional arguments passed to [parameter_inference()].
-#' @return A square numeric matrix with one row and column per coefficient,
-#'   named as [coef()] names them, on the scale `scale` asks for. On the natural
-#'   scale it is singular by construction, because each set of probabilities
-#'   sums to one; the unconstrained matrix is not. [confint()] and the
+#' @return A square numeric matrix with one row and column per *estimated*
+#'   coefficient, named as [coef()] names them, on the scale `scale` asks for. A
+#'   fit made with `fixed` held part of its measurement model at supplied
+#'   values; those coefficients were not estimated here, so they carry no row or
+#'   column. With `scale = "unconstrained"` the matrix is `n_parameters` square,
+#'   for any fit; on the natural scale it is larger by one row and column for
+#'   each set of probabilities whose reference category the estimation scale
+#'   drops, and singular by construction, because each set of probabilities sums
+#'   to one. [confint()] and the
 #'   `conf_low`/`conf_high` columns of [parameter_inference()] are built from
 #'   the natural-scale matrix.
 #' @examples
@@ -693,13 +867,17 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
 
 #' Wald confidence intervals for multilevel LPA coefficients
 #' @param object A fitted `multilpa` model.
-#' @param parm Optional coefficient names or indices; defaults to all coefficients.
+#' @param parm Optional coefficient names or indices; defaults to every
+#'   coefficient the fit estimated. Naming a coefficient that `fixed` held
+#'   raises `multilpa_held_parameter`, because a held value has no interval.
 #' @param level Confidence level strictly between zero and one.
 #' @param data Optional, exactly as for [vcov()].
 #' @param ... Additional arguments passed to [parameter_inference()].
 #' @return A two-column matrix of Wald intervals on the natural scale, one row
 #'   per requested coefficient and named as [coef()] names them. Bounds are not
-#'   clipped to the probability or variance parameter space.
+#'   clipped to the probability or variance parameter space. For a fit made with
+#'   `fixed`, the default rows are the estimated coefficients only and the
+#'   intervals are conditional on the held measurement solution.
 #' @examples
 #' set.seed(3)
 #' example_data <- data.frame(
@@ -716,7 +894,11 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
             is.finite(level), level > 0, level < 1)
   estimates <- coef.multilpa(object)
   covariance <- vcov.multilpa(object, data = data, ...)
-  if (missing(parm)) parm <- names(estimates)
+  ## A held measurement coefficient is reported by coef() -- it is part of the
+  ## model -- but it was not estimated here and has no interval. The default is
+  ## therefore what the covariance actually covers.
+  estimated <- rownames(covariance)
+  if (missing(parm)) parm <- estimated
   if (is.numeric(parm)) {
     if (anyNA(parm) || any(!is.finite(parm)) || any(parm != floor(parm)) ||
         any(parm < 1) || any(parm > length(estimates))) stop("Invalid coefficient indices in parm.")
@@ -724,6 +906,16 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   }
   if (!is.character(parm) || anyNA(parm) || !all(parm %in% names(estimates))) {
     stop("parm must identify existing coefficient names or indices.")
+  }
+  held <- setdiff(parm, estimated)
+  if (length(held) > 0L) {
+    stop(errorCondition(sprintf(
+      "%s %s held fixed by this fit, so %s carr%s no confidence interval.",
+      paste(sprintf("`%s`", held), collapse = ", "),
+      if (length(held) == 1L) "was" else "were",
+      if (length(held) == 1L) "it" else "they",
+      if (length(held) == 1L) "ies" else "y"),
+      class = "multilpa_held_parameter", call = NULL))
   }
   standard_errors <- sqrt(pmax(diag(covariance)[parm], 0))
   critical <- stats::qnorm((1 + level) / 2)
@@ -752,11 +944,16 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
     stop(errorCondition("Inference requires a converged fit.",
                         class = "multilpa_no_converge", call = NULL))
   }
-  if (isTRUE(object$boundary)) {
+  ## A bound-active value that this fit held fixed is a constant of the
+  ## conditional likelihood, not an estimate sitting on its boundary, so it does
+  ## not disqualify the parameters that were actually estimated.
+  held <- object$fixed %||% character()
+  if (isTRUE(object$boundary) && !("variances" %in% held)) {
     stop(errorCondition("Wald inference is unavailable for a bound-active fit.",
                         class = "multilpa_boundary_fit", call = NULL))
   }
-  response <- unlist(object$response_probabilities, use.names = FALSE)
+  response <- if ("response_probabilities" %in% held) NULL else
+    unlist(object$response_probabilities, use.names = FALSE)
   if (length(response) > 0L &&
       any(response <= (object$min_probability %||% 0) * (1 + 1e-7))) {
     stop(errorCondition(
