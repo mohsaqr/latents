@@ -10,3 +10,4 @@
 \.Rcheck$
 ^\.DS_Store$
 ^\.claude$
+^data-raw$

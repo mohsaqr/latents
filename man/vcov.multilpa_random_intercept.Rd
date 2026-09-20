@@ -8,7 +8,7 @@
 \usage{
 \method{vcov}{multilpa_random_intercept}(object, ...)
 
-\method{parameter_inference}{multilpa_random_intercept}(x, data, ...)
+\method{parameter_inference}{multilpa_random_intercept}(x, data = NULL, ...)
 
 \method{confint}{multilpa_random_intercept}(object, parm, level = 0.95, ...)
 }

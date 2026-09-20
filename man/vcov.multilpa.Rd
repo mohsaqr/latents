@@ -9,9 +9,10 @@
 \arguments{
 \item{object}{A fitted `multilpa` model.}
 
-\item{data}{The original fitting data. It is required: the observed
-information is evaluated at the estimates and can only be rebuilt from the
-data that produced them.}
+\item{data}{Optional. The data frame the model was fitted to; when omitted
+it is rebuilt from the indicators, identifiers and occasions the fit
+stores, which round-trip exactly. Supplying it is the stronger check that
+the caller still holds that frame.}
 
 \item{scale}{Which parameter scale the covariance is on. `"natural"`, the
 default, is the covariance of the estimates [coef()] reports -- variances

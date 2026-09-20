@@ -53,9 +53,12 @@
   ridge height compares shapes and not profile sizes; prevalence is printed
   in each profile's label instead.}
 
-\item{data}{Optional. The data frame the model was fitted to. Supplying it
-with `what = "bars"` draws a 95% interval on every bar; it is ignored by
-every other view.}
+\item{data}{Optional. The data frame the model was fitted to, used by
+`what = "bars"` to put a 95% interval on every bar and ignored by every
+other view. A fit carries the columns it was built from, so the intervals
+are drawn without this being supplied; pass it only to draw them from a
+different frame. A model family whose standard errors are not implemented
+gets bars without whiskers rather than an error.}
 
 \item{scale}{For `what = "profiles"`, `"raw"` plots the estimated means in
 input units, and `"standardized"` divides each indicator's deviation from
@@ -114,7 +117,7 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 plot(fit)
 plot(fit, scale = "standardized")
-plot(fit, what = "bars", data = example_data)
+plot(fit, what = "bars")
 plot(fit, what = "heatmap")
 plot(fit, what = "entropy")
 multilpa_plot_types()

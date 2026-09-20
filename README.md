@@ -18,16 +18,27 @@ From this project directory:
 R CMD INSTALL .
 ```
 
-Then, with your own data frame:
+The package ships two example datasets, so the first example runs as written.
+`school_engagement` has 720 students in 60 schools; `engagement_panel` has 120
+students over four waves. Both are simulated, and both carry the kind each row
+was generated from (`engaged`, `state`) beside the indicators, so a fit can be
+checked against what produced it.
 
 ```r
 library(multilpa)
 
+# Before fitting: does the nesting carry any signal at all? An ICC near zero
+# says the schools do not differ, so a model built to tell them apart has
+# nothing to find.
+descriptives(school_engagement,
+             vars = c("homework_hours", "participation", "interest"),
+             id = "school")
+
 fit <- multilpa(
-  data = students,
-  vars = c("reading", "maths", "engagement"),
-  id = "school_id",
-  n_profiles = 3,
+  data = school_engagement,
+  vars = c("homework_hours", "participation", "interest"),
+  id = "school",
+  n_profiles = 2,
   n_group_classes = 2,
   variance_model = "varying",
   n_starts = 20,
@@ -41,13 +52,27 @@ as.data.frame(fit, what = "posteriors")              # one row per individual an
 as.data.frame(fit, what = "posteriors", format = "wide")  # one row per individual
 as.data.frame(fit, what = "group_posteriors")        # one row per group and group class
 as.data.frame(fit, what = "starts")                  # one row per EM start
-information_criteria(fit)                            # every information criterion
+as.data.frame(fit, what = "data")                    # the columns the model was fitted to
+assignments(fit, data = school_engagement)           # every row with the class it was given
+descriptives(fit)                                    # one row per variable, with the ICC
+descriptives(fit, by = "profile")                    # the same, split by assigned profile
+diagnostics(fit)                                     # every classification diagnostic
+report(fit)                                          # summary + diagnostics + every plot
+
+information_criteria(fit)                            # one row, the reportable shape
+information_criteria(fit, format = "long")           # one row per criterion and convention
 classification_table(fit, level = "both")            # classification quality
 entropy_table(fit)                                   # entropy at each level
+average_posteriors(fit, level = "individuals")       # mean posterior by assigned class
 
+multilpa_plot_types()                                # every view, with what it answers
 plot(fit)                                            # profile means by indicator
 plot(fit, scale = "standardized")                    # comparable profile shapes
+plot(fit, what = "bars")                             # the same means, with 95% intervals
+plot(fit, what = "heatmap")                          # which indicators define the profiles
 plot(fit, what = "probabilities")                    # prevalence by group class
+plot(fit, what = "entropy")                          # where the uncertainty actually sits
+plot(fit, what = "posteriors")                       # modal assignment probabilities
 ```
 
 Every result table is a base `data.frame`, so nothing needs to be pulled out of

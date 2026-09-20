@@ -8,7 +8,7 @@
 \usage{
 \method{vcov}{multilpa_transitions}(object, ...)
 
-\method{parameter_inference}{multilpa_transitions}(x, data, ...)
+\method{parameter_inference}{multilpa_transitions}(x, data = NULL, ...)
 
 \method{confint}{multilpa_transitions}(object, parm, level = 0.95, ...)
 }

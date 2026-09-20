@@ -15,7 +15,7 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
   data <- .release_fixture()
   fit <- suppressWarnings(multilpa(data, c("a", "b"), "g", 2L, 2L,
                                    n_starts = 3, seed = 1))
-  criteria <- information_criteria(fit)
+  criteria <- information_criteria(fit, format = "long")
   q <- fit$n_parameters
   log_likelihood <- fit$log_likelihood
 
@@ -38,7 +38,7 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
   # It must not vary with n, unlike every other row that carries a convention.
   expect_equal(clc$value[1L] - clc$value[2L], 2 * (entropies[1L] - entropies[2L]))
   # The formula is documentation, so it is off by default and arrives on request.
-  annotated <- subset(information_criteria(fit, definitions = TRUE),
+  annotated <- subset(information_criteria(fit, format = "long", definitions = TRUE),
                       criterion == "clc")
   expect_identical(annotated$definition, rep("-2L + 2 EN", 2L))
   expect_false("definition" %in% names(criteria))
@@ -48,22 +48,28 @@ test_that("the criteria table keeps its shape as criteria are added", {
   data <- .release_fixture()
   fit <- suppressWarnings(multilpa(data, c("a", "b"), "g", 2L, 2L,
                                    n_starts = 2, seed = 1))
-  criteria <- information_criteria(fit)
-  expect_named(criteria, c("criterion", "convention", "n", "value", "penalty"))
+  criteria <- information_criteria(fit, format = "long")
+  expect_named(criteria, c("criterion", "convention", "n", "value"))
   expect_setequal(unique(criteria$criterion),
                   c("deviance", "aic", "kic", "bic", "sabic", "caic",
                     "awe", "icl", "clc"))
   expect_false(anyNA(criteria$value))
-  # Reporting the deviance rather than the log likelihood makes one identity hold
-  # on EVERY row, with no row carved out: lower is better throughout, and the
-  # deviance row is simply the one whose penalty is zero.
+  # Reporting the deviance rather than the log likelihood makes the `value`
+  # column point one way on EVERY row, with no row carved out.
   deviance <- -2 * fit$log_likelihood
-  expect_equal(criteria$value, deviance + criteria$penalty)
   expect_equal(subset(criteria, criterion == "deviance")$value, deviance)
-  expect_identical(subset(criteria, criterion == "deviance")$penalty, 0)
-  # The penalty is not always positive: sabic subtracts when the sample size
-  # is below 22, because log((n + 2) / 24) is then negative.
-  expect_true(any(criteria$penalty < 0))
+  # The complexity charge is not always positive: sabic subtracts when the
+  # sample size is below 22, because log((n + 2) / 24) is then negative. So a
+  # criterion may fall BELOW the deviance, and the table must not assume
+  # otherwise now that the charge is no longer a column of its own.
+  expect_true(any(criteria$value < deviance))
+
+  # The reported shape: one row, and the columns a comparison table publishes.
+  wide <- information_criteria(fit)
+  expect_identical(nrow(wide), 1L)
+  expect_identical(names(wide)[1:2], c("log_likelihood", "n_parameters"))
+  expect_false("penalty" %in% names(wide))
+  expect_equal(wide$log_likelihood, fit$log_likelihood)
 })
 
 test_that("the measurement tables carry their own standard errors when asked", {

@@ -10,7 +10,10 @@
 #' association rather than assuming it away, or another profile.
 #'
 #' @param x A fitted `multilpa` or `multilpa_covariates` model.
-#' @param data The data frame the model was fitted to.
+#' @param data Optional. The data frame the model was fitted to; when omitted
+#'   it is rebuilt from the indicators, identifiers and occasions the fit
+#'   stores, which round-trip exactly. Supplying it is the stronger check that
+#'   the caller still holds that frame.
 #' @param by `"profile"` (the default) assesses each profile separately, which
 #'   is where the assumption is actually made. `"overall"` pools the profiles
 #'   into one posterior-weighted table per pair.
@@ -99,9 +102,10 @@
 #' bivariate_residuals(fit, example_data)
 #' bivariate_residuals(fit, example_data, by = "overall")
 #' @export
-bivariate_residuals <- function(x, data, by = c("profile", "overall")) {
+bivariate_residuals <- function(x, data = NULL, by = c("profile", "overall")) {
+  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  data <- .multilpa_resolve_data(x, data)
   stopifnot(
-    "`object` must be a fitted model of this package" = .multilpa_any_fit(x),
     "`data` must be a data frame" = is.data.frame(data),
     "`data` must have one row per observation of the fit" =
       nrow(data) == x$n_observations

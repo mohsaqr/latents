@@ -617,7 +617,7 @@ vcov.multilpa_random_intercept <- function(object, ...) {
 #' @rdname vcov.multilpa_random_intercept
 #' @param data Ignored; present for compatibility with the generic.
 #' @export
-parameter_inference.multilpa_random_intercept <- function(x, data, ...) {
+parameter_inference.multilpa_random_intercept <- function(x, data = NULL, ...) {
   vcov(x)
 }
 

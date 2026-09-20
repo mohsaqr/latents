@@ -16,7 +16,7 @@
 }
 
 test_that("a criterion that uses no sample size says NA, not a third level", {
-  criteria <- information_criteria(.tidy_fit())
+  criteria <- information_criteria(.tidy_fit(), format = "long")
   scale_free <- subset(criteria, is.na(convention))
   expect_setequal(scale_free$criterion, c("deviance", "aic", "kic"))
   expect_true(all(is.na(scale_free$n)))
@@ -29,38 +29,66 @@ test_that("a criterion that uses no sample size says NA, not a third level", {
 
 test_that("the value column points one way on every row", {
   fit <- .tidy_fit()
-  criteria <- information_criteria(fit)
-  # Every row is the same deviance plus its own penalty, so a smaller value is
-  # a better-supported model throughout. The log likelihood, for which the
-  # opposite held, is logLik() and is not in this table.
-  expect_equal(criteria$value, -2 * fit$log_likelihood + criteria$penalty)
+  criteria <- information_criteria(fit, format = "long")
+  # Every row is the same deviance plus a non-negative complexity charge, so a
+  # smaller value is a better-supported model throughout. The log likelihood,
+  # for which the opposite held, is logLik() and is not in the long table.
   expect_false("log_likelihood" %in% criteria$criterion)
   expect_equal(subset(criteria, criterion == "deviance")$value,
                -2 * as.numeric(logLik(fit)))
-  expect_equal(subset(criteria, criterion == "deviance")$penalty, 0)
+  expect_true(all(criteria$value >= -2 * as.numeric(logLik(fit)) - 1e-8))
+  # The wide form reports the likelihood instead, because that is what a
+  # model-comparison table publishes.
+  expect_true("log_likelihood" %in% names(information_criteria(fit)))
 })
 
 test_that("formulas are documentation, available only on request", {
   fit <- .tidy_fit()
-  expect_false("definition" %in% names(information_criteria(fit)))
-  explained <- information_criteria(fit, definitions = TRUE)
+  expect_false("definition" %in% names(information_criteria(fit, format = "long")))
+  explained <- information_criteria(fit, format = "long", definitions = TRUE)
   expect_identical(names(explained),
-    c("criterion", "convention", "n", "value", "penalty", "definition"))
+    c("criterion", "convention", "n", "value", "definition"))
   # The column is a pure function of `criterion`, which is why it is optional.
   by_criterion <- tapply(explained$definition, explained$criterion,
                          function(value) length(unique(value)))
   expect_true(all(by_criterion == 1L))
-  expect_identical(nrow(explained), nrow(information_criteria(fit)))
-  expect_error(information_criteria(fit, definitions = "yes"),
+  expect_identical(nrow(explained), nrow(information_criteria(fit, format = "long")))
+  expect_error(information_criteria(fit, format = "long", definitions = "yes"),
                "must be TRUE or FALSE")
+  # A formula per row needs rows; the wide form has one, so the combination is
+  # refused rather than quietly ignored.
+  expect_error(information_criteria(fit, definitions = TRUE),
+               class = "multilpa_bad_argument")
 })
 
-test_that("the criteria table is invariant to how many conventions apply", {
-  # Invariant, not a fixed number: value - penalty is the deviance everywhere.
+test_that("the wide and long forms are the same numbers", {
   fit <- .tidy_fit()
-  criteria <- information_criteria(fit)
-  expect_equal(unique(round(criteria$value - criteria$penalty, 10L)),
-               round(-2 * fit$log_likelihood, 10L))
+  wide <- information_criteria(fit)
+  long <- information_criteria(fit, format = "long")
+  expect_identical(nrow(wide), 1L)
+  expect_equal(wide$log_likelihood, fit$log_likelihood)
+  expect_equal(wide$bic_groups,
+               subset(long, criterion == "bic" & convention == "groups")$value)
+  expect_equal(wide$bic_individual,
+               subset(long, criterion == "bic" & convention == "individuals")$value)
+  expect_equal(wide$aic, subset(long, criterion == "aic")$value)
+})
+
+test_that("a single fit and its enumeration grid name the same things", {
+  # Both go through one pivot, so this cannot drift. A criterion added to the
+  # long table but not to the grid, or renamed in either, fails here.
+  fit <- .tidy_fit()
+  wide <- information_criteria(fit)
+  set.seed(3)
+  dat <- data.frame(g = rep(seq_len(20L), each = 6L),
+                    a = stats::rnorm(120L), b = stats::rnorm(120L))
+  grid <- as.data.frame(enumerate_classes(
+    dat, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
+    n_starts = 2, seed = 1))
+  shared <- intersect(names(wide), names(grid))
+  expect_setequal(shared, setdiff(names(wide), character()))
+  expect_true(all(c("aic", "kic", "bic_groups", "bic_individual",
+                    "log_likelihood", "n_parameters") %in% shared))
 })
 
 test_that("classification_table has one shape and average_posteriors the other", {

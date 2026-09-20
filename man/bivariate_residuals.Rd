@@ -4,12 +4,15 @@
 \alias{bivariate_residuals}
 \title{Residual association between pairs of indicators}
 \usage{
-bivariate_residuals(x, data, by = c("profile", "overall"))
+bivariate_residuals(x, data = NULL, by = c("profile", "overall"))
 }
 \arguments{
 \item{x}{A fitted `multilpa` or `multilpa_covariates` model.}
 
-\item{data}{The data frame the model was fitted to.}
+\item{data}{Optional. The data frame the model was fitted to; when omitted
+it is rebuilt from the indicators, identifiers and occasions the fit
+stores, which round-trip exactly. Supplying it is the stronger check that
+the caller still holds that frame.}
 
 \item{by}{`"profile"` (the default) assesses each profile separately, which
 is where the assumption is actually made. `"overall"` pools the profiles

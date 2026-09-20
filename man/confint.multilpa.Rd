@@ -13,8 +13,7 @@
 
 \item{level}{Confidence level strictly between zero and one.}
 
-\item{data}{The original fitting data, required for the same reason
-[vcov()] requires it.}
+\item{data}{Optional, exactly as for [vcov()].}
 
 \item{...}{Additional arguments passed to [parameter_inference()].}
 }

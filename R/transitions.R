@@ -1270,7 +1270,7 @@ vcov.multilpa_transitions <- function(object, ...) {
 #' @rdname vcov.multilpa_transitions
 #' @param data Ignored; present for compatibility with the generic.
 #' @export
-parameter_inference.multilpa_transitions <- function(x, data, ...) {
+parameter_inference.multilpa_transitions <- function(x, data = NULL, ...) {
   stopifnot(inherits(x, "multilpa_transitions"))
   .multilpa_refuse_transition_inference()
 }

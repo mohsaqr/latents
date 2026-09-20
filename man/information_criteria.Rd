@@ -4,48 +4,65 @@
 \alias{information_criteria}
 \title{Information criteria for a fitted multilevel latent profile model}
 \usage{
-information_criteria(x, definitions = FALSE)
+information_criteria(x, definitions = FALSE, format = c("wide", "long"))
 }
 \arguments{
 \item{x}{A fitted `multilpa` model.}
 
 \item{definitions}{`FALSE`, the default, returns the numbers alone. `TRUE`
 appends a `definition` column carrying each criterion's formula, which is
-the same text as the Details section below.}
+the same text as the Details section below. It describes one criterion per
+row, so it needs `format = "long"` and raises `multilpa_bad_argument`
+otherwise.}
+
+\item{format}{`"wide"`, the default, returns one row with one column per
+criterion -- the shape a model-comparison table is reported in, and the
+same column names [enumerate_classes()] uses, so a single fit and a row of
+its grid name the same quantity the same way. `"long"` returns one row per
+criterion and convention, which is the shape for asking *why* two criteria
+disagree rather than for reporting.}
 }
 \value{
-A base `data.frame` of class `data.frame`, one row per criterion and
-  sample-size convention, with the columns
+A base `data.frame`.
+
+  With `format = "wide"`, one row: `log_likelihood`, `n_parameters`, then one
+  column per criterion, named `aic`, `kic`, and `bic_groups`,
+  `bic_individual` and so on for the criteria that carry a convention. The
+  likelihood is reported here rather than the deviance, because that is the
+  published convention and what [enumerate_classes()] already carries; higher
+  is better for that column and lower is better for every criterion beside it.
+
+  With `format = "long"`, one row per criterion and sample-size convention:
   \describe{
     \item{`criterion`}{character: `"deviance"`, `"aic"`, `"kic"`, `"bic"`,
       `"sabic"`, `"caic"`, `"awe"`, `"icl"` or `"clc"`.}
     \item{`convention`}{character: `"groups"` or `"individuals"`, and
       `NA_character_` for a criterion that uses no sample size and no
-      level-specific entropy.}
+      level-specific entropy. `NA` here means the question does not arise,
+      not that a value is missing.}
     \item{`n`}{integer: the sample size that convention supplies, and
       `NA_integer_` where no sample size enters.}
-    \item{`value`}{numeric: the criterion. **Lower is better on every row.**}
-    \item{`penalty`}{numeric: what the criterion adds to the deviance, so
-      `value == deviance + penalty` holds on every row, and `0` on the
-      `"deviance"` row itself.}
+    \item{`value`}{numeric: the criterion. **Lower is better on every row**,
+      including the first, which is why the long form reports the deviance
+      `-2L` rather than the log likelihood.}
     \item{`definition`}{character, present only when
       `definitions = TRUE`: the criterion's formula.}
   }
-  The table reports the deviance `-2L` rather than the log likelihood `L`, so
-  that the `value` column points one way throughout; `logLik(object)` returns
-  the log likelihood. `deviance`, `aic` and `kic` do not depend on a sample
-  size and carry `convention = NA_character_` with `n = NA_integer_`. `clc`
-  does not depend on one either, but its convention selects which level's
-  classification uncertainty it penalizes, so it is reported once per
-  convention. `value` is `NA_real_` where the entropy a criterion needs is
-  undefined, which is the group level of a continuous random-intercept fit.
+  There is no `penalty` column. It is not a quantity anyone reports, and it
+  is the difference between two the table already carries.
+
+  `deviance`, `aic` and `kic` do not depend on a sample size and carry
+  `convention = NA_character_` with `n = NA_integer_`. `clc` does not depend
+  on one either, but its convention selects which level's classification
+  uncertainty it penalizes, so it is reported once per convention. `value` is
+  `NA_real_` where the entropy a criterion needs is undefined, which is the
+  group level of a continuous random-intercept fit.
 }
 \description{
-Returns every information criterion the package computes, in one tidy table,
-with the sample-size convention stated on each row. Multilevel mixtures admit
-two defensible sample sizes: the number of independent groups and the number
-of individuals. Criteria that depend on a sample size are therefore reported
-once per convention rather than silently fixing one.
+Returns every information criterion the package computes. Multilevel mixtures
+admit two defensible sample sizes -- the number of independent groups and the
+number of individuals -- so criteria that depend on one are reported under
+both conventions rather than silently fixing one.
 }
 \details{
 The verb is named for what it returns. Classification sharpness and class
@@ -80,7 +97,8 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 information_criteria(fit)
-information_criteria(fit, definitions = TRUE)
+information_criteria(fit, format = "long")
+information_criteria(fit, format = "long", definitions = TRUE)
 }
 \references{
 Schwarz, G. (1978). Estimating the dimension of a model.

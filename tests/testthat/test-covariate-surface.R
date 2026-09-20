@@ -70,7 +70,7 @@ test_that("the shared diagnostics accept a covariate fit", {
   expect_equal(nrow(entropy), 2L)
   expect_true(all(entropy$relative_entropy >= 0 & entropy$relative_entropy <= 1))
 
-  criteria <- information_criteria(fit)
+  criteria <- information_criteria(fit, format = "long")
   expect_true(all(c("aic", "bic") %in% criteria$criterion))
   expect_equal(subset(criteria, criterion == "deviance")$value,
                -2 * fit$log_likelihood)

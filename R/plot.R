@@ -7,9 +7,12 @@
 #' in each cell for the same reason.
 #'
 #' @param x A fitted `multilpa` model.
-#' @param data Optional. The data frame the model was fitted to. Supplying it
-#'   with `what = "bars"` draws a 95% interval on every bar; it is ignored by
-#'   every other view.
+#' @param data Optional. The data frame the model was fitted to, used by
+#'   `what = "bars"` to put a 95% interval on every bar and ignored by every
+#'   other view. A fit carries the columns it was built from, so the intervals
+#'   are drawn without this being supplied; pass it only to draw them from a
+#'   different frame. A model family whose standard errors are not implemented
+#'   gets bars without whiskers rather than an error.
 #' @param what Which view to draw. [multilpa_plot_types()] lists every value
 #'   with its group and a one-line description; the `"enumeration"` row it also
 #'   lists belongs to [plot.multilpa_enumeration()], not to this method.
@@ -75,7 +78,7 @@
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' plot(fit)
 #' plot(fit, scale = "standardized")
-#' plot(fit, what = "bars", data = example_data)
+#' plot(fit, what = "bars")
 #' plot(fit, what = "heatmap")
 #' plot(fit, what = "entropy")
 #' multilpa_plot_types()
@@ -899,13 +902,25 @@ multilpa_plot_types <- function() {
 #' Measurement standard errors shaped like the means matrix
 #'
 #' @param x A fitted model.
-#' @param data The data frame the model was fitted to, or `NULL` for no errors.
+#' @param data The data frame the model was fitted to, or `NULL` to use the
+#'   columns the fit carries.
 #' @return A profiles-by-indicators matrix of standard errors, or `NULL`.
 #' @noRd
 .multilpa_mean_error_matrix <- function(x, data) {
-  if (is.null(data)) return(NULL)
+  # A fit carries the columns it was built from, so the intervals cost the
+  # caller nothing to ask for and are drawn by default. Families whose standard
+  # errors are not implemented refuse by condition class; the bars are still
+  # worth drawing without whiskers, so the refusal is caught and reported as
+  # "no errors" rather than propagated out of a plot call.
+  errors <- tryCatch(
+    .multilpa_measurement_errors(x, .multilpa_resolve_data(x, data)),
+    multilpa_unsupported_inference = function(condition) NULL,
+    multilpa_no_inference = function(condition) NULL,
+    multilpa_singular_information = function(condition) NULL,
+    multilpa_incomplete_fit = function(condition) NULL,
+    multilpa_bad_inference_data = function(condition) NULL)
+  if (is.null(errors)) return(NULL)
   vars <- .multilpa_continuous_names(x)
-  errors <- .multilpa_measurement_errors(x, data)
   cells <- expand.grid(indicator = vars, profile = seq_len(x$n_profiles),
                        stringsAsFactors = FALSE)
   values <- .multilpa_match_error(errors, "mean", cells$profile, cells$indicator)

@@ -42,11 +42,10 @@
 
 #' Information criteria for a fitted multilevel latent profile model
 #'
-#' Returns every information criterion the package computes, in one tidy table,
-#' with the sample-size convention stated on each row. Multilevel mixtures admit
-#' two defensible sample sizes: the number of independent groups and the number
-#' of individuals. Criteria that depend on a sample size are therefore reported
-#' once per convention rather than silently fixing one.
+#' Returns every information criterion the package computes. Multilevel mixtures
+#' admit two defensible sample sizes -- the number of independent groups and the
+#' number of individuals -- so criteria that depend on one are reported under
+#' both conventions rather than silently fixing one.
 #'
 #'   The verb is named for what it returns. Classification sharpness and class
 #'   separation are reported by [classification_table()] and [entropy_table()]
@@ -56,35 +55,52 @@
 #' @param x A fitted `multilpa` model.
 #' @param definitions `FALSE`, the default, returns the numbers alone. `TRUE`
 #'   appends a `definition` column carrying each criterion's formula, which is
-#'   the same text as the Details section below.
+#'   the same text as the Details section below. It describes one criterion per
+#'   row, so it needs `format = "long"` and raises `multilpa_bad_argument`
+#'   otherwise.
+#' @param format `"wide"`, the default, returns one row with one column per
+#'   criterion -- the shape a model-comparison table is reported in, and the
+#'   same column names [enumerate_classes()] uses, so a single fit and a row of
+#'   its grid name the same quantity the same way. `"long"` returns one row per
+#'   criterion and convention, which is the shape for asking *why* two criteria
+#'   disagree rather than for reporting.
 #' @seealso [classification_table()] and [entropy_table()] for the
 #'   classification diagnostics that accompany these criteria. [logLik()] for
 #'   the maximized log likelihood itself.
-#' @return A base `data.frame` of class `data.frame`, one row per criterion and
-#'   sample-size convention, with the columns
+#' @return A base `data.frame`.
+#'
+#'   With `format = "wide"`, one row: `log_likelihood`, `n_parameters`, then one
+#'   column per criterion, named `aic`, `kic`, and `bic_groups`,
+#'   `bic_individual` and so on for the criteria that carry a convention. The
+#'   likelihood is reported here rather than the deviance, because that is the
+#'   published convention and what [enumerate_classes()] already carries; higher
+#'   is better for that column and lower is better for every criterion beside it.
+#'
+#'   With `format = "long"`, one row per criterion and sample-size convention:
 #'   \describe{
 #'     \item{`criterion`}{character: `"deviance"`, `"aic"`, `"kic"`, `"bic"`,
 #'       `"sabic"`, `"caic"`, `"awe"`, `"icl"` or `"clc"`.}
 #'     \item{`convention`}{character: `"groups"` or `"individuals"`, and
 #'       `NA_character_` for a criterion that uses no sample size and no
-#'       level-specific entropy.}
+#'       level-specific entropy. `NA` here means the question does not arise,
+#'       not that a value is missing.}
 #'     \item{`n`}{integer: the sample size that convention supplies, and
 #'       `NA_integer_` where no sample size enters.}
-#'     \item{`value`}{numeric: the criterion. **Lower is better on every row.**}
-#'     \item{`penalty`}{numeric: what the criterion adds to the deviance, so
-#'       `value == deviance + penalty` holds on every row, and `0` on the
-#'       `"deviance"` row itself.}
+#'     \item{`value`}{numeric: the criterion. **Lower is better on every row**,
+#'       including the first, which is why the long form reports the deviance
+#'       `-2L` rather than the log likelihood.}
 #'     \item{`definition`}{character, present only when
 #'       `definitions = TRUE`: the criterion's formula.}
 #'   }
-#'   The table reports the deviance `-2L` rather than the log likelihood `L`, so
-#'   that the `value` column points one way throughout; `logLik(object)` returns
-#'   the log likelihood. `deviance`, `aic` and `kic` do not depend on a sample
-#'   size and carry `convention = NA_character_` with `n = NA_integer_`. `clc`
-#'   does not depend on one either, but its convention selects which level's
-#'   classification uncertainty it penalizes, so it is reported once per
-#'   convention. `value` is `NA_real_` where the entropy a criterion needs is
-#'   undefined, which is the group level of a continuous random-intercept fit.
+#'   There is no `penalty` column. It is not a quantity anyone reports, and it
+#'   is the difference between two the table already carries.
+#'
+#'   `deviance`, `aic` and `kic` do not depend on a sample size and carry
+#'   `convention = NA_character_` with `n = NA_integer_`. `clc` does not depend
+#'   on one either, but its convention selects which level's classification
+#'   uncertainty it penalizes, so it is reported once per convention. `value` is
+#'   `NA_real_` where the entropy a criterion needs is undefined, which is the
+#'   group level of a continuous random-intercept fit.
 #' @details Let `q` be the number of free parameters, `n` the chosen sample
 #'   size, and `EN` the classification entropy of the level matching that
 #'   convention. The criteria are `deviance = -2L`, `aic = -2L + 2q`,
@@ -125,12 +141,20 @@
 #' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' information_criteria(fit)
-#' information_criteria(fit, definitions = TRUE)
+#' information_criteria(fit, format = "long")
+#' information_criteria(fit, format = "long", definitions = TRUE)
 #' @export
-information_criteria <- function(x, definitions = FALSE) {
-  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x),
+information_criteria <- function(x, definitions = FALSE,
+                                 format = c("wide", "long")) {
+  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x),
             "`definitions` must be TRUE or FALSE" =
               isTRUE(definitions) || isFALSE(definitions))
+  format <- match.arg(format)
+  if (isTRUE(definitions) && identical(format, "wide")) {
+    stop(errorCondition(
+      "`definitions` describes one criterion per row, which the wide form has not. Use format = \"long\".",
+      class = "multilpa_bad_argument", call = NULL))
+  }
   q <- x$n_parameters
   deviance <- -2 * x$log_likelihood
   conventions <- data.frame(
@@ -161,14 +185,58 @@ information_criteria <- function(x, definitions = FALSE) {
   }))
   result <- rbind(scale_free, scaled)
   # Every row is the same deviance plus its own penalty, so the `value` column
-  # means one thing throughout: smaller is a better-supported model.
+  # means one thing throughout: smaller is a better-supported model. The penalty
+  # itself is not a column: nobody reports it, and it is the difference between
+  # two numbers the table already carries.
   result$value <- deviance + result$penalty
-  result <- result[c("criterion", "convention", "n", "value", "penalty")]
+  result <- result[c("criterion", "convention", "n", "value")]
+  row.names(result) <- NULL
+  if (identical(format, "wide")) return(.multilpa_criteria_wide(result, x))
   if (isTRUE(definitions)) {
     result$definition <- .multilpa_criterion_definitions(result$criterion)
   }
-  row.names(result) <- NULL
   result
+}
+
+#' One criterion per column, the shape a model-comparison table is reported in
+#'
+#' The same pivot the enumeration grid uses, so a single fit and a row of
+#' `as.data.frame(enumerate_classes(...))` cannot name the same quantity
+#' differently. `.multilpa_enumeration_criteria()` owns the column order.
+#'
+#' @param indices The long table, one row per criterion and convention.
+#' @param fit The model the indices came from, for the likelihood and count.
+#' @return A one-row base `data.frame`.
+#' @noRd
+.multilpa_criteria_wide <- function(indices, fit) {
+  labels <- .multilpa_criterion_labels(indices)
+  wanted <- .multilpa_enumeration_criteria()
+  missing_labels <- setdiff(wanted, labels)
+  if (length(missing_labels) > 0L) {
+    stop(errorCondition(sprintf(
+      "information_criteria() no longer reports %s.",
+      paste(missing_labels, collapse = ", ")),
+      class = "multilpa_unknown_criterion", call = NULL))
+  }
+  values <- stats::setNames(indices$value, labels)
+  cbind(data.frame(log_likelihood = fit$log_likelihood,
+                   n_parameters = fit$n_parameters),
+        as.data.frame(as.list(values[wanted])))
+}
+
+#' The wide column name each long row maps to
+#'
+#' A criterion that uses no sample size carries `NA` as its convention and keeps
+#' its bare name; the rest take a `_groups` or `_individual` suffix.
+#'
+#' @param indices The long table.
+#' @return A character vector, one label per row of `indices`.
+#' @noRd
+.multilpa_criterion_labels <- function(indices) {
+  no_convention <- is.na(indices$convention) | indices$convention %in% "none"
+  ifelse(no_convention, indices$criterion,
+         paste(indices$criterion,
+               sub("individuals", "individual", indices$convention), sep = "_"))
 }
 
 #' The posterior matrices of the levels a diagnostic was asked for

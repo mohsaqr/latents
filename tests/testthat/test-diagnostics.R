@@ -14,10 +14,9 @@ make_two_level <- function(seed = 11L, n_groups = 30L, per_group = 8L) {
 test_that("information criteria match their documented formulas", {
   dat <- make_two_level()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
-  indices <- information_criteria(fit)
+  indices <- information_criteria(fit, format = "long")
   expect_s3_class(indices, "data.frame")
-  expect_identical(names(indices),
-    c("criterion", "convention", "n", "value", "penalty"))
+  expect_identical(names(indices), c("criterion", "convention", "n", "value"))
   # 3 without a convention (deviance, aic, kic) and 6 per convention
   # (bic, sabic, caic, awe, icl, clc) at two conventions.
   expect_identical(nrow(indices), 15L)
@@ -54,12 +53,12 @@ test_that("information criteria match their documented formulas", {
   expect_equal(pick("awe", "individuals"),
                -2 * (log_likelihood - entropy_individuals) +
                  2 * q * (1.5 + log(n_individuals)))
-  # Every penalty is positive here and the criteria exceed -2L accordingly.
-  penalties <- subset(indices, criterion != "deviance")$penalty
-  expect_true(all(penalties > 0))
-  # The deviance is the baseline every penalty is added to, so it carries none.
-  expect_equal(subset(indices, criterion == "deviance")$penalty, 0)
-  expect_equal(indices$value, -2 * log_likelihood + indices$penalty)
+  # The deviance is the baseline the penalties are added to, so every other
+  # criterion exceeds it here. The penalty itself is not a column -- nobody
+  # reports one -- so the relation is checked against the deviance directly.
+  deviance <- subset(indices, criterion == "deviance")$value
+  expect_equal(deviance, -2 * log_likelihood)
+  expect_true(all(subset(indices, criterion != "deviance")$value > deviance))
 })
 
 test_that("information criteria order candidate models sensibly", {
@@ -68,8 +67,8 @@ test_that("information criteria order candidate models sensibly", {
   two <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   criteria <- c("bic", "sabic", "caic", "icl", "awe")
   better <- vapply(criteria, function(criterion_name) {
-    one_value <- information_criteria(one)
-    two_value <- information_criteria(two)
+    one_value <- information_criteria(one, format = "long")
+    two_value <- information_criteria(two, format = "long")
     select <- function(indices) {
       subset(indices, criterion == criterion_name &
                convention == "individuals")$value
@@ -166,6 +165,10 @@ test_that("tidy accessors return the documented shapes", {
   expect_identical(nrow(as.data.frame(fit, what = "starts")), 6L)
   expect_identical(as.data.frame(fit, what = "information_criteria"),
                    information_criteria(fit))
+  # and the long shape reaches the verb through the accessor too
+  expect_identical(as.data.frame(fit, what = "information_criteria",
+                                 format = "long"),
+                   information_criteria(fit, format = "long"))
   expect_identical(as.data.frame(fit, what = "entropy"), entropy_table(fit))
   expect_identical(as.data.frame(fit, what = "classification", level = "groups"),
                    classification_table(fit, level = "groups"))

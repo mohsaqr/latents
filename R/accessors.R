@@ -88,18 +88,23 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
                                           "posteriors", "group_posteriors",
                                           "starts", "stages",
                                           "information_criteria",
-                                          "classification", "entropy"),
+                                          "classification", "entropy", "data"),
                                  scale = c("raw", "standardized"),
                                  format = c("long", "wide"), ...) {
   stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"))
+  # Whether `format` was asked for, not merely defaulted: the posterior tables
+  # default to long and the criteria table to wide, so the default cannot be
+  # forwarded without changing one of them.
+  format_supplied <- !missing(format)
   what <- match.arg(what)
   scale <- match.arg(scale)
   format <- match.arg(format)
   stopifnot("`scale` applies only to `what = \"profiles\"`" =
               identical(scale, "raw") || identical(what, "profiles"),
-            "`format` applies only to the posterior tables" =
-              identical(format, "long") ||
-              what %in% c("posteriors", "group_posteriors"))
+            "`format` applies only to the posterior and criteria tables" =
+              !format_supplied ||
+              what %in% c("posteriors", "group_posteriors",
+                          "information_criteria"))
   result <- switch(what,
     profiles = .multilpa_profile_frame(x, scale = scale, ...),
     responses = .multilpa_response_frame(x, ...),
@@ -108,11 +113,136 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
     group_posteriors = .multilpa_group_posterior_frame(x, format),
     starts = x$starts,
     stages = .multilpa_stage_frame(x),
-    information_criteria = information_criteria(x, ...),
+    information_criteria = if (format_supplied)
+      information_criteria(x, format = format, ...) else
+      information_criteria(x, ...),
     classification = classification_table(x, ...),
-    entropy = entropy_table(x))
+    entropy = entropy_table(x),
+    data = .multilpa_model_frame(x))
   row.names(result) <- row.names
   result
+}
+
+#' Every observation with the class it was assigned to
+#'
+#' The join the caller would otherwise write by hand. Comparing an assignment
+#' with anything else -- a known label, an outcome, a covariate -- means putting
+#' them in the same row, and doing that with two separate objects silently
+#' assumes they share an order. Here the alignment is the verb's, not the
+#' reader's, and it is checked rather than assumed.
+#'
+#' This is a verb rather than a `what` of [as.data.frame()] because it computes
+#' a join with a frame the caller supplies. `as.data.frame(fit, what = )`
+#' represents what the fit already holds; anything that brings in columns the
+#' model never saw is its own verb.
+#'
+#' @param x A fitted model of this package.
+#' @param data Optional. A data frame with one row per observation of the fit,
+#'   in the order it was fitted in; its columns are kept and the assignments
+#'   appended. `NULL` uses the columns the fit carries, which are the model's
+#'   own and so can never include the label you want to compare against.
+#' @return A base `data.frame`, one row per observation: the supplied or carried
+#'   columns, then `profile`, `group_class` where the model has one, and one
+#'   `posterior_profile_*` column per profile.
+#' @seealso [as.data.frame()] with `what = "posteriors"` for the posteriors
+#'   alone, [classification_table()] for the class sizes.
+#' @examples
+#' fit <- multilpa(school_engagement,
+#'                 c("homework_hours", "participation", "interest"),
+#'                 id = "school", n_profiles = 2, n_group_classes = 2,
+#'                 n_starts = 4, seed = 1)
+#' head(assignments(fit))
+#'
+#' # `engaged` is the kind each student was simulated from, which the model
+#' # never saw. Bringing it alongside is what the `data` argument is for.
+#' labelled <- assignments(fit, data = school_engagement)
+#' xtabs(~ profile + engaged, data = labelled)
+#' @export
+assignments <- function(x, data = NULL) {
+  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  frame <- .multilpa_resolve_data(x, data)
+  if (nrow(frame) != x$n_observations) {
+    stop(errorCondition(sprintf(
+      "`data` must have one row per observation of the fit: %d rows supplied, %d expected.",
+      nrow(frame), x$n_observations),
+      class = "multilpa_bad_nesting", call = NULL))
+  }
+  posteriors <- as.data.frame(unname(x$subject_posteriors))
+  names(posteriors) <- sprintf("posterior_profile_%d", seq_len(x$n_profiles))
+  added <- cbind(data.frame(profile = x$subject_profiles), posteriors)
+  if (!is.null(x$group_classes)) {
+    added <- cbind(data.frame(profile = x$subject_profiles,
+                              group_class = x$group_classes[x$group_index]),
+                   posteriors)
+  }
+  clashes <- intersect(names(frame), names(added))
+  if (length(clashes) > 0L) {
+    stop(errorCondition(sprintf(
+      "`data` already has a column named %s, which the assignments would overwrite.",
+      paste(sprintf("`%s`", clashes), collapse = ", ")),
+      class = "multilpa_bad_data", call = NULL))
+  }
+  result <- cbind(frame, added)
+  row.names(result) <- NULL
+  result
+}
+
+#' The columns of the original data the model was fitted to
+#'
+#' Rebuilt from what the fit already carries rather than stored a second time:
+#' the continuous indicators are kept uncentred in `indicator_data`, the
+#' categorical ones as codes in `categorical_data` with their levels beside
+#' them, the identifier as `group_values[group_index]`, and the occasion as
+#' `time_values`. The round trip is exact, so an inference verb no longer has to
+#' ask the caller for data the fit is already holding.
+#'
+#' Columns a model never saw -- an outcome, a covariate -- are not here, which
+#' is why [three_step()] and [r3step()] still take `data`.
+#'
+#' @param x A fitted model of this package.
+#' @return A base `data.frame`, one row per observation in input order, with the
+#'   identifier, the occasion where there is one, and the indicators under their
+#'   original names and in their original order.
+#' @noRd
+.multilpa_model_frame <- function(x) {
+  if (is.null(x$indicator_data) && is.null(x$categorical_data)) {
+    stop(errorCondition(
+      "This fit carries no indicator data, so the data it was fitted to cannot be rebuilt.",
+      class = "multilpa_incomplete_fit", call = NULL))
+  }
+  columns <- list()
+  columns[[x$id]] <- x$group_values[x$group_index]
+  if (!is.null(x$time) && !is.null(x$time_values)) columns[[x$time]] <- x$time_values
+  continuous <- if (is.null(x$indicator_data)) list() else
+    stats::setNames(lapply(colnames(x$indicator_data),
+                           function(name) x$indicator_data[, name]),
+                    colnames(x$indicator_data))
+  categorical <- if (is.null(x$categorical_data)) list() else
+    stats::setNames(lapply(colnames(x$categorical_data), function(name) {
+      levels_for <- x$categorical_levels[[name]]
+      if (is.null(levels_for)) x$categorical_data[, name] else
+        levels_for[x$categorical_data[, name]]
+    }), colnames(x$categorical_data))
+  indicators <- c(continuous, categorical)
+  # Back in the order the caller named them, not the order the model stored them.
+  ordered <- x$vars[x$vars %in% names(indicators)]
+  frame <- c(columns, indicators[ordered])
+  as.data.frame(frame, stringsAsFactors = FALSE, check.names = FALSE)
+}
+
+#' The data a verb should use, given what the caller supplied
+#'
+#' `NULL` means the fit's own columns. Anything else is used as given, so the
+#' verbs that need a column the model never saw keep working unchanged.
+#'
+#' @param x A fitted model of this package.
+#' @param data The caller's `data`, possibly `NULL`.
+#' @return A base `data.frame`.
+#' @noRd
+.multilpa_resolve_data <- function(x, data) {
+  if (is.null(data)) return(.multilpa_model_frame(x))
+  stopifnot("`data` must be a data frame" = is.data.frame(data))
+  data
 }
 
 #' The stages of a fit as a tidy table

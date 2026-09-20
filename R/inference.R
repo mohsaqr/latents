@@ -454,9 +454,13 @@
 #' boundary solutions and unidentified Hessians do not admit this calculation.
 #'
 #' @param x A converged `multilpa` fit with inactive variance bounds.
-#' @param data The original fitting data in the original row order. Stored
-#'   indicator data and group identifiers are checked exactly. For older fits
-#'   without stored indicators, the likelihood provides a weaker consistency check.
+#' @param data Optional. The data frame the model was fitted to; when omitted
+#'   it is rebuilt from the indicators, identifiers and occasions the fit
+#'   stores, which round-trip exactly. Supplying it is the stronger check that
+#'   the caller still holds that frame.
+#'   A supplied frame is checked exactly against the stored indicators and
+#'   identifiers; for an older fit without stored indicators, the likelihood
+#'   provides a weaker consistency check.
 #' @param level Confidence level strictly between zero and one.
 #' @param step Positive finite-difference step for the analytic score derivative.
 #' @param vcov_type `"observed"` inverts the observed information.
@@ -501,7 +505,7 @@
 #' # Many tests in one table: name the correction, do not apply one by stealth.
 #' parameter_inference(fit, dat, adjust = "BH")
 #' @export
-parameter_inference <- function(x, data, level = 0.95, step = 1e-4,
+parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
                                 vcov_type = c("observed", "robust"),
                                 adjust = .multilpa_p_adjust_methods) {
   UseMethod("parameter_inference")
@@ -509,10 +513,12 @@ parameter_inference <- function(x, data, level = 0.95, step = 1e-4,
 
 #' @rdname parameter_inference
 #' @export
-parameter_inference.multilpa <- function(x, data, level = 0.95, step = 1e-4,
+parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e-4,
                              vcov_type = c("observed", "robust"),
                              adjust = .multilpa_p_adjust_methods) {
-  stopifnot(inherits(x, "multilpa"), is.data.frame(data),
+  stopifnot(inherits(x, "multilpa"))
+  data <- .multilpa_resolve_data(x, data)
+  stopifnot(is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
             is.numeric(step), length(step) == 1L, is.finite(step), step > 0)
   vcov_type <- match.arg(vcov_type)
@@ -645,9 +651,10 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 
 #' Extract multilevel LPA covariance estimates
 #' @param object A fitted `multilpa` model.
-#' @param data The original fitting data. It is required: the observed
-#'   information is evaluated at the estimates and can only be rebuilt from the
-#'   data that produced them.
+#' @param data Optional. The data frame the model was fitted to; when omitted
+#'   it is rebuilt from the indicators, identifiers and occasions the fit
+#'   stores, which round-trip exactly. Supplying it is the stronger check that
+#'   the caller still holds that frame.
 #' @param scale Which parameter scale the covariance is on. `"natural"`, the
 #'   default, is the covariance of the estimates [coef()] reports -- variances
 #'   in their own units and probabilities as probabilities -- carried from the
@@ -677,11 +684,8 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrained"), ...) {
   stopifnot(inherits(object, "multilpa"))
   scale <- match.arg(scale)
-  if (is.null(data)) {
-    stop(errorCondition(
-      "`data` is required: pass the data frame this model was fitted to.",
-      class = "multilpa_data_required", call = NULL))
-  }
+  # `data` is no longer required: a fit carries the columns it was built from,
+  # and `parameter_inference()` falls back to them.
   information <- parameter_inference(object, data, ...)
   if (scale == "natural") attr(information, "covariance") else
     attr(information, "covariance_unconstrained")
@@ -691,8 +695,7 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
 #' @param object A fitted `multilpa` model.
 #' @param parm Optional coefficient names or indices; defaults to all coefficients.
 #' @param level Confidence level strictly between zero and one.
-#' @param data The original fitting data, required for the same reason
-#'   [vcov()] requires it.
+#' @param data Optional, exactly as for [vcov()].
 #' @param ... Additional arguments passed to [parameter_inference()].
 #' @return A two-column matrix of Wald intervals on the natural scale, one row
 #'   per requested coefficient and named as [coef()] names them. Bounds are not

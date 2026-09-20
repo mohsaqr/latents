@@ -331,7 +331,9 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
 #' replicate makes the p-value NA, avoiding silent deletion of difficult fits.
 #' @param null_model Smaller, converged [multilpa()] model on complete data.
 #' @param alternative_model Larger model fitted to exactly the same data.
-#' @param data Original data, used to verify both fitted likelihoods.
+#' @param data Optional. The data both models were fitted to, used to verify
+#'   both fitted likelihoods; when omitted it is rebuilt from what the null
+#'   model stores.
 #' @param iter Number of simulated datasets (at least two; use many for inference).
 #' @param n_starts Number of starts for each simulated fit.
 #' @param max_iter Maximum EM iterations for each simulated fit.
@@ -349,11 +351,14 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
 #' # After fitting nested models on d:
 #' # bootstrap_lrt(smaller, larger, d, iter = 199, seed = 1)
 #' @export
-bootstrap_lrt <- function(null_model, alternative_model, data,
+bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
-  stopifnot(inherits(null_model, "multilpa"), inherits(alternative_model, "multilpa"),
-            is.data.frame(data), is.numeric(iter), length(iter) == 1L,
+  stopifnot(inherits(null_model, "multilpa"), inherits(alternative_model, "multilpa"))
+  # The null model is the one being simulated from, so its own columns are the
+  # ones that matter when the caller does not supply data.
+  data <- .multilpa_resolve_data(null_model, data)
+  stopifnot(is.data.frame(data), is.numeric(iter), length(iter) == 1L,
             is.finite(iter), iter >= 2L, iter == as.integer(iter),
             is.numeric(n_starts), length(n_starts) == 1L, is.finite(n_starts),
             n_starts >= 1, n_starts == as.integer(n_starts),
@@ -656,26 +661,13 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
     return(as.data.frame(stats::setNames(
       rep(list(NA_real_), length(names_wanted)), names_wanted)))
   }
-  indices <- information_criteria(fit)
-  ## A criterion that uses no sample size carries `NA` as its convention. The
-  ## old test compared it with the string "none", so `ifelse()` saw an `NA`
-  ## condition and returned `NA` for every such criterion, silently producing
-  ## an all-missing column named `NA.` where `aic` was meant to be. Both
-  ## encodings are accepted so the grid survives either spelling upstream.
-  no_convention <- is.na(indices$convention) | indices$convention %in% "none"
-  labels <- ifelse(no_convention, indices$criterion,
-                   paste(indices$criterion,
-                         sub("individuals", "individual", indices$convention),
-                         sep = "_"))
-  missing_labels <- setdiff(names_wanted, labels)
-  if (length(missing_labels) > 0L) {
-    stop(errorCondition(sprintf(
-      "information_criteria() no longer reports %s, so the enumeration grid cannot be built.",
-      paste(missing_labels, collapse = ", ")),
-      class = "multilpa_unknown_criterion", call = NULL))
-  }
-  values <- stats::setNames(indices$value, labels)
-  as.data.frame(as.list(values[names_wanted]))
+  ## The same pivot `information_criteria(format = "wide")` performs, so the
+  ## grid and a single fit cannot name the same quantity differently. The wide
+  ## form leads with the likelihood and parameter count, which the grid already
+  ## carries in its own columns.
+  wide <- information_criteria(fit, format = "wide")
+  as.data.frame(as.list(stats::setNames(
+    lapply(names_wanted, function(name) wide[[name]]), names_wanted)))
 }
 
 #' The information criteria an enumeration grid carries

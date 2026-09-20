@@ -130,7 +130,10 @@ test_that("inference refuses data mismatches and nonregular fits", {
   set.seed(910)
   dat <- data.frame(g = rep(seq_len(10), each = 10), y = rnorm(100))
   fit <- multilpa(dat, "y", "g", 1, 1, n_starts = 1)
-  expect_error(vcov(fit), class = "multilpa_data_required")
+  # `vcov()` no longer demands data: the fit carries the columns it was built
+  # from, and falling back to them gives the same answer as passing them.
+  expect_equal(vcov(fit), vcov(fit, dat))
+  expect_equal(vcov(fit), vcov(fit, data = as.data.frame(fit, what = "data")))
   expect_error(parameter_inference(fit, dat[-1, ]),
                class = "multilpa_bad_inference_data")
   altered <- dat

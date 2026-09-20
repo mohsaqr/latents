@@ -23,60 +23,69 @@ library(multilpa)
 
 ## The question is about schools, not students
 
-Latent profile analysis asks what kinds of *people* there are. This package
-exists for the question one level up: given that there are kinds of people, do
-the **groups** they sit in differ in the mix of people they contain?
+Latent profile analysis asks *what kinds of people are there*. This package
+exists for the question one level up: given that there are kinds of people, **do
+the groups they sit in differ in the mix of people they contain?**
 
 That is not a rephrasing. It is a different parameter, and a single-level model
-does not have it.
+cannot report it at all.
 
-Sixty secondary schools, twelve students each. For every student we have weekly
-homework hours, a teacher's participation rating, and a self-reported interest
-score. Half the schools draw a mostly engaged intake and half do not — but we
-will fit the model as though we did not know that, and see whether it finds out.
+The package ships the data used here, so nothing below depends on a simulation
+you have to read first:
 
-```{r simulate}
-set.seed(2024)
-
-n_schools <- 60
-per_school <- 12
-
-engaged_share <- ifelse(rep(1:2, length.out = n_schools) == 1L, 0.75, 0.25)
-
-students <- data.frame(
-  school = rep(seq_len(n_schools), each = per_school),
-  term   = rep(seq_len(per_school), times = n_schools)
-)
-students$engaged <- runif(nrow(students)) < rep(engaged_share, each = per_school)
-
-engaged <- students$engaged
-students$homework_hours <- round(rnorm(nrow(students), ifelse(engaged, 8.0, 4.2), 1.2), 1)
-students$participation  <- round(rnorm(nrow(students), ifelse(engaged, 7.2, 4.0), 1.1), 1)
-students$interest       <- round(rnorm(nrow(students), ifelse(engaged, 7.4, 4.3), 1.2), 1)
+```{r data}
+str(school_engagement)
 
 vars <- c("homework_hours", "participation", "interest")
 ```
 
-Here is the reason the second level is not a technicality. Across the whole
-sample, **`r round(100 * mean(students$engaged))`%** of students are the engaged
+720 students in 60 schools, three engagement indicators each. Because the data
+are simulated, the column `engaged` records the kind each student was *generated*
+from — the truth behind the observations, which a real study never has. We will
+fit the model without it and only afterwards ask whether the model found it.
+
+Here is why the second level is not a technicality. Across the whole sample,
+**`r round(100 * mean(school_engagement$engaged))`%** of students are the engaged
 kind — a tidy headline number. Now look at the schools one at a time:
 
 ```{r the-hook}
-per_school_share <- tapply(students$engaged, students$school, mean)
-round(range(per_school_share), 2)
+per_school <- aggregate(engaged ~ school, data = school_engagement, FUN = mean)
+
+summary(per_school)
 ```
 
-The share runs from **`r round(min(per_school_share), 2)`** to
-**`r round(max(per_school_share), 2)`**. The sample average describes no school
-in the data. Any analysis that pools the students and reports one number has
+The engaged share runs from **`r round(min(per_school$engaged), 2)`** to
+**`r round(max(per_school$engaged), 2)`**, and its median is
+**`r round(median(per_school$engaged), 2)`**. The sample average describes no
+school in the data. Any analysis that pools the students and reports one number has
 averaged away the thing worth knowing.
+
+That hook used `engaged`, which a real study would not have. The check that
+works without it is the intraclass correlation — the share of each indicator's
+variance lying *between* schools rather than within them:
+
+```{r descriptives}
+descriptives(school_engagement, vars = vars, id = "school")
+```
+
+Around an eighth of the variance in each indicator is between schools. That is
+what makes the rest of this worth doing: had the ICCs come back near zero, the
+schools would not differ, and a model built to tell them apart would have
+nothing to find. It costs one line and is the step most often skipped.
 
 ## Look at the profiles before reading anything about them
 
+The default convergence tolerance is set for the likelihood, and the likelihood
+is flat near its maximum. Wald standard errors need the *score* at zero, which
+is a stricter requirement, so this fit asks for `tol = 1e-10`. It costs two
+extra EM iterations here; at the default the package warns that the intervals
+below should not be trusted, which is exactly the kind of warning worth
+believing.
+
 ```{r fit}
-fit <- multilpa(students, vars, id = "school",
+fit <- multilpa(school_engagement, vars, id = "school",
                 n_profiles = 2, n_group_classes = 2,
-                n_starts = 8, seed = 1)
+                n_starts = 8, tol = 1e-10, seed = 1)
 ```
 
 ```{r plot-profiles}
@@ -105,10 +114,11 @@ plot(fit, scale = "standardized")
 
 The same estimates can be read three ways, and which one to use depends on the
 question. Bars, with a 95% interval on each, answer *how far apart are the two
-profiles on this indicator, and is the gap larger than its uncertainty*:
+profiles on this indicator, and is the gap larger than its uncertainty*. The
+intervals need the data the model was fitted to, and the fit is carrying it:
 
 ```{r plot-bars, fig.height = 4.6}
-plot(fit, what = "bars", data = students)
+plot(fit, what = "bars")
 ```
 
 A heatmap of standard deviations from each indicator's grand mean answers
@@ -129,14 +139,34 @@ Profile labels are arbitrary. Nothing in the likelihood distinguishes "profile
 1" from "profile 2", so a refit may swap them. Read the estimates against what
 generated them, not against the label.
 
+## Did it find what made the data?
+
+This is the check simulated data exist for, and the reason `engaged` ships
+beside the indicators. Asking for the assignments returns every observation with
+the profile it was put in, so the truth column and the estimate are in the same
+row and nothing has to be lined up by hand:
+
+```{r recovery}
+assigned <- assignments(fit, data = school_engagement)
+
+xtabs(~ profile + engaged, data = assigned)
+```
+
+One student out of 720 on the wrong side. That is not a claim about this
+package's accuracy in general — the profiles here are far apart by construction,
+and real indicators overlap much more. It is a statement that the estimator
+does what it says when the assumptions hold, which is the only thing a
+simulation can establish.
+
 ## How many profiles, and how many kinds of school?
 
 Both counts are chosen, not estimated, so choose them in the open. Fit the grid:
 
 ```{r enumerate}
-candidates <- enumerate_classes(students, vars, id = "school",
+candidates <- enumerate_classes(school_engagement, vars, id = "school",
                                 n_profiles = 1:3, n_group_classes = 1:2,
-                                n_starts = 4, seed = 1)
+                                n_starts = 4, max_iter = 10000, tol = 1e-10,
+                                seed = 1)
 ```
 
 ```{r plot-enumeration}
@@ -162,13 +192,29 @@ Note also that every sample-size-dependent criterion is reported twice, under
 sizes — 60 schools or 720 students — and neither is privileged. Pick one
 convention and keep it for the whole analysis rather than choosing per table.
 
+The criteria for the chosen model come back in the shape a model-comparison
+table is published in — one row, one column per criterion:
+
 ```{r criteria}
 information_criteria(fit)
 ```
 
-Lower is better on every row, including the first: the table reports the
-deviance rather than the log likelihood, so `value` means one thing throughout
-and equals `deviance + penalty`.
+Those are the same column names `enumerate_classes()` uses, so this row sits
+directly under the grid it was chosen from without renaming anything.
+
+The same numbers are available one row per criterion, which is the form to use
+when the convention needs to be a value you can filter on rather than half of a
+column name:
+
+```{r criteria-long}
+information_criteria(fit, format = "long")
+```
+
+Lower is better on every row here, including the first: the long form reports
+the deviance rather than the log likelihood, so `value` points one way
+throughout. `convention` is `NA` for the three criteria that use no sample size
+at all — the question does not arise for them, rather than an answer being
+missing.
 
 ## The answer: the schools do differ
 
@@ -185,17 +231,17 @@ plot(fit, what = "probabilities")
 
 Two kinds of school, in roughly equal numbers, and the balance of profiles
 reverses between them: the profile that is the clear majority in one kind is the
-clear minority in the other. The pooled
-`r round(100 * mean(students$engaged))`% from the first section is the average
-of those two populations and a description of neither.
+clear minority in the other. That reversal is why the lines cross. The pooled
+`r round(100 * mean(school_engagement$engaged))`% from the first section is the
+average of those two populations and a description of neither.
 
 To see what pooling costs, fit the same measurement model with a single group
 class — that *is* the single-level model:
 
 ```{r flat}
-flat <- multilpa(students, vars, id = "school",
+flat <- multilpa(school_engagement, vars, id = "school",
                  n_profiles = 2, n_group_classes = 1,
-                 n_starts = 8, seed = 1)
+                 n_starts = 8, tol = 1e-10, seed = 1)
 
 as.data.frame(flat, what = "profile_probabilities")
 ```
@@ -207,9 +253,21 @@ two-level model also fits better by a wide margin:
 lmr_lrt(flat, fit)
 ```
 
+The statistic is reported without a p-value on purpose. The Vermunt–Lo–Mendell–
+Rubin reference distribution is not implemented here, and a chi-square
+approximation to it is not a substitute, so the column is `NA` rather than
+misleading.
+
 ## How much should you trust it?
 
-Three things are worth checking before any of the above is reported.
+Every classification diagnostic comes back from one call:
+
+```{r diagnostics}
+diagnostics(fit)
+```
+
+That is a summary of four tables, each reachable as a data frame with
+`as.data.frame(quality, what = )`. The rest of this section is those tables.
 
 **Are the classes well separated?** Entropy near one means the posterior
 assigns students confidently.
@@ -243,7 +301,7 @@ is where a single summary number would have misled you.
 **Are the estimates precise?** Standard errors, with the measurement model:
 
 ```{r errors}
-as.data.frame(fit, data = students)
+as.data.frame(fit, data = school_engagement)
 ```
 
 Robust errors accumulate the score over independent schools rather than
@@ -251,7 +309,7 @@ students, which is the right unit when the measurement model may be
 misspecified:
 
 ```{r robust}
-head(parameter_inference(fit, data = students, vcov_type = "robust"), 6)
+head(parameter_inference(fit, data = school_engagement, vcov_type = "robust"), 6)
 ```
 
 **Does the model's core assumption hold?** Latent profile analysis assumes the
@@ -259,55 +317,55 @@ indicators are independent *within* a profile. Where they are not, the profiles
 are partly absorbing a correlation instead of describing a kind of student.
 
 ```{r residuals}
-bivariate_residuals(fit, data = students)
+bivariate_residuals(fit, data = school_engagement)
 ```
 
 `observed` and `expected` are both associations on the correlation scale, so
 `residual` is their difference and the rows are comparable. All are small here;
 a large one would argue for `covariance_model = "full"`.
 
+**Does the profile structure account for the nesting?** The ICCs from the first
+section said roughly an eighth of each indicator's variance lay between schools.
+Split the same calculation by assigned profile:
+
+```{r descriptives-by-profile}
+descriptives(fit, by = "profile")
+```
+
+The ICCs collapse towards zero. Within a profile the schools no longer differ,
+which is precisely the model's claim: schools differ in the *mix* of students
+they serve, not in the students themselves. The raw data agree with the model
+without being asked to.
+
 ## When students are measured more than once
 
 If the same people are observed on several occasions, the question changes from
 *what kinds are there* to *who moves between them*. That needs a different
-dataset — in the data above, `term` indexes twelve different students within a
-school, so a "transition" would be between two different people and would mean
+dataset — in `school_engagement`, `term` indexes twelve different students within
+a school, so a "transition" would be between two different people and would mean
 nothing.
 
+The package ships one with the right shape:
+
 ```{r panel}
-set.seed(11)
-n_students <- 120
-n_waves <- 4
-persistence <- 0.85
-
-panel <- data.frame(
-  student = rep(seq_len(n_students), each = n_waves),
-  wave    = rep(seq_len(n_waves), times = n_students)
-)
-
-# Each wave depends on the one before, so the chain is built with
-# Reduce(accumulate = TRUE) rather than a loop.
-waves <- Reduce(function(previous, ignored) {
-  ifelse(runif(n_students) < persistence, previous, 3L - previous)
-}, seq_len(n_waves - 1L),
-   init = sample(1:2, n_students, replace = TRUE), accumulate = TRUE)
-
-panel$state <- as.vector(t(do.call(cbind, waves)))
-high <- panel$state == 1L
-panel$homework_hours <- round(rnorm(nrow(panel), ifelse(high, 8.0, 4.2), 1.2), 1)
-panel$participation  <- round(rnorm(nrow(panel), ifelse(high, 7.2, 4.0), 1.1), 1)
-
-moves <- fit_transitions(panel, c("homework_hours", "participation"),
-                         id = "student", n_profiles = 2, time = "wave",
-                         n_starts = 6, seed = 1)
-
-transitions(moves)
+str(engagement_panel)
 ```
 
-Students were simulated to stay put with probability `r persistence`. The
-diagonal of the fitted matrix is what `stable = TRUE` marks, and it recovers
-that persistence to within a few points — close, not exact, which is what four
-waves of 120 students supports.
+120 students, four waves each, and again a truth column: `state` is the state
+each row was generated from, with students staying put from one wave to the next
+with probability 0.85.
+
+```{r transitions}
+moves <- fit_transitions(engagement_panel, c("homework_hours", "participation"),
+                         id = "student", time = "wave", n_profiles = 2,
+                         n_starts = 6, seed = 1)
+
+transitions(moves, stable = TRUE)
+```
+
+`stable = TRUE` marks the diagonal — staying in the same profile — and it
+recovers the 0.85 it was generated with to within a few points. Close, not
+exact, which is what four waves of 120 students supports.
 
 ## What the package refuses
 

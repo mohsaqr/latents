@@ -7,7 +7,7 @@
 bootstrap_lrt(
   null_model,
   alternative_model,
-  data,
+  data = NULL,
   iter = 199L,
   n_starts = 10L,
   max_iter = 1000L,
@@ -20,7 +20,9 @@ bootstrap_lrt(
 
 \item{alternative_model}{Larger model fitted to exactly the same data.}
 
-\item{data}{Original data, used to verify both fitted likelihoods.}
+\item{data}{Optional. The data both models were fitted to, used to verify
+both fitted likelihoods; when omitted it is rebuilt from what the null
+model stores.}
 
 \item{iter}{Number of simulated datasets (at least two; use many for inference).}
 

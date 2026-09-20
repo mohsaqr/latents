@@ -10,7 +10,7 @@
   optional = FALSE,
   what = c("profiles", "responses", "profile_probabilities", "posteriors",
     "group_posteriors", "starts", "stages", "information_criteria", "classification",
-    "entropy"),
+    "entropy", "data"),
   scale = c("raw", "standardized"),
   format = c("long", "wide"),
   ...

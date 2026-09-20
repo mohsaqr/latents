@@ -17,7 +17,7 @@
 
 parameter_inference(
   x,
-  data,
+  data = NULL,
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust"),
@@ -26,7 +26,7 @@ parameter_inference(
 
 \method{parameter_inference}{multilpa}(
   x,
-  data,
+  data = NULL,
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust"),
@@ -36,9 +36,13 @@ parameter_inference(
 \arguments{
 \item{x}{A converged `multilpa` fit with inactive variance bounds.}
 
-\item{data}{The original fitting data in the original row order. Stored
-indicator data and group identifiers are checked exactly. For older fits
-without stored indicators, the likelihood provides a weaker consistency check.}
+\item{data}{Optional. The data frame the model was fitted to; when omitted
+it is rebuilt from the indicators, identifiers and occasions the fit
+stores, which round-trip exactly. Supplying it is the stronger check that
+the caller still holds that frame.
+A supplied frame is checked exactly against the stored indicators and
+identifiers; for an older fit without stored indicators, the likelihood
+provides a weaker consistency check.}
 
 \item{level}{Confidence level strictly between zero and one.}
 

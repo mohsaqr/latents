@@ -268,7 +268,8 @@ test_that("every view of a Gaussian fit draws and returns the fit invisibly", {
     }, logical(1))
     expect_true(all(drawn))
     expect_invisible(plot(fit, what = "heatmap"))
-    # Supplying the data adds intervals to the bars; omitting it must not fail.
+    # The fit carries its own columns, so the intervals are drawn without data
+    # being supplied, and supplying it changes nothing.
     expect_identical(plot(fit, what = "bars", data = dat), fit)
     expect_identical(plot(fit, what = "bars", scale = "standardized"), fit)
   })
@@ -366,4 +367,30 @@ test_that("ridge views agree with the entropy the package reports", {
   expect_length(contribution, fit$n_observations)
   expect_lte(max(contribution), log(fit$n_profiles) + 1e-8)
   expect_gte(min(contribution), 0)
+})
+
+
+test_that("bar intervals come from the fit's own data, not from the caller", {
+  dat <- plot_fixture()
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5,
+                  tol = 1e-10)
+  supplied <- .multilpa_mean_error_matrix(fit, dat)
+  carried <- .multilpa_mean_error_matrix(fit, NULL)
+  expect_identical(carried, supplied)
+  expect_false(is.null(carried))
+  expect_identical(dim(carried), c(2L, 2L))
+  expect_true(all(carried > 0))
+})
+
+test_that("a family without standard errors gets bars, not an error", {
+  data <- .sequence_plot_fixture()
+  # A transition fit has no implemented standard errors, so the whiskers cannot
+  # be drawn. The bars still can, and a plot must not fail over a missing
+  # ornament.
+  moves <- fit_transitions(data, c("score_a", "score_b"), "school",
+                           n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+  expect_null(.multilpa_mean_error_matrix(moves, NULL))
+  fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
+                  n_group_classes = 2, n_starts = 3, seed = 1)
+  draw(expect_identical(plot(fit, what = "bars"), fit))
 })

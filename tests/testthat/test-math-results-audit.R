@@ -3,7 +3,7 @@ test_that("missing-row information criteria agree across all result accessors", 
   d <- data.frame(g = rep(1:8, each = 6), y = rnorm(48))
   d$y[1:3] <- NA_real_
   fit <- multilpa(d, "y", "g", 1, 1, missing = "fiml", n_starts = 1)
-  criteria <- information_criteria(fit)
+  criteria <- information_criteria(fit, format = "long")
   individual <- subset(criteria, convention == "individuals")
   expect_equal(individual$n, rep(45, 6))
   # One normal population: independently calculate its maximized likelihood.
@@ -16,7 +16,8 @@ test_that("missing-row information criteria agree across all result accessors", 
   grid <- enumerate_classes(d, "y", "g", n_profiles = 1, n_group_classes = 1,
                             missing = "fiml", n_starts = 1)
   expect_equal(grid$table$bic_individual, grid$fits[[1]]$bic_individual)
-  expect_equal(as.data.frame(fit, what = "information_criteria"), criteria)
+  expect_equal(as.data.frame(fit, what = "information_criteria", format = "long"),
+               criteria)
 })
 
 test_that("dropping a univariate covariance preserves one variance per profile", {
@@ -38,7 +39,7 @@ test_that("random-intercept diagnostics distinguish profiles from group classes"
   d <- data.frame(g = rep(1:20, each = 5),
                   y = rep(rnorm(20), each = 5) + rnorm(100))
   fit <- fit_random_intercept(d, "y", "g", n_profiles = 1, n_starts = 1)
-  indices <- information_criteria(fit)
+  indices <- information_criteria(fit, format = "long")
   expect_equal(subset(indices, criterion == "bic" & convention == "groups")$value,
                fit$bic)
   expect_equal(subset(indices, criterion == "bic" & convention == "individuals")$value,

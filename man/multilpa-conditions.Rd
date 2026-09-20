@@ -43,10 +43,6 @@ stable, the messages are not.
     covariate fit alike.}
   \item{`multilpa_no_indicator_data`}{A fit carries no stored indicators, so
     the request cannot be answered without the original data.}
-  \item{`multilpa_data_required`}{An inference verb was called without
-    `data`. The observed information is evaluated at the estimates and can
-    only be rebuilt from the data that produced them, so there is nothing
-    sensible to default to.}
   \item{`multilpa_incomplete_fit`}{A fit is missing fields the request
     needs, usually because it was made by an older version. Raised instead
     of letting a list subset by an absent name yield a `NULL` element keyed
@@ -136,6 +132,9 @@ of returning a number that would be wrong.
 \describe{
   \item{`multilpa_no_continuous`, `multilpa_no_categorical`}{The requested
     panel needs indicators of a kind this fit does not have.}
+  \item{`multilpa_nothing_to_describe`}{[descriptives()] was given no
+    variables to describe: either `vars` named none, or the frame has no
+    numeric column outside `id` and `by` to fall back on.}
   \item{`multilpa_nothing_to_plot`}{The requested panel has no rows to draw.}
   \item{`multilpa_unknown_category`, `multilpa_unknown_criterion`}{A named
     category or information criterion does not exist in this fit.}
