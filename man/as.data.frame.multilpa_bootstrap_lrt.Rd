@@ -37,7 +37,7 @@ returns one row per simulated replicate.}
 A base `data.frame`. `"test"` has one row, with columns
   `null_profiles`, `null_group_classes`, `alternative_profiles`,
   `alternative_group_classes`, `statistic`, `p_value`, `monte_carlo_se`,
-  `n_boot` and `n_valid`. `"replicates"` has one row per simulated dataset,
+  `iter` and `n_valid`. `"replicates"` has one row per simulated dataset,
   with columns `replicate`, `statistic`, `valid`, `boundary`,
   `null_replications`, `alternative_replications`, `warnings` and `error`.
 }

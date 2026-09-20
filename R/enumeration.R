@@ -5,10 +5,10 @@
 #' BIC nor high entropy guarantees the correct number of classes. Unconverged,
 #' boundary, and unreplicated fits are reported, not silently selected.
 #' @param data Data frame.
-#' @param indicators Continuous indicator names.
-#' @param group Group identifier column name.
-#' @param profiles Positive integer profile counts to try.
-#' @param group_classes Positive integer group-class counts to try.
+#' @param vars Continuous indicator names.
+#' @param id Group identifier column name.
+#' @param n_profiles Positive integer profile counts to try.
+#' @param n_group_classes Positive integer group-class counts to try.
 #' @param seed Optional reproducible seed for each fit.
 #' @param ... Further arguments to [multilpa()].
 #' @return An object of class `multilpa_enumeration`. Read it with the verbs
@@ -22,29 +22,28 @@
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
-#'                               group_classes = 1, n_starts = 2, seed = 1)
+#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+#'                               n_group_classes = 1, n_starts = 2, seed = 1)
 #' as.data.frame(candidates)
 #' summary(candidates)
 #' @export
-enumerate_classes <- function(data, indicators, group, profiles = 1:4,
-                              group_classes = 1:3, seed = NULL, ...) {
-  stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
-            is.numeric(profiles), length(profiles) > 0L,
-            all(is.finite(profiles)), all(profiles >= 1), all(profiles == as.integer(profiles)),
-            is.numeric(group_classes), length(group_classes) > 0L,
-            all(is.finite(group_classes)), all(group_classes >= 1),
-            all(group_classes == as.integer(group_classes)))
+enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
+                              n_group_classes = 1:3, seed = NULL, ...) {
+  stopifnot(is.data.frame(data), is.character(vars), is.character(id),
+            is.numeric(n_profiles), length(n_profiles) > 0L,
+            all(is.finite(n_profiles)), all(n_profiles >= 1), all(n_profiles == as.integer(n_profiles)),
+            is.numeric(n_group_classes), length(n_group_classes) > 0L,
+            all(is.finite(n_group_classes)), all(n_group_classes >= 1),
+            all(n_group_classes == as.integer(n_group_classes)))
+  # Every name this guard used to reject is now a formal, so R refuses the call
+  # with "matched by multiple actual arguments" before `...` is assembled.
   extra <- list(...)
-  if (any(names(extra) %in% c("n_profiles", "n_group_classes", "data", "indicators", "group", "seed"))) {
-    stop("Specify model counts through profiles and group_classes.")
-  }
-  grid <- expand.grid(n_profiles = unique(profiles), n_group_classes = unique(group_classes))
+  grid <- expand.grid(n_profiles = unique(n_profiles), n_group_classes = unique(n_group_classes))
   runs <- lapply(seq_len(nrow(grid)), function(i) {
     warnings <- character()
     error_text <- NA_character_
     fit <- tryCatch(withCallingHandlers(do.call(multilpa,
-      c(list(data = data, indicators = indicators, group = group,
+      c(list(data = data, vars = vars, id = id,
              n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed), extra)),
       warning = function(warning) {
         warnings <<- c(warnings, conditionMessage(warning))
@@ -93,8 +92,8 @@ enumerate_classes <- function(data, indicators, group, profiles = 1:4,
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
-#'                               group_classes = 1, n_starts = 2, seed = 1)
+#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+#'                               n_group_classes = 1, n_starts = 2, seed = 1)
 #' candidate_fit(candidates, n_profiles = 2, n_group_classes = 1)
 #' @export
 candidate_fit <- function(x, n_profiles, n_group_classes = 1L) {
@@ -147,8 +146,8 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L) {
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
-#'                               group_classes = 1, n_starts = 2, seed = 1)
+#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+#'                               n_group_classes = 1, n_starts = 2, seed = 1)
 #' summary(candidates)
 #' as.data.frame(summary(candidates))
 #' @export
@@ -233,8 +232,8 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, ...) {
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
-#'                               group_classes = 1, n_starts = 2, seed = 1)
+#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+#'                               n_group_classes = 1, n_starts = 2, seed = 1)
 #' as.data.frame(summary(candidates))
 #' @export
 as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
@@ -298,8 +297,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
     names(drawn) <- names(blocks)
     result <- cbind(result, as.data.frame(drawn, stringsAsFactors = FALSE))
   }
-  result <- result[, object$indicators, drop = FALSE]
-  result[[object$group]] <- object$group_values[object$group_index]
+  result <- result[, object$vars, drop = FALSE]
+  result[[object$id]] <- object$group_values[object$group_index]
   result
 }
 
@@ -333,7 +332,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
 #' @param null_model Smaller, converged [multilpa()] model on complete data.
 #' @param alternative_model Larger model fitted to exactly the same data.
 #' @param data Original data, used to verify both fitted likelihoods.
-#' @param n_boot Number of simulated datasets (at least two; use many for inference).
+#' @param iter Number of simulated datasets (at least two; use many for inference).
 #' @param n_starts Number of starts for each simulated fit.
 #' @param max_iter Maximum EM iterations for each simulated fit.
 #' @param tol Relative likelihood convergence tolerance.
@@ -348,14 +347,14 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL,
 #'   boundary flags and likelihood replication before interpreting results.
 #' @examples
 #' # After fitting nested models on d:
-#' # bootstrap_lrt(smaller, larger, d, n_boot = 199, seed = 1)
+#' # bootstrap_lrt(smaller, larger, d, iter = 199, seed = 1)
 #' @export
 bootstrap_lrt <- function(null_model, alternative_model, data,
-                                 n_boot = 199L, n_starts = 10L, max_iter = 1000L,
+                                 iter = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
   stopifnot(inherits(null_model, "multilpa"), inherits(alternative_model, "multilpa"),
-            is.data.frame(data), is.numeric(n_boot), length(n_boot) == 1L,
-            is.finite(n_boot), n_boot >= 2L, n_boot == as.integer(n_boot),
+            is.data.frame(data), is.numeric(iter), length(iter) == 1L,
+            is.finite(iter), iter >= 2L, iter == as.integer(iter),
             is.numeric(n_starts), length(n_starts) == 1L, is.finite(n_starts),
             n_starts >= 1, n_starts == as.integer(n_starts),
             is.numeric(max_iter), length(max_iter) == 1L, is.finite(max_iter),
@@ -371,7 +370,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
               rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     set.seed(seed)
   }
-  fields <- c("indicators", "group", "group_values", "group_index", "variance_model", "min_variance", "covariance_model")
+  fields <- c("vars", "id", "group_values", "group_index", "variance_model", "min_variance", "covariance_model")
   fields <- c(fields, "categorical", "categorical_levels", "min_probability")
   if (!all(vapply(fields, function(field) identical(null_model[[field]], alternative_model[[field]]), logical(1)))) {
     stop("Models must use the same observations, group layout and covariance specification.")
@@ -383,9 +382,9 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
     if (!isTRUE(model$converged) || isTRUE(model$boundary)) {
       stop("Original models must be converged with inactive variance bounds.")
     }
-    if (!all(c(model$indicators, model$group) %in% names(data)) ||
+    if (!all(c(model$vars, model$id) %in% names(data)) ||
         nrow(data) != model$n_observations ||
-        !identical(data[[model$group]], model$group_values[model$group_index])) {
+        !identical(data[[model$id]], model$group_values[model$group_index])) {
       stop("data must preserve the original observations and group ordering.")
     }
     continuous <- .multilpa_continuous_names(model)
@@ -415,12 +414,12 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
   observed <- 2 * (alternative_model$log_likelihood - null_model$log_likelihood)
   if (observed < -1e-5) stop("Alternative has lower likelihood; improve its optimization first.")
   observed <- max(0, observed)
-  replicates <- do.call(rbind, lapply(seq_len(n_boot), function(i) {
+  replicates <- do.call(rbind, lapply(seq_len(iter), function(i) {
     warning_text <- character()
     tryCatch(withCallingHandlers({
       simulated <- .multilpa_simulate(null_model)
       models <- lapply(list(null_model, alternative_model), function(model) {
-        multilpa(simulated, model$indicators, model$group, model$n_profiles,
+        multilpa(simulated, model$vars, model$id, model$n_profiles,
                     model$n_group_classes, model$variance_model, n_starts = n_starts,
                     max_iter = max_iter, tol = tol, min_variance = model$min_variance,
                     covariance_model = if (is.null(model$covariance_model)) "diagonal" else model$covariance_model,
@@ -444,7 +443,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
     })
   }))
   valid <- all(replicates$valid)
-  p_value <- if (valid) (1 + sum(replicates$statistic >= observed)) / (n_boot + 1) else NA_real_
+  p_value <- if (valid) (1 + sum(replicates$statistic >= observed)) / (iter + 1) else NA_real_
   if (!valid) {
     warning(warningCondition(paste(
       "Some bootstrap fits failed validation, so p_value is NA.",
@@ -452,8 +451,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data,
       class = "multilpa_failed_replicates"))
   }
   result <- list(statistic = observed, p_value = p_value,
-       monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (n_boot + 1)) else NA_real_,
-       n_boot = n_boot, n_valid = sum(replicates$valid), replicates = replicates,
+       monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (iter + 1)) else NA_real_,
+       iter = iter, n_valid = sum(replicates$valid), replicates = replicates,
        null_profiles = null_model$n_profiles,
        null_group_classes = null_model$n_group_classes,
        alternative_profiles = alternative_model$n_profiles,
@@ -480,7 +479,7 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
   cat(sprintf("Observed statistic: %.6f\n", x$statistic))
   cat(sprintf("p-value: %s (Monte Carlo SE %s) from %d of %d valid replicates\n",
               format(x$p_value, digits = 4L), format(x$monte_carlo_se, digits = 3L),
-              x$n_valid, x$n_boot))
+              x$n_valid, x$iter))
   if (is.na(x$p_value)) {
     cat("The p-value is withheld because not every replicate was valid; summary() lists them.\n")
   }
@@ -520,7 +519,7 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
              alternative_group_classes = x$alternative_group_classes,
              statistic = x$statistic, p_value = x$p_value,
              monte_carlo_se = x$monte_carlo_se,
-             n_boot = x$n_boot, n_valid = x$n_valid,
+             iter = x$iter, n_valid = x$n_valid,
              row.names = NULL)
 }
 
@@ -556,7 +555,7 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, ...) {
 #' @return A base `data.frame`. `"test"` has one row, with columns
 #'   `null_profiles`, `null_group_classes`, `alternative_profiles`,
 #'   `alternative_group_classes`, `statistic`, `p_value`, `monte_carlo_se`,
-#'   `n_boot` and `n_valid`. `"replicates"` has one row per simulated dataset,
+#'   `iter` and `n_valid`. `"replicates"` has one row per simulated dataset,
 #'   with columns `replicate`, `statistic`, `valid`, `boundary`,
 #'   `null_replications`, `alternative_replications`, `warnings` and `error`.
 #' @examples
@@ -633,7 +632,7 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
     xlab = "Simulated likelihood-ratio statistic", ylab = "Replicates",
     main = if (is.null(main)) "Simulated null distribution" else main,
     subtitle = if (is.null(subtitle)) sprintf(
-      "%d of %d replicates valid; observed %.3f, p = %s", x$n_valid, x$n_boot,
+      "%d of %d replicates valid; observed %.3f, p = %s", x$n_valid, x$iter,
       x$statistic, format(x$p_value, digits = 3L)) else subtitle,
     style = style)
   graphics::rect(counts$breaks[-length(counts$breaks)], 0,

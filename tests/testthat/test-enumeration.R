@@ -1,7 +1,7 @@
 test_that("enumeration retains failures and both BIC conventions", {
   set.seed(12)
   d <- data.frame(g = rep(1:30, each = 10), y = c(rnorm(150, -2), rnorm(150, 2)))
-  result <- enumerate_classes(d, "y", "g", profiles = 1:2, group_classes = 1:2,
+  result <- enumerate_classes(d, "y", "g", n_profiles = 1:2, n_group_classes = 1:2,
                              n_starts = 2, seed = 12)
   grid <- as.data.frame(result)
   expect_equal(nrow(grid), 4L)
@@ -20,8 +20,19 @@ test_that("enumeration retains failures and both BIC conventions", {
   expect_true(is.na(grid$profile_entropy[1]))
   expect_gt(grid$profile_entropy[2], 0)
   expect_lte(grid$profile_entropy[2], 1)
-  expect_error(enumerate_classes(d, "y", "g", profiles = 0), "profiles")
-  expect_error(enumerate_classes(d, "y", "g", n_profiles = 2), "model counts")
+  expect_error(enumerate_classes(d, "y", "g", n_profiles = 0), "n_profiles")
+  # `n_profiles` names the grid here and the count everywhere else, so a single
+  # value is a one-row grid rather than the error the old `profiles =` spelling
+  # had to raise when the same word arrived through `...`.
+  single <- enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
+                              n_starts = 2, seed = 1)
+  expect_equal(nrow(as.data.frame(single)), 1L)
+  # A name the grid does not own is forwarded to multilpa(), which refuses it.
+  # The enumerator records every candidate's failure rather than raising, so the
+  # refusal has to be visible in the table -- not silently dropped.
+  forwarded <- enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
+                                 nonsense = 1, seed = 1)
+  expect_match(as.data.frame(forwarded)$error, "unused argument")
 })
 
 test_that("simulation preserves group layout and full covariance moments", {
@@ -47,7 +58,7 @@ test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
   small <- multilpa(d, "y", "g", 1, 1, n_starts = 2, seed = 12)
   large <- multilpa(d, "y", "g", 2, 1, n_starts = 2, seed = 12)
   testthat::local_mocked_bindings(multilpa = function(...) stop("test optimization failure"))
-  expect_warning(result <- bootstrap_lrt(small, large, d, n_boot = 2, seed = 1),
+  expect_warning(result <- bootstrap_lrt(small, large, d, iter = 2, seed = 1),
                  class = "multilpa_failed_replicates")
   expect_s3_class(result, "multilpa_bootstrap_lrt")
   ## Methods added in this sweep reach the generic only after the NAMESPACE is
@@ -70,7 +81,7 @@ test_that("bootstrap refits generated data and reports finite simulation correct
   large <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 3, seed = 8,
                       max_iter = 3000, tol = 1e-7)
   rng <- .Random.seed
-  result <- bootstrap_lrt(small, large, d, n_boot = 3, n_starts = 3,
+  result <- bootstrap_lrt(small, large, d, iter = 3, n_starts = 3,
                                   max_iter = 3000, tol = 1e-7, seed = 42)
   expect_identical(.Random.seed, rng)
   test <- as.data.frame.multilpa_bootstrap_lrt(result)
@@ -85,12 +96,12 @@ test_that("bootstrap refits generated data and reports finite simulation correct
   expect_output(print.multilpa_bootstrap_lrt(result), "Parametric bootstrap")
   expect_output(print.summary_multilpa_bootstrap_lrt(
     summary.multilpa_bootstrap_lrt(result)), "simulated, not chi-square")
-  expect_error(bootstrap_lrt(small, small, d, n_boot = 2), "one class")
+  expect_error(bootstrap_lrt(small, small, d, iter = 2), "one class")
   changed <- d
   changed$y <- d$y + 1
-  expect_error(bootstrap_lrt(small, large, changed, n_boot = 2), "reproduce")
+  expect_error(bootstrap_lrt(small, large, changed, iter = 2), "reproduce")
   changed$y[1] <- NA_real_
-  expect_error(bootstrap_lrt(small, large, changed, n_boot = 2), "complete")
+  expect_error(bootstrap_lrt(small, large, changed, iter = 2), "complete")
 })
 
 test_that("full covariance print and summary expose residual matrices", {

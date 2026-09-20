@@ -57,7 +57,7 @@ test_that("pooled Gaussian residuals exclude association explained by profile me
   residual <- as.matrix(expand.grid(a = c(-1, 1), b = c(-1, 1)))
   data <- as.data.frame(rbind(residual - 5, residual + 5))
   object <- structure(list(n_observations = 8L, n_profiles = 2L,
-    indicators = c("a", "b"), means = matrix(c(-5, 5, -5, 5), 2L),
+    vars = c("a", "b"), means = matrix(c(-5, 5, -5, 5), 2L),
     variances = matrix(1, 2L, 2L), covariance_model = "diagonal",
     subject_posteriors = cbind(rep(c(1, 0), each = 4L), rep(c(0, 1), each = 4L))),
     class = "multilpa")
@@ -86,7 +86,7 @@ test_that("categorical profile residuals compare to their own product probabilit
   indices <- rep(seq_len(4L), round(1000 * marginal))
   data <- patterns[indices, , drop = FALSE]
   object <- structure(list(n_observations = 1000L, n_profiles = 2L,
-    indicators = c("a", "b"), continuous = character(), categorical = c("a", "b"),
+    vars = c("a", "b"), continuous = character(), categorical = c("a", "b"),
     categorical_levels = list(a = c("no", "yes"), b = c("no", "yes")),
     response_probabilities = list(a = probabilities, b = probabilities),
     subject_posteriors = (component / rowSums(component))[indices, , drop = FALSE]),
@@ -115,7 +115,7 @@ test_that("categorical profile residuals compare to their own product probabilit
 test_that("Gaussian residuals use the complete rows of each pair", {
   data <- data.frame(a = c(-2, -1, 1, 2, NA), b = c(1, -1, -1, 1, 3))
   object <- structure(list(n_observations = 5L, n_profiles = 1L,
-    indicators = c("a", "b"), means = matrix(0, 1L, 2L),
+    vars = c("a", "b"), means = matrix(0, 1L, 2L),
     variances = matrix(1, 1L, 2L), covariance_model = "diagonal",
     subject_posteriors = matrix(1, 5L, 1L)), class = "multilpa")
   result <- bivariate_residuals(object, data)
@@ -132,7 +132,7 @@ test_that("Gaussian residuals use the complete rows of each pair", {
 
 test_that("LMR rejects equally sized fits on different data or group layouts", {
   object <- structure(list(n_observations = 4L, n_groups = 2L,
-    indicators = "y", group = "g", group_values = 1:2,
+    vars = "y", group = "g", group_values = 1:2,
     group_index = c(1L, 1L, 2L, 2L), indicator_data = matrix(1:4, 4L),
     n_parameters = 2L, log_likelihood = -10), class = "multilpa")
   alternative <- object

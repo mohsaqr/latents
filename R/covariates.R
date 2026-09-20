@@ -136,8 +136,8 @@
 #' supplied units; center or scale them beforehand if desired. Only complete
 #' data are supported here; missing indicators are not integrated out.
 #' @param data Data frame.
-#' @param indicators Names of continuous indicator columns.
-#' @param group Name of group identifier column.
+#' @param vars Names of continuous indicator columns.
+#' @param id Name of group identifier column.
 #' @param n_profiles Number of individual profiles.
 #' @param n_group_classes Number of discrete group classes.
 #' @param profile_covariates Names of numeric predictors of profile membership.
@@ -183,7 +183,7 @@
 #'                             profile_covariates = "z", n_starts = 2, seed = 1)
 #' as.data.frame(fit, what = "coefficients")
 #' @export
-fit_covariates <- function(data, indicators, group, n_profiles,
+fit_covariates <- function(data, vars, id, n_profiles,
                                   n_group_classes = 2L,
                                   profile_covariates = character(),
                                   group_covariates = character(),
@@ -194,7 +194,7 @@ fit_covariates <- function(data, indicators, group, n_profiles,
                                   covariance_model = c("diagonal", "full"),
                                   categorical = character(),
                                   min_probability = 1e-10) {
-  stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
+  stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
             all(c(profile_covariates, group_covariates) %in% names(data)),
@@ -219,9 +219,9 @@ fit_covariates <- function(data, indicators, group, n_profiles,
     set.seed(seed)
   }
   .multilpa_cov_check_covariates(data, profile_covariates, group_covariates,
-                               indicators, group)
+                               vars, id)
   # The base fit validates indicators/model sizes and supplies an initial mode.
-  base <- multilpa(data, indicators, group, n_profiles, n_group_classes,
+  base <- multilpa(data, vars, id, n_profiles, n_group_classes,
                      variance_model, n_starts = 1L, max_iter = max_iter,
                      tol = tol, min_variance = min_variance,
                      covariance_model = covariance_model,
@@ -238,7 +238,7 @@ fit_covariates <- function(data, indicators, group, n_profiles,
   if (n_group_classes == 1L && length(group_covariates)) {
     stop("Group covariates require at least two group classes.")
   }
-  designs <- .multilpa_cov_designs(data, indicators, profile_covariates,
+  designs <- .multilpa_cov_designs(data, vars, profile_covariates,
                                  group_covariates, first_rows, n_group_classes,
                                  categorical, min_probability)
   x <- designs$x
@@ -268,8 +268,8 @@ fit_covariates <- function(data, indicators, group, n_profiles,
   best_index <- which.max(starts$log_likelihood)
   result <- .multilpa_cov_assemble(
     best = attempts[[best_index]], best_index = best_index, starts = starts,
-    designs = designs, base = base, data = data, indicators = indicators,
-    group = group, profile_covariates = profile_covariates,
+    designs = designs, base = base, data = data, vars = vars,
+    id = id, profile_covariates = profile_covariates,
     group_covariates = group_covariates,
     # Stored as integers so the field has the same type it has on every other fit
     # class; a double here made `identical()` on any count derived from it fail.
@@ -281,7 +281,7 @@ fit_covariates <- function(data, indicators, group, n_profiles,
   ## Set here rather than inside the assembler, where the name `time` would
   ## resolve to stats::time instead of this argument.
   result$time <- time
-  result$time_values <- .multilpa_time_values(data, time, group, indicators)
+  result$time_values <- .multilpa_time_values(data, time, id, vars)
   ## The same effective counts the Gaussian fit carries, so the shared
   ## diagnostics and plot panels need no special case for this class.
   result$effective_profile_counts <- colSums(result$subject_posteriors)
@@ -472,7 +472,7 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL,
       class = "multilpa_no_indicator_data", call = NULL))
   }
   result <- as.data.frame(object$indicator_data)
-  result[[object$group]] <- object$group_values[object$group_index]
+  result[[object$id]] <- object$group_values[object$group_index]
   ## The profile design is the group-class indicator block followed by the
   ## profile covariates, in the order they were named.
   profile_block <- object$profile_design[[1L]][,
@@ -525,14 +525,14 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
 .multilpa_cov_check_covariates <- function(data, profile_covariates,
-                                         group_covariates, indicators, group) {
+                                         group_covariates, vars, id) {
   predictors <- unique(c(profile_covariates, group_covariates))
   if (length(predictors) && !all(vapply(data[predictors], function(column) {
     is.numeric(column) && is.null(dim(column)) && all(is.finite(column))
   }, logical(1)))) {
     stop("Covariates must be finite numeric columns without missing values.")
   }
-  if (any(predictors %in% c(indicators, group))) {
+  if (any(predictors %in% c(vars, id))) {
     stop("Covariates must be distinct from indicators and the group identifier.")
   }
   invisible(NULL)
@@ -546,11 +546,11 @@ nobs.multilpa_covariates <- function(object, ...) {
 #'
 #' @return A list with `x`, `center`, `w`, `profile_design` and `stacked_design`.
 #' @noRd
-.multilpa_cov_designs <- function(data, indicators, profile_covariates,
+.multilpa_cov_designs <- function(data, vars, profile_covariates,
                                 group_covariates, first_rows, n_group_classes,
                                 categorical = character(),
                                 min_probability = 1e-10) {
-  measurement <- .multilpa_prepare_indicators(data, indicators, categorical,
+  measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                               "error", min_probability)
   x <- measurement$x
   center <- if (ncol(x) > 0L) colMeans(x) else numeric(0)
@@ -653,7 +653,7 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' @return An `multilpa_covariates` object.
 #' @noRd
 .multilpa_cov_assemble <- function(best, best_index, starts, designs, base, data,
-                                 indicators, group, profile_covariates,
+                                 vars, id, profile_covariates,
                                  group_covariates, n_profiles, n_group_classes,
                                  group_index, variance_model, min_variance,
                                  covariance_model = "diagonal",
@@ -690,14 +690,14 @@ nobs.multilpa_covariates <- function(object, ...) {
     log(nrow(data)) * result$n_parameters
   result$n_observations <- nrow(data)
   result$n_informative <- base$n_informative
-  result$indicator_data <- as.matrix(data[indicators])
+  result$indicator_data <- as.matrix(data[vars])
   result$n_groups <- base$n_groups
   result$n_profiles <- as.integer(n_profiles)
   result$n_group_classes <- as.integer(n_group_classes)
   result$group_index <- group_index
   result$group_values <- base$group_values
-  result$indicators <- indicators
-  result$group <- group
+  result$vars <- vars
+  result$id <- id
   result$profile_covariates <- profile_covariates
   result$group_covariates <- group_covariates
   result$variance_model <- variance_model

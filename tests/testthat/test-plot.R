@@ -13,17 +13,7 @@ plot_fixture <- function(seed = 11L, n_groups = 24L, per_group = 8L) {
   data.frame(g = group, a = y[, 1L], b = y[, 2L])
 }
 
-# Drawing is tested on a null device, so the tests need no graphics back end
-# and leave no files behind.
-draw <- function(expression) {
-  path <- tempfile(fileext = ".png")
-  grDevices::png(path, width = 900, height = 600)
-  on.exit({
-    grDevices::dev.off()
-    unlink(path)
-  }, add = TRUE, after = FALSE)
-  force(expression)
-}
+# `draw()` comes from helper-draw.R, shared with every other drawing test.
 
 test_that("plot methods draw and return their input invisibly", {
   dat <- plot_fixture()
@@ -35,8 +25,8 @@ test_that("plot methods draw and return their input invisibly", {
     expect_identical(plot(fit, scale = "standardized"), fit)
     expect_identical(plot(fit, labels = FALSE), fit)
   })
-  candidates <- enumerate_classes(dat, c("a", "b"), "g", profiles = 1:2,
-                                 group_classes = 1:2, n_starts = 3, seed = 3)
+  candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
+                                 n_group_classes = 1:2, n_starts = 3, seed = 3)
   draw({
     expect_identical(plot(candidates), candidates)
     expect_identical(plot(candidates, criterion = "sabic_individual"), candidates)
@@ -53,6 +43,24 @@ test_that("plotting restores the caller's graphical parameters", {
     plot(fit)
     plot(fit, what = "probabilities")
     expect_equal(graphics::par(c("mar", "xpd", "cex")), before)
+    # `new` left on would silently overlay the caller's next plot onto this one.
+    expect_false(graphics::par("new"))
+  })
+})
+
+test_that("a refused view leaves the device as it found it", {
+  dat <- plot_fixture()
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  draw({
+    # The restore runs before anything has been drawn here. Restoring `mfg` in
+    # that state switches `new` on and warns, so a refused view used to poison
+    # the device for every plot after it -- including the caller's own.
+    expect_warning(
+      expect_error(plot(fit, what = "responses"),
+                   class = "multilpa_no_categorical"),
+      regexp = NA)
+    expect_false(graphics::par("new"))
+    expect_identical(plot(fit), fit)
   })
 })
 
@@ -91,8 +99,8 @@ test_that("standardizing uses the observed indicator scales", {
 
 test_that("enumeration plotting rejects unusable criteria by condition class", {
   dat <- plot_fixture()
-  candidates <- enumerate_classes(dat, c("a", "b"), "g", profiles = 1:2,
-                                 group_classes = 1, n_starts = 3, seed = 3)
+  candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
+                                 n_group_classes = 1, n_starts = 3, seed = 3)
   draw({
     expect_error(plot(candidates, criterion = "not_a_column"),
                  class = "multilpa_unknown_criterion")
@@ -159,7 +167,7 @@ test_that("every plot's data is reachable through a tidy verb", {
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
                   n_group_classes = 2, n_starts = 3, seed = 1, time = "wave")
   candidates <- enumerate_classes(data, c("score_a", "score_b"), "school",
-                                  profiles = 1:2, group_classes = 1,
+                                  n_profiles = 1:2, n_group_classes = 1,
                                   n_starts = 2, seed = 3)
 
   # No plot is the only way to see what it draws: the reader can always get the
@@ -217,11 +225,145 @@ test_that("the label margin grows with the widest label", {
     narrow <- .multilpa_label_margin("ab", 0.78)
     wide <- .multilpa_label_margin("a much longer series label", 0.78)
     expect_gt(wide, narrow)
-    expect_equal(.multilpa_label_margin(character(), 0.78), 1.6)
+    # With nothing to label the margin is exactly the padding. 2.2 lines, not
+    # the earlier 1.6, because the label gap is now one "m" of the label's own
+    # type rather than a fixed 0.45 user units, and a wider gap needs more room.
+    expect_equal(.multilpa_label_margin(character(), 0.78), 2.2)
+    expect_equal(.multilpa_label_margin(character(), 0.78, padding = 1.6), 1.6)
     # Margins never shrink below the style's own right margin.
     style <- .multilpa_style()
     expect_gte(.multilpa_margins(style, character(), 0.78)[4L], style$margins[4L])
     expect_gt(.multilpa_margins(style, "a very long direct label indeed", 0.78)[4L],
               style$margins[4L])
   })
+})
+
+test_that("the catalogue lists exactly the views the methods accept", {
+  catalogue <- multilpa_plot_types()
+  expect_s3_class(catalogue, "data.frame")
+  expect_identical(names(catalogue), c("type", "group", "description"))
+  expect_false(any(duplicated(catalogue$type)))
+  expect_false(any(is.na(catalogue$description)))
+  expect_true(all(nzchar(catalogue$description)))
+  expect_setequal(unique(catalogue$group),
+                  c("measurement", "structure", "diagnostics", "selection"))
+
+  # The invariant that matters: a view added to the method but forgotten in the
+  # catalogue, or listed but never implemented, fails here rather than silently
+  # going undiscoverable. "enumeration" belongs to the enumeration method.
+  fit_views <- eval(formals(plot.multilpa)$what)
+  expect_setequal(setdiff(catalogue$type, "enumeration"), fit_views)
+  expect_true(all(eval(formals(plot.multilpa_covariates)$what) %in%
+                    catalogue$type))
+})
+
+test_that("every view of a Gaussian fit draws and returns the fit invisibly", {
+  dat <- plot_fixture()
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  gaussian_views <- c("profiles", "bars", "heatmap", "probabilities",
+                      "entropy", "posteriors")
+  draw({
+    drawn <- vapply(gaussian_views, function(view) {
+      identical(plot(fit, what = view), fit)
+    }, logical(1))
+    expect_true(all(drawn))
+    expect_invisible(plot(fit, what = "heatmap"))
+    # Supplying the data adds intervals to the bars; omitting it must not fail.
+    expect_identical(plot(fit, what = "bars", data = dat), fit)
+    expect_identical(plot(fit, what = "bars", scale = "standardized"), fit)
+  })
+})
+
+test_that("a view a fit cannot supply is refused by condition class", {
+  dat <- plot_fixture()
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  draw({
+    # Continuous indicators have no response probabilities, and this fit has no
+    # time variable, so neither view is quietly drawn empty.
+    expect_error(plot(fit, what = "responses"),
+                 class = "multilpa_no_categorical")
+    expect_error(plot(fit, what = "sequences"), class = "multilpa_no_time")
+    expect_error(plot(fit, what = "not_a_view"))
+  })
+})
+
+test_that("point area encodes prevalence absolutely, not stretched to the plot", {
+  style <- .multilpa_style()
+  # The defect this replaced: min-max normalising within the plot mapped every
+  # spread onto the same size range, so a 52/48 split was drawn as far apart as
+  # an 80/20 split and the channel carried no information at all.
+  even <- .multilpa_point_sizes(c(0.52, 0.48), style)
+  uneven <- .multilpa_point_sizes(c(0.80, 0.20), style)
+  expect_gt(diff(rev(uneven)), diff(rev(even)))
+  expect_false(isTRUE(all.equal(max(even), max(uneven))))
+
+  # An evenly split pair sits at the style's own point size, whatever k is.
+  expect_equal(.multilpa_point_sizes(c(0.5, 0.5), style),
+               rep(style$point_size, 2L))
+  expect_equal(.multilpa_point_sizes(rep(0.25, 4L), style),
+               rep(style$point_size, 4L))
+
+  # Monotone in share, and bounded so a rare profile is small but never invisible.
+  sizes <- .multilpa_point_sizes(c(0.001, 0.1, 0.3, 0.599), style)
+  expect_false(is.unsorted(sizes))
+  expect_gt(min(sizes), 0)
+  expect_lte(max(.multilpa_point_sizes(c(0.999, 0.001), style)),
+             2.0 * style$point_size)
+  expect_error(.multilpa_point_sizes(c(-0.1, 1.1), style))
+})
+
+test_that("the diverging scale is white at zero and symmetric about it", {
+  expect_equal(.multilpa_diverging(0, limit = 2), "#FFFFFF")
+  expect_equal(.multilpa_diverging(c(-2, 2), limit = 2), c("#D33F6A", "#4A6FE3"))
+  # Equal deviations either side travel equally far from white, so the eye reads
+  # distance from the grand mean rather than the direction alone. The two ends
+  # are different hues by design, so it is the fraction of the way to each end
+  # that must match, not the raw channel values.
+  toward <- function(value, end) {
+    reached <- 1 - grDevices::col2rgb(.multilpa_diverging(value, limit = 2)) / 255
+    available <- 1 - grDevices::col2rgb(end) / 255
+    reached / available
+  }
+  # Absolute, not relative: the colours are quantised to 8 bits, so the two
+  # sides agree only to within one step of 1/255 and a relative tolerance on a
+  # value of 0.5 is the stricter test by accident.
+  expect_lt(max(abs(toward(-1, "#D33F6A") - toward(1, "#4A6FE3"))), 1 / 255)
+  expect_lt(max(abs(toward(-1, "#D33F6A") - 0.5)), 1 / 255)
+  # Beyond the limit the scale clamps instead of cycling through the hues.
+  expect_equal(.multilpa_diverging(5, limit = 2), .multilpa_diverging(2, limit = 2))
+  # A constant matrix has no spread to colour, and must not divide by zero.
+  expect_equal(.multilpa_diverging(c(0, 0)), c("#FFFFFF", "#FFFFFF"))
+})
+
+test_that("the label gap is measured in the type it labels", {
+  style <- .multilpa_style()
+  draw({
+    graphics::plot.new()
+    graphics::plot.window(xlim = c(0, 3), ylim = c(0, 1))
+    narrow_range <- .multilpa_label_offset(style)
+    graphics::plot.new()
+    graphics::plot.window(xlim = c(0, 30), ylim = c(0, 1))
+    wide_range <- .multilpa_label_offset(style)
+    # The offset is in user units, so the same physical gap is a larger number
+    # on a wider axis. A fixed constant would have been identical here, which is
+    # exactly how the labels came to be clipped on the narrower panels.
+    expect_gt(wide_range, narrow_range)
+    expect_gt(narrow_range, 0)
+  })
+})
+
+test_that("ridge views agree with the entropy the package reports", {
+  dat <- plot_fixture()
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  # The picture is never the only access to the numbers behind it.
+  posterior <- as.data.frame(fit, what = "posteriors")
+  expect_s3_class(posterior, "data.frame")
+  expect_true(all(c("row", "profile", "posterior", "modal") %in% names(posterior)))
+  expect_true(all(posterior$posterior >= 0 & posterior$posterior <= 1))
+  # One entropy contribution per case, none of them beyond a flat posterior.
+  contribution <- -rowSums(fit$subject_posteriors *
+                             log(pmax(fit$subject_posteriors, .Machine$double.xmin)))
+  expect_length(contribution, fit$n_observations)
+  expect_lte(max(contribution), log(fit$n_profiles) + 1e-8)
+  expect_gte(min(contribution), 0)
 })

@@ -106,8 +106,8 @@
 #' does not refit the model. Increase both node counts if the check fails.
 #'
 #' @param data Data frame with complete numeric indicators.
-#' @param indicators Character vector of indicator names.
-#' @param group Name of the group identifier column.
+#' @param vars Character vector of indicator names.
+#' @param id Name of the group identifier column.
 #' @param n_profiles Positive integer number of profiles.
 #' @param variance_model Profile-specific (varying) or shared (equal) residual variances.
 #' @param n_starts Number of independently initialized optimizations.
@@ -141,13 +141,13 @@
 #'                                  n_starts = 1)
 #' print(fit)
 #' @export
-fit_random_intercept <- function(data, indicators, group, n_profiles,
+fit_random_intercept <- function(data, vars, id, n_profiles,
     variance_model = c("varying", "equal"), n_starts = 5L, max_iter = 1000L,
     tol = 1e-8, min_variance = 1e-6, quadrature_nodes = 61L,
     quadrature_check_nodes = 121L, quadrature_tolerance = 1e-3, seed = NULL) {
-  stopifnot(is.data.frame(data), is.character(indicators), length(indicators) >= 1L,
-    !anyDuplicated(indicators), is.character(group), length(group) == 1L,
-    all(c(indicators, group) %in% names(data)), !group %in% indicators,
+  stopifnot(is.data.frame(data), is.character(vars), length(vars) >= 1L,
+    !anyDuplicated(vars), is.character(id), length(id) == 1L,
+    all(c(vars, id) %in% names(data)), !id %in% vars,
     is.numeric(n_profiles), length(n_profiles) == 1L, is.finite(n_profiles),
     n_profiles >= 1L, n_profiles == as.integer(n_profiles),
     is.numeric(n_starts), length(n_starts) == 1L, is.finite(n_starts),
@@ -162,14 +162,14 @@ fit_random_intercept <- function(data, indicators, group, n_profiles,
   quadrature <- .ri_quadrature(quadrature_nodes)
   check_quadrature <- .ri_quadrature(quadrature_check_nodes)
   stopifnot(quadrature_check_nodes > quadrature_nodes)
-  stopifnot(all(vapply(data[indicators], is.numeric, logical(1))))
-  x <- as.matrix(data[indicators])
+  stopifnot(all(vapply(data[vars], is.numeric, logical(1))))
+  x <- as.matrix(data[vars])
   stopifnot(nrow(x) >= 2L, all(is.finite(x)),
-            !anyNA(data[[group]]),
-            is.numeric(data[[group]]) || is.character(data[[group]]) || is.factor(data[[group]]))
-  if (is.numeric(data[[group]])) stopifnot(all(is.finite(data[[group]])))
-  group_values <- unique(data[[group]])
-  group_index <- match(data[[group]], group_values)
+            !anyNA(data[[id]]),
+            is.numeric(data[[id]]) || is.character(data[[id]]) || is.factor(data[[id]]))
+  if (is.numeric(data[[id]])) stopifnot(all(is.finite(data[[id]])))
+  group_values <- unique(data[[id]])
+  group_index <- match(data[[id]], group_values)
   group_sizes <- tabulate(group_index)
   stopifnot(length(group_values) >= 2L, any(group_sizes > 1L),
             n_profiles <= nrow(unique(x)))
@@ -244,14 +244,14 @@ fit_random_intercept <- function(data, indicators, group, n_profiles,
   boundary <- any(boundary_flags)
   if (boundary) warning("Random-intercept fit is near a variance or numerical search boundary.", call. = FALSE)
   parameters$means <- sweep(parameters$means, 2L, center, "+")
-  dimnames(parameters$means) <- dimnames(parameters$variances) <- list(paste0("profile_", seq_len(k)), indicators)
+  dimnames(parameters$means) <- dimnames(parameters$variances) <- list(paste0("profile_", seq_len(k)), vars)
   q <- length(best$par)
   result <- c(parameters, estimates, list(call = match.call(), n_profiles = k,
     n_observations = nrow(x), n_groups = length(group_values), group_values = group_values,
-    group_index = group_index, group_sizes = group_sizes, indicators = indicators,
-    continuous = indicators, indicator_data = indicator_data, center = center,
+    group_index = group_index, group_sizes = group_sizes, vars = vars,
+    continuous = vars, indicator_data = indicator_data, center = center,
     effective_profile_counts = colSums(estimates$subject_posteriors),
-    group = group, variance_model = variance_model, n_parameters = q,
+    id = id, variance_model = variance_model, n_parameters = q,
     aic = -2 * estimates$log_likelihood + 2 * q,
     bic = -2 * estimates$log_likelihood + log(length(group_values)) * q,
     bic_individual = -2 * estimates$log_likelihood + log(nrow(x)) * q,
@@ -552,7 +552,7 @@ plot.multilpa_random_intercept <- function(x, what = c("profiles",
 coef.multilpa_random_intercept <- function(object, ...) {
   stopifnot("`object` must be a fitted `multilpa_random_intercept` model" =
               inherits(object, "multilpa_random_intercept"))
-  indicators <- object$indicators
+  vars <- object$vars
   n_profiles <- object$n_profiles
   profiles <- paste0("profile_", seq_len(n_profiles))
   probabilities <- object$profile_probabilities
@@ -569,13 +569,13 @@ coef.multilpa_random_intercept <- function(object, ...) {
     else numeric())
   labels <- rbind(
     data.frame(level = "measurement", parameter = "mean",
-               outcome = rep(profiles, each = length(indicators)),
-               term = rep(indicators, times = n_profiles)),
+               outcome = rep(profiles, each = length(vars)),
+               term = rep(vars, times = n_profiles)),
     data.frame(level = "measurement", parameter = "variance",
                outcome = if (shared_variance) "shared" else
-                 rep(profiles, each = length(indicators)),
-               term = if (shared_variance) indicators else
-                 rep(indicators, times = n_profiles)),
+                 rep(profiles, each = length(vars)),
+               term = if (shared_variance) vars else
+                 rep(vars, times = n_profiles)),
     data.frame(level = "group", parameter = "standard_deviation",
                outcome = "random_intercept", term = NA_character_),
     ## A single-profile fit estimates no logit at all, so it contributes no
@@ -592,7 +592,10 @@ coef.multilpa_random_intercept <- function(object, ...) {
 
 #' Standard errors are not available for a random-intercept fit
 #'
-#' @param object A fitted `multilpa_random_intercept` model.
+#' @param object A fitted `multilpa_random_intercept` model. `vcov()` and
+#'   `confint()` are base generics, so their first formal is `object`.
+#' @param x The same fitted model, under the name this package's own verbs
+#'   use; `parameter_inference()` is documented on this page too.
 #' @param ... Ignored.
 #' @return Nothing; always raises a `multilpa_no_inference` condition. The
 #'   observed-information and sandwich machinery this package uses differentiates
@@ -614,8 +617,8 @@ vcov.multilpa_random_intercept <- function(object, ...) {
 #' @rdname vcov.multilpa_random_intercept
 #' @param data Ignored; present for compatibility with the generic.
 #' @export
-parameter_inference.multilpa_random_intercept <- function(object, data, ...) {
-  vcov(object)
+parameter_inference.multilpa_random_intercept <- function(x, data, ...) {
+  vcov(x)
 }
 
 #' @rdname vcov.multilpa_random_intercept

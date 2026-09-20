@@ -90,7 +90,7 @@ test_that("the result is tidy, with cluster-robust intervals", {
   expect_identical(unique(three_step(fit, data, "y", method = "modal")$method),
                    "modal")
   # a wider level gives a wider interval
-  wide <- three_step(fit, data, "y", level_ci = 0.99)
+  wide <- three_step(fit, data, "y", ci_level = 0.99)
   expect_true(all(wide$conf_high - wide$conf_low >
                     result$conf_high - result$conf_low))
 })
@@ -135,7 +135,7 @@ test_that("a broken contract is refused", {
   expect_error(three_step(fit, missing_outcome, "y"), "must not be missing")
   expect_error(three_step(fit, data[1:10, ], "y"),
                "one row per observation")
-  expect_error(three_step(fit, data, "y", level_ci = 1), "`level_ci` must be")
+  expect_error(three_step(fit, data, "y", ci_level = 1), "`ci_level` must be")
 })
 
 test_that("inseparable classes are refused rather than inverted", {
@@ -329,7 +329,7 @@ test_that("a broken contract is refused", {
                   n_starts = 4, seed = 1)
 
   expect_error(r3step(fit, data, "absent"), "must name columns")
-  expect_error(r3step(fit, data, "truth", level_ci = 1), "`level_ci` must be")
+  expect_error(r3step(fit, data, "truth", ci_level = 1), "`ci_level` must be")
   missing_covariate <- data
   missing_covariate$x[1L] <- NA
   expect_error(r3step(fit, missing_covariate, "x"), "must not be missing")

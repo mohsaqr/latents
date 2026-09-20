@@ -6,8 +6,8 @@
 \usage{
 fit_covariates(
   data,
-  indicators,
-  group,
+  vars,
+  id,
   n_profiles,
   n_group_classes = 2L,
   profile_covariates = character(),
@@ -27,9 +27,9 @@ fit_covariates(
 \arguments{
 \item{data}{Data frame.}
 
-\item{indicators}{Names of continuous indicator columns.}
+\item{vars}{Names of continuous indicator columns.}
 
-\item{group}{Name of group identifier column.}
+\item{id}{Name of group identifier column.}
 
 \item{n_profiles}{Number of individual profiles.}
 

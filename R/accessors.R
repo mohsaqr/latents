@@ -151,7 +151,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 #' @return Character vector of continuous indicator names.
 #' @noRd
 .multilpa_continuous_names <- function(x) {
-  x$continuous %||% x$indicators
+  x$continuous %||% x$vars
 }
 
 #' Measurement parameters as a tidy table
@@ -161,21 +161,21 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 .multilpa_profile_frame <- function(x, data = NULL,
                                     scale = c("raw", "standardized")) {
   scale <- match.arg(scale)
-  indicators <- .multilpa_continuous_names(x)
+  vars <- .multilpa_continuous_names(x)
   n_profiles <- x$n_profiles
   # `spread` of one and `centre` of zero leave the raw scale untouched, so the
   # two scales share one code path and cannot drift apart.
-  basis <- if (identical(scale, "standardized") && length(indicators) > 0L) {
-    .multilpa_standardization(x, indicators)
+  basis <- if (identical(scale, "standardized") && length(vars) > 0L) {
+    .multilpa_standardization(x, vars)
   } else {
-    list(centre = rep(0, length(indicators)),
-         spread = rep(1, length(indicators)))
+    list(centre = rep(0, length(vars)),
+         spread = rep(1, length(vars)))
   }
   means <- sweep(sweep(x$means, 2L, basis$centre, "-"), 2L, basis$spread, "/")
   variances <- sweep(x$variances, 2L, basis$spread^2, "/")
   frame <- data.frame(
-    profile = rep(seq_len(n_profiles), each = length(indicators)),
-    indicator = rep(indicators, times = n_profiles),
+    profile = rep(seq_len(n_profiles), each = length(vars)),
+    indicator = rep(vars, times = n_profiles),
     mean = as.vector(t(means)),
     variance = as.vector(t(variances)),
     # Derived rather than read from the fit, because not every result class
@@ -203,18 +203,18 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 #' effect sizes.
 #'
 #' @param x A fitted model of this package.
-#' @param indicators The continuous indicator names of that fit.
+#' @param vars The continuous indicator names of that fit.
 #' @return A list of the numeric vectors `centre` and `spread`, one element per
 #'   continuous indicator.
 #' @noRd
-.multilpa_standardization <- function(x, indicators) {
+.multilpa_standardization <- function(x, vars) {
   observed <- x$indicator_data
-  if (is.null(observed) || ncol(observed) != length(indicators)) {
+  if (is.null(observed) || ncol(observed) != length(vars)) {
     stop(errorCondition(
       "This fit did not retain indicator data, so it cannot be standardized.",
       class = "multilpa_no_indicator_data", call = NULL))
   }
-  spread <- vapply(seq_along(indicators), function(index) {
+  spread <- vapply(seq_along(vars), function(index) {
     stats::sd(observed[, index], na.rm = TRUE)
   }, numeric(1))
   if (any(!is.finite(spread)) || any(spread <= 0)) {
@@ -384,7 +384,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
 #' candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
-#'                                profiles = 1:2, group_classes = 1, n_starts = 2,
+#'                                n_profiles = 1:2, n_group_classes = 1, n_starts = 2,
 #'                                seed = 1)
 #' as.data.frame(candidates)
 #' @export
@@ -440,7 +440,7 @@ print.multilpa_enumeration <- function(x, ...) {
 #' list by hand, and so that starting values are validated where they are built
 #' rather than deep inside the fitting loop.
 #'
-#' @param object A fitted `multilpa` model, or a list carrying
+#' @param x A fitted `multilpa` model, or a list carrying
 #'   `profile_probabilities`, `group_probabilities`, and whichever measurement
 #'   blocks the model uses: `means` with `variances` or `covariances` for
 #'   continuous indicators, `response_probabilities` for categorical ones. An
@@ -480,32 +480,32 @@ print.multilpa_enumeration <- function(x, ...) {
 #'                     start = starting_values(fit))
 #' logLik(refit)
 #' @export
-starting_values <- function(object, covariance = c("auto", "drop", "keep"),
+starting_values <- function(x, covariance = c("auto", "drop", "keep"),
                             what = c("all", "measurement")) {
-  stopifnot("`object` must be a list or an `multilpa` fit" = is.list(object))
+  stopifnot("`object` must be a list or an `multilpa` fit" = is.list(x))
   covariance <- match.arg(covariance)
   what <- match.arg(what)
-  has_responses <- !is.null(object$response_probabilities)
+  has_responses <- !is.null(x$response_probabilities)
   # A model with only categorical indicators carries no Gaussian block.
   required <- c("means", "profile_probabilities", "group_probabilities")
-  if (has_responses && is.null(object$means)) {
+  if (has_responses && is.null(x$means)) {
     required <- setdiff(required, "means")
   }
-  missing_fields <- setdiff(required, names(object))
+  missing_fields <- setdiff(required, names(x))
   if (length(missing_fields) > 0L) {
     stop(errorCondition(sprintf("`object` is missing starting values for %s.",
                                 paste(missing_fields, collapse = ", ")),
                         class = "multilpa_bad_start", call = NULL))
   }
-  has_covariances <- !is.null(object$covariances)
+  has_covariances <- !is.null(x$covariances)
   if (identical(covariance, "keep") && !has_covariances) {
     stop(errorCondition("`object` carries no covariances to keep.",
                         class = "multilpa_bad_start", call = NULL))
   }
   use_covariances <- has_covariances && !identical(covariance, "drop")
-  n_profiles <- ncol(as.matrix(object$profile_probabilities))
-  means <- object$means %||% matrix(0, n_profiles, 0L)
-  variances <- object$variances
+  n_profiles <- ncol(as.matrix(x$profile_probabilities))
+  means <- x$means %||% matrix(0, n_profiles, 0L)
+  variances <- x$variances
   if (is.null(variances)) {
     if (has_responses && ncol(as.matrix(means)) == 0L) {
       variances <- matrix(0, n_profiles, 0L)
@@ -513,22 +513,22 @@ starting_values <- function(object, covariance = c("auto", "drop", "keep"),
       stop(errorCondition("`object` is missing starting values for variances.",
                           class = "multilpa_bad_start", call = NULL))
     } else {
-    dimension <- dim(object$covariances)[1L]
-    variances <- t(matrix(vapply(seq_len(dim(object$covariances)[3L]), function(profile) {
-      diag(matrix(object$covariances[, , profile], dimension, dimension))
+    dimension <- dim(x$covariances)[1L]
+    variances <- t(matrix(vapply(seq_len(dim(x$covariances)[3L]), function(profile) {
+      diag(matrix(x$covariances[, , profile], dimension, dimension))
     }, numeric(dimension)), nrow = dimension, ncol = n_profiles))
     }
   }
   start <- list(means = unname(as.matrix(means)),
                 variances = unname(as.matrix(variances)),
-                profile_probabilities = unname(as.matrix(object$profile_probabilities)),
-                group_probabilities = unname(as.vector(object$group_probabilities)))
+                profile_probabilities = unname(as.matrix(x$profile_probabilities)),
+                group_probabilities = unname(as.vector(x$group_probabilities)))
   if (use_covariances) {
-    start$covariances <- unname(object$covariances)
+    start$covariances <- unname(x$covariances)
     start$variances <- NULL
   }
   if (has_responses) {
-    start$response_probabilities <- unname(lapply(object$response_probabilities,
+    start$response_probabilities <- unname(lapply(x$response_probabilities,
                                                   \(block) unname(as.matrix(block))))
   }
   # The mixing blocks are sized for the model that produced them, so a staged

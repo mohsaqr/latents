@@ -102,7 +102,7 @@ lmr_lrt <- function(null_model, alternative_model,
 #' @return `NULL`, invisibly; raises a classed condition when the fits differ.
 #' @noRd
 .multilpa_check_comparable <- function(null_model, alternative_model) {
-  fields <- c("n_observations", "n_groups", "indicators", "group", "group_values",
+  fields <- c("n_observations", "n_groups", "vars", "id", "group_values",
               "group_index", "continuous", "categorical", "categorical_levels",
               "indicator_data", "categorical_data", "variance_model",
               "covariance_model", "min_variance", "min_probability")

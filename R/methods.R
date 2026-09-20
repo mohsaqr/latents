@@ -210,8 +210,8 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL,
 #' @return One row per profile and ordered pair of continuous indicators.
 #' @noRd
 .multilpa_covariance_frame <- function(x) {
-  indicators <- .multilpa_continuous_names(x)
-  n_indicators <- length(indicators)
+  vars <- .multilpa_continuous_names(x)
+  n_indicators <- length(vars)
   n_profiles <- x$n_profiles
   if (n_indicators == 0L) {
     return(data.frame(profile = integer(), indicator = character(),
@@ -224,8 +224,8 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL,
       matrix(x$covariances[, , profile], n_indicators, n_indicators)
     }
     data.frame(profile = profile,
-               indicator = rep(indicators, times = n_indicators),
-               indicator_2 = rep(indicators, each = n_indicators),
+               indicator = rep(vars, times = n_indicators),
+               indicator_2 = rep(vars, each = n_indicators),
                covariance = as.vector(block))
   })
   do.call(rbind, blocks)

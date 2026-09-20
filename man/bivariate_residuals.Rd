@@ -4,10 +4,10 @@
 \alias{bivariate_residuals}
 \title{Residual association between pairs of indicators}
 \usage{
-bivariate_residuals(object, data, by = c("profile", "overall"))
+bivariate_residuals(x, data, by = c("profile", "overall"))
 }
 \arguments{
-\item{object}{A fitted `multilpa` or `multilpa_covariates` model.}
+\item{x}{A fitted `multilpa` or `multilpa_covariates` model.}
 
 \item{data}{The data frame the model was fitted to.}
 

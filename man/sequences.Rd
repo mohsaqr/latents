@@ -4,10 +4,10 @@
 \alias{sequences}
 \title{Assignments in sequence order}
 \usage{
-sequences(object, format = c("long", "wide"))
+sequences(x, format = c("long", "wide"))
 }
 \arguments{
-\item{object}{A fitted `multilpa` model, fitted with `time =`.}
+\item{x}{A fitted `multilpa` model, fitted with `time =`.}
 
 \item{format}{`"long"` (the default) gives one row per observation.
 `"wide"` gives one row per group and one column per position, which is the

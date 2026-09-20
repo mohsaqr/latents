@@ -4,10 +4,10 @@
 \alias{transitions}
 \title{Fitted transition probabilities}
 \usage{
-transitions(object, estimated = NULL, stable = NULL)
+transitions(x, estimated = NULL, stable = NULL)
 }
 \arguments{
-\item{object}{A fitted `multilpa_transitions` model.}
+\item{x}{A fitted `multilpa_transitions` model.}
 
 \item{estimated}{Keep only the rows the data could estimate (`TRUE`), only
 the rows that are uniform by construction (`FALSE`), or all of them

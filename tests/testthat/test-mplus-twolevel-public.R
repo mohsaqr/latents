@@ -4,6 +4,9 @@ test_that("matched multilevel fits reproduce Mplus on public continuous data", {
     reference <- readRDS(test_path("..", "fixtures", "mplus",
                                    paste0("twolevel-public-", variance_model, ".rds")))
     expected <- reference$expected
+    # The fixture is a recorded Mplus oracle with its own provenance, so its
+    # stored field keeps the name it was saved under; only the package renamed
+    # `indicators` to `vars`.
     fit <- multilpa(reference$data, reference$indicators, "clus", 2L, 2L,
                       variance_model = variance_model, n_starts = 10L,
                       max_iter = 10000L, tol = 1e-14, seed = 5739)

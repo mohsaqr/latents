@@ -6,7 +6,9 @@
 \usage{
 \method{plot}{multilpa}(
   x,
-  what = c("profiles", "responses", "probabilities", "sequences"),
+  what = c("profiles", "bars", "heatmap", "responses", "probabilities", "sequences",
+    "entropy", "posteriors"),
+  data = NULL,
   scale = c("raw", "standardized"),
   category = "last",
   labels = TRUE,
@@ -23,14 +25,37 @@
 \arguments{
 \item{x}{A fitted `multilpa` model.}
 
-\item{what}{`"profiles"` plots the Gaussian measurement model, one line per
-profile across the continuous indicators. `"responses"` plots the
-categorical measurement model, one line per profile across the categorical
-indicators, showing the probability of a chosen category. `"probabilities"`
-plots profile prevalence within each group class, one line per group class.
-`"sequences"` draws one row per group, one column per position, coloured
-and numbered by the assigned profile, with the groups grouped by their
-latent class; it needs a fit made with `time =`.}
+\item{what}{Which view to draw. [multilpa_plot_types()] lists every value
+  with its group and a one-line description; the `"enumeration"` row it also
+  lists belongs to [plot.multilpa_enumeration()], not to this method.
+
+  The measurement model, three ways: `"profiles"` draws one line per profile
+  across the continuous indicators, with each profile's marker area
+  proportional to its prevalence. `"bars"` draws the same means as grouped
+  bars, one bar per profile within each indicator, with a 95% interval on
+  every bar when `data` is supplied. `"heatmap"` draws them as a diverging
+  grid of standard deviations from each indicator's grand mean, which is the
+  quickest read when there are many indicators or many profiles.
+  `"responses"` is the categorical counterpart of `"profiles"`, one line per
+  profile across the categorical indicators, showing the probability of a
+  chosen category.
+
+  The two-level structure: `"probabilities"` plots profile prevalence within
+  each group class, one line per group class -- the quantity the second level
+  exists to estimate. `"sequences"` draws one row per group, one column per
+  position, coloured and numbered by the assigned profile, with the groups
+  grouped by their latent class; it needs a fit made with `time =`.
+
+  Classification quality: `"entropy"` draws each case's entropy contribution
+  as one ridge per profile, and `"posteriors"` draws the posterior
+  probability of each case's assigned profile the same way. Both ridges are
+  scaled to their own maximum, following the usual ridgeline convention, so
+  ridge height compares shapes and not profile sizes; prevalence is printed
+  in each profile's label instead.}
+
+\item{data}{Optional. The data frame the model was fitted to. Supplying it
+with `what = "bars"` draws a 95% interval on every bar; it is ignored by
+every other view.}
 
 \item{scale}{For `what = "profiles"`, `"raw"` plots the estimated means in
 input units, and `"standardized"` divides each indicator's deviation from
@@ -89,4 +114,11 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 plot(fit)
 plot(fit, scale = "standardized")
+plot(fit, what = "bars", data = example_data)
+plot(fit, what = "heatmap")
+plot(fit, what = "entropy")
+multilpa_plot_types()
+}
+\seealso{
+[multilpa_plot_types()] for the catalogue of views.
 }

@@ -25,8 +25,8 @@ library(multilpa)
 
 fit <- multilpa(
   data = students,
-  indicators = c("reading", "maths", "engagement"),
-  group = "school_id",
+  vars = c("reading", "maths", "engagement"),
+  id = "school_id",
   n_profiles = 3,
   n_group_classes = 2,
   variance_model = "varying",
@@ -177,14 +177,14 @@ as.data.frame(summary(random_intercept), what = "model")
 # Compare profile/group-class counts; inspect diagnostics in every row.
 candidates <- enumerate_classes(
   students, c("reading", "maths", "engagement"), "school_id",
-  profiles = 2:4, group_classes = 1:3, n_starts = 20, seed = 42)
+  n_profiles = 2:4, n_group_classes = 1:3, n_starts = 20, seed = 42)
 as.data.frame(candidates)                            # one row per candidate model
 summary(candidates)                                  # the best model on each criterion
 candidate_fit(candidates, n_profiles = 3, n_group_classes = 2)
 plot(candidates, criterion = "sabic_individual")
 
 # Complete-data nested models differing by one class at one level.
-# bootstrap_lrt(smaller, larger, students, n_boot = 199, seed = 42)
+# bootstrap_lrt(smaller, larger, students, iter = 199, seed = 42)
 
 # Where conditional independence fails: residual association within profiles.
 bivariate_residuals(fit, data = students)

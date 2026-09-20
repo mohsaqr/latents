@@ -5,13 +5,13 @@
 \title{Build starting values for a multilevel latent profile fit}
 \usage{
 starting_values(
-  object,
+  x,
   covariance = c("auto", "drop", "keep"),
   what = c("all", "measurement")
 )
 }
 \arguments{
-\item{object}{A fitted `multilpa` model, or a list carrying
+\item{x}{A fitted `multilpa` model, or a list carrying
 `profile_probabilities`, `group_probabilities`, and whichever measurement
 blocks the model uses: `means` with `variances` or `covariances` for
 continuous indicators, `response_probabilities` for categorical ones. An

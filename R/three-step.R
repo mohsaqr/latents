@@ -28,7 +28,7 @@
 #' matrix from [classification_table()], this conditions on the *true* class
 #' rather than the assigned one, which is the direction the correction requires.
 #'
-#' @param object A fitted model of this package.
+#' @param x A fitted model of this package.
 #' @param level `"individuals"` for profiles, `"groups"` for group classes.
 #' @return A base `data.frame` with one row per ordered pair of classes and the
 #'   columns `level`, `true_class`, `assigned_class` and `probability`. The
@@ -51,9 +51,9 @@
 #'                 n_group_classes = 1, n_starts = 4, seed = 1)
 #' classification_errors(fit)
 #' @export
-classification_errors <- function(object, level = c("individuals", "groups")) {
+classification_errors <- function(x, level = c("individuals", "groups")) {
   level <- match.arg(level)
-  pieces <- .multilpa_level_assignments(object, level)
+  pieces <- .multilpa_level_assignments(x, level)
   matrix_form <- .multilpa_error_matrix(pieces)
   classes <- seq_len(pieces$n_classes)
   index <- expand.grid(assigned_class = classes, true_class = classes)
@@ -86,7 +86,7 @@ classification_errors <- function(object, level = c("individuals", "groups")) {
 #' wrong one; weighting by the inverse of the classification error matrix
 #' removes that attenuation without letting the outcome influence the classes.
 #'
-#' @param object A fitted model of this package.
+#' @param x A fitted model of this package.
 #' @param level `"individuals"` for profiles, `"groups"` for group classes.
 #' @return A base `data.frame` with one row per unit and class, and the columns
 #'   `level`, `unit`, `assigned_class`, `class` and `weight`, ordered by unit and
@@ -111,9 +111,9 @@ classification_errors <- function(object, level = c("individuals", "groups")) {
 #'                 n_group_classes = 1, n_starts = 4, seed = 1)
 #' head(bch_weights(fit))
 #' @export
-bch_weights <- function(object, level = c("individuals", "groups")) {
+bch_weights <- function(x, level = c("individuals", "groups")) {
   level <- match.arg(level)
-  pieces <- .multilpa_level_assignments(object, level)
+  pieces <- .multilpa_level_assignments(x, level)
   inverse <- .multilpa_invert_errors(.multilpa_error_matrix(pieces))
   weights <- inverse[pieces$modal, , drop = FALSE]
   classes <- seq_len(pieces$n_classes)
@@ -155,7 +155,7 @@ bch_weights <- function(object, level = c("individuals", "groups")) {
 #' the outcome pull the classes toward itself; doing it naively by modal class
 #' instead attenuates every difference. This does neither.
 #'
-#' @param object A fitted model of this package.
+#' @param x A fitted model of this package.
 #' @param data The data frame carrying the outcome, in the fit's row order.
 #' @param outcome Name of a numeric outcome column. For `level = "groups"` it
 #'   must be constant within each group.
@@ -164,12 +164,12 @@ bch_weights <- function(object, level = c("individuals", "groups")) {
 #' @param method `"bch"` applies the Bolck-Croon-Hagenaars weights;
 #'   `"proportional"` weights by the posteriors, which is simpler and
 #'   attenuated; `"modal"` is the naive assignment, shown for comparison.
-#' @param level_ci Confidence level for the intervals.
+#' @param ci_level Confidence level for the intervals.
 #' @param contrast `"none"` (the default) reports one outcome mean per class.
 #'   `"pairs"` reports the difference between every pair of classes instead,
 #'   which is the quantity a three-step analysis is usually run to test, with a
 #'   statistic and a p-value against a difference of zero.
-#' @param p_adjust Multiplicity correction applied across the pairwise
+#' @param adjust Multiplicity correction applied across the pairwise
 #'   differences, passed to [stats::p.adjust()]. `"BH"` by default; `"none"`
 #'   leaves the p-values uncorrected. Ignored for `contrast = "none"`, which
 #'   tests nothing.
@@ -188,7 +188,7 @@ bch_weights <- function(object, level = c("individuals", "groups")) {
 #'   Standard errors are cluster-robust in both shapes, taking the fit's groups
 #'   as the independent units, so they remain honest when the outcome is
 #'   measured on observations nested inside those groups. The correction applied
-#'   to `p_value_adjusted` is recorded in the result's `p_adjust` attribute.
+#'   to `p_value_adjusted` is recorded in the result's `adjust` attribute.
 #' @details The correction assumes the outcome is independent of the assigned
 #'   class given the true one, which is what makes a three-step method valid.
 #'
@@ -220,16 +220,16 @@ bch_weights <- function(object, level = c("individuals", "groups")) {
 #' three_step(fit, example_data, "y")
 #' three_step(fit, example_data, "y", contrast = "pairs")
 #' @export
-three_step <- function(object, data, outcome,
+three_step <- function(x, data, outcome,
                        level = c("individuals", "groups"),
                        method = c("bch", "proportional", "modal"),
-                       level_ci = 0.95, contrast = c("none", "pairs"),
-                       p_adjust = c("BH", "holm", "hochberg", "hommel",
+                       ci_level = 0.95, contrast = c("none", "pairs"),
+                       adjust = c("BH", "holm", "hochberg", "hommel",
                                     "bonferroni", "BY", "none")) {
   level <- match.arg(level)
   method <- match.arg(method)
   contrast <- match.arg(contrast)
-  p_adjust <- match.arg(p_adjust)
+  adjust <- match.arg(adjust)
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`outcome` must name a single column of `data`" =
@@ -237,14 +237,14 @@ three_step <- function(object, data, outcome,
     "`outcome` must be numeric" = is.numeric(data[[outcome]]),
     "`outcome` must not be missing" = !anyNA(data[[outcome]]),
     "`outcome` must be finite" = all(is.finite(data[[outcome]])),
-    "`level_ci` must be a single number in (0, 1)" =
-      is.numeric(level_ci) && length(level_ci) == 1L && level_ci > 0 && level_ci < 1
+    "`ci_level` must be a single number in (0, 1)" =
+      is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1
   )
-  pieces <- .multilpa_level_assignments(object, level)
-  values <- .multilpa_outcome_values(object, data, outcome, level)
+  pieces <- .multilpa_level_assignments(x, level)
+  values <- .multilpa_outcome_values(x, data, outcome, level)
   weights <- .multilpa_step_weights(pieces, method)
   classes <- seq_len(pieces$n_classes)
-  quantile <- stats::qnorm(1 - (1 - level_ci) / 2)
+  quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
 
   totals <- colSums(weights)
   if (any(!is.finite(totals)) || any(totals <= 0)) {
@@ -262,7 +262,7 @@ three_step <- function(object, data, outcome,
 
   if (identical(contrast, "pairs")) {
     return(.multilpa_step_pairs(estimates, clustered, level, method, quantile,
-                                p_adjust))
+                                adjust))
   }
   errors <- sqrt(colSums(clustered^2))
   data.frame(level = level, method = method, class = classes,
@@ -279,11 +279,11 @@ three_step <- function(object, data, outcome,
 #' @param clustered Group-summed influence contributions, one column per class.
 #' @param level,method The call's level and method, carried into the result.
 #' @param quantile The normal quantile for the interval.
-#' @param p_adjust A [stats::p.adjust()] method applied across the pairs.
+#' @param adjust A [stats::p.adjust()] method applied across the pairs.
 #' @return One row per unordered pair of classes.
 #' @noRd
 .multilpa_step_pairs <- function(estimates, clustered, level, method, quantile,
-                                 p_adjust) {
+                                 adjust) {
   n_classes <- length(estimates)
   if (n_classes < 2L) {
     stop(errorCondition(
@@ -300,11 +300,11 @@ three_step <- function(object, data, outcome,
     level = level, method = method, class = pairs[2L, ],
     reference_class = pairs[1L, ], estimate = difference,
     standard_error = errors, statistic = statistic, p_value = raw,
-    p_value_adjusted = stats::p.adjust(raw, method = p_adjust),
+    p_value_adjusted = stats::p.adjust(raw, method = adjust),
     conf_low = difference - quantile * errors,
     conf_high = difference + quantile * errors,
     row.names = NULL, stringsAsFactors = FALSE)
-  attr(result, "p_adjust") <- p_adjust
+  attr(result, "adjust") <- adjust
   result
 }
 
@@ -361,17 +361,17 @@ three_step <- function(object, data, outcome,
 #' instead attenuates every coefficient, because some units are in the wrong
 #' class and the covariate cannot explain why.
 #'
-#' @param object A fitted model of this package.
+#' @param x A fitted model of this package.
 #' @param data The data frame carrying the covariates, in the fit's row order.
 #' @param covariates Character vector of numeric covariate columns. For
 #'   `level = "groups"` each must be constant within a group.
 #' @param level `"individuals"` predicts profile membership, `"groups"`
 #'   predicts group-class membership.
-#' @param level_ci Confidence level for the intervals.
+#' @param ci_level Confidence level for the intervals.
 #' @param vcov_type `"observed"` uses the observed information; `"robust"` uses
 #'   the sandwich clustered on the fit's groups, which is the honest choice when
 #'   the covariates are measured on observations nested inside them.
-#' @param p_adjust Multiplicity correction applied across the covariate terms,
+#' @param adjust Multiplicity correction applied across the covariate terms,
 #'   passed to [stats::p.adjust()]. `"BH"` by default; `"none"` leaves the
 #'   p-values uncorrected. The family is every covariate term of every
 #'   non-reference class, which is the set of tests this call computes; the
@@ -380,7 +380,7 @@ three_step <- function(object, data, outcome,
 #'   and the columns `level`, `outcome`, `term`, `estimate`, `standard_error`,
 #'   `statistic`, `p_value`, `p_value_adjusted`, `conf_low` and `conf_high`.
 #'   `p_value` is uncorrected and `p_value_adjusted` carries the correction named
-#'   by `p_adjust`, which is also recorded in the result's `p_adjust` attribute;
+#'   by `adjust`, which is also recorded in the result's `adjust` attribute;
 #'   it is `NA` on the intercept rows, which are not part of the tested family.
 #'   Coefficients are log odds against the final class, which is the reference,
 #'   matching [fit_covariates()].
@@ -421,14 +421,14 @@ three_step <- function(object, data, outcome,
 #'                 n_group_classes = 1, n_starts = 4, seed = 1)
 #' r3step(fit, example_data, "x")
 #' @export
-r3step <- function(object, data, covariates,
-                   level = c("individuals", "groups"), level_ci = 0.95,
+r3step <- function(x, data, covariates,
+                   level = c("individuals", "groups"), ci_level = 0.95,
                    vcov_type = c("observed", "robust"),
-                   p_adjust = c("BH", "holm", "hochberg", "hommel",
+                   adjust = c("BH", "holm", "hochberg", "hommel",
                                 "bonferroni", "BY", "none")) {
   level <- match.arg(level)
   vcov_type <- match.arg(vcov_type)
-  p_adjust <- match.arg(p_adjust)
+  adjust <- match.arg(adjust)
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`covariates` must name columns of `data`" =
@@ -439,16 +439,16 @@ r3step <- function(object, data, covariates,
     "`covariates` must not be missing" = !anyNA(data[covariates]),
     "`covariates` must be finite" =
       all(vapply(data[covariates], function(value) all(is.finite(value)), logical(1))),
-    "`level_ci` must be a single number in (0, 1)" =
-      is.numeric(level_ci) && length(level_ci) == 1L && level_ci > 0 && level_ci < 1
+    "`ci_level` must be a single number in (0, 1)" =
+      is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1
   )
-  pieces <- .multilpa_level_assignments(object, level)
+  pieces <- .multilpa_level_assignments(x, level)
   if (pieces$n_classes < 2L) {
     stop(errorCondition(
       "A single class has no membership to predict.",
       class = "multilpa_inseparable_classes", call = NULL))
   }
-  design <- .multilpa_r3step_design(object, data, covariates, level)
+  design <- .multilpa_r3step_design(x, data, covariates, level)
   errors <- .multilpa_error_matrix(pieces)
   ## The likelihood of the assigned class, given the covariates and an error
   ## matrix fixed at its step-one value.
@@ -487,7 +487,7 @@ r3step <- function(object, data, covariates,
     covariance <- covariance %*% crossprod(scores) %*% covariance
   }
   .multilpa_r3step_frame(fitted$par, covariance, colnames(design), n_free,
-                         pieces$n_classes, level, level_ci, vcov_type, p_adjust)
+                         pieces$n_classes, level, ci_level, vcov_type, adjust)
 }
 
 #' The covariate design at the level being analysed
@@ -522,11 +522,11 @@ r3step <- function(object, data, covariates,
 #' @return One row per non-reference class and term.
 #' @noRd
 .multilpa_r3step_frame <- function(estimates, covariance, terms, n_free,
-                                   n_classes, level, level_ci, vcov_type,
-                                   p_adjust) {
+                                   n_classes, level, ci_level, vcov_type,
+                                   adjust) {
   errors <- sqrt(pmax(diag(covariance), 0))
   statistic <- estimates / errors
-  quantile <- stats::qnorm(1 - (1 - level_ci) / 2)
+  quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
   labels <- expand.grid(term = terms, outcome = paste0("class_", seq_len(n_free)),
                         stringsAsFactors = FALSE)
   raw <- 2 * stats::pnorm(-abs(statistic))
@@ -535,7 +535,7 @@ r3step <- function(object, data, covariates,
   ## covariate look less significant than the data say.
   tested <- labels$term != "(Intercept)"
   adjusted <- rep(NA_real_, length(raw))
-  adjusted[tested] <- stats::p.adjust(raw[tested], method = p_adjust)
+  adjusted[tested] <- stats::p.adjust(raw[tested], method = adjust)
   result <- data.frame(
     level = level, outcome = labels$outcome, term = labels$term,
     estimate = estimates, standard_error = errors, statistic = statistic,
@@ -545,6 +545,6 @@ r3step <- function(object, data, covariates,
     row.names = NULL, stringsAsFactors = FALSE)
   attr(result, "reference_class") <- n_classes
   attr(result, "vcov_type") <- vcov_type
-  attr(result, "p_adjust") <- p_adjust
+  attr(result, "adjust") <- adjust
   result
 }

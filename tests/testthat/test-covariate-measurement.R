@@ -56,18 +56,18 @@
 test_that("every measurement model reproduces the likelihood written from its definition", {
   data <- .cov_measurement_fixture()
   cases <- list(
-    list(label = "gaussian diagonal", indicators = c("y1", "y2"), extra = list()),
-    list(label = "gaussian full", indicators = c("y1", "y2"),
+    list(label = "gaussian diagonal", vars = c("y1", "y2"), extra = list()),
+    list(label = "gaussian full", vars = c("y1", "y2"),
          extra = list(covariance_model = "full")),
-    list(label = "mixed", indicators = c("y1", "y2", "q", "r"),
+    list(label = "mixed", vars = c("y1", "y2", "q", "r"),
          extra = list(categorical = c("q", "r"))),
-    list(label = "mixed, full covariance", indicators = c("y1", "y2", "q", "r"),
+    list(label = "mixed, full covariance", vars = c("y1", "y2", "q", "r"),
          extra = list(categorical = c("q", "r"), covariance_model = "full")),
-    list(label = "categorical only", indicators = c("q", "r"),
+    list(label = "categorical only", vars = c("q", "r"),
          extra = list(categorical = c("q", "r"))))
   invisible(lapply(cases, function(case) {
     fit <- suppressWarnings(do.call(fit_covariates, c(list(
-      data, case$indicators, "g", 2L, 2L, profile_covariates = "z",
+      data, case$vars, "g", 2L, 2L, profile_covariates = "z",
       n_starts = 2, seed = 3, max_iter = 400), case$extra)))
     expect_equal(fit$log_likelihood, .cov_independent_likelihood(fit, data),
                  tolerance = 1e-10, label = case$label)
@@ -106,17 +106,17 @@ test_that("with no covariates the covariate model is the covariate-free one", {
   data <- .cov_measurement_fixture()
   # Intercept-only multinomial logits are a reparameterization of free mixing
   # weights, so the two likelihoods are the same function.
-  cases <- list(list(indicators = c("y1", "y2"), extra = list()),
-                list(indicators = c("y1", "y2"),
+  cases <- list(list(vars = c("y1", "y2"), extra = list()),
+                list(vars = c("y1", "y2"),
                      extra = list(covariance_model = "full")),
-                list(indicators = c("y1", "y2", "q"),
+                list(vars = c("y1", "y2", "q"),
                      extra = list(categorical = "q")))
   invisible(lapply(cases, function(case) {
     plain <- suppressWarnings(do.call(multilpa, c(list(
-      data, case$indicators, "g", 2L, 2L, n_starts = 1, seed = 4,
+      data, case$vars, "g", 2L, 2L, n_starts = 1, seed = 4,
       max_iter = 3000, tol = 1e-12), case$extra)))
     covariate <- suppressWarnings(do.call(fit_covariates, c(list(
-      data, case$indicators, "g", 2L, 2L, n_starts = 1, seed = 4,
+      data, case$vars, "g", 2L, 2L, n_starts = 1, seed = 4,
       max_iter = 3000, tol = 1e-12), case$extra)))
     expect_equal(plain$log_likelihood, covariate$log_likelihood, tolerance = 1e-6)
     expect_equal(plain$n_parameters, covariate$n_parameters)

@@ -445,22 +445,22 @@
 #' @param data The data frame passed to the fit.
 #' @param time `NULL`, or the name of a single column giving each observation's
 #'   position within its group.
-#' @param group Name of the group column, used for the exclusion and the
+#' @param id Name of the group column, used for the exclusion and the
 #'   uniqueness check. It is known to name a column of `data` by the time this
 #'   is called, because the data contract is checked first.
-#' @param indicators The indicator column names, which `time` may not name.
+#' @param vars The indicator column names, which `time` may not name.
 #'   Defaults to none so that callers which have not yet been updated keep
 #'   working; `multilpa()` passes them.
 #' @return `NULL` when `time` is `NULL`, otherwise the column in input row order.
 #' @noRd
-.multilpa_time_values <- function(data, time, group, indicators = character()) {
+.multilpa_time_values <- function(data, time, id, vars = character()) {
   if (is.null(time)) return(NULL)
   stopifnot(
     "`time` must be NULL or a single column name" =
       is.character(time) && length(time) == 1L && !is.na(time),
     "`time` must name a column of `data`" = time %in% names(data),
-    "`time` must not be one of the indicators or the group column" =
-      !identical(time, group) && !time %in% indicators
+    "`time` must not be one of `vars` or the `id` column" =
+      !identical(time, id) && !time %in% vars
   )
   values <- data[[time]]
   if (anyNA(values)) {
@@ -469,7 +469,7 @@
   }
   # split() first converts numeric keys to factor labels, which can collapse
   # distinct numeric identifiers that print identically. Match the native keys.
-  group_index <- match(data[[group]], unique(data[[group]]))
+  group_index <- match(data[[id]], unique(data[[id]]))
   duplicated_within <- any(vapply(split(values, group_index),
                                   function(v) anyDuplicated(v) > 0L, logical(1)))
   if (duplicated_within) {
@@ -490,8 +490,8 @@
 #' missing indicators are available.
 #'
 #' @param data A data frame containing indicators and a group identifier.
-#' @param indicators Unique character vector of continuous indicator column names.
-#' @param group Name of the observed group identifier column. Character,
+#' @param vars Unique character vector of continuous indicator column names.
+#' @param id Name of the observed group identifier column. Character,
 #'   factor, or numeric identifiers are supported; missing identifiers are not.
 #' @param n_profiles Positive integer number of individual profiles.
 #' @param n_group_classes Positive integer number of latent group classes.
@@ -598,7 +598,7 @@
 #' as.data.frame(fit, what = "profile_probabilities")
 #' @export
 #' @importFrom stats setNames
-multilpa <- function(data, indicators, group, n_profiles,
+multilpa <- function(data, vars, id, n_profiles,
                        n_group_classes = 2L, variance_model = c("varying", "equal"),
                        n_starts = 10L, max_iter = 1000L, tol = 1e-8,
                        min_variance = 1e-6, seed = NULL, start = NULL,
@@ -608,9 +608,9 @@ multilpa <- function(data, indicators, group, n_profiles,
                        time = NULL, fixed = character()) {
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
-    "`indicators` must be a character vector of column names" =
-      is.character(indicators),
-    "`group` must be a single column name" = is.character(group),
+    "`vars` must be a character vector of column names" =
+      is.character(vars),
+    "`id` must be a single column name" = is.character(id),
     "`categorical` must be a character vector of indicator names" =
       is.character(categorical) && !anyNA(categorical),
     "`min_probability` must be a single number in (0, 1)" =
@@ -621,14 +621,14 @@ multilpa <- function(data, indicators, group, n_profiles,
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
-  # The data contract comes first: `time` is checked against the group column,
-  # so a `group` that does not name a column of `data` must be reported as
+  # The data contract comes first: `time` is checked against the `id` column,
+  # so an `id` that does not name a column of `data` must be reported as
   # that, not as an opaque failure inside the time check.
-  .multilpa_check_arguments(data, indicators, group, n_profiles, n_group_classes,
+  .multilpa_check_arguments(data, vars, id, n_profiles, n_group_classes,
                           n_starts, max_iter, tol, min_variance, min_probability,
                           seed, categorical)
-  time_values <- .multilpa_time_values(data, time, group, indicators)
-  measurement <- .multilpa_prepare_indicators(data, indicators, categorical,
+  time_values <- .multilpa_time_values(data, time, id, vars)
+  measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                             missing, min_probability)
   continuous <- measurement$continuous
   indicator_frame <- measurement$frame
@@ -636,7 +636,7 @@ multilpa <- function(data, indicators, group, n_profiles,
   codes <- measurement$codes
   n_categories <- measurement$n_categories
   x <- measurement$x
-  groups <- .multilpa_prepare_groups(data[[group]])
+  groups <- .multilpa_prepare_groups(data[[id]])
   group_values <- groups$values
   group_index <- groups$index
   group_ids <- groups$ids
@@ -757,12 +757,12 @@ multilpa <- function(data, indicators, group, n_profiles,
   boundary <- .multilpa_covariance_boundary(parameters, min_variance)
   small_classes <- any(colSums(subject_posteriors) < 1) || any(colSums(group_posteriors) < 1)
   result <- c(parameters, list(
-    call = call, indicators = indicators, continuous = continuous,
+    call = call, vars = vars, continuous = continuous,
     categorical = categorical,
     categorical_levels = encoded$levels, min_probability = min_probability,
     indicator_data = as.matrix(indicator_frame),
     categorical_data = codes,
-    group = group, group_ids = group_ids,
+    id = id, group_ids = group_ids,
     time = time, time_values = time_values,
     group_values = group_values, group_index = group_index,
     group_sizes = setNames(group_sizes, group_ids),
@@ -824,14 +824,14 @@ multilpa <- function(data, indicators, group, n_profiles,
 #' Validate the scalar arguments of a fit
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
-.multilpa_check_arguments <- function(data, indicators, group, n_profiles,
+.multilpa_check_arguments <- function(data, vars, id, n_profiles,
                                     n_group_classes, n_starts, max_iter, tol,
                                     min_variance, min_probability, seed,
                                     categorical) {
-  if (nrow(data) < 2L || length(indicators) < 1L || anyNA(indicators) ||
-      anyDuplicated(indicators) || anyDuplicated(names(data)) ||
-      length(group) != 1L || is.na(group) || group %in% indicators ||
-      !all(c(indicators, group) %in% names(data))) {
+  if (nrow(data) < 2L || length(vars) < 1L || anyNA(vars) ||
+      anyDuplicated(vars) || anyDuplicated(names(data)) ||
+      length(id) != 1L || is.na(id) || id %in% vars ||
+      !all(c(vars, id) %in% names(data))) {
     stop(errorCondition(
       "Supply at least two rows, unique existing indicators, and one distinct group column.",
       class = "multilpa_bad_data", call = NULL))
@@ -865,8 +865,8 @@ multilpa <- function(data, indicators, group, n_profiles,
     stop(errorCondition("seed must be a nonnegative integer or NULL.",
                         class = "multilpa_bad_argument", call = NULL))
   }
-  if (anyDuplicated(categorical) || !all(categorical %in% indicators)) {
-    stop(errorCondition("`categorical` must name distinct indicators listed in `indicators`.",
+  if (anyDuplicated(categorical) || !all(categorical %in% vars)) {
+    stop(errorCondition("`categorical` must name distinct indicators listed in `vars`.",
                         class = "multilpa_bad_categorical", call = NULL))
   }
   invisible(NULL)
@@ -881,9 +881,9 @@ multilpa <- function(data, indicators, group, n_profiles,
 #' @return A list with `continuous`, `frame`, `x`, `encoded`, `codes` and
 #'   `n_categories`.
 #' @noRd
-.multilpa_prepare_indicators <- function(data, indicators, categorical, missing,
+.multilpa_prepare_indicators <- function(data, vars, categorical, missing,
                                        min_probability) {
-  continuous <- setdiff(indicators, categorical)
+  continuous <- setdiff(vars, categorical)
   encoded <- if (length(categorical) > 0L) {
     .multilpa_encode_categorical(data[, categorical, drop = FALSE])
   } else NULL

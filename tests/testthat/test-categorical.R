@@ -88,16 +88,16 @@ test_that("thresholds invert to the cumulative response probabilities", {
 
 test_that("two-level latent class analysis recovers its generating structure", {
   dat <- categorical_fixture()
-  indicators <- paste0("v", 1:5)
-  fit <- multilpa(dat, indicators, "school", n_profiles = 2, n_group_classes = 2,
-                    categorical = indicators, n_starts = 20, seed = 3)
+  vars <- paste0("v", 1:5)
+  fit <- multilpa(dat, vars, "school", n_profiles = 2, n_group_classes = 2,
+                    categorical = vars, n_starts = 20, seed = 3)
   expect_identical(fit$measurement_model, "categorical")
   expect_true(fit$converged)
   # (H - 1) + H (K - 1) + K sum(C - 1), with no Gaussian parameters.
   expect_equal(fit$n_parameters, 1 + 2 * 1 + 2 * 5)
   expect_identical(dim(fit$means), c(2L, 0L))
   expect_length(fit$response_probabilities, 5L)
-  expect_identical(names(fit$response_probabilities), indicators)
+  expect_identical(names(fit$response_probabilities), vars)
   expect_true(all(vapply(fit$response_probabilities, function(block) {
     max(abs(rowSums(block) - 1))
   }, numeric(1)) < 1e-10))
@@ -114,9 +114,9 @@ test_that("two-level latent class analysis recovers its generating structure", {
 
 test_that("categorical fits reproduce genuine Mplus two-level results", {
   reference <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-categorical.rds"))
-  indicators <- paste0("u", 1:5)
-  fit <- multilpa(reference$data, indicators, "clus", n_profiles = 2,
-                    n_group_classes = 2, categorical = indicators,
+  vars <- paste0("u", 1:5)
+  fit <- multilpa(reference$data, vars, "clus", n_profiles = 2,
+                    n_group_classes = 2, categorical = vars,
                     n_starts = 40, seed = 20260918, tol = 1e-13, max_iter = 20000)
   expect_true(fit$converged)
   expect_equal(fit$n_parameters, as.numeric(reference$n_parameters))
@@ -141,8 +141,8 @@ test_that("ordinal and mixed-mode measurement fit and count parameters correctly
   # Collapse two binary indicators into one three-category indicator.
   ordinal$v1 <- ordinal$v1 + ordinal$v2 - 1L
   ordinal$v2 <- NULL
-  indicators <- c("v1", "v3", "v4", "v5")
-  fit <- multilpa(ordinal, indicators, "school", 2, 2, categorical = indicators,
+  vars <- c("v1", "v3", "v4", "v5")
+  fit <- multilpa(ordinal, vars, "school", 2, 2, categorical = vars,
                     n_starts = 12, seed = 4)
   expect_identical(ncol(fit$response_probabilities$v1), 3L)
   expect_equal(fit$n_parameters, 1 + 2 + 2 * (2 + 1 + 1 + 1))
@@ -162,16 +162,16 @@ test_that("ordinal and mixed-mode measurement fit and count parameters correctly
 
 test_that("categorical indicators support observed-data maximum likelihood", {
   dat <- categorical_fixture(seed = 7L, n_groups = 30L, per_group = 14L)
-  indicators <- paste0("v", 1:5)
+  vars <- paste0("v", 1:5)
   incomplete <- dat
   set.seed(12)
   incomplete$v1[sample(nrow(dat), 60L)] <- NA
   incomplete$v4[sample(nrow(dat), 40L)] <- NA
-  expect_error(multilpa(incomplete, indicators, "school", 2, 2,
-                          categorical = indicators, n_starts = 2, seed = 1),
+  expect_error(multilpa(incomplete, vars, "school", 2, 2,
+                          categorical = vars, n_starts = 2, seed = 1),
                "missing or non-finite")
-  fit <- multilpa(incomplete, indicators, "school", 2, 2,
-                    categorical = indicators, missing = "fiml",
+  fit <- multilpa(incomplete, vars, "school", 2, 2,
+                    categorical = vars, missing = "fiml",
                     n_starts = 12, seed = 1)
   expect_true(fit$converged)
   expect_equal(unname(fit$n_observed_by_indicator[["v1"]]), nrow(dat) - 60)
@@ -183,8 +183,8 @@ test_that("categorical indicators support observed-data maximum likelihood", {
 
 test_that("the responses accessor reports probabilities and thresholds", {
   dat <- categorical_fixture(seed = 15L, n_groups = 25L, per_group = 12L)
-  indicators <- paste0("v", 1:5)
-  fit <- multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
+  vars <- paste0("v", 1:5)
+  fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,
                     n_starts = 10, seed = 6)
   responses <- as.data.frame(fit, what = "responses")
   expect_identical(names(responses),
@@ -206,10 +206,10 @@ test_that("the responses accessor reports probabilities and thresholds", {
 
 test_that("unsupported categorical combinations are refused by condition class", {
   dat <- categorical_fixture(seed = 31L, n_groups = 25L, per_group = 12L)
-  indicators <- paste0("v", 1:5)
-  fit <- multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
+  vars <- paste0("v", 1:5)
+  fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,
                     n_starts = 8, seed = 2)
-  smaller <- multilpa(dat, indicators, "school", 1, 1, categorical = indicators,
+  smaller <- multilpa(dat, vars, "school", 1, 1, categorical = vars,
                         n_starts = 3, seed = 2)
   # Categorical measurement now carries analytic scores, so inference works.
   categorical_inference <- parameter_inference(fit, dat)
@@ -221,31 +221,31 @@ test_that("unsupported categorical combinations are refused by condition class",
   # The bootstrap compares models differing by one class at one level. One
   # profile with two group classes is unidentifiable, so the step is taken at
   # the group level instead: two profiles, one class against two.
-  one_class <- multilpa(dat, indicators, "school", 2, 1,
-                        categorical = indicators, n_starts = 3, seed = 2)
+  one_class <- multilpa(dat, vars, "school", 2, 1,
+                        categorical = vars, n_starts = 3, seed = 2)
   bootstrap <- suppressWarnings(
-    bootstrap_lrt(one_class, fit, dat, n_boot = 3, n_starts = 3, seed = 1))
+    bootstrap_lrt(one_class, fit, dat, iter = 3, n_starts = 3, seed = 1))
   expect_gt(bootstrap$statistic, 0)
-  expect_equal(bootstrap$n_boot, 3L)
+  expect_equal(bootstrap$iter, 3L)
   expect_true(all(c("replicate", "statistic", "valid") %in%
                     names(bootstrap$replicates)))
   expect_equal(nrow(bootstrap$replicates), 3L)
-  expect_error(multilpa(dat, indicators, "school", 2, 2, categorical = "absent",
+  expect_error(multilpa(dat, vars, "school", 2, 2, categorical = "absent",
                           n_starts = 2), class = "multilpa_bad_categorical")
-  expect_error(multilpa(dat, indicators, "school", 2, 2,
+  expect_error(multilpa(dat, vars, "school", 2, 2,
                           categorical = c("v1", "v1"), n_starts = 2),
                class = "multilpa_bad_categorical")
   # Categorical starts are supported; a start that names nothing the model uses
   # is rejected on its contents rather than refused outright.
-  expect_error(multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
+  expect_error(multilpa(dat, vars, "school", 2, 2, categorical = vars,
                           n_starts = 1, start = list(a = 1)),
                "response_probabilities")
 })
 
 test_that("categorical models plot their response probabilities", {
   dat <- categorical_fixture(seed = 41L, n_groups = 25L, per_group = 12L)
-  indicators <- paste0("v", 1:5)
-  fit <- multilpa(dat, indicators, "school", 2, 2, categorical = indicators,
+  vars <- paste0("v", 1:5)
+  fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,
                     n_starts = 8, seed = 2)
   path <- tempfile(fileext = ".png")
   grDevices::png(path, width = 900, height = 600)

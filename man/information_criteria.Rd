@@ -4,10 +4,10 @@
 \alias{information_criteria}
 \title{Information criteria for a fitted multilevel latent profile model}
 \usage{
-information_criteria(object, definitions = FALSE)
+information_criteria(x, definitions = FALSE)
 }
 \arguments{
-\item{object}{A fitted `multilpa` model.}
+\item{x}{A fitted `multilpa` model.}
 
 \item{definitions}{`FALSE`, the default, returns the numbers alone. `TRUE`
 appends a `definition` column carrying each criterion's formula, which is

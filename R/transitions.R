@@ -483,7 +483,7 @@
 #' transitions(fit)
 #' summary(fit)
 #' @export
-fit_transitions <- function(data, indicators, group, n_profiles, time,
+fit_transitions <- function(data, vars, id, n_profiles, time,
                             n_group_classes = 1L,
                             variance_model = c("varying", "equal"),
                             n_starts = 10L, max_iter = 1000L, tol = 1e-8,
@@ -492,7 +492,7 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
                             covariance_model = c("diagonal", "full"),
                             categorical = character(), min_probability = 1e-10,
                             occasions = c("observed", "grid")) {
-  stopifnot(is.data.frame(data), is.character(indicators), is.character(group),
+  stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
             "`min_probability` must be a single number in (0, 1)" =
@@ -509,22 +509,22 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
   # The data contract is checked BEFORE the ordering column. Reversed, a missing
   # group column surfaced as an internal `split()` failure ("group length is 0
   # but data length > 0") instead of this package's own classed error.
-  .multilpa_check_arguments(data, indicators, group, n_profiles, n_group_classes,
+  .multilpa_check_arguments(data, vars, id, n_profiles, n_group_classes,
                             n_starts, max_iter, tol, min_variance,
                             min_probability, seed, categorical)
-  time_values <- .multilpa_time_values(data, time, group, indicators)
+  time_values <- .multilpa_time_values(data, time, id, vars)
   if (n_profiles < 2L) {
     stop(errorCondition(
       "`n_profiles` must be at least two; a single profile has nothing to move between.",
       class = "multilpa_bad_transition", call = NULL))
   }
-  measurement <- .multilpa_prepare_indicators(data, indicators, categorical,
+  measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                               missing, min_probability)
   continuous <- measurement$continuous
   codes <- measurement$codes
   n_categories <- measurement$n_categories
   x <- measurement$x
-  groups <- .multilpa_prepare_groups(data[[group]])
+  groups <- .multilpa_prepare_groups(data[[id]])
   layout <- .multilpa_sequence_layout(groups$index, time_values, groups$n, occasions)
   if (layout$n_occasions < 2L) {
     stop(errorCondition(
@@ -627,12 +627,12 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
   small_classes <- any(colSums(subject_posteriors) < 1) ||
     any(colSums(group_posteriors) < 1)
   result <- c(parameters, list(
-    call = call, indicators = indicators, continuous = continuous,
+    call = call, vars = vars, continuous = continuous,
     categorical = categorical,
     categorical_levels = measurement$encoded$levels,
     min_probability = min_probability,
     indicator_data = as.matrix(measurement$frame), categorical_data = codes,
-    group = group, group_ids = groups$ids, time = time, time_values = time_values,
+    id = id, group_ids = groups$ids, time = time, time_values = time_values,
     group_values = groups$values, group_index = groups$index,
     group_sizes = setNames(groups$sizes, groups$ids),
     n_observations = nrow(x), n_informative = n_informative,
@@ -706,7 +706,7 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
 #' profiles are churning are told apart by reading this table, not the profile
 #' prevalences.
 #'
-#' @param object A fitted `multilpa_transitions` model.
+#' @param x A fitted `multilpa_transitions` model.
 #' @param estimated Keep only the rows the data could estimate (`TRUE`), only
 #'   the rows that are uniform by construction (`FALSE`), or all of them
 #'   (`NULL`, the default).
@@ -746,14 +746,14 @@ fit_transitions <- function(data, indicators, group, n_profiles, time,
 #' transitions(fit)
 #' transitions(fit, stable = FALSE)
 #' @export
-transitions <- function(object, estimated = NULL, stable = NULL) {
+transitions <- function(x, estimated = NULL, stable = NULL) {
   stopifnot(
     "`object` must be a fitted `multilpa_transitions` model" =
-      inherits(object, "multilpa_transitions"),
+      inherits(x, "multilpa_transitions"),
     "`estimated` must be NULL, TRUE or FALSE" =
       .multilpa_optional_flag(estimated),
     "`stable` must be NULL, TRUE or FALSE" = .multilpa_optional_flag(stable))
-  .multilpa_restrict_transitions(.multilpa_transition_frame(object),
+  .multilpa_restrict_transitions(.multilpa_transition_frame(x),
                                  estimated = estimated, stable = stable)
 }
 
@@ -1236,7 +1236,10 @@ coef.multilpa_transitions <- function(object, ...) {
 
 #' Standard errors are not available for a latent transition model
 #'
-#' @param object A fitted `multilpa_transitions` model.
+#' @param object A fitted `multilpa_transitions` model. `vcov()` and
+#'   `confint()` are base generics, so their first formal is `object`.
+#' @param x The same fitted model, under the name this package's own verbs
+#'   use; `parameter_inference()` is documented on this page too.
 #' @param ... Ignored.
 #' @return Nothing; `vcov()`, `confint()` and `parameter_inference()` all raise
 #'   a `multilpa_no_inference` condition on a latent transition fit. The
@@ -1267,8 +1270,8 @@ vcov.multilpa_transitions <- function(object, ...) {
 #' @rdname vcov.multilpa_transitions
 #' @param data Ignored; present for compatibility with the generic.
 #' @export
-parameter_inference.multilpa_transitions <- function(object, data, ...) {
-  stopifnot(inherits(object, "multilpa_transitions"))
+parameter_inference.multilpa_transitions <- function(x, data, ...) {
+  stopifnot(inherits(x, "multilpa_transitions"))
   .multilpa_refuse_transition_inference()
 }
 

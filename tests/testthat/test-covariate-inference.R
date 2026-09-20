@@ -6,7 +6,7 @@
 test_that("the analytic scores agree with a numerical gradient", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
-  x <- sweep(as.matrix(fixture$data[fit$indicators]), 2L, fit$center, "-")
+  x <- sweep(as.matrix(fixture$data[fit$vars]), 2L, fit$center, "-")
   theta <- multilpa:::.multilpa_cov_encode(fit)
   likelihood <- function(parameters) {
     pieces <- multilpa:::.multilpa_cov_decode(parameters, fit)
@@ -128,11 +128,11 @@ test_that("a named multiplicity correction is applied and nothing is corrected b
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
   plain <- parameter_inference(fit, fixture$data)
-  corrected <- parameter_inference(fit, fixture$data, p_adjust = "BH")
+  corrected <- parameter_inference(fit, fixture$data, adjust = "BH")
 
-  expect_identical(attr(plain, "p_adjust"), "none")
+  expect_identical(attr(plain, "adjust"), "none")
   expect_equal(plain$p_adjusted, plain$p_value)
-  expect_identical(attr(corrected, "p_adjust"), "BH")
+  expect_identical(attr(corrected, "adjust"), "BH")
   expect_equal(corrected$p_value, plain$p_value)
   # The family is the tests the table reports, not its rows: a variance has no
   # test and must not inflate the correction.

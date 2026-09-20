@@ -74,7 +74,7 @@
   profile_indices <- if (scale == "natural") seq_len(n_profiles) else seq_len(n_profiles - 1L)
   group_indices <- if (scale == "natural") seq_len(n_types) else seq_len(n_types - 1L)
   profile_names <- as.vector(t(outer(seq_len(n_types), profile_indices,
-    function(group, profile) sprintf("profile_probability[%s,%s]", group, profile))))
+    function(id, profile) sprintf("profile_probability[%s,%s]", id, profile))))
   group_names <- sprintf("group_probability[%s]", group_indices)
   profile_values <- as.vector(t(object$profile_probabilities[, profile_indices, drop = FALSE]))
   group_values <- object$group_probabilities[group_indices]
@@ -315,10 +315,10 @@
     Reduce(`+`, lapply(measurement_scores, `[[`, "variances"))
   } else unlist(lapply(measurement_scores, `[[`, "variances"), use.names = FALSE)
   }
-  profile_score <- unlist(lapply(seq_len(object$n_group_classes), function(group) {
-    stopifnot(is.numeric(group), length(group) == 1L)
-    counts <- colSums(expectation$joint[[group]])
-    (counts - sum(counts) * parameters$profile_probabilities[group, ])[
+  profile_score <- unlist(lapply(seq_len(object$n_group_classes), function(id) {
+    stopifnot(is.numeric(id), length(id) == 1L)
+    counts <- colSums(expectation$joint[[id]])
+    (counts - sum(counts) * parameters$profile_probabilities[id, ])[
       seq_len(object$n_profiles - 1L)]
   }), use.names = FALSE)
   group_score <- (colSums(expectation$group_posteriors) -
@@ -429,12 +429,12 @@
       free_at <<- free_at + ncol(block) - 1L
     }))
   }))
-  invisible(lapply(seq_len(object$n_group_classes), function(group) {
-    stopifnot(is.numeric(group), length(group) == 1L)
-    probabilities <- object$profile_probabilities[group, ]
+  invisible(lapply(seq_len(object$n_group_classes), function(id) {
+    stopifnot(is.numeric(id), length(id) == 1L)
+    probabilities <- object$profile_probabilities[id, ]
     block <- diag(probabilities, nrow = length(probabilities)) - tcrossprod(probabilities)
-    natural_rows <- natural_offset + (group - 1L) * object$n_profiles + seq_len(object$n_profiles)
-    free_columns <- free_offset + (group - 1L) * (object$n_profiles - 1L) + seq_len(object$n_profiles - 1L)
+    natural_rows <- natural_offset + (id - 1L) * object$n_profiles + seq_len(object$n_profiles)
+    free_columns <- free_offset + (id - 1L) * (object$n_profiles - 1L) + seq_len(object$n_profiles - 1L)
     jacobian[natural_rows, free_columns] <<- block[, seq_len(object$n_profiles - 1L), drop = FALSE]
   }))
   probabilities <- object$group_probabilities
@@ -453,7 +453,7 @@
 #' not robust sandwich errors and do not account for model selection. Mixture
 #' boundary solutions and unidentified Hessians do not admit this calculation.
 #'
-#' @param object A converged `multilpa` fit with inactive variance bounds.
+#' @param x A converged `multilpa` fit with inactive variance bounds.
 #' @param data The original fitting data in the original row order. Stored
 #'   indicator data and group identifiers are checked exactly. For older fits
 #'   without stored indicators, the likelihood provides a weaker consistency check.
@@ -465,11 +465,11 @@
 #'   independent units, so robust errors relax the assumption that the Gaussian
 #'   within-group model is correctly specified. They do not relax the assumption
 #'   that groups are independent.
-#' @param p_adjust Multiplicity correction applied to `p_value` to produce
+#' @param adjust Multiplicity correction applied to `p_value` to produce
 #'   `p_adjusted`, one of the methods [stats::p.adjust()] accepts. The default
 #'   `"none"` leaves the two columns equal: a correction changes what a p-value
 #'   means, so it is applied only when it is asked for, and the method that was
-#'   applied is recorded in the `p_adjust` attribute. The correction is taken
+#'   applied is recorded in the `adjust` attribute. The correction is taken
 #'   over the tests the table actually reports; bounded parameters carry no test
 #'   and do not count towards the family.
 #' @return A base `data.frame` with one row per reported parameter and the
@@ -488,7 +488,7 @@
 #'   columns repeated down every row: `covariance` and `covariance_unconstrained`
 #'   (natural and estimation-scale covariance of the estimates), `hessian`,
 #'   `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`
-#'   and `p_adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
+#'   and `adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
 #'   groups-by-parameters score matrix and `scaling_correction` the MLR scaling
 #'   correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
 #'   difference tests.
@@ -499,59 +499,59 @@
 #' parameter_inference(fit, dat)
 #'
 #' # Many tests in one table: name the correction, do not apply one by stealth.
-#' parameter_inference(fit, dat, p_adjust = "BH")
+#' parameter_inference(fit, dat, adjust = "BH")
 #' @export
-parameter_inference <- function(object, data, level = 0.95, step = 1e-4,
+parameter_inference <- function(x, data, level = 0.95, step = 1e-4,
                                 vcov_type = c("observed", "robust"),
-                                p_adjust = .multilpa_p_adjust_methods) {
+                                adjust = .multilpa_p_adjust_methods) {
   UseMethod("parameter_inference")
 }
 
 #' @rdname parameter_inference
 #' @export
-parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4,
+parameter_inference.multilpa <- function(x, data, level = 0.95, step = 1e-4,
                              vcov_type = c("observed", "robust"),
-                             p_adjust = .multilpa_p_adjust_methods) {
-  stopifnot(inherits(object, "multilpa"), is.data.frame(data),
+                             adjust = .multilpa_p_adjust_methods) {
+  stopifnot(inherits(x, "multilpa"), is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
             is.numeric(step), length(step) == 1L, is.finite(step), step > 0)
   vcov_type <- match.arg(vcov_type)
-  p_adjust <- match.arg(p_adjust)
-  .multilpa_check_regularity(object, vcov_type)
-  theta <- .multilpa_coefficients(object, "unconstrained")
-  prepared <- .multilpa_inference_matrix(object, data)
-  x <- prepared$x
-  centered_object <- object
-  centered_object$means <- sweep(object$means, 2L, prepared$centers, "-")
+  adjust <- match.arg(adjust)
+  .multilpa_check_regularity(x, vcov_type)
+  theta <- .multilpa_coefficients(x, "unconstrained")
+  prepared <- .multilpa_inference_matrix(x, data)
+  observed <- prepared$x
+  centered_object <- x
+  centered_object$means <- sweep(x$means, 2L, prepared$centers, "-")
   centered_theta <- .multilpa_coefficients(centered_object, "unconstrained")
   codes <- prepared$codes
   objective <- function(parameters) {
     stopifnot(is.numeric(parameters))
-    -.multilpa_expectation(x, object$group_index,
-      .multilpa_decode(parameters, object), codes)$log_likelihood
+    -.multilpa_expectation(observed, x$group_index,
+      .multilpa_decode(parameters, x), codes)$log_likelihood
   }
   score <- function(parameters) {
     stopifnot(is.numeric(parameters))
-    .multilpa_score(parameters, x, object, codes)
+    .multilpa_score(parameters, observed, x, codes)
   }
   fitted_likelihood <- -objective(centered_theta)
-  if (abs(fitted_likelihood - object$log_likelihood) > 1e-8 * (1 + abs(object$log_likelihood))) {
+  if (abs(fitted_likelihood - x$log_likelihood) > 1e-8 * (1 + abs(x$log_likelihood))) {
     stop(errorCondition(
       "data do not reproduce the fitted log likelihood; supply the original fitting data.",
       class = "multilpa_bad_inference_data", call = NULL))
   }
-  parameter_scale <- c(as.vector(t(sqrt(object$variances))),
-                       rep(1, length(theta) - length(object$means)))
-  dimension <- length(.multilpa_continuous_names(object))
-  if (identical(object$covariance_model, "full") && dimension > 0L) {
+  parameter_scale <- c(as.vector(t(sqrt(x$variances))),
+                       rep(1, length(theta) - length(x$means)))
+  dimension <- length(.multilpa_continuous_names(x))
+  if (identical(x$covariance_model, "full") && dimension > 0L) {
     positions <- which(lower.tri(matrix(0, dimension, dimension), diag = TRUE),
                        arr.ind = TRUE)
-    profiles <- if (object$variance_model == "equal") 1L else seq_len(object$n_profiles)
+    profiles <- if (x$variance_model == "equal") 1L else seq_len(x$n_profiles)
     covariance_scale <- unlist(lapply(profiles, function(profile) {
       ifelse(positions[, 1L] == positions[, 2L], 1,
-             sqrt(object$variances[profile, positions[, 1L]]))
+             sqrt(x$variances[profile, positions[, 1L]]))
     }), use.names = FALSE)
-    parameter_scale[length(object$means) + seq_along(covariance_scale)] <- covariance_scale
+    parameter_scale[length(x$means) + seq_along(covariance_scale)] <- covariance_scale
   }
   scaled_objective <- function(displacement) {
     stopifnot(is.numeric(displacement))
@@ -570,17 +570,17 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
   group_scores <- NULL
   scaling_correction <- NA_real_
   if (identical(vcov_type, "robust")) {
-    group_scores <- .multilpa_group_scores(centered_theta, x, object, codes)
+    group_scores <- .multilpa_group_scores(centered_theta, observed, x, codes)
     scaled_cross <- .multilpa_cross_product(sweep(group_scores, 2L, parameter_scale, "*"))
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
     scaled_inverse <- scaled_inverse %*% scaled_cross %*% scaled_inverse
   }
   covariance_unconstrained <- scaled_inverse * tcrossprod(parameter_scale)
   dimnames(hessian) <- dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
-  jacobian <- .multilpa_inference_jacobian(object)
+  jacobian <- .multilpa_inference_jacobian(x)
   covariance <- jacobian %*% covariance_unconstrained %*% t(jacobian)
   standard_errors <- sqrt(pmax(diag(covariance), 0))
-  estimates <- .multilpa_coefficients(object, "natural")
+  estimates <- .multilpa_coefficients(x, "natural")
   critical <- stats::qnorm((1 + level) / 2)
   intervals <- cbind(estimates - critical * standard_errors, estimates + critical * standard_errors)
   colnames(intervals) <- paste0(format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%")
@@ -589,20 +589,20 @@ parameter_inference.multilpa <- function(object, data, level = 0.95, step = 1e-4
   if (scaled_score > 0.01) warning("The fitted likelihood has a non-negligible score; refit with a tighter tolerance before using Wald inference.", call. = FALSE)
   statistic <- unname(estimates / standard_errors)
   result <- data.frame(
-    .multilpa_coefficient_labels(object, "natural"),
+    .multilpa_coefficient_labels(x, "natural"),
     estimate = unname(estimates), standard_error = unname(standard_errors),
     statistic = statistic, p_value = 2 * stats::pnorm(-abs(statistic)),
     conf_low = unname(intervals[, 1L]), conf_high = unname(intervals[, 2L]),
     row.names = NULL, stringsAsFactors = FALSE)
   ## A Wald test of a variance against zero is not a question worth asking; the
   ## interval still is.
-  continuous <- .multilpa_continuous_names(object)
+  continuous <- .multilpa_continuous_names(x)
   bounded <- result$parameter %in% c("variance", "probability", "response") |
     (result$parameter == "covariance" &
        result$term %in% paste(continuous, continuous, sep = ":"))
   result$statistic[bounded] <- NA_real_
   result$p_value[bounded] <- NA_real_
-  result <- .multilpa_adjust_p(result, p_adjust)
+  result <- .multilpa_adjust_p(result, adjust)
   ## Diagnostics of the fit, not of any one parameter, so they travel as
   ## attributes rather than as columns repeated down every row.
   attributes(result) <- c(attributes(result), list(
@@ -779,7 +779,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' @noRd
 .multilpa_inference_matrix <- function(object, data) {
   if (nrow(data) != object$n_observations ||
-      !all(c(object$indicators, object$group) %in% names(data)) ||
+      !all(c(object$vars, object$id) %in% names(data)) ||
       anyDuplicated(names(data)) ||
       !all(vapply(data[, .multilpa_continuous_names(object), drop = FALSE],
                   is.numeric, logical(1)))) {
@@ -787,7 +787,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       "data must contain the original numeric indicators and group column.",
       class = "multilpa_bad_inference_data", call = NULL))
   }
-  group_index <- match(data[[object$group]], object$group_values)
+  group_index <- match(data[[object$id]], object$group_values)
   if (!identical(group_index, object$group_index)) {
     stop(errorCondition(
       "data must retain the original group identifiers and row order.",
@@ -946,19 +946,19 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' parameters that do.
 #'
 #' @param result An inference table carrying `statistic` and `p_value`.
-#' @param p_adjust One of [.multilpa_p_adjust_methods].
+#' @param adjust One of [.multilpa_p_adjust_methods].
 #' @return `result` with `p_adjusted` inserted after `p_value` and the
-#'   `p_adjust` attribute recorded.
+#'   `adjust` attribute recorded.
 #' @noRd
-.multilpa_adjust_p <- function(result, p_adjust) {
+.multilpa_adjust_p <- function(result, adjust) {
   stopifnot("`result` must carry a `p_value` column" = "p_value" %in% names(result))
-  result$p_adjusted <- stats::p.adjust(result$p_value, method = p_adjust)
+  result$p_adjusted <- stats::p.adjust(result$p_value, method = adjust)
   ordered <- c("level", "outcome", "term", "parameter", "estimate",
                "standard_error", "statistic", "p_value", "p_adjusted",
                "conf_low", "conf_high")
   stopifnot("the inference table must carry exactly the documented columns" =
               setequal(names(result), ordered))
   result <- result[, ordered, drop = FALSE]
-  attr(result, "p_adjust") <- p_adjust
+  attr(result, "adjust") <- adjust
   result
 }

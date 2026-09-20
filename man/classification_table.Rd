@@ -4,14 +4,10 @@
 \alias{classification_table}
 \title{Classification quality for a fitted multilevel latent profile model}
 \usage{
-classification_table(
-  object,
-  level = c("individuals", "groups", "both"),
-  detail
-)
+classification_table(x, level = c("individuals", "groups", "both"), detail)
 }
 \arguments{
-\item{object}{A fitted `multilpa` model.}
+\item{x}{A fitted `multilpa` model.}
 
 \item{level}{`"individuals"` for latent profiles, `"groups"` for latent group
 classes, or `"both"` to stack them in one table.}

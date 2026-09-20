@@ -4,10 +4,10 @@
 \alias{sequence_summary}
 \title{Sequence lengths by group class}
 \usage{
-sequence_summary(object)
+sequence_summary(x)
 }
 \arguments{
-\item{object}{A fitted `multilpa` model, fitted with `time =`.}
+\item{x}{A fitted `multilpa` model, fitted with `time =`.}
 }
 \value{
 A base `data.frame` with one row per group class, including any class

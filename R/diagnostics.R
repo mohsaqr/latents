@@ -53,7 +53,7 @@
 #'   rather than folded into this table, so `information_criteria()` stays a
 #'   pure likelihood-penalty summary.
 #'
-#' @param object A fitted `multilpa` model.
+#' @param x A fitted `multilpa` model.
 #' @param definitions `FALSE`, the default, returns the numbers alone. `TRUE`
 #'   appends a `definition` column carrying each criterion's formula, which is
 #'   the same text as the Details section below.
@@ -127,18 +127,18 @@
 #' information_criteria(fit)
 #' information_criteria(fit, definitions = TRUE)
 #' @export
-information_criteria <- function(object, definitions = FALSE) {
-  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(object),
+information_criteria <- function(x, definitions = FALSE) {
+  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x),
             "`definitions` must be TRUE or FALSE" =
               isTRUE(definitions) || isFALSE(definitions))
-  q <- object$n_parameters
-  deviance <- -2 * object$log_likelihood
+  q <- x$n_parameters
+  deviance <- -2 * x$log_likelihood
   conventions <- data.frame(
     convention = c("groups", "individuals"),
-    n = c(object$n_groups, object$n_informative %||% object$n_observations))
-  entropies <- c(groups = if (is.null(object$group_posteriors)) NA_real_ else
-                   .multilpa_entropy_sum(object$group_posteriors),
-                 individuals = .multilpa_entropy_sum(object$subject_posteriors))
+    n = c(x$n_groups, x$n_informative %||% x$n_observations))
+  entropies <- c(groups = if (is.null(x$group_posteriors)) NA_real_ else
+                   .multilpa_entropy_sum(x$group_posteriors),
+                 individuals = .multilpa_entropy_sum(x$subject_posteriors))
   scale_free <- data.frame(
     criterion = c("deviance", "aic", "kic"),
     convention = NA_character_, n = NA_integer_,
@@ -198,7 +198,7 @@ information_criteria <- function(object, definitions = FALSE) {
 #' sizes, average posterior probability in the assigned class, and the odds of
 #' correct classification.
 #'
-#' @param object A fitted `multilpa` model.
+#' @param x A fitted `multilpa` model.
 #' @param level `"individuals"` for latent profiles, `"groups"` for latent group
 #'   classes, or `"both"` to stack them in one table.
 #' @param detail Removed. It used to change the columns this verb returns, which
@@ -251,9 +251,9 @@ information_criteria <- function(object, definitions = FALSE) {
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' classification_table(fit)
 #' @export
-classification_table <- function(object, level = c("individuals", "groups", "both"),
+classification_table <- function(x, level = c("individuals", "groups", "both"),
                                  detail) {
-  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(object))
+  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
   if (!missing(detail)) {
     stop(errorCondition(paste(
       "`detail` was removed from classification_table().",
@@ -261,7 +261,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
       class = "multilpa_removed_argument", call = NULL))
   }
   level <- match.arg(level)
-  posteriors <- .multilpa_posterior_levels(object, level)
+  posteriors <- .multilpa_posterior_levels(x, level)
   result <- do.call(rbind, lapply(names(posteriors), function(which_level) {
     .multilpa_classification_summary(posteriors[[which_level]], which_level)
   }))
@@ -282,7 +282,7 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #' conditions on the *true* class instead, and the two are different numbers,
 #' not two spellings of one table.
 #'
-#' @param object A fitted `multilpa` model.
+#' @param x A fitted `multilpa` model.
 #' @param level `"individuals"` for latent profiles, `"groups"` for latent group
 #'   classes, or `"both"` to stack them in one table.
 #' @return A base `data.frame`, one row per level, assigned class and class,
@@ -310,10 +310,10 @@ classification_table <- function(object, level = c("individuals", "groups", "bot
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' average_posteriors(fit)
 #' @export
-average_posteriors <- function(object, level = c("individuals", "groups", "both")) {
-  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(object))
+average_posteriors <- function(x, level = c("individuals", "groups", "both")) {
+  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
   level <- match.arg(level)
-  posteriors <- .multilpa_posterior_levels(object, level)
+  posteriors <- .multilpa_posterior_levels(x, level)
   result <- do.call(rbind, lapply(names(posteriors), function(which_level) {
     .multilpa_average_posterior_rows(posteriors[[which_level]], which_level)
   }))
@@ -399,7 +399,7 @@ average_posteriors <- function(object, level = c("individuals", "groups", "both"
 #' Reports the zero-to-one relative entropy at each level, alongside the raw
 #' classification entropy the entropy-penalized information criteria use.
 #'
-#' @param object A fitted `multilpa` model.
+#' @param x A fitted `multilpa` model.
 #' @return A base `data.frame`, one row per level the fit has, with the columns
 #'   \describe{
 #'     \item{`level`}{character: `"individuals"`, and `"groups"` when the fit
@@ -426,10 +426,10 @@ average_posteriors <- function(object, level = c("individuals", "groups", "both"
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' entropy_table(fit)
 #' @export
-entropy_table <- function(object) {
-  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(object))
-  posteriors <- list(individuals = object$subject_posteriors,
-                     groups = object$group_posteriors)
+entropy_table <- function(x) {
+  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
+  posteriors <- list(individuals = x$subject_posteriors,
+                     groups = x$group_posteriors)
   posteriors <- Filter(Negate(is.null), posteriors)
   result <- do.call(rbind, lapply(names(posteriors), function(level) {
     probabilities <- posteriors[[level]]

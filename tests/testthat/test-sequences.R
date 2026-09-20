@@ -151,7 +151,7 @@ test_that("the sequence panel draws and respects the no-ordering contract", {
   expect_silent(plot(fit, what = "sequences"))
   grDevices::dev.off()
   expect_gt(file.size(file), 1000)
-  expect_error(plot(.sequence_fit(data), what = "sequences"),
+  expect_error(draw(plot(.sequence_fit(data), what = "sequences")),
                class = "multilpa_no_time")
 })
 

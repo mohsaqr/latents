@@ -4,10 +4,10 @@
 \alias{bch_weights}
 \title{Weights that undo classification error}
 \usage{
-bch_weights(object, level = c("individuals", "groups"))
+bch_weights(x, level = c("individuals", "groups"))
 }
 \arguments{
-\item{object}{A fitted model of this package.}
+\item{x}{A fitted model of this package.}
 
 \item{level}{`"individuals"` for profiles, `"groups"` for group classes.}
 }

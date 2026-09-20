@@ -120,14 +120,14 @@ test_that("the data contract is checked before `time` is", {
 
 test_that("`time` may not name an indicator, as its contract says", {
   data <- .core_fixture()
-  # The contract message has always promised this; only the group column was
+  # The contract message has always promised this; only the `id` column was
   # actually excluded, so `time = "a"` used to be accepted silently.
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
                         time = "a"),
-               "must not be one of the indicators or the group column")
+               "must not be one of `vars` or the `id` column")
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
                         time = "school"),
-               "must not be one of the indicators or the group column")
+               "must not be one of `vars` or the `id` column")
 })
 
 test_that("a repeated or missing position is refused by class", {

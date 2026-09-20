@@ -101,23 +101,23 @@ test_that("holding nothing leaves the maximization step exactly as it was", {
 test_that("every measurement model can be held, exactly and with the right count", {
   data <- .fixed_fixture()
   cases <- list(
-    list(label = "gaussian diagonal", indicators = c("a", "b"),
+    list(label = "gaussian diagonal", vars = c("a", "b"),
          categorical = character(), covariance_model = "diagonal",
          fixed = "measurement", blocks = c("means", "variances"), removed = 8L),
-    list(label = "full covariance", indicators = c("a", "b"),
+    list(label = "full covariance", vars = c("a", "b"),
          categorical = character(), covariance_model = "full",
          fixed = "measurement", blocks = c("means", "covariances"), removed = 10L),
-    list(label = "mixed", indicators = c("a", "b", "q", "r"),
+    list(label = "mixed", vars = c("a", "b", "q", "r"),
          categorical = c("q", "r"), covariance_model = "diagonal",
          fixed = "measurement",
          blocks = c("means", "variances", "response_probabilities"), removed = 14L),
-    list(label = "categorical only", indicators = c("q", "r"),
+    list(label = "categorical only", vars = c("q", "r"),
          categorical = c("q", "r"), covariance_model = "diagonal",
          fixed = "response_probabilities",
          blocks = "response_probabilities", removed = 6L))
   invisible(lapply(cases, function(case) {
     fit_one <- function(classes, ...) {
-      suppressWarnings(multilpa(data, case$indicators, "school", n_profiles = 2L,
+      suppressWarnings(multilpa(data, case$vars, "school", n_profiles = 2L,
         n_group_classes = classes, categorical = case$categorical,
         covariance_model = case$covariance_model, n_starts = 3, seed = 1, ...))
     }

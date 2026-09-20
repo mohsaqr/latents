@@ -146,15 +146,15 @@ test_that("multiplicity is corrected, named, and can be turned off", {
   data <- .tidy_step_data()
   fit <- .tidy_step_fit(data, 3L)
   adjusted <- three_step(fit, data, "y", contrast = "pairs")
-  raw <- three_step(fit, data, "y", contrast = "pairs", p_adjust = "none")
+  raw <- three_step(fit, data, "y", contrast = "pairs", adjust = "none")
 
-  expect_identical(attr(adjusted, "p_adjust"), "BH")
-  expect_identical(attr(raw, "p_adjust"), "none")
+  expect_identical(attr(adjusted, "adjust"), "BH")
+  expect_identical(attr(raw, "adjust"), "none")
   expect_equal(raw$p_value_adjusted, raw$p_value)
   expect_true(all(adjusted$p_value_adjusted >= adjusted$p_value))
   expect_equal(adjusted$p_value, raw$p_value)
   strict <- three_step(fit, data, "y", contrast = "pairs",
-                       p_adjust = "bonferroni")
+                       adjust = "bonferroni")
   expect_true(all(strict$p_value_adjusted >= adjusted$p_value_adjusted))
 })
 
@@ -164,9 +164,9 @@ test_that("r3step corrects across its covariate terms and not its intercepts", {
   data$v <- stats::rnorm(nrow(data))
   fit <- .tidy_step_fit(data)
   result <- r3step(fit, data, c("x", "w", "v"))
-  none <- r3step(fit, data, c("x", "w", "v"), p_adjust = "none")
+  none <- r3step(fit, data, c("x", "w", "v"), adjust = "none")
 
-  expect_identical(attr(result, "p_adjust"), "BH")
+  expect_identical(attr(result, "adjust"), "BH")
   expect_true(all(is.na(result$p_value_adjusted[result$term == "(Intercept)"])))
   tested <- result$term != "(Intercept)"
   expect_equal(sum(tested), 3L)

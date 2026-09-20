@@ -77,7 +77,7 @@
 #' shows whether a group's assignments drift, alternate or hold steady --
 #' something the profile prevalences alone cannot say.
 #'
-#' @param object A fitted `multilpa` model, fitted with `time =`.
+#' @param x A fitted `multilpa` model, fitted with `time =`.
 #' @param format `"long"` (the default) gives one row per observation.
 #'   `"wide"` gives one row per group and one column per position, which is the
 #'   shape sequence-plotting packages expect. Both forms carry the same
@@ -112,31 +112,31 @@
 #' head(sequences(fit))
 #' sequences(fit, format = "wide")
 #' @export
-sequences <- function(object, format = c("long", "wide")) {
-  time_values <- .multilpa_require_time(object)
+sequences <- function(x, format = c("long", "wide")) {
+  time_values <- .multilpa_require_time(x)
   format <- match.arg(format)
   long <- data.frame(
-    group = object$group_values[object$group_index],
-    group_class = object$group_classes[object$group_index],
+    group = x$group_values[x$group_index],
+    group_class = x$group_classes[x$group_index],
     time = time_values,
-    profile = object$subject_profiles,
+    profile = x$subject_profiles,
     row.names = NULL, stringsAsFactors = FALSE
   )
   long <- long[order(long$group, long$time), , drop = FALSE]
   row.names(long) <- NULL
   if (identical(format, "long")) return(long)
 
-  cells <- .multilpa_sequence_matrix(object, long)
+  cells <- .multilpa_sequence_matrix(x, long)
   groups <- unique(long$group)
   occasions <- as.data.frame(lapply(seq_len(ncol(cells)), function(column) {
-    factor(cells[, column], levels = seq_len(object$n_profiles))
+    factor(cells[, column], levels = seq_len(x$n_profiles))
   }), optional = TRUE)
   names(occasions) <- colnames(cells)
   # The group identifier is a column, not a row name: row names coerce to
   # character and would silently merge two groups that print alike.
   data.frame(
     group = groups,
-    group_class = object$group_classes[match(groups, object$group_values)],
+    group_class = x$group_classes[match(groups, x$group_values)],
     occasions,
     row.names = NULL, stringsAsFactors = FALSE, check.names = FALSE)
 }
@@ -148,7 +148,7 @@ sequences <- function(object, format = c("long", "wide")) {
 #' class whose groups simply differ in profile mix, and the prevalence table
 #' cannot show it.
 #'
-#' @param object A fitted `multilpa` model, fitted with `time =`.
+#' @param x A fitted `multilpa` model, fitted with `time =`.
 #' @return A base `data.frame` with one row per group class, including any class
 #'   no group was assigned to, and the columns `group_class`, `groups` (how many
 #'   groups are assigned to it), `observations` (their total number of
@@ -175,21 +175,21 @@ sequences <- function(object, format = c("long", "wide")) {
 #'                 seed = 1, time = "wave")
 #' sequence_summary(fit)
 #' @export
-sequence_summary <- function(object) {
-  time_values <- .multilpa_require_time(object)
+sequence_summary <- function(x) {
+  time_values <- .multilpa_require_time(x)
   positions <- sort(unique(time_values))
   n_positions <- length(positions)
   # Native integer indices avoid unused factor levels and character rounding of
   # distinct numeric group identifiers in tapply().
-  lengths_by_group <- tabulate(object$group_index, nbins = object$n_groups)
+  lengths_by_group <- tabulate(x$group_index, nbins = x$n_groups)
   position_index <- match(time_values, positions)
-  first <- as.integer(tapply(position_index, object$group_index, min))
-  last <- as.integer(tapply(position_index, object$group_index, max))
+  first <- as.integer(tapply(position_index, x$group_index, min))
+  last <- as.integer(tapply(position_index, x$group_index, max))
   # A group whose observations fall short of its own span skipped a position
   # inside it; a group that simply stopped early does not count as a gap.
   has_gap <- lengths_by_group < (last - first + 1L)
-  class_by_group <- object$group_classes
-  classes <- seq_len(object$n_group_classes)
+  class_by_group <- x$group_classes
+  classes <- seq_len(x$n_group_classes)
   summarize <- function(class) {
     in_class <- class_by_group == class
     taken <- lengths_by_group[in_class]

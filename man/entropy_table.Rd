@@ -4,10 +4,10 @@
 \alias{entropy_table}
 \title{Relative entropy of a fitted multilevel latent profile model}
 \usage{
-entropy_table(object)
+entropy_table(x)
 }
 \arguments{
-\item{object}{A fitted `multilpa` model.}
+\item{x}{A fitted `multilpa` model.}
 }
 \value{
 A base `data.frame`, one row per level the fit has, with the columns

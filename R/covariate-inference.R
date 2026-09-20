@@ -256,7 +256,7 @@
 #' coefficient cannot be reported, because nothing distinguishes a real effect
 #' from separation.
 #'
-#' @param object A fitted `multilpa_covariates` model.
+#' @param x A fitted `multilpa_covariates` model.
 #' @param data Optional. The data frame the model was fitted to; when omitted
 #'   it is rebuilt from the indicators, group index and designs the fit stores.
 #'   Supplying it is the stronger check that the caller still holds that frame.
@@ -265,7 +265,7 @@
 #' @param vcov_type `"observed"` uses the observed information;
 #'   `"robust"` uses the group-clustered sandwich, which is the appropriate
 #'   choice when the measurement model may be misspecified.
-#' @param p_adjust Multiplicity correction applied to `p_value` to produce
+#' @param adjust Multiplicity correction applied to `p_value` to produce
 #'   `p_adjusted`, defaulting to `"none"`; see [parameter_inference()].
 #' @return A base `data.frame` with one row per free parameter and the same
 #'   columns, in the same order, that [parameter_inference()] returns for every
@@ -301,20 +301,20 @@
 #' parameter_inference(fit, example_data)
 #' @rdname parameter_inference
 #' @export
-parameter_inference.multilpa_covariates <- function(object, data = NULL, level = 0.95,
+parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95,
                                                     step = 1e-4,
                                                     vcov_type = c("observed", "robust"),
-                                                    p_adjust = .multilpa_p_adjust_methods) {
+                                                    adjust = .multilpa_p_adjust_methods) {
   stopifnot(
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1
   )
   vcov_type <- match.arg(vcov_type)
-  p_adjust <- match.arg(p_adjust)
-  covariance <- .multilpa_cov_covariance(object, data, step, vcov_type)
-  .multilpa_cov_inference_frame(object, .multilpa_cov_encode(object), covariance,
-                                level, vcov_type, p_adjust)
+  adjust <- match.arg(adjust)
+  covariance <- .multilpa_cov_covariance(x, data, step, vcov_type)
+  .multilpa_cov_inference_frame(x, .multilpa_cov_encode(x), covariance,
+                                level, vcov_type, adjust)
 }
 
 #' Covariance of a covariate fit's free parameters
@@ -354,25 +354,25 @@ parameter_inference.multilpa_covariates <- function(object, data = NULL, level =
       class = "multilpa_unsupported_inference", call = NULL))
   }
   .multilpa_check_regularity(object, vcov_type)
-  columns <- unique(c(object$indicators, object$group,
+  columns <- unique(c(object$vars, object$id,
                       object$profile_covariates, object$group_covariates))
   if (!all(columns %in% names(data)) || anyDuplicated(names(data)) ||
       nrow(data) != object$n_observations ||
-      !all(vapply(data[setdiff(columns, object$group)], function(column) {
+      !all(vapply(data[setdiff(columns, object$id)], function(column) {
         is.numeric(column) && is.null(dim(column)) && all(is.finite(column))
       }, logical(1))) ||
-      !identical(match(data[[object$group]], object$group_values), object$group_index)) {
+      !identical(match(data[[object$id]], object$group_values), object$group_index)) {
     stop(errorCondition(
       "`data` must contain the original finite indicators, covariates and group identifiers in fitting order.",
       class = "multilpa_bad_inference_data", call = NULL))
   }
   first_rows <- match(seq_len(object$n_groups), object$group_index)
-  designs <- .multilpa_cov_designs(data, object$indicators,
+  designs <- .multilpa_cov_designs(data, object$vars,
     object$profile_covariates, object$group_covariates, first_rows,
     object$n_group_classes)
   same <- function(left, right) identical(unname(left), unname(right))
   if ((!is.null(object$indicator_data) &&
-       !same(as.matrix(data[object$indicators]), object$indicator_data)) ||
+       !same(as.matrix(data[object$vars]), object$indicator_data)) ||
       !all(vapply(seq_along(designs$profile_design), function(index) {
         same(designs$profile_design[[index]], object$profile_design[[index]])
       }, logical(1))) || !same(designs$w, object$group_design) ||
@@ -382,7 +382,7 @@ parameter_inference.multilpa_covariates <- function(object, data = NULL, level =
     stop(errorCondition("`data` must reproduce the original indicators and covariates.",
                         class = "multilpa_bad_inference_data", call = NULL))
   }
-  x <- sweep(as.matrix(data[object$indicators]), 2L, object$center, "-")
+  x <- sweep(as.matrix(data[object$vars]), 2L, object$center, "-")
   theta <- .multilpa_cov_encode(object)
   objective <- function(parameters) {
     pieces <- .multilpa_cov_decode(parameters, object)
@@ -520,7 +520,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @return One row per free parameter, at every level.
 #' @noRd
 .multilpa_cov_inference_frame <- function(object, theta, covariance, level,
-                                          vcov_type, p_adjust) {
+                                          vcov_type, adjust) {
   labels <- .multilpa_cov_labels(object)
   stopifnot("every parameter must be labelled" = nrow(labels) == length(theta))
 
@@ -552,7 +552,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     }, logical(1))
   result$statistic[is_variance | on_diagonal] <- NA_real_
   result$p_value[is_variance | on_diagonal] <- NA_real_
-  result <- .multilpa_adjust_p(result, p_adjust)
+  result <- .multilpa_adjust_p(result, adjust)
   attr(result, "vcov_type") <- vcov_type
   attr(result, "level") <- level
   result
@@ -660,7 +660,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @return A data frame in the order [.multilpa_cov_encode()] packs them.
 #' @noRd
 .multilpa_cov_labels <- function(object) {
-  indicators <- object$indicators
+  vars <- object$vars
   profiles <- paste0("profile_", seq_len(object$n_profiles))
   variance_rows <- if (identical(object$variance_model, "equal")) "shared" else profiles
   block <- function(term, outcome, level, parameter) {

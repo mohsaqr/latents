@@ -5,17 +5,17 @@
 \title{Covariates predicting class membership, corrected for misclassification}
 \usage{
 r3step(
-  object,
+  x,
   data,
   covariates,
   level = c("individuals", "groups"),
-  level_ci = 0.95,
+  ci_level = 0.95,
   vcov_type = c("observed", "robust"),
-  p_adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
 )
 }
 \arguments{
-\item{object}{A fitted model of this package.}
+\item{x}{A fitted model of this package.}
 
 \item{data}{The data frame carrying the covariates, in the fit's row order.}
 
@@ -25,13 +25,13 @@ r3step(
 \item{level}{`"individuals"` predicts profile membership, `"groups"`
 predicts group-class membership.}
 
-\item{level_ci}{Confidence level for the intervals.}
+\item{ci_level}{Confidence level for the intervals.}
 
 \item{vcov_type}{`"observed"` uses the observed information; `"robust"` uses
 the sandwich clustered on the fit's groups, which is the honest choice when
 the covariates are measured on observations nested inside them.}
 
-\item{p_adjust}{Multiplicity correction applied across the covariate terms,
+\item{adjust}{Multiplicity correction applied across the covariate terms,
 passed to [stats::p.adjust()]. `"BH"` by default; `"none"` leaves the
 p-values uncorrected. The family is every covariate term of every
 non-reference class, which is the set of tests this call computes; the
@@ -42,7 +42,7 @@ A base `data.frame` with one row per non-reference class and term,
   and the columns `level`, `outcome`, `term`, `estimate`, `standard_error`,
   `statistic`, `p_value`, `p_value_adjusted`, `conf_low` and `conf_high`.
   `p_value` is uncorrected and `p_value_adjusted` carries the correction named
-  by `p_adjust`, which is also recorded in the result's `p_adjust` attribute;
+  by `adjust`, which is also recorded in the result's `adjust` attribute;
   it is `NA` on the intercept rows, which are not part of the tested family.
   Coefficients are log odds against the final class, which is the reference,
   matching [fit_covariates()].

@@ -96,9 +96,9 @@ test_that("categorical pairs are assessed with a chi-square", {
     u2 = as.integer(ifelse(shared, TRUE, chance())),
     u3 = as.integer(chance()), u4 = as.integer(chance()),
     u5 = as.integer(chance()))
-  indicators <- c("u1", "u2", "u3", "u4", "u5")
-  fit <- multilpa(data, indicators, "school", n_profiles = 2,
-                  n_group_classes = 1, categorical = indicators,
+  vars <- c("u1", "u2", "u3", "u4", "u5")
+  fit <- multilpa(data, vars, "school", n_profiles = 2,
+                  n_group_classes = 1, categorical = vars,
                   n_starts = 6, seed = 3)
   pooled <- bivariate_residuals(fit, data, by = "overall")
 

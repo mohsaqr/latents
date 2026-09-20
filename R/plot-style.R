@@ -113,7 +113,7 @@
 #' @noRd
 .multilpa_panel <- function(xlim, ylim, xlab, ylab, main = NULL, subtitle = NULL,
                           x_at = NULL, x_labels = NULL, y_at = NULL,
-                          style = .multilpa_style()) {
+                          y_labels = NULL, style = .multilpa_style()) {
   stopifnot("`style` must be a list of visual constants" = is.list(style))
   graphics::plot.new()
   graphics::plot.window(xlim = xlim, ylim = ylim, xaxs = "i", yaxs = "i")
@@ -123,13 +123,19 @@
   grid_at <- if (is.null(y_at)) pretty(ylim) else y_at
   # Keep the grid and its labels inside the panel; pretty() overshoots the range.
   grid_at <- grid_at[grid_at >= ylim[1L] & grid_at <= ylim[2L]]
-  graphics::abline(h = grid_at, col = style$grid_colour, lwd = style$grid_width)
+  # A categorical y axis names its own rows, so the reference grid would be
+  # drawing lines through the middle of them.
+  if (is.null(y_labels)) {
+    graphics::abline(h = grid_at, col = style$grid_colour, lwd = style$grid_width)
+  }
   axis_positions <- if (is.null(x_at)) pretty(xlim) else x_at
   axis_labels <- if (is.null(x_labels)) TRUE else x_labels
   graphics::axis(1L, at = axis_positions, labels = axis_labels, tick = FALSE,
                  line = style$axis_line, col.axis = style$text_colour,
                  cex.axis = style$axis_size, gap.axis = 0.25)
-  graphics::axis(2L, at = grid_at, tick = FALSE, las = 1L,
+  graphics::axis(2L, at = if (is.null(y_labels)) grid_at else y_at,
+                 labels = if (is.null(y_labels)) TRUE else y_labels,
+                 tick = FALSE, las = 1L,
                  line = style$axis_line, col.axis = style$text_colour,
                  cex.axis = style$axis_size)
   graphics::mtext(xlab, side = 1L, line = style$label_line, col = style$text_colour,
@@ -223,7 +229,20 @@
 #' @param padding Extra margin lines added beyond the measured width.
 #' @return A single number of margin lines.
 #' @noRd
-.multilpa_label_margin <- function(labels, cex, padding = 1.6) {
+.multilpa_label_offset <- function(style) {
+  # One "m" of the label's own type, expressed in user units. A fixed user-unit
+  # gap such as 0.45 is a different physical distance on every panel, so the
+  # margin reserved in inches fitted some plots and clipped others.
+  graphics::strwidth("m", cex = style$label_text_size)
+}
+
+#' Right margin wide enough for the direct labels, in lines
+#' @param labels Character vector of direct labels.
+#' @param cex Character expansion the labels are drawn at.
+#' @param padding Extra lines, covering the gap between panel and label.
+#' @return A single number of margin lines.
+#' @noRd
+.multilpa_label_margin <- function(labels, cex, padding = 2.2) {
   stopifnot("`labels` must be character" = is.character(labels),
             "`cex` must be a single positive number" =
               is.numeric(cex) && length(cex) == 1L && is.finite(cex) && cex > 0)
@@ -247,4 +266,127 @@
   margins <- style$margins
   margins[4L] <- max(margins[4L], .multilpa_label_margin(labels, cex))
   margins
+}
+
+#' Point sizes that encode a share without becoming illegible
+#'
+#' The mclust-book profile plot encodes each profile's mixing proportion in the
+#' point size, so a reader sees how much of the sample a line speaks for without
+#' consulting a second table. Areas, not radii, are made proportional to the
+#' share, because area is what the eye reads; the range is bounded so a rare
+#' profile stays visible and a dominant one does not swamp the panel.
+#'
+#' @param share Numeric vector of shares, summing to one.
+#' @param style Visual constants.
+#' @return Numeric vector of `cex` values, one per share.
+#' @noRd
+.multilpa_point_sizes <- function(share, style) {
+  stopifnot("`share` must be finite and non-negative" =
+              is.numeric(share) && length(share) >= 1L &&
+              all(is.finite(share)) && all(share >= 0))
+  # Absolute, not min-max normalised within the plot. Normalising to the observed
+  # range maps whatever spread happens to exist onto the full size range, so two
+  # profiles at 52% and 48% are drawn as far apart as 80% and 20% -- the plot
+  # manufactures a difference out of rounding. Here an evenly split profile is
+  # always the default size, area is proportional to share, and the result is
+  # bounded so a rare profile stays visible.
+  reference <- share * length(share)
+  pmin(2.0, pmax(0.55, sqrt(reference))) * style$point_size
+}
+
+#' Diverging fill colours around a white midpoint
+#'
+#' The house diverging pair, interpolated symmetrically so that zero is always
+#' white and the two directions are distinguishable to a colour-blind reader.
+#'
+#' @param values Numeric vector to colour.
+#' @param limit Value mapped to full saturation; defaults to the largest
+#'   absolute value, so the scale is symmetric about zero.
+#' @return Character vector of hexadecimal colours.
+#' @noRd
+.multilpa_diverging <- function(values, limit = max(abs(values), na.rm = TRUE)) {
+  stopifnot("`values` must be numeric" = is.numeric(values),
+            "`limit` must be a single finite number" =
+              is.numeric(limit) && length(limit) == 1L && is.finite(limit))
+  if (limit <= 0) return(rep("#FFFFFF", length(values)))
+  intensity <- pmax(-1, pmin(1, values / limit))
+  ends <- grDevices::col2rgb(c("#D33F6A", "#4A6FE3")) / 255
+  white <- c(1, 1, 1)
+  mixed <- vapply(intensity, function(t) {
+    if (is.na(t)) return(c(1, 1, 1))
+    end <- if (t < 0) ends[, 1L] else ends[, 2L]
+    white + abs(t) * (end - white)
+  }, numeric(3))
+  grDevices::rgb(mixed[1L, ], mixed[2L, ], mixed[3L, ])
+}
+
+#' Draw one ridge of a binned-line ridge plot
+#'
+#' A base-graphics equivalent of `ggridges::geom_density_ridges(stat =
+#' "binline")`: the binned counts are drawn as a step outline with a filled
+#' area, sitting on a baseline at `base` and never rising above `base + height`.
+#' Counts rather than a smoothed density, because these quantities are bounded
+#' (a probability cannot exceed one) and a kernel would put mass outside the
+#' support and invent a tail the data do not have.
+#'
+#' @param values Numeric vector for this ridge.
+#' @param breaks Bin edges shared across every ridge, so heights are comparable.
+#' @param base Vertical baseline for this ridge.
+#' @param height Maximum height above the baseline.
+#' @param fill,border Colours for the filled area and its outline.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_ridge <- function(values, breaks, base, height, fill, border) {
+  stopifnot("`breaks` must be increasing" = length(breaks) >= 2L &&
+              all(diff(breaks) > 0),
+            "`height` must be a single positive number" =
+              is.numeric(height) && length(height) == 1L && height > 0)
+  counts <- graphics::hist(values, breaks = breaks, plot = FALSE)$counts
+  if (max(counts) <= 0) return(invisible(NULL))
+  scaled <- base + height * counts / max(counts)
+  # Each bin contributes two x values so the outline steps rather than slopes,
+  # which is what makes a bounded quantity's edges readable.
+  xs <- rep(breaks, each = 2L)
+  ys <- c(base, rep(scaled, each = 2L), base)
+  graphics::polygon(xs, ys, col = grDevices::adjustcolor(fill, alpha.f = 0.55),
+                    border = border, lwd = 1.2)
+  invisible(NULL)
+}
+
+#' Draw a compact legend strip above the panel
+#'
+#' Grouped bars cannot carry direct end-labels the way lines can, so the key
+#' sits above the panel. Each entry pairs its swatch with text, and the text
+#' names the profile, so the legend itself never depends on colour.
+#'
+#' @param labels Character vector of entry labels.
+#' @param colours Fill colour per entry.
+#' @param style Visual constants.
+#' @param lines Distance below the panel, in margin lines, counted the way
+#'   `mtext(side = 1, line = )` counts.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_legend_strip <- function(labels, colours, style, lines = 4.4) {
+  stopifnot("`labels` and `colours` must match" =
+              length(labels) == length(colours))
+  usr <- graphics::par("usr")
+  widths <- graphics::strwidth(labels, cex = style$label_text_size)
+  swatch <- graphics::strwidth("m", cex = style$label_text_size)
+  gap <- swatch * 1.6
+  entries <- widths + swatch * 2
+  total <- sum(entries) + gap * (length(labels) - 1L)
+  left <- usr[1L] + (diff(usr[1:2]) - total) / 2
+  height <- graphics::strheight("M", cex = style$label_text_size)
+  # `lines` counts downward from the panel edge, the way mtext() does, so the
+  # caller can place the strip below the axis title without knowing the margin.
+  # grconvertY() measures the other way -- upward from the outer margin edge --
+  # so the two are reconciled here rather than at every call site.
+  y <- graphics::grconvertY(graphics::par("mar")[1L] - lines,
+                            from = "lines", to = "user")
+  starts <- left + c(0, cumsum(entries + gap)[-length(entries)])
+  graphics::rect(starts, y - height * 0.55, starts + swatch, y + height * 0.55,
+                 col = colours, border = style$panel_fill, lwd = 1.2)
+  graphics::text(starts + swatch * 1.5, y, labels, adj = c(0, 0.5),
+                 cex = style$label_text_size, col = style$text_colour)
+  invisible(NULL)
 }

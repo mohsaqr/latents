@@ -8,7 +8,7 @@ bootstrap_lrt(
   null_model,
   alternative_model,
   data,
-  n_boot = 199L,
+  iter = 199L,
   n_starts = 10L,
   max_iter = 1000L,
   tol = 1e-08,
@@ -22,7 +22,7 @@ bootstrap_lrt(
 
 \item{data}{Original data, used to verify both fitted likelihoods.}
 
-\item{n_boot}{Number of simulated datasets (at least two; use many for inference).}
+\item{iter}{Number of simulated datasets (at least two; use many for inference).}
 
 \item{n_starts}{Number of starts for each simulated fit.}
 
@@ -53,5 +53,5 @@ replicate makes the p-value NA, avoiding silent deletion of difficult fits.
 }
 \examples{
 # After fitting nested models on d:
-# bootstrap_lrt(smaller, larger, d, n_boot = 199, seed = 1)
+# bootstrap_lrt(smaller, larger, d, iter = 199, seed = 1)
 }

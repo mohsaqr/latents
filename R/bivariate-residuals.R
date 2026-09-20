@@ -9,7 +9,7 @@
 #' The usual remedies are `covariance_model = "full"`, which estimates the
 #' association rather than assuming it away, or another profile.
 #'
-#' @param object A fitted `multilpa` or `multilpa_covariates` model.
+#' @param x A fitted `multilpa` or `multilpa_covariates` model.
 #' @param data The data frame the model was fitted to.
 #' @param by `"profile"` (the default) assesses each profile separately, which
 #'   is where the assumption is actually made. `"overall"` pools the profiles
@@ -99,36 +99,36 @@
 #' bivariate_residuals(fit, example_data)
 #' bivariate_residuals(fit, example_data, by = "overall")
 #' @export
-bivariate_residuals <- function(object, data, by = c("profile", "overall")) {
+bivariate_residuals <- function(x, data, by = c("profile", "overall")) {
   stopifnot(
-    "`object` must be a fitted model of this package" = .multilpa_any_fit(object),
+    "`object` must be a fitted model of this package" = .multilpa_any_fit(x),
     "`data` must be a data frame" = is.data.frame(data),
     "`data` must have one row per observation of the fit" =
-      nrow(data) == object$n_observations
+      nrow(data) == x$n_observations
   )
-  if (inherits(object, "multilpa_random_intercept")) {
+  if (inherits(x, "multilpa_random_intercept")) {
     stop(errorCondition("Bivariate residuals require a discrete group-class model.",
                         class = "multilpa_no_group_classes", call = NULL))
   }
   by <- match.arg(by)
-  continuous <- .multilpa_continuous_names(object)
-  categorical <- object$categorical %||% character()
+  continuous <- .multilpa_continuous_names(x)
+  categorical <- x$categorical %||% character()
   stopifnot("`data` must contain the fitted indicators" =
               all(c(continuous, categorical) %in% names(data)))
   stopifnot("Gaussian indicators must be numeric and finite when observed" =
     all(vapply(data[continuous], function(value)
       is.numeric(value) && all(is.na(value) | is.finite(value)), logical(1))))
   weights <- if (identical(by, "profile")) {
-    stats::setNames(lapply(seq_len(object$n_profiles),
-                           function(k) object$subject_posteriors[, k]),
-                    paste0("profile_", seq_len(object$n_profiles)))
-  } else list(overall = rep(1, object$n_observations))
+    stats::setNames(lapply(seq_len(x$n_profiles),
+                           function(k) x$subject_posteriors[, k]),
+                    paste0("profile_", seq_len(x$n_profiles)))
+  } else list(overall = rep(1, x$n_observations))
 
   rows <- lapply(names(weights), function(label) {
     weight <- weights[[label]]
     rbind(
-      .multilpa_gaussian_residuals(object, data, continuous, weight, label, by),
-      .multilpa_categorical_residuals(object, data, categorical, weight, label))
+      .multilpa_gaussian_residuals(x, data, continuous, weight, label, by),
+      .multilpa_categorical_residuals(x, data, categorical, weight, label))
   })
   result <- do.call(rbind, rows)
   if (is.null(result) || nrow(result) == 0L) {

@@ -7,34 +7,34 @@
 \title{Tidy inference for a covariate fit}
 \usage{
 \method{parameter_inference}{multilpa_covariates}(
-  object,
+  x,
   data = NULL,
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust"),
-  p_adjust = .multilpa_p_adjust_methods
+  adjust = .multilpa_p_adjust_methods
 )
 
 parameter_inference(
-  object,
+  x,
   data,
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust"),
-  p_adjust = .multilpa_p_adjust_methods
+  adjust = .multilpa_p_adjust_methods
 )
 
 \method{parameter_inference}{multilpa}(
-  object,
+  x,
   data,
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust"),
-  p_adjust = .multilpa_p_adjust_methods
+  adjust = .multilpa_p_adjust_methods
 )
 }
 \arguments{
-\item{object}{A converged `multilpa` fit with inactive variance bounds.}
+\item{x}{A converged `multilpa` fit with inactive variance bounds.}
 
 \item{data}{The original fitting data in the original row order. Stored
 indicator data and group identifiers are checked exactly. For older fits
@@ -51,11 +51,11 @@ independent units, so robust errors relax the assumption that the Gaussian
 within-group model is correctly specified. They do not relax the assumption
 that groups are independent.}
 
-\item{p_adjust}{Multiplicity correction applied to `p_value` to produce
+\item{adjust}{Multiplicity correction applied to `p_value` to produce
 `p_adjusted`, one of the methods [stats::p.adjust()] accepts. The default
 `"none"` leaves the two columns equal: a correction changes what a p-value
 means, so it is applied only when it is asked for, and the method that was
-applied is recorded in the `p_adjust` attribute. The correction is taken
+applied is recorded in the `adjust` attribute. The correction is taken
 over the tests the table actually reports; bounded parameters carry no test
 and do not count towards the family.}
 }
@@ -87,7 +87,7 @@ A base `data.frame` with one row per reported parameter and the
   columns repeated down every row: `covariance` and `covariance_unconstrained`
   (natural and estimation-scale covariance of the estimates), `hessian`,
   `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`
-  and `p_adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
+  and `adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
   groups-by-parameters score matrix and `scaling_correction` the MLR scaling
   correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
   difference tests.
@@ -135,5 +135,5 @@ fit <- multilpa(dat, "y", "group", 1, 1, n_starts = 1)
 parameter_inference(fit, dat)
 
 # Many tests in one table: name the correction, do not apply one by stealth.
-parameter_inference(fit, dat, p_adjust = "BH")
+parameter_inference(fit, dat, adjust = "BH")
 }

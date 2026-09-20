@@ -8,14 +8,18 @@
 \usage{
 \method{vcov}{multilpa_random_intercept}(object, ...)
 
-\method{parameter_inference}{multilpa_random_intercept}(object, data, ...)
+\method{parameter_inference}{multilpa_random_intercept}(x, data, ...)
 
 \method{confint}{multilpa_random_intercept}(object, parm, level = 0.95, ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa_random_intercept` model.}
+\item{object}{A fitted `multilpa_random_intercept` model. `vcov()` and
+`confint()` are base generics, so their first formal is `object`.}
 
 \item{...}{Ignored.}
+
+\item{x}{The same fitted model, under the name this package's own verbs
+use; `parameter_inference()` is documented on this page too.}
 
 \item{data}{Ignored; present for compatibility with the generic.}
 

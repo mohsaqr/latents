@@ -7,14 +7,36 @@
 #' in each cell for the same reason.
 #'
 #' @param x A fitted `multilpa` model.
-#' @param what `"profiles"` plots the Gaussian measurement model, one line per
-#'   profile across the continuous indicators. `"responses"` plots the
-#'   categorical measurement model, one line per profile across the categorical
-#'   indicators, showing the probability of a chosen category. `"probabilities"`
-#'   plots profile prevalence within each group class, one line per group class.
-#'   `"sequences"` draws one row per group, one column per position, coloured
-#'   and numbered by the assigned profile, with the groups grouped by their
-#'   latent class; it needs a fit made with `time =`.
+#' @param data Optional. The data frame the model was fitted to. Supplying it
+#'   with `what = "bars"` draws a 95% interval on every bar; it is ignored by
+#'   every other view.
+#' @param what Which view to draw. [multilpa_plot_types()] lists every value
+#'   with its group and a one-line description; the `"enumeration"` row it also
+#'   lists belongs to [plot.multilpa_enumeration()], not to this method.
+#'
+#'   The measurement model, three ways: `"profiles"` draws one line per profile
+#'   across the continuous indicators, with each profile's marker area
+#'   proportional to its prevalence. `"bars"` draws the same means as grouped
+#'   bars, one bar per profile within each indicator, with a 95% interval on
+#'   every bar when `data` is supplied. `"heatmap"` draws them as a diverging
+#'   grid of standard deviations from each indicator's grand mean, which is the
+#'   quickest read when there are many indicators or many profiles.
+#'   `"responses"` is the categorical counterpart of `"profiles"`, one line per
+#'   profile across the categorical indicators, showing the probability of a
+#'   chosen category.
+#'
+#'   The two-level structure: `"probabilities"` plots profile prevalence within
+#'   each group class, one line per group class -- the quantity the second level
+#'   exists to estimate. `"sequences"` draws one row per group, one column per
+#'   position, coloured and numbered by the assigned profile, with the groups
+#'   grouped by their latent class; it needs a fit made with `time =`.
+#'
+#'   Classification quality: `"entropy"` draws each case's entropy contribution
+#'   as one ridge per profile, and `"posteriors"` draws the posterior
+#'   probability of each case's assigned profile the same way. Both ridges are
+#'   scaled to their own maximum, following the usual ridgeline convention, so
+#'   ridge height compares shapes and not profile sizes; prevalence is printed
+#'   in each profile's label instead.
 #' @param scale For `what = "profiles"`, `"raw"` plots the estimated means in
 #'   input units, and `"standardized"` divides each indicator's deviation from
 #'   its grand mean by that indicator's observed standard deviation. Use
@@ -53,9 +75,16 @@
 #'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' plot(fit)
 #' plot(fit, scale = "standardized")
+#' plot(fit, what = "bars", data = example_data)
+#' plot(fit, what = "heatmap")
+#' plot(fit, what = "entropy")
+#' multilpa_plot_types()
+#' @seealso [multilpa_plot_types()] for the catalogue of views.
 #' @export
-plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
-                                      "sequences"),
+plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses",
+                                      "probabilities", "sequences",
+                                      "entropy", "posteriors"),
+                        data = NULL,
                         scale = c("raw", "standardized"), category = "last",
                         labels = TRUE, main = NULL, subtitle = NULL,
                         palette = NULL, symbols = NULL, linetypes = NULL,
@@ -69,6 +98,11 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
   scale <- match.arg(scale)
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
+  # `mfg` is dropped before the state is restored: setting it switches `new` on
+  # as a documented side effect, so restoring it on a device nothing has been
+  # drawn to yet both warns and leaves `new = TRUE` behind. That is exactly the
+  # state after a refused view, where the restore runs before anything is drawn.
+  previous$mfg <- NULL
   on.exit(graphics::par(previous), add = TRUE, after = FALSE)
   graphics::par(xpd = NA)
   switch(what,
@@ -79,7 +113,12 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
     probabilities = .multilpa_plot_probabilities(x, labels, main, subtitle,
                                                palette, symbols, linetypes, style),
     sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
-                                        style, cell_labels))
+                                        style, cell_labels),
+    bars = .multilpa_plot_bars(x, scale, .multilpa_mean_error_matrix(x, data),
+                               main, subtitle, palette, style),
+    heatmap = .multilpa_plot_heatmap(x, main, subtitle, style),
+    entropy = .multilpa_plot_entropy(x, main, subtitle, palette, style),
+    posteriors = .multilpa_plot_posteriors(x, main, subtitle, palette, style))
   invisible(x)
 }
 
@@ -100,7 +139,7 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
     stop(errorCondition("This model has no categorical indicators.",
                         class = "multilpa_no_categorical", call = NULL))
   }
-  indicators <- names(blocks)
+  vars <- names(blocks)
   n_profiles <- x$n_profiles
   chosen <- vapply(blocks, function(block) {
     index <- if (identical(category, "last")) ncol(block) else
@@ -130,13 +169,13 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
   label_text <- sprintf("Profile %d (%.0f%%)", seq_len(n_profiles), 100 * share)
   graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
-  positions <- seq_along(indicators)
+  positions <- seq_along(vars)
   # The axis names each indicator with the category being plotted, so a mixed
   # set of category labels cannot be misread as one shared category.
   shared <- length(unique(category_labels)) == 1L
-  axis_labels <- if (shared) indicators else
-    sprintf("%s=%s", indicators, category_labels)
-  .multilpa_panel(xlim = c(1 - 0.35, length(indicators) + 0.35), ylim = c(0, 1.02),
+  axis_labels <- if (shared) vars else
+    sprintf("%s=%s", vars, category_labels)
+  .multilpa_panel(xlim = c(1 - 0.35, length(vars) + 0.35), ylim = c(0, 1.02),
     xlab = "Categorical indicator",
     ylab = if (shared) sprintf("P(response = %s)", category_labels[[1L]]) else
       "Response probability",
@@ -144,7 +183,7 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
     subtitle = if (is.null(subtitle)) sprintf(
       "%d profiles, %d group class%s, %d categorical indicator%s", n_profiles,
       x$n_group_classes, if (x$n_group_classes == 1L) "" else "es",
-      length(indicators), if (length(indicators) == 1L) "" else "s") else subtitle,
+      length(vars), if (length(vars) == 1L) "" else "s") else subtitle,
     x_at = positions, x_labels = axis_labels, y_at = seq(0, 1, by = 0.25),
     style = style)
   invisible(lapply(seq_len(n_profiles), function(profile) {
@@ -155,8 +194,9 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
                      cex = style$point_size, lwd = 1.4)
   }))
   if (isTRUE(labels)) {
-    label_y <- .multilpa_spread_labels(values[length(indicators), ], 0.055)
-    graphics::text(length(indicators) + 0.45, label_y, label_text,
+    label_y <- .multilpa_spread_labels(values[length(vars), ], 0.055)
+    graphics::text(length(vars) + .multilpa_label_offset(style), label_y,
+                   label_text,
                    adj = c(0, 0.5), col = colours,
                    cex = style$label_text_size, font = 2L)
   }
@@ -174,10 +214,10 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
 #' @noRd
 .multilpa_plot_profiles <- function(x, scale, labels, main, subtitle, palette,
                                   symbols, linetypes, style) {
-  indicators <- .multilpa_continuous_names(x)
+  vars <- .multilpa_continuous_names(x)
   n_profiles <- x$n_profiles
   means <- x$means
-  if (length(indicators) == 0L) {
+  if (length(vars) == 0L) {
     stop(errorCondition("This model has no continuous indicators; plot `what = \"responses\"` instead.",
                         class = "multilpa_no_continuous", call = NULL))
   }
@@ -188,7 +228,7 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
                           class = "multilpa_no_indicator_data", call = NULL))
     }
     centre <- colMeans(observed, na.rm = TRUE)
-    spread <- vapply(seq_along(indicators), function(index) {
+    spread <- vapply(seq_along(vars), function(index) {
       stats::sd(observed[, index], na.rm = TRUE)
     }, numeric(1))
     if (any(!is.finite(spread)) || any(spread <= 0)) {
@@ -203,18 +243,18 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
     rep(symbols, length.out = n_profiles)
   lines <- if (is.null(linetypes)) .multilpa_linetypes(n_profiles) else
     rep(linetypes, length.out = n_profiles)
-  positions <- seq_along(indicators)
+  positions <- seq_along(vars)
   span <- range(means)
   padding <- 0.12 * max(diff(span), .Machine$double.eps)
   ylim <- c(span[1L] - padding, span[2L] + padding)
-  xlim <- c(1 - 0.35, length(indicators) + 0.35)
+  xlim <- c(1 - 0.35, length(vars) + 0.35)
   share <- x$effective_profile_counts / sum(x$effective_profile_counts)
   label_text <- sprintf("Profile %d (%.0f%%)", seq_len(n_profiles), 100 * share)
   graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
   default_main <- sprintf("Profile means across %d indicator%s",
-                          length(indicators),
-                          if (length(indicators) == 1L) "" else "s")
+                          length(vars),
+                          if (length(vars) == 1L) "" else "s")
   default_subtitle <- sprintf("%d profiles, %d group class%s; %s scale",
     n_profiles, x$n_group_classes,
     if (x$n_group_classes == 1L) "" else "es",
@@ -224,22 +264,26 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
                   "Standardized mean" else "Estimated mean",
                 main = if (is.null(main)) default_main else main,
                 subtitle = if (is.null(subtitle)) default_subtitle else subtitle,
-                x_at = positions, x_labels = indicators, style = style)
+                x_at = positions, x_labels = vars, style = style)
   if (identical(scale, "standardized")) {
     graphics::abline(h = 0, col = style$muted_colour, lwd = 1, lty = 3L)
   }
+  # Point area carries the profile's share of the sample, so a reader sees how
+  # much of the data each line speaks for without consulting a second table.
+  sizes <- .multilpa_point_sizes(share, style)
   invisible(lapply(seq_len(n_profiles), function(profile) {
     values <- means[profile, ]
     graphics::lines(positions, values, col = colours[profile],
                     lwd = style$line_width, lty = lines[profile])
     graphics::points(positions, values, pch = points[profile],
                      bg = colours[profile], col = style$panel_fill,
-                     cex = style$point_size, lwd = 1.4)
+                     cex = sizes[profile], lwd = 1.4)
   }))
   if (isTRUE(labels)) {
-    label_y <- .multilpa_spread_labels(means[, length(indicators)],
+    label_y <- .multilpa_spread_labels(means[, length(vars)],
                                      0.055 * diff(ylim))
-    graphics::text(length(indicators) + 0.45, label_y, label_text, adj = c(0, 0.5),
+    graphics::text(length(vars) + .multilpa_label_offset(style), label_y,
+                   label_text, adj = c(0, 0.5),
                    col = colours, cex = style$label_text_size, font = 2L)
   }
   invisible(NULL)
@@ -288,7 +332,8 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
   }))
   if (isTRUE(labels)) {
     label_y <- .multilpa_spread_labels(probabilities[, n_profiles], 0.055)
-    graphics::text(n_profiles + 0.45, label_y, label_text, adj = c(0, 0.5),
+    graphics::text(n_profiles + .multilpa_label_offset(style), label_y,
+                   label_text, adj = c(0, 0.5),
                    col = colours, cex = style$label_text_size, font = 2L)
   }
   invisible(NULL)
@@ -320,7 +365,7 @@ plot.multilpa <- function(x, what = c("profiles", "responses", "probabilities",
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
 #' candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
-#'                                profiles = 1:3, group_classes = 1, n_starts = 2,
+#'                                n_profiles = 1:3, n_group_classes = 1, n_starts = 2,
 #'                                seed = 1)
 #' plot(candidates)
 #' @export
@@ -350,6 +395,11 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
   }
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
+  # `mfg` is dropped before the state is restored: setting it switches `new` on
+  # as a documented side effect, so restoring it on a device nothing has been
+  # drawn to yet both warns and leaves `new = TRUE` behind. That is exactly the
+  # state after a refused view, where the restore runs before anything is drawn.
+  previous$mfg <- NULL
   on.exit(graphics::par(previous), add = TRUE, after = FALSE)
   graphics::par(xpd = NA)
   class_counts <- sort(unique(grid$n_group_classes))
@@ -410,7 +460,7 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
   if (isTRUE(labels)) {
     keep <- !is.na(ends)
     if (any(keep)) {
-      graphics::text(max(profile_counts) + 0.45,
+      graphics::text(max(profile_counts) + .multilpa_label_offset(style),
                      .multilpa_spread_labels(ends[keep], 0.055 * diff(span)),
                      label_text[keep],
                      adj = c(0, 0.5), col = colours[keep],
@@ -547,6 +597,11 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences"),
   scale <- match.arg(scale)
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
+  # `mfg` is dropped before the state is restored: setting it switches `new` on
+  # as a documented side effect, so restoring it on a device nothing has been
+  # drawn to yet both warns and leaves `new = TRUE` behind. That is exactly the
+  # state after a refused view, where the restore runs before anything is drawn.
+  previous$mfg <- NULL
   on.exit(graphics::par(previous), add = TRUE, after = FALSE)
   graphics::par(xpd = NA)
   switch(what,
@@ -555,4 +610,305 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences"),
     sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
                                          style, cell_labels))
   invisible(x)
+}
+
+#' Draw the measurement model as a heatmap of standardized profile means
+#'
+#' One tile per profile and indicator, filled by how far that profile's mean
+#' sits from the indicator's grand mean in standard deviations, so indicators on
+#' different scales are comparable within one panel. The value is printed in
+#' each tile in ink chosen for contrast, which keeps the number readable without
+#' a colour key and keeps the distinction from resting on colour alone.
+#'
+#' @param x A fitted model carrying `means` and `indicator_data`.
+#' @param main,subtitle Panel title and secondary line.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_heatmap <- function(x, main, subtitle, style) {
+  vars <- .multilpa_continuous_names(x)
+  if (length(vars) == 0L) {
+    stop(errorCondition(
+      "This model has no continuous indicators; plot `what = \"responses\"` instead.",
+      class = "multilpa_no_continuous", call = NULL))
+  }
+  # One standardization map for the whole package, so the heatmap, the bars and
+  # as.data.frame(scale = "standardized") cannot disagree about what z means.
+  standardization <- .multilpa_standardization(x, vars)
+  z <- sweep(sweep(x$means, 2L, standardization$centre, "-"), 2L,
+             standardization$spread, "/")
+  n_profiles <- nrow(z)
+  share <- x$effective_profile_counts / sum(x$effective_profile_counts)
+  rows <- rev(seq_len(n_profiles))
+  graphics::par(mar = style$margins + c(0, 2.2, 0, 0))
+  .multilpa_panel(
+    xlim = c(0.5, length(vars) + 0.5), ylim = c(0.5, n_profiles + 0.5),
+    xlab = "Indicator", ylab = "",
+    main = if (is.null(main)) "Profile means in standard deviations" else main,
+    subtitle = if (is.null(subtitle)) sprintf(
+      "distance from each indicator's grand mean; %d profile%s", n_profiles,
+      if (n_profiles == 1L) "" else "s") else subtitle,
+    x_at = seq_along(vars), x_labels = vars,
+    y_at = rows, y_labels = sprintf("Profile %d\n(%.0f%%)", seq_len(n_profiles),
+                                    100 * share),
+    style = style)
+  cells <- expand.grid(indicator = seq_along(vars),
+                       profile = seq_len(n_profiles))
+  values <- z[cbind(cells$profile, cells$indicator)]
+  fills <- .multilpa_diverging(values)
+  graphics::rect(cells$indicator - 0.5, rows[cells$profile] - 0.5,
+                 cells$indicator + 0.5, rows[cells$profile] + 0.5,
+                 col = fills, border = style$panel_fill, lwd = 1.5)
+  graphics::text(cells$indicator, rows[cells$profile], sprintf("%.2f", values),
+                 col = .multilpa_ink(fills), cex = style$label_text_size)
+  invisible(NULL)
+}
+
+#' Draw a ridge plot of a per-case quantity, one ridge per profile
+#'
+#' Shared by the entropy and posterior-probability diagnostics, which differ
+#' only in what they measure and where their reference line sits.
+#'
+#' Each ridge is scaled to its own maximum, as `ggridges` does, so the shape of
+#' a small profile stays readable. The cost is that height carries no
+#' information about size, which is why every ridge is labelled with its share
+#' and the subtitle says so.
+#'
+#' @param values Per-case numeric vector.
+#' @param profile Integer profile index per case.
+#' @param n_profiles Number of profiles.
+#' @param share Profile shares, used to label each ridge.
+#' @param limits Range of the horizontal axis.
+#' @param reference Vertical reference line, or `NULL`.
+#' @param reference_label Text for the reference line.
+#' @param xlab,main,subtitle Axis label, title and secondary line.
+#' @param palette Fill colours, or `NULL` for the package palette.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_case_ridges <- function(values, profile, n_profiles, share,
+                                       limits, reference, reference_label,
+                                       xlab, main, subtitle, palette, style) {
+  colours <- if (is.null(palette)) .multilpa_palette(n_profiles) else
+    rep(palette, length.out = n_profiles)
+  breaks <- seq(limits[1L], limits[2L], length.out = 22L)
+  rows <- rev(seq_len(n_profiles))
+  graphics::par(mar = style$margins + c(0, 2.2, 0, 0))
+  .multilpa_panel(
+    xlim = limits, ylim = c(0.5, n_profiles + 0.75), xlab = xlab, ylab = "",
+    main = main, subtitle = subtitle,
+    y_at = rows, y_labels = sprintf("Profile %d\n(%.0f%%)", seq_len(n_profiles),
+                                    100 * share),
+    style = style)
+  invisible(lapply(seq_len(n_profiles), function(index) {
+    .multilpa_ridge(values[profile == index], breaks = breaks,
+                    base = rows[index] - 0.42, height = 0.88,
+                    fill = colours[index], border = colours[index])
+  }))
+  if (!is.null(reference)) {
+    # segments(), not abline(): plot.multilpa() sets xpd = NA so that direct
+    # labels can sit outside the panel, and an abline() then runs the full
+    # height of the device and straight through the title.
+    top <- n_profiles + 0.62
+    graphics::segments(reference, 0.5, reference, top, lty = 2L, lwd = 1.3,
+                       col = style$muted_colour)
+    graphics::text(reference, top, reference_label, pos = 4L, offset = 0.25,
+                   cex = style$label_text_size * 0.9, col = style$muted_colour)
+  }
+  invisible(NULL)
+}
+
+#' Draw the per-case entropy contribution within each profile
+#' @param x A fitted model carrying `subject_posteriors`.
+#' @param main,subtitle Panel title and secondary line.
+#' @param palette Fill colours, or `NULL`.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_entropy <- function(x, main, subtitle, palette, style) {
+  posteriors <- x$subject_posteriors
+  n_profiles <- ncol(posteriors)
+  # -sum p log p per case: zero when a case is assigned with certainty, and
+  # log(K) when the posterior is flat.
+  contribution <- -rowSums(posteriors * log(pmax(posteriors, .Machine$double.xmin)))
+  assigned <- max.col(posteriors, ties.method = "first")
+  share <- x$effective_profile_counts / sum(x$effective_profile_counts)
+  .multilpa_plot_case_ridges(
+    values = contribution, profile = assigned, n_profiles = n_profiles,
+    share = share, limits = c(0, log(n_profiles) * 1.02),
+    reference = mean(contribution), reference_label = "mean",
+    xlab = "Case-specific entropy contribution",
+    main = if (is.null(main)) "How confidently is each case assigned?" else main,
+    subtitle = if (is.null(subtitle)) sprintf(
+      paste("0 is certain, %.2f is a flat posterior over %d profiles;",
+            "each ridge is scaled to its own maximum"),
+      log(n_profiles), n_profiles) else subtitle,
+    palette = palette, style = style)
+}
+
+#' Draw the posterior probability of the assigned profile, within each profile
+#' @param x A fitted model carrying `subject_posteriors`.
+#' @param main,subtitle Panel title and secondary line.
+#' @param palette Fill colours, or `NULL`.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_posteriors <- function(x, main, subtitle, palette, style) {
+  posteriors <- x$subject_posteriors
+  n_profiles <- ncol(posteriors)
+  assigned <- max.col(posteriors, ties.method = "first")
+  probability <- posteriors[cbind(seq_len(nrow(posteriors)), assigned)]
+  share <- x$effective_profile_counts / sum(x$effective_profile_counts)
+  .multilpa_plot_case_ridges(
+    values = probability, profile = assigned, n_profiles = n_profiles,
+    share = share, limits = c(1 / n_profiles, 1),
+    reference = NULL, reference_label = NULL,
+    xlab = "Posterior probability of the assigned profile",
+    main = if (is.null(main)) "Modal assignment probabilities" else main,
+    subtitle = if (is.null(subtitle)) sprintf(
+      paste("mass piled at 1 is a clean separation; %.2f is a coin toss;",
+            "each ridge is scaled to its own maximum"),
+      1 / n_profiles) else subtitle,
+    palette = palette, style = style)
+}
+
+#' The plots this package can draw
+#'
+#' Returns the catalogue of `what =` values accepted by the `plot()` methods,
+#' with the group each belongs to, so the available views can be listed rather
+#' than recalled from a help page.
+#'
+#' @return A base `data.frame` with one row per plot type and the columns
+#'   `type` (the value to pass as `what`), `group` (`"measurement"`,
+#'   `"structure"`, `"diagnostics"` or `"selection"`), and `description`.
+#' @examples
+#' multilpa_plot_types()
+#' @export
+multilpa_plot_types <- function() {
+  data.frame(
+    type = c("profiles", "bars", "heatmap", "responses", "probabilities",
+             "sequences", "entropy", "posteriors", "enumeration"),
+    group = c(rep("measurement", 4L), rep("structure", 2L),
+              rep("diagnostics", 2L), "selection"),
+    description = c(
+      "Profile means across indicators, point size showing profile prevalence",
+      "Profile means as grouped bars, with 95% intervals when `data` is given",
+      "Profile means as standard deviations from each indicator's grand mean",
+      "Categorical response probabilities, one line per profile",
+      "Profile prevalence within each group class, the two-level quantity",
+      "Each group's profile at each occasion, one row per group",
+      "Per-case entropy contribution within each profile, as ridges",
+      "Posterior probability of the assigned profile, as ridges",
+      "Information criteria across a candidate grid (plot an enumeration)"
+    ),
+    stringsAsFactors = FALSE
+  )
+}
+
+#' Draw profile means as grouped bars
+#'
+#' The layout most readers of a profile analysis expect: indicators along the
+#' axis, one bar per profile within each indicator. Position within a group
+#' repeats what colour says -- the first bar is always the first profile -- and
+#' each bar carries its own value, so neither the comparison nor the number
+#' depends on reading a colour.
+#'
+#' On the standardized scale the bars run from zero in both directions, which is
+#' the usual way a profile is read: above or below the average for that
+#' indicator.
+#'
+#' @param x A fitted model carrying `means`.
+#' @param scale `"raw"` or `"standardized"`.
+#' @param errors Optional matrix of standard errors, drawn as whiskers.
+#' @param main,subtitle Panel title and secondary line.
+#' @param palette Bar fills, or `NULL` for the package palette.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_bars <- function(x, scale, errors, main, subtitle, palette, style) {
+  vars <- .multilpa_continuous_names(x)
+  if (length(vars) == 0L) {
+    stop(errorCondition(
+      "This model has no continuous indicators; plot `what = \"responses\"` instead.",
+      class = "multilpa_no_continuous", call = NULL))
+  }
+  n_profiles <- x$n_profiles
+  means <- x$means
+  if (identical(scale, "standardized")) {
+    standardization <- .multilpa_standardization(x, vars)
+    means <- sweep(sweep(means, 2L, standardization$centre, "-"), 2L,
+                   standardization$spread, "/")
+    if (!is.null(errors)) errors <- sweep(errors, 2L, standardization$spread, "/")
+  }
+  colours <- if (is.null(palette)) .multilpa_palette(n_profiles) else
+    rep(palette, length.out = n_profiles)
+  share <- x$effective_profile_counts / sum(x$effective_profile_counts)
+  width <- 0.8 / n_profiles
+  offsets <- (seq_len(n_profiles) - (n_profiles + 1) / 2) * width
+  centres <- seq_along(vars)
+  top <- if (is.null(errors)) means else means + 1.96 * errors
+  bottom <- if (is.null(errors)) means else means - 1.96 * errors
+  baseline <- if (identical(scale, "standardized")) 0 else
+    min(0, min(bottom) * 1.05)
+  span <- range(c(baseline, top, bottom))
+  padding <- 0.16 * max(diff(span), .Machine$double.eps)
+  # Room under the axis title for the legend strip.
+  graphics::par(mar = style$margins + c(2.6, 0, 0, 0))
+  .multilpa_panel(
+    xlim = c(0.4, length(vars) + 0.6),
+    ylim = c(span[1L] - padding * 0.4, span[2L] + padding),
+    xlab = "Indicator",
+    ylab = if (identical(scale, "standardized")) "Standardized mean" else
+      "Estimated mean",
+    main = if (is.null(main)) "Profile means" else main,
+    subtitle = if (is.null(subtitle)) sprintf(
+      "%d profiles; %s scale%s", n_profiles,
+      if (identical(scale, "standardized")) "standardized" else "input",
+      if (is.null(errors)) "" else "; whiskers are 95% intervals") else subtitle,
+    x_at = centres, x_labels = vars, style = style)
+  graphics::abline(h = baseline, col = style$muted_colour, lwd = 1)
+  invisible(lapply(seq_len(n_profiles), function(profile) {
+    left <- centres + offsets[profile] - width * 0.44
+    right <- centres + offsets[profile] + width * 0.44
+    value <- means[profile, ]
+    graphics::rect(left, baseline, right, value, col = colours[profile],
+                   border = style$panel_fill, lwd = 1.2)
+    if (!is.null(errors)) {
+      middle <- (left + right) / 2
+      graphics::segments(middle, bottom[profile, ], middle, top[profile, ],
+                         col = style$text_colour, lwd = 1.2)
+      graphics::segments(left + width * 0.12, top[profile, ],
+                         right - width * 0.12, top[profile, ],
+                         col = style$text_colour, lwd = 1.2)
+      graphics::segments(left + width * 0.12, bottom[profile, ],
+                         right - width * 0.12, bottom[profile, ],
+                         col = style$text_colour, lwd = 1.2)
+    }
+    # Above a positive bar, below a negative one, so the label never sits on it.
+    graphics::text((left + right) / 2,
+                   ifelse(value >= baseline, top[profile, ], bottom[profile, ]),
+                   sprintf("%.2f", value),
+                   pos = ifelse(value >= baseline, 3L, 1L), offset = 0.3,
+                   cex = style$label_text_size * 0.85, col = style$text_colour)
+  }))
+  .multilpa_legend_strip(sprintf("Profile %d (%.0f%%)", seq_len(n_profiles),
+                                 100 * share), colours, style)
+  invisible(NULL)
+}
+
+#' Measurement standard errors shaped like the means matrix
+#'
+#' @param x A fitted model.
+#' @param data The data frame the model was fitted to, or `NULL` for no errors.
+#' @return A profiles-by-indicators matrix of standard errors, or `NULL`.
+#' @noRd
+.multilpa_mean_error_matrix <- function(x, data) {
+  if (is.null(data)) return(NULL)
+  vars <- .multilpa_continuous_names(x)
+  errors <- .multilpa_measurement_errors(x, data)
+  cells <- expand.grid(indicator = vars, profile = seq_len(x$n_profiles),
+                       stringsAsFactors = FALSE)
+  values <- .multilpa_match_error(errors, "mean", cells$profile, cells$indicator)
+  if (all(is.na(values))) return(NULL)
+  matrix(values, x$n_profiles, length(vars), byrow = TRUE)
 }

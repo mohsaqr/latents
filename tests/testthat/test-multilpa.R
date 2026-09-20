@@ -318,7 +318,7 @@ test_that("seed restoration also runs when fitting fails", {
 })
 
 test_that("invalid data and unidentifiable specifications fail explicitly", {
-  args <- list(data = multilpa_small_data, indicators = c("x", "y"),
+  args <- list(data = multilpa_small_data, vars = c("x", "y"),
                group = "group", n_profiles = 2L, n_group_classes = 2L,
                n_starts = 1L)
   invalid_data <- list(
@@ -336,9 +336,9 @@ test_that("invalid data and unidentifiable specifications fail explicitly", {
     expect_error(do.call(multilpa, invalid_args))
   }))
   invalid_specs <- list(
-    list(indicators = "missing"), list(indicators = character()),
-    list(indicators = c("x", "x")), list(group = "missing"),
-    list(group = c("group", "x")), list(indicators = c("x", "group")),
+    list(vars = "missing"), list(vars = character()),
+    list(vars = c("x", "x")), list(group = "missing"),
+    list(group = c("group", "x")), list(vars = c("x", "group")),
     list(n_profiles = 7L), list(n_group_classes = 4L),
     list(n_profiles = 1L, n_group_classes = 2L),
     list(data = transform(multilpa_small_data, group = seq_len(nrow(multilpa_small_data))))
@@ -349,7 +349,7 @@ test_that("invalid data and unidentifiable specifications fail explicitly", {
 })
 
 test_that("invalid numeric controls and variance models are rejected", {
-  args <- list(data = multilpa_small_data, indicators = c("x", "y"),
+  args <- list(data = multilpa_small_data, vars = c("x", "y"),
                group = "group", n_profiles = 2L, n_group_classes = 2L,
                n_starts = 1L)
   invalid_specs <- list(

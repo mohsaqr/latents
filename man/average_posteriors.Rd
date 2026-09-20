@@ -4,10 +4,10 @@
 \alias{average_posteriors}
 \title{Average posterior probabilities by modal class}
 \usage{
-average_posteriors(object, level = c("individuals", "groups", "both"))
+average_posteriors(x, level = c("individuals", "groups", "both"))
 }
 \arguments{
-\item{object}{A fitted `multilpa` model.}
+\item{x}{A fitted `multilpa` model.}
 
 \item{level}{`"individuals"` for latent profiles, `"groups"` for latent group
 classes, or `"both"` to stack them in one table.}

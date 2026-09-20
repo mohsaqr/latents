@@ -36,8 +36,8 @@
   set.seed(7)
   data <- data.frame(school = rep(seq_len(12), each = 10),
                      score_a = rnorm(120), score_b = rnorm(120))
-  enumerate_classes(data, c("score_a", "score_b"), "school", profiles = 1:3,
-                    group_classes = 1, n_starts = 2, seed = 1)
+  enumerate_classes(data, c("score_a", "score_b"), "school", n_profiles = 1:3,
+                    n_group_classes = 1, n_starts = 2, seed = 1)
 }
 
 test_that("every result class of this sweep defines all four verbs", {
@@ -242,7 +242,7 @@ test_that("a bootstrap comparison is classed and plots its simulated null", {
                     n_starts = 2, seed = 8)
   large <- multilpa(data, "y", "g", 2, 1, variance_model = "equal",
                     n_starts = 3, seed = 8, max_iter = 3000, tol = 1e-7)
-  result <- bootstrap_lrt(small, large, data, n_boot = 3, n_starts = 3,
+  result <- bootstrap_lrt(small, large, data, iter = 3, n_starts = 3,
                           max_iter = 3000, tol = 1e-7, seed = 42)
   expect_s3_class(result, "multilpa_bootstrap_lrt")
   summary_object <- summary.multilpa_bootstrap_lrt(result)

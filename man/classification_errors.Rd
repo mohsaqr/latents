@@ -4,10 +4,10 @@
 \alias{classification_errors}
 \title{How often each class is assigned to the wrong one}
 \usage{
-classification_errors(object, level = c("individuals", "groups"))
+classification_errors(x, level = c("individuals", "groups"))
 }
 \arguments{
-\item{object}{A fitted model of this package.}
+\item{x}{A fitted model of this package.}
 
 \item{level}{`"individuals"` for profiles, `"groups"` for group classes.}
 }

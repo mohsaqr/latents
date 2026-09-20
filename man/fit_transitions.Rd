@@ -6,8 +6,8 @@
 \usage{
 fit_transitions(
   data,
-  indicators,
-  group,
+  vars,
+  id,
   n_profiles,
   time,
   n_group_classes = 1L,
@@ -27,9 +27,9 @@ fit_transitions(
 \arguments{
 \item{data}{A data frame containing indicators and a group identifier.}
 
-\item{indicators}{Unique character vector of continuous indicator column names.}
+\item{vars}{Unique character vector of continuous indicator column names.}
 
-\item{group}{Name of the observed group identifier column. Character,
+\item{id}{Name of the observed group identifier column. Character,
 factor, or numeric identifiers are supported; missing identifiers are not.}
 
 \item{n_profiles}{Integer number of individual profiles, at least two.}

@@ -231,7 +231,7 @@
 #' as.data.frame(staged, what = "stages")
 #' as.data.frame(staged, what = "profile_probabilities")
 #' @export
-fit_staged <- function(data, indicators, group, n_profiles,
+fit_staged <- function(data, vars, id, n_profiles,
                        n_group_classes = 2L, measurement = NULL,
                        variance_model = c("varying", "equal"), n_starts = 10L,
                        max_iter = 1000L, tol = 1e-8, min_variance = 1e-6,
@@ -253,7 +253,7 @@ fit_staged <- function(data, indicators, group, n_profiles,
     "`measurement` must be NULL or a fitted `multilpa` model" =
       is.null(measurement) || inherits(measurement, "multilpa"))
   call <- match.call()
-  shared <- list(data = data, indicators = indicators, group = group,
+  shared <- list(data = data, vars = vars, id = id,
                  n_profiles = n_profiles, variance_model = variance_model,
                  n_starts = n_starts, max_iter = max_iter, tol = tol,
                  min_variance = min_variance, seed = seed, missing = missing,
@@ -262,7 +262,7 @@ fit_staged <- function(data, indicators, group, n_profiles,
   if (is.null(measurement)) {
     measurement <- do.call(multilpa, c(shared, list(n_group_classes = 1L)))
   } else {
-    .multilpa_check_measurement(measurement, n_profiles, indicators, categorical,
+    .multilpa_check_measurement(measurement, n_profiles, vars, categorical,
                                 covariance_model, variance_model)
   }
   result <- do.call(multilpa, c(shared, list(
@@ -273,7 +273,7 @@ fit_staged <- function(data, indicators, group, n_profiles,
   result$staged <- TRUE
   result$n_parameters_with_measurement <- result$n_parameters +
     .multilpa_fixed_parameters(result$fixed, n_profiles,
-                               length(setdiff(indicators, categorical)),
+                               length(setdiff(vars, categorical)),
                                .multilpa_category_counts(measurement),
                                variance_model, covariance_model)
   result$stage_one <- measurement
@@ -297,13 +297,13 @@ fit_staged <- function(data, indicators, group, n_profiles,
 #'
 #' @param measurement Fitted `multilpa` model offered as the first stage.
 #' @param n_profiles Requested number of profiles.
-#' @param indicators Requested indicator names.
+#' @param vars Requested indicator names.
 #' @param categorical Requested categorical indicator names.
 #' @param covariance_model Requested residual covariance structure.
 #' @param variance_model Requested variance constraint.
 #' @return `NULL`, invisibly; raises `multilpa_bad_stage` on the first mismatch.
 #' @noRd
-.multilpa_check_measurement <- function(measurement, n_profiles, indicators,
+.multilpa_check_measurement <- function(measurement, n_profiles, vars,
                                         categorical, covariance_model,
                                         variance_model) {
   mismatch <- function(what, expected, received) {
@@ -314,9 +314,9 @@ fit_staged <- function(data, indicators, group, n_profiles,
   if (!identical(as.integer(measurement$n_profiles), as.integer(n_profiles))) {
     mismatch("n_profiles", n_profiles, measurement$n_profiles)
   }
-  if (!identical(measurement$indicators, indicators)) {
-    mismatch("indicators", paste(indicators, collapse = ", "),
-             paste(measurement$indicators, collapse = ", "))
+  if (!identical(measurement$vars, vars)) {
+    mismatch("vars", paste(vars, collapse = ", "),
+             paste(measurement$vars, collapse = ", "))
   }
   if (!identical(sort(measurement$categorical %||% character()), sort(categorical))) {
     mismatch("categorical indicators",

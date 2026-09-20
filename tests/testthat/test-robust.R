@@ -12,12 +12,12 @@ robust_fixture_data <- function(seed = 11L, n_groups = 30L, per_group = 8L) {
 }
 
 centered_matrix <- function(fit, dat) {
-  x <- as.matrix(dat[, fit$indicators, drop = FALSE])
+  x <- as.matrix(dat[, fit$vars, drop = FALSE])
   sweep(x, 2L, colMeans(x, na.rm = TRUE), "-")
 }
 
 centered_theta <- function(fit, dat) {
-  x <- as.matrix(dat[, fit$indicators, drop = FALSE])
+  x <- as.matrix(dat[, fit$vars, drop = FALSE])
   centered <- fit
   centered$means <- sweep(fit$means, 2L, colMeans(x, na.rm = TRUE), "-")
   .multilpa_coefficients(centered, "unconstrained")
@@ -46,7 +46,7 @@ test_that("per-group scores sum to the aggregate gradient in every model family"
                           missing = "fiml")))
   invisible(lapply(specifications, function(specification) {
     fit <- do.call(multilpa, c(list(data = specification$data,
-      indicators = c("a", "b"), group = "g", n_profiles = 2,
+      vars = c("a", "b"), id = "g", n_profiles = 2,
       n_group_classes = 2, n_starts = 5, seed = 5), specification$arguments))
     theta <- centered_theta(fit, specification$data)
     x <- centered_matrix(fit, specification$data)

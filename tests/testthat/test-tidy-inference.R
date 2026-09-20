@@ -112,8 +112,8 @@ test_that("one generic returns one column set, whichever class it dispatches on"
   expect_true(all(from_covariate$level %in% c("measurement", "profile", "group")))
   expect_identical(attr(from_plain, "vcov_type"), "observed")
   expect_identical(attr(from_covariate, "vcov_type"), "observed")
-  expect_identical(attr(from_plain, "p_adjust"), "none")
-  expect_identical(attr(from_covariate, "p_adjust"), "none")
+  expect_identical(attr(from_plain, "adjust"), "none")
+  expect_identical(attr(from_covariate, "adjust"), "none")
   expect_equal(attr(from_plain, "level"), 0.95)
   expect_equal(attr(from_covariate, "level"), 0.95)
 })
@@ -121,15 +121,15 @@ test_that("one generic returns one column set, whichever class it dispatches on"
 test_that("a correction is named, never applied by stealth", {
   plain <- .tidy_plain_fit()
   none <- parameter_inference(plain$fit, plain$data)
-  corrected <- parameter_inference(plain$fit, plain$data, p_adjust = "bonferroni")
+  corrected <- parameter_inference(plain$fit, plain$data, adjust = "bonferroni")
   tested <- !is.na(none$p_value)
 
   expect_equal(none$p_adjusted, none$p_value)
-  expect_identical(attr(corrected, "p_adjust"), "bonferroni")
+  expect_identical(attr(corrected, "adjust"), "bonferroni")
   expect_equal(corrected$p_adjusted[tested],
                pmin(1, none$p_value[tested] * sum(tested)))
   expect_true(all(is.na(corrected$p_adjusted[!tested])))
-  expect_error(parameter_inference(plain$fit, plain$data, p_adjust = "nonesuch"))
+  expect_error(parameter_inference(plain$fit, plain$data, adjust = "nonesuch"))
 })
 
 test_that("the natural-scale covariance is what the reported intervals are built from", {
@@ -202,7 +202,7 @@ test_that("coef reports the same numbers the tidy table does, on both spread mod
     # raw coordinates did not have.
     spread <- inference$parameter %in% c("variance", "covariance")
     diagonal_entries <- spread & inference$term %in%
-      paste(fit$indicators, fit$indicators, sep = ":") | inference$parameter == "variance"
+      paste(fit$vars, fit$vars, sep = ":") | inference$parameter == "variance"
     expect_true(all(coef(fit)[diagonal_entries] > 0), info = covariance_model)
     # The estimation scale says so in the name and never claims to be natural.
     estimation <- coef(fit, scale = "unconstrained")

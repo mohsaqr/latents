@@ -27,3 +27,6 @@ tmp/
 
 # Local tooling
 .claude/
+
+# Base graphics opens this when a test forgets its own device.
+Rplots.pdf

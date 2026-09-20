@@ -5,18 +5,18 @@
 \title{Relate a latent class to an outcome it did not help define}
 \usage{
 three_step(
-  object,
+  x,
   data,
   outcome,
   level = c("individuals", "groups"),
   method = c("bch", "proportional", "modal"),
-  level_ci = 0.95,
+  ci_level = 0.95,
   contrast = c("none", "pairs"),
-  p_adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
 )
 }
 \arguments{
-\item{object}{A fitted model of this package.}
+\item{x}{A fitted model of this package.}
 
 \item{data}{The data frame carrying the outcome, in the fit's row order.}
 
@@ -30,14 +30,14 @@ group classes.}
 `"proportional"` weights by the posteriors, which is simpler and
 attenuated; `"modal"` is the naive assignment, shown for comparison.}
 
-\item{level_ci}{Confidence level for the intervals.}
+\item{ci_level}{Confidence level for the intervals.}
 
 \item{contrast}{`"none"` (the default) reports one outcome mean per class.
 `"pairs"` reports the difference between every pair of classes instead,
 which is the quantity a three-step analysis is usually run to test, with a
 statistic and a p-value against a difference of zero.}
 
-\item{p_adjust}{Multiplicity correction applied across the pairwise
+\item{adjust}{Multiplicity correction applied across the pairwise
 differences, passed to [stats::p.adjust()]. `"BH"` by default; `"none"`
 leaves the p-values uncorrected. Ignored for `contrast = "none"`, which
 tests nothing.}
@@ -58,7 +58,7 @@ A base `data.frame`. For `contrast = "none"` it has one row per class
   Standard errors are cluster-robust in both shapes, taking the fit's groups
   as the independent units, so they remain honest when the outcome is
   measured on observations nested inside those groups. The correction applied
-  to `p_value_adjusted` is recorded in the result's `p_adjust` attribute.
+  to `p_value_adjusted` is recorded in the result's `adjust` attribute.
 }
 \description{
 The three-step approach: the measurement model is fitted first, units are

@@ -37,7 +37,7 @@ Tidy an enumeration summary
 \examples{
 set.seed(1)
 d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
-                              group_classes = 1, n_starts = 2, seed = 1)
+candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+                              n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(summary(candidates))
 }

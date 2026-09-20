@@ -173,8 +173,8 @@ test_that("tidy accessors return the documented shapes", {
 
 test_that("enumeration and inference tidy and print", {
   dat <- make_two_level()
-  candidates <- enumerate_classes(dat, c("a", "b"), "g", profiles = 1:2,
-                                 group_classes = 1:2, n_starts = 3, seed = 3)
+  candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
+                                 n_group_classes = 1:2, n_starts = 3, seed = 3)
   expect_s3_class(candidates, "multilpa_enumeration")
   grid <- as.data.frame(candidates)
   expect_identical(nrow(grid), 4L)

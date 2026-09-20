@@ -107,10 +107,10 @@
   })
   covariance_blocks <- lapply(component, function(part) {
     # 0.5 * (P S P - w P) for every group, with S held as a flattened row.
-    t(vapply(seq_len(n_groups), function(group) {
-      scatter <- matrix(part$scatter[group, ], dimension, dimension)
+    t(vapply(seq_len(n_groups), function(id) {
+      scatter <- matrix(part$scatter[id, ], dimension, dimension)
       as.vector(0.5 * (part$precision %*% scatter %*% part$precision -
-                         part$group_weight[group] * part$precision))
+                         part$group_weight[id] * part$precision))
     }, numeric(dimension * dimension)))
   })
   profiles <- if (object$variance_model == "equal") 1L else seq_len(object$n_profiles)
@@ -119,8 +119,8 @@
       Reduce(`+`, covariance_blocks)
     } else covariance_blocks[[profile]]
     factor <- t(chol(matrix(parameters$covariances[, , profile], dimension, dimension)))
-    t(vapply(seq_len(n_groups), function(group) {
-      factor_score <- 2 * matrix(block[group, ], dimension, dimension) %*% factor
+    t(vapply(seq_len(n_groups), function(id) {
+      factor_score <- 2 * matrix(block[id, ], dimension, dimension) %*% factor
       diag(factor_score) <- diag(factor_score) * diag(factor)
       factor_score[lower]
     }, numeric(sum(lower))))

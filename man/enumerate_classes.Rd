@@ -6,10 +6,10 @@
 \usage{
 enumerate_classes(
   data,
-  indicators,
-  group,
-  profiles = 1:4,
-  group_classes = 1:3,
+  vars,
+  id,
+  n_profiles = 1:4,
+  n_group_classes = 1:3,
   seed = NULL,
   ...
 )
@@ -17,13 +17,13 @@ enumerate_classes(
 \arguments{
 \item{data}{Data frame.}
 
-\item{indicators}{Continuous indicator names.}
+\item{vars}{Continuous indicator names.}
 
-\item{group}{Group identifier column name.}
+\item{id}{Group identifier column name.}
 
-\item{profiles}{Positive integer profile counts to try.}
+\item{n_profiles}{Positive integer profile counts to try.}
 
-\item{group_classes}{Positive integer group-class counts to try.}
+\item{n_group_classes}{Positive integer group-class counts to try.}
 
 \item{seed}{Optional reproducible seed for each fit.}
 
@@ -46,8 +46,8 @@ boundary, and unreplicated fits are reported, not silently selected.
 \examples{
 set.seed(1)
 d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
-                              group_classes = 1, n_starts = 2, seed = 1)
+candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+                              n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(candidates)
 summary(candidates)
 }

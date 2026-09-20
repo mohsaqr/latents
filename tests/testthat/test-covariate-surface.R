@@ -121,17 +121,21 @@ test_that("plot draws what a covariate model has and refuses what it has not", {
 
   # Prevalence is a function of each unit's covariates, so there is no single
   # vector to draw and the request is refused rather than averaged.
-  expect_error(plot(fit, what = "probabilities"),
+  expect_error(draw(plot(fit, what = "probabilities")),
                class = "multilpa_nothing_to_plot")
 })
 
 test_that("direct labels are measured in the weight they are drawn", {
   # strwidth() in the regular weight under-reserves the right margin, which
-  # clipped the last character of every direct label.
-  regular <- graphics::strwidth("Profile 1 (98%)", units = "inches", cex = 0.78)
-  bold <- graphics::strwidth("Profile 1 (98%)", units = "inches", cex = 0.78,
-                             font = 2L)
-  expect_gt(bold, regular)
-  expect_gt(.multilpa_label_margin("Profile 1 (98%)", 0.78),
-            regular / graphics::par("csi") + 1.6)
+  # clipped the last character of every direct label. Text measurement needs an
+  # open device: without one R opens Rplots.pdf and the widths come back from a
+  # device nobody chose, so the measuring happens inside draw() like the drawing.
+  draw({
+    regular <- graphics::strwidth("Profile 1 (98%)", units = "inches", cex = 0.78)
+    bold <- graphics::strwidth("Profile 1 (98%)", units = "inches", cex = 0.78,
+                               font = 2L)
+    expect_gt(bold, regular)
+    expect_gt(.multilpa_label_margin("Profile 1 (98%)", 0.78),
+              regular / graphics::par("csi") + 1.6)
+  })
 })

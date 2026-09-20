@@ -33,7 +33,7 @@ names it by its class counts instead of indexing the grid by position.
 \examples{
 set.seed(1)
 d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-candidates <- enumerate_classes(d, "y", "g", profiles = 1:2,
-                              group_classes = 1, n_starts = 2, seed = 1)
+candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
+                              n_group_classes = 1, n_starts = 2, seed = 1)
 candidate_fit(candidates, n_profiles = 2, n_group_classes = 1)
 }

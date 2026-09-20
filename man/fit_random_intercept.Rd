@@ -6,8 +6,8 @@
 \usage{
 fit_random_intercept(
   data,
-  indicators,
-  group,
+  vars,
+  id,
   n_profiles,
   variance_model = c("varying", "equal"),
   n_starts = 5L,
@@ -23,9 +23,9 @@ fit_random_intercept(
 \arguments{
 \item{data}{Data frame with complete numeric indicators.}
 
-\item{indicators}{Character vector of indicator names.}
+\item{vars}{Character vector of indicator names.}
 
-\item{group}{Name of the group identifier column.}
+\item{id}{Name of the group identifier column.}
 
 \item{n_profiles}{Positive integer number of profiles.}
 
