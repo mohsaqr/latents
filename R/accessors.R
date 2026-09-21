@@ -129,7 +129,15 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   # Which level a truth column describes is read off the data, not guessed: a
   # column taking one value within every group is a property of the group, and
   # one that varies inside any group cannot be.
-  grouped <- !is.null(x$group_classes) &&
+  #
+  # That reading needs groups with something inside them. Where every group
+  # holds one observation -- an `id = NULL` fit, or a two-level fit with no
+  # repeated units -- "constant within group" is true of every column by
+  # construction, and the test would send every truth column to the group level
+  # and cross-tabulate it against a group class that is the same for all of
+  # them. There is no group-level question to ask of singleton groups, so the
+  # answer is the profile.
+  grouped <- !is.null(x$group_classes) && max(x$group_sizes) > 1L &&
     .multilpa_constant_within(values, x$group_index)
   assignment <- if (grouped) "group_class" else "profile"
   # `useNA = "ifany"` so a missing label is a visible value rather than a row

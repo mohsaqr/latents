@@ -1,3 +1,36 @@
+# multilpa 0.11.7
+
+## Transition networks, with `get_tna()` and `get_group_tna()`
+
+A fitted transition model hands itself to the tna package:
+
+```r
+moves <- fit_transitions(course_engagement, vars = activity, id = "student",
+                         time = "sequence", n_profiles = 3, n_group_classes = 3)
+
+get_tna(moves)        # one network for the whole sample
+get_group_tna(moves)  # one network per latent group class
+```
+
+`get_tna()` returns a `tna` model and `get_group_tna()` a `group_tna`, so every
+verb of that package applies: `centralities()`, `communities()`, `cliques()`,
+`compare()`, `plot()`. `tna` is in Suggests and is required only by these two.
+
+What is handed over is the **estimates**. tna's own method for a fitted mixture
+model, `group_model.mhmm()`, takes the model's grouping and counts transitions
+between modal assignments, discarding the estimated matrices; these verbs pass
+the matrices themselves, maximised over the full posteriors, so an observation
+split 0.6/0.4 between two profiles contributes to both rather than entirely to
+one. The two answer different questions and will differ wherever classification
+is uncertain.
+
+The whole-sample network is the **marginal** transition matrix: the expected
+counts summed across classes and then normalised, not the class-probability
+average of the class matrices. A class holding a tenth of the units but a fifth
+of the transitions counts for its transitions, which is what a marginal
+probability means. A state no observation ever leaves is reported as a
+self-transition rather than as `NaN`.
+
 # multilpa 0.11.6
 
 ## Single-level fits, with `id = NULL`

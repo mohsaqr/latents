@@ -111,3 +111,31 @@ test_that("the package's verbs work on a single-level fit", {
     c("multilpa_bootstrap_dropped", "multilpa_unconverged"))
   expect_true(all(boot$conf_low <= boot$estimate & boot$estimate <= boot$conf_high))
 })
+
+test_that("a truth column cross-tabulates against profiles, not a single class", {
+  # With one observation per group, "constant within every group" is vacuously
+  # true of every column, so the level detection sent every truth column to the
+  # group level and tabulated it against a group class that is the same for all
+  # rows -- proportion 1.0 everywhere and nothing learned.
+  data <- single_level_data()
+  data$known <- rep(c("a", "b"), each = nrow(data) / 2L)
+  fit <- quietly(multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L,
+                          n_starts = 3L, seed = 1L))
+  recovery <- get_data(fit, "assignments", data = data, truth = "known")
+  expect_identical(unique(recovery$assignment), "profile")
+  expect_identical(nrow(recovery), 4L)
+  # Within each truth value the proportions are a distribution over profiles.
+  shares <- aggregate(proportion ~ value, data = recovery, FUN = sum)
+  expect_equal(shares$proportion, rep(1, 2))
+  # A two-level fit is unaffected: a column constant within groups still
+  # describes the group.
+  grouped_data <- single_level_data()
+  grouped_data$unit <- rep(seq_len(40L), each = 4L)
+  grouped_data$kind <- rep(c("a", "b"), each = nrow(grouped_data) / 2L)
+  grouped <- multilpa(grouped_data, c("x", "y"), id = "unit", n_profiles = 2L,
+                      n_group_classes = 2L, n_starts = 3L, seed = 1L)
+  expect_identical(
+    unique(get_data(grouped, "assignments", data = grouped_data,
+                    truth = "kind")$assignment),
+    "group_class")
+})
