@@ -158,6 +158,10 @@
 #'     membership below one, so it is supported by less than one observation.}
 #'   \item{`multilpa_failed_replicates`}{Some bootstrap replicates failed
 #'     validation, so the bootstrap p-value is `NA`.}
+#'   \item{`multilpa_single_level`}{`id = NULL` was passed, so the fit has one
+#'     observation per unit and no second level. Raised by [multilpa()] on every
+#'     such fit: this package is for the two-level model, and fitting the
+#'     one-level reduction of it is a choice worth stating out loud.}
 #'   \item{`multilpa_bootstrap_dropped`}{Some resamples did not produce a usable
 #'     fit and were left out of the interval. Raised by
 #'     `parameter_inference(method = "bootstrap")`, naming how many, so the

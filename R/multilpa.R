@@ -562,6 +562,52 @@
   values
 }
 
+#' Resolve a single-level request into the two-level machinery
+#'
+#' `id = NULL` says the observations are independent: each row is its own unit,
+#' which is the ordinary one-level mixture this model reduces to when every
+#' group holds one row and there is one group class. Nothing about the
+#' likelihood changes; only the grouping does.
+#'
+#' The column is fabricated here rather than by the caller. A caller who writes
+#' `data$unit <- seq_len(nrow(data))` has to know that the fit stores that
+#' column, that `get_data(x, "data")` will hand it back, and that a second call
+#' must spell it the same way -- plumbing the package should own. This
+#' package's own validation harness wrote that line once per comparison before
+#' this argument existed.
+#'
+#' @param data The caller's data frame.
+#' @param n_group_classes What the caller asked for, or `NULL` if they did not.
+#' @return A list with `data`, `id` and `n_group_classes`.
+#' @noRd
+.multilpa_single_level <- function(data, n_group_classes) {
+  stopifnot("`data` must be a data frame" = is.data.frame(data))
+  name <- ".observation"
+  if (name %in% names(data)) {
+    stop(errorCondition(sprintf(paste(
+      "`id = NULL` gives every observation its own unit and names that unit",
+      "`%s`, which these data already have as a column. Rename it, or pass it",
+      "as `id` if it is the nesting unit."), name),
+      class = "multilpa_bad_data", call = NULL))
+  }
+  if (!is.null(n_group_classes) && !isTRUE(as.integer(n_group_classes) == 1L)) {
+    stop(errorCondition(sprintf(paste(
+      "`id = NULL` puts one observation in each unit, so there is no",
+      "composition for a second-level class to differ in and",
+      "`n_group_classes = %s` has nothing to estimate. Pass `id` to fit group",
+      "classes, or leave `n_group_classes` alone for a single-level fit."),
+      format(n_group_classes)),
+      class = "multilpa_bad_argument", call = NULL))
+  }
+  warning(warningCondition(paste(
+    "`id = NULL` fits a single-level model: every observation is its own unit",
+    "and no second level is estimated. This package exists for the two-level",
+    "model; pass the nesting column as `id` to fit it."),
+    class = "multilpa_single_level", call = NULL))
+  data[[name]] <- seq_len(nrow(data))
+  list(data = data, id = name, n_group_classes = 1L)
+}
+
 #' Fit a two-level latent profile model
 #'
 #' Fits individual Gaussian profiles nested within observed groups. A discrete
@@ -573,10 +619,24 @@
 #'
 #' @param data A data frame containing indicators and a group identifier.
 #' @param vars Unique character vector of continuous indicator column names.
-#' @param id Name of the observed group identifier column. Character,
-#'   factor, or numeric identifiers are supported; missing identifiers are not.
+#' @param id Name of the observed group identifier column. Character, factor, or
+#'   numeric identifiers are supported; missing identifiers are not.
+#'
+#'   `id` has no default: omitting it raises `multilpa_bad_argument`, because a
+#'   forgotten grouping would otherwise be fitted as a different model without
+#'   saying so. Passing `id = NULL` explicitly fits a **single-level** model:
+#'   the observations are treated as independent, each row is its own unit, and
+#'   `n_group_classes` becomes one. That fit raises a `multilpa_single_level`
+#'   warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
+#'   two-level model reduces to, and every verb of this package works on it. The
+#'   unit column is fabricated internally as `.observation`; it is not returned
+#'   by `get_data(x, "data")`, and a `data` that already has a column of that
+#'   name raises `multilpa_bad_data`. Asking for more than one group class
+#'   without an `id` raises `multilpa_bad_argument`, because one observation per
+#'   unit leaves no composition for a second-level class to differ in.
 #' @param n_profiles Positive integer number of individual profiles.
-#' @param n_group_classes Positive integer number of latent group classes.
+#' @param n_group_classes Positive integer number of latent group classes. With
+#'   `id = NULL` it is one, and naming anything else is an error.
 #' @param profile_covariates,group_covariates Names of numeric columns of
 #'   `data` predicting individual-profile and group-class membership through
 #'   multinomial logits, with the final class as reference. Naming either one
@@ -772,11 +832,21 @@ multilpa <- function(data, vars, id, n_profiles,
                        time = NULL, fixed = character(),
                        centering = c("none", "person", "grand"),
                        volume = NULL, shape = NULL, orientation = NULL) {
+  ## Before `stopifnot()`, which reads `id` and would otherwise force the
+  ## missing argument into R's own bare "argument \"id\" is missing" error.
+  if (missing(id)) {
+    stop(errorCondition(paste(
+      "`id` names the column the observations are nested in, and this model",
+      "needs it. Pass it, or pass `id = NULL` to say the observations are",
+      "independent and fit a single-level model."),
+      class = "multilpa_bad_argument", call = NULL))
+  }
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`vars` must be a character vector of column names" =
       is.character(vars),
-    "`id` must be a single column name" = is.character(id),
+    "`id` must be a single column name, or NULL for a single-level fit" =
+      is.null(id) || (is.character(id) && length(id) == 1L),
     "`profile_covariates` must be a character vector of column names" =
       is.character(profile_covariates) && !anyNA(profile_covariates),
     "`group_covariates` must be a character vector of column names" =
@@ -788,6 +858,14 @@ multilpa <- function(data, vars, id, n_profiles,
       is.finite(min_probability) && min_probability > 0 &&
       min_probability < 1)
   call <- match.call()
+  single_level <- is.null(id)
+  if (single_level) {
+    resolved <- .multilpa_single_level(
+      data, if (missing(n_group_classes)) NULL else n_group_classes)
+    data <- resolved$data
+    id <- resolved$id
+    n_group_classes <- resolved$n_group_classes
+  }
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
@@ -995,7 +1073,7 @@ multilpa <- function(data, vars, id, n_profiles,
     indicator_data = as.matrix(indicator_frame),
     centering = centering, centering_offsets = centred$offsets,
     categorical_data = codes,
-    id = id, group_ids = group_ids,
+    id = id, group_ids = group_ids, single_level = single_level,
     time = time, time_values = time_values,
     group_values = group_values, group_index = group_index,
     group_sizes = setNames(group_sizes, group_ids),

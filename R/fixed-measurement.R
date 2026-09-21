@@ -191,6 +191,10 @@
 #' profiles they are meant to describe.
 #'
 #' @inheritParams multilpa
+#' @param id Name of the observed group identifier column. Character, factor, or
+#'   numeric identifiers are supported; missing identifiers are not. Required
+#'   here: this model has a second level by construction, so it has no
+#'   single-level form and does not take `multilpa()`'s `id = NULL`.
 #' @param n_group_classes Number of latent group classes to estimate in the
 #'   second stage. Must be at least two; one would leave nothing to estimate.
 #' @param measurement Optional fitted `multilpa` model to use as the first

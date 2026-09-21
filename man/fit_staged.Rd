@@ -29,8 +29,10 @@ fit_staged(
 
 \item{vars}{Unique character vector of continuous indicator column names.}
 
-\item{id}{Name of the observed group identifier column. Character,
-factor, or numeric identifiers are supported; missing identifiers are not.}
+\item{id}{Name of the observed group identifier column. Character, factor, or
+numeric identifiers are supported; missing identifiers are not. Required
+here: this model has a second level by construction, so it has no
+single-level form and does not take `multilpa()`'s `id = NULL`.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}
 

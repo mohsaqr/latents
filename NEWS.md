@@ -1,3 +1,46 @@
+# multilpa 0.11.6
+
+## Single-level fits, with `id = NULL`
+
+`multilpa()` accepts `id = NULL`, which treats the observations as independent
+-- each row is its own unit, `n_group_classes` becomes one -- and fits the
+ordinary Gaussian or latent-class mixture the two-level model reduces to:
+
+```r
+multilpa(faithful, vars = c("eruptions", "waiting"), id = NULL, n_profiles = 3)
+```
+
+`id` has **no default**, and omitting it still raises, now with
+`multilpa_bad_argument` naming both ways forward rather than R's bare
+"argument \"id\" is missing". A single-level model is not the default in a
+package for multilevel models, and a forgotten grouping must not quietly become
+a different model: on data with 106 students in 1,422 enrolments it would report
+1,422 independent observations and change every standard error. Every
+`id = NULL` fit raises a `multilpa_single_level` warning saying what it fitted.
+
+Nothing about the likelihood changes, and the fit is identical to the one you
+get by numbering the rows yourself and asking for one group class; that
+equivalence is asserted in the tests. Every verb of the package works on it,
+including `parameter_inference()`, whose cluster bootstrap degenerates to the
+ordinary nonparametric bootstrap when each unit holds one row -- which is the
+right bootstrap for independent observations -- and `vcov_type = "robust"`,
+whose per-group scores become per-row scores.
+
+The unit column is fabricated internally as `.observation`. It is not handed
+back by `get_data(x, "data")` or `get_data(x, "assignments")`, and data that
+already carry a column of that name raise `multilpa_bad_data` rather than having
+it silently overwritten. Asking for more than one group class without an `id`
+raises `multilpa_bad_argument`: one observation per unit leaves no composition
+for a second-level class to differ in.
+
+A single-level fit prints as what it is --- `Latent profile analysis: 2
+profiles` over `160 observations` --- rather than reporting one group class and
+160 groups of one.
+
+`fit_staged()` and `fit_transitions()` still require `id`, and say so in their
+own documentation rather than inheriting `multilpa()`'s: both have a second
+level by construction.
+
 # multilpa 0.11.5
 
 ## Every covariance structure now reports uncertainty

@@ -36,12 +36,26 @@ multilpa(
 
 \item{vars}{Unique character vector of continuous indicator column names.}
 
-\item{id}{Name of the observed group identifier column. Character,
-factor, or numeric identifiers are supported; missing identifiers are not.}
+\item{id}{Name of the observed group identifier column. Character, factor, or
+  numeric identifiers are supported; missing identifiers are not.
+
+  `id` has no default: omitting it raises `multilpa_bad_argument`, because a
+  forgotten grouping would otherwise be fitted as a different model without
+  saying so. Passing `id = NULL` explicitly fits a **single-level** model:
+  the observations are treated as independent, each row is its own unit, and
+  `n_group_classes` becomes one. That fit raises a `multilpa_single_level`
+  warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
+  two-level model reduces to, and every verb of this package works on it. The
+  unit column is fabricated internally as `.observation`; it is not returned
+  by `get_data(x, "data")`, and a `data` that already has a column of that
+  name raises `multilpa_bad_data`. Asking for more than one group class
+  without an `id` raises `multilpa_bad_argument`, because one observation per
+  unit leaves no composition for a second-level class to differ in.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}
 
-\item{n_group_classes}{Positive integer number of latent group classes.}
+\item{n_group_classes}{Positive integer number of latent group classes. With
+`id = NULL` it is one, and naming anything else is an error.}
 
 \item{profile_covariates, group_covariates}{Names of numeric columns of
 `data` predicting individual-profile and group-class membership through

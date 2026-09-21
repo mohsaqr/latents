@@ -708,7 +708,8 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     "format"))
   assignments <- list(assignments = .multilpa_table(
     function(x, data = NULL, truth = NULL)
-      .multilpa_assignments(x, data = data, truth = truth),
+      .multilpa_hide_fabricated_id(
+        x, .multilpa_assignments(x, data = data, truth = truth)),
     c("data", "truth")))
   # A continuous random intercept has no discrete group classes, so there are
   # no group posteriors to report rather than an empty table of them.
@@ -779,7 +780,25 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     list(stages = .multilpa_table(.multilpa_stage_frame)) else list()
   c(stages,
     list(starts = .multilpa_table(function(x) x$starts),
-         data = .multilpa_table(.multilpa_model_frame)))
+         data = .multilpa_table(function(x)
+           .multilpa_hide_fabricated_id(x, .multilpa_model_frame(x)))))
+}
+
+#' Hide the unit column a single-level fit fabricated for itself
+#'
+#' `id = NULL` numbers the rows so the two-level machinery has a unit to group
+#' by, and every internal rebuild of the fitting data needs that column --
+#' `parameter_inference()` checks the frame against it. What the caller never
+#' wrote, though, they should not be handed back, so it is dropped here, at the
+#' table the caller reads, rather than at the rebuild the package relies on.
+#'
+#' @param x A fitted model of this package.
+#' @param frame A table that may carry the fabricated column.
+#' @return `frame`, without that column when the fit fabricated one.
+#' @noRd
+.multilpa_hide_fabricated_id <- function(x, frame) {
+  if (!isTRUE(x$single_level) || !x$id %in% names(frame)) return(frame)
+  frame[setdiff(names(frame), x$id)]
 }
 
 #' Which classification levels to report when the caller named none

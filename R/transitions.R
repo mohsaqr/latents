@@ -488,6 +488,10 @@
 #' that differ only in where they start.
 #'
 #' @inheritParams multilpa
+#' @param id Name of the observed group identifier column. Character, factor, or
+#'   numeric identifiers are supported; missing identifiers are not. Required
+#'   here: this model has a second level by construction, so it has no
+#'   single-level form and does not take `multilpa()`'s `id = NULL`.
 #' @param n_profiles Integer number of individual profiles, at least two.
 #' @param time Name of the column giving each observation's occasion within its
 #'   group. Required: this model is defined by the ordering. Values must be

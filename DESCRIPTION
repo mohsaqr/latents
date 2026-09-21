@@ -1,6 +1,6 @@
 Package: multilpa
 Title: Two-Level Latent Profile Analysis
-Version: 0.11.5
+Version: 0.11.6
 Authors@R: person("Mohammed", "Saqr", role = c("aut", "cre"),
     email = "saqr@saqr.me")
 Description: Fits two-level latent profile and latent class models using a

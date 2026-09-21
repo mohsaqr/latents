@@ -18,11 +18,22 @@
 #' @export
 print.multilpa <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa"))
-  cat(sprintf("Two-level latent profile analysis: %d profiles, %d group classes\n",
-              x$n_profiles, x$n_group_classes))
+  ## A single-level fit has one observation per unit and one group class, so
+  ## naming either would describe machinery rather than the model asked for.
+  if (isTRUE(x$single_level)) {
+    cat(sprintf("Latent profile analysis: %d profile%s\n",
+                x$n_profiles, if (x$n_profiles == 1L) "" else "s"))
+  } else {
+    cat(sprintf("Two-level latent profile analysis: %d profile%s, %d group class%s\n",
+                x$n_profiles, if (x$n_profiles == 1L) "" else "s",
+                x$n_group_classes, if (x$n_group_classes == 1L) "" else "es"))
+  }
   covariance_model <- x$covariance_model %||% "diagonal"
-  cat(sprintf("%d individuals in %d groups; %s %s residual covariance%s\n",
-              x$n_observations, x$n_groups, x$variance_model, covariance_model,
+  cat(sprintf("%d %s; %s %s residual covariance%s\n",
+              x$n_observations,
+              if (isTRUE(x$single_level)) "observations" else
+                sprintf("individuals in %d groups", x$n_groups),
+              x$variance_model, covariance_model,
               if (is.null(x$covariance_structure)) "" else
                 sprintf(" (%s)", x$covariance_structure)))
   if (!identical(x$centering %||% "none", "none")) {

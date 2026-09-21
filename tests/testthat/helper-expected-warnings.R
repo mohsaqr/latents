@@ -19,6 +19,8 @@
   "multilpa_small_classes",
   # A deliberately small or separated fixture also reaches these two.
   "multilpa_extreme_coefficients",
+  # Not a defect: a single-level fixture is a deliberate `id = NULL`.
+  "multilpa_single_level",
   "multilpa_empty_transition_row"
 )
 # Deliberately NOT muffled by default, because each reports a result the suite
