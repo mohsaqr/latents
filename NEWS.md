@@ -1,3 +1,24 @@
+# multilpa 0.11.8
+
+## The introductory vignette, rewritten
+
+`vignette("multilpa")` now opens with what the model found. The order is the
+profile means, then how big each profile and class is, then the profile
+probabilities, then everything else -- estimation diagnostics, the plots, the
+sequences. Printing the fit gives the means one row per profile with each
+profile's size, so the guide starts from a result rather than from plumbing.
+
+Two passages are gone. One introduced the notation `pi_{k|m}` and `omega_m`,
+said the probabilities lie between zero and one and sum to one, and never used
+the symbols again; what it was reaching for is now said where the table is read.
+The other listed the model's assumptions in a block, of which the clause that
+does any work -- the default diagonal covariance treats the indicators as
+independent within a profile, which a shared association between activity
+measures can violate -- has moved to Limitations, where a reader can act on it.
+A sentence restating the ICC formula's symbols in words went with them.
+
+Every figure in the text was recomputed against the standardized indicators.
+
 # multilpa 0.11.7
 
 ## Transition networks, with `get_tna()` and `get_group_tna()`
