@@ -48,36 +48,6 @@ test_that("the categorical score agrees with a numerical gradient", {
   expect_lt(max(abs(analytic)), 0.01)
 })
 
-test_that("thresholds and their standard errors reproduce a genuine Mplus run", {
-  fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-categorical.rds"))
-  fit <- .categorical_fit(fixture$data)
-  inference <- parameter_inference(fit, fixture$data)
-  theta <- multilpa:::.multilpa_coefficients(fit, "unconstrained")
-  # The tidy decomposition is the canonical one, so the block is selected by
-  # its `parameter` column rather than by parsing a name back apart.
-  labels <- multilpa:::.multilpa_coefficient_labels(fit, "unconstrained")
-  logits <- which(labels$parameter == "response_logit")
-  errors <- sqrt(diag(attr(inference, "covariance_unconstrained")))[logits]
-
-  # For a binary indicator the unconstrained coordinate log(p0 / p1) is exactly
-  # the threshold Mplus reports, so the two are directly comparable.
-  order_by_first <- order(fit$response_probabilities[[1L]][, 1L], decreasing = TRUE)
-  mplus_threshold <- c(1.451, 1.052, 1.392, -1.471, -1.727,
-                       -1.944, -1.508, -1.153, 1.129, 1.792)
-  mplus_error <- c(0.118, 0.101, 0.112, 0.116, 0.131,
-                   0.145, 0.117, 0.105, 0.104, 0.139)
-  profile <- as.integer(sub("^profile_", "", labels$outcome[logits]))
-  indicator <- sub(":.*$", "", labels$term[logits])
-  key <- paste(match(profile, order_by_first), indicator)
-  expected_key <- paste(rep(c(1L, 2L), each = 5), .categorical_indicators())
-
-  expect_equal(unname(theta[logits])[match(expected_key, key)], mplus_threshold,
-               tolerance = 1e-3)
-  expect_equal(unname(errors)[match(expected_key, key)], mplus_error,
-               tolerance = 2e-3)
-  expect_equal(fit$log_likelihood, fixture$mplus_log_likelihood, tolerance = 1e-6)
-})
-
 test_that("the tidy table carries the response block at the measurement level", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-categorical.rds"))
   fit <- .categorical_fit(fixture$data)

@@ -197,7 +197,7 @@ test_that("attendance is locally dependent on the clicks, deliberately", {
 
 test_that("the dependence is exactly what bivariate_residuals reports", {
   fit <- .course_fit()
-  residuals <- bivariate_residuals(fit)
+  residuals <- get_data(fit, "residuals")
   with_attendance <- subset(residuals, indicator_1 == "attendance" |
                               indicator_2 == "attendance")
   without <- subset(residuals, indicator_1 != "attendance" &
@@ -217,7 +217,7 @@ test_that("the truth joins onto the assignments without a name clash", {
   # one would make `assignments()` refuse, and the reader would have to drop
   # the column by hand before comparing the estimate against the truth.
   fit <- .course_fit()
-  joined <- assignments(fit, data = course_engagement)
+  joined <- get_data(fit, "assignments", data = course_engagement)
   expect_identical(nrow(joined), 1422L)
   expect_true(all(c("profile", "group_class", "engagement", "student_type") %in%
                     names(joined)))
@@ -231,7 +231,7 @@ test_that("the truth joins onto the assignments without a name clash", {
 
 test_that("a fit recovers the two-level structure, not just the profiles", {
   fit <- .course_fit()
-  prevalence <- as.data.frame(fit, what = "profile_probabilities")
+  prevalence <- get_data(fit, "profile_probabilities")
   # The whole claim of the package: the two group classes have opposite mixes,
   # so the lines cross. A pooled model would report one number near the middle.
   by_class <- tapply(prevalence$probability,
@@ -243,7 +243,7 @@ test_that("a fit recovers the two-level structure, not just the profiles", {
   # sort into them the way they were generated. Compared row by row, because
   # the fit's own group order is its business and not something to reproduce
   # here.
-  assigned <- assignments(fit, data = course_engagement)
+  assigned <- get_data(fit, "assignments", data = course_engagement)
   expect_gt(.label_free_agreement(assigned$group_class, assigned$student_type),
             0.8)
 })
@@ -253,7 +253,7 @@ test_that("the sequence recovers the persistence it was generated with", {
   moves <- fit_transitions(course_engagement, vars = .activity, id = "student",
                            time = "sequence", n_profiles = 2, n_starts = 4,
                            seed = 1)
-  staying <- transitions(moves, stable = TRUE)$probability
+  staying <- get_data(moves, "transitions", stable = TRUE)$probability
   expect_length(staying, 2L)
   # Persistence was generated per student kind -- committed (0.60, 0.90),
   # wavering (0.90, 0.70) -- so there is no single generating number to compare

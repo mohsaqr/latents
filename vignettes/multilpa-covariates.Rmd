@@ -1,0 +1,262 @@
+---
+title: "Covariates and staged estimation in multilevel LPA"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Covariates and staged estimation in multilevel LPA}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(digits = 4, width = 100)
+```
+
+Three-step covariate analysis estimates associations between latent profile
+membership and variables outside the measurement model, with an adjustment for
+classification error. The course-engagement example asks whether previous
+grades are associated with a student's engagement in the next course. This
+guide compares membership regression, differences in previous grades across
+profiles, and joint estimation with grades included. It also shows how staged
+estimation holds profile definitions fixed while estimating student classes.
+
+```{r setup}
+library(multilpa)
+```
+
+## Data and engagement profiles
+
+The bundled synthetic `course_engagement` data record enrolments nested within
+students. The five indicators are page views (`browse`), lecture videos viewed
+(`lectures`), forum posts read (`forum_read`), posts written (`forum_post`), and
+active days (`attendance`), all stored as `log1p` counts. `previous_grade` is the
+standardized grade from the preceding course; an entry grade is used for the
+first course. Its temporal position makes it a predictor of subsequent
+engagement. The [introductory guide](multilpa.html) explains the longitudinal
+case and the two levels in more detail.
+
+The indicator vector `vars` defines the activity measures used to estimate the
+profiles. Keeping `previous_grade` separate lets us first establish the
+engagement profiles and then examine their association with grades.
+
+```{r variables}
+vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+```
+
+`multilpa()` estimates profile means and variances together with the probability
+of each profile within each student class. Write that probability as
+$\pi_{k\mid m}=P(C_{it}=k\mid G_i=m)$, where $C_{it}$ is student $i$'s
+profile in course $t$ and $G_i$ is their student class. The probabilities sum
+to one across profiles within a student class. The model below has three
+profiles and three student classes, using independent Gaussian indicators
+within each profile and common profile definitions across student classes.
+
+The fit assumes independent students and independent enrolments conditional on
+student class. Indicator dependence can change the profiles, and multiple
+likelihood maxima can occur. The [evaluation guide](multilpa-evaluation.html)
+examines these issues; here the same candidate model provides a consistent
+basis for comparing covariate methods. Ten starts and a fixed seed make the
+numerical result reproducible.
+
+```{r fit}
+set.seed(1)
+fit <- multilpa(course_engagement, vars, id = "student", time = "sequence", n_profiles = 3, n_group_classes = 3, n_starts = 10, max_iter = 2000, tol = 1e-10, seed = 1)
+fit
+```
+
+The profiles have higher, intermediate, and lower activity in that order.
+Their attendance means are 3.753, 2.915, and 1.840. Profile 3 is therefore the
+lower-activity reference when interpreting the membership regressions below.
+These labels apply to this fit; each subsequent model's means need checking.
+
+## Accounting for classification error
+
+The classification-error matrix estimates the probability of an assigned
+profile given the underlying profile:
+$D_{ks}=P(\widehat C=s\mid C=k)$. Here $\widehat C$ is the profile with the
+largest posterior probability. Each row of $D$ sums to one; diagonal entries
+represent correct assignment under the fitted model. `get_data()` extracts
+this matrix through `"classification_errors"`.
+
+The adjustment assumes that assignment errors are independent of the auxiliary
+variable conditional on the underlying profile. The error matrix is estimated
+from the measurement model and then treated as fixed. Consequently, later
+intervals omit uncertainty in that first-stage estimate. Poor separation can
+also make the correction unstable.
+
+```{r classification-errors}
+get_data(fit, "classification_errors", level = "individuals")
+```
+
+The estimated correct-assignment probabilities are 0.863, 0.852, and 0.984.
+Most ambiguity concerns profiles 1 and 2: the estimated probability of assigning
+profile 1 to profile 2 is 0.137, and the reverse probability is 0.121.
+Treating these assignments as certain would lose that uncertainty.
+
+## Previous grade as a membership predictor
+
+`r3step()` estimates log-odds coefficients relating previous grade to profile
+membership while keeping the profile definitions and error matrix fixed. With
+profile 3 as the reference and $x$ denoting previous grade, the regression is
+
+$$\log\frac{P(C=k\mid x)}{P(C=3\mid x)}=\alpha_k+\beta_k x,\qquad k=1,2.$$
+
+The intercept $\alpha_k$ describes the log odds at average previous grade,
+$x=0$. The slope $\beta_k$ describes the change per one standard deviation of
+previous grade. Positive slopes favor profile $k$ relative to profile 3.
+The regression assumes a linear effect on the log-odds scale. For enrolment-level
+analysis, `vcov_type = "robust"` clusters the score contributions by student;
+it requires enough independent students for an estimable covariance matrix.
+This regression relates marginal profile membership to grades, whereas the
+one-step model below estimates membership conditional on student class.
+The reported 95% intervals use the normal approximation. The adjusted p-values
+apply the Benjamini–Hochberg correction across the slopes; the intervals are
+pointwise and do not receive that correction.
+
+```{r membership-predictor}
+r3step(fit, data = course_engagement, covariates = "previous_grade", vcov_type = "robust")
+```
+
+A one-standard-deviation increase in previous grade is associated with a 0.647
+increase in the log odds of higher activity versus lower activity, and a 0.521
+increase for intermediate versus lower activity. Their confidence intervals
+are 0.492 to 0.801 and 0.381 to 0.660. Both associations favor more active
+engagement after higher previous grades. They are observational associations
+and do not establish that grades cause the subsequent engagement pattern.
+
+## Comparing previous grades across profiles
+
+`three_step()` estimates class-specific means of a numeric auxiliary variable
+and differences between those means. The default BCH method uses signed
+weights derived from the inverse classification-error matrix. For grades
+$x_u$ and profile weights $w_{uk}$ across enrolments $u$, the estimated mean is
+$\widehat\mu_k=\sum_u w_{uk}x_u/\sum_u w_{uk}$. A pairwise contrast compares
+$\widehat\mu_k-\widehat\mu_l$ for profiles $k$ and $l$.
+
+The method requires an invertible error matrix and usable weighted class
+sizes. Its default standard errors account for enrolments clustered within
+students, while treating the classification-error matrix as fixed. Although
+this method also supports distal outcomes, the variable here precedes
+engagement. The contrasts describe differences in prior grades across profiles.
+The 95% intervals are pointwise normal intervals. Adjusted p-values apply the
+Benjamini–Hochberg correction across the pairwise contrasts.
+
+```{r grade-contrasts}
+three_step(fit, data = course_engagement, outcome = "previous_grade", contrast = "pairs")
+```
+
+Previous grades in profile 3 are 0.601 standard deviations below profile 1 and
+0.486 below profile 2. The profile-2 versus profile-1 difference is -0.115,
+with an interval from -0.286 to 0.057. The contrast between the two more active
+profiles is therefore less certain than their contrasts with lower activity.
+
+Modal analysis computes the same contrasts after assigning every enrolment to
+one profile with certainty. It provides a direct comparison with the
+classification-adjusted estimates, but its standard errors omit assignment
+uncertainty.
+
+```{r modal-contrasts}
+three_step(fit, data = course_engagement, outcome = "previous_grade", contrast = "pairs", method = "modal")
+```
+
+The modal profile-2 versus profile-1 difference is -0.095, compared with -0.115
+under BCH. Its standard error is 0.064, compared with 0.088 after correction.
+The adjustment changes both the estimated contrast and its uncertainty where
+the profiles overlap most.
+
+## Estimating profiles and grade associations together
+
+One-step estimation jointly estimates the profile measurement model and the
+membership regression. `multilpa(profile_covariates = "previous_grade")`
+allows the grade association to contribute to estimation of the profiles.
+For student class $m$, the model is
+
+$$\log\frac{P(C=k\mid G=m,x)}{P(C=3\mid G=m,x)}=\alpha_{km}+\beta_k x.$$
+
+Profile-specific intercepts vary by student class; grade slopes are shared
+across student classes. The model retains the Gaussian and conditional
+independence assumptions of the original fit. Because the profiles can change
+and the coefficients are conditional on student class, their magnitudes need
+not equal the three-step coefficients. The fitted means establish which
+profile each coefficient describes.
+
+```{r one-step}
+covariate_fit <- multilpa(course_engagement, vars, id = "student", n_profiles = 3, n_group_classes = 3, profile_covariates = "previous_grade", n_starts = 6, max_iter = 2000, tol = 1e-10, seed = 1)
+covariate_fit
+```
+
+The profiles retain their higher, intermediate, and lower activity ordering.
+Their attendance means are now 3.767, 2.926, and 1.842. The profile definitions
+have changed slightly from the original fit.
+
+The `"coefficients"` table reports the estimated intercepts and grade slopes.
+Profile 3 is the reference for the profile-level coefficients.
+
+```{r one-step-coefficients}
+get_data(covariate_fit, "coefficients")
+```
+
+The previous-grade slopes are 0.503 for higher activity and 0.317 for
+intermediate activity relative to lower activity. Both point in the same
+direction as the three-step slopes of 0.647 and 0.521. Their smaller magnitudes
+cannot be attributed solely to changing profile definitions because the
+one-step regression also conditions on student class.
+
+## Holding profile definitions fixed across student classes
+
+Staged estimation estimates a common set of profiles first, then estimates
+student-class probabilities with those measurement parameters held fixed.
+`fit_staged()` begins with one student class and subsequently estimates the
+requested three-class composition. The second stage estimates
+$\pi_{k\mid m}$ and $\omega_m=P(G=m)$, while retaining the first stage's
+profile means and variances. This separates profile estimation from estimation
+of the higher-level structure.
+
+The first-stage uncertainty is not propagated into the second stage. The
+result is conditional on the fixed measurement model and is not the joint
+maximum-likelihood solution. Profile and student-class numeric labels can differ
+from those in the joint fit, so comparisons require matching their meanings.
+
+```{r staged}
+staged <- fit_staged(course_engagement, vars, id = "student", n_profiles = 3, n_group_classes = 3, n_starts = 6, max_iter = 2000, tol = 1e-10, seed = 1)
+staged
+```
+
+The staged fit labels intermediate activity as profile 1, lower activity as
+profile 2, and higher activity as profile 3. Their attendance means are 2.872,
+1.809, and 3.710. The activity patterns remain recognizable, with different
+numeric labels and slightly different means.
+
+The `"stages"` table distinguishes the parameters estimated at each stage.
+`parameters_with_measurement` also counts the measurement parameters held
+fixed during the membership stage.
+
+```{r stages}
+get_data(staged, "stages")
+```
+
+The measurement stage estimates 32 parameters; the membership stage estimates
+8, with 38 parameters when the held measurement parameters are included.
+The second-stage log likelihood is -7529.197, compared with -7526.274 for the
+joint fit printed earlier. Holding the profiles fixed constrains the final
+solution. A descriptive comparison with a joint fit uses
+`parameters_with_measurement`, which includes the held profile parameters.
+
+## Interpretation and limitations
+
+The membership regressions and grade contrasts agree that lower activity is
+associated with lower previous grades. The distinction between higher and
+intermediate activity has more classification uncertainty and a less certain
+grade contrast. Three-step and joint estimation address different conditional
+relationships; the appropriate estimate depends on whether the goal is to
+retain previously defined profiles or estimate them together with covariates.
+
+All these results depend on the candidate measurement model. The
+[evaluation guide](multilpa-evaluation.html) shows why its diagonal covariance
+and class counts require scrutiny. Classification adjustments do not repair a
+misspecified profile model, and clustering standard errors by student does not
+make observational associations causal. Staged and three-step intervals also
+omit uncertainty in the quantities held fixed from the first stage.

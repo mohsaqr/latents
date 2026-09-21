@@ -2,122 +2,40 @@
 % Please edit documentation in R/accessors.R
 \name{as.data.frame.multilpa}
 \alias{as.data.frame.multilpa}
-\title{Tidy a fitted multilevel latent profile model}
+\title{Coerce a fitted multilevel latent profile model to its primary table}
 \usage{
-\method{as.data.frame}{multilpa}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("profiles", "responses", "profile_probabilities", "posteriors",
-    "group_posteriors", "starts", "stages", "information_criteria", "classification",
-    "entropy", "data"),
-  scale = c("raw", "standardized"),
-  format = c("long", "wide"),
-  ...
-)
+\method{as.data.frame}{multilpa}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A fitted `multilpa` model.}
+\item{x}{A fitted multilevel latent profile model.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return. `"profiles"` gives the Gaussian
-measurement model, `"responses"` the categorical measurement model,
-`"profile_probabilities"` the profile prevalence within each group class,
-`"posteriors"` the individual posteriors, `"group_posteriors"` the group
-posteriors, `"starts"` the restart diagnostics,
-`"stages"` the estimation stages and what each held fixed,
-`"information_criteria"` the information criteria, `"classification"` the
-classification quality, `"entropy"` the entropy summary, and `"data"` the
-columns of the original data the model was fitted to.}
-
-\item{scale}{For `what = "profiles"`, `"raw"` reports the estimates in input
-units and `"standardized"` divides each indicator's deviation from its
-grand mean by that indicator's observed standard deviation, which is what
-`plot(x, scale = "standardized")` draws. Supplying it with any other
-`what` is an error rather than a silent no-op.}
-
-\item{format}{For the posterior tables, `"long"` (the default) gives one row
-per unit and class, and `"wide"` gives one row per unit with one column per
-class. The wide column set grows with the number of classes, so no caller
-can address it generically; it stays available because joining posteriors
-back onto the fitting data wants one row per unit. For
-`what = "information_criteria"` it is forwarded to
-[information_criteria()], where `"wide"` is the default one-row reporting
-shape and `"long"` gives one row per criterion and sample-size convention.
-Supplying it with any other `what` is an error rather than a silent no-op.}
-
-\item{...}{Passed to the underlying accessor. `classification` accepts
-`level`, and `information_criteria` accepts `definitions`. The
-per-assigned-class breakdown that `classification_table(detail = TRUE)`
-once returned is now its own verb, [average_posteriors()]. `profiles` and `responses` accept `data`, the data
-frame the model was fitted to, which adds a standard error beside every
-estimate so the measurement model can be read complete from one call
-rather than joined to [parameter_inference()] by hand.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped, because `what =` used to live on
+this generic and silently returning the primary table instead of the one
+that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame` whose columns depend on `what`.
-  `"profiles"` has one row per profile and continuous indicator, with columns
-  `profile`, `indicator`, `mean`, `variance`, and `standard_deviation`; it has
-  zero rows when every indicator is categorical. Given `data`, it also carries
-  `mean_standard_error` and `variance_standard_error`, and `"responses"`
-  carries `probability_standard_error`. Supplying `data` runs
-  [parameter_inference()], so it raises whatever that would raise for a fit
-  whose standard errors are unavailable, rather than returning empty columns.
-  With `scale = "standardized"` every estimate in that table, and every
-  standard error beside it, is divided by the indicator's observed standard
-  deviation, so the whole row is on one scale; it raises
-  `multilpa_no_indicator_data` for a fit that kept no indicators and
-  `multilpa_bad_scale` for an indicator with no spread.
-  `"responses"` has one row per profile, categorical indicator and category,
-  with columns `profile`, `indicator`, `category`, `probability`, and
-  `threshold`. The threshold is `qlogis(P(y <= category))`, the cumulative
-  logit that mixture software reports, and is `NA_real_` for the final
-  category of each indicator, where the cumulative probability is one.
-  `"profile_probabilities"` has one row per group class and profile, with
-  columns `group_class`, `profile`, `probability`, and
-  `group_class_probability`. `"posteriors"` has one row per input individual
-  and profile, with columns `row`, `group`, `profile`, `posterior` and
-  `modal`, the last flagging the profile that individual was assigned to;
-  `format = "wide"` gives one row per individual instead, with columns `row`,
-  `group`, `profile` (the modal profile) and one `posterior_profile_*` column
-  per profile. `"group_posteriors"` has one row per observed group and group
-  class, with columns `group`, `group_size`, `log_likelihood`, `group_class`,
-  `posterior` and `modal`; `format = "wide"` gives one row per group, with
-  columns `group`, `group_size`, `group_class` (the modal class), the group's
-  `log_likelihood`, and one `posterior_group_class_*` column per group class.
-  `"starts"` has one row per EM start, with columns `start`,
-  `log_likelihood`, `converged`, `iterations`, `error` and `boundary`.
-  `"stages"` has one row per estimation stage, with columns `stage`,
-  `group_classes`, `fixed`, `log_likelihood`, `parameters`,
-  `parameters_with_measurement` and `converged`; an ordinary fit has a single
-  `"joint"` row and a [fit_staged()] result has two. `fixed` names the blocks
-  that stage held fixed, comma separated, and is `NA_character_` when the
-  stage estimated every block, which is the case for an ordinary fit and for
-  the measurement stage of a staged one; it is never a sentinel such as
-  `"none"`. `"data"` has one row per observation in input order, carrying the
-  identifier, the occasion where the model has one, and the indicators under
-  their original names and in their original order; it raises
-  `multilpa_incomplete_fit` for a fit that kept no indicator data. The
-  remaining values return exactly [information_criteria()],
-  [classification_table()], and [entropy_table()].
+A base `data.frame`: the Gaussian measurement model, one row per
+  profile and continuous indicator.
 }
 \description{
-Returns any part of a fitted model as a tidy `data.frame`, so that results
-can be printed, joined, and written out without reaching into the fitted
-object. Every table is one row per observation of the thing it describes.
+Plain coercion, as the base generic means it: one object, one data frame.
+The other tables are named rather than positional, so they belong to
+[get_data()], which takes `what` and refuses a name this object has not.
 }
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  school = rep(seq_len(12), each = 10),
-  score_a = rnorm(120), score_b = rnorm(120)
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+  seed = 1
 )
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                  n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(fit)
-as.data.frame(fit, scale = "standardized")
-as.data.frame(fit, what = "profile_probabilities")
+}
+\seealso{
+[get_data()] for every other table this object holds.
 }

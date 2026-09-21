@@ -64,11 +64,11 @@ test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
   ## Methods added in this sweep reach the generic only after the NAMESPACE is
   ## regenerated, so they are exercised by explicit call here. Dispatch itself
   ## is asserted in test-tidy-classes.R.
-  test <- as.data.frame.multilpa_bootstrap_lrt(result)
+  test <- get_data(result, "test")
   expect_identical(nrow(test), 1L)
   expect_true(is.na(test$p_value))
   expect_equal(test$n_valid, 0L)
-  replicates <- as.data.frame.multilpa_bootstrap_lrt(result, what = "replicates")
+  replicates <- get_data(result, "replicates")
   expect_true(all(replicates$error == "test optimization failure"))
   expect_error(plot.multilpa_bootstrap_lrt(result),
                class = "multilpa_nothing_to_plot")
@@ -84,8 +84,8 @@ test_that("bootstrap refits generated data and reports finite simulation correct
   result <- bootstrap_lrt(small, large, d, iter = 3, n_starts = 3,
                                   max_iter = 3000, tol = 1e-7, seed = 42)
   expect_identical(.Random.seed, rng)
-  test <- as.data.frame.multilpa_bootstrap_lrt(result)
-  replicates <- as.data.frame.multilpa_bootstrap_lrt(result, what = "replicates")
+  test <- get_data(result, "test")
+  replicates <- get_data(result, "replicates")
   expect_identical(nrow(test), 1L)
   expect_equal(test$n_valid, 3L)
   expect_equal(test$statistic, max(0, 2 * (large$log_likelihood - small$log_likelihood)))
@@ -110,7 +110,7 @@ test_that("full covariance print and summary expose residual matrices", {
   fit <- multilpa(d, c("a", "b"), "g", 1, 1, covariance_model = "full", n_starts = 1)
   expect_output(print(fit), "full residual covariance")
   expect_equal(summary(fit)$covariances, fit$covariances)
-  expect_output(print(summary(fit)), "covariance matrices")
+  expect_output(print(summary(fit)), "-- covariances", fixed = TRUE)
 })
 
 test_that("boundary convergence noise is not mistaken for a reversed likelihood", {
@@ -135,11 +135,11 @@ test_that("boundary convergence noise is not mistaken for a reversed likelihood"
   # valid, and eight carry it as well as twelve did.
   result <- quietly(bootstrap_lrt(null_fit, alt_fit, iter = 8, n_starts = 2,
                                   max_iter = 2000, tol = 1e-8, seed = 7))
-  test <- as.data.frame(result, what = "test")
+  test <- get_data(result, "test")
   expect_identical(test$n_valid, 8L)
   expect_false(is.na(test$p_value))
 
-  replicates <- as.data.frame(result, what = "replicates")
+  replicates <- get_data(result, "replicates")
   expect_true(all(replicates$valid))
   expect_true(all(is.na(replicates$error)))
   # A replicate that raised nothing reports NA, not an empty string sitting

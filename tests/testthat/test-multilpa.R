@@ -129,13 +129,13 @@ test_that("one profile gives the analytic maximum likelihood solution", {
   # an unnamed hole in the summary.
   expect_false(anyNA(names(summary_fit)))
   expect_equal(as.data.frame(summary_fit)$mean, as.vector(t(fit$means)))
-  counts <- as.data.frame(summary_fit, what = "counts")
+  counts <- get_data(summary_fit, "counts")
   expect_equal(subset(counts, level == "individuals")$effective_count,
                colSums(fit$subject_posteriors), ignore_attr = TRUE)
   expect_equal(subset(counts, level == "groups")$effective_count,
                colSums(fit$group_posteriors), ignore_attr = TRUE)
   expect_output(printed_summary <- withVisible(print(summary_fit)),
-                "Effective individual memberships")
+                "-- counts", fixed = TRUE)
   expect_false(printed_summary$visible)
   expect_identical(printed_summary$value, summary_fit)
   expect_error(print(summary_fit, digits = 0))

@@ -3,7 +3,7 @@ test_that("missing-row information criteria agree across all result accessors", 
   d <- data.frame(g = rep(1:8, each = 6), y = rnorm(48))
   d$y[1:3] <- NA_real_
   fit <- multilpa(d, "y", "g", 1, 1, missing = "fiml", n_starts = 1)
-  criteria <- information_criteria(fit, format = "long")
+  criteria <- get_data(fit, "information_criteria", format = "long")
   individual <- subset(criteria, convention == "individuals")
   expect_equal(individual$n, rep(45, 6))
   # One normal population: independently calculate its maximized likelihood.
@@ -16,7 +16,7 @@ test_that("missing-row information criteria agree across all result accessors", 
   grid <- enumerate_classes(d, "y", "g", n_profiles = 1, n_group_classes = 1,
                             missing = "fiml", n_starts = 1)
   expect_equal(grid$table$bic_individual, grid$fits[[1]]$bic_individual)
-  expect_equal(as.data.frame(fit, what = "information_criteria", format = "long"),
+  expect_equal(get_data(fit, "information_criteria", format = "long"),
                criteria)
 })
 
@@ -39,17 +39,17 @@ test_that("random-intercept diagnostics distinguish profiles from group classes"
   d <- data.frame(g = rep(1:20, each = 5),
                   y = rep(rnorm(20), each = 5) + rnorm(100))
   fit <- fit_random_intercept(d, "y", "g", n_profiles = 1, n_starts = 1)
-  indices <- information_criteria(fit, format = "long")
+  indices <- get_data(fit, "information_criteria", format = "long")
   expect_equal(subset(indices, criterion == "bic" & convention == "groups")$value,
                fit$bic)
   expect_equal(subset(indices, criterion == "bic" & convention == "individuals")$value,
                fit$bic_individual)
   expect_true(all(is.na(subset(indices, convention == "groups" &
                                 criterion %in% c("awe", "icl"))$value)))
-  expect_equal(classification_table(fit, level = "both")$level, "individuals")
-  expect_error(classification_table(fit, level = "groups"), "no discrete group")
-  expect_equal(entropy_table(fit)$level, "individuals")
-  expect_equal(entropy_table(fit)$entropy_sum, 0)
+  expect_equal(get_data(fit, "classification", level = "both")$level, "individuals")
+  expect_error(get_data(fit, "classification", level = "groups"), "no discrete group")
+  expect_equal(get_data(fit, "entropy")$level, "individuals")
+  expect_equal(get_data(fit, "entropy")$entropy_sum, 0)
 })
 
 test_that("categorical bootstraps preserve probability constraints and data identity", {
@@ -95,7 +95,7 @@ test_that("sequence totals count observed groups rather than unused factor level
                              levels = c("a", "b", "unused")),
                   time = rep(1:3, 2), y = c(-2, -1, -3, 2, 1, 3))
   fit <- multilpa(d, "y", "g", 1, 1, n_starts = 1, time = "time")
-  result <- sequence_summary(fit)
+  result <- get_data(fit, "sequence_summary")
   expect_equal(result$groups, 2L)
   expect_equal(result$observations, 6L)
   expect_equal(result$complete, 2L)
@@ -110,12 +110,12 @@ test_that("sequence outputs keep distinct numeric groups with identical printed 
   # Attach the already-valid ordering to isolate output from input validation.
   fit$time_values <- d$time
   fit$time <- "time"
-  wide <- sequences(fit, "wide")
+  wide <- get_data(fit, "sequences", format = "wide")
   expect_equal(dim(wide), c(2L, 5L))
   # The point of this test: two groups that PRINT identically must stay distinct.
   # They now survive as native doubles in a real column, which is stronger than the
   # make.unique()'d row names this replaced - those kept them apart only as strings.
   expect_identical(wide$group, unique(d$g))
-  expect_equal(sequence_summary(fit)$groups, 2L)
-  expect_equal(sequence_summary(fit)$observations, 6L)
+  expect_equal(get_data(fit, "sequence_summary")$groups, 2L)
+  expect_equal(get_data(fit, "sequence_summary")$observations, 6L)
 })

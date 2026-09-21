@@ -110,7 +110,8 @@ A base `data.frame` with one row per reported parameter and the
 }
 \description{
 Standard errors, tests and intervals for every free parameter of
-[fit_covariates()], at all three levels at once: the measurement model, the
+`multilpa(profile_covariates = )`, at all three levels at once: the
+measurement model, the
 profile logits and the group-class logits. Without them a membership
 coefficient cannot be reported, because nothing distinguishes a real effect
 from separation.
@@ -148,15 +149,17 @@ set.seed(5)
 school <- rep(seq_len(16), each = 8)
 high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
 x <- rnorm(128)
-profile <- ifelse(runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L)
+profile <- ifelse(
+  runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L
+)
 example_data <- data.frame(
   school = school, x = x,
   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
 )
-fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
-                      n_group_classes = 2, profile_covariates = "x",
-                      n_starts = 2, seed = 1)
+fit <- multilpa(example_data, c("y1", "y2"), "school", n_profiles = 2,
+                n_group_classes = 2, profile_covariates = "x",
+                n_starts = 2, seed = 1)
 parameter_inference(fit, example_data)
 set.seed(42)
 example_data <- data.frame(

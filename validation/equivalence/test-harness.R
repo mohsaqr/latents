@@ -109,11 +109,11 @@ test_that("a skipped suite is recorded, and does not stop the other suites", {
   writeLines("# no sources", file.path(scratch, "R", "empty.R"))
 
   run <- suppressMessages(run_equivalence(root = scratch, check_api = FALSE))
-  status <- as.data.frame(run, what = "suites")
+  status <- get_data(run, "suites")
   expect_equal(status$status, c("skipped", "ran", "failed"))
   expect_match(status$reason[status$suite == "alpha"], "not installed")
   expect_match(status$reason[status$suite == "gamma"], "this suite is broken")
-  expect_equal(nrow(as.data.frame(run, what = "comparisons")), 1L)
+  expect_equal(nrow(get_data(run, "comparisons")), 1L)
 })
 
 # --------------------------------------------------------------------------
@@ -166,7 +166,7 @@ test_that("a run records the version and fingerprint it was produced under", {
   writeLines("# a source file", file.path(root, "R", "one.R"))
 
   run <- suppressMessages(run_equivalence(root = root, check_api = FALSE))
-  session <- as.data.frame(run, what = "session")
+  session <- get_data(run, "session")
   expect_true(all(c("multilpa", "multilpa at end", "R/ fingerprint",
                     "source unchanged during run") %in% session$component))
   expect_equal(equivalence_provenance(run, "multilpa"),

@@ -48,7 +48,7 @@ theirs <- as.matrix(tidySEM:::classification_probs_mostlikely(posteriors))
   ordered_rows <- wide[order(wide$unit), , drop = FALSE]
   unname(as.matrix(ordered_rows[, setdiff(names(ordered_rows), "unit"), drop = FALSE]))
 }
-weights_mine <- .bch_weight_matrix(bch_weights(fit))
+weights_mine <- .bch_weight_matrix(get_data(fit, "bch_weights", level = "individuals"))
 weights_theirs <- solve(theirs)[apply(posteriors, 1L, which.max), ]
 estimate_mine <- three_step(fit, data, "y", method = "bch")$estimate
 estimate_theirs <- vapply(seq_len(2), function(class) {

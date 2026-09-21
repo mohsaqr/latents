@@ -9,13 +9,7 @@
 \usage{
 diagnostics(x, data = NULL, plots = FALSE, by = c("profile", "overall"), ...)
 
-\method{as.data.frame}{multilpa_diagnostics}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("entropy", "classification", "posteriors", "residuals"),
-  ...
-)
+\method{as.data.frame}{multilpa_diagnostics}(x, row.names = NULL, optional = FALSE, ...)
 
 \method{print}{multilpa_diagnostics}(x, ...)
 
@@ -30,12 +24,12 @@ columns it was built from, so this is only needed to override them.}
 \item{plots}{`TRUE` also draws the classification plots, as a side effect,
 before returning. Equivalent to calling `plot()` on the result.}
 
-\item{by}{Passed to [bivariate_residuals()]: `"profile"`, the default,
-assesses each profile separately, `"overall"` pools them. It is the one
-argument of a gathered verb this function forwards, because it is the one
-that changes what a gathered table means rather than which fit it is taken
-from. The `level` the classification tables use is not an argument here: it
-follows from whether the fit has discrete group classes.}
+\item{by}{`"profile"`, the default, assesses each profile's bivariate
+residuals separately; `"overall"` pools them. It is the one argument of a
+gathered table this function forwards, because it is the one that changes
+what a gathered table means rather than which fit it is taken from. The
+`level` the classification tables use is not an argument here: it follows
+from whether the fit has discrete group classes.}
 
 \item{...}{For `diagnostics()`, nothing further is accepted. An argument this
 function cannot forward raises an error of class `multilpa_bad_argument`
@@ -45,26 +39,19 @@ in [plot.multilpa()].}
 
 \item{row.names, optional}{Passed to the base generic; `row.names` is applied
 to the returned table.}
-
-\item{what}{Which table: `"entropy"`, `"classification"`, `"posteriors"` or
-`"residuals"`.}
 }
 \value{
-An object of class `multilpa_diagnostics`: a list with the elements
-  `entropy`, `classification`, `posteriors` and `residuals`, each a tidy
-  base `data.frame` as its own verb returns it, plus `fit` for the plot
-  method. Reach the tables with `as.data.frame(result, what = )`, never with
-  `$`. `residuals` is `NULL` for a model family that has no bivariate
-  residuals, and asking for that table raises `multilpa_no_group_classes`.
+An object of class `multilpa_diagnostics`. Read its tables with
+  `get_data(result, what = )`, which offers `"entropy"`, `"classification"`,
+  `"average_posteriors"`, `"residuals"` and `"all"`, and never with `$`. A
+  model family that has no bivariate residuals leaves that table out of
+  `"all"`, and asking for it by name raises `multilpa_no_group_classes`.
 
-  `as.data.frame()` returns one of those tables: `"entropy"` exactly as
-  [entropy_table()] returns it, `"classification"` as
-  [classification_table()] does, `"posteriors"` as [average_posteriors()]
-  does, and `"residuals"` as [bivariate_residuals()] does.
   `print()` returns the object invisibly, having printed one line per
   diagnostic: relative entropy, smallest class, lowest average posterior and
   largest residual, at each level the fit has. `plot()` returns the object
   invisibly, having drawn the case-level entropy and posterior panels.
+  `as.data.frame()` returns the entropy table, the primary one.
 }
 \description{
 `summary()` reports what a model estimated. This reports whether to believe
@@ -73,22 +60,26 @@ actually is, how confidently each unit was assigned, and whether the
 within-profile independence the model assumes survives contact with the data.
 }
 \details{
-It gathers [entropy_table()], [classification_table()],
-[average_posteriors()] and [bivariate_residuals()], which return four
-differently shaped tables, so the result is an object with a `print()` method
-and an `as.data.frame()` accessor rather than four tables printed at once.
+It gathers the four classification tables of [get_data()] --- `"entropy"`,
+`"classification"`, `"average_posteriors"` and `"residuals"` --- and prints
+one line of reading per diagnostic rather than four differently shaped
+tables. The tables themselves come back from `get_data()` on the result, or
+on the fit.
 }
 \examples{
-activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-fit <- multilpa(course_engagement, vars = activity, id = "student",
-                n_profiles = 2, n_group_classes = 2,
-                n_starts = 4, seed = 1)
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+  seed = 1
+)
 quality <- diagnostics(fit)
 quality
-as.data.frame(quality, what = "classification")
-as.data.frame(diagnostics(fit, by = "overall"), what = "residuals")
+get_data(quality, what = "classification")
+get_data(diagnostics(fit, by = "overall"), what = "residuals")
 }
 \seealso{
-[descriptives()] for the before-the-fit counterpart, [summary()]
-  for what the model estimated rather than whether to trust it.
+[get_data()] for these tables and every other one, [descriptives()]
+  for the before-the-fit counterpart, and [summary()] for what the model
+  estimated rather than whether to trust it.
 }

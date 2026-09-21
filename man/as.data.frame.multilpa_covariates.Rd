@@ -2,70 +2,40 @@
 % Please edit documentation in R/accessors.R
 \name{as.data.frame.multilpa_covariates}
 \alias{as.data.frame.multilpa_covariates}
-\title{Tidy a one-step membership-covariate fit}
+\title{Coerce a fitted covariate model to its primary table}
 \usage{
-\method{as.data.frame}{multilpa_covariates}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("profiles", "coefficients", "posteriors", "group_posteriors", "starts"),
-  scale = c("raw", "standardized"),
-  format = c("long", "wide"),
-  ...
-)
+\method{as.data.frame}{multilpa_covariates}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An `multilpa_covariates` model from [fit_covariates()].}
+\item{x}{A fitted covariate model.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return. `"profiles"` gives the measurement model,
-`"coefficients"` the membership regressions at both levels, `"posteriors"`
-the individual posteriors, `"group_posteriors"` the group posteriors, and
-`"starts"` the restart diagnostics.}
-
-\item{scale}{For `what = "profiles"`, `"raw"` reports the estimates in input
-units and `"standardized"` divides each indicator's deviation from its
-grand mean by that indicator's observed standard deviation, matching
-`plot(x, scale = "standardized")`.}
-
-\item{format}{For the posterior tables, `"long"` (the default) gives one row
-per unit and class, and `"wide"` gives one row per unit with one column per
-class. The wide column set grows with the number of classes, so no caller
-can address it generically; it stays available because joining posteriors
-back onto the fitting data wants one row per unit. Supplying it with any
-other `what` is an error rather than a silent no-op.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped, because `what =` used to live on
+this generic and silently returning the primary table instead of the one
+that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame`. `"profiles"` has one row per profile and
-  indicator, with columns `profile`, `indicator`, `mean`, `variance`, and
-  `standard_deviation`. `"coefficients"` has one row per estimated
-  membership coefficient, with columns `level` (`"profile"` or `"group"`),
-  `outcome` (the class the coefficient predicts), `term`, `parameter` (always
-  `"logit"`, because these are multinomial logits and not probabilities), and
-  `estimate`; the standard errors are not in this table, which reports the
-  point estimates the fit stores -- [parameter_inference()] reports them with
-  their standard errors and intervals. `"posteriors"` and
-  `"group_posteriors"` match the corresponding [as.data.frame.multilpa()]
-  tables. `"starts"` has one row per EM start, with columns `start`,
-  `log_likelihood`, `converged`, `iterations` and `error`.
+A base `data.frame`: the Gaussian measurement model, one row per
+  profile and continuous indicator.
 }
 \description{
-Tidy a one-step membership-covariate fit
+Plain coercion, as the base generic means it: one object, one data frame.
+The other tables are named rather than positional, so they belong to
+[get_data()], which takes `what` and refuses a name this object has not.
 }
 \examples{
-set.seed(1)
-example_data <- data.frame(group = rep(seq_len(20), each = 10),
-                           z = rnorm(200))
-example_data$y <- rnorm(200,
-  ifelse(runif(200) < plogis(example_data$z), -3, 3))
-with_predictors <- fit_covariates(example_data, "y", "group",
-                                  n_profiles = 2, n_group_classes = 1,
-                                  profile_covariates = "z", n_starts = 2,
-                                  seed = 1)
-as.data.frame(with_predictors, what = "coefficients")
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2,
+  profile_covariates = "sequence", n_starts = 4, seed = 1
+)
+as.data.frame(fit)
+}
+\seealso{
+[get_data()] for every other table this object holds.
 }

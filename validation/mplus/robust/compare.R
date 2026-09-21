@@ -58,7 +58,7 @@ native_standard_errors <- sqrt(diag(jacobian %*% attr(information, "covariance_u
 # `format = "long"` since 0.9.0: the default became one wide row, and the
 # `convention` of a criterion that has none -- aic, kic, deviance -- became
 # NA_character_ rather than "none". Both are matched explicitly here.
-indices <- information_criteria(fit, format = "long")
+indices <- get_data(fit, "information_criteria", format = "long")
 native <- function(criterion, convention) {
   matched <- indices$criterion == criterion &
     if (is.na(convention)) is.na(indices$convention) else

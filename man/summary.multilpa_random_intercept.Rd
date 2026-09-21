@@ -30,5 +30,5 @@ example_data <- data.frame(group = rep(seq_len(12), each = 5),
 fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
                             n_profiles = 2, n_starts = 2, seed = 1)
 summary(fit)
-as.data.frame(summary(fit), what = "random_intercepts")
+get_data(fit, what = "random_intercepts")
 }

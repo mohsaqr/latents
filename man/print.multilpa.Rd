@@ -4,10 +4,12 @@
 \alias{print.multilpa}
 \title{Print a fitted multilevel latent profile model}
 \usage{
-\method{print}{multilpa}(x, ...)
+\method{print}{multilpa}(x, rows = 20L, ...)
 }
 \arguments{
 \item{x}{An `multilpa` model.}
+
+\item{rows}{How many rows of the printed table to show before truncating.}
 
 \item{...}{Reserved for compatibility with `print()`.}
 }

@@ -158,10 +158,10 @@ test_that("zero iterations evaluate the start instead of failing to assemble", {
   expect_false(fit$converged)
   # The prevalence is a summary of the reported expectation, so it exists and
   # is a distribution even when no M-step ever ran.
-  prevalence <- as.data.frame(fit, what = "initial")
+  prevalence <- get_data(fit, "initial")
   expect_true(all(is.finite(prevalence$prevalence)))
   expect_equal(sum(prevalence$prevalence), 1, tolerance = 1e-10)
-  expect_true(all(is.finite(transitions(fit)$expected_count)))
+  expect_true(all(is.finite(get_data(fit, "transitions")$expected_count)))
   expect_s3_class(summary(fit), "summary_multilpa_transitions")
 })
 
@@ -208,7 +208,7 @@ test_that("two very long sequences fit rather than overflowing", {
     max_iter = 2, seed = 1))
   expect_s3_class(fit, "multilpa_transitions")
   expect_true(is.finite(fit$log_likelihood))
-  moves <- transitions(fit)
+  moves <- get_data(fit, "transitions")
   expect_true(all(is.finite(moves$expected_count)))
   expect_true(all(moves$expected_count >= 0))
   expect_equal(sum(moves$expected_count), 2 * (n_occasions - 1),

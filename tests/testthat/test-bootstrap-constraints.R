@@ -90,7 +90,7 @@ test_that("the held constraint is named on the public surface", {
   result <- bootstrap_lrt(models$null_model, models$alternative_model,
                           models$data, iter = 2, n_starts = 2, seed = 45,
                           tol = 1e-8)
-  test <- as.data.frame(result, what = "test")
+  test <- get_data(result, "test")
   expect_identical(test$fixed, "means, variances")
   expect_output(print(result), "conditional on it")
 })

@@ -119,18 +119,6 @@ test_that("random-intercept quadrature agrees with analytic Gaussian integration
   expect_equal(numerical$subject_posteriors, matrix(rep(c(0.3, 0.7), each = 3L), 3L), tolerance = 1e-12)
 })
 
-test_that("one-profile random intercept matches genuine Mplus output", {
-  fixture <- readRDS(test_path("..", "fixtures", "mplus", "random-intercept-one-profile.rds"))
-  fit <- fit_random_intercept(fixture$data, "y1", "group", 1L,
-    n_starts = 1L, tol = 1e-11, seed = 983L)
-  actual <- c(fit$variances, fit$means, fit$random_sd^2)
-  expect_lt(max(abs(actual - fixture$mplus$parameters)), 1e-5)
-  expect_lt(abs(fit$log_likelihood - fixture$mplus$log_likelihood), 5e-5)
-  expect_lt(abs(fit$aic - fixture$mplus$aic), 1e-4)
-  expect_lt(abs(fit$bic_individual - fixture$mplus$bic), 1e-4)
-  expect_equal(fit$n_parameters, fixture$mplus$n_parameters)
-})
-
 test_that("mixture quadrature agrees with independent adaptive integration", {
   x <- matrix(c(-0.5, 1, 0.2, 0.7, 0.9, -0.3), 3L, 2L)
   parameters <- list(means = matrix(c(-0.6, 0.8, -0.2, 0.6), 2L),

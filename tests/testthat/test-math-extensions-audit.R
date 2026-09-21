@@ -61,7 +61,7 @@ test_that("pooled Gaussian residuals exclude association explained by profile me
     variances = matrix(1, 2L, 2L), covariance_model = "diagonal",
     subject_posteriors = cbind(rep(c(1, 0), each = 4L), rep(c(0, 1), each = 4L))),
     class = "multilpa")
-  result <- bivariate_residuals(object, data, "overall")
+  result <- get_data(object, "residuals", data = data, by = "overall")
   expect_gt(cor(data$a, data$b), 0.9)
   expect_equal(result$observed, 0)
   expect_equal(result$expected, 0)
@@ -70,7 +70,7 @@ test_that("pooled Gaussian residuals exclude association explained by profile me
   data$b <- data$a
   object$covariance_model <- "full"
   object$covariances <- array(1, c(2L, 2L, 2L))
-  resolved <- bivariate_residuals(object, data, "overall")
+  resolved <- get_data(object, "residuals", data = data, by = "overall")
   expect_equal(resolved$observed, 1)
   expect_equal(resolved$expected, 1)
   expect_equal(resolved$residual, 0)
@@ -91,14 +91,14 @@ test_that("categorical profile residuals compare to their own product probabilit
     response_probabilities = list(a = probabilities, b = probabilities),
     subject_posteriors = (component / rowSums(component))[indices, , drop = FALSE]),
     class = "multilpa")
-  profile <- bivariate_residuals(object, data)
-  overall <- bivariate_residuals(object, data, "overall")
+  profile <- get_data(object, "residuals", data = data)
+  overall <- get_data(object, "residuals", data = data, by = "overall")
   expect_equal(profile$statistic, c(0, 0), tolerance = 1e-20)
   expect_equal(profile$effective_n, c(500, 500))
   expect_equal(overall$statistic, 0, tolerance = 1e-20)
   # Preserve all modelled categories even when a pair has no observation in one.
   data$b[data$b == "yes"] <- NA_character_
-  incomplete <- bivariate_residuals(object, data, "overall")
+  incomplete <- get_data(object, "residuals", data = data, by = "overall")
   # Complete-pair posteriors need not keep equal class shares.
   complete <- !is.na(data$b)
   counts <- colSums(object$subject_posteriors[complete, , drop = FALSE])
@@ -109,7 +109,7 @@ test_that("categorical profile residuals compare to their own product probabilit
   expect_equal(incomplete$effective_n, 500)
   expect_equal(incomplete$df, 1)
   data$a[1L] <- "unknown"
-  expect_error(bivariate_residuals(object, data), "levels absent")
+  expect_error(get_data(object, "residuals", data = data), "levels absent")
 })
 
 test_that("Gaussian residuals use the complete rows of each pair", {
@@ -118,14 +118,14 @@ test_that("Gaussian residuals use the complete rows of each pair", {
     vars = c("a", "b"), means = matrix(0, 1L, 2L),
     variances = matrix(1, 1L, 2L), covariance_model = "diagonal",
     subject_posteriors = matrix(1, 5L, 1L)), class = "multilpa")
-  result <- bivariate_residuals(object, data)
+  result <- get_data(object, "residuals", data = data)
   expect_equal(result$effective_n, 4)
   expect_equal(result$observed, 0)
   expect_equal(result$p_value, 1)
   data$a[1L] <- NA_real_
-  expect_true(is.na(bivariate_residuals(object, data)$p_value))
+  expect_true(is.na(get_data(object, "residuals", data = data)$p_value))
   data$a[] <- NA_real_
-  empty <- bivariate_residuals(object, data)
+  empty <- get_data(object, "residuals", data = data)
   expect_equal(empty$effective_n, 0)
   expect_true(is.na(empty$observed))
 })
@@ -173,5 +173,5 @@ test_that("three-step methods reject nonfinite outcomes and empty modal classes"
                class = "multilpa_inseparable_classes")
   class(object) <- "multilpa_random_intercept"
   expect_error(three_step(object, data, "y"), "discrete group-class")
-  expect_error(bivariate_residuals(object, data), "discrete group-class")
+  expect_error(get_data(object, "residuals", data = data), "discrete group-class")
 })

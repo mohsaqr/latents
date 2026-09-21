@@ -29,7 +29,7 @@ utils::write.table(bvr_data, file.path(directory, "bvr.dat"), sep = "\t",
 
 fit <- multilpa(bvr_data, c("y1", "y2", "y3"), "group", n_profiles = 2,
                 n_group_classes = 2, n_starts = 20, seed = 1)
-residuals <- bivariate_residuals(fit, bvr_data)
+residuals <- get_data(fit, "residuals", data = bvr_data)
 
 ## ---- dataset two: a distal outcome and a covariate --------------------------
 set.seed(21)
@@ -57,7 +57,7 @@ targets <- list(
     residuals = residuals),
   three_step = list(
     log_likelihood = step_fit$log_likelihood,
-    errors = classification_errors(step_fit),
+    errors = get_data(step_fit, "classification_errors", level = "individuals"),
     distal_bch = three_step(step_fit, step_data, "distal", method = "bch"),
     distal_modal = three_step(step_fit, step_data, "distal", method = "modal"),
     covariate = r3step(step_fit, step_data, "x")))

@@ -32,12 +32,14 @@ A data frame with 1422 rows (106 students, 32 courses, up to 15
     *before* this one, standardised across the cohort. At a student's first
     course an entry grade stands in its place. It is a predictor of
     engagement here, not an outcome of it: pass it as `profile_covariates`
-    to [fit_covariates()], or as the predictor to [r3step()].}
+    to `multilpa(profile_covariates = )`, or as the predictor to
+    [r3step()].}
   \item{engagement}{Factor, `"disengaged"` or `"engaged"`, the pattern the
     row was generated from. This is the truth behind the data, not something
     a study would observe; it is shipped so a fitted model can be checked
     against what produced it. It is deliberately not called `profile`:
-    [assignments()] adds a column of that name, and a dataset already
+    `get_data(fit, "assignments")` adds a column of that name, and a
+    dataset already
     carrying it would make the verb refuse to join its own output.}
   \item{student_type}{Factor, `"committed"` or `"wavering"`, the kind of
     student the row's student was generated as. The truth behind the group
@@ -79,7 +81,7 @@ split is what a two-level model does and a pooled one cannot.
 A latent profile model with a diagonal residual covariance assumes the
 indicators are independent given the profile. `attendance` is built from the
 click measures, so for these data that assumption is false, and the package
-finds it: [bivariate_residuals()] reports a largest residual of 0.21 with
+finds it: `get_data(fit, "residuals")` reports a largest residual of 0.21
 `p = 1.7e-15`, and `covariance_model = "full"` improves the log likelihood
 from -7618.5 to -7494.7 for twenty more parameters, which every information
 criterion prefers.
@@ -92,7 +94,7 @@ you: under a diagonal model [enumerate_classes()] keeps preferring more
 classes, because extra classes absorb residual association the model is not
 allowed to express directly.
 
-The activity indicators are natural-log counts, `log1p(events)`. Raw
+The c("browse", "lectures", "forum_read", "forum_post", "attendance") indicators are natural-log counts, `log1p(events)`. Raw
 learning-analytics counts are strongly right-skewed, and on an unlogged draft
 of these data the skew alone looked like an extra class, exactly as a floor
 or ceiling effect does. Back-transform with `expm1()` to read them as events:
@@ -100,17 +102,21 @@ a `browse` of 3.9 is about 48 page views.
 }
 
 \examples{
-activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-fit <- multilpa(course_engagement, vars = activity, id = "student",
-                n_profiles = 2, n_group_classes = 2, n_starts = 4, seed = 1)
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+  seed = 1
+)
 as.data.frame(fit)
-as.data.frame(fit, what = "profile_probabilities")
+get_data(fit, what = "profile_probabilities")
 # The generating truth ships alongside, so recovery can be checked directly.
-xtabs(~ profile + engagement, data = assignments(fit, data = course_engagement))
+get_data(fit, what = "assignments", data = course_engagement,
+         truth = "engagement")
 }
 \seealso{
 `vignette("multilpa")` for the analysis these data are used in,
   [multilpa()] for the two-level model, [fit_transitions()] for the
-  sequence, and [fit_covariates()] for `previous_grade`.
+  sequence, and `multilpa(profile_covariates = )` for `previous_grade`.
 }
 \keyword{datasets}

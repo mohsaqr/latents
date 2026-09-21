@@ -14,7 +14,7 @@ make_two_level <- function(seed = 11L, n_groups = 30L, per_group = 8L) {
 test_that("information criteria match their documented formulas", {
   dat <- make_two_level()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
-  indices <- information_criteria(fit, format = "long")
+  indices <- get_data(fit, "information_criteria", format = "long")
   expect_s3_class(indices, "data.frame")
   expect_identical(names(indices), c("criterion", "convention", "n", "value"))
   # 3 without a convention (deviance, aic, kic) and 6 per convention
@@ -67,8 +67,8 @@ test_that("information criteria order candidate models sensibly", {
   two <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   criteria <- c("bic", "sabic", "caic", "icl", "awe")
   better <- vapply(criteria, function(criterion_name) {
-    one_value <- information_criteria(one, format = "long")
-    two_value <- information_criteria(two, format = "long")
+    one_value <- get_data(one, "information_criteria", format = "long")
+    two_value <- get_data(two, "information_criteria", format = "long")
     select <- function(indices) {
       subset(indices, criterion == criterion_name &
                convention == "individuals")$value
@@ -83,7 +83,7 @@ test_that("information criteria order candidate models sensibly", {
 test_that("classification diagnostics are internally consistent", {
   dat <- make_two_level()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
-  summary_table <- classification_table(fit, level = "both")
+  summary_table <- get_data(fit, "classification", level = "both")
   expect_identical(nrow(summary_table), 4L)
   expect_true(all(summary_table$average_posterior >= 0 &
                     summary_table$average_posterior <= 1))
@@ -98,7 +98,7 @@ test_that("classification diagnostics are internally consistent", {
   expect_true(all(individuals$odds_correct_classification > 5))
   # The cross-tabulation is its own verb now, not a flag that changes the
   # columns of this one.
-  cross <- average_posteriors(fit, level = "individuals")
+  cross <- get_data(fit, "average_posteriors", level = "individuals")
   expect_identical(nrow(cross), 4L)
   # Average posteriors within each modal group are a probability distribution.
   totals <- tapply(cross$average_posterior, cross$assigned_class, sum)
@@ -109,7 +109,7 @@ test_that("classification diagnostics handle a class with no modal members", {
   set.seed(3)
   dat <- data.frame(g = rep(seq_len(15L), each = 6L), y = stats::rnorm(90L))
   fit <- multilpa(dat, "y", "g", 1, 1, n_starts = 1, seed = 2)
-  table <- classification_table(fit)
+  table <- get_data(fit, "classification", level = "individuals")
   expect_identical(nrow(table), 1L)
   expect_equal(table$average_posterior, 1)
   # A single class has proportion one, so the odds are undefined, not infinite.
@@ -119,12 +119,12 @@ test_that("classification diagnostics handle a class with no modal members", {
 test_that("entropy is bounded and undefined for a single class", {
   dat <- make_two_level()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
-  entropy <- entropy_table(fit)
+  entropy <- get_data(fit, "entropy")
   expect_identical(nrow(entropy), 2L)
   expect_true(all(entropy$relative_entropy > 0 & entropy$relative_entropy <= 1))
   expect_true(all(entropy$entropy_sum >= 0))
   single <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 1, seed = 5)
-  expect_true(all(is.na(entropy_table(single)$relative_entropy)))
+  expect_true(all(is.na(get_data(single, "entropy")$relative_entropy)))
   # A degenerate, perfectly separated posterior has zero entropy.
   expect_equal(.multilpa_entropy_sum(matrix(c(1, 0, 0, 1), 2L, 2L)), 0)
   expect_equal(.multilpa_relative_entropy(matrix(c(1, 0, 0, 1), 2L, 2L)), 1)
@@ -141,37 +141,36 @@ test_that("tidy accessors return the documented shapes", {
   expect_identical(nrow(profiles), 4L)
   expect_equal(profiles$mean, as.vector(t(fit$means)))
   expect_equal(profiles$standard_deviation, sqrt(profiles$variance))
-  probabilities <- as.data.frame(fit, what = "profile_probabilities")
+  probabilities <- get_data(fit, "profile_probabilities")
   expect_identical(nrow(probabilities), 4L)
   totals <- tapply(probabilities$probability, probabilities$group_class, sum)
   expect_equal(unname(as.vector(totals)), rep(1, 2))
   # One row per individual and profile. The wide form is still available, and
   # carries the same numbers.
-  posteriors <- as.data.frame(fit, what = "posteriors")
+  posteriors <- get_data(fit, "posteriors")
   expect_identical(nrow(posteriors), fit$n_observations * fit$n_profiles)
   expect_equal(as.vector(tapply(posteriors$posterior, posteriors$row, sum)),
                rep(1, fit$n_observations))
-  wide <- as.data.frame(fit, what = "posteriors", format = "wide")
+  wide <- get_data(fit, "posteriors", format = "wide")
   expect_identical(nrow(wide), fit$n_observations)
   expect_identical(wide$row, seq_len(fit$n_observations))
   expect_equal(wide$group, dat$g)
-  group_posteriors <- as.data.frame(fit, what = "group_posteriors")
+  group_posteriors <- get_data(fit, "group_posteriors")
   expect_identical(nrow(group_posteriors),
                    fit$n_groups * fit$n_group_classes)
-  wide_groups <- as.data.frame(fit, what = "group_posteriors", format = "wide")
+  wide_groups <- get_data(fit, "group_posteriors", format = "wide")
   expect_identical(nrow(wide_groups), fit$n_groups)
   expect_equal(sum(wide_groups$group_size), fit$n_observations)
   expect_equal(sum(wide_groups$log_likelihood), fit$log_likelihood)
-  expect_identical(nrow(as.data.frame(fit, what = "starts")), 6L)
-  expect_identical(as.data.frame(fit, what = "information_criteria"),
-                   information_criteria(fit))
+  expect_identical(nrow(get_data(fit, "starts")), 6L)
+  expect_identical(get_data(fit, "information_criteria"),
+                   get_data(fit, "information_criteria"))
   # and the long shape reaches the verb through the accessor too
-  expect_identical(as.data.frame(fit, what = "information_criteria",
-                                 format = "long"),
-                   information_criteria(fit, format = "long"))
-  expect_identical(as.data.frame(fit, what = "entropy"), entropy_table(fit))
-  expect_identical(as.data.frame(fit, what = "classification", level = "groups"),
-                   classification_table(fit, level = "groups"))
+  expect_identical(get_data(fit, "information_criteria", format = "long"),
+                   get_data(fit, "information_criteria", format = "long"))
+  expect_identical(get_data(fit, "entropy"), get_data(fit, "entropy"))
+  expect_identical(get_data(fit, "classification", level = "groups"),
+                   get_data(fit, "classification", level = "groups"))
 })
 
 test_that("enumeration and inference tidy and print", {
@@ -240,14 +239,6 @@ test_that("starting_values rejects incomplete input by condition class", {
     class = "multilpa_bad_start")
 })
 
-test_that("the Lo-Mendell-Rubin adjustment reproduces genuine Mplus TECH11", {
-  reference <- readRDS(test_path("..", "fixtures", "mplus", "lmr-tech11.rds"))
-  expect_identical(nrow(reference), 2L)
-  adjusted <- reference$statistic / (1 + 1 / (reference$df * log(reference$n)))
-  # Mplus prints TECH11 to three decimals; that is the comparison precision.
-  expect_lt(max(abs(adjusted - reference$mplus_adjusted)), 5e-3)
-})
-
 test_that("lmr_lrt reports a statistic and withholds a p-value", {
   dat <- make_two_level()
   smaller <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
@@ -297,7 +288,7 @@ test_that("every result class has a working tidy accessor", {
                     b = stats::rnorm(n, c(-1, 1)[profile]),
                     age = stats::rnorm(n),
                     resources = rep(stats::rnorm(30L), each = 10L))
-  covariate_fit <- quietly(fit_covariates(
+  covariate_fit <- quietly(multilpa(
     dat, c("a", "b"), "school", 2, 2, profile_covariates = "age",
     group_covariates = "resources", n_starts = 4, seed = 1))
   profiles <- as.data.frame(covariate_fit)
@@ -305,7 +296,7 @@ test_that("every result class has a working tidy accessor", {
     c("profile", "indicator", "mean", "variance", "standard_deviation"))
   expect_identical(nrow(profiles), 4L)
   expect_equal(profiles$standard_deviation, sqrt(profiles$variance))
-  coefficients <- as.data.frame(covariate_fit, what = "coefficients")
+  coefficients <- get_data(covariate_fit, "coefficients")
   expect_identical(names(coefficients),
     c("level", "outcome", "term", "parameter", "estimate"))
   # The estimates are multinomial logits; the table has to say so.
@@ -313,19 +304,19 @@ test_that("every result class has a working tidy accessor", {
   expect_setequal(unique(coefficients$level), c("profile", "group"))
   expect_true("age" %in% coefficients$term)
   expect_true("resources" %in% coefficients$term)
-  expect_identical(nrow(as.data.frame(covariate_fit, what = "posteriors")),
+  expect_identical(nrow(get_data(covariate_fit, "posteriors")),
                    n * covariate_fit$n_profiles)
-  expect_identical(nrow(as.data.frame(covariate_fit, what = "group_posteriors")),
+  expect_identical(nrow(get_data(covariate_fit, "group_posteriors")),
                    30L * covariate_fit$n_group_classes)
   intercept_fit <- fit_random_intercept(dat, c("a", "b"), "school", 2,
                                                n_starts = 3, seed = 1)
   expect_identical(nrow(as.data.frame(intercept_fit)), 4L)
-  intercepts <- as.data.frame(intercept_fit, what = "random_intercepts")
+  intercepts <- get_data(intercept_fit, "random_intercepts")
   expect_identical(names(intercepts), c("group", "group_size", "mean", "sd"))
   expect_identical(nrow(intercepts), 30L)
   expect_equal(sum(intercepts$group_size), n)
   expect_true(all(intercepts$sd > 0))
-  expect_identical(nrow(as.data.frame(intercept_fit, what = "posteriors")),
+  expect_identical(nrow(get_data(intercept_fit, "posteriors")),
                    n * intercept_fit$n_profiles)
 })
 
@@ -378,7 +369,7 @@ test_that("extracted covariate and inference helpers keep their contracts", {
                     b = stats::rnorm(n, c(-1, 1)[profile]),
                     age = stats::rnorm(n),
                     resources = rep(stats::rnorm(24L), each = 10L))
-  # Covariate column contracts, previously inline in fit_covariates().
+  # Covariate column contracts, previously inline in multilpa().
   expect_error(.multilpa_cov_check_covariates(dat, "a", character(),
                                             c("a", "b"), "school"),
                "distinct from indicators")

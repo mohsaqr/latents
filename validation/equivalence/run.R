@@ -38,12 +38,12 @@ run <- run_equivalence(if (length(requested) > 0L) requested else NULL,
 
 print(run)
 cat("\n")
-print(as.data.frame(run, what = "summary"))
+print(get_data(run, "summary"))
 
-comparisons <- as.data.frame(run, what = "comparisons")
+comparisons <- get_data(run, "comparisons")
 comparisons$multilpa_version <- equivalence_provenance(run, "multilpa")
 utils::write.csv(comparisons, file.path(directory, "report.csv"), row.names = FALSE)
-utils::write.csv(as.data.frame(run, what = "suites"),
+utils::write.csv(get_data(run, "suites"),
                  file.path(directory, "suites.csv"), row.names = FALSE)
 
 cat(sprintf("\n%d quantities compared, %d agreed, %d disagreed, worst difference %.3e\n",
@@ -66,5 +66,5 @@ cat(sprintf("\nwrote %s, %s, %s and %s\n",
             file.path(directory, "report.csv"), file.path(directory, "suites.csv"),
             file.path(directory, "REPORT.md"), file.path(directory, "SESSION.txt")))
 
-suites <- as.data.frame(run, what = "suites")
+suites <- get_data(run, "suites")
 if (any(suites$status == "failed") || !all(comparisons$agrees)) quit(status = 1L, save = "no")

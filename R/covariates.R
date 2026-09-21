@@ -207,68 +207,26 @@
 
 #' Fit multilevel LPA with class-membership covariates
 #'
+#' The estimator behind `multilpa(profile_covariates =, group_covariates =)`.
 #' Numeric covariates predict individual-profile and group-class membership via
 #' multinomial logits, using the final class as reference. Individual-profile
 #' slopes are shared across group classes; profile intercepts differ by group
 #' class. The measurement model is the one [multilpa()] fits and stays
-#' invariant across group classes: Gaussian, categorical or mixed indicators,
-#' with diagonal or unrestricted residual covariance. This is one-step maximum
-#' likelihood, not regression on assigned classes. Covariates are used in their
-#' supplied units; center or scale them beforehand if desired. Only complete
-#' data are supported here; missing indicators are not integrated out.
-#' @param data Data frame.
-#' @param vars Names of continuous indicator columns.
-#' @param id Name of group identifier column.
-#' @param n_profiles Number of individual profiles.
-#' @param n_group_classes Number of discrete group classes.
-#' @param profile_covariates Names of numeric predictors of profile membership.
-#' @param group_covariates Names of numeric predictors constant within groups.
-#' @param variance_model Varying or equal diagonal variances across profiles.
-#' @param n_starts Number of independent initializations.
-#' @param max_iter Maximum EM iterations per start.
-#' @param tol Relative log-likelihood convergence tolerance.
-#' @param min_variance Explicit variance lower bound.
-#' @param time Optional name of a column giving each observation's position
-#'   within its group, stored so that [sequences()] and `plot(what =
-#'   "sequences")` can read the assignments back in order. The model never uses
-#'   it.
-#' @param seed Optional seed; the caller's random state is restored.
-#' @param covariance_model `"diagonal"` assumes indicators are independent
-#'   given the profile; `"full"` estimates unrestricted within-profile residual
-#'   covariances, as in [multilpa()].
-#' @param categorical Character vector naming indicators to treat as
-#'   categorical, modelled by unrestricted profile-specific response
-#'   probabilities. Indicators not named here stay Gaussian, so naming a subset
-#'   fits a mixed-mode measurement model.
-#' @param min_probability Positive lower bound on every categorical response
-#'   probability, defining a constrained maximum-likelihood problem in the same
-#'   way `min_variance` does for Gaussian indicators.
-#' @return An object of class `multilpa_covariates`. Read it with the verbs
-#'   that describe it rather than by reaching into it: [as.data.frame()] gives
-#'   the measurement model, the membership coefficients, and either set of
-#'   posteriors, one row per profile-indicator, coefficient, individual or
-#'   group; [summary()] gives the model-level fit summary and the restart
-#'   diagnostics; [plot()] draws the measurement model, the assignments in
-#'   occasion order, or the case-level entropy and posterior panels; and
-#'   [parameter_inference()] gives one row per free parameter with a standard
-#'   error and an interval.
-#' @details [parameter_inference()], [vcov()] and [confint()] cover Gaussian
-#'   and full-covariance fits. They refuse a fit with categorical indicators
-#'   with a `multilpa_unsupported_inference` condition, because no score is
-#'   implemented for the response probabilities and reporting the other blocks
-#'   alone would understate the parameter count.
-#' @examples
-#' set.seed(1)
-#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
-#'                            z = rnorm(200))
-#' example_data$y <- rnorm(200,
-#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-#'                       n_group_classes = 1, profile_covariates = "z",
-#'                       n_starts = 2, seed = 1)
-#' as.data.frame(fit, what = "coefficients")
-#' @export
-fit_covariates <- function(data, vars, id, n_profiles,
+#' invariant across group classes. This is one-step maximum likelihood, not
+#' regression on assigned classes. Covariates are used in their supplied units.
+#' Only complete data are supported; missing indicators are not integrated out.
+#'
+#' @param data,vars,id,n_profiles,n_group_classes As in [multilpa()].
+#' @param profile_covariates,group_covariates Names of numeric predictors of
+#'   profile membership, and of group-class membership.
+#' @param variance_model,n_starts,max_iter,tol,min_variance As in [multilpa()].
+#' @param seed,time,covariance_model,categorical,min_probability As in
+#'   [multilpa()].
+#' @param call The user-facing call to record on the result, so the object
+#'   reports the `multilpa()` the caller wrote rather than this delegation.
+#' @return An object of class `multilpa_covariates`.
+#' @noRd
+.multilpa_fit_covariates <- function(data, vars, id, n_profiles,
                                   n_group_classes = 2L,
                                   profile_covariates = character(),
                                   group_covariates = character(),
@@ -278,7 +236,7 @@ fit_covariates <- function(data, vars, id, n_profiles,
                                   time = NULL,
                                   covariance_model = c("diagonal", "full"),
                                   categorical = character(),
-                                  min_probability = 1e-10) {
+                                  min_probability = 1e-10, call = NULL) {
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
@@ -307,7 +265,8 @@ fit_covariates <- function(data, vars, id, n_profiles,
                                vars, id)
   # The base fit validates indicators/model sizes and supplies an initial mode.
   base <- multilpa(data, vars, id, n_profiles, n_group_classes,
-                     variance_model, n_starts = 1L, max_iter = max_iter,
+                     variance_model = variance_model,
+                     n_starts = 1L, max_iter = max_iter,
                      tol = tol, min_variance = min_variance,
                      covariance_model = covariance_model,
                      categorical = categorical,
@@ -375,7 +334,7 @@ fit_covariates <- function(data, vars, id, n_profiles,
     n_group_classes = as.integer(n_group_classes), group_index = group_index,
     variance_model = variance_model, min_variance = min_variance,
     covariance_model = covariance_model, categorical = categorical,
-    call = match.call())
+    call = call %||% match.call())
   ## Set here rather than inside the assembler, where the name `time` would
   ## resolve to stats::time instead of this argument.
   result$time <- time
@@ -410,6 +369,7 @@ fit_covariates <- function(data, vars, id, n_profiles,
 
 #' Print a covariate LPA fit
 #' @param x A covariate LPA fit.
+#' @param rows How many rows of the printed table to show before truncating.
 #' @param ... Reserved.
 #' @return The model, invisibly. Called for the side effect of printing the
 #'   class counts, the covariate counts, the log likelihood with the
@@ -420,17 +380,18 @@ fit_covariates <- function(data, vars, id, n_profiles,
 #'                            z = rnorm(200))
 #' example_data$y <- rnorm(200,
 #'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-#'                       n_group_classes = 1, profile_covariates = "z",
-#'                       n_starts = 2, seed = 1)
+#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
+#'                 n_group_classes = 1, profile_covariates = "z",
+#'                 n_starts = 2, seed = 1)
 #' print(fit)
 #' @export
-print.multilpa_covariates <- function(x, ...) {
+print.multilpa_covariates <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa_covariates"))
   cat(sprintf("Multilevel LPA with covariates: %d profiles, %d group classes\n",
               x$n_profiles, x$n_group_classes))
   cat(sprintf("Log likelihood %.6f; AIC %.3f; BIC (groups) %.3f; converged %s\n",
               x$log_likelihood, x$aic, x$bic, x$converged))
+  .multilpa_print_primary(x, rows = rows)
   invisible(x)
 }
 
@@ -440,7 +401,7 @@ print.multilpa_covariates <- function(x, ...) {
 #' regressions and the restart diagnostics into one object, so that none of
 #' them has to be read out of the fit by hand.
 #'
-#' @param object A covariate LPA fit from [fit_covariates()].
+#' @param object A covariate LPA fit from `multilpa(profile_covariates = )`.
 #' @param ... Reserved for compatibility with `summary()`.
 #' @return An object of class `summary_multilpa_covariates`, with a `print`
 #'   method and an [as.data.frame()] accessor. `as.data.frame()` returns the
@@ -454,44 +415,30 @@ print.multilpa_covariates <- function(x, ...) {
 #'                            z = rnorm(200))
 #' example_data$y <- rnorm(200,
 #'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-#'                       n_group_classes = 1, profile_covariates = "z",
-#'                       n_starts = 2, seed = 1)
+#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
+#'                 n_group_classes = 1, profile_covariates = "z",
+#'                 n_starts = 2, seed = 1)
 #' summary(fit)
-#' as.data.frame(summary(fit), what = "coefficients")
+#' get_data(fit, what = "coefficients")
 #' @export
 summary.multilpa_covariates <- function(object, ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
               inherits(object, "multilpa_covariates"))
-  ## Built field by field rather than by subsetting the fit by a name vector,
-  ## which yields a silent NULL keyed `NA` for any name the fit does not carry.
-  model <- data.frame(
-    n_observations = object$n_observations,
-    n_groups = object$n_groups,
-    n_profiles = object$n_profiles,
-    n_group_classes = object$n_group_classes,
-    n_profile_covariates = length(object$profile_covariates),
-    n_group_covariates = length(object$group_covariates),
-    variance_model = object$variance_model,
-    covariance_model = object$covariance_model %||% "diagonal",
-    n_parameters = object$n_parameters,
-    log_likelihood = object$log_likelihood,
-    aic = object$aic,
-    bic_groups = object$bic,
-    bic_individual = object$bic_individual,
-    converged = object$converged,
-    boundary = object$boundary,
-    extreme_logits = object$extreme_logits,
-    n_starts = nrow(object$starts),
-    row.names = NULL, stringsAsFactors = FALSE)
+  # One builder for the fit and for its summary, so `get_data(x, "model")`
+  # and the printed header cannot describe the same fit differently.
+  model <- .multilpa_covariate_fit_frame(object)
   result <- list(
     model = model,
-    profiles = as.data.frame(object, what = "profiles"),
-    coefficients = as.data.frame(object, what = "coefficients"),
+    profiles = get_data(object, "profiles"),
+    coefficients = get_data(object, "coefficients"),
     starts = object$starts,
     effective_profile_counts = object$effective_profile_counts,
     effective_group_counts = object$effective_group_counts,
     call = object$call)
+  # Every table the fit can produce, built once here, so `get_data()` on the
+  # summary serves the same tables the fit would and `print()` can show them
+  # all without recomputing anything.
+  result$tables <- get_data(object, "all")
   class(result) <- "summary_multilpa_covariates"
   result
 }
@@ -499,6 +446,9 @@ summary.multilpa_covariates <- function(object, ...) {
 #' Print a covariate LPA summary
 #' @param x A `summary_multilpa_covariates` object.
 #' @param digits Number of printed significant digits.
+#' @param rows How many rows of each table to print. A longer table is shown
+#'   to that depth, with its remaining row count and the `get_data()` call that
+#'   returns it whole.
 #' @param ... Passed to the underlying `data.frame` printing.
 #' @return The summary, invisibly. Called for the side effect of printing the
 #'   model line, the measurement model, the membership regressions, the
@@ -510,17 +460,15 @@ summary.multilpa_covariates <- function(object, ...) {
 #'                            z = rnorm(200))
 #' example_data$y <- rnorm(200,
 #'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-#'                       n_group_classes = 1, profile_covariates = "z",
-#'                       n_starts = 2, seed = 1)
+#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
+#'                 n_group_classes = 1, profile_covariates = "z",
+#'                 n_starts = 2, seed = 1)
 #' print(summary(fit), digits = 3)
 #' @export
-print.summary_multilpa_covariates <- function(x, digits = 4L, ...) {
+print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa_covariates` object" =
-              inherits(x, "summary_multilpa_covariates"),
-            "`digits` must be a single number between 1 and 22" =
-              is.numeric(digits) && length(digits) == 1L && is.finite(digits) &&
-              digits >= 1 && digits <= 22)
+              inherits(x, "summary_multilpa_covariates"))
+  .multilpa_check_print_arguments(digits, rows)
   model <- x$model
   cat(sprintf("Multilevel LPA with covariates: %d profiles, %d group classes\n",
               model$n_profiles, model$n_group_classes))
@@ -529,66 +477,45 @@ print.summary_multilpa_covariates <- function(x, digits = 4L, ...) {
               model$converged))
   cat(sprintf("%d profile covariate(s); %d group covariate(s)\n",
               model$n_profile_covariates, model$n_group_covariates))
-  cat("\nMeasurement model:\n")
-  print(x$profiles, digits = digits, row.names = FALSE, ...)
-  cat("\nMembership regressions (no standard errors; see parameter_inference()):\n")
-  print(x$coefficients, digits = digits, row.names = FALSE, ...)
-  cat("\nEffective individual memberships:\n")
-  print(x$effective_profile_counts, digits = digits, ...)
-  cat("\nEffective group memberships:\n")
-  print(x$effective_group_counts, digits = digits, ...)
-  cat(sprintf("\nLog likelihood: %.6f; AIC: %.3f\nBIC (groups): %.3f; BIC (individuals): %.3f\n",
+  cat(sprintf("Log likelihood: %.6f; AIC: %.3f\nBIC (groups): %.3f; BIC (individuals): %.3f\n",
               model$log_likelihood, model$aic, model$bic_groups,
               model$bic_individual))
+  cat("Membership coefficients carry no standard errors here; parameter_inference() has them.\n")
   if (!model$converged) cat("WARNING: the best start did not converge.\n")
   if (model$boundary) cat("WARNING: a residual variance is at min_variance.\n")
   if (model$extreme_logits) {
     cat("WARNING: extreme logit coefficients; check scaling, sparse classes and separation.\n")
   }
-  cat("\nStart diagnostics:\n")
-  print(x$starts, digits = digits, row.names = FALSE, ...)
+  .multilpa_print_tables(x$tables, rows = rows, digits = digits)
+  .multilpa_print_table_footer(x$tables)
   invisible(x)
 }
 
-#' Tidy a covariate LPA summary
-#' @param x A `summary_multilpa_covariates` object.
+#' Coerce a covariate-model summary to its primary table
+#'
+#' Plain coercion, as the base generic means it: one object, one data frame.
+#' A summary carries every table the object it describes can produce, and
+#' [get_data()] names them.
+#'
+#' @param x An object of class `summary_multilpa_covariates`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param what Which table to return: `"model"`, `"profiles"`,
-#'   `"coefficients"` or `"starts"`.
-#' @param ... Ignored.
-#' @return A base `data.frame`. `"model"` has exactly one row describing the
-#'   fit, with columns `n_observations`, `n_groups`, `n_profiles`,
-#'   `n_group_classes`, `n_profile_covariates`, `n_group_covariates`,
-#'   `variance_model`, `covariance_model`, `n_parameters`, `log_likelihood`,
-#'   `aic`, `bic_groups`, `bic_individual`, `converged`, `boundary`,
-#'   `extreme_logits` and `n_starts`. `"profiles"`, `"coefficients"` and
-#'   `"starts"` have one row per profile-indicator, per membership coefficient,
-#'   and per EM start respectively.
+#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#'   naming it, rather than being dropped.
+#' @return A base `data.frame`: one row per profile and continuous indicator.
+#' @seealso [get_data()] for every other table this summary holds.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
-#'                            z = rnorm(200))
-#' example_data$y <- rnorm(200,
-#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-#'                       n_group_classes = 1, profile_covariates = "z",
-#'                       n_starts = 2, seed = 1)
-#' as.data.frame(summary(fit), what = "starts")
+#' fit <- multilpa(
+#'   course_engagement,
+#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+#'   id = "student", n_profiles = 2, n_group_classes = 2,
+#'   profile_covariates = "sequence", n_starts = 4, seed = 1
+#' )
+#' as.data.frame(summary(fit))
 #' @export
-as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL,
-                                                      optional = FALSE,
-                                                      what = c("model",
-                                                               "profiles",
-                                                               "coefficients",
-                                                               "starts"), ...) {
-  stopifnot("`x` must be a `summary_multilpa_covariates` object" =
-              inherits(x, "summary_multilpa_covariates"))
-  what <- match.arg(what)
-  result <- switch(what, model = x$model, profiles = x$profiles,
-                   coefficients = x$coefficients, starts = x$starts)
-  row.names(result) <- row.names
-  result
+as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optional = FALSE, ...) {
+  stopifnot("`x` must be an object of class `summary_multilpa_covariates`" = inherits(x, "summary_multilpa_covariates"))
+  .multilpa_coerce(x, row.names, list(...))
 }
 
 #' Rebuild the fitting data a covariate fit was estimated from
@@ -647,9 +574,9 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL,
 #'                            z = rnorm(200))
 #' example_data$y <- rnorm(200,
 #'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-#'                       n_group_classes = 1, profile_covariates = "z",
-#'                       n_starts = 2, seed = 1)
+#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
+#'                 n_group_classes = 1, profile_covariates = "z",
+#'                 n_starts = 2, seed = 1)
 #' logLik(fit)
 #' @export
 logLik.multilpa_covariates <- function(object, ...) {
@@ -669,9 +596,9 @@ logLik.multilpa_covariates <- function(object, ...) {
 #'                            z = rnorm(200))
 #' example_data$y <- rnorm(200,
 #'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-#'                       n_group_classes = 1, profile_covariates = "z",
-#'                       n_starts = 2, seed = 1)
+#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
+#'                 n_group_classes = 1, profile_covariates = "z",
+#'                 n_starts = 2, seed = 1)
 #' nobs(fit)
 #' @export
 nobs.multilpa_covariates <- function(object, ...) {

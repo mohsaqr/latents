@@ -1,7 +1,7 @@
 test_that("full covariance with missing indicators reproduces genuine two-level Mplus", {
   invisible(lapply(c("varying", "equal"), function(variance_model) {
     stopifnot(is.character(variance_model), length(variance_model) == 1L)
-    reference <- readRDS(test_path("..", "fixtures", "mplus",
+    reference <- readRDS(equivalence_fixture("mplus",
                                    paste0("twolevel-missing-full-", variance_model, ".rds")))
     fit <- multilpa(reference$data, c("y1", "y2"), "clus", 2, 2,
                       covariance_model = "full", missing = "fiml",

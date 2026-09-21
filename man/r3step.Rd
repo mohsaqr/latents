@@ -51,7 +51,8 @@ A base `data.frame` with one row per non-reference class and term,
   by `adjust`, which is also recorded in the result's `adjust` attribute;
   it is `NA` on the intercept rows, which are not part of the tested family.
   Coefficients are log odds against the final class, which is the reference,
-  matching [fit_covariates()]; that class is named in the result's
+  matching `multilpa(profile_covariates = )`; that class is named in the
+  result's
   `reference_class` attribute, and the variance that was used in its
   `vcov_type` attribute.
 }
@@ -79,7 +80,7 @@ The error matrix is held fixed rather than estimated jointly, which
   That coverage was measured where the profiles separate well. The error
   matrix is still treated as known rather than estimated, so intervals should
   be expected to run narrow where classification is poorer; check
-  [classification_errors()] before relying on them.
+  `get_data(x, "classification_errors")` before relying on them.
 }
 \examples{
 set.seed(21)
@@ -103,6 +104,7 @@ Vermunt, J. K. (2010). Latent class modeling with covariates: two
   Modeling*, 21, 329--341.
 }
 \seealso{
-[three_step()] for a distal outcome, and [fit_covariates()] for the
+[three_step()] for a distal outcome, and
+  `multilpa(profile_covariates = )` for the
   one-step alternative that estimates everything jointly.
 }

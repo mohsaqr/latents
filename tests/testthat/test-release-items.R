@@ -15,7 +15,7 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
   data <- .release_fixture()
   fit <- quietly(multilpa(data, c("a", "b"), "g", 2L, 2L,
                                    n_starts = 3, seed = 1))
-  criteria <- information_criteria(fit, format = "long")
+  criteria <- get_data(fit, "information_criteria", format = "long")
   q <- fit$n_parameters
   log_likelihood <- fit$log_likelihood
 
@@ -38,7 +38,7 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
   # It must not vary with n, unlike every other row that carries a convention.
   expect_equal(clc$value[1L] - clc$value[2L], 2 * (entropies[1L] - entropies[2L]))
   # The formula is documentation, so it is off by default and arrives on request.
-  annotated <- subset(information_criteria(fit, format = "long", definitions = TRUE),
+  annotated <- subset(get_data(fit, "information_criteria", format = "long", definitions = TRUE),
                       criterion == "clc")
   expect_identical(annotated$definition, rep("-2L + 2 EN", 2L))
   expect_false("definition" %in% names(criteria))
@@ -48,7 +48,7 @@ test_that("the criteria table keeps its shape as criteria are added", {
   data <- .release_fixture()
   fit <- quietly(multilpa(data, c("a", "b"), "g", 2L, 2L,
                                    n_starts = 2, seed = 1))
-  criteria <- information_criteria(fit, format = "long")
+  criteria <- get_data(fit, "information_criteria", format = "long")
   expect_named(criteria, c("criterion", "convention", "n", "value"))
   expect_setequal(unique(criteria$criterion),
                   c("deviance", "aic", "kic", "bic", "sabic", "caic",
@@ -65,7 +65,7 @@ test_that("the criteria table keeps its shape as criteria are added", {
   expect_true(any(criteria$value < deviance))
 
   # The reported shape: one row, and the columns a comparison table publishes.
-  wide <- information_criteria(fit)
+  wide <- get_data(fit, "information_criteria")
   expect_identical(nrow(wide), 1L)
   expect_identical(names(wide)[1:2], c("log_likelihood", "n_parameters"))
   expect_false("penalty" %in% names(wide))
@@ -77,7 +77,7 @@ test_that("the measurement tables carry their own standard errors when asked", {
   fit <- quietly(multilpa(data, c("a", "b", "q"), "g", 2L, 1L,
     categorical = "q", n_starts = 3, seed = 1))
   bare <- as.data.frame(fit)
-  with_errors <- as.data.frame(fit, data = data)
+  with_errors <- get_data(fit, "profiles", data = data)
   # Adding errors must not change the estimates or the shape.
   expect_identical(nrow(bare), nrow(with_errors))
   expect_equal(bare$mean, with_errors$mean)
@@ -94,7 +94,7 @@ test_that("the measurement tables carry their own standard errors when asked", {
                means$standard_error[match(paste(with_errors$profile,
                                                 with_errors$indicator), key)])
 
-  responses <- as.data.frame(fit, what = "responses", data = data)
+  responses <- get_data(fit, "responses", data = data)
   expect_true("probability_standard_error" %in% names(responses))
   expect_false(anyNA(responses$probability_standard_error))
   reported <- inference[inference$parameter == "response", ]
@@ -114,7 +114,7 @@ test_that("asking for errors a fit cannot supply raises rather than returning bl
     c("a", "b"), "g", n_profiles = 2L, time = "t", n_starts = 2, seed = 1))
   # The transition family has no standard errors, so the measurement table
   # must refuse the request instead of filling the columns with NA.
-  expect_error(as.data.frame(transition_fit, what = "profiles", data = data),
+  expect_error(get_data(transition_fit, "profiles", data = data),
                class = "multilpa_no_inference")
-  expect_s3_class(as.data.frame(transition_fit, what = "profiles"), "data.frame")
+  expect_s3_class(get_data(transition_fit, "profiles"), "data.frame")
 })

@@ -7,7 +7,7 @@
 \method{plot}{multilpa}(
   x,
   what = c("profiles", "bars", "heatmap", "responses", "probabilities", "sequences",
-    "entropy", "posteriors"),
+    "entropy", "posteriors", "all"),
   data = NULL,
   scale = c("raw", "standardized"),
   category = "last",

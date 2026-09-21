@@ -204,7 +204,7 @@
 #'   are exactly the first stage's. It additionally carries `fixed`, naming the
 #'   held blocks; `n_parameters`, counting only the parameters this stage
 #'   estimated; and `n_parameters_with_measurement`, which adds the held
-#'   measurement back. Use [as.data.frame()] with `what = "stages"` for a tidy
+#'   measurement back. Use [get_data()] with `what = "stages"` for a tidy
 #'   two-row summary of both stages.
 #' @details First-stage uncertainty is **not** propagated. The second stage
 #'   treats the measurement solution as known, so its standard errors,
@@ -228,8 +228,8 @@
 #' staged <- fit_staged(example_data, c("score_a", "score_b"), "school",
 #'                      n_profiles = 2, n_group_classes = 2, n_starts = 2,
 #'                      seed = 1)
-#' as.data.frame(staged, what = "stages")
-#' as.data.frame(staged, what = "profile_probabilities")
+#' get_data(staged, what = "stages")
+#' get_data(staged, what = "profile_probabilities")
 #' @export
 fit_staged <- function(data, vars, id, n_profiles,
                        n_group_classes = 2L, measurement = NULL,

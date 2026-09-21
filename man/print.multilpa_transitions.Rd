@@ -4,10 +4,12 @@
 \alias{print.multilpa_transitions}
 \title{Print a fitted latent transition model}
 \usage{
-\method{print}{multilpa_transitions}(x, ...)
+\method{print}{multilpa_transitions}(x, rows = 20L, ...)
 }
 \arguments{
 \item{x}{A fitted `multilpa_transitions` model.}
+
+\item{rows}{How many rows of the printed table to show before truncating.}
 
 \item{...}{Ignored.}
 }
@@ -33,5 +35,5 @@ fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
 print(fit)
 }
 \seealso{
-[transitions()], [as.data.frame.multilpa_transitions()].
+[get_data()], [fit_transitions()].
 }

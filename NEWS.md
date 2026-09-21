@@ -1,3 +1,324 @@
+# multilpa 0.11.4
+
+## Equivalence tests no longer ship with the package
+
+Every test that compares multilpa against other software or published output
+now lives in `equivalence/` in the source repository, and that folder is not
+part of the built package. This covers Mplus, mclust, tidySEM, depmixS4 and
+the in-house enumeration. The shipped `tests/testthat/` keeps unit and
+invariant tests only. Run the comparisons with `Rscript equivalence/run.R`.
+
+`mclust` and `tidySEM` are no longer in `Suggests`; nothing shipped uses them.
+
+## Latent transition references
+
+`fit_transitions()` is now checked against the external references pinned by
+the JStats project: depmixS4 Gaussian and binary panel models, two Mplus LTA
+runs, and the plain-LTA row of Table 5 of Muthen & Asparouhov (2022,
+*Psychological Methods*). Log-likelihoods, criteria and parameters agree to
+the reference's precision. On one binary depmixS4 fixture (K = 3), the
+recorded depmixS4 solution is a local maximum: multilpa reaches a likelihood
+0.016 higher. A brute-force path-sum likelihood confirms both values.
+
+# multilpa 0.11.3
+
+## Within-person profiles, without doing the transform yourself
+
+`multilpa(centering = "person")` subtracts each group's own mean from its rows
+before the measurement model sees them, so the profiles become profiles of
+*change* rather than of level. This is the person-mean-centred, within-person
+design (Quintana, 2021; Voelkle, Brose, Schmiedek, & Lindenberger, 2014), and
+until now it meant transforming the data frame first --- which left the fit
+holding numbers that no longer matched the frame it was given, so every verb
+that checks row alignment was comparing centred values against raw ones.
+
+```r
+multilpa(course_engagement,
+         c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+         id = "student", n_profiles = 3, n_group_classes = 1,
+         centering = "person")
+```
+
+The offsets stay on the fit, so nothing downstream has to guess which scale it
+is looking at: `get_data(x, "data")` returns the columns you supplied,
+alignment is still checked against them, and the bivariate residuals are
+computed on the scale the model was estimated on. `"grand"` subtracts one mean
+per indicator instead. `"none"` is the default and changes nothing.
+
+Centring removes exactly the between-unit variation, so `"person"` refuses with
+`multilpa_bad_data` when it leaves an indicator constant --- which is what
+happens when a unit has one observation of it. With `"person"` the group
+classes become types of *change pattern*, not types of unit.
+
+## All fourteen mclust covariance structures
+
+`volume`, `shape` and `orientation` are the three pieces a covariance
+decomposes into --- `Sigma_k = lambda_k * D_k * A_k * D_k'` --- and naming
+them reaches every model `mclust` fits, where `variance_model` and
+`covariance_model` reached four.
+
+| `volume` | `shape` | `orientation` | model |
+|---|---|---|---|
+| equal / varying | spherical | --- | EII, VII |
+| equal / varying | equal / varying | axis | EEI, VEI, EVI, VVI |
+| equal / varying | equal / varying | equal | EEE, VEE, EVE, VVE |
+| equal / varying | equal / varying | varying | EEV, VEV, EVV, VVV |
+
+All three default to `NULL`, which follows `variance_model` and
+`covariance_model`, so a call that names none of them fits exactly what it did
+before. An ellipsoidal structure carries a full covariance array whatever
+`covariance_model` said, because an orientation cannot live in a diagonal
+block.
+
+The estimates are those of Celeux and Govaert (1995). Ten have a closed form
+or a scalar fixed point; EVE and VVE share one orientation across profiles
+while letting the shapes differ, which has no closed form, and use the
+minorize-maximize step of Browne and McNicholas (2014) --- majorize each trace
+term linearly, then solve the resulting orthogonal Procrustes problem by
+singular value decomposition.
+
+**Verified against `mclust`.** Parameter counts match its own `df` for all
+fourteen. Against `mclust::mstep()` on the same responsibilities, twelve agree
+to 1e-11 or better. EVE and VVE differ by at most 5.7e-4 --- and attain a
+*lower* value of the objective the M-step minimizes, by 2.1e-7 and 2.8e-5, so
+the difference is `mclust` stopping short rather than a disagreement about the
+estimate.
+
+## Selecting over structures as well as class counts
+
+`enumerate_classes(structure = )` crosses the covariance structures with the
+class counts, which is the grid model-based clustering is usually selected
+over, and adds a `structure` column to the candidate table:
+
+```r
+enumerate_classes(course_engagement, activity, id = "student",
+                  n_profiles = 2:4, n_group_classes = 1,
+                  structure = c("EEI", "VEI", "EVI", "VVI"),
+                  centering = "person")
+```
+
+`candidate_fit()` gains `structure` to name one candidate out of a grid where
+the class counts alone name several; asking without it raises
+`multilpa_unknown_candidate` listing the structures it could have meant.
+
+## Also new
+
+The two structures whose M-step iterates over orientations now warm start from
+the previous iteration's answer, which is worth about 1.2 to 1.3 times on them.
+An M-step that stops at its iteration cap is **counted and reported once per
+fit, with the count**, rather than warning from inside every M-step: one step
+in three hundred is a different thing from all of them, and a warning raised
+hundreds of times says neither.
+
+`get_data(x, "assignments")` gains an `uncertainty` column: one minus the
+posterior of the profile each row was assigned to, which is exactly what modal
+assignment discards.
+
+## The constrained diagonal covariance family
+
+`variance_model` ties a profile's covariance volume to its shape: `"equal"`
+constrains both and `"varying"` frees both. `volume` and `shape` free them
+separately, which makes the six axis-parallel `mclust` models reachable
+instead of two:
+
+| `volume` | `shape` | model | spread parameters |
+|---|---|---|---|
+| equal | spherical | EII | 1 |
+| varying | spherical | VII | K |
+| equal | equal | EEI | d |
+| varying | equal | VEI | K + d − 1 |
+| equal | varying | **EVI** | 1 + K(d − 1) |
+| varying | varying | VVI | Kd |
+
+Each profile's covariance decomposes as `Sigma_k = lambda_k * A_k`, a volume
+`lambda_k = |Sigma_k|^(1/d)` and a shape `A_k` with determinant one; the
+estimates are those of Celeux and Govaert (1995). `volume`/`shape` default to
+`NULL`, which follows `variance_model`, so every existing fit is unchanged.
+
+Verified against `mclust`: the parameter counts match its own for all six
+models, and at `mclust`'s maximum-likelihood estimate the log likelihood agrees
+with one written from the mixture definition to 1e-10. The maximized
+likelihoods are monotone along the whole nesting lattice.
+
+Three consequences worth knowing:
+
+* `parameter_inference()`, `vcov()` and `confint()` refuse EII, VII, VEI and
+  EVI with `multilpa_unsupported_inference`. The free coordinates this package
+  differentiates are log variances, one per profile and indicator, which is the
+  wrong chart for a constrained volume or shape --- it has more coordinates than
+  the model has parameters. EEI, VVI, EEE and VVV are unaffected.
+* A constrained structure is maximized across every profile at once, so it
+  cannot be combined with a held `variances` block; `fixed = "means"` is fine.
+* A `start` taken from a wider structure is projected onto the requested family
+  before the first iteration, because EM only promises a likelihood that does
+  not decrease *within* the family it is maximizing over.
+
+`covariance_model = "full"` constrains neither volume nor shape, so naming
+either argument with it raises `multilpa_bad_argument`. Six of `mclust`'s
+fourteen models --- the ones with a non-axis-parallel orientation --- remain
+unavailable.
+
+# multilpa 0.11.2
+
+## One verb for every table
+
+Eleven table verbs and the `what =` argument of seven `as.data.frame()`
+methods are **replaced by one generic**, `get_data(x, what = )`. A reader no
+longer has to know which verb owns which table before they can ask for it:
+
+```r
+get_data(fit)                            # the primary table, the measurement model
+get_data(fit, "entropy")                 # was entropy_table(fit)
+get_data(fit, "transitions")             # was transitions(fit)
+get_data(fit, "profile_probabilities")   # was as.data.frame(fit, what = "...")
+names(get_data(fit, "all"))              # every table this fit can produce
+```
+
+`what = "all"` returns a named list of every table, built from the same
+definitions a single `what` uses, so the two cannot disagree. A table this
+particular fit cannot produce -- sequences for a fit made without `time`,
+bivariate residuals for a family with no discrete group classes -- is left out
+rather than erroring, so the names of the list say what was available.
+
+`summary()` now carries every table and prints all of them, truncated to
+`rows = 10` each with the `get_data()` call that returns the rest.
+`as.data.frame()` is plain coercion to the primary table; it no longer takes
+`what`, and an argument it cannot use raises `multilpa_bad_argument` naming it
+rather than quietly returning a different table.
+
+### Migration
+
+| Was | Now |
+|---|---|
+| `assignments(fit, data)` | `get_data(fit, "assignments", data = data)` |
+| `average_posteriors(fit)` | `get_data(fit, "average_posteriors")` |
+| `bch_weights(fit)` | `get_data(fit, "bch_weights")` |
+| `bivariate_residuals(fit, data)` | `get_data(fit, "residuals", data = data)` |
+| `classification_errors(fit)` | `get_data(fit, "classification_errors")` |
+| `classification_table(fit)` | `get_data(fit, "classification")` |
+| `entropy_table(fit)` | `get_data(fit, "entropy")` |
+| `information_criteria(fit)` | `get_data(fit, "information_criteria")` |
+| `sequences(fit)` | `get_data(fit, "sequences")` |
+| `sequence_summary(fit)` | `get_data(fit, "sequence_summary")` |
+| `transitions(fit)` | `get_data(fit, "transitions")` |
+| `as.data.frame(fit, what = "x")` | `get_data(fit, "x")` |
+| `as.data.frame(summary(fit), what = "fit")` | `get_data(fit, "model")` |
+| `as.data.frame(diagnostics(fit), what = "posteriors")` | `get_data(diagnostics(fit), "average_posteriors")` |
+| `fit_covariates(...)` | `multilpa(..., profile_covariates = )` |
+
+Three tables that could only be reached through a `summary()` object are now
+on the fit itself: `"counts"` (effective class memberships), `"covariances"`
+(the within-profile residual covariance matrices) and `"model"` (the one-row
+fit summary, previously `what = "fit"`). An enumeration grid gains
+`"criteria"`, the per-criterion minima its summary already printed.
+
+### Two defaults changed
+
+`"classification"`, `"average_posteriors"`, `"classification_errors"` and
+`"bch_weights"` default to **both levels** on a fit that has discrete group
+classes, where the old verbs defaulted to `"individuals"`. This is the rule
+`diagnostics()` already followed. Pass `level = "individuals"` for the old
+behaviour. `"classification_errors"` and `"bch_weights"` accept
+`level = "both"` for the first time; weight a regression with one level, not
+with both.
+
+`as.data.frame()` on a fitted transition model returns the **measurement
+model**, not the transition matrix, because the primary table is now the same
+kind of thing for every fitted family. `get_data(fit, "transitions")` is the
+transition matrix.
+
+## Covariates are arguments to `multilpa()`, not a separate verb
+
+`fit_covariates()` is **removed**. Membership covariates are part of the model
+`multilpa()` fits, so they are arguments to it:
+
+```r
+multilpa(course_engagement, activity, id = "student", n_profiles = 2,
+         n_group_classes = 2, profile_covariates = "previous_grade")
+```
+
+The result is a `multilpa_covariates` object exactly as before, and it records
+the `multilpa()` call the caller wrote. The covariate likelihood has no
+observed-data form, no starting-value contract of the shape the covariate-free
+EM uses and no held-measurement machinery, so `start`, `missing = "fiml"` and
+`fixed` are refused by name with `multilpa_bad_argument` rather than accepted
+and ignored.
+
+## Every plot a fit supports, in one call
+
+`plot(x, what = "all")` draws every view the fit has the ingredients for,
+re-issuing the caller's own call once per view so style arguments carry into
+each panel. A view that refuses is named at the end rather than stopping the
+sequence.
+
+## Recovery is one call
+
+`get_data(x, "assignments", truth = )` cross-tabulates the model's labels
+against known ones, so checking a fit against a generating truth no longer
+needs `xtabs()` on the assignment frame:
+
+```r
+get_data(fit, "assignments", data = course_engagement,
+         truth = c("engagement", "student_type"))
+```
+
+Each truth column is compared against the level it describes, read off the
+data rather than guessed: a column taking one value within every group is a
+property of the group and goes against `group_class`, and one that varies
+inside any group goes against `profile`. The `assignment` column records which
+comparison was made.
+
+## A fitted model prints its own estimates
+
+`print()` on any fitted model now shows the measurement model under the header,
+so `fit` alone is the whole result. `fit` followed by `as.data.frame(fit)` was
+two calls showing one thing.
+
+```r
+fit <- multilpa(course_engagement,
+                c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+                id = "student", n_profiles = 2, n_group_classes = 2)
+fit
+#> Two-level latent profile analysis: 2 profiles, 2 group classes
+#> ...
+#>  profile  indicator  mean variance standard_deviation
+#>        1     browse 2.854   0.3521             0.5934
+#>        ...
+#> Every other table: get_data(x, what = ), or get_data(x, "all").
+```
+
+An all-categorical fit prints its response probabilities instead, rather than
+an empty block under a heading promising means. `rows` bounds the printout;
+`get_data()` returns any table whole.
+
+## Also
+
+* `get_data(x, "model")` renames the plain fit's `bic` column to `bic_groups`,
+  which is what the covariate and random-intercept families already called it,
+  so one verb no longer spells the same convention two ways. The table is
+  family-shaped rather than a padded union: a random-intercept fit reports its
+  integration diagnostics and a covariate fit its predictor counts.
+  `"information_criteria"` is the table with one column set for every family,
+  and is the one to compare fits across families with.
+* `report()` gains `rows`, forwarded to `print(summary(x))`, because a first
+  look at a fit with thousands of observations would otherwise be mostly
+  posteriors.
+* A covariate model with **no** covariates can no longer be requested: naming
+  no covariate is a request for the covariate-free model. The two differ only
+  in parameterisation, the intercept-only multinomial logits standing in for
+  the mixing probabilities.
+* `report()` and `diagnostics()` are unchanged in purpose. `diagnostics()`
+  reports its tables through `get_data()` and renames its average-posterior
+  table from `"posteriors"` to `"average_posteriors"`, which no longer
+  collides with the individual posteriors.
+* `multilpa_removed_argument` is **removed** from the condition catalogue. It
+  could only be raised by `classification_table(detail = )`, and that verb no
+  longer exists, so nothing can raise it. `?"multilpa-conditions"` no longer
+  claims otherwise.
+* A three-step method called on a random-intercept fit now refuses with
+  `multilpa_no_group_classes` instead of an unclassed error, so
+  `get_data(x, "all")` can tell a table that does not apply from a defect.
+
 # multilpa 0.11.1
 
 ## One bundled dataset, covering every model family

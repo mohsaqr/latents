@@ -118,7 +118,7 @@ test_that("rows with no observed indicator are excluded from the BIC sample size
                              n_group_classes = 1, categorical = items,
                              n_starts = 1, seed = 1, missing = "fiml"))
   expect_output(print(sparse), "carry no observed indicator")
-  expect_identical(as.data.frame(summary(sparse), what = "fit")$n_informative,
+  expect_identical(get_data(summary(sparse), "model")$n_informative,
                    sparse$n_informative)
   expect_identical(sparse$n_observations, nrow(blanked))
   expect_identical(sparse$n_informative, nrow(blanked) - 3L)

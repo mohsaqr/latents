@@ -23,16 +23,16 @@
 test_that("diagnostics() forwards `by` instead of dropping it", {
   skip_on_cran()
   fit <- .surface_fit()
-  pooled <- as.data.frame(diagnostics(fit, by = "overall"), what = "residuals")
+  pooled <- get_data(diagnostics(fit, by = "overall"), "residuals")
   # The point of the test: the table has to be the pooled one. Before the fix
   # `by` was discarded and this returned the per-profile residuals, which read
   # as pooled ones and are not.
-  expect_identical(pooled, bivariate_residuals(fit, by = "overall"))
+  expect_identical(pooled, get_data(fit, "residuals", by = "overall"))
   expect_identical(unique(pooled$profile), "overall")
   expect_false(any(grepl("profile_", pooled$profile, fixed = TRUE)))
   # The default is unchanged, and is still the per-profile table.
-  by_profile <- as.data.frame(diagnostics(fit), what = "residuals")
-  expect_identical(by_profile, bivariate_residuals(fit))
+  by_profile <- get_data(diagnostics(fit), "residuals")
+  expect_identical(by_profile, get_data(fit, "residuals"))
   expect_false(identical(pooled, by_profile))
 })
 
@@ -62,7 +62,7 @@ test_that("an argument the reporting surface cannot forward is refused", {
 
 test_that("plot(diagnostics()) draws for a covariate fit", {
   skip_on_cran()
-  fit <- fit_covariates(.surface_data(), c("a", "b"), "school",
+  fit <- multilpa(.surface_data(), c("a", "b"), "school",
                         n_profiles = 2L, n_group_classes = 1L,
                         profile_covariates = "z", n_starts = 1L, seed = 1)
   draw({
@@ -104,7 +104,7 @@ test_that("report() draws every view it offers, for every family", {
   skip_on_cran()
   data <- .surface_data()
   fits <- list(
-    covariates = fit_covariates(data, c("a", "b"), "school", n_profiles = 2L,
+    covariates = multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                                 n_group_classes = 1L, profile_covariates = "z",
                                 n_starts = 1L, seed = 1),
     random_intercept = fit_random_intercept(data, c("a", "b"), "school",

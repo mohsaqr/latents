@@ -2,66 +2,38 @@
 % Please edit documentation in R/methods.R
 \name{as.data.frame.summary_multilpa}
 \alias{as.data.frame.summary_multilpa}
-\title{Tidy a multilevel LPA summary}
+\title{Coerce a multilevel LPA summary to its primary table}
 \usage{
-\method{as.data.frame}{summary_multilpa}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("profiles", "responses", "profile_probabilities", "counts", "covariances",
-    "fit", "starts"),
-  ...
-)
+\method{as.data.frame}{summary_multilpa}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa` object from [summary.multilpa()].}
+\item{x}{An object of class `summary_multilpa`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return. `"profiles"` gives the Gaussian
-measurement model, `"responses"` the categorical measurement model,
-`"profile_probabilities"` the profile prevalence within each group class,
-`"counts"` the effective class memberships at both levels,
-`"covariances"` the within-profile residual covariance matrices,
-`"fit"` the one-row fit summary, and `"starts"` the restart diagnostics.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped.}
 }
 \value{
-A base `data.frame` whose columns depend on `what`.
-  `"profiles"` has one row per profile and continuous indicator, with columns
-  `profile`, `indicator`, `mean`, `variance` and `standard_deviation`, and
-  zero rows when every indicator is categorical. `"responses"` has one row
-  per profile, categorical indicator and category, with columns `profile`,
-  `indicator`, `category`, `probability` and `threshold`, and zero rows when
-  no indicator is categorical. `"profile_probabilities"` has one row per
-  group class and profile, with columns `group_class`, `profile`,
-  `probability` and `group_class_probability`. `"counts"` has one row per
-  class at each level, with columns `level` (`"individuals"` or `"groups"`),
-  `class`, `effective_count` (the summed posteriors) and
-  `effective_proportion`. `"covariances"` has one row per profile and
-  ordered pair of continuous indicators, with columns `profile`, `indicator`,
-  `indicator_2` and `covariance`; under the diagonal parameterization the
-  off-diagonal covariances are zero by assumption rather than missing.
-  `"fit"` has exactly one row, carrying the fit's dimensions, likelihood,
-  parameter counts, information criteria and convergence diagnostics.
-  `"starts"` has one row per EM start.
+A base `data.frame`: one row per profile and continuous indicator.
 }
 \description{
-The printed summary is a report for a reader; this returns the same content
-as tidy tables, so nothing has to be read out of the summary object by hand.
+Plain coercion, as the base generic means it: one object, one data frame.
+A summary carries every table the object it describes can produce, and
+[get_data()] names them.
 }
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  school = rep(seq_len(12), each = 10),
-  score_a = rnorm(120), score_b = rnorm(120)
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+  seed = 1
 )
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(summary(fit))
-as.data.frame(summary(fit), what = "counts")
-as.data.frame(summary(fit), what = "fit")
+get_data(summary(fit), what = "counts")
+}
+\seealso{
+[get_data()] for every other table this summary holds.
 }

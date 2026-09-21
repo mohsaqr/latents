@@ -40,113 +40,21 @@
   unname(definitions[criterion])
 }
 
-#' Information criteria for a fitted multilevel latent profile model
+#' Every likelihood-penalty criterion a fit supports
 #'
-#' Returns every information criterion the package computes. Multilevel mixtures
-#' admit two defensible sample sizes -- the number of independent groups and the
-#' number of individuals -- so criteria that depend on one are reported under
-#' both conventions rather than silently fixing one.
+#' The formulas, the two sample-size conventions, the entropy each criterion
+#' penalizes and the references are documented on `?get_data`, which is where
+#' a caller reaches this table from.
 #'
-#'   The verb is named for what it returns. Classification sharpness and class
-#'   separation are reported by [classification_table()] and [entropy_table()]
-#'   rather than folded into this table, so `information_criteria()` stays a
-#'   pure likelihood-penalty summary.
-#'
-#' @param x A fitted model of this package: a `multilpa`,
-#'   `multilpa_covariates`, `multilpa_random_intercept` or
-#'   `multilpa_transitions` fit.
-#' @param definitions `FALSE`, the default, returns the numbers alone. `TRUE`
-#'   appends a `definition` column carrying each criterion's formula, which is
-#'   the same text as the Details section below. It describes one criterion per
-#'   row, so it needs `format = "long"` and raises `multilpa_bad_argument`
-#'   otherwise.
-#' @param format `"wide"`, the default, returns one row with one column per
-#'   criterion -- the shape a model-comparison table is reported in, and the
-#'   same column names [enumerate_classes()] uses, so a single fit and a row of
-#'   its grid name the same quantity the same way. `"long"` returns one row per
-#'   criterion and convention, which is the shape for asking *why* two criteria
-#'   disagree rather than for reporting.
-#' @seealso [classification_table()] and [entropy_table()] for the
-#'   classification diagnostics that accompany these criteria. [logLik()] for
-#'   the maximized log likelihood itself.
-#' @return A base `data.frame`.
-#'
-#'   With `format = "wide"`, one row: `log_likelihood`, `n_parameters`, then one
-#'   column per criterion, named `aic`, `kic`, and `bic_groups`,
-#'   `bic_individual` and so on for the criteria that carry a convention. The
-#'   likelihood is reported here rather than the deviance, because that is the
-#'   published convention and what [enumerate_classes()] already carries; higher
-#'   is better for that column and lower is better for every criterion beside it.
-#'
-#'   With `format = "long"`, one row per criterion and sample-size convention:
-#'   \describe{
-#'     \item{`criterion`}{character: `"deviance"`, `"aic"`, `"kic"`, `"bic"`,
-#'       `"sabic"`, `"caic"`, `"awe"`, `"icl"` or `"clc"`.}
-#'     \item{`convention`}{character: `"groups"` or `"individuals"`, and
-#'       `NA_character_` for a criterion that uses no sample size and no
-#'       level-specific entropy. `NA` here means the question does not arise,
-#'       not that a value is missing.}
-#'     \item{`n`}{integer: the sample size that convention supplies, and
-#'       `NA_integer_` where no sample size enters.}
-#'     \item{`value`}{numeric: the criterion. **Lower is better on every row**,
-#'       including the first, which is why the long form reports the deviance
-#'       `-2L` rather than the log likelihood.}
-#'     \item{`definition`}{character, present only when
-#'       `definitions = TRUE`: the criterion's formula.}
-#'   }
-#'   There is no `penalty` column. It is not a quantity anyone reports, and it
-#'   is the difference between two the table already carries.
-#'
-#'   `deviance`, `aic` and `kic` do not depend on a sample size and carry
-#'   `convention = NA_character_` with `n = NA_integer_`. `clc` does not depend
-#'   on one either, but its convention selects which level's classification
-#'   uncertainty it penalizes, so it is reported once per convention. `value` is
-#'   `NA_real_` where the entropy a criterion needs is undefined, which is the
-#'   group level of a continuous random-intercept fit.
-#' @details Let `q` be the number of free parameters, `n` the chosen sample
-#'   size, and `EN` the classification entropy of the level matching that
-#'   convention. The criteria are `deviance = -2L`, `aic = -2L + 2q`,
-#'   `bic = -2L + q log(n)`,
-#'   `sabic = -2L + q log((n + 2) / 24)`, `caic = -2L + q (log(n) + 1)`,
-#'   `awe = -2(L - EN) + 2q (1.5 + log(n))`, `icl = -2L + q log(n) + 2 EN`,
-#'   `kic = -2L + 3(q + 1)`, and `clc = -2L + 2 EN`. Note that `clc` uses the
-#'   entropy sum, as `icl` and `awe` here do; `tidyLPA` reports a `CLC` built
-#'   from relative entropy instead, which is bounded by one and so penalizes
-#'   almost nothing, and the two numbers are not comparable.
-#'   The entropy-based criteria use group-level posteriors under the `"groups"`
-#'   convention and individual-level posteriors under the `"individuals"`
-#'   convention. This is a stated per-level choice, not a unique multilevel
-#'   definition; use one convention consistently across compared candidates.
-#'   Individual sample sizes exclude rows with no observed indicators. For a
-#'   continuous random-intercept fit, group classification entropy is undefined,
-#'   so group-level `awe`, `icl` and `clc` are `NA`.
-#' @references Schwarz, G. (1978). Estimating the dimension of a model.
-#'   Annals of Statistics, 6, 461--464. Sclove, S. L. (1987). Application of
-#'   model-selection criteria to some problems in multivariate analysis.
-#'   Psychometrika, 52, 333--343. Bozdogan, H. (1987). Model selection and
-#'   Akaike's information criterion. Psychometrika, 52, 345--370.
-#'   Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
-#'   non-Gaussian clustering. Biometrics, 49, 803--821. Biernacki, C., Celeux,
-#'   G., & Govaert, G. (2000). Assessing a mixture model for clustering with the
-#'   integrated completed likelihood. IEEE Transactions on Pattern Analysis and
-#'   Machine Intelligence, 22, 719--725. Biernacki, C., & Govaert, G. (1997).
-#'   Using the classification likelihood to choose the number of clusters.
-#'   Computing Science and Statistics, 29, 451--457. Cavanaugh, J. E. (1999).
-#'   A large-sample model selection criterion based on Kullback's symmetric
-#'   divergence. Statistics and Probability Letters, 42, 333--343.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' information_criteria(fit)
-#' information_criteria(fit, format = "long")
-#' information_criteria(fit, format = "long", definitions = TRUE)
-#' @export
-information_criteria <- function(x, definitions = FALSE,
+#' @param x A fitted model of this package.
+#' @param definitions `TRUE` adds the formula and the reference per criterion,
+#'   which only the long form has a row for.
+#' @param format `"wide"` for the one-row reporting shape, `"long"` for one row
+#'   per criterion and sample-size convention.
+#' @return A base `data.frame`, one row in the wide form and one row per
+#'   criterion and convention in the long form.
+#' @noRd
+.multilpa_information_criteria <- function(x, definitions = FALSE,
                                  format = c("wide", "long")) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x),
             "`definitions` must be TRUE or FALSE" =
@@ -216,7 +124,7 @@ information_criteria <- function(x, definitions = FALSE,
   missing_labels <- setdiff(wanted, labels)
   if (length(missing_labels) > 0L) {
     stop(errorCondition(sprintf(
-      "information_criteria() no longer reports %s.",
+      "The information criteria no longer report %s.",
       paste(missing_labels, collapse = ", ")),
       class = "multilpa_unknown_criterion", call = NULL))
   }
@@ -247,91 +155,44 @@ information_criteria <- function(x, definitions = FALSE,
 #' @return A named list of posterior matrices, in reporting order.
 #' @noRd
 .multilpa_posterior_levels <- function(object, level) {
-  levels_wanted <- if (identical(level, "both")) c("individuals", "groups") else level
-  if (is.null(object$group_posteriors)) {
-    if (identical(level, "groups")) {
-      stop(errorCondition("This model has no discrete group classes.",
-                          class = "multilpa_no_group_classes", call = NULL))
-    }
-    levels_wanted <- "individuals"
-  }
   posteriors <- list(individuals = object$subject_posteriors,
                      groups = object$group_posteriors)
-  posteriors[levels_wanted]
+  posteriors[.multilpa_classification_levels(object, level)]
 }
 
-#' Classification quality for a fitted multilevel latent profile model
+#' Which levels a request for one, the other or both resolves to
 #'
-#' Summarizes how sharply the posterior probabilities separate classes, at the
-#' individual level, the group level, or both. Reports the diagnostics normally
-#' expected alongside a mixture solution: modal counts, model-estimated class
-#' sizes, average posterior probability in the assigned class, and the odds of
-#' correct classification.
+#' `"both"` on a model with no discrete group classes is the individual level
+#' rather than a refusal: the caller asked for every level the fit has, and it
+#' has one. Naming `"groups"` explicitly is a different request and refuses.
 #'
-#' @param x A fitted model of this package: a `multilpa`,
-#'   `multilpa_covariates`, `multilpa_random_intercept` or
-#'   `multilpa_transitions` fit.
-#' @param level `"individuals"` for latent profiles, `"groups"` for latent group
-#'   classes, or `"both"` to stack them in one table.
-#' @param detail Removed. It used to change the columns this verb returns, which
-#'   made one verb answer with two incompatible shapes. The cross-tabulation it
-#'   produced is now the separate verb [average_posteriors()]. Supplying it
-#'   raises an error of class `multilpa_removed_argument`.
-#' @return A base `data.frame`, one row per level and class, with the columns
-#'   \describe{
-#'     \item{`level`}{character: `"individuals"` or `"groups"`.}
-#'     \item{`class`}{integer: the class index within that level.}
-#'     \item{`n_modal`}{integer: units whose modal class is this one.}
-#'     \item{`proportion_modal`}{numeric: `n_modal` over the units at that level.}
-#'     \item{`estimated_n`}{numeric: the model-estimated class size, the column
-#'       sum of the posteriors.}
-#'     \item{`estimated_proportion`}{numeric: `estimated_n` over the units.}
-#'     \item{`average_posterior`}{numeric: mean posterior probability of this
-#'       class among the units assigned to it, so higher is better.}
-#'     \item{`odds_correct_classification`}{numeric: see Details, so higher is
-#'       better.}
-#'   }
-#'   `average_posterior` is `NA_real_` for a class with no modal members, where
-#'   the mean is taken over nothing and is undefined rather than zero.
-#'   `odds_correct_classification` is `NA_real_` wherever it is undefined, that
-#'   is whenever `average_posterior` is missing, or it or
-#'   `estimated_proportion` is zero or one; a single-class solution therefore
-#'   always reports `NA_real_` odds.
-#' @details The odds of correct classification for class `k` is
-#'   `(p / (1 - p)) / (r / (1 - r))`, where `p` is the average posterior in the
-#'   assigned class and `r` is the model-estimated class proportion. Values near
-#'   one indicate classification no better than the class proportion alone;
-#'   values of five or more are conventionally read as adequate separation.
-#'   Modal assignment discards classification uncertainty, so `n_modal` and
-#'   `estimated_n` differ whenever entropy is below one.
-#'   Continuous random-intercept fits have individual profiles but no discrete
-#'   group classes; `"both"` returns individuals only and `"groups"` raises an
-#'   error of class `multilpa_no_group_classes`.
-#' @seealso [average_posteriors()] for the full average-posterior
-#'   cross-tabulation these diagonals come from, [classification_errors()] for
-#'   the complementary table conditioned on the true class, and
-#'   [entropy_table()] for entropy at each level.
-#' @references Nagin, D. S. (2005). Group-Based Modeling of Development.
-#'   Harvard University Press.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' classification_table(fit)
-#' @export
-classification_table <- function(x, level = c("individuals", "groups", "both"),
-                                 detail) {
-  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
-  if (!missing(detail)) {
-    stop(errorCondition(paste(
-      "`detail` was removed from classification_table().",
-      "The cross-tabulation it returned is now average_posteriors()."),
-      class = "multilpa_removed_argument", call = NULL))
+#' @param object A fitted model of this package.
+#' @param level `"individuals"`, `"groups"` or `"both"`.
+#' @return A character vector of level names, in reporting order.
+#' @noRd
+.multilpa_classification_levels <- function(object, level) {
+  levels_wanted <- if (identical(level, "both")) c("individuals", "groups") else level
+  if (!is.null(object$group_posteriors)) return(levels_wanted)
+  if (identical(level, "groups")) {
+    stop(errorCondition("This model has no discrete group classes.",
+                        class = "multilpa_no_group_classes", call = NULL))
   }
+  "individuals"
+}
+
+#' Per-class classification quality at one or both levels
+#'
+#' The columns, the odds-of-correct-classification formula and the reference
+#' are documented on `?get_data`, which is where a caller reaches this table
+#' from.
+#'
+#' @param x A fitted model of this package.
+#' @param level `"individuals"`, `"groups"` or `"both"`.
+#' @return A base `data.frame`, one row per level and class.
+#' @noRd
+.multilpa_classification_table <- function(x, level = c("individuals",
+                                                        "groups", "both")) {
+  stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
   level <- match.arg(level)
   posteriors <- .multilpa_posterior_levels(x, level)
   result <- do.call(rbind, lapply(names(posteriors), function(which_level) {
@@ -341,50 +202,15 @@ classification_table <- function(x, level = c("individuals", "groups", "both"),
   result
 }
 
-#' Average posterior probabilities by modal class
+#' Mean posterior of every class within each modal assignment
 #'
-#' The cross-tabulation mixture software reports beside a solution: for the
-#' units assigned to each class, their mean posterior probability of belonging
-#' to every class. The diagonal is the `average_posterior` column of
-#' [classification_table()]; the off-diagonal entries say which classes a unit
-#' is confused with, and each assigned class's row is a probability
-#' distribution summing to one.
+#' Documented on `?get_data`, which is where a caller reaches this table from.
 #'
-#' This table conditions on the *assigned* class. [classification_errors()]
-#' conditions on the *true* class instead, and the two are different numbers,
-#' not two spellings of one table.
-#'
-#' @param x A fitted model of this package: a `multilpa`,
-#'   `multilpa_covariates`, `multilpa_random_intercept` or
-#'   `multilpa_transitions` fit.
-#' @param level `"individuals"` for latent profiles, `"groups"` for latent group
-#'   classes, or `"both"` to stack them in one table.
-#' @return A base `data.frame`, one row per level, assigned class and class,
-#'   with the columns
-#'   \describe{
-#'     \item{`level`}{character: `"individuals"` or `"groups"`.}
-#'     \item{`assigned_class`}{integer: the modal class the units were assigned
-#'       to, which is what the row conditions on.}
-#'     \item{`class`}{integer: the class whose posterior probability is averaged.}
-#'     \item{`n_assigned`}{integer: how many units carry that `assigned_class`,
-#'       repeated across the row's classes.}
-#'     \item{`average_posterior`}{numeric: the mean posterior probability of
-#'       `class` among those units, `NA_real_` when `n_assigned` is zero and the
-#'       mean is therefore undefined.}
-#'   }
-#' @seealso [classification_table()] for the one-row-per-class summary and
-#'   [classification_errors()] for the same square conditioned the other way.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' average_posteriors(fit)
-#' @export
-average_posteriors <- function(x, level = c("individuals", "groups", "both")) {
+#' @param x A fitted model of this package.
+#' @param level `"individuals"`, `"groups"` or `"both"`.
+#' @return A base `data.frame`, one row per level and ordered pair of classes.
+#' @noRd
+.multilpa_average_posteriors <- function(x, level = c("individuals", "groups", "both")) {
   stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
   level <- match.arg(level)
   posteriors <- .multilpa_posterior_levels(x, level)
@@ -468,41 +294,15 @@ average_posteriors <- function(x, level = c("individuals", "groups", "both")) {
   odds
 }
 
-#' Relative entropy of a fitted multilevel latent profile model
+#' Classification entropy at each level a fit has
 #'
-#' Reports the zero-to-one relative entropy at each level, alongside the raw
-#' classification entropy the entropy-penalized information criteria use.
+#' Documented on `?get_data`, which is where a caller reaches this table from.
 #'
-#' @param x A fitted model of this package: a `multilpa`,
-#'   `multilpa_covariates`, `multilpa_random_intercept` or
-#'   `multilpa_transitions` fit.
-#' @return A base `data.frame`, one row per level the fit has, with the columns
-#'   \describe{
-#'     \item{`level`}{character: `"individuals"`, and `"groups"` when the fit
-#'       has discrete group classes.}
-#'     \item{`n_classes`}{integer: classes at that level.}
-#'     \item{`n_units`}{integer: units at that level.}
-#'     \item{`entropy_sum`}{numeric: the classification entropy `EN`, the
-#'       quantity `awe`, `icl` and `clc` penalize, so lower is sharper.}
-#'     \item{`relative_entropy`}{numeric: `1 - EN / (n log K)`, on the zero-to-one
-#'       scale, so higher is sharper.}
-#'   }
-#'   `relative_entropy` is `NA_real_` when a level has a single class, where it
-#'   is undefined rather than perfect. Continuous random-intercept fits have no
-#'   discrete group classes and return the individual level only.
-#' @seealso [classification_table()] for per-class classification quality and
-#'   [information_criteria()] for the criteria that use `entropy_sum`.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' entropy_table(fit)
-#' @export
-entropy_table <- function(x) {
+#' @param x A fitted model of this package.
+#' @return A base `data.frame`, one row per level, with `level`, `n_classes`,
+#'   `n_units`, `entropy_sum` and `relative_entropy`.
+#' @noRd
+.multilpa_entropy_table <- function(x) {
   stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
   posteriors <- list(individuals = x$subject_posteriors,
                      groups = x$group_posteriors)

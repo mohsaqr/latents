@@ -652,6 +652,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
   .multilpa_check_regularity(x, vcov_type)
+  .multilpa_check_structure_inference(x)
   free <- .multilpa_free_index(x, "unconstrained")
   free_natural <- .multilpa_free_index(x, "natural")
   if (length(free) == 0L) {
@@ -1000,7 +1001,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   ## as.matrix() of a zero-column frame is logical, and the expectation demands
   ## a numeric matrix, so an all-categorical fit needs the mode forced.
   x <- if (length(continuous) == 0L) matrix(numeric(0), nrow(data), 0L) else
-    as.matrix(data[, continuous, drop = FALSE])
+    .multilpa_center_like(object, as.matrix(data[, continuous, drop = FALSE]))
   if (any(is.infinite(x)) || any(is.nan(x)) ||
       (anyNA(x) && !identical(object$missing, "fiml"))) {
     stop(errorCondition(

@@ -81,17 +81,23 @@ whose whole purpose is to tell groups apart will be fitting noise. It is the
 cheapest check available and the one most often skipped.
 }
 \examples{
-activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-descriptives(course_engagement, vars = activity, id = "student")
+descriptives(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student"
+)
 
 # A missing stratifier is a stratum of its own, not a silent loss and not
 # missingness invented in a variable that has none.
 descriptives(data.frame(cohort = c("A", "A", "B", NA), score = 1:4),
              vars = "score", by = "cohort")
 
-fit <- multilpa(course_engagement, vars = activity, id = "student",
-                n_profiles = 2, n_group_classes = 2,
-                n_starts = 4, seed = 1)
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+  seed = 1
+)
 descriptives(fit)
 descriptives(fit, by = "profile")
 }

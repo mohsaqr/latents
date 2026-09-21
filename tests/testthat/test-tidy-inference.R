@@ -28,7 +28,7 @@
     y1 = stats::rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
     y2 = stats::rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7))
   list(data = data,
-       fit = fit_covariates(data, c("y1", "y2"), "school", n_profiles = 2,
+       fit = multilpa(data, c("y1", "y2"), "school", n_profiles = 2,
                             n_group_classes = 2, profile_covariates = "x",
                             n_starts = 2, seed = 1))
 }
@@ -188,7 +188,7 @@ test_that("coef reports the same numbers the tidy table does, on both spread mod
     y1 = stats::rnorm(160, ifelse(profile == 2L, 2, -2), 0.7) + shared,
     y2 = stats::rnorm(160, ifelse(profile == 2L, 1.5, -1.5), 0.7) + 0.6 * shared)
   invisible(lapply(c("diagonal", "full"), function(covariance_model) {
-    fit <- fit_covariates(data, c("y1", "y2"), "school", n_profiles = 2,
+    fit <- multilpa(data, c("y1", "y2"), "school", n_profiles = 2,
                           n_group_classes = 1, profile_covariates = "x",
                           covariance_model = covariance_model,
                           n_starts = 3, seed = 1)

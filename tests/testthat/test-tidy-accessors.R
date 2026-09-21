@@ -59,25 +59,25 @@ test_that("every table of a fit is tidy", {
               "group_posteriors", "starts", "stages", "information_criteria",
               "classification", "entropy")
   invisible(lapply(tables, function(what) {
-    expect_tidy_frame(as.data.frame(fit, what = what))
+    expect_tidy_frame(get_data(fit, what))
   }))
-  expect_identical(nrow(as.data.frame(fit, what = "profiles")), 4L)
-  expect_identical(nrow(as.data.frame(fit, what = "responses")), 0L)
-  expect_identical(nrow(as.data.frame(fit, what = "profile_probabilities")), 4L)
-  expect_identical(nrow(as.data.frame(fit, what = "posteriors")),
+  expect_identical(nrow(get_data(fit, "profiles")), 4L)
+  expect_identical(nrow(get_data(fit, "responses")), 0L)
+  expect_identical(nrow(get_data(fit, "profile_probabilities")), 4L)
+  expect_identical(nrow(get_data(fit, "posteriors")),
                    nrow(tidy_fixture) * fit$n_profiles)
-  expect_identical(nrow(as.data.frame(fit, what = "posteriors", format = "wide")),
+  expect_identical(nrow(get_data(fit, "posteriors", format = "wide")),
                    nrow(tidy_fixture))
-  expect_identical(nrow(as.data.frame(fit, what = "group_posteriors")),
+  expect_identical(nrow(get_data(fit, "group_posteriors")),
                    20L * fit$n_group_classes)
-  expect_identical(nrow(as.data.frame(fit, what = "starts")), 2L)
-  expect_identical(nrow(as.data.frame(fit, what = "stages")), 1L)
+  expect_identical(nrow(get_data(fit, "starts")), 2L)
+  expect_identical(nrow(get_data(fit, "stages")), 1L)
 })
 
 test_that("the standardized profile means the plot draws are available as data", {
   fit <- tidy_fit()
-  raw <- as.data.frame(fit, what = "profiles")
-  standardized <- as.data.frame(fit, what = "profiles", scale = "standardized")
+  raw <- get_data(fit, "profiles")
+  standardized <- get_data(fit, "profiles", scale = "standardized")
   expect_tidy_frame(standardized)
   expect_identical(names(standardized), names(raw))
   expect_identical(standardized$profile, raw$profile)
@@ -104,23 +104,22 @@ test_that("the standardized profile means the plot draws are available as data",
 
 test_that("standardizing errors where the plot would, and only where it applies", {
   fit <- tidy_fit()
-  expect_error(as.data.frame(fit, what = "posteriors", scale = "standardized"),
-               "applies only to")
-  expect_error(as.data.frame(fit, what = "profiles", scale = "nonsense"))
+  expect_error(get_data(fit, "posteriors", scale = "standardized"),
+               class = "multilpa_bad_argument")
+  expect_error(get_data(fit, "profiles", scale = "nonsense"))
   stripped <- fit
   stripped$indicator_data <- NULL
-  expect_error(as.data.frame(stripped, what = "profiles",
-                             scale = "standardized"),
+  expect_error(get_data(stripped, "profiles", scale = "standardized"),
                class = "multilpa_no_indicator_data")
   flat <- fit
   flat$indicator_data[, 1L] <- 1
-  expect_error(as.data.frame(flat, what = "profiles", scale = "standardized"),
+  expect_error(get_data(flat, "profiles", scale = "standardized"),
                class = "multilpa_bad_scale")
 })
 
 test_that("an unestimated stage is missing, not a sentinel level", {
   fit <- tidy_fit()
-  stages <- as.data.frame(fit, what = "stages")
+  stages <- get_data(fit, "stages")
   expect_identical(stages$stage, "joint")
   expect_true(is.na(stages$fixed))
   expect_type(stages$fixed, "character")
@@ -160,17 +159,17 @@ test_that("a summary defaults its absent fields rather than dropping them", {
 test_that("every table of a summary is tidy", {
   summarized <- summary(tidy_fit())
   tables <- c("profiles", "responses", "profile_probabilities", "counts",
-              "covariances", "fit", "starts")
+              "covariances", "model", "starts")
   invisible(lapply(tables, function(what) {
-    expect_tidy_frame(as.data.frame(summarized, what = what))
+    expect_tidy_frame(get_data(summarized, what))
   }))
   expect_identical(names(as.data.frame(summarized)),
                    c("profile", "indicator", "mean", "variance",
                      "standard_deviation"))
-  expect_identical(names(as.data.frame(summarized, what = "counts")),
+  expect_identical(names(get_data(summarized, "counts")),
                    c("level", "class", "effective_count",
                      "effective_proportion"))
-  expect_identical(nrow(as.data.frame(summarized, what = "fit")), 1L)
+  expect_identical(nrow(get_data(summarized, "model")), 1L)
 })
 
 test_that("the summary tables report the quantities the summary was built from", {
@@ -179,7 +178,7 @@ test_that("the summary tables report the quantities the summary was built from",
   expect_equal(as.data.frame(summarized)$mean, as.vector(t(fit$means)))
   expect_equal(as.data.frame(summarized)$standard_deviation,
                sqrt(as.vector(t(fit$variances))))
-  counts <- as.data.frame(summarized, what = "counts")
+  counts <- get_data(summarized, "counts")
   individuals <- subset(counts, level == "individuals")
   groups <- subset(counts, level == "groups")
   expect_equal(individuals$effective_count, colSums(fit$subject_posteriors),
@@ -191,16 +190,16 @@ test_that("the summary tables report the quantities the summary was built from",
   expect_equal(sum(groups$effective_count), fit$n_groups)
   expect_equal(sum(individuals$effective_proportion), 1)
   expect_equal(sum(groups$effective_proportion), 1)
-  fit_row <- as.data.frame(summarized, what = "fit")
+  fit_row <- get_data(summarized, "model")
   expect_identical(fit_row$n_observations, fit$n_observations)
   expect_identical(fit_row$n_informative, fit$n_informative)
   expect_equal(fit_row$log_likelihood, fit$log_likelihood)
   expect_equal(fit_row$bic_individual, fit$bic_individual)
-  expect_identical(as.data.frame(summarized, what = "starts"), fit$starts)
+  expect_identical(get_data(summarized, "starts"), fit$starts)
 })
 
 test_that("the summary reports a covariance matrix under either parameterization", {
-  diagonal <- as.data.frame(summary(tidy_fit()), what = "covariances")
+  diagonal <- get_data(summary(tidy_fit()), "covariances")
   expect_identical(nrow(diagonal), 8L)
   expect_identical(names(diagonal),
                    c("profile", "indicator", "indicator_2", "covariance"))
@@ -214,7 +213,7 @@ test_that("the summary reports a covariance matrix under either parameterization
                as.data.frame(summary(tidy_fit()))$variance)
 
   full_fit <- tidy_fit(covariance_model = "full")
-  full <- as.data.frame(summary(full_fit), what = "covariances")
+  full <- get_data(summary(full_fit), "covariances")
   expect_identical(nrow(full), 8L)
   expect_equal(full$covariance, as.vector(full_fit$covariances))
   # A covariance matrix is symmetric whichever way it is read.
@@ -226,23 +225,27 @@ test_that("the summary reports a covariance matrix under either parameterization
 
 test_that("a categorical summary reports responses and no empty Gaussian block", {
   summarized <- summary(tidy_categorical_fit())
-  responses <- as.data.frame(summarized, what = "responses")
+  responses <- get_data(summarized, "responses")
   expect_tidy_frame(responses)
   expect_identical(names(responses),
                    c("profile", "indicator", "category", "probability",
                      "threshold"))
   expect_identical(nrow(responses), 12L)
-  expect_identical(nrow(as.data.frame(summarized, what = "profiles")), 0L)
-  expect_identical(nrow(as.data.frame(summarized, what = "covariances")), 0L)
-  expect_output(print(summarized), "Categorical response probabilities")
-  # The heading promised means that an all-categorical fit does not have.
-  expect_failure(expect_output(print(summarized), "Profile means"))
+  expect_identical(nrow(get_data(summarized, "profiles")), 0L)
+  expect_identical(nrow(get_data(summarized, "covariances")), 0L)
+  expect_output(print(summarized), "-- responses", fixed = TRUE)
+  # The Gaussian block of an all-categorical fit is empty, and the summary
+  # says so under its own heading rather than promising means it has not.
+  printed <- capture.output(print(summarized))
+  gaussian <- grep("-- profiles ", printed, fixed = TRUE)
+  expect_length(gaussian, 1L)
+  expect_match(printed[gaussian + 1L], "no rows")
 })
 
 test_that("the summary print method is a report and returns its input", {
   summarized <- summary(tidy_fit())
   expect_output(printed <- withVisible(print(summarized)),
-                "Effective individual memberships")
+                "-- counts", fixed = TRUE)
   expect_false(printed$visible)
   expect_identical(printed$value, summarized)
   # No print method may teach the banned idiom.
@@ -253,13 +256,13 @@ test_that("the summary print method is a report and returns its input", {
 test_that("the tidy accessors refuse an object of the wrong class", {
   fit <- tidy_fit()
   expect_error(as.data.frame.summary_multilpa(fit),
-               "must be a `summary_multilpa` object")
-  expect_error(as.data.frame(summary(fit), what = "nonsense"))
+               "must be an object of class `summary_multilpa`")
+  expect_error(get_data(summary(fit), "nonsense"))
   expect_error(print.summary_multilpa(summary(fit), digits = 0),
                "between 1 and 22")
   expect_error(print.multilpa_start(fit), "must be a `multilpa_start` object")
   expect_error(as.data.frame.multilpa_start(fit),
-               "must be a `multilpa_start` object")
+               "must be an object of class `multilpa_start`")
 })
 
 test_that("starting values are a classed object that still round-trips", {
@@ -293,18 +296,17 @@ test_that("a measurement-only start round-trips into a fit that holds it", {
                    n_profiles = 2L, n_group_classes = 3L, n_starts = 1L,
                    seed = 11L, start = measurement, fixed = "measurement")
   expect_equal(unname(held$means), unname(fit$means), tolerance = 1e-10)
-  expect_identical(nrow(as.data.frame(measurement, what = "profiles")), 4L)
+  expect_identical(nrow(get_data(measurement, "profiles")), 4L)
   # The mixing blocks are deliberately absent, so their table is empty rather
   # than an error.
-  expect_identical(nrow(as.data.frame(measurement,
-                                      what = "profile_probabilities")), 0L)
+  expect_identical(nrow(get_data(measurement, "profile_probabilities")), 0L)
 })
 
 test_that("every table of a starting-value set is tidy", {
   start <- starting_values(tidy_fit())
   tables <- c("profiles", "responses", "profile_probabilities", "covariances")
   invisible(lapply(tables, function(what) {
-    expect_tidy_frame(as.data.frame(start, what = what))
+    expect_tidy_frame(get_data(start, what))
   }))
   profiles <- as.data.frame(start)
   expect_identical(names(profiles),
@@ -312,16 +314,16 @@ test_that("every table of a starting-value set is tidy", {
                      "standard_deviation"))
   expect_identical(nrow(profiles), 4L)
   expect_equal(profiles$mean, as.vector(t(start$means)))
-  probabilities <- as.data.frame(start, what = "profile_probabilities")
+  probabilities <- get_data(start, "profile_probabilities")
   expect_identical(nrow(probabilities), 4L)
   totals <- tapply(probabilities$probability, probabilities$group_class, sum)
   expect_equal(unname(as.vector(totals)), rep(1, 2L))
-  expect_identical(nrow(as.data.frame(start, what = "responses")), 0L)
+  expect_identical(nrow(get_data(start, "responses")), 0L)
 })
 
 test_that("a categorical starting-value set tabulates its response blocks", {
   start <- starting_values(tidy_categorical_fit())
-  responses <- as.data.frame(start, what = "responses")
+  responses <- get_data(start, "responses")
   expect_tidy_frame(responses)
   expect_identical(names(responses),
                    c("profile", "indicator", "category", "probability"))
@@ -329,18 +331,18 @@ test_that("a categorical starting-value set tabulates its response blocks", {
   totals <- tapply(responses$probability,
                    list(responses$profile, responses$indicator), sum)
   expect_equal(as.vector(totals), rep(1, 6L))
-  expect_identical(nrow(as.data.frame(start, what = "profiles")), 0L)
+  expect_identical(nrow(get_data(start, "profiles")), 0L)
 })
 
 test_that("a full-covariance start tabulates the variances it implies", {
   start <- starting_values(tidy_fit(covariance_model = "full"))
   expect_true("covariances" %in% names(start))
   expect_null(start$variances)
-  covariances <- as.data.frame(start, what = "covariances")
+  covariances <- get_data(start, "covariances")
   expect_tidy_frame(covariances)
   expect_equal(covariances$covariance, as.vector(start$covariances))
   # The Gaussian table must still report a variance, read off the diagonal.
-  profiles <- as.data.frame(start, what = "profiles")
+  profiles <- get_data(start, "profiles")
   expect_identical(nrow(profiles), 4L)
   expect_true(all(profiles$variance > 0))
   expect_equal(profiles$standard_deviation, sqrt(profiles$variance))

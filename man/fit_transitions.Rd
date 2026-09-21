@@ -103,8 +103,8 @@ A `multilpa_transitions` object containing `means`, `variances`,
   `transition_probabilities` (profiles by profiles by group classes, rows
   indexing the profile moved from), `group_probabilities`, posterior
   matrices, classifications, log likelihood, information criteria, restart
-  diagnostics and convergence history. Use [transitions()] for the tidy
-  transition table and [as.data.frame.multilpa_transitions()] for the other
+  diagnostics and convergence history. Use [get_data()] for the tidy
+  transition table and for the other
   tables. No standard
   errors, likelihood-ratio tests or guarantees of global optimality are
   given for this model family.
@@ -128,7 +128,8 @@ Transitions are first order and homogeneous over occasions: the
   its final occasion leaves its transition row without information; the row
   is then uniform by construction rather than estimated. Such a row is warned
   about when the model is fitted, is flagged by the `estimated` column of
-  [transitions()] and is listed by `transitions(fit, estimated = FALSE)`.
+  the transition table and is listed by
+  `get_data(fit, "transitions", estimated = FALSE)`.
   Profile labels are arbitrary and
   are not comparable across fits without alignment.
 
@@ -142,11 +143,12 @@ Transitions are first order and homogeneous over occasions: the
 # Students take their courses in their own order, which `sequence` records,
 # so the same enrolments that fit a cross-sectional model fit a transition
 # one. Engagement mostly persists from one course to the next.
-activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-fit <- fit_transitions(course_engagement, vars = activity, id = "student",
-                       n_profiles = 2, time = "sequence",
-                       n_starts = 2, seed = 1)
-transitions(fit)
+fit <- fit_transitions(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1
+)
+get_data(fit, what = "transitions")
 summary(fit)
 }
 \references{
@@ -157,7 +159,7 @@ Collins, L. M., & Lanza, S. T. (2010). Latent class and latent
   Methodology, 33, 213--239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 }
 \seealso{
-[transitions()] for the fitted transition probabilities,
-  [sequences()] for the assignments in order, and [multilpa()] for the
+[get_data()] for the fitted transition probabilities and for the
+  assignments in order, and [multilpa()] for the
   cross-sectional model this one shares its measurement parameters with.
 }

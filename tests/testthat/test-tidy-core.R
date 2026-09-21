@@ -196,7 +196,7 @@ test_that("the starts diagnostics are reachable as a tidy frame, not by $", {
   data <- .core_fixture()
   fit <- quietly(multilpa(data, c("a", "b"), "school", 2L, 2L,
                                    n_starts = 3, seed = 1))
-  starts <- as.data.frame(fit, what = "starts")
+  starts <- get_data(fit, "starts")
   expect_s3_class(starts, "data.frame")
   expect_identical(nrow(starts), 3L)
   expect_true(all(c("start", "log_likelihood", "converged", "iterations",
@@ -211,7 +211,7 @@ test_that("multilpa() returns a tidy frame for each `what`", {
   expect_s3_class(profiles, "data.frame")
   # One row per profile x continuous indicator.
   expect_identical(nrow(profiles), 4L)
-  weights <- as.data.frame(fit, what = "profile_probabilities")
+  weights <- get_data(fit, "profile_probabilities")
   expect_s3_class(weights, "data.frame")
   # One row per group class x profile, never a K-wide matrix.
   expect_identical(nrow(weights), 4L)
@@ -225,7 +225,7 @@ test_that("fit_staged() reaches the staged workflow in one call", {
                        n_group_classes = 2L, n_starts = 3, seed = 1)
   expect_s3_class(staged, "multilpa")
   expect_true(isTRUE(staged$staged))
-  stages <- as.data.frame(staged, what = "stages")
+  stages <- get_data(staged, "stages")
   expect_s3_class(stages, "data.frame")
   expect_identical(nrow(stages), 2L)
   expect_identical(stages$stage, c("measurement", "membership"))

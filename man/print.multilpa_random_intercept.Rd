@@ -4,10 +4,12 @@
 \alias{print.multilpa_random_intercept}
 \title{Print a continuous group random-intercept fit}
 \usage{
-\method{print}{multilpa_random_intercept}(x, ...)
+\method{print}{multilpa_random_intercept}(x, rows = 20L, ...)
 }
 \arguments{
 \item{x}{A fitted `multilpa_random_intercept` model.}
+
+\item{rows}{How many rows of the printed table to show before truncating.}
 
 \item{...}{Reserved for compatibility with `print()`.}
 }

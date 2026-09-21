@@ -48,11 +48,6 @@ stable, the messages are not.
     needs, usually because it was made by an older version. Raised instead
     of letting a list subset by an absent name yield a `NULL` element keyed
     `NA`, which would leave a hole in the result.}
-  \item{`multilpa_removed_argument`}{An argument that no longer exists was
-    supplied, such as `classification_table(detail = )`. The argument is
-    kept as a formal only so that this message can name the verb that
-    replaced it, here [average_posteriors()], instead of R's bare
-    \dQuote{unused argument}.}
 }
 }
 
@@ -93,7 +88,7 @@ stable, the messages are not.
     fitted. The message carries that candidate's error.}
   \item{`multilpa_no_group_classes`}{A verb that needs discrete group
     classes was called on a model that has none, such as
-    [bivariate_residuals()] or a group-level diagnostic on a continuous
+    `get_data(x, "residuals")` or a group-level diagnostic on a continuous
     random-intercept fit.}
 }
 }
@@ -163,7 +158,7 @@ simulation loop can catch the qualification it cares about and let the
 others through.
 \describe{
   \item{`multilpa_failed_starts`}{Some, but not all, EM starts raised. The
-    surviving starts are in `as.data.frame(fit, what = "starts")`.}
+    surviving starts are in `get_data(fit, "starts")`.}
   \item{`multilpa_unconverged`}{The best start had not converged when
     `max_iter` was reached, so the returned estimate is not a maximum.}
   \item{`multilpa_boundary`}{A variance, or a covariance eigenvalue, sits at
@@ -181,7 +176,8 @@ others through.
     `quadrature_tolerance`, so the integral is not yet accurate.}
   \item{`multilpa_empty_transition_row`}{A profile is never occupied before a
     final occasion, so its transition row is uniform by construction rather
-    than estimated. `transitions(fit, estimated = FALSE)` lists them.}
+    than estimated. `get_data(fit, "transitions", estimated = FALSE)`
+    lists them.}
   \item{`multilpa_unverified_alignment`}{A supplied `data` frame shares no
     column with the fit, so the row alignment the verb depends on could not
     be checked. The result is returned on the caller's assurance that the
@@ -198,7 +194,8 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 # A sequence verb on a fit made without `time` is catchable by class.
-tryCatch(sequences(fit), multilpa_no_time = function(condition) {
+tryCatch(get_data(fit, "sequences"),
+         multilpa_no_time = function(condition) {
   "this fit carries no ordering"
 })
 }

@@ -40,7 +40,7 @@ An object of class `multilpa_bootstrap_lrt`, carrying the observed
   standard error, the measurement blocks held fixed in every fit, and one
   record per replicate. Read it with the verbs that describe it:
   [as.data.frame()] gives the single-row test result,
-  `as.data.frame(what = "replicates")` one row per simulated replicate,
+  `get_data(what = "replicates")` one row per simulated replicate,
   [summary()] the
   test beside the replicate diagnostics, and [plot()] the simulated null
   distribution with the observed statistic marked. Inspect failed starts,

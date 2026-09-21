@@ -265,7 +265,8 @@ fit_random_intercept <- function(data, vars, id, n_profiles,
     continuous = vars, indicator_data = indicator_data, center = center,
     effective_profile_counts = colSums(estimates$subject_posteriors),
     ## Every other family stores the modal assignment beside the posteriors, and
-    ## `assignments()` and `descriptives(by = "profile")` both document that they
+    ## The assignments table and `descriptives(by = "profile")` both document
+    ## that they
     ## work here too. Without it the first died with an unclassed `cbind()` error.
     subject_profiles = max.col(estimates$subject_posteriors,
                                ties.method = "first"),
@@ -290,6 +291,7 @@ fit_random_intercept <- function(data, vars, id, n_profiles,
 
 #' Print a continuous group random-intercept fit
 #' @param x A fitted `multilpa_random_intercept` model.
+#' @param rows How many rows of the printed table to show before truncating.
 #' @param ... Reserved for compatibility with `print()`.
 #' @return The input model, invisibly. Called for the side effect of printing
 #'   the profile count and sample sizes, the log likelihood and the fitted
@@ -304,11 +306,12 @@ fit_random_intercept <- function(data, vars, id, n_profiles,
 #'                                          seed = 1)
 #' print(random_intercept)
 #' @export
-print.multilpa_random_intercept <- function(x, ...) {
+print.multilpa_random_intercept <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa_random_intercept"))
   cat(sprintf("Random-intercept LPA: %d profiles, %d people, %d groups\n", x$n_profiles, x$n_observations, x$n_groups))
   cat(sprintf("Log likelihood: %.6f; random-intercept SD: %.6f\n", x$log_likelihood, x$random_sd))
   cat(sprintf("Integration: %s; likelihood check difference: %.3g\n", x$integration, x$quadrature_log_likelihood_difference))
+  .multilpa_print_primary(x, rows = rows)
   invisible(x)
 }
 
@@ -332,42 +335,27 @@ print.multilpa_random_intercept <- function(x, ...) {
 #' fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
 #'                             n_profiles = 2, n_starts = 2, seed = 1)
 #' summary(fit)
-#' as.data.frame(summary(fit), what = "random_intercepts")
+#' get_data(fit, what = "random_intercepts")
 #' @export
 summary.multilpa_random_intercept <- function(object, ...) {
   stopifnot("`object` must be a fitted `multilpa_random_intercept` model" =
               inherits(object, "multilpa_random_intercept"))
-  ## Built field by field rather than by subsetting the fit by a name vector,
-  ## which yields a silent NULL keyed `NA` for any name the fit does not carry.
-  model <- data.frame(
-    n_observations = object$n_observations,
-    n_groups = object$n_groups,
-    n_profiles = object$n_profiles,
-    variance_model = object$variance_model,
-    n_parameters = object$n_parameters,
-    random_intercept_sd = object$random_sd,
-    log_likelihood = object$log_likelihood,
-    aic = object$aic,
-    bic_groups = object$bic,
-    bic_individual = object$bic_individual,
-    converged = object$converged,
-    boundary = object$boundary,
-    integration = object$integration,
-    quadrature_nodes = object$quadrature_nodes,
-    quadrature_log_likelihood_difference =
-      object$quadrature_log_likelihood_difference,
-    quadrature_check_passed = object$quadrature_check_passed,
-    n_starts = nrow(object$starts),
-    row.names = NULL, stringsAsFactors = FALSE)
+  # One builder for the fit and for its summary, so `get_data(x, "model")`
+  # and the printed header cannot describe the same fit differently.
+  model <- .multilpa_intercept_fit_frame(object)
   result <- list(
     model = model,
-    profiles = as.data.frame(object, what = "profiles"),
-    random_intercepts = as.data.frame(object, what = "random_intercepts"),
+    profiles = get_data(object, "profiles"),
+    random_intercepts = get_data(object, "random_intercepts"),
     starts = object$starts,
     profile_probabilities = object$profile_probabilities,
     effective_profile_counts = object$effective_profile_counts,
     boundary_flags = object$boundary_flags,
     call = object$call)
+  # Every table the fit can produce, built once here, so `get_data()` on the
+  # summary serves the same tables the fit would and `print()` can show them
+  # all without recomputing anything.
+  result$tables <- get_data(object, "all")
   class(result) <- "summary_multilpa_random_intercept"
   result
 }
@@ -375,6 +363,9 @@ summary.multilpa_random_intercept <- function(object, ...) {
 #' Print a random-intercept LPA summary
 #' @param x A `summary_multilpa_random_intercept` object.
 #' @param digits Number of printed significant digits.
+#' @param rows How many rows of each table to print. A longer table is shown
+#'   to that depth, with its remaining row count and the `get_data()` call that
+#'   returns it whole.
 #' @param ... Passed to the underlying `data.frame` printing.
 #' @return The summary, invisibly. Called for the side effect of printing the
 #'   model line, the measurement model, the profile probabilities and effective
@@ -390,24 +381,17 @@ summary.multilpa_random_intercept <- function(object, ...) {
 #'                                          seed = 1)
 #' print(summary(random_intercept), digits = 3)
 #' @export
-print.summary_multilpa_random_intercept <- function(x, digits = 4L, ...) {
+print.summary_multilpa_random_intercept <- function(x, digits = 4L, rows = 10L,
+                                                    ...) {
   stopifnot("`x` must be a `summary_multilpa_random_intercept` object" =
-              inherits(x, "summary_multilpa_random_intercept"),
-            "`digits` must be a single number between 1 and 22" =
-              is.numeric(digits) && length(digits) == 1L && is.finite(digits) &&
-              digits >= 1 && digits <= 22)
+              inherits(x, "summary_multilpa_random_intercept"))
+  .multilpa_check_print_arguments(digits, rows)
   model <- x$model
   cat(sprintf("Random-intercept LPA: %d profiles, %d people, %d groups\n",
               model$n_profiles, model$n_observations, model$n_groups))
   cat(sprintf("Parameters: %d; converged: %s; group random-intercept SD: %.6f\n",
               model$n_parameters, model$converged, model$random_intercept_sd))
-  cat("\nMeasurement model:\n")
-  print(x$profiles, digits = digits, row.names = FALSE, ...)
-  cat("\nProfile probabilities:\n")
-  print(x$profile_probabilities, digits = digits, ...)
-  cat("\nEffective individual memberships:\n")
-  print(x$effective_profile_counts, digits = digits, ...)
-  cat(sprintf("\nLog likelihood: %.6f; AIC: %.3f\nBIC (groups): %.3f; BIC (individuals): %.3f\n",
+  cat(sprintf("Log likelihood: %.6f; AIC: %.3f\nBIC (groups): %.3f; BIC (individuals): %.3f\n",
               model$log_likelihood, model$aic, model$bic_groups,
               model$bic_individual))
   cat(sprintf("Integration: %s with %d nodes; likelihood check difference %.3g (%s).\n",
@@ -420,46 +404,39 @@ print.summary_multilpa_random_intercept <- function(x, digits = 4L, ...) {
                 paste(names(x$boundary_flags)[x$boundary_flags], collapse = ", ")))
   }
   cat("Standard errors are not available for this model family.\n")
-  cat("\nStart diagnostics:\n")
-  print(x$starts, digits = digits, row.names = FALSE, ...)
+  .multilpa_print_tables(x$tables, rows = rows, digits = digits)
+  .multilpa_print_table_footer(x$tables)
   invisible(x)
 }
 
-#' Tidy a random-intercept LPA summary
-#' @param x A `summary_multilpa_random_intercept` object.
+#' Coerce a random-intercept model summary to its primary table
+#'
+#' Plain coercion, as the base generic means it: one object, one data frame.
+#' A summary carries every table the object it describes can produce, and
+#' [get_data()] names them.
+#'
+#' @param x An object of class `summary_multilpa_random_intercept`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param what Which table to return: `"model"`, `"profiles"`,
-#'   `"random_intercepts"` or `"starts"`.
-#' @param ... Ignored.
-#' @return A base `data.frame`. `"model"` has exactly one row describing the
-#'   fit, with columns `n_observations`, `n_groups`, `n_profiles`,
-#'   `variance_model`, `n_parameters`, `random_intercept_sd`,
-#'   `log_likelihood`, `aic`, `bic_groups`, `bic_individual`, `converged`,
-#'   `boundary`, `integration`, `quadrature_nodes`,
-#'   `quadrature_log_likelihood_difference`, `quadrature_check_passed` and
-#'   `n_starts`. `"profiles"`, `"random_intercepts"` and `"starts"` have one
-#'   row per profile-indicator, per observed group, and per optimizer start.
+#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#'   naming it, rather than being dropped.
+#' @return A base `data.frame`: one row per profile and continuous indicator.
+#' @seealso [get_data()] for every other table this summary holds.
 #' @examples
-#' set.seed(8)
-#' example_data <- data.frame(group = rep(seq_len(12), each = 5),
-#'                            score_a = rnorm(60), score_b = rnorm(60))
-#' random_intercept <- fit_random_intercept(example_data,
-#'                                          c("score_a", "score_b"), "group",
-#'                                          n_profiles = 2, n_starts = 2,
-#'                                          seed = 1)
-#' as.data.frame(summary(random_intercept), what = "starts")
+#' set.seed(7)
+#' example_data <- data.frame(
+#'   school = rep(seq_len(12), each = 10),
+#'   score_a = rnorm(120), score_b = rnorm(120)
+#' )
+#' fit <- fit_random_intercept(
+#'   example_data, c("score_a", "score_b"), "school", n_profiles = 2,
+#'   n_starts = 1, seed = 1
+#' )
+#' as.data.frame(summary(fit))
 #' @export
-as.data.frame.summary_multilpa_random_intercept <- function(
-    x, row.names = NULL, optional = FALSE,
-    what = c("model", "profiles", "random_intercepts", "starts"), ...) {
-  stopifnot("`x` must be a `summary_multilpa_random_intercept` object" =
-              inherits(x, "summary_multilpa_random_intercept"))
-  what <- match.arg(what)
-  result <- switch(what, model = x$model, profiles = x$profiles,
-                   random_intercepts = x$random_intercepts, starts = x$starts)
-  row.names(result) <- row.names
-  result
+as.data.frame.summary_multilpa_random_intercept <- function(x, row.names = NULL, optional = FALSE, ...) {
+  stopifnot("`x` must be an object of class `summary_multilpa_random_intercept`" = inherits(x, "summary_multilpa_random_intercept"))
+  .multilpa_coerce(x, row.names, list(...))
 }
 
 #' Plot a continuous group random-intercept fit
@@ -499,7 +476,8 @@ as.data.frame.summary_multilpa_random_intercept <- function(
 #' @export
 plot.multilpa_random_intercept <- function(x, what = c("profiles",
                                                        "random_intercepts",
-                                                       "entropy", "posteriors"),
+                                                       "entropy", "posteriors",
+                                                       "all"),
                                            scale = c("raw", "standardized"),
                                            labels = TRUE, main = NULL,
                                            subtitle = NULL, palette = NULL,
@@ -509,6 +487,9 @@ plot.multilpa_random_intercept <- function(x, what = c("profiles",
               inherits(x, "multilpa_random_intercept"),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels))
   what <- match.arg(what)
+  if (identical(what, "all")) {
+    return(.multilpa_plot_every_view(x, match.call(), parent.frame()))
+  }
   scale <- match.arg(scale)
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
@@ -548,7 +529,7 @@ plot.multilpa_random_intercept <- function(x, what = c("profiles",
 #' @return `NULL`, invisibly.
 #' @noRd
 .multilpa_plot_random_intercepts <- function(x, main, subtitle, palette, style) {
-  frame <- as.data.frame(x, what = "random_intercepts")
+  frame <- get_data(x, "random_intercepts")
   order_by_mean <- order(frame$mean, frame$group)
   centre <- frame$mean[order_by_mean]
   spread <- frame$sd[order_by_mean]

@@ -2,37 +2,39 @@
 % Please edit documentation in R/accessors.R
 \name{as.data.frame.multilpa_enumeration}
 \alias{as.data.frame.multilpa_enumeration}
-\title{Tidy a class-enumeration grid}
+\title{Coerce a class-enumeration grid to its primary table}
 \usage{
 \method{as.data.frame}{multilpa_enumeration}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An `multilpa_enumeration` result from [enumerate_classes()].}
+\item{x}{An object of class `multilpa_enumeration`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped, because `what =` used to live on
+this generic and silently returning the primary table instead of the one
+that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame` with one row per candidate model in the grid,
-  carrying its class counts, log likelihood, parameter count, every
-  information criterion under both sample-size conventions, both entropies,
-  and the convergence, boundary, replication, warning, and error diagnostics.
-  Failed candidates are retained with `NA` estimates and their error text.
+A base `data.frame`: one row per candidate model in the grid.
 }
 \description{
-Tidy a class-enumeration grid
+Plain coercion, as the base generic means it: one object, one data frame.
+The other tables are named rather than positional, so they belong to
+[get_data()], which takes `what` and refuses a name this object has not.
 }
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  school = rep(seq_len(12), each = 10),
-  score_a = rnorm(120), score_b = rnorm(120)
+candidates <- enumerate_classes(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 1:2, n_group_classes = 1, n_starts = 2,
+  seed = 1
 )
-candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
-                               n_profiles = 1:2, n_group_classes = 1, n_starts = 2,
-                               seed = 1)
 as.data.frame(candidates)
+}
+\seealso{
+[get_data()] for every other table this object holds.
 }

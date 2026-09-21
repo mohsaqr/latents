@@ -2,63 +2,39 @@
 % Please edit documentation in R/accessors.R
 \name{as.data.frame.multilpa_start}
 \alias{as.data.frame.multilpa_start}
-\title{Tidy a set of starting values}
+\title{Coerce a starting-value set to its primary table}
 \usage{
-\method{as.data.frame}{multilpa_start}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("profiles", "responses", "profile_probabilities", "covariances"),
-  ...
-)
+\method{as.data.frame}{multilpa_start}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A `multilpa_start` object from [starting_values()].}
+\item{x}{An object of class `multilpa_start`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return. `"profiles"` gives the Gaussian
-measurement block, `"responses"` the categorical measurement block,
-`"profile_probabilities"` the mixing block, and `"covariances"` the
-within-profile residual covariance matrices.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped, because `what =` used to live on
+this generic and silently returning the primary table instead of the one
+that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame`. `"profiles"` has one row per profile and
-  continuous indicator, with columns `profile`, `indicator` (the indicator's
-  position, since the names are dropped), `mean`, `variance` and
-  `standard_deviation`, and zero rows when the block is empty. `"responses"`
-  has one row per profile, categorical indicator and category, with columns
-  `profile`, `indicator`, `category` and `probability`, and zero rows when
-  the object carries no categorical block. `indicator` and `category` are
-  positions here too: the list keeps the item and category labels so that
-  [multilpa()] can align a block to the item it was estimated for, but the
-  tidy view indexes them by position, as it does for the Gaussian block.
-  `"profile_probabilities"` has one
-  row per group class and profile, with columns `group_class`, `profile`,
-  `probability` and `group_class_probability`, and zero rows for a
-  measurement-only object, which carries no mixing block. `"covariances"`
-  has one row per profile and ordered pair of continuous indicators, with
-  columns `profile`, `indicator`, `indicator_2` and `covariance`; under the
-  diagonal parameterization the off-diagonal covariances are zero by
-  assumption rather than missing.
+A base `data.frame`: one row per profile and continuous indicator.
 }
 \description{
-[starting_values()] indexes the Gaussian blocks by position, because that is
-what [multilpa()] expects of `start`. This labels the positions again, so the
-values can be read and compared without indexing the list.
+Plain coercion, as the base generic means it: one object, one data frame.
+The other tables are named rather than positional, so they belong to
+[get_data()], which takes `what` and refuses a name this object has not.
 }
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  school = rep(seq_len(12), each = 10),
-  score_a = rnorm(120), score_b = rnorm(120)
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+  seed = 1
 )
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                  n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(starting_values(fit))
-as.data.frame(starting_values(fit), what = "profile_probabilities")
+}
+\seealso{
+[get_data()] for every other table this object holds.
 }

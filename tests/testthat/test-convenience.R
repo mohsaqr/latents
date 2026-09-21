@@ -8,7 +8,7 @@
 
 test_that("a fit carries the data it was built from, exactly", {
   fit <- .convenience_fit()
-  rebuilt <- as.data.frame(fit, what = "data")
+  rebuilt <- get_data(fit, "data")
   expect_identical(rebuilt, course_engagement[c("student", .activity)])
   # Columns the model never saw are not invented.
   expect_false(any(c("course", "previous_grade", "engagement", "student_type") %in%
@@ -39,7 +39,7 @@ test_that("the round trip is exact for every model family", {
   expect_true(exact(fit_random_intercept(data, c("a", "b"), "school", 2,
                                          n_starts = 2, seed = 1),
                     c("school", "a", "b")))
-  expect_true(exact(fit_covariates(data, c("a", "b"), "school", 2, 1,
+  expect_true(exact(multilpa(data, c("a", "b"), "school", 2, 1,
                                    profile_covariates = "z", n_starts = 2, seed = 1),
                     c("school", "a", "b")))
 })
@@ -48,8 +48,8 @@ test_that("inference no longer has to be handed data it already holds", {
   fit <- .convenience_fit()
   expect_equal(quietly(parameter_inference(fit)),
                quietly(parameter_inference(fit, course_engagement)))
-  expect_identical(bivariate_residuals(fit),
-                   bivariate_residuals(fit, course_engagement))
+  expect_identical(get_data(fit, "residuals"),
+                   get_data(fit, "residuals", data = course_engagement))
   expect_equal(quietly(vcov(fit)),
                quietly(vcov(fit, course_engagement)))
   expect_equal(quietly(confint(fit)),
@@ -120,14 +120,14 @@ test_that("diagnostics gathers the verbs without changing what they return", {
   fit <- .convenience_fit()
   quality <- diagnostics(fit)
   expect_s3_class(quality, "multilpa_diagnostics")
-  expect_identical(as.data.frame(quality, what = "entropy"), entropy_table(fit))
-  expect_identical(as.data.frame(quality, what = "classification"),
-                   classification_table(fit, level = "both"))
-  expect_identical(as.data.frame(quality, what = "posteriors"),
-                   average_posteriors(fit, level = "both"))
-  expect_identical(as.data.frame(quality, what = "residuals"),
-                   bivariate_residuals(fit))
-  expect_error(as.data.frame(quality, what = "nonsense"))
+  expect_identical(get_data(quality, "entropy"), get_data(fit, "entropy"))
+  expect_identical(get_data(quality, "classification"),
+                   get_data(fit, "classification", level = "both"))
+  expect_identical(get_data(quality, "average_posteriors"),
+                   get_data(fit, "average_posteriors", level = "both"))
+  expect_identical(get_data(quality, "residuals"),
+                   get_data(fit, "residuals"))
+  expect_error(get_data(quality, "nonsense"))
   expect_output(print(quality), "Classification quality")
   expect_invisible(print(quality))
 })
@@ -142,8 +142,8 @@ test_that("a model family without residuals says so instead of failing", {
                               c("browse", "lectures", "forum_read"),
                               id = "student", n_profiles = 2, n_starts = 1, seed = 1)
   quality <- diagnostics(fit)
-  expect_s3_class(as.data.frame(quality, what = "entropy"), "data.frame")
-  expect_error(as.data.frame(quality, what = "residuals"),
+  expect_s3_class(get_data(quality, "entropy"), "data.frame")
+  expect_error(get_data(quality, "residuals"),
                class = "multilpa_no_group_classes")
   expect_output(print(quality), "not available for this model family")
 })
@@ -163,7 +163,7 @@ test_that("report prints everything and returns the fit", {
   draw({
     expect_identical(quietly(report(fit, plots = FALSE)), fit)
     expect_output(report(fit, plots = FALSE), "Classification quality")
-    expect_output(report(fit, plots = FALSE), "Profile means")
+    expect_output(report(fit, plots = FALSE), "-- profiles", fixed = TRUE)
     # Drawing the bars computes intervals from the fit's own data, so a loosely
     # converged fit is told so even through a convenience verb. The warning is
     # the package doing its job; it is asserted, not silenced.
@@ -205,7 +205,7 @@ test_that("report draws only the views a given fit can supply", {
 
 test_that("assignments put the estimate and the truth in the same row", {
   fit <- .convenience_fit(tol = 1e-10)
-  carried <- assignments(fit)
+  carried <- get_data(fit, "assignments")
   expect_identical(nrow(carried), 1422L)
   expect_true(all(c("profile", "group_class", "posterior_profile_1",
                     "posterior_profile_2") %in% names(carried)))
@@ -216,7 +216,7 @@ test_that("assignments put the estimate and the truth in the same row", {
 
   # Supplying a frame keeps every column of it, including ones the model never
   # saw, which is the whole point: the comparison needs them in the same row.
-  supplied <- assignments(fit, data = course_engagement)
+  supplied <- get_data(fit, "assignments", data = course_engagement)
   expect_true(all(names(course_engagement) %in% names(supplied)))
   expect_identical(supplied$engagement, course_engagement$engagement)
   expect_identical(supplied$profile, carried$profile)
@@ -234,9 +234,9 @@ test_that("assignments refuse a frame that cannot be aligned", {
   fit <- .convenience_fit(tol = 1e-10)
   # Too few rows: silently recycling or truncating would be the alignment bug
   # this verb exists to prevent.
-  expect_error(assignments(fit, data = head(course_engagement, 10L)),
+  expect_error(get_data(fit, "assignments", data = head(course_engagement, 10L)),
                class = "multilpa_bad_inference_data")
   # A column the assignments would overwrite is an error, not a replacement.
-  expect_error(assignments(fit, data = transform(course_engagement, profile = 1L)),
+  expect_error(get_data(fit, "assignments", data = transform(course_engagement, profile = 1L)),
                class = "multilpa_bad_data")
 })

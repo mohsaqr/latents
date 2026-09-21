@@ -2,56 +2,37 @@
 % Please edit documentation in R/transitions.R
 \name{as.data.frame.summary_multilpa_transitions}
 \alias{as.data.frame.summary_multilpa_transitions}
-\title{Tables of a latent transition summary}
+\title{Coerce a latent transition model summary to its primary table}
 \usage{
-\method{as.data.frame}{summary_multilpa_transitions}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("transitions", "initial", "starts"),
-  estimated = NULL,
-  stable = NULL,
-  ...
-)
+\method{as.data.frame}{summary_multilpa_transitions}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa_transitions` object.}
+\item{x}{An object of class `summary_multilpa_transitions`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return. `"transitions"` (the default) gives the
-same table as [transitions()] on the fit it summarizes, `"initial"` the
-initial profile probabilities and implied prevalences, and `"starts"` the
-restart diagnostics.}
-
-\item{estimated, stable}{Passed to the same arguments of [transitions()] when
-`what = "transitions"`, and ignored otherwise.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped.}
 }
 \value{
-A base `data.frame` whose columns depend on `what`: one row per group
-  class and ordered pair of profiles for `"transitions"`, one row per group
-  class and profile for `"initial"`, and one row per start for `"starts"`.
+A base `data.frame`: one row per profile and continuous indicator.
 }
 \description{
-Returns the summary's own estimates as tidy `data.frame`s, so that a summary
-can be printed, joined and written out without reaching into it.
+Plain coercion, as the base generic means it: one object, one data frame.
+A summary carries every table the object it describes can produce, and
+[get_data()] names them.
 }
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
+moves <- fit_transitions(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, time = "sequence",
+  n_starts = 2, seed = 1
 )
-example_data$score_a <- stats::rnorm(nrow(example_data))
-example_data$score_b <- stats::rnorm(nrow(example_data))
-fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
-                       n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
-as.data.frame(summary(fit))
-as.data.frame(summary(fit), what = "initial")
+as.data.frame(summary(moves))
 }
 \seealso{
-[summary.multilpa_transitions()], [transitions()].
+[get_data()] for every other table this summary holds.
 }

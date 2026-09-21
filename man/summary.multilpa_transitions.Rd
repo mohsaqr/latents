@@ -15,7 +15,7 @@
 A `summary_multilpa_transitions` object carrying the measurement
   parameters, the initial and transition probabilities and counts, the
   effective class counts, the fit statistics and the restart diagnostics.
-  Its tables are read with [as.data.frame.summary_multilpa_transitions()];
+  Its tables are read with [get_data()];
   `print()` reports the whole model.
 }
 \description{
@@ -33,5 +33,5 @@ fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
 summary(fit)
 }
 \seealso{
-[transitions()] for the transition probabilities as a tidy table.
+[get_data()] for the transition probabilities as a tidy table.
 }

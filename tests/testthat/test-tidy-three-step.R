@@ -22,8 +22,8 @@
 
 test_that("the weight frame is long, so its columns do not grow with K", {
   data <- .tidy_step_data()
-  two <- bch_weights(.tidy_step_fit(data, 2L))
-  three <- bch_weights(.tidy_step_fit(data, 3L))
+  two <- get_data(.tidy_step_fit(data, 2L), "bch_weights", level = "individuals")
+  three <- get_data(.tidy_step_fit(data, 3L), "bch_weights", level = "individuals")
 
   expect_named(two, c("level", "unit", "assigned_class", "class", "weight"))
   expect_named(three, names(two))

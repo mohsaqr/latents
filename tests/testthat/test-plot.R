@@ -172,15 +172,15 @@ test_that("every plot's data is reachable through a tidy verb", {
 
   # No plot is the only way to see what it draws: the reader can always get the
   # numbers as a data frame instead of measuring them off the picture.
-  expect_s3_class(as.data.frame(fit, what = "profiles"), "data.frame")
-  expect_s3_class(as.data.frame(fit, what = "profile_probabilities"),
+  expect_s3_class(get_data(fit, "profiles"), "data.frame")
+  expect_s3_class(get_data(fit, "profile_probabilities"),
                   "data.frame")
-  expect_s3_class(sequences(fit), "data.frame")
+  expect_s3_class(get_data(fit, "sequences"), "data.frame")
   expect_s3_class(as.data.frame(candidates), "data.frame")
   expect_true(all(c("profile", "indicator", "mean") %in%
-                    names(as.data.frame(fit, what = "profiles"))))
+                    names(get_data(fit, "profiles"))))
   expect_true(all(c("group", "group_class", "time", "profile") %in%
-                    names(sequences(fit))))
+                    names(get_data(fit, "sequences"))))
 })
 
 test_that("a filled grid carries its code as text, not by colour alone", {
@@ -246,7 +246,11 @@ test_that("the catalogue lists exactly the views the methods accept", {
   expect_false(any(is.na(catalogue$description)))
   expect_true(all(nzchar(catalogue$description)))
   expect_setequal(unique(catalogue$group),
-                  c("measurement", "structure", "diagnostics", "selection"))
+                  c("measurement", "structure", "diagnostics", "selection",
+                    "every"))
+  # "all" is a request to draw every view rather than a view of its own, so it
+  # is listed once, in its own group, and is not among the views it walks.
+  expect_identical(catalogue$group[catalogue$type == "all"], "every")
 
   # The invariant that matters: a view added to any method but forgotten in the
   # catalogue, or listed but never implemented, fails here rather than silently
@@ -367,7 +371,7 @@ test_that("ridge views agree with the entropy the package reports", {
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   # The picture is never the only access to the numbers behind it.
-  posterior <- as.data.frame(fit, what = "posteriors")
+  posterior <- get_data(fit, "posteriors")
   expect_s3_class(posterior, "data.frame")
   expect_true(all(c("row", "profile", "posterior", "modal") %in% names(posterior)))
   expect_true(all(posterior$posterior >= 0 & posterior$posterior <= 1))

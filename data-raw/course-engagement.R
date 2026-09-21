@@ -128,7 +128,7 @@ course_engagement <- cbind(course_engagement,
 # across the cohort. At a student's first course there is no previous course,
 # so an entry grade stands in its place. It is a predictor of engagement here,
 # not an outcome of it: a student who did well last time is more likely to be
-# engaged this time, which is what `fit_covariates()` and `r3step()` model.
+# engaged this time, which is what `multilpa()` and `r3step()` model.
 grade_now <- stats::rnorm(nrow(course_engagement),
                           ifelse(course_engagement$engagement == 2L, 0.45, -0.45), 0.85)
 first <- !duplicated(course_engagement$student)

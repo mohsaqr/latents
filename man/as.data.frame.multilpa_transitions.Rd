@@ -2,76 +2,39 @@
 % Please edit documentation in R/transitions.R
 \name{as.data.frame.multilpa_transitions}
 \alias{as.data.frame.multilpa_transitions}
-\title{Tidy a fitted latent transition model}
+\title{Coerce a fitted latent transition model to its primary table}
 \usage{
-\method{as.data.frame}{multilpa_transitions}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("transitions", "initial", "profiles", "responses", "posteriors",
-    "group_posteriors", "sequence_lengths", "starts", "information_criteria",
-    "classification", "entropy"),
-  format = c("long", "wide"),
-  ...
-)
+\method{as.data.frame}{multilpa_transitions}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A fitted `multilpa_transitions` model.}
+\item{x}{An object of class `multilpa_transitions`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return. `"transitions"` gives exactly
-[transitions()], `"initial"` the initial profile probabilities and implied
-prevalences, `"profiles"` the Gaussian measurement model, `"responses"`
-the categorical measurement model, `"posteriors"` the individual
-posteriors, `"group_posteriors"` the group posteriors, `"sequence_lengths"`
-how many occasions each group contributes, `"starts"` the restart
-diagnostics, and `"information_criteria"`, `"classification"` and
-`"entropy"` exactly [information_criteria()], [classification_table()] and
-[entropy_table()].}
-
-\item{format}{For the posterior tables, `"long"` (the default) gives one row
-per unit and class, and `"wide"` gives one row per unit with one column per
-class. The wide column set grows with the number of classes, so no caller
-can address it generically; it stays available because joining posteriors
-back onto the fitting data wants one row per unit. Supplying it with any
-other `what` is an error rather than a silent no-op.}
-
-\item{...}{Passed to the underlying accessor; `"transitions"` accepts
-`estimated` and `stable`, `"classification"` accepts `level`, and
-`"information_criteria"` accepts `definitions`. The per-assigned-class
-breakdown that `classification_table(detail = TRUE)` used to return is now
-its own verb, [average_posteriors()].}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped, because `what =` used to live on
+this generic and silently returning the primary table instead of the one
+that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame` whose columns depend on `what`. `"initial"` has
-  one row per group class and profile, with columns `group_class`,
-  `profile`, `probability`, `prevalence` and `group_class_probability`.
-  `"sequence_lengths"` has one row per group, with columns `group`,
-  `group_class`, `occasions` (the span the transitions run over, which under
-  `occasions = "grid"` counts positions the group skipped), `observations`
-  (how many rows the group actually contributes) and `complete`. The
-  remaining values match the tables named under `what`.
+A base `data.frame`: one row per group class and ordered pair of profiles.
 }
 \description{
-Returns any part of a fitted transition model as a tidy `data.frame`, so
-that results can be printed, joined and written out without reaching into
-the fitted object.
+Plain coercion, as the base generic means it: one object, one data frame.
+The other tables are named rather than positional, so they belong to
+[get_data()], which takes `what` and refuses a name this object has not.
 }
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
+moves <- fit_transitions(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, time = "sequence",
+  n_starts = 2, seed = 1
 )
-example_data$score_a <- stats::rnorm(nrow(example_data))
-example_data$score_b <- stats::rnorm(nrow(example_data))
-fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
-                       n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
-as.data.frame(fit)
-as.data.frame(fit, what = "initial")
+as.data.frame(moves)
 }
 \seealso{
-[transitions()], [fit_transitions()].
+[get_data()] for every other table this object holds.
 }

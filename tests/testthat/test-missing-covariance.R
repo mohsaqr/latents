@@ -106,32 +106,6 @@ test_that("full covariance FIML agrees with independent direct Gaussian likeliho
   expect_true(all(diff(fit$log_likelihood_history) >= -1e-9))
 })
 
-test_that("full covariance mixture limits reproduce mclust VVV and EEE", {
-  skip_if_not_installed("mclust")
-  mclustBIC <- mclust::mclustBIC
-  set.seed(65)
-  data <- data.frame(group = rep(seq_len(40), each = 4),
-                     x = c(rnorm(80, -3), rnorm(80, 3)), y = rnorm(160))
-  data$y <- data$y + .6 * data$x
-  x <- as.matrix(data[c("x", "y")])
-  invisible(lapply(c(varying = "VVV", equal = "EEE"), function(model) {
-    reference <- mclust::Mclust(x, G = 2, modelNames = model, verbose = FALSE,
-                                 control = mclust::emControl(tol = c(1e-12, 1e-12)))
-    start <- list(means = t(reference$parameters$mean),
-                   covariances = reference$parameters$variance$sigma,
-                   profile_probabilities = matrix(reference$parameters$pro, 1L),
-                   group_probabilities = 1)
-    fit <- multilpa(data, c("x", "y"), "group", 2, 1, covariance_model = "full",
-                      variance_model = if (model == "VVV") "varying" else "equal",
-                      n_starts = 1, start = start, tol = 1e-13)
-    expect_equal(fit$log_likelihood, as.numeric(reference$loglik), tolerance = 1e-7)
-    expect_equal(unname(fit$means), unname(start$means), tolerance = 2e-5)
-    expect_equal(unname(fit$covariances), unname(start$covariances), tolerance = 3e-5)
-    expect_equal(unname(fit$subject_posteriors), unname(reference$z), tolerance = 2e-5)
-    expect_equal(fit$n_parameters, if (model == "VVV") 11 else 8)
-  }))
-})
-
 test_that("FIML multilevel rows use their observed group context", {
   set.seed(123)
   group <- rep(seq_len(40), each = 12)

@@ -2,49 +2,29 @@
 % Please edit documentation in R/enumeration.R
 \name{as.data.frame.multilpa_bootstrap_lrt}
 \alias{as.data.frame.multilpa_bootstrap_lrt}
-\alias{as.data.frame.summary_multilpa_bootstrap_lrt}
-\title{Tidy a parametric bootstrap likelihood-ratio comparison}
+\title{Coerce a bootstrap likelihood-ratio comparison to its primary table}
 \usage{
-\method{as.data.frame}{multilpa_bootstrap_lrt}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("test", "replicates"),
-  ...
-)
-
-\method{as.data.frame}{summary_multilpa_bootstrap_lrt}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("test", "replicates"),
-  ...
-)
+\method{as.data.frame}{multilpa_bootstrap_lrt}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An `multilpa_bootstrap_lrt` result, or its summary.}
+\item{x}{An object of class `multilpa_bootstrap_lrt`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{`"test"` returns the single-row test result; `"replicates"`
-returns one row per simulated replicate.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped, because `what =` used to live on
+this generic and silently returning the primary table instead of the one
+that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame`. `"test"` has one row, with columns
-  `null_profiles`, `null_group_classes`, `alternative_profiles`,
-  `alternative_group_classes`, `statistic`, `p_value`, `monte_carlo_se`,
-  `iter`, `n_valid` and `fixed`, the measurement blocks every fit held at one
-  solution, or `NA` when none was held. `"replicates"` has one row per
-  simulated dataset,
-  with columns `replicate`, `statistic`, `valid`, `boundary`,
-  `null_replications`, `alternative_replications`, `warnings` and `error`.
+A base `data.frame`: the one-row test result.
 }
 \description{
-Tidy a parametric bootstrap likelihood-ratio comparison
+Plain coercion, as the base generic means it: one object, one data frame.
+The other tables are named rather than positional, so they belong to
+[get_data()], which takes `what` and refuses a name this object has not.
 }
 \examples{
 set.seed(1)
@@ -60,5 +40,7 @@ larger <- multilpa(example_data, "score", "school", n_profiles = 2,
 comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
                             max_iter = 2000, tol = 1e-6, seed = 1)
 as.data.frame(comparison)
-head(as.data.frame(comparison, what = "replicates"))
+}
+\seealso{
+[get_data()] for every other table this object holds.
 }

@@ -87,23 +87,23 @@ tolerance <- 0.1
 }
 
 .estimated_means <- function(fit, indicators) {
-  .as_parameter_matrix(as.data.frame(fit, what = "profiles"),
+  .as_parameter_matrix(get_data(fit, "profiles"),
                        "mean", "profile", "indicator", indicators)
 }
 
 .estimated_sds <- function(fit, indicators) {
-  .as_parameter_matrix(as.data.frame(fit, what = "profiles"),
+  .as_parameter_matrix(get_data(fit, "profiles"),
                        "standard_deviation", "profile", "indicator", indicators)
 }
 
 .estimated_prevalence <- function(fit) {
-  probabilities <- as.data.frame(fit, what = "profile_probabilities")
+  probabilities <- get_data(fit, "profile_probabilities")
   .as_parameter_matrix(probabilities, "probability", "group_class", "profile",
                        as.character(sort(unique(probabilities$profile))))
 }
 
 .estimated_class_proportions <- function(fit) {
-  probabilities <- as.data.frame(fit, what = "profile_probabilities")
+  probabilities <- get_data(fit, "profile_probabilities")
   averaged <- aggregate(group_class_probability ~ group_class,
                         data = probabilities, FUN = mean)
   averaged$group_class_probability
@@ -158,8 +158,8 @@ tolerance <- 0.1
 ## The truth is read back out of the simulation rather than retyped, so the
 ## comparison cannot drift away from what was actually generated.
 .truth_frame <- function(simulation) {
-  parameters <- as.data.frame(simulation, what = "parameters")
-  probabilities <- as.data.frame(simulation, what = "profile_probabilities")
+  parameters <- get_data(simulation, "parameters")
+  probabilities <- get_data(simulation, "profile_probabilities")
   proportions <- aggregate(cluster_class_proportion ~ cluster_class,
                            data = probabilities, FUN = mean)
   rbind(
@@ -181,9 +181,9 @@ tolerance <- 0.1
 ## returns were tidied is one row per individual *and profile* -- three times
 ## as many rows as individuals -- and so silently failed the row-count check.
 .classification_accuracy <- function(fit, simulation, alignment) {
-  assigned <- assignments(fit)
+  assigned <- get_data(fit, "assignments")
   data <- as.data.frame(simulation)
-  clusters <- as.data.frame(simulation, what = "clusters")
+  clusters <- get_data(simulation, "clusters")
   stopifnot(
     "assignments must be one row per input individual, in input order" =
       nrow(assigned) == nrow(data) && identical(assigned$cluster, data$cluster),
@@ -206,7 +206,7 @@ tolerance <- 0.1
 }
 
 .entropy_values <- function(fit) {
-  entropy <- as.data.frame(fit, what = "entropy")
+  entropy <- get_data(fit, "entropy")
   values <- setNames(entropy$relative_entropy, entropy$level)
   data.frame(individual_entropy = unname(values["individuals"]),
              group_entropy = unname(values["groups"]))

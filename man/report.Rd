@@ -4,7 +4,14 @@
 \alias{report}
 \title{Everything about a fit, in one call}
 \usage{
-report(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
+report(
+  x,
+  data = NULL,
+  plots = TRUE,
+  by = c("profile", "overall"),
+  rows = 10L,
+  ...
+)
 }
 \arguments{
 \item{x}{A fitted model of this package.}
@@ -15,8 +22,12 @@ columns it was built from.}
 \item{plots}{`TRUE`, the default, draws the plots. `FALSE` prints only.}
 
 \item{by}{Passed to [diagnostics()], and from there to
-[bivariate_residuals()]: `"profile"`, the default, assesses each profile
+the bivariate residuals: `"profile"`, the default, assesses each profile
 separately, `"overall"` pools them.}
+
+\item{rows}{How many rows of each of the summary's tables to print, passed
+to `print(summary(x))`. A first look at a fit with thousands of
+observations would otherwise be mostly posteriors.}
 
 \item{...}{Nothing further is accepted. An argument this function cannot
 forward raises an error of class `multilpa_bad_argument` naming it, before
@@ -31,11 +42,21 @@ plot the fit supports. A first look, not a substitute for the verbs: each
 section is what [summary()], [diagnostics()] and [plot()] return, and the
 tables are reachable from those rather than from here.
 }
+\section{What it prints}{
+ `summary()`, which is every table the fit can
+  produce, then `descriptives()`, then the condensed reading of
+  `diagnostics()`, then every plot view the fit supports. Each section is
+  what that verb returns, and the tables are reached from [get_data()]
+  rather than from here.
+}
+
 \examples{
-activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-fit <- multilpa(course_engagement, vars = activity, id = "student",
-                n_profiles = 2, n_group_classes = 2,
-                n_starts = 4, seed = 1)
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+  seed = 1
+)
 report(fit, plots = FALSE)
 }
 \seealso{

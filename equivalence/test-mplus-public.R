@@ -1,7 +1,7 @@
 test_that("single-level equal and varying LPA reproduce published Mplus examples", {
   invisible(lapply(c("7.9", "7.10"), function(example) {
     stopifnot(is.character(example))
-    fixture <- readRDS(test_path("..", "fixtures", "mplus", paste0("public-", example, ".rds")))
+    fixture <- readRDS(equivalence_fixture("mplus", paste0("public-", example, ".rds")))
     expect_equal(dim(fixture$data), c(500L, 6L))
     expect_false(anyNA(fixture$data))
     expect_identical(anyDuplicated(fixture$data), 0L)

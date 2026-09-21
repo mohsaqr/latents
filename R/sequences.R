@@ -33,7 +33,7 @@
 #'
 #' The rectangular layout the drawing code needs. A matrix is the right
 #' structure inside a function body and the wrong one to return to a caller,
-#' so this stays internal and [sequences()] returns a data frame instead.
+#' so this stays internal and the sequence table is a data frame instead.
 #'
 #' @param object A fitted model carrying an ordering.
 #' @param long The long form, if the caller already has it; recomputed
@@ -44,7 +44,7 @@
 #'   names are `<time>_<position>`.
 #' @noRd
 .multilpa_sequence_matrix <- function(object,
-                                      long = sequences(object,
+                                      long = .multilpa_sequences(object,
                                                        format = "long")) {
   positions <- sort(unique(long$time))
   groups <- unique(long$group)
@@ -69,50 +69,16 @@
                                 as.character(positions))))
 }
 
-#' Assignments in sequence order
+#' Profile assignments in occasion order
 #'
-#' Returns which profile the model gave each observation, laid out in the order
-#' the observations occur within their group, together with the group's own
-#' latent class. The model itself ignores the ordering, so this is the view that
-#' shows whether a group's assignments drift, alternate or hold steady --
-#' something the profile prevalences alone cannot say.
+#' Documented on `?get_data`, which is where a caller reaches this table from.
 #'
-#' @param x A fitted `multilpa` model, fitted with `time =`.
-#' @param format `"long"` (the default) gives one row per observation.
-#'   `"wide"` gives one row per group and one column per position, which is the
-#'   shape sequence-plotting packages expect. Both forms carry the same
-#'   information: the wide form is a reshape of the long one, not a subset of
-#'   it.
-#' @return For `format = "long"`, a base `data.frame` with one row per
-#'   observation and the columns `group`, `group_class`, `time` and `profile`,
-#'   ordered by group and then by time.
-#'
-#'   For `format = "wide"`, a base `data.frame` with one row per group, in
-#'   increasing group order, and the columns `group` (the group identifier, in
-#'   the type it has in the data), `group_class`, and one column per distinct
-#'   position seen anywhere in the data. The occasion columns are named after
-#'   the `time` column and the position it holds, for example `wave_1`, and
-#'   hold the assigned profile as a factor with one level per profile and `NA`
-#'   where the group has no observation at that position. Row names are the
-#'   default integers, because the group identifier is a column.
-#' @details Profile and group-class labels are arbitrary and are returned as
-#'   integers; two fits must have their labels aligned before their sequences
-#'   are compared.
-#' @seealso [sequence_summary()] for one row per group class, and
-#'   `plot(object, what = "sequences")` to draw them.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(6), each = 5), wave = rep(seq_len(5), times = 6),
-#'   score_a = rnorm(30), score_b = rnorm(30)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 2, n_starts = 2,
-#'                 seed = 1, time = "wave")
-#' head(sequences(fit))
-#' sequences(fit, format = "wide")
-#' @export
-sequences <- function(x, format = c("long", "wide")) {
+#' @param x A fitted model of this package, fitted with `time =`.
+#' @param format `"long"` for one row per observation, `"wide"` for one row per
+#'   group with one column per occasion.
+#' @return A base `data.frame`.
+#' @noRd
+.multilpa_sequences <- function(x, format = c("long", "wide")) {
   time_values <- .multilpa_require_time(x)
   format <- match.arg(format)
   long <- data.frame(
@@ -141,41 +107,15 @@ sequences <- function(x, format = c("long", "wide")) {
     row.names = NULL, stringsAsFactors = FALSE, check.names = FALSE)
 }
 
-#' Sequence lengths by group class
+#' How much data each group class contributes
 #'
-#' Summarizes how much data each latent group class actually contributes. A
-#' class whose groups are systematically shorter is a different finding from a
-#' class whose groups simply differ in profile mix, and the prevalence table
-#' cannot show it.
+#' Documented on `?get_data`, which is where a caller reaches this table from.
 #'
-#' @param x A fitted `multilpa` model, fitted with `time =`.
-#' @return A base `data.frame` with one row per group class, including any class
-#'   no group was assigned to, and the columns `group_class`, `groups` (how many
-#'   groups are assigned to it), `observations` (their total number of
-#'   observations), `mean_length`, `median_length`, `shortest`, `longest`,
-#'   `complete` (how many of its groups are observed at every position seen
-#'   anywhere in the data) and `gaps` (how many of its groups skip a position
-#'   inside their own first-to-last span).
-#'
-#'   A group's *length* is its number of observations, which is what the model
-#'   was fitted on. It is not the group's span: a group observed at positions
-#'   1, 2 and 4 has length 3 and span 4, and is counted in `gaps`. A class whose
-#'   `gaps` is above zero is an unbalanced class with holes inside it, not
-#'   merely a class with short groups. The length columns are `NA` and the
-#'   count columns are `0` for a class with no groups.
-#' @seealso [sequences()].
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(6), each = 5), wave = rep(seq_len(5), times = 6),
-#'   score_a = rnorm(30), score_b = rnorm(30)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 2, n_starts = 2,
-#'                 seed = 1, time = "wave")
-#' sequence_summary(fit)
-#' @export
-sequence_summary <- function(x) {
+#' @param x A fitted model of this package, fitted with `time =`.
+#' @return A base `data.frame`, one row per group class, including any class no
+#'   group was assigned to.
+#' @noRd
+.multilpa_sequence_summary <- function(x) {
   time_values <- .multilpa_require_time(x)
   positions <- sort(unique(time_values))
   n_positions <- length(positions)

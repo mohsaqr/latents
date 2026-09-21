@@ -2,49 +2,37 @@
 % Please edit documentation in R/covariates.R
 \name{as.data.frame.summary_multilpa_covariates}
 \alias{as.data.frame.summary_multilpa_covariates}
-\title{Tidy a covariate LPA summary}
+\title{Coerce a covariate-model summary to its primary table}
 \usage{
-\method{as.data.frame}{summary_multilpa_covariates}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("model", "profiles", "coefficients", "starts"),
-  ...
-)
+\method{as.data.frame}{summary_multilpa_covariates}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa_covariates` object.}
+\item{x}{An object of class `summary_multilpa_covariates`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return: `"model"`, `"profiles"`,
-`"coefficients"` or `"starts"`.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped.}
 }
 \value{
-A base `data.frame`. `"model"` has exactly one row describing the
-  fit, with columns `n_observations`, `n_groups`, `n_profiles`,
-  `n_group_classes`, `n_profile_covariates`, `n_group_covariates`,
-  `variance_model`, `covariance_model`, `n_parameters`, `log_likelihood`,
-  `aic`, `bic_groups`, `bic_individual`, `converged`, `boundary`,
-  `extreme_logits` and `n_starts`. `"profiles"`, `"coefficients"` and
-  `"starts"` have one row per profile-indicator, per membership coefficient,
-  and per EM start respectively.
+A base `data.frame`: one row per profile and continuous indicator.
 }
 \description{
-Tidy a covariate LPA summary
+Plain coercion, as the base generic means it: one object, one data frame.
+A summary carries every table the object it describes can produce, and
+[get_data()] names them.
 }
 \examples{
-set.seed(1)
-example_data <- data.frame(group = rep(seq_len(20), each = 10),
-                           z = rnorm(200))
-example_data$y <- rnorm(200,
-  ifelse(runif(200) < plogis(example_data$z), -3, 3))
-fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-                      n_group_classes = 1, profile_covariates = "z",
-                      n_starts = 2, seed = 1)
-as.data.frame(summary(fit), what = "starts")
+fit <- multilpa(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 2, n_group_classes = 2,
+  profile_covariates = "sequence", n_starts = 4, seed = 1
+)
+as.data.frame(summary(fit))
+}
+\seealso{
+[get_data()] for every other table this summary holds.
 }

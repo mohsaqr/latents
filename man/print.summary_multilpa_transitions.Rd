@@ -4,12 +4,16 @@
 \alias{print.summary_multilpa_transitions}
 \title{Print a latent transition summary}
 \usage{
-\method{print}{summary_multilpa_transitions}(x, digits = 4L, ...)
+\method{print}{summary_multilpa_transitions}(x, digits = 4L, rows = 10L, ...)
 }
 \arguments{
 \item{x}{A `summary_multilpa_transitions` object.}
 
 \item{digits}{Number of printed significant digits.}
+
+\item{rows}{How many rows of each table to print. A longer table is shown
+to that depth, with its remaining row count and the `get_data()` call that
+returns it whole.}
 
 \item{...}{Additional arguments passed to matrix printing.}
 }

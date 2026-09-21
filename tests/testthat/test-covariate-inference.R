@@ -1,5 +1,5 @@
 .covariate_fit <- function(data, ...) {
-  fit_covariates(data, c("y1", "y2"), "g", 2, 2, "z", "w",
+  multilpa(data, c("y1", "y2"), "g", 2, 2, "z", "w",
                  n_starts = 10, seed = 812, tol = 1e-12, ...)
 }
 
@@ -26,54 +26,6 @@ test_that("the analytic scores agree with a numerical gradient", {
   expect_equal(analytic, numerical, tolerance = 1e-4)
   # and at the maximum the gradient is zero
   expect_true(max(abs(analytic)) < 1e-3)
-})
-
-test_that("standard errors reproduce a genuine Mplus covariate run", {
-  fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
-  fit <- .covariate_fit(fixture$data)
-  inference <- parameter_inference(fit, fixture$data)
-  membership <- subset(inference, parameter == "coefficient")
-  value <- function(term) membership$estimate[membership$term == term]
-  error <- function(term) membership$standard_error[membership$term == term]
-
-  # Mplus 9 covariates.out, MODEL RESULTS. Its group-class reference is the
-  # opposite of this package's, so the group-level signs are mirrored.
-  expect_equal(value("z"), -1.008, tolerance = 5e-4)
-  expect_equal(error("z"), 0.117, tolerance = 5e-3)
-  # Both group-class labellings are the same maximum: every start reaches it to
-  # within 3e-11, so which label carries which intercept is decided by the last
-  # bits and is not a property of the model. Assert the pair, not the labelling
-  # -- the same reason `w` and `(Intercept)` below are wrapped in `abs()`.
-  group_estimates <- sort(membership$estimate[grepl("^group_class",
-                                                    membership$term)])
-  expect_equal(group_estimates, sort(c(1.662, 1.662 - 3.233)),
-               tolerance = 5e-4)
-  # The intercept Mplus reports carries its standard error whichever label it
-  # lands on, so pair the error with the estimate rather than with the name.
-  reported <- which.min(abs(membership$estimate - 1.662))
-  expect_equal(membership$standard_error[reported], 0.152, tolerance = 5e-3)
-  expect_equal(abs(value("w")), 0.740, tolerance = 5e-4)
-  expect_equal(error("w"), 0.311, tolerance = 5e-3)
-  expect_equal(abs(value("(Intercept)")), 0.214, tolerance = 5e-3)
-  expect_equal(error("(Intercept)"), 0.278, tolerance = 5e-3)
-})
-
-test_that("the group-class contrast matches Mplus through vcov()", {
-  fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
-  fit <- .covariate_fit(fixture$data)
-  covariance <- vcov(fit, fixture$data)
-  rows <- grep("^profile[.]coefficient[.]profile_1[.]group_class", rownames(covariance))
-  contrast <- c(-1, 1)
-  inference <- parameter_inference(fit, fixture$data)
-  estimates <- inference$estimate[grepl("^group_class", inference$term) &
-                                    inference$level == "profile"]
-
-  # Mplus reports CW#1 ON CB#1 = -3.233 (S.E. 0.226); this package carries one
-  # intercept per group class, whose difference is the same quantity.
-  # Signed only up to the group-class labelling; its magnitude is the quantity.
-  expect_equal(abs(sum(contrast * estimates)), 3.233, tolerance = 1e-3)
-  expect_equal(sqrt(drop(contrast %*% covariance[rows, rows] %*% contrast)),
-               0.226, tolerance = 5e-3)
 })
 
 test_that("the table is tidy and covers every level", {

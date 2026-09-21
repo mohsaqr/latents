@@ -75,11 +75,13 @@
 #' @noRd
 .multilpa_maximize_moments <- function(x, expectation, variance_model,
                                      min_variance, covariance_model,
-                                     held = NULL) {
+                                     held = NULL, structure = NULL,
+                                     previous = NULL) {
   stopifnot(is.matrix(x), is.list(expectation), min_variance > 0,
             variance_model %in% c("varying", "equal"),
             covariance_model %in% c("diagonal", "full"),
-            is.null(held) || is.list(held))
+            is.null(held) || is.list(held),
+            is.null(structure) || structure %in% .multilpa_structures())
   weights <- colSums(expectation$subject_posteriors)
   n_indicators <- ncol(x)
   components <- lapply(seq_along(weights), function(profile) {
@@ -102,6 +104,22 @@
                      n_indicators, length(weights)))
   covariance_sums <- lapply(components, `[[`, "covariance_sum")
   shared <- if (variance_model == "equal") Reduce(`+`, covariance_sums) / sum(weights) else NULL
+  # The constrained diagonals tie the profiles together -- an equal volume is
+  # an average over all of them -- so they are solved once for every profile
+  # rather than profile by profile.
+  constrained_diagonal <- !is.null(structure) &&
+    identical(covariance_model, "diagonal") && !structure %in% c("EEI", "VVI")
+  constrained_full <- .multilpa_is_ellipsoidal(structure) &&
+    !structure %in% c("EEE", "VVV")
+  structured <- if (constrained_diagonal) {
+    .multilpa_structure_variances(.multilpa_scatter_diagonals(covariance_sums),
+                                  weights, structure, min_variance)
+  } else if (constrained_full) {
+    # The previous iteration's answer seeds the structures that iterate, so
+    # each M-step continues where the last one stopped rather than restarting.
+    .multilpa_structure_covariances(covariance_sums, weights, structure,
+                                    min_variance, start = previous$covariances)
+  } else NULL
   covariances <- lapply(seq_along(weights), function(profile) {
     held_covariance <- if (!is.null(held$covariances)) {
       matrix(held$covariances[, , profile], n_indicators, n_indicators)
@@ -109,6 +127,10 @@
       diag(held$variances[profile, ], n_indicators)
     } else NULL
     if (!is.null(held_covariance)) return(held_covariance)
+    if (constrained_diagonal) return(diag(structured[profile, ], n_indicators))
+    if (constrained_full) {
+      return(matrix(structured[, , profile], n_indicators, n_indicators))
+    }
     covariance <- shared %||% (covariance_sums[[profile]] / weights[profile])
     if (covariance_model == "full") .multilpa_bound_covariance(covariance, min_variance)
     else diag(pmax(diag(covariance), min_variance), n_indicators)

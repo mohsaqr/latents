@@ -310,7 +310,7 @@ check_validation_api <- function(root = ".", paths = NULL) {
 #'   `comparisons` (one row per compared quantity), `suites` (one row per
 #'   suite, with its status and, when skipped or failed, the reason) and
 #'   `session` (the versions the run was produced under). Use
-#'   `as.data.frame(x, what = )` to reach any of the three.
+#'   `get_data(x, )` to reach any of the three.
 run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
   # Read the version and fingerprint the source before anything is fitted. A
   # long run can outlive the tree it started against -- the run of 2026-09-20

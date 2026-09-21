@@ -241,7 +241,7 @@ test_that("the stages table describes staged and ordinary fits alike", {
   data <- .fixed_structured()
   staged <- fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
                                   n_group_classes = 2L, n_starts = 3, seed = 2)
-  table_staged <- as.data.frame(staged, what = "stages")
+  table_staged <- get_data(staged, "stages")
   expect_named(table_staged, c("stage", "group_classes", "fixed",
                                "log_likelihood", "parameters",
                                "parameters_with_measurement", "converged"))
@@ -252,7 +252,7 @@ test_that("the stages table describes staged and ordinary fits alike", {
 
   joint <- multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                     n_group_classes = 2L, n_starts = 3, seed = 2)
-  table_joint <- as.data.frame(joint, what = "stages")
+  table_joint <- get_data(joint, "stages")
   expect_identical(nrow(table_joint), 1L)
   expect_identical(table_joint$stage, "joint")
   expect_true(is.na(table_joint$fixed))
@@ -295,6 +295,6 @@ test_that("held values survive every random restart when EM does run", {
   expect_equal(fitted$variances, stage_one$variances)
   expect_gt(fitted$iterations, 0L)
   # Every restart, not merely the winning one, must report the held solution.
-  starts_table <- as.data.frame(fitted, what = "starts")
+  starts_table <- get_data(fitted, "starts")
   expect_identical(nrow(starts_table), 4L)
 })

@@ -89,7 +89,7 @@
 #' @export
 plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses",
                                       "probabilities", "sequences",
-                                      "entropy", "posteriors"),
+                                      "entropy", "posteriors", "all"),
                         data = NULL,
                         scale = c("raw", "standardized"), category = "last",
                         labels = TRUE, main = NULL, subtitle = NULL,
@@ -101,6 +101,9 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
               isTRUE(cell_labels) || isFALSE(cell_labels),
             "`category` must be a single label or index" = length(category) == 1L)
   what <- match.arg(what)
+  if (identical(what, "all")) {
+    return(.multilpa_plot_every_view(x, match.call(), parent.frame()))
+  }
   scale <- match.arg(scale)
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
@@ -437,9 +440,10 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
-#'                                n_profiles = 1:3, n_group_classes = 1, n_starts = 2,
-#'                                seed = 1)
+#' candidates <- enumerate_classes(
+#'   example_data, c("score_a", "score_b"), "school", n_profiles = 1:3,
+#'   n_group_classes = 1, n_starts = 2, seed = 1
+#' )
 #' plot(candidates)
 #' @export
 plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
@@ -567,7 +571,7 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
   ## sequences() owns the reshape, and the same helper supplies the rectangular
   ## layout here, so the picture cannot drift from the tidy verb behind it. Both
   ## are in increasing group order, so one ordering serves both.
-  layout <- sequences(x, format = "wide")
+  layout <- .multilpa_sequences(x, format = "wide")
   ordering <- order(layout$group_class, layout$group)
   codes <- .multilpa_sequence_matrix(x)[ordering, , drop = FALSE]
   classes <- layout$group_class[ordering]
@@ -641,19 +645,22 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
 #' school <- rep(seq_len(16), each = 8)
 #' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
 #' x <- rnorm(128)
-#' profile <- ifelse(runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L)
+#' profile <- ifelse(
+#'   runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L
+#' )
 #' example_data <- data.frame(
 #'   school = school, x = x,
 #'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
 #'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
 #' )
-#' fit <- fit_covariates(example_data, c("y1", "y2"), "school", n_profiles = 2,
-#'                       n_group_classes = 2, profile_covariates = "x",
-#'                       n_starts = 2, seed = 1)
+#' fit <- multilpa(example_data, c("y1", "y2"), "school", n_profiles = 2,
+#'                 n_group_classes = 2, profile_covariates = "x",
+#'                 n_starts = 2, seed = 1)
 #' plot(fit)
 #' @export
 plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
-                                                 "entropy", "posteriors"),
+                                                 "entropy", "posteriors",
+                                                 "all"),
                                      scale = c("raw", "standardized"),
                                      labels = TRUE, main = NULL, subtitle = NULL,
                                      palette = NULL, symbols = NULL,
@@ -671,6 +678,9 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
       class = "multilpa_nothing_to_plot", call = NULL))
   }
   what <- match.arg(what)
+  if (identical(what, "all")) {
+    return(.multilpa_plot_every_view(x, match.call(), parent.frame()))
+  }
   scale <- match.arg(scale)
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
@@ -868,9 +878,9 @@ multilpa_plot_types <- function() {
   data.frame(
     type = c("profiles", "bars", "heatmap", "responses", "probabilities",
              "sequences", "random_intercepts", "entropy", "posteriors",
-             "enumeration"),
+             "enumeration", "all"),
     group = c(rep("measurement", 4L), rep("structure", 3L),
-              rep("diagnostics", 2L), "selection"),
+              rep("diagnostics", 2L), "selection", "every"),
     description = c(
       "Profile means across indicators, point size showing profile prevalence",
       "Profile means as grouped bars, with 95% intervals when `data` is given",
@@ -881,7 +891,8 @@ multilpa_plot_types <- function() {
       "One interval per group: its posterior mean random intercept, plus and minus one posterior standard deviation",
       "Per-case entropy contribution within each profile, as ridges",
       "Posterior probability of the assigned profile, as ridges",
-      "Information criteria across a candidate grid (plot an enumeration)"
+      "Information criteria across a candidate grid (plot an enumeration)",
+      "Every view above that this fit has the ingredients for, in one call"
     ),
     stringsAsFactors = FALSE
   )
@@ -1005,4 +1016,50 @@ multilpa_plot_types <- function() {
   values <- .multilpa_match_error(errors, "mean", cells$profile, cells$indicator)
   if (all(is.na(values))) return(NULL)
   matrix(values, x$n_profiles, length(vars), byrow = TRUE)
+}
+
+#' Draw every view a fit supports, in one call
+#'
+#' `what = "all"` re-issues the caller's own `plot()` call once per supported
+#' view, so every style argument the caller gave is carried into each panel
+#' rather than silently reset to the defaults. A view can still refuse for a
+#' reason only its own panel knows -- nothing in it to draw -- so a refusal
+#' moves on to the next view and is named at the end instead of stopping the
+#' sequence halfway through.
+#'
+#' @param x A fitted model of this package.
+#' @param call The caller's `match.call()`, re-evaluated once per view.
+#' @param env The caller's `parent.frame()`, where that call is evaluated.
+#' @return `x`, invisibly. Called for the side effect of drawing.
+#' @noRd
+.multilpa_plot_every_view <- function(x, call, env) {
+  # `match.call()` inside an S3 method names the method, and the methods of
+  # this package are registered rather than exported, so re-evaluating that
+  # call in the caller's environment fails for everyone who has not attached
+  # the namespace. Dispatch through the generic instead.
+  call[[1L]] <- quote(plot)
+  views <- .multilpa_supported_views(x)
+  if (length(views) == 0L || anyNA(views)) {
+    stop(errorCondition(
+      "This model family has no named plot views to draw.",
+      class = "multilpa_no_plot", call = NULL))
+  }
+  drawn <- vapply(views, function(view) {
+    call$what <- view
+    tryCatch({
+      eval(call, env)
+      TRUE
+    },
+    multilpa_no_plot = function(condition) FALSE,
+    multilpa_nothing_to_plot = function(condition) FALSE,
+    multilpa_no_time = function(condition) FALSE,
+    multilpa_no_categorical = function(condition) FALSE,
+    multilpa_no_continuous = function(condition) FALSE,
+    multilpa_no_indicator_data = function(condition) FALSE)
+  }, logical(1))
+  if (!all(drawn)) {
+    message(sprintf("Not drawn for this model: %s.",
+                    paste(views[!drawn], collapse = ", ")))
+  }
+  invisible(x)
 }

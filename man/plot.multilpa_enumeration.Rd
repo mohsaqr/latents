@@ -53,8 +53,9 @@ example_data <- data.frame(
   school = rep(seq_len(12), each = 10),
   score_a = rnorm(120), score_b = rnorm(120)
 )
-candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
-                               n_profiles = 1:3, n_group_classes = 1, n_starts = 2,
-                               seed = 1)
+candidates <- enumerate_classes(
+  example_data, c("score_a", "score_b"), "school", n_profiles = 1:3,
+  n_group_classes = 1, n_starts = 2, seed = 1
+)
 plot(candidates)
 }

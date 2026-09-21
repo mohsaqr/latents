@@ -15,7 +15,7 @@
 A single integer: the number of observed groups, which are the
   independent units of the two-level likelihood. For the individual count
   alongside every other sample-size-dependent quantity, call
-  [information_criteria()].
+  `get_data(x, "information_criteria")`.
 }
 \description{
 Extract the number of independent groups

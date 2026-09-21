@@ -76,7 +76,7 @@ test_that("a covariate fit is invariant to the units its covariate arrives in", 
     rescaled <- frame
     rescaled$z <- frame$z * unit
     .scaling_fit_recording(
-      fit_covariates(rescaled, "y", "g", n_profiles = 2, n_group_classes = 1,
+      multilpa(rescaled, "y", "g", n_profiles = 2, n_group_classes = 1,
                      profile_covariates = "z", n_starts = 1, seed = 3))
   })
   summarise <- function(recorded, unit) {
@@ -121,9 +121,7 @@ test_that("full-covariance inference survives an indicator held in large units",
     rescaled <- frame
     rescaled$b <- frame$b * unit
     .scaling_fit_recording(
-      fit_covariates(rescaled, c("a", "b"), "g", n_profiles = 1,
-                     n_group_classes = 1, covariance_model = "full",
-                     n_starts = 1, tol = 1e-10, seed = 1))
+      multilpa:::.multilpa_fit_covariates(rescaled, c("a", "b"), "g", n_profiles = 1, n_group_classes = 1, covariance_model = "full", n_starts = 1, tol = 1e-10, seed = 1))
   })
   expect_true(all(vapply(fitted, function(recorded) recorded$fit$converged,
                          logical(1))))

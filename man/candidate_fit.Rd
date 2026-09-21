@@ -4,7 +4,7 @@
 \alias{candidate_fit}
 \title{Take one fitted model out of an enumeration grid}
 \usage{
-candidate_fit(x, n_profiles, n_group_classes = 1L)
+candidate_fit(x, n_profiles, n_group_classes = 1L, structure = NULL)
 }
 \arguments{
 \item{x}{An `multilpa_enumeration` result from [enumerate_classes()].}
@@ -12,6 +12,12 @@ candidate_fit(x, n_profiles, n_group_classes = 1L)
 \item{n_profiles}{Number of individual profiles identifying the candidate.}
 
 \item{n_group_classes}{Number of group classes identifying the candidate.}
+
+\item{structure}{The covariance structure identifying the candidate, needed
+when [enumerate_classes()] was given a `structure` grid and the class
+counts alone name several. Naming counts that match more than one
+candidate raises `multilpa_unknown_candidate` listing the structures it
+could have meant.}
 }
 \value{
 The fitted model for that cell of the grid: an object of class

@@ -1,6 +1,6 @@
 ## Every result class this package returns must answer print(), summary(),
 ## plot() and as.data.frame(). These tests cover the three classes produced by
-## fit_covariates(), fit_random_intercept() and enumerate_classes(), plus the
+## multilpa(), fit_random_intercept() and enumerate_classes(), plus the
 ## bootstrap comparison, and the summary classes they return in turn.
 ##
 ## Methods added in this sweep reach the generic only after the NAMESPACE has
@@ -19,7 +19,7 @@
     y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
     y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7))
   list(data = data,
-       fit = fit_covariates(data, c("y1", "y2"), "school", n_profiles = 2,
+       fit = multilpa(data, c("y1", "y2"), "school", n_profiles = 2,
                             n_group_classes = 2, profile_covariates = "x",
                             n_starts = 2, seed = 1))
 }
@@ -63,23 +63,20 @@ test_that("a covariate summary is a classed, tidy, fully named object", {
   expect_false(anyNA(names(summary_object)))
   expect_output(print.summary_multilpa_covariates(summary_object),
                 "Multilevel LPA with covariates")
-  model <- as.data.frame.summary_multilpa_covariates(summary_object)
+  model <- get_data(summary_object, "model")
   expect_s3_class(model, "data.frame")
   expect_identical(nrow(model), 1L)
   expect_identical(model$n_observations, fixture$fit$n_observations)
   expect_identical(model$n_profiles, fixture$fit$n_profiles)
   expect_equal(model$log_likelihood, fixture$fit$log_likelihood)
   expect_equal(model$bic_groups, fixture$fit$bic)
-  coefficients <- as.data.frame.summary_multilpa_covariates(
-    summary_object, what = "coefficients")
+  coefficients <- get_data(summary_object, "coefficients")
   expect_identical(names(coefficients),
                    c("level", "outcome", "term", "parameter", "estimate"))
-  expect_identical(nrow(as.data.frame.summary_multilpa_covariates(
-    summary_object, what = "starts")), 2L)
-  expect_identical(nrow(as.data.frame.summary_multilpa_covariates(
-    summary_object, what = "profiles")), 4L)
-  expect_error(as.data.frame.summary_multilpa_covariates(
-    summary_object, what = "nonsense"))
+  expect_identical(nrow(get_data(summary_object, "starts")), 2L)
+  expect_identical(nrow(get_data(summary_object, "profiles")), 4L)
+  expect_error(get_data(summary_object, "nonsense"),
+               class = "multilpa_bad_argument")
 })
 
 test_that("a covariate fit carries the data its inference verbs ask for", {
@@ -102,17 +99,15 @@ test_that("a random-intercept summary is classed, tidy and fully named", {
   expect_false(anyNA(names(summary_object)))
   expect_output(print.summary_multilpa_random_intercept(summary_object),
                 "Random-intercept LPA")
-  model <- as.data.frame.summary_multilpa_random_intercept(summary_object)
+  model <- get_data(summary_object, "model")
   expect_identical(nrow(model), 1L)
   expect_equal(model$random_intercept_sd, fit$random_sd)
   expect_equal(model$log_likelihood, fit$log_likelihood)
   expect_true(model$quadrature_check_passed)
-  intercepts <- as.data.frame.summary_multilpa_random_intercept(
-    summary_object, what = "random_intercepts")
+  intercepts <- get_data(summary_object, "random_intercepts")
   expect_identical(nrow(intercepts), fit$n_groups)
   expect_identical(names(intercepts), c("group", "group_size", "mean", "sd"))
-  expect_identical(nrow(as.data.frame.summary_multilpa_random_intercept(
-    summary_object, what = "starts")), 2L)
+  expect_identical(nrow(get_data(summary_object, "starts")), 2L)
 })
 
 test_that("random-intercept coefficients are named, natural and complete", {
@@ -128,7 +123,7 @@ test_that("random-intercept coefficients are named, natural and complete", {
   # name reads back into the columns parameter_inference() reports.
   expect_true(all(vapply(strsplit(names(estimates), ".", fixed = TRUE), length,
                          integer(1)) >= 3L))
-  profiles <- as.data.frame(fit, what = "profiles")
+  profiles <- get_data(fit, "profiles")
   expect_equal(unname(estimates[["measurement.mean.profile_1.score_a"]]),
                subset(profiles, profile == 1L & indicator == "score_a")$mean)
   expect_equal(unname(estimates[["measurement.variance.profile_1.score_a"]]),
@@ -193,8 +188,8 @@ test_that("an enumeration summary names the minimising candidate per criterion",
   expect_s3_class(summary_object, "summary_multilpa_enumeration")
   expect_false(anyNA(names(summary_object)))
   expect_output(print.summary_multilpa_enumeration(summary_object),
-                "minimising each information criterion")
-  criteria <- as.data.frame.summary_multilpa_enumeration(summary_object)
+                "-- criteria", fixed = TRUE)
+  criteria <- get_data(summary_object, "criteria")
   expect_identical(names(criteria), c("criterion", "convention", "n_profiles",
                                       "n_group_classes", "value"))
   expect_identical(nrow(criteria), 14L)
@@ -217,8 +212,7 @@ test_that("an enumeration summary names the minimising candidate per criterion",
     candidate[[column[row]]]
   }, numeric(1))
   expect_equal(criteria$value, named)
-  expect_identical(nrow(as.data.frame.summary_multilpa_enumeration(
-    summary_object, what = "candidates")), nrow(grid))
+  expect_identical(nrow(get_data(summary_object, "candidates")), nrow(grid))
 })
 
 test_that("a candidate fit is reached by its class counts, never by position", {
@@ -248,12 +242,11 @@ test_that("a bootstrap comparison is classed and plots its simulated null", {
   summary_object <- summary.multilpa_bootstrap_lrt(result)
   expect_s3_class(summary_object, "summary_multilpa_bootstrap_lrt")
   expect_false(anyNA(names(summary_object)))
-  test <- as.data.frame.summary_multilpa_bootstrap_lrt(summary_object)
+  test <- get_data(summary_object, "test")
   expect_identical(nrow(test), 1L)
   expect_identical(test$null_profiles, 1L)
   expect_identical(test$alternative_profiles, 2L)
-  expect_identical(nrow(as.data.frame.summary_multilpa_bootstrap_lrt(
-    summary_object, what = "replicates")), 3L)
+  expect_identical(nrow(get_data(summary_object, "replicates")), 3L)
   file <- tempfile(fileext = ".pdf")
   on.exit(unlink(file), add = TRUE)
   grDevices::pdf(file)

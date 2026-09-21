@@ -18,7 +18,7 @@
 test_that("the error matrix conditions on the true class and is a distribution", {
   data <- .step_data()
   fit <- .step_fit(data)
-  errors <- classification_errors(fit)
+  errors <- get_data(fit, "classification_errors", level = "individuals")
 
   expect_named(errors, c("level", "true_class", "assigned_class", "probability"))
   expect_equal(nrow(errors), 4L)
@@ -34,7 +34,7 @@ test_that("the error matrix conditions on the true class and is a distribution",
 test_that("BCH weights sum to one within a unit and are signed", {
   data <- .step_data()
   fit <- .step_fit(data)
-  weights <- bch_weights(fit)
+  weights <- get_data(fit, "bch_weights", level = "individuals")
 
   # one row per unit and class, not one column per class
   expect_named(weights, c("level", "unit", "assigned_class", "class", "weight"))
@@ -117,8 +117,8 @@ test_that("a group-level outcome is related to the group classes", {
   difference <- three_step(fit, data, "z", level = "groups", contrast = "pairs")
   expect_gt(abs(difference$estimate), 3)
   expect_lt(difference$p_value, 0.05)
-  expect_equal(nrow(classification_errors(fit, level = "groups")), 4L)
-  expect_equal(nrow(bch_weights(fit, level = "groups")),
+  expect_equal(nrow(get_data(fit, "classification_errors", level = "groups")), 4L)
+  expect_equal(nrow(get_data(fit, "bch_weights", level = "groups")),
                fit$n_groups * fit$n_group_classes)
 })
 
@@ -144,7 +144,7 @@ test_that("inseparable classes are refused rather than inverted", {
   # A degenerate error matrix means the assignment carries no information.
   broken <- fit
   broken$subject_profiles <- rep(1L, fit$n_observations)
-  expect_error(bch_weights(broken), class = "multilpa_inseparable_classes")
+  expect_error(get_data(broken, "bch_weights", level = "individuals"), class = "multilpa_inseparable_classes")
   expect_error(three_step(broken, data, "y"),
                class = "multilpa_inseparable_classes")
 })
@@ -152,14 +152,14 @@ test_that("inseparable classes are refused rather than inverted", {
 test_that("a covariate fit is supported", {
   data <- .step_data()
   data$x <- stats::rnorm(nrow(data))
-  fit <- fit_covariates(data, c("a", "b"), "g", n_profiles = 2,
+  fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2,
                         n_group_classes = 2, profile_covariates = "x",
                         n_starts = 4, seed = 1)
   result <- three_step(fit, data, "y")
 
   expect_equal(nrow(result), 2L)
   expect_true(all(result$standard_error > 0))
-  expect_equal(nrow(classification_errors(fit)), 4L)
+  expect_equal(nrow(get_data(fit, "classification_errors", level = "individuals")), 4L)
 })
 
 test_that("a one-class level is degenerate but does not error", {
@@ -167,11 +167,11 @@ test_that("a one-class level is degenerate but does not error", {
   fit <- .step_fit(data)
   # The fit has a single group class, so its error matrix is 1 x 1. vapply()
   # drops such a result to a vector, which used to break the accessor.
-  errors <- classification_errors(fit, level = "groups")
+  errors <- get_data(fit, "classification_errors", level = "groups")
 
   expect_equal(nrow(errors), 1L)
   expect_equal(errors$probability, 1)
-  expect_equal(nrow(bch_weights(fit, level = "groups")), fit$n_groups)
+  expect_equal(nrow(get_data(fit, "bch_weights", level = "groups")), fit$n_groups)
 })
 
 test_that("the weights satisfy the identities that define the BCH method", {
@@ -180,7 +180,7 @@ test_that("the weights satisfy the identities that define the BCH method", {
   pieces <- .multilpa_level_assignments(fit, "individuals")
   errors <- .multilpa_error_matrix(pieces)
   inverse <- solve(errors)
-  weights <- bch_weights(fit)
+  weights <- get_data(fit, "bch_weights", level = "individuals")
 
   # Bolck, Croon & Hagenaars (2004): the weights are the inverse of the
   # misclassification matrix applied to assigned class membership.
@@ -205,32 +205,12 @@ test_that("the per-unit weights agree with the original table formulation", {
   # this package carries per-unit weights. They are the same method.
   bins <- cut(data$y, breaks = stats::quantile(data$y, c(0, 0.5, 1)),
               include.lowest = TRUE)
-  weights <- merge(bch_weights(fit),
+  weights <- merge(get_data(fit, "bch_weights", level = "individuals"),
                    data.frame(unit = seq_along(bins), bin = bins),
                    by = "unit")
   from_table <- t(inverse) %*% table(pieces$modal, bins)
   from_weights <- tapply(weights$weight, list(weights$class, weights$bin), sum)
   expect_equal(unname(from_table), unname(from_weights))
-})
-
-test_that("the correction agrees with an independent implementation", {
-  skip_if_not_installed("tidySEM")
-  data <- .step_data()
-  fit <- .step_fit(data)
-  posteriors <- fit$subject_posteriors
-
-  # tidySEM builds the same matrix from the posteriors alone, so the two
-  # implementations can be compared exactly rather than approximately.
-  mine <- .multilpa_error_matrix(.multilpa_level_assignments(fit, "individuals"))
-  theirs <- as.matrix(tidySEM:::classification_probs_mostlikely(posteriors))
-  expect_equal(unname(mine), unname(theirs))
-
-  weights_theirs <- solve(theirs)[apply(posteriors, 1L, which.max), ]
-  estimate_theirs <- vapply(seq_len(2), function(class) {
-    sum(weights_theirs[, class] * data$y) / sum(weights_theirs[, class])
-  }, numeric(1))
-  expect_equal(three_step(fit, data, "y", method = "bch")$estimate,
-               estimate_theirs)
 })
 
 .r3step_data <- function(seed = 21L, slope = 1.2, intercept = -0.3) {

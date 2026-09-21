@@ -1,7 +1,7 @@
 test_that("matched multilevel fits reproduce Mplus on public continuous data", {
   invisible(lapply(c("varying", "equal"), function(variance_model) {
     stopifnot(is.character(variance_model), length(variance_model) == 1L)
-    reference <- readRDS(test_path("..", "fixtures", "mplus",
+    reference <- readRDS(equivalence_fixture("mplus",
                                    paste0("twolevel-public-", variance_model, ".rds")))
     expected <- reference$expected
     # The fixture is a recorded Mplus oracle with its own provenance, so its

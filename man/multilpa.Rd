@@ -10,6 +10,8 @@ multilpa(
   id,
   n_profiles,
   n_group_classes = 2L,
+  profile_covariates = character(),
+  group_covariates = character(),
   variance_model = c("varying", "equal"),
   n_starts = 10L,
   max_iter = 1000L,
@@ -22,7 +24,11 @@ multilpa(
   categorical = character(),
   min_probability = 1e-10,
   time = NULL,
-  fixed = character()
+  fixed = character(),
+  centering = c("none", "person", "grand"),
+  volume = NULL,
+  shape = NULL,
+  orientation = NULL
 )
 }
 \arguments{
@@ -35,7 +41,20 @@ factor, or numeric identifiers are supported; missing identifiers are not.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}
 
-\item{n_group_classes}{Positive integer number of latent group classes.
+\item{n_group_classes}{Positive integer number of latent group classes.}
+
+\item{profile_covariates, group_covariates}{Names of numeric columns of
+`data` predicting individual-profile and group-class membership through
+multinomial logits, with the final class as reference. Naming either one
+fits the one-step covariate model and returns a `multilpa_covariates`
+object: profile slopes are shared across group classes, profile
+intercepts differ by group class, and a `group_covariate` must be
+constant within each group. Covariates enter in their supplied units, so
+centre or scale them beforehand if that is what you want. This is one-step
+maximum likelihood, not a regression on assigned classes; [three_step()]
+and [r3step()] are the staged alternatives. The covariate path supports
+neither `start`, nor `missing = "fiml"`, nor `fixed`, and refuses them by
+name rather than ignoring them.
 Use one for an ordinary, pooled LPA.}
 
 \item{variance_model}{Either `"varying"` (profile-specific variances or
@@ -101,7 +120,8 @@ way `min_variance` does for Gaussian indicators.}
 
 \item{time}{Optional name of a column giving each observation's position
 within its group, such as a wave, occasion or course number. The model does
-not use it; it is stored so that [sequences()], [sequence_summary()] and
+not use it; it is stored so that `get_data(x, "sequences")`,
+`get_data(x, "sequence_summary")` and
 `plot(what = "sequences")` can read the assignments back in order. Values
 must be complete and unique within each group.}
 
@@ -116,6 +136,56 @@ same one. `start` must carry the named blocks;
 `starting_values(fit, what = "measurement")` produces them, and
 [fit_staged()] wraps the whole two-stage workflow in one call. The mixing
 parameters cannot be held: they are what a fixed-measurement fit is for.}
+
+\item{centering}{How to centre the continuous indicators before fitting.
+`"none"`, the default, fits them as supplied. `"person"` subtracts each
+group's own mean from its rows, so a value reads as a deviation from that
+unit's average and the profiles become profiles of *change* rather than of
+level: this is the within-person, person-mean-centred design (Quintana,
+2021; Voelkle, Brose, Schmiedek, & Lindenberger, 2014). `"grand"`
+subtracts one mean per indicator, which moves the origin without touching
+the within-group structure. The offsets are kept on the fit, so
+`get_data(x, "data")` still returns the columns you supplied and every
+verb that checks row alignment still checks it. Centring removes exactly
+the between-unit variation, so `"person"` refuses with
+`multilpa_bad_data` when it leaves an indicator constant --- which is what
+happens when a unit has one observation of it. With `"person"` the group
+classes become types of *change pattern*, not types of unit.}
+
+\item{volume, shape, orientation}{The covariance structure, in the three
+  pieces it is made of. Each profile's covariance decomposes as
+  `Sigma_k = lambda_k * D_k * A_k * D_k'`: a *volume*
+  `lambda_k = |Sigma_k|^(1/d)`, an *orientation* `D_k` of eigenvectors, and
+  a *shape* `A_k`, diagonal with determinant one. Constraining the three
+  across profiles gives the fourteen models `mclust` names with three
+  letters, and this package fits all of them.
+
+  `volume` is `"equal"` or `"varying"`. `shape` is `"equal"`, `"varying"`
+  or `"spherical"`, the last making every indicator's spread equal within a
+  profile, which leaves no orientation to constrain. `orientation` is
+  `"axis"` (axis-parallel, a diagonal covariance), `"equal"` (one
+  orientation shared by every profile) or `"varying"`. Each is `NULL` by
+  default, which follows `variance_model` and `covariance_model`, so a call
+  that names none of them fits exactly what it always did.
+
+  | `volume` | `shape` | `orientation` | model |
+  |---|---|---|---|
+  | equal | spherical | --- | EII |
+  | varying | spherical | --- | VII |
+  | equal/varying | equal/varying | axis | EEI, VEI, EVI, VVI |
+  | equal/varying | equal/varying | equal | EEE, VEE, EVE, VVE |
+  | equal/varying | equal/varying | varying | EEV, VEV, EVV, VVV |
+
+  The estimates are those of Celeux and Govaert (1995); the two models with
+  a shared orientation and a free shape, EVE and VVE, have no closed form
+  and use the minorize-maximize step of Browne and McNicholas (2014).
+  Parameter counts match `mclust`'s own for all fourteen.
+
+  Anything other than EEI, VVI, EEE or VVV is maximized across every profile
+  at once, so it cannot be combined with a held `variances` block, and
+  [parameter_inference()] refuses it with `multilpa_unsupported_inference`:
+  the free coordinates are log variances, which is the wrong chart for a
+  constrained volume, shape or orientation.}
 }
 \value{
 An `multilpa` object containing `means`, `variances`, optional
@@ -175,7 +245,7 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 seed = 42)
 summary(fit)
 as.data.frame(fit)
-as.data.frame(fit, what = "profile_probabilities")
+get_data(fit, what = "profile_probabilities")
 }
 \references{
 Vermunt, J. K. (2003). Multilevel latent class models.

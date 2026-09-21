@@ -15,7 +15,7 @@ test_that("a planted dependence is found and the innocent pairs are not", {
   data <- .dependent_data()
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
                   n_group_classes = 1, n_starts = 4, seed = 1)
-  residuals <- bivariate_residuals(fit, data)
+  residuals <- get_data(fit, "residuals", data = data)
   worst <- head(residuals, 1L)
 
   # ordered worst first, and the worst pair is the one that shares a term
@@ -37,8 +37,8 @@ test_that("estimating the association makes the residual vanish", {
                    n_group_classes = 1, n_starts = 4, seed = 1,
                    covariance_model = "full")
 
-  flagged <- bivariate_residuals(diagonal, data)
-  resolved <- bivariate_residuals(full, data)
+  flagged <- get_data(diagonal, "residuals", data = data)
+  resolved <- get_data(full, "residuals", data = data)
   expect_gt(max(abs(flagged$residual)), 0.5)
   # The full model estimates what the diagonal one assumed away.
   expect_lt(max(abs(resolved$residual)), 1e-3)
@@ -52,7 +52,7 @@ test_that("the table is tidy, complete and correctly weighted", {
   data <- .dependent_data()
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
                   n_group_classes = 1, n_starts = 4, seed = 1)
-  residuals <- bivariate_residuals(fit, data)
+  residuals <- get_data(fit, "residuals", data = data)
 
   expect_named(residuals, c("profile", "indicator_1", "indicator_2", "kind",
                             "observed", "expected", "residual", "effective_n",
@@ -72,7 +72,7 @@ test_that("pooling gives one row per pair", {
   data <- .dependent_data()
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
                   n_group_classes = 1, n_starts = 4, seed = 1)
-  pooled <- bivariate_residuals(fit, data, by = "overall")
+  pooled <- get_data(fit, "residuals", data = data, by = "overall")
 
   expect_equal(nrow(pooled), 3L)
   expect_true(all(pooled$profile == "overall"))
@@ -100,7 +100,7 @@ test_that("categorical pairs are assessed with a chi-square", {
   fit <- multilpa(data, vars, "school", n_profiles = 2,
                   n_group_classes = 1, categorical = vars,
                   n_starts = 6, seed = 3)
-  pooled <- bivariate_residuals(fit, data, by = "overall")
+  pooled <- get_data(fit, "residuals", data = data, by = "overall")
 
   expect_true(all(pooled$kind == "categorical"))
   expect_true(all(pooled$df == 1L))
@@ -123,12 +123,12 @@ test_that("a covariate fit is assessed too", {
   # below are still well defined, since they read posteriors, not the logits.
   fit <- NULL
   expect_warning(
-    fit <- fit_covariates(data, c("a", "b", "c"), "school", n_profiles = 2,
+    fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
                           n_group_classes = 2, profile_covariates = "x",
                           n_starts = 4, seed = 1),
     class = "multilpa_unconverged")
   expect_false(fit$converged)
-  residuals <- bivariate_residuals(fit, data)
+  residuals <- get_data(fit, "residuals", data = data)
 
   expect_equal(nrow(residuals), 3L * 2L)
   expect_gt(max(abs(residuals$residual)), 0.4)
@@ -139,19 +139,19 @@ test_that("a broken contract is refused", {
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
                   n_group_classes = 1, n_starts = 3, seed = 1)
 
-  expect_error(bivariate_residuals(fit, data[1:10, ]),
+  expect_error(get_data(fit, "residuals", data = data[1:10, ]),
                "one row per observation")
-  expect_error(bivariate_residuals(fit, subset(data, select = c(school, a))),
+  expect_error(get_data(fit, "residuals", data = subset(data, select = c(school, a))),
                "must contain the fitted indicators")
-  expect_error(bivariate_residuals("not a fit", data),
-               "must be a fitted model")
+  expect_error(get_data("not a fit", "residuals", data = data),
+               class = "multilpa_bad_argument")
 })
 
 test_that("a single indicator has no pair to assess", {
   data <- .dependent_data()
   fit <- multilpa(data, "a", "school", n_profiles = 2, n_group_classes = 1,
                   n_starts = 3, seed = 1)
-  residuals <- bivariate_residuals(fit, data)
+  residuals <- get_data(fit, "residuals", data = data)
 
   expect_s3_class(residuals, "data.frame")
   expect_equal(nrow(residuals), 0L)
@@ -160,27 +160,29 @@ test_that("a single indicator has no pair to assess", {
                             "statistic", "df", "p_value", "p_adjusted"))
 })
 
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+
 test_that("the residual table corrects for the number of pairs it tests", {
   skip_on_cran()
-  activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+  activity <- activity
   fit <- multilpa(course_engagement, activity, "student", n_profiles = 2,
                   n_group_classes = 2, n_starts = 4, seed = 1)
 
   # `attendance` is generated from the click measures, so these indicators are
   # deliberately locally dependent and the table has real findings in it. Ten
   # pairs are tested at once, which is what `adjust` is for.
-  unadjusted <- bivariate_residuals(fit, by = "overall")
+  unadjusted <- get_data(fit, "residuals", by = "overall")
   expect_true("p_adjusted" %in% names(unadjusted))
   # The default leaves the column equal to the raw p-value rather than absent,
   # so a caller reading `p_adjusted` always gets the stated correction.
   expect_equal(unadjusted$p_adjusted, unadjusted$p_value)
 
-  adjusted <- bivariate_residuals(fit, by = "overall", adjust = "BH")
+  adjusted <- get_data(fit, "residuals", by = "overall", adjust = "BH")
   expect_equal(adjusted$p_value, unadjusted$p_value)
   expect_true(all(adjusted$p_adjusted >= adjusted$p_value))
   # Correction can only remove findings, never create them.
   expect_lte(sum(adjusted$p_adjusted < 0.05), sum(adjusted$p_value < 0.05))
   expect_gt(sum(adjusted$p_adjusted < 0.05), 0L)
 
-  expect_error(bivariate_residuals(fit, adjust = "not_a_method"))
+  expect_error(get_data(fit, "residuals", adjust = "not_a_method"))
 })

@@ -1,6 +1,6 @@
 Package: multilpa
 Title: Two-Level Latent Profile Analysis
-Version: 0.11.1
+Version: 0.11.4
 Authors@R: person("Mohammed", "Saqr", role = c("aut", "cre"),
     email = "saqr@saqr.me")
 Description: Fits two-level latent profile and latent class models using a
@@ -26,7 +26,7 @@ License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: stats, graphics, grDevices, utils
-Suggests: testthat (>= 3.0.0), mclust, tidySEM, knitr, rmarkdown
+Suggests: testthat (>= 3.0.0), knitr, rmarkdown
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 RoxygenNote: 7.3.3

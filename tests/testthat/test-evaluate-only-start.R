@@ -57,8 +57,8 @@ test_that("evaluate-only ignores n_starts and never substitutes a random start",
   expect_equal(many$means, start$means, ignore_attr = TRUE)
   # Exactly one start was run, and the result says so rather than hiding it.
   expect_identical(defaulted$best_start, 1L)
-  expect_identical(nrow(as.data.frame(defaulted, what = "starts")), 1L)
-  expect_identical(nrow(as.data.frame(many, what = "starts")), 1L)
+  expect_identical(nrow(get_data(defaulted, "starts")), 1L)
+  expect_identical(nrow(get_data(many, "starts")), 1L)
 })
 
 test_that("a start supplied for a fit that does iterate still only seeds the first start", {
@@ -69,7 +69,7 @@ test_that("a start supplied for a fit that does iterate still only seeds the fir
   searched <- multilpa(frame, c("a", "b"), "school", n_profiles = 1,
                        n_group_classes = 1, start = start, max_iter = 500,
                        n_starts = 3, seed = 1)
-  expect_identical(nrow(as.data.frame(searched, what = "starts")), 3L)
+  expect_identical(nrow(get_data(searched, "starts")), 3L)
   expect_gt(searched$log_likelihood, -76708.5)
 })
 
@@ -79,7 +79,7 @@ test_that("max_iter = 0 without a start still scores every requested start", {
   # the only thing the call can mean, and it is left as it was.
   scored <- multilpa(frame, c("a", "b"), "school", n_profiles = 2,
                      n_group_classes = 2, max_iter = 0, n_starts = 4, seed = 2)
-  expect_identical(nrow(as.data.frame(scored, what = "starts")), 4L)
+  expect_identical(nrow(get_data(scored, "starts")), 4L)
   expect_identical(scored$iterations, 0L)
 })
 

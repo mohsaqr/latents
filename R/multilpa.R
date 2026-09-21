@@ -97,7 +97,8 @@
 .multilpa_maximization <- function(x, expectation, variance_model, min_variance,
                                   covariance_model = "diagonal", codes = NULL,
                                   n_categories = NULL, min_probability = 1e-10,
-                                  held = NULL) {
+                                  held = NULL, structure = NULL,
+                                  previous = NULL) {
   stopifnot(is.matrix(x), is.list(expectation),
             variance_model %in% c("varying", "equal"), min_variance > 0,
             is.null(held) || is.list(held))
@@ -108,7 +109,7 @@
   }
   gaussian <- if (!is.null(expectation$gaussian_moments)) {
     .multilpa_maximize_moments(x, expectation, variance_model, min_variance,
-                               covariance_model, held)
+                               covariance_model, held, structure, previous)
   } else NULL
   if (ncol(x) == 0L) {
     means <- matrix(numeric(0), length(weights), 0L)
@@ -122,8 +123,15 @@
       residuals <- sweep(x, 2L, means[profile, ], "-")
       colSums(residuals^2 * expectation$subject_posteriors[, profile])
     }, numeric(ncol(x))), nrow = ncol(x), ncol = length(weights)))
+    # A constrained structure ties the profiles together, so it is solved for
+    # all of them at once rather than profile by profile.
+    constrained <- !is.null(structure) && identical(covariance_model, "diagonal") &&
+      !structure %in% c("EEI", "VVI")
     variances <- if (!is.null(held$variances)) held$variances else
-      if (variance_model == "varying") {
+      if (constrained) {
+        .multilpa_structure_variances(variance_sums, weights, structure,
+                                      min_variance)
+      } else if (variance_model == "varying") {
         sweep(variance_sums, 1L, weights, "/")
       } else {
         matrix(colSums(variance_sums) / nrow(x),
@@ -482,7 +490,9 @@
 .multilpa_em <- function(x, group_index, parameters, variance_model,
                         min_variance, max_iter, tol, covariance_model = "diagonal",
                         codes = NULL, n_categories = NULL, min_probability = 1e-10,
-                        held = NULL) {
+                        held = NULL, structure = NULL) {
+  # `parameters` is the current point, which the M-step uses to warm start the
+  # covariance structures that iterate.
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
@@ -493,7 +503,8 @@
   while (iteration < max_iter && !converged) {
     parameters <- .multilpa_maximization(x, expectation, variance_model, min_variance,
                                        covariance_model, codes, n_categories,
-                                       min_probability, held)
+                                       min_probability, held, structure,
+                                       parameters)
     updated <- .multilpa_expectation(x, group_index, parameters, codes)
     improvement <- updated$log_likelihood - expectation$log_likelihood
     if (improvement < -1e-10 * (1 + abs(expectation$log_likelihood))) {
@@ -566,6 +577,18 @@
 #'   factor, or numeric identifiers are supported; missing identifiers are not.
 #' @param n_profiles Positive integer number of individual profiles.
 #' @param n_group_classes Positive integer number of latent group classes.
+#' @param profile_covariates,group_covariates Names of numeric columns of
+#'   `data` predicting individual-profile and group-class membership through
+#'   multinomial logits, with the final class as reference. Naming either one
+#'   fits the one-step covariate model and returns a `multilpa_covariates`
+#'   object: profile slopes are shared across group classes, profile
+#'   intercepts differ by group class, and a `group_covariate` must be
+#'   constant within each group. Covariates enter in their supplied units, so
+#'   centre or scale them beforehand if that is what you want. This is one-step
+#'   maximum likelihood, not a regression on assigned classes; [three_step()]
+#'   and [r3step()] are the staged alternatives. The covariate path supports
+#'   neither `start`, nor `missing = "fiml"`, nor `fixed`, and refuses them by
+#'   name rather than ignoring them.
 #'   Use one for an ordinary, pooled LPA.
 #' @param variance_model Either `"varying"` (profile-specific variances or
 #'   covariance matrices) or `"equal"` (shared across profiles).
@@ -609,9 +632,58 @@
 #'   by the same unrestricted parameterization; numeric, integer, logical,
 #'   character and factor columns are accepted. Indicators not named here stay
 #'   Gaussian, so naming a subset fits a mixed-mode model.
+#' @param volume,shape,orientation The covariance structure, in the three
+#'   pieces it is made of. Each profile's covariance decomposes as
+#'   `Sigma_k = lambda_k * D_k * A_k * D_k'`: a *volume*
+#'   `lambda_k = |Sigma_k|^(1/d)`, an *orientation* `D_k` of eigenvectors, and
+#'   a *shape* `A_k`, diagonal with determinant one. Constraining the three
+#'   across profiles gives the fourteen models `mclust` names with three
+#'   letters, and this package fits all of them.
+#'
+#'   `volume` is `"equal"` or `"varying"`. `shape` is `"equal"`, `"varying"`
+#'   or `"spherical"`, the last making every indicator's spread equal within a
+#'   profile, which leaves no orientation to constrain. `orientation` is
+#'   `"axis"` (axis-parallel, a diagonal covariance), `"equal"` (one
+#'   orientation shared by every profile) or `"varying"`. Each is `NULL` by
+#'   default, which follows `variance_model` and `covariance_model`, so a call
+#'   that names none of them fits exactly what it always did.
+#'
+#'   | `volume` | `shape` | `orientation` | model |
+#'   |---|---|---|---|
+#'   | equal | spherical | --- | EII |
+#'   | varying | spherical | --- | VII |
+#'   | equal/varying | equal/varying | axis | EEI, VEI, EVI, VVI |
+#'   | equal/varying | equal/varying | equal | EEE, VEE, EVE, VVE |
+#'   | equal/varying | equal/varying | varying | EEV, VEV, EVV, VVV |
+#'
+#'   The estimates are those of Celeux and Govaert (1995); the two models with
+#'   a shared orientation and a free shape, EVE and VVE, have no closed form
+#'   and use the minorize-maximize step of Browne and McNicholas (2014).
+#'   Parameter counts match `mclust`'s own for all fourteen.
+#'
+#'   Anything other than EEI, VVI, EEE or VVV is maximized across every profile
+#'   at once, so it cannot be combined with a held `variances` block, and
+#'   [parameter_inference()] refuses it with `multilpa_unsupported_inference`:
+#'   the free coordinates are log variances, which is the wrong chart for a
+#'   constrained volume, shape or orientation.
+#' @param centering How to centre the continuous indicators before fitting.
+#'   `"none"`, the default, fits them as supplied. `"person"` subtracts each
+#'   group's own mean from its rows, so a value reads as a deviation from that
+#'   unit's average and the profiles become profiles of *change* rather than of
+#'   level: this is the within-person, person-mean-centred design (Quintana,
+#'   2021; Voelkle, Brose, Schmiedek, & Lindenberger, 2014). `"grand"`
+#'   subtracts one mean per indicator, which moves the origin without touching
+#'   the within-group structure. The offsets are kept on the fit, so
+#'   `get_data(x, "data")` still returns the columns you supplied and every
+#'   verb that checks row alignment still checks it. Centring removes exactly
+#'   the between-unit variation, so `"person"` refuses with
+#'   `multilpa_bad_data` when it leaves an indicator constant --- which is what
+#'   happens when a unit has one observation of it. With `"person"` the group
+#'   classes become types of *change pattern*, not types of unit.
 #' @param time Optional name of a column giving each observation's position
 #'   within its group, such as a wave, occasion or course number. The model does
-#'   not use it; it is stored so that [sequences()], [sequence_summary()] and
+#'   not use it; it is stored so that `get_data(x, "sequences")`,
+#'   `get_data(x, "sequence_summary")` and
 #'   `plot(what = "sequences")` can read the assignments back in order. Values
 #'   must be complete and unique within each group.
 #' @param fixed Character vector naming measurement blocks to hold at the
@@ -682,22 +754,31 @@
 #'                 seed = 42)
 #' summary(fit)
 #' as.data.frame(fit)
-#' as.data.frame(fit, what = "profile_probabilities")
+#' get_data(fit, what = "profile_probabilities")
 #' @export
 #' @importFrom stats setNames
 multilpa <- function(data, vars, id, n_profiles,
-                       n_group_classes = 2L, variance_model = c("varying", "equal"),
+                       n_group_classes = 2L,
+                       profile_covariates = character(),
+                       group_covariates = character(),
+                       variance_model = c("varying", "equal"),
                        n_starts = 10L, max_iter = 1000L, tol = 1e-8,
                        min_variance = 1e-6, seed = NULL, start = NULL,
                        missing = c("error", "fiml"),
                        covariance_model = c("diagonal", "full"),
                        categorical = character(), min_probability = 1e-10,
-                       time = NULL, fixed = character()) {
+                       time = NULL, fixed = character(),
+                       centering = c("none", "person", "grand"),
+                       volume = NULL, shape = NULL, orientation = NULL) {
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`vars` must be a character vector of column names" =
       is.character(vars),
     "`id` must be a single column name" = is.character(id),
+    "`profile_covariates` must be a character vector of column names" =
+      is.character(profile_covariates) && !anyNA(profile_covariates),
+    "`group_covariates` must be a character vector of column names" =
+      is.character(group_covariates) && !anyNA(group_covariates),
     "`categorical` must be a character vector of indicator names" =
       is.character(categorical) && !anyNA(categorical),
     "`min_probability` must be a single number in (0, 1)" =
@@ -708,6 +789,43 @@ multilpa <- function(data, vars, id, n_profiles,
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
+  centering <- match.arg(centering)
+  structure <- .multilpa_resolve_structure(variance_model, covariance_model,
+                                           volume, shape, orientation)
+  # An ellipsoidal structure has an orientation, which a diagonal parameter
+  # block cannot carry, so the fit keeps a full covariance array whatever
+  # `covariance_model` said.
+  if (.multilpa_is_ellipsoidal(structure)) covariance_model <- "full"
+  # The four structures the package has always fitted are maximized by the
+  # `variance_model` branch of the M-step rather than by a constrained solver,
+  # so reaching one of them through `volume`/`shape`/`orientation` has to set
+  # it. Without this, asking for EEI by its pieces reported EEI and counted its
+  # parameters while fitting free per-profile variances.
+  if (structure %in% c("EEI", "EEE")) variance_model <- "equal"
+  if (structure %in% c("VVI", "VVV")) variance_model <- "varying"
+  # Counted across every M-step of every start, and reported once at the end.
+  .multilpa_reset_structure_log()
+  on.exit(.multilpa_report_structure_log(), add = TRUE)
+  if (!structure %in% .multilpa_inferable_structures() &&
+      any(c("variances", "measurement") %in% fixed)) {
+    stop(errorCondition(paste(
+      "A constrained covariance structure is maximized across every profile at",
+      "once, so holding one profile's variances would not leave the others at",
+      "their maximum. Use `fixed = \"means\"`, or the unconstrained structure."),
+      class = "multilpa_bad_argument", call = NULL))
+  }
+  if (length(profile_covariates) > 0L || length(group_covariates) > 0L) {
+    return(.multilpa_covariate_model(
+      data = data, vars = vars, id = id, n_profiles = n_profiles,
+      n_group_classes = n_group_classes,
+      profile_covariates = profile_covariates,
+      group_covariates = group_covariates, variance_model = variance_model,
+      n_starts = n_starts, max_iter = max_iter, tol = tol,
+      min_variance = min_variance, seed = seed, start = start,
+      missing = missing, covariance_model = covariance_model,
+      categorical = categorical, min_probability = min_probability,
+      time = time, fixed = fixed, call = call))
+  }
   # The data contract comes first: `time` is checked against the `id` column,
   # so an `id` that does not name a column of `data` must be reported as
   # that, not as an opaque failure inside the time check.
@@ -728,6 +846,15 @@ multilpa <- function(data, vars, id, n_profiles,
   group_index <- groups$index
   group_ids <- groups$ids
   n_groups <- groups$n
+  # Centring happens here, between validating the indicators and fitting them,
+  # so the measurement model sees deviations and every verb downstream can put
+  # a supplied frame on the same scale from the offsets kept on the fit.
+  centred <- .multilpa_center_indicators(x, group_index, n_groups, centering)
+  if (!identical(centering, "none") && ncol(x) > 0L) {
+    x <- centred$x
+    .multilpa_check_centered(x, centering)
+    indicator_frame <- as.data.frame(x)
+  }
   group_sizes <- groups$sizes
   distinct_rows <- if (is.null(codes)) nrow(unique(x)) else
     nrow(unique(cbind(x, codes)))
@@ -785,7 +912,7 @@ multilpa <- function(data, vars, id, n_profiles,
   # scoring extra random initializations and keeping the highest would return a
   # parameter set nobody supplied in place of the one the caller asked to have
   # evaluated. Evaluate-only with a `start` therefore uses that start alone, and
-  # `as.data.frame(fit, what = "starts")` shows the single start that was run.
+  # `get_data(fit, "starts")` shows the single start that was run.
   if (max_iter == 0L && !is.null(start)) n_starts <- 1L
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
@@ -797,8 +924,10 @@ multilpa <- function(data, vars, id, n_profiles,
       # Every restart begins from the held values, so a random start cannot
       # report a measurement solution that was neither estimated nor supplied.
       initial <- .multilpa_apply_held(initial, held)
+      initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
       .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
-                 tol, covariance_model, codes, n_categories, min_probability, held)
+                 tol, covariance_model, codes, n_categories, min_probability,
+                 held, structure)
     }, error = function(error) list(error = conditionMessage(error)))
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
@@ -825,7 +954,7 @@ multilpa <- function(data, vars, id, n_profiles,
   group_posteriors <- best$expectation$group_posteriors
   dimnames(subject_posteriors) <- list(rownames(data), profile_names)
   dimnames(group_posteriors) <- list(group_ids, type_names)
-  n_parameters_unconstrained <- .multilpa_count_parameters(
+  n_parameters_unconstrained <- .multilpa_count_parameters(structure = structure,
     n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
     covariance_model)
   n_parameters <- n_parameters_unconstrained -
@@ -862,6 +991,7 @@ multilpa <- function(data, vars, id, n_profiles,
     categorical = categorical,
     categorical_levels = encoded$levels, min_probability = min_probability,
     indicator_data = as.matrix(indicator_frame),
+    centering = centering, centering_offsets = centred$offsets,
     categorical_data = codes,
     id = id, group_ids = group_ids,
     time = time, time_values = time_values,
@@ -870,7 +1000,8 @@ multilpa <- function(data, vars, id, n_profiles,
     n_observations = nrow(x), n_informative = n_informative,
     n_groups = n_groups, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes), variance_model = variance_model,
-    covariance_model = covariance_model, missing = missing,
+    covariance_model = covariance_model, covariance_structure = structure,
+    missing = missing,
     n_observed_by_indicator = setNames(
       c(colSums(!is.na(x)), if (is.null(codes)) NULL else colSums(!is.na(codes))),
       c(continuous, categorical)),
@@ -900,14 +1031,14 @@ multilpa <- function(data, vars, id, n_profiles,
   class(result) <- "multilpa"
   if (any(!valid)) {
     warning(warningCondition(sprintf(
-      "%d of %d starts failed; see as.data.frame(fit, what = \"starts\").",
+      "%d of %d starts failed; see get_data(fit, \"starts\").",
       sum(!valid), n_starts), class = "multilpa_failed_starts", call = NULL))
   }
   # max_iter = 0 is a deliberate evaluate-only call, so non-convergence is
   # expected rather than an anomaly worth reporting.
   if (!best$converged && max_iter > 0L) {
     warning(warningCondition(
-      "The best start did not converge; increase max_iter and see as.data.frame(fit, what = \"starts\").",
+      "The best start did not converge; increase max_iter and see get_data(fit, \"starts\").",
       class = "multilpa_unconverged", call = NULL))
   }
   if (boundary) {
@@ -1078,11 +1209,16 @@ multilpa <- function(data, vars, id, n_profiles,
 #' @noRd
 .multilpa_count_parameters <- function(n_profiles, n_group_classes, n_continuous,
                                      n_categories, variance_model,
-                                     covariance_model) {
+                                     covariance_model, structure = NULL) {
   covariance_parameters <- if (covariance_model == "full") {
     n_continuous * (n_continuous + 1) / 2
   } else n_continuous
-  gaussian <- if (n_continuous == 0L) 0L else {
+  gaussian <- if (n_continuous == 0L) 0L else if (!is.null(structure)) {
+    # The constrained structures divide a determinant-one shape out of a
+    # volume, so their spread block is not `n_profiles` copies of anything.
+    n_profiles * n_continuous +
+      .multilpa_structure_parameters(structure, n_profiles, n_continuous)
+  } else {
     n_profiles * n_continuous +
       if (variance_model == "varying") n_profiles * covariance_parameters else
         covariance_parameters
@@ -1091,4 +1227,55 @@ multilpa <- function(data, vars, id, n_profiles,
     .multilpa_categorical_parameters(n_profiles, n_categories)
   (n_group_classes - 1L) + n_group_classes * (n_profiles - 1L) +
     gaussian + categorical
+}
+
+#' Hand a covariate request to the covariate estimator
+#'
+#' `multilpa()` is one verb over one model, and membership covariates are part
+#' of that model rather than a different one, so they are arguments and not a
+#' separate entry point. Three of `multilpa()`'s own arguments have no meaning
+#' on this path: the covariate likelihood has no observed-data form, no
+#' starting-value contract of the shape the covariate-free EM uses, and no
+#' held-measurement machinery. Each is refused by name instead of being
+#' accepted and ignored, which would return a fit that is not the one asked
+#' for.
+#'
+#' @param data,vars,id,n_profiles,n_group_classes As in [multilpa()].
+#' @param profile_covariates,group_covariates The requested predictors.
+#' @param variance_model,n_starts,max_iter,tol,min_variance As in [multilpa()].
+#' @param seed,time,covariance_model,categorical,min_probability As in
+#'   [multilpa()].
+#' @param start,missing,fixed Refused when they are anything but their default.
+#' @param call The user's call, recorded on the result.
+#' @return An object of class `multilpa_covariates`.
+#' @noRd
+.multilpa_covariate_model <- function(data, vars, id, n_profiles,
+                                      n_group_classes, profile_covariates,
+                                      group_covariates, variance_model,
+                                      n_starts, max_iter, tol, min_variance,
+                                      seed, start, missing, covariance_model,
+                                      categorical, min_probability, time,
+                                      fixed, call) {
+  unsupported <- c(
+    start = !is.null(start),
+    missing = !identical(missing, "error"),
+    fixed = length(fixed) > 0L)
+  if (any(unsupported)) {
+    stop(errorCondition(sprintf(paste(
+      "%s cannot be combined with `profile_covariates` or",
+      "`group_covariates`. Fit the covariate model without %s, or fit the",
+      "covariate-free model and use three_step() or r3step()."),
+      paste(sprintf("`%s`", names(unsupported)[unsupported]), collapse = ", "),
+      if (sum(unsupported) > 1L) "them" else "it"),
+      class = "multilpa_bad_argument", call = NULL))
+  }
+  .multilpa_fit_covariates(
+    data = data, vars = vars, id = id, n_profiles = n_profiles,
+    n_group_classes = n_group_classes,
+    profile_covariates = profile_covariates,
+    group_covariates = group_covariates, variance_model = variance_model,
+    n_starts = n_starts, max_iter = max_iter, tol = tol,
+    min_variance = min_variance, seed = seed, time = time,
+    covariance_model = covariance_model, categorical = categorical,
+    min_probability = min_probability, call = call)
 }

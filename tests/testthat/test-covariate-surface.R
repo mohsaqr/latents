@@ -11,7 +11,7 @@
 }
 
 .surface_fit <- function(data, ...) {
-  fit_covariates(data, c("y1", "y2"), "school", n_profiles = 2,
+  multilpa(data, c("y1", "y2"), "school", n_profiles = 2,
                  n_group_classes = 2, profile_covariates = "x",
                  n_starts = 4, seed = 1, ...)
 }
@@ -66,16 +66,16 @@ test_that("the shared diagnostics accept a covariate fit", {
   data <- .surface_data()
   fit <- .surface_fit(data)
 
-  entropy <- entropy_table(fit)
+  entropy <- get_data(fit, "entropy")
   expect_equal(nrow(entropy), 2L)
   expect_true(all(entropy$relative_entropy >= 0 & entropy$relative_entropy <= 1))
 
-  criteria <- information_criteria(fit, format = "long")
+  criteria <- get_data(fit, "information_criteria", format = "long")
   expect_true(all(c("aic", "bic") %in% criteria$criterion))
   expect_equal(subset(criteria, criterion == "deviance")$value,
                -2 * fit$log_likelihood)
 
-  classification <- classification_table(fit, level = "both")
+  classification <- get_data(fit, "classification", level = "both")
   expect_setequal(unique(classification$level), c("individuals", "groups"))
   expect_equal(sum(classification$n_modal[classification$level == "individuals"]),
                fit$n_observations)
@@ -89,20 +89,20 @@ test_that("a covariate fit can carry and report its ordering", {
   timed <- .surface_fit(data, time = "wave")
 
   expect_null(bare$time)
-  expect_error(sequences(bare), class = "multilpa_no_time")
+  expect_error(get_data(bare, "sequences"), class = "multilpa_no_time")
   expect_identical(timed$time, "wave")
   # the ordering is metadata and must not move an estimate
   expect_equal(bare$log_likelihood, timed$log_likelihood)
   expect_equal(bare$profile_coefficients, timed$profile_coefficients)
 
-  long <- sequences(timed)
+  long <- get_data(timed, "sequences")
   expect_named(long, c("group", "group_class", "time", "profile"))
   expect_equal(nrow(long), nrow(data))
   # The wide form carries the identifier as a column rather than as a row name,
   # so assert the contract by name instead of by width.
-  expect_named(sequences(timed, format = "wide"),
+  expect_named(get_data(timed, "sequences", format = "wide"),
                c("group", "group_class", paste0("wave_", 1:8)))
-  summary_table <- sequence_summary(timed)
+  summary_table <- get_data(timed, "sequence_summary")
   expect_equal(sum(summary_table$groups), timed$n_groups)
   expect_equal(sum(summary_table$observations), nrow(data))
 })

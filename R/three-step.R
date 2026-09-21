@@ -7,7 +7,9 @@
   stopifnot("`object` must be a fitted model of this package" =
               .multilpa_any_fit(object))
   if (inherits(object, "multilpa_random_intercept")) {
-    stop("Three-step methods require a discrete group-class model.")
+    stop(errorCondition(
+      "Three-step methods require a discrete group-class model.",
+      class = "multilpa_no_group_classes", call = NULL))
   }
   level <- match.arg(level, c("individuals", "groups"))
   if (identical(level, "individuals")) {
@@ -21,38 +23,32 @@
   }
 }
 
-#' How often each class is assigned to the wrong one
+#' How often each true class is assigned to another
 #'
-#' The probability that a unit truly in one class is assigned to another, which
-#' is the quantity every three-step method needs. Unlike the average-posterior
-#' matrix from [classification_table()], this conditions on the *true* class
-#' rather than the assigned one, which is the direction the correction requires.
+#' Documented on `?get_data`, which is where a caller reaches this table from,
+#' and consumed by [three_step()] and the BCH weights.
 #'
 #' @param x A fitted model of this package.
-#' @param level `"individuals"` for profiles, `"groups"` for group classes.
-#' @return A base `data.frame` with one row per ordered pair of classes and the
-#'   columns `level`, `true_class`, `assigned_class` and `probability`. The
-#'   probabilities sum to one within each `true_class`.
-#' @seealso [bch_weights()] and [three_step()], which consume it.
-#' @references Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent
-#'   structure models with categorical variables. *Political Analysis*, 12,
-#'   3--27. Vermunt, J. K. (2010). Latent class modeling with covariates: two
-#'   improved three-step approaches. *Political Analysis*, 18, 450--469.
-#' @examples
-#' set.seed(11)
-#' group <- rep(seq_len(40), each = 10)
-#' truth <- 1L + as.integer(runif(400) > 0.5)
-#' example_data <- data.frame(
-#'   g = group,
-#'   a = rnorm(400, ifelse(truth == 2L, 1.1, -1.1)),
-#'   b = rnorm(400, ifelse(truth == 2L, 1.1, -1.1))
-#' )
-#' fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
-#'                 n_group_classes = 1, n_starts = 4, seed = 1)
-#' classification_errors(fit)
-#' @export
-classification_errors <- function(x, level = c("individuals", "groups")) {
+#' @param level `"individuals"`, `"groups"` or `"both"`.
+#' @return A base `data.frame`, one row per level and ordered pair of classes,
+#'   whose probabilities sum to one within each `true_class`.
+#' @noRd
+.multilpa_classification_errors <- function(x,
+                                            level = c("individuals", "groups",
+                                                      "both")) {
   level <- match.arg(level)
+  result <- do.call(rbind, lapply(.multilpa_classification_levels(x, level),
+                                  .multilpa_error_frame, x = x))
+  row.names(result) <- NULL
+  result
+}
+
+#' The classification error table for one level
+#' @param x A fitted model of this package.
+#' @param level A single level name.
+#' @return One row per ordered pair of classes at that level.
+#' @noRd
+.multilpa_error_frame <- function(x, level) {
   pieces <- .multilpa_level_assignments(x, level)
   matrix_form <- .multilpa_error_matrix(pieces)
   classes <- seq_len(pieces$n_classes)
@@ -79,40 +75,29 @@ classification_errors <- function(x, level = c("individuals", "groups")) {
   result
 }
 
-#' Weights that undo classification error
+#' The BCH inverse-classification-error weights
 #'
-#' The Bolck-Croon-Hagenaars weights. Analysing an outcome by modal class
-#' attenuates every difference between classes, because some units are in the
-#' wrong one; weighting by the inverse of the classification error matrix
-#' removes that attenuation without letting the outcome influence the classes.
+#' Documented on `?get_data`, which is where a caller reaches this table from.
 #'
 #' @param x A fitted model of this package.
-#' @param level `"individuals"` for profiles, `"groups"` for group classes.
-#' @return A base `data.frame` with one row per unit and class, and the columns
-#'   `level`, `unit`, `assigned_class`, `class` and `weight`, ordered by unit and
-#'   then by class. This is the expanded layout the method is defined on: one
-#'   weighted record per unit per class. Weights are not probabilities: they are
-#'   signed, and a unit assigned to one class ordinarily carries a negative
-#'   weight for the others. Within a unit they sum to one across the classes.
-#' @seealso [three_step()], which applies them.
-#' @references Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent
-#'   structure models with categorical variables. *Political Analysis*, 12,
-#'   3--27.
-#' @examples
-#' set.seed(11)
-#' group <- rep(seq_len(40), each = 10)
-#' truth <- 1L + as.integer(runif(400) > 0.5)
-#' example_data <- data.frame(
-#'   g = group,
-#'   a = rnorm(400, ifelse(truth == 2L, 1.1, -1.1)),
-#'   b = rnorm(400, ifelse(truth == 2L, 1.1, -1.1))
-#' )
-#' fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
-#'                 n_group_classes = 1, n_starts = 4, seed = 1)
-#' head(bch_weights(fit))
-#' @export
-bch_weights <- function(x, level = c("individuals", "groups")) {
+#' @param level `"individuals"`, `"groups"` or `"both"`.
+#' @return A base `data.frame`, one row per level, unit and class.
+#' @noRd
+.multilpa_bch_weights <- function(x, level = c("individuals", "groups",
+                                               "both")) {
   level <- match.arg(level)
+  result <- do.call(rbind, lapply(.multilpa_classification_levels(x, level),
+                                  .multilpa_weight_frame, x = x))
+  row.names(result) <- NULL
+  result
+}
+
+#' The BCH weights for one level
+#' @param x A fitted model of this package.
+#' @param level A single level name.
+#' @return One row per unit and class at that level.
+#' @noRd
+.multilpa_weight_frame <- function(x, level) {
   pieces <- .multilpa_level_assignments(x, level)
   inverse <- .multilpa_invert_errors(.multilpa_error_matrix(pieces))
   weights <- inverse[pieces$modal, , drop = FALSE]
@@ -136,7 +121,7 @@ bch_weights <- function(x, level = c("individuals", "groups")) {
     stop(errorCondition(
       paste("The classification error matrix cannot be inverted, so the classes",
             "are not separated well enough for a three-step correction.",
-            "Inspect classification_errors()."),
+            "Inspect get_data(x, \"classification_errors\")."),
       class = "multilpa_inseparable_classes", call = NULL))
   })
   if (min(abs(eigen(as.matrix(errors), only.values = TRUE)$values)) < 1e-8) {
@@ -428,7 +413,8 @@ three_step <- function(x, data, outcome,
 #'   by `adjust`, which is also recorded in the result's `adjust` attribute;
 #'   it is `NA` on the intercept rows, which are not part of the tested family.
 #'   Coefficients are log odds against the final class, which is the reference,
-#'   matching [fit_covariates()]; that class is named in the result's
+#'   matching `multilpa(profile_covariates = )`; that class is named in the
+#'   result's
 #'   `reference_class` attribute, and the variance that was used in its
 #'   `vcov_type` attribute.
 #' @details The error matrix is held fixed rather than estimated jointly, which
@@ -446,13 +432,14 @@ three_step <- function(x, data, outcome,
 #'   That coverage was measured where the profiles separate well. The error
 #'   matrix is still treated as known rather than estimated, so intervals should
 #'   be expected to run narrow where classification is poorer; check
-#'   [classification_errors()] before relying on them.
+#'   `get_data(x, "classification_errors")` before relying on them.
 #' @references Vermunt, J. K. (2010). Latent class modeling with covariates: two
 #'   improved three-step approaches. *Political Analysis*, 18, 450--469.
 #'   Asparouhov, T., & Muthen, B. (2014). Auxiliary variables in mixture
 #'   modeling: three-step approaches using Mplus. *Structural Equation
 #'   Modeling*, 21, 329--341.
-#' @seealso [three_step()] for a distal outcome, and [fit_covariates()] for the
+#' @seealso [three_step()] for a distal outcome, and
+#'   `multilpa(profile_covariates = )` for the
 #'   one-step alternative that estimates everything jointly.
 #' @examples
 #' set.seed(21)

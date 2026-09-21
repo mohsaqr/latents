@@ -66,7 +66,7 @@ test_that("every measurement model reproduces the likelihood written from its de
     list(label = "categorical only", vars = c("q", "r"),
          extra = list(categorical = c("q", "r"))))
   invisible(lapply(cases, function(case) {
-    fit <- quietly(do.call(fit_covariates, c(list(
+    fit <- quietly(do.call(multilpa, c(list(
       data, case$vars, "g", 2L, 2L, profile_covariates = "z",
       n_starts = 2, seed = 3, max_iter = 400), case$extra)))
     expect_equal(fit$log_likelihood, .cov_independent_likelihood(fit, data),
@@ -77,13 +77,13 @@ test_that("every measurement model reproduces the likelihood written from its de
 
 test_that("the measurement blocks and parameter counts match the model fitted", {
   data <- .cov_measurement_fixture()
-  gaussian <- quietly(fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
+  gaussian <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 2, seed = 3))
-  full <- quietly(fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
+  full <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 2, seed = 3, covariance_model = "full"))
-  mixed <- quietly(fit_covariates(data, c("y1", "y2", "q", "r"), "g", 2L, 1L,
+  mixed <- quietly(multilpa(data, c("y1", "y2", "q", "r"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 2, seed = 3, categorical = c("q", "r")))
-  categorical <- quietly(fit_covariates(data, c("q", "r"), "g", 2L, 1L,
+  categorical <- quietly(multilpa(data, c("q", "r"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 2, seed = 3, categorical = c("q", "r")))
 
   expect_identical(gaussian$measurement_model, "gaussian")
@@ -115,7 +115,10 @@ test_that("with no covariates the covariate model is the covariate-free one", {
     plain <- quietly(do.call(multilpa, c(list(
       data, case$vars, "g", 2L, 2L, n_starts = 1, seed = 4,
       max_iter = 3000, tol = 1e-12), case$extra)))
-    covariate <- quietly(do.call(fit_covariates, c(list(
+    # The covariate estimator with no covariates: `multilpa()` cannot be
+    # asked for it, because naming no covariate requests the covariate-free
+    # model, which is exactly what this compares it against.
+    covariate <- quietly(do.call(multilpa:::.multilpa_fit_covariates, c(list(
       data, case$vars, "g", 2L, 2L, n_starts = 1, seed = 4,
       max_iter = 3000, tol = 1e-12), case$extra)))
     expect_equal(plain$log_likelihood, covariate$log_likelihood, tolerance = 1e-6)
@@ -125,7 +128,7 @@ test_that("with no covariates the covariate model is the covariate-free one", {
 
 test_that("the full-covariance score is the derivative of the likelihood", {
   data <- .cov_measurement_fixture(n_groups = 24L)
-  fit <- quietly(fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
+  fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 3, seed = 1, covariance_model = "full",
     max_iter = 2000, tol = 1e-11))
   theta <- .multilpa_cov_encode(fit)
@@ -153,7 +156,7 @@ test_that("the full-covariance score is the derivative of the likelihood", {
 
 test_that("full-covariance standard errors match an independent information matrix", {
   data <- .cov_measurement_fixture(n_groups = 24L)
-  fit <- quietly(fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
+  fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 3, seed = 1, covariance_model = "full",
     max_iter = 2000, tol = 1e-11))
   theta <- .multilpa_cov_encode(fit)
@@ -177,7 +180,7 @@ test_that("full-covariance standard errors match an independent information matr
 
 test_that("covariance estimates are reported in natural units with their own tests", {
   data <- .cov_measurement_fixture(n_groups = 24L)
-  fit <- quietly(fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
+  fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 3, seed = 1, covariance_model = "full",
     max_iter = 2000, tol = 1e-11))
   inference <- parameter_inference(fit, data)
@@ -201,13 +204,13 @@ test_that("covariance estimates are reported in natural units with their own tes
 
 test_that("inference refuses a categorical covariate fit rather than miscounting it", {
   data <- .cov_measurement_fixture()
-  fit <- quietly(fit_covariates(data, c("y1", "y2", "q"), "g", 2L, 1L,
+  fit <- quietly(multilpa(data, c("y1", "y2", "q"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 2, seed = 3, categorical = "q"))
   expect_error(parameter_inference(fit, data),
                class = "multilpa_unsupported_inference")
   expect_error(vcov(fit, data), class = "multilpa_unsupported_inference")
   # The fit itself is still usable; only the standard errors are withheld.
-  expect_s3_class(as.data.frame(fit, what = "posteriors"), "data.frame")
+  expect_s3_class(get_data(fit, "posteriors"), "data.frame")
   expect_true(is.finite(fit$log_likelihood))
 })
 
@@ -217,10 +220,8 @@ test_that("natural covariance errors agree with the covariate-free model's own",
   # covariance block in natural units through its own delta method. Agreement
   # is therefore a cross-implementation check on the transformation, which
   # comparing a fit with itself could never provide.
-  plain <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
-    n_starts = 1, seed = 4, max_iter = 4000, tol = 1e-12,
-    covariance_model = "full"))
-  covariate <- quietly(fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
+  plain <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L, n_starts = 1, seed = 4, max_iter = 4000, tol = 1e-12, covariance_model = "full"))
+  covariate <- quietly(multilpa:::.multilpa_fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
     n_starts = 1, seed = 4, max_iter = 4000, tol = 1e-12,
     covariance_model = "full"))
   from_plain <- parameter_inference(plain, data)

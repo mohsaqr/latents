@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{multilpa_random_intercept}(
   x,
-  what = c("profiles", "random_intercepts", "entropy", "posteriors"),
+  what = c("profiles", "random_intercepts", "entropy", "posteriors", "all"),
   scale = c("raw", "standardized"),
   labels = TRUE,
   main = NULL,

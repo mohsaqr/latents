@@ -4,12 +4,16 @@
 \alias{print.summary_multilpa_covariates}
 \title{Print a covariate LPA summary}
 \usage{
-\method{print}{summary_multilpa_covariates}(x, digits = 4L, ...)
+\method{print}{summary_multilpa_covariates}(x, digits = 4L, rows = 10L, ...)
 }
 \arguments{
 \item{x}{A `summary_multilpa_covariates` object.}
 
 \item{digits}{Number of printed significant digits.}
+
+\item{rows}{How many rows of each table to print. A longer table is shown
+to that depth, with its remaining row count and the `get_data()` call that
+returns it whole.}
 
 \item{...}{Passed to the underlying `data.frame` printing.}
 }
@@ -28,8 +32,8 @@ example_data <- data.frame(group = rep(seq_len(20), each = 10),
                            z = rnorm(200))
 example_data$y <- rnorm(200,
   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-fit <- fit_covariates(example_data, "y", "group", n_profiles = 2,
-                      n_group_classes = 1, profile_covariates = "z",
-                      n_starts = 2, seed = 1)
+fit <- multilpa(example_data, "y", "group", n_profiles = 2,
+                n_group_classes = 1, profile_covariates = "z",
+                n_starts = 2, seed = 1)
 print(summary(fit), digits = 3)
 }

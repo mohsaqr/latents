@@ -3,7 +3,7 @@
 test_that("native multilevel LPA reproduces Mplus9 on two synthetic variance models", {
   invisible(lapply(c("varying", "equal"), function(variance_model) {
     stopifnot(is.character(variance_model), length(variance_model) == 1L)
-    reference <- readRDS(test_path("..", "fixtures", "mplus",
+    reference <- readRDS(equivalence_fixture("mplus",
       paste0("twolevel-synthetic-", variance_model, ".rds")))
     fit <- multilpa(reference$data, c("y1", "y2"), "clus", 2L, 2L,
       variance_model = variance_model, n_starts = 10L, tol = 1e-12,

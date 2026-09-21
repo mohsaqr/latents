@@ -1,138 +1,32 @@
-#' Tidy a fitted multilevel latent profile model
+#' Coerce a fitted multilevel latent profile model to its primary table
 #'
-#' Returns any part of a fitted model as a tidy `data.frame`, so that results
-#' can be printed, joined, and written out without reaching into the fitted
-#' object. Every table is one row per observation of the thing it describes.
+#' Plain coercion, as the base generic means it: one object, one data frame.
+#' The other tables are named rather than positional, so they belong to
+#' [get_data()], which takes `what` and refuses a name this object has not.
 #'
-#' @param x A fitted `multilpa` model.
+#' @param x A fitted multilevel latent profile model.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param what Which table to return. `"profiles"` gives the Gaussian
-#'   measurement model, `"responses"` the categorical measurement model,
-#'   `"profile_probabilities"` the profile prevalence within each group class,
-#'   `"posteriors"` the individual posteriors, `"group_posteriors"` the group
-#'   posteriors, `"starts"` the restart diagnostics,
-#'   `"stages"` the estimation stages and what each held fixed,
-#'   `"information_criteria"` the information criteria, `"classification"` the
-#'   classification quality, `"entropy"` the entropy summary, and `"data"` the
-#'   columns of the original data the model was fitted to.
-#' @param scale For `what = "profiles"`, `"raw"` reports the estimates in input
-#'   units and `"standardized"` divides each indicator's deviation from its
-#'   grand mean by that indicator's observed standard deviation, which is what
-#'   `plot(x, scale = "standardized")` draws. Supplying it with any other
-#'   `what` is an error rather than a silent no-op.
-#' @param format For the posterior tables, `"long"` (the default) gives one row
-#'   per unit and class, and `"wide"` gives one row per unit with one column per
-#'   class. The wide column set grows with the number of classes, so no caller
-#'   can address it generically; it stays available because joining posteriors
-#'   back onto the fitting data wants one row per unit. For
-#'   `what = "information_criteria"` it is forwarded to
-#'   [information_criteria()], where `"wide"` is the default one-row reporting
-#'   shape and `"long"` gives one row per criterion and sample-size convention.
-#'   Supplying it with any other `what` is an error rather than a silent no-op.
-#' @param ... Passed to the underlying accessor. `classification` accepts
-#'   `level`, and `information_criteria` accepts `definitions`. The
-#'   per-assigned-class breakdown that `classification_table(detail = TRUE)`
-#'   once returned is now its own verb, [average_posteriors()]. `profiles` and `responses` accept `data`, the data
-#'   frame the model was fitted to, which adds a standard error beside every
-#'   estimate so the measurement model can be read complete from one call
-#'   rather than joined to [parameter_inference()] by hand.
-#' @return A base `data.frame` whose columns depend on `what`.
-#'   `"profiles"` has one row per profile and continuous indicator, with columns
-#'   `profile`, `indicator`, `mean`, `variance`, and `standard_deviation`; it has
-#'   zero rows when every indicator is categorical. Given `data`, it also carries
-#'   `mean_standard_error` and `variance_standard_error`, and `"responses"`
-#'   carries `probability_standard_error`. Supplying `data` runs
-#'   [parameter_inference()], so it raises whatever that would raise for a fit
-#'   whose standard errors are unavailable, rather than returning empty columns.
-#'   With `scale = "standardized"` every estimate in that table, and every
-#'   standard error beside it, is divided by the indicator's observed standard
-#'   deviation, so the whole row is on one scale; it raises
-#'   `multilpa_no_indicator_data` for a fit that kept no indicators and
-#'   `multilpa_bad_scale` for an indicator with no spread.
-#'   `"responses"` has one row per profile, categorical indicator and category,
-#'   with columns `profile`, `indicator`, `category`, `probability`, and
-#'   `threshold`. The threshold is `qlogis(P(y <= category))`, the cumulative
-#'   logit that mixture software reports, and is `NA_real_` for the final
-#'   category of each indicator, where the cumulative probability is one.
-#'   `"profile_probabilities"` has one row per group class and profile, with
-#'   columns `group_class`, `profile`, `probability`, and
-#'   `group_class_probability`. `"posteriors"` has one row per input individual
-#'   and profile, with columns `row`, `group`, `profile`, `posterior` and
-#'   `modal`, the last flagging the profile that individual was assigned to;
-#'   `format = "wide"` gives one row per individual instead, with columns `row`,
-#'   `group`, `profile` (the modal profile) and one `posterior_profile_*` column
-#'   per profile. `"group_posteriors"` has one row per observed group and group
-#'   class, with columns `group`, `group_size`, `log_likelihood`, `group_class`,
-#'   `posterior` and `modal`; `format = "wide"` gives one row per group, with
-#'   columns `group`, `group_size`, `group_class` (the modal class), the group's
-#'   `log_likelihood`, and one `posterior_group_class_*` column per group class.
-#'   `"starts"` has one row per EM start, with columns `start`,
-#'   `log_likelihood`, `converged`, `iterations`, `error` and `boundary`.
-#'   `"stages"` has one row per estimation stage, with columns `stage`,
-#'   `group_classes`, `fixed`, `log_likelihood`, `parameters`,
-#'   `parameters_with_measurement` and `converged`; an ordinary fit has a single
-#'   `"joint"` row and a [fit_staged()] result has two. `fixed` names the blocks
-#'   that stage held fixed, comma separated, and is `NA_character_` when the
-#'   stage estimated every block, which is the case for an ordinary fit and for
-#'   the measurement stage of a staged one; it is never a sentinel such as
-#'   `"none"`. `"data"` has one row per observation in input order, carrying the
-#'   identifier, the occasion where the model has one, and the indicators under
-#'   their original names and in their original order; it raises
-#'   `multilpa_incomplete_fit` for a fit that kept no indicator data. The
-#'   remaining values return exactly [information_criteria()],
-#'   [classification_table()], and [entropy_table()].
+#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#'   naming it, rather than being dropped, because `what =` used to live on
+#'   this generic and silently returning the primary table instead of the one
+#'   that was asked for is the one outcome worth refusing.
+#' @return A base `data.frame`: the Gaussian measurement model, one row per
+#'   profile and continuous indicator.
+#' @seealso [get_data()] for every other table this object holds.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
+#' fit <- multilpa(
+#'   course_engagement,
+#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+#'   id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+#'   seed = 1
 #' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' as.data.frame(fit)
-#' as.data.frame(fit, scale = "standardized")
-#' as.data.frame(fit, what = "profile_probabilities")
 #' @export
-as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
-                                 what = c("profiles", "responses",
-                                          "profile_probabilities",
-                                          "posteriors", "group_posteriors",
-                                          "starts", "stages",
-                                          "information_criteria",
-                                          "classification", "entropy", "data"),
-                                 scale = c("raw", "standardized"),
-                                 format = c("long", "wide"), ...) {
-  stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"))
-  # Whether `format` was asked for, not merely defaulted: the posterior tables
-  # default to long and the criteria table to wide, so the default cannot be
-  # forwarded without changing one of them.
-  format_supplied <- !missing(format)
-  what <- match.arg(what)
-  scale <- match.arg(scale)
-  format <- match.arg(format)
-  stopifnot("`scale` applies only to `what = \"profiles\"`" =
-              identical(scale, "raw") || identical(what, "profiles"),
-            "`format` applies only to the posterior and criteria tables" =
-              !format_supplied ||
-              what %in% c("posteriors", "group_posteriors",
-                          "information_criteria"))
-  result <- switch(what,
-    profiles = .multilpa_profile_frame(x, scale = scale, ...),
-    responses = .multilpa_response_frame(x, ...),
-    profile_probabilities = .multilpa_probability_frame(x),
-    posteriors = .multilpa_posterior_frame(x, format),
-    group_posteriors = .multilpa_group_posterior_frame(x, format),
-    starts = x$starts,
-    stages = .multilpa_stage_frame(x),
-    information_criteria = if (format_supplied)
-      information_criteria(x, format = format, ...) else
-      information_criteria(x, ...),
-    classification = classification_table(x, ...),
-    entropy = entropy_table(x),
-    data = .multilpa_model_frame(x))
-  row.names(result) <- row.names
-  result
+as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
+  stopifnot("`x` must be an object of class `multilpa`" =
+              inherits(x, "multilpa"))
+  .multilpa_coerce(x, row.names, list(...))
 }
 
 #' Every observation with the class it was assigned to
@@ -144,50 +38,18 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE,
 #' reader's, and every column of `data` that the fit can recognise is checked
 #' against what the fit holds for that row.
 #'
-#' This is a verb rather than a `what` of [as.data.frame()] because it computes
-#' a join with a frame the caller supplies. `as.data.frame(fit, what = )`
-#' represents what the fit already holds; anything that brings in columns the
-#' model never saw is its own verb.
+#' Documented on `?get_data`, which is where a caller reaches this table from,
+#' including the recovery cross-tabulation `truth` returns and the rule that
+#' pairs each truth column with the level it describes.
 #'
 #' @param x A fitted model of this package.
-#' @param data Optional. A data frame with one row per observation of the fit,
-#'   in the order it was fitted in; its columns are kept and the assignments
-#'   appended. `NULL` uses the columns the fit carries, which are the model's
-#'   own and so can never include the label you want to compare against.
-#' @return A base `data.frame`, one row per observation: the supplied or carried
-#'   columns, then `profile`, `group_class` where the model has one, and one
-#'   `posterior_profile_*` column per profile.
-#' @section What alignment is checked: The row count must match, and so must
-#'   every column of `data` the fit recognises: the group identifier, the
-#'   indicators, and the occasion where there is one. Each is compared value by
-#'   value against what the fit holds for that row, so a reordered, resorted or
-#'   otherwise permuted frame raises `multilpa_bad_inference_data` naming the
-#'   columns that disagree, rather than pairing each assignment with the wrong
-#'   row. A frame that shares none of those columns with the fit -- an outcome
-#'   and nothing else -- carries no evidence of its own order; that cannot be
-#'   checked, so it warns with class `multilpa_unverified_alignment` rather than
-#'   passing in silence. Supplying the identifier column alongside is what turns
-#'   the assumption back into a check. A fit that stores no indicators, no
-#'   identifier and no occasion holds no row-level record to compare anything
-#'   against; nothing can be verified for such a fit, and its row order is taken
-#'   on trust.
-#' @seealso [as.data.frame()] with `what = "posteriors"` for the posteriors
-#'   alone, [classification_table()] for the class sizes.
-#' @examples
-#' activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-#' fit <- multilpa(course_engagement, vars = activity, id = "student",
-#'                 n_profiles = 2, n_group_classes = 2,
-#'                 n_starts = 4, seed = 1)
-#' head(assignments(fit))
-#'
-#' # `engagement` and `student_type` are the kinds each row was simulated from,
-#' # which the model never saw. Bringing them alongside is what `data` is for,
-#' # and it is why the dataset's truth column is not itself called `profile`.
-#' labelled <- assignments(fit, data = course_engagement)
-#' xtabs(~ profile + engagement, data = labelled)
-#' xtabs(~ group_class + student_type, data = labelled)
-#' @export
-assignments <- function(x, data = NULL) {
+#' @param data A data frame with one row per observation of the fit, in the
+#'   order it was fitted in, or `NULL` for the columns the fit carries.
+#' @param truth Column names of `data` holding known labels, or `NULL`.
+#' @return A base `data.frame`: one row per observation, or, with `truth`, one
+#'   row per class and truth value.
+#' @noRd
+.multilpa_assignments <- function(x, data = NULL, truth = NULL) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
   frame <- .multilpa_resolve_data(x, data)
   if (nrow(frame) != x$n_observations) {
@@ -199,12 +61,15 @@ assignments <- function(x, data = NULL) {
   .multilpa_check_alignment(x, frame)
   posteriors <- as.data.frame(unname(x$subject_posteriors))
   names(posteriors) <- sprintf("posterior_profile_%d", seq_len(x$n_profiles))
-  added <- cbind(data.frame(profile = x$subject_profiles), posteriors)
+  # How much of this row's membership the modal profile did not account for.
+  # Modal assignment throws it away, so the table that reports the assignment
+  # reports what reporting it cost.
+  uncertainty <- 1 - apply(x$subject_posteriors, 1L, max)
+  labels <- data.frame(profile = x$subject_profiles)
   if (!is.null(x$group_classes)) {
-    added <- cbind(data.frame(profile = x$subject_profiles,
-                              group_class = x$group_classes[x$group_index]),
-                   posteriors)
+    labels$group_class <- x$group_classes[x$group_index]
   }
+  added <- cbind(labels, uncertainty = uncertainty, posteriors)
   clashes <- intersect(names(frame), names(added))
   if (length(clashes) > 0L) {
     stop(errorCondition(sprintf(
@@ -214,13 +79,92 @@ assignments <- function(x, data = NULL) {
   }
   result <- cbind(frame, added)
   row.names(result) <- NULL
+  if (is.null(truth)) return(result)
+  .multilpa_recovery_frame(result, truth, x)
+}
+
+#' Cross-tabulate the model's labels against known ones
+#'
+#' The recovery check, as a table rather than as a ritual the reader assembles
+#' from an assignment frame and `xtabs()`.
+#'
+#' @param joined The per-observation frame, already aligned and joined.
+#' @param truth Column names of `joined` holding known labels.
+#' @param x The fit, for its group index and whether it has group classes.
+#' @return One row per class and truth value.
+#' @noRd
+.multilpa_recovery_frame <- function(joined, truth, x) {
+  stopifnot(
+    "`truth` must be a character vector of column names" =
+      is.character(truth) && length(truth) > 0L && !anyNA(truth),
+    "`truth` must not be duplicated" = !anyDuplicated(truth))
+  absent <- setdiff(truth, names(joined))
+  if (length(absent) > 0L) {
+    stop(errorCondition(sprintf(
+      "`truth` names %s, which `data` has not.",
+      paste(sprintf("`%s`", absent), collapse = ", ")),
+      class = "multilpa_bad_data", call = NULL))
+  }
+  assignment_columns <- intersect(c("profile", "group_class"), truth)
+  if (length(assignment_columns) > 0L) {
+    stop(errorCondition(sprintf(
+      "`truth` names %s, which is the model's own label, not a known one.",
+      paste(sprintf("`%s`", assignment_columns), collapse = ", ")),
+      class = "multilpa_bad_data", call = NULL))
+  }
+  rows <- lapply(truth, .multilpa_recovery_rows, joined = joined, x = x)
+  result <- do.call(rbind, rows)
+  row.names(result) <- NULL
   result
+}
+
+#' One truth column cross-tabulated against the level it describes
+#' @param name The truth column's name.
+#' @param joined The per-observation frame.
+#' @param x The fit.
+#' @return One row per class and truth value.
+#' @noRd
+.multilpa_recovery_rows <- function(name, joined, x) {
+  values <- joined[[name]]
+  # Which level a truth column describes is read off the data, not guessed: a
+  # column taking one value within every group is a property of the group, and
+  # one that varies inside any group cannot be.
+  grouped <- !is.null(x$group_classes) &&
+    .multilpa_constant_within(values, x$group_index)
+  assignment <- if (grouped) "group_class" else "profile"
+  # `useNA = "ifany"` so a missing label is a visible value rather than a row
+  # that quietly leaves the table.
+  counts <- as.data.frame(
+    table(class = joined[[assignment]], value = values, useNA = "ifany"),
+    responseName = "n", stringsAsFactors = FALSE)
+  data.frame(
+    assignment = assignment,
+    class = as.integer(counts$class),
+    truth = name,
+    value = counts$value,
+    n = counts$n,
+    # Within a truth value, so the column reads as the share of the units
+    # carrying that label which the model put in each class.
+    proportion = counts$n / stats::ave(counts$n, counts$value, FUN = sum),
+    row.names = NULL, stringsAsFactors = FALSE)
+}
+
+#' Does a column take one value within every group?
+#' @param values The column.
+#' @param group_index One group index per observation.
+#' @return A single logical.
+#' @noRd
+.multilpa_constant_within <- function(values, group_index) {
+  distinct <- tapply(as.character(values), group_index,
+                     function(within) length(unique(within)))
+  all(distinct == 1L)
 }
 
 #' The columns of the original data the model was fitted to
 #'
 #' Rebuilt from what the fit already carries rather than stored a second time:
-#' the continuous indicators are kept uncentred in `indicator_data`, the
+#' the continuous indicators are kept in `indicator_data` as the model saw
+#' them, with the offsets any centring subtracted, the
 #' categorical ones as codes in `categorical_data` with their levels beside
 #' them, the identifier as `group_values[group_index]`, and the occasion as
 #' `time_values`. The round trip is exact, so an inference verb no longer has to
@@ -243,10 +187,10 @@ assignments <- function(x, data = NULL) {
   columns <- list()
   columns[[x$id]] <- x$group_values[x$group_index]
   if (!is.null(x$time) && !is.null(x$time_values)) columns[[x$time]] <- x$time_values
-  continuous <- if (is.null(x$indicator_data)) list() else
-    stats::setNames(lapply(colnames(x$indicator_data),
-                           function(name) x$indicator_data[, name]),
-                    colnames(x$indicator_data))
+  raw <- .multilpa_uncentered_indicators(x)
+  continuous <- if (is.null(raw)) list() else
+    stats::setNames(lapply(colnames(raw), function(name) raw[, name]),
+                    colnames(raw))
   categorical <- if (is.null(x$categorical_data)) list() else
     stats::setNames(lapply(colnames(x$categorical_data), function(name) {
       levels_for <- x$categorical_levels[[name]]
@@ -329,9 +273,10 @@ assignments <- function(x, data = NULL) {
   if (!is.null(x$time) && x$time %in% names(data) && !is.null(x$time_values)) {
     record(x$time, .multilpa_same_values(data[[x$time]], x$time_values))
   }
-  continuous <- intersect(colnames(x$indicator_data), names(data))
+  raw <- .multilpa_uncentered_indicators(x)
+  continuous <- intersect(colnames(raw), names(data))
   lapply(continuous, function(name)
-    record(name, .multilpa_same_values(data[[name]], x$indicator_data[, name])))
+    record(name, .multilpa_same_values(data[[name]], raw[, name])))
   categorical <- intersect(colnames(x$categorical_data), names(data))
   lapply(categorical, function(name) {
     levels_for <- x$categorical_levels[[name]]
@@ -613,35 +558,33 @@ assignments <- function(x, data = NULL) {
         posteriors)
 }
 
-#' Tidy a class-enumeration grid
+#' Coerce a class-enumeration grid to its primary table
 #'
-#' @param x An `multilpa_enumeration` result from [enumerate_classes()].
+#' Plain coercion, as the base generic means it: one object, one data frame.
+#' The other tables are named rather than positional, so they belong to
+#' [get_data()], which takes `what` and refuses a name this object has not.
+#'
+#' @param x An object of class `multilpa_enumeration`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Ignored.
-#' @return A base `data.frame` with one row per candidate model in the grid,
-#'   carrying its class counts, log likelihood, parameter count, every
-#'   information criterion under both sample-size conventions, both entropies,
-#'   and the convergence, boundary, replication, warning, and error diagnostics.
-#'   Failed candidates are retained with `NA` estimates and their error text.
+#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#'   naming it, rather than being dropped, because `what =` used to live on
+#'   this generic and silently returning the primary table instead of the one
+#'   that was asked for is the one outcome worth refusing.
+#' @return A base `data.frame`: one row per candidate model in the grid.
+#' @seealso [get_data()] for every other table this object holds.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
+#' candidates <- enumerate_classes(
+#'   course_engagement,
+#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+#'   id = "student", n_profiles = 1:2, n_group_classes = 1, n_starts = 2,
+#'   seed = 1
 #' )
-#' candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
-#'                                n_profiles = 1:2, n_group_classes = 1, n_starts = 2,
-#'                                seed = 1)
 #' as.data.frame(candidates)
 #' @export
-as.data.frame.multilpa_enumeration <- function(x, row.names = NULL,
-                                             optional = FALSE, ...) {
-  stopifnot("`x` must be an `multilpa_enumeration` result" =
-              inherits(x, "multilpa_enumeration"))
-  result <- x$table
-  row.names(result) <- row.names
-  result
+as.data.frame.multilpa_enumeration <- function(x, row.names = NULL, optional = FALSE, ...) {
+  stopifnot("`x` must be an object of class `multilpa_enumeration`" = inherits(x, "multilpa_enumeration"))
+  .multilpa_coerce(x, row.names, list(...))
 }
 
 
@@ -667,9 +610,10 @@ as.data.frame.multilpa_enumeration <- function(x, row.names = NULL,
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' candidates <- enumerate_classes(example_data, c("score_a", "score_b"), "school",
-#'                                 n_profiles = 1:2, n_group_classes = 1,
-#'                                 n_starts = 2, seed = 1)
+#' candidates <- enumerate_classes(
+#'   example_data, c("score_a", "score_b"), "school", n_profiles = 1:2,
+#'   n_group_classes = 1, n_starts = 2, seed = 1
+#' )
 #' print(candidates)
 #' @export
 print.multilpa_enumeration <- function(x, ...) {
@@ -677,9 +621,10 @@ print.multilpa_enumeration <- function(x, ...) {
               inherits(x, "multilpa_enumeration"))
   table <- x$table
   cat(sprintf("Class enumeration: %d candidate models\n", nrow(table)))
-  columns <- intersect(c("n_profiles", "n_group_classes", "log_likelihood",
-                         "n_parameters", "bic_individual", "sabic_individual",
-                         "profile_entropy", "converged"), names(table))
+  columns <- intersect(c("n_profiles", "n_group_classes", "structure",
+                         "log_likelihood", "n_parameters", "bic_individual",
+                         "sabic_individual", "profile_entropy", "converged"),
+                       names(table))
   print(table[, columns, drop = FALSE], row.names = FALSE, ...)
   failures <- sum(!table$converged)
   if (failures > 0L) {
@@ -729,7 +674,7 @@ print.multilpa_enumeration <- function(x, ...) {
 #'   `multilpa_bad_start` instead of reporting a likelihood for a measurement
 #'   model it never held. The list payload is unchanged by the class, so a
 #'   `multilpa_start` can be passed straight back as `start`.
-#' @seealso [as.data.frame.multilpa_start()] for the values as tidy tables.
+#' @seealso [get_data()] for the values as tidy tables.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -824,7 +769,7 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
 #' @param x A `multilpa_start` object from [starting_values()].
 #' @param ... Reserved for compatibility with `print()`.
 #' @return The input, invisibly.
-#' @seealso [as.data.frame.multilpa_start()] for the values as tidy tables.
+#' @seealso [get_data()] for the values as tidy tables.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -854,63 +799,33 @@ print.multilpa_start <- function(x, ...) {
   invisible(x)
 }
 
-#' Tidy a set of starting values
+#' Coerce a starting-value set to its primary table
 #'
-#' [starting_values()] indexes the Gaussian blocks by position, because that is
-#' what [multilpa()] expects of `start`. This labels the positions again, so the
-#' values can be read and compared without indexing the list.
+#' Plain coercion, as the base generic means it: one object, one data frame.
+#' The other tables are named rather than positional, so they belong to
+#' [get_data()], which takes `what` and refuses a name this object has not.
 #'
-#' @param x A `multilpa_start` object from [starting_values()].
+#' @param x An object of class `multilpa_start`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param what Which table to return. `"profiles"` gives the Gaussian
-#'   measurement block, `"responses"` the categorical measurement block,
-#'   `"profile_probabilities"` the mixing block, and `"covariances"` the
-#'   within-profile residual covariance matrices.
-#' @param ... Ignored.
-#' @return A base `data.frame`. `"profiles"` has one row per profile and
-#'   continuous indicator, with columns `profile`, `indicator` (the indicator's
-#'   position, since the names are dropped), `mean`, `variance` and
-#'   `standard_deviation`, and zero rows when the block is empty. `"responses"`
-#'   has one row per profile, categorical indicator and category, with columns
-#'   `profile`, `indicator`, `category` and `probability`, and zero rows when
-#'   the object carries no categorical block. `indicator` and `category` are
-#'   positions here too: the list keeps the item and category labels so that
-#'   [multilpa()] can align a block to the item it was estimated for, but the
-#'   tidy view indexes them by position, as it does for the Gaussian block.
-#'   `"profile_probabilities"` has one
-#'   row per group class and profile, with columns `group_class`, `profile`,
-#'   `probability` and `group_class_probability`, and zero rows for a
-#'   measurement-only object, which carries no mixing block. `"covariances"`
-#'   has one row per profile and ordered pair of continuous indicators, with
-#'   columns `profile`, `indicator`, `indicator_2` and `covariance`; under the
-#'   diagonal parameterization the off-diagonal covariances are zero by
-#'   assumption rather than missing.
+#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#'   naming it, rather than being dropped, because `what =` used to live on
+#'   this generic and silently returning the primary table instead of the one
+#'   that was asked for is the one outcome worth refusing.
+#' @return A base `data.frame`: one row per profile and continuous indicator.
+#' @seealso [get_data()] for every other table this object holds.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
+#' fit <- multilpa(
+#'   course_engagement,
+#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+#'   id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
+#'   seed = 1
 #' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' as.data.frame(starting_values(fit))
-#' as.data.frame(starting_values(fit), what = "profile_probabilities")
 #' @export
-as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE,
-                                         what = c("profiles", "responses",
-                                                  "profile_probabilities",
-                                                  "covariances"), ...) {
-  stopifnot("`x` must be a `multilpa_start` object" =
-              inherits(x, "multilpa_start"))
-  what <- match.arg(what)
-  result <- switch(what,
-    profiles = .multilpa_start_profile_frame(x),
-    responses = .multilpa_start_response_frame(x),
-    profile_probabilities = .multilpa_start_probability_frame(x),
-    covariances = .multilpa_start_covariance_frame(x))
-  row.names(result) <- row.names
-  result
+as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, ...) {
+  stopifnot("`x` must be an object of class `multilpa_start`" = inherits(x, "multilpa_start"))
+  .multilpa_coerce(x, row.names, list(...))
 }
 
 #' The Gaussian block of a starting-value set as a tidy table
@@ -1026,75 +941,35 @@ as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE,
   do.call(rbind, blocks)
 }
 
-#' Tidy a one-step membership-covariate fit
+#' Coerce a fitted covariate model to its primary table
 #'
-#' @param x An `multilpa_covariates` model from [fit_covariates()].
+#' Plain coercion, as the base generic means it: one object, one data frame.
+#' The other tables are named rather than positional, so they belong to
+#' [get_data()], which takes `what` and refuses a name this object has not.
+#'
+#' @param x A fitted covariate model.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param what Which table to return. `"profiles"` gives the measurement model,
-#'   `"coefficients"` the membership regressions at both levels, `"posteriors"`
-#'   the individual posteriors, `"group_posteriors"` the group posteriors, and
-#'   `"starts"` the restart diagnostics.
-#' @param scale For `what = "profiles"`, `"raw"` reports the estimates in input
-#'   units and `"standardized"` divides each indicator's deviation from its
-#'   grand mean by that indicator's observed standard deviation, matching
-#'   `plot(x, scale = "standardized")`.
-#' @param format For the posterior tables, `"long"` (the default) gives one row
-#'   per unit and class, and `"wide"` gives one row per unit with one column per
-#'   class. The wide column set grows with the number of classes, so no caller
-#'   can address it generically; it stays available because joining posteriors
-#'   back onto the fitting data wants one row per unit. Supplying it with any
-#'   other `what` is an error rather than a silent no-op.
-#' @param ... Ignored.
-#' @return A base `data.frame`. `"profiles"` has one row per profile and
-#'   indicator, with columns `profile`, `indicator`, `mean`, `variance`, and
-#'   `standard_deviation`. `"coefficients"` has one row per estimated
-#'   membership coefficient, with columns `level` (`"profile"` or `"group"`),
-#'   `outcome` (the class the coefficient predicts), `term`, `parameter` (always
-#'   `"logit"`, because these are multinomial logits and not probabilities), and
-#'   `estimate`; the standard errors are not in this table, which reports the
-#'   point estimates the fit stores -- [parameter_inference()] reports them with
-#'   their standard errors and intervals. `"posteriors"` and
-#'   `"group_posteriors"` match the corresponding [as.data.frame.multilpa()]
-#'   tables. `"starts"` has one row per EM start, with columns `start`,
-#'   `log_likelihood`, `converged`, `iterations` and `error`.
+#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#'   naming it, rather than being dropped, because `what =` used to live on
+#'   this generic and silently returning the primary table instead of the one
+#'   that was asked for is the one outcome worth refusing.
+#' @return A base `data.frame`: the Gaussian measurement model, one row per
+#'   profile and continuous indicator.
+#' @seealso [get_data()] for every other table this object holds.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
-#'                            z = rnorm(200))
-#' example_data$y <- rnorm(200,
-#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' with_predictors <- fit_covariates(example_data, "y", "group",
-#'                                   n_profiles = 2, n_group_classes = 1,
-#'                                   profile_covariates = "z", n_starts = 2,
-#'                                   seed = 1)
-#' as.data.frame(with_predictors, what = "coefficients")
+#' fit <- multilpa(
+#'   course_engagement,
+#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+#'   id = "student", n_profiles = 2, n_group_classes = 2,
+#'   profile_covariates = "sequence", n_starts = 4, seed = 1
+#' )
+#' as.data.frame(fit)
 #' @export
-as.data.frame.multilpa_covariates <- function(x, row.names = NULL, optional = FALSE,
-                                            what = c("profiles", "coefficients",
-                                                     "posteriors",
-                                                     "group_posteriors",
-                                                     "starts"),
-                                            scale = c("raw", "standardized"),
-                                            format = c("long", "wide"), ...) {
-  stopifnot("`x` must be an `multilpa_covariates` fit" =
+as.data.frame.multilpa_covariates <- function(x, row.names = NULL, optional = FALSE, ...) {
+  stopifnot("`x` must be an object of class `multilpa_covariates`" =
               inherits(x, "multilpa_covariates"))
-  what <- match.arg(what)
-  scale <- match.arg(scale)
-  format <- match.arg(format)
-  stopifnot("`scale` applies only to `what = \"profiles\"`" =
-              identical(scale, "raw") || identical(what, "profiles"),
-            "`format` applies only to the posterior tables" =
-              identical(format, "long") ||
-              what %in% c("posteriors", "group_posteriors"))
-  result <- switch(what,
-    profiles = .multilpa_profile_frame(x, scale = scale),
-    coefficients = .multilpa_coefficient_frame(x),
-    posteriors = .multilpa_posterior_frame(x, format),
-    group_posteriors = .multilpa_group_posterior_frame(x, format),
-    starts = x$starts)
-  row.names(result) <- row.names
-  result
+  .multilpa_coerce(x, row.names, list(...))
 }
 
 #' Membership regression coefficients as a tidy table
@@ -1123,75 +998,36 @@ as.data.frame.multilpa_covariates <- function(x, row.names = NULL, optional = FA
   result
 }
 
-#' Tidy a continuous group random-intercept fit
+#' Coerce a fitted random-intercept model to its primary table
 #'
-#' @param x An `multilpa_random_intercept` model from
-#'   [fit_random_intercept()].
+#' Plain coercion, as the base generic means it: one object, one data frame.
+#' The other tables are named rather than positional, so they belong to
+#' [get_data()], which takes `what` and refuses a name this object has not.
+#'
+#' @param x A fitted random-intercept model.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param what Which table to return. `"profiles"` gives the measurement model,
-#'   `"posteriors"` the individual posteriors, `"random_intercepts"` the
-#'   posterior group effects, and `"starts"` the restart diagnostics.
-#' @param scale For `what = "profiles"`, `"raw"` reports the estimates in input
-#'   units and `"standardized"` divides each indicator's deviation from its
-#'   grand mean by that indicator's observed standard deviation.
-#' @param format For the posterior tables, `"long"` (the default) gives one row
-#'   per unit and class, and `"wide"` gives one row per unit with one column per
-#'   class. The wide column set grows with the number of classes, so no caller
-#'   can address it generically; it stays available because joining posteriors
-#'   back onto the fitting data wants one row per unit. Supplying it with any
-#'   other `what` is an error rather than a silent no-op.
-#' @param ... Ignored.
-#' @return A base `data.frame`. `"profiles"` has one row per profile and
-#'   indicator, with columns `profile`, `indicator`, `mean`, `variance`, and
-#'   `standard_deviation`. `"random_intercepts"` has one row per observed group,
-#'   with columns `group`, `group_size`, `mean` and `sd`, the posterior mean and
-#'   standard deviation of that group's scalar intercept. `"posteriors"` has one
-#'   row per individual and profile, with columns `row`, `group`, `profile`,
-#'   `posterior` and `modal`; `format = "wide"` gives one row per individual
-#'   instead, with columns `row`, `group`, `profile` (the modal profile) and one
-#'   `posterior_profile_*` column per profile. `"starts"` has one row per start,
-#'   with columns `start`, `log_likelihood`, `converged` and `error`.
+#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#'   naming it, rather than being dropped, because `what =` used to live on
+#'   this generic and silently returning the primary table instead of the one
+#'   that was asked for is the one outcome worth refusing.
+#' @return A base `data.frame`: the Gaussian measurement model, one row per
+#'   profile and continuous indicator.
+#' @seealso [get_data()] for every other table this object holds.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
 #'   school = rep(seq_len(12), each = 10),
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
-#' random_intercept <- fit_random_intercept(example_data,
-#'                                          c("score_a", "score_b"), "school",
-#'                                          n_profiles = 2, n_starts = 1,
-#'                                          seed = 1)
-#' head(as.data.frame(random_intercept, what = "random_intercepts"))
+#' fit <- fit_random_intercept(
+#'   example_data, c("score_a", "score_b"), "school", n_profiles = 2,
+#'   n_starts = 1, seed = 1
+#' )
+#' as.data.frame(fit)
 #' @export
-as.data.frame.multilpa_random_intercept <- function(x, row.names = NULL,
-                                                  optional = FALSE,
-                                                  what = c("profiles",
-                                                           "posteriors",
-                                                           "random_intercepts",
-                                                           "starts"),
-                                                  scale = c("raw",
-                                                            "standardized"),
-                                                  format = c("long", "wide"),
-                                                  ...) {
-  stopifnot("`x` must be an `multilpa_random_intercept` fit" =
+as.data.frame.multilpa_random_intercept <- function(x, row.names = NULL, optional = FALSE, ...) {
+  stopifnot("`x` must be an object of class `multilpa_random_intercept`" =
               inherits(x, "multilpa_random_intercept"))
-  what <- match.arg(what)
-  scale <- match.arg(scale)
-  format <- match.arg(format)
-  stopifnot("`scale` applies only to `what = \"profiles\"`" =
-              identical(scale, "raw") || identical(what, "profiles"),
-            "`format` applies only to the posterior tables" =
-              identical(format, "long") || identical(what, "posteriors"))
-  result <- switch(what,
-    profiles = .multilpa_profile_frame(x, scale = scale),
-    posteriors = .multilpa_posterior_frame(x, format),
-    random_intercepts = data.frame(
-      group = x$group_values,
-      group_size = unname(x$group_sizes),
-      mean = unname(x$random_intercept_mean),
-      sd = unname(x$random_intercept_sd)),
-    starts = x$starts)
-  row.names(result) <- row.names
-  result
+  .multilpa_coerce(x, row.names, list(...))
 }

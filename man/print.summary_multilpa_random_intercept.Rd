@@ -4,12 +4,16 @@
 \alias{print.summary_multilpa_random_intercept}
 \title{Print a random-intercept LPA summary}
 \usage{
-\method{print}{summary_multilpa_random_intercept}(x, digits = 4L, ...)
+\method{print}{summary_multilpa_random_intercept}(x, digits = 4L, rows = 10L, ...)
 }
 \arguments{
 \item{x}{A `summary_multilpa_random_intercept` object.}
 
 \item{digits}{Number of printed significant digits.}
+
+\item{rows}{How many rows of each table to print. A longer table is shown
+to that depth, with its remaining row count and the `get_data()` call that
+returns it whole.}
 
 \item{...}{Passed to the underlying `data.frame` printing.}
 }

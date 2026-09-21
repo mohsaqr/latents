@@ -2,48 +2,40 @@
 % Please edit documentation in R/random-intercept.R
 \name{as.data.frame.summary_multilpa_random_intercept}
 \alias{as.data.frame.summary_multilpa_random_intercept}
-\title{Tidy a random-intercept LPA summary}
+\title{Coerce a random-intercept model summary to its primary table}
 \usage{
-\method{as.data.frame}{summary_multilpa_random_intercept}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("model", "profiles", "random_intercepts", "starts"),
-  ...
-)
+\method{as.data.frame}{summary_multilpa_random_intercept}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa_random_intercept` object.}
+\item{x}{An object of class `summary_multilpa_random_intercept`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return: `"model"`, `"profiles"`,
-`"random_intercepts"` or `"starts"`.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped.}
 }
 \value{
-A base `data.frame`. `"model"` has exactly one row describing the
-  fit, with columns `n_observations`, `n_groups`, `n_profiles`,
-  `variance_model`, `n_parameters`, `random_intercept_sd`,
-  `log_likelihood`, `aic`, `bic_groups`, `bic_individual`, `converged`,
-  `boundary`, `integration`, `quadrature_nodes`,
-  `quadrature_log_likelihood_difference`, `quadrature_check_passed` and
-  `n_starts`. `"profiles"`, `"random_intercepts"` and `"starts"` have one
-  row per profile-indicator, per observed group, and per optimizer start.
+A base `data.frame`: one row per profile and continuous indicator.
 }
 \description{
-Tidy a random-intercept LPA summary
+Plain coercion, as the base generic means it: one object, one data frame.
+A summary carries every table the object it describes can produce, and
+[get_data()] names them.
 }
 \examples{
-set.seed(8)
-example_data <- data.frame(group = rep(seq_len(12), each = 5),
-                           score_a = rnorm(60), score_b = rnorm(60))
-random_intercept <- fit_random_intercept(example_data,
-                                         c("score_a", "score_b"), "group",
-                                         n_profiles = 2, n_starts = 2,
-                                         seed = 1)
-as.data.frame(summary(random_intercept), what = "starts")
+set.seed(7)
+example_data <- data.frame(
+  school = rep(seq_len(12), each = 10),
+  score_a = rnorm(120), score_b = rnorm(120)
+)
+fit <- fit_random_intercept(
+  example_data, c("score_a", "score_b"), "school", n_profiles = 2,
+  n_starts = 1, seed = 1
+)
+as.data.frame(summary(fit))
+}
+\seealso{
+[get_data()] for every other table this summary holds.
 }

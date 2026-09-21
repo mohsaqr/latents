@@ -112,28 +112,6 @@ test_that("two-level latent class analysis recovers its generating structure", {
   expect_equal(unname(rowSums(fit$profile_probabilities)), rep(1, 2))
 })
 
-test_that("categorical fits reproduce genuine Mplus two-level results", {
-  reference <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-categorical.rds"))
-  vars <- paste0("u", 1:5)
-  fit <- multilpa(reference$data, vars, "clus", n_profiles = 2,
-                    n_group_classes = 2, categorical = vars,
-                    n_starts = 40, seed = 20260918, tol = 1e-13, max_iter = 20000)
-  expect_true(fit$converged)
-  expect_equal(fit$n_parameters, as.numeric(reference$n_parameters))
-  thresholds <- vapply(fit$response_probabilities, function(block) {
-    as.vector(.multilpa_categorical_thresholds(block))
-  }, numeric(2))
-  profile_order <- order(thresholds[, 1L])[rank(reference$mplus_thresholds[, 1L])]
-  group_order <- order(fit$profile_probabilities[, profile_order[1L]])[
-    rank(reference$mplus_profile_probabilities[, 1L])]
-  expect_lt(max(abs(thresholds[profile_order, ] - reference$mplus_thresholds)), 1e-4)
-  expect_lt(max(abs(fit$profile_probabilities[group_order, profile_order] -
-                      reference$mplus_profile_probabilities)), 1e-5)
-  expect_lt(max(abs(fit$group_probabilities[group_order] -
-                      reference$mplus_group_probabilities)), 1e-5)
-  expect_lt(abs(fit$log_likelihood - reference$mplus_log_likelihood), 1e-3)
-})
-
 test_that("ordinal and mixed-mode measurement fit and count parameters correctly", {
   set.seed(21)
   dat <- categorical_fixture(seed = 21L, n_groups = 30L, per_group = 12L)
@@ -157,7 +135,7 @@ test_that("ordinal and mixed-mode measurement fit and count parameters correctly
   expect_equal(mixed_fit$n_parameters, 1 + 2 + (2 + 2) + 2 * 5)
   expect_identical(dim(mixed_fit$means), c(2L, 1L))
   expect_identical(nrow(as.data.frame(mixed_fit)), 2L)
-  expect_identical(nrow(as.data.frame(mixed_fit, what = "responses")), 20L)
+  expect_identical(nrow(get_data(mixed_fit, "responses")), 20L)
 })
 
 test_that("categorical indicators support observed-data maximum likelihood", {
@@ -186,7 +164,7 @@ test_that("the responses accessor reports probabilities and thresholds", {
   vars <- paste0("v", 1:5)
   fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,
                     n_starts = 10, seed = 6)
-  responses <- as.data.frame(fit, what = "responses")
+  responses <- get_data(fit, "responses")
   expect_identical(names(responses),
     c("profile", "indicator", "category", "probability", "threshold"))
   expect_identical(nrow(responses), 2L * 5L * 2L)
@@ -201,7 +179,7 @@ test_that("the responses accessor reports probabilities and thresholds", {
   # A Gaussian-only fit returns an empty table of the same shape, not an error.
   gaussian <- multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
                          "y", "g", 2, 1, n_starts = 3, seed = 1)
-  expect_identical(nrow(as.data.frame(gaussian, what = "responses")), 0L)
+  expect_identical(nrow(get_data(gaussian, "responses")), 0L)
 })
 
 test_that("unsupported categorical combinations are refused by condition class", {

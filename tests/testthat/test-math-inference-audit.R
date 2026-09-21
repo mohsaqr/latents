@@ -3,8 +3,7 @@ test_that("mixed full covariance inference matches Gaussian and binomial informa
   dat <- data.frame(g = rep(seq_len(30), each = 8),
                     a = rnorm(240), b = rnorm(240), u = sample(1:2, 240, TRUE))
   dat$b <- dat$b + 0.4 * dat$a
-  fit <- multilpa(dat, c("a", "b", "u"), "g", 1, 1,
-                 categorical = "u", covariance_model = "full", n_starts = 1)
+  fit <- multilpa(dat, c("a", "b", "u"), "g", 1, 1, categorical = "u", covariance_model = "full", n_starts = 1)
   information <- parameter_inference(fit, dat)
   covariance <- cov(dat[c("a", "b")]) * (nrow(dat) - 1) / nrow(dat)
   probability <- mean(dat$u == 1)
@@ -37,8 +36,7 @@ test_that("all-categorical full covariance inference has no Gaussian parameters"
   set.seed(7602)
   dat <- data.frame(g = rep(seq_len(30), each = 8), u = sample(1:3, 240, TRUE))
   fits <- lapply(c("diagonal", "full"), function(covariance_model) {
-    multilpa(dat, "u", "g", 1, 1, categorical = "u",
-             covariance_model = covariance_model, n_starts = 1)
+    multilpa(dat, "u", "g", 1, 1, categorical = "u", covariance_model = covariance_model, n_starts = 1)
   })
   expect_equal(coef(fits[[1]]), coef(fits[[2]]))
   invisible(lapply(c("observed", "robust"), function(vcov_type) {
@@ -81,7 +79,9 @@ test_that("Wald inference refuses active categorical probability constraints", {
 test_that("covariate inference supports empty membership coefficient blocks", {
   set.seed(7603)
   dat <- data.frame(g = rep(seq_len(30), each = 8), y = rnorm(240, 3, 2))
-  fit <- fit_covariates(dat, "y", "g", 1, 1, n_starts = 1)
+  # The covariate estimator with no covariates, which `multilpa()` cannot be
+  # asked for: naming no covariate requests the covariate-free model.
+  fit <- multilpa:::.multilpa_fit_covariates(dat, "y", "g", 1, 1, n_starts = 1)
   information <- parameter_inference(fit, dat)
   variance <- mean((dat$y - mean(dat$y))^2)
   expect_equal(information$estimate, c(mean(dat$y), variance))
@@ -100,7 +100,7 @@ test_that("covariate inference supports empty membership coefficient blocks", {
                ignore_attr = TRUE, tolerance = 1e-7)
 
   dat$y <- dat$y * 1e6
-  scaled_fit <- fit_covariates(dat, "y", "g", 1, 1, n_starts = 1)
+  scaled_fit <- multilpa:::.multilpa_fit_covariates(dat, "y", "g", 1, 1, n_starts = 1)
   scaled <- parameter_inference(scaled_fit, dat)
   expect_equal(scaled$standard_error / c(1e6, 1e12), information$standard_error,
                tolerance = 1e-7)
@@ -114,7 +114,7 @@ test_that("covariate inference refuses nonregular fits and altered fitting data"
   dat <- data.frame(g = rep(seq_len(30), each = 8), z = rnorm(240))
   profile <- rbinom(240, 1, plogis(dat$z))
   dat$y <- 6 * profile + rnorm(240, sd = 0.5)
-  fit <- fit_covariates(dat, "y", "g", 2, 1, "z", n_starts = 1, tol = 1e-12)
+  fit <- multilpa(dat, "y", "g", 2, 1, "z", n_starts = 1, tol = 1e-12)
   expect_equal(nrow(parameter_inference(fit, dat)), fit$n_parameters)
   unconverged <- fit
   unconverged$converged <- FALSE

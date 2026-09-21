@@ -1,5 +1,3 @@
-source(testthat::test_path("helper-independent-likelihood.R"), local = TRUE)
-
 test_that("exhaustive reference agrees with an analytically solvable model", {
   x <- matrix(c(-0.4, 0.2, 0.8), ncol = 1L)
   parameters <- list(means = matrix(c(0, 0), 2L, 1L),

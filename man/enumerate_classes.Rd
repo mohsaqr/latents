@@ -10,6 +10,7 @@ enumerate_classes(
   id,
   n_profiles = 1:4,
   n_group_classes = 1:3,
+  structure = NULL,
   seed = NULL,
   ...
 )
@@ -24,6 +25,15 @@ enumerate_classes(
 \item{n_profiles}{Positive integer profile counts to try.}
 
 \item{n_group_classes}{Positive integer group-class counts to try.}
+
+\item{structure}{Covariance structures to try, as the three-letter model
+codes [multilpa()]'s `volume`, `shape` and `orientation` name: any of
+`"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
+`"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`. Naming them crosses
+the structures with the class counts, which is the grid model-based
+clustering is usually selected over, and adds a `structure` column to the
+candidate table. `NULL`, the default, fits whatever the other arguments
+already asked for, and the grid is the one this verb has always fitted.}
 
 \item{seed}{Optional reproducible seed for each fit.}
 

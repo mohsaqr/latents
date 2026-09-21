@@ -2,57 +2,30 @@
 % Please edit documentation in R/accessors.R
 \name{as.data.frame.multilpa_random_intercept}
 \alias{as.data.frame.multilpa_random_intercept}
-\title{Tidy a continuous group random-intercept fit}
+\title{Coerce a fitted random-intercept model to its primary table}
 \usage{
-\method{as.data.frame}{multilpa_random_intercept}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("profiles", "posteriors", "random_intercepts", "starts"),
-  scale = c("raw", "standardized"),
-  format = c("long", "wide"),
-  ...
-)
+\method{as.data.frame}{multilpa_random_intercept}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An `multilpa_random_intercept` model from
-[fit_random_intercept()].}
+\item{x}{A fitted random-intercept model.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{Which table to return. `"profiles"` gives the measurement model,
-`"posteriors"` the individual posteriors, `"random_intercepts"` the
-posterior group effects, and `"starts"` the restart diagnostics.}
-
-\item{scale}{For `what = "profiles"`, `"raw"` reports the estimates in input
-units and `"standardized"` divides each indicator's deviation from its
-grand mean by that indicator's observed standard deviation.}
-
-\item{format}{For the posterior tables, `"long"` (the default) gives one row
-per unit and class, and `"wide"` gives one row per unit with one column per
-class. The wide column set grows with the number of classes, so no caller
-can address it generically; it stays available because joining posteriors
-back onto the fitting data wants one row per unit. Supplying it with any
-other `what` is an error rather than a silent no-op.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped, because `what =` used to live on
+this generic and silently returning the primary table instead of the one
+that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame`. `"profiles"` has one row per profile and
-  indicator, with columns `profile`, `indicator`, `mean`, `variance`, and
-  `standard_deviation`. `"random_intercepts"` has one row per observed group,
-  with columns `group`, `group_size`, `mean` and `sd`, the posterior mean and
-  standard deviation of that group's scalar intercept. `"posteriors"` has one
-  row per individual and profile, with columns `row`, `group`, `profile`,
-  `posterior` and `modal`; `format = "wide"` gives one row per individual
-  instead, with columns `row`, `group`, `profile` (the modal profile) and one
-  `posterior_profile_*` column per profile. `"starts"` has one row per start,
-  with columns `start`, `log_likelihood`, `converged` and `error`.
+A base `data.frame`: the Gaussian measurement model, one row per
+  profile and continuous indicator.
 }
 \description{
-Tidy a continuous group random-intercept fit
+Plain coercion, as the base generic means it: one object, one data frame.
+The other tables are named rather than positional, so they belong to
+[get_data()], which takes `what` and refuses a name this object has not.
 }
 \examples{
 set.seed(7)
@@ -60,9 +33,12 @@ example_data <- data.frame(
   school = rep(seq_len(12), each = 10),
   score_a = rnorm(120), score_b = rnorm(120)
 )
-random_intercept <- fit_random_intercept(example_data,
-                                         c("score_a", "score_b"), "school",
-                                         n_profiles = 2, n_starts = 1,
-                                         seed = 1)
-head(as.data.frame(random_intercept, what = "random_intercepts"))
+fit <- fit_random_intercept(
+  example_data, c("score_a", "score_b"), "school", n_profiles = 2,
+  n_starts = 1, seed = 1
+)
+as.data.frame(fit)
+}
+\seealso{
+[get_data()] for every other table this object holds.
 }

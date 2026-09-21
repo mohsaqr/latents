@@ -2,42 +2,38 @@
 % Please edit documentation in R/enumeration.R
 \name{as.data.frame.summary_multilpa_enumeration}
 \alias{as.data.frame.summary_multilpa_enumeration}
-\title{Tidy an enumeration summary}
+\title{Coerce a class-enumeration summary to its primary table}
 \usage{
-\method{as.data.frame}{summary_multilpa_enumeration}(
-  x,
-  row.names = NULL,
-  optional = FALSE,
-  what = c("criteria", "candidates"),
-  ...
-)
+\method{as.data.frame}{summary_multilpa_enumeration}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa_enumeration` object.}
+\item{x}{An object of class `summary_multilpa_enumeration`.}
 
 \item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{what}{`"criteria"` returns one row per information criterion with the
-candidate that minimises it; `"candidates"` returns the full grid, exactly
-as [as.data.frame.multilpa_enumeration()] returns it.}
-
-\item{...}{Ignored.}
+\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+naming it, rather than being dropped.}
 }
 \value{
-A base `data.frame`. For `"criteria"`, one row per information
-  criterion, with columns `criterion`, `convention`, `n_profiles`,
-  `n_group_classes` and `value`. For `"candidates"`, one row per candidate
-  model in the grid.
+A base `data.frame`: one row per candidate model in the grid.
 }
 \description{
-Tidy an enumeration summary
+Plain coercion, as the base generic means it: one object, one data frame.
+A summary carries every table the object it describes can produce, and
+[get_data()] names them.
 }
 \examples{
-set.seed(1)
-d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
-                              n_group_classes = 1, n_starts = 2, seed = 1)
+candidates <- enumerate_classes(
+  course_engagement,
+  vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+  id = "student", n_profiles = 1:2, n_group_classes = 1, n_starts = 2,
+  seed = 1
+)
 as.data.frame(summary(candidates))
+get_data(summary(candidates), what = "criteria")
+}
+\seealso{
+[get_data()] for every other table this summary holds.
 }
