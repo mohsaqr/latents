@@ -77,7 +77,7 @@ get_data(fit, "starts")
 ```
 
 All ten starts converged without a reported boundary and reached a log
-likelihood of approximately -7526.274. The class-count comparisons below
+likelihood of approximately -8348.429. The class-count comparisons below
 therefore begin with a replicated solution.
 
 ## Classification uncertainty
@@ -103,7 +103,7 @@ relative entropy for the two levels.
 get_data(fit, "entropy")
 ```
 
-Relative entropy is 0.802 for enrolments and 0.794 for students. Both levels
+Relative entropy is 0.792 for enrolments and 0.797 for students. Both levels
 retain classification uncertainty, so replacing every posterior distribution
 with its most probable class discards information.
 
@@ -120,10 +120,10 @@ classification <- get_data(fit, "classification")
 classification[, c("level", "class", "n_modal", "average_posterior")]
 ```
 
-Profile 2 has 440 assigned enrolments and an average posterior probability of
-0.851, compared with 0.979 for the 576 enrolments assigned to profile 3.
-Student class 1 also has less certain assignments than class 3: their average
-posterior probabilities are 0.857 and 0.975. Later analyses should retain this
+Profile 2 has 478 assigned enrolments and an average posterior probability of
+0.853, compared with 0.978 for the 576 enrolments assigned to profile 3.
+Student class 2 also has less certain assignments than class 3: their average
+posterior probabilities are 0.864 and 0.977. Later analyses should retain this
 uncertainty; [the covariate vignette](multilpa-covariates.html) describes
 classification-error adjustments.
 
@@ -151,8 +151,8 @@ residuals <- get_data(fit, "residuals")
 head(residuals[, c("profile", "indicator_1", "indicator_2", "observed", "expected", "residual")], 4)
 ```
 
-The largest residual is 0.199 between forum reading and attendance in profile
-3, followed by 0.183 between browsing and attendance in the same profile.
+The largest residual is 0.211 between forum reading and attendance in profile
+3, followed by 0.177 between browsing and attendance in the same profile.
 All four displayed pairs include attendance. The three-profile model has left
 an association between recorded activity and active days within its profiles.
 
@@ -187,12 +187,13 @@ comparison[, c("n_profiles", "n_group_classes", "structure", "bic_groups", "conv
 ```
 
 The diagonal models favor three profiles and three student classes, with BIC
-15229.8. Allowing residual covariance changes the preferred profile count:
-the two-profile, three-class model has BIC 15163.4. Its best solution recurs
-across all six starts. The full covariance model with three profiles and
-three classes has BIC 15194.0, and its best solution occurs only once. Thus
-the requested three-by-three model is a working description whose support
-depends on the measurement assumptions.
+16874.1. Allowing residual covariance changes the preferred profile count: the
+two-profile, three-class model has BIC 16800.6, the lowest in the grid, and its
+best solution recurs across all six starts. The full covariance model with three
+profiles and three classes has BIC 16867.3. Only the three-profile, two-class
+full-covariance model fails to replicate, reaching its best solution once in six
+starts. Thus the requested three-by-three model is a working description whose
+support depends on the measurement assumptions.
 
 `candidate_fit()` retrieves a fitted candidate by its class counts and
 covariance structure. Its residual table checks whether the estimated
@@ -205,7 +206,7 @@ head(full_residuals[, c("profile", "indicator_1", "indicator_2", "observed", "ex
 ```
 
 The full covariance model estimates a forum-reading–attendance correlation of
-approximately 0.244 in profile 2, almost exactly its observed value. The
+approximately 0.267 in profile 2, almost exactly its observed value. The
 displayed residuals are close to zero because these associations are now
 estimated. Their agreement checks the fitted covariance calculation; it does
 not independently validate the profile count or the student classes.
@@ -229,9 +230,9 @@ inference <- parameter_inference(fit)
 subset(inference, parameter == "mean" & term == "attendance", select = c(outcome, term, estimate, standard_error, conf_low, conf_high))
 ```
 
-The attendance mean in profile 1 is 3.753 with a standard error of 0.051 and
-an interval from 3.653 to 3.853. Profile 2's interval is 2.829 to 3.000, and
-profile 3's is 1.792 to 1.888. The means are distinct within this fitted model;
+The attendance mean in profile 1 is 1.133 with a standard error of 0.061 and
+an interval from 1.013 to 1.252. Profile 2's interval is 0.155 to 0.357, and
+profile 3's is -0.993 to -0.887. The means are distinct within this fitted model;
 these intervals do not resolve the covariance sensitivity identified above.
 
 ## Limits of the interpretation

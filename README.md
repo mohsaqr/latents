@@ -12,7 +12,12 @@ multiple starts.
 
 ## Install and run
 
-From this project directory:
+```r
+# install.packages("remotes")
+remotes::install_github("mohsaqr/multilpa")
+```
+
+Or, from a local clone of this repository:
 
 ```sh
 R CMD INSTALL .

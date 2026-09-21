@@ -1,3 +1,31 @@
+# multilpa 0.11.9
+
+## Vignette figures reconciled with the standardized data
+
+Every number in the prose of all four vignettes was checked against the value
+its own chunk actually prints, and the stale ones corrected. Seventy-one figures
+changed. Three passages needed rewriting rather than renumbering, because the
+conclusion moved with the data:
+
+* In the transition guide, the student class with the *highest* probability of
+  staying in lower activity is now class 3 at 0.947, where the text had class 3
+  as the least persistent at 0.584. The near-boundary transitions are now near
+  zero rather than near one, so the caution about sparse cells was rewritten
+  around the estimates that are actually at a bound.
+* In the evaluation guide, the full-covariance candidate whose best solution
+  occurs only once is the three-profile, two-class model, not the three-by-three.
+* In the covariate guide, the one-step fit now reports `converged FALSE`: its
+  membership logits still carry a non-negligible score at `max_iter`. The text
+  says so, and reads the coefficients as the direction of the association rather
+  than as a converged maximum.
+
+## Authors and installation
+
+Sonsoles López-Pernas is recorded as an author, and both authors carry their
+ORCIDs. The README's installation section now gives
+`remotes::install_github("mohsaqr/multilpa")` before the local
+`R CMD INSTALL .`, which was the only instruction it offered.
+
 # multilpa 0.11.8
 
 ## The introductory vignette, rewritten

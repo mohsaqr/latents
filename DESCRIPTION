@@ -1,8 +1,11 @@
 Package: multilpa
 Title: Two-Level Latent Profile Analysis
-Version: 0.11.8
-Authors@R: person("Mohammed", "Saqr", role = c("aut", "cre"),
-    email = "saqr@saqr.me")
+Version: 0.11.9
+Authors@R: c(
+    person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0001-5881-3109")),
+    person("Sonsoles", "L\u00f3pez-Pernas", role = "aut",
+           comment = c(ORCID = "0000-0002-9621-1392")))
 Description: Fits two-level latent profile and latent class models using a
     nested expectation-maximization algorithm. Indicators may be continuous,
     categorical, or a mixture of the two. Individual profiles share measurement
