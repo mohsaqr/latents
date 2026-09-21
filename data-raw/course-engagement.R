@@ -120,6 +120,31 @@ names(activity) <- indicators
 clicks <- rowMeans(activity[c("browse", "lectures", "forum_read", "forum_post")])
 activity$attendance <- activity$attendance +
   0.62 * (clicks - mean(clicks)) + stats::rnorm(nrow(activity), 0, 0.30)
+# ---- per-course standardization -------------------------------------------
+# The shipped indicators are standardized within course: each enrolment's value
+# is expressed in standard deviations from its own course's mean. This is the
+# scale a learning-analytics reader meets, because activity volume is not
+# comparable across courses -- a course with weekly quizzes generates more
+# clicks than a seminar whatever its students are like -- and an analyst
+# therefore compares a student to their coursemates rather than to the cohort.
+#
+# It is applied to the log values, not to counts: standardizing is affine
+# within each course, so it leaves the within-course skew exactly as it found
+# it, and the skew is what made an earlier draft's criteria read a floor as an
+# extra class. Across the pooled data the map is piecewise affine, one shift
+# and scale per course, so pooled skew does move -- from 3.35 on counts to 1.96
+# -- but not nearly far enough on its own. The log does that work; this puts
+# the courses on a common footing afterwards.
+standardize_within <- function(values, by) {
+  ave(values, by, FUN = function(z) {
+    spread <- stats::sd(z)
+    # A course with one enrolment, or no variation in it, has nothing to divide
+    # by; centring still applies and the scale is left alone.
+    if (!is.finite(spread) || spread <= 0) return(z - mean(z))
+    (z - mean(z)) / spread
+  })
+}
+activity[] <- lapply(activity, standardize_within, by = course_engagement$course)
 course_engagement <- cbind(course_engagement,
                            as.data.frame(lapply(activity, round, 2)))
 
@@ -156,10 +181,19 @@ stopifnot(
     all(vapply(split(course_engagement$sequence, course_engagement$student),
                function(s) identical(s, seq_along(s)), logical(1))),
   "no missing values" = !anyNA(course_engagement),
-  # A log count cannot be negative. This is asserted rather than clamped: a
-  # clamp would build the floor effect the comment above warns about.
-  "indicators must be finite and non-negative" =
+  "indicators must be finite" =
     all(vapply(course_engagement[indicators], function(v)
-      all(is.finite(v) & v >= 0), logical(1))))
+      all(is.finite(v)), logical(1))),
+  # The standardization is asserted rather than assumed: within every course
+  # each indicator must centre on zero and scale to one. Rounding to two
+  # decimals is what the tolerance allows for, and the assertion is what says
+  # the shipped scale is the one the documentation claims.
+  "each indicator must be standardized within every course" =
+    all(vapply(indicators, function(v) {
+      by_course <- split(course_engagement[[v]], course_engagement$course)
+      all(vapply(by_course, function(z) {
+        abs(mean(z)) < 0.02 && (length(z) < 2L || abs(stats::sd(z) - 1) < 0.02)
+      }, logical(1)))
+    }, logical(1))))
 
 usethis::use_data(course_engagement, overwrite = TRUE)

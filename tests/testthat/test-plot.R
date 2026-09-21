@@ -408,3 +408,43 @@ test_that("a family without standard errors gets bars, not an error", {
                   n_group_classes = 2, n_starts = 3, seed = 1)
   draw(expect_identical(plot(fit, what = "bars"), fit))
 })
+
+test_that("sizes and avepp draw, and are in the catalogue and in `all`", {
+  dat <- plot_fixture()
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  draw({
+    expect_identical(plot(fit, what = "sizes"), fit)
+    expect_identical(plot(fit, what = "avepp"), fit)
+  })
+  # The catalogue and the method's own `what` must not drift apart: `report()`
+  # and `plot(what = "all")` read the formals, users read the catalogue.
+  types <- multilpa_plot_types()
+  expect_true(all(c("sizes", "avepp") %in% types$type))
+  accepted <- eval(formals(multilpa:::plot.multilpa)$what)
+  expect_true(all(c("sizes", "avepp") %in% accepted))
+  expect_true(all(setdiff(accepted, "all") %in% types$type))
+})
+
+test_that("the avepp panel reads the average posterior matrix", {
+  dat <- plot_fixture()
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  averages <- multilpa:::.multilpa_average_posterior_matrix(fit$subject_posteriors)
+  # Rows condition on the assigned class, so each row is a distribution.
+  expect_equal(unname(rowSums(averages)), rep(1, ncol(averages)))
+  # And it is the same quantity the table reports, so the panel and
+  # get_data(x, "average_posteriors") cannot disagree.
+  table <- get_data(fit, "average_posteriors")
+  individuals <- table[table$level == "individuals", , drop = FALSE]
+  expect_equal(individuals$average_posterior,
+               as.vector(t(averages)))
+})
+
+test_that("a one-profile fit has no avepp to draw", {
+  dat <- plot_fixture()
+  fit <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
+  # One profile means every case is assigned to it with probability one; the
+  # matrix is the scalar 1 and says nothing, but `sizes` still does.
+  draw({
+    expect_identical(plot(fit, what = "sizes"), fit)
+  })
+})

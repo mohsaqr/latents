@@ -90,19 +90,23 @@ test_that("the sequence runs 1..n inside every student, and the panel is ragged"
   expect_false(all(taken == taken[[1L]]))
 })
 
-test_that("the indicators are log counts and the covariate is standardised", {
+test_that("the indicators are standardized within course, the covariate across the cohort", {
   finite <- vapply(course_engagement[.activity],
                    function(v) all(is.finite(v)), logical(1L))
-  non_negative <- vapply(course_engagement[.activity],
-                         function(v) all(v >= 0), logical(1L))
   expect_true(all(finite))
-  # A log count cannot be negative. The generator asserts this rather than
-  # clamping, because a clamp would build the floor effect that looked like an
-  # extra class; the shipped data must therefore satisfy it on its own.
-  expect_true(all(non_negative))
-  # The documented back-transform: `expm1()` reads an indicator as events, and
-  # a `browse` of 3.9 is about 48 page views.
-  expect_equal(round(expm1(3.9)), 48)
+  # The documented scale: each indicator centres on zero and scales to one
+  # inside every course. Asserted here as well as in the generator, because the
+  # documentation promises it to a reader who has only the shipped object.
+  standardized <- vapply(.activity, function(v) {
+    by_course <- split(course_engagement[[v]], course_engagement$course)
+    all(vapply(by_course, function(z) {
+      abs(mean(z)) < 0.02 && abs(stats::sd(z) - 1) < 0.02
+    }, logical(1L)))
+  }, logical(1L))
+  expect_true(all(standardized))
+  # Standardizing inside every course leaves the pooled indicator centred too,
+  # but not scaled to one: the courses are pooled, not re-standardized.
+  expect_equal(mean(course_engagement$browse), 0, tolerance = 0.01)
 
   # `previous_grade` is documented as standardised across the cohort.
   expect_equal(mean(course_engagement$previous_grade), 0, tolerance = 1e-3)
@@ -149,17 +153,29 @@ test_that("the shipped truth columns describe the data they came with", {
 test_that("a fit recovers the measurement model the data were generated from", {
   fit <- .course_fit()
   profiles <- as.data.frame(fit)
-  # Profile labels are arbitrary, so the comparison is against the sorted
-  # generating means rather than against a label. From data-raw the click
-  # measures are drawn at disengaged (2.90, 2.70, 2.40, 2.10) and engaged
-  # (3.90, 3.60, 3.90, 3.20). `attendance` is excluded because it is not drawn
-  # from a mean of its own: it is built from the click measures and then
-  # blurred, which shifts both of its profile means away from the constant the
-  # generator starts it at. Its own contract is the local dependence asserted
-  # below.
-  clicks <- subset(profiles, indicator != "attendance")
-  generated <- c(2.90, 2.70, 2.40, 2.10, 3.90, 3.60, 3.90, 3.20)
-  expect_equal(sort(clicks$mean), sort(generated), tolerance = 0.05)
+  # The generating means (disengaged 2.90, 2.70, 2.40, 2.10; engaged 3.90,
+  # 3.60, 3.90, 3.20) are on the log scale the draws are made on, and the
+  # shipped indicators are standardized within course, so the fitted means are
+  # not those constants and comparing them to those constants would be
+  # comparing two scales. What survives the standardization is the contrast:
+  # which profile is higher, and by how many standard deviations.
+  #
+  # Profile labels are arbitrary, so the profiles are identified by their own
+  # ordering rather than by a label.
+  wide <- stats::reshape(profiles[c("profile", "indicator", "mean")],
+                         idvar = "profile", timevar = "indicator",
+                         direction = "wide")
+  lower <- pmin(wide[2L, -1L], wide[1L, -1L])
+  upper <- pmax(wide[2L, -1L], wide[1L, -1L])
+  # One profile sits below its course average on every indicator and the other
+  # above it, which is what makes this a disengaged and an engaged pattern
+  # rather than two arbitrary groups.
+  expect_true(all(lower < 0))
+  expect_true(all(upper > 0))
+  # And they are far enough apart to be learnable: the smallest contrast here
+  # is about one standard deviation, the largest about one and a half.
+  expect_gt(min(upper - lower), 0.9)
+  expect_lt(max(upper - lower), 2.5)
   expect_identical(fit$n_profiles, 2L)
   expect_true(fit$converged)
   # And the enrolments land where they were generated from. `engagement` is

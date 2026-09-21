@@ -663,9 +663,11 @@
 #'
 #'   Anything other than EEI, VVI, EEE or VVV is maximized across every profile
 #'   at once, so it cannot be combined with a held `variances` block, and
-#'   [parameter_inference()] refuses it with `multilpa_unsupported_inference`:
-#'   the free coordinates are log variances, which is the wrong chart for a
-#'   constrained volume, shape or orientation.
+#'   `parameter_inference(method = "wald")` refuses it with
+#'   `multilpa_unsupported_inference`: the free coordinates are log variances,
+#'   which is the wrong chart for a constrained volume, shape or orientation.
+#'   `parameter_inference(method = "bootstrap")` reports all fourteen: it
+#'   resamples groups and refits inside the same family, so it needs no chart.
 #' @param centering How to centre the continuous indicators before fitting.
 #'   `"none"`, the default, fits them as supplied. `"person"` subtracts each
 #'   group's own mean from its rows, so a value reads as a deviation from that

@@ -288,3 +288,32 @@ test_that("plot draws every supported view under what = \"all\"", {
   # walks: it would otherwise call itself.
   expect_false("all" %in% multilpa:::.multilpa_supported_views(fit))
 })
+
+test_that("a fit prints its means one row per profile, not one per cell", {
+  # Three profiles over five indicators is fifteen console lines for a table
+  # that has three rows. The long table is still what `get_data()` returns.
+  indicators <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+  fit <- quietly(multilpa(course_engagement, indicators, "student",
+                          n_profiles = 3L, n_group_classes = 1L, n_starts = 3L,
+                          seed = 1L, max_iter = 5000))
+  wide <- multilpa:::.multilpa_wide_means(fit)
+  expect_identical(nrow(wide), 3L)
+  expect_identical(names(wide), c("profile", indicators))
+
+  # Reshaped from the long table, so the two cannot report different numbers.
+  long <- get_data(fit, "profiles")
+  expect_equal(wide$forum_post, long$mean[long$indicator == "forum_post"])
+  expect_identical(nrow(long), 15L)
+
+  printed <- utils::capture.output(print(fit))
+  expect_true(any(grepl("attendance", printed, fixed = TRUE)))
+  # How big each profile is, beside what it looks like, matched on the label.
+  expect_true(any(grepl("proportion", printed, fixed = TRUE)))
+  sizes <- get_data(fit, "counts")
+  individuals <- sizes[sizes$level == "individuals", , drop = FALSE]
+  expect_true(any(grepl(format(individuals$effective_count[1L], digits = 7),
+                        printed, fixed = TRUE)))
+  # The spread columns belong to the long table, and are pointed at, not shown.
+  expect_false(any(grepl("standard_deviation", printed, fixed = TRUE)))
+  expect_true(any(grepl("get_data(x, \"profiles\")", printed, fixed = TRUE)))
+})

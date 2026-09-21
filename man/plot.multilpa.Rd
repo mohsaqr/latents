@@ -7,7 +7,7 @@
 \method{plot}{multilpa}(
   x,
   what = c("profiles", "bars", "heatmap", "responses", "probabilities", "sequences",
-    "entropy", "posteriors", "all"),
+    "sizes", "entropy", "posteriors", "avepp", "all"),
   data = NULL,
   scale = c("raw", "standardized"),
   category = "last",
@@ -46,6 +46,10 @@
   position, coloured and numbered by the assigned profile, with the groups
   grouped by their latent class; it needs a fit made with `time =`.
 
+  How big each profile is: `"sizes"` draws one bar per profile holding its
+  effective count -- the posterior mass it carries, not the number of cases
+  that won a tie -- with the count and the share printed on the bar.
+
   Classification quality: `"entropy"` draws each case's entropy contribution
   as one ridge per profile, and `"posteriors"` draws the posterior
   probability of each case's assigned profile the same way. Both ridges are
@@ -54,7 +58,12 @@
   in each profile's label instead. Both read the individual posteriors alone,
   so every family of this package can draw them; a one-profile fit refuses
   them with an error of class `multilpa_nothing_to_plot`, because every case
-  then belongs to the single profile with probability one.}
+  then belongs to the single profile with probability one. `"avepp"` draws
+  the average posterior probability matrix: one row per assigned profile, one
+  column per profile, each cell the mean posterior that group puts on that
+  profile. The diagonal is the avePP usually reported, and the off-diagonal
+  says which profiles a group is confused with, which the diagonal alone
+  cannot show.}
 
 \item{data}{Optional. The data frame the model was fitted to, used by
 `what = "bars"` to put a 95% interval on every bar and ignored by every
@@ -123,6 +132,8 @@ plot(fit, scale = "standardized")
 plot(fit, what = "bars")
 plot(fit, what = "heatmap")
 plot(fit, what = "entropy")
+plot(fit, what = "sizes")
+plot(fit, what = "avepp")
 multilpa_plot_types()
 }
 \seealso{

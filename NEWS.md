@@ -1,3 +1,81 @@
+# multilpa 0.11.5
+
+## Every covariance structure now reports uncertainty
+
+`parameter_inference()` gains `method = "bootstrap"`. It resamples *groups*
+with replacement, refits inside the same covariance family, undoes the
+relabelling each refit comes back with, and reports the percentile interval and
+the standard deviation of the replicates:
+
+```r
+fit <- multilpa(course_engagement, activity, id = "student", n_profiles = 2,
+                n_group_classes = 1, volume = "varying", shape = "equal",
+                orientation = "axis")
+parameter_inference(fit, method = "bootstrap", iter = 999, seed = 1)
+```
+
+This closes the gap the fourteen structures opened. Ten of them --- EII, VII,
+VEI, EVI, VEE, EVE, VVE, EEV, VEV and EVV --- constrain the volume, the shape
+or the orientation, which the Wald coordinates cannot express, so the Wald path
+refused them. `enumerate_classes(structure = )` could therefore select a model
+the package would not then do inference on: on this package's own
+`course_engagement` data the best of the fourteen is `VEI`. Every structure the
+grid can select now reports an interval.
+
+`vcov()` and `confint()` reach the same path through `...`. `confint()` returns
+the percentile interval the table reports rather than rebuilding
+`estimate +/- z * se` from the bootstrap standard error, so one fit does not
+give two different intervals.
+
+Groups are the resampling unit, not rows, so the interval carries the same
+independence assumption as `vcov_type = "robust"` and not the stronger one
+`"observed"` makes. Against the cluster-robust sandwich on `course_engagement`,
+where both are available, the bootstrap standard errors agree to within 11%
+across every estimated parameter. `statistic`, `p_value` and `p_adjusted` are
+`NA` on this path: the interval is the inference, and putting a normal
+approximation back on top of the replicates it was read from is the assumption
+the path exists to avoid.
+
+A fit that holds a measurement block is refused with
+`multilpa_unsupported_inference`, because the held values came from another fit
+and resampling these data does not resample them.
+
+## Fixes
+
+* `fit_staged()` accepted a measurement fitted with a constrained covariance
+  structure and silently fitted the second stage as the nearest structure
+  `variance_model` and `covariance_model` can name: a `VEI` measurement came
+  back recorded as `VVI`. The held means and variances were the right numbers,
+  but under the wrong model, and `n_parameters_with_measurement` counted the
+  spread as `VVI`'s. `multilpa()` already refuses to hold the variances of such
+  a structure, so a staged fit of one was never supported; it is now refused up
+  front with `multilpa_bad_stage`, naming the structure. Refit the measurement
+  as EEI, VVI, EEE or VVV, or fit both levels together with `multilpa()`, which
+  estimates all fourteen directly.
+
+* `bootstrap_lrt()` refitted each replicate from `variance_model` and
+  `covariance_model` alone, which cannot express a constrained structure: a
+  `VEI` model came back as `VVI`, two parameters wider, so the reference
+  distribution belonged to a different pair of models than the statistic
+  compared against it. Replicates are now refitted from the structure the model
+  records.
+
+## Corrections to the 0.11.3 notes below
+
+The 0.11.3 section was written in two passes and the earlier one was left
+standing. Two of its statements are wrong, and are corrected here rather than
+edited away:
+
+* "Six of `mclust`'s fourteen models --- the ones with a non-axis-parallel
+  orientation --- remain unavailable" was superseded within that same release
+  by "All fourteen mclust covariance structures". All fourteen ship, and their
+  parameter counts match `mclust`'s own.
+* The refusal list "`parameter_inference()`, `vcov()` and `confint()` refuse
+  EII, VII, VEI and EVI" named four of the ten that were actually refused. The
+  rule, rather than the list: Wald inference was available exactly for the four
+  structures reachable by `variance_model` and `covariance_model` alone --- EEI,
+  VVI, EEE and VVV. As of this release the bootstrap covers all fourteen.
+
 # multilpa 0.11.4
 
 ## Equivalence tests no longer ship with the package

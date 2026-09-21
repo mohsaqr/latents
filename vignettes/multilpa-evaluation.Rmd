@@ -32,7 +32,8 @@ The bundled data are synthetic; their relationship to the longitudinal
 engagement study is described in the [introductory vignette](multilpa.html).
 The indicators measure course-page views (`browse`), lecture-video views
 (`lectures`), forum posts read (`forum_read`), forum posts written
-(`forum_post`), and days active (`attendance`), each on the `log1p` count scale.
+(`forum_post`), and days active (`attendance`), each a `log1p` count
+standardized within course.
 `student` identifies the higher-level unit, and `sequence` orders each
 student's courses. The model uses student nesting; courses are not an
 additional grouping level.
@@ -62,8 +63,8 @@ fit
 
 The fit describes 1,422 enrolments from 106 students. Profile 1 has the highest
 mean on every indicator, profile 2 has intermediate means, and profile 3 has
-the lowest means. Attendance means are 3.753, 2.915, and 1.840, respectively,
-on the log count scale. These differences define the fitted profiles; the
+the lowest means. Attendance means are 1.133, 0.256, and -0.940, respectively,
+in standard deviations from each course's mean. These differences define the fitted profiles; the
 checks below assess their support.
 
 `get_data(fit, "starts")` reports convergence and the maximized log likelihood

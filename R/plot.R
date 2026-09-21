@@ -34,6 +34,10 @@
 #'   position, coloured and numbered by the assigned profile, with the groups
 #'   grouped by their latent class; it needs a fit made with `time =`.
 #'
+#'   How big each profile is: `"sizes"` draws one bar per profile holding its
+#'   effective count -- the posterior mass it carries, not the number of cases
+#'   that won a tie -- with the count and the share printed on the bar.
+#'
 #'   Classification quality: `"entropy"` draws each case's entropy contribution
 #'   as one ridge per profile, and `"posteriors"` draws the posterior
 #'   probability of each case's assigned profile the same way. Both ridges are
@@ -42,7 +46,12 @@
 #'   in each profile's label instead. Both read the individual posteriors alone,
 #'   so every family of this package can draw them; a one-profile fit refuses
 #'   them with an error of class `multilpa_nothing_to_plot`, because every case
-#'   then belongs to the single profile with probability one.
+#'   then belongs to the single profile with probability one. `"avepp"` draws
+#'   the average posterior probability matrix: one row per assigned profile, one
+#'   column per profile, each cell the mean posterior that group puts on that
+#'   profile. The diagonal is the avePP usually reported, and the off-diagonal
+#'   says which profiles a group is confused with, which the diagonal alone
+#'   cannot show.
 #' @param scale For `what = "profiles"`, `"raw"` plots the estimated means in
 #'   input units, and `"standardized"` divides each indicator's deviation from
 #'   its grand mean by that indicator's observed standard deviation. Use
@@ -84,12 +93,14 @@
 #' plot(fit, what = "bars")
 #' plot(fit, what = "heatmap")
 #' plot(fit, what = "entropy")
+#' plot(fit, what = "sizes")
+#' plot(fit, what = "avepp")
 #' multilpa_plot_types()
 #' @seealso [multilpa_plot_types()] for the catalogue of views.
 #' @export
 plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses",
-                                      "probabilities", "sequences",
-                                      "entropy", "posteriors", "all"),
+                                      "probabilities", "sequences", "sizes",
+                                      "entropy", "posteriors", "avepp", "all"),
                         data = NULL,
                         scale = c("raw", "standardized"), category = "last",
                         labels = TRUE, main = NULL, subtitle = NULL,
@@ -126,6 +137,8 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
     bars = .multilpa_plot_bars(x, scale, .multilpa_mean_error_matrix(x, data),
                                main, subtitle, palette, style),
     heatmap = .multilpa_plot_heatmap(x, main, subtitle, style),
+    sizes = .multilpa_plot_sizes(x, main, subtitle, palette, style),
+    avepp = .multilpa_plot_avepp(x, main, subtitle, style),
     entropy = ,
     posteriors = .multilpa_plot_case_diagnostic(x, what, main, subtitle,
                                                 palette, style))
@@ -754,6 +767,108 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
   invisible(NULL)
 }
 
+#' Draw the average posterior probability matrix
+#'
+#' One tile per pair of profiles: the row is the profile a case was assigned to,
+#' the column is a profile, and the cell is the mean posterior that the cases
+#' assigned to that row put on that column. The diagonal is the classification
+#' certainty usually reported as avePP, and the off-diagonal says where a
+#' profile leaks -- which of the two is the problem is not visible from the
+#' diagonal alone.
+#'
+#' The fill is the shared white-to-blue ramp taken over the whole probability
+#' range, so darker is always a higher posterior wherever it sits. Every cell
+#' also prints its number, so nothing rests on reading a colour. A profile no
+#' case was assigned to has no row of means, and prints empty rather than `NA`.
+#'
+#' @param x A fitted model carrying `subject_posteriors`.
+#' @param main,subtitle Panel title and secondary line.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_avepp <- function(x, main, subtitle, style) {
+  probabilities <- x$subject_posteriors
+  if (is.null(probabilities) || ncol(probabilities) < 1L) {
+    stop(errorCondition(
+      "This model carries no individual posteriors to average.",
+      class = "multilpa_nothing_to_plot", call = NULL))
+  }
+  averages <- .multilpa_average_posterior_matrix(probabilities)
+  n_classes <- ncol(averages)
+  assigned <- tabulate(max.col(probabilities, ties.method = "first"), n_classes)
+  rows <- rev(seq_len(n_classes))
+  graphics::par(mar = style$margins + c(0, 2.2, 0, 0))
+  .multilpa_panel(
+    xlim = c(0.5, n_classes + 0.5), ylim = c(0.5, n_classes + 0.5),
+    xlab = "Posterior profile", ylab = "",
+    main = if (is.null(main)) "Average posterior probability" else main,
+    subtitle = if (is.null(subtitle)) paste(
+      "mean posterior each assigned group puts on each profile;",
+      "the diagonal is classification certainty") else subtitle,
+    x_at = seq_len(n_classes),
+    x_labels = sprintf("Profile %d", seq_len(n_classes)),
+    y_at = rows,
+    y_labels = sprintf("Assigned %d\n(n = %d)", seq_len(n_classes), assigned),
+    style = style)
+  cells <- expand.grid(column = seq_len(n_classes), row = seq_len(n_classes))
+  values <- averages[cbind(cells$row, cells$column)]
+  # A probability needs no midpoint: taken over [0, 1] the shared ramp uses its
+  # upper half only, which is a plain white-to-blue sequential scale.
+  fills <- .multilpa_diverging(values, limit = 1)
+  graphics::rect(cells$column - 0.5, rows[cells$row] - 0.5,
+                 cells$column + 0.5, rows[cells$row] + 0.5,
+                 col = fills, border = style$panel_fill, lwd = 1.5)
+  labels <- rep("", length(values))
+  labels[!is.na(values)] <- sprintf("%.2f", values[!is.na(values)])
+  graphics::text(cells$column, rows[cells$row], labels,
+                 col = .multilpa_ink(fills), cex = style$label_text_size)
+  invisible(NULL)
+}
+
+#' Draw how many cases each profile holds
+#'
+#' Effective counts rather than modal ones, because a profile's size in a
+#' mixture is the posterior mass it carries and not the number of cases that
+#' happened to win a tie. Each bar prints its own count and share, so the
+#' comparison does not depend on reading a colour or a gridline.
+#'
+#' @param x A fitted model carrying `effective_profile_counts`.
+#' @param main,subtitle Panel title and secondary line.
+#' @param palette Bar fills, or `NULL` for the package palette.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_sizes <- function(x, main, subtitle, palette, style) {
+  counts <- x$effective_profile_counts
+  if (is.null(counts) || length(counts) == 0L) {
+    stop(errorCondition(
+      "This model carries no effective profile counts to draw.",
+      class = "multilpa_nothing_to_plot", call = NULL))
+  }
+  n_profiles <- length(counts)
+  share <- counts / sum(counts)
+  colours <- if (is.null(palette)) .multilpa_palette(n_profiles) else
+    rep(palette, length.out = n_profiles)
+  graphics::par(mar = style$margins)
+  .multilpa_panel(
+    xlim = c(0.5, n_profiles + 0.5), ylim = c(0, max(counts) * 1.18),
+    xlab = "Profile", ylab = "Effective count",
+    main = if (is.null(main)) "Profile sizes" else main,
+    subtitle = if (is.null(subtitle)) sprintf(
+      "posterior mass per profile; %d case%s in total", round(sum(counts)),
+      if (round(sum(counts)) == 1L) "" else "s") else subtitle,
+    x_at = seq_len(n_profiles),
+    x_labels = sprintf("Profile %d", seq_len(n_profiles)),
+    style = style)
+  graphics::rect(seq_len(n_profiles) - 0.36, 0,
+                 seq_len(n_profiles) + 0.36, counts,
+                 col = colours, border = style$panel_fill, lwd = 1.5)
+  graphics::text(seq_len(n_profiles), counts,
+                 sprintf("%.0f\n(%.1f%%)", counts, 100 * share),
+                 pos = 3L, offset = 0.4, cex = style$label_text_size)
+  invisible(NULL)
+}
+
 #' Draw a ridge plot of a per-case quantity, one ridge per profile
 #'
 #' Shared by the entropy and posterior-probability diagnostics, which differ
@@ -877,10 +992,10 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
 multilpa_plot_types <- function() {
   data.frame(
     type = c("profiles", "bars", "heatmap", "responses", "probabilities",
-             "sequences", "random_intercepts", "entropy", "posteriors",
-             "enumeration", "all"),
-    group = c(rep("measurement", 4L), rep("structure", 3L),
-              rep("diagnostics", 2L), "selection", "every"),
+             "sequences", "random_intercepts", "sizes", "entropy", "posteriors",
+             "avepp", "enumeration", "all"),
+    group = c(rep("measurement", 4L), rep("structure", 4L),
+              rep("diagnostics", 3L), "selection", "every"),
     description = c(
       "Profile means across indicators, point size showing profile prevalence",
       "Profile means as grouped bars, with 95% intervals when `data` is given",
@@ -889,8 +1004,10 @@ multilpa_plot_types <- function() {
       "Profile prevalence within each group class, the two-level quantity",
       "Each group's profile at each occasion, one row per group",
       "One interval per group: its posterior mean random intercept, plus and minus one posterior standard deviation",
+      "Effective number of cases in each profile, with its share",
       "Per-case entropy contribution within each profile, as ridges",
       "Posterior probability of the assigned profile, as ridges",
+      "Average posterior probability: assigned profile by posterior profile",
       "Information criteria across a candidate grid (plot an enumeration)",
       "Every view above that this fit has the ingredients for, in one call"
     ),

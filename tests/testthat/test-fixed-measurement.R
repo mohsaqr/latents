@@ -298,3 +298,35 @@ test_that("held values survive every random restart when EM does run", {
   starts_table <- get_data(fitted, "starts")
   expect_identical(nrow(starts_table), 4L)
 })
+
+test_that("a constrained measurement is refused, not fitted as a wider one", {
+  # This stage passes `variance_model` and `covariance_model`, which name only
+  # four of the fourteen structures, and it holds the whole measurement, which
+  # `multilpa()` refuses for a structure maximized across every profile at
+  # once. A VEI measurement used to come back recorded as VVI: the right held
+  # numbers under the wrong model, with one variance parameter too many.
+  set.seed(11)
+  n <- 240L
+  high <- rep(c(TRUE, FALSE), each = n / 2L)
+  data <- data.frame(unit = rep(seq_len(60L), each = 4L),
+                     x = stats::rnorm(n, ifelse(high, 2, -2), 1),
+                     y = stats::rnorm(n, ifelse(high, 1, -1), 1))
+  constrained <- multilpa(data, c("x", "y"), "unit", n_profiles = 2L,
+                          n_group_classes = 1L, n_starts = 3L, seed = 1L,
+                          volume = "varying", shape = "equal", orientation = "axis")
+  expect_identical(constrained$covariance_structure, "VEI")
+  expect_error(
+    fit_staged(data, c("x", "y"), "unit", n_profiles = 2L, n_group_classes = 2L,
+               measurement = constrained, n_starts = 2L, seed = 1L),
+    class = "multilpa_bad_stage")
+
+  # The four the two switches can name still stage as they always did.
+  free <- multilpa(data, c("x", "y"), "unit", n_profiles = 2L,
+                   n_group_classes = 1L, n_starts = 3L, seed = 1L)
+  expect_identical(free$covariance_structure, "VVI")
+  staged <- fit_staged(data, c("x", "y"), "unit", n_profiles = 2L,
+                       n_group_classes = 2L, measurement = free,
+                       n_starts = 2L, seed = 1L)
+  expect_identical(staged$covariance_structure, "VVI")
+  expect_equal(unname(staged$means), unname(free$means))
+})

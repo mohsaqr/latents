@@ -31,8 +31,9 @@ model (`time = "sequence"`) and the membership-covariate model
 The data are simulated, and they carry the truth each row was generated from
 beside the indicators — `engagement` for the pattern the row came from,
 `student_type` for the kind of student — so a fit can be checked against what
-produced it. The five indicators are `log1p` counts of learning-analytics
-events.
+produced it. The five indicators are learning-analytics event counts, `log1p`-transformed
+and then standardized within course, so a value reads as standard deviations
+from that course's average enrolment.
 
 ```r
 library(multilpa)

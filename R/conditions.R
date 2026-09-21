@@ -109,7 +109,15 @@
 #'   \item{`multilpa_unsupported_inference`}{Standard errors are not available
 #'     for this particular fit. Raised for a covariate fit with categorical
 #'     indicators, where no score is implemented for the response
-#'     probabilities, and for fits made by an older version.}
+#'     probabilities, for fits made by an older version, for a covariance
+#'     structure the Wald coordinates cannot express --- which
+#'     `parameter_inference(method = "bootstrap")` reports instead --- and by
+#'     that bootstrap itself for a fit holding a measurement block, whose held
+#'     values came from a fit these data do not resample.}
+#'   \item{`multilpa_bootstrap_failed`}{Fewer than two resamples produced a
+#'     usable fit, so there is nothing to read a spread from. Raised by
+#'     `parameter_inference(method = "bootstrap")`; the message carries the
+#'     first reason a resample gave.}
 #'   \item{`multilpa_no_free_parameters`}{The fit holds every parameter it has,
 #'     so there is no free coordinate to report a standard error for. Raised by
 #'     [parameter_inference()] and [vcov()] on a fully held fit.}
@@ -150,6 +158,10 @@
 #'     membership below one, so it is supported by less than one observation.}
 #'   \item{`multilpa_failed_replicates`}{Some bootstrap replicates failed
 #'     validation, so the bootstrap p-value is `NA`.}
+#'   \item{`multilpa_bootstrap_dropped`}{Some resamples did not produce a usable
+#'     fit and were left out of the interval. Raised by
+#'     `parameter_inference(method = "bootstrap")`, naming how many, so the
+#'     count the interval rests on is never quietly smaller than `iter`.}
 #'   \item{`multilpa_extreme_coefficients`}{A membership logit coefficient is
 #'     large enough that the class is close to separated, so the estimate is
 #'     driven by scaling, a sparse class or separation rather than by the data.}

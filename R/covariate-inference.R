@@ -307,12 +307,28 @@
 parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95,
                                                     step = 1e-4,
                                                     vcov_type = c("observed", "robust"),
-                                                    adjust = .multilpa_p_adjust_methods) {
+                                                    adjust = .multilpa_p_adjust_methods,
+                                                    method = c("wald", "bootstrap"),
+                                                    iter = 199L, n_starts = 10L,
+                                                    max_iter = 1000L, tol = 1e-8,
+                                                    seed = NULL) {
   stopifnot(
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1
   )
+  ## A covariate fit reaches the covariance structures only through
+  ## `variance_model` and `covariance_model`, so it has no structure the Wald
+  ## coordinates cannot express and nothing to send to the bootstrap. The
+  ## argument is accepted so that every method of the generic has the generic's
+  ## formals, and refused rather than silently ignored.
+  if (!identical(match.arg(method), "wald")) {
+    stop(errorCondition(paste(
+      "`method = \"bootstrap\"` is not implemented for a covariate fit. Its",
+      "covariance structures are the four the Wald coordinates already",
+      "express, so `method = \"wald\"` covers every model this verb can fit."),
+      class = "multilpa_unsupported_inference", call = NULL))
+  }
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
   covariance <- .multilpa_cov_covariance(x, data, step, vcov_type)

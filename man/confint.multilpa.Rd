@@ -17,12 +17,16 @@ raises `multilpa_held_parameter`, because a held value has no interval.}
 
 \item{data}{Optional, exactly as for [vcov()].}
 
-\item{...}{Additional arguments passed to [parameter_inference()].}
+\item{...}{Additional arguments passed to [parameter_inference()], including
+`method = "bootstrap"` for a structure the Wald path cannot chart.}
 }
 \value{
-A two-column matrix of Wald intervals on the natural scale, one row
-  per requested coefficient and named as [coef()] names them. Bounds are not
-  clipped to the probability or variance parameter space. For a fit made with
+A two-column matrix on the natural scale, one row per requested
+  coefficient and named as [coef()] names them. Wald intervals by default;
+  with `method = "bootstrap"` the percentile interval the replicates give,
+  which is the same interval `parameter_inference()` reports rather than a
+  normal approximation rebuilt from the bootstrap standard error. Wald bounds
+  are not clipped to the probability or variance parameter space. For a fit made with
   `fixed`, the default rows are the estimated coefficients only and the
   intervals are conditional on the held measurement solution.
 }

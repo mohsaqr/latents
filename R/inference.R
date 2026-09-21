@@ -578,6 +578,24 @@
 #'   applied is recorded in the `adjust` attribute. The correction is taken
 #'   over the tests the table actually reports; bounded parameters carry no test
 #'   and do not count towards the family.
+#' @param method How uncertainty is measured. `"wald"`, the default, inverts the
+#'   observed information in the estimation coordinates, and is available for
+#'   the four covariance structures those coordinates can express: EEI, VVI, EEE
+#'   and VVV. `"bootstrap"` resamples *groups* with replacement, refits inside
+#'   the same covariance family, undoes the relabelling each refit comes back
+#'   with, and reports the percentile interval and the standard deviation of the
+#'   replicates. It is available for all fourteen structures, because it needs
+#'   no coordinate chart for the constraint. Groups are the resampling unit
+#'   rather than rows, so the interval carries the same independence assumption
+#'   as `vcov_type = "robust"` and not the stronger one `"observed"` makes.
+#' @param iter Number of resamples when `method = "bootstrap"`, at least two.
+#'   The default 199 is enough for a standard error; a 95% percentile interval
+#'   is steadier at 999 and above.
+#' @param n_starts,max_iter,tol Passed to each bootstrap refit. Each replicate
+#'   is a fresh fit, so `n_starts` buys the same protection against a local
+#'   maximum here as it does in [multilpa()], at the same multiple of the cost.
+#' @param seed Optional seed for the resampling. The stream is restored on exit,
+#'   so a seeded call leaves the caller's random state exactly as it found it.
 #' @return A base `data.frame` with one row per reported parameter and the
 #'   columns `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`,
 #'   `term`, `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
@@ -601,6 +619,19 @@
 #'   is conditional on that measurement solution and does not propagate its
 #'   uncertainty. See [fit_staged()] for what that conditioning means.
 #'
+#'   With `method = "bootstrap"` the table has the same columns and the same
+#'   rows, `estimate` is still the fitted value, `standard_error` is the
+#'   standard deviation of the replicates and `conf_low`/`conf_high` are the
+#'   percentile interval. `statistic`, `p_value` and `p_adjusted` are `NA`
+#'   throughout: putting a normal approximation back on top of the replicates
+#'   the interval was read from is the assumption this path exists to avoid, so
+#'   the interval is the inference. Its attributes are `covariance` (the
+#'   covariance of the replicates, which `vcov()` returns), `level`, `method`,
+#'   `iter`, `n_valid`, `replicates` (the kept replicates, one row each),
+#'   `messages` (why a resample was dropped, `NA` where it was not),
+#'   `structure` and `fixed`; `covariance_unconstrained` is `NULL`, because the
+#'   estimation-scale chart is what this path does without.
+#'
 #'   Diagnostics of the fit as a whole travel as attributes rather than as
 #'   columns repeated down every row: `covariance` and `covariance_unconstrained`
 #'   (natural and estimation-scale covariance of the estimates), `hessian`,
@@ -620,6 +651,14 @@
 #'   with fewer independent groups than reported parameters. A fit whose score
 #'   is still far from zero is reported with a `multilpa_unconverged` warning
 #'   rather than refused.
+#'
+#'   `method = "bootstrap"` adds `multilpa_unsupported_inference` for a fit that
+#'   holds a measurement block --- the held values came from another fit and
+#'   resampling these data does not resample them --- and
+#'   `multilpa_bootstrap_failed` when fewer than two resamples produced a usable
+#'   fit, whose message carries the first reason one gave. Resamples that fail
+#'   or do not converge are dropped with a `multilpa_bootstrap_dropped` warning
+#'   naming how many, rather than being silently left out of the count.
 #' @examples
 #' set.seed(42)
 #' example_data <- data.frame(
@@ -632,10 +671,21 @@
 #'
 #' # Many tests in one table: name the correction, do not apply one by stealth.
 #' parameter_inference(fit, adjust = "BH")
+#'
+#' # A structure that constrains the shape has no Wald chart. The bootstrap
+#' # resamples schools and refits inside the same family, so it reports one.
+#' shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
+#'                    n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1,
+#'                    volume = "varying", shape = "equal", orientation = "axis")
+#' parameter_inference(shaped, method = "bootstrap", iter = 25, n_starts = 1,
+#'                     seed = 1)
 #' @export
 parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
                                 vcov_type = c("observed", "robust"),
-                                adjust = .multilpa_p_adjust_methods) {
+                                adjust = .multilpa_p_adjust_methods,
+                                method = c("wald", "bootstrap"), iter = 199L,
+                                n_starts = 10L, max_iter = 1000L, tol = 1e-8,
+                                seed = NULL) {
   UseMethod("parameter_inference")
 }
 
@@ -643,7 +693,10 @@ parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
 #' @export
 parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e-4,
                              vcov_type = c("observed", "robust"),
-                             adjust = .multilpa_p_adjust_methods) {
+                             adjust = .multilpa_p_adjust_methods,
+                             method = c("wald", "bootstrap"), iter = 199L,
+                             n_starts = 10L, max_iter = 1000L, tol = 1e-8,
+                             seed = NULL) {
   stopifnot(inherits(x, "multilpa"))
   data <- .multilpa_resolve_data(x, data)
   stopifnot(is.data.frame(data),
@@ -651,6 +704,35 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
             is.numeric(step), length(step) == 1L, is.finite(step), step > 0)
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
+  method <- match.arg(method)
+  if (identical(method, "bootstrap")) {
+    stopifnot(
+      "`iter` must be a single integer of at least two" =
+        is.numeric(iter) && length(iter) == 1L && is.finite(iter) &&
+        iter >= 2 && iter == floor(iter),
+      "`n_starts` must be a single positive integer" =
+        is.numeric(n_starts) && length(n_starts) == 1L && is.finite(n_starts) &&
+        n_starts >= 1 && n_starts == floor(n_starts),
+      "`max_iter` must be a single positive integer" =
+        is.numeric(max_iter) && length(max_iter) == 1L && is.finite(max_iter) &&
+        max_iter >= 1 && max_iter == floor(max_iter),
+      "`tol` must be a single positive number" =
+        is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
+    if (!is.null(seed)) {
+      stopifnot("`seed` must be a single number" =
+                  is.numeric(seed) && length(seed) == 1L && is.finite(seed))
+      previous <- if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
+        get(".Random.seed", envir = .GlobalEnv) else NULL
+      on.exit(if (!is.null(previous))
+        assign(".Random.seed", previous, envir = .GlobalEnv)
+        else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
+          rm(".Random.seed", envir = .GlobalEnv), add = TRUE, after = FALSE)
+      set.seed(seed)
+    }
+    return(.multilpa_bootstrap_inference(x, data, level, as.integer(iter),
+                                         as.integer(n_starts),
+                                         as.integer(max_iter), tol, adjust))
+  }
   .multilpa_check_regularity(x, vcov_type)
   .multilpa_check_structure_inference(x)
   free <- .multilpa_free_index(x, "unconstrained")
@@ -782,7 +864,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     hessian = hessian, gradient = gradient, scaled_score = scaled_score,
     score_displacement = score_displacement,
     condition_ratio = condition_ratio, level = level, step = step,
-    vcov_type = vcov_type, group_scores = group_scores,
+    method = "wald", vcov_type = vcov_type, group_scores = group_scores,
     scaling_correction = scaling_correction,
     fixed = x$fixed %||% character()))
   result
@@ -833,7 +915,9 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 #'   the scale the model is actually estimated on: log variances for a diagonal
 #'   fit, log-Cholesky coordinates for a full-covariance fit, and
 #'   baseline-category logits for the mixing and response probabilities.
-#' @param ... Additional arguments passed to [parameter_inference()].
+#' @param ... Additional arguments passed to [parameter_inference()], including
+#'   `method = "bootstrap"`, which is how a covariance structure the Wald path
+#'   cannot chart reports one here.
 #' @return A square numeric matrix with one row and column per *estimated*
 #'   coefficient, named as [coef()] names them, on the scale `scale` asks for. A
 #'   fit made with `fixed` held part of its measurement model at supplied
@@ -873,10 +957,14 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
 #'   raises `multilpa_held_parameter`, because a held value has no interval.
 #' @param level Confidence level strictly between zero and one.
 #' @param data Optional, exactly as for [vcov()].
-#' @param ... Additional arguments passed to [parameter_inference()].
-#' @return A two-column matrix of Wald intervals on the natural scale, one row
-#'   per requested coefficient and named as [coef()] names them. Bounds are not
-#'   clipped to the probability or variance parameter space. For a fit made with
+#' @param ... Additional arguments passed to [parameter_inference()], including
+#'   `method = "bootstrap"` for a structure the Wald path cannot chart.
+#' @return A two-column matrix on the natural scale, one row per requested
+#'   coefficient and named as [coef()] names them. Wald intervals by default;
+#'   with `method = "bootstrap"` the percentile interval the replicates give,
+#'   which is the same interval `parameter_inference()` reports rather than a
+#'   normal approximation rebuilt from the bootstrap standard error. Wald bounds
+#'   are not clipped to the probability or variance parameter space. For a fit made with
 #'   `fixed`, the default rows are the estimated coefficients only and the
 #'   intervals are conditional on the held measurement solution.
 #' @examples
@@ -894,7 +982,12 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   stopifnot(inherits(object, "multilpa"), is.numeric(level), length(level) == 1L,
             is.finite(level), level > 0, level < 1)
   estimates <- coef.multilpa(object)
-  covariance <- vcov.multilpa(object, data = data, ...)
+  ## One call, not one through `vcov()`: the bootstrap interval is the
+  ## percentile interval this table already carries, and reaching it through
+  ## the covariance would rebuild it as `estimate +/- z * se`, a different
+  ## interval from the one `parameter_inference()` reports for the same fit.
+  information <- parameter_inference(object, data = data, level = level, ...)
+  covariance <- attr(information, "covariance")
   ## A held measurement coefficient is reported by coef() -- it is part of the
   ## model -- but it was not estimated here and has no interval. The default is
   ## therefore what the covariance actually covers.
@@ -918,10 +1011,16 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       if (length(held) == 1L) "ies" else "y"),
       class = "multilpa_held_parameter", call = NULL))
   }
-  standard_errors <- sqrt(pmax(diag(covariance)[parm], 0))
-  critical <- stats::qnorm((1 + level) / 2)
-  intervals <- cbind(estimates[parm] - critical * standard_errors,
-                     estimates[parm] + critical * standard_errors)
+  intervals <- if (identical(attr(information, "method"), "bootstrap")) {
+    percentile <- cbind(information$conf_low, information$conf_high)
+    rownames(percentile) <- rownames(covariance)
+    percentile[parm, , drop = FALSE]
+  } else {
+    standard_errors <- sqrt(pmax(diag(covariance)[parm], 0))
+    critical <- stats::qnorm((1 + level) / 2)
+    cbind(estimates[parm] - critical * standard_errors,
+          estimates[parm] + critical * standard_errors)
+  }
   colnames(intervals) <- paste0(format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%")
   intervals
 }

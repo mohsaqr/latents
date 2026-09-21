@@ -12,7 +12,13 @@
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust"),
-  adjust = .multilpa_p_adjust_methods
+  adjust = .multilpa_p_adjust_methods,
+  method = c("wald", "bootstrap"),
+  iter = 199L,
+  n_starts = 10L,
+  max_iter = 1000L,
+  tol = 1e-08,
+  seed = NULL
 )
 
 parameter_inference(
@@ -21,7 +27,13 @@ parameter_inference(
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust"),
-  adjust = .multilpa_p_adjust_methods
+  adjust = .multilpa_p_adjust_methods,
+  method = c("wald", "bootstrap"),
+  iter = 199L,
+  n_starts = 10L,
+  max_iter = 1000L,
+  tol = 1e-08,
+  seed = NULL
 )
 
 \method{parameter_inference}{multilpa}(
@@ -30,7 +42,13 @@ parameter_inference(
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust"),
-  adjust = .multilpa_p_adjust_methods
+  adjust = .multilpa_p_adjust_methods,
+  method = c("wald", "bootstrap"),
+  iter = 199L,
+  n_starts = 10L,
+  max_iter = 1000L,
+  tol = 1e-08,
+  seed = NULL
 )
 }
 \arguments{
@@ -62,6 +80,28 @@ means, so it is applied only when it is asked for, and the method that was
 applied is recorded in the `adjust` attribute. The correction is taken
 over the tests the table actually reports; bounded parameters carry no test
 and do not count towards the family.}
+
+\item{method}{How uncertainty is measured. `"wald"`, the default, inverts the
+observed information in the estimation coordinates, and is available for
+the four covariance structures those coordinates can express: EEI, VVI, EEE
+and VVV. `"bootstrap"` resamples *groups* with replacement, refits inside
+the same covariance family, undoes the relabelling each refit comes back
+with, and reports the percentile interval and the standard deviation of the
+replicates. It is available for all fourteen structures, because it needs
+no coordinate chart for the constraint. Groups are the resampling unit
+rather than rows, so the interval carries the same independence assumption
+as `vcov_type = "robust"` and not the stronger one `"observed"` makes.}
+
+\item{iter}{Number of resamples when `method = "bootstrap"`, at least two.
+The default 199 is enough for a standard error; a 95% percentile interval
+is steadier at 999 and above.}
+
+\item{n_starts, max_iter, tol}{Passed to each bootstrap refit. Each replicate
+is a fresh fit, so `n_starts` buys the same protection against a local
+maximum here as it does in [multilpa()], at the same multiple of the cost.}
+
+\item{seed}{Optional seed for the resampling. The stream is restored on exit,
+so a seeded call leaves the caller's random state exactly as it found it.}
 }
 \value{
 A base `data.frame` with one row per free parameter and the same
@@ -97,6 +137,19 @@ A base `data.frame` with one row per reported parameter and the
   the values they were held at, so every standard error, interval and p-value
   is conditional on that measurement solution and does not propagate its
   uncertainty. See [fit_staged()] for what that conditioning means.
+
+  With `method = "bootstrap"` the table has the same columns and the same
+  rows, `estimate` is still the fitted value, `standard_error` is the
+  standard deviation of the replicates and `conf_low`/`conf_high` are the
+  percentile interval. `statistic`, `p_value` and `p_adjusted` are `NA`
+  throughout: putting a normal approximation back on top of the replicates
+  the interval was read from is the assumption this path exists to avoid, so
+  the interval is the inference. Its attributes are `covariance` (the
+  covariance of the replicates, which `vcov()` returns), `level`, `method`,
+  `iter`, `n_valid`, `replicates` (the kept replicates, one row each),
+  `messages` (why a resample was dropped, `NA` where it was not),
+  `structure` and `fixed`; `covariance_unconstrained` is `NULL`, because the
+  estimation-scale chart is what this path does without.
 
   Diagnostics of the fit as a whole travel as attributes rather than as
   columns repeated down every row: `covariance` and `covariance_unconstrained`
@@ -141,6 +194,14 @@ Class-membership coefficients are on the multinomial logit scale
   with fewer independent groups than reported parameters. A fit whose score
   is still far from zero is reported with a `multilpa_unconverged` warning
   rather than refused.
+
+  `method = "bootstrap"` adds `multilpa_unsupported_inference` for a fit that
+  holds a measurement block --- the held values came from another fit and
+  resampling these data does not resample them --- and
+  `multilpa_bootstrap_failed` when fewer than two resamples produced a usable
+  fit, whose message carries the first reason one gave. Resamples that fail
+  or do not converge are dropped with a `multilpa_bootstrap_dropped` warning
+  naming how many, rather than being silently left out of the count.
 }
 
 \examples{
@@ -172,4 +233,12 @@ parameter_inference(fit)
 
 # Many tests in one table: name the correction, do not apply one by stealth.
 parameter_inference(fit, adjust = "BH")
+
+# A structure that constrains the shape has no Wald chart. The bootstrap
+# resamples schools and refits inside the same family, so it reports one.
+shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
+                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1,
+                   volume = "varying", shape = "equal", orientation = "axis")
+parameter_inference(shaped, method = "bootstrap", iter = 25, n_starts = 1,
+                    seed = 1)
 }

@@ -23,7 +23,9 @@ the scale the model is actually estimated on: log variances for a diagonal
 fit, log-Cholesky coordinates for a full-covariance fit, and
 baseline-category logits for the mixing and response probabilities.}
 
-\item{...}{Additional arguments passed to [parameter_inference()].}
+\item{...}{Additional arguments passed to [parameter_inference()], including
+`method = "bootstrap"`, which is how a covariance structure the Wald path
+cannot chart reports one here.}
 }
 \value{
 A square numeric matrix with one row and column per *estimated*

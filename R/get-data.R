@@ -880,6 +880,28 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   invisible(NULL)
 }
 
+#' The profile means as one row per profile
+#'
+#' The long measurement table is one row per profile *and* indicator, which is
+#' the right shape to compute on and the wrong one to read: three profiles over
+#' five indicators is fifteen lines of console for a table that has three rows.
+#' This is the shape the means are read in. It is built by reshaping the long
+#' table rather than from `x$means`, so the two cannot report different numbers.
+#'
+#' @param x A fitted model of this package.
+#' @return A `data.frame` with one row per profile and one column per
+#'   continuous indicator.
+#' @noRd
+.multilpa_wide_means <- function(x) {
+  long <- .multilpa_profile_frame(x)
+  wide <- stats::reshape(long[c("profile", "indicator", "mean")],
+                         idvar = "profile", timevar = "indicator",
+                         direction = "wide")
+  names(wide) <- sub("^mean\\.", "", names(wide))
+  row.names(wide) <- NULL
+  wide
+}
+
 #' Print a fit's primary table under its header
 #'
 #' A fitted model auto-prints its own estimates. The alternative is a header
@@ -901,6 +923,27 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
               rows >= 0 && rows == as.integer(rows))
   table <- get_data(x)
   name <- names(.multilpa_catalogue(x))[1L]
+  ## The Gaussian measurement is printed one row per profile. Everything else
+  ## keeps the catalogue's own shape, which is already one row per thing.
+  if (identical(name, "profiles") && nrow(table) > 0L) {
+    wide <- .multilpa_wide_means(x)
+    ## How big each profile is belongs beside what it looks like: a mean is read
+    ## differently when it describes two percent of the sample. Matched on the
+    ## class label rather than on row order, which the two tables need not share.
+    sizes <- .multilpa_count_frame(x)
+    individuals <- sizes[sizes$level == "individuals", , drop = FALSE]
+    at <- match(wide$profile, individuals$class)
+    wide$count <- individuals$effective_count[at]
+    wide$proportion <- individuals$effective_proportion[at]
+    cat("\n")
+    print(utils::head(wide, rows), row.names = FALSE)
+    if (nrow(wide) > rows) {
+      cat(sprintf("   ... %d more profiles.\n", nrow(wide) - rows))
+    }
+    cat("\nVariances and standard errors: get_data(x, \"profiles\").",
+        "\nEvery other table: get_data(x, what = ), or get_data(x, \"all\").\n")
+    return(invisible(NULL))
+  }
   if (nrow(table) == 0L && length(x$categorical %||% character()) > 0L) {
     table <- get_data(x, "responses")
     name <- "responses"

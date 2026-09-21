@@ -183,9 +183,11 @@ classes become types of *change pattern*, not types of unit.}
 
   Anything other than EEI, VVI, EEE or VVV is maximized across every profile
   at once, so it cannot be combined with a held `variances` block, and
-  [parameter_inference()] refuses it with `multilpa_unsupported_inference`:
-  the free coordinates are log variances, which is the wrong chart for a
-  constrained volume, shape or orientation.}
+  `parameter_inference(method = "wald")` refuses it with
+  `multilpa_unsupported_inference`: the free coordinates are log variances,
+  which is the wrong chart for a constrained volume, shape or orientation.
+  `parameter_inference(method = "bootstrap")` reports all fourteen: it
+  resamples groups and refits inside the same family, so it needs no chart.}
 }
 \value{
 An `multilpa` object containing `means`, `variances`, optional

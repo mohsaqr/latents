@@ -634,14 +634,27 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     tryCatch(withCallingHandlers({
       simulated <- .multilpa_simulate(null_model)
       models <- lapply(list(null_model, alternative_model), function(model) {
-        multilpa(simulated, model$vars, model$id, model$n_profiles,
-                    model$n_group_classes,
-                    variance_model = model$variance_model, n_starts = n_starts,
-                    max_iter = max_iter, tol = tol, min_variance = model$min_variance,
-                    covariance_model = if (is.null(model$covariance_model)) "diagonal" else model$covariance_model,
-                    categorical = model$categorical %||% character(),
-                    min_probability = model$min_probability %||% 1e-10,
-                    start = constraint$start, fixed = constraint$fixed)
+        ## `variance_model` and `covariance_model` cannot express a structure
+        ## that constrains the volume, the shape or the orientation: refitting
+        ## from them alone returned a VEI replicate as VVI, two parameters
+        ## wider, so the reference distribution belonged to a different pair of
+        ## models than the statistic compared against it.
+        family <- .multilpa_structure_arguments(
+          model$covariance_structure %||% NA_character_)
+        if (length(family) == 0L) {
+          family <- list(variance_model = model$variance_model,
+                         covariance_model = model$covariance_model %||% "diagonal")
+        }
+        do.call(multilpa, c(
+          list(data = simulated, vars = model$vars, id = model$id,
+               n_profiles = model$n_profiles,
+               n_group_classes = model$n_group_classes),
+          family,
+          list(n_starts = n_starts, max_iter = max_iter, tol = tol,
+               min_variance = model$min_variance,
+               categorical = model$categorical %||% character(),
+               min_probability = model$min_probability %||% 1e-10,
+               start = constraint$start, fixed = constraint$fixed)))
       })
       statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
       valid <- all(vapply(models, `[[`, logical(1), "converged")) &&

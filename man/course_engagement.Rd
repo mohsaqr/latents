@@ -15,12 +15,16 @@ A data frame with 1422 rows (106 students, 32 courses, up to 15
   \item{sequence}{Integer, the position of this course in the student's own
     order, 1 upwards. Pass it as `time`. Students who took fewer courses have
     shorter sequences, so the panel is ragged.}
-  \item{browse}{Numeric, `log1p` of course page views.}
-  \item{lectures}{Numeric, `log1p` of lecture videos viewed.}
-  \item{forum_read}{Numeric, `log1p` of forum posts read.}
-  \item{forum_post}{Numeric, `log1p` of forum posts written.}
-  \item{attendance}{Numeric, `log1p` of days the student was active in the
-    course. It is **generated from the four click measures** and then
+  \item{browse}{Numeric, course page views as `log1p(events)`, standardized
+    within course.}
+  \item{lectures}{Numeric, lecture videos viewed as `log1p(events)`, standardized
+    within course.}
+  \item{forum_read}{Numeric, forum posts read as `log1p(events)`, standardized
+    within course.}
+  \item{forum_post}{Numeric, forum posts written as `log1p(events)`, standardized
+    within course.}
+  \item{attendance}{Numeric, days the student was active in the course as
+    `log1p(events)`, standardized within course. It is **generated from the four click measures** and then
     blurred, because a student is recorded present on a day precisely because
     they clicked something, and a day is a coarse unit -- one tick however
     much happened inside it. The indicators are therefore locally dependent
@@ -94,11 +98,27 @@ you: under a diagonal model [enumerate_classes()] keeps preferring more
 classes, because extra classes absorb residual association the model is not
 allowed to express directly.
 
-The c("browse", "lectures", "forum_read", "forum_post", "attendance") indicators are natural-log counts, `log1p(events)`. Raw
-learning-analytics counts are strongly right-skewed, and on an unlogged draft
-of these data the skew alone looked like an extra class, exactly as a floor
-or ceiling effect does. Back-transform with `expm1()` to read them as events:
-a `browse` of 3.9 is about 48 page views.
+The five activity indicators are **standardized within course**: each value is
+that enrolment's distance from its own course's mean, in that course's
+standard deviations. Every indicator therefore has mean zero and standard
+deviation one within every course, and a `browse` of 1.2 reads as "1.2
+standard deviations more active than the average enrolment in that course".
+This is the scale a learning-analytics reader meets, because activity volume
+is not comparable across courses: a course with weekly quizzes generates more
+clicks than a seminar whatever its students are like, so an analyst compares a
+student with their coursemates rather than with the whole cohort.
+
+In this simulation the courses do not in fact differ in activity volume, so
+the standardization sets the scale rather than removing a course effect. It is
+stated here rather than left implicit because a reader who assumed otherwise
+would misread what the `course` column does.
+
+The standardization is applied to `log1p(events)`, not to the raw counts.
+Standardizing is affine within a course, so it leaves the within-course skew
+exactly as it found it, and raw learning-analytics counts are strongly
+right-skewed: on an unlogged draft of these data the skew alone looked like an
+extra class, exactly as a floor or ceiling effect does. The log removes the
+skew; the standardization puts the courses on a common footing afterwards.
 }
 
 \examples{

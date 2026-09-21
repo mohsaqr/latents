@@ -71,7 +71,10 @@ numbers of enrolments. The model groups observations by student; it does not
 estimate a separate course effect.
 
 The five activity indicators describe what happened during each enrolment.
-They are stored on the natural-log scale, as `log1p(count)`.
+They are stored as `log1p(count)` standardized within course, so each value is
+that enrolment's distance from its own course's average, in that course's
+standard deviations. Activity volume is not comparable across courses, so a
+student is compared with their coursemates rather than with the whole cohort.
 
 | Variable | Definition |
 |---|---|
@@ -163,9 +166,9 @@ fit
 ```
 
 Profile 1 has the highest mean on every indicator, profile 2 is intermediate,
-and profile 3 has the lowest means. For `attendance`, their means are 3.753,
-2.915, and 1.840 on the log scale. For `browse`, they are 4.017, 3.793, and
-2.845. These profiles describe different levels of activity, with a particularly
+and profile 3 has the lowest means. For `attendance`, their means are 1.133,
+0.256, and -0.940 standard deviations from each course's average. For `browse`,
+they are 0.709, 0.387, and -0.777. These profiles describe different levels of activity, with a particularly
 clear attendance difference between profiles 1 and 2.
 
 The profile numbers are identifiers assigned during estimation. In this fit,
@@ -187,11 +190,12 @@ active variance bounds. The agreement supports the numerical stability of
 this fitted solution.
 
 `plot()` compares the estimated profile means across the five activity
-indicators. The vertical axis is the log count scale, and line types and point
+indicators. The vertical axis is in standard deviations from each course's
+mean, and line types and point
 symbols distinguish the profiles as well as colour.
 
 ```{r profiles}
-plot(fit, subtitle = "Profile means on the log1p activity-count scale")
+plot(fit, subtitle = "Profile means, standard deviations from each course mean")
 ```
 
 The three lines retain the same ordering across all five indicators. Profiles

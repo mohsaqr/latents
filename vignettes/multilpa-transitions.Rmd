@@ -45,7 +45,9 @@ Five indicators describe engagement within each course. `browse` measures
 course page views, `lectures` measures lecture videos viewed, `forum_read`
 measures forum posts read, `forum_post` measures posts written, and `attendance`
 measures days of online activity. Each indicator is stored as `log1p` of its
-activity count: higher values indicate more activity. The indicator names are
+activity count, standardized within course: a value is that enrolment's
+distance from its own course's average, in that course's standard deviations,
+and higher values indicate more activity. The indicator names are
 collected in `vars` for use in the model.
 
 ```{r variables}
@@ -95,11 +97,11 @@ moves
 ```
 
 The model uses 1,422 enrolments from 106 students, with histories extending to
-15 courses. The selected solution converges after 107 iterations. Its profile
+15 courses. The selected solution converges after 276 iterations. Its profile
 means distinguish three activity patterns: profile 1 has the highest mean on
 every indicator, profile 2 is intermediate, and profile 3 has the lowest means.
-For example, their mean `attendance` values are 3.807, 2.960, and 1.851 on the
-log scale. We therefore refer to them as the higher-, intermediate-, and
+For example, their mean `attendance` values are 1.091, 0.244, and -0.928
+standard deviations from each course's mean. We therefore refer to them as the higher-, intermediate-, and
 lower-activity profiles. These labels describe this fitted model's means and
 must be checked again when interpreting a different fit.
 

@@ -275,12 +275,13 @@
     return(invisible(NULL))
   }
   stop(errorCondition(sprintf(paste(
-    "Standard errors are not available for the %s covariance structure. It",
-    "constrains the volume or the shape across profiles, and the free",
-    "coordinates this package differentiates -- one log variance per profile",
-    "and indicator -- do not express that constraint. Refit with",
-    "`variance_model` alone for EEI or VVI, or `covariance_model = \"full\"`",
-    "for EEE or VVV."), structure),
+    "Wald standard errors are not available for the %s covariance structure.",
+    "It constrains the volume, the shape or the orientation across profiles,",
+    "and the free coordinates this package differentiates -- one log variance",
+    "per profile and indicator -- do not express that constraint. Use",
+    "`method = \"bootstrap\"`, which resamples groups and needs no such chart,",
+    "or refit with `variance_model` alone for EEI or VVI, or",
+    "`covariance_model = \"full\"` for EEE or VVV."), structure),
     class = "multilpa_unsupported_inference", call = NULL))
 }
 

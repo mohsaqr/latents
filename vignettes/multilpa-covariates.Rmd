@@ -32,7 +32,8 @@ library(multilpa)
 The bundled synthetic `course_engagement` data record enrolments nested within
 students. The five indicators are page views (`browse`), lecture videos viewed
 (`lectures`), forum posts read (`forum_read`), posts written (`forum_post`), and
-active days (`attendance`), all stored as `log1p` counts. `previous_grade` is the
+active days (`attendance`), all stored as `log1p` counts standardized within
+course. `previous_grade` is the
 standardized grade from the preceding course; an entry grade is used for the
 first course. Its temporal position makes it a predictor of subsequent
 engagement. The [introductory guide](multilpa.html) explains the longitudinal

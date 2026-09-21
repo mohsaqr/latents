@@ -252,6 +252,28 @@ fit_staged <- function(data, vars, id, n_profiles,
       n_group_classes == floor(n_group_classes),
     "`measurement` must be NULL or a fitted `multilpa` model" =
       is.null(measurement) || inherits(measurement, "multilpa"))
+  ## A staged fit holds the whole measurement, and `multilpa()` refuses to hold
+  ## the variances of a structure that is maximized across every profile at
+  ## once. This stage cannot name those structures either -- it passes
+  ## `variance_model` and `covariance_model`, which reach only four of the
+  ## fourteen -- so a constrained measurement used to be fitted as the nearest
+  ## structure those two can express: a VEI measurement came back recorded as
+  ## VVI, holding the right numbers under the wrong model and counting one
+  ## variance parameter too many. It is refused here instead, where the reason
+  ## can name the structure the caller actually fitted.
+  if (!is.null(measurement)) {
+    held_structure <- measurement$covariance_structure %||% NA_character_
+    if (!is.na(held_structure) &&
+        !held_structure %in% .multilpa_inferable_structures()) {
+      stop(errorCondition(sprintf(paste(
+        "`measurement` was fitted with the %s covariance structure, which is",
+        "maximized across every profile at once, so holding it would not leave",
+        "each profile at its maximum. Refit the measurement as EEI, VVI, EEE or",
+        "VVV, or fit both levels together with `multilpa()`, which can estimate",
+        "%s directly."), held_structure, held_structure),
+        class = "multilpa_bad_stage", call = NULL))
+    }
+  }
   call <- match.call()
   shared <- list(data = data, vars = vars, id = id,
                  n_profiles = n_profiles, variance_model = variance_model,
