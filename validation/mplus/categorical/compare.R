@@ -2,6 +2,7 @@
 # Mplus 9 run with CATEGORICAL binary indicators.
 # Run from the project root: Rscript validation/mplus/categorical/compare.R
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
+source(file.path("validation", "fixtures.R"))
 artifact_dir <- file.path("validation", "mplus", "categorical")
 
 indicators <- paste0("u", 1:5)
@@ -106,6 +107,6 @@ saveRDS(list(data = raw, mplus_thresholds = mplus_thresholds,
              mplus_group_probabilities = mplus_group_probabilities,
              mplus_log_likelihood = mplus_log_likelihood,
              n_parameters = n_parameters),
-        file.path("tests", "fixtures", "mplus", "twolevel-categorical.rds"))
+        mplus_fixture("twolevel-categorical.rds"))
 write.csv(comparison, file.path(artifact_dir, "comparison.csv"), row.names = FALSE)
 cat("Categorical comparison complete.\n")

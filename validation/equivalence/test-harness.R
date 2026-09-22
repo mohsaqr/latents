@@ -57,6 +57,29 @@ test_that("check_validation_api accepts current calls and dots-forwarded ones", 
   expect_equal(nrow(check_validation_api(paths = current)), 0L)
 })
 
+test_that("check_validation_api names a call to a removed verb", {
+  # get_data() was renamed get_results() in 0.4.0 and seven scripts kept the
+  # old name, unseen, because only still-exported verbs were being checked.
+  removed <- file.path(scratch, "removed.R")
+  writeLines(c('x <- get_data(fit, "entropy")',
+               'y <- fit_transitions(d, "y", "g", n_profiles = 2, time = "t")',
+               'lmr_lrt(a, b)'), removed)
+  found <- check_validation_api(paths = removed)
+  expect_equal(found$line, 1:3)
+  expect_equal(found$call, c("get_data", "fit_transitions", "lmr_lrt"))
+  expect_equal(found$replacement[1:2], c("get_results", "lta"))
+  expect_match(found$replacement[3L], "^deferred:")
+  expect_error(.stop_if_stale_api(found), "get_data\\(\\) -> get_results",
+               class = "multilpa_stale_validation_api")
+})
+
+test_that("a script defining a removed name itself is calling its own binding", {
+  own <- file.path(scratch, "own.R")
+  writeLines(c('lmr_lrt <- deferred_verb("lmr.R", "lmr_lrt")',
+               'lmr_lrt(a, b)'), own)
+  expect_equal(nrow(check_validation_api(paths = own)), 0L)
+})
+
 test_that("the whole validation tree matches the loaded package", {
   expect_equal(nrow(check_validation_api(root = ".")), 0L)
 })
@@ -109,11 +132,11 @@ test_that("a skipped suite is recorded, and does not stop the other suites", {
   writeLines("# no sources", file.path(scratch, "R", "empty.R"))
 
   run <- suppressMessages(run_equivalence(root = scratch, check_api = FALSE))
-  status <- get_data(run, "suites")
+  status <- as.data.frame(run, what = "suites")
   expect_equal(status$status, c("skipped", "ran", "failed"))
   expect_match(status$reason[status$suite == "alpha"], "not installed")
   expect_match(status$reason[status$suite == "gamma"], "this suite is broken")
-  expect_equal(nrow(get_data(run, "comparisons")), 1L)
+  expect_equal(nrow(as.data.frame(run, what = "comparisons")), 1L)
 })
 
 # --------------------------------------------------------------------------
@@ -166,7 +189,7 @@ test_that("a run records the version and fingerprint it was produced under", {
   writeLines("# a source file", file.path(root, "R", "one.R"))
 
   run <- suppressMessages(run_equivalence(root = root, check_api = FALSE))
-  session <- get_data(run, "session")
+  session <- as.data.frame(run, what = "session")
   expect_true(all(c("multilpa", "multilpa at end", "R/ fingerprint",
                     "source unchanged during run") %in% session$component))
   expect_equal(equivalence_provenance(run, "multilpa"),

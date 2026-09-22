@@ -335,27 +335,27 @@ print.multilpa_random_intercept <- function(x, rows = 20L, ...) {
 #' fit <- fit_random_intercept(example_data, c("score_a", "score_b"), "group",
 #'                             n_profiles = 2, n_starts = 2, seed = 1)
 #' summary(fit)
-#' get_data(fit, what = "random_intercepts")
+#' get_results(fit, what = "random_intercepts")
 #' @export
 summary.multilpa_random_intercept <- function(object, ...) {
   stopifnot("`object` must be a fitted `multilpa_random_intercept` model" =
               inherits(object, "multilpa_random_intercept"))
-  # One builder for the fit and for its summary, so `get_data(x, "model")`
+  # One builder for the fit and for its summary, so `get_results(x, "model")`
   # and the printed header cannot describe the same fit differently.
   model <- .multilpa_intercept_fit_frame(object)
   result <- list(
     model = model,
-    profiles = get_data(object, "profiles"),
-    random_intercepts = get_data(object, "random_intercepts"),
+    profiles = get_results(object, "profiles"),
+    random_intercepts = get_results(object, "random_intercepts"),
     starts = object$starts,
     profile_probabilities = object$profile_probabilities,
     effective_profile_counts = object$effective_profile_counts,
     boundary_flags = object$boundary_flags,
     call = object$call)
-  # Every table the fit can produce, built once here, so `get_data()` on the
+  # Every table the fit can produce, built once here, so `get_results()` on the
   # summary serves the same tables the fit would and `print()` can show them
   # all without recomputing anything.
-  result$tables <- get_data(object, "all")
+  result$tables <- get_results(object, "all")
   class(result) <- "summary_multilpa_random_intercept"
   result
 }
@@ -364,7 +364,7 @@ summary.multilpa_random_intercept <- function(object, ...) {
 #' @param x A `summary_multilpa_random_intercept` object.
 #' @param digits Number of printed significant digits.
 #' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_data()` call that
+#'   to that depth, with its remaining row count and the `get_results()` call that
 #'   returns it whole.
 #' @param ... Passed to the underlying `data.frame` printing.
 #' @return The summary, invisibly. Called for the side effect of printing the
@@ -413,7 +413,7 @@ print.summary_multilpa_random_intercept <- function(x, digits = 4L, rows = 10L,
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' A summary carries every table the object it describes can produce, and
-#' [get_data()] names them.
+#' [get_results()] names them.
 #'
 #' @param x An object of class `summary_multilpa_random_intercept`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -421,7 +421,7 @@ print.summary_multilpa_random_intercept <- function(x, digits = 4L, rows = 10L,
 #' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: one row per profile and continuous indicator.
-#' @seealso [get_data()] for every other table this summary holds.
+#' @seealso [get_results()] for every other table this summary holds.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -529,7 +529,7 @@ plot.multilpa_random_intercept <- function(x, what = c("profiles",
 #' @return `NULL`, invisibly.
 #' @noRd
 .multilpa_plot_random_intercepts <- function(x, main, subtitle, palette, style) {
-  frame <- get_data(x, "random_intercepts")
+  frame <- get_results(x, "random_intercepts")
   order_by_mean <- order(frame$mean, frame$group)
   centre <- frame$mean[order_by_mean]
   spread <- frame$sd[order_by_mean]

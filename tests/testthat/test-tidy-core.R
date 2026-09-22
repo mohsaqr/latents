@@ -268,7 +268,10 @@ test_that("every condition class raised in R/ is documented, and every documente
   skip_on_cran()
   # A built package does not ship R/, so this is a source-tree check only.
   source_dir <- file.path(testthat::test_path("..", ".."), "R")
-  skip_if_not(dir.exists(source_dir), "R/ sources are not available")
+  # An installed package also has an R/ directory, holding the lazy-load
+  # database rather than sources, so test for a source file, not the folder.
+  skip_if_not(file.exists(file.path(source_dir, "conditions.R")),
+              "R/ sources are not available")
   files <- list.files(source_dir, pattern = "[.]R$", full.names = TRUE)
 
   raised <- unlist(lapply(files, function(path) {
@@ -305,7 +308,8 @@ test_that("every condition class raised in R/ is documented, and every documente
 test_that("every warning the package raises carries a class", {
   skip_on_cran()
   source_dir <- test_path("..", "..", "R")
-  skip_if_not(dir.exists(source_dir), "package sources not available")
+  skip_if_not(file.exists(file.path(source_dir, "conditions.R")),
+              "package sources not available")
   # `?"multilpa-conditions"` states the classes are the contract and the
   # messages are not. A bare `warning()` breaks that promise silently: a caller
   # muffling an expected qualification can only match message text, which

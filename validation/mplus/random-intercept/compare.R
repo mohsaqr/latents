@@ -1,11 +1,16 @@
 # Run from the package root after the retained Mplus analyses.
 pkgload::load_all(".")
+source(file.path("validation", "fixtures.R"))
 directory <- file.path("validation", "mplus", "random-intercept")
 data <- read.table(file.path(directory, "one-profile.dat"), col.names = c("y1", "y2", "group"))
 str(data)
 print(head(data))
 print(summary(data))
 stopifnot(!anyNA(data), all(vapply(data, is.numeric, logical(1))))
+# fit_random_intercept() is deferred (future/README.md); this comparison is the
+# evidence for restoring it, so it loads the deferred source.
+source(file.path("validation", "deferred.R"))
+fit_random_intercept <- deferred_verb("random-intercept.R", "fit_random_intercept")
 fit <- fit_random_intercept(data, "y1", "group", 1L,
   n_starts = 2L, tol = 1e-11, seed = 983L)
 reference <- scan(file.path(directory, "univariate-results.dat"), quiet = TRUE)
@@ -26,7 +31,7 @@ saveRDS(list(data = data[c("y1", "group")],
   mplus_version = "Mplus VERSION 9 DEMO (Mac)",
   source = file.path(directory, "univariate.out"),
   md5 = tools::md5sum(file.path(directory, c("one-profile.dat", "univariate.out", "univariate-results.dat")))),
-  file.path("tests", "fixtures", "mplus", "random-intercept-one-profile.rds"))
+  mplus_fixture("random-intercept-one-profile.rds"))
 
 # Diagnose the separate singular two-indicator Mplus specification without
 # pretending it is the exact rank-one random-intercept model.

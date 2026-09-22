@@ -112,7 +112,7 @@ suite_depmixs4 <- function() {
   # raises and records the first one in suites.csv, so a start that hit its
   # iteration cap is visible in the evidence rather than hidden by the call
   # that produced it.
-  fit <- fit_transitions(
+  fit <- lta(
     frame, indicators, "g", n_profiles = profiles, time = "t",
     categorical = if (categorical) "c1" else character(),
     n_starts = 8, seed = seed, max_iter = 2000, tol = 1e-12)

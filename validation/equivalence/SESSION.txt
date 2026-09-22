@@ -1,5 +1,5 @@
-multilpa 0.11.1
-generated 2026-09-20 22:12:39 EEST
+multilpa 0.5.0
+generated 2026-09-22 19:45:35 EEST
 platform aarch64-apple-darwin20
 
 R version 4.5.2 (2025-10-31)
@@ -20,7 +20,7 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] multilpa_0.11.1 testthat_3.3.2 
+[1] multilpa_0.5.0 testthat_3.3.2
 
 loaded via a namespace (and not attached):
   [1] mnormt_2.1.2          glca_1.4.2            sandwich_3.1-1       

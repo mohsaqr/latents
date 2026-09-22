@@ -14,8 +14,8 @@ test_that("a model family without residuals says so instead of failing", {
                               c("browse", "lectures", "forum_read"),
                               id = "student", n_profiles = 2, n_starts = 1, seed = 1)
   quality <- diagnostics(fit)
-  expect_s3_class(get_data(quality, "entropy"), "data.frame")
-  expect_error(get_data(quality, "residuals"),
+  expect_s3_class(get_results(quality, "entropy"), "data.frame")
+  expect_error(get_results(quality, "residuals"),
                class = "multilpa_no_group_classes")
   expect_output(print(quality), "not available for this model family")
 })
@@ -27,17 +27,17 @@ test_that("random-intercept diagnostics distinguish profiles from group classes"
   d <- data.frame(g = rep(1:20, each = 5),
                   y = rep(rnorm(20), each = 5) + rnorm(100))
   fit <- fit_random_intercept(d, "y", "g", n_profiles = 1, n_starts = 1)
-  indices <- get_data(fit, "information_criteria", format = "long")
+  indices <- get_results(fit, "information_criteria", format = "long")
   expect_equal(subset(indices, criterion == "bic" & convention == "groups")$value,
                fit$bic)
   expect_equal(subset(indices, criterion == "bic" & convention == "individuals")$value,
                fit$bic_individual)
   expect_true(all(is.na(subset(indices, convention == "groups" &
                                 criterion %in% c("awe", "icl"))$value)))
-  expect_equal(get_data(fit, "classification", level = "both")$level, "individuals")
-  expect_error(get_data(fit, "classification", level = "groups"), "no discrete group")
-  expect_equal(get_data(fit, "entropy")$level, "individuals")
-  expect_equal(get_data(fit, "entropy")$entropy_sum, 0)
+  expect_equal(get_results(fit, "classification", level = "both")$level, "individuals")
+  expect_error(get_results(fit, "classification", level = "groups"), "no discrete group")
+  expect_equal(get_results(fit, "entropy")$level, "individuals")
+  expect_equal(get_results(fit, "entropy")$entropy_sum, 0)
 })
 
 
@@ -47,16 +47,16 @@ test_that("a model with no discrete group classes refuses by condition class", {
   data <- data.frame(g = rep(seq_len(20L), each = 5L),
                      y = rep(stats::rnorm(20L), each = 5L) + stats::rnorm(100L))
   fit <- fit_random_intercept(data, "y", "g", n_profiles = 1, n_starts = 1)
-  expect_error(get_data(fit, "classification", level = "groups"),
+  expect_error(get_results(fit, "classification", level = "groups"),
                class = "multilpa_no_group_classes")
-  expect_error(get_data(fit, "average_posteriors", level = "groups"),
+  expect_error(get_results(fit, "average_posteriors", level = "groups"),
                class = "multilpa_no_group_classes")
-  expect_error(get_data(fit, "residuals", data = data),
+  expect_error(get_results(fit, "residuals", data = data),
                class = "multilpa_no_group_classes")
   # "both" degrades to the level the model actually has.
-  expect_identical(unique(get_data(fit, "classification", level = "both")$level),
+  expect_identical(unique(get_results(fit, "classification", level = "both")$level),
                    "individuals")
-  expect_identical(unique(get_data(fit, "average_posteriors", level = "both")$level),
+  expect_identical(unique(get_results(fit, "average_posteriors", level = "both")$level),
                    "individuals")
 })
 
@@ -65,7 +65,7 @@ test_that("a model with no discrete group classes refuses by condition class", {
 test_that("a level a fit has not is refused rather than silently dropped", {
   intercepts <- fit_random_intercept(course_engagement, activity, "student",
                                      n_profiles = 2, n_starts = 1, seed = 1)
-  expect_error(get_data(intercepts, "classification", level = "groups"),
+  expect_error(get_results(intercepts, "classification", level = "groups"),
                class = "multilpa_no_group_classes")
 })
 
@@ -220,15 +220,15 @@ test_that("a random-intercept summary is classed, tidy and fully named", {
   expect_false(anyNA(names(summary_object)))
   expect_output(print.summary_multilpa_random_intercept(summary_object),
                 "Random-intercept LPA")
-  model <- get_data(summary_object, "model")
+  model <- get_results(summary_object, "model")
   expect_identical(nrow(model), 1L)
   expect_equal(model$random_intercept_sd, fit$random_sd)
   expect_equal(model$log_likelihood, fit$log_likelihood)
   expect_true(model$quadrature_check_passed)
-  intercepts <- get_data(summary_object, "random_intercepts")
+  intercepts <- get_results(summary_object, "random_intercepts")
   expect_identical(nrow(intercepts), fit$n_groups)
   expect_identical(names(intercepts), c("group", "group_size", "mean", "sd"))
-  expect_identical(nrow(get_data(summary_object, "starts")), 2L)
+  expect_identical(nrow(get_results(summary_object, "starts")), 2L)
 })
 
 
@@ -246,7 +246,7 @@ test_that("random-intercept coefficients are named, natural and complete", {
   # name reads back into the columns parameter_inference() reports.
   expect_true(all(vapply(strsplit(names(estimates), ".", fixed = TRUE), length,
                          integer(1)) >= 3L))
-  profiles <- get_data(fit, "profiles")
+  profiles <- get_results(fit, "profiles")
   expect_equal(unname(estimates[["measurement.mean.profile_1.score_a"]]),
                subset(profiles, profile == 1L & indicator == "score_a")$mean)
   expect_equal(unname(estimates[["measurement.variance.profile_1.score_a"]]),

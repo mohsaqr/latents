@@ -1,0 +1,40 @@
+//LG6.1//
+version = 6.1
+infile 'c12.dat'
+
+model
+title 'c12_course_engagement';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+   outfile 'c12_course_engagement_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent browse continuous, lectures continuous, forum_read continuous, forum_post continuous, attendance continuous;
+   latent
+      GClass group nominal 2,
+      Cluster nominal 2;
+equations
+   GClass <- 1;
+   Cluster <- 1 + GClass;
+   browse <- 1 + Cluster;
+   lectures <- 1 + Cluster;
+   forum_read <- 1 + Cluster;
+   forum_post <- 1 + Cluster;
+   attendance <- 1 + Cluster;
+   browse | Cluster;
+   lectures | Cluster;
+   forum_read | Cluster;
+   forum_post | Cluster;
+   attendance | Cluster;
+end model
+

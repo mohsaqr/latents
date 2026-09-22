@@ -1,90 +1,205 @@
-# Latent GOLD comparison
+# Latent GOLD comparison kit
 
-Latent GOLD 6.1 is **Windows only** and offers a free academic single-user
-licence. It cannot be run on the machine this package is developed on, so this
-directory follows the same pattern as `validation/mplus/`: the datasets and the
-targets are prepared here, someone runs Latent GOLD on a Windows machine, the
-output files are committed, and `compare.R` checks them offline.
+Latent GOLD is the reference implementation of the multilevel latent class
+model this package fits (Vermunt 2003) and of the three-step corrections
+(Vermunt 2010; Bakk, Tekle & Vermunt 2013). It is a Windows program, but runs
+on this machine under Wine; see "Pilot" below. This directory builds the data
+and syntax, has Latent GOLD estimate them, and compares the output here.
 
-## Why Latent GOLD rather than more Mplus
+**Status: run, 2026-09-22. 260 quantities compared, 260 agree, 0 disagree.**
+Latent GOLD's own output is retained in `returned/`, so `compare.R` runs
+offline: **Latent GOLD is not needed again** unless the kit's data or syntax
+change, which `compare.R` detects (`multilpa_stale_latentgold_output`).
 
-Three features in this package have no external anchor at all, and Latent GOLD
-is the reference implementation for all three.
+| What was compared | Rows | Result |
+|---|---|---|
+| Log likelihood and parameter count | 24 | likelihoods within Latent GOLD's printed precision (4.8e-5 at worst); counts exact |
+| Posteriors, over every unit and class | 22 | largest difference 5.6e-6 |
+| Means, variances, group-class proportions, recomputed from Latent GOLD's posteriors | 118 | largest difference 9.7e-7 |
+| Information criteria, in both sample-size conventions | 75 | largest difference 4.8e-5, which is twice the likelihood's rounding |
+| Sample sizes (cases, groups) | 21 | exact |
 
-- **Bivariate residuals for continuous indicators.** Mplus's TECH10 is
-  categorical only. Latent GOLD's BVR is the standard.
-- **Step-3 with the BCH correction.** Jeroen Vermunt wrote the three-step
-  papers and co-authored Latent GOLD, so its Step-3 is as close to the seminal
-  source as software gets. The current check is against `tidySEM`, a
-  third-party reimplementation.
-- **Step-3 with covariates**, the R3STEP equivalent.
+The 63 remaining rows are `awaiting parser`: standard errors, bivariate
+residuals and the Step-3 tables, which exist only in the listing (see below).
+The listings holding them are in `returned/`, so those parsers can be written
+without running Latent GOLD again.
 
-## What to run
+Two findings came out of the first full run, both fixed:
 
-Two datasets are written here by `make-fixtures.R`, tab separated with a header.
+- **The kit wrote invalid syntax** for every case without covariates:
+  `GClass <- 1 + ;`, because `paste0(" + ", character(0), collapse = "")` is
+  `" + "`, not `""`. Only the one case with covariates escaped it. Every
+  generated file is now checked in `test-compare.R`.
+- **This package was stopping short of the optimum.** Eight posterior
+  comparisons sat at 1.1e-4 to 1.7e-4 against a 1e-4 tolerance. Tightening
+  Latent GOLD changed nothing; tightening this package from `tol = 1e-10` to
+  `1e-14` dropped them to about 2e-6. The targets are now fitted at `1e-14`,
+  rather than the tolerance being widened to fit the result.
 
-### 1. `bvr.dat` — bivariate residuals
+## What it checks that nothing else does
 
-400 rows, 40 groups, columns `id`, `group`, `y1`, `y2`, `y3`.
-`y1` and `y2` share a term the profiles do not explain; `y3` does not.
+The package is already checked against Mplus (continuous two-level
+likelihoods), depmixS4 (single-level latent transitions) and tidySEM (BCH
+arithmetic). Latent GOLD adds:
 
-Fit: **two-level cluster model**, 2 latent classes at the case level and 2 at
-the group level, three continuous dependents, local independence, and request
-bivariate residuals in the output.
+| Case | Model | Anchors |
+|---|---|---|
+| `c01_continuous_varying` | 2 profiles x 2 group classes, 3 continuous, class-specific variances | likelihood, posteriors at both levels, means, variances, group proportions, standard errors |
+| `c02_continuous_equal` | as c01, one variance per indicator | as c01 |
+| `c03_full_covariance` | 2 correlated continuous, class-specific full covariance | likelihood, posteriors |
+| `c04_categorical` | 4 nominal items, 3 categories, two-level | likelihood, posteriors |
+| `c05_mixed` | 2 continuous + 2 nominal, two-level | likelihood, posteriors, means, variances |
+| `c06_missing_fiml` | c01 with 10% of values missing at random, FIML | likelihood, posteriors |
+| `c07_covariates` | c01 with a profile predictor and a group-class predictor | likelihood, posteriors, standard errors |
+| `c08_bivariate_residuals` | y1 and y2 locally dependent | likelihood, posteriors, residual ranking |
+| `c09_three_step` | single-level measurement, then four Step-3 analyses | likelihood, posteriors, BCH / modal / proportional means, R3STEP slope |
+| `c10_lta` | latent transitions, 2 states, 4 occasions | likelihood, state posteriors |
+| `c11_lta_mixture` | c10 with two sequence classes | likelihood, posteriors at both levels |
+| `c12_course_engagement` | **the package's own bundled data**: 1,422 enrolments in 106 students, five indicators, 2 x 2 classes — the model the README reports | likelihood, posteriors at both levels, means, variances, information criteria |
 
-This package's values, for the same data:
+Eleven cases are simulated from a fixed seed; c12 is the bundled
+`course_engagement` data, so the package's published example is checked too.
+Every case is fitted here with 50 starts, and
+refused as a target unless its best likelihood is reached by at least two
+starts (every case reaches it with all 50).
 
-| quantity | value |
+## Running it
+
+Only steps 1 and 4 are needed to reproduce the comparison from the retained
+output. Steps 2 and 3 are needed only after the kit's data or syntax change.
+
+1. **Build** (development machine, ~7 minutes):
+   `Rscript validation/latentgold/make-kit.R`
+   Writes `kit/` (data, syntax, `run-all.bat`, `MANIFEST.txt`) and `targets/`.
+2. **Estimate** with a licensed Latent GOLD 6.1. On Windows, set the `LG` path
+   at the top of `run-all.bat` and run it. Under Wine on this machine, run each
+   model as `wine "C:\\Program Files\\LatentGOLD6.1\\lg61.exe" <case>.lgs /b /o
+   <case>.lst` with `WINEPREFIX=~/.wine-latentgold`, from a directory inside
+   the Wine drive. Either way the models run in the order `MANIFEST.txt` lists:
+   `c09_step1` must precede the four `c09_*` Step-3 models, which read its
+   posterior file.
+3. **Collect** every `.lst` listing and every `*_posteriors.txt` file into
+   `validation/latentgold/returned/`.
+4. **Compare**: `Rscript validation/latentgold/compare.R`
+   Writes `comparison.csv` and `REPORT.md`, and exits with status 1 if any
+   quantity disagrees. After a fresh Latent GOLD run, record it with
+   `Rscript validation/latentgold/record-run.R`, which fingerprints the inputs
+   and writes `returned/PROVENANCE.md`.
+
+`Rscript validation/latentgold/test-compare.R` tests the comparison itself on
+imitated Latent GOLD output: rounded, label-swapped posteriors must agree, and
+a moved posterior, a wrong likelihood, a wrong parameter count, a renamed
+column, an absent file and a blank listing must each be caught.
+
+## Pilot: done, except the licence
+
+**Latent GOLD 6.1 runs on this machine**, under Wine (Wine Devel 11.17 in
+`~/.wine-latentgold`, installed 2026-09-22), so the kit no longer needs a
+Windows machine. The pilot of 2026-09-22 confirmed, against Latent GOLD itself:
+
+| Assumption | Result |
 |---|---|
-| log likelihood | -1990.324253 |
-| free parameters | 15 |
-| BVR, `y1` with `y2`, profile 1 | 0.5841 |
-| BVR, `y1` with `y2`, profile 2 | 0.5664 |
-| BVR, `y2` with `y3`, profile 1 | 0.0543 |
+| Batch form `lg61.exe file.lgs /b /o file.lst` | works |
+| `//LG6.1//` header, `options`/`variables`/`equations` blocks | accepted |
+| `bayes categorical=0 variances=0 latent=0 poisson=0` | accepted; the listing reports `Log-prior 0.0000`, so it is maximum likelihood |
+| `groupid`, `latent GClass group nominal 2`, `Cluster <- 1 + GClass` | accepted (same forms as the bundled `peetmis_smmr.lgs`) |
+| `y1 \| Cluster` for class-specific variances | accepted: 15 parameters against 12 without |
+| **omitting** the variance line for equal variances (c02) | identical to writing the bare `y1;` line the bundled examples use: 12 parameters, same likelihood |
+| `y1 <-> y2 \| Cluster` | accepted; adds one covariance per class |
+| nominal indicators (c04, c05) | accepted |
+| `independent x, w` with no scale type | accepted; one slope, as this package fits it |
+| `missing includeall` (c06) | accepted |
+| `caseid`, `State nominal dynamic`, `State[=0]`, `State <- 1 \| State[-1]` | accepted, and **exactly equivalent** to the bundled `DFG.lgs` form `(~tra) 1 \| State[-1]`: same parameter count, same likelihood to four decimals |
+| `State <- 1 \| State[-1] GClass` for class-specific transitions (c11) | likewise equivalent to the bundled multilevel Markov form |
+| `step3 modal bch` with `latent Cluster nominal posterior = ( ... )` | accepted |
 
-Latent GOLD reports BVR as a chi-square-like quantity per pair rather than as a
-residual correlation, so the two will not be numerically identical. What must
-agree is the **ranking and the separation**: `y1` with `y2` far above every
-other pair, and the other pairs near zero. If Latent GOLD flags a pair this
-package does not, or the reverse, that is the finding.
+Two findings were fixed in `compare-functions.R`, both confirmed against a real
+listing rather than assumed:
 
-### 2. `threestep.dat` — BCH and covariates
+- The parameter count is labelled **`Number of parameters (Npar)`**. `Npar`
+  alone appears only as a column heading of the summary table, on a line with
+  no value; the parser looked for that and would have failed on every run.
+- The listing is **Latin-1**, not UTF-8 (it prints `Entropy R²` as one byte).
+  Read as UTF-8 it yields invalid strings that match no pattern.
 
-600 rows, 50 groups, columns `id`, `group`, `x`, `y1`, `y2`, `distal`.
-Class membership was generated as `plogis(-0.3 + 1.2 * x)`; the distal outcome
-is 10 in class 2 and 0 in class 1.
+Both are covered by `test-compare.R`, whose imitated listing now copies the
+real labels, separators and encoding.
 
-Fit: **single-level, 2 latent classes**, dependents `y1` and `y2`, then Step-3
-twice — once with `distal` as the dependent under the BCH correction, once with
-`x` as a covariate predicting class membership.
+### What is still blocked: the licence
 
-This package's values:
+The installed Latent GOLD runs in **Demonstration Mode**, which opens only its
+own bundled sample data and writes no output files. With the kit's data it
+reports `Can't open Input data`, and `outfile` silently writes nothing. That is
+a licence restriction, not a syntax error: byte-identical copies of a bundled
+file fail under any other name.
 
-| quantity | value |
-|---|---|
-| log likelihood | -2024.808558 |
-| classification error, true 1 assigned 2 | 0.046048 |
-| classification error, true 2 assigned 1 | 0.026016 |
-| distal mean, class 1, BCH | 10.0755 |
-| distal mean, class 2, BCH | 0.2927 |
-| distal mean, class 1, modal | 9.70111 |
-| covariate slope on `x` | 1.21877 (SE 0.13546) |
+So the two things still unverified are exactly the two the licence gates:
 
-Class labels are arbitrary and will differ; align them by the means of `y1`
-before comparing. The generating slope is 1.2 and the generating distal
-difference is 10, so both packages can also be scored against the truth.
+1. the models on this package's data, and
+2. the **posterior file** `outfile ... classification keep id g` writes, whose
+   column names (`Cluster#1`, `GClass#1`, ...) `compare.R` expects.
 
-## Files to commit back
-
-Whatever Latent GOLD writes: the `.lgs` syntax, the `.lst` or `.txt` output,
-and any saved parameter files. Then run:
+Latent GOLD is free for academic use. Register from its Registration dialog:
 
 ```
-Rscript validation/latentgold/compare.R
+WINEPREFIX=~/.wine-latentgold ~/Applications/"Wine Devel.app"/Contents/Resources/wine/bin/wine "C:\Program Files\LatentGOLD6.1\lg61.exe"
 ```
 
-## Syntax
+Once it is licensed, run the kit with `kit/run-all.bat`'s commands through
+Wine, put the output in `returned/`, and run `compare.R`.
 
-A sketch is in `syntax-sketch.lgs`. It has **not been run** and the exact
-keywords should be checked against the Latent GOLD 6.1 manual before use; it is
-a statement of the models to fit, not tested code.
+## How agreement is judged
+
+- **Log likelihood**: within half a unit of the last digit Latent GOLD printed,
+  plus 1e-5 for two independent searches stopping at their own criteria.
+- **Parameter count**: exactly.
+- **Posteriors**, at each level: the largest absolute difference over every
+  unit and class, after matching Latent GOLD's arbitrary class labels to this
+  package's by the ordering that brings them closest. Tolerance: the file's
+  printed rounding plus 1e-4.
+- **Means and variances**: recomputed from Latent GOLD's own posteriors. At
+  convergence EM is at a fixed point, so its estimates are exactly the
+  posterior-weighted means and variances; this recovers them without scraping
+  the listing's parameter tables. The tolerance is the bound the posteriors'
+  printed rounding puts on a weighted moment, derived in
+  `.lg_moment_rows()`. Only for complete data with a diagonal covariance, where
+  that fixed point is the plain weighted moment.
+- **Group-class proportions**: the mean of Latent GOLD's group posteriors.
+- **Information criteria**: each is matched to the column computed on the same
+  sample size, read from the listing, not by its label. Latent GOLD's "case" is
+  an observation in a two-level model but a whole sequence in a `caseid` model,
+  which is this package's *group*; matching by label alone compares a sequence
+  model's BIC against `bic_individual`. A criterion is `-2 * LL` plus a penalty
+  in the parameter count and the sample size, both compared separately and
+  exactly, so the tolerance is twice the likelihood's plus the printed
+  rounding. Latent GOLD's `AIC3`, `CLC`, `AWE`, entropy R-squared and
+  classification errors are **not** compared: those definitions differ from
+  this package's, so a comparison would measure the definition.
+
+These are all invariant to how either program parameterises the model, which
+is why they are compared first: Latent GOLD's logit coding differs from this
+package's, so its raw coefficients are not comparable number by number.
+
+## Awaiting parser
+
+Standard errors, bivariate residuals and the Step-3 results are printed only
+in the listing's tables, and their layout is not known until a real listing
+exists. `compare.R` lists each as `awaiting parser`, with this package's value
+beside it, rather than parse it with a guess that could misread a column.
+Write those parsers against the first real listings, in
+`compare-functions.R`, and add an imitation of each table to
+`test-compare.R`. Notes for them:
+
+- **Bivariate residuals** are a different statistic in the two programs.
+  Compare which pairs stand out, not the values.
+- **Step-3** maps as follows.
+
+  | this package | Latent GOLD |
+  |---|---|
+  | `three_step(method = "bch")` | `step3 modal bch` |
+  | `three_step(method = "modal")` | `step3 modal none` |
+  | `three_step(method = "proportional")` | `step3 proportional none` |
+  | `r3step()` | `step3 modal ml` |
+
+  `r3step()` reports log odds against the last class; convert Latent GOLD's
+  coding before comparing.

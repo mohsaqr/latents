@@ -1,0 +1,197 @@
+c09.dat
+File name:	c09.dat	
+File size:	48986 bytes  600 records	
+File date:	2026-Sep-22 9:09:23 PM	
+Syntax:	c09_step1.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Max. BVR	Class.Err.	Entropy R²	
+c09_step1	2-Cluster	-1953.4836	3964.5396	3924.9672	3933.9672	9	0.0053	0.1023	0.6394	
+c09_step1 - LL = -1953.4836
+2-Cluster Syntax Model	
+					
+Number of cases	600				
+Number of parameters (Npar)	9				
+Activated Constraints	0				
+Random Seed	20260922				
+Best Start Seed	2392910				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1953.4836				
+Log-prior	0.0000				
+Log-posterior	-1953.4836				
+BIC (based on LL)	3964.5396				
+AIC (based on LL)	3924.9672				
+AIC3 (based on LL)	3933.9672				
+CAIC (based on LL)	3973.5396				
+SABIC (based on LL)	3935.9671				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.1023				
+Reduction of errors (Lambda)	0.7501				
+Entropy R-squared	0.6394				
+Standard R-squared	0.6926				
+Classification log-likelihood	-2099.8941				
+Entropy	146.4105				
+CLC	4199.7883				
+AWE	4341.9330				
+ICL-BIC	4257.3607				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	321.4285	32.8345	354.2630		
+2	28.5715	217.1655	245.7370		
+Total	350.0000	250.0000	600.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	309.6592	44.6038	354.2630		
+2	44.6038	201.1333	245.7370		
+Total	354.2630	245.7370	600.0000		
+					
+Files					
+Infile	C:\lgkit\c09.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20260922				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+bivariate residuals	marginal				
+identification	no				
+validation LL	no				
+sample size BIC	     600				
+predictionstatistics	no				
+outfile					
+file name	c09_step1_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+   outfile 'c09_step1_posteriors.txt' classification keep id x distal;
+variables
+   dependent y1 continuous, y2 continuous;
+   latent Cluster nominal 2;
+equations
+   Cluster <- 1;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	5.1256	1	0.024				
+Cluster(2)	<-	1			-0.3658	0.1616	-2.2640	0.024							
+															
+y1	<-	1			0.0653	0.0824	0.7926	0.43	0.6281	1	0.43				
+y1	<-	Cluster(1)			0.0000	.	.	.	367.4977	1	6.6e-82				
+y1	<-	Cluster(2)			2.0155	0.1051	19.1702	6.6e-82							
+															
+y2	<-	1			0.0498	0.0779	0.6394	0.52	0.4089	1	0.52				
+y2	<-	Cluster(1)			0.0000	.	.	.	184.3562	1	5.4e-42				
+y2	<-	Cluster(2)			1.4206	0.1046	13.5778	5.4e-42							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1			|	Cluster(1)	0.9642	0.1025	9.4027	5.3e-21	132.3865	2	1.8e-29	0.0598	1	0.81	
+y1			|	Cluster(2)	0.9241	0.1320	7.0009	2.5e-12							
+y2			|	Cluster(1)	1.1165	0.1038	10.7552	5.6e-27	193.7370	2	8.5e-43	2.1600	1	0.14	
+y2			|	Cluster(2)	0.9054	0.1007	8.9909	2.5e-19							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	5.1256	1	0.024	
+	
+y1	<-	 Cluster			Cluster	1	2	367.4977	1	6.6e-82	
+	
+y2	<-	 Cluster			Cluster	1	2	184.3562	1	5.4e-42	
+Variances	
+y1			|	Cluster	Cluster	1	2	0.0598	1	0.81	
+y2			|	Cluster	Cluster	1	2	2.1600	1	0.14	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5904	0.0391	0.4096	0.0391	 	 	
+y1	 	
+Mean	0.0653	0.0824	2.0808	0.1083	0.8908	0.0567	
+y2	 	
+Mean	0.0498	0.0779	1.4704	0.0863	0.6316	0.0503	
+ProbMeans-Posterior
+	Cluster		
+	1	2	
+Overall	0.5904	0.4096	
+Dependent			
+y1			
+-3.276 - -0.299	0.9868	0.0132	
+-0.293 - 0.421	0.9284	0.0716	
+0.424 - 1.211	0.6852	0.3148	
+1.213 - 2.182	0.3112	0.6888	
+2.187 - 4.901	0.0405	0.9595	
+y2			
+-3.585 - -0.392	0.9614	0.0386	
+-0.374 - 0.302	0.8066	0.1934	
+0.303 - 0.942	0.6200	0.3800	
+0.944 - 1.656	0.3853	0.6147	
+1.667 - 4.216	0.1790	0.8210	
+Bivariate Residuals
+Dependent	y1	y2	
+y1	.		
+y2	0.0053	.	
+EstimatedValues-Model
+ 	Cluster	
+ 	1	s.e.	2	s.e.	
+ 	0.5904	0.0391	0.4096	0.0391	
+	
+ 	y1	
+Cluster	Mean	s.e.	 	 	
+1	0.0653	0.0824	 	 	
+2	2.0808	0.1083	 	 	
+	
+ 	y2	
+Cluster	Mean	s.e.	 	 	
+1	0.0498	0.0779	 	 	
+2	1.4704	0.0863	 	 	

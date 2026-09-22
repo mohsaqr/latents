@@ -4,6 +4,7 @@
 # stopped existing when the sources were reorganised, and a comparison script
 # should not depend on the internal file layout.
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
+source(file.path("validation", "fixtures.R"))
 artifact_dir <- file.path("validation", "mplus", "extensions-missing-full")
 synthetic <- read.table(file.path(artifact_dir, "synthetic.dat"),
                         col.names = c("y1", "y2", "clus", "id"), na.strings = "-999")
@@ -73,8 +74,7 @@ comparisons <- lapply(c("varying", "equal"), function(variance_model) {
       results_precision = "eight significant digits", posterior_precision = "twelve decimal places",
       md5 = tools::md5sum(file.path(artifact_dir, c("synthetic.dat", paste0(prefix,
         c(".inp", ".out", "-results.dat", "-posteriors.dat")))))))
-  saveRDS(reference, file.path("tests", "fixtures", "mplus",
-                               paste0("twolevel-missing-full-", variance_model, ".rds")))
+  saveRDS(reference, mplus_fixture(paste0("twolevel-missing-full-", variance_model, ".rds")))
   list(variance_model = variance_model, differences = differences, fit = fit)
 })
 saveRDS(comparisons, file.path(artifact_dir, "comparison.rds"))
