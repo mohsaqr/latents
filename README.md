@@ -119,13 +119,13 @@ plot(fit, what = "all")                # every view this fit supports, in order
 have ICCs of 0.09 to 0.22 across students, so the nesting carries signal and a
 two-level model has something to find. That fit then converges, all ten starts
 reach the same likelihood, and the two profiles separate cleanly: relative
-entropy is 0.946 at the enrolment level and 0.938 at the student level. The
-recovery table above puts 1,398 of 1,422 enrolments in the profile that
-generated them, 98.3%, with the fitted profile 1 standing for the generated
+entropy is 0.938 at the enrolment level and 0.940 at the student level. The
+recovery table above puts 1,389 of 1,422 enrolments in the profile that
+generated them, 97.7%, with fitted profile 2 standing for the generated
 `engaged` pattern — label switching is ordinary and is not worth reordering
-anything to hide. The same table reads `student_type` against the group class:
-98.5% of the 840 enrolments of `committed` students land in group class 2, and
-77.8% of the 582 enrolments of `wavering` students in group class 1. Those two
+anything to hide. The same table reads `student_type` against the group class,
+counting each student once: 61 of 62 `committed` students (98.4%) land in group
+class 2, and 34 of 44 `wavering` students (77.3%) in group class 1. Those two
 group classes are two kinds of student, and
 `get_results(fit, "profile_probabilities")` says how: one is 83% disengaged
 enrolments, the other 79% engaged. Pooled over the whole sample the engaged
@@ -153,9 +153,10 @@ and `vcov()`. It is still required by `three_step()` and `r3step()`, which need
 the outcome or covariate columns the fit never saw, and by the recovery call
 above, whose `truth` columns are equally unseen. When it is supplied it is
 checked column by column against the fit: `get_results(x, "assignments")` and
-`get_results(x, "residuals")` raise `multilpa_bad_inference_data` on a frame that
-is not in fitting row order, and warn `multilpa_unverified_alignment` on a frame
-that shares no column with the fit and so cannot be checked at all.
+`get_results(x, "residuals")`, `three_step()` and `r3step()` raise
+`multilpa_bad_inference_data` when shared fitted columns disagree row by row.
+They warn `multilpa_unverified_alignment` when the supplied columns cannot
+establish order, for example when only a repeated group ID is shared.
 
 `descriptives()` also takes `by` on a plain data frame. A stratifier with
 missing values gets its own labelled `NA` stratum rather than being dropped, so
@@ -420,11 +421,11 @@ absorb. Read the residual table before reading the grid.
 | Recovery against a known truth | `get_results(x, "assignments", truth = )` cross-tabulates the model's labels against columns of `data` holding known ones, comparing each against the level it describes |
 | Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; held measurement blocks are carried into every refit and reported in a `fixed` column, and a pair whose constrained nesting cannot be established is refused with `multilpa_bad_nesting`; not Mplus TECH14 |
 | Local dependence | Posterior-weighted bivariate residuals within profile or overall, with approximate unadjusted p-values; apply a multiplicity correction with `adjust =` when comparing pairs |
-| Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment, with `three_step(vcov_type = "cluster")` or `"independent"`; R3STEP membership covariates with `r3step(vcov_type = "observed")` or `"robust"`. A cluster-robust request is refused with `multilpa_too_few_groups` when there are not more independent groups than reported quantities, because the contributions sum to zero at the estimate and the covariance would be singular |
+| Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment, with `three_step(vcov_type = "cluster")` or `"independent"`; R3STEP membership covariates with `r3step(vcov_type = "observed")` or `"robust"`. The three-step verbs require a covariate-free first-stage fit and external variables that were not measurement indicators. A cluster-robust request is refused with `multilpa_too_few_groups` when there are not more independent groups than reported quantities, because the contributions sum to zero at the estimate and the covariance would be singular. On transition fits these are marginal occasion-level profile analyses, not models of transition probabilities or sequence-level outcomes |
 | Sequences | Profile assignments in long or wide form, with group counts, sequence lengths and completeness by group class; observed transitions between assignments are not computed |
 | Latent transitions | `lta()`: first-order homogeneous transition probabilities between profiles, measurement invariant across occasions, per-group-class initial distributions and transition matrices; Gaussian, categorical or mixed indicators, FIML, diagonal or full covariance, ragged sequences; no standard errors, enumeration or bootstrap |
 | Staged estimation | `fit_staged()` and `multilpa(fixed=)`: hold means, variances or response probabilities at supplied values while membership is estimated; `fit_staged()` reports both parameter counts; first-stage uncertainty is not propagated |
-| Transition networks | `get_tna()` returns the marginal transition network of a `lta()` model as a fitted `tna` model; `get_group_tna()` returns one per latent class as a `group_tna`. Estimated transition probabilities are handed over, not recounted from modal assignments; `tna` is a Suggests dependency |
+| Transition networks | `get_tna()` returns the marginal transition network of a `lta()` model as a fitted `tna` model; `get_group_tna()` returns one per latent class as a `group_tna`. Estimated transition probabilities are handed over, not recounted from modal assignments; rows with no outgoing move keep the fit's unestimated fallback and warn rather than becoming certain self-transitions. `tna` is a Suggests dependency |
 | Warm starts | `starting_values()` round-trips any fitted solution, keeping indicator names and category labels on categorical response blocks, so a stage cannot attach a response distribution to the wrong item; an encoding that cannot be aligned raises `multilpa_bad_start` or `multilpa_bad_stage`. `max_iter = 0` evaluates a supplied parameter set without moving, and `lta()` accepts it too |
 | Plots | Profile means (raw or standardized), grouped bars with Wald intervals, a standardized heatmap, categorical response curves, prevalence by group class, profile sequences, per-case entropy, modal posteriors, and any enumeration criterion; `multilpa_plot_types()` lists them and `plot(x, what = "all")` draws every one the fit supports. Entropy and posterior views also work for covariate fits. Base graphics only. A transition fit draws the same measurement and classification views plus `what = "transitions"`, its estimated transition matrix as one heatmap panel per group class |
 | Conditions | The errors and warnings listed in `?"multilpa-conditions"` carry stable classes, so they can be caught by what went wrong. A few internal guards in `bootstrap_lrt()` and `lta()` still raise unclassed errors; match on class only where the catalogue documents one |
@@ -670,7 +671,10 @@ refit does not carry, and their labels cannot yet be aligned between two fits.
 A covariate or outcome added to the measurement model can change the classes it
 was meant to describe. The three-step approach fits the measurement model first,
 then carries the classification and its error into a second stage, so the
-classes stay fixed.
+classes stay fixed. `three_step()` and `r3step()` require a fit without
+membership covariates and refuse measurement indicators as external variables.
+The correction here uses a single classification-error matrix; a first-stage
+model with membership covariates needs an error adjustment conditional on them.
 
 `previous_grade` is what makes this section runnable on bundled data:
 `multilpa()` never sees it, so it is genuinely a variable the classes did not

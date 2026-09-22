@@ -24,8 +24,9 @@ columns it was built from, so `vars` and `id` are read from it.}
 
 \item{...}{Passed between methods.}
 
-\item{vars}{Character vector of column names to describe. For a data frame,
-defaults to every numeric column that is not `id`.}
+\item{vars}{Character vector of column names to describe. Repeated names
+are described once. For a data frame, defaults to every numeric column
+that is not `id`.}
 
 \item{id}{Optional. The column identifying the groups rows are nested in.
 Supplying it adds `n_groups` and `icc`; omitting it leaves them out.}
@@ -52,7 +53,8 @@ A base `data.frame`, one row per variable, or one row per variable
     \item{`n_groups`,`icc`}{present only when `id` is known. `icc` is the
       one-way random-effects estimate, and may be slightly negative when the
       between-group mean square falls below the within-group one; that is the
-      estimator reporting no group structure, not an error.}
+      estimator reporting no group structure, not an error. Rows with a
+      missing group ID do not contribute to either statistic.}
   }
   A `by` column comes first, named after what it splits on and holding that
   level's own value, `NA` for the stratum of rows whose stratifier is
@@ -71,9 +73,9 @@ intraclass correlation, the share of each variable's variance that lies
 *between* groups rather than within them.
 }
 \details{
-An ICC near zero says the groups do not differ on that variable, so a model
-whose whole purpose is to tell groups apart will be fitting noise. It is the
-cheapest check available and the one most often skipped.
+An ICC near zero suggests little between-group mean variation in that
+variable. It does not rule out group classes that differ in other variables,
+profile prevalence, or other features of their distributions.
 }
 \examples{
 descriptives(

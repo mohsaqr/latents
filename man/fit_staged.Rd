@@ -42,8 +42,10 @@ second stage. Must be at least two; one would leave nothing to estimate.}
 \item{measurement}{Optional fitted `multilpa` model to use as the first
 stage, so that a measurement solution already chosen and inspected is
 carried forward rather than refitted. Its profiles, indicators and
-measurement options must match the ones requested here. When `NULL`, the
-first stage is fitted here with one group class.}
+measurement options must match the ones requested here, and it must have
+one group class: a multi-class fit already estimates group structure and
+is not a measurement-only first stage. When `NULL`, the first stage is
+fitted here with one group class.}
 
 \item{variance_model}{Either `"varying"` (profile-specific variances or
 covariance matrices) or `"equal"` (shared across profiles).}

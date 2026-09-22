@@ -658,7 +658,9 @@ nobs.multilpa_covariates <- function(object, ...) {
        profile_design = profile_design, stacked_design = stacked_design,
        continuous = measurement$continuous, codes = measurement$codes,
        n_categories = measurement$n_categories,
-       categorical_levels = measurement$encoded$levels)
+       categorical_levels = measurement$encoded$levels,
+       categorical_values = .multilpa_categorical_values(
+         data, categorical, measurement$encoded))
 }
 
 #' Run one covariate EM start to convergence
@@ -787,7 +789,7 @@ nobs.multilpa_covariates <- function(object, ...) {
     log(nrow(data)) * result$n_parameters
   result$n_observations <- nrow(data)
   result$n_informative <- base$n_informative
-  result$indicator_data <- as.matrix(data[vars])
+  result$indicator_data <- as.matrix(data[designs$continuous])
   result$n_groups <- base$n_groups
   result$n_profiles <- as.integer(n_profiles)
   result$n_group_classes <- as.integer(n_group_classes)
@@ -801,7 +803,10 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$covariance_model <- covariance_model
   result$categorical <- categorical
   result$continuous <- designs$continuous
+  result$continuous_types <- vapply(data[designs$continuous], typeof,
+                                    character(1))
   result$categorical_levels <- designs$categorical_levels
+  result$categorical_values <- designs$categorical_values
   result$categorical_data <- designs$codes
   result$n_categories <- designs$n_categories
   result$measurement_model <- if (is.null(designs$codes)) "gaussian" else

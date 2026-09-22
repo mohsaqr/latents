@@ -140,10 +140,12 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
       inherits(x, "multilpa_enumeration"),
     "`n_profiles` must be a single positive integer" =
       is.numeric(n_profiles) && length(n_profiles) == 1L &&
-      is.finite(n_profiles) && n_profiles >= 1,
+      is.finite(n_profiles) && n_profiles >= 1 &&
+      n_profiles == floor(n_profiles),
     "`n_group_classes` must be a single positive integer" =
       is.numeric(n_group_classes) && length(n_group_classes) == 1L &&
-      is.finite(n_group_classes) && n_group_classes >= 1,
+      is.finite(n_group_classes) && n_group_classes >= 1 &&
+      n_group_classes == floor(n_group_classes),
     "`structure` must be a single model code, or NULL" =
       is.null(structure) || (is.character(structure) &&
                                length(structure) == 1L && !is.na(structure)))
@@ -190,13 +192,12 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
 #' @param object An `multilpa_enumeration` result from [enumerate_classes()].
 #' @param ... Reserved for compatibility with `summary()`.
 #' @return An object of class `summary_multilpa_enumeration`, with a `print`
-#'   method and an [as.data.frame()] accessor. `as.data.frame()` returns one
-#'   row per information criterion, with columns `criterion`, `convention`
-#'   (`"groups"`, `"individuals"` or `NA` when the criterion uses no sample
-#'   size), `n_profiles` and `n_group_classes` of the minimising candidate, and
-#'   its `value`. Only converged candidates are eligible; a criterion with no
-#'   converged candidate has `NA` in every remaining column. Pass
-#'   `what = "candidates"` for the full grid instead.
+#'   method and an [as.data.frame()] accessor. `as.data.frame()` returns the
+#'   candidate grid. `get_results(summary(object), "criteria")` gives one row
+#'   per information criterion, with its sample-size convention, the class
+#'   counts and covariance structure of the minimising candidate, and its
+#'   value. Only converged candidates are eligible; a criterion with no
+#'   converged candidate has `NA` in the candidate and value columns.
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
@@ -243,6 +244,8 @@ summary.multilpa_enumeration <- function(object, ...) {
         as.integer(grid$n_profiles[best]),
       n_group_classes = if (is.na(best)) NA_integer_ else
         as.integer(grid$n_group_classes[best]),
+      structure = if (is.na(best)) NA_character_ else
+        as.character(grid$structure[best]),
       value = if (is.na(best)) NA_real_ else values[best],
       row.names = NULL, stringsAsFactors = FALSE)
   })
@@ -272,8 +275,9 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   .multilpa_check_print_arguments(digits, rows)
   cat(sprintf("Class enumeration: %d candidates, %d converged, %d failed to fit\n",
               x$n_candidates, x$n_converged, x$n_failed))
-  disagreement <- unique(x$criteria[stats::complete.cases(
-    x$criteria[c("n_profiles", "n_group_classes")]), c("n_profiles", "n_group_classes")])
+  identified <- c("n_profiles", "n_group_classes", "structure")
+  present <- x$criteria[!is.na(x$criteria$n_profiles), identified, drop = FALSE]
+  disagreement <- unique(present)
   cat(sprintf("%d distinct candidate(s) are minimal under some criterion.\n",
               nrow(disagreement)))
   cat("No candidate is selected automatically. Choose one convention and keep it.\n")
@@ -341,23 +345,23 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
     names(values) <- continuous
     result <- cbind(result, values)
   }
-  ## Categorical indicators are returned as their original category values, not
-  ## as codes, so that refitting re-encodes them to exactly the same levels.
+  ## Categorical indicators return their original value type and factor level
+  ## order, so refitting re-encodes the same categories.
   blocks <- object$response_probabilities
   if (!is.null(blocks) && length(blocks) > 0L) {
     drawn <- lapply(names(blocks), function(indicator) {
       probabilities <- blocks[[indicator]][profile, , drop = FALSE]
-      ## Levels are stored as character. Returning them as such would make a
-      ## refit sort "10" before "2", permuting the categories relative to the
-      ## fit being bootstrapped, so a numeric level set goes back as numeric.
-      levels_observed <- object$categorical_levels[[indicator]]
-      ## The coercion warning IS the test here: `as.numeric("a")` warns and
-      ## returns NA, and `anyNA()` below is what reads that answer. This is the
-      ## documented exception to the no-suppressWarnings rule -- one specific
-      ## base warning, diagnosed on the next line rather than discarded.
-      numeric_levels <- suppressWarnings(as.numeric(levels_observed)) # nolint: undesirable_function_linter.
-      if (!anyNA(numeric_levels)) levels_observed <- numeric_levels
-      levels_observed[.multilpa_draw_rows(probabilities)]
+      values <- object$categorical_values[[indicator]]
+      if (is.null(values)) {
+        # Older fits retained labels but not their input types. Keep their
+        # previous numeric-label fallback for saved objects.
+        values <- object$categorical_levels[[indicator]]
+        # Coercion warns for labels such as "a"; the NA result immediately
+        # below decides whether to retain those labels unchanged.
+        numeric_values <- suppressWarnings(as.numeric(values)) # nolint: undesirable_function_linter.
+        if (!anyNA(numeric_values)) values <- numeric_values
+      }
+      values[.multilpa_draw_rows(probabilities)]
     })
     names(drawn) <- names(blocks)
     result <- cbind(result, as.data.frame(drawn, stringsAsFactors = FALSE))
@@ -473,7 +477,10 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' Simulates complete indicators under the null model while preserving observed
 #' group sizes, refits both models, and compares their likelihood differences.
 #' Models must differ by exactly one individual profile or one group class, with
-#' the other count and covariance specification fixed. This is a native
+#' the other count, covariance structure and centering mode fixed. Grand-mean
+#' centering is repeated in every simulated refit. Person-centred fits are
+#' refused because this model does not specify a generative distribution for
+#' the group baselines removed by that transformation. This is a native
 #' parametric bootstrap, not an implementation of Mplus TECH14. It does not use
 #' a chi-square reference distribution. Any failed/nonconverged or reversed
 #' replicate makes the p-value NA, avoiding silent deletion of difficult fits.
@@ -494,6 +501,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'   alternative does not estimate more free parameters than the null.
 #'   `multilpa_failed_replicates` is warned when some replicate fails
 #'   validation, and the p-value is `NA`.
+#'   `multilpa_unsupported_bootstrap` refuses person-centred fits, for which
+#'   this simulator has no group-baseline distribution.
 #' @param null_model Smaller, converged [multilpa()] model on complete data.
 #' @param alternative_model Larger model fitted to exactly the same data.
 #' @param data Optional. The data both models were fitted to, used to verify
@@ -553,11 +562,27 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
               rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     set.seed(seed)
   }
-  fields <- c("vars", "id", "group_values", "group_index", "variance_model", "min_variance", "covariance_model")
+  fields <- c("vars", "id", "group_values", "group_index", "variance_model",
+              "min_variance", "covariance_model")
   fields <- c(fields, "categorical", "categorical_levels", "min_probability")
-  if (!all(vapply(fields, function(field) identical(null_model[[field]], alternative_model[[field]]), logical(1)))) {
-    stop(errorCondition("Models must use the same observations, group layout and covariance specification.",
+  structure_for <- function(model) model$covariance_structure %||%
+    .multilpa_resolve_structure(model$variance_model,
+                                model$covariance_model %||% "diagonal")
+  centering_for <- function(model) model$centering %||% "none"
+  same_fields <- all(vapply(fields, function(field)
+    identical(null_model[[field]], alternative_model[[field]]), logical(1)))
+  if (!same_fields ||
+      !identical(structure_for(null_model), structure_for(alternative_model)) ||
+      !identical(centering_for(null_model), centering_for(alternative_model))) {
+    stop(errorCondition("Models must use the same observations, group layout, covariance structure and centering mode.",
         class = "multilpa_incomparable_models", call = NULL))
+  }
+  if (identical(centering_for(null_model), "person")) {
+    stop(errorCondition(paste(
+      "A person-centred fit removes each group's baseline, but this bootstrap",
+      "does not model those baselines for simulation. Compare fits without",
+      "person centering."),
+      class = "multilpa_unsupported_bootstrap", call = NULL))
   }
   delta <- c(alternative_model$n_profiles - null_model$n_profiles,
              alternative_model$n_group_classes - null_model$n_group_classes)
@@ -652,6 +677,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
           family,
           list(n_starts = n_starts, max_iter = max_iter, tol = tol,
                min_variance = model$min_variance,
+               centering = model$centering %||% "none",
                categorical = model$categorical %||% character(),
                min_probability = model$min_probability %||% 1e-10,
                start = constraint$start, fixed = constraint$fixed)))

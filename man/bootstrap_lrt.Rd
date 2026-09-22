@@ -50,7 +50,10 @@ An object of class `multilpa_bootstrap_lrt`, carrying the observed
 Simulates complete indicators under the null model while preserving observed
 group sizes, refits both models, and compares their likelihood differences.
 Models must differ by exactly one individual profile or one group class, with
-the other count and covariance specification fixed. This is a native
+the other count, covariance structure and centering mode fixed. Grand-mean
+centering is repeated in every simulated refit. Person-centred fits are
+refused because this model does not specify a generative distribution for
+the group baselines removed by that transformation. This is a native
 parametric bootstrap, not an implementation of Mplus TECH14. It does not use
 a chi-square reference distribution. Any failed/nonconverged or reversed
 replicate makes the p-value NA, avoiding silent deletion of difficult fits.
@@ -74,6 +77,8 @@ refused rather than given a p-value.
   alternative does not estimate more free parameters than the null.
   `multilpa_failed_replicates` is warned when some replicate fails
   validation, and the p-value is `NA`.
+  `multilpa_unsupported_bootstrap` refuses person-centred fits, for which
+  this simulator has no group-baseline distribution.
 }
 
 \examples{

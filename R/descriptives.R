@@ -5,14 +5,15 @@
 #' intraclass correlation, the share of each variable's variance that lies
 #' *between* groups rather than within them.
 #'
-#' An ICC near zero says the groups do not differ on that variable, so a model
-#' whose whole purpose is to tell groups apart will be fitting noise. It is the
-#' cheapest check available and the one most often skipped.
+#' An ICC near zero suggests little between-group mean variation in that
+#' variable. It does not rule out group classes that differ in other variables,
+#' profile prevalence, or other features of their distributions.
 #'
 #' @param x A data frame, or a fitted model of this package. A fit carries the
 #'   columns it was built from, so `vars` and `id` are read from it.
-#' @param vars Character vector of column names to describe. For a data frame,
-#'   defaults to every numeric column that is not `id`.
+#' @param vars Character vector of column names to describe. Repeated names
+#'   are described once. For a data frame, defaults to every numeric column
+#'   that is not `id`.
 #' @param id Optional. The column identifying the groups rows are nested in.
 #'   Supplying it adds `n_groups` and `icc`; omitting it leaves them out.
 #' @param by Optional. `"profile"` or `"group_class"` on a fitted model, or a
@@ -36,7 +37,8 @@
 #'     \item{`n_groups`,`icc`}{present only when `id` is known. `icc` is the
 #'       one-way random-effects estimate, and may be slightly negative when the
 #'       between-group mean square falls below the within-group one; that is the
-#'       estimator reporting no group structure, not an error.}
+#'       estimator reporting no group structure, not an error. Rows with a
+#'       missing group ID do not contribute to either statistic.}
 #'   }
 #'   A `by` column comes first, named after what it splits on and holding that
 #'   level's own value, `NA` for the stratum of rows whose stratifier is
@@ -90,6 +92,7 @@ descriptives.data.frame <- function(x, vars = NULL, id = NULL, by = NULL, ...) {
     numeric_columns <- names(x)[vapply(x, is.numeric, logical(1))]
     vars <- setdiff(numeric_columns, c(id, by))
   }
+  vars <- unique(vars)
   if (length(vars) == 0L) {
     stop(errorCondition("There are no variables to describe.",
                         class = "multilpa_nothing_to_describe", call = NULL))
@@ -216,7 +219,6 @@ descriptives.multilpa_covariates <- descriptives.multilpa
 .multilpa_describe <- function(data, vars, id) {
   described <- lapply(vars, function(name) {
     values <- data[[name]]
-    numeric_values <- if (is.numeric(values)) values else NA_real_
     observed <- values[!is.na(values)]
     row <- data.frame(
       variable = name,
@@ -229,9 +231,10 @@ descriptives.multilpa_covariates <- descriptives.multilpa
       n_distinct = length(unique(observed)),
       stringsAsFactors = FALSE)
     if (is.null(id)) return(row)
-    groups <- data[[id]][!is.na(values)]
+    grouped <- !is.na(values) & !is.na(data[[id]])
+    groups <- data[[id]][grouped]
     row$n_groups <- length(unique(groups))
-    row$icc <- if (is.numeric(values)) .multilpa_icc(observed, groups) else NA_real_
+    row$icc <- if (is.numeric(values)) .multilpa_icc(values[grouped], groups) else NA_real_
     row
   })
   result <- do.call(rbind, described)

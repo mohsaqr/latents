@@ -84,6 +84,46 @@ test_that("an unconstrained comparison is refitted without a constraint", {
   expect_identical(result$fixed, character(0))
 })
 
+test_that("bootstrap refits retain grand centering", {
+  set.seed(91)
+  data <- data.frame(g = rep(seq_len(20L), each = 6L),
+                     y = c(stats::rnorm(60L, 28), stats::rnorm(60L, 32)))
+  small <- multilpa(data, "y", "g", 1L, 1L, centering = "grand",
+                    n_starts = 2L, seed = 1L)
+  large <- multilpa(data, "y", "g", 2L, 1L, centering = "grand",
+                    n_starts = 2L, seed = 1L)
+  recorder <- refit_recorder()
+  testthat::local_mocked_bindings(multilpa = recorder$mock)
+  quietly(bootstrap_lrt(small, large, data, iter = 2L, n_starts = 2L,
+                        seed = 2L))
+  calls <- recorder$calls()
+  expect_identical(length(calls), 4L)
+  expect_true(all(vapply(calls, function(arguments)
+    identical(arguments$centering, "grand"), logical(1))))
+})
+
+test_that("bootstrap refuses incomparable structures and person centering", {
+  set.seed(92)
+  data <- data.frame(g = rep(seq_len(12L), each = 6L),
+                     a = stats::rnorm(72L), b = stats::rnorm(72L))
+  fit <- function(n_group_classes, centering = "none", shape = "equal") {
+    quietly(multilpa(data, c("a", "b"), "g", 2L, n_group_classes,
+                      volume = "varying", shape = shape,
+                      orientation = "axis", centering = centering,
+                      n_starts = 1L, max_iter = 0L, seed = 1L))
+  }
+  expect_error(bootstrap_lrt(fit(1L), fit(2L, shape = "varying"),
+                             data, iter = 2L),
+               class = "multilpa_incomparable_models")
+  expect_error(bootstrap_lrt(fit(1L), fit(2L, centering = "grand"),
+                             data, iter = 2L),
+               class = "multilpa_incomparable_models")
+  expect_error(bootstrap_lrt(fit(1L, centering = "person"),
+                             fit(2L, centering = "person"),
+                             data, iter = 2L),
+               class = "multilpa_unsupported_bootstrap")
+})
+
 test_that("the held constraint is named on the public surface", {
   skip_on_cran()
   models <- constrained_pair()

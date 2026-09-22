@@ -58,6 +58,15 @@ test_that("a frame with no column of the fit warns that it cannot be checked", {
                  class = "multilpa_unverified_alignment")
 })
 
+test_that("repeated group IDs alone cannot verify within-group order", {
+  data <- .aligned_data()
+  fit <- .aligned_fit(data)
+  thin <- data[c("g", "outcome")]
+  expect_warning(get_results(fit, "assignments", data = thin),
+                 class = "multilpa_unverified_alignment")
+  expect_silent(get_results(fit, "assignments", data = data))
+})
+
 test_that("the row-count contract is unchanged", {
   data <- .aligned_data()
   fit <- .aligned_fit(data)

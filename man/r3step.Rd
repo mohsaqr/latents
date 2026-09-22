@@ -15,12 +15,17 @@ r3step(
 )
 }
 \arguments{
-\item{x}{A fitted model of this package.}
+\item{x}{A covariate-free fitted [multilpa()] or [lta()] model. A fit that
+already uses membership covariates cannot be corrected by the fixed,
+unconditional classification-error matrix used here.}
 
-\item{data}{The data frame carrying the covariates, in the fit's row order.}
+\item{data}{The data frame carrying the covariates, in the fit's row order.
+Shared fit columns are checked row by row; a frame with too little
+identifying information warns that alignment cannot be verified.}
 
-\item{covariates}{Character vector of numeric covariate columns. For
-`level = "groups"` each must be constant within a group.}
+\item{covariates}{Character vector of numeric columns not used as measurement
+indicators in `x`. For `level = "groups"` each must be constant within a
+group.}
 
 \item{level}{`"individuals"` predicts profile membership, `"groups"`
 predicts group-class membership.}
@@ -50,6 +55,8 @@ A base `data.frame` with one row per non-reference class and term,
   `p_value` is uncorrected and `p_value_adjusted` carries the correction named
   by `adjust`, which is also recorded in the result's `adjust` attribute;
   it is `NA` on the intercept rows, which are not part of the tested family.
+  A coefficient with zero standard error has an undefined Wald statistic and
+  p-value, reported as `NA_real_` rather than infinity or zero.
   Coefficients are log odds against the final class, which is the reference,
   matching `multilpa(profile_covariates = )`; that class is named in the
   result's
@@ -68,6 +75,10 @@ class and the covariate cannot explain why.
 The error matrix is held fixed rather than estimated jointly, which
   is what makes this a three-step method and what keeps the covariates from
   reshaping the classes.
+  On a [lta()] fit, `level = "individuals"` models the marginal profile at
+  each occasion. It does not regress initial-state or transition
+  probabilities on the covariates. `vcov_type = "robust"` clusters the
+  occasion scores by group; `"observed"` treats them as independent.
 
   Over 60 replications of a two-profile design with a true log-odds slope of
   1.2 and intercept -0.3, this recovered the slope with a bias of -0.002 and

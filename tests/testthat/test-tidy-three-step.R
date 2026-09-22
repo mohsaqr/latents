@@ -108,6 +108,68 @@ test_that("the estimator is equivariant under an affine change of outcome", {
   expect_equal(moved$statistic, plain$statistic)
 })
 
+test_that("a constant outcome cannot manufacture a significant class contrast", {
+  data <- .tidy_step_data()
+  data$y <- 1
+  fit <- .tidy_step_fit(data)
+  means <- three_step(fit, data, "y")
+  pairs <- three_step(fit, data, "y", contrast = "pairs")
+
+  expect_equal(means$estimate, c(1, 1))
+  expect_identical(pairs$estimate, 0)
+  expect_identical(pairs$standard_error, 0)
+  expect_true(all(is.na(pairs[c("statistic", "p_value", "p_value_adjusted")])))
+})
+
+test_that("a zero-variance membership coefficient has no Wald test", {
+  frame <- .multilpa_r3step_frame(
+    estimates = c(1, 2), covariance = diag(c(0, 1)),
+    terms = c("(Intercept)", "x"), n_free = 1L, n_classes = 2L,
+    level = "individuals", ci_level = .95, vcov_type = "robust",
+    adjust = "BH")
+  expect_identical(frame$standard_error[1L], 0)
+  expect_true(is.na(frame$statistic[1L]))
+  expect_true(is.na(frame$p_value[1L]))
+  expect_true(is.finite(frame$statistic[2L]))
+  expect_true(is.finite(frame$p_value[2L]))
+})
+
+test_that("three-step outcomes and covariates retain the fit's row order", {
+  data <- .tidy_step_data()
+  fit <- .tidy_step_fit(data)
+  shuffled <- data
+  rows <- unlist(lapply(split(seq_len(nrow(data)), data$g), rev),
+                 use.names = FALSE)
+  shuffled <- shuffled[rows, , drop = FALSE]
+  expect_identical(shuffled$g, data$g)
+  expect_error(three_step(fit, shuffled, "y"),
+               class = "multilpa_bad_inference_data")
+  expect_error(r3step(fit, shuffled, "x"),
+               class = "multilpa_bad_inference_data")
+  expect_warning(three_step(fit, data[c("g", "y")], "y"),
+                 class = "multilpa_unverified_alignment")
+  expect_warning(r3step(fit, data[c("g", "x")], "x"),
+                 class = "multilpa_unverified_alignment")
+})
+
+test_that("three-step variables must be external to the measurement model", {
+  data <- .tidy_step_data()
+  fit <- .tidy_step_fit(data)
+  expect_error(three_step(fit, data, "a"),
+               class = "multilpa_bad_outcome")
+  expect_error(r3step(fit, data, "b"),
+               class = "multilpa_bad_argument")
+
+  predicted <- quietly(multilpa(
+    data, c("a", "b"), "g", n_profiles = 2L, n_group_classes = 1L,
+    profile_covariates = "x", n_starts = 2L, seed = 1L))
+  expect_s3_class(predicted, "multilpa_covariates")
+  expect_error(three_step(predicted, data, "y"),
+               class = "multilpa_unsupported_three_step")
+  expect_error(r3step(predicted, data, "x"),
+               class = "multilpa_unsupported_three_step")
+})
+
 test_that("the pairwise standard error agrees with a cluster bootstrap", {
   skip_on_cran()
   # Weak separation on purpose: the BCH weights for the two classes are then

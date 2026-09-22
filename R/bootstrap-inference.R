@@ -122,14 +122,27 @@
   stopifnot(inherits(x, "multilpa"),
             "`order` must be a permutation of the profiles" =
               identical(sort(as.integer(order)), seq_len(x$n_profiles)))
+  labels <- paste0("profile_", seq_len(x$n_profiles))
   x$means <- x$means[order, , drop = FALSE]
+  rownames(x$means) <- labels
   x$variances <- x$variances[order, , drop = FALSE]
-  if (!is.null(x$covariances)) x$covariances <- x$covariances[, , order, drop = FALSE]
+  rownames(x$variances) <- labels
+  if (!is.null(x$standard_deviations)) {
+    x$standard_deviations <- x$standard_deviations[order, , drop = FALSE]
+    rownames(x$standard_deviations) <- labels
+  }
+  if (!is.null(x$covariances)) {
+    x$covariances <- x$covariances[, , order, drop = FALSE]
+    dimnames(x$covariances)[[3L]] <- labels
+  }
   x$profile_probabilities <- x$profile_probabilities[, order, drop = FALSE]
+  colnames(x$profile_probabilities) <- labels
   responses <- x$response_probabilities %||% list()
   if (length(responses) > 0L) {
     x$response_probabilities <- lapply(responses, function(block) {
-      block[order, , drop = FALSE]
+      reordered <- block[order, , drop = FALSE]
+      rownames(reordered) <- labels
+      reordered
     })
   }
   # Everything indexed by profile moves, not only the parameter blocks. The
@@ -141,12 +154,14 @@
   # that compares assignments.
   if (!is.null(x$subject_posteriors)) {
     x$subject_posteriors <- x$subject_posteriors[, order, drop = FALSE]
+    colnames(x$subject_posteriors) <- labels
   }
   if (!is.null(x$subject_profiles)) {
     x$subject_profiles <- match(x$subject_profiles, order)
   }
   if (!is.null(x$effective_profile_counts)) {
     x$effective_profile_counts <- x$effective_profile_counts[order]
+    names(x$effective_profile_counts) <- labels
   }
   x
 }
@@ -160,8 +175,22 @@
   stopifnot(inherits(x, "multilpa"),
             "`order` must be a permutation of the group classes" =
               identical(sort(as.integer(order)), seq_len(x$n_group_classes)))
+  labels <- paste0("group_class_", seq_len(x$n_group_classes))
   x$profile_probabilities <- x$profile_probabilities[order, , drop = FALSE]
+  rownames(x$profile_probabilities) <- labels
   x$group_probabilities <- x$group_probabilities[order]
+  names(x$group_probabilities) <- labels
+  if (!is.null(x$group_posteriors)) {
+    x$group_posteriors <- x$group_posteriors[, order, drop = FALSE]
+    colnames(x$group_posteriors) <- labels
+  }
+  if (!is.null(x$group_classes)) {
+    x$group_classes <- match(x$group_classes, order)
+  }
+  if (!is.null(x$effective_group_counts)) {
+    x$effective_group_counts <- x$effective_group_counts[order]
+    names(x$effective_group_counts) <- labels
+  }
   x
 }
 
@@ -206,6 +235,7 @@
                  min_variance = x$min_variance,
                  min_probability = x$min_probability %||% 1e-10,
                  missing = x$missing %||% "error",
+                 time = x$time,
                  centering = x$centering %||% "none")
   structure <- x$covariance_structure
   if (is.null(structure) || is.na(structure) || !structure %in% .multilpa_structures()) {

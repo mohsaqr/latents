@@ -140,11 +140,20 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   grouped <- !is.null(x$group_classes) && max(x$group_sizes) > 1L &&
     .multilpa_constant_within(values, x$group_index)
   assignment <- if (grouped) "group_class" else "profile"
+  # A group-level truth labels groups, not the observations inside them.
+  # Counting every row would give larger groups more weight in recovery.
+  units <- if (grouped) !duplicated(x$group_index) else
+    rep(TRUE, length(values))
+  values <- values[units]
+  assigned <- joined[[assignment]][units]
   # `useNA = "ifany"` so a missing label is a visible value rather than a row
   # that quietly leaves the table.
-  counts <- as.data.frame(
-    table(class = joined[[assignment]], value = values, useNA = "ifany"),
-    responseName = "n", stringsAsFactors = FALSE)
+  tabulation <- table(class = assigned, value = values, useNA = "ifany")
+  # Factors may retain unused levels. They have no units and hence no
+  # defined within-truth proportion; only observed truth values are rows.
+  tabulation <- tabulation[, colSums(tabulation) > 0L, drop = FALSE]
+  counts <- as.data.frame(tabulation, responseName = "n",
+                          stringsAsFactors = FALSE)
   data.frame(
     assignment = assignment,
     class = as.integer(counts$class),
@@ -153,7 +162,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     n = counts$n,
     # Within a truth value, so the column reads as the share of the units
     # carrying that label which the model put in each class.
-    proportion = counts$n / stats::ave(counts$n, counts$value, FUN = sum),
+    proportion = as.vector(sweep(tabulation, 2L, colSums(tabulation), "/")),
     row.names = NULL, stringsAsFactors = FALSE)
 }
 
@@ -172,11 +181,12 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #'
 #' Rebuilt from what the fit already carries rather than stored a second time:
 #' the continuous indicators are kept in `indicator_data` as the model saw
-#' them, with the offsets any centring subtracted, the
-#' categorical ones as codes in `categorical_data` with their levels beside
-#' them, the identifier as `group_values[group_index]`, and the occasion as
-#' `time_values`. The round trip is exact, so an inference verb no longer has to
-#' ask the caller for data the fit is already holding.
+#' them, with centring offsets and input storage types recorded. Categorical
+#' indicators are codes in `categorical_data` with one original typed value
+#' per code. The identifier is `group_values[group_index]` and the occasion is
+#' `time_values`. Continuous values restored after centring agree to floating-
+#' point precision; other columns retain their input types. An inference verb
+#' therefore no longer has to ask for data the fit already holds.
 #'
 #' Columns a model never saw -- an outcome, a covariate -- are not here, which
 #' is why [three_step()] and [r3step()] still take `data`.
@@ -197,10 +207,24 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   if (!is.null(x$time) && !is.null(x$time_values)) columns[[x$time]] <- x$time_values
   raw <- .multilpa_uncentered_indicators(x)
   continuous <- if (is.null(raw)) list() else
-    stats::setNames(lapply(colnames(raw), function(name) raw[, name]),
+    stats::setNames(lapply(colnames(raw), function(name) {
+      value <- raw[, name]
+      # Combining integer and double indicators in a matrix promotes the
+      # integers to doubles. Put the supplied type back in the data table;
+      # rounding first removes centring's floating-point residue.
+      if (identical(x$continuous_types[[name]], "integer")) {
+        as.integer(round(value))
+      } else value
+    }),
                     colnames(raw))
   categorical <- if (is.null(x$categorical_data)) list() else
     stats::setNames(lapply(colnames(x$categorical_data), function(name) {
+      original_values <- x$categorical_values[[name]]
+      if (!is.null(original_values)) {
+        return(original_values[x$categorical_data[, name]])
+      }
+      # Fits saved before typed category values were retained still expose
+      # their labels, even though their original storage class is unknown.
       levels_for <- x$categorical_levels[[name]]
       if (is.null(levels_for)) x$categorical_data[, name] else
         levels_for[x$categorical_data[, name]]
@@ -258,9 +282,9 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' group index, the indicators and the occasion, so each of those columns the
 #' caller supplies can be compared against the fit rather than trusted.
 #'
-#' A frame sharing none of those columns carries no evidence of its own order.
-#' That is the one case alignment cannot be established in, and it warns rather
-#' than passing silently.
+#' A frame with no shared column, or with only repeated identifiers that cannot
+#' distinguish rows within a group, does not establish its order. That warns
+#' rather than passing silently.
 #'
 #' @param x A fitted model of this package.
 #' @param data The frame to check, already known to have the right row count.
@@ -300,15 +324,21 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       class = "multilpa_bad_inference_data", call = NULL))
   }
   # A fit that carries no row-level record of its own has nothing to compare
-  # against, and saying so on every call would blame the caller for the fit.
-  # The warning is for the case the caller can act on: the fit could have
-  # checked, and the frame supplied none of the columns it knows.
+  # against. Otherwise the supplied columns establish order if their observed
+  # combinations uniquely identify rows, or if they contain the complete
+  # fitted input (indistinguishable duplicate input rows then share a fitted
+  # posterior). A repeated group identifier alone cannot distinguish a swap
+  # of two different observations within that group.
   checkable <- c(if (!is.null(x$group_values) && !is.null(x$group_index)) x$id,
                  if (!is.null(x$time_values)) x$time,
                  colnames(x$indicator_data), colnames(x$categorical_data))
-  if (length(checked) == 0L && length(checkable) > 0L) {
+  measurements <- c(colnames(x$indicator_data), colnames(x$categorical_data))
+  unique_rows <- length(checked) > 0L && !anyDuplicated(data[checked])
+  complete_inputs <- length(measurements) > 0L &&
+    all(checkable %in% checked)
+  if (length(checkable) > 0L && !unique_rows && !complete_inputs) {
     warning(warningCondition(sprintf(
-      "`data` shares no column with the fit, so its row order is assumed rather than checked; include %s to have it verified.",
+      "`data` does not establish its row order uniquely against the fit; include more fitted columns (for example %s) to have it verified.",
       paste(sprintf("`%s`", checkable), collapse = ", ")),
       class = "multilpa_unverified_alignment"))
   }

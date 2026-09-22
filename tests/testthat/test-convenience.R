@@ -41,6 +41,45 @@ test_that("the round trip is exact for every model family", {
                     c("school", "a", "b")))
 })
 
+test_that("mixed fits retain numeric indicators and typed categorical values", {
+  set.seed(42)
+  data <- data.frame(
+    school = rep(seq_len(16L), each = 6L),
+    wave = rep(seq_len(6L), times = 16L),
+    a = as.integer(round(5 * stats::rnorm(96L))),
+    b = stats::rnorm(96L),
+    passed = ordered(sample(c("yes", "no"), 96L, TRUE),
+                     levels = c("yes", "no")),
+    rating = sample(c(10L, 20L), 96L, TRUE),
+    z = stats::rnorm(96L))
+  indicators <- c("a", "b", "passed", "rating")
+  categorical <- c("passed", "rating")
+  fit <- quietly(multilpa(data, indicators, "school", 2L, 1L,
+                           categorical = categorical, n_starts = 2L,
+                           max_iter = 80L, seed = 1L))
+  centered <- quietly(multilpa(data, indicators, "school", 2L, 1L,
+                                categorical = categorical, centering = "person",
+                                n_starts = 1L, max_iter = 40L, seed = 1L))
+  transition <- quietly(lta(data, indicators, "school", n_profiles = 2L,
+                            time = "wave", categorical = categorical,
+                            n_starts = 2L, max_iter = 80L, seed = 1L))
+  covariate <- quietly(multilpa(data, indicators, "school", 2L, 1L,
+                                 categorical = categorical,
+                                 profile_covariates = "z", n_starts = 2L,
+                                 max_iter = 80L, seed = 1L))
+  expected <- data[c("school", indicators)]
+  expect_identical(get_results(fit, "data"), expected)
+  restored <- get_results(centered, "data")
+  expect_identical(restored[c("school", "a", "passed", "rating")],
+                   expected[c("school", "a", "passed", "rating")])
+  expect_equal(restored$b, expected$b, tolerance = 1e-14)
+  expect_identical(get_results(transition, "data"),
+                   data[c("school", "wave", indicators)])
+  expect_identical(get_results(covariate, "data"), expected)
+  expect_type(covariate$indicator_data, "double")
+  expect_identical(colnames(covariate$indicator_data), c("a", "b"))
+})
+
 test_that("inference no longer has to be handed data it already holds", {
   fit <- .convenience_fit()
   expect_equal(quietly(parameter_inference(fit)),

@@ -32,6 +32,10 @@ test_that("plot methods draw and return their input invisibly", {
     expect_identical(plot(candidates, criterion = "sabic_individual"), candidates)
     expect_identical(plot(candidates, labels = FALSE, mark_minimum = FALSE),
                      candidates)
+    structured <- candidates
+    structured$table <- rbind(candidates$table, candidates$table)
+    structured$table$structure <- rep(c("EII", "VII"), each = nrow(candidates$table))
+    expect_identical(plot(structured), structured)
   })
 })
 
@@ -103,6 +107,8 @@ test_that("enumeration plotting rejects unusable criteria by condition class", {
                                  n_group_classes = 1, n_starts = 3, seed = 3)
   draw({
     expect_error(plot(candidates, criterion = "not_a_column"),
+                 class = "multilpa_unknown_criterion")
+    expect_error(plot(candidates, criterion = "structure"),
                  class = "multilpa_unknown_criterion")
     empty <- candidates
     empty$table$bic_individual <- NA_real_

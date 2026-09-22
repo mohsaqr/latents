@@ -129,10 +129,14 @@ Every fitted model offers these:
     different numbers, not two spellings of one table. Takes `level`.}
   \item{`"classification_errors"`}{The probability that a unit truly in one
     class is assigned to another: `level`, `true_class`, `assigned_class`,
-    `probability`, summing to one within each `true_class`. Takes `level`.}
+    `probability`, summing to one within each `true_class`. Takes `level`.
+    On a membership-covariate fit this is a marginal summary over the fitted
+    units, not a classification-error adjustment conditional on covariates.}
   \item{`"bch_weights"`}{The BCH inverse-error weights, one row per unit and
     class: `level`, `unit`, `assigned_class`, `class`, `weight`. Takes
-    `level`; weight a regression with one level, not with `"both"`.}
+    `level`; weight a regression with one level, not with `"both"`. On a
+    membership-covariate fit these invert the marginal error matrix and are
+    not a conditional three-step correction.}
   \item{`"entropy"`}{One row per level: `level`, `n_classes`, `n_units`,
     `entropy_sum`, `relative_entropy`.}
   \item{`"residuals"`}{Bivariate residuals for every indicator pair, testing
@@ -181,7 +185,8 @@ And each family adds its own:
   \item{`"transitions"`, `"initial"`, `"sequence_lengths"`}{A transition
     fit. `"transitions"` has one row per group class and ordered pair of
     profiles, with `group_class`, `from`, `to`, `probability`,
-    `expected_count`, `stable` and `estimated`; it takes `estimated` and
+    `expected_count`, `stable`, `estimated` and
+    `group_class_probability`; it takes `estimated` and
     `stable` to restrict it. `"initial"` has one row per group class and
     profile: `group_class`, `profile`, `probability`, `prevalence`,
     `group_class_probability`. `"sequence_lengths"` has one row per group:
@@ -277,6 +282,9 @@ And each family adds its own:
   `group_class`; a column that varies inside any group cannot be a
   group-level label and is compared against `profile`. The `assignment`
   column records which comparison was made, so the choice is never silent.
+  Group-level recovery counts each group once, even when groups have
+  different numbers of observations. Unused factor levels are omitted,
+  because their within-truth proportions are undefined.
   Every column is compared against `profile` for a fit with no discrete
   group classes.
 

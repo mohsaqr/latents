@@ -26,13 +26,13 @@
 
 \item{labels}{`TRUE` prints a direct label at the right end of each series.}
 
-\item{mark_minimum}{`TRUE` rings the lowest value of the criterion. This
-marks an extremum, it does not select a model.}
+\item{mark_minimum}{`TRUE` rings the lowest value among converged candidates.
+This marks an extremum, it does not select a model.}
 
 \item{main, subtitle}{Panel title and secondary line.}
 
-\item{palette, symbols, linetypes}{Series aesthetics, recycled over the number
-of group-class counts.}
+\item{palette, symbols, linetypes}{Series aesthetics, recycled over combinations
+of group-class count and covariance structure.}
 
 \item{style}{A list of visual constants, as built by `.multilpa_style()`.}
 
@@ -43,9 +43,9 @@ The enumeration result, invisibly. Called for its drawing side effect.
 }
 \description{
 Draws one information criterion against the number of profiles, with one
-line per number of group classes. Candidates that failed to converge are
-marked rather than dropped, so a gap in a line is visible as a failure and
-not mistaken for a missing candidate.
+line per number of group classes and covariance structure. Candidates that
+failed to converge are marked rather than dropped, so a gap in a line is
+visible as a failure and not mistaken for a missing candidate.
 }
 \examples{
 set.seed(7)

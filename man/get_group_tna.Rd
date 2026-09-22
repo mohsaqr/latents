@@ -24,6 +24,8 @@ An object of class `group_tna`, one `tna` model per latent class:
 \description{
 Builds one [tna::tna()] model per latent group class of a fitted transition
 model, collected into the `group_tna` object tna's grouped verbs expect.
+A class row with no expected outgoing moves keeps the fit's unestimated
+transition probabilities and raises `multilpa_empty_transition_row`.
 }
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {

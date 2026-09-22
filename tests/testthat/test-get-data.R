@@ -211,13 +211,38 @@ test_that("truth cross-tabulates against the level each column describes", {
                    "profile")
   expect_identical(unique(recovery$assignment[recovery$truth == "student_type"]),
                    "group_class")
-  # Every enrolment is counted once per truth column.
+  # Observation-level truth counts enrolments; group-level truth counts students.
   expect_equal(sum(recovery$n[recovery$truth == "engagement"]),
                nrow(course_engagement))
+  expect_equal(sum(recovery$n[recovery$truth == "student_type"]),
+               length(unique(course_engagement$student)))
   # The proportions are shares within a truth value, so they sum to one.
   shares <- as.vector(tapply(recovery$proportion,
                              paste(recovery$truth, recovery$value), sum))
   expect_equal(shares, rep(1, length(shares)))
+})
+
+test_that("group recovery gives each group one vote and omits unused truth levels", {
+  fit <- two_level()
+  data <- course_engagement
+  data$known_group <- factor(data$student_type,
+                             levels = c(as.character(unique(data$student_type)),
+                                        "unused"))
+  joined <- get_results(fit, "assignments", data = data)
+  groups <- joined[!duplicated(joined$student), ]
+  recovery <- get_results(fit, "assignments", data = data,
+                          truth = "known_group")
+  expected <- table(groups$group_class, groups$known_group)
+  expect_identical(unique(recovery$assignment), "group_class")
+  expect_equal(sum(recovery$n), nrow(groups))
+  expect_false(any(as.character(recovery$value) == "unused"))
+  expect_true(all(is.finite(recovery$proportion)))
+  for (class in seq_len(fit$n_group_classes)) {
+    for (value in setdiff(colnames(expected), "unused")) {
+      observed <- recovery$n[recovery$class == class & recovery$value == value]
+      expect_equal(observed, as.integer(expected[as.character(class), value]))
+    }
+  }
 })
 
 test_that("truth reproduces the cross-tabulation it replaces", {
