@@ -354,15 +354,15 @@ logLik(evaluated)   # identical to logLik(full_fit)
 `attendance` counts the days a student was active in a course, and a day counts as active *because*
 something was clicked, so `attendance` shares variance with the click measures
 beyond what the profile explains. The diagonal model has no way to say that,
-and `get_results(fit, "residuals", by = "overall")` reports it: the largest
-residual correlation is 0.208 (`forum_read` with `attendance`, p = 1.7e-15),
-and five of the ten pairs are significant at 0.05 — the four that pair
-`attendance` with a click measure, plus `browse` with `forum_read` at
-p = 0.035. `dependent`, the same two profiles and two group classes with
-`covariance_model = "full"`, raises the log likelihood from -7618.51 to
--7494.69 for twenty more parameters, which AIC (15283.03 to 15075.39) and
-group-count BIC (15344.29 to 15189.92) both pay for, and leaves no residual
-above 1.5e-05. Local dependence shows up in the enumeration above too, where
+and `get_results(fit, "residuals", by = "overall")` reports it. The largest
+residual correlation is 0.216, between `forum_read` and `attendance`
+(p = 1.4e-16), and five of the ten pairs are significant at 0.05. Four of those
+five pair `attendance` with a click measure, and the fifth pairs `browse` with
+`forum_read` at p = 0.018. The `dependent` fit uses the same two profiles and
+two group classes with `covariance_model = "full"`. It raises the log
+likelihood from -8439.82 to -8313.11 for twenty more parameters, which AIC
+(16925.63 to 16712.22) and group-count BIC (16986.89 to 16826.75) both pay for,
+and it leaves no residual above 1.3e-05. Local dependence shows up in the enumeration above too, where
 AIC and the group-count BIC, SABIC and CAIC all keep improving out to four
 profiles and three group classes, the largest model on the grid: unmodelled
 residual association is one of the things extra classes get recruited to
@@ -433,11 +433,12 @@ get_results(over_time, "sequence_summary")             # counts, lengths and com
 plot(over_time, what = "sequences")
 ```
 
-`sequence` is the position of a course in that student's own order, so no
-argument beyond `time =` is needed and no separate panel dataset is: the rows
-the cross-sectional fit used are already ordered within student. They are
-ragged — the shortest student has ten courses and the longest fifteen, which
-the sequence summary reports per group class. A fit made without `time` refuses
+`sequence` is the position of a course in that student's own order. The rows
+the cross-sectional fit used are therefore already ordered within student, so
+`time =` is the only argument needed and no separate panel dataset is
+required. The sequences are ragged, because the shortest student has ten
+courses and the longest has fifteen. The sequence summary reports that range
+per group class. A fit made without `time` refuses
 both tables with `multilpa_no_time` rather than inventing an order.
 
 ## Staged estimation: deciding the measurement model first
@@ -459,11 +460,11 @@ get_results(staged, "stages")     # what each stage estimated and held
 get_results(staged, "profile_probabilities")
 ```
 
-On these data the two routes nearly agree, which is the reassuring case rather
-than the guaranteed one: the staged fit reaches -7618.67 against the joint
-fit's -7618.51 with the same 23 parameters, so holding the measurement costs
-almost nothing here and the group classes are describing the same two profiles
-either way.
+On these data the two routes nearly agree. The staged fit reaches -8440.08 and
+the joint fit reaches -8439.82, both with 23 parameters. Holding the
+measurement therefore costs almost nothing here, and the group classes describe
+the same two profiles either way. This agreement is the reassuring outcome, and
+it is worth checking on each dataset rather than assuming.
 
 The result is an ordinary `multilpa` object, so every accessor, diagnostic and
 method works on it unchanged. A measurement solution already fitted and
@@ -522,12 +523,12 @@ one of those against a joint fit.
 
 ## Latent transition analysis
 
-The `"sequences"` table reports where the model put each observation. It does
-not estimate how observations move. `lta()` does: it fits the same
-measurement model and, on top of it, the probability of moving from each
+The `"sequences"` table reports where the model put each observation at each
+occasion. `lta()` goes further and estimates how observations move. It fits the
+same measurement model, and on top of it the probability of moving from each
 profile to each profile between consecutive occasions. With more than one group
-class it is a mixture over transition patterns, so the classes are trajectories
-rather than states.
+class the model becomes a mixture over transition patterns, so each class
+describes a trajectory through the profiles.
 
 ```r
 moves <- lta(
@@ -603,28 +604,34 @@ tna::centralities(per_class)         # tidy, with a `group` column
 ```
 
 The aggregate pools the posterior expected transition counts across classes and
-then normalises, so it is the marginal transition matrix rather than a
-class-probability-weighted average of the class matrices. A state that is never
-left is given a self-transition of one, because a centrality can read that and
-cannot read `NaN`.
+then normalises, so it reports the marginal transition matrix. Averaging the
+class matrices by class probability would answer a different question, because
+a class contributing few observed moves would still weigh as much as its size.
+When a state has no expected outgoing moves, the network keeps that state's
+fitted transition row, averaged over the group classes, and warns with
+`multilpa_empty_transition_row`. The row is reported as unestimated, because
+absent transition information is a gap in the evidence and reads as certain
+persistence if it is recorded as a self-transition of one.
 
 ## Does the solution survive a different seed?
 
 EM converges to a local maximum from the starts it was given. `n_starts`
 reports how many starts *within one seed's stream* reached the best likelihood,
-which says nothing about whether another stream would have found another mode.
-`sensitivity()` refits under several seeds and reports what changed.
+so it describes one stream only. Whether a different stream would have found a
+different mode is a separate question, and `sensitivity()` answers it by
+refitting under several seeds and reporting what changed.
 
 ```r
 sensitivity(fit, seeds = 1:10)
 ```
 
-One row per seed. `optimum` numbers the distinct maxima found, `1` being the
+One row per seed. `optimum` numbers the distinct maxima found, with `1` for the
 best, so the number of basins is visible at a glance. `agreement` is the
-proportion of observations given the same profile as the reference fit, after
-each refit's arbitrary profile labels have been matched to it -- two fits of the
-same mixture can be identical and still number their profiles differently, so
-comparing labels directly would report disagreement that is not there.
+proportion of observations given the same profile as the reference fit. Each
+refit's profile labels are matched to the reference before that proportion is
+computed, because two fits of the same mixture can be identical and still
+number their profiles differently. Comparing the labels directly would report
+disagreement that reflects only the numbering.
 
 A seed whose refit fails contributes an `NA` row rather than being dropped, and
 `multilpa_sensitivity_dropped` names how many failed, so the table is never
@@ -678,15 +685,15 @@ returns the multinomial logits with standard errors.
 
 The two verbs answer different questions about the same column, which is why
 both are shown on it. `three_step()` describes the classes: BCH puts mean
-`previous_grade` at 0.221 in the engaged profile and -0.315 in the disengaged
-one, a gap of 0.536 (SE 0.050). `r3step()` runs the regression the design
+`previous_grade` at 0.222 in the engaged profile and -0.315 in the disengaged
+one, a gap of 0.536 (SE 0.052). `r3step()` runs the regression the design
 actually supports, because the grade was earned in the course *before* the
-enrolment being classified: a one standard deviation higher previous grade
-raises the log odds of the engaged profile by 0.574 (SE 0.062, 95% CI 0.453 to
-0.695), and 0.574 (SE 0.057) with `vcov_type = "robust"`. The same covariate
-estimated jointly with the measurement model by
-`multilpa(profile_covariates = "previous_grade")` gives 0.440 (SE 0.074) — a
-smaller coefficient, because there the covariate is also allowed to move the
+enrolment being classified. A one standard deviation higher previous grade
+raises the log odds of the engaged profile by 0.575 (SE 0.062, 95% CI 0.453 to
+0.697), and by the same 0.575 (SE 0.059) with `vcov_type = "robust"`. The same
+covariate estimated jointly with the measurement model by
+`multilpa(profile_covariates = "previous_grade")` gives 0.422 (SE 0.074). That
+coefficient is smaller because the covariate is there allowed to move the
 profiles it is predicting.
 
 `level = "groups"` is available to both verbs and needs a covariate that is
@@ -694,14 +701,14 @@ constant within a group; `previous_grade` varies from course to course, so
 asking for it at the student level is refused with `multilpa_bad_outcome`
 rather than silently averaged.
 
-Both verbs default to a cluster-robust variance over the fit's groups, and both
-**refuse it** with `multilpa_too_few_groups` when there are not more independent
-groups than the quantities being reported. The cluster contributions sum to zero
-at the estimate — that sum is the stationarity condition — so too few groups
-leave the covariance singular and would hand back a standard error of
-essentially zero. `three_step(vcov_type = "independent")` and
-`r3step(vcov_type = "observed")` are the explicit, labelled alternatives; each
-ignores the nesting, and must be reported as having done so.
+Both verbs default to a cluster-robust variance over the fit's groups. Both
+refuse that variance with `multilpa_too_few_groups` when the number of
+independent groups does not exceed the number of quantities being reported. The
+cluster contributions sum to zero at the estimate, which is the stationarity
+condition, so with too few groups the covariance becomes singular and the
+standard error collapses to essentially zero. The labelled alternatives are
+`three_step(vcov_type = "independent")` and `r3step(vcov_type = "observed")`.
+Each one ignores the nesting, and a report that uses either should say so.
 
 ## Plots
 
@@ -732,13 +739,14 @@ divisor is each indicator's observed standard deviation, not its within-profile
 residual standard deviation, so the values are comparable but are not effect
 sizes.
 
-Plots show point estimates only and profile order is arbitrary. The one
-exception is `what = "bars"`, which draws 95% Wald intervals and therefore
-inherits the inference qualifications: on a fit whose likelihood still carries a
-non-negligible score it warns `multilpa_unconverged` before drawing. In an
-enumeration plot the ringed point marks the lowest criterion
-value, which identifies an extremum and does not select a model; candidates that
-failed to converge appear as crosses on the baseline rather than being dropped.
+Most plots show point estimates only, and profile order is arbitrary
+throughout. `what = "bars"` is the exception, because it draws 95% Wald
+intervals and therefore carries the same qualifications as the inference verbs.
+On a fit whose likelihood still carries a non-negligible score it warns
+`multilpa_unconverged` before drawing. In an enumeration plot the ringed point
+marks the lowest criterion value, which identifies an extremum and leaves the
+choice of model to the reader. Candidates that failed to converge appear as
+crosses on the baseline, so a failure stays visible.
 
 No visual constant is hard-coded. Pass any of them inline:
 
@@ -884,20 +892,20 @@ The original six comparisons cover three datasets:
   four-indicator dataset: the two single-level variance models reproduce the
   published estimates within their displayed precision.
 - New Mplus 9 Demo runs on **1,200 simulated individuals in 60 groups**:
-  both two-level variance models agree on parameter estimates within `6e-8`
-  and on marginal posterior probabilities within `2e-10`.
+  both two-level variance models agree on parameter estimates within `5.1e-8`
+  and on marginal posterior probabilities within `1.7e-10`.
 - New Mplus 9 Demo runs on the **public Example 10.4 dataset**, with 1,000
   individuals in 110 groups and five indicators: both matched two-level LPA
-  models agree on parameter estimates within `1.1e-5` and posteriors within
-  `3e-5`. These are new LPA fits; the original published CFA mixture is a
+  models agree on parameter estimates within `1.0e-5` and posteriors within
+  `3.0e-5`. These are new LPA fits; the original published CFA mixture is a
   different model and is not used as the numerical target.
 
 A genuine `CATEGORICAL =` run validates the two-level latent class model on
 1,200 individuals in 60 groups with five binary indicators: thresholds agree
 within `5.8e-6`, profile probabilities within `1.1e-6`, group-class
-probabilities within `8.3e-7`, and the likelihood within `2.8e-6`. The
-single-level limit additionally agrees with `poLCA` to `2.7e-11` in likelihood
-and `7.9e-8` in response probabilities, with identical free-parameter counts.
+probabilities within `1.1e-7`, and the likelihood within `2.7e-6`. The
+single-level limit additionally agrees with `poLCA` to `2.3e-9` in likelihood
+and `6.1e-7` in response probabilities, with identical free-parameter counts.
 
 Additional genuine Mplus runs validate full covariance with missing indicators
 (both equal and varying covariance), one-step membership covariates at both
@@ -905,9 +913,9 @@ levels. Observed
 information standard errors are also compared with Mplus.
 
 A further genuine `ESTIMATOR = MLR` run validates the robust sandwich errors and
-the new information criteria: robust standard errors agree within `1.2e-7`, the
-MLR scaling correction factor within `7.1e-7`, and AIC, BIC and SABIC within
-`4.1e-5`. See [the extension report](https://github.com/mohsaqr/multilpa/blob/main/validation/mplus/EXTENSIONS.md) for exact
+the new information criteria: robust standard errors agree within `1.8e-7`, the
+MLR scaling correction factor within `7.0e-7`, and AIC, BIC and SABIC within
+`4.0e-5`. See [the extension report](https://github.com/mohsaqr/multilpa/blob/main/validation/mplus/EXTENSIONS.md) for exact
 scope and tolerances.
 
 All new two-level comparisons use independent starts in R and Mplus. Class labels and saved subject
@@ -926,3 +934,14 @@ The independent reference implementation lives in
 `tests/testthat/helper-independent-likelihood.R`; it uses explicit assignment
 enumeration and direct probability arithmetic, independently of the fitting
 engine's log-domain EM calculation.
+
+## Authors
+
+The package is written and maintained by
+[Mohammed Saqr](https://orcid.org/0000-0001-5881-3109) and
+[Sonsoles López-Pernas](https://orcid.org/0000-0002-9621-1392). Mohammed Saqr
+maintains it, and questions are best raised as issues on the
+[repository](https://github.com/mohsaqr/multilpa/issues).
+
+To cite the package in published work, run `citation("multilpa")`, which
+reports the version used alongside the authors.
