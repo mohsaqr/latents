@@ -1,3 +1,10 @@
+# multilpa 0.4.1
+
+`vignettes/figure`, a leftover `knitr` figure directory from a preview render,
+is added to `.Rbuildignore`. It was entering the tarball and drawing a
+"looks like a leftover from 'knitr'" NOTE. The tarball's `vignettes/` now holds
+the four `.Rmd` sources and nothing else.
+
 # multilpa 0.4.0
 
 ## `get_data()` is renamed `get_results()`
