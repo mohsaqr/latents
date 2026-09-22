@@ -77,9 +77,9 @@
 #'   \item{`multilpa_failed_candidate`}{An enumerated candidate could not be
 #'     fitted. The message carries that candidate's error.}
 #'   \item{`multilpa_no_group_classes`}{A verb that needs discrete group
-#'     classes was called on a model that has none, such as
-#'     `get_data(x, "residuals")` or a group-level diagnostic on a continuous
-#'     random-intercept fit.}
+#'     classes was called on a model that has none. Every model family this
+#'     version fits has them, so this is a guard against a future family
+#'     rather than a refusal the current surface can produce.}
 #' }
 #'
 #' @section Model comparison:
@@ -105,7 +105,7 @@
 #' \describe{
 #'   \item{`multilpa_no_inference`}{Standard errors are not available for this
 #'     model family. Raised by [vcov()] and [parameter_inference()] on a
-#'     `multilpa_transitions` fit and on a `multilpa_random_intercept` fit.}
+#'     `multilpa_transitions` fit.}
 #'   \item{`multilpa_unsupported_inference`}{Standard errors are not available
 #'     for this particular fit. Raised for a covariate fit with categorical
 #'     indicators, where no score is implemented for the response
@@ -124,9 +124,14 @@
 #'   \item{`multilpa_held_parameter`}{A named parameter was held fixed by this
 #'     fit, so it has no sampling distribution and no confidence interval.
 #'     Raised by [confint()] when `parm` names a held coordinate.}
-#'   \item{`multilpa_no_plot`}{No plot method is defined for this model family.}
+#'   \item{`multilpa_no_plot`}{`plot(x, what = "all")` was called on an object
+#'     whose plot method names no views to draw.}
 #'   \item{`multilpa_no_time`}{A sequence verb was called on a fit made without
 #'     `time`, so it carries no ordering.}
+#'   \item{`multilpa_missing_package`}{A verb needs a package listed in
+#'     `Suggests` that is not installed. Raised by [get_tna()] and
+#'     [get_group_tna()] when the `tna` package is absent; the message names
+#'     the package and how to install it.}
 #' }
 #'
 #' @section Plotting:
@@ -169,9 +174,6 @@
 #'   \item{`multilpa_extreme_coefficients`}{A membership logit coefficient is
 #'     large enough that the class is close to separated, so the estimate is
 #'     driven by scaling, a sparse class or separation rather than by the data.}
-#'   \item{`multilpa_quadrature_check`}{The random-intercept likelihood computed
-#'     at the check node count disagrees with the fitted one by more than
-#'     `quadrature_tolerance`, so the integral is not yet accurate.}
 #'   \item{`multilpa_empty_transition_row`}{A profile is never occupied before a
 #'     final occasion, so its transition row is uniform by construction rather
 #'     than estimated. `get_data(fit, "transitions", estimated = FALSE)`

@@ -69,8 +69,8 @@ diagnostics <- function(x, data = NULL, plots = FALSE,
     entropy = .multilpa_entropy_table(x),
     classification = .multilpa_classification_table(x, level = level),
     average_posteriors = .multilpa_average_posteriors(x, level = level),
-    # Residuals need a discrete group-class model; a random-intercept fit
-    # refuses rather than returning a table of a different meaning.
+    # Residuals need a discrete group-class model; a fit without one refuses
+    # rather than returning a table of a different meaning.
     residuals = tryCatch(.multilpa_bivariate_residuals(x, data, by = by),
                          multilpa_no_group_classes = function(condition) NULL),
     fit = x)
@@ -171,10 +171,10 @@ plot.multilpa_diagnostics <- function(x, ...) {
   # Drawn from the fit's posteriors directly rather than through
   # `plot(fit, what = )`. The two panels need only the individual posteriors and
   # the effective profile counts, which every family carries, while not every
-  # family's `plot()` method offers a `what` -- a covariate fit's takes
-  # "profiles" and "sequences", a random-intercept fit's "profiles" and
-  # "random_intercepts" -- so dispatching through the generic asked those fits
-  # for a view their method had never heard of and failed on the match.
+  # family's `plot()` method offers the full `what` catalogue -- a covariate
+  # fit's takes "profiles" and "sequences" only -- so dispatching through the
+  # generic asked those fits for a view their method had never heard of and
+  # failed on the match.
   .multilpa_plot_case_diagnostic(x$fit, what = "entropy", ...)
   .multilpa_plot_case_diagnostic(x$fit, what = "posteriors", ...)
   invisible(x)
@@ -272,9 +272,9 @@ report <- function(x, data = NULL, plots = TRUE,
 #' @noRd
 .multilpa_supported_views <- function(x) {
   # Ask the method that will be called what it accepts, rather than assuming
-  # every class takes the full catalogue. A random-intercept fit's plot method
-  # offers "profiles" and "random_intercepts" only, so report() must not hand it
-  # a view it has never heard of.
+  # every class takes the full catalogue. A covariate fit's plot method offers
+  # "profiles" and "sequences" only, so report() must not hand it a view it has
+  # never heard of.
   method <- utils::getS3method("plot", class(x)[1L], optional = TRUE)
   if (is.null(method)) return(character())
   # A method with no `what` draws one thing. `NA_character_` stands for "call

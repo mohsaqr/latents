@@ -1005,37 +1005,3 @@ as.data.frame.multilpa_covariates <- function(x, row.names = NULL, optional = FA
   }
   result
 }
-
-#' Coerce a fitted random-intercept model to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' The other tables are named rather than positional, so they belong to
-#' [get_data()], which takes `what` and refuses a name this object has not.
-#'
-#' @param x A fitted random-intercept model.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
-#'   naming it, rather than being dropped, because `what =` used to live on
-#'   this generic and silently returning the primary table instead of the one
-#'   that was asked for is the one outcome worth refusing.
-#' @return A base `data.frame`: the Gaussian measurement model, one row per
-#'   profile and continuous indicator.
-#' @seealso [get_data()] for every other table this object holds.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- fit_random_intercept(
-#'   example_data, c("score_a", "score_b"), "school", n_profiles = 2,
-#'   n_starts = 1, seed = 1
-#' )
-#' as.data.frame(fit)
-#' @export
-as.data.frame.multilpa_random_intercept <- function(x, row.names = NULL, optional = FALSE, ...) {
-  stopifnot("`x` must be an object of class `multilpa_random_intercept`" =
-              inherits(x, "multilpa_random_intercept"))
-  .multilpa_coerce(x, row.names, list(...))
-}

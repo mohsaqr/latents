@@ -6,11 +6,6 @@
 .multilpa_level_assignments <- function(object, level) {
   stopifnot("`object` must be a fitted model of this package" =
               .multilpa_any_fit(object))
-  if (inherits(object, "multilpa_random_intercept")) {
-    stop(errorCondition(
-      "Three-step methods require a discrete group-class model.",
-      class = "multilpa_no_group_classes", call = NULL))
-  }
   level <- match.arg(level, c("individuals", "groups"))
   if (identical(level, "individuals")) {
     list(posteriors = object$subject_posteriors, modal = object$subject_profiles,

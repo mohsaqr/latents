@@ -82,7 +82,7 @@ within a profile. Residual associations, changing profile definitions, or
 transitions that vary across courses can therefore distort the estimated
 patterns.
 
-`fit_transitions()` estimates the profile distributions, student-class
+`lta()` estimates the profile distributions, student-class
 probabilities, initial probabilities, and transition probabilities jointly by
 maximum likelihood. It uses the indicators in `vars`, groups observations by
 `student`, and orders them by `sequence`. Course positions must be observed and
@@ -92,7 +92,7 @@ estimates three profiles and three student classes from six starts.
 
 ```{r transition-model}
 set.seed(1)
-moves <- fit_transitions(course_engagement, vars = vars, id = "student", time = "sequence", n_profiles = 3, n_group_classes = 3, n_starts = 6, max_iter = 2000, seed = 1)
+moves <- lta(course_engagement, vars = vars, id = "student", time = "sequence", n_profiles = 3, n_group_classes = 3, n_starts = 6, max_iter = 2000, seed = 1)
 moves
 ```
 

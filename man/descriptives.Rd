@@ -6,7 +6,6 @@
 \alias{descriptives.multilpa}
 \alias{descriptives.multilpa_transitions}
 \alias{descriptives.multilpa_covariates}
-\alias{descriptives.multilpa_random_intercept}
 \title{Describe the variables a model uses, or will use}
 \usage{
 descriptives(x, ...)
@@ -18,8 +17,6 @@ descriptives(x, ...)
 \method{descriptives}{multilpa_transitions}(x, by = NULL, ...)
 
 \method{descriptives}{multilpa_covariates}(x, by = NULL, ...)
-
-\method{descriptives}{multilpa_random_intercept}(x, by = NULL, ...)
 }
 \arguments{
 \item{x}{A data frame, or a fitted model of this package. A fit carries the
@@ -33,10 +30,8 @@ defaults to every numeric column that is not `id`.}
 \item{id}{Optional. The column identifying the groups rows are nested in.
 Supplying it adds `n_groups` and `icc`; omitting it leaves them out.}
 
-\item{by}{Optional. `"profile"` or `"group_class"` on a fitted model -- only
-`"profile"` on a `multilpa_random_intercept` fit, which has no discrete
-group classes -- or a column name on a data frame: describe each variable
-once per level of it,
+\item{by}{Optional. `"profile"` or `"group_class"` on a fitted model, or a
+column name on a data frame: describe each variable once per level of it,
 rather than once overall. Rows whose stratifier is `NA` are neither dropped
 nor folded into another level: they form their own stratum, labelled `NA`
 in the `by` column and reported last, so that the strata account for every

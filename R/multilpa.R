@@ -778,8 +778,8 @@
 #'   conventions, not interchangeable criteria. `boundary` identifies variance
 #'   bounds; `small_classes` flags effective memberships below one. The fit
 #'   itself carries no standard errors: [parameter_inference()] computes them
-#'   from the fit and the data it was fitted to, and [lmr_lrt()] and
-#'   [bootstrap_lrt()] test nested models. No guarantee of global optimality is
+#'   from the fit and the data it was fitted to, and [bootstrap_lrt()] tests
+#'   nested models. No guarantee of global optimality is
 #'   given, whatever `n_starts` is used.
 #'   Read the tidy form with `as.data.frame()`; `what` selects which table.
 #' @details Infinite and constant observed indicators are rejected. Each

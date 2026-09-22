@@ -73,13 +73,6 @@ test_that("plot(diagnostics()) draws for a covariate fit", {
   expect_true(all(c("entropy", "posteriors") %in% .multilpa_supported_views(fit)))
 })
 
-test_that("plot(diagnostics()) draws for a random-intercept fit", {
-  skip_on_cran()
-  fit <- fit_random_intercept(.surface_data(), c("a", "b"), "school",
-                              n_profiles = 2L, n_starts = 2L, seed = 1)
-  draw(expect_invisible(plot(diagnostics(fit))))
-})
-
 test_that("a single-profile fit refuses the case diagnostics by class", {
   skip_on_cran()
   # One profile leaves the two panels nothing to separate. The refusal is the
@@ -87,9 +80,7 @@ test_that("a single-profile fit refuses the case diagnostics by class", {
   # "`breaks` must be increasing", which reads as an internal fault.
   fits <- list(
     multilpa(.surface_data(), c("a", "b"), "school", n_profiles = 1L,
-             n_group_classes = 1L, n_starts = 2L, seed = 1),
-    fit_random_intercept(.surface_data(), c("a", "b"), "school",
-                         n_profiles = 1L, n_starts = 1L, seed = 1))
+             n_group_classes = 1L, n_starts = 2L, seed = 1))
   draw(invisible(lapply(fits, function(fit) {
     expect_error(plot(diagnostics(fit)), class = "multilpa_nothing_to_plot")
     # The refusal names what can be drawn instead, so it is a signpost and not
@@ -107,9 +98,6 @@ test_that("report() draws every view it offers, for every family", {
     covariates = multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                                 n_group_classes = 1L, profile_covariates = "z",
                                 n_starts = 1L, seed = 1),
-    random_intercept = fit_random_intercept(data, c("a", "b"), "school",
-                                            n_profiles = 2L, n_starts = 2L,
-                                            seed = 1),
     one_profile = multilpa(data, c("a", "b"), "school", n_profiles = 1L,
                            n_group_classes = 1L, n_starts = 2L, seed = 1))
   draw(invisible(lapply(fits, function(fit) {

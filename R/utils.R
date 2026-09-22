@@ -21,6 +21,5 @@
 #' @noRd
 .multilpa_any_fit <- function(object) {
   inherits(object, "multilpa") || inherits(object, "multilpa_covariates") ||
-    inherits(object, "multilpa_random_intercept") ||
     inherits(object, "multilpa_transitions")
 }

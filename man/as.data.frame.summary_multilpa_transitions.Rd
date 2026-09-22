@@ -25,7 +25,7 @@ A summary carries every table the object it describes can produce, and
 [get_data()] names them.
 }
 \examples{
-moves <- fit_transitions(
+moves <- lta(
   course_engagement,
   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
   id = "student", n_profiles = 2, n_group_classes = 2, time = "sequence",

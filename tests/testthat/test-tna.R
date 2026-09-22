@@ -4,7 +4,7 @@
 
 transition_fit <- function() {
   activity <- c("browse", "lectures", "forum_read")
-  quietly(fit_transitions(course_engagement, vars = activity, id = "student",
+  quietly(lta(course_engagement, vars = activity, id = "student",
                           time = "sequence", n_profiles = 3,
                           n_group_classes = 2, n_starts = 3, max_iter = 1000,
                           seed = 1))
@@ -89,4 +89,36 @@ test_that("a state nothing ever leaves is a self-transition, not NaN", {
   expect_false(anyNA(aggregate$probabilities))
   expect_equal(unname(aggregate$probabilities[2L, ]), c(0, 1, 0))
   expect_equal(unname(rowSums(aggregate$probabilities)), rep(1, 3))
+})
+
+test_that("a transition fit draws every view its catalogue claims", {
+  # The family refused `plot()` outright until 0.12.0, although its measurement
+  # model is the one `multilpa()` fits and its means, posteriors and sequences
+  # were all present. What is tested is that the catalogue and the method agree:
+  # a view listed but not drawable, or drawable but unlisted, fails here.
+  fit <- transition_fit()
+  views <- setdiff(eval(formals(multilpa:::plot.multilpa_transitions)$what), "all")
+  expect_true(all(views %in% multilpa_plot_types()$type))
+  expect_true("transitions" %in% views)
+  drawable <- c("transitions", "profiles", "bars", "heatmap", "sequences",
+                "sizes", "entropy", "posteriors", "avepp")
+  invisible(lapply(drawable, function(view) {
+    expect_s3_class(draw(plot(fit, what = view)), "multilpa_transitions")
+  }))
+})
+
+test_that("the transition panel is the fitted matrix, per class", {
+  fit <- transition_fit()
+  # Rows of every drawn panel are the rows of `transition_probabilities`, which
+  # is what makes the picture readable against `get_data(x, "transitions")`.
+  expect_equal(unname(rowSums(fit$transition_probabilities[, , 1L])),
+               rep(1, fit$n_profiles))
+  expect_identical(dim(fit$transition_probabilities),
+                   c(fit$n_profiles, fit$n_profiles, fit$n_group_classes))
+  # A single-class fit still draws one panel rather than refusing.
+  single <- quietly(lta(course_engagement, vars = c("browse", "lectures"),
+                        id = "student", time = "sequence", n_profiles = 2,
+                        n_group_classes = 1, n_starts = 2, max_iter = 300,
+                        seed = 1))
+  expect_s3_class(draw(plot(single, what = "transitions")), "multilpa_transitions")
 })

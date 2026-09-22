@@ -10,7 +10,7 @@ get_group_tna(x, ...)
 \method{get_group_tna}{multilpa_transitions}(x, label = "Group class", ...)
 }
 \arguments{
-\item{x}{A fitted model from [fit_transitions()].}
+\item{x}{A fitted model from [lta()].}
 
 \item{...}{Passed to [tna::tna()] for each class.}
 
@@ -28,7 +28,7 @@ model, collected into the `group_tna` object tna's grouped verbs expect.
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {
   activity <- c("browse", "lectures", "forum_read")
-  moves <- fit_transitions(course_engagement, vars = activity, id = "student",
+  moves <- lta(course_engagement, vars = activity, id = "student",
                            time = "sequence", n_profiles = 2,
                            n_group_classes = 2, n_starts = 2, seed = 1)
   get_group_tna(moves)

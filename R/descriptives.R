@@ -15,10 +15,8 @@
 #'   defaults to every numeric column that is not `id`.
 #' @param id Optional. The column identifying the groups rows are nested in.
 #'   Supplying it adds `n_groups` and `icc`; omitting it leaves them out.
-#' @param by Optional. `"profile"` or `"group_class"` on a fitted model -- only
-#'   `"profile"` on a `multilpa_random_intercept` fit, which has no discrete
-#'   group classes -- or a column name on a data frame: describe each variable
-#'   once per level of it,
+#' @param by Optional. `"profile"` or `"group_class"` on a fitted model, or a
+#'   column name on a data frame: describe each variable once per level of it,
 #'   rather than once overall. Rows whose stratifier is `NA` are neither dropped
 #'   nor folded into another level: they form their own stratum, labelled `NA`
 #'   in the `by` column and reported last, so that the strata account for every
@@ -124,19 +122,6 @@ descriptives.multilpa_transitions <- descriptives.multilpa
 #' @rdname descriptives
 #' @export
 descriptives.multilpa_covariates <- descriptives.multilpa
-
-#' @rdname descriptives
-#' @export
-descriptives.multilpa_random_intercept <- function(x, by = NULL, ...) {
-  stopifnot("`by` must be \"profile\"" =
-              is.null(by) || identical(by, "profile"))
-  frame <- .multilpa_model_frame(x)
-  if (is.null(by)) {
-    return(descriptives.data.frame(frame, vars = x$vars, id = x$id, ...))
-  }
-  .multilpa_describe_by(frame, x$vars, x$id,
-                        .multilpa_assignment_values(x, by), by)
-}
 
 #' The class a fit assigned to each of its observations
 #'

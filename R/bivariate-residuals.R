@@ -19,10 +19,6 @@
     "`data` must have one row per observation of the fit" =
       nrow(data) == x$n_observations
   )
-  if (inherits(x, "multilpa_random_intercept")) {
-    stop(errorCondition("Bivariate residuals require a discrete group-class model.",
-                        class = "multilpa_no_group_classes", call = NULL))
-  }
   by <- match.arg(by)
   adjust <- match.arg(adjust)
   continuous <- .multilpa_continuous_names(x)

@@ -33,12 +33,9 @@ test_that("the round trip is exact for every model family", {
   expect_true(exact(multilpa(data, c("a", "b"), "school", 2, 2, time = "wave",
                              n_starts = 2, seed = 1),
                     c("school", "wave", "a", "b")))
-  expect_true(exact(fit_transitions(data, c("a", "b"), "school", n_profiles = 2,
+  expect_true(exact(lta(data, c("a", "b"), "school", n_profiles = 2,
                                     time = "wave", n_starts = 2, seed = 1),
                     c("school", "wave", "a", "b")))
-  expect_true(exact(fit_random_intercept(data, c("a", "b"), "school", 2,
-                                         n_starts = 2, seed = 1),
-                    c("school", "a", "b")))
   expect_true(exact(multilpa(data, c("a", "b"), "school", 2, 1,
                                    profile_covariates = "z", n_starts = 2, seed = 1),
                     c("school", "a", "b")))
@@ -130,22 +127,6 @@ test_that("diagnostics gathers the verbs without changing what they return", {
   expect_error(get_data(quality, "nonsense"))
   expect_output(print(quality), "Classification quality")
   expect_invisible(print(quality))
-})
-
-test_that("a model family without residuals says so instead of failing", {
-  # Quadrature over 1422 observations is the slowest fit in this file, so it
-  # runs on three indicators from a single start: the assertions below are
-  # about what `diagnostics()` does with this model family, not about how well
-  # the fit itself recovers anything.
-  skip_on_cran()
-  fit <- fit_random_intercept(course_engagement,
-                              c("browse", "lectures", "forum_read"),
-                              id = "student", n_profiles = 2, n_starts = 1, seed = 1)
-  quality <- diagnostics(fit)
-  expect_s3_class(get_data(quality, "entropy"), "data.frame")
-  expect_error(get_data(quality, "residuals"),
-               class = "multilpa_no_group_classes")
-  expect_output(print(quality), "not available for this model family")
 })
 
 test_that("diagnostics draws only when asked", {

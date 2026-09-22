@@ -10,7 +10,7 @@ get_tna(x, ...)
 \method{get_tna}{multilpa_transitions}(x, ...)
 }
 \arguments{
-\item{x}{A fitted model from [fit_transitions()].}
+\item{x}{A fitted model from [lta()].}
 
 \item{...}{Passed to [tna::tna()].}
 }
@@ -35,7 +35,7 @@ the latter.
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {
   activity <- c("browse", "lectures", "forum_read")
-  moves <- fit_transitions(course_engagement, vars = activity, id = "student",
+  moves <- lta(course_engagement, vars = activity, id = "student",
                            time = "sequence", n_profiles = 2,
                            n_group_classes = 2, n_starts = 2, seed = 1)
   get_tna(moves)

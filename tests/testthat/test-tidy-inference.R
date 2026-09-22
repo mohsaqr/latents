@@ -221,7 +221,7 @@ test_that("a fit with no standard errors says so by class rather than by number"
                      wave = rep(seq_len(5), times = 30))
   data$score_a <- stats::rnorm(150)
   data$score_b <- stats::rnorm(150)
-  fit <- fit_transitions(data, c("score_a", "score_b"), "person",
+  fit <- lta(data, c("score_a", "score_b"), "person",
                          n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 
   expect_error(parameter_inference(fit, data), class = "multilpa_no_inference")

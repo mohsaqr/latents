@@ -110,7 +110,7 @@ test_that("expected counts and posteriors satisfy their own invariants", {
 
 test_that("a fitted model's counts total its within-sequence transitions", {
   data <- .numerics_fixture(n_groups = 12L, occasions = 5L, seed = 11L)
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
     n_group_classes = 2L, n_starts = 2, seed = 3, max_iter = 40))
   expect_true(all(is.finite(fit$transition_counts)))
@@ -129,7 +129,7 @@ test_that("expected counts match explicit path enumeration", {
                 list(profiles = 3L, types = 1L),
                 list(profiles = 2L, types = 2L))
   deviations <- vapply(cases, function(case) {
-    fit <- quietly(fit_transitions(
+    fit <- quietly(lta(
       data, c("y1", "y2"), "g", n_profiles = case$profiles, time = "t",
       n_group_classes = case$types, n_starts = 2, seed = 4, max_iter = 25))
     reference <- .enumerate_transition_counts(continuous, fit$group_index,
@@ -150,7 +150,7 @@ test_that("zero iterations evaluate the start instead of failing to assemble", {
   data <- data.frame(id = rep(seq_len(3), each = 8),
                      time = rep(seq_len(8), times = 3),
                      y = stats::rnorm(24))
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, "y", "id", n_profiles = 2L, time = "time", n_starts = 1,
     max_iter = 0, seed = 1))
   expect_s3_class(fit, "multilpa_transitions")
@@ -170,14 +170,14 @@ test_that("the prevalence reported is the one the final expectation implies", {
   # With one group class every group belongs to it with probability one, so
   # the class's joint posteriors are the individual posteriors themselves and
   # the implied prevalence is their normalised column sums.
-  single <- quietly(fit_transitions(
+  single <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
     n_starts = 2, seed = 5, max_iter = 60))
   shares <- colSums(single$subject_posteriors)
   expect_equal(unname(drop(single$profile_prevalence)),
                unname(shares / sum(shares)), tolerance = 1e-10)
 
-  nested <- quietly(fit_transitions(
+  nested <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
     n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 60))
   expect_true(all(is.finite(nested$profile_prevalence)))
@@ -203,7 +203,7 @@ test_that("two very long sequences fit rather than overflowing", {
     time = rep(seq_len(n_occasions), times = 2),
     y = rep(rep(c(-5, 5), length.out = n_occasions), times = 2) +
       stats::rnorm(2 * n_occasions, sd = 0.1))
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, "y", "id", n_profiles = 2L, time = "time", n_starts = 1,
     max_iter = 2, seed = 1))
   expect_s3_class(fit, "multilpa_transitions")
@@ -217,16 +217,19 @@ test_that("two very long sequences fit rather than overflowing", {
 
 test_that("broken contracts of the moment step raise by class", {
   data <- .numerics_fixture(n_groups = 6L, occasions = 3L, seed = 31L)
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_starts = 2,
     seed = 6, max_iter = 20))
   # A single profile has nothing to move between, and a fit that carries no
   # ordering has no sequence to read: both are classed, not message-matched.
-  expect_error(fit_transitions(data, c("y1", "y2"), "g", n_profiles = 1L,
+  expect_error(lta(data, c("y1", "y2"), "g", n_profiles = 1L,
                                time = "t", n_starts = 1, seed = 6),
                class = "multilpa_bad_transition")
   expect_error(parameter_inference(fit), class = "multilpa_no_inference")
-  expect_error(plot(fit), class = "multilpa_no_plot")
+  # A transition fit draws: the measurement views it shares with multilpa(),
+  # plus its own transition matrix. This used to refuse outright.
+  expect_s3_class(draw(plot(fit, what = "transitions")), "multilpa_transitions")
+  expect_s3_class(draw(plot(fit, what = "profiles")), "multilpa_transitions")
   # A group class with no effective membership leaves its profile prevalence
   # undefined, and is refused rather than divided by zero.
   expect_error(

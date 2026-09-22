@@ -71,7 +71,7 @@ test_that("the recursion reproduces the likelihood enumeration gives", {
     list(profiles = 2L, types = 1L), list(profiles = 3L, types = 1L),
     list(profiles = 2L, types = 2L), list(profiles = 3L, types = 2L))
   invisible(lapply(cases, function(case) {
-    fit <- quietly(fit_transitions(
+    fit <- quietly(lta(
       data, c("y1", "y2"), "g", n_profiles = case$profiles, time = "t",
       n_group_classes = case$types, n_starts = 2, seed = 4, max_iter = 25))
     expect_equal(fit$log_likelihood,
@@ -85,7 +85,7 @@ test_that("the recursion reproduces the likelihood enumeration gives", {
 
 test_that("enumeration agrees for categorical, mixed and incomplete indicators", {
   data <- .transition_fixture()
-  mixed <- quietly(fit_transitions(
+  mixed <- quietly(lta(
     data, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
     categorical = "c1", n_starts = 2, seed = 8, max_iter = 25))
   expect_equal(mixed$log_likelihood,
@@ -93,7 +93,7 @@ test_that("enumeration agrees for categorical, mixed and incomplete indicators",
                                      mixed$categorical_data, mixed$group_index,
                                      data$t, mixed), tolerance = 1e-10)
 
-  pure <- quietly(fit_transitions(
+  pure <- quietly(lta(
     data, "c1", "g", n_profiles = 2L, time = "t", categorical = "c1",
     n_starts = 2, seed = 8, max_iter = 25))
   expect_equal(pure$log_likelihood,
@@ -105,7 +105,7 @@ test_that("enumeration agrees for categorical, mixed and incomplete indicators",
   incomplete <- data
   incomplete$y1[c(2L, 9L, 20L)] <- NA
   incomplete$y2[c(5L, 9L)] <- NA
-  fiml <- quietly(fit_transitions(
+  fiml <- quietly(lta(
     incomplete, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
     categorical = "c1", missing = "fiml", n_starts = 2, seed = 8, max_iter = 25))
   expect_equal(fiml$log_likelihood,
@@ -117,7 +117,7 @@ test_that("enumeration agrees for categorical, mixed and incomplete indicators",
 test_that("known transition probabilities are recovered across seeds", {
   recovered <- do.call(rbind, lapply(1:3, function(seed) {
     data <- .transition_recovery_data(seed)
-    fit <- quietly(fit_transitions(
+    fit <- quietly(lta(
       data, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_starts = 4,
       seed = seed))
     # Profile labels are arbitrary, so align them by the first indicator mean
@@ -164,7 +164,7 @@ test_that("enough starts reach the same maximum from either row order", {
   # and k-means starts depend on row order, so agreement is a claim about the
   # restart policy rather than about the algebra. Two starts is not enough.
   maximize <- function(frame) {
-    quietly(fit_transitions(frame, c("y1", "y2"), "g", n_profiles = 2L,
+    quietly(lta(frame, c("y1", "y2"), "g", n_profiles = 2L,
       time = "t", n_starts = 10, seed = 3, max_iter = 400))$log_likelihood
   }
   expect_equal(maximize(data), maximize(shuffled), tolerance = 1e-6)
@@ -173,7 +173,7 @@ test_that("enough starts reach the same maximum from either row order", {
 test_that("a grid of occasions differs from consecutive ones only when a wave is skipped", {
   data <- .transition_fixture(n_groups = 8L, occasions = 5L, seed = 31L)
   fit <- function(frame, occasions) {
-    quietly(fit_transitions(frame, c("y1", "y2"), "g", n_profiles = 2L,
+    quietly(lta(frame, c("y1", "y2"), "g", n_profiles = 2L,
       time = "t", n_starts = 2, seed = 6, max_iter = 25, occasions = occasions))
   }
   balanced_observed <- fit(data, "observed")
@@ -200,7 +200,7 @@ test_that("a grid of occasions differs from consecutive ones only when a wave is
 
 test_that("the fitted quantities satisfy their own definitions", {
   data <- .transition_fixture()
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 3L, time = "t", n_group_classes = 2L,
     n_starts = 2, seed = 5, max_iter = 60))
   expect_equal(rowSums(fit$initial_probabilities), rep(1, 2),
@@ -220,7 +220,7 @@ test_that("the fitted quantities satisfy their own definitions", {
 
 test_that("the free parameter count is the one the model actually has", {
   data <- .transition_fixture()
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 3L, time = "t", n_group_classes = 2L,
     n_starts = 2, seed = 5, max_iter = 20))
   # 3 profiles x 2 indicators means and variances, one group-class split,
@@ -235,31 +235,31 @@ test_that("the free parameter count is the one the model actually has", {
 
 test_that("broken contracts raise their own condition classes", {
   data <- .transition_fixture()
-  expect_error(fit_transitions(data, c("y1", "y2"), "g", n_profiles = 1L,
+  expect_error(lta(data, c("y1", "y2"), "g", n_profiles = 1L,
                                time = "t", n_starts = 1, seed = 1),
                class = "multilpa_bad_transition")
   one_occasion <- data[data$t == 1L, ]
-  expect_error(fit_transitions(one_occasion, c("y1", "y2"), "g", n_profiles = 2L,
+  expect_error(lta(one_occasion, c("y1", "y2"), "g", n_profiles = 2L,
                                time = "t", n_starts = 1, seed = 1),
                class = "multilpa_bad_transition")
   repeated <- data
   repeated$t[2L] <- 1L
-  expect_error(fit_transitions(repeated, c("y1", "y2"), "g", n_profiles = 2L,
+  expect_error(lta(repeated, c("y1", "y2"), "g", n_profiles = 2L,
                                time = "t", n_starts = 1, seed = 1),
                class = "multilpa_bad_time")
   absent <- data
   absent$t[3L] <- NA
-  expect_error(fit_transitions(absent, c("y1", "y2"), "g", n_profiles = 2L,
+  expect_error(lta(absent, c("y1", "y2"), "g", n_profiles = 2L,
                                time = "t", n_starts = 1, seed = 1),
                class = "multilpa_bad_time")
-  expect_error(fit_transitions(data, c("y1", "y2"), "g", n_profiles = 2L,
+  expect_error(lta(data, c("y1", "y2"), "g", n_profiles = 2L,
                                time = NULL, n_starts = 1, seed = 1))
   expect_error(get_data(data, "transitions"))
 })
 
 test_that("the accessors return the tidy tables they promise", {
   data <- .transition_fixture()
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
     categorical = "c1", n_group_classes = 2L, n_starts = 2, seed = 5,
     max_iter = 30))
@@ -316,7 +316,7 @@ test_that("the accessors return the tidy tables they promise", {
 
 test_that("transitions() restricts by argument instead of by bracket", {
   data <- .transition_fixture()
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
     n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 30))
 
@@ -352,7 +352,7 @@ test_that("transitions() restricts by argument instead of by bracket", {
 
 test_that("the summary keeps named fields only, and reports its own tables", {
   data <- .transition_fixture()
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
     n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 30))
   digest <- summary(fit)
@@ -384,7 +384,7 @@ test_that("the summary keeps named fields only, and reports its own tables", {
 
 test_that("the shared sequence and diagnostic verbs accept a transition fit", {
   data <- .transition_fixture()
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_group_classes = 2L,
     n_starts = 2, seed = 5, max_iter = 30))
   long <- get_data(fit, "sequences")
@@ -401,7 +401,7 @@ test_that("groups of one occasion contribute an initial state and no transition"
   data <- .transition_fixture()
   short <- rbind(data, data.frame(g = 10L, t = 1L, y1 = 0.4, y2 = -0.2,
                                   c1 = "lo"))
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     short, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_starts = 2,
     seed = 7, max_iter = 25))
   expect_identical(unname(fit$sequence_lengths[10L]), 1L)
@@ -469,7 +469,7 @@ test_that("the emission layout removes an offset it can add back exactly", {
 
 test_that("the generics either answer or refuse, and never answer emptily", {
   data <- .transition_fixture()
-  fit <- quietly(fit_transitions(
+  fit <- quietly(lta(
     data, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
     categorical = "c1", n_starts = 2, seed = 5, max_iter = 30))
 
@@ -507,5 +507,6 @@ test_that("the generics either answer or refuse, and never answer emptily", {
   expect_error(vcov(fit), class = "multilpa_no_inference")
   expect_error(confint(fit), class = "multilpa_no_inference")
   expect_error(parameter_inference(fit, data), class = "multilpa_no_inference")
-  expect_error(plot(fit), class = "multilpa_no_plot")
+  expect_s3_class(draw(plot(fit, what = "transitions")), "multilpa_transitions")
+  expect_s3_class(draw(plot(fit, what = "profiles")), "multilpa_transitions")
 })

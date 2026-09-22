@@ -21,3 +21,7 @@
 ^AGENT-NOTE.*\.md$
 ^README\.html$
 ^equivalence$
+^future$
+^docs$
+^vignettes/\.beatrina
+^vignettes/.*\.tex$

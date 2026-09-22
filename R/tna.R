@@ -1,6 +1,6 @@
 # Handing a fitted transition model to the tna package.
 #
-# `fit_transitions()` estimates exactly what a transition network is: a square
+# `lta()` estimates exactly what a transition network is: a square
 # matrix of probabilities over the same states, and where the sequences start.
 # tna builds its models from those two things, so the handover is the estimates
 # themselves rather than a re-analysis of the assignments.
@@ -25,7 +25,7 @@
 #' holding a tenth of the students but a fifth of the observed moves counts for
 #' the latter.
 #'
-#' @param x A fitted model from [fit_transitions()].
+#' @param x A fitted model from [lta()].
 #' @param ... Passed to [tna::tna()].
 #' @return An object of class `tna`, as [tna::tna()] returns: every verb of that
 #'   package applies to it, including `centralities()`, `communities()`,
@@ -34,7 +34,7 @@
 #' @examples
 #' if (requireNamespace("tna", quietly = TRUE)) {
 #'   activity <- c("browse", "lectures", "forum_read")
-#'   moves <- fit_transitions(course_engagement, vars = activity, id = "student",
+#'   moves <- lta(course_engagement, vars = activity, id = "student",
 #'                            time = "sequence", n_profiles = 2,
 #'                            n_group_classes = 2, n_starts = 2, seed = 1)
 #'   get_tna(moves)
@@ -57,7 +57,7 @@ get_tna.multilpa_transitions <- function(x, ...) {
 #' Builds one [tna::tna()] model per latent group class of a fitted transition
 #' model, collected into the `group_tna` object tna's grouped verbs expect.
 #'
-#' @param x A fitted model from [fit_transitions()].
+#' @param x A fitted model from [lta()].
 #' @param label What the classes are called in tna's output.
 #' @param ... Passed to [tna::tna()] for each class.
 #' @return An object of class `group_tna`, one `tna` model per latent class:
@@ -67,7 +67,7 @@ get_tna.multilpa_transitions <- function(x, ...) {
 #' @examples
 #' if (requireNamespace("tna", quietly = TRUE)) {
 #'   activity <- c("browse", "lectures", "forum_read")
-#'   moves <- fit_transitions(course_engagement, vars = activity, id = "student",
+#'   moves <- lta(course_engagement, vars = activity, id = "student",
 #'                            time = "sequence", n_profiles = 2,
 #'                            n_group_classes = 2, n_starts = 2, seed = 1)
 #'   get_group_tna(moves)
@@ -109,7 +109,7 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
 }
 
 #' State labels for a transition network
-#' @param x A fitted model from [fit_transitions()].
+#' @param x A fitted model from [lta()].
 #' @return A character vector, one per profile.
 #' @noRd
 .multilpa_state_labels <- function(x) {
@@ -119,7 +119,7 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
 
 #' The transition model marginal over latent group classes
 #'
-#' @param x A fitted model from [fit_transitions()].
+#' @param x A fitted model from [lta()].
 #' @return A list with `probabilities`, a square matrix, and `initial`.
 #' @noRd
 .multilpa_aggregate_transitions <- function(x) {

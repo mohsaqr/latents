@@ -196,9 +196,8 @@ P(Y_j) = sum_h eta_h * product_i [sum_k pi_hk * product_d
 The formulation extends the nonparametric multilevel mixture framework of
 [Vermunt (2003)](https://jeroenvermunt.nl/sm2003.pdf) to Gaussian indicators.
 It assumes measurement invariance across group classes. Full residual covariance,
-membership covariates, latent transitions over ordered occasions, and an
-alternative continuous random-intercept model are available through the
-extensions below. Random slopes are not implemented.
+membership covariates, and latent transitions over ordered occasions are
+available through the extensions below. Random slopes are not implemented.
 
 ## Categorical indicators
 
@@ -279,9 +278,9 @@ confint(full_fit)
 parameter_inference(full_fit, vcov_type = "robust")
 vcov(full_fit, vcov_type = "robust")
 
-# Likelihood-ratio statistic with the Lo-Mendell-Rubin adjustment. The
-# `p_value` column is returned as NA on purpose, because the VLMR reference
-# distribution is not reproduced; use the bootstrap below for a calibrated one.
+# Nested model comparison. `bootstrap_lrt()` below gives the calibrated
+# p-value; the Lo-Mendell-Rubin adjustment is not shipped, because its
+# reference distribution is not reproduced.
 smaller_fit <- multilpa(
   incomplete,
   c("browse", "lectures", "forum_read", "forum_post", "attendance"),
@@ -292,8 +291,6 @@ larger_fit <- multilpa(
   c("browse", "lectures", "forum_read", "forum_post", "attendance"),
   "student", n_profiles = 3, n_group_classes = 2, missing = "fiml", seed = 1
 )
-lmr_lrt(smaller_fit, larger_fit)
-
 # One-step membership regressions: `profile_covariates` and `group_covariates`
 # are arguments to multilpa(), not a separate verb. The measurement model is
 # the one multilpa() fits: Gaussian, categorical or mixed, diagonal or full
@@ -321,16 +318,6 @@ multilpa(course_engagement,
          n_profiles = 2, n_group_classes = 2,
          profile_covariates = "previous_grade",
          covariance_model = "full", seed = 1)
-
-# Alternative: one continuous group intercept, loading 1 on every indicator.
-# Complete data only, like the covariate fits above.
-random_intercept <- fit_random_intercept(
-  course_engagement,
-  c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-  "student", 2, seed = 1)
-summary(random_intercept)                   # includes the quadrature check
-get_data(random_intercept, "model")         # the one-row fit summary
-get_data(random_intercept, "random_intercepts")  # one interval per group
 
 # Compare profile/group-class counts; inspect diagnostics in every row. Anything
 # enumerate_classes() does not name itself reaches multilpa(), so
@@ -418,7 +405,7 @@ absorb. Read the residual table before reading the grid.
 | Residual covariance | `volume`, `shape` and `orientation` reach **all fourteen** mclust structures — EII, VII, EEI, VEI, EVI, VVI, EEE, VEE, EVE, VVE, EEV, VEV, EVV, VVV — with parameter counts matching mclust's own. `variance_model` and `covariance_model` remain the two-argument shorthand for EEI/VVI/EEE/VVV. Standard errors cover those four only |
 | Selecting a structure | `enumerate_classes(structure = )` crosses the structures with the class counts and reports every criterion per cell; `candidate_fit(structure = )` takes one back out |
 | Within-person profiles | `centering="person"` subtracts each group's own mean before fitting, so the profiles are profiles of change; `"grand"` moves the origin only. The offsets stay on the fit, so every verb still reports and checks the scale you supplied |
-| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models, with or without full residual covariance; and fixed or staged fits, whose standard errors are conditional on the held measurement. Not available for transition fits (`multilpa_no_inference`), random-intercept fits (`multilpa_no_inference`), covariate fits with categorical indicators (`multilpa_unsupported_inference`), or a fit that holds every parameter it has (`multilpa_no_free_parameters`), each of which refuses by condition class rather than returning a number |
+| SEs/CIs | Observed-Hessian ML inference for Gaussian, categorical and mixed discrete models, including full covariance and FIML; membership-covariate inference for complete Gaussian models, with or without full residual covariance; and fixed or staged fits, whose standard errors are conditional on the held measurement. Not available for transition fits (`multilpa_no_inference`), covariate fits with categorical indicators (`multilpa_unsupported_inference`), or a fit that holds every parameter it has (`multilpa_no_free_parameters`), each of which refuses by condition class rather than returning a number |
 | Robust SEs | `vcov_type="robust"`: Huber-White sandwich over independent groups, plus the MLR scaling correction factor. This is the same estimator Mplus `ESTIMATOR=MLR` defines, but the two have not been compared numerically; the retained Mplus comparison covers likelihoods, parameters and criteria only |
 | Membership covariates | `profile_covariates` and `group_covariates` on `multilpa()`: numeric predictors at both levels; shared individual-profile slopes across group classes; Gaussian, categorical or mixed indicators with diagonal or full residual covariance; complete data only |
 | Continuous random effect | One shared Gaussian group intercept with unit indicator loadings; complete diagonal model, no discrete group classes |
@@ -427,16 +414,16 @@ absorb. Read the residual table before reading the grid.
 | Classification quality | Modal and model-estimated class sizes, average posterior probabilities, odds of correct classification, relative entropy. `"classification"`, `"average_posteriors"`, `"classification_errors"` and `"bch_weights"` report both levels on a fit that has discrete group classes; `level = "individuals"` or `"groups"` asks for one |
 | Measurement estimates | `get_data(fit, "profiles")`, also reached by `as.data.frame(fit)`; adding `data =` is what asks for it with a standard error beside every estimate, in one call, and `scale = "standardized"` is what `plot(fit, scale = "standardized")` draws |
 | Recovery against a known truth | `get_data(x, "assignments", truth = )` cross-tabulates the model's labels against columns of `data` holding known ones, comparing each against the level it describes |
-| LMR statistic | Likelihood-ratio statistic and the Lo-Mendell-Rubin adjustment; the `p_value` column is **always `NA`**, because the VLMR reference distribution is not reproduced |
 | Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; held measurement blocks are carried into every refit and reported in a `fixed` column, and a pair whose constrained nesting cannot be established is refused with `multilpa_bad_nesting`; not Mplus TECH14 |
 | Local dependence | Posterior-weighted bivariate residuals within profile or overall, with approximate unadjusted p-values; apply a multiplicity correction with `adjust =` when comparing pairs |
 | Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment, with `three_step(vcov_type = "cluster")` or `"independent"`; R3STEP membership covariates with `r3step(vcov_type = "observed")` or `"robust"`. A cluster-robust request is refused with `multilpa_too_few_groups` when there are not more independent groups than reported quantities, because the contributions sum to zero at the estimate and the covariance would be singular |
 | Sequences | Profile assignments in long or wide form, with group counts, sequence lengths and completeness by group class; observed transitions between assignments are not computed |
-| Latent transitions | `fit_transitions()`: first-order homogeneous transition probabilities between profiles, measurement invariant across occasions, per-group-class initial distributions and transition matrices; Gaussian, categorical or mixed indicators, FIML, diagonal or full covariance, ragged sequences; no standard errors, enumeration or bootstrap |
+| Latent transitions | `lta()`: first-order homogeneous transition probabilities between profiles, measurement invariant across occasions, per-group-class initial distributions and transition matrices; Gaussian, categorical or mixed indicators, FIML, diagonal or full covariance, ragged sequences; no standard errors, enumeration or bootstrap |
 | Staged estimation | `fit_staged()` and `multilpa(fixed=)`: hold means, variances or response probabilities at supplied values while membership is estimated; `fit_staged()` reports both parameter counts; first-stage uncertainty is not propagated |
-| Warm starts | `starting_values()` round-trips any fitted solution, keeping indicator names and category labels on categorical response blocks, so a stage cannot attach a response distribution to the wrong item; an encoding that cannot be aligned raises `multilpa_bad_start` or `multilpa_bad_stage`. `max_iter = 0` evaluates a supplied parameter set without moving, and `fit_transitions()` accepts it too |
-| Plots | Profile means (raw or standardized), grouped bars with Wald intervals, a standardized heatmap, categorical response curves, prevalence by group class, profile sequences, per-case entropy, modal posteriors, and any enumeration criterion; `multilpa_plot_types()` lists them and `plot(x, what = "all")` draws every one the fit supports. Entropy and posterior views also work for covariate and random-intercept fits. Base graphics only; a transition fit has no plot method and refuses with `multilpa_no_plot` |
-| Conditions | The errors and warnings listed in `?"multilpa-conditions"` carry stable classes, so they can be caught by what went wrong. A few internal guards in `bootstrap_lrt()` and `fit_transitions()` still raise unclassed errors; match on class only where the catalogue documents one |
+| Transition networks | `get_tna()` returns the marginal transition network of a `lta()` model as a fitted `tna` model; `get_group_tna()` returns one per latent class as a `group_tna`. Estimated transition probabilities are handed over, not recounted from modal assignments; `tna` is a Suggests dependency |
+| Warm starts | `starting_values()` round-trips any fitted solution, keeping indicator names and category labels on categorical response blocks, so a stage cannot attach a response distribution to the wrong item; an encoding that cannot be aligned raises `multilpa_bad_start` or `multilpa_bad_stage`. `max_iter = 0` evaluates a supplied parameter set without moving, and `lta()` accepts it too |
+| Plots | Profile means (raw or standardized), grouped bars with Wald intervals, a standardized heatmap, categorical response curves, prevalence by group class, profile sequences, per-case entropy, modal posteriors, and any enumeration criterion; `multilpa_plot_types()` lists them and `plot(x, what = "all")` draws every one the fit supports. Entropy and posterior views also work for covariate fits. Base graphics only. A transition fit draws the same measurement and classification views plus `what = "transitions"`, its estimated transition matrix as one heatmap panel per group class |
+| Conditions | The errors and warnings listed in `?"multilpa-conditions"` carry stable classes, so they can be caught by what went wrong. A few internal guards in `bootstrap_lrt()` and `lta()` still raise unclassed errors; match on class only where the catalogue documents one |
 
 These are explicit model families, not every combination of Mplus options.
 Random-intercept fits currently do not provide standard errors.
@@ -562,15 +549,17 @@ not the joint maximum. A fit built with `multilpa(fixed =)` directly reports
 only the count it estimated here, so add the held blocks yourself when comparing
 one of those against a joint fit.
 
-## Latent transitions
+## Latent transition analysis
 
 The `"sequences"` table reports where the model put each observation. It does
-not estimate how observations move. `fit_transitions()` does: it fits the same
+not estimate how observations move. `lta()` does: it fits the same
 measurement model and, on top of it, the probability of moving from each
-profile to each profile between consecutive occasions.
+profile to each profile between consecutive occasions. With more than one group
+class it is a mixture over transition patterns, so the classes are trajectories
+rather than states.
 
 ```r
-moves <- fit_transitions(
+moves <- lta(
   course_engagement,
   c("browse", "lectures", "forum_read", "forum_post", "attendance"),
   "student", n_profiles = 2, time = "sequence", seed = 1
@@ -597,7 +586,7 @@ distribution and its own transition matrix, which separates groups that differ
 in how they move from groups that differ only in where they start.
 
 ```r
-mixture <- fit_transitions(
+mixture <- lta(
   course_engagement,
   c("browse", "lectures", "forum_read", "forum_post", "attendance"),
   "student", n_profiles = 2, n_group_classes = 2, time = "sequence", seed = 1
@@ -613,13 +602,40 @@ measurement information at it. The two agree whenever every group is observed
 at every position, which `get_data(moves, "sequence_summary")` reports as a
 `gaps` count of zero for every group class.
 
-Standard errors, likelihood-ratio tests, class enumeration and plots are not
+Standard errors, likelihood-ratio tests and class enumeration are not
 available for this model family — `parameter_inference()` and `vcov()` refuse
-with `multilpa_no_inference`, and `plot()` with `multilpa_no_plot`. `logLik()`
+with `multilpa_no_inference`. `plot()` draws every measurement and
+classification view, plus `what = "transitions"` for the matrix itself, though
+`"bars"` carries no intervals because there are no standard errors to draw.
+`logLik()`
 is available, and so are the `"information_criteria"`, `"classification"`,
 `"entropy"`, `"sequences"` and `"sequence_summary"` tables. `max_iter = 0` is
 accepted here too, so a supplied parameter set can be scored without being
 moved.
+
+### Handing the transitions to `tna`
+
+The estimated transition matrix is a network, so it is handed to the
+[tna](https://cran.r-project.org/package=tna) package as a fitted model rather
+than recounted from modal assignments. `get_tna()` returns the marginal
+transition network for the whole sample; `get_group_tna()` returns one network
+per latent class, as a `group_tna` object that tna's grouped verbs read
+directly. Both keep the fit's own state labels, so a network and a profile
+table can be read against each other. `tna` is a Suggests dependency.
+
+```r
+network <- get_tna(mixture)          # one tna model, the marginal transitions
+tna::centralities(network)
+
+per_class <- get_group_tna(mixture)  # one tna model per group class
+tna::centralities(per_class)         # tidy, with a `group` column
+```
+
+The aggregate pools the posterior expected transition counts across classes and
+then normalises, so it is the marginal transition matrix rather than a
+class-probability-weighted average of the class matrices. A state that is never
+left is given a self-transition of one, because a centrality can read that and
+cannot read `NaN`.
 
 ## Relating classes to variables that did not define them
 
@@ -691,12 +707,11 @@ ignores the nesting, and must be reported as having done so.
 
 ## Plots
 
-`plot()` methods are provided for fitted models, covariate fits,
-random-intercept fits and enumeration grids. They use base graphics only; no
+`plot()` methods are provided for fitted models, covariate fits and
+enumeration grids. They use base graphics only; no
 plotting package is added as a dependency. `multilpa_plot_types()` returns every
 view with the question it answers, and `plot(x, what = "all")` draws every view
-the fit has the ingredients for, naming at the end any that refused. A latent
-transition fit has no plot method and refuses with `multilpa_no_plot`.
+the fit has the ingredients for, naming at the end any that refused.
 
 Every series is distinguished by **colour, point symbol and line type together**
 and labelled directly at the line end, so the plots stay readable in greyscale,
@@ -709,7 +724,7 @@ plot(fit, what = "probabilities")           # profile prevalence per group class
 plot(fit, what = "entropy")                 # where the classification uncertainty sits
 plot(fit, what = "posteriors")              # modal assignment probabilities
 plot(with_predictors, what = "entropy")     # the same two views on a covariate fit
-plot(random_intercept, what = "posteriors") # and on a random-intercept fit
+plot(moves, what = "transitions")           # the estimated transition matrix
 plot(candidates, criterion = "icl_groups")  # any column of the enumeration grid
 ```
 
@@ -888,22 +903,14 @@ and `7.9e-8` in response probabilities, with identical free-parameter counts.
 
 Additional genuine Mplus runs validate full covariance with missing indicators
 (both equal and varying covariance), one-step membership covariates at both
-levels, and the single-profile continuous random-intercept limit. Observed
+levels. Observed
 information standard errors are also compared with Mplus.
 
 A further genuine `ESTIMATOR = MLR` run validates the robust sandwich errors and
 the new information criteria: robust standard errors agree within `1.2e-7`, the
 MLR scaling correction factor within `7.1e-7`, and AIC, BIC and SABIC within
-`4.1e-5`. Two genuine `TECH11` runs reproduce the Lo-Mendell-Rubin adjusted
-statistic to the three decimals Mplus prints, end to end from native fits on the
-published Example 7.9 data (`747.0633` against `747.063`, adjusted `723.7708`
-against `723.771`). The Vuong-Lo-Mendell-Rubin reference distribution, that is
-the mean, standard deviation and p-value Mplus reports beside it, is **not**
-reproduced, and no p-value is returned in its place. See
-[the extension report](validation/mplus/EXTENSIONS.md) for exact scope and
-tolerances. The random-intercept mixture likelihood additionally agrees with
-independent adaptive numerical integration; its Mplus comparison currently
-covers one profile only.
+`4.1e-5`. See [the extension report](validation/mplus/EXTENSIONS.md) for exact
+scope and tolerances.
 
 All new two-level comparisons use independent starts in R and Mplus. Class labels and saved subject
 IDs are aligned before comparison. Mplus's BIC is compared to

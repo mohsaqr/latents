@@ -49,9 +49,9 @@
 #'   \item{`"model"`}{One row describing the whole fit: its dimensions,
 #'     likelihood, parameter counts, `aic`, `bic_groups`, `bic_individual` and
 #'     its convergence and boundary diagnostics. The columns are those of the
-#'     family: a random-intercept fit reports its integration diagnostics and a
-#'     covariate fit its predictor counts, because padding those onto a
-#'     two-level fit would leave the common case mostly `NA`. Comparing fits
+#'     family: a covariate fit reports its predictor counts, because padding
+#'     those onto a two-level fit would leave the common case mostly `NA`.
+#'     Comparing fits
 #'     across families is what `"information_criteria"` is for, and that table
 #'     does have one column set for every family.}
 #'   \item{`"posteriors"`}{One row per individual and profile: `row`, `group`,
@@ -104,8 +104,7 @@
 #'     Columns a model never saw are not here, which is why [three_step()] and
 #'     [r3step()] still take `data`.}
 #' }
-#' Every family with discrete group classes -- that is, every family except
-#' the random-intercept one -- adds:
+#' Every family with discrete group classes adds:
 #' \describe{
 #'   \item{`"group_posteriors"`}{One row per observed group and group class:
 #'     `group`, `group_size`, `log_likelihood`, `group_class`, `posterior`,
@@ -133,9 +132,6 @@
 #'     profile: `group_class`, `profile`, `probability`, `prevalence`,
 #'     `group_class_probability`. `"sequence_lengths"` has one row per group:
 #'     `group`, `group_class`, `occasions`, `observations`, `complete`.}
-#'   \item{`"random_intercepts"`}{A random-intercept fit. One row per observed
-#'     group: `group`, `group_size`, `mean`, `sd`, the posterior mean and
-#'     standard deviation of that group's scalar intercept.}
 #'   \item{`"candidates"`, `"criteria"`}{An enumeration grid.
 #'     `"criteria"` has one row per information criterion, naming the candidate
 #'     that minimises it. `"candidates"` has one row per candidate model,
@@ -247,9 +243,8 @@
 #'   `convention = NA_character_`. `clc` depends on none either, but its
 #'   convention selects which level's classification uncertainty it penalizes,
 #'   so it is reported once per convention. Individual sample sizes exclude
-#'   rows with no observed indicators. For a continuous random-intercept fit
-#'   the group classification entropy is undefined, so group-level `awe`, `icl`
-#'   and `clc` are `NA`.
+#'   rows with no observed indicators. Where the group classification entropy
+#'   is undefined, group-level `awe`, `icl` and `clc` are `NA`.
 #'
 #' @section Classification quality: The odds of correct classification for
 #'   class `k` is `(p / (1 - p)) / (r / (1 - r))`, where `p` is the average
@@ -269,9 +264,9 @@
 #'   criteria use, so lower is sharper. `relative_entropy` is `NA_real_` when a
 #'   level has a single class, where it is undefined rather than perfect.
 #'
-#'   A continuous random-intercept fit has individual profiles but no discrete
-#'   group classes: `level = "both"` returns individuals only, and
-#'   `level = "groups"` raises `multilpa_no_group_classes`.
+#'   A fit with individual profiles but no discrete group classes returns
+#'   individuals only for `level = "both"`, and raises
+#'   `multilpa_no_group_classes` for `level = "groups"`.
 #'
 #' @section Bivariate residuals: The measurement model assumes the indicators
 #'   are independent within a profile. `"residuals"` tests that pair by pair,
@@ -359,11 +354,6 @@ get_data.multilpa_transitions <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_data
-#' @export
-get_data.multilpa_random_intercept <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
 
 #' @rdname get_data
 #' @export
@@ -401,11 +391,6 @@ get_data.summary_multilpa_covariates <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_data
-#' @export
-get_data.summary_multilpa_random_intercept <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
 
 #' @rdname get_data
 #' @export
@@ -515,8 +500,8 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' Classed refusals that mean "this object has no such table"
 #'
 #' `what = "all"` walks the whole catalogue, and some of its entries cannot be
-#' built for every object: a fit made without `time` has no sequences, a
-#' random-intercept fit has no bivariate residuals. Those are refusals about
+#' built for every object: a fit made without `time` has no sequences, a fit
+#' without discrete group classes has no bivariate residuals. Those are refusals about
 #' the object, not failures, and `"all"` leaves the table out. Every other
 #' condition propagates, so a genuine defect is never swallowed.
 #'
@@ -621,7 +606,6 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' @noRd
 .multilpa_any_summary <- function(x) {
   inherits(x, c("summary_multilpa", "summary_multilpa_covariates",
-                "summary_multilpa_random_intercept",
                 "summary_multilpa_transitions",
                 "summary_multilpa_enumeration",
                 "summary_multilpa_bootstrap_lrt"))
@@ -672,14 +656,6 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' @noRd
 .multilpa_mixing_catalogue <- function(x) {
   counts <- list(counts = .multilpa_table(.multilpa_count_frame))
-  if (inherits(x, "multilpa_random_intercept")) {
-    return(c(list(random_intercepts = .multilpa_table(
-      function(x) data.frame(group = x$group_values,
-                             group_size = unname(x$group_sizes),
-                             mean = unname(x$random_intercept_mean),
-                             sd = unname(x$random_intercept_sd),
-                             row.names = NULL))), counts))
-  }
   if (inherits(x, "multilpa_transitions")) {
     return(c(list(
       transitions = .multilpa_table(
@@ -711,11 +687,6 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
       .multilpa_hide_fabricated_id(
         x, .multilpa_assignments(x, data = data, truth = truth)),
     c("data", "truth")))
-  # A continuous random intercept has no discrete group classes, so there are
-  # no group posteriors to report rather than an empty table of them.
-  if (inherits(x, "multilpa_random_intercept")) {
-    return(c(posteriors, assignments))
-  }
   c(posteriors,
     list(group_posteriors = .multilpa_table(
       function(x, format = c("long", "wide"))

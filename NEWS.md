@@ -1,3 +1,104 @@
+# multilpa 0.2.0
+
+## Two features moved to `future/`
+
+The package now exports 17 verbs rather than 19. The test applied was whether
+an export makes a claim the package can back; two did not, and they are kept in
+`future/`, which `.Rbuildignore` excludes, with a note on what would bring each
+one back.
+
+* **`fit_random_intercept()` is removed.** Its independent validation reached
+  only the one-profile limit -- multiple-profile parameter recovery had never
+  been checked against anything -- and it refused `parameter_inference()`,
+  `vcov()` and `confint()` outright, so nothing in the package could say when
+  it was wrong. It is also a different model family: a continuous group effect
+  rather than the discrete group classes the package is named for. It appeared
+  in no vignette.
+* **`lmr_lrt()` is removed.** It returned a `p_value` column that was always
+  `NA`, because the Vuong-Lo-Mendell-Rubin reference distribution is not
+  reproduced. `bootstrap_lrt()` gives a calibrated p-value for the same
+  comparison. The Lo-Mendell-Rubin adjustment factor itself had been verified
+  against two genuine Mplus `TECH11` runs; that evidence is recorded in
+  `future/README.md` against the day it is restored.
+
+Fifteen S3 methods and twelve help pages go with them. `multilpa_plot_types()`
+no longer lists `"random_intercepts"`, and `get_data()` no longer offers the
+`"random_intercepts"` table.
+
+Two conditions changed status as a consequence, both of which had the random
+intercept as their only trigger:
+
+* `multilpa_quadrature_check` is removed from `?"multilpa-conditions"`. Nothing
+  raises it any more.
+* `multilpa_no_group_classes` is still raised by guards in `R/diagnostics.R`
+  and `R/get-data.R`, but every model family this version fits has discrete
+  group classes, so no call can reach it. The catalogue says so rather than
+  describing a refusal a caller cannot produce.
+
+## `fit_transitions()` is renamed `lta()`
+
+**Breaking, and deliberately without an alias.** The package has never been on
+CRAN, so there is no installed base to migrate and a compatibility alias would
+be permanent debt paid for nobody.
+
+The old name described the mechanism; every other fitting verb here is named
+for its method. `multilpa()` is latent profile analysis, so latent transition
+analysis is `lta()`. Under the old name the capability was undiscoverable by the
+name the literature uses: searching the index for "lta" found nothing.
+
+`multilta()` was considered and rejected. It is one character from `multilpa()`,
+and the two take the same leading arguments, so a typo would fit a different
+model and still return a result.
+
+Nothing else moves. The fitted object is still `multilpa_transitions`, the table
+is still `get_data(x, "transitions")`, and the help page is now `?lta`.
+
+## A latent transition fit draws, instead of refusing
+
+`plot()` on an `lta()` fit raised `multilpa_no_plot` for every view. That was a
+blanket refusal, not a limitation: the measurement model is the one `multilpa()`
+fits, and the fit already carried `means`, `variances`, `subject_posteriors`,
+`subject_profiles` and `sequence_lengths`. Six of the seven plot helpers worked
+against one unchanged; the seventh was called with the wrong signature.
+
+`plot.multilpa_transitions()` now offers ten views: `"transitions"`,
+`"profiles"`, `"bars"`, `"heatmap"`, `"responses"`, `"sequences"`, `"sizes"`,
+`"entropy"`, `"posteriors"`, `"avepp"`, and `"all"`.
+
+`what = "transitions"` is new and is this family's own view: the estimated
+transition matrix as a heatmap, one panel per group class, row the current
+profile and column the next, so the diagonal is persistence. Every cell prints
+its probability, and the fill is the white-to-blue ramp the average-posterior
+matrix already uses, so darker is a higher probability anywhere in the package.
+A row with no data support has its label parenthesised: such a row is uniform by
+construction rather than estimated.
+
+`"bars"` draws point estimates with no whiskers here. The interval it draws on a
+`multilpa()` fit is a Wald interval, and this family has no standard errors, so
+there is none to draw; the subtitle says so rather than the plot implying an
+uncertainty it does not have.
+
+`multilpa_plot_types()` lists thirteen views. `multilpa_no_plot` keeps its entry
+in `?"multilpa-conditions"`, reworded to what still raises it: `what = "all"` on
+an object whose method names no views.
+
+## `get_tna()` and `get_group_tna()` are documented
+
+Both were added in 0.11.7 and appeared nowhere in the README. The README now
+carries a section and a feature-matrix row for them, and every one of the 17
+exports appears there again.
+
+## Build
+
+`^future$`, `^docs$`, `^vignettes/\.beatrina` and `^vignettes/.*\.tex$` are
+added to `.Rbuildignore`. The hidden `vignettes/.beatrina-*` directories were in
+`.gitignore` but not in `.Rbuildignore`, so they stayed out of version control
+and shipped in the tarball anyway, along with a leftover `vignettes/multilpa.tex`
+from a preview render.
+
+`R CMD check --as-cran` on this version reports 1 NOTE, 0 errors and 0 warnings.
+The NOTE is "New submission".
+
 # multilpa 0.11.9
 
 ## Vignette figures reconciled with the standardized data
