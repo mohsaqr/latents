@@ -1,5 +1,6 @@
 # Rebuild offline targets from genuine Mplus output, then refit R independently.
 pkgload::load_all(".")
+source(file.path("validation", "fixtures.R"))
 directory <- file.path("validation", "mplus", "covariates")
 data <- read.table(file.path(directory, "covariates.dat"),
                    col.names = c("y1", "y2", "z", "w", "g", "id"))
@@ -38,7 +39,7 @@ fixture <- list(data = data, expected = target, version = "Mplus VERSION 9 DEMO 
                 source = "New matching two-level ML analysis on synthetic data",
                 md5 = tools::md5sum(file.path(directory, c("covariates.dat", "covariates.inp", "covariates.out",
                                                           "covariates-results.dat", "covariates-posteriors.dat"))))
-saveRDS(fixture, file.path("tests", "fixtures", "mplus", "twolevel-covariates.rds"))
+saveRDS(fixture, mplus_fixture("twolevel-covariates.rds"))
 fit <- multilpa(data, c("y1", "y2"), "g", 2, 2, "z", "w",
                              n_starts = 10, seed = 812, tol = 1e-12)
 p <- order(fit$means[, 1])

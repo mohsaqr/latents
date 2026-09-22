@@ -1,0 +1,27 @@
+//LG6.1//
+version = 6.1
+infile 'c09_step1_posteriors.txt'
+
+model
+title 'c09_distal_modal';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   step3 modal none;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+variables
+   dependent distal continuous;
+   latent Cluster nominal posterior = ( Cluster#1 Cluster#2 );
+equations
+   Cluster <- 1;
+   distal <- 1 + Cluster;
+end model
+

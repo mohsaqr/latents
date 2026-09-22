@@ -2,6 +2,7 @@
 # and the sample-size adjusted BIC against a retained genuine Mplus 9 run.
 # Run from the project root: Rscript validation/mplus/robust/compare.R
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
+source(file.path("validation", "fixtures.R"))
 artifact_dir <- file.path("validation", "mplus", "robust")
 
 output <- readLines(file.path(artifact_dir, "robust.out"))
@@ -27,8 +28,7 @@ mplus_aic <- values[2L * n_parameters + 4L]
 mplus_bic <- values[2L * n_parameters + 5L]
 mplus_sabic <- values[2L * n_parameters + 6L]
 
-reference <- readRDS(file.path("tests", "fixtures", "mplus",
-                               "twolevel-synthetic-varying.rds"))
+reference <- readRDS(mplus_fixture("twolevel-synthetic-varying.rds"))
 dat <- reference$data
 str(dat)
 print(head(dat))
@@ -58,7 +58,7 @@ native_standard_errors <- sqrt(diag(jacobian %*% attr(information, "covariance_u
 # `format = "long"` since 0.9.0: the default became one wide row, and the
 # `convention` of a criterion that has none -- aic, kic, deviance -- became
 # NA_character_ rather than "none". Both are matched explicitly here.
-indices <- get_data(fit, "information_criteria", format = "long")
+indices <- get_results(fit, "information_criteria", format = "long")
 native <- function(criterion, convention) {
   matched <- indices$criterion == criterion &
     if (is.na(convention)) is.na(indices$convention) else
@@ -102,6 +102,6 @@ saveRDS(list(data = dat, mplus_standard_errors = mplus_standard_errors,
              means = reference$means, variances = reference$variances,
              profile_probabilities = reference$profile_probabilities,
              group_probabilities = reference$group_probabilities),
-        file.path("tests", "fixtures", "mplus", "twolevel-robust.rds"))
+        mplus_fixture("twolevel-robust.rds"))
 write.csv(comparison, file.path(artifact_dir, "comparison.csv"), row.names = FALSE)
 cat("Robust comparison complete.\n")

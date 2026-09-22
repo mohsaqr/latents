@@ -179,6 +179,52 @@ require_suite_files <- function(..., reason = NULL) {
                            n_boot = "iter", profiles = "n_profiles",
                            group_classes = "n_group_classes")
 
+#' Verbs that left the exported API, as a lookup to what replaced them
+#'
+#' The argument check below only inspects calls to verbs the package still
+#' exports, so a call to a removed verb was never looked at. `get_data()` became
+#' `get_results()` in 0.4.0 and seven validation scripts kept calling the old
+#' name unnoticed. A removed verb is listed here with its replacement, or with
+#' where it went if it was deferred rather than renamed.
+#'
+#' @format A named character vector: names are the removed verbs, values the
+#'   replacement to report.
+.multilpa_removed_verbs <- c(
+  get_data = "get_results",
+  fit_transitions = "lta",
+  fit_random_intercept = "deferred: deferred_verb(\"random-intercept.R\", \"fit_random_intercept\")",
+  lmr_lrt = "deferred: deferred_verb(\"lmr.R\", \"lmr_lrt\")")
+
+#' Calls to removed verbs in one file
+#'
+#' A file that assigns the name itself -- loading a deferred verb with
+#' `deferred_verb()`, say -- is calling its own binding, not the removed export,
+#' and is not reported.
+#'
+#' @param path Path to an R script.
+#' @return A `data.frame` with columns `file`, `line`, `call`, `argument` and
+#'   `replacement`, one row per offending call; `argument` is `NA`.
+.validation_removed_calls <- function(path) {
+  parsed <- parse(path, keep.source = TRUE)
+  data <- utils::getParseData(parsed)
+  empty <- data.frame(file = character(), line = integer(), call = character(),
+                      argument = character(), replacement = character(),
+                      stringsAsFactors = FALSE)
+  if (is.null(data) || nrow(data) == 0L) return(empty)
+  assigned <- vapply(as.list(parsed), function(expression) {
+    if (is.call(expression) && identical(expression[[1L]], as.name("<-")) &&
+        is.name(expression[[2L]])) as.character(expression[[2L]]) else NA_character_
+  }, character(1))
+  removed <- setdiff(names(.multilpa_removed_verbs), assigned)
+  called <- data[data$token == "SYMBOL_FUNCTION_CALL" & data$text %in% removed, ,
+                 drop = FALSE]
+  if (nrow(called) == 0L) return(empty)
+  data.frame(file = path, line = called$line1, call = called$text,
+             argument = NA_character_,
+             replacement = unname(.multilpa_removed_verbs[called$text]),
+             stringsAsFactors = FALSE)
+}
+
 #' Every named argument passed to a multilpa verb in one file
 #'
 #' Parses the file and reads argument names off the parse data, so the line
@@ -247,11 +293,12 @@ check_validation_api <- function(root = ".", paths = NULL) {
     paths <- list.files(file.path(root, "validation"), pattern = "[.]R$",
                         recursive = TRUE, full.names = TRUE)
   }
+  removed <- do.call(rbind, lapply(paths, .validation_removed_calls))
   used <- do.call(rbind, lapply(paths, .validation_call_arguments, verbs = verbs))
   empty <- data.frame(file = character(), line = integer(), call = character(),
                       argument = character(), replacement = character(),
                       stringsAsFactors = FALSE)
-  if (is.null(used) || nrow(used) == 0L) return(empty)
+  if (is.null(used) || nrow(used) == 0L) return(rbind(empty, removed))
   known <- vapply(seq_len(nrow(used)), function(index) {
     formal_names <- names(formals(get(used$call[[index]], envir = asNamespace("multilpa"))))
     argument <- used$argument[[index]]
@@ -259,7 +306,13 @@ check_validation_api <- function(root = ".", paths = NULL) {
     # Arguments before `...` may be abbreviated, exactly as R matches them;
     # those after it must be given in full.
     matchable <- if (is.na(dots)) formal_names else formal_names[seq_len(dots - 1L)]
-    if (argument %in% formal_names || sum(startsWith(matchable, argument)) == 1L) {
+    if (argument %in% formal_names) return(TRUE)
+    # A retired spelling is stale even when it partially matches a current
+    # argument. `group` abbreviates `group_covariates`, so an old
+    # `multilpa(group = "school")` does not fail: R silently passes the ID
+    # column as a group covariate instead.
+    if (argument %in% names(.multilpa_api_renames)) return(FALSE)
+    if (sum(startsWith(matchable, argument)) == 1L) {
       return(TRUE)
     }
     # A verb with `...` forwards what it does not recognise, so an unmatched
@@ -268,9 +321,9 @@ check_validation_api <- function(root = ".", paths = NULL) {
     !is.na(dots) && !(argument %in% names(.multilpa_api_renames))
   }, logical(1))
   stale <- used[!known, , drop = FALSE]
-  if (nrow(stale) == 0L) return(empty)
   replacement <- unname(.multilpa_api_renames[stale$argument])
   stale$replacement <- ifelse(is.na(replacement), "(no known replacement)", replacement)
+  stale <- rbind(empty, stale, removed)
   row.names(stale) <- NULL
   stale
 }
@@ -281,8 +334,11 @@ check_validation_api <- function(root = ".", paths = NULL) {
 #'   `multilpa_stale_validation_api` condition is signalled.
 .stop_if_stale_api <- function(stale) {
   if (nrow(stale) == 0L) return(invisible(TRUE))
-  lines <- sprintf("  %s:%d  %s(%s = ) -> %s", stale$file, stale$line,
-                   stale$call, stale$argument, stale$replacement)
+  # A removed verb has no argument to name; the call itself is what is stale.
+  site <- ifelse(is.na(stale$argument), sprintf("%s()", stale$call),
+                 sprintf("%s(%s = )", stale$call, stale$argument))
+  lines <- sprintf("  %s:%d  %s -> %s", stale$file, stale$line, site,
+                   stale$replacement)
   stop(errorCondition(
     paste(c(sprintf("%d validation call site(s) do not match multilpa %s:",
                     nrow(stale), utils::packageVersion("multilpa")),
@@ -310,7 +366,7 @@ check_validation_api <- function(root = ".", paths = NULL) {
 #'   `comparisons` (one row per compared quantity), `suites` (one row per
 #'   suite, with its status and, when skipped or failed, the reason) and
 #'   `session` (the versions the run was produced under). Use
-#'   `get_data(x, )` to reach any of the three.
+#'   `as.data.frame(x, what = )` to reach any of the three.
 run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
   # Read the version and fingerprint the source before anything is fitted. A
   # long run can outlive the tree it started against -- the run of 2026-09-20

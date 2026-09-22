@@ -5,6 +5,7 @@
 # stopped existing when the sources were reorganised, and a comparison script
 # should not depend on the internal file layout.
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
+source(file.path("validation", "fixtures.R"))
 artifact_dir <- file.path("validation", "mplus", "public-refit")
 public_dir <- file.path("validation", "mplus", "public")
 indicator_names <- paste0("y", seq_len(5L))
@@ -81,7 +82,7 @@ comparisons <- lapply(c("varying", "equal"), function(variance_model) {
         file.path(artifact_dir, c("ex104-lpa.dat", paste0(prefix, ".inp"), paste0(prefix, ".out"),
                                  paste0(prefix, "-results.dat"), paste0(prefix, "-posteriors.dat"))))),
       precision = "SAVEDATA RESULTS 8 significant digits; posterior FORMAT F20.12"))
-  saveRDS(reference, file.path("tests", "fixtures", "mplus", paste0("twolevel-public-", variance_model, ".rds")))
+  saveRDS(reference, mplus_fixture(paste0("twolevel-public-", variance_model, ".rds")))
   fit <- multilpa(data, indicator_names, "clus", 2L, 2L,
                     variance_model = variance_model, n_starts = 20L,
                     max_iter = 10000L, tol = 1e-14, seed = 20260917)

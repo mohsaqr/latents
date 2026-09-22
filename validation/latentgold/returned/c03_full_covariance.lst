@@ -1,0 +1,247 @@
+c03.dat
+File name:	c03.dat	
+File size:	28136 bytes  600 records	
+File date:	2026-Sep-22 9:09:23 PM	
+Syntax:	c03_full_covariance.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Max. BVR	Class.Err.	Entropy R²	
+c03_full_covariance	2-GClass  2-Cluster	-1798.3854	3679.9309	3622.7708	3635.7708	13	0.0000	0.1581	0.4815	
+c03_full_covariance - LL = -1798.3854
+2-GClass  2-Cluster Syntax Model	
+					
+Number of groups	60				
+Number of cases	600				
+Number of parameters (Npar)	13				
+Activated Constraints	0				
+Random Seed	20260922				
+Best Start Seed	1279936				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1798.3854				
+Log-prior	0.0000				
+Log-posterior	-1798.3854				
+BIC (based on LL)	3679.9309				
+AIC (based on LL)	3622.7708				
+AIC3 (based on LL)	3635.7708				
+CAIC (based on LL)	3692.9309				
+SABIC (based on LL)	3638.6595				
+BIC (based on LL,Ngroups)	3649.9973				
+CAIC (based on LL,Ngroups)	3662.9973				
+SABIC (based on LL,Ngroups)	3609.1089				
+					
+					
+Classification Statistics	GClass	Cluster			
+Classification errors	0.0843	0.1581			
+Reduction of errors (Lambda)	0.7978	0.6603			
+Entropy R-squared	0.7001	0.4815			
+Standard R-squared	0.7474	0.5473			
+Classification log-likelihood	-2002.8576				
+Entropy	204.4722				
+CLC	4005.7153				
+AWE	4211.0354				
+ICL-BIC	4088.8754				
+					
+GClass  Classification Table	Modal				
+Latent	1	2	Total		
+1	32.9573	2.0174	34.9747		
+2	3.0427	21.9826	25.0253		
+Total	36.0000	24.0000	60.0000		
+					
+GClass  Classification Table	Proportional				
+Latent	1	2	Total		
+1	31.2897	3.6850	34.9747		
+2	3.6850	21.3403	25.0253		
+Total	34.9747	25.0253	60.0000		
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	274.4796	46.3320	320.8116		
+2	48.5204	230.6680	279.1884		
+Total	323.0000	277.0000	600.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	253.2403	67.5712	320.8116		
+2	67.5712	211.6172	279.1884		
+Total	320.8116	279.1884	600.0000		
+					
+Files					
+Infile	C:\lgkit\c03.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20260922				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+bivariate residuals	marginal				
+identification	no				
+validation LL	no				
+sample size BIC	     600				
+predictionstatistics	no				
+outfile					
+file name	c03_full_covariance_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Group ID	g	60			
+Latent					
+GClass	Nominal	Group	2		
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+   outfile 'c03_full_covariance_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent y1 continuous, y2 continuous;
+   latent
+      GClass group nominal 2,
+      Cluster nominal 2;
+equations
+   GClass <- 1;
+   Cluster <- 1 + GClass;
+   y1 <- 1 + Cluster;
+   y2 <- 1 + Cluster;
+   y1 | Cluster;
+   y2 | Cluster;
+   y1 <-> y2 | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+GClass(1)	<-	1			0.0000	.	.	.	0.7933	1	0.37				
+GClass(2)	<-	1			-0.3347	0.3758	-0.8907	0.37							
+															
+Cluster(1)	<-	1			0.0000	.	.	.	7.1158	1	0.0077				
+Cluster(2)	<-	1			-1.3833	0.5186	-2.6675	0.0077							
+Cluster(1)	<-	GClass(1)			0.0000	.	.	.	29.9152	1	4.5e-8				
+Cluster(2)	<-	GClass(1)			0.0000	.	.	.							
+Cluster(1)	<-	GClass(2)			0.0000	.	.	.							
+Cluster(2)	<-	GClass(2)			3.0081	0.5500	5.4695	4.5e-8							
+															
+y1	<-	1			1.9506	0.1533	12.7271	4.2e-37	161.9783	1	4.2e-37				
+y1	<-	Cluster(1)			0.0000	.	.	.	99.6924	1	1.8e-23				
+y1	<-	Cluster(2)			-1.6441	0.1647	-9.9846	1.8e-23							
+															
+y2	<-	1			1.4511	0.1152	12.5931	2.3e-36	158.5866	1	2.3e-36				
+y2	<-	Cluster(1)			0.0000	.	.	.	77.5999	1	1.3e-18				
+y2	<-	Cluster(2)			-1.2635	0.1434	-8.8091	1.3e-18							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1			|	Cluster(1)	1.1899	0.1777	6.6978	2.1e-11	74.7392	2	5.9e-17	0.1924	1	0.66	
+y1			|	Cluster(2)	1.0883	0.1732	6.2830	3.3e-10							
+y2			|	Cluster(1)	1.1369	0.1156	9.8347	8.0e-23	145.2521	2	2.9e-32	0.0000	1	1.00	
+y2			|	Cluster(2)	1.1379	0.1504	7.5673	3.8e-14							
+	
+Covariances / Associations	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1	<->	y2	|	Cluster(1)	0.5887	0.1261	4.6701	3.0e-6	40.6336	2	1.5e-9	0.1346	1	0.71	
+y1	<->	y2	|	Cluster(2)	0.6516	0.1333	4.8886	1.0e-6							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+GClass	<-	1			GClass	1	2	0.7933	1	0.37	
+	
+Cluster	<-	1			Cluster	1	2	7.1158	1	0.0077	
+Cluster	<-	 GClass			GClass	1	2	29.9152	1	4.5e-8	
+					Cluster	1	2	29.9152	1	4.5e-8	
+	
+y1	<-	 Cluster			Cluster	1	2	99.6924	1	1.8e-23	
+	
+y2	<-	 Cluster			Cluster	1	2	77.5999	1	1.3e-18	
+Variances	
+y1			|	Cluster	Cluster	1	2	0.1924	1	0.66	
+y2			|	Cluster	Cluster	1	2	0.0000	1	1.00	
+Covariances / Associations	
+y1	<->	y2	|	Cluster	Cluster	1	2	0.1346	1	0.71	
+Profile
+ 	GClass	 	 	 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5829	0.0914	0.4171	0.0914	0.5347	0.0867	0.4653	0.0867	 	 	
+y1	 	
+Mean	1.6210	0.0920	0.5770	0.1114	1.9506	0.1533	0.3064	0.1559	1.1855	0.0837	
+y2	 	
+Mean	1.1978	0.0783	0.3955	0.0998	1.4511	0.1152	0.1876	0.1383	0.8632	0.0700	
+	
+ 	GClass	 	 	 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	1	s.e.	2	s.e.	 	 	
+Cluster	 	
+1	0.7995	0.0831	0.1646	0.0918	.	.	.	.	 	 	
+2	0.2005	0.0831	0.8354	0.0918	.	.	.	.	 	 	
+ProbMeans-Posterior
+	GClass		Cluster		
+	1	2	1	2	
+Overall	0.5829	0.4171	0.5347	0.4653	
+Dependent					
+y1					
+-3.026 - -0.0262	0.3266	0.6734	0.0985	0.9015	
+-0.0189 - 0.842	0.4073	0.5927	0.2929	0.7071	
+0.844 - 1.530	0.6128	0.3872	0.5613	0.4387	
+1.539 - 2.364	0.7126	0.2874	0.7709	0.2291	
+2.373 - 4.989	0.8553	0.1447	0.9499	0.0501	
+y2					
+-2.492 - -0.158	0.3429	0.6571	0.1656	0.8344	
+-0.151 - 0.497	0.4680	0.5320	0.3619	0.6381	
+0.508 - 1.190	0.6363	0.3637	0.5719	0.4281	
+1.190 - 1.961	0.6709	0.3291	0.6968	0.3032	
+1.966 - 4.018	0.7964	0.2036	0.8771	0.1229	
+Bivariate Residuals
+Dependent	y1	y2	
+y1	.		
+y2	0.0000	.	
+Twolevel	y1	y2	
+Group	0.5074	0.5964	
+Pairs	0.0008	0.0014	
+EstimatedValues-Model
+ 	GClass	
+ 	1	s.e.	2	s.e.	
+ 	0.5829	0.0914	0.4171	0.0914	
+	
+ 	Cluster	
+GClass	1	s.e.	2	s.e.	
+1	0.7995	0.0831	0.2005	0.0831	
+2	0.1646	0.0918	0.8354	0.0918	
+	
+ 	y1	 	y2	 	
+Cluster	Mean	s.e.	Mean	s.e.	
+1	1.9506	0.1533	1.4511	0.1152	
+2	0.3064	0.1559	0.1876	0.1383	

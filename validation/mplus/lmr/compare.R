@@ -3,6 +3,7 @@
 # deliberately not reproduced.
 # Run from the project root: Rscript validation/mplus/lmr/compare.R
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
+source(file.path("validation", "fixtures.R"))
 artifact_dir <- file.path("validation", "mplus", "lmr")
 
 # Mplus prints TECH11 as a fixed block; read the labelled numbers out of it.
@@ -50,7 +51,7 @@ stopifnot("LMR adjustment disagrees with Mplus" =
 # the statistic Mplus computed from its own one- and two-class fits. With one
 # group class the likelihood is the pooled single-level LPA likelihood, so the
 # group column carries no information here and only supplies the group layout.
-fixture <- readRDS(file.path("tests", "fixtures", "mplus", "public-7.9.rds"))
+fixture <- readRDS(mplus_fixture("public-7.9.rds"))
 indicators <- c("y1", "y2", "y3", "y4")
 # Example 7.9 is the shared-variance specification, which is also the Mplus
 # TYPE = MIXTURE default; the TECH11 run above inherited it.
@@ -67,6 +68,10 @@ stopifnot("native parameter difference does not match Mplus" =
             reference$df[1L])
 stopifnot("native fits did not converge" =
             fitted_null$converged && fitted_alternative$converged)
+# lmr_lrt() is deferred (future/README.md); this comparison is the evidence
+# for restoring it, so it loads the deferred source rather than the package.
+source(file.path("validation", "deferred.R"))
+lmr_lrt <- deferred_verb("lmr.R", "lmr_lrt")
 native <- lmr_lrt(fitted_null, fitted_alternative)
 print(native, digits = 10, row.names = FALSE)
 stopifnot(
@@ -76,7 +81,7 @@ stopifnot(
     abs(native$adjusted_statistic - reference$mplus_adjusted[1L]) < 5e-3,
   "a p-value must not be reported" = is.na(native$p_value))
 
-saveRDS(reference, file.path("tests", "fixtures", "mplus", "lmr-tech11.rds"))
+saveRDS(reference, mplus_fixture("lmr-tech11.rds"))
 write.csv(reference, file.path(artifact_dir, "comparison.csv"), row.names = FALSE)
 cat("\nVLMR reference distribution (Mplus Mean/Standard Deviation and p-value)\n",
     "is deliberately not reproduced; see R/lmr.R and the README.\n", sep = "")

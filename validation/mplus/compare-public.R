@@ -5,11 +5,11 @@
 # stopped existing when the sources were reorganised, and a comparison script
 # should not depend on the internal file layout.
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
-source(file.path("tests", "testthat", "helper-mplus-public.R"))
-dir.create(file.path("tests", "fixtures", "mplus"), recursive = TRUE, showWarnings = FALSE)
+source(file.path("validation", "fixtures.R"))
+source(file.path("equivalence", "helper-mplus-public.R"))
 
 # Exercise the parser on simulated output before reading official data/results.
-testthat::test_file(file.path("tests", "testthat", "test-mplus-public-parser.R"))
+testthat::test_file(file.path("equivalence", "test-mplus-public-parser.R"))
 
 #' Reproduce one published single-level Mplus example from the original artifacts
 #' @param example Official example identifier, 7.9 or 7.10.
@@ -49,7 +49,7 @@ run_public_comparison <- function(example) {
     retrieved = "2026-09-17", scope = "single-level LPA only",
     tolerance_note = "Absolute half printed unit, except effective counts: 0.001 subject optimization allowance.")
   saveRDS(list(data = data, expected = expected, variance_model = variance_model,
-               provenance = provenance), file.path("tests", "fixtures", "mplus", paste0("public-", example, ".rds")))
+               provenance = provenance), mplus_fixture(paste0("public-", example, ".rds")))
   comparison$example <- example
   comparison
 }

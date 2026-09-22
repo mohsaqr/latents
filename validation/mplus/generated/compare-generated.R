@@ -4,6 +4,7 @@
 # stopped existing when the sources were reorganised, and a comparison script
 # should not depend on the internal file layout.
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
+source(file.path("validation", "fixtures.R"))
 artifact_dir <- file.path("validation", "mplus", "generated")
 synthetic_data <- read.table(file.path(artifact_dir, "synthetic.dat"),
   col.names = c("y1", "y2", "clus", "id"))
@@ -93,8 +94,7 @@ comparisons <- lapply(c("varying", "equal"), function(variance_model) {
       date = "2026-09-17",
       md5 = tools::md5sum(file.path(artifact_dir, c("synthetic.dat",
         paste0(variance_model, c(".inp", ".out", "-results.dat", "-posteriors.dat")))))))
-  saveRDS(reference, file.path("tests", "fixtures", "mplus",
-    paste0("twolevel-synthetic-", variance_model, ".rds")))
+  saveRDS(reference, mplus_fixture(paste0("twolevel-synthetic-", variance_model, ".rds")))
   list(variance_model = variance_model, fit = fit, differences = differences,
     mplus_values = values, profile_order = profile_order, group_order = group_order)
 })

@@ -1,0 +1,34 @@
+//LG6.1//
+version = 6.1
+infile 'c04.dat'
+
+model
+title 'c04_categorical';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+   outfile 'c04_categorical_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent c1 nominal, c2 nominal, c3 nominal, c4 nominal;
+   latent
+      GClass group nominal 2,
+      Cluster nominal 2;
+equations
+   GClass <- 1;
+   Cluster <- 1 + GClass;
+   c1 <- 1 + Cluster;
+   c2 <- 1 + Cluster;
+   c3 <- 1 + Cluster;
+   c4 <- 1 + Cluster;
+end model
+

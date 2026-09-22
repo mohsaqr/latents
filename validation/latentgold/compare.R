@@ -1,45 +1,50 @@
-# Compare Latent GOLD output against this package. Run from the project root
-# once the Latent GOLD output files are in this directory:
+# Compare Latent GOLD's output against this package's targets.
+#
+# Run from the project root, after make-kit.R and after the Latent GOLD output
+# has been copied into validation/latentgold/returned/:
 #   Rscript validation/latentgold/compare.R
 #
-# Latent GOLD has not been run yet, so this script reports what is missing
-# rather than pretending to a comparison it cannot make.
+# Writes validation/latentgold/comparison.csv (one row per compared quantity)
+# and validation/latentgold/REPORT.md. With no output returned yet it still
+# runs, and reports every quantity as `missing`, which is the honest state.
+#
+# Status of each row:
+#   agree            within the tolerance printed beside it
+#   disagree         outside it: a finding
+#   missing          Latent GOLD's file for this quantity is not in returned/
+#   unparsed         the file is there but could not be read; the note says why
+#   awaiting parser  only in the listing's tables, whose layout is not known
+#                    until a real listing exists (see README.md, "Pilot")
 
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 directory <- file.path("validation", "latentgold")
-targets <- readRDS(file.path(directory, "multilpa-targets.rds"))
+source(file.path(directory, "compare-functions.R"))
 
-output_files <- list.files(directory, pattern = "[.](lst|txt|out)$",
-                           full.names = TRUE)
-if (length(output_files) == 0L) {
-  cat("No Latent GOLD output found in", directory, "\n\n")
-  cat("Targets this package produces, awaiting a comparison:\n\n")
-  cat("--- model 1, bvr.dat: two-level, 2 x 2 classes, three continuous ---\n")
-  cat("log likelihood ", format(targets$bvr$log_likelihood, digits = 10),
-      " on ", targets$bvr$n_parameters, " parameters\n", sep = "")
-  cat("bivariate residuals, worst three:\n")
-  print(head(targets$bvr$residuals[c("profile", "indicator_1", "indicator_2",
-                                     "observed", "p_value")], 3),
-        digits = 4, row.names = FALSE)
-  cat("\n--- model 2, threestep.dat: 2 classes, then Step-3 ---\n")
-  cat("log likelihood ", format(targets$three_step$log_likelihood, digits = 10),
-      "\n", sep = "")
-  cat("classification errors:\n")
-  print(targets$three_step$errors, digits = 5, row.names = FALSE)
-  cat("distal outcome under BCH:\n")
-  print(targets$three_step$distal_bch[c("class", "estimate", "standard_error")],
-        digits = 5, row.names = FALSE)
-  cat("covariate on membership:\n")
-  print(targets$three_step$covariate[c("outcome", "term", "estimate",
-                                       "standard_error")],
-        digits = 5, row.names = FALSE)
-  cat("\nAdd the Latent GOLD output to", directory,
-      "and run this again.\n")
-  quit(save = "no", status = 0L)
+target_files <- sort(list.files(file.path(directory, "targets"), pattern = "[.]rds$",
+                                full.names = TRUE))
+if (length(target_files) == 0L) {
+  stop(errorCondition("No targets found. Run validation/latentgold/make-kit.R first.",
+                      class = "multilpa_missing_targets", call = NULL))
+}
+returned <- file.path(directory, "returned")
+targets <- lapply(target_files, readRDS)
+built_with <- lg_target_versions(targets)
+current <- as.character(utils::packageVersion("multilpa"))
+if (!identical(built_with, current)) {
+  warning(warningCondition(sprintf(
+    "Targets were built with multilpa %s but %s is loaded; rebuild the kit if the fitting code changed.",
+    paste(built_with, collapse = ", "), current), class = "multilpa_stale_targets"))
 }
 
-cat("Found Latent GOLD output:\n"); print(basename(output_files))
-cat("\nThe parser is not written yet, because the exact output layout is not\n")
-cat("known until a real file exists. Write it against these files, following\n")
-cat("the pattern in validation/mplus/*/compare.R, which parses genuine .out\n")
-cat("artifacts the same way.\n")
+# The retained output is evidence for the kit it was produced from, and for no
+# other; `record-run.R` fingerprinted that kit.
+lg_check_fingerprint(file.path(directory, "kit"), returned)
+
+comparison <- lg_compare_all(targets, returned)
+lg_write_report(comparison, directory, current)
+
+print(lg_status_counts(comparison), row.names = FALSE)
+cat("\nEvery compared quantity:\n")
+print(lg_compared(comparison), row.names = FALSE, digits = 8)
+cat(sprintf("\n%s.\n", lg_totals(comparison)))
+if (any(comparison$status == "disagree")) quit(save = "no", status = 1L)
