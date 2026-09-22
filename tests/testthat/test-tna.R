@@ -110,7 +110,7 @@ test_that("a transition fit draws every view its catalogue claims", {
 test_that("the transition panel is the fitted matrix, per class", {
   fit <- transition_fit()
   # Rows of every drawn panel are the rows of `transition_probabilities`, which
-  # is what makes the picture readable against `get_data(x, "transitions")`.
+  # is what makes the picture readable against `get_results(x, "transitions")`.
   expect_equal(unname(rowSums(fit$transition_probabilities[, , 1L])),
                rep(1, fit$n_profiles))
   expect_identical(dim(fit$transition_probabilities),

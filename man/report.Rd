@@ -46,7 +46,7 @@ tables are reachable from those rather than from here.
  `summary()`, which is every table the fit can
   produce, then `descriptives()`, then the condensed reading of
   `diagnostics()`, then every plot view the fit supports. Each section is
-  what that verb returns, and the tables are reached from [get_data()]
+  what that verb returns, and the tables are reached from [get_results()]
   rather than from here.
 }
 

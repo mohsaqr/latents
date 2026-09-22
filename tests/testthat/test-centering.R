@@ -67,9 +67,9 @@ test_that("centring reproduces the transform done by hand", {
 
 test_that("the caller's own scale comes back from the fit", {
   fit <- centred_fit()
-  # `get_data("data")` is what the model was fitted to, expressed as it was
+  # `get_results("data")` is what the model was fitted to, expressed as it was
   # handed in: the offsets are on the fit, so the round trip is exact.
-  returned <- get_data(fit, "data")
+  returned <- get_results(fit, "data")
   expect_equal(returned[activity], course_engagement[activity],
                ignore_attr = TRUE)
   expect_equal(returned$student, course_engagement$student)
@@ -79,12 +79,12 @@ test_that("alignment is still checked against the frame the caller has", {
   fit <- centred_fit()
   # The fit holds centred values and the caller holds raw ones; the check has
   # to compare like with like or it would reject every correct frame.
-  joined <- get_data(fit, "assignments", data = course_engagement)
+  joined <- get_results(fit, "assignments", data = course_engagement)
   expect_identical(nrow(joined), nrow(course_engagement))
   expect_true(all(c("profile", "browse") %in% names(joined)))
   # A reordered frame must still be caught.
   shuffled <- course_engagement[rev(seq_len(nrow(course_engagement))), ]
-  expect_error(get_data(fit, "assignments", data = shuffled),
+  expect_error(get_results(fit, "assignments", data = shuffled),
                class = "multilpa_bad_inference_data")
 })
 
@@ -93,8 +93,8 @@ test_that("the diagnostics work on the scale the model was fitted on", {
   # Bivariate residuals compare an observed association with a model-implied
   # one, so handing them raw columns for a centred fit would compare two
   # different scales. Supplying the frame must match supplying nothing.
-  from_fit <- get_data(fit, "residuals")
-  supplied <- get_data(fit, "residuals", data = course_engagement)
+  from_fit <- get_results(fit, "residuals")
+  supplied <- get_results(fit, "residuals", data = course_engagement)
   expect_equal(from_fit, supplied)
   # And the residuals must be the ones the by-hand transform gives.
   by_hand <- course_engagement
@@ -103,7 +103,7 @@ test_that("the diagnostics work on the scale the model was fitted on", {
   })
   manual <- multilpa(by_hand, activity, "student", n_profiles = 3,
                      n_group_classes = 1, n_starts = 5, seed = 1)
-  expect_equal(from_fit$residual, get_data(manual, "residuals")$residual)
+  expect_equal(from_fit$residual, get_results(manual, "residuals")$residual)
 })
 
 test_that("inference works on a centred fit and reports the centred scale", {
@@ -128,10 +128,10 @@ test_that("centring that leaves nothing to model is refused", {
 
 test_that("the fit says which scale it is on", {
   fit <- centred_fit()
-  expect_identical(get_data(fit, "model")$centering, "person")
+  expect_identical(get_results(fit, "model")$centering, "person")
   expect_output(print(fit), "person-centred", fixed = TRUE)
   plain <- centred_fit("none")
-  expect_identical(get_data(plain, "model")$centering, "none")
+  expect_identical(get_results(plain, "model")$centering, "none")
   expect_failure(expect_output(print(plain), "centred", fixed = TRUE))
 })
 
@@ -139,5 +139,5 @@ test_that("centring and a constrained structure compose", {
   fit <- centred_fit(volume = "equal", shape = "varying", max_iter = 5000)
   expect_identical(fit$centering, "person")
   expect_identical(fit$covariance_structure, "EVI")
-  expect_equal(nrow(get_data(fit, "profiles")), 3L * length(activity))
+  expect_equal(nrow(get_results(fit, "profiles")), 3L * length(activity))
 })

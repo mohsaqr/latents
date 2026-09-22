@@ -23,16 +23,16 @@
 test_that("diagnostics() forwards `by` instead of dropping it", {
   skip_on_cran()
   fit <- .surface_fit()
-  pooled <- get_data(diagnostics(fit, by = "overall"), "residuals")
+  pooled <- get_results(diagnostics(fit, by = "overall"), "residuals")
   # The point of the test: the table has to be the pooled one. Before the fix
   # `by` was discarded and this returned the per-profile residuals, which read
   # as pooled ones and are not.
-  expect_identical(pooled, get_data(fit, "residuals", by = "overall"))
+  expect_identical(pooled, get_results(fit, "residuals", by = "overall"))
   expect_identical(unique(pooled$profile), "overall")
   expect_false(any(grepl("profile_", pooled$profile, fixed = TRUE)))
   # The default is unchanged, and is still the per-profile table.
-  by_profile <- get_data(diagnostics(fit), "residuals")
-  expect_identical(by_profile, get_data(fit, "residuals"))
+  by_profile <- get_results(diagnostics(fit), "residuals")
+  expect_identical(by_profile, get_results(fit, "residuals"))
   expect_false(identical(pooled, by_profile))
 })
 

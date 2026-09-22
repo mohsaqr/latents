@@ -210,7 +210,7 @@ test_that("inference refuses a categorical covariate fit rather than miscounting
                class = "multilpa_unsupported_inference")
   expect_error(vcov(fit, data), class = "multilpa_unsupported_inference")
   # The fit itself is still usable; only the standard errors are withheld.
-  expect_s3_class(get_data(fit, "posteriors"), "data.frame")
+  expect_s3_class(get_results(fit, "posteriors"), "data.frame")
   expect_true(is.finite(fit$log_likelihood))
 })
 

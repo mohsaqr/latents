@@ -34,5 +34,5 @@ fit <- multilpa(example_data, "y", "group", n_profiles = 2,
                 n_group_classes = 1, profile_covariates = "z",
                 n_starts = 2, seed = 1)
 summary(fit)
-get_data(fit, what = "coefficients")
+get_results(fit, what = "coefficients")
 }

@@ -71,7 +71,7 @@
 
 #' Profile assignments in occasion order
 #'
-#' Documented on `?get_data`, which is where a caller reaches this table from.
+#' Documented on `?get_results`, which is where a caller reaches this table from.
 #'
 #' @param x A fitted model of this package, fitted with `time =`.
 #' @param format `"long"` for one row per observation, `"wide"` for one row per
@@ -109,7 +109,7 @@
 
 #' How much data each group class contributes
 #'
-#' Documented on `?get_data`, which is where a caller reaches this table from.
+#' Documented on `?get_results`, which is where a caller reaches this table from.
 #'
 #' @param x A fitted model of this package, fitted with `time =`.
 #' @return A base `data.frame`, one row per group class, including any class no

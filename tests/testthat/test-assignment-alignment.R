@@ -21,8 +21,8 @@
 test_that("a conforming frame is joined exactly as before", {
   data <- .aligned_data()
   fit <- .aligned_fit(data)
-  supplied <- get_data(fit, "assignments", data = data)
-  carried <- get_data(fit, "assignments")
+  supplied <- get_results(fit, "assignments", data = data)
+  carried <- get_results(fit, "assignments")
 
   expect_identical(nrow(supplied), nrow(data))
   expect_identical(supplied$profile, fit$subject_profiles)
@@ -37,7 +37,7 @@ test_that("a reordered frame is refused rather than silently misaligned", {
   data <- .aligned_data()
   fit <- .aligned_fit(data)
   reversed <- data[rev(seq_len(nrow(data))), , drop = FALSE]
-  expect_error(get_data(fit, "assignments", data = reversed),
+  expect_error(get_results(fit, "assignments", data = reversed),
                class = "multilpa_bad_inference_data")
 
   # A permutation within the fitted group order is caught by the indicators,
@@ -45,7 +45,7 @@ test_that("a reordered frame is refused rather than silently misaligned", {
   set.seed(11)
   shuffled <- data
   shuffled$a <- sample(data$a)
-  expect_error(get_data(fit, "assignments", data = shuffled),
+  expect_error(get_results(fit, "assignments", data = shuffled),
                class = "multilpa_bad_inference_data")
 })
 
@@ -54,7 +54,7 @@ test_that("a frame with no column of the fit warns that it cannot be checked", {
   fit <- .aligned_fit(data)
   # Nothing here can be compared with the fit, so the row order is assumed;
   # saying so is the contract, and it is a warning rather than silence.
-  expect_warning(get_data(fit, "assignments", data = data.frame(outcome = data$outcome)),
+  expect_warning(get_results(fit, "assignments", data = data.frame(outcome = data$outcome)),
                  class = "multilpa_unverified_alignment")
 })
 
@@ -63,24 +63,24 @@ test_that("the row-count contract is unchanged", {
   fit <- .aligned_fit(data)
   # A wrong number of rows is a data contract failure, not a model-nesting one;
   # `multilpa_bad_nesting` is reserved for comparing two models.
-  expect_error(get_data(fit, "assignments", data = head(data, 10L)),
+  expect_error(get_results(fit, "assignments", data = head(data, 10L)),
                class = "multilpa_bad_inference_data")
 })
 
 test_that("bivariate residuals accept the fitted frame and refuse another order", {
   data <- .aligned_data()
   fit <- .aligned_fit(data)
-  carried <- get_data(fit, "residuals")
-  supplied <- get_data(fit, "residuals", data = data)
+  carried <- get_results(fit, "residuals")
+  supplied <- get_results(fit, "residuals", data = data)
 
   # Supplying the frame the fit was built from changes nothing.
   expect_equal(supplied$residual, carried$residual)
   expect_identical(supplied$profile, carried$profile)
 
   reversed <- data[rev(seq_len(nrow(data))), , drop = FALSE]
-  expect_error(get_data(fit, "residuals", data = reversed),
+  expect_error(get_results(fit, "residuals", data = reversed),
                class = "multilpa_bad_inference_data")
-  expect_error(get_data(fit, "residuals", data = reversed, by = "overall"),
+  expect_error(get_results(fit, "residuals", data = reversed, by = "overall"),
                class = "multilpa_bad_inference_data")
 })
 
@@ -123,7 +123,7 @@ test_that("starting values carry the labels a categorical block is held by", {
 
   # The tidy view reports the labels the start carries, matching what the fitted
   # object's own response table reports for the same quantity.
-  responses <- get_data(start, "responses")
+  responses <- get_results(start, "responses")
   expect_type(responses$indicator, "character")
   expect_type(responses$category, "character")
   expect_setequal(unique(responses$indicator), items)
@@ -132,7 +132,7 @@ test_that("starting values carry the labels a categorical block is held by", {
   positional <- start
   positional$response_probabilities <-
     unname(lapply(positional$response_probabilities, unname))
-  bare <- get_data(positional, "responses")
+  bare <- get_results(positional, "responses")
   expect_type(bare$indicator, "integer")
   expect_type(bare$category, "integer")
 })
@@ -144,13 +144,13 @@ test_that("alignment survives a round trip that changes storage, not order", {
   # written file are the same rows in the same order, and must still align.
   as_text <- data
   as_text$g <- as.character(as_text$g)
-  expect_identical(get_data(fit, "assignments", data = as_text)$profile,
+  expect_identical(get_results(fit, "assignments", data = as_text)$profile,
                    fit$subject_profiles)
 
   path <- tempfile(fileext = ".csv")
   on.exit(unlink(path), add = TRUE, after = FALSE)
   utils::write.csv(data, path, row.names = FALSE)
   round_tripped <- utils::read.csv(path)
-  expect_identical(get_data(fit, "assignments", data = round_tripped)$profile,
+  expect_identical(get_results(fit, "assignments", data = round_tripped)$profile,
                    fit$subject_profiles)
 })

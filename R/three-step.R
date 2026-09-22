@@ -20,7 +20,7 @@
 
 #' How often each true class is assigned to another
 #'
-#' Documented on `?get_data`, which is where a caller reaches this table from,
+#' Documented on `?get_results`, which is where a caller reaches this table from,
 #' and consumed by [three_step()] and the BCH weights.
 #'
 #' @param x A fitted model of this package.
@@ -72,7 +72,7 @@
 
 #' The BCH inverse-classification-error weights
 #'
-#' Documented on `?get_data`, which is where a caller reaches this table from.
+#' Documented on `?get_results`, which is where a caller reaches this table from.
 #'
 #' @param x A fitted model of this package.
 #' @param level `"individuals"`, `"groups"` or `"both"`.
@@ -116,7 +116,7 @@
     stop(errorCondition(
       paste("The classification error matrix cannot be inverted, so the classes",
             "are not separated well enough for a three-step correction.",
-            "Inspect get_data(x, \"classification_errors\")."),
+            "Inspect get_results(x, \"classification_errors\")."),
       class = "multilpa_inseparable_classes", call = NULL))
   })
   if (min(abs(eigen(as.matrix(errors), only.values = TRUE)$values)) < 1e-8) {
@@ -427,7 +427,7 @@ three_step <- function(x, data, outcome,
 #'   That coverage was measured where the profiles separate well. The error
 #'   matrix is still treated as known rather than estimated, so intervals should
 #'   be expected to run narrow where classification is poorer; check
-#'   `get_data(x, "classification_errors")` before relying on them.
+#'   `get_results(x, "classification_errors")` before relying on them.
 #' @references Vermunt, J. K. (2010). Latent class modeling with covariates: two
 #'   improved three-step approaches. *Political Analysis*, 18, 450--469.
 #'   Asparouhov, T., & Muthen, B. (2014). Auxiliary variables in mixture

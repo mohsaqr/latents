@@ -22,7 +22,7 @@ A base `data.frame`: one row per candidate model in the grid.
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 A summary carries every table the object it describes can produce, and
-[get_data()] names them.
+[get_results()] names them.
 }
 \examples{
 candidates <- enumerate_classes(
@@ -32,8 +32,8 @@ candidates <- enumerate_classes(
   seed = 1
 )
 as.data.frame(summary(candidates))
-get_data(summary(candidates), what = "criteria")
+get_results(summary(candidates), what = "criteria")
 }
 \seealso{
-[get_data()] for every other table this summary holds.
+[get_results()] for every other table this summary holds.
 }

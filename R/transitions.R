@@ -516,7 +516,7 @@
 #'   `transition_probabilities` (profiles by profiles by group classes, rows
 #'   indexing the profile moved from), `group_probabilities`, posterior
 #'   matrices, classifications, log likelihood, information criteria, restart
-#'   diagnostics and convergence history. Use [get_data()] for the tidy
+#'   diagnostics and convergence history. Use [get_results()] for the tidy
 #'   transition table and for the other
 #'   tables. No standard
 #'   errors, likelihood-ratio tests or guarantees of global optimality are
@@ -529,7 +529,7 @@
 #'   is then uniform by construction rather than estimated. Such a row is warned
 #'   about when the model is fitted, is flagged by the `estimated` column of
 #'   the transition table and is listed by
-#'   `get_data(fit, "transitions", estimated = FALSE)`.
+#'   `get_results(fit, "transitions", estimated = FALSE)`.
 #'   Profile labels are arbitrary and
 #'   are not comparable across fits without alignment.
 #'
@@ -543,7 +543,7 @@
 #'
 #'   Vermunt, J. K. (2003). Multilevel latent class models. Sociological
 #'   Methodology, 33, 213--239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
-#' @seealso [get_data()] for the fitted transition probabilities and for the
+#' @seealso [get_results()] for the fitted transition probabilities and for the
 #'   assignments in order, and [multilpa()] for the
 #'   cross-sectional model this one shares its measurement parameters with.
 #' @examples
@@ -555,7 +555,7 @@
 #'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
 #'   id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1
 #' )
-#' get_data(fit, what = "transitions")
+#' get_results(fit, what = "transitions")
 #' summary(fit)
 #' @export
 lta <- function(data, vars, id, n_profiles, time,
@@ -758,7 +758,7 @@ lta <- function(data, vars, id, n_profiles, time,
   if (any(!valid)) {
     warning(warningCondition(sprintf(
       paste("%d of %d starts failed; read their messages with",
-            "get_data(fit, \"starts\")."),
+            "get_results(fit, \"starts\")."),
       sum(!valid), n_starts),
       class = "multilpa_failed_starts", call = NULL))
   }
@@ -778,7 +778,7 @@ lta <- function(data, vars, id, n_profiles, time,
       "A profile is never occupied before a final occasion; its",
       "transition row is uniform by construction, not estimated.",
       "List the affected rows with",
-      "get_data(fit, \"transitions\", estimated = FALSE)."),
+      "get_results(fit, \"transitions\", estimated = FALSE)."),
       class = "multilpa_empty_transition_row", call = NULL))
   }
   if (small_classes) {
@@ -791,7 +791,7 @@ lta <- function(data, vars, id, n_profiles, time,
 
 #' First-order transition probabilities between profiles
 #'
-#' Documented on `?get_data`, which is where a caller reaches this table from.
+#' Documented on `?get_results`, which is where a caller reaches this table from.
 #'
 #' @param x A fitted `multilpa_transitions` model.
 #' @param estimated,stable `TRUE` or `FALSE` restricts the table; `NULL` keeps
@@ -881,7 +881,7 @@ lta <- function(data, vars, id, n_profiles, time,
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' The other tables are named rather than positional, so they belong to
-#' [get_data()], which takes `what` and refuses a name this object has not.
+#' [get_results()], which takes `what` and refuses a name this object has not.
 #'
 #' @param x An object of class `multilpa_transitions`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -891,7 +891,7 @@ lta <- function(data, vars, id, n_profiles, time,
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
 #' @return A base `data.frame`: one row per group class and ordered pair of profiles.
-#' @seealso [get_data()] for every other table this object holds.
+#' @seealso [get_results()] for every other table this object holds.
 #' @examples
 #' moves <- lta(
 #'   course_engagement,
@@ -918,7 +918,7 @@ as.data.frame.multilpa_transitions <- function(x, row.names = NULL, optional = F
 #'   counts, the occasion layout, the log likelihood with the information
 #'   criteria, the convergence and restart diagnostics, and the verbs that
 #'   return the fitted quantities.
-#' @seealso [get_data()], [lta()].
+#' @seealso [get_results()], [lta()].
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -1002,9 +1002,9 @@ nobs.multilpa_transitions <- function(object, ...) {
 #' @return A `summary_multilpa_transitions` object carrying the measurement
 #'   parameters, the initial and transition probabilities and counts, the
 #'   effective class counts, the fit statistics and the restart diagnostics.
-#'   Its tables are read with [get_data()];
+#'   Its tables are read with [get_results()];
 #'   `print()` reports the whole model.
-#' @seealso [get_data()] for the transition probabilities as a tidy table.
+#' @seealso [get_results()] for the transition probabilities as a tidy table.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -1045,10 +1045,10 @@ summary.multilpa_transitions <- function(object, ...) {
       class = "multilpa_incomplete_fit", call = NULL))
   }
   result <- object[intersect(fields, names(object))]
-  # Every table the fit can produce, built once here, so `get_data()` on the
+  # Every table the fit can produce, built once here, so `get_results()` on the
   # summary serves the same tables the fit would and `print()` can show them
   # all without recomputing anything.
-  result$tables <- get_data(object, "all")
+  result$tables <- get_results(object, "all")
   class(result) <- "summary_multilpa_transitions"
   result
 }
@@ -1057,7 +1057,7 @@ summary.multilpa_transitions <- function(object, ...) {
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' A summary carries every table the object it describes can produce, and
-#' [get_data()] names them.
+#' [get_results()] names them.
 #'
 #' @param x An object of class `summary_multilpa_transitions`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -1065,7 +1065,7 @@ summary.multilpa_transitions <- function(object, ...) {
 #' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: one row per profile and continuous indicator.
-#' @seealso [get_data()] for every other table this summary holds.
+#' @seealso [get_results()] for every other table this summary holds.
 #' @examples
 #' moves <- lta(
 #'   course_engagement,
@@ -1085,7 +1085,7 @@ as.data.frame.summary_multilpa_transitions <- function(x, row.names = NULL, opti
 #' @param x A `summary_multilpa_transitions` object.
 #' @param digits Number of printed significant digits.
 #' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_data()` call that
+#'   to that depth, with its remaining row count and the `get_results()` call that
 #'   returns it whole.
 #' @param ... Additional arguments passed to matrix printing.
 #' @return The summary, invisibly; called for what it prints.
@@ -1146,7 +1146,7 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
 #'   an indicator name itself contains a dot.
 #'
 #'   No standard errors accompany these: [vcov.multilpa_transitions()] refuses
-#'   rather than returning an invalid matrix. [get_data()] gives the same
+#'   rather than returning an invalid matrix. [get_results()] gives the same
 #'   quantities as tidy
 #'   tables, which is the form to prefer.
 #' @examples
@@ -1259,7 +1259,7 @@ confint.multilpa_transitions <- function(object, parm, level = 0.95, ...) {
 .multilpa_refuse_transition_inference <- function() {
   stop(errorCondition(
     paste("Standard errors are not available for a latent transition model.",
-          "Read the estimates with get_data()."),
+          "Read the estimates with get_results()."),
     class = "multilpa_no_inference", call = NULL))
 }
 

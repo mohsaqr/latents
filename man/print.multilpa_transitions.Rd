@@ -35,5 +35,5 @@ fit <- lta(example_data, c("score_a", "score_b"), "person",
 print(fit)
 }
 \seealso{
-[get_data()], [lta()].
+[get_results()], [lta()].
 }

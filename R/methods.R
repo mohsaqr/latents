@@ -85,8 +85,8 @@ print.multilpa <- function(x, rows = 20L, ...) {
 #'   diagnostics. `covariances` is `NULL` under the diagonal parameterization
 #'   and `response_probabilities` is `NULL` when no indicator is categorical;
 #'   both keep their names in either case. Use
-#'   [get_data()] rather than reading the fields.
-#' @seealso [get_data()] for the tidy tables.
+#'   [get_results()] rather than reading the fields.
+#' @seealso [get_results()] for the tidy tables.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -143,10 +143,10 @@ summary.multilpa <- function(object, ...) {
     replication_tolerance = object$replication_tolerance)
   stopifnot("the summary must not carry an unnamed field" =
               !anyNA(names(result)) && !any(names(result) == ""))
-  # Every table the fit can produce, built once here, so `get_data()` on the
+  # Every table the fit can produce, built once here, so `get_results()` on the
   # summary serves the same tables the fit would and `print()` can show them
   # all without recomputing anything.
-  result$tables <- get_data(object, "all")
+  result$tables <- get_results(object, "all")
   class(result) <- "summary_multilpa"
   result
 }
@@ -155,7 +155,7 @@ summary.multilpa <- function(object, ...) {
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' A summary carries every table the object it describes can produce, and
-#' [get_data()] names them.
+#' [get_results()] names them.
 #'
 #' @param x An object of class `summary_multilpa`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -163,7 +163,7 @@ summary.multilpa <- function(object, ...) {
 #' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: one row per profile and continuous indicator.
-#' @seealso [get_data()] for every other table this summary holds.
+#' @seealso [get_results()] for every other table this summary holds.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -172,7 +172,7 @@ summary.multilpa <- function(object, ...) {
 #'   seed = 1
 #' )
 #' as.data.frame(summary(fit))
-#' get_data(summary(fit), what = "counts")
+#' get_results(summary(fit), what = "counts")
 #' @export
 as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa`" = inherits(x, "summary_multilpa"))
@@ -325,19 +325,19 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
 #' Print a multilevel LPA summary
 #'
 #' A human-facing report of the fit. The same content is available as tidy
-#' tables from [get_data()].
+#' tables from [get_results()].
 #'
 #' @param x A `summary_multilpa` object.
 #' @param digits Number of printed significant digits.
 #' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_data()` call that
+#'   to that depth, with its remaining row count and the `get_results()` call that
 #'   returns it whole.
 #' @param ... Additional arguments passed to matrix printing.
 #' @return The summary, invisibly. Called for the side effect of printing the
 #'   estimates block by block, the effective class memberships at both levels,
 #'   the likelihood and information criteria, any convergence or boundary
 #'   warnings, and the restart diagnostics.
-#' @seealso [get_data()] for the same content as data.
+#' @seealso [get_results()] for the same content as data.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -380,7 +380,7 @@ print.summary_multilpa <- function(x, digits = 4L, rows = 10L, ...) {
 #' @return A `logLik` object with parameter count `df` and the number of observed
 #'   groups as `nobs`. Thus `stats::BIC()` uses group-count BIC. For the
 #'   individual-count alternative, and every other criterion, call
-#'   `get_data(x, "information_criteria")`, which reports both conventions
+#'   `get_results(x, "information_criteria")`, which reports both conventions
 #'   side by side.
 #' @examples
 #' set.seed(7)
@@ -407,7 +407,7 @@ logLik.multilpa <- function(object, ...) {
 #' @return A single integer: the number of observed groups, which are the
 #'   independent units of the two-level likelihood. For the individual count
 #'   alongside every other sample-size-dependent quantity, call
-#'   `get_data(x, "information_criteria")`.
+#'   `get_results(x, "information_criteria")`.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(

@@ -172,15 +172,15 @@ test_that("every plot's data is reachable through a tidy verb", {
 
   # No plot is the only way to see what it draws: the reader can always get the
   # numbers as a data frame instead of measuring them off the picture.
-  expect_s3_class(get_data(fit, "profiles"), "data.frame")
-  expect_s3_class(get_data(fit, "profile_probabilities"),
+  expect_s3_class(get_results(fit, "profiles"), "data.frame")
+  expect_s3_class(get_results(fit, "profile_probabilities"),
                   "data.frame")
-  expect_s3_class(get_data(fit, "sequences"), "data.frame")
+  expect_s3_class(get_results(fit, "sequences"), "data.frame")
   expect_s3_class(as.data.frame(candidates), "data.frame")
   expect_true(all(c("profile", "indicator", "mean") %in%
-                    names(get_data(fit, "profiles"))))
+                    names(get_results(fit, "profiles"))))
   expect_true(all(c("group", "group_class", "time", "profile") %in%
-                    names(get_data(fit, "sequences"))))
+                    names(get_results(fit, "sequences"))))
 })
 
 test_that("a filled grid carries its code as text, not by colour alone", {
@@ -370,7 +370,7 @@ test_that("ridge views agree with the entropy the package reports", {
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   # The picture is never the only access to the numbers behind it.
-  posterior <- get_data(fit, "posteriors")
+  posterior <- get_results(fit, "posteriors")
   expect_s3_class(posterior, "data.frame")
   expect_true(all(c("row", "profile", "posterior", "modal") %in% names(posterior)))
   expect_true(all(posterior$posterior >= 0 & posterior$posterior <= 1))
@@ -431,8 +431,8 @@ test_that("the avepp panel reads the average posterior matrix", {
   # Rows condition on the assigned class, so each row is a distribution.
   expect_equal(unname(rowSums(averages)), rep(1, ncol(averages)))
   # And it is the same quantity the table reports, so the panel and
-  # get_data(x, "average_posteriors") cannot disagree.
-  table <- get_data(fit, "average_posteriors")
+  # get_results(x, "average_posteriors") cannot disagree.
+  table <- get_results(fit, "average_posteriors")
   individuals <- table[table$level == "individuals", , drop = FALSE]
   expect_equal(individuals$average_posterior,
                as.vector(t(averages)))

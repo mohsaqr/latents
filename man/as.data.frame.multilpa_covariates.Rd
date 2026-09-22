@@ -25,7 +25,7 @@ A base `data.frame`: the Gaussian measurement model, one row per
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 The other tables are named rather than positional, so they belong to
-[get_data()], which takes `what` and refuses a name this object has not.
+[get_results()], which takes `what` and refuses a name this object has not.
 }
 \examples{
 fit <- multilpa(
@@ -37,5 +37,5 @@ fit <- multilpa(
 as.data.frame(fit)
 }
 \seealso{
-[get_data()] for every other table this object holds.
+[get_results()] for every other table this object holds.
 }

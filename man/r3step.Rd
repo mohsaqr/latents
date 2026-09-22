@@ -80,7 +80,7 @@ The error matrix is held fixed rather than estimated jointly, which
   That coverage was measured where the profiles separate well. The error
   matrix is still treated as known rather than estimated, so intervals should
   be expected to run narrow where classification is poorer; check
-  `get_data(x, "classification_errors")` before relying on them.
+  `get_results(x, "classification_errors")` before relying on them.
 }
 \examples{
 set.seed(21)

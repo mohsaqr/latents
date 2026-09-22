@@ -23,7 +23,7 @@ A `summary_multilpa` object: a named list, never carrying an `NA`
   diagnostics. `covariances` is `NULL` under the diagonal parameterization
   and `response_probabilities` is `NULL` when no indicator is categorical;
   both keep their names in either case. Use
-  [get_data()] rather than reading the fields.
+  [get_results()] rather than reading the fields.
 }
 \description{
 The summary collects the estimates, the effective class counts, the
@@ -45,5 +45,5 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 summary(fit)
 }
 \seealso{
-[get_data()] for the tidy tables.
+[get_results()] for the tidy tables.
 }

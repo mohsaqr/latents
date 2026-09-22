@@ -1,7 +1,7 @@
 #' Bivariate residuals for every pair of indicators
 #'
 #' The statistic per pair kind, what the test assumes and the references are
-#' documented on `?get_data`, which is where a caller reaches this table from.
+#' documented on `?get_results`, which is where a caller reaches this table from.
 #'
 #' @param x A fitted model of this package.
 #' @param data The data the model was fitted to; `NULL` uses what it carries.

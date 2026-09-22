@@ -68,19 +68,19 @@ summary(fit)                    # every table the fit holds, ten rows each
 print(summary(fit), rows = 3)   # the same reading, shorter
 
 # One verb returns every table, named by `what`.
-names(get_data(fit, "all"))                   # every table this fit can produce
-get_data(fit)                                 # one row per profile and indicator
+names(get_results(fit, "all"))                   # every table this fit can produce
+get_results(fit)                                 # one row per profile and indicator
 as.data.frame(fit)                            # the same table, by plain coercion
-get_data(fit, "profile_probabilities")        # one row per group class and profile
-get_data(fit, "counts")                       # effective memberships at both levels
-get_data(fit, "covariances")                  # within-profile residual covariances
-get_data(fit, "posteriors")                   # one row per individual and profile
-get_data(fit, "posteriors", format = "wide")  # one row per individual
-get_data(fit, "group_posteriors")             # one row per group and group class
-get_data(fit, "model")                        # one row describing the whole fit
-get_data(fit, "starts")                       # one row per EM start
-get_data(fit, "data")                         # the columns the model was fitted to
-get_data(fit, "assignments")                  # every row with the class it was given
+get_results(fit, "profile_probabilities")        # one row per group class and profile
+get_results(fit, "counts")                       # effective memberships at both levels
+get_results(fit, "covariances")                  # within-profile residual covariances
+get_results(fit, "posteriors")                   # one row per individual and profile
+get_results(fit, "posteriors", format = "wide")  # one row per individual
+get_results(fit, "group_posteriors")             # one row per group and group class
+get_results(fit, "model")                        # one row describing the whole fit
+get_results(fit, "starts")                       # one row per EM start
+get_results(fit, "data")                         # the columns the model was fitted to
+get_results(fit, "assignments")                  # every row with the class it was given
 
 # The generating truth ships beside the indicators, so recovery is one call.
 # `truth` names the known labels, and each is compared against the level it
@@ -88,7 +88,7 @@ get_data(fit, "assignments")                  # every row with the class it was 
 # `profile`, `student_type` is constant within one and is read against
 # `group_class`. Profile and group-class numbers are arbitrary, so read the
 # table, not the diagonal.
-get_data(fit, "assignments", data = course_engagement,
+get_results(fit, "assignments", data = course_engagement,
          truth = c("engagement", "student_type"))
 
 descriptives(fit)                      # one row per variable, with the ICC
@@ -97,12 +97,12 @@ diagnostics(fit)                       # every classification diagnostic
 diagnostics(fit, by = "overall")       # residuals pooled rather than per profile
 report(fit)                            # summary + diagnostics + every plot
 
-get_data(fit, "information_criteria")                    # the reportable shape
-get_data(fit, "information_criteria", format = "long")   # one row per criterion
-get_data(fit, "classification")                          # classification quality
-get_data(fit, "entropy")                                 # entropy at each level
-get_data(fit, "average_posteriors")                      # mean posterior by assigned class
-get_data(fit, "average_posteriors", level = "individuals")  # enrolments only
+get_results(fit, "information_criteria")                    # the reportable shape
+get_results(fit, "information_criteria", format = "long")   # one row per criterion
+get_results(fit, "classification")                          # classification quality
+get_results(fit, "entropy")                                 # entropy at each level
+get_results(fit, "average_posteriors")                      # mean posterior by assigned class
+get_results(fit, "average_posteriors", level = "individuals")  # enrolments only
 
 multilpa_plot_types()                  # every view, with what it answers
 plot(fit)                              # profile means by indicator
@@ -127,17 +127,17 @@ anything to hide. The same table reads `student_type` against the group class:
 98.5% of the 840 enrolments of `committed` students land in group class 2, and
 77.8% of the 582 enrolments of `wavering` students in group class 1. Those two
 group classes are two kinds of student, and
-`get_data(fit, "profile_probabilities")` says how: one is 83% disengaged
+`get_results(fit, "profile_probabilities")` says how: one is 83% disengaged
 enrolments, the other 79% engaged. Pooled over the whole sample the engaged
 profile takes 58.8% of enrolments, which describes neither kind of student.
 Recovering that split is what the two-level model does and a pooled one cannot.
 
 Every result table is a base `data.frame` and one verb returns all of them, so
-nothing has to be pulled out of the fitted object by hand. `get_data(x, what = )`
+nothing has to be pulled out of the fitted object by hand. `get_results(x, what = )`
 names the table, `what = "all"` returns every table the object can produce as a
 named list, `as.data.frame(x)` is plain coercion to the primary table — the
 measurement model for every fitted family — and `summary(x)` prints all of them
-truncated to `rows = 10` each, with the `get_data()` call that returns the rest.
+truncated to `rows = 10` each, with the `get_results()` call that returns the rest.
 Asking an object for a table it does not have raises `multilpa_bad_argument`
 naming the ones it does.
 
@@ -148,12 +148,12 @@ is refused by `multilpa_bad_argument` naming it, rather than being dropped, so a
 different question.
 
 A table reads the data the fit already carries, so `data =` is optional for
-`get_data()`, `diagnostics()`, `report()`, `parameter_inference()`, `confint()`
+`get_results()`, `diagnostics()`, `report()`, `parameter_inference()`, `confint()`
 and `vcov()`. It is still required by `three_step()` and `r3step()`, which need
 the outcome or covariate columns the fit never saw, and by the recovery call
 above, whose `truth` columns are equally unseen. When it is supplied it is
-checked column by column against the fit: `get_data(x, "assignments")` and
-`get_data(x, "residuals")` raise `multilpa_bad_inference_data` on a frame that
+checked column by column against the fit: `get_results(x, "assignments")` and
+`get_results(x, "residuals")` raise `multilpa_bad_inference_data` on a frame that
 is not in fitting row order, and warn `multilpa_unverified_alignment` on a frame
 that shares no column with the fit and so cannot be checked at all.
 
@@ -216,7 +216,7 @@ lca <- multilpa(survey, c("u1", "u2", "u3", "u4", "u5"), "school_id",
                 categorical = c("u1", "u2", "u3", "u4", "u5"),
                 n_starts = 40, seed = 42)
 
-get_data(lca, "responses")   # probabilities and logit thresholds
+get_results(lca, "responses")   # probabilities and logit thresholds
 plot(lca, what = "responses")  # response curves by profile
 
 # Mixed measurement: name only the categorical ones.
@@ -312,7 +312,7 @@ with_predictors <- multilpa(
   "student",
   n_profiles = 2, n_group_classes = 2,
   profile_covariates = "previous_grade", seed = 1)
-get_data(with_predictors, "coefficients")   # both levels, one row per term
+get_results(with_predictors, "coefficients")   # both levels, one row per term
 parameter_inference(with_predictors)        # with standard errors and intervals
 
 multilpa(course_engagement,
@@ -331,7 +331,7 @@ candidates <- enumerate_classes(
   "student",
   n_profiles = 2:4, n_group_classes = 1:3, n_starts = 10, seed = 1)
 as.data.frame(candidates)                   # one row per candidate model
-get_data(candidates, "criteria")            # the minimum of each criterion
+get_results(candidates, "criteria")            # the minimum of each criterion
 summary(candidates)                         # the best model on each criterion
 candidate_fit(candidates, n_profiles = 2, n_group_classes = 2)
 plot(candidates, criterion = "sabic_individual")
@@ -344,8 +344,8 @@ plot(candidates, criterion = "sabic_individual")
 # Where conditional independence fails: residual association within profiles.
 # `fit` is the diagonal model from the first example, which is the one that has
 # something to confess.
-get_data(fit, "residuals")
-get_data(fit, "residuals", by = "overall")
+get_results(fit, "residuals")
+get_results(fit, "residuals", by = "overall")
 
 # What those residuals ask for: the same two profiles and two group classes,
 # with the association estimated rather than assumed away.
@@ -355,8 +355,8 @@ dependent <- multilpa(
   "student", n_profiles = 2, n_group_classes = 2, covariance_model = "full",
   n_starts = 10, seed = 1
 )
-get_data(dependent, "information_criteria")
-get_data(dependent, "residuals", by = "overall")
+get_results(dependent, "information_criteria")
+get_results(dependent, "residuals", by = "overall")
 
 # Resume from a fitted solution, or score parameters produced elsewhere. A start
 # describes one measurement specification, so the refit must be given the same
@@ -386,7 +386,7 @@ Those residuals are not decoration on these data. `attendance` counts the days
 a student was active in a course, and a day counts as active *because*
 something was clicked, so `attendance` shares variance with the click measures
 beyond what the profile explains. The diagonal model has no way to say that,
-and `get_data(fit, "residuals", by = "overall")` reports it: the largest
+and `get_results(fit, "residuals", by = "overall")` reports it: the largest
 residual correlation is 0.208 (`forum_read` with `attendance`, p = 1.7e-15),
 and five of the ten pairs are significant at 0.05 — the four that pair
 `attendance` with a click measure, plus `browse` with `forum_read` at
@@ -402,7 +402,7 @@ absorb. Read the residual table before reading the grid.
 
 | Capability | Supported scope |
 |---|---|
-| Result tables | One verb, `get_data(x, what = )`, returns every table listed in `?get_data`; `what = "all"` returns all of them as a named list, `as.data.frame(x)` coerces to the primary table, and `summary(x)` prints every table truncated to `rows` each |
+| Result tables | One verb, `get_results(x, what = )`, returns every table listed in `?get_results` — the table you want is an argument, not a function name, which is why this package has eighteen exports rather than forty; `what = "all"` returns all of them as a named list, `as.data.frame(x)` coerces to the primary table, and `summary(x)` prints every table truncated to `rows` each |
 | Measurement model | Gaussian, categorical, or mixed, via `categorical`; categorical indicators use unrestricted profile-specific response probabilities |
 | Missing indicators | `missing="fiml"`: observed Gaussian marginals and observed categorical responses, ignorable missingness assumption; no missing covariates |
 | Residual covariance | `volume`, `shape` and `orientation` reach **all fourteen** mclust structures — EII, VII, EEI, VEI, EVI, VVI, EEE, VEE, EVE, VVE, EEV, VEV, EVV, VVV — with parameter counts matching mclust's own. `variance_model` and `covariance_model` remain the two-argument shorthand for EEI/VVI/EEE/VVV. Standard errors cover those four only |
@@ -416,8 +416,8 @@ absorb. Read the residual table before reading the grid.
 | Class enumeration | Grid of discrete models, every information criterion under every sample-size convention that applies to it, entropy, failed-fit and convergence diagnostics |
 | Information criteria | AIC, BIC, SABIC, CAIC, AWE, ICL, CLC and KIC. The five that depend on a sample size are reported under both the group-count and individual-count conventions; AIC and KIC depend on none and are reported once; CLC is reported once per convention because its convention selects which level's classification uncertainty it penalizes |
 | Classification quality | Modal and model-estimated class sizes, average posterior probabilities, odds of correct classification, relative entropy. `"classification"`, `"average_posteriors"`, `"classification_errors"` and `"bch_weights"` report both levels on a fit that has discrete group classes; `level = "individuals"` or `"groups"` asks for one |
-| Measurement estimates | `get_data(fit, "profiles")`, also reached by `as.data.frame(fit)`; adding `data =` is what asks for it with a standard error beside every estimate, in one call, and `scale = "standardized"` is what `plot(fit, scale = "standardized")` draws |
-| Recovery against a known truth | `get_data(x, "assignments", truth = )` cross-tabulates the model's labels against columns of `data` holding known ones, comparing each against the level it describes |
+| Measurement estimates | `get_results(fit, "profiles")`, also reached by `as.data.frame(fit)`; adding `data =` is what asks for it with a standard error beside every estimate, in one call, and `scale = "standardized"` is what `plot(fit, scale = "standardized")` draws |
+| Recovery against a known truth | `get_results(x, "assignments", truth = )` cross-tabulates the model's labels against columns of `data` holding known ones, comparing each against the level it describes |
 | Bootstrap LRT | Parametric bootstrap preserving group sizes; complete discrete models differing by one class; held measurement blocks are carried into every refit and reported in a `fixed` column, and a pair whose constrained nesting cannot be established is refused with `multilpa_bad_nesting`; not Mplus TECH14 |
 | Local dependence | Posterior-weighted bivariate residuals within profile or overall, with approximate unadjusted p-values; apply a multiplicity correction with `adjust =` when comparing pairs |
 | Three-step | Classification error matrix and BCH weights at either level; distal outcomes by BCH, proportional or modal assignment, with `three_step(vcov_type = "cluster")` or `"independent"`; R3STEP membership covariates with `r3step(vcov_type = "observed")` or `"robust"`. A cluster-robust request is refused with `multilpa_too_few_groups` when there are not more independent groups than reported quantities, because the contributions sum to zero at the estimate and the covariance would be singular |
@@ -460,9 +460,9 @@ over_time <- multilpa(
   "student", n_profiles = 2, n_group_classes = 2, time = "sequence", seed = 1
 )
 
-get_data(over_time, "sequences")                    # one row per individual and time point
-get_data(over_time, "sequences", format = "wide")   # one row per individual
-get_data(over_time, "sequence_summary")             # counts, lengths and completeness
+get_results(over_time, "sequences")                    # one row per individual and time point
+get_results(over_time, "sequences", format = "wide")   # one row per individual
+get_results(over_time, "sequence_summary")             # counts, lengths and completeness
 plot(over_time, what = "sequences")
 ```
 
@@ -488,8 +488,8 @@ staged <- fit_staged(
   "student", n_profiles = 2, n_group_classes = 2, seed = 1
 )
 
-get_data(staged, "stages")     # what each stage estimated and held
-get_data(staged, "profile_probabilities")
+get_results(staged, "stages")     # what each stage estimated and held
+get_results(staged, "profile_probabilities")
 ```
 
 On these data the two routes nearly agree, which is the reassuring case rather
@@ -539,7 +539,7 @@ raises `multilpa_held_parameter`, because a held value has no sampling
 distribution.
 
 ```r
-get_data(staged, "stages")      # parameters and parameters_with_measurement
+get_results(staged, "stages")      # parameters and parameters_with_measurement
 parameter_inference(staged)     # the estimated parameters, with their errors
 ```
 
@@ -569,9 +569,9 @@ moves <- lta(
   "student", n_profiles = 2, time = "sequence", seed = 1
 )
 
-get_data(moves, "transitions")        # one row per ordered pair of profiles
-get_data(moves, "initial")            # where sequences start
-get_data(moves, "sequence_lengths")   # one row per group
+get_results(moves, "transitions")        # one row per ordered pair of profiles
+get_results(moves, "initial")            # where sequences start
+get_results(moves, "sequence_lengths")   # one row per group
 as.data.frame(moves)                  # the measurement model, like any other fit
 ```
 
@@ -595,7 +595,7 @@ mixture <- lta(
   c("browse", "lectures", "forum_read", "forum_post", "attendance"),
   "student", n_profiles = 2, n_group_classes = 2, time = "sequence", seed = 1
 )
-get_data(mixture, "transitions")
+get_results(mixture, "transitions")
 ```
 
 Groups need not be observed at every occasion. `occasions = "observed"`, the
@@ -603,7 +603,7 @@ default, links each group's own consecutive observations. `occasions = "grid"`
 places them on the grid of every position seen in the data, so a group that
 skips a wave spends a transition crossing the gap and contributes no
 measurement information at it. The two agree whenever every group is observed
-at every position, which `get_data(moves, "sequence_summary")` reports as a
+at every position, which `get_results(moves, "sequence_summary")` reports as a
 `gaps` count of zero for every group class.
 
 Standard errors, likelihood-ratio tests and class enumeration are not
@@ -679,12 +679,12 @@ define.
 ```r
 # The classification error matrix, P(assigned | true). A fit with discrete
 # group classes reports both levels; name one to get one.
-get_data(fit, "classification_errors")
-get_data(fit, "classification_errors", level = "groups")
+get_results(fit, "classification_errors")
+get_results(fit, "classification_errors", level = "groups")
 
 # Bolck-Croon-Hagenaars weights, the inverse of that matrix by modal class.
 # Weight a regression with one level, not with both.
-get_data(fit, "bch_weights", level = "individuals")   # one row per unit and class
+get_results(fit, "bch_weights", level = "individuals")   # one row per unit and class
 
 # A variable the classes did not define, corrected for misclassification.
 three_step(fit, data = course_engagement, outcome = "previous_grade")
@@ -796,8 +796,8 @@ Two tidy tables carry the search diagnostics, so none of this has to be pulled
 out of the fitted object by hand:
 
 ```r
-get_data(fit, "model")      # converged, best start, n_best_replicated, boundary
-get_data(fit, "starts")     # one row per start, with its error if any
+get_results(fit, "model")      # converged, best start, n_best_replicated, boundary
+get_results(fit, "starts")     # one row per start, with its error if any
 ```
 
 The best finite likelihood is returned even when
@@ -810,12 +810,12 @@ relative likelihood change, not parameter stability or a Hessian test.
 `min_variance` is an explicit lower bound in **squared input units**, defaulting
 to `1e-6`. Gaussian mixtures with freely varying variances otherwise allow
 singular solutions. The returned estimates solve a constrained likelihood
-problem; the `boundary` column of `get_data(fit, "model")`
+problem; the `boundary` column of `get_results(fit, "model")`
 and a `multilpa_boundary` warning identify a variance at the bound.
 Choose a sensible bound for the indicator scales and examine sensitivity. The
 `small_classes` column of the same table flags effective memberships below one,
 warned as `multilpa_small_classes`; effective class counts are also in
-`get_data(fit, "counts")` and printed by `summary()`.
+`get_results(fit, "counts")` and printed by `summary()`.
 
 Missing indicators are rejected with `multilpa_bad_data` by default; use `missing="fiml"` to integrate
 them out of the likelihood. Completely unobserved rows contribute no indicator

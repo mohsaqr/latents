@@ -216,10 +216,10 @@ summary.multilpa_enumeration <- function(object, ...) {
                  n_failed = sum(is.na(grid$log_likelihood)),
                  n_boundary = sum(grid$boundary %in% TRUE),
                  call = object$call)
-  # Every table the fit can produce, built once here, so `get_data()` on the
+  # Every table the fit can produce, built once here, so `get_results()` on the
   # summary serves the same tables the fit would and `print()` can show them
   # all without recomputing anything.
-  result$tables <- get_data(object, "all")
+  result$tables <- get_results(object, "all")
   class(result) <- "summary_multilpa_enumeration"
   result
 }
@@ -253,7 +253,7 @@ summary.multilpa_enumeration <- function(object, ...) {
 #' @param x A `summary_multilpa_enumeration` object.
 #' @param digits Number of printed significant digits.
 #' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_data()` call that
+#'   to that depth, with its remaining row count and the `get_results()` call that
 #'   returns it whole.
 #' @param ... Passed to the underlying `data.frame` printing.
 #' @return The summary, invisibly. Called for the side effect of printing the
@@ -286,7 +286,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' A summary carries every table the object it describes can produce, and
-#' [get_data()] names them.
+#' [get_results()] names them.
 #'
 #' @param x An object of class `summary_multilpa_enumeration`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -294,7 +294,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
 #' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: one row per candidate model in the grid.
-#' @seealso [get_data()] for every other table this summary holds.
+#' @seealso [get_results()] for every other table this summary holds.
 #' @examples
 #' candidates <- enumerate_classes(
 #'   course_engagement,
@@ -303,7 +303,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
 #'   seed = 1
 #' )
 #' as.data.frame(summary(candidates))
-#' get_data(summary(candidates), what = "criteria")
+#' get_results(summary(candidates), what = "criteria")
 #' @export
 as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_enumeration`" = inherits(x, "summary_multilpa_enumeration"))
@@ -509,7 +509,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'   standard error, the measurement blocks held fixed in every fit, and one
 #'   record per replicate. Read it with the verbs that describe it:
 #'   [as.data.frame()] gives the single-row test result,
-#'   `get_data(what = "replicates")` one row per simulated replicate,
+#'   `get_results(what = "replicates")` one row per simulated replicate,
 #'   [summary()] the
 #'   test beside the replicate diagnostics, and [plot()] the simulated null
 #'   distribution with the observed statistic marked. Inspect failed starts,
@@ -735,7 +735,7 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
   }
   if (is.na(x$p_value)) {
     cat(paste("The p-value is withheld because not every replicate was valid;",
-              "get_data(x, \"replicates\") lists them.\n"))
+              "get_results(x, \"replicates\") lists them.\n"))
   }
   invisible(x)
 }
@@ -770,10 +770,10 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
                  n_boundary = sum(object$replicates$boundary %in% TRUE),
                  n_errors = sum(!is.na(object$replicates$error)),
                  call = object$call)
-  # Every table the fit can produce, built once here, so `get_data()` on the
+  # Every table the fit can produce, built once here, so `get_results()` on the
   # summary serves the same tables the fit would and `print()` can show them
   # all without recomputing anything.
-  result$tables <- get_data(object, "all")
+  result$tables <- get_results(object, "all")
   class(result) <- "summary_multilpa_bootstrap_lrt"
   result
 }
@@ -801,7 +801,7 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
 #' @param x A `summary_multilpa_bootstrap_lrt` object.
 #' @param digits Number of printed significant digits.
 #' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_data()` call that
+#'   to that depth, with its remaining row count and the `get_results()` call that
 #'   returns it whole.
 #' @param ... Passed to the underlying `data.frame` printing.
 #' @return The summary, invisibly. Called for the side effect of printing the
@@ -840,7 +840,7 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' The other tables are named rather than positional, so they belong to
-#' [get_data()], which takes `what` and refuses a name this object has not.
+#' [get_results()], which takes `what` and refuses a name this object has not.
 #'
 #' @param x An object of class `multilpa_bootstrap_lrt`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -850,7 +850,7 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
 #' @return A base `data.frame`: the one-row test result.
-#' @seealso [get_data()] for every other table this object holds.
+#' @seealso [get_results()] for every other table this object holds.
 #' @examples
 #' set.seed(1)
 #' example_data <- data.frame(
@@ -875,7 +875,7 @@ as.data.frame.multilpa_bootstrap_lrt <- function(x, row.names = NULL, optional =
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' A summary carries every table the object it describes can produce, and
-#' [get_data()] names them.
+#' [get_results()] names them.
 #'
 #' @param x An object of class `summary_multilpa_bootstrap_lrt`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -883,7 +883,7 @@ as.data.frame.multilpa_bootstrap_lrt <- function(x, row.names = NULL, optional =
 #' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: the one-row test result.
-#' @seealso [get_data()] for every other table this summary holds.
+#' @seealso [get_results()] for every other table this summary holds.
 #' @examples
 #' set.seed(1)
 #' example_data <- data.frame(
@@ -983,7 +983,7 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
     return(as.data.frame(stats::setNames(
       rep(list(NA_real_), length(names_wanted)), names_wanted)))
   }
-  ## The same pivot `get_data(what = "information_criteria")` performs in its
+  ## The same pivot `get_results(what = "information_criteria")` performs in its
   ## wide form, so the
   ## grid and a single fit cannot name the same quantity differently. The wide
   ## form leads with the likelihood and parameter count, which the grid already

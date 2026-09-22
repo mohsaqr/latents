@@ -173,13 +173,13 @@ naming it.
 
 ### Profile and class sizes
 
-`get_data()` extracts tables from a fitted model. The `"counts"` table reports
+`get_results()` extracts tables from a fitted model. The `"counts"` table reports
 effective memberships at both levels: how many enrolments fall in each profile,
 and how many students in each student class. These are summed posterior
 probabilities rather than modal counts, so they are not whole numbers.
 
 ```{r counts}
-get_data(fit, "counts")
+get_results(fit, "counts")
 ```
 
 The lower-activity profile is the largest, holding 575.0 enrolments, or 40.4%.
@@ -195,7 +195,7 @@ students. Reading a row therefore answers two separate questions: how a class
 composes its enrolments, and how common that class is.
 
 ```{r profile-probabilities}
-get_data(fit, "profile_probabilities")
+get_results(fit, "profile_probabilities")
 ```
 
 Student class 1 has probabilities of 0.398, 0.547, and 0.055 for profiles 1, 2,
@@ -224,7 +224,7 @@ variance-boundary status for each start. Repeated likelihoods support numerical
 stability, although they cannot prove that a global maximum has been found.
 
 ```{r starts}
-get_data(fit, "starts")
+get_results(fit, "starts")
 ```
 
 All ten starts converge to a log likelihood of approximately -8348.4, with no
@@ -255,7 +255,7 @@ so the sequence is a summary that omits classification uncertainty. The wide
 format places students in rows and successive courses in columns.
 
 ```{r sequences}
-get_data(fit, "sequences", format = "wide") |> head(4)
+get_results(fit, "sequences", format = "wide") |> head(4)
 ```
 
 Students 1 and 2 are assigned to student class 3: student 1 begins in the
@@ -269,7 +269,7 @@ observed courses in each assigned student class. `gaps` counts students missing
 an occasion within their observed span; a shorter history alone is not a gap.
 
 ```{r sequence-summary}
-get_data(fit, "sequence_summary")
+get_results(fit, "sequence_summary")
 ```
 
 The assigned classes contain 25, 51, and 30 students. Mean sequence lengths are

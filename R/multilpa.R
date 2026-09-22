@@ -571,7 +571,7 @@
 #'
 #' The column is fabricated here rather than by the caller. A caller who writes
 #' `data$unit <- seq_len(nrow(data))` has to know that the fit stores that
-#' column, that `get_data(x, "data")` will hand it back, and that a second call
+#' column, that `get_results(x, "data")` will hand it back, and that a second call
 #' must spell it the same way -- plumbing the package should own. This
 #' package's own validation harness wrote that line once per comparison before
 #' this argument existed.
@@ -630,7 +630,7 @@
 #'   warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
 #'   two-level model reduces to, and every verb of this package works on it. The
 #'   unit column is fabricated internally as `.observation`; it is not returned
-#'   by `get_data(x, "data")`, and a `data` that already has a column of that
+#'   by `get_results(x, "data")`, and a `data` that already has a column of that
 #'   name raises `multilpa_bad_data`. Asking for more than one group class
 #'   without an `id` raises `multilpa_bad_argument`, because one observation per
 #'   unit leaves no composition for a second-level class to differ in.
@@ -736,7 +736,7 @@
 #'   2021; Voelkle, Brose, Schmiedek, & Lindenberger, 2014). `"grand"`
 #'   subtracts one mean per indicator, which moves the origin without touching
 #'   the within-group structure. The offsets are kept on the fit, so
-#'   `get_data(x, "data")` still returns the columns you supplied and every
+#'   `get_results(x, "data")` still returns the columns you supplied and every
 #'   verb that checks row alignment still checks it. Centring removes exactly
 #'   the between-unit variation, so `"person"` refuses with
 #'   `multilpa_bad_data` when it leaves an indicator constant --- which is what
@@ -744,8 +744,8 @@
 #'   classes become types of *change pattern*, not types of unit.
 #' @param time Optional name of a column giving each observation's position
 #'   within its group, such as a wave, occasion or course number. The model does
-#'   not use it; it is stored so that `get_data(x, "sequences")`,
-#'   `get_data(x, "sequence_summary")` and
+#'   not use it; it is stored so that `get_results(x, "sequences")`,
+#'   `get_results(x, "sequence_summary")` and
 #'   `plot(what = "sequences")` can read the assignments back in order. Values
 #'   must be complete and unique within each group.
 #' @param fixed Character vector naming measurement blocks to hold at the
@@ -816,7 +816,7 @@
 #'                 seed = 42)
 #' summary(fit)
 #' as.data.frame(fit)
-#' get_data(fit, what = "profile_probabilities")
+#' get_results(fit, what = "profile_probabilities")
 #' @export
 #' @importFrom stats setNames
 multilpa <- function(data, vars, id, n_profiles,
@@ -992,7 +992,7 @@ multilpa <- function(data, vars, id, n_profiles,
   # scoring extra random initializations and keeping the highest would return a
   # parameter set nobody supplied in place of the one the caller asked to have
   # evaluated. Evaluate-only with a `start` therefore uses that start alone, and
-  # `get_data(fit, "starts")` shows the single start that was run.
+  # `get_results(fit, "starts")` shows the single start that was run.
   if (max_iter == 0L && !is.null(start)) n_starts <- 1L
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
@@ -1111,14 +1111,14 @@ multilpa <- function(data, vars, id, n_profiles,
   class(result) <- "multilpa"
   if (any(!valid)) {
     warning(warningCondition(sprintf(
-      "%d of %d starts failed; see get_data(fit, \"starts\").",
+      "%d of %d starts failed; see get_results(fit, \"starts\").",
       sum(!valid), n_starts), class = "multilpa_failed_starts", call = NULL))
   }
   # max_iter = 0 is a deliberate evaluate-only call, so non-convergence is
   # expected rather than an anomaly worth reporting.
   if (!best$converged && max_iter > 0L) {
     warning(warningCondition(
-      "The best start did not converge; increase max_iter and see get_data(fit, \"starts\").",
+      "The best start did not converge; increase max_iter and see get_results(fit, \"starts\").",
       class = "multilpa_unconverged", call = NULL))
   }
   if (boundary) {

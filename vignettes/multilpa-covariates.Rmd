@@ -79,7 +79,7 @@ The classification-error matrix estimates the probability of an assigned
 profile given the underlying profile:
 $D_{ks}=P(\widehat C=s\mid C=k)$. Here $\widehat C$ is the profile with the
 largest posterior probability. Each row of $D$ sums to one; diagonal entries
-represent correct assignment under the fitted model. `get_data()` extracts
+represent correct assignment under the fitted model. `get_results()` extracts
 this matrix through `"classification_errors"`.
 
 The adjustment assumes that assignment errors are independent of the auxiliary
@@ -89,7 +89,7 @@ intervals omit uncertainty in that first-stage estimate. Poor separation can
 also make the correction unstable.
 
 ```{r classification-errors}
-get_data(fit, "classification_errors", level = "individuals")
+get_results(fit, "classification_errors", level = "individuals")
 ```
 
 The estimated correct-assignment probabilities are 0.842, 0.854, and 0.980.
@@ -200,7 +200,7 @@ The `"coefficients"` table reports the estimated intercepts and grade slopes.
 Profile 3 is the reference for the profile-level coefficients.
 
 ```{r one-step-coefficients}
-get_data(covariate_fit, "coefficients")
+get_results(covariate_fit, "coefficients")
 ```
 
 The previous-grade slopes are 0.533 for higher activity and 0.294 for
@@ -239,7 +239,7 @@ The `"stages"` table distinguishes the parameters estimated at each stage.
 fixed during the membership stage.
 
 ```{r stages}
-get_data(staged, "stages")
+get_results(staged, "stages")
 ```
 
 The measurement stage estimates 32 parameters; the membership stage estimates

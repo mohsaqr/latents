@@ -42,7 +42,7 @@ to the returned table.}
 }
 \value{
 An object of class `multilpa_diagnostics`. Read its tables with
-  `get_data(result, what = )`, which offers `"entropy"`, `"classification"`,
+  `get_results(result, what = )`, which offers `"entropy"`, `"classification"`,
   `"average_posteriors"`, `"residuals"` and `"all"`, and never with `$`. A
   model family that has no bivariate residuals leaves that table out of
   `"all"`, and asking for it by name raises `multilpa_no_group_classes`.
@@ -60,10 +60,10 @@ actually is, how confidently each unit was assigned, and whether the
 within-profile independence the model assumes survives contact with the data.
 }
 \details{
-It gathers the four classification tables of [get_data()] --- `"entropy"`,
+It gathers the four classification tables of [get_results()] --- `"entropy"`,
 `"classification"`, `"average_posteriors"` and `"residuals"` --- and prints
 one line of reading per diagnostic rather than four differently shaped
-tables. The tables themselves come back from `get_data()` on the result, or
+tables. The tables themselves come back from `get_results()` on the result, or
 on the fit.
 }
 \examples{
@@ -75,11 +75,11 @@ fit <- multilpa(
 )
 quality <- diagnostics(fit)
 quality
-get_data(quality, what = "classification")
-get_data(diagnostics(fit, by = "overall"), what = "residuals")
+get_results(quality, what = "classification")
+get_results(diagnostics(fit, by = "overall"), what = "residuals")
 }
 \seealso{
-[get_data()] for these tables and every other one, [descriptives()]
+[get_results()] for these tables and every other one, [descriptives()]
   for the before-the-fit counterpart, and [summary()] for what the model
   estimated rather than whether to trust it.
 }
