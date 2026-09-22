@@ -21,3 +21,5 @@
 ^AGENT-NOTE.*\.md$
 ^README\.html$
 ^equivalence$
+^.*\.Rproj$
+^\.Rproj\.user$

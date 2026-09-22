@@ -17,36 +17,13 @@ knitr::opts_chunk$set(collapse = FALSE, comment = "#>",
 options(digits = 4, width = 92)
 ```
 
-Multilevel latent profile analysis (MLPA) estimates profiles of observations and
-differences in their prevalence across higher-level units. These units may be
-persons with repeated measurements, schools containing students, clinics
-containing patients, or organizations containing employees. Observations from
-the same unit can be dependent. A two-level mixture model represents this
-structure through latent profiles at Level 1 and latent classes at Level 2.
-The lower level describes heterogeneity among observations; the higher level
-describes how their composition differs between units.
+Multilevel latent profile analysis (MLPA) is used when observations are nested within higher-level units and the aim is to identify latent profiles at the observation level while also describing how the prevalence of those profiles varies across units. Examples include repeated measurements nested within persons, students nested within schools, patients nested within clinics, or employees nested within organizations. Because observations from the same higher-level unit may be dependent, MLPA extends standard latent profile analysis by modeling the data at two levels. Latent profiles are defined at Level 1, whereas latent classes at Level 2 describe differences between higher-level units in the composition of those profiles.
 
-In a repeated-measure application, a person can occupy different profiles on
-different occasions. Let $C_{it}$ denote the profile of person $i$ at occasion
-$t$, and $G_i$ their person-level class. MLPA estimates the probability
-$P(C_{it}=k\mid G_i=m)$ of profile $k$ within person class $m$. This separates
-diversity across repeated observations from differences between people in the
-profiles they tend to occupy.
+Consider a repeated-measures application. A person may occupy different profiles on different occasions. Let $C_{it}$ denote the profile of person $i$ at occasion $t$, and let $G_i$ denote the person's Level-2 latent class. The model estimates the conditional probability $P(C_{it}=k\mid G_i=m)$ that an observation belongs to profile $k$ given that the person belongs to class $m$. In this way, MLPA separates variation across repeated observations from variation between persons in the profiles they tend to occupy.
 
-VASSTRA makes this distinction between **state diversity** and **person
-heterogeneity** explicit through sequential estimation. It first establishes a
-common state space across observations, then represents each person's repeated
-observations within that space. The joint MLPA model estimates the profiles and
-person classes together. Both approaches allow a person to occupy several
-states; they differ in how the state definitions and person-level representation
-are estimated.
+This distinction is also central to VaSSTra, which separates **state diversity** from **person heterogeneity** using a sequential estimation strategy. VaSSTra first establishes a common state space across all observations and then summarizes each person's repeated observations within that space. MLPA takes a different approach: the observation-level profiles and person-level classes are estimated jointly within a single model. Both approaches allow the same person to occupy several states across repeated observations, but they differ in how the states and the person-level representation are constructed.
 
-The `multilpa` package fits MLPA through maximum likelihood with multiple
-expectation-maximization starts. This guide develops a three-profile,
-three-student-class example from longitudinal course engagement. The companion
-guides cover [model evaluation](multilpa-evaluation.html),
-[covariates and staged estimation](multilpa-covariates.html), and
-[latent transitions](multilpa-transitions.html).
+The `multilpa` package fits MLPA models using maximum likelihood with multiple expectation-maximization starting values. In this vignette, we work through a three-profile, three-person-class example using longitudinal data on course engagement. The focus is on specifying, estimating, and interpreting the model. The companion guides cover [model evaluation](multilpa-evaluation.html), [covariates and staged estimation](multilpa-covariates.html), and [latent transitions](multilpa-transitions.html). 
 
 ```{r setup}
 library(multilpa)
@@ -54,27 +31,43 @@ library(multilpa)
 
 ## Longitudinal course engagement
 
-The engagement example revisits the case in
+
+The engagement example revisits the setting studied by
 [Saqr and López-Pernas (2021)](https://doi.org/10.1016/j.compedu.2021.104325),
-*The longitudinal trajectories of online engagement over a full program*.
-The study distinguished three engagement states within courses and three
-longer-term student trajectories. Here, the bundled synthetic `course_engagement` data
-provide a reproducible version of that nested design. The example illustrates
-the analytical questions; its estimates are specific to these package data.
+*The longitudinal trajectories of online engagement over a full program*. The
+study distinguished three engagement states within courses and three
+longer-term student trajectories. Here, we use the bundled synthetic
+`course_engagement` data to reproduce the same type of nested longitudinal
+design. The purpose of the example is to illustrate the analytical questions
+and workflow; the estimates reported below apply only to the synthetic package
+data.
 
-An enrolment records one student's activity in one course. Enrolments are
-Level-1 observations, and the student taking those courses is the Level-2 unit.
-The same student therefore appears on several rows. `student` identifies the
-nesting, `course` identifies the course, and `sequence` gives the course's
-position in that student's observed history. Students can have different
-numbers of enrolments. The model groups observations by student; it does not
-estimate a separate course effect.
+Each row represents one student's enrolment in one course. Enrolments are
+therefore the Level-1 observations, while students are the Level-2 units within
+which those observations are nested. A student who takes several courses
+appears on several rows. The variable `student` identifies the Level-2 unit,
+`course` identifies the course associated with each enrolment, and `sequence`
+records the position of that course in the student's observed history.
+Students need not contribute the same number of enrolments. The MLPA model
+accounts for the grouping of enrolments within students; it does not include a
+separate course-level random effect or latent structure.
 
-The five activity indicators describe what happened during each enrolment.
-They are stored as `log1p(count)` standardized within course, so each value is
-that enrolment's distance from its own course's average, in that course's
-standard deviations. Activity volume is not comparable across courses, so a
-student is compared with their coursemates rather than with the whole cohort.
+Five activity indicators describe the student's engagement during each
+enrolment. The indicators are stored as `log1p(count)` values standardized
+within course. Each value can therefore be interpreted as the enrolment's
+distance from the mean of that particular course, expressed in course-specific
+standard deviations. A value above zero indicates more activity than the
+course average, whereas a value below zero indicates less activity than the
+course average.
+
+This within-course standardization is important for the interpretation of the
+profiles. Raw activity volumes can differ substantially across courses because
+of differences in course design, duration, or expected workload. The indicators
+therefore describe a student's engagement relative to other students taking
+the same course rather than relative to the cohort as a whole. The profiles
+identified below should consequently be interpreted as recurring patterns of
+**relative engagement within courses**, not as absolute levels of activity
+across the program.
 
 | Variable | Definition |
 |---|---|
@@ -95,69 +88,108 @@ vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 ## Descriptive statistics and clustering within students
 
-`descriptives()` summarizes the activity distributions and estimates their
-intraclass correlations (ICCs) using `student` as the grouping variable. The
-ICC is the between-student variance divided by total variance:
+The `descriptives()` function summarizes the distributions of the activity indicators and estimates their intraclass correlations (ICCs), using `student` as the grouping variable. The ICC describes how much of the variation in an indicator is attributable to differences between students rather than variation across enrolments within the same student. It is defined as
 
-$$\mathrm{ICC}=\frac{\sigma^2_{\mathrm{between}}}{\sigma^2_{\mathrm{between}}+\sigma^2_{\mathrm{within}}}.$$
+$$
+\mathrm{ICC}
+=
+\frac{\sigma^2_{\mathrm{between}}}
+{\sigma^2_{\mathrm{between}}+\sigma^2_{\mathrm{within}}}.
+$$
 
-Here $\sigma^2_{\mathrm{between}}$ is variance between students and
-$\sigma^2_{\mathrm{within}}$ is variance across enrolments within students.
 
+Here, $\sigma^2_{\mathrm{between}}$ is the variance between students and
+$\sigma^2_{\mathrm{within}}$ is the variance across enrolments within students.
 An ICC near zero indicates little between-student variation in an indicator's
-mean; an ICC near one indicates little variation within students. The one-way
-random-effects estimate can be negative because of sampling variation. ICCs
-describe each indicator separately and do not determine how many profiles or
-student classes to fit. Students could differ in their profile composition even
-when their indicator means are similar.
+average level, whereas an ICC near one indicates little variation across
+enrolments within students. With the one-way random-effects estimator used
+here, an estimated ICC can occasionally be negative because of sampling
+variation; such estimates are generally interpreted as indicating little or no
+detectable between-student clustering for that indicator.
+
+ICCs describe the clustering of each activity indicator separately. They do not
+determine how many Level-1 profiles or Level-2 student classes should be fitted.
+In particular, students may differ in the **composition of their engagement
+profiles** even when their average levels on the individual indicators are
+similar. The ICCs are therefore descriptive measures of the multilevel
+structure in the observed indicators rather than criteria for selecting the
+latent structure.
 
 The descriptive table reports means, standard deviations, ranges, and ICCs for
-the activity indicators, alongside sample sizes and missingness.
+the activity indicators, together with sample sizes and missingness.
+
 
 ```{r descriptives}
 descriptives(course_engagement, vars = vars, id = "student")
 ```
 
-The data contain 1,422 enrolments from 106 students. The activity indicators have no
-missing values. Their ICCs range from 0.093 for `lectures` to 0.225 for
-`forum_read`: approximately a tenth to a quarter of their variance lies between
-students. The repeated enrolments therefore contain information about both
-course-level engagement and differences between students.
+The data contain 1,422 enrolments from 106 students, with no missing values in
+the activity indicators. The estimated ICCs range from 0.093 for `lectures` to
+0.225 for `forum_read`, indicating that approximately one tenth to one quarter
+of the variance in these indicators lies between students. Thus, most variation
+occurs across enrolments within students, while a non-negligible share reflects
+systematic differences between students. The repeated enrolments therefore
+contain information about both variation in engagement across courses and
+between-student heterogeneity in engagement.
 
 ## Three engagement profiles and three student classes
 
-`multilpa()` estimates engagement profiles from the five indicators and student
-classes from the prevalence of those profiles across each student's enrolments.
-A **3 × 3 model** has three enrolment profiles and three student classes. Each
-student class has its own probabilities of occupying the three profiles, and
-each student can have enrolments in more than one profile.
+The `multilpa()` function estimates engagement profiles from the five activity indicators and
+student classes from the distribution of those profiles across each student's
+enrolments. A **3 × 3 model** contains three Level-1 enrolment profiles and
+three Level-2 student classes. Each student class is characterized by a
+different set of probabilities for the three enrolment profiles, while an
+individual student may contribute enrolments to more than one profile.
 
-An engagement profile has a mean and variance for each activity indicator.
-These parameters have the same meaning in every student class. For example, a
-high-activity profile describes the same pattern whether it occurs frequently
-or occasionally in a student's history. Student classes differ in how often
-their enrolments occupy each profile.
+Each engagement profile is defined by a mean and variance for every activity
+indicator. These profile-specific parameters are shared across student classes.
+Thus, a given profile represents the same pattern of engagement regardless of
+which student class it occurs in. What differs across student classes is the
+relative frequency with which their enrolments occupy the profiles.
 
-The profile probabilities introduced above can be written as
-$\pi_{k\mid m}=P(C_{it}=k\mid G_i=m)$. They range from zero to one and sum to
-one across the three profiles within each student class. The class probability
-$\omega_m=P(G_i=m)$ describes the proportion of students in class $m$.
+The conditional profile probabilities introduced above can be written as
 
-The model assumes Gaussian indicator distributions within each profile,
-independent students, common profile definitions across
-students, and independent enrolments conditional on student class. Its default
-diagonal covariance also assumes that the indicators are independent within a
-profile. A shared association between activity measures can violate that
-assumption and affect the estimated profiles. Three profiles and three student
-classes are a candidate specification, which the
-[evaluation guide](multilpa-evaluation.html) compares with alternatives.
+$$
+\pi_{k\mid m}=P(C_{it}=k\mid G_i=m),
+$$
 
-The analysis uses ten random starts to check whether estimation repeatedly
-reaches the same solution. `seed = 1` makes those starts reproducible and
-restores the caller's random state afterward. The tighter `tol` supports the
-later calculation of standard errors. `time = "sequence"` retains course
-order for displaying histories; this model estimates profile composition across
-courses. Transition probabilities require the separate longitudinal model.
+where $\pi_{k\mid m}$ is the probability that an enrolment belongs to profile
+$k$ when the student belongs to class $m$. For each student class, these
+probabilities range from zero to one and sum to one across the three profiles.
+The Level-2 class probability
+
+$$
+\omega_m=P(G_i=m)
+$$
+
+gives the proportion of students represented by class $m$.
+
+The model makes several distributional and independence assumptions. Activity
+indicators are assumed to follow Gaussian distributions within each profile,
+and the profile definitions are assumed to be common across students. Students
+are treated as independent Level-2 units, while enrolments are conditionally
+independent given the student's latent class. Under the default diagonal
+covariance structure, the five activity indicators are also assumed to be
+independent within a profile after conditioning on profile membership. Residual
+associations among the indicators that remain within profiles may therefore
+signal a departure from this assumption and can influence the estimated
+profile structure.
+
+The choice of three profiles and three student classes is a candidate model
+rather than an assumption about the true latent structure. The
+[evaluation guide](multilpa-evaluation.html) compares this specification with
+models containing different numbers of Level-1 profiles and Level-2 classes.
+
+The analysis below uses ten random starts to assess whether estimation
+repeatedly converges to the same likelihood solution. Setting seed = 1 makes
+the set of starting values reproducible and restores the caller's random state
+after estimation. A tighter tol is used to support the subsequent calculation
+of standard errors. Finally, time = "sequence" retains the observed course
+order for displaying students' enrolment histories. The present model describes
+the composition of profiles across a student's courses; it does not model
+transitions from one profile to another. Transition probabilities are estimated
+with the separate longitudinal model.
+
 
 ```{r fit}
 set.seed(1)
@@ -165,27 +197,39 @@ fit <- multilpa(course_engagement, vars, id = "student", time = "sequence", n_pr
 fit
 ```
 
-Profile 1 has the highest mean on every indicator, profile 2 is intermediate,
-and profile 3 has the lowest means. For `attendance`, their means are 1.133,
-0.256, and -0.940 standard deviations from each course's average. For `browse`,
-they are 0.709, 0.387, and -0.777. These profiles describe different levels of activity, with a particularly
-clear attendance difference between profiles 1 and 2.
+The estimated profiles are ordered by their overall level of activity. **Profile 1**
+has the highest mean on all five indicators, **Profile 2** has intermediate means,
+and **Profile 3** has the lowest means. For `attendance`, for example, the profile
+means are 1.133, 0.256, and -0.940 standard deviations relative to the
+corresponding course means. For `browse`, the means are 0.709, 0.387, and
+-0.777. The profiles therefore primarily distinguish different levels of
+engagement, although the size of the differences varies across indicators. The
+contrast between profiles 1 and 2 is particularly pronounced for `attendance`.
 
-The profile numbers are identifiers assigned during estimation. In this fit,
-we refer to profiles 1, 2, and 3 as **higher activity**, **intermediate activity**,
-and **lower activity**, respectively. A separately fitted model can use the
-numbers in a different order, so its means must be checked before naming it.
+Profile numbers are arbitrary identifiers assigned during estimation; they do
+not have an intrinsic substantive meaning. For this fitted model, we refer to
+profiles 1, 2, and 3 as **higher activity**, **intermediate activity**, and
+**lower activity**, respectively. These labels are based on the estimated
+indicator means and are used only to make the subsequent interpretation easier.
+A separately estimated model may assign the same substantive profiles different
+numbers, so profile labels should always be based on the estimated parameters
+rather than on the numeric identifiers themselves.
 
-`get_data()` extracts tables from a fitted model. Its `"starts"` table reports
-the log likelihood, convergence status, and variance-boundary status for each
-start. Repeated likelihoods support numerical stability, although they cannot
-prove that a global maximum has been found.
+Before interpreting the student classes, it is useful to check whether the
+multiple random starts converged to the same solution. `get_data()` extracts
+the underlying result tables from a fitted model. The `"starts"` table reports
+the final log likelihood, convergence status, and variance-boundary status for
+each starting value. When several starts converge to the same highest log
+likelihood, this provides evidence that the selected solution is numerically
+stable with respect to the starting values used. It does not, however, prove
+that the solution is the global maximum.
+
 
 ```{r starts}
 get_data(fit, "starts")
 ```
 
-All ten starts converge to a log likelihood of approximately -7526.274, with no
+All ten starts converge to a log likelihood of approximately -, with no
 active variance bounds. The agreement supports the numerical stability of
 this fitted solution.
 
