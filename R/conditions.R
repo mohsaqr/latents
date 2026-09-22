@@ -124,6 +124,9 @@
 #'   \item{`multilpa_held_parameter`}{A named parameter was held fixed by this
 #'     fit, so it has no sampling distribution and no confidence interval.
 #'     Raised by [confint()] when `parm` names a held coordinate.}
+#'   \item{`multilpa_unsupported_sensitivity`}{[sensitivity()] was called on a
+#'     model family whose refit needs arguments the shared refit does not carry,
+#'     or whose profile labels cannot yet be aligned between two fits.}
 #'   \item{`multilpa_no_plot`}{`plot(x, what = "all")` was called on an object
 #'     whose plot method names no views to draw.}
 #'   \item{`multilpa_no_time`}{A sequence verb was called on a fit made without
@@ -171,6 +174,10 @@
 #'     fit and were left out of the interval. Raised by
 #'     `parameter_inference(method = "bootstrap")`, naming how many, so the
 #'     count the interval rests on is never quietly smaller than `iter`.}
+#'   \item{`multilpa_sensitivity_dropped`}{One or more seeds did not produce a
+#'     fit in [sensitivity()]. Their rows are `NA` rather than absent, and the
+#'     warning names how many failed and the first reason, so the table is never
+#'     quietly shorter than `seeds`.}
 #'   \item{`multilpa_extreme_coefficients`}{A membership logit coefficient is
 #'     large enough that the class is close to separated, so the estimate is
 #'     driven by scaling, a sparse class or separation rather than by the data.}

@@ -1,4 +1,4 @@
-# multilpa 0.2.0
+# multilpa 0.3.0
 
 ## Two features moved to `future/`
 
@@ -34,6 +34,34 @@ intercept as their only trigger:
   and `R/get-data.R`, but every model family this version fits has discrete
   group classes, so no call can reach it. The catalogue says so rather than
   describing a refusal a caller cannot produce.
+
+## `sensitivity()` asks whether the solution survives a different seed
+
+EM converges to a local maximum from the starts it was given. The package could
+report how many starts within one seed's stream reached the best likelihood, and
+nothing else: a user could not vary the seed on their own data at all. That left
+the package unable to meet, on a user's data, the standard it applies to its own.
+
+`sensitivity(fit, seeds = )` refits under each seed and returns one tidy row per
+seed: `log_likelihood`, `converged`, `iterations`, `optimum` (which distinct
+maximum it reached, `1` being the best), `best`, and `agreement` (the proportion
+of observations assigned as the reference fit assigned them).
+
+`agreement` is computed after each refit's arbitrary profile labels have been
+matched to the reference fit's, so two identical solutions that happened to
+number their profiles differently report agreement of one rather than zero.
+
+Writing it exposed a defect in `.multilpa_permute_profiles()`, which has been
+fixed. It permuted `means`, `variances`, `covariances`,
+`profile_probabilities` and `response_probabilities`, but left
+`subject_posteriors`, `subject_profiles` and `effective_profile_counts` behind.
+The bootstrap it was written for reads only parameters, so a permuted fit that
+described one labelling and assigned another went unnoticed. `subject_profiles`
+holds labels rather than positions and takes the inverse permutation.
+
+`multilpa()` fits only. `lta()` and covariate fits raise
+`multilpa_unsupported_sensitivity`, and a seed whose refit fails contributes an
+`NA` row with a `multilpa_sensitivity_dropped` warning naming how many.
 
 ## `fit_transitions()` is renamed `lta()`
 

@@ -13,6 +13,9 @@ multiple starts.
 ## Install and run
 
 ```r
+install.packages("multilpa")
+
+# Development version:
 # install.packages("remotes")
 remotes::install_github("mohsaqr/multilpa")
 ```
@@ -409,6 +412,7 @@ absorb. Read the residual table before reading the grid.
 | Robust SEs | `vcov_type="robust"`: Huber-White sandwich over independent groups, plus the MLR scaling correction factor. This is the same estimator Mplus `ESTIMATOR=MLR` defines, but the two have not been compared numerically; the retained Mplus comparison covers likelihoods, parameters and criteria only |
 | Membership covariates | `profile_covariates` and `group_covariates` on `multilpa()`: numeric predictors at both levels; shared individual-profile slopes across group classes; Gaussian, categorical or mixed indicators with diagonal or full residual covariance; complete data only |
 | Continuous random effect | One shared Gaussian group intercept with unit indicator loadings; complete diagonal model, no discrete group classes |
+| Seed sensitivity | `sensitivity(fit, seeds = )` refits under each seed and returns one tidy row per seed: the maximised log likelihood, which basin it reached, and the proportion of cases assigned as the reference fit assigned them, after the arbitrary profile labels have been matched. `multilpa()` fits only |
 | Class enumeration | Grid of discrete models, every information criterion under every sample-size convention that applies to it, entropy, failed-fit and convergence diagnostics |
 | Information criteria | AIC, BIC, SABIC, CAIC, AWE, ICL, CLC and KIC. The five that depend on a sample size are reported under both the group-count and individual-count conventions; AIC and KIC depend on none and are reported once; CLC is reported once per convention because its convention selects which level's classification uncertainty it penalizes |
 | Classification quality | Modal and model-estimated class sizes, average posterior probabilities, odds of correct classification, relative entropy. `"classification"`, `"average_posteriors"`, `"classification_errors"` and `"bch_weights"` report both levels on a fit that has discrete group classes; `level = "individuals"` or `"groups"` asks for one |
@@ -636,6 +640,30 @@ then normalises, so it is the marginal transition matrix rather than a
 class-probability-weighted average of the class matrices. A state that is never
 left is given a self-transition of one, because a centrality can read that and
 cannot read `NaN`.
+
+## Does the solution survive a different seed?
+
+EM converges to a local maximum from the starts it was given. `n_starts`
+reports how many starts *within one seed's stream* reached the best likelihood,
+which says nothing about whether another stream would have found another mode.
+`sensitivity()` refits under several seeds and reports what changed.
+
+```r
+sensitivity(fit, seeds = 1:10)
+```
+
+One row per seed. `optimum` numbers the distinct maxima found, `1` being the
+best, so the number of basins is visible at a glance. `agreement` is the
+proportion of observations given the same profile as the reference fit, after
+each refit's arbitrary profile labels have been matched to it -- two fits of the
+same mixture can be identical and still number their profiles differently, so
+comparing labels directly would report disagreement that is not there.
+
+A seed whose refit fails contributes an `NA` row rather than being dropped, and
+`multilpa_sensitivity_dropped` names how many failed, so the table is never
+quietly shorter than `seeds`. `lta()` and covariate fits are refused with
+`multilpa_unsupported_sensitivity`: refitting them needs arguments the shared
+refit does not carry, and their labels cannot yet be aligned between two fits.
 
 ## Relating classes to variables that did not define them
 
@@ -875,7 +903,7 @@ is a fixed point of the new engine; they do not compare global searches.
 Independent likelihood enumeration and direct optimization validate the
 multilevel calculations on tested examples.
 
-The [mathematical audit](validation/MATH_AUDIT.md) documents numerical fixes,
+The [mathematical audit](https://github.com/mohsaqr/multilpa/blob/main/validation/MATH_AUDIT.md) documents numerical fixes,
 independent regression checks, and the results of the latest full validation.
 
 ### Direct Mplus comparisons
@@ -909,7 +937,7 @@ information standard errors are also compared with Mplus.
 A further genuine `ESTIMATOR = MLR` run validates the robust sandwich errors and
 the new information criteria: robust standard errors agree within `1.2e-7`, the
 MLR scaling correction factor within `7.1e-7`, and AIC, BIC and SABIC within
-`4.1e-5`. See [the extension report](validation/mplus/EXTENSIONS.md) for exact
+`4.1e-5`. See [the extension report](https://github.com/mohsaqr/multilpa/blob/main/validation/mplus/EXTENSIONS.md) for exact
 scope and tolerances.
 
 All new two-level comparisons use independent starts in R and Mplus. Class labels and saved subject
@@ -919,7 +947,7 @@ likelihoods and information criteria have finite output precision, accounted
 for explicitly in the assertions. Tests run offline from retained fixtures;
 neither Mplus nor internet access is needed to run them.
 
-See [the comparison report](validation/mplus/COMPARISON.md) for numerical
+See [the comparison report](https://github.com/mohsaqr/multilpa/blob/main/validation/mplus/COMPARISON.md) for numerical
 tables, original URLs, raw Mplus artifacts, reproduction commands, and scope.
 These checks establish agreement for the tested specifications, not full
 Mplus feature parity or a guarantee for every dataset.

@@ -1,6 +1,6 @@
 Package: multilpa
 Title: Two-Level Latent Profile Analysis
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),

@@ -132,6 +132,22 @@
       block[order, , drop = FALSE]
     })
   }
+  # Everything indexed by profile moves, not only the parameter blocks. The
+  # posteriors are columns and reorder like the rest; `subject_profiles` holds
+  # labels rather than positions, so it takes the inverse permutation -- a case
+  # on old profile `order[j]` is on new profile `j`. Permuting the parameters
+  # while leaving the assignments behind would leave the fit self-inconsistent,
+  # which is invisible to a caller that reads only parameters and wrong for one
+  # that compares assignments.
+  if (!is.null(x$subject_posteriors)) {
+    x$subject_posteriors <- x$subject_posteriors[, order, drop = FALSE]
+  }
+  if (!is.null(x$subject_profiles)) {
+    x$subject_profiles <- match(x$subject_profiles, order)
+  }
+  if (!is.null(x$effective_profile_counts)) {
+    x$effective_profile_counts <- x$effective_profile_counts[order]
+  }
   x
 }
 
