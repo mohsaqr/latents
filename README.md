@@ -26,22 +26,24 @@ Or, from a local clone of this repository:
 R CMD INSTALL .
 ```
 
-The package ships one example dataset, so the first example runs as written.
-`course_engagement` has 1,422 enrolments: 106 students, 32 courses, up to
-fifteen courses per student. It replaces the two datasets earlier versions
-shipped, because one frame now carries what needed two. `student` is the
-nesting unit, `sequence` orders each student's own courses, and
-`previous_grade` is a covariate recorded before each enrolment, so the same
-1,422 rows fit the two-level model (`id = "student"`), the latent transition
-model (`time = "sequence"`) and the membership-covariate model
-(`profile_covariates = "previous_grade"`) without changing dataset.
+## Example Dataset and Methodological Structure
 
-The data are simulated, and they carry the truth each row was generated from
-beside the indicators — `engagement` for the pattern the row came from,
-`student_type` for the kind of student — so a fit can be checked against what
-produced it. The five indicators are learning-analytics event counts, `log1p`-transformed
-and then standardized within course, so a value reads as standard deviations
-from that course's average enrolment.
+The package includes one example dataset, `course_engagement`, which is used throughout the examples. The dataset contains 1,422 course enrolments from 106 students across 32 courses, with each student contributing observations from up to fifteen courses.
+
+The important point is that each row represents one student enrolled in one course. This gives the data a multilevel and longitudinal structure. Enrolments are grouped within students, and the courses taken by each student are ordered over time. Because all of the required variables are stored in the same data frame, the same 1,422 rows can be used for the two-level model, the latent transition model, and the membership-covariate model.
+
+The variable `student` identifies which enrolments belong to the same student. It therefore defines the nesting structure for the multilevel model and is specified using `id = "student"`.
+
+Within each student, the variable `sequence` records the order in which courses were taken. This ordering is used in the latent transition model through `time = "sequence"`, allowing profile membership to be examined across a student's sequence of course enrolments.
+
+The variable `previous_grade` is recorded before each enrolment. Because it precedes the enrolment being modeled, it can be used as a covariate of profile membership through `profile_covariates = "previous_grade"`.
+
+Taken together, these variables allow the same dataset to support several related analyses. The observations are nested within students through `student`, ordered within students through `sequence`, and accompanied by a pre-enrolment covariate through `previous_grade`.
+
+The `course_engagement` data are simulated, which means that the data-generating structure is known. Two additional variables store this information alongside the observed indicators. The variable `engagement` records the pattern from which each row was generated, while `student_type` records the type of student from which it came. These variables make it possible to compare the profiles estimated by a model with the known structure used to generate the data.
+
+The dataset also contains five learning-analytics indicators. These variables are event counts that were first transformed using `log1p` and then standardized within course. As a result, each value is interpreted relative to other enrolments in the same course. A value of zero corresponds to the course average, while positive and negative values indicate how many standard deviations an enrolment lies above or below that average.
+
 
 ```r
 library(multilpa)
@@ -115,58 +117,24 @@ plot(fit, what = "posteriors")         # modal assignment probabilities
 plot(fit, what = "all")                # every view this fit supports, in order
 ```
 
-`descriptives()` answers the question it was asked first: the five indicators
-have ICCs of 0.09 to 0.22 across students, so the nesting carries signal and a
-two-level model has something to find. That fit then converges, all ten starts
-reach the same likelihood, and the two profiles separate cleanly: relative
-entropy is 0.938 at the enrolment level and 0.940 at the student level. The
-recovery table above puts 1,389 of 1,422 enrolments in the profile that
-generated them, 97.7%, with fitted profile 2 standing for the generated
-`engaged` pattern — label switching is ordinary and is not worth reordering
-anything to hide. The same table reads `student_type` against the group class,
-counting each student once: 61 of 62 `committed` students (98.4%) land in group
-class 2, and 34 of 44 `wavering` students (77.3%) in group class 1. Those two
-group classes are two kinds of student, and
-`get_results(fit, "profile_probabilities")` says how: one is 83% disengaged
-enrolments, the other 79% engaged. Pooled over the whole sample the engaged
-profile takes 58.8% of enrolments, which describes neither kind of student.
-Recovering that split is what the two-level model does and a pooled one cannot.
+ `descriptives()` provides a first check of whether the multilevel structure is worth modelling. For the five indicators, ICCs range from 0.09 to 0.22 across students, showing that the nesting contains meaningful between-student variation. The two-level model then converges successfully, with all ten starts reaching the same likelihood. Classification is also clear, with relative entropy of 0.938 at the enrolment level and 0.940 at the student level.
 
-Every result table is a base `data.frame` and one verb returns all of them, so
-nothing has to be pulled out of the fitted object by hand. `get_results(x, what = )`
-names the table, `what = "all"` returns every table the object can produce as a
-named list, `as.data.frame(x)` is plain coercion to the primary table — the
-measurement model for every fitted family — and `summary(x)` prints all of them
-truncated to `rows = 10` each, with the `get_results()` call that returns the rest.
-Asking an object for a table it does not have raises `multilpa_bad_argument`
-naming the ones it does.
+Because `course_engagement` is simulated, the fitted classes can be compared with the classes that generated the data. At the enrolment level, 1,389 of 1,422 observations, or 97.7%, are assigned to the correct profile. Fitted profile 2 corresponds to the generated `engaged` pattern. The numerical labels themselves are arbitrary, so this label switching does not need to be corrected.
 
-`diagnostics()` and `report()` take `by` and nothing else, apart from the `rows`
-that `report()` forwards to `print(summary(x))`: an argument they cannot forward
-is refused by `multilpa_bad_argument` naming it, rather than being dropped, so a
-`by` that was meant to reach the residual table cannot silently answer a
-different question.
+The same recovery table compares `student_type` with the group-level class, counting each student once. Of the 62 `committed` students, 61, or 98.4%, are assigned to group class 2. Of the 44 `wavering` students, 34, or 77.3%, are assigned to group class 1. `get_results(fit, "profile_probabilities")` shows what these group classes represent: one consists of about 83% disengaged enrolments, while the other consists of about 79% engaged enrolments. By contrast, the pooled sample contains 58.8% engaged enrolments, which describes neither group well. This separation between student-level patterns is what the two-level model captures.
 
-A table reads the data the fit already carries, so `data =` is optional for
-`get_results()`, `diagnostics()`, `report()`, `parameter_inference()`, `confint()`
-and `vcov()`. It is still required by `three_step()` and `r3step()`, which need
-the outcome or covariate columns the fit never saw, and by the recovery call
-above, whose `truth` columns are equally unseen. When it is supplied it is
-checked column by column against the fit: `get_results(x, "assignments")` and
-`get_results(x, "residuals")`, `three_step()` and `r3step()` raise
-`multilpa_bad_inference_data` when shared fitted columns disagree row by row.
-They warn `multilpa_unverified_alignment` when the supplied columns cannot
-establish order, for example when only a repeated group ID is shared.
+All result tables are returned as base `data.frame` objects. `get_results(x, what = )` retrieves a specific table, while `what = "all"` returns all available tables as a named list. `as.data.frame(x)` returns the primary table, which is the measurement model for every fitted family. `summary(x)` prints all available tables, truncated to `rows = 10`, together with the corresponding `get_results()` call for retrieving the full result. Requesting a table that is not available raises `multilpa_bad_argument` and reports the valid choices.
 
-`descriptives()` also takes `by` on a plain data frame. A stratifier with
-missing values gets its own labelled `NA` stratum rather than being dropped, so
-the per-stratum counts always add up to the number of rows you passed in.
+`diagnostics()` and `report()` take `by`, with `report()` also forwarding `rows` to `print(summary(x))`. Unsupported arguments are rejected with `multilpa_bad_argument` rather than silently ignored.
 
-Everything below runs on `course_engagement` as written, with one exception:
-the bundled indicators are all continuous, so the categorical examples in the
-next section use `survey`, a placeholder for data with categorical indicators of
-your own. For a complete reproducible example that simulates its own data and
-checks recovery against the values that generated it, run:
+For `get_results()`, `diagnostics()`, `report()`, `parameter_inference()`, `confint()`, and `vcov()`, `data =` is optional because the fitted object already carries the required data. It remains required for `three_step()` and `r3step()`, which need outcome or covariate columns not used in the original fit, and for recovery analyses using unseen `truth` columns.
+
+When `data =` is supplied, shared fitted columns are checked row by row against the original fit. `get_results(x, "assignments")`, `get_results(x, "residuals")`, `three_step()`, and `r3step()` raise `multilpa_bad_inference_data` when these columns disagree. If the available shared columns cannot establish row order, the package instead warns with `multilpa_unverified_alignment`.
+
+`descriptives()` also accepts `by` when applied to a plain data frame. Missing values in the stratifying variable are retained as a labelled `NA` stratum, so the stratum counts still sum to the total number of rows.
+
+All examples below run directly on `course_engagement`, except the categorical examples. Because the bundled indicators are continuous, those examples use `survey` as a placeholder for a dataset with categorical indicators. For a complete reproducible example that simulates data and checks recovery against the generating values, run:
+
 
 ```sh
 Rscript validation/synthetic-demo.R
@@ -383,8 +351,7 @@ evaluated <- multilpa(
 logLik(evaluated)   # identical to logLik(full_fit)
 ```
 
-Those residuals are not decoration on these data. `attendance` counts the days
-a student was active in a course, and a day counts as active *because*
+`attendance` counts the days a student was active in a course, and a day counts as active *because*
 something was clicked, so `attendance` shares variance with the click measures
 beyond what the profile explains. The diagonal model has no way to say that,
 and `get_results(fit, "residuals", by = "overall")` reports it: the largest
@@ -430,7 +397,6 @@ absorb. Read the residual table before reading the grid.
 | Plots | Profile means (raw or standardized), grouped bars with Wald intervals, a standardized heatmap, categorical response curves, prevalence by group class, profile sequences, per-case entropy, modal posteriors, and any enumeration criterion; `multilpa_plot_types()` lists them and `plot(x, what = "all")` draws every one the fit supports. Entropy and posterior views also work for covariate fits. Base graphics only. A transition fit draws the same measurement and classification views plus `what = "transitions"`, its estimated transition matrix as one heatmap panel per group class |
 | Conditions | The errors and warnings listed in `?"multilpa-conditions"` carry stable classes, so they can be caught by what went wrong. A few internal guards in `bootstrap_lrt()` and `lta()` still raise unclassed errors; match on class only where the catalogue documents one |
 
-These are explicit model families, not every combination of Mplus options.
 Random-intercept fits currently do not provide standard errors.
 Random-intercept mixtures use Gaussian quadrature; increase node counts and
 refit if the higher-order likelihood check fails, which warns
