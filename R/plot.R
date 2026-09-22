@@ -992,7 +992,7 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
 multilpa_plot_types <- function() {
   data.frame(
     type = c("profiles", "bars", "heatmap", "responses", "probabilities",
-             "sequences", "random_intercepts", "sizes", "entropy", "posteriors",
+             "sequences", "transitions", "sizes", "entropy", "posteriors",
              "avepp", "enumeration", "all"),
     group = c(rep("measurement", 4L), rep("structure", 4L),
               rep("diagnostics", 3L), "selection", "every"),
@@ -1003,7 +1003,7 @@ multilpa_plot_types <- function() {
       "Categorical response probabilities, one line per profile",
       "Profile prevalence within each group class, the two-level quantity",
       "Each group's profile at each occasion, one row per group",
-      "One interval per group: its posterior mean random intercept, plus and minus one posterior standard deviation",
+      "Estimated transition matrix, one panel per group class (a transition fit)",
       "Effective number of cases in each profile, with its share",
       "Per-case entropy contribution within each profile, as ridges",
       "Posterior probability of the assigned profile, as ridges",

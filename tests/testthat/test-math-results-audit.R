@@ -34,24 +34,6 @@ test_that("dropping a univariate covariance preserves one variance per profile",
   expect_equal(fit$log_likelihood, expected, tolerance = 1e-12)
 })
 
-test_that("random-intercept diagnostics distinguish profiles from group classes", {
-  set.seed(174)
-  d <- data.frame(g = rep(1:20, each = 5),
-                  y = rep(rnorm(20), each = 5) + rnorm(100))
-  fit <- fit_random_intercept(d, "y", "g", n_profiles = 1, n_starts = 1)
-  indices <- get_data(fit, "information_criteria", format = "long")
-  expect_equal(subset(indices, criterion == "bic" & convention == "groups")$value,
-               fit$bic)
-  expect_equal(subset(indices, criterion == "bic" & convention == "individuals")$value,
-               fit$bic_individual)
-  expect_true(all(is.na(subset(indices, convention == "groups" &
-                                criterion %in% c("awe", "icl"))$value)))
-  expect_equal(get_data(fit, "classification", level = "both")$level, "individuals")
-  expect_error(get_data(fit, "classification", level = "groups"), "no discrete group")
-  expect_equal(get_data(fit, "entropy")$level, "individuals")
-  expect_equal(get_data(fit, "entropy")$entropy_sum, 0)
-})
-
 test_that("categorical bootstraps preserve probability constraints and data identity", {
   set.seed(113)
   d <- data.frame(g = rep(1:20, each = 10),

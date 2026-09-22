@@ -30,10 +30,10 @@ example_data <- data.frame(
 )
 example_data$score_a <- stats::rnorm(nrow(example_data))
 example_data$score_b <- stats::rnorm(nrow(example_data))
-fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+fit <- lta(example_data, c("score_a", "score_b"), "person",
                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 print(fit)
 }
 \seealso{
-[get_data()], [fit_transitions()].
+[get_data()], [lta()].
 }

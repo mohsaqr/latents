@@ -1,3 +1,181 @@
+# multilpa 0.3.0
+
+## Two features moved to `future/`
+
+The package now exports 17 verbs rather than 19. The test applied was whether
+an export makes a claim the package can back; two did not, and they are kept in
+`future/`, which `.Rbuildignore` excludes, with a note on what would bring each
+one back.
+
+* **`fit_random_intercept()` is removed.** Its independent validation reached
+  only the one-profile limit -- multiple-profile parameter recovery had never
+  been checked against anything -- and it refused `parameter_inference()`,
+  `vcov()` and `confint()` outright, so nothing in the package could say when
+  it was wrong. It is also a different model family: a continuous group effect
+  rather than the discrete group classes the package is named for. It appeared
+  in no vignette.
+* **`lmr_lrt()` is removed.** It returned a `p_value` column that was always
+  `NA`, because the Vuong-Lo-Mendell-Rubin reference distribution is not
+  reproduced. `bootstrap_lrt()` gives a calibrated p-value for the same
+  comparison. The Lo-Mendell-Rubin adjustment factor itself had been verified
+  against two genuine Mplus `TECH11` runs; that evidence is recorded in
+  `future/README.md` against the day it is restored.
+
+Fifteen S3 methods and twelve help pages go with them. `multilpa_plot_types()`
+no longer lists `"random_intercepts"`, and `get_data()` no longer offers the
+`"random_intercepts"` table.
+
+Two conditions changed status as a consequence, both of which had the random
+intercept as their only trigger:
+
+* `multilpa_quadrature_check` is removed from `?"multilpa-conditions"`. Nothing
+  raises it any more.
+* `multilpa_no_group_classes` is still raised by guards in `R/diagnostics.R`
+  and `R/get-data.R`, but every model family this version fits has discrete
+  group classes, so no call can reach it. The catalogue says so rather than
+  describing a refusal a caller cannot produce.
+
+## `sensitivity()` asks whether the solution survives a different seed
+
+EM converges to a local maximum from the starts it was given. The package could
+report how many starts within one seed's stream reached the best likelihood, and
+nothing else: a user could not vary the seed on their own data at all. That left
+the package unable to meet, on a user's data, the standard it applies to its own.
+
+`sensitivity(fit, seeds = )` refits under each seed and returns one tidy row per
+seed: `log_likelihood`, `converged`, `iterations`, `optimum` (which distinct
+maximum it reached, `1` being the best), `best`, and `agreement` (the proportion
+of observations assigned as the reference fit assigned them).
+
+`agreement` is computed after each refit's arbitrary profile labels have been
+matched to the reference fit's, so two identical solutions that happened to
+number their profiles differently report agreement of one rather than zero.
+
+Writing it exposed a defect in `.multilpa_permute_profiles()`, which has been
+fixed. It permuted `means`, `variances`, `covariances`,
+`profile_probabilities` and `response_probabilities`, but left
+`subject_posteriors`, `subject_profiles` and `effective_profile_counts` behind.
+The bootstrap it was written for reads only parameters, so a permuted fit that
+described one labelling and assigned another went unnoticed. `subject_profiles`
+holds labels rather than positions and takes the inverse permutation.
+
+`multilpa()` fits only. `lta()` and covariate fits raise
+`multilpa_unsupported_sensitivity`, and a seed whose refit fails contributes an
+`NA` row with a `multilpa_sensitivity_dropped` warning naming how many.
+
+## `fit_transitions()` is renamed `lta()`
+
+**Breaking, and deliberately without an alias.** The package has never been on
+CRAN, so there is no installed base to migrate and a compatibility alias would
+be permanent debt paid for nobody.
+
+The old name described the mechanism; every other fitting verb here is named
+for its method. `multilpa()` is latent profile analysis, so latent transition
+analysis is `lta()`. Under the old name the capability was undiscoverable by the
+name the literature uses: searching the index for "lta" found nothing.
+
+`multilta()` was considered and rejected. It is one character from `multilpa()`,
+and the two take the same leading arguments, so a typo would fit a different
+model and still return a result.
+
+Nothing else moves. The fitted object is still `multilpa_transitions`, the table
+is still `get_data(x, "transitions")`, and the help page is now `?lta`.
+
+## A latent transition fit draws, instead of refusing
+
+`plot()` on an `lta()` fit raised `multilpa_no_plot` for every view. That was a
+blanket refusal, not a limitation: the measurement model is the one `multilpa()`
+fits, and the fit already carried `means`, `variances`, `subject_posteriors`,
+`subject_profiles` and `sequence_lengths`. Six of the seven plot helpers worked
+against one unchanged; the seventh was called with the wrong signature.
+
+`plot.multilpa_transitions()` now offers ten views: `"transitions"`,
+`"profiles"`, `"bars"`, `"heatmap"`, `"responses"`, `"sequences"`, `"sizes"`,
+`"entropy"`, `"posteriors"`, `"avepp"`, and `"all"`.
+
+`what = "transitions"` is new and is this family's own view: the estimated
+transition matrix as a heatmap, one panel per group class, row the current
+profile and column the next, so the diagonal is persistence. Every cell prints
+its probability, and the fill is the white-to-blue ramp the average-posterior
+matrix already uses, so darker is a higher probability anywhere in the package.
+A row with no data support has its label parenthesised: such a row is uniform by
+construction rather than estimated.
+
+`"bars"` draws point estimates with no whiskers here. The interval it draws on a
+`multilpa()` fit is a Wald interval, and this family has no standard errors, so
+there is none to draw; the subtitle says so rather than the plot implying an
+uncertainty it does not have.
+
+`multilpa_plot_types()` lists thirteen views. `multilpa_no_plot` keeps its entry
+in `?"multilpa-conditions"`, reworded to what still raises it: `what = "all"` on
+an object whose method names no views.
+
+## `get_tna()` and `get_group_tna()` are documented
+
+Both were added in 0.11.7 and appeared nowhere in the README. The README now
+carries a section and a feature-matrix row for them, and every one of the 17
+exports appears there again.
+
+## Build
+
+`^future$`, `^docs$`, `^vignettes/\.beatrina` and `^vignettes/.*\.tex$` are
+added to `.Rbuildignore`. The hidden `vignettes/.beatrina-*` directories were in
+`.gitignore` but not in `.Rbuildignore`, so they stayed out of version control
+and shipped in the tarball anyway, along with a leftover `vignettes/multilpa.tex`
+from a preview render.
+
+`R CMD check --as-cran` on this version reports 1 NOTE, 0 errors and 0 warnings.
+The NOTE is "New submission".
+
+# multilpa 0.11.9
+
+## Vignette figures reconciled with the standardized data
+
+Every number in the prose of all four vignettes was checked against the value
+its own chunk actually prints, and the stale ones corrected. Seventy-one figures
+changed. Three passages needed rewriting rather than renumbering, because the
+conclusion moved with the data:
+
+* In the transition guide, the student class with the *highest* probability of
+  staying in lower activity is now class 3 at 0.947, where the text had class 3
+  as the least persistent at 0.584. The near-boundary transitions are now near
+  zero rather than near one, so the caution about sparse cells was rewritten
+  around the estimates that are actually at a bound.
+* In the evaluation guide, the full-covariance candidate whose best solution
+  occurs only once is the three-profile, two-class model, not the three-by-three.
+* In the covariate guide, the one-step fit now reports `converged FALSE`: its
+  membership logits still carry a non-negligible score at `max_iter`. The text
+  says so, and reads the coefficients as the direction of the association rather
+  than as a converged maximum.
+
+## Authors and installation
+
+Sonsoles López-Pernas is recorded as an author, and both authors carry their
+ORCIDs. The README's installation section now gives
+`remotes::install_github("mohsaqr/multilpa")` before the local
+`R CMD INSTALL .`, which was the only instruction it offered.
+
+# multilpa 0.11.8
+
+## The introductory vignette, rewritten
+
+`vignette("multilpa")` now opens with what the model found. The order is the
+profile means, then how big each profile and class is, then the profile
+probabilities, then everything else -- estimation diagnostics, the plots, the
+sequences. Printing the fit gives the means one row per profile with each
+profile's size, so the guide starts from a result rather than from plumbing.
+
+Two passages are gone. One introduced the notation `pi_{k|m}` and `omega_m`,
+said the probabilities lie between zero and one and sum to one, and never used
+the symbols again; what it was reaching for is now said where the table is read.
+The other listed the model's assumptions in a block, of which the clause that
+does any work -- the default diagonal covariance treats the indicators as
+independent within a profile, which a shared association between activity
+measures can violate -- has moved to Limitations, where a reader can act on it.
+A sentence restating the ICC formula's symbols in words went with them.
+
+Every figure in the text was recomputed against the standardized indicators.
+
 # multilpa 0.11.7
 
 ## Transition networks, with `get_tna()` and `get_group_tna()`

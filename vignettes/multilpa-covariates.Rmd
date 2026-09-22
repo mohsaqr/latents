@@ -69,7 +69,7 @@ fit
 ```
 
 The profiles have higher, intermediate, and lower activity in that order.
-Their attendance means are 3.753, 2.915, and 1.840. Profile 3 is therefore the
+Their attendance means are 1.133, 0.256, and -0.940. Profile 3 is therefore the
 lower-activity reference when interpreting the membership regressions below.
 These labels apply to this fit; each subsequent model's means need checking.
 
@@ -92,9 +92,9 @@ also make the correction unstable.
 get_data(fit, "classification_errors", level = "individuals")
 ```
 
-The estimated correct-assignment probabilities are 0.863, 0.852, and 0.984.
+The estimated correct-assignment probabilities are 0.842, 0.854, and 0.980.
 Most ambiguity concerns profiles 1 and 2: the estimated probability of assigning
-profile 1 to profile 2 is 0.137, and the reverse probability is 0.121.
+profile 1 to profile 2 is 0.158, and the reverse probability is 0.120.
 Treating these assignments as certain would lose that uncertainty.
 
 ## Previous grade as a membership predictor
@@ -121,10 +121,10 @@ pointwise and do not receive that correction.
 r3step(fit, data = course_engagement, covariates = "previous_grade", vcov_type = "robust")
 ```
 
-A one-standard-deviation increase in previous grade is associated with a 0.647
-increase in the log odds of higher activity versus lower activity, and a 0.521
+A one-standard-deviation increase in previous grade is associated with a 0.677
+increase in the log odds of higher activity versus lower activity, and a 0.475
 increase for intermediate versus lower activity. Their confidence intervals
-are 0.492 to 0.801 and 0.381 to 0.660. Both associations favor more active
+are 0.508 to 0.846 and 0.340 to 0.611. Both associations favor more active
 engagement after higher previous grades. They are observational associations
 and do not establish that grades cause the subsequent engagement pattern.
 
@@ -149,9 +149,9 @@ Benjamini–Hochberg correction across the pairwise contrasts.
 three_step(fit, data = course_engagement, outcome = "previous_grade", contrast = "pairs")
 ```
 
-Previous grades in profile 3 are 0.601 standard deviations below profile 1 and
-0.486 below profile 2. The profile-2 versus profile-1 difference is -0.115,
-with an interval from -0.286 to 0.057. The contrast between the two more active
+Previous grades in profile 3 are 0.629 standard deviations below profile 1 and
+0.446 below profile 2. The profile-2 versus profile-1 difference is -0.183,
+with an interval from -0.368 to 0.002. The contrast between the two more active
 profiles is therefore less certain than their contrasts with lower activity.
 
 Modal analysis computes the same contrasts after assigning every enrolment to
@@ -163,8 +163,8 @@ uncertainty.
 three_step(fit, data = course_engagement, outcome = "previous_grade", contrast = "pairs", method = "modal")
 ```
 
-The modal profile-2 versus profile-1 difference is -0.095, compared with -0.115
-under BCH. Its standard error is 0.064, compared with 0.088 after correction.
+The modal profile-2 versus profile-1 difference is -0.143, compared with -0.183
+under BCH. Its standard error is 0.067, compared with 0.094 after correction.
 The adjustment changes both the estimated contrast and its uncertainty where
 the profiles overlap most.
 
@@ -190,8 +190,11 @@ covariate_fit
 ```
 
 The profiles retain their higher, intermediate, and lower activity ordering.
-Their attendance means are now 3.767, 2.926, and 1.842. The profile definitions
-have changed slightly from the original fit.
+Their attendance means are now 1.159, 0.277, and -0.938. The profile definitions
+have changed slightly from the original fit. This fit reports `converged FALSE`:
+its membership logits still carry a non-negligible score at `max_iter`, so the
+coefficients below are read as a description of the direction of the
+association rather than as a converged maximum.
 
 The `"coefficients"` table reports the estimated intercepts and grade slopes.
 Profile 3 is the reference for the profile-level coefficients.
@@ -200,9 +203,9 @@ Profile 3 is the reference for the profile-level coefficients.
 get_data(covariate_fit, "coefficients")
 ```
 
-The previous-grade slopes are 0.503 for higher activity and 0.317 for
+The previous-grade slopes are 0.533 for higher activity and 0.294 for
 intermediate activity relative to lower activity. Both point in the same
-direction as the three-step slopes of 0.647 and 0.521. Their smaller magnitudes
+direction as the three-step slopes of 0.677 and 0.475. Their smaller magnitudes
 cannot be attributed solely to changing profile definitions because the
 one-step regression also conditions on student class.
 
@@ -227,8 +230,8 @@ staged
 ```
 
 The staged fit labels intermediate activity as profile 1, lower activity as
-profile 2, and higher activity as profile 3. Their attendance means are 2.872,
-1.809, and 3.710. The activity patterns remain recognizable, with different
+profile 2, and higher activity as profile 3. Their attendance means are 0.197,
+-0.978, and 1.075. The activity patterns remain recognizable, with different
 numeric labels and slightly different means.
 
 The `"stages"` table distinguishes the parameters estimated at each stage.
@@ -241,7 +244,7 @@ get_data(staged, "stages")
 
 The measurement stage estimates 32 parameters; the membership stage estimates
 8, with 38 parameters when the held measurement parameters are included.
-The second-stage log likelihood is -7529.197, compared with -7526.274 for the
+The second-stage log likelihood is -8351.808, compared with -8348.429 for the
 joint fit printed earlier. Holding the profiles fixed constrains the final
 solution. A descriptive comparison with a joint fit uses
 `parameters_with_measurement`, which includes the held profile parameters.

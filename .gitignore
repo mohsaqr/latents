@@ -30,3 +30,8 @@ tmp/
 
 # Base graphics opens this when a test forgets its own device.
 Rplots.pdf
+
+# Notebook preview artifacts
+.beatrina-preview/
+.beatrina-latex/
+vignettes/*.tex

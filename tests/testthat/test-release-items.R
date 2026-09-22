@@ -110,7 +110,7 @@ test_that("asking for errors a fit cannot supply raises rather than returning bl
   data <- .release_fixture()
   transitions_data <- data
   transitions_data$t <- rep(seq_len(8), times = 20)
-  transition_fit <- quietly(fit_transitions(transitions_data,
+  transition_fit <- quietly(lta(transitions_data,
     c("a", "b"), "g", n_profiles = 2L, time = "t", n_starts = 2, seed = 1))
   # The transition family has no standard errors, so the measurement table
   # must refuse the request instead of filling the columns with NA.

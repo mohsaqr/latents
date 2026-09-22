@@ -239,44 +239,6 @@ test_that("starting_values rejects incomplete input by condition class", {
     class = "multilpa_bad_start")
 })
 
-test_that("lmr_lrt reports a statistic and withholds a p-value", {
-  dat <- make_two_level()
-  smaller <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
-  larger <- multilpa(dat, c("a", "b"), "g", 2, 1, n_starts = 5, seed = 5)
-  result <- lmr_lrt(smaller, larger)
-  expect_s3_class(result, "data.frame")
-  expect_identical(nrow(result), 1L)
-  expect_equal(result$statistic,
-               2 * (larger$log_likelihood - smaller$log_likelihood))
-  expect_identical(result$df, larger$n_parameters - smaller$n_parameters)
-  expect_equal(result$n, smaller$n_observations)
-  expect_equal(result$adjustment_factor, 1 + 1 / (result$df * log(result$n)))
-  expect_equal(result$adjusted_statistic, result$statistic / result$adjustment_factor)
-  # The adjustment always shrinks a positive statistic.
-  expect_lt(result$adjusted_statistic, result$statistic)
-  expect_true(is.na(result$p_value))
-  grouped <- lmr_lrt(smaller, larger, n = "groups")
-  expect_equal(grouped$n, smaller$n_groups)
-  expect_equal(grouped$statistic, result$statistic)
-  expect_gt(grouped$adjustment_factor, result$adjustment_factor)
-})
-
-test_that("lmr_lrt rejects invalid comparisons by condition class", {
-  dat <- make_two_level()
-  smaller <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
-  larger <- multilpa(dat, c("a", "b"), "g", 2, 1, n_starts = 5, seed = 5)
-  expect_error(lmr_lrt(larger, smaller), class = "multilpa_bad_nesting")
-  other <- multilpa(make_two_level(seed = 12L, n_groups = 20L),
-                      c("a", "b"), "g", 2, 1, n_starts = 3, seed = 5)
-  expect_error(lmr_lrt(smaller, other),
-               class = "multilpa_incomparable_models")
-  expect_error(lmr_lrt(smaller, larger, n = 1), "greater than one")
-  reversed <- larger
-  reversed$log_likelihood <- smaller$log_likelihood - 1
-  expect_error(lmr_lrt(smaller, reversed),
-               class = "multilpa_reversed_likelihood")
-})
-
 test_that("every result class has a working tidy accessor", {
   # Rule 0: no result object should make the caller reach in with `$`.
   set.seed(4)
@@ -308,16 +270,6 @@ test_that("every result class has a working tidy accessor", {
                    n * covariate_fit$n_profiles)
   expect_identical(nrow(get_data(covariate_fit, "group_posteriors")),
                    30L * covariate_fit$n_group_classes)
-  intercept_fit <- fit_random_intercept(dat, c("a", "b"), "school", 2,
-                                               n_starts = 3, seed = 1)
-  expect_identical(nrow(as.data.frame(intercept_fit)), 4L)
-  intercepts <- get_data(intercept_fit, "random_intercepts")
-  expect_identical(names(intercepts), c("group", "group_size", "mean", "sd"))
-  expect_identical(nrow(intercepts), 30L)
-  expect_equal(sum(intercepts$group_size), n)
-  expect_true(all(intercepts$sd > 0))
-  expect_identical(nrow(get_data(intercept_fit, "posteriors")),
-                   n * intercept_fit$n_profiles)
 })
 
 test_that("preparation helpers enforce their own contracts", {

@@ -50,17 +50,6 @@ test_that("a table a fit cannot produce still refuses by class when named", {
   fit <- two_level()
   expect_error(get_data(fit, "sequences"), class = "multilpa_no_time")
   expect_error(get_data(fit, "sequence_summary"), class = "multilpa_no_time")
-  intercepts <- fit_random_intercept(course_engagement, activity, "student",
-                                     n_profiles = 2, n_starts = 1, seed = 1)
-  expect_error(get_data(intercepts, "residuals"),
-               class = "multilpa_no_group_classes")
-  # Three-step tables refused an intercept fit with an unclassed error before
-  # 0.11.2, which `all` could not tell apart from a defect.
-  expect_error(get_data(intercepts, "classification_errors"),
-               class = "multilpa_no_group_classes")
-  expect_error(get_data(intercepts, "bch_weights"),
-               class = "multilpa_no_group_classes")
-  expect_false("residuals" %in% names(get_data(intercepts, "all")))
 })
 
 test_that("an unknown table names the ones this object has", {
@@ -89,8 +78,6 @@ test_that("get_data has no method for an unrelated object", {
 
 test_that("the classification tables default to every level the fit has", {
   fit <- two_level()
-  intercepts <- fit_random_intercept(course_engagement, activity, "student",
-                                     n_profiles = 2, n_starts = 1, seed = 1)
   for (what in c("classification", "average_posteriors",
                  "classification_errors", "bch_weights")) {
     both <- get_data(fit, what)
@@ -100,16 +87,6 @@ test_that("the classification tables default to every level the fit has", {
     expect_identical(unique(one$level), "individuals")
     expect_lt(nrow(one), nrow(both))
   }
-  # A family with one level reports that level rather than refusing.
-  expect_identical(unique(get_data(intercepts, "classification")$level),
-                   "individuals")
-})
-
-test_that("a level a fit has not is refused rather than silently dropped", {
-  intercepts <- fit_random_intercept(course_engagement, activity, "student",
-                                     n_profiles = 2, n_starts = 1, seed = 1)
-  expect_error(get_data(intercepts, "classification", level = "groups"),
-               class = "multilpa_no_group_classes")
 })
 
 test_that("as.data.frame coerces to the primary table and takes nothing else", {
@@ -119,7 +96,7 @@ test_that("as.data.frame coerces to the primary table and takes nothing else", {
                class = "multilpa_bad_argument")
   expect_error(as.data.frame(fit, scale = "standardized"),
                class = "multilpa_bad_argument")
-  moves <- fit_transitions(course_engagement, activity, "student",
+  moves <- lta(course_engagement, activity, "student",
                            n_profiles = 2, n_group_classes = 2,
                            time = "sequence", n_starts = 2, seed = 1)
   # The primary table is the measurement model for every fitted family, so a
@@ -205,21 +182,18 @@ test_that("the tables the summaries used to own are on the fit", {
 })
 
 test_that("`model` reports the columns of the family, not a padded union", {
-  intercepts <- fit_random_intercept(course_engagement, activity, "student",
-                                     n_profiles = 2, n_starts = 1, seed = 1)
   covariates <- multilpa(course_engagement, activity, "student", n_profiles = 2,
                          n_group_classes = 2,
                          profile_covariates = "previous_grade",
                          n_starts = 2, seed = 1)
-  expect_true("quadrature_check_passed" %in% names(get_data(intercepts, "model")))
   expect_true("n_profile_covariates" %in% names(get_data(covariates, "model")))
-  expect_false("quadrature_check_passed" %in% names(get_data(two_level(), "model")))
+  expect_false("n_profile_covariates" %in% names(get_data(two_level(), "model")))
   # The one table whose columns are the same for every family, which is what
   # makes it the one to compare fits across families with.
-  expect_identical(names(get_data(intercepts, "information_criteria")),
+  expect_identical(names(get_data(covariates, "information_criteria")),
                    names(get_data(two_level(), "information_criteria")))
   # Both families spell the two conventions the same way.
-  for (fit in list(intercepts, covariates, two_level())) {
+  for (fit in list(covariates, two_level())) {
     expect_true(all(c("bic_groups", "bic_individual") %in%
                       names(get_data(fit, "model"))))
   }

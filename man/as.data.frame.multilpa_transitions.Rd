@@ -27,7 +27,7 @@ The other tables are named rather than positional, so they belong to
 [get_data()], which takes `what` and refuses a name this object has not.
 }
 \examples{
-moves <- fit_transitions(
+moves <- lta(
   course_engagement,
   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
   id = "student", n_profiles = 2, n_group_classes = 2, time = "sequence",

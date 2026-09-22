@@ -475,7 +475,7 @@
   cross_sectional + n_group_classes * n_profiles * (n_profiles - 1L)
 }
 
-#' Fit a latent transition model
+#' Latent transition analysis
 #'
 #' Fits latent profiles to repeated observations of the same group and
 #' estimates the probabilities of moving between them from one occasion to the
@@ -486,6 +486,10 @@
 #' class carries its own initial distribution and its own transition matrix,
 #' which is how groups that differ in their dynamics are separated from groups
 #' that differ only in where they start.
+#'
+#' This is latent transition analysis (LTA); with more than one group class it
+#' is a mixture over transition patterns, so the classes are trajectories rather
+#' than states. [multilpa()] is the cross-sectional counterpart.
 #'
 #' @inheritParams multilpa
 #' @param id Name of the observed group identifier column. Character, factor, or
@@ -546,7 +550,7 @@
 #' # Students take their courses in their own order, which `sequence` records,
 #' # so the same enrolments that fit a cross-sectional model fit a transition
 #' # one. Engagement mostly persists from one course to the next.
-#' fit <- fit_transitions(
+#' fit <- lta(
 #'   course_engagement,
 #'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
 #'   id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1
@@ -554,7 +558,7 @@
 #' get_data(fit, what = "transitions")
 #' summary(fit)
 #' @export
-fit_transitions <- function(data, vars, id, n_profiles, time,
+lta <- function(data, vars, id, n_profiles, time,
                             n_group_classes = 1L,
                             variance_model = c("varying", "equal"),
                             n_starts = 10L, max_iter = 1000L, tol = 1e-8,
@@ -889,7 +893,7 @@ fit_transitions <- function(data, vars, id, n_profiles, time,
 #' @return A base `data.frame`: one row per group class and ordered pair of profiles.
 #' @seealso [get_data()] for every other table this object holds.
 #' @examples
-#' moves <- fit_transitions(
+#' moves <- lta(
 #'   course_engagement,
 #'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
 #'   id = "student", n_profiles = 2, n_group_classes = 2, time = "sequence",
@@ -914,7 +918,7 @@ as.data.frame.multilpa_transitions <- function(x, row.names = NULL, optional = F
 #'   counts, the occasion layout, the log likelihood with the information
 #'   criteria, the convergence and restart diagnostics, and the verbs that
 #'   return the fitted quantities.
-#' @seealso [get_data()], [fit_transitions()].
+#' @seealso [get_data()], [lta()].
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -922,7 +926,7 @@ as.data.frame.multilpa_transitions <- function(x, row.names = NULL, optional = F
 #' )
 #' example_data$score_a <- stats::rnorm(nrow(example_data))
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#' fit <- lta(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 #' print(fit)
 #' @export
@@ -958,7 +962,7 @@ print.multilpa_transitions <- function(x, rows = 20L, ...) {
 #' )
 #' example_data$score_a <- stats::rnorm(nrow(example_data))
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#' fit <- lta(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 #' logLik(fit)
 #' @export
@@ -982,7 +986,7 @@ logLik.multilpa_transitions <- function(object, ...) {
 #' )
 #' example_data$score_a <- stats::rnorm(nrow(example_data))
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#' fit <- lta(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 #' nobs(fit)
 #' @export
@@ -1008,7 +1012,7 @@ nobs.multilpa_transitions <- function(object, ...) {
 #' )
 #' example_data$score_a <- stats::rnorm(nrow(example_data))
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#' fit <- lta(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 #' summary(fit)
 #' @export
@@ -1063,7 +1067,7 @@ summary.multilpa_transitions <- function(object, ...) {
 #' @return A base `data.frame`: one row per profile and continuous indicator.
 #' @seealso [get_data()] for every other table this summary holds.
 #' @examples
-#' moves <- fit_transitions(
+#' moves <- lta(
 #'   course_engagement,
 #'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
 #'   id = "student", n_profiles = 2, n_group_classes = 2, time = "sequence",
@@ -1092,7 +1096,7 @@ as.data.frame.summary_multilpa_transitions <- function(x, row.names = NULL, opti
 #' )
 #' example_data$score_a <- stats::rnorm(nrow(example_data))
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#' fit <- lta(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 #' print(summary(fit), digits = 3)
 #' @export
@@ -1152,7 +1156,7 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
 #' )
 #' example_data$score_a <- stats::rnorm(nrow(example_data))
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#' fit <- lta(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 #' coef(fit)
 #' @export
@@ -1215,7 +1219,7 @@ coef.multilpa_transitions <- function(object, ...) {
 #' )
 #' example_data$score_a <- stats::rnorm(nrow(example_data))
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
+#' fit <- lta(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 #' tryCatch(confint(fit), multilpa_no_inference = function(condition) {
 #'   conditionMessage(condition)
@@ -1259,12 +1263,35 @@ confint.multilpa_transitions <- function(object, parm, level = 0.95, ...) {
     class = "multilpa_no_inference", call = NULL))
 }
 
-#' No plot method is defined for a latent transition model
+#' Plot a fitted latent transition model
+#'
+#' The measurement model is the one [multilpa()] fits, so every measurement and
+#' classification view it draws is available here. `what = "transitions"` is the
+#' view this family adds: the estimated transition matrix, one panel per group
+#' class.
 #'
 #' @param x A fitted `multilpa_transitions` model.
-#' @param ... Ignored.
-#' @return Nothing; always raises a `multilpa_no_plot` condition, rather than
-#'   letting the fit fall through to the default method and fail obscurely.
+#' @param what The view to draw. `"transitions"` draws the estimated transition
+#'   matrix, one panel per group class. `"profiles"`, `"bars"` and `"heatmap"`
+#'   draw the measurement model, `"responses"` the categorical response curves,
+#'   `"sequences"` each group's profile at each occasion, and `"sizes"`,
+#'   `"entropy"`, `"posteriors"` and `"avepp"` the classification diagnostics.
+#'   `"all"` draws every view this fit has the ingredients for.
+#' @param data Optional. The data the model was fitted to. Accepted for
+#'   consistency with [plot.multilpa()]; `"bars"` draws point estimates without
+#'   intervals here, because this family has no standard errors.
+#' @param scale `"raw"` keeps the indicators in their own units;
+#'   `"standardized"` divides by each indicator's observed standard deviation.
+#' @param category For `"responses"`, which category to draw.
+#' @param labels Whether to label series directly.
+#' @param main,subtitle Panel title and secondary line.
+#' @param palette,symbols,linetypes,style,cell_labels Visual overrides, as in
+#'   [plot.multilpa()].
+#' @param ... Further style overrides.
+#' @return The fitted model, invisibly, having drawn the requested view.
+#' @seealso [get_tna()] and [get_group_tna()] to draw the transitions as a
+#'   network instead, and [plot.multilpa()] for the same views on a
+#'   cross-sectional fit.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -1272,19 +1299,111 @@ confint.multilpa_transitions <- function(object, parm, level = 0.95, ...) {
 #' )
 #' example_data$score_a <- stats::rnorm(nrow(example_data))
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
-#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
-#' # The refusal is catchable by class, not by message text.
-#' tryCatch(plot(fit), multilpa_no_plot = function(condition) {
-#'   "no plot method for this model family"
-#' })
+#' fit <- lta(example_data, c("score_a", "score_b"), "person",
+#'            n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' plot(fit, what = "transitions")
+#' plot(fit, what = "profiles")
 #' @export
-plot.multilpa_transitions <- function(x, ...) {
-  stopifnot(inherits(x, "multilpa_transitions"))
-  stop(errorCondition(
-    paste("No plot method is defined for a latent transition model.",
-          "Use get_data(x, \"transitions\") for the transition probabilities,",
-          "and",
-          "plot(what = \"sequences\") on a multilpa() fit for profile paths."),
-    class = "multilpa_no_plot", call = NULL))
+plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
+                                                  "bars", "heatmap", "responses",
+                                                  "sequences", "sizes", "entropy",
+                                                  "posteriors", "avepp", "all"),
+                                      data = NULL,
+                                      scale = c("raw", "standardized"),
+                                      category = "last", labels = TRUE,
+                                      main = NULL, subtitle = NULL,
+                                      palette = NULL, symbols = NULL,
+                                      linetypes = NULL,
+                                      style = .multilpa_style(),
+                                      cell_labels = TRUE, ...) {
+  stopifnot("`x` must be a fitted `multilpa_transitions` model" =
+              inherits(x, "multilpa_transitions"),
+            "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
+            "`cell_labels` must be TRUE or FALSE" =
+              isTRUE(cell_labels) || isFALSE(cell_labels))
+  what <- match.arg(what)
+  if (identical(what, "all")) {
+    return(.multilpa_plot_every_view(x, match.call(), parent.frame()))
+  }
+  scale <- match.arg(scale)
+  style <- utils::modifyList(style, list(...))
+  previous <- graphics::par(no.readonly = TRUE)
+  previous$mfg <- NULL
+  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
+  graphics::par(xpd = NA)
+  switch(what,
+    transitions = .multilpa_plot_transitions(x, main, subtitle, style),
+    profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
+                                       symbols, linetypes, style),
+    # No error matrix: this family has no standard errors, so the bars carry
+    # point estimates and say so by having no whiskers, rather than borrowing
+    # an interval from an inference this fit cannot do.
+    bars = .multilpa_plot_bars(x, scale, NULL, main, subtitle, palette, style),
+    heatmap = .multilpa_plot_heatmap(x, main, subtitle, style),
+    responses = .multilpa_plot_responses(x, category, labels, main, subtitle,
+                                         palette, symbols, linetypes, style),
+    sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
+                                         style, cell_labels),
+    sizes = .multilpa_plot_sizes(x, main, subtitle, palette, style),
+    avepp = .multilpa_plot_avepp(x, main, subtitle, style),
+    entropy = ,
+    posteriors = .multilpa_plot_case_diagnostic(x, what, main, subtitle,
+                                                palette, style))
+  invisible(x)
+}
+
+#' Draw the estimated transition matrix, one panel per group class
+#'
+#' Row is the current profile, column the next one, and the cell is
+#' P(next = column | current = row) for that group class. The diagonal is
+#' persistence. Every cell prints its probability, so nothing rests on reading a
+#' colour, and the fill is the package's shared white-to-blue ramp taken over
+#' the whole probability range, so darker is a higher probability wherever it
+#' sits.
+#'
+#' A row with no data support is drawn with its label parenthesised: such a row
+#' is uniform by construction rather than estimated, and must not be read as
+#' evidence of equal transition chances.
+#'
+#' @param x A fitted `multilpa_transitions` model.
+#' @param main,subtitle Panel title and secondary line.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_transitions <- function(x, main, subtitle, style) {
+  probabilities <- x$transition_probabilities
+  n_profiles <- x$n_profiles
+  n_classes <- x$n_group_classes
+  empty <- x$empty_transition_rows
+  columns <- min(n_classes, 2L)
+  graphics::par(mfrow = c(ceiling(n_classes / columns), columns),
+                mar = style$margins + c(0, 1.6, 0, 0))
+  rows <- rev(seq_len(n_profiles))
+  cells <- expand.grid(to = seq_len(n_profiles), from = seq_len(n_profiles))
+  # One panel per class; the loop is over at most a handful of panels and each
+  # iteration draws to a device, so there is nothing to vectorise.
+  invisible(lapply(seq_len(n_classes), function(class) {
+    values <- probabilities[, , class][cbind(cells$from, cells$to)]
+    unestimated <- if (is.null(empty)) rep(FALSE, n_profiles) else
+      as.logical(empty[, class])
+    .multilpa_panel(
+      xlim = c(0.5, n_profiles + 0.5), ylim = c(0.5, n_profiles + 0.5),
+      xlab = "Next profile", ylab = "",
+      main = if (is.null(main)) sprintf("Group class %d", class) else main,
+      subtitle = if (is.null(subtitle)) sprintf(
+        "%.0f%% of groups; rows sum to one",
+        100 * x$group_probabilities[class]) else subtitle,
+      x_at = seq_len(n_profiles), x_labels = sprintf("%d", seq_len(n_profiles)),
+      y_at = rows,
+      y_labels = ifelse(unestimated, sprintf("(Profile %d)", seq_len(n_profiles)),
+                        sprintf("Profile %d", seq_len(n_profiles))),
+      style = style)
+    fills <- .multilpa_diverging(values, limit = 1)
+    graphics::rect(cells$to - 0.5, rows[cells$from] - 0.5,
+                   cells$to + 0.5, rows[cells$from] + 0.5,
+                   col = fills, border = style$panel_fill, lwd = 1.5)
+    graphics::text(cells$to, rows[cells$from], sprintf("%.2f", values),
+                   col = .multilpa_ink(fills), cex = style$label_text_size)
+  }))
+  invisible(NULL)
 }

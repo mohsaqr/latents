@@ -23,3 +23,7 @@
 ^equivalence$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^future$
+^docs$
+^vignettes/\.beatrina
+^vignettes/.*\.tex$

@@ -2,21 +2,62 @@
 % Please edit documentation in R/transitions.R
 \name{plot.multilpa_transitions}
 \alias{plot.multilpa_transitions}
-\title{No plot method is defined for a latent transition model}
+\title{Plot a fitted latent transition model}
 \usage{
-\method{plot}{multilpa_transitions}(x, ...)
+\method{plot}{multilpa_transitions}(
+  x,
+  what = c("transitions", "profiles", "bars", "heatmap", "responses", "sequences",
+    "sizes", "entropy", "posteriors", "avepp", "all"),
+  data = NULL,
+  scale = c("raw", "standardized"),
+  category = "last",
+  labels = TRUE,
+  main = NULL,
+  subtitle = NULL,
+  palette = NULL,
+  symbols = NULL,
+  linetypes = NULL,
+  style = .multilpa_style(),
+  cell_labels = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{A fitted `multilpa_transitions` model.}
 
-\item{...}{Ignored.}
+\item{what}{The view to draw. `"transitions"` draws the estimated transition
+matrix, one panel per group class. `"profiles"`, `"bars"` and `"heatmap"`
+draw the measurement model, `"responses"` the categorical response curves,
+`"sequences"` each group's profile at each occasion, and `"sizes"`,
+`"entropy"`, `"posteriors"` and `"avepp"` the classification diagnostics.
+`"all"` draws every view this fit has the ingredients for.}
+
+\item{data}{Optional. The data the model was fitted to. Accepted for
+consistency with [plot.multilpa()]; `"bars"` draws point estimates without
+intervals here, because this family has no standard errors.}
+
+\item{scale}{`"raw"` keeps the indicators in their own units;
+`"standardized"` divides by each indicator's observed standard deviation.}
+
+\item{category}{For `"responses"`, which category to draw.}
+
+\item{labels}{Whether to label series directly.}
+
+\item{main, subtitle}{Panel title and secondary line.}
+
+\item{palette, symbols, linetypes, style, cell_labels}{Visual overrides, as in
+[plot.multilpa()].}
+
+\item{...}{Further style overrides.}
 }
 \value{
-Nothing; always raises a `multilpa_no_plot` condition, rather than
-  letting the fit fall through to the default method and fail obscurely.
+The fitted model, invisibly, having drawn the requested view.
 }
 \description{
-No plot method is defined for a latent transition model
+The measurement model is the one [multilpa()] fits, so every measurement and
+classification view it draws is available here. `what = "transitions"` is the
+view this family adds: the estimated transition matrix, one panel per group
+class.
 }
 \examples{
 set.seed(7)
@@ -25,10 +66,13 @@ example_data <- data.frame(
 )
 example_data$score_a <- stats::rnorm(nrow(example_data))
 example_data$score_b <- stats::rnorm(nrow(example_data))
-fit <- fit_transitions(example_data, c("score_a", "score_b"), "person",
-                       n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
-# The refusal is catchable by class, not by message text.
-tryCatch(plot(fit), multilpa_no_plot = function(condition) {
-  "no plot method for this model family"
-})
+fit <- lta(example_data, c("score_a", "score_b"), "person",
+           n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+plot(fit, what = "transitions")
+plot(fit, what = "profiles")
+}
+\seealso{
+[get_tna()] and [get_group_tna()] to draw the transitions as a
+  network instead, and [plot.multilpa()] for the same views on a
+  cross-sectional fit.
 }

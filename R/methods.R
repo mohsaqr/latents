@@ -254,9 +254,6 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
   if (inherits(x, "multilpa_covariates")) {
     return(.multilpa_covariate_fit_frame(x))
   }
-  if (inherits(x, "multilpa_random_intercept")) {
-    return(.multilpa_intercept_fit_frame(x))
-  }
   # A field an older fit or another family does not carry is absent, not
   # short: `NULL` and a length-two vector would both corrupt the row.
   data.frame(n_observations = .multilpa_one(x$n_observations, NA_integer_),
@@ -321,33 +318,6 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
     converged = x$converged,
     boundary = x$boundary,
     extreme_logits = x$extreme_logits,
-    n_starts = nrow(x$starts),
-    row.names = NULL, stringsAsFactors = FALSE)
-}
-
-#' The one-row description of a random-intercept fit
-#' @param x A fitted `multilpa_random_intercept` model.
-#' @return One row.
-#' @noRd
-.multilpa_intercept_fit_frame <- function(x) {
-  data.frame(
-    n_observations = x$n_observations,
-    n_groups = x$n_groups,
-    n_profiles = x$n_profiles,
-    variance_model = x$variance_model,
-    n_parameters = x$n_parameters,
-    random_intercept_sd = x$random_sd,
-    log_likelihood = x$log_likelihood,
-    aic = x$aic,
-    bic_groups = x$bic,
-    bic_individual = x$bic_individual,
-    converged = x$converged,
-    boundary = x$boundary,
-    integration = x$integration,
-    quadrature_nodes = x$quadrature_nodes,
-    quadrature_log_likelihood_difference =
-      x$quadrature_log_likelihood_difference,
-    quadrature_check_passed = x$quadrature_check_passed,
     n_starts = nrow(x$starts),
     row.names = NULL, stringsAsFactors = FALSE)
 }

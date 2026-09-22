@@ -100,6 +100,7 @@ $$
 
 Here, $\sigma^2_{\mathrm{between}}$ is the variance between students and
 $\sigma^2_{\mathrm{within}}$ is the variance across enrolments within students.
+
 An ICC near zero indicates little between-student variation in an indicator's
 average level, whereas an ICC near one indicates little variation across
 enrolments within students. With the one-way random-effects estimator used
@@ -118,19 +119,21 @@ latent structure.
 The descriptive table reports means, standard deviations, ranges, and ICCs for
 the activity indicators, together with sample sizes and missingness.
 
-
 ```{r descriptives}
 descriptives(course_engagement, vars = vars, id = "student")
 ```
 
-The data contain 1,422 enrolments from 106 students, with no missing values in
-the activity indicators. The estimated ICCs range from 0.093 for `lectures` to
-0.225 for `forum_read`, indicating that approximately one tenth to one quarter
-of the variance in these indicators lies between students. Thus, most variation
-occurs across enrolments within students, while a non-negligible share reflects
-systematic differences between students. The repeated enrolments therefore
-contain information about both variation in engagement across courses and
-between-student heterogeneity in engagement.
+The data comprise 1,422 enrolments from 106 students, with complete observations
+on all activity indicators. Because the indicators were standardized within
+course, their pooled means are approximately zero and their standard deviations
+are close to one. The estimated ICCs range from 0.088 for `lectures` to 0.224
+for `forum_read`, indicating that about 9% to 22% of the variance in the
+individual indicators is attributable to differences between students. Most
+variation therefore occurs across enrolments within students, while a meaningful
+share reflects between-student differences. This combination of within- and
+between-student variation is the structure that the multilevel model is designed
+to represent.
+
 
 ## Three engagement profiles and three student classes
 
@@ -164,105 +167,107 @@ $$
 
 gives the proportion of students represented by class $m$.
 
-The model makes several distributional and independence assumptions. Activity
-indicators are assumed to follow Gaussian distributions within each profile,
-and the profile definitions are assumed to be common across students. Students
-are treated as independent Level-2 units, while enrolments are conditionally
-independent given the student's latent class. Under the default diagonal
-covariance structure, the five activity indicators are also assumed to be
-independent within a profile after conditioning on profile membership. Residual
-associations among the indicators that remain within profiles may therefore
-signal a departure from this assumption and can influence the estimated
-profile structure.
+The model relies on several distributional and independence assumptions. Within
+each profile, the activity indicators are modeled as Gaussian, and the same
+profile definitions apply to all students. Students are treated as independent
+Level-2 units, and enrolments within a student are conditionally independent
+given the student's latent class. With the default diagonal covariance
+structure, the activity indicators are additionally assumed to be independent
+within each profile. Substantial residual associations between indicators after
+accounting for profile membership may indicate that this assumption is too
+restrictive and can affect the resulting profile solution.
 
-The choice of three profiles and three student classes is a candidate model
-rather than an assumption about the true latent structure. The
-[evaluation guide](multilpa-evaluation.html) compares this specification with
-models containing different numbers of Level-1 profiles and Level-2 classes.
+The **3 × 3 model** considered here is one candidate representation of the
+latent structure rather than a prespecified truth. The
+[evaluation guide](multilpa-evaluation.html) shows how this model can be
+compared with alternatives containing different numbers of Level-1 profiles
+and Level-2 student classes.
 
-The analysis below uses ten random starts to assess whether estimation
-repeatedly converges to the same likelihood solution. Setting seed = 1 makes
-the set of starting values reproducible and restores the caller's random state
-after estimation. A tighter tol is used to support the subsequent calculation
-of standard errors. Finally, time = "sequence" retains the observed course
-order for displaying students' enrolment histories. The present model describes
-the composition of profiles across a student's courses; it does not model
-transitions from one profile to another. Transition probabilities are estimated
-with the separate longitudinal model.
+The model is estimated from ten random starts to check whether different
+initial values lead to the same likelihood solution. Setting `seed = 1` makes
+these starts reproducible while restoring the caller's random state after
+estimation. A tighter convergence criterion, specified through `tol`, is used
+to support the subsequent calculation of standard errors. The argument
+`time = "sequence"` retains the order of each student's courses so that
+enrolment histories can be displayed in sequence. Course order does not enter
+the present model, however: the model describes the **composition of profiles**
+across a student's enrolments rather than transitions between successive
+profiles. Profile-to-profile transitions are addressed by the separate
+longitudinal model.
+
 
 
 ```{r fit}
 set.seed(1)
 fit <- multilpa(course_engagement, vars, id = "student", time = "sequence", n_profiles = 3, n_group_classes = 3, n_starts = 10, max_iter = 2000, tol = 1e-10, seed = 1)
+```
+### Profile means
+
+Printing the fitted model provides a compact summary of the Level-1 profiles.
+Each row corresponds to one profile and reports its estimated mean on each
+activity indicator, together with the number of enrolments assigned to that
+profile.
+
+```{r means}
 fit
 ```
 
-The estimated profiles are ordered by their overall level of activity. **Profile 1**
-has the highest mean on all five indicators, **Profile 2** has intermediate means,
-and **Profile 3** has the lowest means. For `attendance`, for example, the profile
-means are 1.133, 0.256, and -0.940 standard deviations relative to the
-corresponding course means. For `browse`, the means are 0.709, 0.387, and
--0.777. The profiles therefore primarily distinguish different levels of
-engagement, although the size of the differences varies across indicators. The
-contrast between profiles 1 and 2 is particularly pronounced for `attendance`.
-
-Profile numbers are arbitrary identifiers assigned during estimation; they do
-not have an intrinsic substantive meaning. For this fitted model, we refer to
-profiles 1, 2, and 3 as **higher activity**, **intermediate activity**, and
-**lower activity**, respectively. These labels are based on the estimated
-indicator means and are used only to make the subsequent interpretation easier.
-A separately estimated model may assign the same substantive profiles different
-numbers, so profile labels should always be based on the estimated parameters
-rather than on the numeric identifiers themselves.
-
-Before interpreting the student classes, it is useful to check whether the
-multiple random starts converged to the same solution. `get_data()` extracts
-the underlying result tables from a fitted model. The `"starts"` table reports
-the final log likelihood, convergence status, and variance-boundary status for
-each starting value. When several starts converge to the same highest log
-likelihood, this provides evidence that the selected solution is numerically
-stable with respect to the starting values used. It does not, however, prove
-that the solution is the global maximum.
 
 
-```{r starts}
-get_data(fit, "starts")
+Profile 1 has the highest estimated mean on all five activity indicators,
+profile 2 has intermediate means, and profile 3 has the lowest means. For
+`attendance`, the profile means are 1.133, 0.256, and -0.940 standard
+deviations from the corresponding course mean. For `browse`, they are 0.709,
+0.387, and -0.777. The profiles therefore primarily distinguish different
+levels of recorded activity, although the separation varies across indicators.
+For example, the difference between profiles 1 and 2 is substantially larger
+for `attendance` than for `browse`.
+
+Profile numbers are arbitrary labels assigned during estimation and have no
+inherent substantive meaning. In this fitted model, we refer to profiles 1, 2,
+and 3 as **higher activity**, **intermediate activity**, and **lower activity**,
+respectively. The numbering may change when the model is fitted again or when a
+different specification is estimated. Profile labels should therefore be based
+on the estimated indicator means rather than on the profile numbers themselves.
+
+
+### Profile and class sizes
+
+The `get_data()` function extracts result tables from the fitted model. The `"counts"` table
+summarizes **effective membership** at both levels: the estimated number of
+enrolments associated with each Level-1 profile and the estimated number of
+students associated with each Level-2 class. These counts are obtained by
+summing posterior membership probabilities across observations or students,
+rather than by assigning each case to its most likely class. They therefore
+need not be whole numbers.
+
+
+```{r counts}
+get_data(fit, "counts")
 ```
 
-All ten starts converge to a log likelihood of approximately -, with no
-active variance bounds. The agreement supports the numerical stability of
-this fitted solution.
+ 
+The lower-activity profile is the largest, holding 575.0 enrolments, or 40.4%.
+The higher-activity profile holds 369.2, or 26.0%. Among students, class 2 is
+the largest at 47.3 students, or 44.6%, with classes 1 and 3 holding 27.7 and
+31.0.
 
-`plot()` compares the estimated profile means across the five activity
-indicators. The vertical axis is in standard deviations from each course's
-mean, and line types and point
-symbols distinguish the profiles as well as colour.
+### How students differ in their profile composition
 
-```{r profiles}
-plot(fit, subtitle = "Profile means, standard deviations from each course mean")
-```
-
-The three lines retain the same ordering across all five indicators. Profiles
-1 and 2 are closer on page browsing than on attendance, consistent with their
-means above. Profile 3 is lower throughout, so the main contrast concerns the
-amount of recorded activity.
-
-## How students differ in their profile composition
-
-The `"profile_probabilities"` table reports $\pi_{k\mid m}$ and $\omega_m$.
-The first probability describes enrolments within a student class; the second
-describes the prevalence of that class among students.
+The `"profile_probabilities"` table reports the probability of each profile
+within each student class, alongside the prevalence of that class among
+students. Reading a row therefore answers two separate questions: how a class
+composes its enrolments, and how common that class is.
 
 ```{r profile-probabilities}
 get_data(fit, "profile_probabilities")
 ```
 
-Student class 1 has probabilities of 0.424, 0.507, and 0.068 for profiles 1,
-2, and 3. Its enrolments are predominantly in the higher and intermediate
-activity profiles. Student class 2 has a more even composition: 0.325, 0.340,
-and 0.335. Student class 3 has probability 0.854 of the lower-activity profile.
-The estimated proportions of students in these classes are 0.304, 0.410,
-and 0.286.
+Student class 1 has probabilities of 0.398, 0.547, and 0.055 for profiles 1, 2,
+and 3. Its enrolments are predominantly higher and intermediate activity.
+Student class 2 has a more even composition: 0.295, 0.388, and 0.317. Student
+class 3 has probability 0.847 of the lower-activity profile. The estimated
+proportions of students in these classes are 0.261, 0.446, and 0.293.
 
 The probability plot compares these compositions on a common zero-to-one scale.
 Each line represents a student class, and each point gives the probability of
@@ -273,9 +278,39 @@ plot(fit, what = "probabilities")
 ```
 
 Class 2 has a nearly level line because its three profile probabilities are
-similar. Class 3 rises to 0.854 at profile 3, while class 1 falls to 0.068 there.
-The contrast shows how students can differ in their overall engagement pattern
-while still having enrolments in several profiles.
+similar. Class 3 rises to 0.847 at profile 3, while class 1 falls to 0.055
+there. The contrast shows how students can differ in their overall engagement
+pattern while still having enrolments in several profiles.
+
+## Checking the estimation
+
+The `"starts"` table reports the log likelihood, convergence status, and
+variance-boundary status for each start. Repeated likelihoods support numerical
+stability, although they cannot prove that a global maximum has been found.
+
+```{r starts}
+get_data(fit, "starts")
+```
+
+All ten starts converge to a log likelihood of approximately -8348.4, with no
+active variance bounds. The agreement supports the numerical stability of this
+fitted solution.
+
+## Profile means as a plot
+
+`plot()` compares the estimated profile means across the five activity
+indicators. The vertical axis is in standard deviations from each course's
+mean, and line types and point symbols distinguish the profiles as well as
+colour.
+
+```{r profiles}
+plot(fit, subtitle = "Profile means, standard deviations from each course mean")
+```
+
+The three lines retain the same ordering across all five indicators. Profiles
+1 and 2 are closer on page browsing than on attendance, consistent with their
+means above. Profile 3 is lower throughout, so the main contrast concerns the
+amount of recorded activity.
 
 ## Reading each student's course history
 
@@ -288,10 +323,11 @@ format places students in rows and successive courses in columns.
 get_data(fit, "sequences", format = "wide") |> head(4)
 ```
 
-Student 1 occupies profile 1 in the first two courses and profile 3 in the
-remaining observed courses. Student 2 occupies profile 3 throughout. Students
-3 and 4 move between profiles 1 and 2. The trailing `NA` values mark
-unobserved later courses.
+Students 1 and 2 are assigned to student class 3: student 1 begins in the
+intermediate profile and settles into the lower-activity profile, and student 2
+occupies the lower-activity profile throughout. Students 3 and 4 belong to
+class 1 and move between the higher- and intermediate-activity profiles. The
+trailing `NA` values mark unobserved later courses.
 
 The `"sequence_summary"` table reports the number of students, enrolments, and
 observed courses in each assigned student class. `gaps` counts students missing
@@ -301,10 +337,10 @@ an occasion within their observed span; a shorter history alone is not a gap.
 get_data(fit, "sequence_summary")
 ```
 
-The assigned classes contain 34, 42, and 30 students. Mean sequence lengths
-are 13.35, 13.45, and 13.43 courses, respectively, so the differences in profile
-composition occur among classes with similar observation lengths. No sequence
-has an internal gap.
+The assigned classes contain 25, 51, and 30 students. Mean sequence lengths are
+13.20, 13.51, and 13.43 courses, so the differences in profile composition
+occur among classes with similar observation lengths. No sequence has an
+internal gap.
 
 ## Interpretation
 
@@ -327,10 +363,11 @@ followed by hidden Markov modeling; the joint MLPA here estimates a different
 model. Its three student classes describe profile composition across enrolments.
 
 The 3 × 3 specification requires evaluation before substantive interpretation.
-Overlapping indicators can influence profile definitions, and modal assignments
-omit uncertainty. The [evaluation guide](multilpa-evaluation.html) examines
-these issues with the same data and candidate model. The model also omits
-shared course effects and assumes stable profile definitions across courses.
+The default diagonal covariance treats the indicators as independent within a
+profile, and a shared association between activity measures can violate that
+and affect the estimated profiles. Modal assignments omit uncertainty. The
+[evaluation guide](multilpa-evaluation.html) examines these issues with the
+same data and candidate model.
 
 ## Reference
 

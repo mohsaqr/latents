@@ -1,18 +1,20 @@
 Package: multilpa
 Title: Two-Level Latent Profile Analysis
-Version: 0.11.7
-Authors@R: person("Mohammed", "Saqr", role = c("aut", "cre"),
-    email = "saqr@saqr.me")
+Version: 0.3.0
+Authors@R: c(
+    person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0001-5881-3109")),
+    person("Sonsoles", "L\u00f3pez-Pernas", role = "aut",
+           comment = c(ORCID = "0000-0002-9621-1392")))
 Description: Fits two-level latent profile and latent class models using a
     nested expectation-maximization algorithm. Indicators may be continuous,
     categorical, or a mixture of the two. Individual profiles share measurement
     parameters across discrete group classes, which differ in their profile
     proportions. Supports observed-data likelihood
     for missing indicators, diagonal or full residual covariance, observed
-    information and robust sandwich inference, class-membership covariates, a
-    continuous Gaussian group random-intercept alternative, class enumeration,
-    and parametric bootstrap comparisons. Latent transition models estimate
-    first-order transition probabilities between profiles over ordered
+    information and robust sandwich inference, class-membership covariates,
+    class enumeration, and parametric bootstrap comparisons. Latent transition
+    models estimate first-order transition probabilities between profiles over ordered
     occasions, optionally varying across group classes, by a forward-backward
     expectation-maximization algorithm. Includes multiple starts, posterior
     classification, explicit variance constraints, tidy accessors, information

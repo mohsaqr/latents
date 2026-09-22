@@ -230,21 +230,3 @@ test_that("df is a column that does not apply to a Gaussian pair", {
   expect_identical(names(empty), names(residuals))
   expect_type(empty$df, "integer")
 })
-
-test_that("a model with no discrete group classes refuses by condition class", {
-  set.seed(174)
-  data <- data.frame(g = rep(seq_len(20L), each = 5L),
-                     y = rep(stats::rnorm(20L), each = 5L) + stats::rnorm(100L))
-  fit <- fit_random_intercept(data, "y", "g", n_profiles = 1, n_starts = 1)
-  expect_error(get_data(fit, "classification", level = "groups"),
-               class = "multilpa_no_group_classes")
-  expect_error(get_data(fit, "average_posteriors", level = "groups"),
-               class = "multilpa_no_group_classes")
-  expect_error(get_data(fit, "residuals", data = data),
-               class = "multilpa_no_group_classes")
-  # "both" degrades to the level the model actually has.
-  expect_identical(unique(get_data(fit, "classification", level = "both")$level),
-                   "individuals")
-  expect_identical(unique(get_data(fit, "average_posteriors", level = "both")$level),
-                   "individuals")
-})

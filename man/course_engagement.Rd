@@ -136,7 +136,7 @@ get_data(fit, what = "assignments", data = course_engagement,
 }
 \seealso{
 `vignette("multilpa")` for the analysis these data are used in,
-  [multilpa()] for the two-level model, [fit_transitions()] for the
+  [multilpa()] for the two-level model, [lta()] for the
   sequence, and `multilpa(profile_covariates = )` for `previous_grade`.
 }
 \keyword{datasets}

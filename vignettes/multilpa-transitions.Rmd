@@ -82,7 +82,7 @@ within a profile. Residual associations, changing profile definitions, or
 transitions that vary across courses can therefore distort the estimated
 patterns.
 
-`fit_transitions()` estimates the profile distributions, student-class
+`lta()` estimates the profile distributions, student-class
 probabilities, initial probabilities, and transition probabilities jointly by
 maximum likelihood. It uses the indicators in `vars`, groups observations by
 `student`, and orders them by `sequence`. Course positions must be observed and
@@ -92,7 +92,7 @@ estimates three profiles and three student classes from six starts.
 
 ```{r transition-model}
 set.seed(1)
-moves <- fit_transitions(course_engagement, vars = vars, id = "student", time = "sequence", n_profiles = 3, n_group_classes = 3, n_starts = 6, max_iter = 2000, seed = 1)
+moves <- lta(course_engagement, vars = vars, id = "student", time = "sequence", n_profiles = 3, n_group_classes = 3, n_starts = 6, max_iter = 2000, seed = 1)
 moves
 ```
 
@@ -120,11 +120,11 @@ uncertainty about an individual student's class remains part of the model.
 get_data(moves, "initial")
 ```
 
-Class 1 starts in the lower-activity profile with probability 0.527, and class
-2 starts there with probability 0.939. Class 3 begins more often in the
-higher-activity or intermediate-activity profiles, with probabilities 0.436 and
-0.381. Its estimated student-class probability is 0.668, compared with 0.142
-and 0.191 for classes 1 and 2. These differences describe starting positions;
+Class 1 starts in the lower-activity profile with probability 0.841, and class
+3 starts there with probability 0.747. Class 2 begins in the higher-activity or
+intermediate-activity profiles, with probabilities 0.605 and 0.371, and almost
+never in the lower-activity one. Its estimated student-class probability is
+0.550, compared with 0.194 and 0.256 for classes 1 and 3. These differences describe starting positions;
 the transition probabilities establish how engagement subsequently develops.
 
 ## Movement between engagement profiles
@@ -148,24 +148,25 @@ the three student classes.
 get_data(moves, "transitions")
 ```
 
-Lower activity persists with probability 0.964 in class 1 and 0.888 in class 2.
+Lower activity persists with probability 0.947 in class 3 and 0.746 in class 1.
 These classes therefore combine frequent lower activity at entry with a high
-probability of remaining there once it occurs. Class 3 has a lower probability
-of remaining in that profile, 0.584; its probabilities of moving from lower
-activity to higher or intermediate activity are 0.181 and 0.235.
+probability of remaining there once it occurs. Class 2 has a lower probability
+of remaining in that profile, 0.597; its probabilities of moving from lower
+activity to higher or intermediate activity are 0.186 and 0.216.
 
-Class 3 also moves between the two more active profiles. Its probability of
-moving from higher to intermediate activity is 0.522, and the reverse
-probability is 0.361. A student can therefore maintain relatively active
+Class 2 also moves between the two more active profiles. Its probability of
+moving from higher to intermediate activity is 0.459, and the reverse
+probability is 0.395. A student can therefore maintain relatively active
 engagement while changing between those profiles. Student classes represent
 different transition patterns, while profiles describe engagement within an
 individual course.
 
-Class 1's transition from intermediate to higher activity has probability
-approximately one, but its expected count is only 7.385. Several other
-probabilities approach zero. Such boundary estimates call for caution about
-sparse transitions and the chosen number of student classes; they do not
-establish that a transition is certain or impossible in the population.
+Class 3's transition from higher to intermediate activity sits at its lower
+bound, on an expected count of essentially zero: no observation supports it.
+Class 1's transition from higher to lower activity is likewise near zero.
+Such boundary estimates call for caution about sparse transitions and the
+chosen number of student classes; they do not establish that a transition is
+impossible in the population, only that these data carry no evidence for it.
 
 ## Limitations
 

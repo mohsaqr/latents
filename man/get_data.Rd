@@ -6,14 +6,12 @@
 \alias{get_data.multilpa}
 \alias{get_data.multilpa_covariates}
 \alias{get_data.multilpa_transitions}
-\alias{get_data.multilpa_random_intercept}
 \alias{get_data.multilpa_enumeration}
 \alias{get_data.multilpa_bootstrap_lrt}
 \alias{get_data.multilpa_start}
 \alias{get_data.multilpa_diagnostics}
 \alias{get_data.summary_multilpa}
 \alias{get_data.summary_multilpa_covariates}
-\alias{get_data.summary_multilpa_random_intercept}
 \alias{get_data.summary_multilpa_transitions}
 \alias{get_data.summary_multilpa_enumeration}
 \alias{get_data.summary_multilpa_bootstrap_lrt}
@@ -29,8 +27,6 @@ get_data(x, what = NULL, ...)
 
 \method{get_data}{multilpa_transitions}(x, what = NULL, ...)
 
-\method{get_data}{multilpa_random_intercept}(x, what = NULL, ...)
-
 \method{get_data}{multilpa_enumeration}(x, what = NULL, ...)
 
 \method{get_data}{multilpa_bootstrap_lrt}(x, what = NULL, ...)
@@ -42,8 +38,6 @@ get_data(x, what = NULL, ...)
 \method{get_data}{summary_multilpa}(x, what = NULL, ...)
 
 \method{get_data}{summary_multilpa_covariates}(x, what = NULL, ...)
-
-\method{get_data}{summary_multilpa_random_intercept}(x, what = NULL, ...)
 
 \method{get_data}{summary_multilpa_transitions}(x, what = NULL, ...)
 
@@ -109,9 +103,9 @@ Every fitted model offers these:
   \item{`"model"`}{One row describing the whole fit: its dimensions,
     likelihood, parameter counts, `aic`, `bic_groups`, `bic_individual` and
     its convergence and boundary diagnostics. The columns are those of the
-    family: a random-intercept fit reports its integration diagnostics and a
-    covariate fit its predictor counts, because padding those onto a
-    two-level fit would leave the common case mostly `NA`. Comparing fits
+    family: a covariate fit reports its predictor counts, because padding
+    those onto a two-level fit would leave the common case mostly `NA`.
+    Comparing fits
     across families is what `"information_criteria"` is for, and that table
     does have one column set for every family.}
   \item{`"posteriors"`}{One row per individual and profile: `row`, `group`,
@@ -164,8 +158,7 @@ Every fitted model offers these:
     Columns a model never saw are not here, which is why [three_step()] and
     [r3step()] still take `data`.}
 }
-Every family with discrete group classes -- that is, every family except
-the random-intercept one -- adds:
+Every family with discrete group classes adds:
 \describe{
   \item{`"group_posteriors"`}{One row per observed group and group class:
     `group`, `group_size`, `log_likelihood`, `group_class`, `posterior`,
@@ -193,9 +186,6 @@ And each family adds its own:
     profile: `group_class`, `profile`, `probability`, `prevalence`,
     `group_class_probability`. `"sequence_lengths"` has one row per group:
     `group`, `group_class`, `occasions`, `observations`, `complete`.}
-  \item{`"random_intercepts"`}{A random-intercept fit. One row per observed
-    group: `group`, `group_size`, `mean`, `sd`, the posterior mean and
-    standard deviation of that group's scalar intercept.}
   \item{`"candidates"`, `"criteria"`}{An enumeration grid.
     `"criteria"` has one row per information criterion, naming the candidate
     that minimises it. `"candidates"` has one row per candidate model,
@@ -315,9 +305,8 @@ And each family adds its own:
   `convention = NA_character_`. `clc` depends on none either, but its
   convention selects which level's classification uncertainty it penalizes,
   so it is reported once per convention. Individual sample sizes exclude
-  rows with no observed indicators. For a continuous random-intercept fit
-  the group classification entropy is undefined, so group-level `awe`, `icl`
-  and `clc` are `NA`.
+  rows with no observed indicators. Where the group classification entropy
+  is undefined, group-level `awe`, `icl` and `clc` are `NA`.
 }
 
 \section{Classification quality}{
@@ -339,9 +328,9 @@ And each family adds its own:
   criteria use, so lower is sharper. `relative_entropy` is `NA_real_` when a
   level has a single class, where it is undefined rather than perfect.
 
-  A continuous random-intercept fit has individual profiles but no discrete
-  group classes: `level = "both"` returns individuals only, and
-  `level = "groups"` raises `multilpa_no_group_classes`.
+  A fit with individual profiles but no discrete group classes returns
+  individuals only for `level = "both"`, and raises
+  `multilpa_no_group_classes` for `level = "groups"`.
 }
 
 \section{Bivariate residuals}{

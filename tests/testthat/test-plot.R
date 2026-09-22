@@ -257,12 +257,11 @@ test_that("the catalogue lists exactly the views the methods accept", {
   # going undiscoverable. "enumeration" belongs to the enumeration method.
   #
   # This previously compared the catalogue against `plot.multilpa` alone, which
-  # made it enforce the omission it was meant to catch: `"random_intercepts"` is
-  # offered only by the random-intercept method, so anchoring the catalogue to
-  # one method's views required that row to be absent. The catalogue is the
-  # union over every method, so compare it with the union.
+  # made it enforce the omission it was meant to catch: a view offered by only
+  # one family's method had to be absent for the comparison to pass. The
+  # catalogue is the union over every method, so compare it with the union.
   methods <- list(plot.multilpa, plot.multilpa_covariates,
-                  plot.multilpa_random_intercept)
+                  plot.multilpa_transitions)
   method_views <- unique(unlist(lapply(methods, function(method)
     eval(formals(method)$what)), use.names = FALSE))
   expect_setequal(setdiff(catalogue$type, "enumeration"), method_views)
@@ -401,7 +400,7 @@ test_that("a family without standard errors gets bars, not an error", {
   # A transition fit has no implemented standard errors, so the whiskers cannot
   # be drawn. The bars still can, and a plot must not fail over a missing
   # ornament.
-  moves <- fit_transitions(data, c("score_a", "score_b"), "school",
+  moves <- lta(data, c("score_a", "score_b"), "school",
                            n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
   expect_null(.multilpa_mean_error_matrix(moves, NULL))
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
