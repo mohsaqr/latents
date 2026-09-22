@@ -1,9 +1,31 @@
 <!-- README.md is generated from README.Rmd. Please edit that file and rebuild
      with:  Rscript -e 'knitr::knit("README.Rmd", "README.md")' -->
 
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>",
+  fig.path = "man/figures/README-", out.width = "100%",
+  fig.cap = "", fig.alt = "",
+  dpi = 150, fig.width = 8, fig.height = 5,
+  message = FALSE, warning = FALSE
+)
+library(multilpa)
+```
 
-
-
+```{r objects, include = FALSE}
+vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit <- multilpa(course_engagement, vars, "student",
+                n_profiles = 2, n_group_classes = 2, variance_model = "varying",
+                n_starts = 10, seed = 1)
+moves <- lta(course_engagement, vars, "student",
+             n_profiles = 2, time = "sequence", seed = 1)
+with_predictors <- multilpa(course_engagement, vars, "student",
+                            n_profiles = 2, n_group_classes = 2,
+                            profile_covariates = "previous_grade", seed = 1)
+candidates <- enumerate_classes(course_engagement, vars, "student",
+                                n_profiles = 2:4, n_group_classes = 1:3,
+                                n_starts = 10, seed = 1)
+```
 
 # multilpa <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
@@ -141,7 +163,9 @@ Recovering that split is what the two-level model does and a pooled one cannot.
 
 The two recovered profiles, in input units:
 
-<img src="man/figures/README-profiles-1.png" alt="" width="100%" />
+```{r profiles, echo = FALSE}
+plot(fit)
+```
 
 Every result table is a base `data.frame` and one verb returns all of them, so
 nothing has to be pulled out of the fitted object by hand. `get_results(x, what = )`
@@ -760,54 +784,33 @@ Every series is distinguished by **colour, point symbol and line type together**
 and labelled directly at the line end, so the plots stay readable in greyscale,
 for colour-blind readers, and without a legend. Colours are Okabe-Ito.
 
-
-``` r
+```{r plot-standardized}
 plot(fit, scale = "standardized")           # shapes comparable across indicators
 ```
 
-<img src="man/figures/README-plot-standardized-1.png" alt="" width="100%" />
-
-
-``` r
+```{r plot-probabilities}
 plot(fit, what = "probabilities")           # profile prevalence per group class
 ```
 
-<img src="man/figures/README-plot-probabilities-1.png" alt="" width="100%" />
-
-
-``` r
+```{r plot-entropy}
 plot(fit, what = "entropy")                 # where the classification uncertainty sits
 ```
 
-<img src="man/figures/README-plot-entropy-1.png" alt="" width="100%" />
-
-
-``` r
+```{r plot-posteriors}
 plot(fit, what = "posteriors")              # modal assignment probabilities
 ```
 
-<img src="man/figures/README-plot-posteriors-1.png" alt="" width="100%" />
-
-
-``` r
+```{r plot-cov-entropy}
 plot(with_predictors, what = "entropy")     # the same view on a covariate fit
 ```
 
-<img src="man/figures/README-plot-cov-entropy-1.png" alt="" width="100%" />
-
-
-``` r
+```{r plot-transitions}
 plot(moves, what = "transitions")           # the estimated transition matrix
 ```
 
-<img src="man/figures/README-plot-transitions-1.png" alt="" width="100%" />
-
-
-``` r
+```{r plot-enumeration}
 plot(candidates, criterion = "icl_groups")  # any column of the enumeration grid
 ```
-
-<img src="man/figures/README-plot-enumeration-1.png" alt="" width="100%" />
 
 Use `scale = "standardized"` whenever indicators are on different scales,
 otherwise the largest-scale indicator dictates the apparent profile shape. The

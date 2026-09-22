@@ -8,8 +8,6 @@ vignette: >
   %\VignetteIndexEntry{Evaluating multilevel latent profile models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-beatrina-metadata: {"schema":1,"meta":{"beatrinaDocument":{"documentId":"745af730-8584-4047-bbf9-4261aed3ead8"}}}
-carmar-mode: writing
 ---
 
 Multilevel latent profile analysis (MLPA) estimates latent profiles at the observation level while simultaneously modeling how the probabilities of those profiles vary across higher-level latent classes. In this framework, the observation-level profiles are defined by their characteristic indicator means, whereas the higher-level classes are distinguished by the probabilities with which those profiles occur.

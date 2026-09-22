@@ -116,7 +116,7 @@ The command `get_results(moves, "initial")` extracts the estimated initial proba
 
 The output also reports `group_class_probability`, which gives the estimated proportion of students belonging to each higher-level latent class. These are population-level probabilities from the fitted model rather than deterministic assignments of individual students. Each student retains a posterior probability of belonging to each class, so uncertainty in student-class membership remains part of the analysis.
 
-```{r initial-probabilities} id="h6k2m9"
+```{r initial-probabilities}
 get_results(moves, "initial")
 ```
 
@@ -144,7 +144,7 @@ The output also reports `expected_count`, which is the posterior expected number
 
 A further diagnostic is the `estimated` flag, which indicates whether an outgoing transition row is supported by the observed data. If a profile is never occupied before a student’s final observation, there is no information about what profile would follow it. In such cases, the corresponding transition row cannot be estimated from the data. The software assigns uniform probabilities to that row and marks it as unestimated. These uniform values are placeholders and should not be interpreted as evidence that all destination profiles are equally likely.
 
-```{r transition-probabilities} id="w7m3q8"
+```{r transition-probabilities}
 get_results(moves, "transitions")
 ```
 

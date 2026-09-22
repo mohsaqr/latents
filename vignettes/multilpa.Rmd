@@ -234,8 +234,6 @@ on the estimated indicator means rather than on the profile numbers themselves.
 
 ### Profile and class sizes
 
-### Profile and class sizes
-
 The `get_results()` function extracts result tables from the fitted model. The
 `"counts"` table reports **effective membership** at both levels: the estimated
 number of enrolments in each Level-1 profile and the estimated number of
@@ -312,7 +310,7 @@ variance-boundary status for each random start. Agreement across starts provides
 evidence that the estimation is repeatedly reaching the same solution, although
 it does not establish that this solution is the global maximum.
 
-```{r starts} id="h7d3kc"
+```{r starts}
 get_results(fit, "starts")
 ```
 
@@ -330,7 +328,7 @@ vertical axis is expressed in standard deviations from the corresponding course
 mean. Line types and point symbols distinguish the profiles in addition to
 colour.
 
-```{r profiles} id="k4m8zu"
+```{r profiles}
 plot(fit, subtitle = "Profile means, standard deviations from each course mean")
 ```
 
@@ -357,7 +355,7 @@ get_results(fit, "sequences", format = "wide") |> head(4)
 ```
 
 Students 1 and 2 are assigned to student class 3. Student 1 is assigned to the
-**intermediate-activity** profile for the first observed course and to the
+**intermediate-activity** profile for the first two observed courses and to the
 **lower-activity** profile for the courses that follow, whereas student 2 is
 assigned to the **lower-activity** profile throughout the observed sequence.
 Students 3 and 4 are assigned to class 1 and have enrolments classified as both
