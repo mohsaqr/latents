@@ -43,7 +43,7 @@
 #' Every likelihood-penalty criterion a fit supports
 #'
 #' The formulas, the two sample-size conventions, the entropy each criterion
-#' penalizes and the references are documented on `?get_data`, which is where
+#' penalizes and the references are documented on `?get_results`, which is where
 #' a caller reaches this table from.
 #'
 #' @param x A fitted model of this package.
@@ -183,7 +183,7 @@
 #' Per-class classification quality at one or both levels
 #'
 #' The columns, the odds-of-correct-classification formula and the reference
-#' are documented on `?get_data`, which is where a caller reaches this table
+#' are documented on `?get_results`, which is where a caller reaches this table
 #' from.
 #'
 #' @param x A fitted model of this package.
@@ -204,7 +204,7 @@
 
 #' Mean posterior of every class within each modal assignment
 #'
-#' Documented on `?get_data`, which is where a caller reaches this table from.
+#' Documented on `?get_results`, which is where a caller reaches this table from.
 #'
 #' @param x A fitted model of this package.
 #' @param level `"individuals"`, `"groups"` or `"both"`.
@@ -296,7 +296,7 @@
 
 #' Classification entropy at each level a fit has
 #'
-#' Documented on `?get_data`, which is where a caller reaches this table from.
+#' Documented on `?get_results`, which is where a caller reaches this table from.
 #'
 #' @param x A fitted model of this package.
 #' @return A base `data.frame`, one row per level, with `level`, `n_classes`,

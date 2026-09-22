@@ -89,8 +89,8 @@ way `min_variance` does for Gaussian indicators.}
 
 \item{time}{Optional name of a column giving each observation's position
 within its group, such as a wave, occasion or course number. The model does
-not use it; it is stored so that `get_data(x, "sequences")`,
-`get_data(x, "sequence_summary")` and
+not use it; it is stored so that `get_results(x, "sequences")`,
+`get_results(x, "sequence_summary")` and
 `plot(what = "sequences")` can read the assignments back in order. Values
 must be complete and unique within each group.}
 }
@@ -100,7 +100,7 @@ A `multilpa` object for the second stage, so that every accessor,
   are exactly the first stage's. It additionally carries `fixed`, naming the
   held blocks; `n_parameters`, counting only the parameters this stage
   estimated; and `n_parameters_with_measurement`, which adds the held
-  measurement back. Use [get_data()] with `what = "stages"` for a tidy
+  measurement back. Use [get_results()] with `what = "stages"` for a tidy
   two-row summary of both stages.
 }
 \description{
@@ -131,8 +131,8 @@ example_data <- data.frame(
 staged <- fit_staged(example_data, c("score_a", "score_b"), "school",
                      n_profiles = 2, n_group_classes = 2, n_starts = 2,
                      seed = 1)
-get_data(staged, what = "stages")
-get_data(staged, what = "profile_probabilities")
+get_results(staged, what = "stages")
+get_results(staged, what = "profile_probabilities")
 }
 \seealso{
 [multilpa()] with `fixed` for finer control over which blocks are

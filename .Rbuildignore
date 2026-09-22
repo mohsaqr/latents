@@ -27,3 +27,4 @@
 ^docs$
 ^vignettes/\.beatrina
 ^vignettes/.*\.tex$
+^vignettes/figure$

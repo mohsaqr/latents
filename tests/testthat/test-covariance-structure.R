@@ -146,7 +146,7 @@ test_that("a constrained structure refuses a held variance block", {
 test_that("the structure is reported, and the default one is unchanged", {
   default <- structure_fit(n_profiles = 2L)
   expect_identical(default$covariance_structure, "VVI")
-  expect_identical(get_data(default, "model")$covariance_structure, "VVI")
+  expect_identical(get_results(default, "model")$covariance_structure, "VVI")
   expect_output(print(default), "VVI", fixed = TRUE)
   # Naming the pair that the old arguments already meant must not change the fit.
   named <- structure_fit(volume = "varying", shape = "varying", n_profiles = 2L)
@@ -171,7 +171,7 @@ test_that("the structure grid crosses models with class counts", {
     course_engagement, activity, "student", n_profiles = 2:3,
     n_group_classes = 1, structure = c("EEI", "EVI", "EEE"),
     n_starts = 2, seed = 1, max_iter = 2000)
-  grid <- get_data(candidates, "candidates")
+  grid <- get_results(candidates, "candidates")
   expect_true("structure" %in% names(grid))
   expect_identical(nrow(grid), 6L)
   expect_setequal(unique(grid$structure), c("EEI", "EVI", "EEE"))
@@ -202,7 +202,7 @@ test_that("an ellipsoidal structure keeps a full covariance array", {
   # array whatever `covariance_model` defaulted to.
   expect_identical(fit$covariance_model, "full")
   expect_equal(dim(fit$covariances), c(length(activity), length(activity), 2L))
-  covariances <- get_data(fit, "covariances")
+  covariances <- get_results(fit, "covariances")
   off_diagonal <- covariances$covariance[
     covariances$indicator != covariances$indicator_2]
   expect_true(any(abs(off_diagonal) > 1e-8))
@@ -210,10 +210,10 @@ test_that("an ellipsoidal structure keeps a full covariance array", {
 
 test_that("the assignments table carries what modal assignment discards", {
   fit <- structure_fit(n_profiles = 2L)
-  assignments <- get_data(fit, "assignments")
+  assignments <- get_results(fit, "assignments")
   expect_true("uncertainty" %in% names(assignments))
   # One minus the posterior of the profile that was assigned.
-  posteriors <- get_data(fit, "posteriors", format = "wide")
+  posteriors <- get_results(fit, "posteriors", format = "wide")
   columns <- grep("^posterior_profile_", names(posteriors), value = TRUE)
   expect_equal(assignments$uncertainty,
                1 - apply(posteriors[columns], 1L, max))

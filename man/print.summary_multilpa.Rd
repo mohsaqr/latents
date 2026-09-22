@@ -12,7 +12,7 @@
 \item{digits}{Number of printed significant digits.}
 
 \item{rows}{How many rows of each table to print. A longer table is shown
-to that depth, with its remaining row count and the `get_data()` call that
+to that depth, with its remaining row count and the `get_results()` call that
 returns it whole.}
 
 \item{...}{Additional arguments passed to matrix printing.}
@@ -25,7 +25,7 @@ The summary, invisibly. Called for the side effect of printing the
 }
 \description{
 A human-facing report of the fit. The same content is available as tidy
-tables from [get_data()].
+tables from [get_results()].
 }
 \examples{
 set.seed(7)
@@ -38,5 +38,5 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 print(summary(fit), digits = 3)
 }
 \seealso{
-[get_data()] for the same content as data.
+[get_results()] for the same content as data.
 }

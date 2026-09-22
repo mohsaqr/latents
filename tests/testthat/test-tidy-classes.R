@@ -55,19 +55,19 @@ test_that("a covariate summary is a classed, tidy, fully named object", {
   expect_false(anyNA(names(summary_object)))
   expect_output(print.summary_multilpa_covariates(summary_object),
                 "Multilevel LPA with covariates")
-  model <- get_data(summary_object, "model")
+  model <- get_results(summary_object, "model")
   expect_s3_class(model, "data.frame")
   expect_identical(nrow(model), 1L)
   expect_identical(model$n_observations, fixture$fit$n_observations)
   expect_identical(model$n_profiles, fixture$fit$n_profiles)
   expect_equal(model$log_likelihood, fixture$fit$log_likelihood)
   expect_equal(model$bic_groups, fixture$fit$bic)
-  coefficients <- get_data(summary_object, "coefficients")
+  coefficients <- get_results(summary_object, "coefficients")
   expect_identical(names(coefficients),
                    c("level", "outcome", "term", "parameter", "estimate"))
-  expect_identical(nrow(get_data(summary_object, "starts")), 2L)
-  expect_identical(nrow(get_data(summary_object, "profiles")), 4L)
-  expect_error(get_data(summary_object, "nonsense"),
+  expect_identical(nrow(get_results(summary_object, "starts")), 2L)
+  expect_identical(nrow(get_results(summary_object, "profiles")), 4L)
+  expect_error(get_results(summary_object, "nonsense"),
                class = "multilpa_bad_argument")
 })
 
@@ -91,7 +91,7 @@ test_that("an enumeration summary names the minimising candidate per criterion",
   expect_false(anyNA(names(summary_object)))
   expect_output(print.summary_multilpa_enumeration(summary_object),
                 "-- criteria", fixed = TRUE)
-  criteria <- get_data(summary_object, "criteria")
+  criteria <- get_results(summary_object, "criteria")
   expect_identical(names(criteria), c("criterion", "convention", "n_profiles",
                                       "n_group_classes", "value"))
   expect_identical(nrow(criteria), 14L)
@@ -114,7 +114,7 @@ test_that("an enumeration summary names the minimising candidate per criterion",
     candidate[[column[row]]]
   }, numeric(1))
   expect_equal(criteria$value, named)
-  expect_identical(nrow(get_data(summary_object, "candidates")), nrow(grid))
+  expect_identical(nrow(get_results(summary_object, "candidates")), nrow(grid))
 })
 
 test_that("a candidate fit is reached by its class counts, never by position", {
@@ -144,11 +144,11 @@ test_that("a bootstrap comparison is classed and plots its simulated null", {
   summary_object <- summary.multilpa_bootstrap_lrt(result)
   expect_s3_class(summary_object, "summary_multilpa_bootstrap_lrt")
   expect_false(anyNA(names(summary_object)))
-  test <- get_data(summary_object, "test")
+  test <- get_results(summary_object, "test")
   expect_identical(nrow(test), 1L)
   expect_identical(test$null_profiles, 1L)
   expect_identical(test$alternative_profiles, 2L)
-  expect_identical(nrow(get_data(summary_object, "replicates")), 3L)
+  expect_identical(nrow(get_results(summary_object, "replicates")), 3L)
   file <- tempfile(fileext = ".pdf")
   on.exit(unlink(file), add = TRUE)
   grDevices::pdf(file)

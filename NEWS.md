@@ -1,3 +1,28 @@
+# multilpa 0.4.1
+
+`vignettes/figure`, a leftover `knitr` figure directory from a preview render,
+is added to `.Rbuildignore`. It was entering the tarball and drawing a
+"looks like a leftover from 'knitr'" NOTE. The tarball's `vignettes/` now holds
+the four `.Rmd` sources and nothing else.
+
+# multilpa 0.4.0
+
+## `get_data()` is renamed `get_results()`
+
+**Breaking, and deliberately without an alias.** The package has never been on
+CRAN, so there is no installed base to migrate.
+
+The old name was ambiguous in a way that showed up inside the verb itself:
+`get_data(x, what = "data")` used the same word for the accessor and for one of
+its own values, and "data" in an R package normally means the input rather than
+what a model produced. `get_results()` says what comes back, and keeps the
+`get_*` family consistent with `get_tna()` and `get_group_tna()`.
+
+All thirteen S3 methods, the four vignettes and the README move with it. The
+`what =` values are unchanged, so `get_results(x, what = "profiles")` returns
+exactly what `get_data(x, what = "profiles")` did. Earlier entries in this file
+still say `get_data()`, because that is what those versions shipped.
+
 # multilpa 0.3.0
 
 ## Two features moved to `future/`

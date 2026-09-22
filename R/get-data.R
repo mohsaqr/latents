@@ -313,100 +313,100 @@
 #'   id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
 #'   seed = 1
 #' )
-#' get_data(fit)
-#' get_data(fit, what = "profile_probabilities")
-#' get_data(fit, what = "entropy")
-#' names(get_data(fit, what = "all"))
+#' get_results(fit)
+#' get_results(fit, what = "profile_probabilities")
+#' get_results(fit, what = "entropy")
+#' names(get_results(fit, what = "all"))
 #'
 #' # `engagement` and `student_type` are the kinds each row was simulated from,
 #' # which the model never saw. Both recovery checks are one call.
-#' get_data(fit, what = "assignments", data = course_engagement,
+#' get_results(fit, what = "assignments", data = course_engagement,
 #'          truth = c("engagement", "student_type"))
 #' @export
-get_data <- function(x, what = NULL, ...) {
-  UseMethod("get_data")
+get_results <- function(x, what = NULL, ...) {
+  UseMethod("get_results")
 }
 
-#' @rdname get_data
+#' @rdname get_results
 #' @export
-get_data.default <- function(x, what = NULL, ...) {
+get_results.default <- function(x, what = NULL, ...) {
   stop(errorCondition(sprintf(
-    "`get_data()` has no method for an object of class %s.",
+    "`get_results()` has no method for an object of class %s.",
     paste(sprintf("`%s`", class(x)), collapse = ", ")),
     class = "multilpa_bad_argument", call = NULL))
 }
 
-#' @rdname get_data
+#' @rdname get_results
 #' @export
-get_data.multilpa <- function(x, what = NULL, ...) {
+get_results.multilpa <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_data
+#' @rdname get_results
 #' @export
-get_data.multilpa_covariates <- function(x, what = NULL, ...) {
+get_results.multilpa_covariates <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_data
+#' @rdname get_results
 #' @export
-get_data.multilpa_transitions <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-
-#' @rdname get_data
-#' @export
-get_data.multilpa_enumeration <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_data
-#' @export
-get_data.multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_data
-#' @export
-get_data.multilpa_start <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_data
-#' @export
-get_data.multilpa_diagnostics <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_data
-#' @export
-get_data.summary_multilpa <- function(x, what = NULL, ...) {
-  .multilpa_dispatch_table(x, what, list(...))
-}
-
-#' @rdname get_data
-#' @export
-get_data.summary_multilpa_covariates <- function(x, what = NULL, ...) {
+get_results.multilpa_transitions <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
 
-#' @rdname get_data
+#' @rdname get_results
 #' @export
-get_data.summary_multilpa_transitions <- function(x, what = NULL, ...) {
+get_results.multilpa_enumeration <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_data
+#' @rdname get_results
 #' @export
-get_data.summary_multilpa_enumeration <- function(x, what = NULL, ...) {
+get_results.multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
-#' @rdname get_data
+#' @rdname get_results
 #' @export
-get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
+get_results.multilpa_start <- function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @rdname get_results
+#' @export
+get_results.multilpa_diagnostics <- function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @rdname get_results
+#' @export
+get_results.summary_multilpa <- function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @rdname get_results
+#' @export
+get_results.summary_multilpa_covariates <- function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+
+#' @rdname get_results
+#' @export
+get_results.summary_multilpa_transitions <- function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @rdname get_results
+#' @export
+get_results.summary_multilpa_enumeration <- function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @rdname get_results
+#' @export
+get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
@@ -423,8 +423,8 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 .multilpa_coerce <- function(x, row.names, extra) {
   .multilpa_reject_extra_arguments(
     extra, "as.data.frame()",
-    "It coerces to the primary table; get_data(x, what = ) has the others.")
-  result <- get_data(x)
+    "It coerces to the primary table; get_results(x, what = ) has the others.")
+  result <- get_results(x)
   row.names(result) <- row.names
   result
 }
@@ -615,7 +615,7 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #'
 #' A summary is built by asking the fit for every table, so its own catalogue
 #' serves them back rather than recomputing them. That is what makes
-#' `get_data(summary(fit), what)` and `get_data(fit, what)` the same table
+#' `get_results(summary(fit), what)` and `get_results(fit, what)` the same table
 #' rather than two computations that could diverge.
 #'
 #' @param x A summary object.
@@ -813,7 +813,7 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' alternative is either a console dump or a table the reader cannot tell was
 #' truncated.
 #'
-#' @param tables A named list of `data.frame`s, as `get_data(x, "all")` gives.
+#' @param tables A named list of `data.frame`s, as `get_results(x, "all")` gives.
 #' @param rows How many rows of each table to show.
 #' @param digits Printed significant digits.
 #' @return `NULL`, invisibly. Called for the printing.
@@ -835,7 +835,7 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     }
     print(utils::head(frame, rows), digits = digits, row.names = FALSE)
     if (nrow(frame) > rows) {
-      cat(sprintf("   ... %d more rows.  get_data(x, what = \"%s\")\n",
+      cat(sprintf("   ... %d more rows.  get_results(x, what = \"%s\")\n",
                   nrow(frame) - rows, name))
     }
     invisible(NULL)
@@ -848,8 +848,8 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' @noRd
 .multilpa_print_table_footer <- function(tables) {
   cat(sprintf(paste0(
-    "\n%d tables above, truncated to fit. get_data(x, what = ) returns any\n",
-    "of them whole, and get_data(x, what = \"all\") returns every one.\n"),
+    "\n%d tables above, truncated to fit. get_results(x, what = ) returns any\n",
+    "of them whole, and get_results(x, what = \"all\") returns every one.\n"),
     length(tables)))
   invisible(NULL)
 }
@@ -911,7 +911,7 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   stopifnot("`rows` must be a single non-negative whole number" =
               is.numeric(rows) && length(rows) == 1L && is.finite(rows) &&
               rows >= 0 && rows == as.integer(rows))
-  table <- get_data(x)
+  table <- get_results(x)
   name <- names(.multilpa_catalogue(x))[1L]
   ## The Gaussian measurement is printed one row per profile. Everything else
   ## keeps the catalogue's own shape, which is already one row per thing.
@@ -930,21 +930,21 @@ get_data.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     if (nrow(wide) > rows) {
       cat(sprintf("   ... %d more profiles.\n", nrow(wide) - rows))
     }
-    cat("\nVariances and standard errors: get_data(x, \"profiles\").",
-        "\nEvery other table: get_data(x, what = ), or get_data(x, \"all\").\n")
+    cat("\nVariances and standard errors: get_results(x, \"profiles\").",
+        "\nEvery other table: get_results(x, what = ), or get_results(x, \"all\").\n")
     return(invisible(NULL))
   }
   if (nrow(table) == 0L && length(x$categorical %||% character()) > 0L) {
-    table <- get_data(x, "responses")
+    table <- get_results(x, "responses")
     name <- "responses"
   }
   if (nrow(table) == 0L) return(invisible(NULL))
   cat("\n")
   print(utils::head(table, rows), row.names = FALSE)
   if (nrow(table) > rows) {
-    cat(sprintf("   ... %d more rows.  get_data(x, \"%s\")\n",
+    cat(sprintf("   ... %d more rows.  get_results(x, \"%s\")\n",
                 nrow(table) - rows, name))
   }
-  cat("\nEvery other table: get_data(x, what = ), or get_data(x, \"all\").\n")
+  cat("\nEvery other table: get_results(x, what = ), or get_results(x, \"all\").\n")
   invisible(NULL)
 }

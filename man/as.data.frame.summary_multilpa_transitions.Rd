@@ -22,7 +22,7 @@ A base `data.frame`: one row per profile and continuous indicator.
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 A summary carries every table the object it describes can produce, and
-[get_data()] names them.
+[get_results()] names them.
 }
 \examples{
 moves <- lta(
@@ -34,5 +34,5 @@ moves <- lta(
 as.data.frame(summary(moves))
 }
 \seealso{
-[get_data()] for every other table this summary holds.
+[get_results()] for every other table this summary holds.
 }

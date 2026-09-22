@@ -27,7 +27,7 @@ A named numeric vector of every free parameter on its natural scale:
   an indicator name itself contains a dot.
 
   No standard errors accompany these: [vcov.multilpa_transitions()] refuses
-  rather than returning an invalid matrix. [get_data()] gives the same
+  rather than returning an invalid matrix. [get_results()] gives the same
   quantities as tidy
   tables, which is the form to prefer.
 }

@@ -156,7 +156,7 @@
 #' others through.
 #' \describe{
 #'   \item{`multilpa_failed_starts`}{Some, but not all, EM starts raised. The
-#'     surviving starts are in `get_data(fit, "starts")`.}
+#'     surviving starts are in `get_results(fit, "starts")`.}
 #'   \item{`multilpa_unconverged`}{The best start had not converged when
 #'     `max_iter` was reached, so the returned estimate is not a maximum.}
 #'   \item{`multilpa_boundary`}{A variance, or a covariance eigenvalue, sits at
@@ -183,7 +183,7 @@
 #'     driven by scaling, a sparse class or separation rather than by the data.}
 #'   \item{`multilpa_empty_transition_row`}{A profile is never occupied before a
 #'     final occasion, so its transition row is uniform by construction rather
-#'     than estimated. `get_data(fit, "transitions", estimated = FALSE)`
+#'     than estimated. `get_results(fit, "transitions", estimated = FALSE)`
 #'     lists them.}
 #'   \item{`multilpa_unverified_alignment`}{A supplied `data` frame shares no
 #'     column with the fit, so the row alignment the verb depends on could not
@@ -201,7 +201,7 @@
 #' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' # A sequence verb on a fit made without `time` is catchable by class.
-#' tryCatch(get_data(fit, "sequences"),
+#' tryCatch(get_results(fit, "sequences"),
 #'          multilpa_no_time = function(condition) {
 #'   "this fit carries no ordering"
 #' })

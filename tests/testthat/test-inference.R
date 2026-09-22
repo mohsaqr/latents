@@ -68,7 +68,7 @@ test_that("inference refuses data mismatches and nonregular fits", {
   # `vcov()` no longer demands data: the fit carries the columns it was built
   # from, and falling back to them gives the same answer as passing them.
   expect_equal(vcov(fit), vcov(fit, dat))
-  expect_equal(vcov(fit), vcov(fit, data = get_data(fit, "data")))
+  expect_equal(vcov(fit), vcov(fit, data = get_results(fit, "data")))
   expect_error(parameter_inference(fit, dat[-1, ]),
                class = "multilpa_bad_inference_data")
   altered <- dat

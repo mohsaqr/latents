@@ -29,7 +29,7 @@ test_that("a group covariate alone also takes the covariate path", {
   expect_identical(fit$group_covariates, "mean_grade")
   expect_length(fit$profile_covariates, 0L)
   expect_true(fit$converged)
-  expect_true("group" %in% get_data(fit, "coefficients")$level)
+  expect_true("group" %in% get_results(fit, "coefficients")$level)
 })
 
 test_that("no covariate leaves the covariate-free path untouched", {
@@ -98,13 +98,13 @@ test_that("a covariate fit offers the tables its family defines", {
   fit <- multilpa(course_engagement, activity, "student", n_profiles = 2,
                   n_group_classes = 2, profile_covariates = "previous_grade",
                   n_starts = 2, seed = 1)
-  tables <- get_data(fit, "all")
+  tables <- get_results(fit, "all")
   expect_true("coefficients" %in% names(tables))
   # A covariate model has no single profile prevalence: it varies with each
   # unit's covariates, so the table the covariate-free model has is absent.
   expect_false("profile_probabilities" %in% names(tables))
-  expect_error(get_data(fit, "profile_probabilities"),
+  expect_error(get_results(fit, "profile_probabilities"),
                class = "multilpa_bad_argument")
-  expect_named(get_data(fit, "coefficients"),
+  expect_named(get_results(fit, "coefficients"),
                c("level", "outcome", "term", "parameter", "estimate"))
 })

@@ -108,7 +108,7 @@ must be checked again when interpreting a different fit.
 ## Engagement at the beginning of the sequence
 
 Initial profile probabilities describe how students enter their observed course
-histories. `get_data(moves, "initial")` extracts these probabilities for each
+histories. `get_results(moves, "initial")` extracts these probabilities for each
 student class. The `probability` column gives $\delta_{k\mid m}$, whereas
 `prevalence` gives the posterior expected proportion of enrolments in each
 profile within that class, across the observed histories.
@@ -117,7 +117,7 @@ in each class. These probabilities describe the fitted distributions;
 uncertainty about an individual student's class remains part of the model.
 
 ```{r initial-probabilities}
-get_data(moves, "initial")
+get_results(moves, "initial")
 ```
 
 Class 1 starts in the lower-activity profile with probability 0.841, and class
@@ -130,7 +130,7 @@ the transition probabilities establish how engagement subsequently develops.
 ## Movement between engagement profiles
 
 Transition probabilities describe the destination profile conditional on the
-current profile and student class. `get_data(moves, "transitions")` extracts
+current profile and student class. `get_results(moves, "transitions")` extracts
 the fitted $a_{kl\mid m}$ values. `from` and `to` identify the current and next
 profiles, and `stable` marks a transition that stays in the same profile.
 `expected_count` is the posterior expected number of transitions of that type,
@@ -145,7 +145,7 @@ of equal transition chances. The following table gives all transitions for
 the three student classes.
 
 ```{r transition-probabilities}
-get_data(moves, "transitions")
+get_results(moves, "transitions")
 ```
 
 Lower activity persists with probability 0.947 in class 3 and 0.746 in class 1.

@@ -2,7 +2,7 @@
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' The other tables are named rather than positional, so they belong to
-#' [get_data()], which takes `what` and refuses a name this object has not.
+#' [get_results()], which takes `what` and refuses a name this object has not.
 #'
 #' @param x A fitted multilevel latent profile model.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -13,7 +13,7 @@
 #'   that was asked for is the one outcome worth refusing.
 #' @return A base `data.frame`: the Gaussian measurement model, one row per
 #'   profile and continuous indicator.
-#' @seealso [get_data()] for every other table this object holds.
+#' @seealso [get_results()] for every other table this object holds.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -38,7 +38,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' reader's, and every column of `data` that the fit can recognise is checked
 #' against what the fit holds for that row.
 #'
-#' Documented on `?get_data`, which is where a caller reaches this table from,
+#' Documented on `?get_results`, which is where a caller reaches this table from,
 #' including the recovery cross-tabulation `truth` returns and the rule that
 #' pairs each truth column with the level it describes.
 #'
@@ -570,7 +570,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' The other tables are named rather than positional, so they belong to
-#' [get_data()], which takes `what` and refuses a name this object has not.
+#' [get_results()], which takes `what` and refuses a name this object has not.
 #'
 #' @param x An object of class `multilpa_enumeration`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -580,7 +580,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
 #' @return A base `data.frame`: one row per candidate model in the grid.
-#' @seealso [get_data()] for every other table this object holds.
+#' @seealso [get_results()] for every other table this object holds.
 #' @examples
 #' candidates <- enumerate_classes(
 #'   course_engagement,
@@ -682,7 +682,7 @@ print.multilpa_enumeration <- function(x, ...) {
 #'   `multilpa_bad_start` instead of reporting a likelihood for a measurement
 #'   model it never held. The list payload is unchanged by the class, so a
 #'   `multilpa_start` can be passed straight back as `start`.
-#' @seealso [get_data()] for the values as tidy tables.
+#' @seealso [get_results()] for the values as tidy tables.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -777,7 +777,7 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
 #' @param x A `multilpa_start` object from [starting_values()].
 #' @param ... Reserved for compatibility with `print()`.
 #' @return The input, invisibly.
-#' @seealso [get_data()] for the values as tidy tables.
+#' @seealso [get_results()] for the values as tidy tables.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -811,7 +811,7 @@ print.multilpa_start <- function(x, ...) {
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' The other tables are named rather than positional, so they belong to
-#' [get_data()], which takes `what` and refuses a name this object has not.
+#' [get_results()], which takes `what` and refuses a name this object has not.
 #'
 #' @param x An object of class `multilpa_start`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -821,7 +821,7 @@ print.multilpa_start <- function(x, ...) {
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
 #' @return A base `data.frame`: one row per profile and continuous indicator.
-#' @seealso [get_data()] for every other table this object holds.
+#' @seealso [get_results()] for every other table this object holds.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -953,7 +953,7 @@ as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, 
 #'
 #' Plain coercion, as the base generic means it: one object, one data frame.
 #' The other tables are named rather than positional, so they belong to
-#' [get_data()], which takes `what` and refuses a name this object has not.
+#' [get_results()], which takes `what` and refuses a name this object has not.
 #'
 #' @param x A fitted covariate model.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
@@ -964,7 +964,7 @@ as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, 
 #'   that was asked for is the one outcome worth refusing.
 #' @return A base `data.frame`: the Gaussian measurement model, one row per
 #'   profile and continuous indicator.
-#' @seealso [get_data()] for every other table this object holds.
+#' @seealso [get_results()] for every other table this object holds.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,

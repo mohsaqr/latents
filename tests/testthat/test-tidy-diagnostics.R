@@ -16,7 +16,7 @@
 }
 
 test_that("a criterion that uses no sample size says NA, not a third level", {
-  criteria <- get_data(.tidy_fit(), "information_criteria", format = "long")
+  criteria <- get_results(.tidy_fit(), "information_criteria", format = "long")
   scale_free <- subset(criteria, is.na(convention))
   expect_setequal(scale_free$criterion, c("deviance", "aic", "kic"))
   expect_true(all(is.na(scale_free$n)))
@@ -29,7 +29,7 @@ test_that("a criterion that uses no sample size says NA, not a third level", {
 
 test_that("the value column points one way on every row", {
   fit <- .tidy_fit()
-  criteria <- get_data(fit, "information_criteria", format = "long")
+  criteria <- get_results(fit, "information_criteria", format = "long")
   # Every row is the same deviance plus a non-negative complexity charge, so a
   # smaller value is a better-supported model throughout. The log likelihood,
   # for which the opposite held, is logLik() and is not in the long table.
@@ -39,32 +39,32 @@ test_that("the value column points one way on every row", {
   expect_true(all(criteria$value >= -2 * as.numeric(logLik(fit)) - 1e-8))
   # The wide form reports the likelihood instead, because that is what a
   # model-comparison table publishes.
-  expect_true("log_likelihood" %in% names(get_data(fit, "information_criteria")))
+  expect_true("log_likelihood" %in% names(get_results(fit, "information_criteria")))
 })
 
 test_that("formulas are documentation, available only on request", {
   fit <- .tidy_fit()
-  expect_false("definition" %in% names(get_data(fit, "information_criteria", format = "long")))
-  explained <- get_data(fit, "information_criteria", format = "long", definitions = TRUE)
+  expect_false("definition" %in% names(get_results(fit, "information_criteria", format = "long")))
+  explained <- get_results(fit, "information_criteria", format = "long", definitions = TRUE)
   expect_identical(names(explained),
     c("criterion", "convention", "n", "value", "definition"))
   # The column is a pure function of `criterion`, which is why it is optional.
   by_criterion <- tapply(explained$definition, explained$criterion,
                          function(value) length(unique(value)))
   expect_true(all(by_criterion == 1L))
-  expect_identical(nrow(explained), nrow(get_data(fit, "information_criteria", format = "long")))
-  expect_error(get_data(fit, "information_criteria", format = "long", definitions = "yes"),
+  expect_identical(nrow(explained), nrow(get_results(fit, "information_criteria", format = "long")))
+  expect_error(get_results(fit, "information_criteria", format = "long", definitions = "yes"),
                "must be TRUE or FALSE")
   # A formula per row needs rows; the wide form has one, so the combination is
   # refused rather than quietly ignored.
-  expect_error(get_data(fit, "information_criteria", definitions = TRUE),
+  expect_error(get_results(fit, "information_criteria", definitions = TRUE),
                class = "multilpa_bad_argument")
 })
 
 test_that("the wide and long forms are the same numbers", {
   fit <- .tidy_fit()
-  wide <- get_data(fit, "information_criteria")
-  long <- get_data(fit, "information_criteria", format = "long")
+  wide <- get_results(fit, "information_criteria")
+  long <- get_results(fit, "information_criteria", format = "long")
   expect_identical(nrow(wide), 1L)
   expect_equal(wide$log_likelihood, fit$log_likelihood)
   expect_equal(wide$bic_groups,
@@ -78,7 +78,7 @@ test_that("a single fit and its enumeration grid name the same things", {
   # Both go through one pivot, so this cannot drift. A criterion added to the
   # long table but not to the grid, or renamed in either, fails here.
   fit <- .tidy_fit()
-  wide <- get_data(fit, "information_criteria")
+  wide <- get_results(fit, "information_criteria")
   set.seed(3)
   dat <- data.frame(g = rep(seq_len(20L), each = 6L),
                     a = stats::rnorm(120L), b = stats::rnorm(120L))
@@ -93,12 +93,12 @@ test_that("a single fit and its enumeration grid name the same things", {
 
 test_that("classification_table has one shape and average_posteriors the other", {
   fit <- .tidy_fit()
-  summary_table <- get_data(fit, "classification", level = "both")
+  summary_table <- get_results(fit, "classification", level = "both")
   expect_identical(names(summary_table),
     c("level", "class", "n_modal", "proportion_modal", "estimated_n",
       "estimated_proportion", "average_posterior",
       "odds_correct_classification"))
-  cross <- get_data(fit, "average_posteriors", level = "both")
+  cross <- get_results(fit, "average_posteriors", level = "both")
   expect_identical(names(cross),
     c("level", "assigned_class", "class", "n_assigned", "average_posterior"))
   # One row per level x assigned class x class.
@@ -111,14 +111,14 @@ test_that("classification_table has one shape and average_posteriors the other",
   diagonal <- subset(cross, assigned_class == class)
   expect_equal(diagonal$average_posterior, summary_table$average_posterior)
   # The removed flag is refused by class, not by an "unused argument" message.
-  expect_error(get_data(fit, "classification", detail = TRUE),
+  expect_error(get_results(fit, "classification", detail = TRUE),
                class = "multilpa_bad_argument")
 })
 
 test_that("average_posteriors is not classification_errors under another name", {
   fit <- .tidy_fit()
-  cross <- get_data(fit, "average_posteriors", level = "individuals")
-  errors <- get_data(fit, "classification_errors", level = "individuals")
+  cross <- get_results(fit, "average_posteriors", level = "individuals")
+  errors <- get_results(fit, "classification_errors", level = "individuals")
   # Same square, opposite conditioning: one averages posteriors within the
   # assigned class, the other distributes the true class over assignments.
   expect_identical(nrow(cross), nrow(errors))
@@ -130,7 +130,7 @@ test_that("a class with no modal members reports undefined, not zero", {
   # A hand-built posterior whose second class is never modal.
   probabilities <- cbind(c(0.9, 0.8, 0.7), c(0.1, 0.2, 0.3))
   object <- structure(list(subject_posteriors = probabilities), class = "multilpa")
-  table <- get_data(object, "classification", level = "individuals")
+  table <- get_results(object, "classification", level = "individuals")
   empty <- subset(table, class == 2L)
   expect_identical(empty$n_modal, 0L)
   expect_true(is.na(empty$average_posterior))
@@ -138,7 +138,7 @@ test_that("a class with no modal members reports undefined, not zero", {
   # Its estimated size is still positive: the model gives it weight, modal
   # assignment does not.
   expect_gt(empty$estimated_n, 0)
-  cross <- get_data(object, "average_posteriors", level = "individuals")
+  cross <- get_results(object, "average_posteriors", level = "individuals")
   expect_true(all(is.na(subset(cross, assigned_class == 2L)$average_posterior)))
 })
 
@@ -185,7 +185,7 @@ test_that("a mixed fit puts both kinds of pair on one scale", {
   fit <- multilpa(data, c("a", "b", "u1", "u2", "u3"), "school", n_profiles = 2,
                   n_group_classes = 1, categorical = c("u1", "u2", "u3"),
                   n_starts = 5, seed = 3)
-  residuals <- get_data(fit, "residuals", data = data)
+  residuals <- get_results(fit, "residuals", data = data)
   expect_setequal(unique(residuals$kind), c("gaussian", "categorical"))
   # `residual` is observed minus expected for every kind, not only one.
   expect_equal(residuals$residual, residuals$observed - residuals$expected)
@@ -201,11 +201,11 @@ test_that("a mixed fit puts both kinds of pair on one scale", {
   expect_equal(categorical$expected, rep(0, nrow(categorical)),
                tolerance = 1e-8)
   # Pooling mixes profiles, so the model then implies a nonzero association.
-  pooled <- subset(get_data(fit, "residuals", data = data, by = "overall"),
+  pooled <- subset(get_results(fit, "residuals", data = data, by = "overall"),
                    kind == "categorical")
   expect_gt(max(pooled$expected), 0.05)
   # The planted dependence is still the worst pair, over both kinds.
-  worst <- head(get_data(fit, "residuals", data = data, by = "overall"), 1L)
+  worst <- head(get_results(fit, "residuals", data = data, by = "overall"), 1L)
   expect_setequal(c(worst$indicator_1, worst$indicator_2), c("a", "b"))
 })
 
@@ -214,7 +214,7 @@ test_that("df is a column that does not apply to a Gaussian pair", {
   fit <- multilpa(data, c("a", "b", "u1", "u2", "u3"), "school", n_profiles = 2,
                   n_group_classes = 1, categorical = c("u1", "u2", "u3"),
                   n_starts = 5, seed = 3)
-  residuals <- get_data(fit, "residuals", data = data, by = "overall")
+  residuals <- get_results(fit, "residuals", data = data, by = "overall")
   expect_type(residuals$df, "integer")
   # A Fisher z is a standard normal deviate and has no degrees of freedom.
   expect_true(all(is.na(subset(residuals, kind == "gaussian")$df)))
@@ -226,7 +226,7 @@ test_that("df is a column that does not apply to a Gaussian pair", {
   # The empty table declares the same column types as a populated one.
   single <- multilpa(data, "a", "school", n_profiles = 2, n_group_classes = 1,
                      n_starts = 2, seed = 1)
-  empty <- get_data(single, "residuals", data = data)
+  empty <- get_results(single, "residuals", data = data)
   expect_identical(names(empty), names(residuals))
   expect_type(empty$df, "integer")
 })

@@ -5,10 +5,10 @@
 #' actually is, how confidently each unit was assigned, and whether the
 #' within-profile independence the model assumes survives contact with the data.
 #'
-#' It gathers the four classification tables of [get_data()] --- `"entropy"`,
+#' It gathers the four classification tables of [get_results()] --- `"entropy"`,
 #' `"classification"`, `"average_posteriors"` and `"residuals"` --- and prints
 #' one line of reading per diagnostic rather than four differently shaped
-#' tables. The tables themselves come back from `get_data()` on the result, or
+#' tables. The tables themselves come back from `get_results()` on the result, or
 #' on the fit.
 #'
 #' @param x A fitted model of this package.
@@ -28,7 +28,7 @@
 #'   something other than what was asked for. For `plot()`, style overrides, as
 #'   in [plot.multilpa()].
 #' @return An object of class `multilpa_diagnostics`. Read its tables with
-#'   `get_data(result, what = )`, which offers `"entropy"`, `"classification"`,
+#'   `get_results(result, what = )`, which offers `"entropy"`, `"classification"`,
 #'   `"average_posteriors"`, `"residuals"` and `"all"`, and never with `$`. A
 #'   model family that has no bivariate residuals leaves that table out of
 #'   `"all"`, and asking for it by name raises `multilpa_no_group_classes`.
@@ -38,7 +38,7 @@
 #'   largest residual, at each level the fit has. `plot()` returns the object
 #'   invisibly, having drawn the case-level entropy and posterior panels.
 #'   `as.data.frame()` returns the entropy table, the primary one.
-#' @seealso [get_data()] for these tables and every other one, [descriptives()]
+#' @seealso [get_results()] for these tables and every other one, [descriptives()]
 #'   for the before-the-fit counterpart, and [summary()] for what the model
 #'   estimated rather than whether to trust it.
 #' @examples
@@ -50,8 +50,8 @@
 #' )
 #' quality <- diagnostics(fit)
 #' quality
-#' get_data(quality, what = "classification")
-#' get_data(diagnostics(fit, by = "overall"), what = "residuals")
+#' get_results(quality, what = "classification")
+#' get_results(diagnostics(fit, by = "overall"), what = "residuals")
 #' @export
 diagnostics <- function(x, data = NULL, plots = FALSE,
                         by = c("profile", "overall"), ...) {
@@ -60,7 +60,7 @@ diagnostics <- function(x, data = NULL, plots = FALSE,
   .multilpa_reject_extra_arguments(
     list(...), "diagnostics()",
     paste("The only argument of a gathered table it forwards is `by`;",
-          "ask get_data() for that table directly for anything else."))
+          "ask get_results() for that table directly for anything else."))
   by <- match.arg(by)
   data <- .multilpa_resolve_data(x, data)
   has_groups <- !is.null(x$group_posteriors)
@@ -88,8 +88,8 @@ as.data.frame.multilpa_diagnostics <- function(x, row.names = NULL,
   stopifnot(inherits(x, "multilpa_diagnostics"))
   .multilpa_reject_extra_arguments(
     list(...), "as.data.frame()",
-    "It coerces to the primary table; get_data(x, what = ) has the others.")
-  result <- get_data(x)
+    "It coerces to the primary table; get_results(x, what = ) has the others.")
+  result <- get_results(x)
   row.names(result) <- row.names
   result
 }
@@ -136,7 +136,7 @@ print.multilpa_diagnostics <- function(x, ...) {
          sprintf("%.3f  (%s, %s; %s)", worst$residual, worst$indicator_1,
                  worst$indicator_2, worst$profile))
   }
-  cat("\nTables: get_data(x, what = \"entropy\" | \"classification\" |",
+  cat("\nTables: get_results(x, what = \"entropy\" | \"classification\" |",
       "\n        \"average_posteriors\" | \"residuals\" | \"all\").",
       "plot(x) draws them.\n")
   invisible(x)
@@ -203,7 +203,7 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #' @section What it prints: `summary()`, which is every table the fit can
 #'   produce, then `descriptives()`, then the condensed reading of
 #'   `diagnostics()`, then every plot view the fit supports. Each section is
-#'   what that verb returns, and the tables are reached from [get_data()]
+#'   what that verb returns, and the tables are reached from [get_results()]
 #'   rather than from here.
 #' @return The fitted model, invisibly. Called for the printing and drawing.
 #' @seealso [summary()], [diagnostics()], [descriptives()],

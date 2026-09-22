@@ -60,14 +60,14 @@ test_that("a single-level fit records what it is", {
 test_that("the fabricated unit column is not handed back", {
   fit <- flat_fit(n_starts = 3L, seed = 1L)
   # The caller never wrote `.observation`, so no table may return it.
-  expect_identical(names(get_data(fit, "data")), c("x", "y"))
-  expect_false(".observation" %in% names(get_data(fit, "assignments")))
+  expect_identical(names(get_results(fit, "data")), c("x", "y"))
+  expect_false(".observation" %in% names(get_results(fit, "assignments")))
   # A two-level fit still reports the identifier its caller did supply.
   data <- single_level_data()
   data$unit <- rep(seq_len(40L), each = 4L)
   grouped <- multilpa(data, c("x", "y"), id = "unit", n_profiles = 2L,
                       n_group_classes = 2L, n_starts = 3L, seed = 1L)
-  expect_true("unit" %in% names(get_data(grouped, "data")))
+  expect_true("unit" %in% names(get_results(grouped, "data")))
 })
 
 test_that("group classes without an id are refused, not silently dropped", {
@@ -94,13 +94,13 @@ test_that("the package's verbs work on a single-level fit", {
   # Inference, classification and the tables, on a fit with no second level.
   inference <- parameter_inference(fit)
   expect_true(all(is.finite(inference$standard_error)))
-  expect_identical(nrow(get_data(fit, "profiles")), 4L)
+  expect_identical(nrow(get_results(fit, "profiles")), 4L)
   # Both levels are still reported: two profiles, and the single group class the
   # single-level fit collapses to, which carries the whole sample.
-  counts <- get_data(fit, "counts")
+  counts <- get_results(fit, "counts")
   expect_identical(sum(counts$level == "individuals"), 2L)
   expect_equal(counts$effective_proportion[counts$level == "groups"], 1)
-  expect_gt(get_data(fit, "entropy")$relative_entropy[1L], 0.5)
+  expect_gt(get_results(fit, "entropy")$relative_entropy[1L], 0.5)
   # The cluster bootstrap degenerates to the ordinary one when every unit holds
   # one row, which is the right bootstrap for independent observations. On 160
   # rows with two starts a resample occasionally fails to converge, and the
@@ -121,7 +121,7 @@ test_that("a truth column cross-tabulates against profiles, not a single class",
   data$known <- rep(c("a", "b"), each = nrow(data) / 2L)
   fit <- quietly(multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L,
                           n_starts = 3L, seed = 1L))
-  recovery <- get_data(fit, "assignments", data = data, truth = "known")
+  recovery <- get_results(fit, "assignments", data = data, truth = "known")
   expect_identical(unique(recovery$assignment), "profile")
   expect_identical(nrow(recovery), 4L)
   # Within each truth value the proportions are a distribution over profiles.
@@ -135,7 +135,7 @@ test_that("a truth column cross-tabulates against profiles, not a single class",
   grouped <- multilpa(grouped_data, c("x", "y"), id = "unit", n_profiles = 2L,
                       n_group_classes = 2L, n_starts = 3L, seed = 1L)
   expect_identical(
-    unique(get_data(grouped, "assignments", data = grouped_data,
+    unique(get_results(grouped, "assignments", data = grouped_data,
                     truth = "kind")$assignment),
     "group_class")
 })

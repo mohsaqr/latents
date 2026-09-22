@@ -47,7 +47,7 @@ multilpa(
   warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
   two-level model reduces to, and every verb of this package works on it. The
   unit column is fabricated internally as `.observation`; it is not returned
-  by `get_data(x, "data")`, and a `data` that already has a column of that
+  by `get_results(x, "data")`, and a `data` that already has a column of that
   name raises `multilpa_bad_data`. Asking for more than one group class
   without an `id` raises `multilpa_bad_argument`, because one observation per
   unit leaves no composition for a second-level class to differ in.}
@@ -134,8 +134,8 @@ way `min_variance` does for Gaussian indicators.}
 
 \item{time}{Optional name of a column giving each observation's position
 within its group, such as a wave, occasion or course number. The model does
-not use it; it is stored so that `get_data(x, "sequences")`,
-`get_data(x, "sequence_summary")` and
+not use it; it is stored so that `get_results(x, "sequences")`,
+`get_results(x, "sequence_summary")` and
 `plot(what = "sequences")` can read the assignments back in order. Values
 must be complete and unique within each group.}
 
@@ -159,7 +159,7 @@ level: this is the within-person, person-mean-centred design (Quintana,
 2021; Voelkle, Brose, Schmiedek, & Lindenberger, 2014). `"grand"`
 subtracts one mean per indicator, which moves the origin without touching
 the within-group structure. The offsets are kept on the fit, so
-`get_data(x, "data")` still returns the columns you supplied and every
+`get_results(x, "data")` still returns the columns you supplied and every
 verb that checks row alignment still checks it. Centring removes exactly
 the between-unit variation, so `"person"` refuses with
 `multilpa_bad_data` when it leaves an indicator constant --- which is what
@@ -261,7 +261,7 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 seed = 42)
 summary(fit)
 as.data.frame(fit)
-get_data(fit, what = "profile_probabilities")
+get_results(fit, what = "profile_probabilities")
 }
 \references{
 Vermunt, J. K. (2003). Multilevel latent class models.

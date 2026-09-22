@@ -42,7 +42,7 @@ A data frame with 1422 rows (106 students, 32 courses, up to 15
     row was generated from. This is the truth behind the data, not something
     a study would observe; it is shipped so a fitted model can be checked
     against what produced it. It is deliberately not called `profile`:
-    `get_data(fit, "assignments")` adds a column of that name, and a
+    `get_results(fit, "assignments")` adds a column of that name, and a
     dataset already
     carrying it would make the verb refuse to join its own output.}
   \item{student_type}{Factor, `"committed"` or `"wavering"`, the kind of
@@ -85,7 +85,7 @@ split is what a two-level model does and a pooled one cannot.
 A latent profile model with a diagonal residual covariance assumes the
 indicators are independent given the profile. `attendance` is built from the
 click measures, so for these data that assumption is false, and the package
-finds it: `get_data(fit, "residuals")` reports a largest residual of 0.21
+finds it: `get_results(fit, "residuals")` reports a largest residual of 0.21
 `p = 1.7e-15`, and `covariance_model = "full"` improves the log likelihood
 from -7618.5 to -7494.7 for twenty more parameters, which every information
 criterion prefers.
@@ -129,9 +129,9 @@ fit <- multilpa(
   seed = 1
 )
 as.data.frame(fit)
-get_data(fit, what = "profile_probabilities")
+get_results(fit, what = "profile_probabilities")
 # The generating truth ships alongside, so recovery can be checked directly.
-get_data(fit, what = "assignments", data = course_engagement,
+get_results(fit, what = "assignments", data = course_engagement,
          truth = "engagement")
 }
 \seealso{

@@ -8,7 +8,7 @@
 
 test_that("a fit carries the data it was built from, exactly", {
   fit <- .convenience_fit()
-  rebuilt <- get_data(fit, "data")
+  rebuilt <- get_results(fit, "data")
   expect_identical(rebuilt, course_engagement[c("student", .activity)])
   # Columns the model never saw are not invented.
   expect_false(any(c("course", "previous_grade", "engagement", "student_type") %in%
@@ -45,8 +45,8 @@ test_that("inference no longer has to be handed data it already holds", {
   fit <- .convenience_fit()
   expect_equal(quietly(parameter_inference(fit)),
                quietly(parameter_inference(fit, course_engagement)))
-  expect_identical(get_data(fit, "residuals"),
-                   get_data(fit, "residuals", data = course_engagement))
+  expect_identical(get_results(fit, "residuals"),
+                   get_results(fit, "residuals", data = course_engagement))
   expect_equal(quietly(vcov(fit)),
                quietly(vcov(fit, course_engagement)))
   expect_equal(quietly(confint(fit)),
@@ -117,14 +117,14 @@ test_that("diagnostics gathers the verbs without changing what they return", {
   fit <- .convenience_fit()
   quality <- diagnostics(fit)
   expect_s3_class(quality, "multilpa_diagnostics")
-  expect_identical(get_data(quality, "entropy"), get_data(fit, "entropy"))
-  expect_identical(get_data(quality, "classification"),
-                   get_data(fit, "classification", level = "both"))
-  expect_identical(get_data(quality, "average_posteriors"),
-                   get_data(fit, "average_posteriors", level = "both"))
-  expect_identical(get_data(quality, "residuals"),
-                   get_data(fit, "residuals"))
-  expect_error(get_data(quality, "nonsense"))
+  expect_identical(get_results(quality, "entropy"), get_results(fit, "entropy"))
+  expect_identical(get_results(quality, "classification"),
+                   get_results(fit, "classification", level = "both"))
+  expect_identical(get_results(quality, "average_posteriors"),
+                   get_results(fit, "average_posteriors", level = "both"))
+  expect_identical(get_results(quality, "residuals"),
+                   get_results(fit, "residuals"))
+  expect_error(get_results(quality, "nonsense"))
   expect_output(print(quality), "Classification quality")
   expect_invisible(print(quality))
 })
@@ -186,7 +186,7 @@ test_that("report draws only the views a given fit can supply", {
 
 test_that("assignments put the estimate and the truth in the same row", {
   fit <- .convenience_fit(tol = 1e-10)
-  carried <- get_data(fit, "assignments")
+  carried <- get_results(fit, "assignments")
   expect_identical(nrow(carried), 1422L)
   expect_true(all(c("profile", "group_class", "posterior_profile_1",
                     "posterior_profile_2") %in% names(carried)))
@@ -197,7 +197,7 @@ test_that("assignments put the estimate and the truth in the same row", {
 
   # Supplying a frame keeps every column of it, including ones the model never
   # saw, which is the whole point: the comparison needs them in the same row.
-  supplied <- get_data(fit, "assignments", data = course_engagement)
+  supplied <- get_results(fit, "assignments", data = course_engagement)
   expect_true(all(names(course_engagement) %in% names(supplied)))
   expect_identical(supplied$engagement, course_engagement$engagement)
   expect_identical(supplied$profile, carried$profile)
@@ -215,9 +215,9 @@ test_that("assignments refuse a frame that cannot be aligned", {
   fit <- .convenience_fit(tol = 1e-10)
   # Too few rows: silently recycling or truncating would be the alignment bug
   # this verb exists to prevent.
-  expect_error(get_data(fit, "assignments", data = head(course_engagement, 10L)),
+  expect_error(get_results(fit, "assignments", data = head(course_engagement, 10L)),
                class = "multilpa_bad_inference_data")
   # A column the assignments would overwrite is an error, not a replacement.
-  expect_error(get_data(fit, "assignments", data = transform(course_engagement, profile = 1L)),
+  expect_error(get_results(fit, "assignments", data = transform(course_engagement, profile = 1L)),
                class = "multilpa_bad_data")
 })

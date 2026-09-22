@@ -105,7 +105,7 @@ A `multilpa_transitions` object containing `means`, `variances`,
   `transition_probabilities` (profiles by profiles by group classes, rows
   indexing the profile moved from), `group_probabilities`, posterior
   matrices, classifications, log likelihood, information criteria, restart
-  diagnostics and convergence history. Use [get_data()] for the tidy
+  diagnostics and convergence history. Use [get_results()] for the tidy
   transition table and for the other
   tables. No standard
   errors, likelihood-ratio tests or guarantees of global optimality are
@@ -135,7 +135,7 @@ Transitions are first order and homogeneous over occasions: the
   is then uniform by construction rather than estimated. Such a row is warned
   about when the model is fitted, is flagged by the `estimated` column of
   the transition table and is listed by
-  `get_data(fit, "transitions", estimated = FALSE)`.
+  `get_results(fit, "transitions", estimated = FALSE)`.
   Profile labels are arbitrary and
   are not comparable across fits without alignment.
 
@@ -154,7 +154,7 @@ fit <- lta(
   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
   id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1
 )
-get_data(fit, what = "transitions")
+get_results(fit, what = "transitions")
 summary(fit)
 }
 \references{
@@ -165,7 +165,7 @@ Collins, L. M., & Lanza, S. T. (2010). Latent class and latent
   Methodology, 33, 213--239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 }
 \seealso{
-[get_data()] for the fitted transition probabilities and for the
+[get_results()] for the fitted transition probabilities and for the
   assignments in order, and [multilpa()] for the
   cross-sectional model this one shares its measurement parameters with.
 }

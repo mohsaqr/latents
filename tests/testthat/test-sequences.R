@@ -24,8 +24,8 @@ test_that("a fit carries the ordering only when asked, and refuses it otherwise"
   expect_null(bare$time_values)
   expect_identical(timed$time, "wave")
   expect_identical(timed$time_values, data$wave)
-  expect_error(get_data(bare, "sequences"), class = "multilpa_no_time")
-  expect_error(get_data(bare, "sequence_summary"), class = "multilpa_no_time")
+  expect_error(get_results(bare, "sequences"), class = "multilpa_no_time")
+  expect_error(get_results(bare, "sequence_summary"), class = "multilpa_no_time")
   # The ordering is metadata: carrying it must not move the estimates.
   expect_equal(bare$log_likelihood, timed$log_likelihood)
   expect_equal(bare$means, timed$means)
@@ -34,7 +34,7 @@ test_that("a fit carries the ordering only when asked, and refuses it otherwise"
 test_that("the long form is one tidy row per observation, in sequence order", {
   data <- .sequence_fixture()
   fit <- .sequence_fit(data, time = "wave")
-  long <- get_data(fit, "sequences")
+  long <- get_results(fit, "sequences")
 
   expect_s3_class(long, "data.frame")
   expect_named(long, c("group", "group_class", "time", "profile"))
@@ -53,8 +53,8 @@ test_that("the long form is one tidy row per observation, in sequence order", {
 test_that("the wide form is one row per group, carrying the group identifier", {
   data <- .sequence_fixture()
   fit <- .sequence_fit(data, time = "wave")
-  wide <- get_data(fit, "sequences", format = "wide")
-  long <- get_data(fit, "sequences")
+  wide <- get_results(fit, "sequences", format = "wide")
+  long <- get_results(fit, "sequences")
 
   occasions <- paste0("wave_", sort(unique(data$wave)))
   expect_named(wide, c("group", "group_class", occasions))
@@ -74,8 +74,8 @@ test_that("the wide form loses nothing the long form carries", {
   data <- .sequence_fixture()
   trimmed <- data[!(data$school == 1L & data$wave > 5L), , drop = FALSE]
   fit <- .sequence_fit(trimmed, time = "wave")
-  wide <- get_data(fit, "sequences", format = "wide")
-  long <- get_data(fit, "sequences")
+  wide <- get_results(fit, "sequences", format = "wide")
+  long <- get_results(fit, "sequences")
   occasions <- paste0("wave_", sort(unique(trimmed$wave)))
 
   # group_class travels with the group, not with the row position
@@ -96,10 +96,10 @@ test_that("an unbalanced group leaves NA at the positions it never reached", {
   data <- .sequence_fixture()
   trimmed <- data[!(data$school == 1L & data$wave > 5L), , drop = FALSE]
   fit <- .sequence_fit(trimmed, time = "wave")
-  wide <- get_data(fit, "sequences", format = "wide")
+  wide <- get_results(fit, "sequences", format = "wide")
   short <- wide[wide$group == 1L, , drop = FALSE]
 
-  expect_equal(nrow(get_data(fit, "sequences")), nrow(trimmed))
+  expect_equal(nrow(get_results(fit, "sequences")), nrow(trimmed))
   expect_equal(sum(is.na(wide)), 3L)
   expect_true(all(is.na(unlist(short[c("wave_6", "wave_7", "wave_8")]))))
   expect_false(anyNA(unlist(short[c("wave_1", "wave_5")])))
@@ -109,8 +109,8 @@ test_that("the summary counts each class's groups and their lengths", {
   data <- .sequence_fixture()
   trimmed <- data[!(data$school == 1L & data$wave > 5L), , drop = FALSE]
   fit <- .sequence_fit(trimmed, time = "wave")
-  summary_table <- get_data(fit, "sequence_summary")
-  long <- get_data(fit, "sequences")
+  summary_table <- get_results(fit, "sequence_summary")
+  long <- get_results(fit, "sequences")
 
   expect_named(summary_table, c("group_class", "groups", "observations",
                                 "mean_length", "median_length", "shortest",
@@ -161,7 +161,7 @@ test_that("the ordering is imposed, not inherited from the input row order", {
   shuffled <- data[sample(nrow(data)), , drop = FALSE]
   row.names(shuffled) <- NULL
   fit <- .sequence_fit(shuffled, time = "wave")
-  long <- get_data(fit, "sequences")
+  long <- get_results(fit, "sequences")
 
   # The input is deliberately out of order, so a stable sort on group alone
   # would leave time scrambled within each group.
@@ -171,7 +171,7 @@ test_that("the ordering is imposed, not inherited from the input row order", {
                          function(v) identical(v, sort(v)), logical(1))))
   # and the wide form must put each observation in its own column, keyed by the
   # identifier it carries rather than by where the row happens to sit
-  wide <- get_data(fit, "sequences", format = "wide")
+  wide <- get_results(fit, "sequences", format = "wide")
   occasions <- paste0("wave_", sort(unique(shuffled$wave)))
   first <- wide[wide$group == long$group[1L], occasions, drop = FALSE]
   expect_equal(as.integer(unlist(first, use.names = FALSE)),

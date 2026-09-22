@@ -70,5 +70,5 @@ refit <- multilpa(example_data, c("score_a", "score_b"), "school",
 logLik(refit)
 }
 \seealso{
-[get_data()] for the values as tidy tables.
+[get_results()] for the values as tidy tables.
 }

@@ -22,7 +22,7 @@ A base `data.frame`: the one-row test result.
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 A summary carries every table the object it describes can produce, and
-[get_data()] names them.
+[get_results()] names them.
 }
 \examples{
 set.seed(1)
@@ -40,5 +40,5 @@ comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
 as.data.frame(summary(comparison))
 }
 \seealso{
-[get_data()] for every other table this summary holds.
+[get_results()] for every other table this summary holds.
 }

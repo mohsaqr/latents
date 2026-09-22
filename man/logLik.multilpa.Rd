@@ -15,7 +15,7 @@
 A `logLik` object with parameter count `df` and the number of observed
   groups as `nobs`. Thus `stats::BIC()` uses group-count BIC. For the
   individual-count alternative, and every other criterion, call
-  `get_data(x, "information_criteria")`, which reports both conventions
+  `get_results(x, "information_criteria")`, which reports both conventions
   side by side.
 }
 \description{

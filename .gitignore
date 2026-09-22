@@ -35,3 +35,5 @@ Rplots.pdf
 .beatrina-preview/
 .beatrina-latex/
 vignettes/*.tex
+vignettes/figure/
+vignettes/.beatrina*/

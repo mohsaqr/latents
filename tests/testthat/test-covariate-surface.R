@@ -66,16 +66,16 @@ test_that("the shared diagnostics accept a covariate fit", {
   data <- .surface_data()
   fit <- .surface_fit(data)
 
-  entropy <- get_data(fit, "entropy")
+  entropy <- get_results(fit, "entropy")
   expect_equal(nrow(entropy), 2L)
   expect_true(all(entropy$relative_entropy >= 0 & entropy$relative_entropy <= 1))
 
-  criteria <- get_data(fit, "information_criteria", format = "long")
+  criteria <- get_results(fit, "information_criteria", format = "long")
   expect_true(all(c("aic", "bic") %in% criteria$criterion))
   expect_equal(subset(criteria, criterion == "deviance")$value,
                -2 * fit$log_likelihood)
 
-  classification <- get_data(fit, "classification", level = "both")
+  classification <- get_results(fit, "classification", level = "both")
   expect_setequal(unique(classification$level), c("individuals", "groups"))
   expect_equal(sum(classification$n_modal[classification$level == "individuals"]),
                fit$n_observations)
@@ -89,20 +89,20 @@ test_that("a covariate fit can carry and report its ordering", {
   timed <- .surface_fit(data, time = "wave")
 
   expect_null(bare$time)
-  expect_error(get_data(bare, "sequences"), class = "multilpa_no_time")
+  expect_error(get_results(bare, "sequences"), class = "multilpa_no_time")
   expect_identical(timed$time, "wave")
   # the ordering is metadata and must not move an estimate
   expect_equal(bare$log_likelihood, timed$log_likelihood)
   expect_equal(bare$profile_coefficients, timed$profile_coefficients)
 
-  long <- get_data(timed, "sequences")
+  long <- get_results(timed, "sequences")
   expect_named(long, c("group", "group_class", "time", "profile"))
   expect_equal(nrow(long), nrow(data))
   # The wide form carries the identifier as a column rather than as a row name,
   # so assert the contract by name instead of by width.
-  expect_named(get_data(timed, "sequences", format = "wide"),
+  expect_named(get_results(timed, "sequences", format = "wide"),
                c("group", "group_class", paste0("wave_", 1:8)))
-  summary_table <- get_data(timed, "sequence_summary")
+  summary_table <- get_results(timed, "sequence_summary")
   expect_equal(sum(summary_table$groups), timed$n_groups)
   expect_equal(sum(summary_table$observations), nrow(data))
 })

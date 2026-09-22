@@ -201,12 +201,13 @@ longitudinal model.
 set.seed(1)
 fit <- multilpa(course_engagement, vars, id = "student", time = "sequence", n_profiles = 3, n_group_classes = 3, n_starts = 10, max_iter = 2000, tol = 1e-10, seed = 1)
 ```
+
 ### Profile means
 
-Printing the fitted model provides a compact summary of the Level-1 profiles.
-Each row corresponds to one profile and reports its estimated mean on each
-activity indicator, together with the number of enrolments assigned to that
-profile.
+Printing the fitted model gives a compact summary of the Level-1 profile
+solution. Each row represents one engagement profile and reports its estimated
+mean on each activity indicator, together with its estimated enrolment
+membership.
 
 ```{r means}
 fit
@@ -233,141 +234,199 @@ on the estimated indicator means rather than on the profile numbers themselves.
 
 ### Profile and class sizes
 
-The `get_data()` function extracts result tables from the fitted model. The `"counts"` table
-summarizes **effective membership** at both levels: the estimated number of
-enrolments associated with each Level-1 profile and the estimated number of
-students associated with each Level-2 class. These counts are obtained by
-summing posterior membership probabilities across observations or students,
-rather than by assigning each case to its most likely class. They therefore
-need not be whole numbers.
+### Profile and class sizes
 
-
-```{r counts}
-get_data(fit, "counts")
-```
+The `get_results()` function extracts result tables from the fitted model. The
+`"counts"` table reports **effective membership** at both levels: the estimated
+number of enrolments in each Level-1 profile and the estimated number of
+students in each Level-2 class. Effective membership is obtained by summing
+posterior membership probabilities rather than assigning each case to its
+single most likely profile or class. For example, a student with a posterior
+probability of 0.80 of belonging to class 2 contributes 0.80 to the effective
+size of that class. Because these probabilities are summed across enrolments or
+students, the resulting counts need not be whole numbers. Counts based on
+assigning each case to its most likely profile or class, by contrast, would
+always be integers.
 
  
-The lower-activity profile is the largest, holding 575.0 enrolments, or 40.4%.
-The higher-activity profile holds 369.2, or 26.0%. Among students, class 2 is
-the largest at 47.3 students, or 44.6%, with classes 1 and 3 holding 27.7 and
-31.0.
+
+```{r counts}
+get_results(fit, "counts")
+```
+
+The **lower-activity** profile has the largest effective membership, accounting
+for 575.0 enrolments, or 40.4% of the total. The **higher-activity** profile
+accounts for 369.2 enrolments, or 26.0%. At Level 2, student class 2 is the
+largest, with an effective membership of 47.3 students, corresponding to 44.6%
+of the sample. Classes 1 and 3 have effective memberships of 27.7 and 31.0
+students, respectively.
+
 
 ### How students differ in their profile composition
 
-The `"profile_probabilities"` table reports the probability of each profile
-within each student class, alongside the prevalence of that class among
-students. Reading a row therefore answers two separate questions: how a class
-composes its enrolments, and how common that class is.
+The `"profile_probabilities"` table shows how the three enrolment profiles are
+distributed within each student class. For each class, it reports the
+probability of an enrolment belonging to each Level-1 profile, together with
+the prevalence of that Level-2 class among students. Each row therefore answers
+two related questions: **which profiles characterize students in this class,
+and how common is the class in the student population?**
 
 ```{r profile-probabilities}
-get_data(fit, "profile_probabilities")
+get_results(fit, "profile_probabilities")
 ```
 
-Student class 1 has probabilities of 0.398, 0.547, and 0.055 for profiles 1, 2,
-and 3. Its enrolments are predominantly higher and intermediate activity.
-Student class 2 has a more even composition: 0.295, 0.388, and 0.317. Student
-class 3 has probability 0.847 of the lower-activity profile. The estimated
-proportions of students in these classes are 0.261, 0.446, and 0.293.
+Student class 1 is characterized mainly by the **higher-activity** and
+**intermediate-activity** profiles. Conditional on membership in class 1, the
+probabilities of an enrolment occupying profiles 1, 2, and 3 are 0.398, 0.547,
+and 0.055, respectively. Student class 2 has a more balanced profile
+composition, with corresponding probabilities of 0.295, 0.388, and 0.317.
+Student class 3 is strongly characterized by the **lower-activity** profile:
+an enrolment from a student in this class has a probability of 0.847 of
+occupying profile 3. The estimated prevalences of student classes 1, 2, and 3
+are 0.261, 0.446, and 0.293, respectively.
 
-The probability plot compares these compositions on a common zero-to-one scale.
-Each line represents a student class, and each point gives the probability of
-an enrolment occupying that profile.
+The probability plot provides a visual comparison of these class-specific
+profile compositions on a common scale from zero to one. Each line represents
+a student class, and each point shows the conditional probability of an
+enrolment occupying a particular profile within that class. Differences in the
+shape of the lines therefore show how the distribution of engagement profiles
+varies across student classes.
+
 
 ```{r probabilities}
 plot(fit, what = "probabilities")
 ```
 
-Class 2 has a nearly level line because its three profile probabilities are
-similar. Class 3 rises to 0.847 at profile 3, while class 1 falls to 0.055
-there. The contrast shows how students can differ in their overall engagement
-pattern while still having enrolments in several profiles.
+Class 2 has an almost level profile because its probabilities are similar across
+the three engagement profiles. In contrast, class 3 rises sharply to 0.847 for
+the **lower-activity** profile, whereas class 1 falls to 0.055 for that same
+profile. These differences illustrate how student classes can have distinct
+profile compositions even though students within each class may still occupy
+more than one engagement profile across their enrolments.
+
 
 ## Checking the estimation
 
-The `"starts"` table reports the log likelihood, convergence status, and
-variance-boundary status for each start. Repeated likelihoods support numerical
-stability, although they cannot prove that a global maximum has been found.
+The `"starts"` table reports the final log likelihood, convergence status, and
+variance-boundary status for each random start. Agreement across starts provides
+evidence that the estimation is repeatedly reaching the same solution, although
+it does not establish that this solution is the global maximum.
 
-```{r starts}
-get_data(fit, "starts")
+```{r starts} id="h7d3kc"
+get_results(fit, "starts")
 ```
 
-All ten starts converge to a log likelihood of approximately -8348.4, with no
-active variance bounds. The agreement supports the numerical stability of this
-fitted solution.
+All ten starts converge to a log likelihood of approximately -8348.4, and none
+has an active variance bound. The identical likelihoods across starts indicate
+that the fitted solution is stable with respect to the starting values used in
+this analysis.
+
 
 ## Profile means as a plot
 
-`plot()` compares the estimated profile means across the five activity
-indicators. The vertical axis is in standard deviations from each course's
-mean, and line types and point symbols distinguish the profiles as well as
+`plot()` displays the estimated profile means across the five activity
+indicators. Because the indicators were standardized within course, the
+vertical axis is expressed in standard deviations from the corresponding course
+mean. Line types and point symbols distinguish the profiles in addition to
 colour.
 
-```{r profiles}
+```{r profiles} id="k4m8zu"
 plot(fit, subtitle = "Profile means, standard deviations from each course mean")
 ```
 
-The three lines retain the same ordering across all five indicators. Profiles
-1 and 2 are closer on page browsing than on attendance, consistent with their
-means above. Profile 3 is lower throughout, so the main contrast concerns the
-amount of recorded activity.
+The three profiles retain the same ordering across all five indicators, with
+profile 1 highest, profile 2 intermediate, and profile 3 lowest. The distance
+between profiles 1 and 2 varies across indicators: they are relatively close on
+page browsing but more clearly separated on attendance, consistent with the
+estimated means reported above. Because the profiles differ mainly in overall
+elevation rather than in the shape of their indicator patterns, the principal
+contrast is the overall amount of recorded activity.
+
 
 ## Reading each student's course history
 
-The `"sequences"` table arranges each enrolment's assigned profile in course
-order. Assignment selects the profile with the highest posterior probability,
-so the sequence is a summary that omits classification uncertainty. The wide
-format places students in rows and successive courses in columns.
+The `"sequences"` table arranges each student's enrolments in course order and
+shows the profile assigned to each enrolment. Assignment is based on the profile
+with the highest posterior probability, so these sequences provide a simplified
+summary of the fitted model and do not represent classification uncertainty.
+In the wide format, each row corresponds to a student and successive observed
+courses appear in columns.
 
 ```{r sequences}
-get_data(fit, "sequences", format = "wide") |> head(4)
+get_results(fit, "sequences", format = "wide") |> head(4)
 ```
 
-Students 1 and 2 are assigned to student class 3: student 1 begins in the
-intermediate profile and settles into the lower-activity profile, and student 2
-occupies the lower-activity profile throughout. Students 3 and 4 belong to
-class 1 and move between the higher- and intermediate-activity profiles. The
-trailing `NA` values mark unobserved later courses.
+Students 1 and 2 are assigned to student class 3. Student 1 is assigned to the
+**intermediate-activity** profile for the first observed course and to the
+**lower-activity** profile for the courses that follow, whereas student 2 is
+assigned to the **lower-activity** profile throughout the observed sequence.
+Students 3 and 4 are assigned to class 1 and have enrolments classified as both
+**higher activity** and **intermediate activity**. These patterns illustrate
+the class-specific profile compositions described above, but they should not be
+interpreted as estimated transition processes. Trailing `NA` values indicate
+courses that were not observed for that student rather than missing profile
+assignments within the observed history.
 
-The `"sequence_summary"` table reports the number of students, enrolments, and
-observed courses in each assigned student class. `gaps` counts students missing
-an occasion within their observed span; a shorter history alone is not a gap.
+The `"sequence_summary"` table summarizes the modal student-class assignments
+and the amount of longitudinal information available within each class. It
+reports the number of students, enrolments, and observed courses in each
+assigned class. The `gaps` column counts students with an unobserved occasion
+between observed occasions in their sequence; simply having a shorter observed
+history does not constitute a gap.
 
 ```{r sequence-summary}
-get_data(fit, "sequence_summary")
+get_results(fit, "sequence_summary")
 ```
 
-The assigned classes contain 25, 51, and 30 students. Mean sequence lengths are
-13.20, 13.51, and 13.43 courses, so the differences in profile composition
-occur among classes with similar observation lengths. No sequence has an
-internal gap.
+The modal assignments place 25, 51, and 30 students in classes 1, 2, and 3,
+respectively. Their mean sequence lengths are 13.20, 13.51, and 13.43 observed
+courses. Thus, the classes have similar amounts of longitudinal information,
+even though their profile compositions differ substantially. None of the
+observed sequences contains an internal gap.
+
 
 ## Interpretation
 
-The descriptive statistics show variation both within and between students.
-The MLPA model expresses that variation as three activity profiles and three
-student classes with different profile compositions. The ordered assignments
-add an individual perspective: a student can change engagement profile across
-courses while retaining one student-level class.
+The descriptive statistics indicate meaningful variation both across enrolments
+within students and between students. The MLPA represents this structure with
+three Level-1 activity profiles and three Level-2 student classes that differ
+in their profile composition. The ordered profile assignments add a
+student-level view of the fitted solution: the same student may be assigned to
+different engagement profiles across courses while remaining a member of a
+single student class.
 
-The composition and sequence summaries answer different questions. Two students
-can have similar proportions of the profiles but occupy them in a different
-order. The [transition guide](multilpa-transitions.html) models that order by
-estimating probabilities of moving between profiles.
+Profile composition and profile order describe different aspects of the data.
+Two students may spend similar proportions of their enrolments in the same
+profiles while encountering those profiles in a different sequence. The MLPA
+estimated here captures the former by modeling class-specific profile
+probabilities, but it does not model the ordering of profiles over time. The
+[transition guide](multilpa-transitions.html) extends the analysis to that
+question by estimating probabilities of moving from one profile to another
+across successive observations.
+
 
 ## Limitations
 
-The bundled data support an illustrative analysis of the published case, rather
-than a numerical replication of the study. The study used latent class analysis
-followed by hidden Markov modeling; the joint MLPA here estimates a different
-model. Its three student classes describe profile composition across enrolments.
+The bundled data are designed to reproduce the structure of the published case
+for instructional purposes; they do not provide a numerical replication of the
+original study. The published analysis used latent class analysis followed by
+hidden Markov modeling, whereas the present example fits a joint MLPA model.
+The resulting three student classes therefore summarize differences in profile
+composition across enrolments rather than reproducing the longitudinal
+trajectories estimated in the original study.
 
-The 3 × 3 specification requires evaluation before substantive interpretation.
-The default diagonal covariance treats the indicators as independent within a
-profile, and a shared association between activity measures can violate that
-and affect the estimated profiles. Modal assignments omit uncertainty. The
-[evaluation guide](multilpa-evaluation.html) examines these issues with the
-same data and candidate model.
+The **3 × 3 specification** should also be treated as a candidate model rather
+than a definitive representation of the latent structure. Its adequacy depends
+on comparisons with alternative numbers of Level-1 profiles and Level-2
+classes, as well as on the model's distributional assumptions. In particular,
+the default diagonal covariance structure assumes that the activity indicators
+are conditionally independent within each profile. Residual associations among
+the indicators may violate this assumption and alter the estimated profile
+solution. In addition, modal profile and class assignments simplify the fitted
+model by ignoring classification uncertainty. The
+[evaluation guide](multilpa-evaluation.html) examines these issues using the
+same data and candidate specification.
+
 
 ## Reference
 

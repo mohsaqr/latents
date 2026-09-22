@@ -24,7 +24,7 @@ A base `data.frame`: one row per candidate model in the grid.
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 The other tables are named rather than positional, so they belong to
-[get_data()], which takes `what` and refuses a name this object has not.
+[get_results()], which takes `what` and refuses a name this object has not.
 }
 \examples{
 candidates <- enumerate_classes(
@@ -36,5 +36,5 @@ candidates <- enumerate_classes(
 as.data.frame(candidates)
 }
 \seealso{
-[get_data()] for every other table this object holds.
+[get_results()] for every other table this object holds.
 }
