@@ -13,13 +13,12 @@
 }
 \value{
 An object of class `summary_multilpa_enumeration`, with a `print`
-  method and an [as.data.frame()] accessor. `as.data.frame()` returns one
-  row per information criterion, with columns `criterion`, `convention`
-  (`"groups"`, `"individuals"` or `NA` when the criterion uses no sample
-  size), `n_profiles` and `n_group_classes` of the minimising candidate, and
-  its `value`. Only converged candidates are eligible; a criterion with no
-  converged candidate has `NA` in every remaining column. Pass
-  `what = "candidates"` for the full grid instead.
+  method and an [as.data.frame()] accessor. `as.data.frame()` returns the
+  candidate grid. `get_results(summary(object), "criteria")` gives one row
+  per information criterion, with its sample-size convention, the class
+  counts and covariance structure of the minimising candidate, and its
+  value. Only converged candidates are eligible; a criterion with no
+  converged candidate has `NA` in the candidate and value columns.
 }
 \description{
 Reports, for every information criterion the grid carries, which candidate

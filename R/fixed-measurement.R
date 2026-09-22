@@ -200,8 +200,10 @@
 #' @param measurement Optional fitted `multilpa` model to use as the first
 #'   stage, so that a measurement solution already chosen and inspected is
 #'   carried forward rather than refitted. Its profiles, indicators and
-#'   measurement options must match the ones requested here. When `NULL`, the
-#'   first stage is fitted here with one group class.
+#'   measurement options must match the ones requested here, and it must have
+#'   one group class: a multi-class fit already estimates group structure and
+#'   is not a measurement-only first stage. When `NULL`, the first stage is
+#'   fitted here with one group class.
 #' @param n_starts Number of EM starts, used for both stages.
 #' @return A `multilpa` object for the second stage, so that every accessor,
 #'   diagnostic and method works on it unchanged. Its measurement parameters
@@ -266,6 +268,12 @@ fit_staged <- function(data, vars, id, n_profiles,
   ## variance parameter too many. It is refused here instead, where the reason
   ## can name the structure the caller actually fitted.
   if (!is.null(measurement)) {
+    if (!identical(as.integer(measurement$n_group_classes), 1L)) {
+      stop(errorCondition(paste(
+        "`measurement` must be a one-group-class measurement stage;",
+        "a fit with group classes has already estimated membership structure."),
+        class = "multilpa_bad_stage", call = NULL))
+    }
     held_structure <- measurement$covariance_structure %||% NA_character_
     if (!is.na(held_structure) &&
         !held_structure %in% .multilpa_inferable_structures()) {

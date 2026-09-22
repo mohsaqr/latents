@@ -30,7 +30,10 @@ matrices. The two differ: averaging weights each class by how probable it is,
 and summing counts weights it by how much transition mass it actually
 contributes, which is what a marginal transition probability means. A class
 holding a tenth of the students but a fifth of the observed moves counts for
-the latter.
+the latter. If a profile has no expected outgoing moves in any class, its
+transition row has no count-based estimate; the network uses the fitted
+class rows averaged by class probability and warns that the row is
+unestimated. It never interprets absent moves as a certain self-transition.
 }
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {

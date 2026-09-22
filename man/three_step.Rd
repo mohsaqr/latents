@@ -17,12 +17,17 @@ three_step(
 )
 }
 \arguments{
-\item{x}{A fitted model of this package.}
+\item{x}{A covariate-free fitted [multilpa()] or [lta()] model. A fit that
+already uses membership covariates cannot be corrected by the fixed,
+unconditional classification-error matrix used here.}
 
-\item{data}{The data frame carrying the outcome, in the fit's row order.}
+\item{data}{The data frame carrying the outcome, in the fit's row order.
+Shared fit columns are checked row by row; a frame with too little
+identifying information warns that alignment cannot be verified.}
 
-\item{outcome}{Name of a numeric outcome column. For `level = "groups"` it
-must be constant within each group.}
+\item{outcome}{Name of a numeric outcome column not used as a measurement
+indicator in `x`. For `level = "groups"` it must be constant within each
+group.}
 
 \item{level}{`"individuals"` relates the outcome to profiles, `"groups"` to
 group classes.}
@@ -64,6 +69,8 @@ A base `data.frame`. For `contrast = "none"` it has one row per class
   `reference_class`, `estimate` (the mean of `class` minus the mean of
   `reference_class`), `standard_error`, `statistic`, `p_value`,
   `p_value_adjusted`, `conf_low` and `conf_high`, matching [r3step()].
+  A contrast with zero standard error has no defined test statistic or
+  p-value; those columns are `NA_real_` rather than a spurious finite test.
 
   Standard errors are cluster-robust in both shapes under the default
   `vcov_type = "cluster"`, taking the fit's groups as the independent units,
@@ -85,6 +92,11 @@ instead attenuates every difference. This does neither.
 \details{
 The correction assumes the outcome is independent of the assigned
   class given the true one, which is what makes a three-step method valid.
+  On a [lta()] fit, `level = "individuals"` uses one row per occasion and
+  relates the outcome to the profile at that occasion. The default
+  group-clustered variance accounts for repeated occasions within a group.
+  This is a marginal profile-outcome analysis; it does not estimate an
+  outcome effect on transitions or a sequence-level outcome model.
 
   A cluster-robust variance is the sum of one outer product per independent
   unit, and those contributions sum to zero at the estimate, so it has rank

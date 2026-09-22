@@ -52,6 +52,27 @@ test_that("simulation preserves group layout and full covariance moments", {
   expect_equal(mean(single_indicator$a), mean(d$a), tolerance = .1)
 })
 
+test_that("simulation preserves categorical types and declared factor order", {
+  set.seed(7)
+  data <- data.frame(
+    g = rep(seq_len(20L), each = 5L),
+    y = stats::rnorm(100L),
+    category = ordered(rep(c("10", "2"), 50L), levels = c("10", "2")),
+    rating = rep(c(10L, 2L), each = 50L))
+  fit <- quietly(multilpa(data, c("y", "category", "rating"), "g", 2L, 1L,
+                           categorical = c("category", "rating"),
+                           n_starts = 2L, max_iter = 80L, seed = 1L))
+  simulated <- .multilpa_simulate(fit)
+  expect_identical(class(simulated$category), c("ordered", "factor"))
+  expect_identical(levels(simulated$category), c("10", "2"))
+  expect_type(simulated$rating, "integer")
+  expect_identical(names(simulated), c("y", "category", "rating", "g"))
+  encoded <- .multilpa_encode_categorical(
+    simulated[c("category", "rating")])
+  expect_identical(encoded$levels$category, fit$categorical_levels$category)
+  expect_identical(encoded$levels$rating, fit$categorical_levels$rating)
+})
+
 test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
   set.seed(53)
   d <- data.frame(g = rep(1:20, each = 5), y = c(rnorm(50, -2), rnorm(50, 2)))

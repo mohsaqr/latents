@@ -149,17 +149,15 @@ test_that("inseparable classes are refused rather than inverted", {
                class = "multilpa_inseparable_classes")
 })
 
-test_that("a covariate fit is supported", {
+test_that("classification errors remain available for covariate fits", {
   data <- .step_data()
   data$x <- stats::rnorm(nrow(data))
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2,
                         n_group_classes = 2, profile_covariates = "x",
                         n_starts = 4, seed = 1)
-  result <- three_step(fit, data, "y")
-
-  expect_equal(nrow(result), 2L)
-  expect_true(all(result$standard_error > 0))
   expect_equal(nrow(get_results(fit, "classification_errors", level = "individuals")), 4L)
+  expect_error(three_step(fit, data, "y"),
+               class = "multilpa_unsupported_three_step")
 })
 
 test_that("a one-class level is degenerate but does not error", {

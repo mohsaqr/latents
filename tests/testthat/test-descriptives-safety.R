@@ -105,3 +105,21 @@ test_that("a stratifier that cannot be told apart from the summary is refused", 
                             vars = "y", by = "mean"),
                class = "multilpa_bad_data")
 })
+
+test_that("missing group IDs do not become a group in ICC calculations", {
+  data <- data.frame(g = c(1L, 1L, 2L, 2L, NA_integer_),
+                     y = c(1, 2, 3, 4, 100))
+  described <- descriptives(data, vars = "y", id = "g")
+  observed_groups <- descriptives(data[1:4, ], vars = "y", id = "g")
+  expect_identical(described$n, 5L)
+  expect_identical(described$n_groups, 2L)
+  expect_equal(described$icc, observed_groups$icc)
+})
+
+test_that("repeating a requested variable still returns one row per variable", {
+  data <- data.frame(cohort = c("A", "A", "B"), y = 1:3)
+  described <- descriptives(data, vars = c("y", "y"), by = "cohort")
+  expect_identical(nrow(described), 2L)
+  expect_identical(described$variable, c("y", "y"))
+  expect_identical(sum(described$n + described$n_missing), 3L)
+})

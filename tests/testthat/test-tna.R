@@ -78,17 +78,34 @@ test_that("the class label is the caller's", {
   expect_identical(attr(grouped, "label"), "Trajectory")
   expect_error(get_group_tna(transition_fit(), label = c("a", "b")),
                "single string")
+  expect_error(get_group_tna(transition_fit(), label = NA_character_),
+               "single string")
 })
 
-test_that("a state nothing ever leaves is a self-transition, not NaN", {
-  # Normalising an all-zero row divides by zero. "Never left" is a probability
-  # one of staying, which every centrality can read; NaN is not.
+test_that("a state with no moves keeps the fit's row, not invented persistence", {
+  # No outgoing count identifies no transition probability. The fit's own row
+  # is the only defensible fallback for a network that requires a stochastic
+  # matrix; a certain self-transition would invent evidence of persistence.
   fit <- transition_fit()
   fit$transition_counts[2L, , ] <- 0
+  fit$empty_transition_rows[2L, ] <- TRUE
+  fit$transition_probabilities[2L, , 1L] <- c(.1, .2, .7)
+  fit$transition_probabilities[2L, , 2L] <- c(.3, .4, .3)
   aggregate <- multilpa:::.multilpa_aggregate_transitions(fit)
   expect_false(anyNA(aggregate$probabilities))
-  expect_equal(unname(aggregate$probabilities[2L, ]), c(0, 1, 0))
+  expected <- as.vector(matrix(fit$transition_probabilities[2L, , ],
+                               nrow = fit$n_profiles) %*% fit$group_probabilities)
+  expect_equal(unname(aggregate$probabilities[2L, ]), expected)
+  expect_false(aggregate$estimated[2L])
   expect_equal(unname(rowSums(aggregate$probabilities)), rep(1, 3))
+  if (requireNamespace("tna", quietly = TRUE)) {
+    expect_warning(network <- get_tna(fit),
+                   class = "multilpa_empty_transition_row")
+    expect_equal(unname(network$weights[2L, ]), expected)
+    expect_warning(grouped <- get_group_tna(fit),
+                   class = "multilpa_empty_transition_row")
+    expect_equal(unname(grouped[[1L]]$weights[2L, ]), c(.1, .2, .7))
+  }
 })
 
 test_that("a transition fit draws every view its catalogue claims", {

@@ -26,8 +26,8 @@
 #'   \item{`multilpa_bad_fixed`}{A `fixed` request names a block the model does
 #'     not have, or one that `start` does not supply, or `start` is absent.}
 #'   \item{`multilpa_bad_stage`}{A `measurement` fit offered to [fit_staged()]
-#'     was fitted to different indicators, profiles or measurement options than
-#'     the stage being requested.}
+#'     has already estimated multiple group classes, or was fitted to different
+#'     indicators, profiles or measurement options than the stage requested.}
 #'   \item{`multilpa_bad_transition`}{A transition model was asked for with
 #'     fewer than two profiles, or with no group observed at two occasions.}
 #'   \item{`multilpa_bad_inference_data`}{The data passed to an inference verb
@@ -89,12 +89,15 @@
 #'     measurement blocks differ, are held at different values, or are held in
 #'     only one of the two models.}
 #'   \item{`multilpa_incomparable_models`}{Two models were fitted to different
-#'     data, or differ in more than the comparison allows.}
+#'     data, or differ in covariance structure or centering mode where the
+#'     comparison requires them to match.}
 #'   \item{`multilpa_reversed_likelihood`}{The model with more parameters has
 #'     the lower likelihood, so at least one fit is at a local optimum and the
 #'     comparison is meaningless.}
 #'   \item{`multilpa_bad_outcome`}{A distal outcome is not of a type the
-#'     requested three-step method can handle.}
+#'     requested three-step method can handle, varies within a group when a
+#'     group-level outcome is requested, or is a measurement indicator that
+#'     already helped define the classes.}
 #'   \item{`multilpa_bad_scores`}{Score contributions could not be formed for
 #'     the robust sandwich.}
 #' }
@@ -126,7 +129,16 @@
 #'     Raised by [confint()] when `parm` names a held coordinate.}
 #'   \item{`multilpa_unsupported_sensitivity`}{[sensitivity()] was called on a
 #'     model family whose refit needs arguments the shared refit does not carry,
-#'     or whose profile labels cannot yet be aligned between two fits.}
+#'     whose profile labels cannot yet be aligned between two fits, or a
+#'     directly fixed fit whose original free starts cannot be replayed.}
+#'   \item{`multilpa_unsupported_three_step`}{[three_step()] or [r3step()] was
+#'     called on a membership-covariate fit. Its classification errors depend
+#'     on the fitted predictors, but the correction here uses one unconditional
+#'     error matrix.}
+#'   \item{`multilpa_unsupported_bootstrap`}{[bootstrap_lrt()] was called on a
+#'     person-centred fit. Group baselines were removed before estimation and
+#'     no distribution for them is available to simulate raw data under the
+#'     null model.}
 #'   \item{`multilpa_no_plot`}{`plot(x, what = "all")` was called on an object
 #'     whose plot method names no views to draw.}
 #'   \item{`multilpa_no_time`}{A sequence verb was called on a fit made without
@@ -184,11 +196,12 @@
 #'   \item{`multilpa_empty_transition_row`}{A profile is never occupied before a
 #'     final occasion, so its transition row is uniform by construction rather
 #'     than estimated. `get_results(fit, "transitions", estimated = FALSE)`
-#'     lists them.}
-#'   \item{`multilpa_unverified_alignment`}{A supplied `data` frame shares no
-#'     column with the fit, so the row alignment the verb depends on could not
-#'     be checked. The result is returned on the caller's assurance that the
-#'     rows are in fitting order.}
+#'     lists them. The transition-network handoff also warns when it includes
+#'     such a row, because it cannot be read as evidence of persistence.}
+#'   \item{`multilpa_unverified_alignment`}{A supplied `data` frame has too
+#'     little fitted information to establish row order, for example only a
+#'     repeated group identifier. The result is returned on the caller's
+#'     assurance that the rows are in fitting order.}
 #' }
 #'
 #' @return Nothing; this page documents conditions rather than a function.

@@ -46,6 +46,27 @@
        n_categories = vapply(encoded, function(part) length(part$levels), integer(1)))
 }
 
+#' One original, typed value for each encoded category
+#'
+#' Category labels alone do not reconstruct a numeric or ordered-factor
+#' indicator: converting them to text changes the data a refit sees, and
+#' sorting the text can change the codes of a factor with declared levels.
+#' Keeping one original value per code preserves the input type and factor
+#' attributes without copying every observation into the fit a second time.
+#'
+#' @param data The original fitting data frame.
+#' @param categorical Names of its categorical indicators.
+#' @param encoded The result of [.multilpa_encode_categorical()], or `NULL`.
+#' @return A named list of typed vectors, one value per observed category.
+#' @noRd
+.multilpa_categorical_values <- function(data, categorical, encoded) {
+  if (length(categorical) == 0L) return(NULL)
+  stats::setNames(lapply(categorical, function(name) {
+    column <- data[[name]]
+    column[match(encoded$levels[[name]], as.character(column))]
+  }), categorical)
+}
+
 #' Conditional log density of categorical indicators
 #'
 #' Sums the log response probabilities of the observed categories. Missing

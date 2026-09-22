@@ -431,19 +431,19 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
 #' Plot a class-enumeration grid
 #'
 #' Draws one information criterion against the number of profiles, with one
-#' line per number of group classes. Candidates that failed to converge are
-#' marked rather than dropped, so a gap in a line is visible as a failure and
-#' not mistaken for a missing candidate.
+#' line per number of group classes and covariance structure. Candidates that
+#' failed to converge are marked rather than dropped, so a gap in a line is
+#' visible as a failure and not mistaken for a missing candidate.
 #'
 #' @param x An `multilpa_enumeration` result from [enumerate_classes()].
 #' @param criterion Name of the column to plot, as it appears in
 #'   `as.data.frame(x)`, for example `"bic_individual"` or `"sabic_groups"`.
 #' @param labels `TRUE` prints a direct label at the right end of each series.
-#' @param mark_minimum `TRUE` rings the lowest value of the criterion. This
-#'   marks an extremum, it does not select a model.
+#' @param mark_minimum `TRUE` rings the lowest value among converged candidates.
+#'   This marks an extremum, it does not select a model.
 #' @param main,subtitle Panel title and secondary line.
-#' @param palette,symbols,linetypes Series aesthetics, recycled over the number
-#'   of group-class counts.
+#' @param palette,symbols,linetypes Series aesthetics, recycled over combinations
+#'   of group-class count and covariance structure.
 #' @param style A list of visual constants, as built by `.multilpa_style()`.
 #' @param ... Further named visual constants, merged into `style`.
 #' @return The enumeration result, invisibly. Called for its drawing side effect.
@@ -472,14 +472,15 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
             "`mark_minimum` must be TRUE or FALSE" =
               isTRUE(mark_minimum) || isFALSE(mark_minimum))
   grid <- as.data.frame(x)
-  if (!criterion %in% names(grid)) {
-    stop(errorCondition(sprintf("`%s` is not a column of the enumeration grid.",
+  if (!criterion %in% .multilpa_enumeration_criteria()) {
+    stop(errorCondition(sprintf("`%s` is not an information criterion in the enumeration grid.",
                                 criterion),
                         class = "multilpa_unknown_criterion", call = NULL))
   }
   values <- grid[[criterion]]
-  if (all(is.na(values))) {
-    stop(errorCondition(sprintf("Every candidate has a missing `%s`; nothing to plot.",
+  eligible <- grid$converged %in% TRUE & is.finite(values)
+  if (!any(eligible)) {
+    stop(errorCondition(sprintf("No converged candidate has a finite `%s`; nothing to plot.",
                                 criterion),
                         class = "multilpa_nothing_to_plot", call = NULL))
   }
@@ -492,20 +493,32 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
   previous$mfg <- NULL
   on.exit(graphics::par(previous), add = TRUE, after = FALSE)
   graphics::par(xpd = NA)
-  class_counts <- sort(unique(grid$n_group_classes))
+  series_structure <- grid$structure
+  known_structures <- unique(stats::na.omit(series_structure))
+  if (length(known_structures) == 1L) {
+    series_structure[is.na(series_structure)] <- known_structures
+  }
+  series_keys <- unique(data.frame(n_group_classes = grid$n_group_classes,
+                                   structure = series_structure))
+  series_keys <- series_keys[order(series_keys$n_group_classes,
+                                   series_keys$structure), , drop = FALSE]
+  n_series <- nrow(series_keys)
   profile_counts <- sort(unique(grid$n_profiles))
-  colours <- if (is.null(palette)) .multilpa_palette(length(class_counts)) else
-    rep(palette, length.out = length(class_counts))
-  points <- if (is.null(symbols)) .multilpa_symbols(length(class_counts)) else
-    rep(symbols, length.out = length(class_counts))
-  lines <- if (is.null(linetypes)) .multilpa_linetypes(length(class_counts)) else
-    rep(linetypes, length.out = length(class_counts))
-  span <- range(values, na.rm = TRUE)
+  colours <- if (is.null(palette)) .multilpa_palette(n_series) else
+    rep(palette, length.out = n_series)
+  points <- if (is.null(symbols)) .multilpa_symbols(n_series) else
+    rep(symbols, length.out = n_series)
+  lines <- if (is.null(linetypes)) .multilpa_linetypes(n_series) else
+    rep(linetypes, length.out = n_series)
+  span <- range(values[eligible])
   padding <- 0.12 * max(diff(span), .Machine$double.eps)
   xlim <- c(min(profile_counts) - 0.35, max(profile_counts) + 0.35)
   failures <- sum(!grid$converged)
-  label_text <- sprintf("%d group class%s", class_counts,
-                        ifelse(class_counts == 1L, "", "es"))
+  label_text <- sprintf("%d group class%s", series_keys$n_group_classes,
+                        ifelse(series_keys$n_group_classes == 1L, "", "es"))
+  if (length(unique(series_keys$structure)) > 1L) {
+    label_text <- paste(label_text, series_keys$structure)
+  }
   graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
   .multilpa_panel(xlim = xlim, ylim = c(span[1L] - padding, span[2L] + padding),
@@ -517,11 +530,15 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
       if (failures == 0L) "" else sprintf(", %d did not converge", failures)) else
       subtitle,
     x_at = profile_counts, x_labels = profile_counts, style = style)
-  ends <- vapply(seq_along(class_counts), function(index) {
-    rows <- grid$n_group_classes == class_counts[index]
-    series <- data.frame(profiles = grid$n_profiles[rows], value = values[rows])
+  ends <- vapply(seq_len(n_series), function(index) {
+    same_structure <- if (is.na(series_keys$structure[index]))
+      is.na(series_structure) else series_structure == series_keys$structure[index]
+    rows <- grid$n_group_classes == series_keys$n_group_classes[index] &
+      same_structure
+    series <- data.frame(profiles = grid$n_profiles[rows],
+                         value = values[rows], eligible = eligible[rows])
     series <- series[order(series$profiles), , drop = FALSE]
-    finite <- !is.na(series$value)
+    finite <- series$eligible
     graphics::lines(series$profiles[finite], series$value[finite],
                     col = colours[index], lwd = style$line_width,
                     lty = lines[index])
@@ -533,7 +550,7 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
     if (any(!finite)) {
       # Offset by series so that two candidates failing at the same profile
       # count remain visibly distinct rather than drawing on top of each other.
-      offset <- (index - (length(class_counts) + 1) / 2) * 0.09
+      offset <- (index - (n_series + 1) / 2) * 0.09
       graphics::points(series$profiles[!finite] + offset,
                        rep(span[1L] - padding * 0.55, sum(!finite)),
                        pch = 4L, col = colours[index], cex = style$point_size,
@@ -542,7 +559,7 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
     if (any(finite)) series$value[finite][sum(finite)] else NA_real_
   }, numeric(1))
   if (isTRUE(mark_minimum)) {
-    best <- which.min(values)
+    best <- which.min(replace(values, !eligible, Inf))
     graphics::points(grid$n_profiles[best], values[best], pch = 1L,
                      col = style$title_colour, cex = style$point_size * 2.4,
                      lwd = 1.8)

@@ -15,10 +15,17 @@ sensitivity(
 )
 }
 \arguments{
-\item{x}{A fitted `multilpa` model to use as the reference.}
+\item{x}{A fitted `multilpa` model to use as the reference.
+A [fit_staged()] result varies the second-stage starts while holding its
+first-stage measurement solution fixed. A directly fitted model with
+measurement blocks held is refused: its original free starting
+values are not retained, so replaying the same seed would not replay the
+same search.}
 
-\item{data}{Optional. The data the model was fitted to. A fit carries the
-columns it was built from, so this is only needed to override them.}
+\item{data}{Optional. The data the model was fitted to, in its original row
+order. A fit carries the columns it was built from, so this is only needed
+to override them. Shared identifier and indicator columns are checked
+against the fit before assignment agreement is calculated.}
 
 \item{seeds}{Integer seeds to refit under. The reference fit's own seed may
 be among them, in which case that row reproduces it and is the arithmetic

@@ -225,6 +225,10 @@ test_that("a supplied first stage is used, and a mismatched one is refused", {
                                  n_group_classes = 2L, n_starts = 5, seed = 2,
                                  measurement = measurement)
   expect_equal(again$log_likelihood, staged$log_likelihood)
+  expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
+                          n_group_classes = 2L, n_starts = 2, seed = 2,
+                          measurement = staged),
+               class = "multilpa_bad_stage")
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 3L,
                                      n_group_classes = 2L, n_starts = 2, seed = 2,
                                      measurement = measurement),

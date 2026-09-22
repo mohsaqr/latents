@@ -1,3 +1,46 @@
+# multilpa 0.5.0
+
+## Behaviour changes
+
+* `get_results(x, "assignments", truth = )` counts each group once when a
+  truth column is compared against group classes, rather than once per
+  observation, so larger groups no longer weigh more in recovery. Unused factor
+  levels are omitted.
+* The `multilpa_unverified_alignment` warning now also fires when the supplied
+  `data` shares only columns that cannot establish row order, such as a
+  repeated group identifier on its own.
+* `three_step()` and `r3step()` refuse a membership-covariate fit
+  (`multilpa_unsupported_three_step`) and refuse measurement indicators as
+  outcomes or predictors. Both now check `data` alignment against the fit.
+* `bootstrap_lrt()` requires matching covariance structure and centering,
+  repeats grand-mean centering in every refit, and refuses person-centred fits
+  (`multilpa_unsupported_bootstrap`).
+* `get_tna()` and `get_group_tna()` no longer turn a state with no outgoing
+  moves into a certain self-transition. The fit's own row is kept and
+  `multilpa_empty_transition_row` is warned.
+* `fit_staged(measurement = )` refuses a first stage with more than one group
+  class (`multilpa_bad_stage`).
+* `sensitivity()` works on `fit_staged()` results, refuses directly fixed fits,
+  checks `data` alignment, and requires non-negative whole-number seeds.
+
+## Bug fixes
+
+* `sensitivity()` now refits with the reference fit's own `max_iter` and `tol`;
+  `multilpa()` did not store them, so the defaults were always used.
+* Relabelling group classes during bootstrap alignment now also reorders
+  `group_posteriors`, `group_classes` and `effective_group_counts`.
+* Covariate fits no longer store categorical indicators in `indicator_data`,
+  which coerced the matrix to character.
+* Categorical indicators round-trip with their original type (numeric, factor)
+  through `get_results(x, "data")` and bootstrap simulation.
+* BCH `three_step()` no longer reports a spurious significant contrast for a
+  constant outcome; zero standard errors give `NA` statistics and p-values in
+  `three_step()` and `r3step()`.
+* `descriptives()` excludes rows with a missing group ID from `n_groups` and
+  `icc`, and describes repeated `vars` once.
+* Enumeration summaries and plots distinguish covariance structures; the plot
+  marks the minimum among converged candidates only.
+
 # multilpa 0.4.1
 
 `vignettes/figure`, a leftover `knitr` figure directory from a preview render,

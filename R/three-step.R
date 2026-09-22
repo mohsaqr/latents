@@ -18,6 +18,24 @@
   }
 }
 
+#' Require a first-stage fit whose classification error is not predictor-dependent
+#' @param object A fitted model of this package.
+#' @return `NULL`, invisibly, or `multilpa_unsupported_three_step`.
+#' @noRd
+.multilpa_check_three_step_fit <- function(object) {
+  stopifnot("`x` must be a fitted model of this package" =
+              .multilpa_any_fit(object))
+  if (inherits(object, "multilpa_covariates")) {
+    stop(errorCondition(paste(
+      "Three-step correction is unavailable for a fit that already uses",
+      "membership covariates: this method has no classification-error",
+      "adjustment conditional on those covariates. Fit the measurement model",
+      "without membership covariates before using three_step() or r3step()."),
+      class = "multilpa_unsupported_three_step", call = NULL))
+  }
+  invisible(NULL)
+}
+
 #' How often each true class is assigned to another
 #'
 #' Documented on `?get_results`, which is where a caller reaches this table from,
@@ -135,10 +153,15 @@
 #' the outcome pull the classes toward itself; doing it naively by modal class
 #' instead attenuates every difference. This does neither.
 #'
-#' @param x A fitted model of this package.
+#' @param x A covariate-free fitted [multilpa()] or [lta()] model. A fit that
+#'   already uses membership covariates cannot be corrected by the fixed,
+#'   unconditional classification-error matrix used here.
 #' @param data The data frame carrying the outcome, in the fit's row order.
-#' @param outcome Name of a numeric outcome column. For `level = "groups"` it
-#'   must be constant within each group.
+#'   Shared fit columns are checked row by row; a frame with too little
+#'   identifying information warns that alignment cannot be verified.
+#' @param outcome Name of a numeric outcome column not used as a measurement
+#'   indicator in `x`. For `level = "groups"` it must be constant within each
+#'   group.
 #' @param level `"individuals"` relates the outcome to profiles, `"groups"` to
 #'   group classes.
 #' @param method `"bch"` applies the Bolck-Croon-Hagenaars weights;
@@ -172,6 +195,8 @@
 #'   `reference_class`, `estimate` (the mean of `class` minus the mean of
 #'   `reference_class`), `standard_error`, `statistic`, `p_value`,
 #'   `p_value_adjusted`, `conf_low` and `conf_high`, matching [r3step()].
+#'   A contrast with zero standard error has no defined test statistic or
+#'   p-value; those columns are `NA_real_` rather than a spurious finite test.
 #'
 #'   Standard errors are cluster-robust in both shapes under the default
 #'   `vcov_type = "cluster"`, taking the fit's groups as the independent units,
@@ -184,6 +209,11 @@
 #'   attribute.
 #' @details The correction assumes the outcome is independent of the assigned
 #'   class given the true one, which is what makes a three-step method valid.
+#'   On a [lta()] fit, `level = "individuals"` uses one row per occasion and
+#'   relates the outcome to the profile at that occasion. The default
+#'   group-clustered variance accounts for repeated occasions within a group.
+#'   This is a marginal profile-outcome analysis; it does not estimate an
+#'   outcome effect on transitions or a sequence-level outcome model.
 #'
 #'   A cluster-robust variance is the sum of one outer product per independent
 #'   unit, and those contributions sum to zero at the estimate, so it has rank
@@ -243,7 +273,16 @@ three_step <- function(x, data, outcome,
     "`ci_level` must be a single number in (0, 1)" =
       is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1
   )
+  .multilpa_check_three_step_fit(x)
+  if (outcome %in% x$vars) {
+    stop(errorCondition(sprintf(
+      "`%s` helped define the fitted classes, so it is not a distal outcome.",
+      outcome), class = "multilpa_bad_outcome", call = NULL))
+  }
   pieces <- .multilpa_level_assignments(x, level)
+  stopifnot("`data` must have one row per observation of the fit" =
+              nrow(data) == x$n_observations)
+  .multilpa_check_alignment(x, data)
   values <- .multilpa_outcome_values(x, data, outcome, level)
   weights <- .multilpa_step_weights(pieces, method)
   classes <- seq_len(pieces$n_classes)
@@ -254,13 +293,21 @@ three_step <- function(x, data, outcome,
     stop(errorCondition("A class has no positive total outcome weight.",
                         class = "multilpa_inseparable_classes", call = NULL))
   }
-  estimates <- as.vector(crossprod(weights, values)) / totals
+  # BCH weights may be negative. Multiplying and summing a constant outcome
+  # directly can then leave a few ulps of cancellation, which looks like a
+  # nonzero class contrast with an equally tiny standard error and can produce
+  # a false significant p-value. Work on differences from an observed value.
+  baseline <- values[[1L]]
+  centered <- values - baseline
+  centered_estimates <- as.vector(crossprod(weights, centered)) / totals
+  estimates <- baseline + centered_estimates
   ## Cluster-robust variance of a weighted mean: the per-unit influence
   ## contributions are summed within each independent group, then across
   ## groups. Holding them as a matrix lets a difference between two classes be
   ## given a standard error from the same quantities, rather than assuming the
   ## two means are independent when they share every unit.
-  influence <- sweep(weights * outer(values, estimates, "-"), 2L, totals, "/")
+  influence <- sweep(weights * outer(centered, centered_estimates, "-"),
+                     2L, totals, "/")
   units <- if (identical(vcov_type, "cluster")) {
     pieces$group_index
   } else seq_len(nrow(influence))
@@ -276,7 +323,7 @@ three_step <- function(x, data, outcome,
     })
 
   if (identical(contrast, "pairs")) {
-    return(.multilpa_step_pairs(estimates, clustered, level, method, quantile,
+    return(.multilpa_step_pairs(centered_estimates, clustered, level, method, quantile,
                                 adjust, vcov_type))
   }
   errors <- sqrt(colSums(clustered^2))
@@ -312,8 +359,11 @@ three_step <- function(x, data, outcome,
   difference <- estimates[pairs[2L, ]] - estimates[pairs[1L, ]]
   errors <- sqrt(colSums((clustered[, pairs[2L, ], drop = FALSE] -
                             clustered[, pairs[1L, ], drop = FALSE])^2))
-  statistic <- difference / errors
-  raw <- 2 * stats::pnorm(-abs(statistic))
+  statistic <- rep(NA_real_, length(errors))
+  valid <- is.finite(errors) & errors > 0
+  statistic[valid] <- difference[valid] / errors[valid]
+  raw <- rep(NA_real_, length(errors))
+  raw[valid] <- 2 * stats::pnorm(-abs(statistic[valid]))
   result <- data.frame(
     level = level, method = method, class = pairs[2L, ],
     reference_class = pairs[1L, ], estimate = difference,
@@ -380,10 +430,15 @@ three_step <- function(x, data, outcome,
 #' instead attenuates every coefficient, because some units are in the wrong
 #' class and the covariate cannot explain why.
 #'
-#' @param x A fitted model of this package.
+#' @param x A covariate-free fitted [multilpa()] or [lta()] model. A fit that
+#'   already uses membership covariates cannot be corrected by the fixed,
+#'   unconditional classification-error matrix used here.
 #' @param data The data frame carrying the covariates, in the fit's row order.
-#' @param covariates Character vector of numeric covariate columns. For
-#'   `level = "groups"` each must be constant within a group.
+#'   Shared fit columns are checked row by row; a frame with too little
+#'   identifying information warns that alignment cannot be verified.
+#' @param covariates Character vector of numeric columns not used as measurement
+#'   indicators in `x`. For `level = "groups"` each must be constant within a
+#'   group.
 #' @param level `"individuals"` predicts profile membership, `"groups"`
 #'   predicts group-class membership.
 #' @param ci_level Confidence level for the intervals.
@@ -407,6 +462,8 @@ three_step <- function(x, data, outcome,
 #'   `p_value` is uncorrected and `p_value_adjusted` carries the correction named
 #'   by `adjust`, which is also recorded in the result's `adjust` attribute;
 #'   it is `NA` on the intercept rows, which are not part of the tested family.
+#'   A coefficient with zero standard error has an undefined Wald statistic and
+#'   p-value, reported as `NA_real_` rather than infinity or zero.
 #'   Coefficients are log odds against the final class, which is the reference,
 #'   matching `multilpa(profile_covariates = )`; that class is named in the
 #'   result's
@@ -415,6 +472,10 @@ three_step <- function(x, data, outcome,
 #' @details The error matrix is held fixed rather than estimated jointly, which
 #'   is what makes this a three-step method and what keeps the covariates from
 #'   reshaping the classes.
+#'   On a [lta()] fit, `level = "individuals"` models the marginal profile at
+#'   each occasion. It does not regress initial-state or transition
+#'   probabilities on the covariates. `vcov_type = "robust"` clusters the
+#'   occasion scores by group; `"observed"` treats them as independent.
 #'
 #'   Over 60 replications of a two-profile design with a true log-odds slope of
 #'   1.2 and intercept -0.3, this recovered the slope with a bias of -0.002 and
@@ -471,7 +532,18 @@ r3step <- function(x, data, covariates,
     "`ci_level` must be a single number in (0, 1)" =
       is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1
   )
+  .multilpa_check_three_step_fit(x)
+  reused <- intersect(covariates, x$vars)
+  if (length(reused) > 0L) {
+    stop(errorCondition(sprintf(
+      "Measurement indicator(s) %s already helped define the fitted classes and cannot be used as external predictors.",
+      paste(sprintf("`%s`", reused), collapse = ", ")),
+      class = "multilpa_bad_argument", call = NULL))
+  }
   pieces <- .multilpa_level_assignments(x, level)
+  stopifnot("`data` must have one row per observation of the fit" =
+              nrow(data) == x$n_observations)
+  .multilpa_check_alignment(x, data)
   if (pieces$n_classes < 2L) {
     stop(errorCondition(
       "A single class has no membership to predict.",
@@ -563,11 +635,14 @@ r3step <- function(x, data, covariates,
                                    n_classes, level, ci_level, vcov_type,
                                    adjust) {
   errors <- sqrt(pmax(diag(covariance), 0))
-  statistic <- estimates / errors
+  statistic <- rep(NA_real_, length(errors))
+  valid <- is.finite(errors) & errors > 0
+  statistic[valid] <- estimates[valid] / errors[valid]
   quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
   labels <- expand.grid(term = terms, outcome = paste0("class_", seq_len(n_free)),
                         stringsAsFactors = FALSE)
-  raw <- 2 * stats::pnorm(-abs(statistic))
+  raw <- rep(NA_real_, length(errors))
+  raw[valid] <- 2 * stats::pnorm(-abs(statistic[valid]))
   ## The intercepts are estimated, not tested: correcting across them would
   ## enlarge the family with hypotheses nobody asked about and make every
   ## covariate look less significant than the data say.

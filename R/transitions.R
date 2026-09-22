@@ -713,8 +713,11 @@ lta <- function(data, vars, id, n_profiles, time,
     any(colSums(group_posteriors) < 1)
   result <- c(parameters, list(
     call = call, vars = vars, continuous = continuous,
+    continuous_types = vapply(data[continuous], typeof, character(1)),
     categorical = categorical,
     categorical_levels = measurement$encoded$levels,
+    categorical_values = .multilpa_categorical_values(
+      data, categorical, measurement$encoded),
     min_probability = min_probability,
     indicator_data = as.matrix(measurement$frame), categorical_data = codes,
     id = id, group_ids = groups$ids, time = time, time_values = time_values,

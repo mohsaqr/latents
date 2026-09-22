@@ -23,7 +23,10 @@
 #' and summing counts weights it by how much transition mass it actually
 #' contributes, which is what a marginal transition probability means. A class
 #' holding a tenth of the students but a fifth of the observed moves counts for
-#' the latter.
+#' the latter. If a profile has no expected outgoing moves in any class, its
+#' transition row has no count-based estimate; the network uses the fitted
+#' class rows averaged by class probability and warns that the row is
+#' unestimated. It never interprets absent moves as a certain self-transition.
 #'
 #' @param x A fitted model from [lta()].
 #' @param ... Passed to [tna::tna()].
@@ -49,6 +52,9 @@ get_tna <- function(x, ...) {
 get_tna.multilpa_transitions <- function(x, ...) {
   .multilpa_require_tna()
   aggregate <- .multilpa_aggregate_transitions(x)
+  if (any(!aggregate$estimated)) {
+    .multilpa_warn_tna_empty_rows()
+  }
   tna::tna(aggregate$probabilities, inits = aggregate$initial, ...)
 }
 
@@ -56,6 +62,8 @@ get_tna.multilpa_transitions <- function(x, ...) {
 #'
 #' Builds one [tna::tna()] model per latent group class of a fitted transition
 #' model, collected into the `group_tna` object tna's grouped verbs expect.
+#' A class row with no expected outgoing moves keeps the fit's unestimated
+#' transition probabilities and raises `multilpa_empty_transition_row`.
 #'
 #' @param x A fitted model from [lta()].
 #' @param label What the classes are called in tna's output.
@@ -82,7 +90,10 @@ get_group_tna <- function(x, ...) {
 get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
   .multilpa_require_tna()
   stopifnot("`label` must be a single string" =
-              is.character(label) && length(label) == 1L)
+              is.character(label) && length(label) == 1L && !is.na(label))
+  if (any(x$empty_transition_rows %||% FALSE)) {
+    .multilpa_warn_tna_empty_rows()
+  }
   states <- .multilpa_state_labels(x)
   names <- sprintf("%s %d", label, seq_len(x$n_group_classes))
   models <- stats::setNames(lapply(seq_len(x$n_group_classes), function(class) {
@@ -93,6 +104,18 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
              ...)
   }), names)
   .multilpa_as_group_tna(models, label = label)
+}
+
+#' Warn when a network contains fitted transition rows without move data
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_warn_tna_empty_rows <- function() {
+  warning(warningCondition(paste(
+    "A transition row has no expected outgoing moves, so its probabilities",
+    "are not estimated from transitions. The network retains the fitted",
+    "row; inspect get_results(fit, \"transitions\", estimated = FALSE)."),
+    class = "multilpa_empty_transition_row", call = NULL))
+  invisible(NULL)
 }
 
 #' Is the tna package available?
@@ -120,7 +143,8 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
 #' The transition model marginal over latent group classes
 #'
 #' @param x A fitted model from [lta()].
-#' @return A list with `probabilities`, a square matrix, and `initial`.
+#' @return A list with `probabilities`, a square matrix; `initial`, the state
+#'   distribution; and `estimated`, marking rows with positive expected counts.
 #' @noRd
 .multilpa_aggregate_transitions <- function(x) {
   states <- .multilpa_state_labels(x)
@@ -129,16 +153,22 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
   ## averaging the matrices would weight it by class size alone.
   counts <- apply(x$transition_counts, seq_len(2L), sum)
   totals <- rowSums(counts)
-  ## A state no observation ever leaves contributes no row to normalise. Its row
-  ## is reported as a self-transition rather than as NaN, which is what "never
-  ## left" means and what every downstream centrality can read.
+  ## A state with no outgoing moves has no count-based transition estimate.
+  ## Keep the model's own row as a labelled fallback. A self-transition of one
+  ## would falsely turn missing transition information into evidence of staying.
   probabilities <- counts / ifelse(totals > 0, totals, 1)
   empty <- which(totals <= 0)
-  if (length(empty) > 0L) probabilities[cbind(empty, empty)] <- 1
+  for (from in empty) {
+    rows <- matrix(x$transition_probabilities[from, , ],
+                   nrow = x$n_profiles, ncol = x$n_group_classes)
+    fallback <- as.vector(rows %*% x$group_probabilities)
+    probabilities[from, ] <- fallback / sum(fallback)
+  }
   dimnames(probabilities) <- list(states, states)
   initial <- as.numeric(x$group_probabilities %*% x$initial_probabilities)
   list(probabilities = probabilities,
-       initial = stats::setNames(initial / sum(initial), states))
+       initial = stats::setNames(initial / sum(initial), states),
+       estimated = totals > 0)
 }
 
 #' Collect per-class models into tna's grouped object
