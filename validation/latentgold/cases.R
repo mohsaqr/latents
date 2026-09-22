@@ -252,6 +252,15 @@ lg_cases <- function() {
   covariates$x <- .lg_with_seed(1107L, stats::rnorm(nrow(covariates)))
   covariates$w <- rep(.lg_with_seed(1108L, stats::rnorm(60L)), each = 10L)
 
+  # Real data, not simulated: the bundled set the README's example fits. Only
+  # the columns the model uses are written, under the names the kit's syntax
+  # expects; the truth columns are text and no model reads them.
+  engagement_indicators <- c("browse", "lectures", "forum_read", "forum_post",
+                             "attendance")
+  engagement <- data.frame(id = seq_len(nrow(course_engagement)),
+                           g = as.integer(factor(course_engagement$student)),
+                           course_engagement[engagement_indicators])
+
   steps <- .lg_step_data(seed = 109L)
   sequences <- .lg_sequence_data(seed = 110L)
 
@@ -329,6 +338,16 @@ lg_cases <- function() {
       files = list(c08_bivariate_residuals.lgs = .lg_file("c08.dat", list(
         .lg_twolevel("c08_bivariate_residuals", continuous = cont3)))),
       data_file = "c08.dat"),
+    c12_course_engagement = list(
+      description = "The package's own bundled data: 1,422 enrolments in 106 students, five indicators, 2 profiles x 2 group classes. This is the model the README reports.",
+      anchors = c("likelihood", "posteriors", "group posteriors", "means and variances",
+                  "information criteria"),
+      data = engagement,
+      fit = function() .lg_fit(engagement, engagement_indicators, "g",
+                               n_profiles = 2, n_group_classes = 2),
+      files = list(c12_course_engagement.lgs = .lg_file("c12.dat", list(
+        .lg_twolevel("c12_course_engagement", continuous = engagement_indicators)))),
+      data_file = "c12.dat"),
     c09_three_step = .lg_step_case(steps),
     c10_lta = .lg_sequence_case(sequences, n_group_classes = 1L),
     c11_lta_mixture = .lg_sequence_case(sequences, n_group_classes = 2L))

@@ -25,6 +25,8 @@ echo Estimating c07_covariates.lgs
 %LG% c07_covariates.lgs /b /o c07_covariates.lst
 echo Estimating c08_bivariate_residuals.lgs
 %LG% c08_bivariate_residuals.lgs /b /o c08_bivariate_residuals.lst
+echo Estimating c12_course_engagement.lgs
+%LG% c12_course_engagement.lgs /b /o c12_course_engagement.lst
 echo Estimating c09_step1.lgs
 %LG% c09_step1.lgs /b /o c09_step1.lst
 echo Estimating c09_distal_bch.lgs

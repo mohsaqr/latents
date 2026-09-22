@@ -17,8 +17,8 @@ change. `INPUTS.md5` fingerprints exactly those inputs; `compare.R` warns with
 
 ## Files
 
-- 26 listings and posterior files (`OUTPUTS.md5`)
-- from 24 input files (`INPUTS.md5`)
+- 28 listings and posterior files (`OUTPUTS.md5`)
+- from 26 input files (`INPUTS.md5`)
 
 These are Latent GOLD's own output, kept for verification only. They are not
 redistributed as part of the package: `validation/` is in `.Rbuildignore`.

@@ -9,13 +9,14 @@ Run order:
   6. c06_missing_fiml.lgs
   7. c07_covariates.lgs
   8. c08_bivariate_residuals.lgs
-  9. c09_step1.lgs
-  10. c09_distal_bch.lgs
-  11. c09_distal_modal.lgs
-  12. c09_distal_proportional.lgs
-  13. c09_covariate_ml.lgs
-  14. c10_lta.lgs
-  15. c11_lta_mixture.lgs
+  9. c12_course_engagement.lgs
+  10. c09_step1.lgs
+  11. c09_distal_bch.lgs
+  12. c09_distal_modal.lgs
+  13. c09_distal_proportional.lgs
+  14. c09_covariate_ml.lgs
+  15. c10_lta.lgs
+  16. c11_lta_mixture.lgs
 
 md5:
   3d0c3ebccb5b60ea6e37c2b26950df2a  c01_continuous_varying.lgs
@@ -42,4 +43,6 @@ md5:
   a8ba8505c5ff5941c37a37fb5340c372  c10_lta.lgs
   c24b6ffa4b931651c0521c5b2559afc9  c10.dat
   dfa38195117bc6f00d94c275e5039924  c11_lta_mixture.lgs
-  778cf6e7f825ea01631ac6a2d1fd7131  run-all.bat
+  0b8405cb8d728411dbee13167ebdef75  c12_course_engagement.lgs
+  078a7e2c4c283c75c90d8bf24a6ea48b  c12.dat
+  7555435314e232f30d3591f91eba4c3e  run-all.bat

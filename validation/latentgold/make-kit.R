@@ -89,6 +89,8 @@ dir.create(targets_dir, recursive = TRUE)
        missing = fit$missing %||% "error",
        log_likelihood = fit$log_likelihood, n_parameters = fit$n_parameters,
        n_best_replicated = replicated,
+       criteria = get_results(fit, "information_criteria"),
+       n_observations = fit$n_observations, n_groups = fit$n_groups,
        posteriors = posteriors, group_posteriors = groups,
        profiles = get_results(fit, "profiles"),
        group_class_probabilities = if (fit$n_group_classes > 1L) fit$group_probabilities,

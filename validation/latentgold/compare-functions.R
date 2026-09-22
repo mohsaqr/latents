@@ -143,17 +143,24 @@
 
 #' One labelled number from a Latent GOLD listing
 #'
+#' The listing is tab-separated with the label in the first field, so the label
+#' is matched as that whole field rather than as a pattern: `AIC (based on LL)`
+#' and `AIC3 (based on LL)` are different labels but one is a prefix of the
+#' other, and a label ending in `)` has no word boundary after it.
+#'
 #' @param lines The listing's lines.
-#' @param label A regular expression matching the start of the line's label.
-#' @return A list with `value` and `half_unit`, or `NULL` when absent.
+#' @param label The label, exactly as the listing writes it.
+#' @return A list with `value` and `half_unit`, or `NULL` when the label is
+#'   absent or carries no number (`Npar` heads a column of the summary table).
 .lg_listing_value <- function(lines, label) {
-  hit <- grep(label, lines, value = TRUE)
-  if (length(hit) == 0L) return(NULL)
-  tokens <- regmatches(hit[[1L]], gregexpr("-?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?",
-                                           hit[[1L]]))[[1L]]
-  if (length(tokens) == 0L) return(NULL)
-  token <- tokens[[length(tokens)]]
-  list(value = as.numeric(token), half_unit = .lg_half_unit(token))
+  fields <- strsplit(lines, "\t", fixed = TRUE)
+  hit <- Find(function(row) length(row) > 1L && identical(trimws(row[[1L]]), label),
+              fields)
+  if (is.null(hit)) return(NULL)
+  numbers <- trimws(hit[-1L])
+  numbers <- numbers[grepl("^-?[0-9]+([.][0-9]+)?([eE][-+]?[0-9]+)?$", numbers)]
+  if (length(numbers) == 0L) return(NULL)
+  list(value = as.numeric(numbers[[1L]]), half_unit = .lg_half_unit(numbers[[1L]]))
 }
 
 #' A block of comparison rows
@@ -259,6 +266,92 @@
   do.call(rbind, rows)
 }
 
+#' Information criteria, by the sample size each is computed on
+#'
+#' Latent GOLD labels a criterion `(based on LL)` when it uses the number of
+#' cases and `(based on LL,Ngroups)` when it uses the number of groups. This
+#' package draws the same distinction as `*_individual` and `*_groups`. The two
+#' vocabularies do not line up by name, because what Latent GOLD calls a case
+#' depends on the model: for a two-level model it is an observation, but for a
+#' sequence model declared with `caseid` it is a whole sequence, which is this
+#' package's *group*. So each criterion is matched to the column computed on
+#' the same sample size, read from the listing, rather than by its label.
+#'
+#' Deliberately not compared, because the definitions differ rather than the
+#' values: Latent GOLD's `AIC3` (this package reports `kic`, which is not
+#' `-2LL + 3p`), and its `CLC`, `AWE`, entropy R-squared and classification
+#' errors, which use different entropy conventions.
+#'
+#' @format A named character vector: the listing's label, and the stem of this
+#'   package's column.
+.lg_criteria <- c("AIC (based on LL)" = "aic",
+                  "BIC (based on LL)" = "bic",
+                  "CAIC (based on LL)" = "caic",
+                  "SABIC (based on LL)" = "sabic")
+
+#' Which convention of this package a Latent GOLD sample size is
+#'
+#' @param size The sample size Latent GOLD reports, or `NULL`.
+#' @param target One case's targets.
+#' @return `"individual"`, `"groups"`, or `NA` when it is neither.
+.lg_convention <- function(size, target) {
+  if (is.null(size) || is.null(target$n_observations)) return(NA_character_)
+  if (isTRUE(all.equal(size, as.numeric(target$n_observations)))) return("individual")
+  if (isTRUE(all.equal(size, as.numeric(target$n_groups)))) return("groups")
+  NA_character_
+}
+
+#' Comparison rows for the information criteria and the sample sizes
+#'
+#' Each criterion is `-2 * LL` plus a penalty in the parameter count and the
+#' sample size, both compared separately and exactly, so the only slack is
+#' twice the likelihood's plus the criterion's own printed rounding.
+#'
+#' @param lines The listing's lines.
+#' @param target One case's targets.
+#' @return Comparison rows, or `NULL` when the targets predate the criteria.
+.lg_criteria_rows <- function(lines, target) {
+  if (is.null(target$criteria)) return(NULL)
+  likelihood <- .lg_listing_value(lines, "Log-likelihood (LL)")
+  slack <- 2 * ((likelihood$half_unit %||% 0) + .lg_tolerances[["likelihood"]])
+  cases <- .lg_listing_value(lines, "Number of cases")
+  groups <- .lg_listing_value(lines, "Number of groups")
+  families <- list(list(suffix = "", size = cases, label = "cases"),
+                   list(suffix = ",Ngroups", size = groups, label = "groups"))
+  rows <- lapply(families, function(family) {
+    # Latent GOLD prints the group-based family only for a model that has a
+    # group level; its absence is the model's shape, not a parse failure.
+    if (is.null(family$size)) return(NULL)
+    convention <- .lg_convention(family$size$value, target)
+    if (is.na(convention)) {
+      return(.lg_rows(target$case, sprintf("sample size (%s)", family$label),
+                      family$size$value, target$n_observations, 0,
+                      note = "Latent GOLD's sample size is neither this fit's observations nor its groups."))
+    }
+    criteria <- lapply(names(.lg_criteria), function(label) {
+      printed <- .lg_listing_value(lines, sub("\\)$", paste0(family$suffix, ")"), label))
+      if (is.null(printed)) return(NULL)
+      column <- if (identical(.lg_criteria[[label]], "aic")) "aic" else
+        paste0(.lg_criteria[[label]], "_", convention)
+      if (is.null(target$criteria[[column]])) return(NULL)
+      .lg_rows(target$case, column, printed$value, target$criteria[[column]],
+               printed$half_unit + slack,
+               note = sprintf("Latent GOLD's `%s`, on %d %s.",
+                              sub("\\)$", paste0(family$suffix, ")"), label),
+                              as.integer(family$size$value), family$label))
+    })
+    size_row <- .lg_rows(target$case,
+                         sprintf("n_%s", if (identical(convention, "individual"))
+                           "observations" else "groups"),
+                         family$size$value,
+                         if (identical(convention, "individual")) target$n_observations else
+                           target$n_groups, 0,
+                         note = sprintf("Latent GOLD's `Number of %s`.", family$label))
+    do.call(rbind, c(criteria, list(size_row)))
+  })
+  do.call(rbind, rows)
+}
+
 #' Compare every quantity of one case
 #'
 #' @param target One case's targets, as written by make-kit.R.
@@ -280,9 +373,10 @@ lg_compare_case <- function(target, returned) {
     # listing: "Log-likelihood (LL)" and "Number of parameters (Npar)", each
     # followed by a tab and the value. "Npar" alone appears only as a column
     # heading in the summary table, with no value on that line.
-    likelihood <- .lg_listing_value(lines, "^Log-likelihood \\(LL\\)")
-    count <- .lg_listing_value(lines, "^Number of parameters \\(Npar\\)")
+    likelihood <- .lg_listing_value(lines, "Log-likelihood (LL)")
+    count <- .lg_listing_value(lines, "Number of parameters (Npar)")
     rbind(
+      .lg_criteria_rows(lines, target),
       .lg_rows(case, "log likelihood", likelihood$value %||% NA_real_, target$log_likelihood,
                (likelihood$half_unit %||% NA_real_) + .lg_tolerances[["likelihood"]],
                note = if (is.null(likelihood)) "No `Log-likelihood (LL)` line in the listing." else ""),

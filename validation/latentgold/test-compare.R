@@ -33,9 +33,28 @@ sequences <- readRDS(file.path(targets_dir, "c11_lta_mixture.rds"))
 imitate <- function(target, directory, individual = "Cluster", group = "GClass",
                     digits = 4L, separator = "\t",
                     likelihood = round(target$log_likelihood, 4L),
-                    parameters = target$n_parameters) {
+                    parameters = target$n_parameters,
+                    n_cases = target$n_observations,
+                    n_groups = if (!is.null(target$group_posteriors)) target$n_groups) {
   dir.create(directory, showWarnings = FALSE, recursive = TRUE)
   stem <- target$case
+  # Latent GOLD writes each criterion once per sample size it uses: the
+  # unsuffixed family on its cases, and the ",Ngroups" family only when the
+  # model has a group level.
+  criterion <- function(label, column, suffix) {
+    value <- target$criteria[[column]]
+    if (is.null(value)) NULL else sprintf("%s (based on LL%s)\t%.4f\t\t\t", label, suffix, value)
+  }
+  convention <- if (isTRUE(all.equal(as.numeric(n_cases), as.numeric(target$n_observations))))
+    "individual" else "groups"
+  criteria_lines <- c(
+    criterion("AIC", "aic", ""),
+    criterion("BIC", paste0("bic_", convention), ""),
+    criterion("CAIC", paste0("caic_", convention), ""),
+    criterion("SABIC", paste0("sabic_", convention), ""),
+    if (!is.null(n_groups)) c(criterion("BIC", "bic_groups", ",Ngroups"),
+                              criterion("CAIC", "caic_groups", ",Ngroups"),
+                              criterion("SABIC", "sabic_groups", ",Ngroups")))
   # The labels, the tab separator and the Latin-1 "R\u00b2" are copied from a real
   # Latent GOLD 6.1 listing produced under Wine on 2026-09-22. "Npar" also
   # appears alone as a column heading of the summary table, on a line with no
@@ -47,7 +66,10 @@ imitate <- function(target, directory, individual = "Cluster", group = "GClass",
                "Log-likelihood Statistics\t\t\t\t",
                sprintf("Log-likelihood (LL)\t%.4f\t\t\t", likelihood),
                "Log-prior\t0.0000\t\t\t",
-               sprintf("Number of parameters (Npar)\t%d\t\t\t", parameters))
+               sprintf("Number of parameters (Npar)\t%d\t\t\t", parameters),
+               sprintf("Number of cases\t%d\t\t\t", n_cases),
+               if (!is.null(n_groups)) sprintf("Number of groups\t%d\t\t\t", n_groups),
+               criteria_lines)
   connection <- file(file.path(directory, sprintf("%s.lst", stem)), open = "wb")
   writeLines(listing, connection, useBytes = TRUE)
   close(connection)
@@ -94,9 +116,9 @@ test_that("imitated Latent GOLD output agrees on every compared quantity", {
   returned <- imitate(target, tempfile("lg-agree-"))
   result <- lg_compare_case(target, returned)
   compared <- result[result$status %in% c("agree", "disagree"), , drop = FALSE]
-  # likelihood, count, two posterior levels, 2 x 3 means, 2 x 3 variances,
-  # two group proportions
-  expect_equal(nrow(compared), 18L)
+  # likelihood, parameter count, 4 + 3 information criteria, two sample sizes,
+  # two posterior levels, 2 x 3 means, 2 x 3 variances, two group proportions
+  expect_equal(nrow(compared), 27L)
   expect_true(all(compared$status == "agree"),
               info = paste(compared$quantity[compared$status != "agree"], collapse = "; "))
   expect_true(all(result$status[!result$status %in% c("agree", "disagree")] ==
@@ -184,6 +206,25 @@ test_that("a latent transition case reads State and GClass posteriors", {
   expect_true(all(statuses_of(result, "^posteriors") == "agree"))
   expect_equal(length(statuses_of(result, "^posteriors")), 2L)
   expect_true(all(statuses_of(result, "^(mean|variance):") == "agree"))
+})
+
+test_that("a criterion is matched to the column computed on the same N", {
+  # Latent GOLD's "case" is an observation in a two-level model but a whole
+  # sequence in a caseid model, which is this package's group. Matching by
+  # label instead of by sample size compared a sequence model's BIC against
+  # bic_individual and called it a disagreement.
+  two_level <- lg_compare_case(target, imitate(target, tempfile("lg-n-")))
+  expect_equal(statuses_of(two_level, "^(bic|caic|sabic)_(individual|groups)$"),
+               rep("agree", 6L))
+  expect_equal(statuses_of(two_level, "^n_(observations|groups)$"), c("agree", "agree"))
+
+  # A sequence model: Latent GOLD counts sequences and prints no group family.
+  returned <- imitate(sequences, tempfile("lg-seq-"), individual = "State",
+                      n_cases = sequences$n_groups, n_groups = NULL)
+  result <- lg_compare_case(sequences, returned)
+  expect_equal(statuses_of(result, "^(bic|caic|sabic)_groups$"), rep("agree", 3L))
+  expect_false(any(grepl("_individual$", result$quantity)))
+  expect_equal(statuses_of(result, "^n_groups$"), "agree")
 })
 
 test_that("output produced from a different kit is reported as stale", {

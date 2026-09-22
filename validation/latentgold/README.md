@@ -6,17 +6,18 @@ model this package fits (Vermunt 2003) and of the three-step corrections
 on this machine under Wine; see "Pilot" below. This directory builds the data
 and syntax, has Latent GOLD estimate them, and compares the output here.
 
-**Status: run, 2026-09-22. 138 quantities compared, 138 agree, 0 disagree.**
+**Status: run, 2026-09-22. 260 quantities compared, 260 agree, 0 disagree.**
 Latent GOLD's own output is retained in `returned/`, so `compare.R` runs
 offline: **Latent GOLD is not needed again** unless the kit's data or syntax
 change, which `compare.R` detects (`multilpa_stale_latentgold_output`).
 
-| What was compared | Result |
-|---|---|
-| Log likelihood, 11 models | agree; largest gap 4.9e-5, within Latent GOLD's printed precision |
-| Number of parameters, 11 models | exact |
-| Posteriors, every unit and class | largest difference 4.9e-6 (individuals), 5.6e-6 (groups) |
-| Means, variances, group-class proportions (96 quantities) | largest difference 9.7e-7 |
+| What was compared | Rows | Result |
+|---|---|---|
+| Log likelihood and parameter count | 24 | likelihoods within Latent GOLD's printed precision (4.8e-5 at worst); counts exact |
+| Posteriors, over every unit and class | 22 | largest difference 5.6e-6 |
+| Means, variances, group-class proportions, recomputed from Latent GOLD's posteriors | 118 | largest difference 9.7e-7 |
+| Information criteria, in both sample-size conventions | 75 | largest difference 4.8e-5, which is twice the likelihood's rounding |
+| Sample sizes (cases, groups) | 21 | exact |
 
 The 63 remaining rows are `awaiting parser`: standard errors, bivariate
 residuals and the Step-3 tables, which exist only in the listing (see below).
@@ -54,8 +55,11 @@ arithmetic). Latent GOLD adds:
 | `c09_three_step` | single-level measurement, then four Step-3 analyses | likelihood, posteriors, BCH / modal / proportional means, R3STEP slope |
 | `c10_lta` | latent transitions, 2 states, 4 occasions | likelihood, state posteriors |
 | `c11_lta_mixture` | c10 with two sequence classes | likelihood, posteriors at both levels |
+| `c12_course_engagement` | **the package's own bundled data**: 1,422 enrolments in 106 students, five indicators, 2 x 2 classes — the model the README reports | likelihood, posteriors at both levels, means, variances, information criteria |
 
-Every case is simulated from a fixed seed, fitted here with 50 starts, and
+Eleven cases are simulated from a fixed seed; c12 is the bundled
+`course_engagement` data, so the package's published example is checked too.
+Every case is fitted here with 50 starts, and
 refused as a target unless its best likelihood is reached by at least two
 starts (every case reaches it with all 50).
 
@@ -161,6 +165,16 @@ Wine, put the output in `returned/`, and run `compare.R`.
   `.lg_moment_rows()`. Only for complete data with a diagonal covariance, where
   that fixed point is the plain weighted moment.
 - **Group-class proportions**: the mean of Latent GOLD's group posteriors.
+- **Information criteria**: each is matched to the column computed on the same
+  sample size, read from the listing, not by its label. Latent GOLD's "case" is
+  an observation in a two-level model but a whole sequence in a `caseid` model,
+  which is this package's *group*; matching by label alone compares a sequence
+  model's BIC against `bic_individual`. A criterion is `-2 * LL` plus a penalty
+  in the parameter count and the sample size, both compared separately and
+  exactly, so the tolerance is twice the likelihood's plus the printed
+  rounding. Latent GOLD's `AIC3`, `CLC`, `AWE`, entropy R-squared and
+  classification errors are **not** compared: those definitions differ from
+  this package's, so a comparison would measure the definition.
 
 These are all invariant to how either program parameterises the model, which
 is why they are compared first: Latent GOLD's logit coding differs from this
