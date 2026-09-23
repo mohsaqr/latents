@@ -1,6 +1,6 @@
 test_that("ordinary ML Hessian standard errors reproduce genuine Mplus9 results", {
   # These are the q standard errors following q estimates in the retained
-  # validation/mplus/generated/{varying,equal}-results.dat files. TECH1 fixes
+  # equivalence/mplus/generated/{varying,equal}-results.dat files. TECH1 fixes
   # their ordering; the accompanying RDS fixtures retain file MD5 provenance.
   mplus_standard_errors <- list(
     varying = c(0.025488887, 0.033533281, 0.022282673, 0.038562637,

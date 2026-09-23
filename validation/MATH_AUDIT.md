@@ -62,7 +62,7 @@ Latent GOLD executable runs were performed in this audit.
 
 ## Comparison with Houle et al. (2026)
 
-The subsequent [article and supplement comparison](houle-2026/REPORT.md)
+The subsequent [article and supplement comparison](../equivalence/houle-2026/REPORT.md)
 identifies the core package model with the article's dispersion-heterogeneity
 family, distinguishes joint estimation from fixed-measurement stages, and
 checks all 24 published fit-table rows plus a synthetic exhaustive likelihood.

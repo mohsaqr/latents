@@ -11,6 +11,11 @@
 requested <- commandArgs(trailingOnly = TRUE)
 filter <- if (length(requested) > 0L) paste(requested, collapse = "|") else NULL
 
+# This folder never goes to CRAN, so a `skip_on_cran()` here must not fire.
+# Without this, testthat reads every plain Rscript run as a CRAN run and the
+# mclust comparisons were skipped by `Rscript equivalence/run.R` itself.
+Sys.setenv(NOT_CRAN = "true")
+
 # The package is loaded here rather than by `load_package = "source"`: that
 # mode sources the helpers of tests/testthat/ and skips this folder's own.
 pkgload::load_all(".", quiet = TRUE)

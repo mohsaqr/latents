@@ -1,9 +1,0 @@
-"suite","status","compared","agreed","warnings","seconds","reason","first_warning"
-"depmixs4","ran",38,38,0,1.81,NA,NA
-"glca","ran",153,153,0,44.18,NA,NA
-"mclust","ran",86,86,0,68.24,NA,NA
-"mplus-twolevel-lca","ran",150,150,0,332.13,NA,NA
-"multilevlca","ran",123,123,0,91.71,NA,NA
-"polca","ran",421,421,0,491.2,NA,NA
-"published","ran",41,41,0,367.35,NA,NA
-"stability","ran",6,6,0,446.11,NA,NA
