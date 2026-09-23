@@ -1,27 +1,23 @@
 Package: latents
 Title: Multilevel Latent Profile, Class and Transition Models
-Version: 0.8.1
+Version: 0.8.2
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),
     person("Sonsoles", "L\u00f3pez-Pernas", role = "aut",
            comment = c(ORCID = "0000-0002-9621-1392")))
-Description: Fits two-level latent profile and latent class models using a
-    nested expectation-maximization algorithm. Indicators may be continuous,
-    categorical, or a mixture of the two. Individual profiles share measurement
-    parameters across discrete group classes, which differ in their profile
-    proportions. Supports observed-data likelihood
-    for missing indicators, diagonal or full residual covariance, observed
-    information and robust sandwich inference, class-membership covariates,
-    class enumeration, and parametric bootstrap comparisons. Latent transition
-    models estimate first-order transition probabilities between profiles over ordered
-    occasions, optionally varying across group classes, by a forward-backward
-    expectation-maximization algorithm. Includes multiple starts, posterior
-    classification, explicit variance constraints, tidy accessors, information
-    criteria under both multilevel sample-size conventions, classification
-    quality diagnostics, and entropy summaries.
-    The nonparametric multilevel mixture formulation follows Vermunt (2003)
-    <doi:10.1111/j.0081-1750.2003.t01-1-00131.x>.
+Description: Provides functions for fitting multilevel latent profile
+    analysis, latent class, and latent transition models for continuous,
+    categorical, and mixed-type variables. Models are estimated by expectation-maximization,
+    handle missing data, and provide standard and robust standard errors.
+    Model selection is supported by information criteria, entropy,
+    classification diagnostics, and a parametric bootstrap likelihood ratio
+    test. Covariates can be related to latent class membership using
+    three-step methods with correction for classification error. Latent
+    transition models estimate transitions between latent profiles across
+    ordered occasions and are compatible with the 'tna' package for network
+    and sequence analysis. The multilevel mixture formulation follows Vermunt
+    (2003) <doi:10.1111/j.0081-1750.2003.t01-1-00131.x>.
 URL: https://pak.dynasite.org/latents, https://github.com/mohsaqr/latents
 BugReports: https://github.com/mohsaqr/latents/issues
 License: GPL-3

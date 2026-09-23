@@ -1,3 +1,7 @@
+# latents 0.8.2
+
+* The package description is rewritten.
+
 # latents 0.8.1
 
 * A documentation website, built with pkgdown, is published at
