@@ -7,23 +7,23 @@
 \method{summary}{multilpa}(object, ...)
 }
 \arguments{
-\item{object}{An `multilpa` model.}
+\item{object}{An \code{multilpa} model.}
 
-\item{...}{Reserved for compatibility with `summary()`.}
+\item{...}{Reserved for compatibility with \code{summary()}.}
 }
 \value{
-A `summary_multilpa` object: a named list, never carrying an `NA`
-  name, with the fit's dimensions (`n_observations`, `n_informative`,
-  `n_groups`, `n_profiles`, `n_group_classes`), its specification
-  (`variance_model`, `covariance_model`, `missing`, `continuous`, `fixed`,
-  `staged`), its estimates (`means`, `variances`, `standard_deviations`,
-  `covariances`, `response_probabilities`, `profile_probabilities`,
-  `group_probabilities`), the effective class counts at both levels, the
-  likelihood, parameter counts and information criteria, and the restart
-  diagnostics. `covariances` is `NULL` under the diagonal parameterization
-  and `response_probabilities` is `NULL` when no indicator is categorical;
-  both keep their names in either case. Use
-  [get_results()] rather than reading the fields.
+A \code{summary_multilpa} object: a named list, never carrying an \code{NA}
+name, with the fit's dimensions (\code{n_observations}, \code{n_informative},
+\code{n_groups}, \code{n_profiles}, \code{n_group_classes}), its specification
+(\code{variance_model}, \code{covariance_model}, \code{missing}, \code{continuous}, \code{fixed},
+\code{staged}), its estimates (\code{means}, \code{variances}, \code{standard_deviations},
+\code{covariances}, \code{response_probabilities}, \code{profile_probabilities},
+\code{group_probabilities}), the effective class counts at both levels, the
+likelihood, parameter counts and information criteria, and the restart
+diagnostics. \code{covariances} is \code{NULL} under the diagonal parameterization
+and \code{response_probabilities} is \code{NULL} when no indicator is categorical;
+both keep their names in either case. Use
+\code{\link[=get_results]{get_results()}} rather than reading the fields.
 }
 \description{
 The summary collects the estimates, the effective class counts, the
@@ -31,7 +31,7 @@ information criteria and the restart diagnostics of a fit. Every field is
 built explicitly, and a field the fit does not carry takes its documented
 default rather than being silently absent, so the summary of a diagonal fit
 and the summary of a staged full-covariance fit have exactly the same names.
-Read the numbers with [as.data.frame()], which returns them as tidy tables;
+Read the numbers with \code{\link[=as.data.frame]{as.data.frame()}}, which returns them as tidy tables;
 the printed form is a human-facing report.
 }
 \examples{
@@ -45,5 +45,5 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 summary(fit)
 }
 \seealso{
-[get_results()] for the tidy tables.
+\code{\link[=get_results]{get_results()}} for the tidy tables.
 }

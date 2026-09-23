@@ -89,7 +89,7 @@ test_that("a covariate fit can carry and report its ordering", {
   timed <- .surface_fit(data, time = "wave")
 
   expect_null(bare$time)
-  expect_error(get_results(bare, "sequences"), class = "multilpa_no_time")
+  expect_error(get_results(bare, "sequences"), class = "latents_no_time")
   expect_identical(timed$time, "wave")
   # the ordering is metadata and must not move an estimate
   expect_equal(bare$log_likelihood, timed$log_likelihood)
@@ -122,7 +122,7 @@ test_that("plot draws what a covariate model has and refuses what it has not", {
   # Prevalence is a function of each unit's covariates, so there is no single
   # vector to draw and the request is refused rather than averaged.
   expect_error(draw(plot(fit, what = "probabilities")),
-               class = "multilpa_nothing_to_plot")
+               class = "latents_nothing_to_plot")
 })
 
 test_that("direct labels are measured in the weight they are drawn", {

@@ -7,7 +7,7 @@
 \method{confint}{multilpa_covariates}(object, parm, level = 0.95, data = NULL, ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa_covariates` model.}
+\item{object}{A fitted \code{multilpa_covariates} model.}
 
 \item{parm}{Optional parameter names or indices; defaults to all of them.}
 
@@ -17,14 +17,14 @@
 it is rebuilt from the indicators, group index and designs the fit stores.
 Supplying it is the stronger check that the caller still holds that frame.}
 
-\item{...}{Passed to [parameter_inference()], so `vcov_type = "robust"` and
-`step` reach it.}
+\item{...}{Passed to \code{\link[=parameter_inference]{parameter_inference()}}, so \code{vcov_type = "robust"} and
+\code{step} reach it.}
 }
 \value{
 A two-column matrix of Wald intervals, one row per requested
-  parameter, named as [coef()] names them. Bounds are on the natural scale
-  and are not constrained to respect a variance's positivity or a
-  probability's range.
+parameter, named as \code{\link[=coef]{coef()}} names them. Bounds are on the natural scale
+and are not constrained to respect a variance's positivity or a
+probability's range.
 }
 \description{
 Wald confidence intervals for a covariate fit

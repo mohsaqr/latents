@@ -20,16 +20,16 @@
 )
 }
 \arguments{
-\item{x}{A fitted `multilpa_covariates` model.}
+\item{x}{A fitted \code{multilpa_covariates} model.}
 
-\item{what}{`"profiles"` (the default) draws the measurement model;
-`"sequences"` draws the assignments in course order and needs a fit made
-with `time =`. `"entropy"` and `"posteriors"` draw the two case-level
-classification diagnostics exactly as [plot.multilpa()] draws them: they
+\item{what}{\code{"profiles"} (the default) draws the measurement model;
+\code{"sequences"} draws the assignments in course order and needs a fit made
+with \verb{time =}. \code{"entropy"} and \code{"posteriors"} draw the two case-level
+classification diagnostics exactly as \code{\link[=plot.multilpa]{plot.multilpa()}} draws them: they
 read the individual posteriors, which a covariate fit has, and say nothing
 about prevalence, which it does not.}
 
-\item{scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, ...}{Passed through as in [plot.multilpa()].}
+\item{scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, ...}{Passed through as in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
 }
 \value{
 The fitted model, invisibly. Called for the side effect of drawing.

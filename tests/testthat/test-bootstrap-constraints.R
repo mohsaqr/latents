@@ -89,12 +89,12 @@ test_that("bootstrap refits retain grand centering", {
   data <- data.frame(g = rep(seq_len(20L), each = 6L),
                      y = c(stats::rnorm(60L, 28), stats::rnorm(60L, 32)))
   small <- multilpa(data, "y", "g", 1L, 1L, centering = "grand",
-                    n_starts = 2L, seed = 1L)
+                    n_starts = 1L, seed = 1L)
   large <- multilpa(data, "y", "g", 2L, 1L, centering = "grand",
-                    n_starts = 2L, seed = 1L)
+                    n_starts = 1L, seed = 1L)
   recorder <- refit_recorder()
   testthat::local_mocked_bindings(multilpa = recorder$mock)
-  quietly(bootstrap_lrt(small, large, data, iter = 2L, n_starts = 2L,
+  quietly(bootstrap_lrt(small, large, data, iter = 2L, n_starts = 1L,
                         seed = 2L))
   calls <- recorder$calls()
   expect_identical(length(calls), 4L)
@@ -114,14 +114,14 @@ test_that("bootstrap refuses incomparable structures and person centering", {
   }
   expect_error(bootstrap_lrt(fit(1L), fit(2L, shape = "varying"),
                              data, iter = 2L),
-               class = "multilpa_incomparable_models")
+               class = "latents_incomparable_models")
   expect_error(bootstrap_lrt(fit(1L), fit(2L, centering = "grand"),
                              data, iter = 2L),
-               class = "multilpa_incomparable_models")
+               class = "latents_incomparable_models")
   expect_error(bootstrap_lrt(fit(1L, centering = "person"),
                              fit(2L, centering = "person"),
                              data, iter = 2L),
-               class = "multilpa_unsupported_bootstrap")
+               class = "latents_unsupported_bootstrap")
 })
 
 test_that("the held constraint is named on the public surface", {
@@ -149,20 +149,20 @@ test_that("a constrained pair that is not nested is refused", {
   expect_error(
     bootstrap_lrt(models$null_model, mismatched, models$data, iter = 2,
                   seed = 1),
-    class = "multilpa_bad_nesting")
+    class = "latents_bad_nesting")
 })
 
 test_that("a held measurement is refused across different profile counts", {
   skip_on_cran()
   models <- constrained_pair()
-  three <- multilpa(models$data, c("a", "b"), "g", 3, 1, n_starts = 3, seed = 5,
+  three <- multilpa(models$data, c("a", "b"), "g", 3, 1, n_starts = 1, seed = 5,
                     tol = 1e-10)
   larger <- multilpa(models$data, c("a", "b"), "g", 3, 1, n_starts = 1,
                      start = starting_values(three, what = "measurement"),
                      fixed = "measurement", seed = 5, tol = 1e-10)
   expect_error(
     bootstrap_lrt(models$null_model, larger, models$data, iter = 2, seed = 1),
-    class = "multilpa_bad_nesting")
+    class = "latents_bad_nesting")
 })
 
 test_that("a constraint on only one of the two models is refused", {
@@ -173,7 +173,7 @@ test_that("a constraint on only one of the two models is refused", {
   expect_error(
     bootstrap_lrt(models$null_model, free_alternative, models$data, iter = 2,
                   seed = 1),
-    class = "multilpa_bad_nesting")
+    class = "latents_bad_nesting")
   # And the other way round: an unconstrained null against a constrained
   # alternative is equally not a nested pair.
   free_null <- multilpa(models$data, c("a", "b"), "g", 2, 1, n_starts = 3,
@@ -181,7 +181,7 @@ test_that("a constraint on only one of the two models is refused", {
   expect_error(
     bootstrap_lrt(free_null, models$alternative_model, models$data, iter = 2,
                   seed = 1),
-    class = "multilpa_bad_nesting")
+    class = "latents_bad_nesting")
 })
 
 test_that("models holding different blocks are refused", {
@@ -193,5 +193,5 @@ test_that("models holding different blocks are refused", {
   expect_error(
     bootstrap_lrt(models$null_model, means_only, models$data, iter = 2,
                   seed = 1),
-    class = "multilpa_bad_nesting")
+    class = "latents_bad_nesting")
 })

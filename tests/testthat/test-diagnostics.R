@@ -229,14 +229,14 @@ test_that("starting_values round-trips a fitted solution", {
 
 test_that("starting_values rejects incomplete input by condition class", {
   expect_error(starting_values(list(means = matrix(0, 2, 2))),
-               class = "multilpa_bad_start")
+               class = "latents_bad_start")
   expect_error(starting_values(list(means = matrix(0, 2, 2),
     profile_probabilities = matrix(0.5, 1, 2), group_probabilities = 1)),
-    class = "multilpa_bad_start")
+    class = "latents_bad_start")
   expect_error(starting_values(list(means = matrix(0, 2, 2),
     variances = matrix(1, 2, 2), profile_probabilities = matrix(0.5, 1, 2),
     group_probabilities = 1), covariance = "keep"),
-    class = "multilpa_bad_start")
+    class = "latents_bad_start")
 })
 
 test_that("every result class has a working tidy accessor", {
@@ -252,7 +252,7 @@ test_that("every result class has a working tidy accessor", {
                     resources = rep(stats::rnorm(30L), each = 10L))
   covariate_fit <- quietly(multilpa(
     dat, c("a", "b"), "school", 2, 2, profile_covariates = "age",
-    group_covariates = "resources", n_starts = 4, seed = 1))
+    group_covariates = "resources", n_starts = 1, max_iter = 20, seed = 1))
   profiles <- as.data.frame(covariate_fit)
   expect_identical(names(profiles),
     c("profile", "indicator", "mean", "variance", "standard_deviation"))
@@ -299,8 +299,11 @@ test_that("preparation helpers enforce their own contracts", {
                                        1e-10, NULL, character()),
                "finite positive")
   expect_error(.multilpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, 1e-8, 1e-6,
-                                       1e-10, -1, character()),
-               "nonnegative integer")
+                                       1e-10, 1.5, character()),
+               class = "latents_bad_argument")
+  # A negative seed is one set.seed() accepts, so it is not refused.
+  expect_no_error(.multilpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, 1e-8, 1e-6,
+                                            1e-10, -1, character()))
 })
 
 test_that("the null-default operator behaves like base %||%", {

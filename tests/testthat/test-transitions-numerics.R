@@ -224,8 +224,8 @@ test_that("broken contracts of the moment step raise by class", {
   # ordering has no sequence to read: both are classed, not message-matched.
   expect_error(lta(data, c("y1", "y2"), "g", n_profiles = 1L,
                                time = "t", n_starts = 1, seed = 6),
-               class = "multilpa_bad_transition")
-  expect_error(parameter_inference(fit), class = "multilpa_no_inference")
+               class = "latents_bad_transition")
+  expect_error(parameter_inference(fit), class = "latents_no_inference")
   # A transition fit draws: the measurement views it shares with multilpa(),
   # plus its own transition matrix. This used to refuse outright.
   expect_s3_class(draw(plot(fit, what = "transitions")), "multilpa_transitions")
@@ -234,7 +234,7 @@ test_that("broken contracts of the moment step raise by class", {
   # undefined, and is refused rather than divided by zero.
   expect_error(
     .multilpa_transition_prevalence(list(joint = list(matrix(0, 4L, 2L)))),
-    class = "multilpa_empty_profile")
+    class = "latents_empty_profile")
   # The moment step states its own contract rather than trusting the caller.
   expect_error(.multilpa_sequence_moments(list(alpha = list(), beta = list(),
                                                log_scaled = 0),

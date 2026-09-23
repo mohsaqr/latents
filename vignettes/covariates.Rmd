@@ -1,0 +1,195 @@
+---
+title: "Covariates, outcomes and staged estimation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Covariates, outcomes and staged estimation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 3, width = 100)
+```
+
+Variables outside the measurement model can be related to the latent classes
+in two ways. The three-step approach fits the profiles first and then relates
+them to an external variable, correcting for classification error, so the
+profiles stay fixed. The one-step approach adds the variable to the model, so
+it can also change the profiles. Staged estimation applies the same idea of
+fixed profiles to the group classes.
+
+## Data
+
+`course_engagement` has one row per course enrolment: 1,422 enrolments from
+106 students. `student` identifies the group, and five activity measures
+(`browse`, `lectures`, `forum_read`, `forum_post`, `attendance`) are the
+indicators. `previous_grade` is the standardized grade from the course before
+each enrolment; it is not an indicator, so it can serve as an external
+variable.
+
+```{r setup}
+library(latents)
+```
+
+## The measurement model
+
+To fit the profiles without the external variable, we call `multilpa()` with
+`vars` for the indicators, `id` for the group, `n_profiles`,
+`n_group_classes`, `n_starts` and `seed`.
+
+```{r fit}
+fit <- multilpa(course_engagement,
+                vars = c("browse", "lectures", "forum_read", "forum_post",
+                         "attendance"),
+                id = "student", n_profiles = 2, n_group_classes = 2,
+                n_starts = 10, seed = 1)
+fit
+```
+
+## Classification error
+
+To obtain the classification-error matrix, we call `get_results()` with
+`"classification_errors"` and `level` for the observations or the groups.
+Each row gives the probability of each assigned class for cases in a true
+class; the three-step methods use it to correct for misclassification.
+
+```{r errors}
+get_results(fit, "classification_errors", level = "individuals")
+```
+
+## Class means of an external variable
+
+To estimate the mean of an external variable in each profile, we call
+`three_step()` with `data` for the data frame and `outcome` for the variable.
+The default method, BCH, corrects for classification error; standard errors
+are clustered on groups.
+
+```{r three-step}
+three_step(fit, data = course_engagement, outcome = "previous_grade")
+```
+
+To compare the profiles, we call `three_step()` with `contrast = "pairs"`,
+which returns each difference between profile means with a Benjamini-Hochberg
+adjusted p-value.
+
+```{r contrasts}
+three_step(fit, data = course_engagement, outcome = "previous_grade",
+           contrast = "pairs")
+```
+
+To see the effect of ignoring classification error, we call `three_step()`
+with `method = "modal"`, which treats each case's most probable profile as
+known.
+
+```{r modal}
+three_step(fit, data = course_engagement, outcome = "previous_grade",
+           method = "modal")
+```
+
+## Predicting class membership
+
+To regress profile membership on a covariate, we call `r3step()` with `data`
+for the data frame and `covariates` for the predictors. It returns
+multinomial logit coefficients, corrected for classification error.
+`vcov_type = "robust"` clusters the standard errors on groups.
+
+```{r r3step}
+r3step(fit, data = course_engagement, covariates = "previous_grade",
+       vcov_type = "robust")
+```
+
+## One-step estimation
+
+To estimate the covariate together with the profiles, we call `multilpa()`
+with `profile_covariates` for predictors of profile membership.
+`group_covariates` does the same for group-class membership and needs a
+variable that is constant within groups. Covariate models require complete
+data.
+
+```{r one-step}
+one_step <- multilpa(course_engagement,
+                     vars = c("browse", "lectures", "forum_read",
+                              "forum_post", "attendance"),
+                     id = "student", n_profiles = 2, n_group_classes = 2,
+                     profile_covariates = "previous_grade", n_starts = 10,
+                     seed = 1)
+one_step
+```
+
+To obtain the membership coefficients, we call `get_results()` with
+`"coefficients"`, and for their standard errors and intervals,
+`parameter_inference()`.
+
+```{r coefficients}
+get_results(one_step, "coefficients")
+parameter_inference(one_step)
+```
+
+## Staged estimation
+
+To hold the profiles fixed while the group classes are estimated, we call
+`fit_staged()` with the same arguments as `multilpa()`. It first fits the
+profiles with one group class, then estimates the group classes with the
+profile means and variances held fixed.
+
+```{r staged}
+staged <- fit_staged(course_engagement,
+                     vars = c("browse", "lectures", "forum_read",
+                              "forum_post", "attendance"),
+                     id = "student", n_profiles = 2, n_group_classes = 2,
+                     n_starts = 10, seed = 1)
+staged
+```
+
+To see what each stage estimated, we call `get_results()` with `"stages"`.
+`parameters` counts the parameters estimated at a stage, and
+`parameters_with_measurement` adds those held fixed.
+
+```{r stages}
+get_results(staged, "stages")
+```
+
+## Reference
+
+The calls below list other functions for external variables and fixed
+parameters. Each comment states what the call returns.
+
+```{r reference, eval = FALSE}
+get_results(fit, "classification_errors", level = "groups")  # group-level errors
+get_results(fit, "bch_weights", level = "individuals")       # BCH weights per case
+three_step(fit, data = course_engagement, outcome = "previous_grade",
+           method = "proportional")        # weighting by posterior probabilities
+three_step(fit, data = course_engagement, outcome = "previous_grade",
+           vcov_type = "independent")      # standard errors without clustering
+r3step(fit, data = course_engagement,
+       covariates = "previous_grade")      # observed-information standard errors
+measurement <- multilpa(course_engagement,
+                        vars = c("browse", "lectures", "forum_read",
+                                 "forum_post", "attendance"),
+                        id = "student", n_profiles = 2,
+                        n_group_classes = 1, seed = 1)  # a one-class measurement fit
+fit_staged(course_engagement,
+           vars = c("browse", "lectures", "forum_read", "forum_post",
+                    "attendance"),
+           id = "student", n_profiles = 2, n_group_classes = 2,
+           measurement = measurement)      # stage two from that fit
+multilpa(course_engagement,
+         vars = c("browse", "lectures", "forum_read", "forum_post",
+                  "attendance"),
+         id = "student", n_profiles = 2, n_group_classes = 2,
+         start = starting_values(fit, what = "measurement"),
+         fixed = "variances")              # hold chosen parameters fixed
+parameter_inference(staged)                # standard errors of the estimated stage
+```
+
+## Assumptions
+
+- Three-step methods assume classification errors are independent of the
+  external variable given the true class, and treat the error matrix as known.
+- One-step coefficients are conditional on the group class and can change the
+  profiles, so they need not equal the three-step coefficients.
+- Staged estimation does not carry first-stage uncertainty into the second
+  stage, and its likelihood is not the joint maximum.
+- All associations are observational.

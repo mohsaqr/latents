@@ -13,13 +13,13 @@
 #' @param what Which table to return, or `"all"` for every table the object can
 #'   produce. The tables an object offers depend on its class and are listed
 #'   under *Tables* below; asking for one it does not have raises
-#'   `multilpa_bad_argument` naming the ones it does. `NULL`, the default,
+#'   `latents_bad_argument` naming the ones it does. `NULL`, the default,
 #'   gives the object's primary table: the measurement model for a fit, the
 #'   candidate grid for an enumeration, the test row for a bootstrap
 #'   comparison, and the entropy summary for a diagnostics object.
 #' @param ... Arguments for the requested table. Each table accepts only the
 #'   arguments listed for it below, and any other name raises
-#'   `multilpa_bad_argument` saying which that table takes, rather than being
+#'   `latents_bad_argument` saying which that table takes, rather than being
 #'   dropped on the way to a table that would then answer a different question.
 #'
 #' @section Tables:
@@ -94,11 +94,11 @@
 #'     package computes. Takes `format` and `definitions`.}
 #'   \item{`"sequences"`}{The assignments in occasion order, one row per
 #'     observation: `group`, `group_class`, `time`, `profile`. Takes `format`.
-#'     Raises `multilpa_no_time` for a fit made without `time`.}
+#'     Raises `latents_no_time` for a fit made without `time`.}
 #'   \item{`"sequence_summary"`}{One row per group class, summarizing how much
 #'     data it contributes: `group_class`, `groups`, `observations`,
 #'     `mean_length`, `median_length`, `shortest`, `longest`, `complete`,
-#'     `gaps`. Raises `multilpa_no_time` for a fit made without `time`.}
+#'     `gaps`. Raises `latents_no_time` for a fit made without `time`.}
 #'   \item{`"starts"`}{One row per EM start: `start`, `log_likelihood`,
 #'     `converged`, `iterations`, `error` and, where the family records it,
 #'     `boundary`.}
@@ -140,7 +140,7 @@
 #'   \item{`"candidates"`, `"criteria"`}{An enumeration grid.
 #'     `"criteria"` has one row per information criterion, naming the candidate
 #'     that minimises it. `"candidates"` has one row per candidate model,
-#'     with its class counts, its covariance `structure`, log likelihood,
+#'     with its class counts, its covariance `model`, log likelihood,
 #'     parameter count, every criterion
 #'     under both sample-size conventions, both entropies, and the convergence,
 #'     boundary, replication, warning and error diagnostics. Failed candidates
@@ -156,7 +156,7 @@
 #'   produce, in catalogue order, built from the same definitions a single
 #'   `what` uses, so the two can never disagree. It takes no further arguments:
 #'   every table is built with its defaults, and supplying anything else raises
-#'   `multilpa_bad_argument`. A table this particular object cannot produce is
+#'   `latents_bad_argument`. A table this particular object cannot produce is
 #'   left out rather than erroring -- a sequence table for a fit made without
 #'   `time`, bivariate residuals for a family with no discrete group classes --
 #'   so the names of the list say what was available. Only the classed
@@ -274,7 +274,7 @@
 #'
 #'   A fit with individual profiles but no discrete group classes returns
 #'   individuals only for `level = "both"`, and raises
-#'   `multilpa_no_group_classes` for `level = "groups"`.
+#'   `latents_no_group_classes` for `level = "groups"`.
 #'
 #' @section Bivariate residuals: The measurement model assumes the indicators
 #'   are independent within a profile. `"residuals"` tests that pair by pair,
@@ -341,7 +341,7 @@ get_results.default <- function(x, what = NULL, ...) {
   stop(errorCondition(sprintf(
     "`get_results()` has no method for an object of class %s.",
     paste(sprintf("`%s`", class(x)), collapse = ", ")),
-    class = "multilpa_bad_argument", call = NULL))
+    class = "latents_bad_argument", call = NULL))
 }
 
 #' @rdname get_results
@@ -477,7 +477,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   stop(errorCondition(sprintf(
     "`what = \"%s\"` is not a table of this object. It has %s, and \"all\".",
     what, paste(sprintf("\"%s\"", choices), collapse = ", ")),
-    class = "multilpa_bad_argument", call = NULL))
+    class = "latents_bad_argument", call = NULL))
 }
 
 #' Refuse an argument the requested table does not take
@@ -502,7 +502,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     sprintf("takes %s", paste(sprintf("`%s`", accepted), collapse = ", "))
   stop(errorCondition(sprintf("`what = \"%s\"` does not use %s; it %s.",
                               what, paste(labels, collapse = ", "), takes),
-                      class = "multilpa_bad_argument", call = NULL))
+                      class = "latents_bad_argument", call = NULL))
 }
 
 #' Classed refusals that mean "this object has no such table"
@@ -516,13 +516,13 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' @return A character vector of condition classes.
 #' @noRd
 .multilpa_absent_table_conditions <- function() {
-  c("multilpa_no_time", "multilpa_no_group_classes",
-    "multilpa_no_indicator_data", "multilpa_incomplete_fit",
-    "multilpa_no_continuous", "multilpa_no_categorical",
+  c("latents_no_time", "latents_no_group_classes",
+    "latents_no_indicator_data", "latents_incomplete_fit",
+    "latents_no_continuous", "latents_no_categorical",
     # A fit whose classes cannot be separated has no three-step correction to
     # report, which is a fact about the fit and not a reason for `summary()`
     # to fail.
-    "multilpa_inseparable_classes")
+    "latents_inseparable_classes")
 }
 
 #' Build every table an object can produce
@@ -635,7 +635,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     stop(errorCondition(paste(
       "This summary carries no tables, so it was made by an older version of",
       "the package. Take the tables from the fit instead."),
-      class = "multilpa_incomplete_fit", call = NULL))
+      class = "latents_incomplete_fit", call = NULL))
   }
   lapply(tables, function(table) {
     force(table)
@@ -798,7 +798,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   if (!is.null(x$residuals)) return(x$residuals)
   stop(errorCondition(
     "This fit has no bivariate residuals: they need a discrete group-class model.",
-    class = "multilpa_no_group_classes", call = NULL))
+    class = "latents_no_group_classes", call = NULL))
 }
 
 #' How many occasions each group of a transition fit contributes

@@ -2,17 +2,26 @@
 # that the aggregate is the marginal transition matrix and not an average of the
 # class matrices -- and that the objects are the ones tna's own verbs accept.
 
-transition_fit <- function() {
-  activity <- c("browse", "lectures", "forum_read")
-  quietly(lta(course_engagement, vars = activity, id = "student",
-                          time = "sequence", n_profiles = 3,
-                          n_group_classes = 2, n_starts = 3, max_iter = 1000,
-                          seed = 1))
-}
+# A small fixture: 20 students, one start and 20 iterations exercise the
+# hand-over to tna. No test modifies the fit, so it is fitted once and reused.
+transition_fit <- local({
+  cached <- NULL
+  function() {
+    if (is.null(cached)) {
+      activity <- c("browse", "lectures", "forum_read")
+      cached <<- quietly(lta(subset(course_engagement, student <= 20),
+                             vars = activity, id = "student",
+                             time = "sequence", n_profiles = 3,
+                             n_group_classes = 2, n_starts = 1,
+                             max_iter = 20, seed = 1))
+    }
+    cached
+  }
+})
 
 test_that("the aggregate is the marginal, not the mean of the class matrices", {
   fit <- transition_fit()
-  aggregate <- multilpa:::.multilpa_aggregate_transitions(fit)
+  aggregate <- latents:::.multilpa_aggregate_transitions(fit)
 
   # Every row of a transition matrix is a distribution.
   expect_equal(unname(rowSums(aggregate$probabilities)),
@@ -44,7 +53,7 @@ test_that("get_tna returns a tna model of the whole sample", {
   expect_equal(sum(model$inits), 1)
   # The states keep the fit's own names, so a network and a profile table can be
   # read against each other.
-  expect_identical(model$labels, multilpa:::.multilpa_state_labels(fit))
+  expect_identical(model$labels, latents:::.multilpa_state_labels(fit))
   # tna's verbs accept it.
   expect_identical(nrow(tna::centralities(model)), 3L)
 })
@@ -91,7 +100,7 @@ test_that("a state with no moves keeps the fit's row, not invented persistence",
   fit$empty_transition_rows[2L, ] <- TRUE
   fit$transition_probabilities[2L, , 1L] <- c(.1, .2, .7)
   fit$transition_probabilities[2L, , 2L] <- c(.3, .4, .3)
-  aggregate <- multilpa:::.multilpa_aggregate_transitions(fit)
+  aggregate <- latents:::.multilpa_aggregate_transitions(fit)
   expect_false(anyNA(aggregate$probabilities))
   expected <- as.vector(matrix(fit$transition_probabilities[2L, , ],
                                nrow = fit$n_profiles) %*% fit$group_probabilities)
@@ -100,10 +109,10 @@ test_that("a state with no moves keeps the fit's row, not invented persistence",
   expect_equal(unname(rowSums(aggregate$probabilities)), rep(1, 3))
   if (requireNamespace("tna", quietly = TRUE)) {
     expect_warning(network <- get_tna(fit),
-                   class = "multilpa_empty_transition_row")
+                   class = "latents_empty_transition_row")
     expect_equal(unname(network$weights[2L, ]), expected)
     expect_warning(grouped <- get_group_tna(fit),
-                   class = "multilpa_empty_transition_row")
+                   class = "latents_empty_transition_row")
     expect_equal(unname(grouped[[1L]]$weights[2L, ]), c(.1, .2, .7))
   }
 })
@@ -114,8 +123,8 @@ test_that("a transition fit draws every view its catalogue claims", {
   # were all present. What is tested is that the catalogue and the method agree:
   # a view listed but not drawable, or drawable but unlisted, fails here.
   fit <- transition_fit()
-  views <- setdiff(eval(formals(multilpa:::plot.multilpa_transitions)$what), "all")
-  expect_true(all(views %in% multilpa_plot_types()$type))
+  views <- setdiff(eval(formals(latents:::plot.multilpa_transitions)$what), "all")
+  expect_true(all(views %in% plot_views()$type))
   expect_true("transitions" %in% views)
   drawable <- c("transitions", "profiles", "bars", "heatmap", "sequences",
                 "sizes", "entropy", "posteriors", "avepp")
@@ -138,4 +147,27 @@ test_that("the transition panel is the fitted matrix, per class", {
                         n_group_classes = 1, n_starts = 2, max_iter = 300,
                         seed = 1))
   expect_s3_class(draw(plot(single, what = "transitions")), "multilpa_transitions")
+})
+
+test_that("several empty rows each keep their own row, and estimated rows are untouched", {
+  # Two empty rows of three. A fallback computed with the from and to margins
+  # swapped, or for the wrong row, would still give rows summing to one; the
+  # values themselves are what distinguishes it.
+  fit <- transition_fit()
+  reference <- latents:::.multilpa_aggregate_transitions(fit)
+  fit$transition_counts[c(1L, 3L), , ] <- 0
+  fit$transition_probabilities[1L, , 1L] <- c(.6, .3, .1)
+  fit$transition_probabilities[1L, , 2L] <- c(.2, .2, .6)
+  fit$transition_probabilities[3L, , 1L] <- c(.05, .15, .8)
+  fit$transition_probabilities[3L, , 2L] <- c(.5, .25, .25)
+  aggregate <- latents:::.multilpa_aggregate_transitions(fit)
+  weight <- fit$group_probabilities
+  class_average <- function(from) {
+    as.vector(fit$transition_probabilities[from, , ] %*% weight)
+  }
+  expect_equal(unname(aggregate$probabilities[1L, ]), class_average(1L))
+  expect_equal(unname(aggregate$probabilities[3L, ]), class_average(3L))
+  expect_identical(unname(aggregate$estimated), c(FALSE, TRUE, FALSE))
+  # Row 2 still has its moves; zeroing rows 1 and 3 does not change it.
+  expect_equal(aggregate$probabilities[2L, ], reference$probabilities[2L, ])
 })

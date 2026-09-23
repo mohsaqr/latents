@@ -15,10 +15,21 @@
              y = stats::rnorm(n, ifelse(truth == 2L, difference, 0)))
 }
 
-.tidy_step_fit <- function(data, n_profiles = 2L) {
-  multilpa(data, c("a", "b"), "g", n_profiles = n_profiles, n_group_classes = 1,
-           n_starts = 6, seed = 1)
-}
+# The fixture separates its classes clearly, so one start is enough, and most
+# tests fit the same data: each fit is computed once and reused.
+.tidy_step_fit <- local({
+  cache <- list()
+  function(data, n_profiles = 2L) {
+    hit <- Filter(function(entry) entry$n_profiles == n_profiles &&
+                    identical(entry$data, data), cache)
+    if (length(hit)) return(hit[[1L]]$fit)
+    fit <- multilpa(data, c("a", "b"), "g", n_profiles = n_profiles,
+                    n_group_classes = 1, n_starts = 1, seed = 1)
+    cache[[length(cache) + 1L]] <<- list(data = data, n_profiles = n_profiles,
+                                         fit = fit)
+    fit
+  }
+})
 
 test_that("the weight frame is long, so its columns do not grow with K", {
   data <- .tidy_step_data()
@@ -143,31 +154,36 @@ test_that("three-step outcomes and covariates retain the fit's row order", {
   shuffled <- shuffled[rows, , drop = FALSE]
   expect_identical(shuffled$g, data$g)
   expect_error(three_step(fit, shuffled, "y"),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   expect_error(r3step(fit, shuffled, "x"),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   expect_warning(three_step(fit, data[c("g", "y")], "y"),
-                 class = "multilpa_unverified_alignment")
+                 class = "latents_unverified_alignment")
   expect_warning(r3step(fit, data[c("g", "x")], "x"),
-                 class = "multilpa_unverified_alignment")
+                 class = "latents_unverified_alignment")
 })
 
 test_that("three-step variables must be external to the measurement model", {
   data <- .tidy_step_data()
   fit <- .tidy_step_fit(data)
   expect_error(three_step(fit, data, "a"),
-               class = "multilpa_bad_outcome")
+               class = "latents_bad_outcome")
   expect_error(r3step(fit, data, "b"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_covariate")
+  # The same mistake is one class in both verbs, so one handler catches it.
+  expect_error(three_step(fit, data, "a"), class = "multilpa_indicator_reused")
+  expect_error(r3step(fit, data, "b"), class = "multilpa_indicator_reused")
+  expect_error(r3step(fit, data, c("x", "a")),
+               class = "multilpa_indicator_reused")
 
   predicted <- quietly(multilpa(
     data, c("a", "b"), "g", n_profiles = 2L, n_group_classes = 1L,
     profile_covariates = "x", n_starts = 2L, seed = 1L))
   expect_s3_class(predicted, "multilpa_covariates")
   expect_error(three_step(predicted, data, "y"),
-               class = "multilpa_unsupported_three_step")
+               class = "latents_unsupported_three_step")
   expect_error(r3step(predicted, data, "x"),
-               class = "multilpa_unsupported_three_step")
+               class = "latents_unsupported_three_step")
 })
 
 test_that("the pairwise standard error agrees with a cluster bootstrap", {
@@ -245,7 +261,34 @@ test_that("a single class is refused a contrast by condition class", {
 
   expect_equal(nrow(three_step(fit, data, "y")), 1L)
   expect_error(three_step(fit, data, "y", contrast = "pairs"),
-               class = "multilpa_inseparable_classes")
+               class = "latents_inseparable_classes")
   expect_error(three_step(fit, data, "y", contrast = "nonsense"),
                "'arg' should be one of")
+})
+
+test_that("a wrong row count is the same classed error in every verb", {
+  data <- .tidy_step_data()
+  fit <- .tidy_step_fit(data)
+  short <- data[-1L, ]
+  expect_error(three_step(fit, short, "y"), class = "latents_bad_inference_data")
+  expect_error(r3step(fit, short, "x"), class = "latents_bad_inference_data")
+  expect_error(get_results(fit, "residuals", data = short),
+               class = "latents_bad_inference_data")
+  expect_error(get_results(fit, "assignments", data = short),
+               class = "latents_bad_inference_data")
+  # The message still says what was supplied and what was expected.
+  expect_error(three_step(fit, short, "y"),
+               sprintf("%d rows supplied, %d expected", nrow(data) - 1L, nrow(data)))
+})
+
+test_that("an unusable r3step predictor is a covariate problem, not an outcome one", {
+  data <- .tidy_step_data()
+  fit <- .tidy_step_fit(data)
+  data$x_copy <- 2 * data$x
+  expect_error(r3step(fit, data, c("x", "x_copy")),
+               class = "latents_bad_covariate")
+  collinear <- tryCatch(r3step(fit, data, c("x", "x_copy")),
+                        latents_bad_covariate = identity)
+  expect_false(inherits(collinear, "latents_bad_outcome"))
+  expect_false(inherits(collinear, "latents_bad_inference_data"))
 })

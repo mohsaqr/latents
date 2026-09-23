@@ -19,18 +19,18 @@ report(
 \item{data}{Optional. The data the model was fitted to; a fit carries the
 columns it was built from.}
 
-\item{plots}{`TRUE`, the default, draws the plots. `FALSE` prints only.}
+\item{plots}{\code{TRUE}, the default, draws the plots. \code{FALSE} prints only.}
 
-\item{by}{Passed to [diagnostics()], and from there to
-the bivariate residuals: `"profile"`, the default, assesses each profile
-separately, `"overall"` pools them.}
+\item{by}{Passed to \code{\link[=diagnostics]{diagnostics()}}, and from there to
+the bivariate residuals: \code{"profile"}, the default, assesses each profile
+separately, \code{"overall"} pools them.}
 
 \item{rows}{How many rows of each of the summary's tables to print, passed
-to `print(summary(x))`. A first look at a fit with thousands of
+to \code{print(summary(x))}. A first look at a fit with thousands of
 observations would otherwise be mostly posteriors.}
 
 \item{...}{Nothing further is accepted. An argument this function cannot
-forward raises an error of class `multilpa_bad_argument` naming it, before
+forward raises an error of class \code{latents_bad_argument} naming it, before
 anything has been printed, rather than being dropped.}
 }
 \value{
@@ -39,15 +39,15 @@ The fitted model, invisibly. Called for the printing and drawing.
 \description{
 Prints the estimates, then the classification diagnostics, then draws every
 plot the fit supports. A first look, not a substitute for the verbs: each
-section is what [summary()], [diagnostics()] and [plot()] return, and the
+section is what \code{\link[=summary]{summary()}}, \code{\link[=diagnostics]{diagnostics()}} and \code{\link[=plot]{plot()}} return, and the
 tables are reachable from those rather than from here.
 }
 \section{What it prints}{
- `summary()`, which is every table the fit can
-  produce, then `descriptives()`, then the condensed reading of
-  `diagnostics()`, then every plot view the fit supports. Each section is
-  what that verb returns, and the tables are reached from [get_results()]
-  rather than from here.
+ \code{summary()}, which is every table the fit can
+produce, then \code{descriptives()}, then the condensed reading of
+\code{diagnostics()}, then every plot view the fit supports. Each section is
+what that verb returns, and the tables are reached from \code{\link[=get_results]{get_results()}}
+rather than from here.
 }
 
 \examples{
@@ -60,6 +60,6 @@ fit <- multilpa(
 report(fit, plots = FALSE)
 }
 \seealso{
-[summary()], [diagnostics()], [descriptives()],
-  [multilpa_plot_types()].
+\code{\link[=summary]{summary()}}, \code{\link[=diagnostics]{diagnostics()}}, \code{\link[=descriptives]{descriptives()}},
+\code{\link[=plot_views]{plot_views()}}.
 }

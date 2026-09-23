@@ -7,22 +7,22 @@
 \method{as.data.frame}{summary_multilpa}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An object of class `summary_multilpa`.}
+\item{x}{An object of class \code{summary_multilpa}.}
 
-\item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
+\item{row.names}{Passed to \code{data.frame()}; \code{NULL} gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+\item{...}{Must be empty. An argument here raises \code{latents_bad_argument}
 naming it, rather than being dropped.}
 }
 \value{
-A base `data.frame`: one row per profile and continuous indicator.
+A base \code{data.frame}: one row per profile and continuous indicator.
 }
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 A summary carries every table the object it describes can produce, and
-[get_results()] names them.
+\code{\link[=get_results]{get_results()}} names them.
 }
 \examples{
 fit <- multilpa(
@@ -35,5 +35,5 @@ as.data.frame(summary(fit))
 get_results(summary(fit), what = "counts")
 }
 \seealso{
-[get_results()] for every other table this summary holds.
+\code{\link[=get_results]{get_results()}} for every other table this summary holds.
 }

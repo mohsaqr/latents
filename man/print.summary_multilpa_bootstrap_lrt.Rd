@@ -7,20 +7,20 @@
 \method{print}{summary_multilpa_bootstrap_lrt}(x, digits = 4L, rows = 10L, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa_bootstrap_lrt` object.}
+\item{x}{A \code{summary_multilpa_bootstrap_lrt} object.}
 
 \item{digits}{Number of printed significant digits.}
 
 \item{rows}{How many rows of each table to print. A longer table is shown
-to that depth, with its remaining row count and the `get_results()` call that
+to that depth, with its remaining row count and the \code{get_results()} call that
 returns it whole.}
 
-\item{...}{Passed to the underlying `data.frame` printing.}
+\item{...}{Passed to the underlying \code{data.frame} printing.}
 }
 \value{
 The summary, invisibly. Called for the side effect of printing the
-  one-row test table, then the number of replicates that reached a parameter
-  boundary and the number that raised an error.
+one-row test table, then the number of replicates that reached a parameter
+boundary and the number that raised an error.
 }
 \description{
 Print a bootstrap likelihood-ratio summary

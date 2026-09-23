@@ -14,11 +14,8 @@
                                adjust = .multilpa_p_adjust_methods) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
   data <- .multilpa_resolve_data(x, data)
-  stopifnot(
-    "`data` must be a data frame" = is.data.frame(data),
-    "`data` must have one row per observation of the fit" =
-      nrow(data) == x$n_observations
-  )
+  stopifnot("`data` must be a data frame" = is.data.frame(data))
+  .multilpa_check_row_count(x, data)
   by <- match.arg(by)
   adjust <- match.arg(adjust)
   continuous <- .multilpa_continuous_names(x)

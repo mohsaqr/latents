@@ -1,0 +1,232 @@
+---
+title: "Multilevel latent profile analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Multilevel latent profile analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 3, width = 100)
+```
+
+Multilevel latent profile analysis (MLPA) estimates latent profiles at the
+observation level and, at a higher level, identifies latent group classes that
+differ in how probable each profile is for their observations. Each profile is characterized by a mean and variance for
+each indicator and is defined identically across all group classes. The group
+classes therefore differ only in the probabilities associated with the
+profiles.
+
+## Data
+
+`course_engagement` has one row per course enrolment: 1,422 enrolments from
+106 students. `multilpa()` needs two kinds of variables.
+
+- **Group:** `student` identifies which enrolments belong to the same
+  student.
+- **Indicators:** five activity measures (`browse`, `lectures`, `forum_read`,
+  `forum_post`, `attendance`), each standardized within course, so 0 is the
+  course average.
+
+The data are simulated, and two further variables record the structure that
+generated them: `engagement` for each enrolment and `student_type` for each
+student.
+
+```{r setup}
+library(latents)
+```
+
+## Clustering within groups
+
+To check how much each indicator varies between groups, we call
+`descriptives()` with `vars` for the indicators and `id` for the group. `icc`
+is the share of an indicator's variance that lies between groups.
+
+```{r descriptives}
+descriptives(course_engagement,
+             vars = c("browse", "lectures", "forum_read", "forum_post",
+                      "attendance"),
+             id = "student")
+```
+
+## Fit
+
+To fit the model, we call `multilpa()` with `vars` for the indicators, `id`
+for the group, `n_profiles` for the number of profiles, `n_group_classes` for
+the number of group classes, `n_starts` for the number of random EM starts, and
+`seed` for reproducible starts. Printing the fit gives the profile means.
+
+```{r fit}
+fit <- multilpa(course_engagement,
+                vars = c("browse", "lectures", "forum_read", "forum_post",
+                         "attendance"),
+                id = "student", n_profiles = 2, n_group_classes = 2,
+                n_starts = 10, seed = 1)
+fit
+```
+
+To check whether the starts agree, we call `get_results()` with `"starts"`.
+Starts that reach the same log likelihood support the solution.
+
+```{r starts}
+get_results(fit, "starts")
+```
+
+## Profiles
+
+To obtain the profile means and variances, we call `get_results()` on the fit.
+There is one row per profile and indicator.
+
+```{r profiles}
+get_results(fit)
+```
+
+To see the profiles, we call `plot()` on the fit. Each line is a profile's
+mean on each indicator, and point size shows how common the profile is.
+
+```{r profile-plot}
+plot(fit)
+```
+
+## Group classes
+
+To obtain the profile probabilities of each group class, we call
+`get_results()` with `"profile_probabilities"`. `probability` is the chance
+that an observation of a group in that class falls in each profile, and
+`group_class_probability` is the share of groups in the class.
+
+```{r profile-probabilities}
+get_results(fit, "profile_probabilities")
+```
+
+To compare the group classes, we call `plot()` with `what = "probabilities"`:
+one line per group class across the profiles.
+
+```{r probability-plot}
+plot(fit, what = "probabilities")
+```
+
+## Class sizes
+
+To obtain class sizes, we call `get_results()` with `"counts"`.
+`effective_count` sums the posterior probabilities, so it need not be a whole
+number.
+
+```{r counts}
+get_results(fit, "counts")
+```
+
+## Classification
+
+To obtain classification certainty, we call `get_results()` with `"entropy"`.
+Relative entropy is reported for observations and for groups: 1 means every
+case is assigned with certainty, 0 means no separation.
+
+```{r entropy}
+get_results(fit, "entropy")
+```
+
+To add each observation's assigned profile and group class to the data, we
+call `get_results()` with `"assignments"` and `data` for the data frame. It
+returns the data in its original row order with five added columns: `profile`
+and `group_class` hold the most probable classes, `uncertainty` is one minus
+the posterior probability of the assigned profile, and the `posterior_profile_`
+columns hold the posterior probability of each profile. Assignment takes the
+most probable class, so `profile` and `group_class` alone ignore
+classification uncertainty.
+
+```{r assignments}
+get_results(fit, "assignments", data = course_engagement) |> head()
+```
+
+## Recovery of the known structure
+
+To compare the fitted classes with known labels, we call `get_results()` with
+`"assignments"`, `data` for the data frame, and `truth` for the columns that
+hold the labels. `engagement` is compared with the profiles and
+`student_type` with the group classes. Class numbers are arbitrary, so the
+table is read by its largest cells.
+
+```{r recovery}
+get_results(fit, "assignments", data = course_engagement,
+            truth = c("engagement", "student_type"))
+```
+
+## Reference
+
+The calls below list the other tables, functions and views available for a
+fitted model. Each comment states what the call returns.
+
+```{r reference, eval = FALSE}
+# Tables: get_results(fit, what)
+get_results(fit, "all")                          # every table, as a named list
+get_results(fit, "covariances")                  # within-profile residual covariances
+get_results(fit, "posteriors")                   # one row per observation and profile
+get_results(fit, "posteriors", format = "wide")  # one row per observation
+get_results(fit, "group_posteriors")             # one row per group and group class
+get_results(fit, "classification")               # class sizes and average posteriors
+get_results(fit, "average_posteriors")           # mean posterior by assigned class
+get_results(fit, "classification_errors")        # P(assigned class | true class)
+get_results(fit, "bch_weights")                  # weights for three-step analysis
+get_results(fit, "residuals")                    # residual correlations within profiles
+get_results(fit, "information_criteria")         # AIC, BIC and the other criteria
+get_results(fit, "model")                        # one row describing the fit
+get_results(fit, "data")                         # the variables used in the fit
+as.data.frame(fit)                               # the profile table
+
+# Summaries and diagnostics
+descriptives(fit)                    # indicator summaries with the ICC
+descriptives(fit, by = "profile")    # the same, by assigned profile
+diagnostics(fit)                     # every classification diagnostic
+report(fit)                          # summary, diagnostics and plots together
+
+# Inference and likelihood
+parameter_inference(fit)             # standard errors and Wald intervals
+confint(fit)                         # confidence intervals
+vcov(fit)                            # covariance matrix of the estimates
+logLik(fit)                          # log likelihood
+AIC(fit)                             # Akaike information criterion
+BIC(fit)                             # BIC with the number of groups
+nobs(fit)                            # number of groups
+
+# Plots: plot(fit, what)
+plot_views()                # every view and what it shows
+plot(fit, what = "bars")             # profile means with 95% intervals
+plot(fit, what = "heatmap")          # means in standard deviations
+plot(fit, what = "sizes")            # effective size of each profile
+plot(fit, what = "entropy")          # per-case classification uncertainty
+plot(fit, what = "posteriors")       # posterior of each assigned profile
+plot(fit, what = "avepp")            # average posteriors, assigned by posterior class
+plot(fit, what = "all")              # every view this fit supports
+
+# Other functions
+sensitivity(fit, seeds = 1:10)       # refits under several seeds
+starting_values(fit)                 # parameters to start another fit
+```
+
+The evaluation vignette covers `enumerate_classes()`, `candidate_fit()` and
+`bootstrap_lrt()`; the covariates vignette covers `three_step()`, `r3step()`
+and `fit_staged()`; the transitions vignette covers `lta()`, `get_tna()` and
+`get_group_tna()`.
+
+## All tables
+
+To see every table at once, we call `summary()` on the fit, with `rows` for
+the number of rows shown per table.
+
+```{r summary}
+print(summary(fit), rows = 3)
+```
+
+## Assumptions
+
+- Profiles have the same means and variances in every group class.
+- Observations are independent given their group's class, and groups are
+  independent of one another.
+- Indicators are independent within a profile (the default diagonal
+  covariance; `covariance_model = "full"` relaxes it).
+- The numbers of profiles and group classes are chosen by the analyst; see
+  the evaluation vignette for comparing them.

@@ -85,5 +85,5 @@ test_that("three-step methods reject nonfinite outcomes and empty modal classes"
   expect_error(r3step(object, data, "y"), "must be finite")
   data$y[4L] <- 4
   expect_error(three_step(object, data, "y", method = "modal"),
-               class = "multilpa_inseparable_classes")
+               class = "latents_inseparable_classes")
 })

@@ -63,7 +63,7 @@ get_tna.multilpa_transitions <- function(x, ...) {
 #' Builds one [tna::tna()] model per latent group class of a fitted transition
 #' model, collected into the `group_tna` object tna's grouped verbs expect.
 #' A class row with no expected outgoing moves keeps the fit's unestimated
-#' transition probabilities and raises `multilpa_empty_transition_row`.
+#' transition probabilities and raises `latents_empty_transition_row`.
 #'
 #' @param x A fitted model from [lta()].
 #' @param label What the classes are called in tna's output.
@@ -114,19 +114,19 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
     "A transition row has no expected outgoing moves, so its probabilities",
     "are not estimated from transitions. The network retains the fitted",
     "row; inspect get_results(fit, \"transitions\", estimated = FALSE)."),
-    class = "multilpa_empty_transition_row", call = NULL))
+    class = "latents_empty_transition_row", call = NULL))
   invisible(NULL)
 }
 
 #' Is the tna package available?
-#' @return `NULL`, invisibly; raises `multilpa_missing_package` when it is not.
+#' @return `NULL`, invisibly; raises `latents_missing_package` when it is not.
 #' @noRd
 .multilpa_require_tna <- function() {
   if (!requireNamespace("tna", quietly = TRUE)) {
     stop(errorCondition(paste(
       "The tna package is needed to build a transition network.",
       "Install it with install.packages(\"tna\")."),
-      class = "multilpa_missing_package", call = NULL))
+      class = "latents_missing_package", call = NULL))
   }
   invisible(NULL)
 }
@@ -157,13 +157,16 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
   ## Keep the model's own row as a labelled fallback. A self-transition of one
   ## would falsely turn missing transition information into evidence of staying.
   probabilities <- counts / ifelse(totals > 0, totals, 1)
-  empty <- which(totals <= 0)
-  for (from in empty) {
-    rows <- matrix(x$transition_probabilities[from, , ],
-                   nrow = x$n_profiles, ncol = x$n_group_classes)
-    fallback <- as.vector(rows %*% x$group_probabilities)
-    probabilities[from, ] <- fallback / sum(fallback)
-  }
+  ## The fallback for every row at once: flattening the from x to x class
+  ## array to (from, to) x class turns the class-probability average into one
+  ## matrix product. Only the empty rows keep it.
+  n_states <- x$n_profiles
+  averaged <- matrix(matrix(x$transition_probabilities,
+                            n_states * n_states, x$n_group_classes) %*%
+                       x$group_probabilities, n_states, n_states)
+  empty <- totals <= 0
+  probabilities[empty, ] <- averaged[empty, , drop = FALSE] /
+    rowSums(averaged[empty, , drop = FALSE])
   dimnames(probabilities) <- list(states, states)
   initial <- as.numeric(x$group_probabilities %*% x$initial_probabilities)
   list(probabilities = probabilities,

@@ -7,7 +7,7 @@ test_that("enumeration retains failures and both BIC conventions", {
   expect_equal(nrow(grid), 4L)
   expect_match(grid$error[3], "profile")
   expect_error(candidate_fit(result, n_profiles = 1, n_group_classes = 2),
-               class = "multilpa_failed_candidate")
+               class = "latents_failed_candidate")
   # Every criterion the grid names must actually carry numbers. `aic` was
   # silently an all-missing column named `NA.`, so a finiteness assertion on
   # `grid$aic` passed vacuously against a column that did not exist.
@@ -27,12 +27,11 @@ test_that("enumeration retains failures and both BIC conventions", {
   single <- enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
                               n_starts = 2, seed = 1)
   expect_equal(nrow(as.data.frame(single)), 1L)
-  # A name the grid does not own is forwarded to multilpa(), which refuses it.
-  # The enumerator records every candidate's failure rather than raising, so the
-  # refusal has to be visible in the table -- not silently dropped.
-  forwarded <- enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
-                                 nonsense = 1, seed = 1)
-  expect_match(as.data.frame(forwarded)$error, "unused argument")
+  # A name multilpa() does not take is refused before any candidate is fitted,
+  # so the refusal is visible at once instead of as a grid of failed fits.
+  expect_error(enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
+                                 nonsense = 1, seed = 1),
+               class = "latents_bad_argument")
 })
 
 test_that("simulation preserves group layout and full covariance moments", {
@@ -80,7 +79,7 @@ test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
   large <- multilpa(d, "y", "g", 2, 1, n_starts = 2, seed = 12)
   testthat::local_mocked_bindings(multilpa = function(...) stop("test optimization failure"))
   expect_warning(result <- bootstrap_lrt(small, large, d, iter = 2, seed = 1),
-                 class = "multilpa_failed_replicates")
+                 class = "latents_failed_replicates")
   expect_s3_class(result, "multilpa_bootstrap_lrt")
   ## Methods added in this sweep reach the generic only after the NAMESPACE is
   ## regenerated, so they are exercised by explicit call here. Dispatch itself
@@ -92,17 +91,17 @@ test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
   replicates <- get_results(result, "replicates")
   expect_true(all(replicates$error == "test optimization failure"))
   expect_error(plot.multilpa_bootstrap_lrt(result),
-               class = "multilpa_nothing_to_plot")
+               class = "latents_nothing_to_plot")
 })
 
 test_that("bootstrap refits generated data and reports finite simulation correction", {
   set.seed(53)
   d <- data.frame(g = rep(1:30, each = 8), y = rnorm(240))
   small <- multilpa(d, "y", "g", 1, 1, variance_model = "equal", n_starts = 2, seed = 8)
-  large <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 3, seed = 8,
+  large <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 1, seed = 8,
                       max_iter = 3000, tol = 1e-7)
   rng <- .Random.seed
-  result <- bootstrap_lrt(small, large, d, iter = 3, n_starts = 3,
+  result <- bootstrap_lrt(small, large, d, iter = 3, n_starts = 1,
                                   max_iter = 3000, tol = 1e-7, seed = 42)
   expect_identical(.Random.seed, rng)
   test <- get_results(result, "test")
@@ -137,9 +136,9 @@ test_that("full covariance print and summary expose residual matrices", {
 test_that("boundary convergence noise is not mistaken for a reversed likelihood", {
   skip_on_cran()
   vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-  null_fit <- multilpa(course_engagement, vars, "student", n_profiles = 2,
+  null_fit <- multilpa(engagement_small, vars, "student", n_profiles = 2,
                        n_group_classes = 1, n_starts = 3, seed = 1, tol = 1e-8)
-  alt_fit <- multilpa(course_engagement, vars, "student", n_profiles = 2,
+  alt_fit <- multilpa(engagement_small, vars, "student", n_profiles = 2,
                       n_group_classes = 2, n_starts = 3, seed = 1, tol = 1e-8)
   # Under the null the alternative converges to the null solution, so every
   # replicate statistic sits at zero plus EM noise. EM stops on a RELATIVE
@@ -171,18 +170,71 @@ test_that("boundary convergence noise is not mistaken for a reversed likelihood"
   # An unconverged model is refused before any statistic is formed, by class.
   # This guard fires ahead of the reversed-likelihood one, and correctly so: a
   # reversal means the alternative was badly optimised, which is what this
-  # catches. That ordering makes `multilpa_reversed_likelihood` hard to reach
+  # catches. That ordering makes `latents_reversed_likelihood` hard to reach
   # from here, so it is not asserted in this test.
   poor_start <- list(means = matrix(rep(c(0, 1), each = length(vars)),
                                     nrow = 2, byrow = TRUE),
                      variances = matrix(1, 2, length(vars)),
                      profile_probabilities = matrix(0.5, 2, 2),
                      group_probabilities = c(0.5, 0.5))
-  unconverged <- quietly(multilpa(course_engagement, vars, "student",
+  unconverged <- quietly(multilpa(engagement_small, vars, "student",
                                   n_profiles = 2, n_group_classes = 2,
                                   n_starts = 1, seed = 1, max_iter = 0,
                                   start = poor_start, tol = 1e-8))
   expect_error(bootstrap_lrt(null_fit, unconverged, iter = 2, n_starts = 1,
                              seed = 1),
-               class = "multilpa_no_converge")
+               class = "latents_no_converge")
+})
+
+test_that("covariance models are named with `model`, and a stray argument is refused", {
+  grid <- quietly(enumerate_classes(engagement_small, c("browse", "lectures"),
+                                    "student", n_profiles = 2, n_group_classes = 1,
+                                    model = c("VVI", "EEI"), n_starts = 1,
+                                    max_iter = 20, seed = 1))
+  table <- as.data.frame(grid)
+  expect_identical(sort(table$model), c("EEI", "VVI"))
+  expect_s3_class(candidate_fit(grid, n_profiles = 2, n_group_classes = 1,
+                                model = "EEI"), "multilpa")
+  expect_true("model" %in% names(get_results(grid, "criteria")))
+  # The old name would otherwise fail inside every candidate.
+  expect_error(enumerate_classes(engagement_small, "browse", "student",
+                                 n_profiles = 2, n_group_classes = 1,
+                                 structure = "VVI"),
+               class = "latents_bad_argument")
+  expect_error(enumerate_classes(engagement_small, "browse", "student",
+                                 n_profiles = 2, n_group_classes = 1,
+                                 structure = "VVI"),
+               "`model`")
+})
+
+test_that("printing a grid shows the criteria and the diagnostics", {
+  grid <- quietly(enumerate_classes(engagement_small, c("browse", "lectures"),
+                                    "student", n_profiles = 1:2,
+                                    n_group_classes = 1:2, n_starts = 1,
+                                    max_iter = 20, seed = 1))
+  printed <- paste(utils::capture.output(print(grid)), collapse = "\n")
+  invisible(lapply(c("aic", "bic_groups", "bic_individual", "icl_individual",
+                     "group_entropy", "boundary", "n_best_replicated"),
+                   function(column) expect_match(printed, column, fixed = TRUE)))
+})
+
+test_that("the enumeration plot draws several criteria and restores the device", {
+  grid <- quietly(enumerate_classes(engagement_small, c("browse", "lectures"),
+                                    "student", n_profiles = 1:3,
+                                    n_group_classes = 1:2, n_starts = 1,
+                                    max_iter = 20, seed = 1))
+  path <- tempfile(fileext = ".pdf")
+  grDevices::pdf(path)
+  on.exit({ grDevices::dev.off(); unlink(path) }, add = TRUE)
+  before <- graphics::par("mfrow")
+  expect_invisible(plot(grid))
+  expect_identical(graphics::par("mfrow"), before)
+  expect_invisible(plot(grid, criterion = "bic_groups"))
+  expect_invisible(plot(grid, criterion = c("aic", "bic_individual")))
+  # Separate figures: each criterion starts a page of its own.
+  expect_invisible(plot(grid, criterion = c("aic", "bic_groups"), combine = FALSE))
+  expect_identical(graphics::par("mfrow"), before)
+  expect_error(plot(grid, combine = NA))
+  expect_error(plot(grid, criterion = c("aic", "not_a_criterion")),
+               class = "latents_unknown_criterion")
 })

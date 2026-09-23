@@ -23,83 +23,83 @@
 )
 }
 \arguments{
-\item{x}{A fitted `multilpa` model.}
+\item{x}{A fitted \code{multilpa} model.}
 
-\item{what}{Which view to draw. [multilpa_plot_types()] lists every value
-  with its group and a one-line description; the `"enumeration"` row it also
-  lists belongs to [plot.multilpa_enumeration()], not to this method.
+\item{what}{Which view to draw. \code{\link[=plot_views]{plot_views()}} lists every value
+with its group and a one-line description; the \code{"enumeration"} row it also
+lists belongs to \code{\link[=plot.multilpa_enumeration]{plot.multilpa_enumeration()}}, not to this method.
 
-  The measurement model, three ways: `"profiles"` draws one line per profile
-  across the continuous indicators, with each profile's marker area
-  proportional to its prevalence. `"bars"` draws the same means as grouped
-  bars, one bar per profile within each indicator, with a 95% interval on
-  every bar when `data` is supplied. `"heatmap"` draws them as a diverging
-  grid of standard deviations from each indicator's grand mean, which is the
-  quickest read when there are many indicators or many profiles.
-  `"responses"` is the categorical counterpart of `"profiles"`, one line per
-  profile across the categorical indicators, showing the probability of a
-  chosen category.
+The measurement model, three ways: \code{"profiles"} draws one line per profile
+across the continuous indicators, with each profile's marker area
+proportional to its prevalence. \code{"bars"} draws the same means as grouped
+bars, one bar per profile within each indicator, with a 95\% interval on
+every bar when \code{data} is supplied. \code{"heatmap"} draws them as a diverging
+grid of standard deviations from each indicator's grand mean, which is the
+quickest read when there are many indicators or many profiles.
+\code{"responses"} is the categorical counterpart of \code{"profiles"}, one line per
+profile across the categorical indicators, showing the probability of a
+chosen category.
 
-  The two-level structure: `"probabilities"` plots profile prevalence within
-  each group class, one line per group class -- the quantity the second level
-  exists to estimate. `"sequences"` draws one row per group, one column per
-  position, coloured and numbered by the assigned profile, with the groups
-  grouped by their latent class; it needs a fit made with `time =`.
+The two-level structure: \code{"probabilities"} plots profile prevalence within
+each group class, one line per group class -- the quantity the second level
+exists to estimate. \code{"sequences"} draws one row per group, one column per
+position, coloured and numbered by the assigned profile, with the groups
+grouped by their latent class; it needs a fit made with \verb{time =}.
 
-  How big each profile is: `"sizes"` draws one bar per profile holding its
-  effective count -- the posterior mass it carries, not the number of cases
-  that won a tie -- with the count and the share printed on the bar.
+How big each profile is: \code{"sizes"} draws one bar per profile holding its
+effective count -- the posterior mass it carries, not the number of cases
+that won a tie -- with the count and the share printed on the bar.
 
-  Classification quality: `"entropy"` draws each case's entropy contribution
-  as one ridge per profile, and `"posteriors"` draws the posterior
-  probability of each case's assigned profile the same way. Both ridges are
-  scaled to their own maximum, following the usual ridgeline convention, so
-  ridge height compares shapes and not profile sizes; prevalence is printed
-  in each profile's label instead. Both read the individual posteriors alone,
-  so every family of this package can draw them; a one-profile fit refuses
-  them with an error of class `multilpa_nothing_to_plot`, because every case
-  then belongs to the single profile with probability one. `"avepp"` draws
-  the average posterior probability matrix: one row per assigned profile, one
-  column per profile, each cell the mean posterior that group puts on that
-  profile. The diagonal is the avePP usually reported, and the off-diagonal
-  says which profiles a group is confused with, which the diagonal alone
-  cannot show.}
+Classification quality: \code{"entropy"} draws each case's entropy contribution
+as one ridge per profile, and \code{"posteriors"} draws the posterior
+probability of each case's assigned profile the same way. Both ridges are
+scaled to their own maximum, following the usual ridgeline convention, so
+ridge height compares shapes and not profile sizes; prevalence is printed
+in each profile's label instead. Both read the individual posteriors alone,
+so every family of this package can draw them; a one-profile fit refuses
+them with an error of class \code{latents_nothing_to_plot}, because every case
+then belongs to the single profile with probability one. \code{"avepp"} draws
+the average posterior probability matrix: one row per assigned profile, one
+column per profile, each cell the mean posterior that group puts on that
+profile. The diagonal is the avePP usually reported, and the off-diagonal
+says which profiles a group is confused with, which the diagonal alone
+cannot show.}
 
 \item{data}{Optional. The data frame the model was fitted to, used by
-`what = "bars"` to put a 95% interval on every bar and ignored by every
+\code{what = "bars"} to put a 95\% interval on every bar and ignored by every
 other view. A fit carries the columns it was built from, so the intervals
 are drawn without this being supplied; pass it only to draw them from a
 different frame. A model family whose standard errors are not implemented
 gets bars without whiskers rather than an error.}
 
-\item{scale}{For `what = "profiles"`, `"raw"` plots the estimated means in
-input units, and `"standardized"` divides each indicator's deviation from
+\item{scale}{For \code{what = "profiles"}, \code{"raw"} plots the estimated means in
+input units, and \code{"standardized"} divides each indicator's deviation from
 its grand mean by that indicator's observed standard deviation. Use
-`"standardized"` when indicators are on different scales, where raw means
+\code{"standardized"} when indicators are on different scales, where raw means
 make the largest-scale indicator dominate the shape.}
 
-\item{category}{For `what = "responses"`, which category's probability to
-plot. `"last"` uses each indicator's highest category, which is the usual
-choice for binary indicators, `"first"` uses the lowest, or give a single
+\item{category}{For \code{what = "responses"}, which category's probability to
+plot. \code{"last"} uses each indicator's highest category, which is the usual
+choice for binary indicators, \code{"first"} uses the lowest, or give a single
 category label or index used for every indicator.}
 
-\item{labels}{`TRUE` prints a direct label at the right end of each series.}
+\item{labels}{\code{TRUE} prints a direct label at the right end of each series.}
 
-\item{main, subtitle}{Panel title and secondary line. `NULL` for none; pass
-`""` to reserve the space without text.}
+\item{main, subtitle}{Panel title and secondary line. \code{NULL} for none; pass
+\code{""} to reserve the space without text.}
 
 \item{palette, symbols, linetypes}{Vectors of colours, plotting characters and
 line types, recycled to the number of series. Defaults are the Okabe-Ito
 palette and matched symbol and line-type sequences.}
 
-\item{style}{A list of visual constants, as built by `.multilpa_style()`;
+\item{style}{A list of visual constants, as built by \code{.multilpa_style()};
 pass named elements to override individual constants.}
 
-\item{cell_labels}{For `what = "sequences"`, `TRUE` prints the profile number
+\item{cell_labels}{For \code{what = "sequences"}, \code{TRUE} prints the profile number
 inside each cell, so the profile is never carried by colour alone. The
 numbers are drawn only where the cell is wide and tall enough to hold one.}
 
-\item{...}{Further named visual constants, merged into `style`.}
+\item{...}{Further named visual constants, merged into \code{style}.}
 }
 \value{
 The fitted model, invisibly. Called for the side effect of drawing.
@@ -113,11 +113,11 @@ in each cell for the same reason.
 }
 \details{
 The plot shows point estimates only. It carries no standard errors,
-  and profile order is arbitrary, so two fits must have their labels aligned
-  before their plots are compared. With `scale = "standardized"` the
-  standard deviations are the observed indicator standard deviations, not
-  the within-profile residual standard deviations, so the plotted values are
-  comparable across indicators but are not effect sizes.
+and profile order is arbitrary, so two fits must have their labels aligned
+before their plots are compared. With \code{scale = "standardized"} the
+standard deviations are the observed indicator standard deviations, not
+the within-profile residual standard deviations, so the plotted values are
+comparable across indicators but are not effect sizes.
 }
 \examples{
 set.seed(7)
@@ -134,8 +134,8 @@ plot(fit, what = "heatmap")
 plot(fit, what = "entropy")
 plot(fit, what = "sizes")
 plot(fit, what = "avepp")
-multilpa_plot_types()
+plot_views()
 }
 \seealso{
-[multilpa_plot_types()] for the catalogue of views.
+\code{\link[=plot_views]{plot_views()}} for the catalogue of views.
 }

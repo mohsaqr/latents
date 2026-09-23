@@ -13,7 +13,7 @@
 }
 \value{
 A single integer: the number of observed groups, which are the
-  independent units of this likelihood.
+independent units of this likelihood.
 }
 \description{
 Count independent groups in a covariate LPA fit

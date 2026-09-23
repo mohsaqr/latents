@@ -229,7 +229,7 @@
     stop(errorCondition(
       paste("A group class has no effective membership, so the profile",
             "prevalence within it is not defined."),
-      class = "multilpa_empty_profile", call = NULL))
+      class = "latents_empty_profile", call = NULL))
   }
   counts / totals
 }
@@ -591,7 +591,7 @@ lta <- function(data, vars, id, n_profiles, time,
   if (n_profiles < 2L) {
     stop(errorCondition(
       "`n_profiles` must be at least two; a single profile has nothing to move between.",
-      class = "multilpa_bad_transition", call = NULL))
+      class = "latents_bad_transition", call = NULL))
   }
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                               missing, min_probability)
@@ -604,27 +604,27 @@ lta <- function(data, vars, id, n_profiles, time,
   if (layout$n_occasions < 2L) {
     stop(errorCondition(
       "No group is observed at two occasions, so no transition can be estimated.",
-      class = "multilpa_bad_transition", call = NULL))
+      class = "latents_bad_transition", call = NULL))
   }
   distinct_rows <- if (is.null(codes)) nrow(unique(x)) else
     nrow(unique(cbind(x, codes)))
   if (n_profiles > distinct_rows) {
     stop(errorCondition("n_profiles cannot exceed the number of distinct observed indicator rows.",
-        class = "multilpa_unidentified", call = NULL))
+        class = "latents_unidentified", call = NULL))
   }
   if (n_group_classes > groups$n) {
     stop(errorCondition("n_group_classes cannot exceed the number of groups.",
-        class = "multilpa_unidentified", call = NULL))
+        class = "latents_unidentified", call = NULL))
   }
   if (n_group_classes > 1L && all(groups$sizes == 1L)) {
     stop(errorCondition("Multiple group classes are not identifiable with only singleton groups.",
-        class = "multilpa_unidentified", call = NULL))
+        class = "latents_unidentified", call = NULL))
   }
   if (!is.null(seed)) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
     old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
     on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)
+      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
       else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
         rm(".Random.seed", envir = .GlobalEnv)
       }
@@ -637,7 +637,7 @@ lta <- function(data, vars, id, n_profiles, time,
   x <- sweep(x, 2L, centers, "-")
   if (any(!is.finite(x[!is.na(x)]^2))) {
     stop(errorCondition("Indicator scales overflow squared residuals; rescale the data.",
-        class = "multilpa_bad_data", call = NULL))
+        class = "latents_bad_data", call = NULL))
   }
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
@@ -763,18 +763,18 @@ lta <- function(data, vars, id, n_profiles, time,
       paste("%d of %d starts failed; read their messages with",
             "get_results(fit, \"starts\")."),
       sum(!valid), n_starts),
-      class = "multilpa_failed_starts", call = NULL))
+      class = "latents_failed_starts", call = NULL))
   }
   if (!best$converged && max_iter > 0L) {
     warning(warningCondition(
       "The best start did not converge; increase max_iter and inspect starts.",
-      class = "multilpa_unconverged", call = NULL))
+      class = "latents_unconverged", call = NULL))
   }
   if (boundary) {
     warning(warningCondition(if (covariance_model == "full")
       "A covariance eigenvalue reached min_variance; this is a bound-active constrained fit." else
       "A variance reached min_variance; this is a bound-active constrained fit.",
-      class = "multilpa_boundary", call = NULL))
+      class = "latents_boundary", call = NULL))
   }
   if (empty_rows) {
     warning(warningCondition(paste(
@@ -782,12 +782,12 @@ lta <- function(data, vars, id, n_profiles, time,
       "transition row is uniform by construction, not estimated.",
       "List the affected rows with",
       "get_results(fit, \"transitions\", estimated = FALSE)."),
-      class = "multilpa_empty_transition_row", call = NULL))
+      class = "latents_empty_transition_row", call = NULL))
   }
   if (small_classes) {
     warning(warningCondition(
       "A profile or group class has effective membership below one.",
-      class = "multilpa_small_classes", call = NULL))
+      class = "latents_small_classes", call = NULL))
   }
   result
 }
@@ -889,7 +889,7 @@ lta <- function(data, vars, id, n_profiles, time,
 #' @param x An object of class `multilpa_transitions`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped, because `what =` used to live on
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
@@ -1045,7 +1045,7 @@ summary.multilpa_transitions <- function(object, ...) {
     stop(errorCondition(
       sprintf("The fit is missing fields the summary requires: %s.",
               paste(absent, collapse = ", ")),
-      class = "multilpa_incomplete_fit", call = NULL))
+      class = "latents_incomplete_fit", call = NULL))
   }
   result <- object[intersect(fields, names(object))]
   # Every table the fit can produce, built once here, so `get_results()` on the
@@ -1065,7 +1065,7 @@ summary.multilpa_transitions <- function(object, ...) {
 #' @param x An object of class `summary_multilpa_transitions`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: one row per profile and continuous indicator.
 #' @seealso [get_results()] for every other table this summary holds.
@@ -1209,7 +1209,7 @@ coef.multilpa_transitions <- function(object, ...) {
 #'   use; `parameter_inference()` is documented on this page too.
 #' @param ... Ignored.
 #' @return Nothing; `vcov()`, `confint()` and `parameter_inference()` all raise
-#'   a `multilpa_no_inference` condition on a latent transition fit. The
+#'   a `latents_no_inference` condition on a latent transition fit. The
 #'   analytic score and Jacobian this package uses for observed-information and
 #'   sandwich standard errors do not yet cover the initial and transition
 #'   multinomial logits, so no interval is reported rather than an invalid one.
@@ -1224,7 +1224,7 @@ coef.multilpa_transitions <- function(object, ...) {
 #' example_data$score_b <- stats::rnorm(nrow(example_data))
 #' fit <- lta(example_data, c("score_a", "score_b"), "person",
 #'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
-#' tryCatch(confint(fit), multilpa_no_inference = function(condition) {
+#' tryCatch(confint(fit), latents_no_inference = function(condition) {
 #'   conditionMessage(condition)
 #' })
 #' @export
@@ -1257,13 +1257,13 @@ confint.multilpa_transitions <- function(object, parm, level = 0.95, ...) {
 #' One definition so that `vcov()`, `confint()` and `parameter_inference()`
 #' cannot drift apart in what they say or in the class they raise.
 #'
-#' @return Nothing; always raises `multilpa_no_inference`.
+#' @return Nothing; always raises `latents_no_inference`.
 #' @noRd
 .multilpa_refuse_transition_inference <- function() {
   stop(errorCondition(
     paste("Standard errors are not available for a latent transition model.",
           "Read the estimates with get_results()."),
-    class = "multilpa_no_inference", call = NULL))
+    class = "latents_no_inference", call = NULL))
 }
 
 #' Plot a fitted latent transition model

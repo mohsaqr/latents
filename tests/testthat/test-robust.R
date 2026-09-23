@@ -113,12 +113,12 @@ test_that("robust inference refuses fits with too few groups", {
   fit <- multilpa(small, c("a", "b"), "g", 2, 1, n_starts = 4, seed = 1)
   expect_gt(fit$n_parameters, fit$n_groups)
   expect_error(parameter_inference(fit, small, vcov_type = "robust"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
 })
 
 test_that("the cross-product matrix rejects non-finite scores", {
   expect_error(.multilpa_cross_product(matrix(c(1, NA, 2, 3), 2L, 2L)),
-               class = "multilpa_bad_scores")
+               class = "latents_bad_scores")
   expect_equal(.multilpa_cross_product(matrix(c(1, 2), 2L, 1L)),
                matrix(5, 1L, 1L))
 })

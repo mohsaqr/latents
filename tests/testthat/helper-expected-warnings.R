@@ -12,20 +12,20 @@
 # probability resting on its boundary, and classes too small to be well
 # separated.
 .multilpa_expected_warnings <- c(
-  "multilpa_unconverged",
-  "multilpa_failed_starts",
-  "multilpa_failed_replicates",
-  "multilpa_boundary",
-  "multilpa_small_classes",
+  "latents_unconverged",
+  "latents_failed_starts",
+  "latents_failed_replicates",
+  "latents_boundary",
+  "latents_small_classes",
   # A deliberately small or separated fixture also reaches these two.
-  "multilpa_extreme_coefficients",
+  "latents_extreme_coefficients",
   # Not a defect: a single-level fixture is a deliberate `id = NULL`.
-  "multilpa_single_level",
-  "multilpa_empty_transition_row"
+  "latents_single_level",
+  "latents_empty_transition_row"
 )
 # Deliberately NOT muffled by default, because each reports a result the suite
 # should not quietly accept: `multilpa_quadrature_check` (the integral is not
-# accurate), `multilpa_unverified_alignment` (the caller's rows could not be
+# accurate), `latents_unverified_alignment` (the caller's rows could not be
 # checked) and anything unclassed.
 
 #' Evaluate `expr`, muffling only expected package warnings

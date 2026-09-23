@@ -1,0 +1,290 @@
+---
+title: "Case study: Two-level latent class analysis of leisure activities"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Case study: Two-level latent class analysis of leisure activities}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 3, width = 100)
+```
+
+Two-level latent class analysis estimates latent classes of categorical
+responses at the level of single observations and, above them, latent group
+classes that differ in how probable each class is for their observations. In
+the output the observation-level classes are called profiles. Each profile is
+described by the probability of every answer to every item; the group classes
+differ only in how often their observations fall in each profile.
+
+The question here is whether the leisure activities that university students
+report in daily life form a small number of recurring patterns, and whether
+students differ in how often they are in each pattern.
+
+## Data
+
+`student_esm` holds experience-sampling data from a study of university
+students (Neubauer & Schmiedek, 2024). The students answered six prompts a day
+for fourteen days. At each prompt when they had not studied since the previous
+one, they reported which of eight leisure activities they had done. The
+dataset holds these prompts for 100 students: 2,582 prompts, between 15 and 51
+per student. Prompts are the observations and students the groups, so a
+student contributes many rows.
+
+The eight activities are yes/no items, and they are named once so that each
+model can refer to them.
+
+```{r setup}
+library(latents)
+activities <- c("time_with_friends", "on_social_media", "tv_video_games",
+                "listened_music", "sports", "walking", "reading",
+                "part_time_job")
+```
+
+`summary()` counts the answers to each activity item and summarizes the other
+variables.
+
+```{r counts}
+summary(student_esm)
+```
+
+Social media is the most frequent activity, reported at 745 of the 2,582
+prompts, followed by TV or video games at 549. A part-time job is the rarest,
+at 103 prompts. Every item is answered "no" at most prompts, so a profile is
+described by how much more often than average its prompts say "yes".
+
+## The model
+
+For prompt $t$ of student $i$, let $C_{it}$ be the profile and $G_i$ the
+student's class. The model estimates three sets of probabilities:
+
+- the response probabilities $\theta_{kjc}=P(Y_{itj}=c\mid C_{it}=k)$ of each
+  answer $c$ to item $j$ in profile $k$, the same in every student class;
+- the profile probabilities $\pi_{k\mid m}=P(C_{it}=k\mid G_i=m)$ of each
+  student class $m$, which sum to one across profiles;
+- the class probabilities $\omega_m=P(G_i=m)$.
+
+The items are assumed independent given the profile, the prompts of a student
+independent given the student's class, and the students independent of one
+another. The likelihood can have several local maxima, so each model is
+started from several random values. A rare answer can drive a response
+probability to its lower bound, and too many profiles or classes for the data
+show up as starts that fail to reach the same maximum.
+
+## How many profiles and classes
+
+`enumerate_classes()` fits every combination of two to four profiles and one
+to three student classes, each from five random starts, and reports the
+information criteria and the diagnostics of each fit. It does not choose a
+model.
+
+```{r enumerate}
+candidates <- enumerate_classes(student_esm, vars = activities,
+                                categorical = activities, id = "student",
+                                n_profiles = 2:4, n_group_classes = 1:3,
+                                n_starts = 5, seed = 1)
+as.data.frame(candidates)
+get_results(candidates, "criteria")
+```
+
+The criteria disagree, and the diagnostics explain why. BIC with the number of
+students keeps falling up to the largest model in the grid, four profiles and
+three classes. Most of the larger models reach their best solution from only
+one of the five starts, and two of the four-profile models do not converge,
+which the two warnings above report, so their low BIC rests on unstable
+solutions. The criteria that also penalize
+classification uncertainty (ICL, AWE and CLC counted over prompts) choose two
+profiles and two classes, the model whose best solution recurs in all five
+starts.
+
+The ICL plot shows the same choice across the grid.
+
+```{r icl-plot}
+plot(candidates, criterion = "icl_individual")
+```
+
+The plot marks the minimum at two profiles and two classes, and the analysis
+continues with that model.
+
+## The chosen model
+
+`multilca()` fits it, treating every item as categorical, with ten random
+starts and a tight convergence tolerance, which the standard errors below need.
+
+```{r fit}
+lca <- multilca(student_esm, vars = activities, id = "student",
+                n_profiles = 2, n_group_classes = 2, n_starts = 10,
+                tol = 1e-10, seed = 1)
+get_results(lca, "model")
+```
+
+The fit converges, and six of the ten starts reach the best log likelihood of
+-7740.
+
+## Two activity profiles
+
+The `"responses"` table gives the probability of each answer in each profile,
+with a "no" and a "yes" row for every item. The "yes" rows carry the
+information, since the two probabilities of an item sum to one.
+
+```{r responses}
+get_results(lca, "responses")
+```
+
+The two profiles differ mainly in media use. At prompts in profile 2, students
+used social media with probability 0.765, watched TV or played video games with
+probability 0.396, and listened to music with probability 0.364. In profile 1
+the same probabilities are 0.119, 0.147 and 0.075. Profile 1 is slightly more
+likely to include time with friends (0.157 against 0.106), walking (0.138
+against 0.096) and a part-time job (0.051 against 0.010), and both profiles
+report sports at 0.07. Profile 2 is therefore a media-heavy pattern, and
+profile 1 a pattern of little media use with the remaining activities at
+their usual low rates.
+
+The response plot draws the same probabilities, one line per profile across
+the items.
+
+```{r responses-plot}
+plot(lca, what = "responses")
+```
+
+The lines separate on the three media items and nearly coincide on sports, so
+the media items carry almost all of the difference between the profiles.
+
+## Two student classes
+
+The `"counts"` table gives the size of each profile and class, and the
+`"profile_probabilities"` table the profile mix of each student class.
+
+```{r mix}
+get_results(lca, "counts")
+get_results(lca, "profile_probabilities")
+```
+
+The low-media profile holds 73.7% of prompts and the media-heavy profile
+26.3%. The student classes differ sharply in their mix. In class 2, which holds
+58.4% of students, 0.974 of prompts fall in the low-media profile. In class 1,
+with 41.6% of students, the media-heavy profile is the more common, at 0.565.
+Media-heavy leisure is therefore concentrated in a minority of students, and
+for them it is the usual pattern, while most students almost never report it.
+
+The probability plot compares the two mixes.
+
+```{r probabilities-plot}
+plot(lca, what = "probabilities")
+```
+
+Class 2 runs close to one on the low-media profile and close to zero on the
+media-heavy one; class 1 divides its prompts more evenly, with the larger
+share on the media-heavy profile.
+
+## Classification certainty
+
+Profiles and classes are estimated as posterior probabilities. Relative
+entropy summarizes how concentrated those probabilities are, from 0
+for no separation to 1 for certain assignment, and the `"classification"`
+table reports the average posterior probability of each assigned class.
+
+```{r classification}
+get_results(lca, "entropy")
+get_results(lca, "classification")
+```
+
+Relative entropy is 0.668 for prompts and 0.877 for students. A single prompt
+answers eight yes/no questions, which leaves its profile uncertain; a student
+contributes many prompts, which pins down the class. The average posterior
+probability is 0.926 for prompts assigned to the low-media profile and 0.859
+for the media-heavy one, and 0.980 and 0.960 for the two student classes.
+Conclusions about students are therefore well supported, while an analysis of
+individual prompts should carry the posterior probabilities forward.
+
+## Local independence
+
+The model assumes the items are independent within a profile. The
+`"residuals"` table measures the association that each pair of items keeps
+within a profile, with a chi-square test for each pair; the ten largest are
+shown.
+
+```{r residuals}
+get_results(lca, "residuals") |> head(10)
+```
+
+The largest residual is 0.171, between sports and walking in the media-heavy
+profile, followed by friends and walking (0.140) and music and walking (0.133)
+in the same profile. Physical and social activities occur together more often
+than two profiles allow, which is a limit of a two-profile model and one reason
+BIC rewards larger models: extra profiles can absorb this association.
+
+## Uncertainty in the response probabilities
+
+`parameter_inference()` gives standard errors and 95% Wald intervals for every
+parameter. The intervals of the "yes" probabilities, in the rows whose `term`
+ends in `:yes`, show how firmly the profiles are distinguished.
+
+```{r inference}
+parameter_inference(lca)
+```
+
+The profiles are clearly separated on the media items: the interval for
+social media is 0.696 to 0.834 in the media-heavy profile and 0.082 to 0.156 in
+the low-media profile. On sports the two intervals overlap almost entirely.
+The part-time-job probability in the media-heavy profile has an interval
+starting at 0.0001, close to the bound, because very few of its prompts report
+a job.
+
+## Adding affect
+
+A mixed model adds three affect ratings (happy, relaxed, exhausted, each from
+1 to 7) as continuous indicators. `worried` is left out because about half of
+its ratings are 1, which can push a profile's variance to its lower bound.
+
+```{r mixed}
+mixed <- multilpa(student_esm,
+                  vars = c("happy", "relaxed", "exhausted", activities),
+                  categorical = activities, id = "student", n_profiles = 2,
+                  n_group_classes = 2, n_starts = 10, seed = 1)
+get_results(mixed)
+get_results(mixed, "responses")
+get_results(mixed, "profile_probabilities")
+```
+
+With affect included, the profiles become profiles of mood. Profile 1 has mean
+ratings of 5.85 for happy, 5.59 for relaxed and 2.55 for exhausted; profile 2
+has 3.58, 3.33 and 4.33. The activities now differ less and in a different
+way: time with friends is reported at 0.188 of profile-1 prompts and 0.084 of
+profile-2 prompts, social media at 0.269 and 0.315. Good mood goes with social
+time more than with media use. The student classes remain distinct: 0.833 of
+the prompts of class 1 fall in the good-mood profile, and 0.873 of those of
+class 2 in the low-mood profile. The profiles a model finds are set by the
+indicators it is given, so the choice of indicators is part of the question.
+
+## Interpretation
+
+Students' leisure at non-study prompts falls into two patterns, one defined by
+social media, TV and music and one with little media use. The distinction that
+matters most is between students: a majority almost never reports the
+media-heavy pattern, and a minority reports it at more than half of their
+prompts. That student-level result is well supported by the classification
+diagnostics, while the assignment of any single prompt is uncertain.
+
+## Limitations
+
+The data contain only prompts at which the student had not studied, so the
+patterns describe leisure time, not the whole day. The two-profile model leaves
+association between physical and social activities within its profiles, and
+larger models fit better by BIC but are not stable across starts on these
+data. Prompts are treated as independent given the student's class, so the
+model ignores the order of prompts within a day. The associations are
+observational and say nothing about causes.
+
+## Reference
+
+Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic adjustment on
+multiple time scales. *Zeitschrift für Erziehungswissenschaft, 27*(1),
+147-168. <https://doi.org/10.1007/s11618-023-01182-8>

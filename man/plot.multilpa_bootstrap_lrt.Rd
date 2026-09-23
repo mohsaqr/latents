@@ -14,16 +14,16 @@
 )
 }
 \arguments{
-\item{x}{An `multilpa_bootstrap_lrt` result.}
+\item{x}{An \code{multilpa_bootstrap_lrt} result.}
 
-\item{main, subtitle}{Panel title and secondary line, or `NULL` for defaults.}
+\item{main, subtitle}{Panel title and secondary line, or \code{NULL} for defaults.}
 
 \item{palette}{A vector of at least two colours: the histogram fill and the
-observed-statistic marker. `NULL` uses the package palette.}
+observed-statistic marker. \code{NULL} uses the package palette.}
 
-\item{style}{A list of visual constants, as built by `.multilpa_style()`.}
+\item{style}{A list of visual constants, as built by \code{.multilpa_style()}.}
 
-\item{...}{Further named visual constants, merged into `style`.}
+\item{...}{Further named visual constants, merged into \code{style}.}
 }
 \value{
 The input, invisibly. Called for the side effect of drawing.
@@ -36,7 +36,7 @@ statistic and are counted in the subtitle rather than dropped silently.
 }
 \section{Conditions}{
 
-  `multilpa_nothing_to_plot` when no replicate produced a finite statistic.
+\code{latents_nothing_to_plot} when no replicate produced a finite statistic.
 }
 
 \examples{

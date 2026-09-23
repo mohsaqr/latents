@@ -7,16 +7,16 @@
 \method{logLik}{multilpa}(object, ...)
 }
 \arguments{
-\item{object}{An `multilpa` model.}
+\item{object}{An \code{multilpa} model.}
 
-\item{...}{Reserved for compatibility with `logLik()`.}
+\item{...}{Reserved for compatibility with \code{logLik()}.}
 }
 \value{
-A `logLik` object with parameter count `df` and the number of observed
-  groups as `nobs`. Thus `stats::BIC()` uses group-count BIC. For the
-  individual-count alternative, and every other criterion, call
-  `get_results(x, "information_criteria")`, which reports both conventions
-  side by side.
+A \code{logLik} object with parameter count \code{df} and the number of observed
+groups as \code{nobs}. Thus \code{stats::BIC()} uses group-count BIC. For the
+individual-count alternative, and every other criterion, call
+\code{get_results(x, "information_criteria")}, which reports both conventions
+side by side.
 }
 \description{
 Extract the multilevel model log likelihood

@@ -137,5 +137,5 @@ test_that("time uniqueness respects distinct native numeric group identifiers", 
   expect_equal(fit$time_values, data$time)
   data$time[2] <- data$time[1]
   expect_error(multilpa(data, "score", "group", 1, 1, n_starts = 1, time = "time"),
-               class = "multilpa_bad_time")
+               class = "latents_bad_time")
 })

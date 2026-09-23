@@ -20,57 +20,57 @@ descriptives(x, ...)
 }
 \arguments{
 \item{x}{A data frame, or a fitted model of this package. A fit carries the
-columns it was built from, so `vars` and `id` are read from it.}
+columns it was built from, so \code{vars} and \code{id} are read from it.}
 
 \item{...}{Passed between methods.}
 
 \item{vars}{Character vector of column names to describe. Repeated names
 are described once. For a data frame, defaults to every numeric column
-that is not `id`.}
+that is not \code{id}.}
 
 \item{id}{Optional. The column identifying the groups rows are nested in.
-Supplying it adds `n_groups` and `icc`; omitting it leaves them out.}
+Supplying it adds \code{n_groups} and \code{icc}; omitting it leaves them out.}
 
-\item{by}{Optional. `"profile"` or `"group_class"` on a fitted model, or a
+\item{by}{Optional. \code{"profile"} or \code{"group_class"} on a fitted model, or a
 column name on a data frame: describe each variable once per level of it,
-rather than once overall. Rows whose stratifier is `NA` are neither dropped
-nor folded into another level: they form their own stratum, labelled `NA`
-in the `by` column and reported last, so that the strata account for every
-input row exactly once. The stratifier is never compared with `==`, so a
+rather than once overall. Rows whose stratifier is \code{NA} are neither dropped
+nor folded into another level: they form their own stratum, labelled \code{NA}
+in the \code{by} column and reported last, so that the strata account for every
+input row exactly once. The stratifier is never compared with \code{==}, so a
 missing value cannot select rows it does not belong to.}
 }
 \value{
-A base `data.frame`, one row per variable, or one row per variable
-  and `by` level, with the columns
-  \describe{
-    \item{`variable`}{character: the column described.}
-    \item{`n`}{integer: observations with a value.}
-    \item{`n_missing`}{integer: observations without one.}
-    \item{`mean`,`sd`,`min`,`max`}{numeric, and `NA_real_` for a variable
-      that is not numeric.}
-    \item{`n_distinct`}{integer: distinct observed values, which is the
-      useful summary where a mean is not.}
-    \item{`n_groups`,`icc`}{present only when `id` is known. `icc` is the
-      one-way random-effects estimate, and may be slightly negative when the
-      between-group mean square falls below the within-group one; that is the
-      estimator reporting no group structure, not an error. Rows with a
-      missing group ID do not contribute to either statistic.}
-  }
-  A `by` column comes first, named after what it splits on and holding that
-  level's own value, `NA` for the stratum of rows whose stratifier is
-  missing. For every variable, `n + n_missing` summed over the strata equals
-  the number of input rows; that invariant is asserted before the table is
-  returned. Describing by a class the model assigned keeps that assignment
-  out of the described frame, so an indicator of the caller's own that is
-  named `profile` or `group_class` is summarized as itself, not replaced by
-  the assignment. A `by` whose name is one of the summary's own columns
-  cannot be told apart from them and raises `multilpa_bad_data`.
+A base \code{data.frame}, one row per variable, or one row per variable
+and \code{by} level, with the columns
+\describe{
+\item{\code{variable}}{character: the column described.}
+\item{\code{n}}{integer: observations with a value.}
+\item{\code{n_missing}}{integer: observations without one.}
+\item{\code{mean},\code{sd},\code{min},\code{max}}{numeric, and \code{NA_real_} for a variable
+that is not numeric.}
+\item{\code{n_distinct}}{integer: distinct observed values, which is the
+useful summary where a mean is not.}
+\item{\code{n_groups},\code{icc}}{present only when \code{id} is known. \code{icc} is the
+one-way random-effects estimate, and may be slightly negative when the
+between-group mean square falls below the within-group one; that is the
+estimator reporting no group structure, not an error. Rows with a
+missing group ID do not contribute to either statistic.}
+}
+A \code{by} column comes first, named after what it splits on and holding that
+level's own value, \code{NA} for the stratum of rows whose stratifier is
+missing. For every variable, \code{n + n_missing} summed over the strata equals
+the number of input rows; that invariant is asserted before the table is
+returned. Describing by a class the model assigned keeps that assignment
+out of the described frame, so an indicator of the caller's own that is
+named \code{profile} or \code{group_class} is summarized as itself, not replaced by
+the assignment. A \code{by} whose name is one of the summary's own columns
+cannot be told apart from them and raises \code{latents_bad_data}.
 }
 \description{
 One row per variable, with the summaries you would look at before fitting and
 the one that decides whether a two-level model has anything to find: the
 intraclass correlation, the share of each variable's variance that lies
-*between* groups rather than within them.
+\emph{between} groups rather than within them.
 }
 \details{
 An ICC near zero suggests little between-group mean variation in that
@@ -100,10 +100,10 @@ descriptives(fit, by = "profile")
 }
 \references{
 Bliese, P. D. (2000). Within-group agreement, non-independence,
-  and reliability. In K. J. Klein & S. W. J. Kozlowski (Eds.), *Multilevel
-  theory, research, and methods in organizations*.
+and reliability. In K. J. Klein & S. W. J. Kozlowski (Eds.), \emph{Multilevel
+theory, research, and methods in organizations}.
 }
 \seealso{
-[multilpa()] to fit, [diagnostics()] for the after-the-fit
-  counterpart.
+\code{\link[=multilpa]{multilpa()}} to fit, \code{\link[=diagnostics]{diagnostics()}} for the after-the-fit
+counterpart.
 }

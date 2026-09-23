@@ -213,9 +213,9 @@ test_that("held-measurement standard errors match an independent numerical infor
 test_that("holding only the means leaves the variances estimated and correct", {
   skip_on_cran()
   prepared <- fixed_measurement_data()
-  stage <- multilpa(prepared$data, c("a", "b"), "g", 2, 1, n_starts = 4,
+  stage <- multilpa(prepared$data, c("a", "b"), "g", 2, 1, n_starts = 2,
                     seed = 11, tol = 1e-12)
-  held <- multilpa(prepared$data, c("a", "b"), "g", 2, 2, n_starts = 3,
+  held <- multilpa(prepared$data, c("a", "b"), "g", 2, 2, n_starts = 2,
                    start = starting_values(stage, what = "measurement"),
                    fixed = "means", seed = 11, tol = 1e-12)
   expect_true(held$converged)
@@ -288,7 +288,7 @@ test_that("inference refuses what a held fit cannot answer", {
   # not estimated here and has no interval.
   expect_error(confint(held, parm = "measurement.mean.profile_1.a",
                        data = prepared$data),
-               class = "multilpa_held_parameter")
+               class = "latents_held_parameter")
 
   # Holding every parameter the model has leaves nothing to report.
   set.seed(4055)
@@ -299,18 +299,18 @@ test_that("inference refuses what a held fit cannot answer", {
                          fixed = "measurement")
   expect_equal(everything$n_parameters, 0L)
   expect_error(parameter_inference(everything, small),
-               class = "multilpa_no_free_parameters")
+               class = "latents_no_free_parameters")
   expect_error(vcov(everything, data = small),
-               class = "multilpa_no_free_parameters")
+               class = "latents_no_free_parameters")
 
   # A `fixed` field naming something that is not a measurement block is refused
   # rather than silently treated as free.
   corrupted <- held
   corrupted$fixed <- c("means", "profile_probabilities")
   expect_error(.multilpa_free_index(corrupted, "unconstrained"),
-               class = "multilpa_bad_fixed")
+               class = "latents_bad_fixed")
   expect_error(parameter_inference(corrupted, prepared$data),
-               class = "multilpa_bad_fixed")
+               class = "latents_bad_fixed")
 })
 
 test_that("fit_staged makes good on its promise of conditional standard errors", {

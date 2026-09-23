@@ -1,3 +1,11 @@
+# fit_random_intercept() is deferred to future/ (see future/README.md); this
+# comparison is part of the evidence for restoring it, so it loads the deferred
+# source rather than an export that no longer exists. Bound at the top level,
+# where the harness's API check recognises the binding.
+source("deferred.R", local = TRUE)
+fit_random_intercept <- deferred_verb("random-intercept.R", "fit_random_intercept",
+                                      root = "..")
+
 test_that("one-profile random intercept matches genuine Mplus output", {
   fixture <- readRDS(equivalence_fixture("mplus", "random-intercept-one-profile.rds"))
   fit <- fit_random_intercept(fixture$data, "y1", "group", 1L,

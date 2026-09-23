@@ -1,3 +1,110 @@
+# latents 0.8.1
+
+* A documentation website, built with pkgdown, is published at
+  <https://pak.dynasite.org/latents/>.
+
+# latents 0.8.0
+
+## Package renamed
+
+* The package is renamed from multilpa to **latents**, a name that covers
+  latent profile, latent class and latent transition models and the planned
+  extensions. The model functions keep their names (`multilpa()`,
+  `multilca()`, `lta()`), as do the result classes. Condition classes now use
+  the `latents_` prefix (for example `latents_bad_argument`, previously
+  `multilpa_bad_argument`), `multilpa_plot_types()` is `plot_views()`,
+  and the conditions catalogue is `?"latents-conditions"`. The vignettes are
+  `vignette("lpa", package = "latents")`, `"evaluation"`, `"covariates"`,
+  `"lca"` and `"lta"`.
+
+## New features
+
+* `multilca()` fits a two-level latent class model: `multilpa()` with every
+  indicator categorical, so the items are named once. Mixed models remain
+  `multilpa(categorical = )`.
+
+# multilpa 0.7.0
+
+## Behaviour changes
+
+* `enumerate_classes(structure =)` and `candidate_fit(structure =)` are now
+  `model =`, and the candidate grid's `structure` column is `model`. An
+  argument `multilpa()` does not take, including the old `structure`, is
+  refused with `multilpa_bad_argument` before any candidate is fitted, instead
+  of failing inside every candidate.
+* Printing an enumeration grid shows AIC, BIC under both conventions, ICL,
+  entropy at both levels, and the diagnostics `boundary` and
+  `n_best_replicated`.
+* `plot()` on an enumeration grid draws several criteria as line plots, one
+  panel per criterion and one line per covariance model and group-class
+  count; the default shows AIC, both BICs and ICL. `combine = FALSE` draws
+  each criterion as a separate figure.
+
+## Documentation
+
+* `?course_engagement` and the case studies now say that the indicators are
+  simulated on the `log1p` scale, not transformed from counts.
+* New case study on two-level latent class analysis of `student_esm`; the two
+  latent transition case studies are merged into one. Case studies and
+  vignettes print whole tables instead of filtering them.
+
+## Tests
+
+* The bivariate-residual test for a covariate fit no longer asserts whether
+  a separated fixture converges, which differed on R-devel.
+
+# multilpa 0.6.1
+
+## Tests
+
+* Two score tests compared the analytic and numerical gradients at the fitted
+  maximum, where both are near zero; they failed on Linux and Windows. They now
+  compare at a point away from the maximum, where a wrong score is detected.
+* The test suite runs on small data with few starts and iterations: no test
+  fits the full bundled dataset, shared fixtures are fitted once, and tests
+  whose inequality depended on random starts reaching the global maximum now
+  warm-start the wider model. The full suite takes about a fifth of its
+  previous time, and slow tests no longer need to be skipped on CRAN.
+
+# multilpa 0.6.0
+
+## New data
+
+* `student_esm`: experience-sampling data on the leisure activities of 100
+  university students at 2,582 non-study prompts, with four affect ratings,
+  from openESM dataset 0062 (Neubauer & Schmiedek, 2024; CC-BY 4.0). Eight
+  yes/no activity items make it the categorical counterpart of
+  `course_engagement`, used for two-level latent class and mixed-measurement
+  examples.
+
+## Behaviour changes
+
+* One seed rule for every verb: `seed` (and each of `sensitivity()`'s `seeds`)
+  is any whole number that `set.seed()` accepts, negative ones included.
+  `multilpa()`, `fit_staged()`, `lta()`, the covariate fit, `bootstrap_lrt()`
+  and `sensitivity()` previously refused negative seeds, and the bootstrap in
+  `parameter_inference()` accepted a fraction that `set.seed()` truncates, so
+  seeds 1.2 and 1.7 drew the same stream. Every refusal is now
+  `multilpa_bad_argument`.
+* Consistent condition classes for the three-step verbs:
+  - A measurement indicator offered as an external variable raises
+    `multilpa_indicator_reused` from both verbs, alongside
+    `multilpa_bad_outcome` from `three_step()` and the new
+    `multilpa_bad_covariate` from `r3step()` (previously
+    `multilpa_bad_argument`).
+  - `r3step()` raises `multilpa_bad_covariate` for a predictor that varies
+    within a group at `level = "groups"` (previously `multilpa_bad_outcome`)
+    and for a rank-deficient design (previously `multilpa_bad_inference_data`).
+  - `data` with the wrong number of rows raises `multilpa_bad_inference_data`
+    from `three_step()`, `r3step()` and the bivariate residuals, as it already
+    did from the assignments table and `sensitivity()`. These were unclassed.
+
+## Internal
+
+* The fallback row for a transition state with no outgoing moves in
+  `get_tna()` is computed for every state in one matrix product rather than a
+  loop; the result is bit-identical.
+
 # multilpa 0.5.0
 
 ## Behaviour changes

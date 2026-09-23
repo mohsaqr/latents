@@ -23,30 +23,30 @@
 )
 }
 \arguments{
-\item{x}{A fitted `multilpa_transitions` model.}
+\item{x}{A fitted \code{multilpa_transitions} model.}
 
-\item{what}{The view to draw. `"transitions"` draws the estimated transition
-matrix, one panel per group class. `"profiles"`, `"bars"` and `"heatmap"`
-draw the measurement model, `"responses"` the categorical response curves,
-`"sequences"` each group's profile at each occasion, and `"sizes"`,
-`"entropy"`, `"posteriors"` and `"avepp"` the classification diagnostics.
-`"all"` draws every view this fit has the ingredients for.}
+\item{what}{The view to draw. \code{"transitions"} draws the estimated transition
+matrix, one panel per group class. \code{"profiles"}, \code{"bars"} and \code{"heatmap"}
+draw the measurement model, \code{"responses"} the categorical response curves,
+\code{"sequences"} each group's profile at each occasion, and \code{"sizes"},
+\code{"entropy"}, \code{"posteriors"} and \code{"avepp"} the classification diagnostics.
+\code{"all"} draws every view this fit has the ingredients for.}
 
 \item{data}{Optional. The data the model was fitted to. Accepted for
-consistency with [plot.multilpa()]; `"bars"` draws point estimates without
+consistency with \code{\link[=plot.multilpa]{plot.multilpa()}}; \code{"bars"} draws point estimates without
 intervals here, because this family has no standard errors.}
 
-\item{scale}{`"raw"` keeps the indicators in their own units;
-`"standardized"` divides by each indicator's observed standard deviation.}
+\item{scale}{\code{"raw"} keeps the indicators in their own units;
+\code{"standardized"} divides by each indicator's observed standard deviation.}
 
-\item{category}{For `"responses"`, which category to draw.}
+\item{category}{For \code{"responses"}, which category to draw.}
 
 \item{labels}{Whether to label series directly.}
 
 \item{main, subtitle}{Panel title and secondary line.}
 
 \item{palette, symbols, linetypes, style, cell_labels}{Visual overrides, as in
-[plot.multilpa()].}
+\code{\link[=plot.multilpa]{plot.multilpa()}}.}
 
 \item{...}{Further style overrides.}
 }
@@ -54,8 +54,8 @@ intervals here, because this family has no standard errors.}
 The fitted model, invisibly, having drawn the requested view.
 }
 \description{
-The measurement model is the one [multilpa()] fits, so every measurement and
-classification view it draws is available here. `what = "transitions"` is the
+The measurement model is the one \code{\link[=multilpa]{multilpa()}} fits, so every measurement and
+classification view it draws is available here. \code{what = "transitions"} is the
 view this family adds: the estimated transition matrix, one panel per group
 class.
 }
@@ -72,7 +72,7 @@ plot(fit, what = "transitions")
 plot(fit, what = "profiles")
 }
 \seealso{
-[get_tna()] and [get_group_tna()] to draw the transitions as a
-  network instead, and [plot.multilpa()] for the same views on a
-  cross-sectional fit.
+\code{\link[=get_tna]{get_tna()}} and \code{\link[=get_group_tna]{get_group_tna()}} to draw the transitions as a
+network instead, and \code{\link[=plot.multilpa]{plot.multilpa()}} for the same views on a
+cross-sectional fit.
 }

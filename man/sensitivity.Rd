@@ -15,8 +15,8 @@ sensitivity(
 )
 }
 \arguments{
-\item{x}{A fitted `multilpa` model to use as the reference.
-A [fit_staged()] result varies the second-stage starts while holding its
+\item{x}{A fitted \code{multilpa} model to use as the reference.
+A \code{\link[=fit_staged]{fit_staged()}} result varies the second-stage starts while holding its
 first-stage measurement solution fixed. A directly fitted model with
 measurement blocks held is refused: its original free starting
 values are not retained, so replaying the same seed would not replay the
@@ -27,7 +27,9 @@ order. A fit carries the columns it was built from, so this is only needed
 to override them. Shared identifier and indicator columns are checked
 against the fit before assignment agreement is calculated.}
 
-\item{seeds}{Integer seeds to refit under. The reference fit's own seed may
+\item{seeds}{Seeds to refit under: at least two distinct whole numbers of
+either sign, as \code{set.seed()} accepts. Anything else raises
+\code{latents_bad_argument}. The reference fit's own seed may
 be among them, in which case that row reproduces it and is the arithmetic
 check that the refit is the same model.}
 
@@ -41,34 +43,34 @@ same optimum. Defaults to the reference fit's own replication tolerance,
 which is what it used to decide whether its starts agreed.}
 }
 \value{
-A base `data.frame`, one row per seed, with columns `seed`,
-  `log_likelihood`, `converged`, `iterations`, `optimum` (1 for the best
-  maximum found across the seeds, 2 for the next distinct one, and so on),
-  `best` (whether this seed reached optimum 1) and `agreement` (the
-  proportion of observations given the same profile as the reference fit,
-  after label alignment). A failed refit has `NA` throughout except `seed`.
+A base \code{data.frame}, one row per seed, with columns \code{seed},
+\code{log_likelihood}, \code{converged}, \code{iterations}, \code{optimum} (1 for the best
+maximum found across the seeds, 2 for the next distinct one, and so on),
+\code{best} (whether this seed reached optimum 1) and \code{agreement} (the
+proportion of observations given the same profile as the reference fit,
+after label alignment). A failed refit has \code{NA} throughout except \code{seed}.
 }
 \description{
 A latent profile model is fitted by EM from random starts, so what comes back
-is a local maximum reached from one particular set of them. `n_starts`
-reports how many starts *within a single seed's stream* reached the best
+is a local maximum reached from one particular set of them. \code{n_starts}
+reports how many starts \emph{within a single seed's stream} reached the best
 likelihood; it cannot say whether a different stream would have found a
 different mode. This verb refits the model under each of several seeds and
 reports what changed.
 }
 \details{
 Three things are worth reading off the result. Whether every seed reached the
-same maximised log likelihood, which is what `optimum` counts. Whether the
+same maximised log likelihood, which is what \code{optimum} counts. Whether the
 seeds that reached it converged. And how many observations were assigned to a
-different profile, which is what `agreement` measures, after the arbitrary
+different profile, which is what \code{agreement} measures, after the arbitrary
 profile labels of each refit have been matched to the reference fit's -- two
 fits of the same mixture can be identical and still number their profiles
 differently, so comparing labels directly would report disagreement that is
 not there.
 
-A seed whose refit fails contributes a row with `NA` estimates rather than
-being dropped silently, and a `multilpa_sensitivity_dropped` warning names
-how many failed, so the table is never quietly shorter than `seeds`.
+A seed whose refit fails contributes a row with \code{NA} estimates rather than
+being dropped silently, and a \code{latents_sensitivity_dropped} warning names
+how many failed, so the table is never quietly shorter than \code{seeds}.
 }
 \examples{
 set.seed(7)
@@ -83,10 +85,10 @@ sensitivity(fit, seeds = 1:3, n_starts = 3)
 }
 \references{
 Hipp, J. R., & Bauer, D. J. (2006). Local solutions in the
-  estimation of growth mixture models. *Psychological Methods, 11*, 36--53.
+estimation of growth mixture models. \emph{Psychological Methods, 11}, 36--53.
 }
 \seealso{
-[enumerate_classes()] to vary the number of classes rather than the
-  seed, and [parameter_inference()] for uncertainty about the parameters of a
-  single solution.
+\code{\link[=enumerate_classes]{enumerate_classes()}} to vary the number of classes rather than the
+seed, and \code{\link[=parameter_inference]{parameter_inference()}} for uncertainty about the parameters of a
+single solution.
 }

@@ -37,3 +37,6 @@ Rplots.pdf
 vignettes/*.tex
 vignettes/figure/
 vignettes/.beatrina*/
+
+# pkgdown output (built into gh-pages by CI)
+docs/

@@ -63,7 +63,7 @@
   if (isTRUE(definitions) && identical(format, "wide")) {
     stop(errorCondition(
       "`definitions` describes one criterion per row, which the wide form has not. Use format = \"long\".",
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   q <- x$n_parameters
   deviance <- -2 * x$log_likelihood
@@ -126,7 +126,7 @@
     stop(errorCondition(sprintf(
       "The information criteria no longer report %s.",
       paste(missing_labels, collapse = ", ")),
-      class = "multilpa_unknown_criterion", call = NULL))
+      class = "latents_unknown_criterion", call = NULL))
   }
   values <- stats::setNames(indices$value, labels)
   cbind(data.frame(log_likelihood = fit$log_likelihood,
@@ -175,7 +175,7 @@
   if (!is.null(object$group_posteriors)) return(levels_wanted)
   if (identical(level, "groups")) {
     stop(errorCondition("This model has no discrete group classes.",
-                        class = "multilpa_no_group_classes", call = NULL))
+                        class = "latents_no_group_classes", call = NULL))
   }
   "individuals"
 }

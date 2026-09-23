@@ -6,7 +6,8 @@
 \usage{
 \method{plot}{multilpa_enumeration}(
   x,
-  criterion = "bic_individual",
+  criterion = c("aic", "bic_groups", "bic_individual", "icl_individual"),
+  combine = TRUE,
   labels = TRUE,
   mark_minimum = TRUE,
   main = NULL,
@@ -19,33 +20,40 @@
 )
 }
 \arguments{
-\item{x}{An `multilpa_enumeration` result from [enumerate_classes()].}
+\item{x}{An \code{multilpa_enumeration} result from \code{\link[=enumerate_classes]{enumerate_classes()}}.}
 
-\item{criterion}{Name of the column to plot, as it appears in
-`as.data.frame(x)`, for example `"bic_individual"` or `"sabic_groups"`.}
+\item{criterion}{One or more criterion columns of \code{as.data.frame(x)}, such
+as \code{"bic_individual"} or \code{"sabic_groups"}. Several names draw one panel
+each; the default draws AIC, BIC under both sample-size conventions, and
+ICL counted over individuals.}
 
-\item{labels}{`TRUE` prints a direct label at the right end of each series.}
+\item{combine}{\code{TRUE}, the default, draws several criteria as panels of one
+figure. \code{FALSE} draws each criterion as its own full-size figure, one after
+another, so a report shows them as separate images.}
 
-\item{mark_minimum}{`TRUE` rings the lowest value among converged candidates.
+\item{labels}{\code{TRUE} prints a direct label at the right end of each series.}
+
+\item{mark_minimum}{\code{TRUE} rings the lowest value among converged candidates.
 This marks an extremum, it does not select a model.}
 
 \item{main, subtitle}{Panel title and secondary line.}
 
 \item{palette, symbols, linetypes}{Series aesthetics, recycled over combinations
-of group-class count and covariance structure.}
+of group-class count and covariance model.}
 
-\item{style}{A list of visual constants, as built by `.multilpa_style()`.}
+\item{style}{A list of visual constants, as built by \code{.multilpa_style()}.}
 
-\item{...}{Further named visual constants, merged into `style`.}
+\item{...}{Further named visual constants, merged into \code{style}.}
 }
 \value{
 The enumeration result, invisibly. Called for its drawing side effect.
 }
 \description{
-Draws one information criterion against the number of profiles, with one
-line per number of group classes and covariance structure. Candidates that
-failed to converge are marked rather than dropped, so a gap in a line is
-visible as a failure and not mistaken for a missing candidate.
+Draws information criteria against the number of profiles as line plots,
+one panel per criterion, with one line per number of group classes and
+covariance model. Candidates that failed to converge are marked on the
+baseline, so a gap in a line reads as a failure and not as a missing
+candidate.
 }
 \examples{
 set.seed(7)

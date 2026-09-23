@@ -4,11 +4,14 @@
 # covariate path has no meaning for instead of accepting and ignoring them.
 
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+# These tests check routing and arguments, not estimates, so a small subset
+# and short runs are enough.
+small <- engagement_small
 
 test_that("naming a covariate returns a covariate fit, not a plain one", {
-  fit <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+  fit <- quietly(multilpa(small, activity, "student", n_profiles = 2,
                   n_group_classes = 2, profile_covariates = "previous_grade",
-                  n_starts = 2, seed = 1)
+                  n_starts = 1, max_iter = 20, seed = 1))
   expect_s3_class(fit, "multilpa_covariates")
   expect_false(inherits(fit, "multilpa"))
   expect_identical(fit$profile_covariates, "previous_grade")
@@ -33,11 +36,13 @@ test_that("a group covariate alone also takes the covariate path", {
 })
 
 test_that("no covariate leaves the covariate-free path untouched", {
-  named <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+  named <- quietly(multilpa(small, activity, "student", n_profiles = 2,
                     n_group_classes = 2, profile_covariates = character(),
-                    group_covariates = character(), n_starts = 2, seed = 1)
-  plain <- multilpa(course_engagement, activity, "student", n_profiles = 2,
-                    n_group_classes = 2, n_starts = 2, seed = 1)
+                    group_covariates = character(), n_starts = 1,
+                    max_iter = 20, seed = 1))
+  plain <- quietly(multilpa(small, activity, "student", n_profiles = 2,
+                    n_group_classes = 2, n_starts = 1, max_iter = 20,
+                    seed = 1))
   expect_s3_class(named, "multilpa")
   expect_equal(named$log_likelihood, plain$log_likelihood)
   expect_equal(named$means, plain$means)
@@ -47,16 +52,16 @@ test_that("every forwarded argument reaches the estimator unchanged", {
   # A mis-wired argument in the delegation would change the fit, so the two
   # routes are compared on a specification that exercises the ones most easily
   # crossed: the covariance model, the variance floor and the tolerance.
-  through_multilpa <- multilpa(
-    course_engagement, activity, "student", n_profiles = 2,
+  through_multilpa <- quietly(multilpa(
+    small, activity, "student", n_profiles = 2,
     n_group_classes = 2, profile_covariates = "previous_grade",
     variance_model = "equal", covariance_model = "full", min_variance = 1e-4,
-    tol = 1e-6, max_iter = 300L, n_starts = 2, seed = 1, time = "sequence")
-  direct <- multilpa:::.multilpa_fit_covariates(
-    course_engagement, activity, "student", n_profiles = 2,
+    tol = 1e-6, max_iter = 300L, n_starts = 1, seed = 1, time = "sequence"))
+  direct <- quietly(latents:::.multilpa_fit_covariates(
+    small, activity, "student", n_profiles = 2,
     n_group_classes = 2, profile_covariates = "previous_grade",
     variance_model = "equal", covariance_model = "full", min_variance = 1e-4,
-    tol = 1e-6, max_iter = 300L, n_starts = 2, seed = 1, time = "sequence")
+    tol = 1e-6, max_iter = 300L, n_starts = 1, seed = 1, time = "sequence"))
   expect_equal(through_multilpa$log_likelihood, direct$log_likelihood)
   expect_equal(through_multilpa$means, direct$means)
   expect_equal(through_multilpa$profile_coefficients,
@@ -69,16 +74,17 @@ test_that("every forwarded argument reaches the estimator unchanged", {
 
 test_that("the three arguments the covariate path cannot honour are refused", {
   call_with <- function(...) {
-    multilpa(course_engagement, activity, "student", n_profiles = 2,
+    multilpa(small, activity, "student", n_profiles = 2,
              n_group_classes = 2, profile_covariates = "previous_grade",
-             n_starts = 1, seed = 1, ...)
+             n_starts = 1, max_iter = 20, seed = 1, ...)
   }
-  plain <- multilpa(course_engagement, activity, "student", n_profiles = 2,
-                    n_group_classes = 2, n_starts = 1, seed = 1)
+  plain <- quietly(multilpa(small, activity, "student", n_profiles = 2,
+                    n_group_classes = 2, n_starts = 1, max_iter = 20,
+                    seed = 1))
   expect_error(call_with(start = starting_values(plain)),
-               class = "multilpa_bad_argument")
-  expect_error(call_with(missing = "fiml"), class = "multilpa_bad_argument")
-  expect_error(call_with(fixed = "means"), class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
+  expect_error(call_with(missing = "fiml"), class = "latents_bad_argument")
+  expect_error(call_with(fixed = "means"), class = "latents_bad_argument")
   # The message names the argument, so the caller is told which one to drop.
   expect_error(call_with(missing = "fiml"), "`missing`")
   # All three at once are named together rather than one refusal at a time.
@@ -95,16 +101,16 @@ test_that("a non-character covariate name is refused before any fitting", {
 })
 
 test_that("a covariate fit offers the tables its family defines", {
-  fit <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+  fit <- quietly(multilpa(small, activity, "student", n_profiles = 2,
                   n_group_classes = 2, profile_covariates = "previous_grade",
-                  n_starts = 2, seed = 1)
+                  n_starts = 1, max_iter = 20, seed = 1))
   tables <- get_results(fit, "all")
   expect_true("coefficients" %in% names(tables))
   # A covariate model has no single profile prevalence: it varies with each
   # unit's covariates, so the table the covariate-free model has is absent.
   expect_false("profile_probabilities" %in% names(tables))
   expect_error(get_results(fit, "profile_probabilities"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_named(get_results(fit, "coefficients"),
                c("level", "outcome", "term", "parameter", "estimate"))
 })

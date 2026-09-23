@@ -16,7 +16,7 @@ bootstrap_lrt(
 )
 }
 \arguments{
-\item{null_model}{Smaller, converged [multilpa()] model on complete data.}
+\item{null_model}{Smaller, converged \code{\link[=multilpa]{multilpa()}} model on complete data.}
 
 \item{alternative_model}{Larger model fitted to exactly the same data.}
 
@@ -32,19 +32,20 @@ model stores.}
 
 \item{tol}{Relative likelihood convergence tolerance.}
 
-\item{seed}{Optional seed, with caller RNG state restored.}
+\item{seed}{Optional seed: any whole number \code{set.seed()} accepts. The
+caller's random-number state is restored on exit.}
 }
 \value{
-An object of class `multilpa_bootstrap_lrt`, carrying the observed
-  statistic, the finite-simulation corrected p-value, its Monte Carlo
-  standard error, the measurement blocks held fixed in every fit, and one
-  record per replicate. Read it with the verbs that describe it:
-  [as.data.frame()] gives the single-row test result,
-  `get_results(what = "replicates")` one row per simulated replicate,
-  [summary()] the
-  test beside the replicate diagnostics, and [plot()] the simulated null
-  distribution with the observed statistic marked. Inspect failed starts,
-  boundary flags and likelihood replication before interpreting results.
+An object of class \code{multilpa_bootstrap_lrt}, carrying the observed
+statistic, the finite-simulation corrected p-value, its Monte Carlo
+standard error, the measurement blocks held fixed in every fit, and one
+record per replicate. Read it with the verbs that describe it:
+\code{\link[=as.data.frame]{as.data.frame()}} gives the single-row test result,
+\code{get_results(what = "replicates")} one row per simulated replicate,
+\code{\link[=summary]{summary()}} the
+test beside the replicate diagnostics, and \code{\link[=plot]{plot()}} the simulated null
+distribution with the observed statistic marked. Inspect failed starts,
+boundary flags and likelihood replication before interpreting results.
 }
 \description{
 Simulates complete indicators under the null model while preserving observed
@@ -59,7 +60,7 @@ a chi-square reference distribution. Any failed/nonconverged or reversed
 replicate makes the p-value NA, avoiding silent deletion of difficult fits.
 }
 \details{
-Models fitted with `fixed`, including those from [fit_staged()], are
+Models fitted with \code{fixed}, including those from \code{\link[=fit_staged]{fit_staged()}}, are
 supported: every replicate is refitted with the same blocks held at the same
 values, so the simulated statistics compare the same two constrained models
 as the observed statistic does. The p-value is then conditional on that
@@ -69,16 +70,16 @@ refused rather than given a p-value.
 }
 \section{Conditions}{
 
-  `multilpa_bad_nesting` when only one of the two models holds measurement
-  blocks fixed, when they hold different blocks, when they hold the same
-  blocks at different values, when they hold a measurement fixed while
-  differing in the number of profiles (the held blocks then have different
-  shapes, so the null is not a restriction of the alternative), or when the
-  alternative does not estimate more free parameters than the null.
-  `multilpa_failed_replicates` is warned when some replicate fails
-  validation, and the p-value is `NA`.
-  `multilpa_unsupported_bootstrap` refuses person-centred fits, for which
-  this simulator has no group-baseline distribution.
+\code{latents_bad_nesting} when only one of the two models holds measurement
+blocks fixed, when they hold different blocks, when they hold the same
+blocks at different values, when they hold a measurement fixed while
+differing in the number of profiles (the held blocks then have different
+shapes, so the null is not a restriction of the alternative), or when the
+alternative does not estimate more free parameters than the null.
+\code{latents_failed_replicates} is warned when some replicate fails
+validation, and the p-value is \code{NA}.
+\code{latents_unsupported_bootstrap} refuses person-centred fits, for which
+this simulator has no group-baseline distribution.
 }
 
 \examples{

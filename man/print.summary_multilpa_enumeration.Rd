@@ -7,20 +7,20 @@
 \method{print}{summary_multilpa_enumeration}(x, digits = 4L, rows = 10L, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa_enumeration` object.}
+\item{x}{A \code{summary_multilpa_enumeration} object.}
 
 \item{digits}{Number of printed significant digits.}
 
 \item{rows}{How many rows of each table to print. A longer table is shown
-to that depth, with its remaining row count and the `get_results()` call that
+to that depth, with its remaining row count and the \code{get_results()} call that
 returns it whole.}
 
-\item{...}{Passed to the underlying `data.frame` printing.}
+\item{...}{Passed to the underlying \code{data.frame} printing.}
 }
 \value{
 The summary, invisibly. Called for the side effect of printing the
-  candidate counts, the table of which candidate minimises each criterion,
-  and how many distinct candidates are minimal under some criterion.
+candidate counts, the table of which candidate minimises each criterion,
+and how many distinct candidates are minimal under some criterion.
 }
 \description{
 Print an enumeration summary

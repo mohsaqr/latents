@@ -4,25 +4,25 @@
 \alias{candidate_fit}
 \title{Take one fitted model out of an enumeration grid}
 \usage{
-candidate_fit(x, n_profiles, n_group_classes = 1L, structure = NULL)
+candidate_fit(x, n_profiles, n_group_classes = 1L, model = NULL)
 }
 \arguments{
-\item{x}{An `multilpa_enumeration` result from [enumerate_classes()].}
+\item{x}{An \code{multilpa_enumeration} result from \code{\link[=enumerate_classes]{enumerate_classes()}}.}
 
 \item{n_profiles}{Number of individual profiles identifying the candidate.}
 
 \item{n_group_classes}{Number of group classes identifying the candidate.}
 
-\item{structure}{The covariance structure identifying the candidate, needed
-when [enumerate_classes()] was given a `structure` grid and the class
-counts alone name several. Naming counts that match more than one
-candidate raises `multilpa_unknown_candidate` listing the structures it
-could have meant.}
+\item{model}{The covariance model identifying the candidate, needed when
+\code{\link[=enumerate_classes]{enumerate_classes()}} was given several \code{model}s and the class counts
+alone name several candidates. Naming counts that match more than one
+candidate raises \code{latents_unknown_candidate} listing the models it could
+have meant.}
 }
 \value{
 The fitted model for that cell of the grid: an object of class
-  `multilpa`, exactly as [multilpa()] returned it, with every verb of this
-  package available on it.
+\code{multilpa}, exactly as \code{\link[=multilpa]{multilpa()}} returned it, with every verb of this
+package available on it.
 }
 \description{
 An enumeration keeps every candidate it fitted. This returns one of them, so
@@ -31,11 +31,11 @@ names it by its class counts instead of indexing the grid by position.
 }
 \section{Conditions}{
 
-  `multilpa_unknown_candidate` when the requested class counts are not in
-  the grid, and `multilpa_failed_candidate` when they are in the grid but
-  that fit raised an error, so no model exists to return. Neither situation
-  returns `NULL`, because a `NULL` would flow silently into whatever the
-  caller did next.
+\code{latents_unknown_candidate} when the requested class counts are not in
+the grid, and \code{latents_failed_candidate} when they are in the grid but
+that fit raised an error, so no model exists to return. Neither situation
+returns \code{NULL}, because a \code{NULL} would flow silently into whatever the
+caller did next.
 }
 
 \examples{

@@ -7,24 +7,24 @@
 \method{as.data.frame}{multilpa_transitions}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An object of class `multilpa_transitions`.}
+\item{x}{An object of class \code{multilpa_transitions}.}
 
-\item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
+\item{row.names}{Passed to \code{data.frame()}; \code{NULL} gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
-naming it, rather than being dropped, because `what =` used to live on
+\item{...}{Must be empty. An argument here raises \code{latents_bad_argument}
+naming it, rather than being dropped, because \verb{what =} used to live on
 this generic and silently returning the primary table instead of the one
 that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame`: one row per group class and ordered pair of profiles.
+A base \code{data.frame}: one row per group class and ordered pair of profiles.
 }
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 The other tables are named rather than positional, so they belong to
-[get_results()], which takes `what` and refuses a name this object has not.
+\code{\link[=get_results]{get_results()}}, which takes \code{what} and refuses a name this object has not.
 }
 \examples{
 moves <- lta(
@@ -36,5 +36,5 @@ moves <- lta(
 as.data.frame(moves)
 }
 \seealso{
-[get_results()] for every other table this object holds.
+\code{\link[=get_results]{get_results()}} for every other table this object holds.
 }

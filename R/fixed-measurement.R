@@ -24,7 +24,7 @@
 #' @param n_continuous Number of continuous indicators.
 #' @param n_categories Category counts per categorical indicator, or `NULL`.
 #' @return The expanded character vector of held block names, in a fixed order.
-#'   Raises `multilpa_bad_fixed` when the request cannot be met.
+#'   Raises `latents_bad_fixed` when the request cannot be met.
 #' @noRd
 .multilpa_validate_fixed <- function(fixed, start, covariance_model,
                                      n_continuous, n_categories) {
@@ -32,7 +32,7 @@
   if (!is.character(fixed) || anyNA(fixed)) {
     stop(errorCondition(
       "`fixed` must be a character vector of measurement block names.",
-      class = "multilpa_bad_fixed", call = NULL))
+      class = "latents_bad_fixed", call = NULL))
   }
   # The shorthand names every block the model actually has, so that a caller
   # holding "measurement" does not have to know which blocks a mixed-mode or
@@ -47,19 +47,19 @@
       "`fixed` may name %s or \"measurement\"; received %s.",
       paste(sprintf("\"%s\"", .multilpa_fixed_blocks()), collapse = ", "),
       paste(sprintf("\"%s\"", unknown), collapse = ", ")),
-      class = "multilpa_bad_fixed", call = NULL))
+      class = "latents_bad_fixed", call = NULL))
   }
   absent <- setdiff(fixed, available)
   if (length(absent) > 0L) {
     stop(errorCondition(sprintf(
       "This model has no %s to hold fixed.",
       paste(sprintf("`%s`", absent), collapse = " or ")),
-      class = "multilpa_bad_fixed", call = NULL))
+      class = "latents_bad_fixed", call = NULL))
   }
   if (is.null(start)) {
     stop(errorCondition(
       "`fixed` needs `start` to supply the values to hold. Pass starting_values(fit).",
-      class = "multilpa_bad_fixed", call = NULL))
+      class = "latents_bad_fixed", call = NULL))
   }
   supplied <- vapply(fixed, function(block) {
     if (identical(block, "variances") && identical(covariance_model, "full")) {
@@ -70,7 +70,7 @@
     stop(errorCondition(sprintf(
       "`start` carries no %s to hold fixed.",
       paste(sprintf("`%s`", fixed[!supplied]), collapse = " or ")),
-      class = "multilpa_bad_fixed", call = NULL))
+      class = "latents_bad_fixed", call = NULL))
   }
   # Holding everything leaves no measurement parameter free, which is allowed
   # and is exactly the staged case; holding nothing is the ordinary fit.
@@ -272,7 +272,7 @@ fit_staged <- function(data, vars, id, n_profiles,
       stop(errorCondition(paste(
         "`measurement` must be a one-group-class measurement stage;",
         "a fit with group classes has already estimated membership structure."),
-        class = "multilpa_bad_stage", call = NULL))
+        class = "latents_bad_stage", call = NULL))
     }
     held_structure <- measurement$covariance_structure %||% NA_character_
     if (!is.na(held_structure) &&
@@ -283,7 +283,7 @@ fit_staged <- function(data, vars, id, n_profiles,
         "each profile at its maximum. Refit the measurement as EEI, VVI, EEE or",
         "VVV, or fit both levels together with `multilpa()`, which can estimate",
         "%s directly."), held_structure, held_structure),
-        class = "multilpa_bad_stage", call = NULL))
+        class = "latents_bad_stage", call = NULL))
     }
   }
   call <- match.call()
@@ -384,7 +384,7 @@ fit_staged <- function(data, vars, id, n_profiles,
 #'   indicators. The labels, not their order, are what must match: a stage that
 #'   sees the same categories in a different order is aligned by label, while a
 #'   stage that sees a different category cannot be aligned at all.
-#' @return `NULL`, invisibly; raises `multilpa_bad_stage` on the first mismatch.
+#' @return `NULL`, invisibly; raises `latents_bad_stage` on the first mismatch.
 #' @noRd
 .multilpa_check_measurement <- function(measurement, n_profiles, vars,
                                         categorical, covariance_model,
@@ -392,7 +392,7 @@ fit_staged <- function(data, vars, id, n_profiles,
   mismatch <- function(what, expected, received) {
     stop(errorCondition(sprintf(
       "`measurement` was fitted with %s %s, but %s was requested.",
-      what, received, expected), class = "multilpa_bad_stage", call = NULL))
+      what, received, expected), class = "latents_bad_stage", call = NULL))
   }
   if (!identical(as.integer(measurement$n_profiles), as.integer(n_profiles))) {
     mismatch("n_profiles", n_profiles, measurement$n_profiles)
@@ -419,7 +419,7 @@ fit_staged <- function(data, vars, id, n_profiles,
           paste(sprintf("\"%s\"", held %||% character()), collapse = ", "),
           indicator,
           paste(sprintf("\"%s\"", wanted), collapse = ", ")),
-          class = "multilpa_bad_stage", call = NULL))
+          class = "latents_bad_stage", call = NULL))
       }
     }))
   }

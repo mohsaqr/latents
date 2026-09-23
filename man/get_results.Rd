@@ -50,307 +50,307 @@ get_results(x, what = NULL, ...)
 comparison, a starting-value set, a classification-diagnostics object, or
 the summary of any of them.}
 
-\item{what}{Which table to return, or `"all"` for every table the object can
+\item{what}{Which table to return, or \code{"all"} for every table the object can
 produce. The tables an object offers depend on its class and are listed
-under *Tables* below; asking for one it does not have raises
-`multilpa_bad_argument` naming the ones it does. `NULL`, the default,
+under \emph{Tables} below; asking for one it does not have raises
+\code{latents_bad_argument} naming the ones it does. \code{NULL}, the default,
 gives the object's primary table: the measurement model for a fit, the
 candidate grid for an enumeration, the test row for a bootstrap
 comparison, and the entropy summary for a diagnostics object.}
 
 \item{...}{Arguments for the requested table. Each table accepts only the
 arguments listed for it below, and any other name raises
-`multilpa_bad_argument` saying which that table takes, rather than being
+\code{latents_bad_argument} saying which that table takes, rather than being
 dropped on the way to a table that would then answer a different question.}
 }
 \value{
-A base `data.frame` for a single `what`, whose columns are given
-  under *Tables*, or a named list of such data frames for `what = "all"`.
+A base \code{data.frame} for a single \code{what}, whose columns are given
+under \emph{Tables}, or a named list of such data frames for \code{what = "all"}.
 }
 \description{
-One verb returns every tidy table this package computes, named by `what`.
-The tables were once eleven separate verbs and seven `as.data.frame()`
-methods with their own `what` catalogues; a reader had to know which verb
+One verb returns every tidy table this package computes, named by \code{what}.
+The tables were once eleven separate verbs and seven \code{as.data.frame()}
+methods with their own \code{what} catalogues; a reader had to know which verb
 owned which table before they could ask for it. Here the object decides
-what it can offer and `what` names it, so the same call shape reads a
+what it can offer and \code{what} names it, so the same call shape reads a
 measurement model, a classification diagnostic and a transition matrix.
 }
 \section{Tables}{
 
 Every fitted model offers these:
 \describe{
-  \item{`"profiles"`}{The Gaussian measurement model, one row per profile
-    and continuous indicator: `profile`, `indicator`, `mean`, `variance`,
-    `standard_deviation`. Zero rows when every indicator is categorical.
-    Takes `scale`, and `data`, which adds `mean_standard_error` and
-    `variance_standard_error`.}
-  \item{`"responses"`}{The categorical measurement model, one row per
-    profile, categorical indicator and category: `profile`, `indicator`,
-    `category`, `probability`, `threshold`. The threshold is
-    `qlogis(P(y <= category))` and is `NA_real_` for each indicator's final
-    category, where the cumulative probability is one. Takes `data`, which
-    adds `probability_standard_error`.}
-  \item{`"covariances"`}{The within-profile residual covariance matrices,
-    one row per profile and ordered pair of continuous indicators:
-    `profile`, `indicator`, `indicator_2`, `covariance`. The diagonal
-    parameterization carries no covariance array but does state a covariance
-    matrix -- the variances on the diagonal and exact zeros off it -- and it
-    is reported explicitly, so one shape answers both parameterizations.}
-  \item{`"counts"`}{Effective class memberships, one row per class at each
-    level the fit has: `level`, `class`, `effective_count` (the summed
-    posteriors) and `effective_proportion`. These differ from the modal
-    counts in `"classification"` whenever entropy is below one.}
-  \item{`"model"`}{One row describing the whole fit: its dimensions,
-    likelihood, parameter counts, `aic`, `bic_groups`, `bic_individual` and
-    its convergence and boundary diagnostics. The columns are those of the
-    family: a covariate fit reports its predictor counts, because padding
-    those onto a two-level fit would leave the common case mostly `NA`.
-    Comparing fits
-    across families is what `"information_criteria"` is for, and that table
-    does have one column set for every family.}
-  \item{`"posteriors"`}{One row per individual and profile: `row`, `group`,
-    `profile`, `posterior`, `modal`. Takes `format`.}
-  \item{`"assignments"`}{One row per observation, the columns the fit was
-    built from (or those of `data`) followed by `profile`, `group_class`
-    where the model has one, `uncertainty`, and one `posterior_profile_*`
-    column per profile. `uncertainty` is one minus the posterior of the
-    assigned profile, which is what modal assignment discards. Takes `data`
-    and `truth`; `truth` returns a recovery cross-tabulation instead,
-    described below.}
-  \item{`"classification"`}{Classification quality, one row per class and
-    level: `level`, `class`, `n_modal`, `proportion_modal`, `estimated_n`,
-    `estimated_proportion`, `average_posterior`,
-    `odds_correct_classification`. Takes `level`.}
-  \item{`"average_posteriors"`}{For the units assigned to each class, their
-    mean posterior of belonging to every class: `level`, `assigned_class`,
-    `class`, `n_assigned`, `average_posterior`. Each assigned class's rows
-    sum to one. Conditions on the *assigned* class, where
-    `"classification_errors"` conditions on the *true* one; the two are
-    different numbers, not two spellings of one table. Takes `level`.}
-  \item{`"classification_errors"`}{The probability that a unit truly in one
-    class is assigned to another: `level`, `true_class`, `assigned_class`,
-    `probability`, summing to one within each `true_class`. Takes `level`.
-    On a membership-covariate fit this is a marginal summary over the fitted
-    units, not a classification-error adjustment conditional on covariates.}
-  \item{`"bch_weights"`}{The BCH inverse-error weights, one row per unit and
-    class: `level`, `unit`, `assigned_class`, `class`, `weight`. Takes
-    `level`; weight a regression with one level, not with `"both"`. On a
-    membership-covariate fit these invert the marginal error matrix and are
-    not a conditional three-step correction.}
-  \item{`"entropy"`}{One row per level: `level`, `n_classes`, `n_units`,
-    `entropy_sum`, `relative_entropy`.}
-  \item{`"residuals"`}{Bivariate residuals for every indicator pair, testing
-    the within-profile independence the measurement model assumes: `profile`,
-    `indicator_1`, `indicator_2`, `kind`, `observed`, `expected`, `residual`,
-    `effective_n`, `statistic`, `df`, `p_value`, `p_adjusted`. Takes `data`,
-    `by` and `adjust`.}
-  \item{`"information_criteria"`}{Every likelihood-penalty criterion the
-    package computes. Takes `format` and `definitions`.}
-  \item{`"sequences"`}{The assignments in occasion order, one row per
-    observation: `group`, `group_class`, `time`, `profile`. Takes `format`.
-    Raises `multilpa_no_time` for a fit made without `time`.}
-  \item{`"sequence_summary"`}{One row per group class, summarizing how much
-    data it contributes: `group_class`, `groups`, `observations`,
-    `mean_length`, `median_length`, `shortest`, `longest`, `complete`,
-    `gaps`. Raises `multilpa_no_time` for a fit made without `time`.}
-  \item{`"starts"`}{One row per EM start: `start`, `log_likelihood`,
-    `converged`, `iterations`, `error` and, where the family records it,
-    `boundary`.}
-  \item{`"data"`}{The columns of the original data the model was fitted to,
-    one row per observation in input order: the identifier, the occasion
-    where there is one, and the indicators under their original names.
-    Columns a model never saw are not here, which is why [three_step()] and
-    [r3step()] still take `data`.}
+\item{\code{"profiles"}}{The Gaussian measurement model, one row per profile
+and continuous indicator: \code{profile}, \code{indicator}, \code{mean}, \code{variance},
+\code{standard_deviation}. Zero rows when every indicator is categorical.
+Takes \code{scale}, and \code{data}, which adds \code{mean_standard_error} and
+\code{variance_standard_error}.}
+\item{\code{"responses"}}{The categorical measurement model, one row per
+profile, categorical indicator and category: \code{profile}, \code{indicator},
+\code{category}, \code{probability}, \code{threshold}. The threshold is
+\code{qlogis(P(y <= category))} and is \code{NA_real_} for each indicator's final
+category, where the cumulative probability is one. Takes \code{data}, which
+adds \code{probability_standard_error}.}
+\item{\code{"covariances"}}{The within-profile residual covariance matrices,
+one row per profile and ordered pair of continuous indicators:
+\code{profile}, \code{indicator}, \code{indicator_2}, \code{covariance}. The diagonal
+parameterization carries no covariance array but does state a covariance
+matrix -- the variances on the diagonal and exact zeros off it -- and it
+is reported explicitly, so one shape answers both parameterizations.}
+\item{\code{"counts"}}{Effective class memberships, one row per class at each
+level the fit has: \code{level}, \code{class}, \code{effective_count} (the summed
+posteriors) and \code{effective_proportion}. These differ from the modal
+counts in \code{"classification"} whenever entropy is below one.}
+\item{\code{"model"}}{One row describing the whole fit: its dimensions,
+likelihood, parameter counts, \code{aic}, \code{bic_groups}, \code{bic_individual} and
+its convergence and boundary diagnostics. The columns are those of the
+family: a covariate fit reports its predictor counts, because padding
+those onto a two-level fit would leave the common case mostly \code{NA}.
+Comparing fits
+across families is what \code{"information_criteria"} is for, and that table
+does have one column set for every family.}
+\item{\code{"posteriors"}}{One row per individual and profile: \code{row}, \code{group},
+\code{profile}, \code{posterior}, \code{modal}. Takes \code{format}.}
+\item{\code{"assignments"}}{One row per observation, the columns the fit was
+built from (or those of \code{data}) followed by \code{profile}, \code{group_class}
+where the model has one, \code{uncertainty}, and one \verb{posterior_profile_*}
+column per profile. \code{uncertainty} is one minus the posterior of the
+assigned profile, which is what modal assignment discards. Takes \code{data}
+and \code{truth}; \code{truth} returns a recovery cross-tabulation instead,
+described below.}
+\item{\code{"classification"}}{Classification quality, one row per class and
+level: \code{level}, \code{class}, \code{n_modal}, \code{proportion_modal}, \code{estimated_n},
+\code{estimated_proportion}, \code{average_posterior},
+\code{odds_correct_classification}. Takes \code{level}.}
+\item{\code{"average_posteriors"}}{For the units assigned to each class, their
+mean posterior of belonging to every class: \code{level}, \code{assigned_class},
+\code{class}, \code{n_assigned}, \code{average_posterior}. Each assigned class's rows
+sum to one. Conditions on the \emph{assigned} class, where
+\code{"classification_errors"} conditions on the \emph{true} one; the two are
+different numbers, not two spellings of one table. Takes \code{level}.}
+\item{\code{"classification_errors"}}{The probability that a unit truly in one
+class is assigned to another: \code{level}, \code{true_class}, \code{assigned_class},
+\code{probability}, summing to one within each \code{true_class}. Takes \code{level}.
+On a membership-covariate fit this is a marginal summary over the fitted
+units, not a classification-error adjustment conditional on covariates.}
+\item{\code{"bch_weights"}}{The BCH inverse-error weights, one row per unit and
+class: \code{level}, \code{unit}, \code{assigned_class}, \code{class}, \code{weight}. Takes
+\code{level}; weight a regression with one level, not with \code{"both"}. On a
+membership-covariate fit these invert the marginal error matrix and are
+not a conditional three-step correction.}
+\item{\code{"entropy"}}{One row per level: \code{level}, \code{n_classes}, \code{n_units},
+\code{entropy_sum}, \code{relative_entropy}.}
+\item{\code{"residuals"}}{Bivariate residuals for every indicator pair, testing
+the within-profile independence the measurement model assumes: \code{profile},
+\code{indicator_1}, \code{indicator_2}, \code{kind}, \code{observed}, \code{expected}, \code{residual},
+\code{effective_n}, \code{statistic}, \code{df}, \code{p_value}, \code{p_adjusted}. Takes \code{data},
+\code{by} and \code{adjust}.}
+\item{\code{"information_criteria"}}{Every likelihood-penalty criterion the
+package computes. Takes \code{format} and \code{definitions}.}
+\item{\code{"sequences"}}{The assignments in occasion order, one row per
+observation: \code{group}, \code{group_class}, \code{time}, \code{profile}. Takes \code{format}.
+Raises \code{latents_no_time} for a fit made without \code{time}.}
+\item{\code{"sequence_summary"}}{One row per group class, summarizing how much
+data it contributes: \code{group_class}, \code{groups}, \code{observations},
+\code{mean_length}, \code{median_length}, \code{shortest}, \code{longest}, \code{complete},
+\code{gaps}. Raises \code{latents_no_time} for a fit made without \code{time}.}
+\item{\code{"starts"}}{One row per EM start: \code{start}, \code{log_likelihood},
+\code{converged}, \code{iterations}, \code{error} and, where the family records it,
+\code{boundary}.}
+\item{\code{"data"}}{The columns of the original data the model was fitted to,
+one row per observation in input order: the identifier, the occasion
+where there is one, and the indicators under their original names.
+Columns a model never saw are not here, which is why \code{\link[=three_step]{three_step()}} and
+\code{\link[=r3step]{r3step()}} still take \code{data}.}
 }
 Every family with discrete group classes adds:
 \describe{
-  \item{`"group_posteriors"`}{One row per observed group and group class:
-    `group`, `group_size`, `log_likelihood`, `group_class`, `posterior`,
-    `modal`. Takes `format`.}
+\item{\code{"group_posteriors"}}{One row per observed group and group class:
+\code{group}, \code{group_size}, \code{log_likelihood}, \code{group_class}, \code{posterior},
+\code{modal}. Takes \code{format}.}
 }
 And each family adds its own:
 \describe{
-  \item{`"profile_probabilities"`, `"stages"`}{A `multilpa` fit.
-    `"profile_probabilities"` has one row per group class and profile:
-    `group_class`, `profile`, `probability`, `group_class_probability`.
-    `"stages"` has one row per estimation stage: `stage`, `group_classes`,
-    `fixed`, `log_likelihood`, `parameters`, `parameters_with_measurement`,
-    `converged`. An ordinary fit has a single `"joint"` row and a
-    [fit_staged()] result has two; `fixed` is `NA_character_` for a stage
-    that estimated every block, never a sentinel such as `"none"`.}
-  \item{`"coefficients"`}{A covariate fit. One row per estimated membership
-    coefficient: `level` (`"profile"` or `"group"`), `outcome`, `term`,
-    `parameter` (always `"logit"`), `estimate`. The standard errors are not
-    here; [parameter_inference()] reports them.}
-  \item{`"transitions"`, `"initial"`, `"sequence_lengths"`}{A transition
-    fit. `"transitions"` has one row per group class and ordered pair of
-    profiles, with `group_class`, `from`, `to`, `probability`,
-    `expected_count`, `stable`, `estimated` and
-    `group_class_probability`; it takes `estimated` and
-    `stable` to restrict it. `"initial"` has one row per group class and
-    profile: `group_class`, `profile`, `probability`, `prevalence`,
-    `group_class_probability`. `"sequence_lengths"` has one row per group:
-    `group`, `group_class`, `occasions`, `observations`, `complete`.}
-  \item{`"candidates"`, `"criteria"`}{An enumeration grid.
-    `"criteria"` has one row per information criterion, naming the candidate
-    that minimises it. `"candidates"` has one row per candidate model,
-    with its class counts, its covariance `structure`, log likelihood,
-    parameter count, every criterion
-    under both sample-size conventions, both entropies, and the convergence,
-    boundary, replication, warning and error diagnostics. Failed candidates
-    are retained with `NA` estimates and their error text.}
-  \item{`"test"`, `"replicates"`}{A bootstrap comparison. `"test"` is the
-    one-row result; `"replicates"` has one row per simulated dataset.}
-  \item{`"covariances"`}{A starting-value set. One row per profile and
-    ordered pair of continuous indicators: `profile`, `indicator`,
-    `indicator_2`, `covariance`.}
+\item{\code{"profile_probabilities"}, \code{"stages"}}{A \code{multilpa} fit.
+\code{"profile_probabilities"} has one row per group class and profile:
+\code{group_class}, \code{profile}, \code{probability}, \code{group_class_probability}.
+\code{"stages"} has one row per estimation stage: \code{stage}, \code{group_classes},
+\code{fixed}, \code{log_likelihood}, \code{parameters}, \code{parameters_with_measurement},
+\code{converged}. An ordinary fit has a single \code{"joint"} row and a
+\code{\link[=fit_staged]{fit_staged()}} result has two; \code{fixed} is \code{NA_character_} for a stage
+that estimated every block, never a sentinel such as \code{"none"}.}
+\item{\code{"coefficients"}}{A covariate fit. One row per estimated membership
+coefficient: \code{level} (\code{"profile"} or \code{"group"}), \code{outcome}, \code{term},
+\code{parameter} (always \code{"logit"}), \code{estimate}. The standard errors are not
+here; \code{\link[=parameter_inference]{parameter_inference()}} reports them.}
+\item{\code{"transitions"}, \code{"initial"}, \code{"sequence_lengths"}}{A transition
+fit. \code{"transitions"} has one row per group class and ordered pair of
+profiles, with \code{group_class}, \code{from}, \code{to}, \code{probability},
+\code{expected_count}, \code{stable}, \code{estimated} and
+\code{group_class_probability}; it takes \code{estimated} and
+\code{stable} to restrict it. \code{"initial"} has one row per group class and
+profile: \code{group_class}, \code{profile}, \code{probability}, \code{prevalence},
+\code{group_class_probability}. \code{"sequence_lengths"} has one row per group:
+\code{group}, \code{group_class}, \code{occasions}, \code{observations}, \code{complete}.}
+\item{\code{"candidates"}, \code{"criteria"}}{An enumeration grid.
+\code{"criteria"} has one row per information criterion, naming the candidate
+that minimises it. \code{"candidates"} has one row per candidate model,
+with its class counts, its covariance \code{model}, log likelihood,
+parameter count, every criterion
+under both sample-size conventions, both entropies, and the convergence,
+boundary, replication, warning and error diagnostics. Failed candidates
+are retained with \code{NA} estimates and their error text.}
+\item{\code{"test"}, \code{"replicates"}}{A bootstrap comparison. \code{"test"} is the
+one-row result; \code{"replicates"} has one row per simulated dataset.}
+\item{\code{"covariances"}}{A starting-value set. One row per profile and
+ordered pair of continuous indicators: \code{profile}, \code{indicator},
+\code{indicator_2}, \code{covariance}.}
 }
 }
 
-\section{What `"all"` returns}{
+\section{What \code{"all"} returns}{
  A named list of every table the object can
-  produce, in catalogue order, built from the same definitions a single
-  `what` uses, so the two can never disagree. It takes no further arguments:
-  every table is built with its defaults, and supplying anything else raises
-  `multilpa_bad_argument`. A table this particular object cannot produce is
-  left out rather than erroring -- a sequence table for a fit made without
-  `time`, bivariate residuals for a family with no discrete group classes --
-  so the names of the list say what was available. Only the classed
-  refusals that mean *this object has no such table* are skipped; anything
-  else propagates.
+produce, in catalogue order, built from the same definitions a single
+\code{what} uses, so the two can never disagree. It takes no further arguments:
+every table is built with its defaults, and supplying anything else raises
+\code{latents_bad_argument}. A table this particular object cannot produce is
+left out rather than erroring -- a sequence table for a fit made without
+\code{time}, bivariate residuals for a family with no discrete group classes --
+so the names of the list say what was available. Only the classed
+refusals that mean \emph{this object has no such table} are skipped; anything
+else propagates.
 }
 
 \section{Arguments the tables take}{
 
-  These reach the requested table through `...`, and each table takes
-  only the ones listed for it under *Tables* above.
+These reach the requested table through \code{...}, and each table takes
+only the ones listed for it under \emph{Tables} above.
 \describe{
-  \item{`data`}{A data frame with one row per observation of the fit, in the
-  order it was fitted in. `NULL` uses the columns the fit carries. For
-  `"profiles"` and `"responses"` it triggers [parameter_inference()] and
-  adds a standard error beside every estimate.
-  }
-  \item{`scale`}{For `"profiles"`, `"raw"` reports the estimates in input units
-  and `"standardized"` divides each indicator's deviation from its grand
-  mean by that indicator's observed standard deviation, which is what
-  `plot(x, scale = "standardized")` draws. Every standard error beside an
-  estimate is divided by the same constant, so the whole row is on one
-  scale.
-  }
-  \item{`format`}{For the posterior tables and `"sequences"`, `"long"` gives one
-  row per unit and class and `"wide"` one row per unit with one column per
-  class. For `"information_criteria"`, `"wide"` is the one-row reporting
-  shape and `"long"` gives one row per criterion and sample-size convention.
-  }
-  \item{`level`}{Which level of classification to report: `"individuals"`,
-  `"groups"` or `"both"`. `NULL`, the default, gives `"both"` for a fit that
-  has discrete group classes and `"individuals"` for one that does not,
-  which is the same rule [diagnostics()] follows.
-  }
-  \item{`truth`}{For `"assignments"`, one or more column names of `data` holding
-  a known label to check the assignments against. See *Recovery* below.
-  }
-  \item{`by`}{For `"residuals"`, `"profile"` assesses each profile separately
-  and `"overall"` pools them.
-  }
-  \item{`adjust`}{For `"residuals"`, the multiplicity correction applied across
-  the indicator pairs.
-  }
-  \item{`definitions`}{For `"information_criteria"` in long format, `TRUE` adds
-  the formula and the reference for each criterion.
-  }
-  \item{`estimated`, `stable`}{For `"transitions"`, `TRUE` or `FALSE` restricts the
-  table to the rows that were estimated from observed occupancy, or to the
-  diagonal. `NULL` keeps every row.
-  
-  }
+\item{\code{data}}{A data frame with one row per observation of the fit, in the
+order it was fitted in. \code{NULL} uses the columns the fit carries. For
+\code{"profiles"} and \code{"responses"} it triggers \code{\link[=parameter_inference]{parameter_inference()}} and
+adds a standard error beside every estimate.
+}
+\item{\code{scale}}{For \code{"profiles"}, \code{"raw"} reports the estimates in input units
+and \code{"standardized"} divides each indicator's deviation from its grand
+mean by that indicator's observed standard deviation, which is what
+\code{plot(x, scale = "standardized")} draws. Every standard error beside an
+estimate is divided by the same constant, so the whole row is on one
+scale.
+}
+\item{\code{format}}{For the posterior tables and \code{"sequences"}, \code{"long"} gives one
+row per unit and class and \code{"wide"} one row per unit with one column per
+class. For \code{"information_criteria"}, \code{"wide"} is the one-row reporting
+shape and \code{"long"} gives one row per criterion and sample-size convention.
+}
+\item{\code{level}}{Which level of classification to report: \code{"individuals"},
+\code{"groups"} or \code{"both"}. \code{NULL}, the default, gives \code{"both"} for a fit that
+has discrete group classes and \code{"individuals"} for one that does not,
+which is the same rule \code{\link[=diagnostics]{diagnostics()}} follows.
+}
+\item{\code{truth}}{For \code{"assignments"}, one or more column names of \code{data} holding
+a known label to check the assignments against. See \emph{Recovery} below.
+}
+\item{\code{by}}{For \code{"residuals"}, \code{"profile"} assesses each profile separately
+and \code{"overall"} pools them.
+}
+\item{\code{adjust}}{For \code{"residuals"}, the multiplicity correction applied across
+the indicator pairs.
+}
+\item{\code{definitions}}{For \code{"information_criteria"} in long format, \code{TRUE} adds
+the formula and the reference for each criterion.
+}
+\item{\code{estimated}, \code{stable}}{For \code{"transitions"}, \code{TRUE} or \code{FALSE} restricts the
+table to the rows that were estimated from observed occupancy, or to the
+diagonal. \code{NULL} keeps every row.
+
+}
 }
 }
 
 \section{Recovery}{
- `what = "assignments"` with `truth` returns a
-  cross-tabulation of the model's labels against known ones instead of the
-  per-observation table: one row per class and truth value, with columns
-  `assignment` (which model label the column was compared against),
-  `class`, `truth` (the column name), `value`, `n` and `proportion`, the
-  share of the units carrying that truth value that were assigned to that
-  class. Several truth columns may be named at once and are stacked.
+ \code{what = "assignments"} with \code{truth} returns a
+cross-tabulation of the model's labels against known ones instead of the
+per-observation table: one row per class and truth value, with columns
+\code{assignment} (which model label the column was compared against),
+\code{class}, \code{truth} (the column name), \code{value}, \code{n} and \code{proportion}, the
+share of the units carrying that truth value that were assigned to that
+class. Several truth columns may be named at once and are stacked.
 
-  Each truth column is compared against the level it describes, which is
-  read off the data rather than guessed: a column that takes one value
-  within every group is a property of the group and is compared against
-  `group_class`; a column that varies inside any group cannot be a
-  group-level label and is compared against `profile`. The `assignment`
-  column records which comparison was made, so the choice is never silent.
-  Group-level recovery counts each group once, even when groups have
-  different numbers of observations. Unused factor levels are omitted,
-  because their within-truth proportions are undefined.
-  Every column is compared against `profile` for a fit with no discrete
-  group classes.
+Each truth column is compared against the level it describes, which is
+read off the data rather than guessed: a column that takes one value
+within every group is a property of the group and is compared against
+\code{group_class}; a column that varies inside any group cannot be a
+group-level label and is compared against \code{profile}. The \code{assignment}
+column records which comparison was made, so the choice is never silent.
+Group-level recovery counts each group once, even when groups have
+different numbers of observations. Unused factor levels are omitted,
+because their within-truth proportions are undefined.
+Every column is compared against \code{profile} for a fit with no discrete
+group classes.
 
-  The labels are the model's own and carry no order, so a recovery table
-  whose mass sits off the diagonal is a relabelling, not a failure.
+The labels are the model's own and carry no order, so a recovery table
+whose mass sits off the diagonal is a relabelling, not a failure.
 }
 
 \section{Information criteria}{
- Let `q` be the number of free parameters,
-  `n` the chosen sample size, and `EN` the classification entropy of the
-  level matching that convention. The criteria are `deviance = -2L`,
-  `aic = -2L + 2q`, `bic = -2L + q log(n)`,
-  `sabic = -2L + q log((n + 2) / 24)`, `caic = -2L + q (log(n) + 1)`,
-  `awe = -2(L - EN) + 2q (1.5 + log(n))`, `icl = -2L + q log(n) + 2 EN`,
-  `kic = -2L + 3(q + 1)`, and `clc = -2L + 2 EN`. Note that `clc` uses the
-  entropy sum, as `icl` and `awe` here do; `tidyLPA` reports a `CLC` built
-  from relative entropy instead, which is bounded by one and so penalizes
-  almost nothing, and the two numbers are not comparable.
+ Let \code{q} be the number of free parameters,
+\code{n} the chosen sample size, and \code{EN} the classification entropy of the
+level matching that convention. The criteria are \code{deviance = -2L},
+\verb{aic = -2L + 2q}, \verb{bic = -2L + q log(n)},
+\verb{sabic = -2L + q log((n + 2) / 24)}, \code{caic = -2L + q (log(n) + 1)},
+\verb{awe = -2(L - EN) + 2q (1.5 + log(n))}, \verb{icl = -2L + q log(n) + 2 EN},
+\code{kic = -2L + 3(q + 1)}, and \verb{clc = -2L + 2 EN}. Note that \code{clc} uses the
+entropy sum, as \code{icl} and \code{awe} here do; \code{tidyLPA} reports a \code{CLC} built
+from relative entropy instead, which is bounded by one and so penalizes
+almost nothing, and the two numbers are not comparable.
 
-  Every criterion that depends on a sample size is reported under both
-  multilevel conventions, `"groups"` and `"individuals"`, and uses
-  group-level posteriors under the first and individual-level posteriors
-  under the second. That is a stated per-level choice, not a unique
-  multilevel definition: use one convention consistently across compared
-  candidates. `deviance`, `aic` and `kic` depend on no sample size and carry
-  `convention = NA_character_`. `clc` depends on none either, but its
-  convention selects which level's classification uncertainty it penalizes,
-  so it is reported once per convention. Individual sample sizes exclude
-  rows with no observed indicators. Where the group classification entropy
-  is undefined, group-level `awe`, `icl` and `clc` are `NA`.
+Every criterion that depends on a sample size is reported under both
+multilevel conventions, \code{"groups"} and \code{"individuals"}, and uses
+group-level posteriors under the first and individual-level posteriors
+under the second. That is a stated per-level choice, not a unique
+multilevel definition: use one convention consistently across compared
+candidates. \code{deviance}, \code{aic} and \code{kic} depend on no sample size and carry
+\code{convention = NA_character_}. \code{clc} depends on none either, but its
+convention selects which level's classification uncertainty it penalizes,
+so it is reported once per convention. Individual sample sizes exclude
+rows with no observed indicators. Where the group classification entropy
+is undefined, group-level \code{awe}, \code{icl} and \code{clc} are \code{NA}.
 }
 
 \section{Classification quality}{
  The odds of correct classification for
-  class `k` is `(p / (1 - p)) / (r / (1 - r))`, where `p` is the average
-  posterior in the assigned class and `r` is the model-estimated class
-  proportion. Values near one indicate classification no better than the
-  class proportion alone; values of five or more are conventionally read as
-  adequate separation. It is `NA_real_` wherever it is undefined, that is
-  whenever `average_posterior` is missing, or it or `estimated_proportion`
-  is zero or one, so a single-class solution always reports `NA_real_`.
-  `average_posterior` is itself `NA_real_` for a class with no modal
-  members, where the mean is taken over nothing and is undefined rather than
-  zero. Modal assignment discards classification uncertainty, which is why
-  `n_modal` and `estimated_n` differ whenever entropy is below one.
+class \code{k} is \code{(p / (1 - p)) / (r / (1 - r))}, where \code{p} is the average
+posterior in the assigned class and \code{r} is the model-estimated class
+proportion. Values near one indicate classification no better than the
+class proportion alone; values of five or more are conventionally read as
+adequate separation. It is \code{NA_real_} wherever it is undefined, that is
+whenever \code{average_posterior} is missing, or it or \code{estimated_proportion}
+is zero or one, so a single-class solution always reports \code{NA_real_}.
+\code{average_posterior} is itself \code{NA_real_} for a class with no modal
+members, where the mean is taken over nothing and is undefined rather than
+zero. Modal assignment discards classification uncertainty, which is why
+\code{n_modal} and \code{estimated_n} differ whenever entropy is below one.
 
-  `relative_entropy` is `1 - EN / (n log K)`, on the zero-to-one scale, so
-  higher is sharper; `entropy_sum` is the raw `EN` the entropy-penalized
-  criteria use, so lower is sharper. `relative_entropy` is `NA_real_` when a
-  level has a single class, where it is undefined rather than perfect.
+\code{relative_entropy} is \verb{1 - EN / (n log K)}, on the zero-to-one scale, so
+higher is sharper; \code{entropy_sum} is the raw \code{EN} the entropy-penalized
+criteria use, so lower is sharper. \code{relative_entropy} is \code{NA_real_} when a
+level has a single class, where it is undefined rather than perfect.
 
-  A fit with individual profiles but no discrete group classes returns
-  individuals only for `level = "both"`, and raises
-  `multilpa_no_group_classes` for `level = "groups"`.
+A fit with individual profiles but no discrete group classes returns
+individuals only for \code{level = "both"}, and raises
+\code{latents_no_group_classes} for \code{level = "groups"}.
 }
 
 \section{Bivariate residuals}{
  The measurement model assumes the indicators
-  are independent within a profile. `"residuals"` tests that pair by pair,
-  weighting every observation by the posterior the fit holds for it, so a
-  frame in any other row order would pair each observation with someone
-  else's posterior; the alignment is checked rather than assumed. A large
-  residual is evidence of local dependence between two indicators, which the
-  enumeration grid will otherwise absorb by asking for an extra profile. The
-  p-values are approximate, and `p_adjusted` applies the multiplicity
-  correction named by `adjust` across the pairs.
+are independent within a profile. \code{"residuals"} tests that pair by pair,
+weighting every observation by the posterior the fit holds for it, so a
+frame in any other row order would pair each observation with someone
+else's posterior; the alignment is checked rather than assumed. A large
+residual is evidence of local dependence between two indicators, which the
+enumeration grid will otherwise absorb by asking for an extra profile. The
+p-values are approximate, and \code{p_adjusted} applies the multiplicity
+correction named by \code{adjust} across the pairs.
 }
 
 \examples{
@@ -372,31 +372,31 @@ get_results(fit, what = "assignments", data = course_engagement,
 }
 \references{
 Schwarz, G. (1978). Estimating the dimension of a model.
-  *Annals of Statistics*, 6, 461--464.
-  Sclove, S. L. (1987). Application of model-selection criteria to some
-  problems in multivariate analysis. *Psychometrika*, 52, 333--343.
-  Bozdogan, H. (1987). Model selection and Akaike's information criterion.
-  *Psychometrika*, 52, 345--370.
-  Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
-  non-Gaussian clustering. *Biometrics*, 49, 803--821.
-  Biernacki, C., & Govaert, G. (1997). Using the classification likelihood
-  to choose the number of clusters. *Computing Science and Statistics*, 29,
-  451--457.
-  Cavanaugh, J. E. (1999). A large-sample model selection criterion based on
-  Kullback's symmetric divergence. *Statistics and Probability Letters*, 42,
-  333--343.
-  Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
-  for clustering with the integrated completed likelihood. *IEEE
-  Transactions on Pattern Analysis and Machine Intelligence*, 22, 719--725.
-  Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
-  models with categorical variables. *Political Analysis*, 12, 3--27.
-  Nagin, D. S. (2005). *Group-Based Modeling of Development*. Harvard
-  University Press.
-  Vermunt, J. K. (2010). Latent class modeling with covariates: two improved
-  three-step approaches. *Political Analysis*, 18, 450--469.
+\emph{Annals of Statistics}, 6, 461--464.
+Sclove, S. L. (1987). Application of model-selection criteria to some
+problems in multivariate analysis. \emph{Psychometrika}, 52, 333--343.
+Bozdogan, H. (1987). Model selection and Akaike's information criterion.
+\emph{Psychometrika}, 52, 345--370.
+Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
+non-Gaussian clustering. \emph{Biometrics}, 49, 803--821.
+Biernacki, C., & Govaert, G. (1997). Using the classification likelihood
+to choose the number of clusters. \emph{Computing Science and Statistics}, 29,
+451--457.
+Cavanaugh, J. E. (1999). A large-sample model selection criterion based on
+Kullback's symmetric divergence. \emph{Statistics and Probability Letters}, 42,
+333--343.
+Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
+for clustering with the integrated completed likelihood. \emph{IEEE
+Transactions on Pattern Analysis and Machine Intelligence}, 22, 719--725.
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
+models with categorical variables. \emph{Political Analysis}, 12, 3--27.
+Nagin, D. S. (2005). \emph{Group-Based Modeling of Development}. Harvard
+University Press.
+Vermunt, J. K. (2010). Latent class modeling with covariates: two improved
+three-step approaches. \emph{Political Analysis}, 18, 450--469.
 }
 \seealso{
-[as.data.frame()], which returns the primary table alone,
-  [summary()], which prints every table, and [diagnostics()] for the
-  classification tables gathered with a condensed reading.
+\code{\link[=as.data.frame]{as.data.frame()}}, which returns the primary table alone,
+\code{\link[=summary]{summary()}}, which prints every table, and \code{\link[=diagnostics]{diagnostics()}} for the
+classification tables gathered with a condensed reading.
 }

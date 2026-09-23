@@ -7,9 +7,9 @@
 \method{print}{multilpa_start}(x, ...)
 }
 \arguments{
-\item{x}{A `multilpa_start` object from [starting_values()].}
+\item{x}{A \code{multilpa_start} object from \code{\link[=starting_values]{starting_values()}}.}
 
-\item{...}{Reserved for compatibility with `print()`.}
+\item{...}{Reserved for compatibility with \code{print()}.}
 }
 \value{
 The input, invisibly.
@@ -28,5 +28,5 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 print(starting_values(fit))
 }
 \seealso{
-[get_results()] for the values as tidy tables.
+\code{\link[=get_results]{get_results()}} for the values as tidy tables.
 }

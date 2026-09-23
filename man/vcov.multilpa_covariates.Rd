@@ -14,7 +14,7 @@
 )
 }
 \arguments{
-\item{object}{A fitted `multilpa_covariates` model.}
+\item{object}{A fitted \code{multilpa_covariates} model.}
 
 \item{data}{Optional. The data frame the model was fitted to; when omitted
 it is rebuilt from the indicators, group index and designs the fit stores.
@@ -22,13 +22,13 @@ Supplying it is the stronger check that the caller still holds that frame.}
 
 \item{step}{Finite-difference step for the observed information.}
 
-\item{vcov_type}{`"observed"` or `"robust"`.}
+\item{vcov_type}{\code{"observed"} or \code{"robust"}.}
 
 \item{scale}{Which parameter scale the covariance is on, matching
-[vcov.multilpa()]. `"natural"`, the default, is the covariance of the
-estimates [coef()] and [parameter_inference()] report: variances and
+\code{\link[=vcov.multilpa]{vcov.multilpa()}}. \code{"natural"}, the default, is the covariance of the
+estimates \code{\link[=coef]{coef()}} and \code{\link[=parameter_inference]{parameter_inference()}} report: variances and
 residual covariances in their own units, carried from the estimation scale
-by the delta method. `"unconstrained"` is the covariance on the scale the
+by the delta method. \code{"unconstrained"} is the covariance on the scale the
 model is estimated on, with log variances and log-Cholesky coordinates.
 Means and membership coefficients are the same on both scales.}
 
@@ -36,8 +36,8 @@ Means and membership coefficients are the same on both scales.}
 }
 \value{
 A square numeric matrix with one row and column per free parameter,
-  named as [coef()] names them and ordered measurement means, measurement
-  variances or covariances, profile logits, group logits.
+named as \code{\link[=coef]{coef()}} names them and ordered measurement means, measurement
+variances or covariances, profile logits, group logits.
 }
 \description{
 Covariance matrix of a covariate fit

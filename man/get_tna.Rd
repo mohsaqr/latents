@@ -10,17 +10,17 @@ get_tna(x, ...)
 \method{get_tna}{multilpa_transitions}(x, ...)
 }
 \arguments{
-\item{x}{A fitted model from [lta()].}
+\item{x}{A fitted model from \code{\link[=lta]{lta()}}.}
 
-\item{...}{Passed to [tna::tna()].}
+\item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}}.}
 }
 \value{
-An object of class `tna`, as [tna::tna()] returns: every verb of that
-  package applies to it, including `centralities()`, `communities()`,
-  `cliques()` and `plot()`.
+An object of class \code{tna}, as \code{\link[tna:build_model]{tna::tna()}} returns: every verb of that
+package applies to it, including \code{centralities()}, \code{communities()},
+\code{cliques()} and \code{plot()}.
 }
 \description{
-Builds one [tna::tna()] model from a fitted transition model, aggregated
+Builds one \code{\link[tna:build_model]{tna::tna()}} model from a fitted transition model, aggregated
 over every latent group class.
 }
 \details{
@@ -45,5 +45,5 @@ if (requireNamespace("tna", quietly = TRUE)) {
 }
 }
 \seealso{
-[get_group_tna()] for one network per latent class.
+\code{\link[=get_group_tna]{get_group_tna()}} for one network per latent class.
 }

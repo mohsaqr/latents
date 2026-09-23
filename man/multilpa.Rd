@@ -37,88 +37,89 @@ multilpa(
 \item{vars}{Unique character vector of continuous indicator column names.}
 
 \item{id}{Name of the observed group identifier column. Character, factor, or
-  numeric identifiers are supported; missing identifiers are not.
+numeric identifiers are supported; missing identifiers are not.
 
-  `id` has no default: omitting it raises `multilpa_bad_argument`, because a
-  forgotten grouping would otherwise be fitted as a different model without
-  saying so. Passing `id = NULL` explicitly fits a **single-level** model:
-  the observations are treated as independent, each row is its own unit, and
-  `n_group_classes` becomes one. That fit raises a `multilpa_single_level`
-  warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
-  two-level model reduces to, and every verb of this package works on it. The
-  unit column is fabricated internally as `.observation`; it is not returned
-  by `get_results(x, "data")`, and a `data` that already has a column of that
-  name raises `multilpa_bad_data`. Asking for more than one group class
-  without an `id` raises `multilpa_bad_argument`, because one observation per
-  unit leaves no composition for a second-level class to differ in.}
+\code{id} has no default: omitting it raises \code{latents_bad_argument}, because a
+forgotten grouping would otherwise be fitted as a different model without
+saying so. Passing \code{id = NULL} explicitly fits a \strong{single-level} model:
+the observations are treated as independent, each row is its own unit, and
+\code{n_group_classes} becomes one. That fit raises a \code{latents_single_level}
+warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
+two-level model reduces to, and every verb of this package works on it. The
+unit column is fabricated internally as \code{.observation}; it is not returned
+by \code{get_results(x, "data")}, and a \code{data} that already has a column of that
+name raises \code{latents_bad_data}. Asking for more than one group class
+without an \code{id} raises \code{latents_bad_argument}, because one observation per
+unit leaves no composition for a second-level class to differ in.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}
 
 \item{n_group_classes}{Positive integer number of latent group classes. With
-`id = NULL` it is one, and naming anything else is an error.}
+\code{id = NULL} it is one, and naming anything else is an error.}
 
 \item{profile_covariates, group_covariates}{Names of numeric columns of
-`data` predicting individual-profile and group-class membership through
+\code{data} predicting individual-profile and group-class membership through
 multinomial logits, with the final class as reference. Naming either one
-fits the one-step covariate model and returns a `multilpa_covariates`
+fits the one-step covariate model and returns a \code{multilpa_covariates}
 object: profile slopes are shared across group classes, profile
-intercepts differ by group class, and a `group_covariate` must be
+intercepts differ by group class, and a \code{group_covariate} must be
 constant within each group. Covariates enter in their supplied units, so
 centre or scale them beforehand if that is what you want. This is one-step
-maximum likelihood, not a regression on assigned classes; [three_step()]
-and [r3step()] are the staged alternatives. The covariate path supports
-neither `start`, nor `missing = "fiml"`, nor `fixed`, and refuses them by
+maximum likelihood, not a regression on assigned classes; \code{\link[=three_step]{three_step()}}
+and \code{\link[=r3step]{r3step()}} are the staged alternatives. The covariate path supports
+neither \code{start}, nor \code{missing = "fiml"}, nor \code{fixed}, and refuses them by
 name rather than ignoring them.
 Use one for an ordinary, pooled LPA.}
 
-\item{variance_model}{Either `"varying"` (profile-specific variances or
-covariance matrices) or `"equal"` (shared across profiles).}
+\item{variance_model}{Either \code{"varying"} (profile-specific variances or
+covariance matrices) or \code{"equal"} (shared across profiles).}
 
-\item{n_starts}{Positive integer number of EM starts. When `start` is supplied,
+\item{n_starts}{Positive integer number of EM starts. When \code{start} is supplied,
 it supplies the first start; remaining starts are random initializations.
-It is ignored when `max_iter = 0` and `start` is supplied: that call
+It is ignored when \code{max_iter = 0} and \code{start} is supplied: that call
 evaluates the supplied parameters and nothing else, so exactly one start is
-run whatever `n_starts` says.}
+run whatever \code{n_starts} says.}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-`max_iter = 0` performs no update. With `start`, it returns the model
-evaluated at exactly those values, whatever `n_starts` is, so that
-`logLik()` scores a parameter set supplied from elsewhere rather than the
+\code{max_iter = 0} performs no update. With \code{start}, it returns the model
+evaluated at exactly those values, whatever \code{n_starts} is, so that
+\code{logLik()} scores a parameter set supplied from elsewhere rather than the
 best of some random initializations that were never asked for. Without
-`start` there is nothing to evaluate at, so the random initializations are
+\code{start} there is nothing to evaluate at, so the random initializations are
 scored and the highest is returned.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
-absolute change no greater than `tol * (1 + abs(previous log likelihood))`.}
+absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.}
 
 \item{min_variance}{Positive lower bound on each variance, or each covariance
 eigenvalue for full covariance, in squared input units. This defines a constrained maximum-likelihood problem. Bound-active
 estimates are explicitly reported and generate a warning.}
 
-\item{seed}{Optional nonnegative integer random seed. With a supplied seed,
+\item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
+negative ones included. With a supplied seed,
 the caller's random-number state is restored on exit.}
 
-\item{start}{Optional list of `means` and `variances` (profiles by indicators),
-`profile_probabilities` (group classes by profiles), and
-`group_probabilities` (vector). Starting probabilities must be positive.
-For full covariance, supply `covariances` (indicators by indicators by
-profiles); `variances` may be omitted or must match their diagonals.
-A categorical model also takes `response_probabilities`, a list of one
-profiles-by-categories matrix per indicator named in `categorical`. That
+\item{start}{Optional list of \code{means} and \code{variances} (profiles by indicators),
+\code{profile_probabilities} (group classes by profiles), and
+\code{group_probabilities} (vector). Starting probabilities must be positive.
+For full covariance, supply \code{covariances} (indicators by indicators by
+profiles); \code{variances} may be omitted or must match their diagonals.
+A categorical model also takes \code{response_probabilities}, a list of one
+profiles-by-categories matrix per indicator named in \code{categorical}. That
 list is read by position unless it is labelled: name its elements after the
 indicators, or its columns after the categories, and each block is matched
 to the indicator and category its labels name, so a differently ordered
-`categorical` or a differently ordered set of factor levels cannot attach a
+\code{categorical} or a differently ordered set of factor levels cannot attach a
 distribution to the wrong item. A label naming an indicator or a category
-this fit does not have raises `multilpa_bad_start` rather than being
+this fit does not have raises \code{latents_bad_start} rather than being
 aligned by position.}
 
-\item{missing}{`"error"` rejects missing indicators; `"fiml"` maximizes the
+\item{missing}{\code{"error"} rejects missing indicators; \code{"fiml"} maximizes the
 observed-data likelihood under an ignorable missingness mechanism (MAR).
 Missing indicators are integrated out, not filled in for likelihood fitting.}
 
-\item{covariance_model}{`"diagonal"` assumes conditional independence;
-`"full"` estimates within-profile residual covariances.}
+\item{covariance_model}{\code{"diagonal"} assumes conditional independence;
+\code{"full"} estimates within-profile residual covariances.}
 
 \item{categorical}{Character vector naming indicators to treat as
 categorical. Each is modelled by unrestricted, profile-specific response
@@ -130,95 +131,95 @@ Gaussian, so naming a subset fits a mixed-mode model.}
 
 \item{min_probability}{Positive lower bound on every categorical response
 probability, defining a constrained maximum-likelihood problem in the same
-way `min_variance` does for Gaussian indicators.}
+way \code{min_variance} does for Gaussian indicators.}
 
 \item{time}{Optional name of a column giving each observation's position
 within its group, such as a wave, occasion or course number. The model does
-not use it; it is stored so that `get_results(x, "sequences")`,
-`get_results(x, "sequence_summary")` and
-`plot(what = "sequences")` can read the assignments back in order. Values
+not use it; it is stored so that \code{get_results(x, "sequences")},
+\code{get_results(x, "sequence_summary")} and
+\code{plot(what = "sequences")} can read the assignments back in order. Values
 must be complete and unique within each group.}
 
 \item{fixed}{Character vector naming measurement blocks to hold at the
-values `start` supplies, instead of estimating them: any of `"means"`,
-`"variances"` and `"response_probabilities"`, or `"measurement"` for every
-block the model has. Under `covariance_model = "full"`, `"variances"`
+values \code{start} supplies, instead of estimating them: any of \code{"means"},
+\code{"variances"} and \code{"response_probabilities"}, or \code{"measurement"} for every
+block the model has. Under \code{covariance_model = "full"}, \code{"variances"}
 holds the residual covariance matrices. A held block stays exactly as
-supplied, in every restart, and stops counting towards `n_parameters`, so
+supplied, in every restart, and stops counting towards \code{n_parameters}, so
 this is a different model rather than a different starting point for the
-same one. `start` must carry the named blocks;
-`starting_values(fit, what = "measurement")` produces them, and
-[fit_staged()] wraps the whole two-stage workflow in one call. The mixing
+same one. \code{start} must carry the named blocks;
+\code{starting_values(fit, what = "measurement")} produces them, and
+\code{\link[=fit_staged]{fit_staged()}} wraps the whole two-stage workflow in one call. The mixing
 parameters cannot be held: they are what a fixed-measurement fit is for.}
 
 \item{centering}{How to centre the continuous indicators before fitting.
-`"none"`, the default, fits them as supplied. `"person"` subtracts each
+\code{"none"}, the default, fits them as supplied. \code{"person"} subtracts each
 group's own mean from its rows, so a value reads as a deviation from that
-unit's average and the profiles become profiles of *change* rather than of
+unit's average and the profiles become profiles of \emph{change} rather than of
 level: this is the within-person, person-mean-centred design (Quintana,
-2021; Voelkle, Brose, Schmiedek, & Lindenberger, 2014). `"grand"`
+2021; Voelkle, Brose, Schmiedek, & Lindenberger, 2014). \code{"grand"}
 subtracts one mean per indicator, which moves the origin without touching
 the within-group structure. The offsets are kept on the fit, so
-`get_results(x, "data")` still returns the columns you supplied and every
+\code{get_results(x, "data")} still returns the columns you supplied and every
 verb that checks row alignment still checks it. Centring removes exactly
-the between-unit variation, so `"person"` refuses with
-`multilpa_bad_data` when it leaves an indicator constant --- which is what
-happens when a unit has one observation of it. With `"person"` the group
-classes become types of *change pattern*, not types of unit.}
+the between-unit variation, so \code{"person"} refuses with
+\code{latents_bad_data} when it leaves an indicator constant --- which is what
+happens when a unit has one observation of it. With \code{"person"} the group
+classes become types of \emph{change pattern}, not types of unit.}
 
 \item{volume, shape, orientation}{The covariance structure, in the three
-  pieces it is made of. Each profile's covariance decomposes as
-  `Sigma_k = lambda_k * D_k * A_k * D_k'`: a *volume*
-  `lambda_k = |Sigma_k|^(1/d)`, an *orientation* `D_k` of eigenvectors, and
-  a *shape* `A_k`, diagonal with determinant one. Constraining the three
-  across profiles gives the fourteen models `mclust` names with three
-  letters, and this package fits all of them.
+pieces it is made of. Each profile's covariance decomposes as
+\verb{Sigma_k = lambda_k * D_k * A_k * D_k'}: a \emph{volume}
+\verb{lambda_k = |Sigma_k|^(1/d)}, an \emph{orientation} \code{D_k} of eigenvectors, and
+a \emph{shape} \code{A_k}, diagonal with determinant one. Constraining the three
+across profiles gives the fourteen models \code{mclust} names with three
+letters, and this package fits all of them.
 
-  `volume` is `"equal"` or `"varying"`. `shape` is `"equal"`, `"varying"`
-  or `"spherical"`, the last making every indicator's spread equal within a
-  profile, which leaves no orientation to constrain. `orientation` is
-  `"axis"` (axis-parallel, a diagonal covariance), `"equal"` (one
-  orientation shared by every profile) or `"varying"`. Each is `NULL` by
-  default, which follows `variance_model` and `covariance_model`, so a call
-  that names none of them fits exactly what it always did.
+\code{volume} is \code{"equal"} or \code{"varying"}. \code{shape} is \code{"equal"}, \code{"varying"}
+or \code{"spherical"}, the last making every indicator's spread equal within a
+profile, which leaves no orientation to constrain. \code{orientation} is
+\code{"axis"} (axis-parallel, a diagonal covariance), \code{"equal"} (one
+orientation shared by every profile) or \code{"varying"}. Each is \code{NULL} by
+default, which follows \code{variance_model} and \code{covariance_model}, so a call
+that names none of them fits exactly what it always did.\tabular{llll}{
+   \code{volume} \tab \code{shape} \tab \code{orientation} \tab model \cr
+   equal \tab spherical \tab --- \tab EII \cr
+   varying \tab spherical \tab --- \tab VII \cr
+   equal/varying \tab equal/varying \tab axis \tab EEI, VEI, EVI, VVI \cr
+   equal/varying \tab equal/varying \tab equal \tab EEE, VEE, EVE, VVE \cr
+   equal/varying \tab equal/varying \tab varying \tab EEV, VEV, EVV, VVV \cr
+}
 
-  | `volume` | `shape` | `orientation` | model |
-  |---|---|---|---|
-  | equal | spherical | --- | EII |
-  | varying | spherical | --- | VII |
-  | equal/varying | equal/varying | axis | EEI, VEI, EVI, VVI |
-  | equal/varying | equal/varying | equal | EEE, VEE, EVE, VVE |
-  | equal/varying | equal/varying | varying | EEV, VEV, EVV, VVV |
 
-  The estimates are those of Celeux and Govaert (1995); the two models with
-  a shared orientation and a free shape, EVE and VVE, have no closed form
-  and use the minorize-maximize step of Browne and McNicholas (2014).
-  Parameter counts match `mclust`'s own for all fourteen.
+The estimates are those of Celeux and Govaert (1995); the two models with
+a shared orientation and a free shape, EVE and VVE, have no closed form
+and use the minorize-maximize step of Browne and McNicholas (2014).
+Parameter counts match \code{mclust}'s own for all fourteen.
 
-  Anything other than EEI, VVI, EEE or VVV is maximized across every profile
-  at once, so it cannot be combined with a held `variances` block, and
-  `parameter_inference(method = "wald")` refuses it with
-  `multilpa_unsupported_inference`: the free coordinates are log variances,
-  which is the wrong chart for a constrained volume, shape or orientation.
-  `parameter_inference(method = "bootstrap")` reports all fourteen: it
-  resamples groups and refits inside the same family, so it needs no chart.}
+Anything other than EEI, VVI, EEE or VVV is maximized across every profile
+at once, so it cannot be combined with a held \code{variances} block, and
+\code{parameter_inference(method = "wald")} refuses it with
+\code{latents_unsupported_inference}: the free coordinates are log variances,
+which is the wrong chart for a constrained volume, shape or orientation.
+\code{parameter_inference(method = "bootstrap")} reports all fourteen: it
+resamples groups and refits inside the same family, so it needs no chart.}
 }
 \value{
-An `multilpa` object containing `means`, `variances`, optional
-  `covariances` (indicators by indicators by profiles),
-  `profile_probabilities`, `group_probabilities`, posterior matrices,
-  classifications, log likelihood, information criteria, restart diagnostics,
-  and convergence history. Individual rows retain their input order; groups
-  retain first-occurrence order. `bic` and `bic_groups` use the observed group
-  count; `bic_individual` uses `n_informative`, the number of rows carrying at
-  least one observed indicator. These are alternative
-  conventions, not interchangeable criteria. `boundary` identifies variance
-  bounds; `small_classes` flags effective memberships below one. The fit
-  itself carries no standard errors: [parameter_inference()] computes them
-  from the fit and the data it was fitted to, and [bootstrap_lrt()] tests
-  nested models. No guarantee of global optimality is
-  given, whatever `n_starts` is used.
-  Read the tidy form with `as.data.frame()`; `what` selects which table.
+An \code{multilpa} object containing \code{means}, \code{variances}, optional
+\code{covariances} (indicators by indicators by profiles),
+\code{profile_probabilities}, \code{group_probabilities}, posterior matrices,
+classifications, log likelihood, information criteria, restart diagnostics,
+and convergence history. Individual rows retain their input order; groups
+retain first-occurrence order. \code{bic} and \code{bic_groups} use the observed group
+count; \code{bic_individual} uses \code{n_informative}, the number of rows carrying at
+least one observed indicator. These are alternative
+conventions, not interchangeable criteria. \code{boundary} identifies variance
+bounds; \code{small_classes} flags effective memberships below one. The fit
+itself carries no standard errors: \code{\link[=parameter_inference]{parameter_inference()}} computes them
+from the fit and the data it was fitted to, and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} tests
+nested models. No guarantee of global optimality is
+given, whatever \code{n_starts} is used.
+Read the tidy form with \code{as.data.frame()}; \code{what} selects which table.
 }
 \description{
 Fits individual Gaussian profiles nested within observed groups. A discrete
@@ -230,19 +231,19 @@ missing indicators are available.
 }
 \details{
 Infinite and constant observed indicators are rejected. Each
-  indicator must have at least two distinct observed values. No rows are
-  silently dropped. In FIML mode, fully missing individuals contribute no
-  direct measurement likelihood but receive posterior probabilities from
-  their group's information. Observation counts retain these individuals;
-  the individual-level BIC excludes them through `n_informative`, while the
-  group-level BIC uses all observed groups. Missing patterns can prevent parameter
-  identification; no general identification guarantee is made. Initialization
-  alone uses indicator-mean filling. EM uses conditional Gaussian sufficient
-  statistics and observed marginal densities. More than one group class requires more than one profile
-  and at least one group with multiple individuals; these checks are necessary
-  but do not establish identification. The highest finite likelihood across
-  starts is returned, even if that start did not converge; inspect `converged`
-  and `starts`. Profile and group-class labels are arbitrary.
+indicator must have at least two distinct observed values. No rows are
+silently dropped. In FIML mode, fully missing individuals contribute no
+direct measurement likelihood but receive posterior probabilities from
+their group's information. Observation counts retain these individuals;
+the individual-level BIC excludes them through \code{n_informative}, while the
+group-level BIC uses all observed groups. Missing patterns can prevent parameter
+identification; no general identification guarantee is made. Initialization
+alone uses indicator-mean filling. EM uses conditional Gaussian sufficient
+statistics and observed marginal densities. More than one group class requires more than one profile
+and at least one group with multiple individuals; these checks are necessary
+but do not establish identification. The highest finite likelihood across
+starts is returned, even if that start did not converge; inspect \code{converged}
+and \code{starts}. Profile and group-class labels are arbitrary.
 }
 \examples{
 set.seed(7)
@@ -265,6 +266,9 @@ get_results(fit, what = "profile_probabilities")
 }
 \references{
 Vermunt, J. K. (2003). Multilevel latent class models.
-  Sociological Methodology, 33, 213--239.
-  doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+Sociological Methodology, 33, 213--239.
+doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+}
+\seealso{
+\code{\link[=multilca]{multilca()}} for a model in which every indicator is categorical.
 }

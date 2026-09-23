@@ -36,11 +36,11 @@ test_that("categorical encoding is deterministic and type agnostic", {
 
 test_that("categorical encoding rejects unusable indicators by condition class", {
   expect_error(.multilpa_encode_categorical(data.frame(a = c(1, 1, 1))),
-               class = "multilpa_bad_categorical")
+               class = "latents_bad_categorical")
   expect_error(.multilpa_encode_categorical(data.frame(a = c(1, NA, NA))),
-               class = "multilpa_bad_categorical")
+               class = "latents_bad_categorical")
   expect_error(.multilpa_encode_categorical(data.frame(a = c(1, Inf, 2))),
-               class = "multilpa_bad_categorical")
+               class = "latents_bad_categorical")
 })
 
 test_that("the categorical M-step is the posterior-weighted response share", {
@@ -59,7 +59,7 @@ test_that("the categorical M-step is the posterior-weighted response share", {
   expect_gte(min(bounded[[2L]]), 0.01 * (1 - 1e-9))
   expect_error(.multilpa_categorical_maximize(codes,
     matrix(c(1, 1, 0, 0, 0, 0, 0, 0), 4L, 2L), c(2L, 2L), 1e-10),
-    class = "multilpa_empty_profile")
+    class = "latents_empty_profile")
 })
 
 test_that("missing categorical cells contribute nothing to the log density", {
@@ -209,10 +209,10 @@ test_that("unsupported categorical combinations are refused by condition class",
                     names(bootstrap$replicates)))
   expect_equal(nrow(bootstrap$replicates), 3L)
   expect_error(multilpa(dat, vars, "school", 2, 2, categorical = "absent",
-                          n_starts = 2), class = "multilpa_bad_categorical")
+                          n_starts = 2), class = "latents_bad_categorical")
   expect_error(multilpa(dat, vars, "school", 2, 2,
                           categorical = c("v1", "v1"), n_starts = 2),
-               class = "multilpa_bad_categorical")
+               class = "latents_bad_categorical")
   # Categorical starts are supported; a start that names nothing the model uses
   # is rejected on its contents rather than refused outright.
   expect_error(multilpa(dat, vars, "school", 2, 2, categorical = vars,
@@ -235,10 +235,10 @@ test_that("categorical models plot their response probabilities", {
   expect_identical(plot(fit, what = "responses", category = "first"), fit)
   expect_identical(plot(fit, what = "probabilities"), fit)
   expect_error(plot(fit, what = "responses", category = "nope"),
-               class = "multilpa_unknown_category")
+               class = "latents_unknown_category")
   # A model with no continuous indicators cannot draw a profile-means plot.
-  expect_error(plot(fit, what = "profiles"), class = "multilpa_no_continuous")
+  expect_error(plot(fit, what = "profiles"), class = "latents_no_continuous")
   gaussian <- multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
                          "y", "g", 2, 1, n_starts = 3, seed = 1)
-  expect_error(plot(gaussian, what = "responses"), class = "multilpa_no_categorical")
+  expect_error(plot(gaussian, what = "responses"), class = "latents_no_categorical")
 })

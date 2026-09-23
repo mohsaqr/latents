@@ -325,12 +325,12 @@
       "A fit that holds a block fixed cannot be bootstrapped here: the held",
       "values came from another fit, and resampling these data does not",
       "resample them. Bootstrap the fit the measurement came from."),
-      class = "multilpa_unsupported_inference", call = NULL))
+      class = "latents_unsupported_inference", call = NULL))
   }
   if (!isTRUE(x$converged)) {
     stop(errorCondition(
       "The original fit did not converge; bootstrap it only once it has.",
-      class = "multilpa_no_converge", call = NULL))
+      class = "latents_no_converge", call = NULL))
   }
   free_natural <- .multilpa_free_index(x, "natural")
   drawn <- .multilpa_bootstrap_replicates(x, data, iter, n_starts, max_iter, tol)
@@ -342,13 +342,13 @@
       "Only %d of %d resamples produced a usable fit; the first reason was: %s",
       sum(valid), iter,
       if (length(reasons) > 0L) reasons[1L] else "no reason was recorded"),
-      class = "multilpa_bootstrap_failed", call = NULL))
+      class = "latents_bootstrap_failed", call = NULL))
   }
   kept <- estimates[valid, , drop = FALSE]
   if (sum(valid) < iter) {
     warning(warningCondition(sprintf(
       "%d of %d resamples did not produce a usable fit and were dropped.",
-      iter - sum(valid), iter), class = "multilpa_bootstrap_dropped", call = NULL))
+      iter - sum(valid), iter), class = "latents_bootstrap_dropped", call = NULL))
   }
   bounds <- c((1 - level) / 2, (1 + level) / 2)
   quantiles <- apply(kept, 2L, stats::quantile, probs = bounds, names = FALSE)

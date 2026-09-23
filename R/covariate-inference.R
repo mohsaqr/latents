@@ -327,7 +327,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       "`method = \"bootstrap\"` is not implemented for a covariate fit. Its",
       "covariance structures are the four the Wald coordinates already",
       "express, so `method = \"wald\"` covers every model this verb can fit."),
-      class = "multilpa_unsupported_inference", call = NULL))
+      class = "latents_unsupported_inference", call = NULL))
   }
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
@@ -362,7 +362,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   if (is.null(object$profile_design) || is.null(object$group_design)) {
     stop(errorCondition(
       "This fit predates covariate inference; refit with the current version.",
-      class = "multilpa_unsupported_inference", call = NULL))
+      class = "latents_unsupported_inference", call = NULL))
   }
   if (!is.null(object$categorical) && length(object$categorical) > 0L) {
     stop(errorCondition(paste(
@@ -370,7 +370,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       "indicators. The measurement block has no score implemented for its",
       "response probabilities, and reporting the other blocks alone would",
       "understate the parameter count."),
-      class = "multilpa_unsupported_inference", call = NULL))
+      class = "latents_unsupported_inference", call = NULL))
   }
   .multilpa_check_regularity(object, vcov_type)
   columns <- unique(c(object$vars, object$id,
@@ -383,7 +383,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       !identical(match(data[[object$id]], object$group_values), object$group_index)) {
     stop(errorCondition(
       "`data` must contain the original finite indicators, covariates and group identifiers in fitting order.",
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   first_rows <- match(seq_len(object$n_groups), object$group_index)
   designs <- .multilpa_cov_designs(data, object$vars,
@@ -399,7 +399,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
         any(data[[name]] != data[[name]][first_rows][object$group_index])
       }, logical(1)))) {
     stop(errorCondition("`data` must reproduce the original indicators and covariates.",
-                        class = "multilpa_bad_inference_data", call = NULL))
+                        class = "latents_bad_inference_data", call = NULL))
   }
   x <- sweep(as.matrix(data[object$vars]), 2L, object$center, "-")
   theta <- .multilpa_cov_encode(object)
@@ -414,7 +414,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       1e-6 * (1 + abs(object$log_likelihood))) {
     stop(errorCondition(
       "`data` do not reproduce the fitted log likelihood; supply the fitting data.",
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   gradient <- function(parameters) {
     -colSums(.multilpa_cov_group_scores(parameters, x, object))

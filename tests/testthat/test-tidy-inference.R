@@ -70,9 +70,9 @@ test_that("the unconstrained coefficients carry names of the same shape", {
   expect_true(all(grepl("^(measurement|profile|group)[.]", names(estimation))))
   # The kind names the scale it is on, so a log variance cannot be mistaken
   # for a variance by a caller reading the name.
-  labels <- multilpa:::.multilpa_coefficient_labels(plain$fit, "unconstrained")
+  labels <- latents:::.multilpa_coefficient_labels(plain$fit, "unconstrained")
   expect_setequal(unique(labels$parameter), c("mean", "log_variance", "logit"))
-  expect_identical(names(estimation), multilpa:::.multilpa_parameter_names(labels))
+  expect_identical(names(estimation), latents:::.multilpa_parameter_names(labels))
 })
 
 test_that("vcov and confint are named exactly as coef is", {
@@ -154,17 +154,17 @@ test_that("the delta method is invertible: the two covariate scales agree throug
   covariate <- .tidy_covariate_fit()
   estimation <- vcov(covariate$fit, covariate$data, scale = "unconstrained")
   natural <- vcov(covariate$fit, covariate$data)
-  theta <- multilpa:::.multilpa_cov_encode(covariate$fit)
-  jacobian <- multilpa:::.multilpa_cov_natural_jacobian(
-    covariate$fit, theta, multilpa:::.multilpa_cov_labels(covariate$fit))
+  theta <- latents:::.multilpa_cov_encode(covariate$fit)
+  jacobian <- latents:::.multilpa_cov_natural_jacobian(
+    covariate$fit, theta, latents:::.multilpa_cov_labels(covariate$fit))
 
   expect_equal(natural, jacobian %*% estimation %*% t(jacobian),
                ignore_attr = TRUE)
   # A numerical derivative of the estimation-to-natural map reproduces it, so
   # the Jacobian is the formula and not just a convenient matrix.
-  labels <- multilpa:::.multilpa_cov_labels(covariate$fit)
+  labels <- latents:::.multilpa_cov_labels(covariate$fit)
   natural_of <- function(values) {
-    multilpa:::.multilpa_cov_natural_estimate(covariate$fit, values, labels)
+    latents:::.multilpa_cov_natural_estimate(covariate$fit, values, labels)
   }
   numerical <- vapply(seq_along(theta), function(index) {
     step <- numeric(length(theta))
@@ -224,6 +224,6 @@ test_that("a fit with no standard errors says so by class rather than by number"
   fit <- lta(data, c("score_a", "score_b"), "person",
                          n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 
-  expect_error(parameter_inference(fit, data), class = "multilpa_no_inference")
-  expect_error(vcov(fit), class = "multilpa_no_inference")
+  expect_error(parameter_inference(fit, data), class = "latents_no_inference")
+  expect_error(vcov(fit), class = "latents_no_inference")
 })

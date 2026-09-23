@@ -17,7 +17,7 @@
 #' not there.
 #'
 #' A seed whose refit fails contributes a row with `NA` estimates rather than
-#' being dropped silently, and a `multilpa_sensitivity_dropped` warning names
+#' being dropped silently, and a `latents_sensitivity_dropped` warning names
 #' how many failed, so the table is never quietly shorter than `seeds`.
 #'
 #' @param x A fitted `multilpa` model to use as the reference.
@@ -30,7 +30,9 @@
 #'   order. A fit carries the columns it was built from, so this is only needed
 #'   to override them. Shared identifier and indicator columns are checked
 #'   against the fit before assignment agreement is calculated.
-#' @param seeds Integer seeds to refit under. The reference fit's own seed may
+#' @param seeds Seeds to refit under: at least two distinct whole numbers of
+#'   either sign, as `set.seed()` accepts. Anything else raises
+#'   `latents_bad_argument`. The reference fit's own seed may
 #'   be among them, in which case that row reproduces it and is the arithmetic
 #'   check that the refit is the same model.
 #' @param n_starts Starts per refit. Defaults to the number the reference fit
@@ -72,14 +74,10 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
       "Seed sensitivity is implemented for `multilpa()` fits only. Refitting",
       "this family needs arguments the shared refit does not carry, and its",
       "profile labels cannot yet be aligned between two fits."),
-      class = "multilpa_unsupported_sensitivity", call = NULL))
+      class = "latents_unsupported_sensitivity", call = NULL))
   }
   stopifnot(
     "`x` must be a fitted `multilpa` model" = inherits(x, "multilpa"),
-    "`seeds` must be a vector of at least two distinct whole numbers" =
-      is.numeric(seeds) && length(seeds) >= 2L && all(is.finite(seeds)) &&
-      all(seeds >= 0 & seeds == floor(seeds) &
-            seeds <= .Machine$integer.max) && !anyDuplicated(seeds),
     "`n_starts` must be a single positive whole number, or NULL" =
       is.null(n_starts) || (is.numeric(n_starts) && length(n_starts) == 1L &&
         is.finite(n_starts) && n_starts >= 1 &&
@@ -87,20 +85,23 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
     "`tolerance` must be a single positive number, or NULL" =
       is.null(tolerance) || (is.numeric(tolerance) && length(tolerance) == 1L &&
                                is.finite(tolerance) && tolerance > 0))
+  if (length(seeds) < 2L || !all(.multilpa_is_seed(seeds)) ||
+      anyDuplicated(seeds) > 0L) {
+    stop(errorCondition(sprintf(paste(
+      "`seeds` must be at least two distinct whole numbers between -%d and %d,",
+      "the seeds set.seed() accepts."),
+      .Machine$integer.max, .Machine$integer.max),
+      class = "latents_bad_argument", call = NULL))
+  }
   if (length(x$fixed %||% character()) > 0L && !isTRUE(x$staged)) {
     stop(errorCondition(paste(
       "Seed sensitivity for a directly fixed fit cannot replay its original",
       "free starting values. Use a joint fit or a fit_staged() result, whose",
       "conditional second-stage search can be repeated."),
-      class = "multilpa_unsupported_sensitivity", call = NULL))
+      class = "latents_unsupported_sensitivity", call = NULL))
   }
   frame <- .multilpa_resolve_data(x, data)
-  if (nrow(frame) != x$n_observations) {
-    stop(errorCondition(sprintf(
-      "`data` must have one row per observation of the fit: %d rows supplied, %d expected.",
-      nrow(frame), x$n_observations),
-      class = "multilpa_bad_inference_data", call = NULL))
-  }
+  .multilpa_check_row_count(x, frame)
   .multilpa_check_alignment(x, frame)
   shared <- .multilpa_refit_arguments(x)
   if (isTRUE(x$staged)) {
@@ -123,7 +124,7 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
       sprintf("%d of %d seeds did not produce a fit; their rows are NA. First reason: %s",
               sum(failed), length(seeds),
               conditionMessage(refits[[which(failed)[1L]]])),
-      class = "multilpa_sensitivity_dropped", call = NULL))
+      class = "latents_sensitivity_dropped", call = NULL))
   }
   likelihood <- vapply(refits, function(fit)
     if (inherits(fit, "condition")) NA_real_ else fit$log_likelihood, numeric(1))

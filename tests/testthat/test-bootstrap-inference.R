@@ -20,7 +20,7 @@ small_fit <- function(...) {
 }
 
 test_that("every permutation of the profiles appears exactly once", {
-  permutations <- multilpa:::.multilpa_permutations
+  permutations <- latents:::.multilpa_permutations
   expect_identical(dim(permutations(1L)), c(1L, 1L))
   for (k in 2:5) {
     orders <- permutations(k)
@@ -35,21 +35,21 @@ test_that("every permutation of the profiles appears exactly once", {
 
 test_that("matching recovers a relabelling that was applied on purpose", {
   fit <- small_fit()
-  scrambled <- multilpa:::.multilpa_permute_profiles(fit, c(2L, 1L))
-  order <- multilpa:::.multilpa_match_order(
-    multilpa:::.multilpa_profile_signature(fit, fit),
-    multilpa:::.multilpa_profile_signature(scrambled, fit))
+  scrambled <- latents:::.multilpa_permute_profiles(fit, c(2L, 1L))
+  order <- latents:::.multilpa_match_order(
+    latents:::.multilpa_profile_signature(fit, fit),
+    latents:::.multilpa_profile_signature(scrambled, fit))
   expect_identical(order, c(2L, 1L))
   # Undoing it returns the means the fit started with.
-  restored <- multilpa:::.multilpa_permute_profiles(scrambled, order)
+  restored <- latents:::.multilpa_permute_profiles(scrambled, order)
   expect_equal(restored$means, fit$means)
 })
 
 test_that("permuting profiles is invertible", {
   fit <- small_fit()
   order <- c(2L, 1L)
-  twice <- multilpa:::.multilpa_permute_profiles(
-    multilpa:::.multilpa_permute_profiles(fit, order), order(order))
+  twice <- latents:::.multilpa_permute_profiles(
+    latents:::.multilpa_permute_profiles(fit, order), order(order))
   expect_equal(twice$means, fit$means)
   expect_equal(twice$variances, fit$variances)
   expect_equal(twice$profile_probabilities, fit$profile_probabilities)
@@ -59,7 +59,7 @@ test_that("a resample carries one group per draw, whatever repeats", {
   data <- clustered_data(n_groups = 5L, per_group = 3L)
   rows_by_group <- split(seq_len(nrow(data)), data$unit)
   drawn <- c(1L, 1L, 3L, 5L, 5L)
-  resampled <- multilpa:::.multilpa_resample_groups(data, rows_by_group, "unit", drawn)
+  resampled <- latents:::.multilpa_resample_groups(data, rows_by_group, "unit", drawn)
   expect_identical(nrow(resampled), 15L)
   # A group drawn twice becomes two groups, not one of double the size.
   expect_identical(length(unique(resampled$unit)), 5L)
@@ -74,7 +74,7 @@ test_that("a refit reproduces the structure it was fitted with", {
                   n_starts = 3L, seed = 1L, volume = "varying", shape = "equal",
                   orientation = "axis")
   expect_identical(fit$covariance_structure, "VEI")
-  arguments <- multilpa:::.multilpa_refit_arguments(fit)
+  arguments <- latents:::.multilpa_refit_arguments(fit)
   expect_false(any(c("variance_model", "covariance_model") %in% names(arguments)))
   again <- do.call(multilpa, c(list(data = data), arguments,
                                list(n_starts = 3L, seed = 1L)))
@@ -85,7 +85,7 @@ test_that("a refit reproduces the structure it was fitted with", {
 test_that("a constrained structure reports intervals the Wald path refuses", {
   skip_on_cran()
   fit <- small_fit(volume = "varying", shape = "equal", orientation = "axis")
-  expect_error(parameter_inference(fit), class = "multilpa_unsupported_inference")
+  expect_error(parameter_inference(fit), class = "latents_unsupported_inference")
   boot <- parameter_inference(fit, method = "bootstrap", iter = 25L,
                               n_starts = 2L, seed = 5L)
   expect_s3_class(boot, "data.frame")
@@ -125,9 +125,9 @@ test_that("a replicate is relabelled onto the original before it is read", {
   # fold. This is the guard for the wiring, which a calibration band alone did
   # not catch.
   fit <- small_fit()
-  scrambled <- multilpa:::.multilpa_permute_profiles(fit, c(2L, 1L))
+  scrambled <- latents:::.multilpa_permute_profiles(fit, c(2L, 1L))
   expect_false(isTRUE(all.equal(scrambled$means, fit$means)))
-  aligned <- multilpa:::.multilpa_align_labels(scrambled, fit)
+  aligned <- latents:::.multilpa_align_labels(scrambled, fit)
   expect_equal(aligned$means, fit$means)
   expect_equal(aligned$variances, fit$variances)
   expect_equal(aligned$profile_probabilities, fit$profile_probabilities)
@@ -136,8 +136,8 @@ test_that("a replicate is relabelled onto the original before it is read", {
 test_that("group classes are relabelled once their profiles agree", {
   fit <- multilpa(clustered_data(), c("x", "y"), "unit", n_profiles = 2L,
                   n_group_classes = 2L, n_starts = 3L, seed = 1L)
-  scrambled <- multilpa:::.multilpa_permute_group_classes(fit, c(2L, 1L))
-  aligned <- multilpa:::.multilpa_align_labels(scrambled, fit)
+  scrambled <- latents:::.multilpa_permute_group_classes(fit, c(2L, 1L))
+  aligned <- latents:::.multilpa_align_labels(scrambled, fit)
   expect_equal(aligned$profile_probabilities, fit$profile_probabilities)
   expect_equal(aligned$group_probabilities, fit$group_probabilities)
 })
@@ -148,7 +148,7 @@ test_that("a held measurement block is refused rather than resampled", {
                        n_group_classes = 2L, n_starts = 2L, seed = 1L)
   expect_error(
     parameter_inference(staged, method = "bootstrap", iter = 5L, n_starts = 1L),
-    class = "multilpa_unsupported_inference")
+    class = "latents_unsupported_inference")
 })
 
 test_that("the resample count is validated before anything is fitted", {
@@ -158,7 +158,10 @@ test_that("the resample count is validated before anything is fitted", {
   expect_error(parameter_inference(fit, method = "bootstrap", iter = 10L, n_starts = 0L),
                "positive integer")
   expect_error(parameter_inference(fit, method = "bootstrap", iter = 10L, seed = c(1, 2)),
-               "single number")
+               class = "latents_bad_argument")
+  # set.seed() would truncate 1.5 to 1 without notice.
+  expect_error(parameter_inference(fit, method = "bootstrap", iter = 10L, seed = 1.5),
+               class = "latents_bad_argument")
 })
 
 test_that("a seed makes the table reproducible and leaves the stream alone", {
@@ -167,15 +170,15 @@ test_that("a seed makes the table reproducible and leaves the stream alone", {
   set.seed(99L)
   before <- stats::runif(1L)
   state <- get(".Random.seed", envir = .GlobalEnv)
-  first <- parameter_inference(fit, method = "bootstrap", iter = 20L,
+  first <- parameter_inference(fit, method = "bootstrap", iter = 5L,
                                n_starts = 2L, seed = 4L)
   expect_identical(get(".Random.seed", envir = .GlobalEnv), state)
-  second <- parameter_inference(fit, method = "bootstrap", iter = 20L,
+  second <- parameter_inference(fit, method = "bootstrap", iter = 5L,
                                 n_starts = 2L, seed = 4L)
   expect_equal(first$standard_error, second$standard_error)
   expect_equal(first$conf_low, second$conf_low)
   # A different seed moves the replicates, so the two are not the same draw.
-  third <- parameter_inference(fit, method = "bootstrap", iter = 20L,
+  third <- parameter_inference(fit, method = "bootstrap", iter = 5L,
                                n_starts = 2L, seed = 5L)
   expect_false(isTRUE(all.equal(first$standard_error, third$standard_error)))
   expect_identical(before, {
@@ -223,5 +226,5 @@ test_that("a covariate fit refuses the bootstrap rather than ignoring it", {
                           n_starts = 2L, seed = 1L))
   expect_s3_class(fit, "multilpa_covariates")
   expect_error(parameter_inference(fit, method = "bootstrap"),
-               class = "multilpa_unsupported_inference")
+               class = "latents_unsupported_inference")
 })

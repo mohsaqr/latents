@@ -2,7 +2,7 @@
 # classes their failures carry, and the tidy shape of what comes back.
 #
 # Error paths are asserted by CLASS, never by message text: the class is the
-# contract documented on ?"multilpa-conditions", the message is not.
+# contract documented on ?"latents-conditions", the message is not.
 
 .core_fixture <- function(n_groups = 20L, per_group = 10L, seed = 5L) {
   set.seed(seed)
@@ -46,66 +46,66 @@ test_that("a broken data contract is refused by class, not by message", {
   # An absent indicator, a duplicated indicator, and a group column that is
   # also an indicator all break the same contract.
   expect_error(multilpa(data, c("a", "absent"), "school", 2L, 1L, n_starts = 1),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
   expect_error(multilpa(data, c("a", "a"), "school", 2L, 1L, n_starts = 1),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
   expect_error(multilpa(data, c("a", "school"), "school", 2L, 1L, n_starts = 1),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
   # A factor is not a continuous indicator.
   factored <- transform(data, a = factor(sample(c("p", "q"), nrow(data), TRUE)))
   expect_error(multilpa(factored, c("a", "b"), "school", 2L, 1L, n_starts = 1),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
   # A constant indicator identifies nothing.
   flat <- transform(data, a = 1)
   expect_error(multilpa(flat, c("a", "b"), "school", 2L, 1L, n_starts = 1),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
   # Missing values are rejected under the default missing = "error".
   gappy <- data
   gappy$a <- replace(gappy$a, 1L, NA_real_)
   expect_error(multilpa(gappy, c("a", "b"), "school", 2L, 1L, n_starts = 1),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
   # A missing group identifier.
   ungrouped <- data
   ungrouped$school <- replace(ungrouped$school, 1L, NA_integer_)
   expect_error(multilpa(ungrouped, c("a", "b"), "school", 2L, 1L, n_starts = 1),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
 })
 
 test_that("a scalar argument outside its contract is refused by class", {
   data <- .core_fixture()
   expect_error(multilpa(data, c("a", "b"), "school", 0L, 1L, n_starts = 1),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(multilpa(data, c("a", "b"), "school", 2.5, 1L, n_starts = 1),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 0L),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        max_iter = -1L), class = "multilpa_bad_argument")
+                        max_iter = -1L), class = "latents_bad_argument")
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        tol = 0), class = "multilpa_bad_argument")
+                        tol = 0), class = "latents_bad_argument")
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        min_variance = -1), class = "multilpa_bad_argument")
+                        min_variance = -1), class = "latents_bad_argument")
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        seed = -1), class = "multilpa_bad_argument")
+                        seed = 1.5), class = "latents_bad_argument")
 })
 
 test_that("an unidentifiable request is refused by class", {
   data <- .core_fixture()
   # More group classes than groups.
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 100L, n_starts = 1),
-               class = "multilpa_unidentified")
+               class = "latents_unidentified")
   # Several group classes with a single profile.
   expect_error(multilpa(data, c("a", "b"), "school", 1L, 2L, n_starts = 1),
-               class = "multilpa_unidentified")
+               class = "latents_unidentified")
   # Only singleton groups.
   singletons <- transform(data, school = seq_len(nrow(data)))
   expect_error(multilpa(singletons, c("a", "b"), "school", 2L, 2L, n_starts = 1),
-               class = "multilpa_unidentified")
+               class = "latents_unidentified")
   # More profiles than distinct observed indicator rows.
   tiny <- data.frame(school = rep(1:4, each = 2),
                      a = rep(c(0, 1), 4), b = rep(c(0, 1), 4))
   expect_error(multilpa(tiny, c("a", "b"), "school", 5L, 1L, n_starts = 1),
-               class = "multilpa_unidentified")
+               class = "latents_unidentified")
 })
 
 test_that("the data contract is checked before `time` is", {
@@ -115,7 +115,7 @@ test_that("the data contract is checked before `time` is", {
   # not exist has to be reported as the data-contract failure it is, not as an
   # opaque failure inside split() during the time check.
   expect_error(multilpa(data, c("a", "b"), "absent", 2L, 1L, n_starts = 1,
-                        time = "occasion"), class = "multilpa_bad_data")
+                        time = "occasion"), class = "latents_bad_data")
 })
 
 test_that("`time` may not name an indicator, as its contract says", {
@@ -136,11 +136,11 @@ test_that("a repeated or missing position is refused by class", {
   repeated <- data
   repeated$occasion <- replace(repeated$occasion, 2L, 1L)
   expect_error(multilpa(repeated, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        time = "occasion"), class = "multilpa_bad_time")
+                        time = "occasion"), class = "latents_bad_time")
   gappy <- data
   gappy$occasion <- replace(gappy$occasion, 1L, NA_integer_)
   expect_error(multilpa(gappy, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        time = "occasion"), class = "multilpa_bad_time")
+                        time = "occasion"), class = "latents_bad_time")
 })
 
 test_that("a malformed start is refused by class", {
@@ -151,15 +151,15 @@ test_that("a malformed start is refused by class", {
   wrong_shape <- start
   wrong_shape$means <- matrix(0, 3L, 2L)
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        start = wrong_shape), class = "multilpa_bad_start")
+                        start = wrong_shape), class = "latents_bad_start")
   missing_block <- start
   missing_block$variances <- NULL
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        start = missing_block), class = "multilpa_bad_start")
+                        start = missing_block), class = "latents_bad_start")
   negative <- start
   negative$group_probabilities <- c(2, -1)
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 2L, n_starts = 1,
-                        start = negative), class = "multilpa_bad_start")
+                        start = negative), class = "latents_bad_start")
 })
 
 test_that("a qualified fit warns by class and never tells the caller to use $", {
@@ -179,17 +179,17 @@ test_that("a qualified fit warns by class and never tells the caller to use $", 
   messages <- vapply(seen, conditionMessage, character(1))
   classes <- vapply(seen, function(w) class(w)[[1L]], character(1))
   # Every warning multilpa() raises is catchable by its own class ...
-  expect_true(all(startsWith(classes, "multilpa_")))
+  expect_true(all(startsWith(classes, "latents_")))
   # ... and none of them directs the caller at a `$` on the result.
   expect_false(any(grepl("$", messages, fixed = TRUE)))
 })
 
-test_that("an unconverged fit raises a catchable multilpa_unconverged warning", {
+test_that("an unconverged fit raises a catchable latents_unconverged warning", {
   data <- .core_fixture()
   expect_warning(
     multilpa(data, c("a", "b"), "school", 2L, 2L, n_starts = 1, seed = 1,
              max_iter = 1L),
-    class = "multilpa_unconverged")
+    class = "latents_unconverged")
 })
 
 test_that("the starts diagnostics are reachable as a tidy frame, not by $", {
@@ -249,7 +249,7 @@ test_that("fit_staged() refuses a staging request it cannot meet", {
 })
 
 test_that("the categorical and utility helpers stay internal", {
-  exported <- getNamespaceExports("multilpa")
+  exported <- getNamespaceExports("latents")
   # These return bare matrices and lists by design, which is only acceptable
   # because nothing outside the package can call them.
   internal <- c(".multilpa_encode_categorical", ".multilpa_categorical_log_density",
@@ -258,7 +258,7 @@ test_that("the categorical and utility helpers stay internal", {
                 ".multilpa_categorical_parameters", ".multilpa_categorical_thresholds",
                 ".multilpa_any_fit")
   expect_true(all(vapply(internal, exists, logical(1),
-                         envir = asNamespace("multilpa"), inherits = FALSE)))
+                         envir = asNamespace("latents"), inherits = FALSE)))
   expect_length(intersect(internal, exported), 0L)
   # Nothing in the namespace may be exported under a private `.multilpa_` name.
   expect_length(grep("^\\.multilpa_", exported, value = TRUE), 0L)
@@ -310,7 +310,7 @@ test_that("every warning the package raises carries a class", {
   source_dir <- test_path("..", "..", "R")
   skip_if_not(file.exists(file.path(source_dir, "conditions.R")),
               "package sources not available")
-  # `?"multilpa-conditions"` states the classes are the contract and the
+  # `?"latents-conditions"` states the classes are the contract and the
   # messages are not. A bare `warning()` breaks that promise silently: a caller
   # muffling an expected qualification can only match message text, which
   # changes between versions, so it ends up muffling every warning instead.

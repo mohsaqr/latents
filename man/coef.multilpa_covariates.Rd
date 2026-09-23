@@ -7,26 +7,26 @@
 \method{coef}{multilpa_covariates}(object, scale = c("natural", "unconstrained"), ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa_covariates` model.}
+\item{object}{A fitted \code{multilpa_covariates} model.}
 
 \item{scale}{Natural coefficients, or the unconstrained coordinates the model
 is estimated on: log variances for a diagonal fit and log-Cholesky
-coordinates for a full-covariance fit. Matches [coef.multilpa()].}
+coordinates for a full-covariance fit. Matches \code{\link[=coef.multilpa]{coef.multilpa()}}.}
 
 \item{...}{Ignored, present for generic compatibility.}
 }
 \value{
 A named numeric vector of every free parameter, in the order
-  [parameter_inference()] reports them: measurement means, measurement
-  variances or residual covariances, profile logits, then group-class logits.
-  Names are `level.parameter.outcome.term`, the same four-part decomposition
-  [parameter_inference()] reports as columns and the same spelling every
-  fitted class in this package uses; it is what keeps a mean and a variance
-  on the same indicator distinguishable, and the `parameter` part names the
-  scale, so a log variance is never served under a name that says
-  `variance`. On the natural scale variances and residual covariances are in
-  their own units and agree with [parameter_inference()]'s `estimate` column
-  exactly.
+\code{\link[=parameter_inference]{parameter_inference()}} reports them: measurement means, measurement
+variances or residual covariances, profile logits, then group-class logits.
+Names are \code{level.parameter.outcome.term}, the same four-part decomposition
+\code{\link[=parameter_inference]{parameter_inference()}} reports as columns and the same spelling every
+fitted class in this package uses; it is what keeps a mean and a variance
+on the same indicator distinguishable, and the \code{parameter} part names the
+scale, so a log variance is never served under a name that says
+\code{variance}. On the natural scale variances and residual covariances are in
+their own units and agree with \code{\link[=parameter_inference]{parameter_inference()}}'s \code{estimate} column
+exactly.
 }
 \description{
 Estimated parameters of a covariate fit

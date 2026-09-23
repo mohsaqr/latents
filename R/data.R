@@ -49,7 +49,9 @@
 #' stated here rather than left implicit because a reader who assumed otherwise
 #' would misread what the `course` column does.
 #'
-#' The standardization is applied to `log1p(events)`, not to the raw counts.
+#' The indicators are simulated directly on the `log1p(events)` scale, the scale
+#' of a logged activity export; no raw counts are generated. They are
+#' standardized on that scale, not as counts.
 #' Standardizing is affine within a course, so it leaves the within-course skew
 #' exactly as it found it, and raw learning-analytics counts are strongly
 #' right-skewed: on an unlogged draft of these data the skew alone looked like an
@@ -66,16 +68,16 @@
 #'   \item{sequence}{Integer, the position of this course in the student's own
 #'     order, 1 upwards. Pass it as `time`. Students who took fewer courses have
 #'     shorter sequences, so the panel is ragged.}
-#'   \item{browse}{Numeric, course page views as `log1p(events)`, standardized
+#'   \item{browse}{Numeric, course page views on the `log1p(events)` scale, standardized
 #'     within course.}
-#'   \item{lectures}{Numeric, lecture videos viewed as `log1p(events)`, standardized
+#'   \item{lectures}{Numeric, lecture videos viewed on the `log1p(events)` scale, standardized
 #'     within course.}
-#'   \item{forum_read}{Numeric, forum posts read as `log1p(events)`, standardized
+#'   \item{forum_read}{Numeric, forum posts read on the `log1p(events)` scale, standardized
 #'     within course.}
-#'   \item{forum_post}{Numeric, forum posts written as `log1p(events)`, standardized
+#'   \item{forum_post}{Numeric, forum posts written on the `log1p(events)` scale, standardized
 #'     within course.}
 #'   \item{attendance}{Numeric, days the student was active in the course as
-#'     `log1p(events)`, standardized within course. It is **generated from the four click measures** and then
+#'     on the `log1p(events)` scale, standardized within course. It is **generated from the four click measures** and then
 #'     blurred, because a student is recorded present on a day precisely because
 #'     they clicked something, and a day is a coarse unit -- one tick however
 #'     much happened inside it. The indicators are therefore locally dependent
@@ -106,7 +108,7 @@
 #'   is across a student's courses -- but only those aggregate constants were
 #'   used. No row, identifier or value of any real student is present, and the
 #'   source is not distributed.
-#' @seealso `vignette("multilpa")` for the analysis these data are used in,
+#' @seealso `vignette("lpa", package = "latents")` for the analysis these data are used in,
 #'   [multilpa()] for the two-level model, [lta()] for the
 #'   sequence, and `multilpa(profile_covariates = )` for `previous_grade`.
 #' @examples
@@ -122,3 +124,74 @@
 #' get_results(fit, what = "assignments", data = course_engagement,
 #'          truth = "engagement")
 "course_engagement"
+
+#' Leisure activities of university students in daily life
+#'
+#' Experience-sampling data on what university students did between prompts
+#' when they were not studying. Prompts are nested within students, so the
+#' data suit a two-level latent class analysis: each prompt belongs to an
+#' activity profile, and students differ in how often their prompts fall in
+#' each profile.
+#'
+#' The students answered six prompts a day for fourteen days. At a prompt where
+#' the student had not studied since the previous prompt, the questionnaire
+#' asked which of eight leisure activities they had done. The study asked these
+#' items only at non-study prompts, so the dataset contains those prompts alone.
+#' Each row is one answered non-study prompt with all eight activity items and
+#' all four affect ratings observed.
+#'
+#' The dataset is a subset of the original study: 100 of its students, drawn
+#' with a fixed seed from the students with at least 15 such prompts, with every
+#' such prompt they answered. Each student contributes 15 to 51 prompts (median
+#' 24). The eight activity items are categorical indicators; the four affect
+#' ratings are continuous-scored and can be combined with them in a mixed
+#' measurement model. `worried` has a floor: 49.7% of its ratings are 1, so a
+#' profile of low-worry prompts can have zero variance on it and reach the
+#' `min_variance` bound.
+#'
+#' @format A data frame with 2582 rows (100 students) and 15 columns:
+#' \describe{
+#'   \item{student}{Integer student identifier, 1 to 100. The nesting unit;
+#'     pass it as `id`.}
+#'   \item{day}{Integer study day, 0 to 13.}
+#'   \item{beep}{Integer prompt of the day, 1 to 5 among the prompts kept.}
+#'   \item{time_with_friends}{Factor, `"no"` or `"yes"`: spent time with
+#'     friends since the previous prompt.}
+#'   \item{on_social_media}{Factor, `"no"` or `"yes"`: used social media.}
+#'   \item{tv_video_games}{Factor, `"no"` or `"yes"`: watched TV or played
+#'     video games.}
+#'   \item{listened_music}{Factor, `"no"` or `"yes"`: listened to music.}
+#'   \item{sports}{Factor, `"no"` or `"yes"`: did sports.}
+#'   \item{walking}{Factor, `"no"` or `"yes"`: went for a walk.}
+#'   \item{reading}{Factor, `"no"` or `"yes"`: read.}
+#'   \item{part_time_job}{Factor, `"no"` or `"yes"`: worked in a part-time
+#'     job.}
+#'   \item{happy}{Integer rating of feeling happy, 1 to 7.}
+#'   \item{relaxed}{Integer rating of feeling relaxed, 1 to 7.}
+#'   \item{worried}{Integer rating of feeling worried, 1 to 7.}
+#'   \item{exhausted}{Integer rating of feeling exhausted, 1 to 7.}
+#' }
+#' @source openESM dataset 0062, deposited by Neubauer and Schmiedek at
+#'   Zenodo, \doi{10.5281/zenodo.17347974}, under the Creative Commons
+#'   Attribution 4.0 licence (CC-BY 4.0), and retrieved through the openESM
+#'   database (<https://openesmdata.org>). The subset is produced by
+#'   `data-raw/student-esm.R` in the source repository; identifiers are
+#'   renumbered and the values are otherwise unchanged.
+#' @references Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic
+#'   adjustment on multiple time scales. *Zeitschrift für
+#'   Erziehungswissenschaft*, 27, 147--168. \doi{10.1007/s11618-023-01182-8}
+#' @seealso [multilpa()] with `categorical =` for the two-level latent class
+#'   model.
+#' @examples
+#' \donttest{
+#' activities <- c("time_with_friends", "on_social_media", "tv_video_games",
+#'                 "listened_music", "sports", "walking", "reading",
+#'                 "part_time_job")
+#' first_week <- subset(student_esm, day <= 6)
+#' lca <- multilpa(first_week, vars = activities, id = "student",
+#'                 n_profiles = 2, n_group_classes = 2,
+#'                 categorical = activities, n_starts = 3, seed = 1)
+#' get_results(lca, what = "responses")
+#' get_results(lca, what = "profile_probabilities")
+#' }
+"student_esm"

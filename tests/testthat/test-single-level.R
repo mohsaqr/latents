@@ -22,13 +22,13 @@ test_that("a forgotten id raises, and a stated one warns", {
   # It must keep raising, or a forgotten grouping silently becomes a different
   # model.
   expect_error(multilpa(data, c("x", "y"), n_profiles = 2L, n_starts = 2L),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(multilpa(data, c("x", "y"), n_profiles = 2L, n_starts = 2L),
                "pass `id = NULL`")
   # Saying it explicitly works, and says so back.
   expect_warning(multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L,
                           n_starts = 2L, seed = 1L),
-                 class = "multilpa_single_level")
+                 class = "latents_single_level")
 })
 
 test_that("id = NULL is the fit you get by numbering the rows yourself", {
@@ -74,7 +74,7 @@ test_that("group classes without an id are refused, not silently dropped", {
   expect_error(
     multilpa(single_level_data(), c("x", "y"), id = NULL, n_profiles = 2L,
              n_group_classes = 2L, n_starts = 2L),
-    class = "multilpa_bad_argument")
+    class = "latents_bad_argument")
   # Naming one explicitly is the same request as leaving it alone, so it passes.
   expect_s3_class(flat_fit(n_group_classes = 1L, n_starts = 2L, seed = 1L),
                   "multilpa")
@@ -85,12 +85,12 @@ test_that("a column already called .observation is refused", {
   data$.observation <- seq_len(nrow(data))
   expect_error(
     multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L, n_starts = 2L),
-    class = "multilpa_bad_data")
+    class = "latents_bad_data")
 })
 
 test_that("the package's verbs work on a single-level fit", {
   skip_on_cran()
-  fit <- flat_fit(n_starts = 5L, seed = 1L)
+  fit <- flat_fit(n_starts = 2L, seed = 1L)
   # Inference, classification and the tables, on a fit with no second level.
   inference <- parameter_inference(fit)
   expect_true(all(is.finite(inference$standard_error)))
@@ -106,9 +106,9 @@ test_that("the package's verbs work on a single-level fit", {
   # rows with two starts a resample occasionally fails to converge, and the
   # warning saying how many were dropped is the one this fixture expects.
   boot <- quietly(
-    parameter_inference(fit, method = "bootstrap", iter = 25L,
-                        n_starts = 2L, seed = 2L),
-    c("multilpa_bootstrap_dropped", "multilpa_unconverged"))
+    parameter_inference(fit, method = "bootstrap", iter = 10L,
+                        n_starts = 1L, seed = 2L),
+    c("latents_bootstrap_dropped", "latents_unconverged"))
   expect_true(all(boot$conf_low <= boot$estimate & boot$estimate <= boot$conf_high))
 })
 

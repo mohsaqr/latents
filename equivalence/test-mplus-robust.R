@@ -21,7 +21,7 @@ test_that("robust standard errors reproduce genuine Mplus MLR results", {
                                  t(jacobian)))
   expect_lt(max(abs(standard_errors - reference$mplus_standard_errors)), 1e-6)
   expect_lt(abs(attr(information, "scaling_correction") - reference$mplus_scaling), 1e-6)
-  indices <- get_data(fit, "information_criteria", format = "long")
+  indices <- get_results(fit, "information_criteria", format = "long")
   # A criterion that has no sample-size convention -- AIC counts parameters, not
   # units -- carries NA there rather than a sentinel level, so it is selected
   # by NA and not by a magic string.

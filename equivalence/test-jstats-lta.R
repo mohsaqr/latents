@@ -1,7 +1,7 @@
 # Latent transition models against the external references JStats pins:
 # depmixS4 (Visser & Speekenbrink, 2010) panel hidden Markov fits, two Mplus
 # LTA runs, and the plain-LTA row of Table 5 of Muthen & Asparouhov (2022).
-# fit_transitions() with one group class is exactly this model: first-order,
+# lta() with one group class is exactly this model: first-order,
 # homogeneous transitions, measurement invariant over occasions.
 #
 # Tolerances. Mplus prints three decimals, so a value it reports can sit 5e-4
@@ -13,7 +13,7 @@
 skip_if_not_installed("jsonlite")
 
 fit_panel <- function(data, vars, k, categorical = character()) {
-  fit_transitions(data, vars, "id", n_profiles = k, time = "time",
+  lta(data, vars, "id", n_profiles = k, time = "time",
                   categorical = categorical, n_starts = 20L, seed = 1L,
                   tol = 1e-12, max_iter = 5000L)
 }
@@ -93,7 +93,7 @@ test_that("binary LTA reproduces the two Mplus LTA runs pinned by JStats", {
     fit <- fit_panel(data, vars, run$k, categorical = vars)
     success <- success_probabilities(fit)
     p <- match_profiles(success[, 1L], expected$rho[, 1L])
-    criteria <- get_data(fit, "information_criteria")
+    criteria <- get_results(fit, "information_criteria")
 
     expect_true(fit$converged, label = scenario)
     expect_identical(fit$n_parameters, as.integer(expected$npar), label = scenario)
@@ -120,7 +120,7 @@ test_that("plain LTA reproduces Table 5 of Muthen and Asparouhov (2022)", {
   # diagonal identifies the labelling.
   diagonal <- diag(fit$transition_probabilities[, , 1L])
   p <- match_profiles(diagonal, diag(expected$transition_stationary))
-  criteria <- get_data(fit, "information_criteria")
+  criteria <- get_results(fit, "information_criteria")
 
   expect_identical(fit$n_groups, as.integer(anchor$dims$N))
   expect_true(fit$converged)

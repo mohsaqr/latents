@@ -7,25 +7,25 @@
 \method{print}{summary_multilpa}(x, digits = 4L, rows = 10L, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa` object.}
+\item{x}{A \code{summary_multilpa} object.}
 
 \item{digits}{Number of printed significant digits.}
 
 \item{rows}{How many rows of each table to print. A longer table is shown
-to that depth, with its remaining row count and the `get_results()` call that
+to that depth, with its remaining row count and the \code{get_results()} call that
 returns it whole.}
 
 \item{...}{Additional arguments passed to matrix printing.}
 }
 \value{
 The summary, invisibly. Called for the side effect of printing the
-  estimates block by block, the effective class memberships at both levels,
-  the likelihood and information criteria, any convergence or boundary
-  warnings, and the restart diagnostics.
+estimates block by block, the effective class memberships at both levels,
+the likelihood and information criteria, any convergence or boundary
+warnings, and the restart diagnostics.
 }
 \description{
 A human-facing report of the fit. The same content is available as tidy
-tables from [get_results()].
+tables from \code{\link[=get_results]{get_results()}}.
 }
 \examples{
 set.seed(7)
@@ -38,5 +38,5 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 print(summary(fit), digits = 3)
 }
 \seealso{
-[get_results()] for the same content as data.
+\code{\link[=get_results]{get_results()}} for the same content as data.
 }

@@ -1,4 +1,4 @@
 library(testthat)
-library(multilpa)
+library(latents)
 
-test_check("multilpa")
+test_check("latents")

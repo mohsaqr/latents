@@ -61,7 +61,7 @@ test_that("a refused view leaves the device as it found it", {
     # the device for every plot after it -- including the caller's own.
     expect_warning(
       expect_error(plot(fit, what = "responses"),
-                   class = "multilpa_no_categorical"),
+                   class = "latents_no_categorical"),
       regexp = NA)
     expect_false(graphics::par("new"))
     expect_identical(plot(fit), fit)
@@ -98,7 +98,7 @@ test_that("standardizing uses the observed indicator scales", {
   stripped <- fit
   stripped$indicator_data <- NULL
   draw(expect_error(plot(stripped, scale = "standardized"),
-                    class = "multilpa_no_indicator_data"))
+                    class = "latents_no_indicator_data"))
 })
 
 test_that("enumeration plotting rejects unusable criteria by condition class", {
@@ -107,13 +107,13 @@ test_that("enumeration plotting rejects unusable criteria by condition class", {
                                  n_group_classes = 1, n_starts = 3, seed = 3)
   draw({
     expect_error(plot(candidates, criterion = "not_a_column"),
-                 class = "multilpa_unknown_criterion")
+                 class = "latents_unknown_criterion")
     expect_error(plot(candidates, criterion = "structure"),
-                 class = "multilpa_unknown_criterion")
+                 class = "latents_unknown_criterion")
     empty <- candidates
     empty$table$bic_individual <- NA_real_
     expect_error(plot(empty, criterion = "bic_individual"),
-                 class = "multilpa_nothing_to_plot")
+                 class = "latents_nothing_to_plot")
   })
 })
 
@@ -245,7 +245,7 @@ test_that("the label margin grows with the widest label", {
 })
 
 test_that("the catalogue lists exactly the views the methods accept", {
-  catalogue <- multilpa_plot_types()
+  catalogue <- plot_views()
   expect_s3_class(catalogue, "data.frame")
   expect_identical(names(catalogue), c("type", "group", "description"))
   expect_false(any(duplicated(catalogue$type)))
@@ -301,8 +301,8 @@ test_that("a view a fit cannot supply is refused by condition class", {
     # Continuous indicators have no response probabilities, and this fit has no
     # time variable, so neither view is quietly drawn empty.
     expect_error(plot(fit, what = "responses"),
-                 class = "multilpa_no_categorical")
-    expect_error(plot(fit, what = "sequences"), class = "multilpa_no_time")
+                 class = "latents_no_categorical")
+    expect_error(plot(fit, what = "sequences"), class = "latents_no_time")
     expect_error(plot(fit, what = "not_a_view"))
   })
 })
@@ -423,9 +423,9 @@ test_that("sizes and avepp draw, and are in the catalogue and in `all`", {
   })
   # The catalogue and the method's own `what` must not drift apart: `report()`
   # and `plot(what = "all")` read the formals, users read the catalogue.
-  types <- multilpa_plot_types()
+  types <- plot_views()
   expect_true(all(c("sizes", "avepp") %in% types$type))
-  accepted <- eval(formals(multilpa:::plot.multilpa)$what)
+  accepted <- eval(formals(latents:::plot.multilpa)$what)
   expect_true(all(c("sizes", "avepp") %in% accepted))
   expect_true(all(setdiff(accepted, "all") %in% types$type))
 })
@@ -433,7 +433,7 @@ test_that("sizes and avepp draw, and are in the catalogue and in `all`", {
 test_that("the avepp panel reads the average posterior matrix", {
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
-  averages <- multilpa:::.multilpa_average_posterior_matrix(fit$subject_posteriors)
+  averages <- latents:::.multilpa_average_posterior_matrix(fit$subject_posteriors)
   # Rows condition on the assigned class, so each row is a distribution.
   expect_equal(unname(rowSums(averages)), rep(1, ncol(averages)))
   # And it is the same quantity the table reports, so the panel and

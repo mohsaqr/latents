@@ -6,15 +6,15 @@
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 two_level <- function(...) {
-  multilpa(course_engagement, vars = activity, id = "student", n_profiles = 2,
+  multilpa(engagement_small, vars = activity, id = "student", n_profiles = 2,
            n_group_classes = 2, n_starts = 2, seed = 1, ...)
 }
 
 test_that("every table in a fit's catalogue is a data frame", {
   fit <- two_level()
-  catalogue <- setdiff(names(multilpa:::.multilpa_catalogue(fit)), "all")
+  catalogue <- setdiff(names(latents:::.multilpa_catalogue(fit)), "all")
   expect_gt(length(catalogue), 15L)
-  absent <- c("multilpa_no_time", "multilpa_no_group_classes")
+  absent <- c("latents_no_time", "latents_no_group_classes")
   for (what in catalogue) {
     table <- tryCatch(get_results(fit, what), error = function(condition) {
       if (inherits(condition, absent)) NULL else stop(condition)
@@ -48,13 +48,13 @@ test_that("`all` omits only the tables this fit cannot produce", {
 
 test_that("a table a fit cannot produce still refuses by class when named", {
   fit <- two_level()
-  expect_error(get_results(fit, "sequences"), class = "multilpa_no_time")
-  expect_error(get_results(fit, "sequence_summary"), class = "multilpa_no_time")
+  expect_error(get_results(fit, "sequences"), class = "latents_no_time")
+  expect_error(get_results(fit, "sequence_summary"), class = "latents_no_time")
 })
 
 test_that("an unknown table names the ones this object has", {
   fit <- two_level()
-  expect_error(get_results(fit, "nonsense"), class = "multilpa_bad_argument")
+  expect_error(get_results(fit, "nonsense"), class = "latents_bad_argument")
   expect_error(get_results(fit, "nonsense"), "profile_probabilities")
   expect_error(get_results(fit, c("entropy", "profiles")),
                "must be a single table name")
@@ -63,17 +63,17 @@ test_that("an unknown table names the ones this object has", {
 test_that("an argument a table does not take is named, not dropped", {
   fit <- two_level()
   expect_error(get_results(fit, "entropy", level = "groups"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(get_results(fit, "profiles", nonsense = 1),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(get_results(fit, "profiles", "standardized"),
-               class = "multilpa_bad_argument")
-  expect_error(get_results(fit, "all", data = course_engagement),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
+  expect_error(get_results(fit, "all", data = engagement_small),
+               class = "latents_bad_argument")
 })
 
 test_that("get_results has no method for an unrelated object", {
-  expect_error(get_results(data.frame(a = 1)), class = "multilpa_bad_argument")
+  expect_error(get_results(data.frame(a = 1)), class = "latents_bad_argument")
 })
 
 test_that("the classification tables default to every level the fit has", {
@@ -93,10 +93,10 @@ test_that("as.data.frame coerces to the primary table and takes nothing else", {
   fit <- two_level()
   expect_identical(as.data.frame(fit), get_results(fit, "profiles"))
   expect_error(as.data.frame(fit, what = "entropy"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(as.data.frame(fit, scale = "standardized"),
-               class = "multilpa_bad_argument")
-  moves <- lta(course_engagement, activity, "student",
+               class = "latents_bad_argument")
+  moves <- lta(engagement_small, activity, "student",
                            n_profiles = 2, n_group_classes = 2,
                            time = "sequence", n_starts = 2, seed = 1)
   # The primary table is the measurement model for every fitted family, so a
@@ -130,7 +130,7 @@ test_that("the summary print shows every table and honours `rows`", {
 })
 
 test_that("the enumeration and bootstrap objects carry their own tables", {
-  candidates <- enumerate_classes(course_engagement, activity, "student",
+  candidates <- enumerate_classes(engagement_small, activity, "student",
                                   n_profiles = 1:2, n_group_classes = 1,
                                   n_starts = 2, seed = 1)
   expect_identical(as.data.frame(candidates), get_results(candidates, "candidates"))
@@ -154,7 +154,7 @@ test_that("a starting-value set and a diagnostics object have catalogues", {
   expect_identical(get_results(quality, "entropy"), get_results(fit, "entropy"))
   # The gathered table is named for what it holds, not for the individual
   # posteriors it used to collide with.
-  expect_error(get_results(quality, "posteriors"), class = "multilpa_bad_argument")
+  expect_error(get_results(quality, "posteriors"), class = "latents_bad_argument")
 })
 
 test_that("the tables the summaries used to own are on the fit", {
@@ -182,7 +182,7 @@ test_that("the tables the summaries used to own are on the fit", {
 })
 
 test_that("`model` reports the columns of the family, not a padded union", {
-  covariates <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+  covariates <- multilpa(engagement_small, activity, "student", n_profiles = 2,
                          n_group_classes = 2,
                          profile_covariates = "previous_grade",
                          n_starts = 2, seed = 1)
@@ -201,7 +201,7 @@ test_that("`model` reports the columns of the family, not a padded union", {
 
 test_that("truth cross-tabulates against the level each column describes", {
   fit <- two_level()
-  recovery <- get_results(fit, "assignments", data = course_engagement,
+  recovery <- get_results(fit, "assignments", data = engagement_small,
                        truth = c("engagement", "student_type"))
   expect_named(recovery, c("assignment", "class", "truth", "value", "n",
                            "proportion"))
@@ -213,9 +213,9 @@ test_that("truth cross-tabulates against the level each column describes", {
                    "group_class")
   # Observation-level truth counts enrolments; group-level truth counts students.
   expect_equal(sum(recovery$n[recovery$truth == "engagement"]),
-               nrow(course_engagement))
+               nrow(engagement_small))
   expect_equal(sum(recovery$n[recovery$truth == "student_type"]),
-               length(unique(course_engagement$student)))
+               length(unique(engagement_small$student)))
   # The proportions are shares within a truth value, so they sum to one.
   shares <- as.vector(tapply(recovery$proportion,
                              paste(recovery$truth, recovery$value), sum))
@@ -224,7 +224,7 @@ test_that("truth cross-tabulates against the level each column describes", {
 
 test_that("group recovery gives each group one vote and omits unused truth levels", {
   fit <- two_level()
-  data <- course_engagement
+  data <- engagement_small
   data$known_group <- factor(data$student_type,
                              levels = c(as.character(unique(data$student_type)),
                                         "unused"))
@@ -247,9 +247,9 @@ test_that("group recovery gives each group one vote and omits unused truth level
 
 test_that("truth reproduces the cross-tabulation it replaces", {
   fit <- two_level()
-  joined <- get_results(fit, "assignments", data = course_engagement)
+  joined <- get_results(fit, "assignments", data = engagement_small)
   expected <- table(joined$profile, joined$engagement)
-  recovery <- get_results(fit, "assignments", data = course_engagement,
+  recovery <- get_results(fit, "assignments", data = engagement_small,
                        truth = "engagement")
   taken <- recovery$n[recovery$class == 1L & recovery$value == "engaged"]
   expect_equal(taken, as.integer(expected["1", "engaged"]))
@@ -258,11 +258,11 @@ test_that("truth reproduces the cross-tabulation it replaces", {
 
 test_that("truth refuses a column it cannot use", {
   fit <- two_level()
-  expect_error(get_results(fit, "assignments", data = course_engagement,
-                        truth = "absent"), class = "multilpa_bad_data")
-  expect_error(get_results(fit, "assignments", data = course_engagement,
-                        truth = "profile"), class = "multilpa_bad_data")
-  expect_error(get_results(fit, "assignments", data = course_engagement,
+  expect_error(get_results(fit, "assignments", data = engagement_small,
+                        truth = "absent"), class = "latents_bad_data")
+  expect_error(get_results(fit, "assignments", data = engagement_small,
+                        truth = "profile"), class = "latents_bad_data")
+  expect_error(get_results(fit, "assignments", data = engagement_small,
                         truth = c("engagement", "engagement")),
                "must not be duplicated")
 })
@@ -285,17 +285,17 @@ test_that("plot draws every supported view under what = \"all\"", {
   expect_s3_class(evalq(plot(fit, what = "all"), clean), "multilpa")
   # "all" is a request, not a view, so it must not appear among the views it
   # walks: it would otherwise call itself.
-  expect_false("all" %in% multilpa:::.multilpa_supported_views(fit))
+  expect_false("all" %in% latents:::.multilpa_supported_views(fit))
 })
 
 test_that("a fit prints its means one row per profile, not one per cell", {
   # Three profiles over five indicators is fifteen console lines for a table
   # that has three rows. The long table is still what `get_results()` returns.
   indicators <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-  fit <- quietly(multilpa(course_engagement, indicators, "student",
+  fit <- quietly(multilpa(engagement_small, indicators, "student",
                           n_profiles = 3L, n_group_classes = 1L, n_starts = 3L,
                           seed = 1L, max_iter = 5000))
-  wide <- multilpa:::.multilpa_wide_means(fit)
+  wide <- latents:::.multilpa_wide_means(fit)
   expect_identical(nrow(wide), 3L)
   expect_identical(names(wide), c("profile", indicators))
 
@@ -310,8 +310,11 @@ test_that("a fit prints its means one row per profile, not one per cell", {
   expect_true(any(grepl("proportion", printed, fixed = TRUE)))
   sizes <- get_results(fit, "counts")
   individuals <- sizes[sizes$level == "individuals", , drop = FALSE]
-  expect_true(any(grepl(format(individuals$effective_count[1L], digits = 7),
-                        printed, fixed = TRUE)))
+  # The count is printed to the column's precision; its value truncated to two
+  # decimals is a prefix of the printed number whatever its size.
+  shown <- formatC(trunc(individuals$effective_count[1L] * 100) / 100,
+                   format = "f", digits = 2)
+  expect_true(any(grepl(shown, printed, fixed = TRUE)))
   # The spread columns belong to the long table, and are pointed at, not shown.
   expect_false(any(grepl("standard_deviation", printed, fixed = TRUE)))
   expect_true(any(grepl("get_results(x, \"profiles\")", printed, fixed = TRUE)))

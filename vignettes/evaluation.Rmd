@@ -1,0 +1,210 @@
+---
+title: "Evaluating a multilevel latent profile model"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Evaluating a multilevel latent profile model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 3, width = 100)
+```
+
+A fitted mixture model is evaluated on four questions: whether the estimation
+found a stable solution, how clearly observations and groups are classified,
+whether the indicators are independent within profiles as the model assumes,
+and whether a different number of profiles or group classes fits better.
+
+## Data
+
+`course_engagement` has one row per course enrolment: 1,422 enrolments from
+106 students. `student` identifies the group, and five activity measures
+(`browse`, `lectures`, `forum_read`, `forum_post`, `attendance`) are the
+indicators, each standardized within course.
+
+```{r setup}
+library(latents)
+```
+
+## The model to evaluate
+
+To fit the model, we call `multilpa()` with `vars` for the indicators, `id`
+for the group, `n_profiles` for the number of profiles, `n_group_classes` for
+the number of group classes, `n_starts` for the number of random EM starts, and
+`seed` for reproducible starts.
+
+```{r fit}
+fit <- multilpa(course_engagement,
+                vars = c("browse", "lectures", "forum_read", "forum_post",
+                         "attendance"),
+                id = "student", n_profiles = 2, n_group_classes = 2,
+                n_starts = 10, seed = 1)
+```
+
+## Estimation
+
+To check convergence, we call `get_results()` with `"model"`. `converged`
+reports convergence of the best start, `boundary` whether a variance reached
+its lower bound, and `n_best_replicated` how many starts reached the best log
+likelihood.
+
+```{r model}
+get_results(fit, "model")
+```
+
+To check the individual starts, we call `get_results()` with `"starts"`.
+
+```{r starts}
+get_results(fit, "starts")
+```
+
+To check whether other random seeds reach the same solution, we call
+`sensitivity()` with `seeds` for the seeds to try. `optimum` numbers the
+distinct maxima found, and `agreement` is the share of observations assigned
+as in the original fit, after matching the arbitrary profile labels.
+
+```{r sensitivity}
+sensitivity(fit, seeds = 1:5)
+```
+
+## Classification
+
+To obtain relative entropy, we call `get_results()` with `"entropy"`. It is
+reported for observations and for groups: 1 means every case is assigned with
+certainty, 0 means no separation.
+
+```{r entropy}
+get_results(fit, "entropy")
+```
+
+To obtain classification quality by class, we call `get_results()` with
+`"classification"`. `n_modal` is the number of cases assigned to the class,
+`average_posterior` the mean posterior probability of those cases, and
+`odds_correct_classification` compares that certainty with the class's size.
+
+```{r classification}
+get_results(fit, "classification")
+```
+
+To see the uncertainty, we call `plot()` with `what = "entropy"` for the
+per-case uncertainty within each profile, and with `what = "avepp"` for the
+average posterior of each assigned class across all classes.
+
+```{r entropy-plot}
+plot(fit, what = "entropy")
+```
+
+```{r avepp-plot}
+plot(fit, what = "avepp")
+```
+
+## Local independence
+
+The default model assumes the indicators are independent within a profile. To
+test this, we call `get_results()` with `"residuals"`. `residual` is the
+correlation between two indicators that the profiles leave unexplained;
+`by = "overall"` pools the profiles. The p-values are approximate.
+
+```{r residuals}
+get_results(fit, "residuals", by = "overall")
+```
+
+To relax the assumption, we call `multilpa()` with `covariance_model = "full"`,
+which estimates the covariances between indicators within each profile. To
+compare the two models, we call `get_results()` with
+`"information_criteria"` on each; lower values are better.
+
+```{r full-covariance}
+full <- multilpa(course_engagement,
+                 vars = c("browse", "lectures", "forum_read", "forum_post",
+                          "attendance"),
+                 id = "student", n_profiles = 2, n_group_classes = 2,
+                 covariance_model = "full", n_starts = 10, seed = 1)
+get_results(fit, "information_criteria")
+get_results(full, "information_criteria")
+get_results(full, "residuals", by = "overall")
+```
+
+## Number of profiles and group classes
+
+To compare numbers of profiles and group classes, we call
+`enumerate_classes()` with `n_profiles` and `n_group_classes` for the counts to
+cross. It fits every combination and does not choose a model.
+
+```{r enumerate}
+candidates <- enumerate_classes(course_engagement,
+                                vars = c("browse", "lectures", "forum_read",
+                                         "forum_post", "attendance"),
+                                id = "student", n_profiles = 2:4,
+                                n_group_classes = 1:3, n_starts = 5, seed = 1)
+as.data.frame(candidates)
+```
+
+To find which candidate minimizes each criterion, we call `get_results()` with
+`"criteria"`. Criteria that depend on a sample size are reported with the
+number of groups and with the number of observations.
+
+```{r criteria}
+get_results(candidates, "criteria")
+```
+
+To draw one criterion across the grid, we call `plot()` with `criterion` for
+its name.
+
+```{r enumeration-plot}
+plot(candidates, criterion = "bic_groups")
+```
+
+To take one candidate out of the grid as a fitted model, we call
+`candidate_fit()` with its `n_profiles` and `n_group_classes`.
+
+```{r candidate}
+candidate_fit(candidates, n_profiles = 3, n_group_classes = 2)
+```
+
+## Parameter uncertainty
+
+To obtain standard errors and 95% Wald intervals, we call
+`parameter_inference()` on the fit. With `vcov_type = "robust"`, the standard
+errors are clustered on groups.
+
+```{r inference}
+parameter_inference(fit)
+parameter_inference(fit, vcov_type = "robust")
+```
+
+## Reference
+
+The calls below list other evaluation functions and views. Each comment states
+what the call returns.
+
+```{r reference, eval = FALSE}
+get_results(fit, "information_criteria", format = "long")  # one row per criterion
+get_results(fit, "average_posteriors")          # mean posterior by assigned class
+get_results(fit, "classification_errors")       # P(assigned class | true class)
+get_results(fit, "residuals")                   # residuals within each profile
+get_results(candidates, "candidates")           # the full enumeration grid
+summary(candidates)                             # the best candidate on each criterion
+bootstrap_lrt(fit, candidate_fit(candidates, n_profiles = 3, n_group_classes = 2),
+              iter = 199, seed = 42)            # bootstrap test of one more class (slow)
+enumerate_classes(course_engagement, vars = c("browse", "lectures"),
+                  id = "student", n_profiles = 2:3,
+                  model = c("VVI", "VVV"))      # crossing covariance models (slow)
+confint(fit)                                    # confidence intervals
+vcov(fit, vcov_type = "robust")                 # robust covariance matrix
+plot(fit, what = "posteriors")                  # posterior of each assigned profile
+plot(fit, what = "bars")                        # profile means with 95% intervals
+diagnostics(fit)                                # all classification diagnostics
+```
+
+## Limits
+
+- Information criteria compare the candidates fitted, not all possible models.
+- Classification measures describe the fitted model; a misspecified model can
+  still classify sharply.
+- Wald intervals assume a converged fit with no variance at its bound, and are
+  conditional on the chosen numbers of profiles and classes.
+- Unmodelled dependence between indicators can make extra classes look better.

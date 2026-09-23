@@ -115,6 +115,6 @@ test_that("asking for errors a fit cannot supply raises rather than returning bl
   # The transition family has no standard errors, so the measurement table
   # must refuse the request instead of filling the columns with NA.
   expect_error(get_results(transition_fit, "profiles", data = data),
-               class = "multilpa_no_inference")
+               class = "latents_no_inference")
   expect_s3_class(get_results(transition_fit, "profiles"), "data.frame")
 })

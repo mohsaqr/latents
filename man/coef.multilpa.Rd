@@ -7,7 +7,7 @@
 \method{coef}{multilpa}(object, scale = c("natural", "unconstrained"), ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa` model.}
+\item{object}{A fitted \code{multilpa} model.}
 
 \item{scale}{Natural coefficients or unconstrained log variances (diagonal),
 log-Cholesky coordinates (full covariance), and baseline-category logits.}
@@ -16,15 +16,15 @@ log-Cholesky coordinates (full covariance), and baseline-category logits.}
 }
 \value{
 A named numeric vector of every coefficient the model has, held ones
-  included: a block `fixed` held is part of the model and is reported here,
-  even though it has no standard error and no interval. Natural coefficients
-  include all mixing probabilities; unconstrained coefficients exclude their
-  reference categories. Names are `level.parameter.outcome.term`, the same four-part
-  decomposition [parameter_inference()] reports as columns and the same
-  spelling every fitted class in this package uses, so a name written for one
-  fit means the same thing for another. A parameter with no term -- a
-  group-class probability -- carries the first three parts only.
-  [parameter_inference()] is the tidy form and the one to prefer.
+included: a block \code{fixed} held is part of the model and is reported here,
+even though it has no standard error and no interval. Natural coefficients
+include all mixing probabilities; unconstrained coefficients exclude their
+reference categories. Names are \code{level.parameter.outcome.term}, the same four-part
+decomposition \code{\link[=parameter_inference]{parameter_inference()}} reports as columns and the same
+spelling every fitted class in this package uses, so a name written for one
+fit means the same thing for another. A parameter with no term -- a
+group-class probability -- carries the first three parts only.
+\code{\link[=parameter_inference]{parameter_inference()}} is the tidy form and the one to prefer.
 }
 \description{
 Extract multilevel LPA coefficients
