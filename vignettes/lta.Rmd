@@ -1,0 +1,163 @@
+---
+title: "Latent transition analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Latent transition analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 3, width = 100)
+```
+
+Latent transition analysis (LTA) estimates latent profiles at each occasion
+and the probability of moving from one profile to another between consecutive
+occasions. With group classes, each class has its own starting probabilities
+and its own transition matrix, so classes separate groups that change
+differently over time.
+
+## Data
+
+`course_engagement` has one row per course enrolment: 1,422 enrolments from
+106 students. `lta()` needs three kinds of variables.
+
+- **Group:** `student` identifies whose occasions belong together.
+- **Occasion order:** `sequence` is the position of each course in the
+  student's history. Students can have different numbers of occasions.
+- **Indicators:** five activity measures (`browse`, `lectures`, `forum_read`,
+  `forum_post`, `attendance`), each standardized within course, so 0 is the
+  course average.
+
+```{r setup}
+library(multilpa)
+```
+
+## Fit
+
+To fit the model, we call `lta()` with `vars` for the indicators, `id` for
+the group, `time` for the occasion order, `n_profiles` for the number of
+profiles, `n_group_classes` for the number of group classes, `n_starts` for
+the number of random EM starts, and `seed` for reproducible starts.
+
+```{r fit}
+moves <- lta(course_engagement,
+             vars = c("browse", "lectures", "forum_read", "forum_post",
+                      "attendance"),
+             id = "student", time = "sequence",
+             n_profiles = 3, n_group_classes = 2, n_starts = 10, seed = 1)
+moves
+```
+
+To check whether the starts agree, we call `get_results()` with `"starts"`.
+Starts that reach the same log likelihood support the solution.
+
+```{r starts}
+get_results(moves, "starts")
+```
+
+## Profiles
+
+To see the profiles, we call `plot()` on the fit. Each line is a profile's
+mean on each indicator, and point size shows how common the profile is.
+
+```{r profiles}
+plot(moves)
+```
+
+To compare profiles on a common scale, we call `plot()` with
+`what = "heatmap"`, which shows each mean in standard deviations from the
+indicator's overall mean.
+
+```{r heatmap}
+plot(moves, what = "heatmap")
+```
+
+## Starting probabilities
+
+To obtain the starting probabilities, we call `get_results()` with
+`"initial"`. `probability` is the chance of starting in each profile,
+`prevalence` the expected share of all occasions in it, and
+`group_class_probability` the share of groups in the class.
+
+```{r initial}
+get_results(moves, "initial")
+```
+
+## Transitions
+
+To obtain the transition probabilities, we call `get_results()` with
+`"transitions"`. `probability` is the chance of moving from profile `from` to
+profile `to` at the next occasion, and the probabilities out of each profile
+sum to one. `stable` marks staying in the same profile, `expected_count` is
+the expected number of such moves in the data, and `estimated = FALSE` marks a
+row the data cannot inform.
+
+```{r transitions}
+get_results(moves, "transitions")
+```
+
+To draw the transition matrices, we call `plot()` with `what = "transitions"`:
+one heatmap per group class, current profile in rows and next profile in
+columns.
+
+```{r transition-plot}
+plot(moves, what = "transitions")
+```
+
+## Sequences
+
+To see each group's path, we call `plot()` with `what = "sequences"`: one row
+per group, coloured by its most probable profile at each occasion. These
+assignments ignore classification uncertainty.
+
+```{r sequences, fig.height = 6}
+plot(moves, what = "sequences")
+```
+
+## Classification
+
+To obtain classification certainty, we call `get_results()` with `"entropy"`.
+Relative entropy is reported for occasions and for groups: 1 means every case
+is assigned with certainty, 0 means no separation.
+
+```{r entropy}
+get_results(moves, "entropy")
+```
+
+To see where the uncertainty lies, we call `plot()` with `what = "entropy"`
+for the per-case uncertainty within each profile, and with
+`what = "posteriors"` for the posterior probability of each case's assigned
+profile.
+
+```{r entropy-plot}
+plot(moves, what = "entropy")
+```
+
+```{r posteriors-plot}
+plot(moves, what = "posteriors")
+```
+
+## Transition networks
+
+To analyse the transitions as networks, we call `get_tna()` for one network
+pooled over group classes and `get_group_tna()` for one network per class.
+Both return [tna](https://cran.r-project.org/package=tna) models built from
+the estimated transitions, which `plot()` draws.
+
+```{r networks, message = FALSE, eval = requireNamespace("tna", quietly = TRUE)}
+plot(get_tna(moves))
+plot(get_group_tna(moves))
+```
+
+## Assumptions
+
+- The next profile depends only on the current profile and the group class,
+  and transition probabilities are the same at every occasion.
+- Profiles have the same definition at every occasion.
+- Indicators are independent within a profile (the default diagonal
+  covariance; `covariance_model = "full"` relaxes it).
+- Standard errors, likelihood-ratio tests and class enumeration are not
+  available for this model.

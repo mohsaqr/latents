@@ -7,17 +7,17 @@
 \method{print}{multilpa_transitions}(x, rows = 20L, ...)
 }
 \arguments{
-\item{x}{A fitted `multilpa_transitions` model.}
+\item{x}{A fitted \code{multilpa_transitions} model.}
 
 \item{rows}{How many rows of the printed table to show before truncating.}
 
 \item{...}{Ignored.}
 }
 \value{
-`x`, invisibly. Called for the side effect of printing the class
-  counts, the occasion layout, the log likelihood with the information
-  criteria, the convergence and restart diagnostics, and the verbs that
-  return the fitted quantities.
+\code{x}, invisibly. Called for the side effect of printing the class
+counts, the occasion layout, the log likelihood with the information
+criteria, the convergence and restart diagnostics, and the verbs that
+return the fitted quantities.
 }
 \description{
 Reports the model's size, how the occasions are laid out, its fit and its
@@ -35,5 +35,5 @@ fit <- lta(example_data, c("score_a", "score_b"), "person",
 print(fit)
 }
 \seealso{
-[get_results()], [lta()].
+\code{\link[=get_results]{get_results()}}, \code{\link[=lta]{lta()}}.
 }

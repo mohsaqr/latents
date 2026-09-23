@@ -27,25 +27,25 @@ enumerate_classes(
 \item{n_group_classes}{Positive integer group-class counts to try.}
 
 \item{structure}{Covariance structures to try, as the three-letter model
-codes [multilpa()]'s `volume`, `shape` and `orientation` name: any of
-`"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
-`"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`. Naming them crosses
+codes \code{\link[=multilpa]{multilpa()}}'s \code{volume}, \code{shape} and \code{orientation} name: any of
+\code{"EII"}, \code{"VII"}, \code{"EEI"}, \code{"VEI"}, \code{"EVI"}, \code{"VVI"}, \code{"EEE"}, \code{"VEE"},
+\code{"EVE"}, \code{"VVE"}, \code{"EEV"}, \code{"VEV"}, \code{"EVV"}, \code{"VVV"}. Naming them crosses
 the structures with the class counts, which is the grid model-based
-clustering is usually selected over, and adds a `structure` column to the
-candidate table. `NULL`, the default, fits whatever the other arguments
+clustering is usually selected over, and adds a \code{structure} column to the
+candidate table. \code{NULL}, the default, fits whatever the other arguments
 already asked for, and the grid is the one this verb has always fitted.}
 
 \item{seed}{Optional reproducible seed for each fit.}
 
-\item{...}{Further arguments to [multilpa()].}
+\item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}.}
 }
 \value{
-An object of class `multilpa_enumeration`. Read it with the verbs
-  that describe it rather than by reaching into it: [as.data.frame()] gives
-  one row per candidate model with every criterion and diagnostic,
-  [summary()] gives one row per information criterion naming the candidate
-  that minimises it, [plot()] draws one criterion across the grid, and
-  [candidate_fit()] returns the fitted model for one cell of the grid.
+An object of class \code{multilpa_enumeration}. Read it with the verbs
+that describe it rather than by reaching into it: \code{\link[=as.data.frame]{as.data.frame()}} gives
+one row per candidate model with every criterion and diagnostic,
+\code{\link[=summary]{summary()}} gives one row per information criterion naming the candidate
+that minimises it, \code{\link[=plot]{plot()}} draws one criterion across the grid, and
+\code{\link[=candidate_fit]{candidate_fit()}} returns the fitted model for one cell of the grid.
 }
 \description{
 Fits every requested combination and retains errors and warnings alongside
@@ -62,6 +62,6 @@ as.data.frame(candidates)
 summary(candidates)
 }
 \seealso{
-[candidate_fit()] to take one fitted model out of the grid,
-  [summary.multilpa_enumeration()] for the criterion-by-criterion comparison.
+\code{\link[=candidate_fit]{candidate_fit()}} to take one fitted model out of the grid,
+\code{\link[=summary.multilpa_enumeration]{summary.multilpa_enumeration()}} for the criterion-by-criterion comparison.
 }

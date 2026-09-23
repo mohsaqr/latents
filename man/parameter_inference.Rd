@@ -52,7 +52,7 @@ parameter_inference(
 )
 }
 \arguments{
-\item{x}{A converged `multilpa` fit with inactive variance bounds.}
+\item{x}{A converged \code{multilpa} fit with inactive variance bounds.}
 
 \item{data}{Optional. The data frame the model was fitted to; when omitted
 it is rebuilt from the indicators, identifiers and occasions the fit
@@ -66,105 +66,105 @@ provides a weaker consistency check.}
 
 \item{step}{Positive finite-difference step for the analytic score derivative.}
 
-\item{vcov_type}{`"observed"` inverts the observed information.
-`"robust"` returns the Huber-White sandwich `A^-1 B A^-1`, where `B`
+\item{vcov_type}{\code{"observed"} inverts the observed information.
+\code{"robust"} returns the Huber-White sandwich \verb{A^-1 B A^-1}, where \code{B}
 accumulates the outer product of the per-group scores. Groups are the
 independent units, so robust errors relax the assumption that the Gaussian
 within-group model is correctly specified. They do not relax the assumption
 that groups are independent.}
 
-\item{adjust}{Multiplicity correction applied to `p_value` to produce
-`p_adjusted`, one of the methods [stats::p.adjust()] accepts. The default
-`"none"` leaves the two columns equal: a correction changes what a p-value
+\item{adjust}{Multiplicity correction applied to \code{p_value} to produce
+\code{p_adjusted}, one of the methods \code{\link[stats:p.adjust]{stats::p.adjust()}} accepts. The default
+\code{"none"} leaves the two columns equal: a correction changes what a p-value
 means, so it is applied only when it is asked for, and the method that was
-applied is recorded in the `adjust` attribute. The correction is taken
+applied is recorded in the \code{adjust} attribute. The correction is taken
 over the tests the table actually reports; bounded parameters carry no test
 and do not count towards the family.}
 
-\item{method}{How uncertainty is measured. `"wald"`, the default, inverts the
+\item{method}{How uncertainty is measured. \code{"wald"}, the default, inverts the
 observed information in the estimation coordinates, and is available for
 the four covariance structures those coordinates can express: EEI, VVI, EEE
-and VVV. `"bootstrap"` resamples *groups* with replacement, refits inside
+and VVV. \code{"bootstrap"} resamples \emph{groups} with replacement, refits inside
 the same covariance family, undoes the relabelling each refit comes back
 with, and reports the percentile interval and the standard deviation of the
 replicates. It is available for all fourteen structures, because it needs
 no coordinate chart for the constraint. Groups are the resampling unit
 rather than rows, so the interval carries the same independence assumption
-as `vcov_type = "robust"` and not the stronger one `"observed"` makes.}
+as \code{vcov_type = "robust"} and not the stronger one \code{"observed"} makes.}
 
-\item{iter}{Number of resamples when `method = "bootstrap"`, at least two.
-The default 199 is enough for a standard error; a 95% percentile interval
+\item{iter}{Number of resamples when \code{method = "bootstrap"}, at least two.
+The default 199 is enough for a standard error; a 95\% percentile interval
 is steadier at 999 and above.}
 
 \item{n_starts, max_iter, tol}{Passed to each bootstrap refit. Each replicate
-is a fresh fit, so `n_starts` buys the same protection against a local
-maximum here as it does in [multilpa()], at the same multiple of the cost.}
+is a fresh fit, so \code{n_starts} buys the same protection against a local
+maximum here as it does in \code{\link[=multilpa]{multilpa()}}, at the same multiple of the cost.}
 
-\item{seed}{Optional seed for the resampling: any whole number `set.seed()`
-accepts; a fraction raises `multilpa_bad_argument`. The stream is restored on exit,
+\item{seed}{Optional seed for the resampling: any whole number \code{set.seed()}
+accepts; a fraction raises \code{multilpa_bad_argument}. The stream is restored on exit,
 so a seeded call leaves the caller's random state exactly as it found it.}
 }
 \value{
-A base `data.frame` with one row per free parameter and the same
-  columns, in the same order, that [parameter_inference()] returns for every
-  other fitted class: `level` (`"measurement"`, `"profile"` or `"group"`),
-  `outcome` (which profile or group class the coefficient predicts, or which
-  profile a measurement parameter belongs to), `term`, `parameter`
-  (`"mean"`, `"variance"`, `"covariance"` or `"coefficient"`), `estimate`,
-  `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
-  `conf_high`. Variances and covariances are reported in their natural units,
-  with standard errors carried through the delta method from the log and
-  log-Cholesky coordinates on which they are estimated.
+A base \code{data.frame} with one row per free parameter and the same
+columns, in the same order, that \code{\link[=parameter_inference]{parameter_inference()}} returns for every
+other fitted class: \code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}),
+\code{outcome} (which profile or group class the coefficient predicts, or which
+profile a measurement parameter belongs to), \code{term}, \code{parameter}
+(\code{"mean"}, \code{"variance"}, \code{"covariance"} or \code{"coefficient"}), \code{estimate},
+\code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
+\code{conf_high}. Variances and covariances are reported in their natural units,
+with standard errors carried through the delta method from the log and
+log-Cholesky coordinates on which they are estimated.
 
-A base `data.frame` with one row per reported parameter and the
-  columns `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`,
-  `term`, `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
-  `p_adjusted`, `conf_low` and `conf_high`. Estimates are on the natural
-  scale: variances in their own units, probabilities as probabilities. A
-  parameter whose null value is on the boundary of its space -- a variance, a
-  probability, a residual variance on the covariance diagonal -- carries `NA`
-  for `statistic`, `p_value` and `p_adjusted`, because a Wald test against
-  that boundary is not a question worth asking; the interval still is. All
-  class probabilities are reported; their sum constraints make the natural
-  covariance singular. Wald intervals are not clipped to parameter bounds.
+A base \code{data.frame} with one row per reported parameter and the
+columns \code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}), \code{outcome},
+\code{term}, \code{parameter}, \code{estimate}, \code{standard_error}, \code{statistic}, \code{p_value},
+\code{p_adjusted}, \code{conf_low} and \code{conf_high}. Estimates are on the natural
+scale: variances in their own units, probabilities as probabilities. A
+parameter whose null value is on the boundary of its space -- a variance, a
+probability, a residual variance on the covariance diagonal -- carries \code{NA}
+for \code{statistic}, \code{p_value} and \code{p_adjusted}, because a Wald test against
+that boundary is not a question worth asking; the interval still is. All
+class probabilities are reported; their sum constraints make the natural
+covariance singular. Wald intervals are not clipped to parameter bounds.
 
-  A fit made with `fixed` reports only the parameters it estimated: a held
-  measurement block is a constant of this likelihood, so it contributes no
-  row here and no row or column to the information matrix. The table is on
-  the natural scale, where every class probability is reported, so it has one
-  row per estimated natural coefficient: `n_parameters` rows plus one for
-  each set of probabilities whose reference category the estimation scale
-  drops. The held values still enter the likelihood at
-  the values they were held at, so every standard error, interval and p-value
-  is conditional on that measurement solution and does not propagate its
-  uncertainty. See [fit_staged()] for what that conditioning means.
+A fit made with \code{fixed} reports only the parameters it estimated: a held
+measurement block is a constant of this likelihood, so it contributes no
+row here and no row or column to the information matrix. The table is on
+the natural scale, where every class probability is reported, so it has one
+row per estimated natural coefficient: \code{n_parameters} rows plus one for
+each set of probabilities whose reference category the estimation scale
+drops. The held values still enter the likelihood at
+the values they were held at, so every standard error, interval and p-value
+is conditional on that measurement solution and does not propagate its
+uncertainty. See \code{\link[=fit_staged]{fit_staged()}} for what that conditioning means.
 
-  With `method = "bootstrap"` the table has the same columns and the same
-  rows, `estimate` is still the fitted value, `standard_error` is the
-  standard deviation of the replicates and `conf_low`/`conf_high` are the
-  percentile interval. `statistic`, `p_value` and `p_adjusted` are `NA`
-  throughout: putting a normal approximation back on top of the replicates
-  the interval was read from is the assumption this path exists to avoid, so
-  the interval is the inference. Its attributes are `covariance` (the
-  covariance of the replicates, which `vcov()` returns), `level`, `method`,
-  `iter`, `n_valid`, `replicates` (the kept replicates, one row each),
-  `messages` (why a resample was dropped, `NA` where it was not),
-  `structure` and `fixed`; `covariance_unconstrained` is `NULL`, because the
-  estimation-scale chart is what this path does without.
+With \code{method = "bootstrap"} the table has the same columns and the same
+rows, \code{estimate} is still the fitted value, \code{standard_error} is the
+standard deviation of the replicates and \code{conf_low}/\code{conf_high} are the
+percentile interval. \code{statistic}, \code{p_value} and \code{p_adjusted} are \code{NA}
+throughout: putting a normal approximation back on top of the replicates
+the interval was read from is the assumption this path exists to avoid, so
+the interval is the inference. Its attributes are \code{covariance} (the
+covariance of the replicates, which \code{vcov()} returns), \code{level}, \code{method},
+\code{iter}, \code{n_valid}, \code{replicates} (the kept replicates, one row each),
+\code{messages} (why a resample was dropped, \code{NA} where it was not),
+\code{structure} and \code{fixed}; \code{covariance_unconstrained} is \code{NULL}, because the
+estimation-scale chart is what this path does without.
 
-  Diagnostics of the fit as a whole travel as attributes rather than as
-  columns repeated down every row: `covariance` and `covariance_unconstrained`
-  (natural and estimation-scale covariance of the estimates), `hessian`,
-  `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`,
-  `fixed` (the measurement blocks this fit held, `character()` when none) and
-  `adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
-  groups-by-parameters score matrix and `scaling_correction` the MLR scaling
-  correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
-  difference tests.
+Diagnostics of the fit as a whole travel as attributes rather than as
+columns repeated down every row: \code{covariance} and \code{covariance_unconstrained}
+(natural and estimation-scale covariance of the estimates), \code{hessian},
+\code{gradient}, \code{scaled_score}, \code{condition_ratio}, \code{level}, \code{step}, \code{vcov_type},
+\code{fixed} (the measurement blocks this fit held, \code{character()} when none) and
+\code{adjust}. When \code{vcov_type} is \code{"robust"}, \code{group_scores} holds the
+groups-by-parameters score matrix and \code{scaling_correction} the MLR scaling
+correction factor \verb{tr(A^-1 B) / q}, used for scaled likelihood-ratio
+difference tests.
 }
 \description{
 Standard errors, tests and intervals for every free parameter of
-`multilpa(profile_covariates = )`, at all three levels at once: the
+\code{multilpa(profile_covariates = )}, at all three levels at once: the
 measurement model, the
 profile logits and the group-class logits. Without them a membership
 coefficient cannot be reported, because nothing distinguishes a real effect
@@ -178,31 +178,31 @@ boundary solutions and unidentified Hessians do not admit this calculation.
 }
 \details{
 Class-membership coefficients are on the multinomial logit scale
-  with the final profile and the final group class as references, so a
-  coefficient is a log odds against that reference. The tests are Wald tests
-  and inherit the usual caveat: they are unreliable for a coefficient driven
-  to the boundary by separation, which the size of the estimate and its
-  standard error together will reveal.
+with the final profile and the final group class as references, so a
+coefficient is a log odds against that reference. The tests are Wald tests
+and inherit the usual caveat: they are unreliable for a coefficient driven
+to the boundary by separation, which the size of the estimate and its
+standard error together will reveal.
 }
 \section{Conditions}{
 
-  `multilpa_no_converge` for an unconverged fit, `multilpa_boundary_fit` when
-  a variance, a response probability or a mixing probability sits at its
-  bound, `multilpa_singular_information` when the observed information cannot
-  be inverted, `multilpa_no_free_parameters` when `fixed` held every
-  parameter, `multilpa_bad_inference_data` when a supplied `data` does not
-  reproduce the fit, and `multilpa_too_few_groups` for `vcov_type = "robust"`
-  with fewer independent groups than reported parameters. A fit whose score
-  is still far from zero is reported with a `multilpa_unconverged` warning
-  rather than refused.
+\code{multilpa_no_converge} for an unconverged fit, \code{multilpa_boundary_fit} when
+a variance, a response probability or a mixing probability sits at its
+bound, \code{multilpa_singular_information} when the observed information cannot
+be inverted, \code{multilpa_no_free_parameters} when \code{fixed} held every
+parameter, \code{multilpa_bad_inference_data} when a supplied \code{data} does not
+reproduce the fit, and \code{multilpa_too_few_groups} for \code{vcov_type = "robust"}
+with fewer independent groups than reported parameters. A fit whose score
+is still far from zero is reported with a \code{multilpa_unconverged} warning
+rather than refused.
 
-  `method = "bootstrap"` adds `multilpa_unsupported_inference` for a fit that
-  holds a measurement block --- the held values came from another fit and
-  resampling these data does not resample them --- and
-  `multilpa_bootstrap_failed` when fewer than two resamples produced a usable
-  fit, whose message carries the first reason one gave. Resamples that fail
-  or do not converge are dropped with a `multilpa_bootstrap_dropped` warning
-  naming how many, rather than being silently left out of the count.
+\code{method = "bootstrap"} adds \code{multilpa_unsupported_inference} for a fit that
+holds a measurement block --- the held values came from another fit and
+resampling these data does not resample them --- and
+\code{multilpa_bootstrap_failed} when fewer than two resamples produced a usable
+fit, whose message carries the first reason one gave. Resamples that fail
+or do not converge are dropped with a \code{multilpa_bootstrap_dropped} warning
+naming how many, rather than being silently left out of the count.
 }
 
 \examples{

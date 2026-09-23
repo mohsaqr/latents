@@ -21,49 +21,49 @@ diagnostics(x, data = NULL, plots = FALSE, by = c("profile", "overall"), ...)
 \item{data}{Optional. The data the model was fitted to. A fit carries the
 columns it was built from, so this is only needed to override them.}
 
-\item{plots}{`TRUE` also draws the classification plots, as a side effect,
-before returning. Equivalent to calling `plot()` on the result.}
+\item{plots}{\code{TRUE} also draws the classification plots, as a side effect,
+before returning. Equivalent to calling \code{plot()} on the result.}
 
-\item{by}{`"profile"`, the default, assesses each profile's bivariate
-residuals separately; `"overall"` pools them. It is the one argument of a
+\item{by}{\code{"profile"}, the default, assesses each profile's bivariate
+residuals separately; \code{"overall"} pools them. It is the one argument of a
 gathered table this function forwards, because it is the one that changes
 what a gathered table means rather than which fit it is taken from. The
-`level` the classification tables use is not an argument here: it follows
+\code{level} the classification tables use is not an argument here: it follows
 from whether the fit has discrete group classes.}
 
-\item{...}{For `diagnostics()`, nothing further is accepted. An argument this
-function cannot forward raises an error of class `multilpa_bad_argument`
+\item{...}{For \code{diagnostics()}, nothing further is accepted. An argument this
+function cannot forward raises an error of class \code{multilpa_bad_argument}
 naming it, rather than being dropped on the way to a table that then means
-something other than what was asked for. For `plot()`, style overrides, as
-in [plot.multilpa()].}
+something other than what was asked for. For \code{plot()}, style overrides, as
+in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
 
-\item{row.names, optional}{Passed to the base generic; `row.names` is applied
+\item{row.names, optional}{Passed to the base generic; \code{row.names} is applied
 to the returned table.}
 }
 \value{
-An object of class `multilpa_diagnostics`. Read its tables with
-  `get_results(result, what = )`, which offers `"entropy"`, `"classification"`,
-  `"average_posteriors"`, `"residuals"` and `"all"`, and never with `$`. A
-  model family that has no bivariate residuals leaves that table out of
-  `"all"`, and asking for it by name raises `multilpa_no_group_classes`.
+An object of class \code{multilpa_diagnostics}. Read its tables with
+\code{get_results(result, what = )}, which offers \code{"entropy"}, \code{"classification"},
+\code{"average_posteriors"}, \code{"residuals"} and \code{"all"}, and never with \code{$}. A
+model family that has no bivariate residuals leaves that table out of
+\code{"all"}, and asking for it by name raises \code{multilpa_no_group_classes}.
 
-  `print()` returns the object invisibly, having printed one line per
-  diagnostic: relative entropy, smallest class, lowest average posterior and
-  largest residual, at each level the fit has. `plot()` returns the object
-  invisibly, having drawn the case-level entropy and posterior panels.
-  `as.data.frame()` returns the entropy table, the primary one.
+\code{print()} returns the object invisibly, having printed one line per
+diagnostic: relative entropy, smallest class, lowest average posterior and
+largest residual, at each level the fit has. \code{plot()} returns the object
+invisibly, having drawn the case-level entropy and posterior panels.
+\code{as.data.frame()} returns the entropy table, the primary one.
 }
 \description{
-`summary()` reports what a model estimated. This reports whether to believe
+\code{summary()} reports what a model estimated. This reports whether to believe
 it: how sharply the posterior separates the classes, how big each class
 actually is, how confidently each unit was assigned, and whether the
 within-profile independence the model assumes survives contact with the data.
 }
 \details{
-It gathers the four classification tables of [get_results()] --- `"entropy"`,
-`"classification"`, `"average_posteriors"` and `"residuals"` --- and prints
+It gathers the four classification tables of \code{\link[=get_results]{get_results()}} --- \code{"entropy"},
+\code{"classification"}, \code{"average_posteriors"} and \code{"residuals"} --- and prints
 one line of reading per diagnostic rather than four differently shaped
-tables. The tables themselves come back from `get_results()` on the result, or
+tables. The tables themselves come back from \code{get_results()} on the result, or
 on the fit.
 }
 \examples{
@@ -79,7 +79,7 @@ get_results(quality, what = "classification")
 get_results(diagnostics(fit, by = "overall"), what = "residuals")
 }
 \seealso{
-[get_results()] for these tables and every other one, [descriptives()]
-  for the before-the-fit counterpart, and [summary()] for what the model
-  estimated rather than whether to trust it.
+\code{\link[=get_results]{get_results()}} for these tables and every other one, \code{\link[=descriptives]{descriptives()}}
+for the before-the-fit counterpart, and \code{\link[=summary]{summary()}} for what the model
+estimated rather than whether to trust it.
 }

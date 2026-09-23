@@ -17,7 +17,7 @@ three_step(
 )
 }
 \arguments{
-\item{x}{A covariate-free fitted [multilpa()] or [lta()] model. A fit that
+\item{x}{A covariate-free fitted \code{\link[=multilpa]{multilpa()}} or \code{\link[=lta]{lta()}} model. A fit that
 already uses membership covariates cannot be corrected by the fixed,
 unconditional classification-error matrix used here.}
 
@@ -26,61 +26,61 @@ Shared fit columns are checked row by row; a frame with too little
 identifying information warns that alignment cannot be verified.}
 
 \item{outcome}{Name of a numeric outcome column not used as a measurement
-indicator in `x`. For `level = "groups"` it must be constant within each
+indicator in \code{x}. For \code{level = "groups"} it must be constant within each
 group.}
 
-\item{level}{`"individuals"` relates the outcome to profiles, `"groups"` to
+\item{level}{\code{"individuals"} relates the outcome to profiles, \code{"groups"} to
 group classes.}
 
-\item{method}{`"bch"` applies the Bolck-Croon-Hagenaars weights;
-`"proportional"` weights by the posteriors, which is simpler and
-attenuated; `"modal"` is the naive assignment, shown for comparison.}
+\item{method}{\code{"bch"} applies the Bolck-Croon-Hagenaars weights;
+\code{"proportional"} weights by the posteriors, which is simpler and
+attenuated; \code{"modal"} is the naive assignment, shown for comparison.}
 
 \item{ci_level}{Confidence level for the intervals.}
 
-\item{contrast}{`"none"` (the default) reports one outcome mean per class.
-`"pairs"` reports the difference between every pair of classes instead,
+\item{contrast}{\code{"none"} (the default) reports one outcome mean per class.
+\code{"pairs"} reports the difference between every pair of classes instead,
 which is the quantity a three-step analysis is usually run to test, with a
 statistic and a p-value against a difference of zero.}
 
 \item{adjust}{Multiplicity correction applied across the pairwise
-differences, passed to [stats::p.adjust()]. `"BH"` by default; `"none"`
-leaves the p-values uncorrected. Ignored for `contrast = "none"`, which
+differences, passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}. \code{"BH"} by default; \code{"none"}
+leaves the p-values uncorrected. Ignored for \code{contrast = "none"}, which
 tests nothing.}
 
-\item{vcov_type}{`"cluster"`, the default, sums the influence contributions
+\item{vcov_type}{\code{"cluster"}, the default, sums the influence contributions
 within the fit's groups and takes those groups as the independent units,
 which is the honest choice when the outcome is measured on observations
-nested inside them. `"independent"` treats every observation as its own
+nested inside them. \code{"independent"} treats every observation as its own
 independent unit instead. That ignores the nesting the model was fitted to
 and is only defensible when there is no nesting left to ignore, such as a
 fit with a single group; it is never substituted silently, and the choice
-is recorded in the result's `vcov_type` attribute.}
+is recorded in the result's \code{vcov_type} attribute.}
 }
 \value{
-A base `data.frame`. For `contrast = "none"` it has one row per class
-  and the columns `level`, `method`, `class`, `estimate`, `standard_error`,
-  `conf_low`, `conf_high` and `effective_n`. It carries no `statistic` or
-  `p_value`, unlike [r3step()]: an outcome mean has no meaningful null value
-  to be tested against, and a p-value for "this class's mean is zero" would
-  answer a question nobody asked. The comparison that does have a null is the
-  difference between two classes, and that is what `contrast = "pairs"`
-  returns: one row per pair with the columns `level`, `method`, `class`,
-  `reference_class`, `estimate` (the mean of `class` minus the mean of
-  `reference_class`), `standard_error`, `statistic`, `p_value`,
-  `p_value_adjusted`, `conf_low` and `conf_high`, matching [r3step()].
-  A contrast with zero standard error has no defined test statistic or
-  p-value; those columns are `NA_real_` rather than a spurious finite test.
+A base \code{data.frame}. For \code{contrast = "none"} it has one row per class
+and the columns \code{level}, \code{method}, \code{class}, \code{estimate}, \code{standard_error},
+\code{conf_low}, \code{conf_high} and \code{effective_n}. It carries no \code{statistic} or
+\code{p_value}, unlike \code{\link[=r3step]{r3step()}}: an outcome mean has no meaningful null value
+to be tested against, and a p-value for "this class's mean is zero" would
+answer a question nobody asked. The comparison that does have a null is the
+difference between two classes, and that is what \code{contrast = "pairs"}
+returns: one row per pair with the columns \code{level}, \code{method}, \code{class},
+\code{reference_class}, \code{estimate} (the mean of \code{class} minus the mean of
+\code{reference_class}), \code{standard_error}, \code{statistic}, \code{p_value},
+\code{p_value_adjusted}, \code{conf_low} and \code{conf_high}, matching \code{\link[=r3step]{r3step()}}.
+A contrast with zero standard error has no defined test statistic or
+p-value; those columns are \code{NA_real_} rather than a spurious finite test.
 
-  Standard errors are cluster-robust in both shapes under the default
-  `vcov_type = "cluster"`, taking the fit's groups as the independent units,
-  so they remain honest when the outcome is measured on observations nested
-  inside those groups; `vcov_type = "independent"` gives the unclustered
-  variance instead. The variance that was used is recorded in the result's
-  `vcov_type` attribute, and for `contrast = "pairs"` the correction applied
-  to `p_value_adjusted` is recorded in its `adjust` attribute. A
-  `contrast = "none"` table tests nothing, so it carries no `adjust`
-  attribute.
+Standard errors are cluster-robust in both shapes under the default
+\code{vcov_type = "cluster"}, taking the fit's groups as the independent units,
+so they remain honest when the outcome is measured on observations nested
+inside those groups; \code{vcov_type = "independent"} gives the unclustered
+variance instead. The variance that was used is recorded in the result's
+\code{vcov_type} attribute, and for \code{contrast = "pairs"} the correction applied
+to \code{p_value_adjusted} is recorded in its \code{adjust} attribute. A
+\code{contrast = "none"} table tests nothing, so it carries no \code{adjust}
+attribute.
 }
 \description{
 The three-step approach: the measurement model is fitted first, units are
@@ -91,29 +91,29 @@ instead attenuates every difference. This does neither.
 }
 \details{
 The correction assumes the outcome is independent of the assigned
-  class given the true one, which is what makes a three-step method valid.
-  On a [lta()] fit, `level = "individuals"` uses one row per occasion and
-  relates the outcome to the profile at that occasion. The default
-  group-clustered variance accounts for repeated occasions within a group.
-  This is a marginal profile-outcome analysis; it does not estimate an
-  outcome effect on transitions or a sequence-level outcome model.
+class given the true one, which is what makes a three-step method valid.
+On a \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} uses one row per occasion and
+relates the outcome to the profile at that occasion. The default
+group-clustered variance accounts for repeated occasions within a group.
+This is a marginal profile-outcome analysis; it does not estimate an
+outcome effect on transitions or a sequence-level outcome model.
 
-  A cluster-robust variance is the sum of one outer product per independent
-  unit, and those contributions sum to zero at the estimate, so it has rank
-  at most one less than the number of units. With a single group it is
-  exactly zero and with as many groups as classes it is singular. Both are
-  refused with `multilpa_too_few_groups` rather than reported as a very
-  small standard error; `vcov_type = "independent"` is the labelled way to
-  ask for the unclustered variance instead.
+A cluster-robust variance is the sum of one outer product per independent
+unit, and those contributions sum to zero at the estimate, so it has rank
+at most one less than the number of units. With a single group it is
+exactly zero and with as many groups as classes it is singular. Both are
+refused with \code{multilpa_too_few_groups} rather than reported as a very
+small standard error; \code{vcov_type = "independent"} is the labelled way to
+ask for the unclustered variance instead.
 
-  The error matrix is treated as known rather than estimated, so the intervals
-  are optimistic and the amount is worth stating. Over 60 replications of a
-  two-profile design with 8% misclassification and a true class difference of
-  10, `"bch"` recovered that difference with a bias of -0.13 against -1.28 for
-  `"modal"` and -1.82 for `"proportional"`, and its nominal 95% intervals
-  covered the truth 85% of the time. Treat the point estimate as close to
-  unbiased and the interval as somewhat too narrow; the other two methods are
-  biased enough that their intervals covered the truth in none of the 60.
+The error matrix is treated as known rather than estimated, so the intervals
+are optimistic and the amount is worth stating. Over 60 replications of a
+two-profile design with 8\% misclassification and a true class difference of
+10, \code{"bch"} recovered that difference with a bias of -0.13 against -1.28 for
+\code{"modal"} and -1.82 for \code{"proportional"}, and its nominal 95\% intervals
+covered the truth 85\% of the time. Treat the point estimate as close to
+unbiased and the interval as somewhat too narrow; the other two methods are
+biased enough that their intervals covered the truth in none of the 60.
 }
 \examples{
 set.seed(11)
@@ -132,8 +132,8 @@ three_step(fit, example_data, "y", contrast = "pairs")
 }
 \references{
 Vermunt, J. K. (2010). Latent class modeling with covariates: two
-  improved three-step approaches. *Political Analysis*, 18, 450--469.
-  Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
-  modeling with continuous distal outcomes. *Structural Equation Modeling*,
-  23, 20--31.
+improved three-step approaches. \emph{Political Analysis}, 18, 450--469.
+Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
+modeling with continuous distal outcomes. \emph{Structural Equation Modeling},
+23, 20--31.
 }

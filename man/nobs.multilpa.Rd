@@ -7,15 +7,15 @@
 \method{nobs}{multilpa}(object, ...)
 }
 \arguments{
-\item{object}{An `multilpa` model.}
+\item{object}{An \code{multilpa} model.}
 
-\item{...}{Reserved for compatibility with `nobs()`.}
+\item{...}{Reserved for compatibility with \code{nobs()}.}
 }
 \value{
 A single integer: the number of observed groups, which are the
-  independent units of the two-level likelihood. For the individual count
-  alongside every other sample-size-dependent quantity, call
-  `get_results(x, "information_criteria")`.
+independent units of the two-level likelihood. For the individual count
+alongside every other sample-size-dependent quantity, call
+\code{get_results(x, "information_criteria")}.
 }
 \description{
 Extract the number of independent groups

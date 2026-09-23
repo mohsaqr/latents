@@ -7,24 +7,24 @@
 \method{as.data.frame}{multilpa_bootstrap_lrt}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An object of class `multilpa_bootstrap_lrt`.}
+\item{x}{An object of class \code{multilpa_bootstrap_lrt}.}
 
-\item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
+\item{row.names}{Passed to \code{data.frame()}; \code{NULL} gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
-naming it, rather than being dropped, because `what =` used to live on
+\item{...}{Must be empty. An argument here raises \code{multilpa_bad_argument}
+naming it, rather than being dropped, because \verb{what =} used to live on
 this generic and silently returning the primary table instead of the one
 that was asked for is the one outcome worth refusing.}
 }
 \value{
-A base `data.frame`: the one-row test result.
+A base \code{data.frame}: the one-row test result.
 }
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 The other tables are named rather than positional, so they belong to
-[get_results()], which takes `what` and refuses a name this object has not.
+\code{\link[=get_results]{get_results()}}, which takes \code{what} and refuses a name this object has not.
 }
 \examples{
 set.seed(1)
@@ -42,5 +42,5 @@ comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
 as.data.frame(comparison)
 }
 \seealso{
-[get_results()] for every other table this object holds.
+\code{\link[=get_results]{get_results()}} for every other table this object holds.
 }

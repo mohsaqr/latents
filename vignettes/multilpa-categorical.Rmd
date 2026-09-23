@@ -1,0 +1,172 @@
+---
+title: "Two-level latent class analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Two-level latent class analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 3, width = 100)
+```
+
+Two-level latent class analysis (LCA) is used when the indicators are
+categorical: yes/no answers, ratings on a few ordered options, or unordered
+choices. Like multilevel latent profile analysis, it estimates latent classes
+of observations, called profiles in the output, and latent group classes that
+differ in how probable each profile is for their observations. The difference
+is in how a profile is described: by the probability of each answer to each
+item, instead of a mean and a variance. `multilpa()` fits LCA when the
+indicators are named in `categorical`; naming only some of them gives a mixed
+model with both kinds of indicator.
+
+## What the package supports
+
+- **Item types.** Binary, ordinal and nominal items share one
+  parameterization: a free probability for every category in every profile.
+  Numeric, integer, logical, character and factor columns are accepted; factor
+  levels keep their order, other types are sorted.
+- **Mixed measurement.** Continuous and categorical indicators in one model.
+- **Missing answers.** `missing = "fiml"` uses the observed answers of each
+  row.
+- **Standard errors.** Observed-information and robust
+  (`vcov_type = "robust"`) standard errors through `parameter_inference()`.
+- **Model comparison.** `enumerate_classes()` and, for complete data,
+  `bootstrap_lrt()`.
+- **External variables.** `three_step()` and `r3step()` work on a categorical
+  fit.
+- **Membership covariates.** `profile_covariates` and `group_covariates` work
+  with categorical indicators; standard errors are not available for these
+  fits.
+- **Transitions.** `lta()` accepts categorical indicators.
+- **Bounds.** `min_probability` keeps every response probability above a
+  lower bound.
+
+## Data
+
+`student_esm` holds experience-sampling data: 2,582 prompts from 100 university
+students, answered at times when the student had not been studying. `student`
+identifies the group. Eight yes/no items record the leisure activities done
+since the previous prompt, and four items rate affect from 1 to 7. `day` is the
+study day, from 0 to 13. `?student_esm` gives the source.
+
+```{r setup}
+library(multilpa)
+```
+
+To keep the example short, we call `subset()` with `day <= 6`, which keeps the
+first week and all 100 students.
+
+```{r first-week}
+first_week <- subset(student_esm, day <= 6)
+```
+
+The eight activity items are named in two arguments of each fit, so we store
+their names once.
+
+```{r activities}
+activities <- c("time_with_friends", "on_social_media", "tv_video_games",
+                "listened_music", "sports", "walking", "reading",
+                "part_time_job")
+```
+
+## Fitting the model
+
+To fit the model, we call `multilpa()` with `vars` for the indicators,
+`categorical` for the indicators to treat as categorical, `id` for the group,
+`n_profiles`, `n_group_classes`, `n_starts`, `seed`, and `tol` for a tighter
+convergence tolerance, which standard errors need.
+
+```{r lca}
+lca <- multilpa(first_week, vars = activities, categorical = activities,
+                id = "student", n_profiles = 2, n_group_classes = 2,
+                n_starts = 10, tol = 1e-10, seed = 1)
+lca
+```
+
+To obtain the response probabilities, we call `get_results()` with
+`"responses"`. There is one row per profile, item and category;
+`probability` is the chance of that answer in that profile.
+
+```{r responses}
+get_results(lca, "responses")
+```
+
+To see them, we call `plot()` with `what = "responses"`: one line per
+profile across the items.
+
+```{r responses-plot}
+plot(lca, what = "responses")
+```
+
+To obtain the profile probabilities of each group class, we call
+`get_results()` with `"profile_probabilities"`, and to compare the classes,
+`plot()` with `what = "probabilities"`.
+
+```{r profile-probabilities}
+get_results(lca, "profile_probabilities")
+```
+
+```{r probability-plot}
+plot(lca, what = "probabilities")
+```
+
+To obtain classification certainty, we call `get_results()` with
+`"entropy"`.
+
+```{r entropy}
+get_results(lca, "entropy")
+```
+
+## Mixed indicators
+
+To combine both kinds, we call `multilpa()` with all indicators in `vars` and
+only the categorical ones in `categorical`. Here three affect ratings are
+continuous and the activities categorical. `worried` is left out: about half
+its ratings are 1, which can push a profile's variance to its lower bound.
+
+```{r mixed}
+mixed <- multilpa(first_week,
+                  vars = c("happy", "relaxed", "exhausted", activities),
+                  categorical = activities, id = "student", n_profiles = 2,
+                  n_group_classes = 2, n_starts = 10, seed = 1)
+```
+
+To obtain the means and variances of the continuous indicators, we call
+`get_results()` on the fit; for the answer probabilities of the categorical
+ones, `get_results()` with `"responses"`.
+
+```{r mixed-results}
+get_results(mixed)
+get_results(mixed, "responses")
+```
+
+## Reference
+
+The calls below list other functions that work with categorical and mixed
+models. Each comment states what the call returns.
+
+```{r reference, eval = FALSE}
+get_results(lca, "classification")               # class sizes and average posteriors
+get_results(lca, "residuals")                    # residual association within profiles
+parameter_inference(lca)                         # standard errors and intervals
+enumerate_classes(first_week, vars = activities, categorical = activities,
+                  id = "student", n_profiles = 2:3,
+                  n_group_classes = 1:2, seed = 1)  # compare numbers of classes (slow)
+plot(mixed)                                      # means of the continuous indicators
+plot(mixed, what = "responses")                  # answers to the categorical ones
+multilpa(first_week, vars = activities, categorical = activities,
+         id = "student", n_profiles = 2, n_group_classes = 2,
+         missing = "fiml")                       # incomplete answers, if any
+```
+
+## Assumptions
+
+- Items are independent within a profile.
+- Every category of every item has its own probability in each profile, so
+  rare answers can push probabilities to their lower bound (`min_probability`).
+- Categories are taken from the observed values; factor levels keep their
+  order.

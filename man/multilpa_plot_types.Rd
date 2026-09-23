@@ -7,12 +7,12 @@
 multilpa_plot_types()
 }
 \value{
-A base `data.frame` with one row per plot type and the columns
-  `type` (the value to pass as `what`), `group` (`"measurement"`,
-  `"structure"`, `"diagnostics"` or `"selection"`), and `description`.
+A base \code{data.frame} with one row per plot type and the columns
+\code{type} (the value to pass as \code{what}), \code{group} (\code{"measurement"},
+\code{"structure"}, \code{"diagnostics"} or \code{"selection"}), and \code{description}.
 }
 \description{
-Returns the catalogue of `what =` values accepted by the `plot()` methods,
+Returns the catalogue of \verb{what =} values accepted by the \code{plot()} methods,
 with the group each belongs to, so the available views can be listed rather
 than recalled from a help page.
 }

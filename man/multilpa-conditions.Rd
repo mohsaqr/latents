@@ -15,113 +15,113 @@ stable, the messages are not.
 \section{Input and data contracts}{
 
 \describe{
-  \item{`multilpa_bad_data`}{The data frame, the indicator columns or the
-    group column break the input contract: too few rows, a duplicated or
-    absent column name, an indicator that is not a numeric vector, an
-    indicator that is constant or wholly unobserved, missing or non-finite
-    values under `missing = "error"`, or a missing group identifier.}
-  \item{`multilpa_bad_argument`}{A scalar argument is outside its contract:
-    `n_profiles`, `n_group_classes`, `n_starts`, `max_iter`, `tol`,
-    `min_variance`, or a `seed` or `seeds` that is not a whole number
-    `set.seed()` accepts.}
-  \item{`multilpa_bad_time`}{`time` is missing, or repeats a position within
-    a group, so the ordering it is supposed to supply does not exist.}
-  \item{`multilpa_bad_categorical`}{A categorical indicator cannot be
-    encoded, or `min_probability` leaves no room for its number of
-    categories.}
-  \item{`multilpa_bad_start`}{Supplied starting values are missing a block
-    the model needs, do not have the shape it requires, or carry labels that
-    name an indicator or a category this fit does not have.}
-  \item{`multilpa_bad_fixed`}{A `fixed` request names a block the model does
-    not have, or one that `start` does not supply, or `start` is absent.}
-  \item{`multilpa_bad_stage`}{A `measurement` fit offered to [fit_staged()]
-    has already estimated multiple group classes, or was fitted to different
-    indicators, profiles or measurement options than the stage requested.}
-  \item{`multilpa_bad_transition`}{A transition model was asked for with
-    fewer than two profiles, or with no group observed at two occasions.}
-  \item{`multilpa_bad_inference_data`}{The data passed to a verb alongside
-    a fit do not reproduce the fit: a different number of rows, different
-    values, or a different group ordering. Raised for a plain `multilpa` fit and for a
-    covariate fit alike.}
-  \item{`multilpa_no_indicator_data`}{A fit carries no stored indicators, so
-    the request cannot be answered without the original data.}
-  \item{`multilpa_incomplete_fit`}{A fit is missing fields the request
-    needs, usually because it was made by an older version. Raised instead
-    of letting a list subset by an absent name yield a `NULL` element keyed
-    `NA`, which would leave a hole in the result.}
+\item{\code{multilpa_bad_data}}{The data frame, the indicator columns or the
+group column break the input contract: too few rows, a duplicated or
+absent column name, an indicator that is not a numeric vector, an
+indicator that is constant or wholly unobserved, missing or non-finite
+values under \code{missing = "error"}, or a missing group identifier.}
+\item{\code{multilpa_bad_argument}}{A scalar argument is outside its contract:
+\code{n_profiles}, \code{n_group_classes}, \code{n_starts}, \code{max_iter}, \code{tol},
+\code{min_variance}, or a \code{seed} or \code{seeds} that is not a whole number
+\code{set.seed()} accepts.}
+\item{\code{multilpa_bad_time}}{\code{time} is missing, or repeats a position within
+a group, so the ordering it is supposed to supply does not exist.}
+\item{\code{multilpa_bad_categorical}}{A categorical indicator cannot be
+encoded, or \code{min_probability} leaves no room for its number of
+categories.}
+\item{\code{multilpa_bad_start}}{Supplied starting values are missing a block
+the model needs, do not have the shape it requires, or carry labels that
+name an indicator or a category this fit does not have.}
+\item{\code{multilpa_bad_fixed}}{A \code{fixed} request names a block the model does
+not have, or one that \code{start} does not supply, or \code{start} is absent.}
+\item{\code{multilpa_bad_stage}}{A \code{measurement} fit offered to \code{\link[=fit_staged]{fit_staged()}}
+has already estimated multiple group classes, or was fitted to different
+indicators, profiles or measurement options than the stage requested.}
+\item{\code{multilpa_bad_transition}}{A transition model was asked for with
+fewer than two profiles, or with no group observed at two occasions.}
+\item{\code{multilpa_bad_inference_data}}{The data passed to a verb alongside
+a fit do not reproduce the fit: a different number of rows, different
+values, or a different group ordering. Raised for a plain \code{multilpa} fit and for a
+covariate fit alike.}
+\item{\code{multilpa_no_indicator_data}}{A fit carries no stored indicators, so
+the request cannot be answered without the original data.}
+\item{\code{multilpa_incomplete_fit}}{A fit is missing fields the request
+needs, usually because it was made by an older version. Raised instead
+of letting a list subset by an absent name yield a \code{NULL} element keyed
+\code{NA}, which would leave a hole in the result.}
 }
 }
 
 \section{Estimation and identification}{
 
 \describe{
-  \item{`multilpa_unidentified`}{The requested model cannot be identified
-    from these data: more profiles than distinct observed indicator rows,
-    more group classes than groups, or more than one group class with only
-    one profile or only singleton groups.}
-  \item{`multilpa_all_starts_failed`}{Every EM start raised, so no fit was
-    produced. The message carries the distinct start errors.}
-  \item{`multilpa_empty_profile`}{A profile has no observed responses for an
-    indicator, so its response probabilities are not identified; or a group
-    class has no effective membership, so the profile prevalence within it is
-    not defined.}
-  \item{`multilpa_too_few_groups`}{Fewer independent groups than the
-    quantities being reported, so the covariance cannot be formed. Raised by
-    robust [parameter_inference()], and by [three_step()] and [r3step()],
-    whose cluster-robust contributions sum to zero at the estimate and so
-    span at most one dimension fewer than the number of groups.}
-  \item{`multilpa_inseparable_classes`}{Classes cannot be separated well
-    enough for the requested three-step correction.}
-  \item{`multilpa_no_converge`}{A fit required by the request did not
-    converge, and using it would report an unconverged estimate as final.
-    Raised for a plain `multilpa` fit and for a covariate fit alike.}
-  \item{`multilpa_boundary_fit`}{A variance or a response probability sits
-    at its bound, or a mixing probability is zero, so the parameter is on
-    the edge of its space and the asymptotic normal approximation Wald
-    inference relies on does not hold. The standard error is refused rather
-    than reported.}
-  \item{`multilpa_singular_information`}{The observed information is not
-    positive definite, or is numerically singular, so it cannot be inverted
-    and no standard error can be formed.}
-  \item{`multilpa_unknown_candidate`}{The requested profile and group-class
-    combination was never enumerated.}
-  \item{`multilpa_failed_candidate`}{An enumerated candidate could not be
-    fitted. The message carries that candidate's error.}
-  \item{`multilpa_no_group_classes`}{A verb that needs discrete group
-    classes was called on a model that has none. Every model family this
-    version fits has them, so this is a guard against a future family
-    rather than a refusal the current surface can produce.}
+\item{\code{multilpa_unidentified}}{The requested model cannot be identified
+from these data: more profiles than distinct observed indicator rows,
+more group classes than groups, or more than one group class with only
+one profile or only singleton groups.}
+\item{\code{multilpa_all_starts_failed}}{Every EM start raised, so no fit was
+produced. The message carries the distinct start errors.}
+\item{\code{multilpa_empty_profile}}{A profile has no observed responses for an
+indicator, so its response probabilities are not identified; or a group
+class has no effective membership, so the profile prevalence within it is
+not defined.}
+\item{\code{multilpa_too_few_groups}}{Fewer independent groups than the
+quantities being reported, so the covariance cannot be formed. Raised by
+robust \code{\link[=parameter_inference]{parameter_inference()}}, and by \code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}},
+whose cluster-robust contributions sum to zero at the estimate and so
+span at most one dimension fewer than the number of groups.}
+\item{\code{multilpa_inseparable_classes}}{Classes cannot be separated well
+enough for the requested three-step correction.}
+\item{\code{multilpa_no_converge}}{A fit required by the request did not
+converge, and using it would report an unconverged estimate as final.
+Raised for a plain \code{multilpa} fit and for a covariate fit alike.}
+\item{\code{multilpa_boundary_fit}}{A variance or a response probability sits
+at its bound, or a mixing probability is zero, so the parameter is on
+the edge of its space and the asymptotic normal approximation Wald
+inference relies on does not hold. The standard error is refused rather
+than reported.}
+\item{\code{multilpa_singular_information}}{The observed information is not
+positive definite, or is numerically singular, so it cannot be inverted
+and no standard error can be formed.}
+\item{\code{multilpa_unknown_candidate}}{The requested profile and group-class
+combination was never enumerated.}
+\item{\code{multilpa_failed_candidate}}{An enumerated candidate could not be
+fitted. The message carries that candidate's error.}
+\item{\code{multilpa_no_group_classes}}{A verb that needs discrete group
+classes was called on a model that has none. Every model family this
+version fits has them, so this is a guard against a future family
+rather than a refusal the current surface can produce.}
 }
 }
 
 \section{Model comparison}{
 
 \describe{
-  \item{`multilpa_bad_nesting`}{Two models are not nested in the way the
-    comparison requires, including a [bootstrap_lrt()] pair whose held
-    measurement blocks differ, are held at different values, or are held in
-    only one of the two models.}
-  \item{`multilpa_incomparable_models`}{Two models were fitted to different
-    data, or differ in covariance structure or centering mode where the
-    comparison requires them to match.}
-  \item{`multilpa_reversed_likelihood`}{The model with more parameters has
-    the lower likelihood, so at least one fit is at a local optimum and the
-    comparison is meaningless.}
-  \item{`multilpa_bad_outcome`}{A distal outcome given to [three_step()]
-    is not of a type the requested method can handle, varies within a group
-    when a group-level outcome is requested, or is a measurement indicator
-    that already helped define the classes.}
-  \item{`multilpa_bad_covariate`}{A predictor given to [r3step()] varies
-    within a group when group-level membership is predicted, makes the
-    design rank deficient, or is a measurement indicator that already
-    helped define the classes. The counterpart of `multilpa_bad_outcome`.}
-  \item{`multilpa_indicator_reused`}{A measurement indicator was offered
-    as an external variable, to [three_step()] as an outcome or to
-    [r3step()] as a predictor. Raised alongside `multilpa_bad_outcome` or
-    `multilpa_bad_covariate`, so one handler catches the mistake from
-    either verb.}
-  \item{`multilpa_bad_scores`}{Score contributions could not be formed for
-    the robust sandwich.}
+\item{\code{multilpa_bad_nesting}}{Two models are not nested in the way the
+comparison requires, including a \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} pair whose held
+measurement blocks differ, are held at different values, or are held in
+only one of the two models.}
+\item{\code{multilpa_incomparable_models}}{Two models were fitted to different
+data, or differ in covariance structure or centering mode where the
+comparison requires them to match.}
+\item{\code{multilpa_reversed_likelihood}}{The model with more parameters has
+the lower likelihood, so at least one fit is at a local optimum and the
+comparison is meaningless.}
+\item{\code{multilpa_bad_outcome}}{A distal outcome given to \code{\link[=three_step]{three_step()}}
+is not of a type the requested method can handle, varies within a group
+when a group-level outcome is requested, or is a measurement indicator
+that already helped define the classes.}
+\item{\code{multilpa_bad_covariate}}{A predictor given to \code{\link[=r3step]{r3step()}} varies
+within a group when group-level membership is predicted, makes the
+design rank deficient, or is a measurement indicator that already
+helped define the classes. The counterpart of \code{multilpa_bad_outcome}.}
+\item{\code{multilpa_indicator_reused}}{A measurement indicator was offered
+as an external variable, to \code{\link[=three_step]{three_step()}} as an outcome or to
+\code{\link[=r3step]{r3step()}} as a predictor. Raised alongside \code{multilpa_bad_outcome} or
+\code{multilpa_bad_covariate}, so one handler catches the mistake from
+either verb.}
+\item{\code{multilpa_bad_scores}}{Score contributions could not be formed for
+the robust sandwich.}
 }
 }
 
@@ -130,62 +130,62 @@ stable, the messages are not.
 These name capabilities the package does not have. They are raised in place
 of returning a number that would be wrong.
 \describe{
-  \item{`multilpa_no_inference`}{Standard errors are not available for this
-    model family. Raised by [vcov()] and [parameter_inference()] on a
-    `multilpa_transitions` fit.}
-  \item{`multilpa_unsupported_inference`}{Standard errors are not available
-    for this particular fit. Raised for a covariate fit with categorical
-    indicators, where no score is implemented for the response
-    probabilities, for fits made by an older version, for a covariance
-    structure the Wald coordinates cannot express --- which
-    `parameter_inference(method = "bootstrap")` reports instead --- and by
-    that bootstrap itself for a fit holding a measurement block, whose held
-    values came from a fit these data do not resample.}
-  \item{`multilpa_bootstrap_failed`}{Fewer than two resamples produced a
-    usable fit, so there is nothing to read a spread from. Raised by
-    `parameter_inference(method = "bootstrap")`; the message carries the
-    first reason a resample gave.}
-  \item{`multilpa_no_free_parameters`}{The fit holds every parameter it has,
-    so there is no free coordinate to report a standard error for. Raised by
-    [parameter_inference()] and [vcov()] on a fully held fit.}
-  \item{`multilpa_held_parameter`}{A named parameter was held fixed by this
-    fit, so it has no sampling distribution and no confidence interval.
-    Raised by [confint()] when `parm` names a held coordinate.}
-  \item{`multilpa_unsupported_sensitivity`}{[sensitivity()] was called on a
-    model family whose refit needs arguments the shared refit does not carry,
-    whose profile labels cannot yet be aligned between two fits, or a
-    directly fixed fit whose original free starts cannot be replayed.}
-  \item{`multilpa_unsupported_three_step`}{[three_step()] or [r3step()] was
-    called on a membership-covariate fit. Its classification errors depend
-    on the fitted predictors, but the correction here uses one unconditional
-    error matrix.}
-  \item{`multilpa_unsupported_bootstrap`}{[bootstrap_lrt()] was called on a
-    person-centred fit. Group baselines were removed before estimation and
-    no distribution for them is available to simulate raw data under the
-    null model.}
-  \item{`multilpa_no_plot`}{`plot(x, what = "all")` was called on an object
-    whose plot method names no views to draw.}
-  \item{`multilpa_no_time`}{A sequence verb was called on a fit made without
-    `time`, so it carries no ordering.}
-  \item{`multilpa_missing_package`}{A verb needs a package listed in
-    `Suggests` that is not installed. Raised by [get_tna()] and
-    [get_group_tna()] when the `tna` package is absent; the message names
-    the package and how to install it.}
+\item{\code{multilpa_no_inference}}{Standard errors are not available for this
+model family. Raised by \code{\link[=vcov]{vcov()}} and \code{\link[=parameter_inference]{parameter_inference()}} on a
+\code{multilpa_transitions} fit.}
+\item{\code{multilpa_unsupported_inference}}{Standard errors are not available
+for this particular fit. Raised for a covariate fit with categorical
+indicators, where no score is implemented for the response
+probabilities, for fits made by an older version, for a covariance
+structure the Wald coordinates cannot express --- which
+\code{parameter_inference(method = "bootstrap")} reports instead --- and by
+that bootstrap itself for a fit holding a measurement block, whose held
+values came from a fit these data do not resample.}
+\item{\code{multilpa_bootstrap_failed}}{Fewer than two resamples produced a
+usable fit, so there is nothing to read a spread from. Raised by
+\code{parameter_inference(method = "bootstrap")}; the message carries the
+first reason a resample gave.}
+\item{\code{multilpa_no_free_parameters}}{The fit holds every parameter it has,
+so there is no free coordinate to report a standard error for. Raised by
+\code{\link[=parameter_inference]{parameter_inference()}} and \code{\link[=vcov]{vcov()}} on a fully held fit.}
+\item{\code{multilpa_held_parameter}}{A named parameter was held fixed by this
+fit, so it has no sampling distribution and no confidence interval.
+Raised by \code{\link[=confint]{confint()}} when \code{parm} names a held coordinate.}
+\item{\code{multilpa_unsupported_sensitivity}}{\code{\link[=sensitivity]{sensitivity()}} was called on a
+model family whose refit needs arguments the shared refit does not carry,
+whose profile labels cannot yet be aligned between two fits, or a
+directly fixed fit whose original free starts cannot be replayed.}
+\item{\code{multilpa_unsupported_three_step}}{\code{\link[=three_step]{three_step()}} or \code{\link[=r3step]{r3step()}} was
+called on a membership-covariate fit. Its classification errors depend
+on the fitted predictors, but the correction here uses one unconditional
+error matrix.}
+\item{\code{multilpa_unsupported_bootstrap}}{\code{\link[=bootstrap_lrt]{bootstrap_lrt()}} was called on a
+person-centred fit. Group baselines were removed before estimation and
+no distribution for them is available to simulate raw data under the
+null model.}
+\item{\code{multilpa_no_plot}}{\code{plot(x, what = "all")} was called on an object
+whose plot method names no views to draw.}
+\item{\code{multilpa_no_time}}{A sequence verb was called on a fit made without
+\code{time}, so it carries no ordering.}
+\item{\code{multilpa_missing_package}}{A verb needs a package listed in
+\code{Suggests} that is not installed. Raised by \code{\link[=get_tna]{get_tna()}} and
+\code{\link[=get_group_tna]{get_group_tna()}} when the \code{tna} package is absent; the message names
+the package and how to install it.}
 }
 }
 
 \section{Plotting}{
 
 \describe{
-  \item{`multilpa_no_continuous`, `multilpa_no_categorical`}{The requested
-    panel needs indicators of a kind this fit does not have.}
-  \item{`multilpa_nothing_to_describe`}{[descriptives()] was given no
-    variables to describe: either `vars` named none, or the frame has no
-    numeric column outside `id` and `by` to fall back on.}
-  \item{`multilpa_nothing_to_plot`}{The requested panel has no rows to draw.}
-  \item{`multilpa_unknown_category`, `multilpa_unknown_criterion`}{A named
-    category or information criterion does not exist in this fit.}
-  \item{`multilpa_bad_scale`}{An unrecognised plotting scale was requested.}
+\item{\code{multilpa_no_continuous}, \code{multilpa_no_categorical}}{The requested
+panel needs indicators of a kind this fit does not have.}
+\item{\code{multilpa_nothing_to_describe}}{\code{\link[=descriptives]{descriptives()}} was given no
+variables to describe: either \code{vars} named none, or the frame has no
+numeric column outside \code{id} and \code{by} to fall back on.}
+\item{\code{multilpa_nothing_to_plot}}{The requested panel has no rows to draw.}
+\item{\code{multilpa_unknown_category}, \code{multilpa_unknown_criterion}}{A named
+category or information criterion does not exist in this fit.}
+\item{\code{multilpa_bad_scale}}{An unrecognised plotting scale was requested.}
 }
 }
 
@@ -195,41 +195,41 @@ A fit that is returned but qualified warns rather than errors, so that a
 simulation loop can catch the qualification it cares about and let the
 others through.
 \describe{
-  \item{`multilpa_failed_starts`}{Some, but not all, EM starts raised. The
-    surviving starts are in `get_results(fit, "starts")`.}
-  \item{`multilpa_unconverged`}{The best start had not converged when
-    `max_iter` was reached, so the returned estimate is not a maximum.}
-  \item{`multilpa_boundary`}{A variance, or a covariance eigenvalue, sits at
-    `min_variance`, so the fit is bound-active and its standard errors are
-    not valid at that parameter.}
-  \item{`multilpa_small_classes`}{A profile or group class has effective
-    membership below one, so it is supported by less than one observation.}
-  \item{`multilpa_failed_replicates`}{Some bootstrap replicates failed
-    validation, so the bootstrap p-value is `NA`.}
-  \item{`multilpa_single_level`}{`id = NULL` was passed, so the fit has one
-    observation per unit and no second level. Raised by [multilpa()] on every
-    such fit: this package is for the two-level model, and fitting the
-    one-level reduction of it is a choice worth stating out loud.}
-  \item{`multilpa_bootstrap_dropped`}{Some resamples did not produce a usable
-    fit and were left out of the interval. Raised by
-    `parameter_inference(method = "bootstrap")`, naming how many, so the
-    count the interval rests on is never quietly smaller than `iter`.}
-  \item{`multilpa_sensitivity_dropped`}{One or more seeds did not produce a
-    fit in [sensitivity()]. Their rows are `NA` rather than absent, and the
-    warning names how many failed and the first reason, so the table is never
-    quietly shorter than `seeds`.}
-  \item{`multilpa_extreme_coefficients`}{A membership logit coefficient is
-    large enough that the class is close to separated, so the estimate is
-    driven by scaling, a sparse class or separation rather than by the data.}
-  \item{`multilpa_empty_transition_row`}{A profile is never occupied before a
-    final occasion, so its transition row is uniform by construction rather
-    than estimated. `get_results(fit, "transitions", estimated = FALSE)`
-    lists them. The transition-network handoff also warns when it includes
-    such a row, because it cannot be read as evidence of persistence.}
-  \item{`multilpa_unverified_alignment`}{A supplied `data` frame has too
-    little fitted information to establish row order, for example only a
-    repeated group identifier. The result is returned on the caller's
-    assurance that the rows are in fitting order.}
+\item{\code{multilpa_failed_starts}}{Some, but not all, EM starts raised. The
+surviving starts are in \code{get_results(fit, "starts")}.}
+\item{\code{multilpa_unconverged}}{The best start had not converged when
+\code{max_iter} was reached, so the returned estimate is not a maximum.}
+\item{\code{multilpa_boundary}}{A variance, or a covariance eigenvalue, sits at
+\code{min_variance}, so the fit is bound-active and its standard errors are
+not valid at that parameter.}
+\item{\code{multilpa_small_classes}}{A profile or group class has effective
+membership below one, so it is supported by less than one observation.}
+\item{\code{multilpa_failed_replicates}}{Some bootstrap replicates failed
+validation, so the bootstrap p-value is \code{NA}.}
+\item{\code{multilpa_single_level}}{\code{id = NULL} was passed, so the fit has one
+observation per unit and no second level. Raised by \code{\link[=multilpa]{multilpa()}} on every
+such fit: this package is for the two-level model, and fitting the
+one-level reduction of it is a choice worth stating out loud.}
+\item{\code{multilpa_bootstrap_dropped}}{Some resamples did not produce a usable
+fit and were left out of the interval. Raised by
+\code{parameter_inference(method = "bootstrap")}, naming how many, so the
+count the interval rests on is never quietly smaller than \code{iter}.}
+\item{\code{multilpa_sensitivity_dropped}}{One or more seeds did not produce a
+fit in \code{\link[=sensitivity]{sensitivity()}}. Their rows are \code{NA} rather than absent, and the
+warning names how many failed and the first reason, so the table is never
+quietly shorter than \code{seeds}.}
+\item{\code{multilpa_extreme_coefficients}}{A membership logit coefficient is
+large enough that the class is close to separated, so the estimate is
+driven by scaling, a sparse class or separation rather than by the data.}
+\item{\code{multilpa_empty_transition_row}}{A profile is never occupied before a
+final occasion, so its transition row is uniform by construction rather
+than estimated. \code{get_results(fit, "transitions", estimated = FALSE)}
+lists them. The transition-network handoff also warns when it includes
+such a row, because it cannot be read as evidence of persistence.}
+\item{\code{multilpa_unverified_alignment}}{A supplied \code{data} frame has too
+little fitted information to establish row order, for example only a
+repeated group identifier. The result is returned on the caller's
+assurance that the rows are in fitting order.}
 }
 }
 

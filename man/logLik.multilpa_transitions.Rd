@@ -7,15 +7,15 @@
 \method{logLik}{multilpa_transitions}(object, ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa_transitions` model.}
+\item{object}{A fitted \code{multilpa_transitions} model.}
 
 \item{...}{Ignored.}
 }
 \value{
-A `logLik` object carrying the maximized observed-data log
-  likelihood, the free parameter count as `df`, and the number of groups as
-  `nobs`. Groups are the independent units, because a group's occasions are
-  dependent by construction in this model.
+A \code{logLik} object carrying the maximized observed-data log
+likelihood, the free parameter count as \code{df}, and the number of groups as
+\code{nobs}. Groups are the independent units, because a group's occasions are
+dependent by construction in this model.
 }
 \description{
 Log likelihood of a fitted latent transition model

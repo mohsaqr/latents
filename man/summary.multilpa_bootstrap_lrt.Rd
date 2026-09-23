@@ -7,15 +7,15 @@
 \method{summary}{multilpa_bootstrap_lrt}(object, ...)
 }
 \arguments{
-\item{object}{An `multilpa_bootstrap_lrt` result.}
+\item{object}{An \code{multilpa_bootstrap_lrt} result.}
 
-\item{...}{Reserved for compatibility with `summary()`.}
+\item{...}{Reserved for compatibility with \code{summary()}.}
 }
 \value{
-An object of class `summary_multilpa_bootstrap_lrt`, with a `print`
-  method and an [as.data.frame()] accessor. `as.data.frame()` returns the
-  one-row test table by default and one row per replicate with
-  `what = "replicates"`.
+An object of class \code{summary_multilpa_bootstrap_lrt}, with a \code{print}
+method and an \code{\link[=as.data.frame]{as.data.frame()}} accessor. \code{as.data.frame()} returns the
+one-row test table by default and one row per replicate with
+\code{what = "replicates"}.
 }
 \description{
 Summarise a parametric bootstrap likelihood-ratio comparison

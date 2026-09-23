@@ -7,18 +7,18 @@
 \method{summary}{multilpa_enumeration}(object, ...)
 }
 \arguments{
-\item{object}{An `multilpa_enumeration` result from [enumerate_classes()].}
+\item{object}{An \code{multilpa_enumeration} result from \code{\link[=enumerate_classes]{enumerate_classes()}}.}
 
-\item{...}{Reserved for compatibility with `summary()`.}
+\item{...}{Reserved for compatibility with \code{summary()}.}
 }
 \value{
-An object of class `summary_multilpa_enumeration`, with a `print`
-  method and an [as.data.frame()] accessor. `as.data.frame()` returns the
-  candidate grid. `get_results(summary(object), "criteria")` gives one row
-  per information criterion, with its sample-size convention, the class
-  counts and covariance structure of the minimising candidate, and its
-  value. Only converged candidates are eligible; a criterion with no
-  converged candidate has `NA` in the candidate and value columns.
+An object of class \code{summary_multilpa_enumeration}, with a \code{print}
+method and an \code{\link[=as.data.frame]{as.data.frame()}} accessor. \code{as.data.frame()} returns the
+candidate grid. \code{get_results(summary(object), "criteria")} gives one row
+per information criterion, with its sample-size convention, the class
+counts and covariance structure of the minimising candidate, and its
+value. Only converged candidates are eligible; a criterion with no
+converged candidate has \code{NA} in the candidate and value columns.
 }
 \description{
 Reports, for every information criterion the grid carries, which candidate

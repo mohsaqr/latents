@@ -7,17 +7,17 @@
 \method{print}{multilpa}(x, rows = 20L, ...)
 }
 \arguments{
-\item{x}{An `multilpa` model.}
+\item{x}{An \code{multilpa} model.}
 
 \item{rows}{How many rows of the printed table to show before truncating.}
 
-\item{...}{Reserved for compatibility with `print()`.}
+\item{...}{Reserved for compatibility with \code{print()}.}
 }
 \value{
 The input model, invisibly. Called for the side effect of printing
-  the class counts, the sample sizes and covariance specification, the log
-  likelihood with AIC and group-level BIC, the convergence and restart
-  diagnostics, and any blocks the fit held fixed.
+the class counts, the sample sizes and covariance specification, the log
+likelihood with AIC and group-level BIC, the convergence and restart
+diagnostics, and any blocks the fit held fixed.
 }
 \description{
 Print a fitted multilevel latent profile model

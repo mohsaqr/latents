@@ -7,14 +7,14 @@
 \method{nobs}{multilpa_transitions}(object, ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa_transitions` model.}
+\item{object}{A fitted \code{multilpa_transitions} model.}
 
 \item{...}{Ignored.}
 }
 \value{
 A single integer: the number of observed groups. Occasions within a
-  group are dependent by construction, so they are not independent
-  observations.
+group are dependent by construction, so they are not independent
+observations.
 }
 \description{
 Number of independent units in a fitted latent transition model

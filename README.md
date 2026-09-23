@@ -11,11 +11,11 @@ Multilevel latent profile analysis (MLPA) extends latent profile analysis to dat
 
 In repeated-measure applications, this distinction is particularly important. Let \(\mathbf{Y}_{it}\) denote the vector of indicators observed for person \(i\) at occasion \(t\), and let \(C_{it}\) denote a Level-1 latent profile. MLPA can estimate probabilities such as \(P(C_{it}=k)\) while accounting for the fact that multiple observations belong to the same person. A higher-level latent variable can then represent differences among persons in the distribution of these lower-level profiles. Thus, MLPA can distinguish diversity among repeated observations from systematic differences in the composition of those observations across people. The same logic applies to other nested designs: the Level-1 profile characterizes an observation, while the Level-2 structure captures dependence and heterogeneity associated with the unit in which observations are nested.
 
-VASSTRA represents a related but distinct case in which the separation between **state diversity** and **person heterogeneity** is made explicit as the organizing principle of the analysis. Rather than treating the lower-level latent profiles and higher-level classification primarily as components of a single joint multilevel mixture, VASSTRA first establishes a common state space from the Level-1 observations. The first stage therefore asks: *what distinct states occur across observations?* Once these states have been estimated, the repeated observations belonging to each person are represented within that common state space. The second stage consequently asks: *how does each person occupy or distribute their observations across the states?* The resulting person-level representation can retain multiple states for the same individual rather than reducing the person immediately to a single latent category.
+VaSSTra ([López-Pernas & Saqr, 2023](https://doi.org/10.1007/978-981-99-0942-1_123)) represents a related but distinct case in which the separation between **state diversity** and **person heterogeneity** is made explicit as the organizing principle of the analysis. Rather than treating the lower-level latent profiles and higher-level classification primarily as components of a single joint multilevel mixture, VaSSTra first establishes a common state space from the Level-1 observations. The first stage therefore asks: *what distinct states occur across observations?* Once these states have been estimated, the repeated observations belonging to each person are represented within that common state space. The second stage consequently asks: *how does each person occupy or distribute their observations across the states?* The resulting person-level representation can retain multiple states for the same individual rather than reducing the person immediately to a single latent category.
 
 The multilpa R package provides an implementation of multilevel latent profile and related mixture models for clustered observations. It is designed to estimate latent profiles at the observation level while representing the higher-level structure of the groups containing those observations. In a typical application, the data consist of multiple Level-1 observations nested within Level-2 units, and the package provides estimation procedures for the corresponding two-level latent structure. Model fitting is likelihood-based and uses expectation-maximization estimation with multiple starting values to address the possibility of local solutions. The package also provides tools for comparing candidate solutions through information criteria, likelihood-based comparisons, classification diagnostics, uncertainty estimates, and diagnostics for residual dependence. These components allow the researcher to evaluate the latent structure rather than relying on the estimated profile assignments alone.
 
-The multilpa package also provides a useful computational basis for examining alternative representations of hierarchical heterogeneity. Its model-fitting functions expose the estimated profile structure, posterior classification information, and model-comparison quantities needed to examine how many latent profiles and higher-level classes are supported by the data. The package is therefore useful both for conventional MLPA and for analyses in which the multilevel mixture provides a reference model for a more explicitly state-oriented approach such as VASSTRA. In the latter setting, MLPA can establish and evaluate a joint multilevel representation, while VASSTRA uses a sequential representation when the scientific objective is to identify the diversity of lower-level states first and then characterize people according to their distribution across that state space.
+The multilpa package also provides a useful computational basis for examining alternative representations of hierarchical heterogeneity. Its model-fitting functions expose the estimated profile structure, posterior classification information, and model-comparison quantities needed to examine how many latent profiles and higher-level classes are supported by the data. The package is therefore useful both for conventional MLPA and for analyses in which the multilevel mixture provides a reference model for a more explicitly state-oriented approach such as VaSSTra. In the latter setting, MLPA can establish and evaluate a joint multilevel representation, while VaSSTra uses a sequential representation when the scientific objective is to identify the diversity of lower-level states first and then characterize people according to their distribution across that state space.
 
 ## Installation
 
@@ -491,7 +491,7 @@ plot(get_group_tna(moves))
 ```
 
 Standard errors, likelihood-ratio tests and class enumeration are not
-available for transition models. The article *Latent transition analysis and
+available for transition models. The case study *Latent transition analysis and
 its plots* works through a three-profile model with every plot.
 
 ## Seed sensitivity
@@ -591,11 +591,14 @@ Okabe-Ito colours. Standardized values are rescaled means, not effect sizes.
 
 | Document | Contents |
 |---|---|
-| `vignette("multilpa")` | The longitudinal case, descriptives and a three-profile, three-class model |
-| `vignette("multilpa-evaluation")` | Classification, residual dependence, enumeration and uncertainty |
-| `vignette("multilpa-covariates")` | Three-step and joint covariate estimation, and staged models |
-| `vignette("multilpa-transitions")` | Initial profiles and transitions across courses |
-| Article: *Latent transition analysis and its plots* | A three-profile, two-class LTA with every plot and its transition networks (`vignettes/articles/` in the source repository) |
+| `vignette("multilpa")` | Fitting a two-level model: profiles, group classes, class sizes, assignments and recovery |
+| `vignette("multilpa-evaluation")` | Convergence, seed sensitivity, classification, local independence, enumeration and standard errors |
+| `vignette("multilpa-covariates")` | Three-step class means and membership regression, one-step covariates, staged estimation |
+| `vignette("lta")` | Latent transition analysis: starting and transition probabilities, sequences and networks |
+| `vignette("multilpa-categorical")` | Two-level latent class analysis and mixed indicators, with `student_esm` |
+
+Worked case studies with full interpretation are in `vignettes/articles/` in the
+source repository.
 
 ## Verification
 
@@ -610,7 +613,7 @@ gives the tables and scope.
 
 ```sh
 R CMD build .
-R CMD check multilpa_0.5.1.tar.gz
+R CMD check multilpa_0.6.0.tar.gz
 ```
 
 ## Authors

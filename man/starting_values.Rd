@@ -11,44 +11,44 @@ starting_values(
 )
 }
 \arguments{
-\item{x}{A fitted `multilpa` model, or a list carrying
-`profile_probabilities`, `group_probabilities`, and whichever measurement
-blocks the model uses: `means` with `variances` or `covariances` for
-continuous indicators, `response_probabilities` for categorical ones. An
+\item{x}{A fitted \code{multilpa} model, or a list carrying
+\code{profile_probabilities}, \code{group_probabilities}, and whichever measurement
+blocks the model uses: \code{means} with \code{variances} or \code{covariances} for
+continuous indicators, \code{response_probabilities} for categorical ones. An
 all-categorical model needs no Gaussian block. Any other elements are
 ignored.}
 
-\item{covariance}{`"auto"` keeps `covariances` when the object carries them,
-`"drop"` always returns the diagonal parameterization, and `"keep"`
-requires `covariances` and fails when they are absent.}
+\item{covariance}{\code{"auto"} keeps \code{covariances} when the object carries them,
+\code{"drop"} always returns the diagonal parameterization, and \code{"keep"}
+requires \code{covariances} and fails when they are absent.}
 
-\item{what}{`"all"` returns the measurement and mixing blocks.
-`"measurement"` omits `profile_probabilities` and `group_probabilities`,
+\item{what}{\code{"all"} returns the measurement and mixing blocks.
+\code{"measurement"} omits \code{profile_probabilities} and \code{group_probabilities},
 which are sized for the model that produced them and must not be carried
 into a staged fit that changes the number of group classes. Pass the
-result as `start` alongside `fixed` in [multilpa()].}
+result as \code{start} alongside \code{fixed} in \code{\link[=multilpa]{multilpa()}}.}
 }
 \value{
-An object of class `multilpa_start`: the list [multilpa()] accepts as
-  `start`, with elements `means`, `variances`, `profile_probabilities`, and
-  `group_probabilities`, plus `covariances` when the full-covariance
-  parameterization is returned and `response_probabilities` when the object
-  carries a categorical measurement model. `what = "measurement"` drops
-  `profile_probabilities` and `group_probabilities`. The Gaussian blocks are
-  unnamed and indexed by position, matching what [multilpa()] expects of
-  `start`; read them with [as.data.frame()], which labels the positions,
-  rather than out of the list. `response_probabilities` is the exception: the
-  list keeps each indicator's name and each block keeps its category names,
-  because those labels are what lets [multilpa()] attach a block to the item
-  it was estimated for rather than to whichever item happens to sit in that
-  position. A fit that names its categorical indicators in another order, or
-  that has other categories, therefore refuses the start with
-  `multilpa_bad_start` instead of reporting a likelihood for a measurement
-  model it never held. The list payload is unchanged by the class, so a
-  `multilpa_start` can be passed straight back as `start`.
+An object of class \code{multilpa_start}: the list \code{\link[=multilpa]{multilpa()}} accepts as
+\code{start}, with elements \code{means}, \code{variances}, \code{profile_probabilities}, and
+\code{group_probabilities}, plus \code{covariances} when the full-covariance
+parameterization is returned and \code{response_probabilities} when the object
+carries a categorical measurement model. \code{what = "measurement"} drops
+\code{profile_probabilities} and \code{group_probabilities}. The Gaussian blocks are
+unnamed and indexed by position, matching what \code{\link[=multilpa]{multilpa()}} expects of
+\code{start}; read them with \code{\link[=as.data.frame]{as.data.frame()}}, which labels the positions,
+rather than out of the list. \code{response_probabilities} is the exception: the
+list keeps each indicator's name and each block keeps its category names,
+because those labels are what lets \code{\link[=multilpa]{multilpa()}} attach a block to the item
+it was estimated for rather than to whichever item happens to sit in that
+position. A fit that names its categorical indicators in another order, or
+that has other categories, therefore refuses the start with
+\code{multilpa_bad_start} instead of reporting a likelihood for a measurement
+model it never held. The list payload is unchanged by the class, so a
+\code{multilpa_start} can be passed straight back as \code{start}.
 }
 \description{
-Returns the starting-value list [multilpa()] accepts, taken from a fitted
+Returns the starting-value list \code{\link[=multilpa]{multilpa()}} accepts, taken from a fitted
 model or from any object that already carries the parameter blocks, such as a
 retained reference solution. This exists so that callers never assemble the
 list by hand, and so that starting values are validated where they are built
@@ -70,5 +70,5 @@ refit <- multilpa(example_data, c("score_a", "score_b"), "school",
 logLik(refit)
 }
 \seealso{
-[get_results()] for the values as tidy tables.
+\code{\link[=get_results]{get_results()}} for the values as tidy tables.
 }

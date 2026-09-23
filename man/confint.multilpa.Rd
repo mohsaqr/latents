@@ -7,28 +7,28 @@
 \method{confint}{multilpa}(object, parm, level = 0.95, data = NULL, ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa` model.}
+\item{object}{A fitted \code{multilpa} model.}
 
 \item{parm}{Optional coefficient names or indices; defaults to every
-coefficient the fit estimated. Naming a coefficient that `fixed` held
-raises `multilpa_held_parameter`, because a held value has no interval.}
+coefficient the fit estimated. Naming a coefficient that \code{fixed} held
+raises \code{multilpa_held_parameter}, because a held value has no interval.}
 
 \item{level}{Confidence level strictly between zero and one.}
 
-\item{data}{Optional, exactly as for [vcov()].}
+\item{data}{Optional, exactly as for \code{\link[=vcov]{vcov()}}.}
 
-\item{...}{Additional arguments passed to [parameter_inference()], including
-`method = "bootstrap"` for a structure the Wald path cannot chart.}
+\item{...}{Additional arguments passed to \code{\link[=parameter_inference]{parameter_inference()}}, including
+\code{method = "bootstrap"} for a structure the Wald path cannot chart.}
 }
 \value{
 A two-column matrix on the natural scale, one row per requested
-  coefficient and named as [coef()] names them. Wald intervals by default;
-  with `method = "bootstrap"` the percentile interval the replicates give,
-  which is the same interval `parameter_inference()` reports rather than a
-  normal approximation rebuilt from the bootstrap standard error. Wald bounds
-  are not clipped to the probability or variance parameter space. For a fit made with
-  `fixed`, the default rows are the estimated coefficients only and the
-  intervals are conditional on the held measurement solution.
+coefficient and named as \code{\link[=coef]{coef()}} names them. Wald intervals by default;
+with \code{method = "bootstrap"} the percentile interval the replicates give,
+which is the same interval \code{parameter_inference()} reports rather than a
+normal approximation rebuilt from the bootstrap standard error. Wald bounds
+are not clipped to the probability or variance parameter space. For a fit made with
+\code{fixed}, the default rows are the estimated coefficients only and the
+intervals are conditional on the held measurement solution.
 }
 \description{
 Wald confidence intervals for multilevel LPA coefficients

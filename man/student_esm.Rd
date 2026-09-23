@@ -7,34 +7,34 @@
 \format{
 A data frame with 2582 rows (100 students) and 15 columns:
 \describe{
-  \item{student}{Integer student identifier, 1 to 100. The nesting unit;
-    pass it as `id`.}
-  \item{day}{Integer study day, 0 to 13.}
-  \item{beep}{Integer prompt of the day, 1 to 5 among the prompts kept.}
-  \item{time_with_friends}{Factor, `"no"` or `"yes"`: spent time with
-    friends since the previous prompt.}
-  \item{on_social_media}{Factor, `"no"` or `"yes"`: used social media.}
-  \item{tv_video_games}{Factor, `"no"` or `"yes"`: watched TV or played
-    video games.}
-  \item{listened_music}{Factor, `"no"` or `"yes"`: listened to music.}
-  \item{sports}{Factor, `"no"` or `"yes"`: did sports.}
-  \item{walking}{Factor, `"no"` or `"yes"`: went for a walk.}
-  \item{reading}{Factor, `"no"` or `"yes"`: read.}
-  \item{part_time_job}{Factor, `"no"` or `"yes"`: worked in a part-time
-    job.}
-  \item{happy}{Integer rating of feeling happy, 1 to 7.}
-  \item{relaxed}{Integer rating of feeling relaxed, 1 to 7.}
-  \item{worried}{Integer rating of feeling worried, 1 to 7.}
-  \item{exhausted}{Integer rating of feeling exhausted, 1 to 7.}
+\item{student}{Integer student identifier, 1 to 100. The nesting unit;
+pass it as \code{id}.}
+\item{day}{Integer study day, 0 to 13.}
+\item{beep}{Integer prompt of the day, 1 to 5 among the prompts kept.}
+\item{time_with_friends}{Factor, \code{"no"} or \code{"yes"}: spent time with
+friends since the previous prompt.}
+\item{on_social_media}{Factor, \code{"no"} or \code{"yes"}: used social media.}
+\item{tv_video_games}{Factor, \code{"no"} or \code{"yes"}: watched TV or played
+video games.}
+\item{listened_music}{Factor, \code{"no"} or \code{"yes"}: listened to music.}
+\item{sports}{Factor, \code{"no"} or \code{"yes"}: did sports.}
+\item{walking}{Factor, \code{"no"} or \code{"yes"}: went for a walk.}
+\item{reading}{Factor, \code{"no"} or \code{"yes"}: read.}
+\item{part_time_job}{Factor, \code{"no"} or \code{"yes"}: worked in a part-time
+job.}
+\item{happy}{Integer rating of feeling happy, 1 to 7.}
+\item{relaxed}{Integer rating of feeling relaxed, 1 to 7.}
+\item{worried}{Integer rating of feeling worried, 1 to 7.}
+\item{exhausted}{Integer rating of feeling exhausted, 1 to 7.}
 }
 }
 \source{
 openESM dataset 0062, deposited by Neubauer and Schmiedek at
-  Zenodo, \doi{10.5281/zenodo.17347974}, under the Creative Commons
-  Attribution 4.0 licence (CC-BY 4.0), and retrieved through the openESM
-  database (<https://openesmdata.org>). The subset is produced by
-  `data-raw/student-esm.R` in the source repository; identifiers are
-  renumbered and the values are otherwise unchanged.
+Zenodo, \doi{10.5281/zenodo.17347974}, under the Creative Commons
+Attribution 4.0 licence (CC-BY 4.0), and retrieved through the openESM
+database (\url{https://openesmdata.org}). The subset is produced by
+\code{data-raw/student-esm.R} in the source repository; identifiers are
+renumbered and the values are otherwise unchanged.
 }
 \usage{
 student_esm
@@ -59,9 +59,9 @@ with a fixed seed from the students with at least 15 such prompts, with every
 such prompt they answered. Each student contributes 15 to 51 prompts (median
 24). The eight activity items are categorical indicators; the four affect
 ratings are continuous-scored and can be combined with them in a mixed
-measurement model. `worried` has a floor: 49.7% of its ratings are 1, so a
+measurement model. \code{worried} has a floor: 49.7\% of its ratings are 1, so a
 profile of low-worry prompts can have zero variance on it and reach the
-`min_variance` bound.
+\code{min_variance} bound.
 }
 \examples{
 \donttest{
@@ -78,11 +78,11 @@ get_results(lca, what = "profile_probabilities")
 }
 \references{
 Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic
-  adjustment on multiple time scales. *Zeitschrift für
-  Erziehungswissenschaft*, 27, 147--168. \doi{10.1007/s11618-023-01182-8}
+adjustment on multiple time scales. \emph{Zeitschrift für
+Erziehungswissenschaft}, 27, 147--168. \doi{10.1007/s11618-023-01182-8}
 }
 \seealso{
-[multilpa()] with `categorical =` for the two-level latent class
-  model.
+\code{\link[=multilpa]{multilpa()}} with \verb{categorical =} for the two-level latent class
+model.
 }
 \keyword{datasets}

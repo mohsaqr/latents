@@ -1,225 +1,210 @@
 ---
-title: "Evaluating multilevel latent profile models"
-output:
-  rmarkdown::html_vignette:
-    toc: true
-    toc_depth: 2
+title: "Evaluating a multilevel latent profile model"
+output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Evaluating multilevel latent profile models}
+  %\VignetteIndexEntry{Evaluating a multilevel latent profile model}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-Multilevel latent profile analysis (MLPA) estimates latent profiles at the observation level while simultaneously modeling how the probabilities of those profiles vary across higher-level latent classes. In this framework, the observation-level profiles are defined by their characteristic indicator means, whereas the higher-level classes are distinguished by the probabilities with which those profiles occur.
-
-Model evaluation therefore involves several related questions. First, it is important to determine whether the estimated profiles provide meaningful separation among observations. Second, the measurement assumptions should be examined to assess whether the model adequately represents the relationships among the observed indicators. Third, alternative model specifications can be compared to determine whether a different number of observation-level profiles or higher-level classes provides a more appropriate representation of the data.
-
-The three-profile, three-class model introduced in [the introductory vignette](multilpa.html) serves as the starting point for these evaluation procedures. The following sections use this model as a reference while examining profile separation, measurement assumptions, and alternative model specifications.
-
-```{r setup, message = FALSE}
-library(multilpa)
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-options(digits = 6, width = 100)
-vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 3, width = 100)
 ```
 
-## Data and starting model
+A fitted mixture model is evaluated on four questions: whether the estimation
+found a stable solution, how clearly observations and groups are classified,
+whether the indicators are independent within profiles as the model assumes,
+and whether a different number of profiles or group classes fits better.
 
-The `course_engagement` dataset contains repeated course enrolments nested within students. The bundled data are synthetic, and their relationship to the longitudinal engagement study is described in the [introductory vignette](multilpa.html). Engagement is measured using five course-level indicators: course-page views (`browse`), lecture-video views (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and days active (`attendance`). Each indicator is represented as a `log1p`-transformed count and standardized within course.
+## Data
 
-The variable `student` identifies the higher-level unit, while `sequence` records the order of each student's course enrolments. In the present model, enrolments are treated as observations nested within students. Courses themselves are not modeled as an additional grouping level. The multilevel structure therefore distinguishes between variation across enrolments and variation across students.
+`course_engagement` has one row per course enrolment: 1,422 enrolments from
+106 students. `student` identifies the group, and five activity measures
+(`browse`, `lectures`, `forum_read`, `forum_post`, `attendance`) are the
+indicators, each standardized within course.
 
-The starting model contains three Gaussian enrolment-level profiles and three student-level latent classes. A central quantity in the model is the conditional probability
+```{r setup}
+library(multilpa)
+```
 
-$$
-\pi_{k\mid m}=P(C_{it}=k\mid G_i=m),
-$$
+## The model to evaluate
 
-where $C\_{it}$ denotes the latent profile of student ii at occasion tt, and $G\_i$ denotes that student's higher-level latent class. Each probability lies between zero and one, and the profile probabilities sum to one within each student class. These probabilities describe how frequently the different engagement profiles are expected to occur among students belonging to each latent class. The profile-specific means and variances are shared across student classes, so the classes differ in their profile probabilities rather than in the definitions of the profiles themselves.
-
-The model uses a diagonal covariance structure, which assumes that the engagement indicators are conditionally independent within each latent profile. It also assumes that enrolments are conditionally independent given the student's latent class and that students are independent of one another. In practice, these assumptions may be violated. For example, indicators may remain associated because several measures reflect related forms of online activity, engagement may persist across adjacent courses taken by the same student, or students may share unmodeled course-level influences.
-
-Like other finite-mixture models, MLPA can also be sensitive to local likelihood maxima. Using multiple starting values reduces the risk that estimation will settle on a suboptimal local solution, although it does not guarantee that the global maximum has been identified. Model evaluation should therefore consider both the substantive interpretation of the solution and evidence concerning the stability of the likelihood across different starting values.
-
-The `multilpa()` function estimates the model by maximum likelihood. A stricter convergence tolerance (`tol`) is used here so that the optimization proceeds closer to a stationary solution before standard errors are calculated. This provides a more stringent convergence criterion for the starting model used in the subsequent evaluation steps.
+To fit the model, we call `multilpa()` with `vars` for the indicators, `id`
+for the group, `n_profiles` for the number of profiles, `n_group_classes` for
+the number of group classes, `n_starts` for the number of random EM starts, and
+`seed` for reproducible starts.
 
 ```{r fit}
-set.seed(1)
-fit <- multilpa(course_engagement, vars, id = "student", time = "sequence", n_profiles = 3, n_group_classes = 3, n_starts = 10, max_iter = 2000, tol = 1e-10, seed = 1)
-fit
+fit <- multilpa(course_engagement,
+                vars = c("browse", "lectures", "forum_read", "forum_post",
+                         "attendance"),
+                id = "student", n_profiles = 2, n_group_classes = 2,
+                n_starts = 10, seed = 1)
 ```
 
-The fitted model summarizes 1,422 course enrolments contributed by 106 students. The three estimated profiles show a clear ordering across the engagement indicators. Profile 1 has the highest mean on every indicator, Profile 2 has intermediate means, and Profile 3 has the lowest means. For example, the estimated attendance means are 1.133, 0.256, and −0.940 standard deviations relative to the corresponding course mean for Profiles 1, 2, and 3, respectively.
+## Estimation
 
-These differences in indicator means define the substantive interpretation of the fitted profiles. In this example, the profiles can therefore be understood as representing progressively lower levels of engagement across the observed activity measures. However, the presence of distinct estimated means does not by itself establish that the profiles are well supported. The diagnostic checks that follow examine the extent to which the data support this separation and whether the fitted solution is numerically stable.
+To check convergence, we call `get_results()` with `"model"`. `converged`
+reports convergence of the best start, `boundary` whether a variance reached
+its lower bound, and `n_best_replicated` how many starts reached the best log
+likelihood.
 
-The command `get_results(fit, "starts")` summarizes the outcome of each model initialization, including convergence information and the maximized log likelihood. When multiple converged starts arrive at the same or very similar log-likelihood value, this provides evidence that the selected solution is numerically stable. By contrast, substantially different likelihood values across converged starts may indicate the presence of competing local maxima. Similarly, variance estimates that reach active parameter bounds can signal estimation difficulties or an inadequately specified solution. Either pattern warrants further investigation before the fitted profiles are interpreted in detail.
+```{r model}
+get_results(fit, "model")
+```
+
+To check the individual starts, we call `get_results()` with `"starts"`.
 
 ```{r starts}
 get_results(fit, "starts")
 ```
 
-All ten starting values converged to the same solution, with no reported boundary issues and a maximized log likelihood of approximately (-8348.429). This replication across starts provides evidence that the fitted solution is numerically stable. The comparisons of alternative profile and class counts below therefore begin from a solution that was recovered consistently across multiple initializations.
+To check whether other random seeds reach the same solution, we call
+`sensitivity()` with `seeds` for the seeds to try. `optimum` numbers the
+distinct maxima found, and `agreement` is the share of observations assigned
+as in the original fit, after matching the arbitrary profile labels.
 
-## Classification uncertainty
+```{r sensitivity}
+sensitivity(fit, seeds = 1:5)
+```
 
-An important aspect of model evaluation is the degree of uncertainty in assigning observations to latent profiles or classes. Relative entropy summarizes this uncertainty by measuring how concentrated the posterior membership probabilities are. For ($N$) units, ($K$) latent classes, and posterior probability ($p_{uk}$) that unit ($u$) belongs to class ($k$), relative entropy is defined as:
+## Classification
 
-$$
-E=1-\frac{-\sum_{u=1}^{N}\sum_{k=1}^{K}p_{uk}\log p_{uk}}{N\log K}.
-$$
-
-Relative entropy ranges from zero to one. A value of zero occurs when each unit has equal posterior probability of belonging to every class, indicating maximal classification uncertainty. A value of one occurs when every unit has posterior probability one for a single class and zero for all others, indicating completely concentrated classifications. Values between these extremes reflect varying degrees of certainty in the posterior assignments.
-
-In a multilevel latent profile model, relative entropy is calculated separately for the enrolment and student levels. Enrolment-level entropy summarizes the concentration of posterior probabilities for the observation-level profiles, whereas student-level entropy summarizes uncertainty in assignment to the higher-level latent classes. These quantities should therefore be interpreted separately because classification may be more distinct at one level than at the other.
-
-Relative entropy is conditional on the fitted model and should not be interpreted as a general measure of model correctness. A misspecified model can still produce highly concentrated posterior probabilities. For example, inappropriate assumptions about indicator independence or the number of latent profiles may yield confident classifications even when the model provides an inadequate representation of the data. Entropy should therefore be considered alongside other diagnostic and model-comparison measures rather than used as a standalone criterion for model selection. Relative entropy is also undefined at any level containing only a single latent class because there is no classification uncertainty to evaluate.
-
-The command `get_results(fit, "entropy")` reports both the unnormalized entropy sum and the corresponding relative entropy for the enrolment and student levels. These results provide a descriptive summary of how clearly the fitted model assigns units to the latent profiles and classes at each level.
+To obtain relative entropy, we call `get_results()` with `"entropy"`. It is
+reported for observations and for groups: 1 means every case is assigned with
+certainty, 0 means no separation.
 
 ```{r entropy}
 get_results(fit, "entropy")
 ```
 
-The fitted model has a relative entropy of 0.792 at the enrolment level and 0.797 at the student level. These values indicate that posterior membership probabilities are reasonably concentrated at both levels, but that classification remains uncertain for some enrolments and students. Consequently, reducing each posterior probability distribution to a single most likely profile or class results in a loss of information. Where possible, subsequent analyses should therefore recognize the uncertainty represented by the full posterior probabilities rather than treating modal assignments as perfectly observed classifications.
-
-A complementary measure of classification certainty is the average posterior probability within each assigned class. Let \(A_k\) denote the set of units whose most probable assignment is to class \(k\). The average posterior probability for that class is
-
-$$
-\bar{p}_k
-=
-\frac{1}{|A_k|}
-\sum_{u\in A_k} p_{uk},
-$$
-
-where \(p_{uk}\) is the posterior probability that unit \(u\) belongs to class \(k\). This quantity summarizes, among units assigned to a particular class, how strongly the model supports those assignments. Values closer to one indicate that units assigned to the class generally have high posterior probabilities for that class, whereas lower values indicate greater ambiguity in the assignments.
-
-Average posterior probabilities provide class-specific information that is not visible from a single overall entropy measure. For example, a model may show relatively high overall entropy while still containing one profile or class whose members are considerably more difficult to classify than those in the others. Examining average posterior probabilities by class can therefore help identify where classification uncertainty is concentrated.
-
-Like relative entropy, however, average posterior probability is conditional on the fitted model and its estimated classes. It describes the certainty of the resulting modal assignments but does not establish that the chosen number of classes, measurement assumptions, or substantive interpretation is correct. Classification diagnostics should therefore be considered alongside other evidence about model fit and specification.
-
-The command `get_results(fit, "classification")` reports these class-specific classification summaries together with the number of units assigned to each profile or class. The class counts are also useful for identifying very small groups, for which classification summaries and subsequent substantive comparisons may be less stable.
-
+To obtain classification quality by class, we call `get_results()` with
+`"classification"`. `n_modal` is the number of cases assigned to the class,
+`average_posterior` the mean posterior probability of those cases, and
+`odds_correct_classification` compares that certainty with the class's size.
 
 ```{r classification}
-classification <- get_results(fit, "classification")
-classification[, c("level", "class", "n_modal", "average_posterior")]
+get_results(fit, "classification")
 ```
 
-The class-specific results show that classification certainty varies across profiles and student classes. At the enrolment level, 478 enrolments are assigned to Profile 2, with an average posterior probability of 0.853. By comparison, the 576 enrolments assigned to Profile 3 have a much higher average posterior probability of 0.978. This indicates that enrolments classified into Profile 2 are, on average, more ambiguous than those classified into Profile 3.
+To see the uncertainty, we call `plot()` with `what = "entropy"` for the
+per-case uncertainty within each profile, and with `what = "avepp"` for the
+average posterior of each assigned class across all classes.
 
-A similar pattern appears at the student level. Students assigned to Class 2 have an average posterior probability of 0.864, whereas those assigned to Class 3 have an average posterior probability of 0.977. The student-level classifications are therefore not equally certain across classes, even though the overall relative entropy is similar across the two levels.
+```{r entropy-plot}
+plot(fit, what = "entropy")
+```
 
-These differences matter for subsequent analyses because modal class assignments treat the most likely class as if it were observed without error. When average posterior probabilities are lower, that simplification discards more of the uncertainty contained in the posterior distribution. Later analyses should therefore retain or adjust for classification uncertainty rather than relying exclusively on modal assignments.
+```{r avepp-plot}
+plot(fit, what = "avepp")
+```
 
-The [covariate vignette](multilpa-covariates.html) describes approaches for incorporating this uncertainty when relating latent profiles and classes to external variables, including methods that adjust explicitly for classification error.
+## Local independence
 
-## Residual dependence
-
-An important assumption of the diagonal covariance model is that the indicators are conditionally independent within each latent profile. Bivariate residual correlations can be used to examine whether meaningful associations remain between pairs of indicators after the fitted profile structure has been taken into account. For indicators \(a\) and \(b\) within profile \(k\), the residual correlation is defined as
-
-$$
-r_{ab,k}^{\text{observed}}
--
-r_{ab,k}^{\text{expected}}.
-$$
-
-The observed correlation is calculated using posterior probabilities of profile membership as weights. Under the diagonal covariance model, the expected within-profile correlation is zero. A residual close to zero therefore indicates that the conditional-independence assumption provides a reasonable approximation for that particular indicator pair. Larger residuals indicate associations that remain unexplained by the fitted measurement model, while the sign of the residual indicates whether the remaining association is positive or negative.
-
-These residual correlations should be interpreted as diagnostic quantities rather than formal tests of model fit. Their values depend on the estimated posterior profile memberships and therefore on the fitted model itself. In addition, the reported p-values are descriptive approximations. They do not account fully for uncertainty in the estimated measurement parameters or posterior memberships, nor do they adjust for the dependence created by repeated enrolments from the same student. The magnitude and pattern of the residuals are therefore more useful for identifying measurement assumptions that warrant further examination than the p-values are for making formal inferential decisions.
-
-The command `get_results(fit, "residuals")` returns the indicator pairs ordered by the absolute magnitude of their residual correlations. Examining the largest residuals provides a convenient way to identify the pairs for which the diagonal covariance assumption is least consistent with the observed associations.
+The default model assumes the indicators are independent within a profile. To
+test this, we call `get_results()` with `"residuals"`. `residual` is the
+correlation between two indicators that the profiles leave unexplained;
+`by = "overall"` pools the profiles. The p-values are approximate.
 
 ```{r residuals}
-residuals <- get_results(fit, "residuals")
-head(residuals[, c("profile", "indicator_1", "indicator_2", "observed", "expected", "residual")], 4)
+get_results(fit, "residuals", by = "overall")
 ```
 
-The largest residual correlation is 0.211 between forum reading and attendance in Profile 3. The next largest is 0.177 between browsing and attendance, also in Profile 3. Notably, all four of the largest residuals involve the attendance indicator. This pattern suggests that the three-profile model does not completely account for the association between recorded online activity and the number of days on which students are active.
+To relax the assumption, we call `multilpa()` with `covariance_model = "full"`,
+which estimates the covariances between indicators within each profile. To
+compare the two models, we call `get_results()` with
+`"information_criteria"` on each; lower values are better.
 
-The concentration of the largest residuals around attendance provides a specific direction for further model evaluation. Rather than indicating that the entire profile solution is necessarily inadequate, the results identify a particular part of the measurement structure where the conditional-independence assumption may be too restrictive. Alternative specifications could therefore examine whether allowing selected within-profile associations involving attendance changes the estimated profiles or improves the representation of the engagement data.
-
-## Class counts and covariance assumptions
-
-
-Class enumeration evaluates alternative models with different numbers of enrolment-level profiles and student-level latent classes. One common criterion for comparing these models is the Bayesian information criterion (BIC),
-
-$$
-\mathrm{BIC}
-=
--2\ell + q\log(N),
-$$
-
-where \(\ell\) is the maximized log likelihood, \(q\) is the number of freely estimated parameters, and \(N\) is the sample size used in the penalty term. Lower BIC values indicate a more favorable balance between model fit and complexity within the set of candidate models being compared. In the present analysis, `bic_groups` uses the number of students as \(N\) for every candidate, so the BIC values are calculated on a consistent basis across models.
-
-The comparison also examines whether assumptions about the covariance structure affect the preferred numbers of profiles and student classes. With `structure = "VVI"`, each profile has its own indicator variances, but residual covariances between indicators are fixed to zero. This specification corresponds to the conditional-independence assumption examined in the preceding section. By contrast, `structure = "VVV"` estimates a separate unrestricted covariance matrix for each profile, allowing the indicators to remain correlated within profiles.
-
-Both covariance structures retain Gaussian enrolment-level profiles and use common measurement parameters across student classes. The main difference is therefore the amount of within-profile dependence that the measurement model is permitted to capture. Because unrestricted covariance matrices require substantially more parameters, full-covariance models can be more difficult to estimate. Numerical instability is particularly likely when some profiles contain relatively few observations or when several likelihood maxima provide similar fits.
-
-The `enumerate_classes()` function fits every requested combination of profile count, student-class count, and covariance structure to the same enrolments and indicators. The resulting candidate models can then be summarized with `get_results()`, which reports BIC together with numerical diagnostics such as convergence status, active parameter bounds, and replication of the best likelihood across starting values.
-
-These diagnostics should be considered before interpreting differences in BIC. Comparisons are most informative when the candidate models have converged, no relevant parameter bounds are active, and the best likelihood is reproduced across multiple starts. BIC then provides evidence about relative fit within the specified candidate set, but it does not by itself establish that the Gaussian measurement assumptions are correct or that a unique number of latent profiles or classes exists.
-
-
-```{r enumeration}
-candidates <- enumerate_classes(course_engagement, vars, id = "student", time = "sequence", n_profiles = 2:3, n_group_classes = 2:3, structure = c("VVI", "VVV"), n_starts = 6, max_iter = 2000, tol = 1e-10, seed = 1)
-comparison <- get_results(candidates, "candidates")
-comparison[, c("n_profiles", "n_group_classes", "structure", "bic_groups", "converged", "boundary", "n_best_replicated")]
+```{r full-covariance}
+full <- multilpa(course_engagement,
+                 vars = c("browse", "lectures", "forum_read", "forum_post",
+                          "attendance"),
+                 id = "student", n_profiles = 2, n_group_classes = 2,
+                 covariance_model = "full", n_starts = 10, seed = 1)
+get_results(fit, "information_criteria")
+get_results(full, "information_criteria")
+get_results(full, "residuals", by = "overall")
 ```
 
-Under the diagonal covariance specification, the lowest BIC is obtained for the model with three profiles and three student classes, with a BIC of 16874.1. When residual covariances are allowed to vary freely within profiles, however, the preferred profile count changes. The two-profile, three-class full-covariance model has a BIC of 16800.6, the lowest value among the models in the candidate grid, and its best likelihood is reproduced across all six starting values. The three-profile, three-class full-covariance model has a higher BIC of 16867.3.
+## Number of profiles and group classes
 
-Most candidate models also show stable likelihood replication across starts. The exception is the three-profile, two-class full-covariance model, whose best solution is recovered only once across the six initializations. This weaker replication suggests greater numerical uncertainty for that candidate and illustrates why class enumeration should not be based on information criteria alone.
+To compare numbers of profiles and group classes, we call
+`enumerate_classes()` with `n_profiles` and `n_group_classes` for the counts to
+cross. It fits every combination and does not choose a model.
 
-Taken together, these results show that support for the original three-profile, three-class specification depends on the assumptions made about within-profile covariance. Under the diagonal model, the three-by-three solution is preferred within the candidate set. Once residual correlations are estimated directly, a two-profile, three-class model receives stronger BIC support. The original three-by-three model should therefore be regarded as a useful working representation rather than as a profile structure that is invariant to the measurement assumptions.
-
-The `candidate_fit()` function can be used to retrieve a fitted candidate with a particular combination of profile count, student-class count, and covariance structure. Examining its residual correlations provides a direct check of whether the estimated covariance parameters reproduce the within-profile associations observed in the data.
-
-```{r covariance-check}
-full <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 3, structure = "VVV")
-full_residuals <- get_results(full, "residuals")
-head(full_residuals[, c("profile", "indicator_1", "indicator_2", "observed", "expected", "residual")], 4)
+```{r enumerate}
+candidates <- enumerate_classes(course_engagement,
+                                vars = c("browse", "lectures", "forum_read",
+                                         "forum_post", "attendance"),
+                                id = "student", n_profiles = 2:4,
+                                n_group_classes = 1:3, n_starts = 5, seed = 1)
+as.data.frame(candidates)
 ```
 
-In the two-profile, three-class full-covariance model, the estimated correlation between forum reading and attendance in Profile 2 is approximately 0.267, which is nearly identical to the corresponding observed within-profile correlation. As a result, the residual correlations displayed for the largest indicator pairs are close to zero. This is expected because the full-covariance specification estimates these within-profile associations directly rather than constraining them to zero.
+To find which candidate minimizes each criterion, we call `get_results()` with
+`"criteria"`. Criteria that depend on a sample size are reported with the
+number of groups and with the number of observations.
 
-The close agreement between the observed and expected correlations therefore verifies that the fitted covariance structure is reproducing the associations it was designed to model. It should not, however, be interpreted as independent evidence that the two-profile solution or the three student classes are substantively correct. Those questions require consideration of the broader pattern of model fit, numerical stability, classification quality, and substantive interpretability.
+```{r criteria}
+get_results(candidates, "criteria")
+```
 
+To draw one criterion across the grid, we call `plot()` with `criterion` for
+its name.
 
-## Uncertainty in profile means
+```{r enumeration-plot}
+plot(candidates, criterion = "bic_groups")
+```
 
-Parameter inference quantifies the sampling uncertainty associated with an estimated model parameter, \(\hat{\theta}\). By default, the standard error is obtained from the observed information matrix. Specifically, the estimated variance of a parameter is taken from the corresponding diagonal element of the inverse observed information matrix, and the standard error is the square root of that value.
+To take one candidate out of the grid as a fitted model, we call
+`candidate_fit()` with its `n_profiles` and `n_group_classes`.
 
-A conventional 95% Wald confidence interval is calculated as
+```{r candidate}
+candidate_fit(candidates, n_profiles = 3, n_group_classes = 2)
+```
 
-$$
-\hat{\theta}
-\pm
-1.96\,\operatorname{SE}(\hat{\theta}).
-$$
+## Parameter uncertainty
 
-These intervals provide a local approximation to parameter uncertainty within the fitted model. Their use requires a satisfactorily converged solution, inactive parameter bounds, and an invertible information matrix. If these conditions are not met, the resulting standard errors and confidence intervals may be unstable or unavailable.
-
-The intervals are also conditional on the specified latent structure. In particular, they treat the selected numbers of enrolment-level profiles and student-level classes, together with the assumed covariance structure, as fixed. A parameter estimate can therefore have a narrow confidence interval even when an alternative model specification supports a different number of profiles. Wald intervals describe uncertainty about parameters within a chosen model; they do not incorporate uncertainty about the choice of model itself.
-
-The `parameter_inference()` function calculates standard errors and confidence intervals for the fitted model. The output below is restricted to the attendance means from the original three-profile, three-class model.
+To obtain standard errors and 95% Wald intervals, we call
+`parameter_inference()` on the fit. With `vcov_type = "robust"`, the standard
+errors are clustered on groups.
 
 ```{r inference}
-inference <- parameter_inference(fit)
-subset(inference, parameter == "mean" & term == "attendance", select = c(outcome, term, estimate, standard_error, conf_low, conf_high))
+parameter_inference(fit)
+parameter_inference(fit, vcov_type = "robust")
 ```
 
-For Profile 1, the estimated attendance mean is 1.133 standard deviations above the course mean, with a standard error of 0.061 and a 95% Wald interval from 1.013 to 1.252. Profile 2 has an interval from 0.155 to 0.357, while Profile 3 has an interval from \(-0.993\) to \(-0.887\).
+## Reference
 
-Within the original three-profile, three-class specification, these intervals show clear separation among the attendance means. This provides evidence that the fitted profiles differ substantially in their expected levels of attendance under that model. However, the precision of these estimates should not be interpreted as resolving the model-specification uncertainty identified in the covariance comparison. The confidence intervals quantify uncertainty in the profile means conditional on the three-by-three model; they do not address whether a different covariance structure or profile count provides a preferable representation of the data.
+The calls below list other evaluation functions and views. Each comment states
+what the call returns.
 
-## Limits of the interpretation
+```{r reference, eval = FALSE}
+get_results(fit, "information_criteria", format = "long")  # one row per criterion
+get_results(fit, "average_posteriors")          # mean posterior by assigned class
+get_results(fit, "classification_errors")       # P(assigned class | true class)
+get_results(fit, "residuals")                   # residuals within each profile
+get_results(candidates, "candidates")           # the full enumeration grid
+summary(candidates)                             # the best candidate on each criterion
+bootstrap_lrt(fit, candidate_fit(candidates, n_profiles = 3, n_group_classes = 2),
+              iter = 199, seed = 42)            # bootstrap test of one more class (slow)
+enumerate_classes(course_engagement, vars = c("browse", "lectures"),
+                  id = "student", n_profiles = 2:3,
+                  structure = c("VVI", "VVV"))  # crossing covariance structures (slow)
+confint(fit)                                    # confidence intervals
+vcov(fit, vcov_type = "robust")                 # robust covariance matrix
+plot(fit, what = "posteriors")                  # posterior of each assigned profile
+plot(fit, what = "bars")                        # profile means with 95% intervals
+diagnostics(fit)                                # all classification diagnostics
+```
 
-The model comparisons presented here should be interpreted within the limits of the candidate set that was examined. Only a restricted range of profile counts, student-class counts, and covariance structures was considered, and the resulting BIC values also depend on the convention used to define the sample size in the BIC penalty. The comparison therefore identifies relative support among the fitted candidates rather than establishing a uniquely correct latent structure.
+## Limits
 
-Additional caution is warranted for candidate models whose best likelihood was not reproduced across multiple starting values. In particular, full-covariance solutions with weak replication should be refitted with additional starts before they are used for substantive interpretation. More generally, all reported classification summaries, residual diagnostics, standard errors, and confidence intervals are conditional on the measurement specification from which they were obtained.
-
-The multilevel structure accounts for the nesting of repeated enrolments within students by allowing students to differ in the composition of their engagement profiles. However, the model does not directly estimate serial dependence between adjacent enrolments. The argument `time = "sequence"` preserves the ordering of each student’s enrolments and makes that ordering available for sequence-based summaries, but it does not by itself introduce a transition or autoregressive structure into the fitted model.
-
-When the scientific question concerns how students move from one engagement profile to another over time, a transition model is more appropriate. The [transition vignette](multilpa-transitions.html) extends the analysis by estimating probabilities of movement between profiles across successive enrolments.
-
+- Information criteria compare the candidates fitted, not all possible models.
+- Classification measures describe the fitted model; a misspecified model can
+  still classify sharply.
+- Wald intervals assume a converged fit with no variance at its bound, and are
+  conditional on the chosen numbers of profiles and classes.
+- Unmodelled dependence between indicators can make extra classes look better.

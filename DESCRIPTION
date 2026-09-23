@@ -1,6 +1,6 @@
 Package: multilpa
 Title: Two-Level Latent Profile Analysis
-Version: 0.5.1
+Version: 0.6.0
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),
@@ -31,5 +31,6 @@ Imports: stats, graphics, grDevices, utils
 Suggests: testthat (>= 3.0.0), knitr, rmarkdown, tna
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 LazyData: true

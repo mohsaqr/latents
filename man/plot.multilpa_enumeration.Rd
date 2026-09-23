@@ -19,14 +19,14 @@
 )
 }
 \arguments{
-\item{x}{An `multilpa_enumeration` result from [enumerate_classes()].}
+\item{x}{An \code{multilpa_enumeration} result from \code{\link[=enumerate_classes]{enumerate_classes()}}.}
 
 \item{criterion}{Name of the column to plot, as it appears in
-`as.data.frame(x)`, for example `"bic_individual"` or `"sabic_groups"`.}
+\code{as.data.frame(x)}, for example \code{"bic_individual"} or \code{"sabic_groups"}.}
 
-\item{labels}{`TRUE` prints a direct label at the right end of each series.}
+\item{labels}{\code{TRUE} prints a direct label at the right end of each series.}
 
-\item{mark_minimum}{`TRUE` rings the lowest value among converged candidates.
+\item{mark_minimum}{\code{TRUE} rings the lowest value among converged candidates.
 This marks an extremum, it does not select a model.}
 
 \item{main, subtitle}{Panel title and secondary line.}
@@ -34,9 +34,9 @@ This marks an extremum, it does not select a model.}
 \item{palette, symbols, linetypes}{Series aesthetics, recycled over combinations
 of group-class count and covariance structure.}
 
-\item{style}{A list of visual constants, as built by `.multilpa_style()`.}
+\item{style}{A list of visual constants, as built by \code{.multilpa_style()}.}
 
-\item{...}{Further named visual constants, merged into `style`.}
+\item{...}{Further named visual constants, merged into \code{style}.}
 }
 \value{
 The enumeration result, invisibly. Called for its drawing side effect.

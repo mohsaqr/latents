@@ -7,15 +7,15 @@
 \method{print}{multilpa_enumeration}(x, ...)
 }
 \arguments{
-\item{x}{An `multilpa_enumeration` result.}
+\item{x}{An \code{multilpa_enumeration} result.}
 
-\item{...}{Passed to the underlying `data.frame` printing.}
+\item{...}{Passed to the underlying \code{data.frame} printing.}
 }
 \value{
 The input, invisibly. Called for the side effect of printing the
-  candidate grid: one line per candidate with its class counts, log
-  likelihood, parameter count, BIC, SABIC, profile entropy and convergence,
-  then a count of the candidates that did not converge.
+candidate grid: one line per candidate with its class counts, log
+likelihood, parameter count, BIC, SABIC, profile entropy and convergence,
+then a count of the candidates that did not converge.
 }
 \description{
 Print a class-enumeration grid

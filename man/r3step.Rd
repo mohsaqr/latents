@@ -15,7 +15,7 @@ r3step(
 )
 }
 \arguments{
-\item{x}{A covariate-free fitted [multilpa()] or [lta()] model. A fit that
+\item{x}{A covariate-free fitted \code{\link[=multilpa]{multilpa()}} or \code{\link[=lta]{lta()}} model. A fit that
 already uses membership covariates cannot be corrected by the fixed,
 unconditional classification-error matrix used here.}
 
@@ -24,44 +24,44 @@ Shared fit columns are checked row by row; a frame with too little
 identifying information warns that alignment cannot be verified.}
 
 \item{covariates}{Character vector of numeric columns not used as measurement
-indicators in `x`. For `level = "groups"` each must be constant within a
+indicators in \code{x}. For \code{level = "groups"} each must be constant within a
 group.}
 
-\item{level}{`"individuals"` predicts profile membership, `"groups"`
+\item{level}{\code{"individuals"} predicts profile membership, \code{"groups"}
 predicts group-class membership.}
 
 \item{ci_level}{Confidence level for the intervals.}
 
-\item{vcov_type}{`"observed"` uses the observed information; `"robust"` uses
+\item{vcov_type}{\code{"observed"} uses the observed information; \code{"robust"} uses
 the sandwich clustered on the fit's groups, which is the honest choice when
-the covariates are measured on observations nested inside them. `"robust"`
+the covariates are measured on observations nested inside them. \code{"robust"}
 needs more independent groups than the regression has coefficients, because
 the group score contributions sum to zero at the estimate and so span at
 most one dimension fewer than there are groups; with too few it is refused
-with `multilpa_too_few_groups` rather than reporting a variance that is
-singular, or, with a single group, numerically zero. `"observed"` remains
+with \code{multilpa_too_few_groups} rather than reporting a variance that is
+singular, or, with a single group, numerically zero. \code{"observed"} remains
 available there and does not allow for the nesting.}
 
 \item{adjust}{Multiplicity correction applied across the covariate terms,
-passed to [stats::p.adjust()]. `"BH"` by default; `"none"` leaves the
+passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}. \code{"BH"} by default; \code{"none"} leaves the
 p-values uncorrected. The family is every covariate term of every
 non-reference class, which is the set of tests this call computes; the
 intercepts are not part of it.}
 }
 \value{
-A base `data.frame` with one row per non-reference class and term,
-  and the columns `level`, `outcome`, `term`, `estimate`, `standard_error`,
-  `statistic`, `p_value`, `p_value_adjusted`, `conf_low` and `conf_high`.
-  `p_value` is uncorrected and `p_value_adjusted` carries the correction named
-  by `adjust`, which is also recorded in the result's `adjust` attribute;
-  it is `NA` on the intercept rows, which are not part of the tested family.
-  A coefficient with zero standard error has an undefined Wald statistic and
-  p-value, reported as `NA_real_` rather than infinity or zero.
-  Coefficients are log odds against the final class, which is the reference,
-  matching `multilpa(profile_covariates = )`; that class is named in the
-  result's
-  `reference_class` attribute, and the variance that was used in its
-  `vcov_type` attribute.
+A base \code{data.frame} with one row per non-reference class and term,
+and the columns \code{level}, \code{outcome}, \code{term}, \code{estimate}, \code{standard_error},
+\code{statistic}, \code{p_value}, \code{p_value_adjusted}, \code{conf_low} and \code{conf_high}.
+\code{p_value} is uncorrected and \code{p_value_adjusted} carries the correction named
+by \code{adjust}, which is also recorded in the result's \code{adjust} attribute;
+it is \code{NA} on the intercept rows, which are not part of the tested family.
+A coefficient with zero standard error has an undefined Wald statistic and
+p-value, reported as \code{NA_real_} rather than infinity or zero.
+Coefficients are log odds against the final class, which is the reference,
+matching \code{multilpa(profile_covariates = )}; that class is named in the
+result's
+\code{reference_class} attribute, and the variance that was used in its
+\code{vcov_type} attribute.
 }
 \description{
 The R3STEP approach. A multinomial logit of class membership on covariates,
@@ -73,25 +73,25 @@ class and the covariate cannot explain why.
 }
 \details{
 The error matrix is held fixed rather than estimated jointly, which
-  is what makes this a three-step method and what keeps the covariates from
-  reshaping the classes.
-  On a [lta()] fit, `level = "individuals"` models the marginal profile at
-  each occasion. It does not regress initial-state or transition
-  probabilities on the covariates. `vcov_type = "robust"` clusters the
-  occasion scores by group; `"observed"` treats them as independent.
+is what makes this a three-step method and what keeps the covariates from
+reshaping the classes.
+On a \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} models the marginal profile at
+each occasion. It does not regress initial-state or transition
+probabilities on the covariates. \code{vcov_type = "robust"} clusters the
+occasion scores by group; \code{"observed"} treats them as independent.
 
-  Over 60 replications of a two-profile design with a true log-odds slope of
-  1.2 and intercept -0.3, this recovered the slope with a bias of -0.002 and
-  the intercept with a bias of +0.006, where a logistic regression on the
-  modal class was biased by -0.163 on the slope. The correction costs some
-  precision: the standard deviation of the slope across replications was
-  0.127 against 0.100 for the naive fit. The nominal 95% intervals covered
-  the true slope in 95% of those replications.
+Over 60 replications of a two-profile design with a true log-odds slope of
+1.2 and intercept -0.3, this recovered the slope with a bias of -0.002 and
+the intercept with a bias of +0.006, where a logistic regression on the
+modal class was biased by -0.163 on the slope. The correction costs some
+precision: the standard deviation of the slope across replications was
+0.127 against 0.100 for the naive fit. The nominal 95\% intervals covered
+the true slope in 95\% of those replications.
 
-  That coverage was measured where the profiles separate well. The error
-  matrix is still treated as known rather than estimated, so intervals should
-  be expected to run narrow where classification is poorer; check
-  `get_results(x, "classification_errors")` before relying on them.
+That coverage was measured where the profiles separate well. The error
+matrix is still treated as known rather than estimated, so intervals should
+be expected to run narrow where classification is poorer; check
+\code{get_results(x, "classification_errors")} before relying on them.
 }
 \examples{
 set.seed(21)
@@ -109,13 +109,13 @@ r3step(fit, example_data, "x")
 }
 \references{
 Vermunt, J. K. (2010). Latent class modeling with covariates: two
-  improved three-step approaches. *Political Analysis*, 18, 450--469.
-  Asparouhov, T., & Muthen, B. (2014). Auxiliary variables in mixture
-  modeling: three-step approaches using Mplus. *Structural Equation
-  Modeling*, 21, 329--341.
+improved three-step approaches. \emph{Political Analysis}, 18, 450--469.
+Asparouhov, T., & Muthen, B. (2014). Auxiliary variables in mixture
+modeling: three-step approaches using Mplus. \emph{Structural Equation
+Modeling}, 21, 329--341.
 }
 \seealso{
-[three_step()] for a distal outcome, and
-  `multilpa(profile_covariates = )` for the
-  one-step alternative that estimates everything jointly.
+\code{\link[=three_step]{three_step()}} for a distal outcome, and
+\code{multilpa(profile_covariates = )} for the
+one-step alternative that estimates everything jointly.
 }

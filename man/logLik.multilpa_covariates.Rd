@@ -12,9 +12,9 @@
 \item{...}{Reserved.}
 }
 \value{
-A `logLik` object carrying the maximized log likelihood, the free
-  parameter count as `df`, and the number of observed groups as `nobs`, so
-  `stats::BIC()` uses the group-count BIC.
+A \code{logLik} object carrying the maximized log likelihood, the free
+parameter count as \code{df}, and the number of observed groups as \code{nobs}, so
+\code{stats::BIC()} uses the group-count BIC.
 }
 \description{
 Extract a covariate LPA log likelihood

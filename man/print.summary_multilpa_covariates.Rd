@@ -7,21 +7,21 @@
 \method{print}{summary_multilpa_covariates}(x, digits = 4L, rows = 10L, ...)
 }
 \arguments{
-\item{x}{A `summary_multilpa_covariates` object.}
+\item{x}{A \code{summary_multilpa_covariates} object.}
 
 \item{digits}{Number of printed significant digits.}
 
 \item{rows}{How many rows of each table to print. A longer table is shown
-to that depth, with its remaining row count and the `get_results()` call that
+to that depth, with its remaining row count and the \code{get_results()} call that
 returns it whole.}
 
-\item{...}{Passed to the underlying `data.frame` printing.}
+\item{...}{Passed to the underlying \code{data.frame} printing.}
 }
 \value{
 The summary, invisibly. Called for the side effect of printing the
-  model line, the measurement model, the membership regressions, the
-  effective memberships at both levels, the likelihood and information
-  criteria, any warnings, and the restart diagnostics.
+model line, the measurement model, the membership regressions, the
+effective memberships at both levels, the likelihood and information
+criteria, any warnings, and the restart diagnostics.
 }
 \description{
 Print a covariate LPA summary

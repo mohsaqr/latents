@@ -7,29 +7,29 @@
 \method{coef}{multilpa_transitions}(object, ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa_transitions` model.}
+\item{object}{A fitted \code{multilpa_transitions} model.}
 
-\item{...}{Reserved for compatibility with `coef()`.}
+\item{...}{Reserved for compatibility with \code{coef()}.}
 }
 \value{
 A named numeric vector of every free parameter on its natural scale:
-  profile means and variances, categorical response probabilities where
-  present, each group class's initial profile probabilities, its transition
-  probabilities, and the group-class probabilities.
+profile means and variances, categorical response probabilities where
+present, each group class's initial profile probabilities, its transition
+probabilities, and the group-class probabilities.
 
-  Names follow the package-wide `level.parameter.outcome.term` grammar shared
-  with [coef.multilpa()], so one pattern matches across fit classes: for
-  example `measurement.mean.profile_1.reading` and
-  `profile.transition_probability.profile_2.group_class_1:profile_1`, whose
-  term names the origin the move is from. `level`, `parameter` and `outcome`
-  never contain a dot, so everything after the third dot is the term and the
-  name parses back into the columns [parameter_inference()] reports even when
-  an indicator name itself contains a dot.
+Names follow the package-wide \code{level.parameter.outcome.term} grammar shared
+with \code{\link[=coef.multilpa]{coef.multilpa()}}, so one pattern matches across fit classes: for
+example \code{measurement.mean.profile_1.reading} and
+\code{profile.transition_probability.profile_2.group_class_1:profile_1}, whose
+term names the origin the move is from. \code{level}, \code{parameter} and \code{outcome}
+never contain a dot, so everything after the third dot is the term and the
+name parses back into the columns \code{\link[=parameter_inference]{parameter_inference()}} reports even when
+an indicator name itself contains a dot.
 
-  No standard errors accompany these: [vcov.multilpa_transitions()] refuses
-  rather than returning an invalid matrix. [get_results()] gives the same
-  quantities as tidy
-  tables, which is the form to prefer.
+No standard errors accompany these: \code{\link[=vcov.multilpa_transitions]{vcov.multilpa_transitions()}} refuses
+rather than returning an invalid matrix. \code{\link[=get_results]{get_results()}} gives the same
+quantities as tidy
+tables, which is the form to prefer.
 }
 \description{
 Fitted parameters of a latent transition model

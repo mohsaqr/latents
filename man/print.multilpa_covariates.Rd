@@ -15,8 +15,8 @@
 }
 \value{
 The model, invisibly. Called for the side effect of printing the
-  class counts, the covariate counts, the log likelihood with the
-  information criteria, and the convergence diagnostics.
+class counts, the covariate counts, the log likelihood with the
+information criteria, and the convergence diagnostics.
 }
 \description{
 Print a covariate LPA fit

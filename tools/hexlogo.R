@@ -11,7 +11,7 @@
 #   Rscript tools/hexlogo.R
 # It writes man/figures/logo.png, which the README embeds at the top.
 
-logo_path <- file.path("man", "figures", "logo2.png")
+logo_path <- file.path("man", "figures", "logo.png")
 dir.create(dirname(logo_path), showWarnings = FALSE, recursive = TRUE)
 
 ## Palette -------------------------------------------------------------------
@@ -62,6 +62,8 @@ graphics::polygon(h$x, h$y, col = fill, border = border, lwd = 42)
 wm_y <- 0.60
 label <- "multilpa"
 wm <- list(cex = 0.5, x = -0.4)
+# A search loop: it stops at the first (largest) size that fits, which an apply
+# call cannot do without evaluating every size.
 for (cex in seq(6, 0.5, by = -0.05)) {
   w <- graphics::strwidth(label, cex = cex, font = 2)
   ht <- graphics::strheight(label, cex = cex, font = 2)
@@ -84,11 +86,11 @@ clusters <- list(
   list(cx = 0.40, cy = -0.30, pch = 24, col = tr_col)    # triangles, lower-right
 )
 r_bound <- 0.30
-for (cl in clusters) boundary(cl$cx, cl$cy, r_bound, cl$col)
-for (cl in clusters) {
+invisible(lapply(clusters, \(cl) boundary(cl$cx, cl$cy, r_bound, cl$col)))
+invisible(lapply(clusters, \(cl) {
   cluster(cl$cx, cl$cy, blob_dx, blob_dy, pch = cl$pch, col = cl$col,
           cex = cex_m)
-}
+}))
 
 graphics::par(op)
 grDevices::dev.off()

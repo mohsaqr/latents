@@ -10,22 +10,22 @@ get_group_tna(x, ...)
 \method{get_group_tna}{multilpa_transitions}(x, label = "Group class", ...)
 }
 \arguments{
-\item{x}{A fitted model from [lta()].}
+\item{x}{A fitted model from \code{\link[=lta]{lta()}}.}
 
-\item{...}{Passed to [tna::tna()] for each class.}
+\item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}} for each class.}
 
 \item{label}{What the classes are called in tna's output.}
 }
 \value{
-An object of class `group_tna`, one `tna` model per latent class:
-  `centralities()` returns one tidy table with a `group` column,
-  `compare()` contrasts two classes, and `plot()` draws them together.
+An object of class \code{group_tna}, one \code{tna} model per latent class:
+\code{centralities()} returns one tidy table with a \code{group} column,
+\code{compare()} contrasts two classes, and \code{plot()} draws them together.
 }
 \description{
-Builds one [tna::tna()] model per latent group class of a fitted transition
-model, collected into the `group_tna` object tna's grouped verbs expect.
+Builds one \code{\link[tna:build_model]{tna::tna()}} model per latent group class of a fitted transition
+model, collected into the \code{group_tna} object tna's grouped verbs expect.
 A class row with no expected outgoing moves keeps the fit's unestimated
-transition probabilities and raises `multilpa_empty_transition_row`.
+transition probabilities and raises \code{multilpa_empty_transition_row}.
 }
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {
@@ -37,5 +37,5 @@ if (requireNamespace("tna", quietly = TRUE)) {
 }
 }
 \seealso{
-[get_tna()] for one network over the whole sample.
+\code{\link[=get_tna]{get_tna()}} for one network over the whole sample.
 }

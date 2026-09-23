@@ -32,51 +32,51 @@ fit_staged(
 \item{id}{Name of the observed group identifier column. Character, factor, or
 numeric identifiers are supported; missing identifiers are not. Required
 here: this model has a second level by construction, so it has no
-single-level form and does not take `multilpa()`'s `id = NULL`.}
+single-level form and does not take \code{multilpa()}'s \code{id = NULL}.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}
 
 \item{n_group_classes}{Number of latent group classes to estimate in the
 second stage. Must be at least two; one would leave nothing to estimate.}
 
-\item{measurement}{Optional fitted `multilpa` model to use as the first
+\item{measurement}{Optional fitted \code{multilpa} model to use as the first
 stage, so that a measurement solution already chosen and inspected is
 carried forward rather than refitted. Its profiles, indicators and
 measurement options must match the ones requested here, and it must have
 one group class: a multi-class fit already estimates group structure and
-is not a measurement-only first stage. When `NULL`, the first stage is
+is not a measurement-only first stage. When \code{NULL}, the first stage is
 fitted here with one group class.}
 
-\item{variance_model}{Either `"varying"` (profile-specific variances or
-covariance matrices) or `"equal"` (shared across profiles).}
+\item{variance_model}{Either \code{"varying"} (profile-specific variances or
+covariance matrices) or \code{"equal"} (shared across profiles).}
 
 \item{n_starts}{Number of EM starts, used for both stages.}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-`max_iter = 0` performs no update. With `start`, it returns the model
-evaluated at exactly those values, whatever `n_starts` is, so that
-`logLik()` scores a parameter set supplied from elsewhere rather than the
+\code{max_iter = 0} performs no update. With \code{start}, it returns the model
+evaluated at exactly those values, whatever \code{n_starts} is, so that
+\code{logLik()} scores a parameter set supplied from elsewhere rather than the
 best of some random initializations that were never asked for. Without
-`start` there is nothing to evaluate at, so the random initializations are
+\code{start} there is nothing to evaluate at, so the random initializations are
 scored and the highest is returned.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
-absolute change no greater than `tol * (1 + abs(previous log likelihood))`.}
+absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.}
 
 \item{min_variance}{Positive lower bound on each variance, or each covariance
 eigenvalue for full covariance, in squared input units. This defines a constrained maximum-likelihood problem. Bound-active
 estimates are explicitly reported and generate a warning.}
 
-\item{seed}{Optional random seed: any whole number `set.seed()` accepts,
+\item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
 negative ones included. With a supplied seed,
 the caller's random-number state is restored on exit.}
 
-\item{missing}{`"error"` rejects missing indicators; `"fiml"` maximizes the
+\item{missing}{\code{"error"} rejects missing indicators; \code{"fiml"} maximizes the
 observed-data likelihood under an ignorable missingness mechanism (MAR).
 Missing indicators are integrated out, not filled in for likelihood fitting.}
 
-\item{covariance_model}{`"diagonal"` assumes conditional independence;
-`"full"` estimates within-profile residual covariances.}
+\item{covariance_model}{\code{"diagonal"} assumes conditional independence;
+\code{"full"} estimates within-profile residual covariances.}
 
 \item{categorical}{Character vector naming indicators to treat as
 categorical. Each is modelled by unrestricted, profile-specific response
@@ -88,23 +88,23 @@ Gaussian, so naming a subset fits a mixed-mode model.}
 
 \item{min_probability}{Positive lower bound on every categorical response
 probability, defining a constrained maximum-likelihood problem in the same
-way `min_variance` does for Gaussian indicators.}
+way \code{min_variance} does for Gaussian indicators.}
 
 \item{time}{Optional name of a column giving each observation's position
 within its group, such as a wave, occasion or course number. The model does
-not use it; it is stored so that `get_results(x, "sequences")`,
-`get_results(x, "sequence_summary")` and
-`plot(what = "sequences")` can read the assignments back in order. Values
+not use it; it is stored so that \code{get_results(x, "sequences")},
+\code{get_results(x, "sequence_summary")} and
+\code{plot(what = "sequences")} can read the assignments back in order. Values
 must be complete and unique within each group.}
 }
 \value{
-A `multilpa` object for the second stage, so that every accessor,
-  diagnostic and method works on it unchanged. Its measurement parameters
-  are exactly the first stage's. It additionally carries `fixed`, naming the
-  held blocks; `n_parameters`, counting only the parameters this stage
-  estimated; and `n_parameters_with_measurement`, which adds the held
-  measurement back. Use [get_results()] with `what = "stages"` for a tidy
-  two-row summary of both stages.
+A \code{multilpa} object for the second stage, so that every accessor,
+diagnostic and method works on it unchanged. Its measurement parameters
+are exactly the first stage's. It additionally carries \code{fixed}, naming the
+held blocks; \code{n_parameters}, counting only the parameters this stage
+estimated; and \code{n_parameters_with_measurement}, which adds the held
+measurement back. Use \code{\link[=get_results]{get_results()}} with \code{what = "stages"} for a tidy
+two-row summary of both stages.
 }
 \description{
 Estimates the measurement model once, on its own, and then estimates the
@@ -114,16 +114,16 @@ the grouping question is asked, so that adding group classes cannot move the
 profiles they are meant to describe.
 }
 \details{
-First-stage uncertainty is **not** propagated. The second stage
-  treats the measurement solution as known, so its standard errors,
-  information criteria and likelihood-ratio comparisons are conditional on
-  that solution and are narrower than they would be if the measurement had
-  been estimated jointly. This is a property of staging itself, not of this
-  implementation, and it is the reason both parameter counts are reported:
-  compare staged fits with one another using `n_parameters`, and compare a
-  staged fit with a jointly estimated one using
-  `n_parameters_with_measurement`, remembering that the staged likelihood is
-  not the joint maximum and the comparison is descriptive.
+First-stage uncertainty is \strong{not} propagated. The second stage
+treats the measurement solution as known, so its standard errors,
+information criteria and likelihood-ratio comparisons are conditional on
+that solution and are narrower than they would be if the measurement had
+been estimated jointly. This is a property of staging itself, not of this
+implementation, and it is the reason both parameter counts are reported:
+compare staged fits with one another using \code{n_parameters}, and compare a
+staged fit with a jointly estimated one using
+\code{n_parameters_with_measurement}, remembering that the staged likelihood is
+not the joint maximum and the comparison is descriptive.
 }
 \examples{
 set.seed(7)
@@ -138,7 +138,7 @@ get_results(staged, what = "stages")
 get_results(staged, what = "profile_probabilities")
 }
 \seealso{
-[multilpa()] with `fixed` for finer control over which blocks are
-  held, and [starting_values()] with `what = "measurement"` for the values a
-  stage hands on.
+\code{\link[=multilpa]{multilpa()}} with \code{fixed} for finer control over which blocks are
+held, and \code{\link[=starting_values]{starting_values()}} with \code{what = "measurement"} for the values a
+stage hands on.
 }

@@ -32,7 +32,7 @@ lta(
 \item{id}{Name of the observed group identifier column. Character, factor, or
 numeric identifiers are supported; missing identifiers are not. Required
 here: this model has a second level by construction, so it has no
-single-level form and does not take `multilpa()`'s `id = NULL`.}
+single-level form and does not take \code{multilpa()}'s \code{id = NULL}.}
 
 \item{n_profiles}{Integer number of individual profiles, at least two.}
 
@@ -44,40 +44,40 @@ complete and unique within each group.}
 gives an ordinary single-level latent transition model; more than one fits
 a mixture of transition models over groups.}
 
-\item{variance_model}{Either `"varying"` (profile-specific variances or
-covariance matrices) or `"equal"` (shared across profiles).}
+\item{variance_model}{Either \code{"varying"} (profile-specific variances or
+covariance matrices) or \code{"equal"} (shared across profiles).}
 
-\item{n_starts}{Positive integer number of EM starts. When `start` is supplied,
+\item{n_starts}{Positive integer number of EM starts. When \code{start} is supplied,
 it supplies the first start; remaining starts are random initializations.
-It is ignored when `max_iter = 0` and `start` is supplied: that call
+It is ignored when \code{max_iter = 0} and \code{start} is supplied: that call
 evaluates the supplied parameters and nothing else, so exactly one start is
-run whatever `n_starts` says.}
+run whatever \code{n_starts} says.}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-`max_iter = 0` performs no update. With `start`, it returns the model
-evaluated at exactly those values, whatever `n_starts` is, so that
-`logLik()` scores a parameter set supplied from elsewhere rather than the
+\code{max_iter = 0} performs no update. With \code{start}, it returns the model
+evaluated at exactly those values, whatever \code{n_starts} is, so that
+\code{logLik()} scores a parameter set supplied from elsewhere rather than the
 best of some random initializations that were never asked for. Without
-`start` there is nothing to evaluate at, so the random initializations are
+\code{start} there is nothing to evaluate at, so the random initializations are
 scored and the highest is returned.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
-absolute change no greater than `tol * (1 + abs(previous log likelihood))`.}
+absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.}
 
 \item{min_variance}{Positive lower bound on each variance, or each covariance
 eigenvalue for full covariance, in squared input units. This defines a constrained maximum-likelihood problem. Bound-active
 estimates are explicitly reported and generate a warning.}
 
-\item{seed}{Optional random seed: any whole number `set.seed()` accepts,
+\item{seed}{Optional random seed: any whole number \code{set.seed()} accepts,
 negative ones included. With a supplied seed,
 the caller's random-number state is restored on exit.}
 
-\item{missing}{`"error"` rejects missing indicators; `"fiml"` maximizes the
+\item{missing}{\code{"error"} rejects missing indicators; \code{"fiml"} maximizes the
 observed-data likelihood under an ignorable missingness mechanism (MAR).
 Missing indicators are integrated out, not filled in for likelihood fitting.}
 
-\item{covariance_model}{`"diagonal"` assumes conditional independence;
-`"full"` estimates within-profile residual covariances.}
+\item{covariance_model}{\code{"diagonal"} assumes conditional independence;
+\code{"full"} estimates within-profile residual covariances.}
 
 \item{categorical}{Character vector naming indicators to treat as
 categorical. Each is modelled by unrestricted, profile-specific response
@@ -89,33 +89,33 @@ Gaussian, so naming a subset fits a mixed-mode model.}
 
 \item{min_probability}{Positive lower bound on every categorical response
 probability, defining a constrained maximum-likelihood problem in the same
-way `min_variance` does for Gaussian indicators.}
+way \code{min_variance} does for Gaussian indicators.}
 
 \item{occasions}{How a group's occasions are placed on the transition grid.
-`"observed"` numbers each group's own observations consecutively, so a
-transition always links two adjacent observations. `"grid"` places them on
+\code{"observed"} numbers each group's own observations consecutively, so a
+transition always links two adjacent observations. \code{"grid"} places them on
 the grid of every position seen in the data, so a group that skips a
 position still consumes a transition across the gap and contributes no
 measurement information at it. The two agree whenever every group is
 observed at every position.}
 }
 \value{
-A `multilpa_transitions` object containing `means`, `variances`,
-  optional `covariances` and `response_probabilities`,
-  `initial_probabilities` (group classes by profiles),
-  `transition_probabilities` (profiles by profiles by group classes, rows
-  indexing the profile moved from), `group_probabilities`, posterior
-  matrices, classifications, log likelihood, information criteria, restart
-  diagnostics and convergence history. Use [get_results()] for the tidy
-  transition table and for the other
-  tables. No standard
-  errors, likelihood-ratio tests or guarantees of global optimality are
-  given for this model family.
+A \code{multilpa_transitions} object containing \code{means}, \code{variances},
+optional \code{covariances} and \code{response_probabilities},
+\code{initial_probabilities} (group classes by profiles),
+\code{transition_probabilities} (profiles by profiles by group classes, rows
+indexing the profile moved from), \code{group_probabilities}, posterior
+matrices, classifications, log likelihood, information criteria, restart
+diagnostics and convergence history. Use \code{\link[=get_results]{get_results()}} for the tidy
+transition table and for the other
+tables. No standard
+errors, likelihood-ratio tests or guarantees of global optimality are
+given for this model family.
 }
 \description{
 Fits latent profiles to repeated observations of the same group and
 estimates the probabilities of moving between them from one occasion to the
-next. The measurement model is that of [multilpa()] -- Gaussian, categorical
+next. The measurement model is that of \code{\link[=multilpa]{multilpa()}} -- Gaussian, categorical
 or mixed indicators, invariant across occasions -- so profiles keep the same
 meaning at every occasion and a change of profile is a change of state
 rather than a change of definition. With more than one group class, each
@@ -126,25 +126,25 @@ that differ only in where they start.
 \details{
 This is latent transition analysis (LTA); with more than one group class it
 is a mixture over transition patterns, so the classes are trajectories rather
-than states. [multilpa()] is the cross-sectional counterpart.
+than states. \code{\link[=multilpa]{multilpa()}} is the cross-sectional counterpart.
 
 Transitions are first order and homogeneous over occasions: the
-  probability of moving from one profile to another does not depend on the
-  occasion or on earlier profiles. Measurement parameters are shared across
-  occasions and across group classes. A profile that no group occupies before
-  its final occasion leaves its transition row without information; the row
-  is then uniform by construction rather than estimated. Such a row is warned
-  about when the model is fitted, is flagged by the `estimated` column of
-  the transition table and is listed by
-  `get_results(fit, "transitions", estimated = FALSE)`.
-  Profile labels are arbitrary and
-  are not comparable across fits without alignment.
+probability of moving from one profile to another does not depend on the
+occasion or on earlier profiles. Measurement parameters are shared across
+occasions and across group classes. A profile that no group occupies before
+its final occasion leaves its transition row without information; the row
+is then uniform by construction rather than estimated. Such a row is warned
+about when the model is fitted, is flagged by the \code{estimated} column of
+the transition table and is listed by
+\code{get_results(fit, "transitions", estimated = FALSE)}.
+Profile labels are arbitrary and
+are not comparable across fits without alignment.
 
-  `max_iter = 0` updates nothing: the starting values are evaluated and
-  returned with the expectation they imply, and the fit reports
-  `converged = FALSE` after zero iterations. Every reported quantity,
-  including `expected_count` and the implied profile prevalence, is then
-  read off that single expectation.
+\code{max_iter = 0} updates nothing: the starting values are evaluated and
+returned with the expectation they imply, and the fit reports
+\code{converged = FALSE} after zero iterations. Every reported quantity,
+including \code{expected_count} and the implied profile prevalence, is then
+read off that single expectation.
 }
 \examples{
 # Students take their courses in their own order, which `sequence` records,
@@ -160,13 +160,13 @@ summary(fit)
 }
 \references{
 Collins, L. M., & Lanza, S. T. (2010). Latent class and latent
-  transition analysis. Wiley.
+transition analysis. Wiley.
 
-  Vermunt, J. K. (2003). Multilevel latent class models. Sociological
-  Methodology, 33, 213--239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+Vermunt, J. K. (2003). Multilevel latent class models. Sociological
+Methodology, 33, 213--239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 }
 \seealso{
-[get_results()] for the fitted transition probabilities and for the
-  assignments in order, and [multilpa()] for the
-  cross-sectional model this one shares its measurement parameters with.
+\code{\link[=get_results]{get_results()}} for the fitted transition probabilities and for the
+assignments in order, and \code{\link[=multilpa]{multilpa()}} for the
+cross-sectional model this one shares its measurement parameters with.
 }

@@ -7,16 +7,16 @@
 \method{summary}{multilpa_transitions}(object, ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa_transitions` model.}
+\item{object}{A fitted \code{multilpa_transitions} model.}
 
-\item{...}{Reserved for compatibility with `summary()`.}
+\item{...}{Reserved for compatibility with \code{summary()}.}
 }
 \value{
-A `summary_multilpa_transitions` object carrying the measurement
-  parameters, the initial and transition probabilities and counts, the
-  effective class counts, the fit statistics and the restart diagnostics.
-  Its tables are read with [get_results()];
-  `print()` reports the whole model.
+A \code{summary_multilpa_transitions} object carrying the measurement
+parameters, the initial and transition probabilities and counts, the
+effective class counts, the fit statistics and the restart diagnostics.
+Its tables are read with \code{\link[=get_results]{get_results()}};
+\code{print()} reports the whole model.
 }
 \description{
 Summarize a fitted latent transition model
@@ -33,5 +33,5 @@ fit <- lta(example_data, c("score_a", "score_b"), "person",
 summary(fit)
 }
 \seealso{
-[get_results()] for the transition probabilities as a tidy table.
+\code{\link[=get_results]{get_results()}} for the transition probabilities as a tidy table.
 }

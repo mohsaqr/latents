@@ -1,5 +1,5 @@
 ---
-title: "Latent transition analysis and its plots"
+title: "Case study: Latent transition analysis and its plots"
 output:
   rmarkdown::html_document:
     toc: true

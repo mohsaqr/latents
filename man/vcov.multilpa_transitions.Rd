@@ -13,13 +13,13 @@
 \method{confint}{multilpa_transitions}(object, parm, level = 0.95, ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa_transitions` model. `vcov()` and
-`confint()` are base generics, so their first formal is `object`.}
+\item{object}{A fitted \code{multilpa_transitions} model. \code{vcov()} and
+\code{confint()} are base generics, so their first formal is \code{object}.}
 
 \item{...}{Ignored.}
 
 \item{x}{The same fitted model, under the name this package's own verbs
-use; `parameter_inference()` is documented on this page too.}
+use; \code{parameter_inference()} is documented on this page too.}
 
 \item{data}{Ignored; present for compatibility with the generic.}
 
@@ -28,13 +28,13 @@ use; `parameter_inference()` is documented on this page too.}
 \item{level}{Ignored; present for compatibility with the generic.}
 }
 \value{
-Nothing; `vcov()`, `confint()` and `parameter_inference()` all raise
-  a `multilpa_no_inference` condition on a latent transition fit. The
-  analytic score and Jacobian this package uses for observed-information and
-  sandwich standard errors do not yet cover the initial and transition
-  multinomial logits, so no interval is reported rather than an invalid one.
-  `confint()` refuses explicitly instead of letting `confint.default()`
-  reach `vcov()` and refuse by accident.
+Nothing; \code{vcov()}, \code{confint()} and \code{parameter_inference()} all raise
+a \code{multilpa_no_inference} condition on a latent transition fit. The
+analytic score and Jacobian this package uses for observed-information and
+sandwich standard errors do not yet cover the initial and transition
+multinomial logits, so no interval is reported rather than an invalid one.
+\code{confint()} refuses explicitly instead of letting \code{confint.default()}
+reach \code{vcov()} and refuse by accident.
 }
 \description{
 Standard errors are not available for a latent transition model

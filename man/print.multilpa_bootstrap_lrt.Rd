@@ -7,15 +7,15 @@
 \method{print}{multilpa_bootstrap_lrt}(x, ...)
 }
 \arguments{
-\item{x}{An `multilpa_bootstrap_lrt` result.}
+\item{x}{An \code{multilpa_bootstrap_lrt} result.}
 
-\item{...}{Reserved for compatibility with `print()`.}
+\item{...}{Reserved for compatibility with \code{print()}.}
 }
 \value{
 The input, invisibly. Called for the side effect of printing the
-  two models compared, the observed statistic, the p-value with its Monte
-  Carlo standard error and the number of valid replicates, and the blocks
-  held fixed where there are any.
+two models compared, the observed statistic, the p-value with its Monte
+Carlo standard error and the number of valid replicates, and the blocks
+held fixed where there are any.
 }
 \description{
 Print a parametric bootstrap likelihood-ratio comparison

@@ -7,22 +7,22 @@
 \method{as.data.frame}{summary_multilpa_bootstrap_lrt}(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
-\item{x}{An object of class `summary_multilpa_bootstrap_lrt`.}
+\item{x}{An object of class \code{summary_multilpa_bootstrap_lrt}.}
 
-\item{row.names}{Passed to `data.frame()`; `NULL` gives default row names.}
+\item{row.names}{Passed to \code{data.frame()}; \code{NULL} gives default row names.}
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{...}{Must be empty. An argument here raises `multilpa_bad_argument`
+\item{...}{Must be empty. An argument here raises \code{multilpa_bad_argument}
 naming it, rather than being dropped.}
 }
 \value{
-A base `data.frame`: the one-row test result.
+A base \code{data.frame}: the one-row test result.
 }
 \description{
 Plain coercion, as the base generic means it: one object, one data frame.
 A summary carries every table the object it describes can produce, and
-[get_results()] names them.
+\code{\link[=get_results]{get_results()}} names them.
 }
 \examples{
 set.seed(1)
@@ -40,5 +40,5 @@ comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
 as.data.frame(summary(comparison))
 }
 \seealso{
-[get_results()] for every other table this summary holds.
+\code{\link[=get_results]{get_results()}} for every other table this summary holds.
 }

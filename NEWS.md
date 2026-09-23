@@ -1,4 +1,4 @@
-# multilpa (development version)
+# multilpa 0.6.0
 
 ## New data
 

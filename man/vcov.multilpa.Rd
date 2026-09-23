@@ -7,38 +7,38 @@
 \method{vcov}{multilpa}(object, data = NULL, scale = c("natural", "unconstrained"), ...)
 }
 \arguments{
-\item{object}{A fitted `multilpa` model.}
+\item{object}{A fitted \code{multilpa} model.}
 
 \item{data}{Optional. The data frame the model was fitted to; when omitted
 it is rebuilt from the indicators, identifiers and occasions the fit
 stores, which round-trip exactly. Supplying it is the stronger check that
 the caller still holds that frame.}
 
-\item{scale}{Which parameter scale the covariance is on. `"natural"`, the
-default, is the covariance of the estimates [coef()] reports -- variances
+\item{scale}{Which parameter scale the covariance is on. \code{"natural"}, the
+default, is the covariance of the estimates \code{\link[=coef]{coef()}} reports -- variances
 in their own units and probabilities as probabilities -- carried from the
 estimation scale by the delta method with
-`.multilpa_inference_jacobian()`. `"unconstrained"` is the covariance on
+\code{.multilpa_inference_jacobian()}. \code{"unconstrained"} is the covariance on
 the scale the model is actually estimated on: log variances for a diagonal
 fit, log-Cholesky coordinates for a full-covariance fit, and
 baseline-category logits for the mixing and response probabilities.}
 
-\item{...}{Additional arguments passed to [parameter_inference()], including
-`method = "bootstrap"`, which is how a covariance structure the Wald path
+\item{...}{Additional arguments passed to \code{\link[=parameter_inference]{parameter_inference()}}, including
+\code{method = "bootstrap"}, which is how a covariance structure the Wald path
 cannot chart reports one here.}
 }
 \value{
-A square numeric matrix with one row and column per *estimated*
-  coefficient, named as [coef()] names them, on the scale `scale` asks for. A
-  fit made with `fixed` held part of its measurement model at supplied
-  values; those coefficients were not estimated here, so they carry no row or
-  column. With `scale = "unconstrained"` the matrix is `n_parameters` square,
-  for any fit; on the natural scale it is larger by one row and column for
-  each set of probabilities whose reference category the estimation scale
-  drops, and singular by construction, because each set of probabilities sums
-  to one. [confint()] and the
-  `conf_low`/`conf_high` columns of [parameter_inference()] are built from
-  the natural-scale matrix.
+A square numeric matrix with one row and column per \emph{estimated}
+coefficient, named as \code{\link[=coef]{coef()}} names them, on the scale \code{scale} asks for. A
+fit made with \code{fixed} held part of its measurement model at supplied
+values; those coefficients were not estimated here, so they carry no row or
+column. With \code{scale = "unconstrained"} the matrix is \code{n_parameters} square,
+for any fit; on the natural scale it is larger by one row and column for
+each set of probabilities whose reference category the estimation scale
+drops, and singular by construction, because each set of probabilities sums
+to one. \code{\link[=confint]{confint()}} and the
+\code{conf_low}/\code{conf_high} columns of \code{\link[=parameter_inference]{parameter_inference()}} are built from
+the natural-scale matrix.
 }
 \description{
 Extract multilevel LPA covariance estimates

@@ -7,17 +7,17 @@
 \method{summary}{multilpa_covariates}(object, ...)
 }
 \arguments{
-\item{object}{A covariate LPA fit from `multilpa(profile_covariates = )`.}
+\item{object}{A covariate LPA fit from \code{multilpa(profile_covariates = )}.}
 
-\item{...}{Reserved for compatibility with `summary()`.}
+\item{...}{Reserved for compatibility with \code{summary()}.}
 }
 \value{
-An object of class `summary_multilpa_covariates`, with a `print`
-  method and an [as.data.frame()] accessor. `as.data.frame()` returns the
-  one-row model summary by default; `what = "profiles"`, `"coefficients"`
-  and `"starts"` return the measurement model, the membership coefficients
-  and the restart diagnostics. The membership coefficients carry no standard
-  errors here; [parameter_inference()] reports those.
+An object of class \code{summary_multilpa_covariates}, with a \code{print}
+method and an \code{\link[=as.data.frame]{as.data.frame()}} accessor. \code{as.data.frame()} returns the
+one-row model summary by default; \code{what = "profiles"}, \code{"coefficients"}
+and \code{"starts"} return the measurement model, the membership coefficients
+and the restart diagnostics. The membership coefficients carry no standard
+errors here; \code{\link[=parameter_inference]{parameter_inference()}} reports those.
 }
 \description{
 Collects the model-level fit, the measurement model, the membership
