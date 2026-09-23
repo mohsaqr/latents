@@ -15,16 +15,16 @@ enrolment was in.}
 \item{sequence}{Integer, the position of this course in the student's own
 order, 1 upwards. Pass it as \code{time}. Students who took fewer courses have
 shorter sequences, so the panel is ragged.}
-\item{browse}{Numeric, course page views as \code{log1p(events)}, standardized
+\item{browse}{Numeric, course page views on the \code{log1p(events)} scale, standardized
 within course.}
-\item{lectures}{Numeric, lecture videos viewed as \code{log1p(events)}, standardized
+\item{lectures}{Numeric, lecture videos viewed on the \code{log1p(events)} scale, standardized
 within course.}
-\item{forum_read}{Numeric, forum posts read as \code{log1p(events)}, standardized
+\item{forum_read}{Numeric, forum posts read on the \code{log1p(events)} scale, standardized
 within course.}
-\item{forum_post}{Numeric, forum posts written as \code{log1p(events)}, standardized
+\item{forum_post}{Numeric, forum posts written on the \code{log1p(events)} scale, standardized
 within course.}
 \item{attendance}{Numeric, days the student was active in the course as
-\code{log1p(events)}, standardized within course. It is \strong{generated from the four click measures} and then
+on the \code{log1p(events)} scale, standardized within course. It is \strong{generated from the four click measures} and then
 blurred, because a student is recorded present on a day precisely because
 they clicked something, and a day is a coarse unit -- one tick however
 much happened inside it. The indicators are therefore locally dependent
@@ -113,7 +113,9 @@ the standardization sets the scale rather than removing a course effect. It is
 stated here rather than left implicit because a reader who assumed otherwise
 would misread what the \code{course} column does.
 
-The standardization is applied to \code{log1p(events)}, not to the raw counts.
+The indicators are simulated directly on the \code{log1p(events)} scale, the scale
+of a logged activity export; no raw counts are generated. They are
+standardized on that scale, not as counts.
 Standardizing is affine within a course, so it leaves the within-course skew
 exactly as it found it, and raw learning-analytics counts are strongly
 right-skewed: on an unlogged draft of these data the skew alone looked like an

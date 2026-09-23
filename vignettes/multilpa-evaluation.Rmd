@@ -192,7 +192,7 @@ bootstrap_lrt(fit, candidate_fit(candidates, n_profiles = 3, n_group_classes = 2
               iter = 199, seed = 42)            # bootstrap test of one more class (slow)
 enumerate_classes(course_engagement, vars = c("browse", "lectures"),
                   id = "student", n_profiles = 2:3,
-                  structure = c("VVI", "VVV"))  # crossing covariance structures (slow)
+                  model = c("VVI", "VVV"))      # crossing covariance models (slow)
 confint(fit)                                    # confidence intervals
 vcov(fit, vcov_type = "robust")                 # robust covariance matrix
 plot(fit, what = "posteriors")                  # posterior of each assigned profile

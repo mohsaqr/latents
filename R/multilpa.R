@@ -971,7 +971,7 @@ multilpa <- function(data, vars, id, n_profiles,
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
     old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
     on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)
+      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
       else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
         rm(".Random.seed", envir = .GlobalEnv)
       }

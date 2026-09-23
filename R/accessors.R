@@ -654,9 +654,13 @@ as.data.frame.multilpa_enumeration <- function(x, row.names = NULL, optional = F
 #' @param x An `multilpa_enumeration` result.
 #' @param ... Passed to the underlying `data.frame` printing.
 #' @return The input, invisibly. Called for the side effect of printing the
-#'   candidate grid: one line per candidate with its class counts, log
-#'   likelihood, parameter count, BIC, SABIC, profile entropy and convergence,
-#'   then a count of the candidates that did not converge.
+#'   candidate grid: one line per candidate with its class counts, covariance
+#'   model, log likelihood, parameter count, AIC, BIC under both sample-size
+#'   conventions, ICL counted over individuals, entropy at both levels, and the
+#'   diagnostics needed to trust a candidate (convergence, a bound reached, and
+#'   how many starts reached the best likelihood), then a count of the
+#'   candidates that did not converge. [summary()] and [as.data.frame()] give
+#'   every criterion.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -674,9 +678,11 @@ print.multilpa_enumeration <- function(x, ...) {
               inherits(x, "multilpa_enumeration"))
   table <- x$table
   cat(sprintf("Class enumeration: %d candidate models\n", nrow(table)))
-  columns <- intersect(c("n_profiles", "n_group_classes", "structure",
-                         "log_likelihood", "n_parameters", "bic_individual",
-                         "sabic_individual", "profile_entropy", "converged"),
+  columns <- intersect(c("n_profiles", "n_group_classes", "model",
+                         "log_likelihood", "n_parameters", "aic", "bic_groups",
+                         "bic_individual", "icl_individual", "profile_entropy",
+                         "group_entropy", "converged", "boundary",
+                         "n_best_replicated"),
                        names(table))
   print(table[, columns, drop = FALSE], row.names = FALSE, ...)
   failures <- sum(!table$converged)

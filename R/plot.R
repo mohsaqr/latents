@@ -430,20 +430,26 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
 
 #' Plot a class-enumeration grid
 #'
-#' Draws one information criterion against the number of profiles, with one
-#' line per number of group classes and covariance structure. Candidates that
-#' failed to converge are marked rather than dropped, so a gap in a line is
-#' visible as a failure and not mistaken for a missing candidate.
+#' Draws information criteria against the number of profiles as line plots,
+#' one panel per criterion, with one line per number of group classes and
+#' covariance model. Candidates that failed to converge are marked on the
+#' baseline, so a gap in a line reads as a failure and not as a missing
+#' candidate.
 #'
 #' @param x An `multilpa_enumeration` result from [enumerate_classes()].
-#' @param criterion Name of the column to plot, as it appears in
-#'   `as.data.frame(x)`, for example `"bic_individual"` or `"sabic_groups"`.
+#' @param criterion One or more criterion columns of `as.data.frame(x)`, such
+#'   as `"bic_individual"` or `"sabic_groups"`. Several names draw one panel
+#'   each; the default draws AIC, BIC under both sample-size conventions, and
+#'   ICL counted over individuals.
+#' @param combine `TRUE`, the default, draws several criteria as panels of one
+#'   figure. `FALSE` draws each criterion as its own full-size figure, one after
+#'   another, so a report shows them as separate images.
 #' @param labels `TRUE` prints a direct label at the right end of each series.
 #' @param mark_minimum `TRUE` rings the lowest value among converged candidates.
 #'   This marks an extremum, it does not select a model.
 #' @param main,subtitle Panel title and secondary line.
 #' @param palette,symbols,linetypes Series aesthetics, recycled over combinations
-#'   of group-class count and covariance structure.
+#'   of group-class count and covariance model.
 #' @param style A list of visual constants, as built by `.multilpa_style()`.
 #' @param ... Further named visual constants, merged into `style`.
 #' @return The enumeration result, invisibly. Called for its drawing side effect.
@@ -459,24 +465,79 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
 #' )
 #' plot(candidates)
 #' @export
-plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
+plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
+                                                      "bic_individual",
+                                                      "icl_individual"),
+                                    combine = TRUE,
                                     labels = TRUE, mark_minimum = TRUE,
                                     main = NULL, subtitle = NULL, palette = NULL,
                                     symbols = NULL, linetypes = NULL,
                                     style = .multilpa_style(), ...) {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
               inherits(x, "multilpa_enumeration"),
-            "`criterion` must be a single column name" =
-              is.character(criterion) && length(criterion) == 1L,
+            "`criterion` must name one or more columns" =
+              is.character(criterion) && length(criterion) >= 1L &&
+              !anyNA(criterion),
+            "`combine` must be TRUE or FALSE" = isTRUE(combine) || isFALSE(combine),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
             "`mark_minimum` must be TRUE or FALSE" =
               isTRUE(mark_minimum) || isFALSE(mark_minimum))
   grid <- as.data.frame(x)
-  if (!criterion %in% .multilpa_enumeration_criteria()) {
-    stop(errorCondition(sprintf("`%s` is not an information criterion in the enumeration grid.",
-                                criterion),
-                        class = "multilpa_unknown_criterion", call = NULL))
+  unknown <- setdiff(criterion, .multilpa_enumeration_criteria())
+  if (length(unknown) > 0L) {
+    stop(errorCondition(sprintf(
+      "%s is not an information criterion in the enumeration grid.",
+      paste(sprintf("`%s`", unknown), collapse = ", ")),
+      class = "multilpa_unknown_criterion", call = NULL))
   }
+  empty <- criterion[!vapply(criterion, function(name) {
+    any(grid$converged %in% TRUE & is.finite(grid[[name]]))
+  }, logical(1))]
+  if (length(empty) > 0L) {
+    stop(errorCondition(sprintf(
+      "No converged candidate has a finite %s; nothing to plot.",
+      paste(sprintf("`%s`", empty), collapse = ", ")),
+      class = "multilpa_nothing_to_plot", call = NULL))
+  }
+  style <- utils::modifyList(style, list(...))
+  previous <- graphics::par(no.readonly = TRUE)
+  # `mfg` is dropped before the state is restored: setting it switches `new` on
+  # as a documented side effect, so restoring it on a device nothing has been
+  # drawn to yet both warns and leaves `new = TRUE` behind.
+  previous$mfg <- NULL
+  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
+  several <- length(criterion) > 1L
+  if (several && combine) {
+    # One panel per criterion, laid out once here and restored once on exit,
+    # so the panels do not reset each other's layout.
+    columns <- if (length(criterion) <= 3L) length(criterion) else 2L
+    graphics::par(mfrow = c(ceiling(length(criterion) / columns), columns))
+  }
+  invisible(lapply(criterion, function(name) {
+    .multilpa_enumeration_panel(
+      grid, name, labels = labels, mark_minimum = mark_minimum,
+      main = if (is.null(main)) (if (several && combine) name else NULL) else main,
+      subtitle = if (is.null(subtitle) && several && combine) "" else subtitle,
+      palette = palette, symbols = symbols, linetypes = linetypes,
+      style = style)
+  }))
+  invisible(x)
+}
+
+#' Draw one information criterion across an enumeration grid
+#'
+#' The panel [plot.multilpa_enumeration()] draws for each criterion. It sets
+#' margins but leaves the graphics state to its caller, which saves it once
+#' before the first panel and restores it once after the last.
+#' @param grid The enumeration table.
+#' @param criterion One criterion column name, already validated.
+#' @param labels,mark_minimum,main,subtitle,palette,symbols,linetypes,style As
+#'   for [plot.multilpa_enumeration()].
+#' @return `NULL`, invisibly. Called for its drawing side effect.
+#' @noRd
+.multilpa_enumeration_panel <- function(grid, criterion, labels, mark_minimum,
+                                        main, subtitle, palette, symbols,
+                                        linetypes, style) {
   values <- grid[[criterion]]
   eligible <- grid$converged %in% TRUE & is.finite(values)
   if (!any(eligible)) {
@@ -484,24 +545,16 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
                                 criterion),
                         class = "multilpa_nothing_to_plot", call = NULL))
   }
-  style <- utils::modifyList(style, list(...))
-  previous <- graphics::par(no.readonly = TRUE)
-  # `mfg` is dropped before the state is restored: setting it switches `new` on
-  # as a documented side effect, so restoring it on a device nothing has been
-  # drawn to yet both warns and leaves `new = TRUE` behind. That is exactly the
-  # state after a refused view, where the restore runs before anything is drawn.
-  previous$mfg <- NULL
-  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
   graphics::par(xpd = NA)
-  series_structure <- grid$structure
-  known_structures <- unique(stats::na.omit(series_structure))
-  if (length(known_structures) == 1L) {
-    series_structure[is.na(series_structure)] <- known_structures
+  series_model <- grid$model
+  known_models <- unique(stats::na.omit(series_model))
+  if (length(known_models) == 1L) {
+    series_model[is.na(series_model)] <- known_models
   }
   series_keys <- unique(data.frame(n_group_classes = grid$n_group_classes,
-                                   structure = series_structure))
+                                   model = series_model))
   series_keys <- series_keys[order(series_keys$n_group_classes,
-                                   series_keys$structure), , drop = FALSE]
+                                   series_keys$model), , drop = FALSE]
   n_series <- nrow(series_keys)
   profile_counts <- sort(unique(grid$n_profiles))
   colours <- if (is.null(palette)) .multilpa_palette(n_series) else
@@ -516,8 +569,8 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
   failures <- sum(!grid$converged)
   label_text <- sprintf("%d group class%s", series_keys$n_group_classes,
                         ifelse(series_keys$n_group_classes == 1L, "", "es"))
-  if (length(unique(series_keys$structure)) > 1L) {
-    label_text <- paste(label_text, series_keys$structure)
+  if (length(unique(series_keys$model)) > 1L) {
+    label_text <- paste(series_keys$model, label_text, sep = ", ")
   }
   graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
@@ -531,10 +584,10 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
       subtitle,
     x_at = profile_counts, x_labels = profile_counts, style = style)
   ends <- vapply(seq_len(n_series), function(index) {
-    same_structure <- if (is.na(series_keys$structure[index]))
-      is.na(series_structure) else series_structure == series_keys$structure[index]
+    same_model <- if (is.na(series_keys$model[index]))
+      is.na(series_model) else series_model == series_keys$model[index]
     rows <- grid$n_group_classes == series_keys$n_group_classes[index] &
-      same_structure
+      same_model
     series <- data.frame(profiles = grid$n_profiles[rows],
                          value = values[rows], eligible = eligible[rows])
     series <- series[order(series$profiles), , drop = FALSE]
@@ -574,7 +627,7 @@ plot.multilpa_enumeration <- function(x, criterion = "bic_individual",
                      cex = style$label_text_size, font = 2L)
     }
   }
-  invisible(x)
+  invisible(NULL)
 }
 
 #' Draw the assignments in sequence order

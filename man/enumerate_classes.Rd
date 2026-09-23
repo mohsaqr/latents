@@ -10,7 +10,7 @@ enumerate_classes(
   id,
   n_profiles = 1:4,
   n_group_classes = 1:3,
-  structure = NULL,
+  model = NULL,
   seed = NULL,
   ...
 )
@@ -26,12 +26,12 @@ enumerate_classes(
 
 \item{n_group_classes}{Positive integer group-class counts to try.}
 
-\item{structure}{Covariance structures to try, as the three-letter model
-codes \code{\link[=multilpa]{multilpa()}}'s \code{volume}, \code{shape} and \code{orientation} name: any of
+\item{model}{Covariance models to try, as the three-letter codes
+\code{\link[=multilpa]{multilpa()}}'s \code{volume}, \code{shape} and \code{orientation} name: any of
 \code{"EII"}, \code{"VII"}, \code{"EEI"}, \code{"VEI"}, \code{"EVI"}, \code{"VVI"}, \code{"EEE"}, \code{"VEE"},
 \code{"EVE"}, \code{"VVE"}, \code{"EEV"}, \code{"VEV"}, \code{"EVV"}, \code{"VVV"}. Naming them crosses
-the structures with the class counts, which is the grid model-based
-clustering is usually selected over, and adds a \code{structure} column to the
+the models with the class counts, which is the grid model-based
+clustering is usually selected over, and adds a \code{model} column to the
 candidate table. \code{NULL}, the default, fits whatever the other arguments
 already asked for, and the grid is the one this verb has always fitted.}
 

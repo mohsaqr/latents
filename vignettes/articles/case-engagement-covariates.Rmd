@@ -26,7 +26,7 @@ library(multilpa)
 ```
 
 ## Data and engagement profiles
-The bundled synthetic `course_engagement` dataset contains enrolment records nested within students. Engagement is represented by five activity indicators: page views (`browse`), lecture videos viewed (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and active days (`attendance`). Each indicator is stored as a `log1p`-transformed count and standardized within course to make activity levels more comparable across courses.
+The bundled synthetic `course_engagement` dataset contains enrolment records nested within students. Engagement is represented by five activity indicators: page views (`browse`), lecture videos viewed (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and active days (`attendance`). Each indicator is simulated on the `log1p` scale of an activity count and standardized within course to make activity levels comparable across courses.
 
 The variable `previous_grade` represents the standardized grade obtained in the preceding course. For a student's first observed course, an entry grade is used instead. Because this grade is measured before engagement in the subsequent course, it can be treated as a predictor of later engagement patterns. The [introductory vignette](case-engagement-profiles.html) provides additional explanation of the longitudinal structure of the data and the distinction between the student and enrolment levels.
 

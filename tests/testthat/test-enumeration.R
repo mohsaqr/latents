@@ -27,12 +27,11 @@ test_that("enumeration retains failures and both BIC conventions", {
   single <- enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
                               n_starts = 2, seed = 1)
   expect_equal(nrow(as.data.frame(single)), 1L)
-  # A name the grid does not own is forwarded to multilpa(), which refuses it.
-  # The enumerator records every candidate's failure rather than raising, so the
-  # refusal has to be visible in the table -- not silently dropped.
-  forwarded <- enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
-                                 nonsense = 1, seed = 1)
-  expect_match(as.data.frame(forwarded)$error, "unused argument")
+  # A name multilpa() does not take is refused before any candidate is fitted,
+  # so the refusal is visible at once instead of as a grid of failed fits.
+  expect_error(enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
+                                 nonsense = 1, seed = 1),
+               class = "multilpa_bad_argument")
 })
 
 test_that("simulation preserves group layout and full covariance moments", {
@@ -185,4 +184,57 @@ test_that("boundary convergence noise is not mistaken for a reversed likelihood"
   expect_error(bootstrap_lrt(null_fit, unconverged, iter = 2, n_starts = 1,
                              seed = 1),
                class = "multilpa_no_converge")
+})
+
+test_that("covariance models are named with `model`, and a stray argument is refused", {
+  grid <- quietly(enumerate_classes(engagement_small, c("browse", "lectures"),
+                                    "student", n_profiles = 2, n_group_classes = 1,
+                                    model = c("VVI", "EEI"), n_starts = 1,
+                                    max_iter = 20, seed = 1))
+  table <- as.data.frame(grid)
+  expect_identical(sort(table$model), c("EEI", "VVI"))
+  expect_s3_class(candidate_fit(grid, n_profiles = 2, n_group_classes = 1,
+                                model = "EEI"), "multilpa")
+  expect_true("model" %in% names(get_results(grid, "criteria")))
+  # The old name would otherwise fail inside every candidate.
+  expect_error(enumerate_classes(engagement_small, "browse", "student",
+                                 n_profiles = 2, n_group_classes = 1,
+                                 structure = "VVI"),
+               class = "multilpa_bad_argument")
+  expect_error(enumerate_classes(engagement_small, "browse", "student",
+                                 n_profiles = 2, n_group_classes = 1,
+                                 structure = "VVI"),
+               "`model`")
+})
+
+test_that("printing a grid shows the criteria and the diagnostics", {
+  grid <- quietly(enumerate_classes(engagement_small, c("browse", "lectures"),
+                                    "student", n_profiles = 1:2,
+                                    n_group_classes = 1:2, n_starts = 1,
+                                    max_iter = 20, seed = 1))
+  printed <- paste(utils::capture.output(print(grid)), collapse = "\n")
+  invisible(lapply(c("aic", "bic_groups", "bic_individual", "icl_individual",
+                     "group_entropy", "boundary", "n_best_replicated"),
+                   function(column) expect_match(printed, column, fixed = TRUE)))
+})
+
+test_that("the enumeration plot draws several criteria and restores the device", {
+  grid <- quietly(enumerate_classes(engagement_small, c("browse", "lectures"),
+                                    "student", n_profiles = 1:3,
+                                    n_group_classes = 1:2, n_starts = 1,
+                                    max_iter = 20, seed = 1))
+  path <- tempfile(fileext = ".pdf")
+  grDevices::pdf(path)
+  on.exit({ grDevices::dev.off(); unlink(path) }, add = TRUE)
+  before <- graphics::par("mfrow")
+  expect_invisible(plot(grid))
+  expect_identical(graphics::par("mfrow"), before)
+  expect_invisible(plot(grid, criterion = "bic_groups"))
+  expect_invisible(plot(grid, criterion = c("aic", "bic_individual")))
+  # Separate figures: each criterion starts a page of its own.
+  expect_invisible(plot(grid, criterion = c("aic", "bic_groups"), combine = FALSE))
+  expect_identical(graphics::par("mfrow"), before)
+  expect_error(plot(grid, combine = NA))
+  expect_error(plot(grid, criterion = c("aic", "not_a_criterion")),
+               class = "multilpa_unknown_criterion")
 })

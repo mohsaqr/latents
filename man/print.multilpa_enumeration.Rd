@@ -13,9 +13,13 @@
 }
 \value{
 The input, invisibly. Called for the side effect of printing the
-candidate grid: one line per candidate with its class counts, log
-likelihood, parameter count, BIC, SABIC, profile entropy and convergence,
-then a count of the candidates that did not converge.
+candidate grid: one line per candidate with its class counts, covariance
+model, log likelihood, parameter count, AIC, BIC under both sample-size
+conventions, ICL counted over individuals, entropy at both levels, and the
+diagnostics needed to trust a candidate (convergence, a bound reached, and
+how many starts reached the best likelihood), then a count of the
+candidates that did not converge. \code{\link[=summary]{summary()}} and \code{\link[=as.data.frame]{as.data.frame()}} give
+every criterion.
 }
 \description{
 Print a class-enumeration grid

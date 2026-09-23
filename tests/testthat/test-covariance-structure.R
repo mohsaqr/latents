@@ -177,27 +177,27 @@ test_that("the equal-shape iteration is bounded and says when it stops short", {
 test_that("the structure grid crosses models with class counts", {
   candidates <- quietly(enumerate_classes(
     engagement_small, activity, "student", n_profiles = 2:3,
-    n_group_classes = 1, structure = c("EEI", "EVI", "EEE"),
+    n_group_classes = 1, model = c("EEI", "EVI", "EEE"),
     n_starts = 2, seed = 1, max_iter = 50))
   grid <- get_results(candidates, "candidates")
-  expect_true("structure" %in% names(grid))
+  expect_true("model" %in% names(grid))
   expect_identical(nrow(grid), 6L)
-  expect_setequal(unique(grid$structure), c("EEI", "EVI", "EEE"))
+  expect_setequal(unique(grid$model), c("EEI", "EVI", "EEE"))
   # The class counts alone no longer name one candidate, and saying so beats
   # returning whichever came first.
   expect_error(candidate_fit(candidates, n_profiles = 3, n_group_classes = 1),
                class = "multilpa_unknown_candidate")
   fitted <- candidate_fit(candidates, n_profiles = 3, n_group_classes = 1,
-                          structure = "EVI")
+                          model = "EVI")
   expect_identical(fitted$covariance_structure, "EVI")
   # And the print method names the column, so the grid is readable.
-  expect_output(print(candidates), "structure", fixed = TRUE)
+  expect_output(print(candidates), "model", fixed = TRUE)
 })
 
 test_that("the grid refuses a model code this package does not fit", {
   expect_error(
     enumerate_classes(engagement_small, activity, "student", n_profiles = 2,
-                      n_group_classes = 1, structure = "XYZ", n_starts = 1),
+                      n_group_classes = 1, model = "XYZ", n_starts = 1),
     class = "multilpa_bad_argument")
 })
 

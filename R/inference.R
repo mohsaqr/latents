@@ -724,7 +724,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
       previous <- if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
         get(".Random.seed", envir = .GlobalEnv) else NULL
       on.exit(if (!is.null(previous))
-        assign(".Random.seed", previous, envir = .GlobalEnv)
+        assign(".Random.seed", previous, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
         else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
           rm(".Random.seed", envir = .GlobalEnv), add = TRUE, after = FALSE)
       set.seed(seed)

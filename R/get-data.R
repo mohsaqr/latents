@@ -140,7 +140,7 @@
 #'   \item{`"candidates"`, `"criteria"`}{An enumeration grid.
 #'     `"criteria"` has one row per information criterion, naming the candidate
 #'     that minimises it. `"candidates"` has one row per candidate model,
-#'     with its class counts, its covariance `structure`, log likelihood,
+#'     with its class counts, its covariance `model`, log likelihood,
 #'     parameter count, every criterion
 #'     under both sample-size conventions, both entropies, and the convergence,
 #'     boundary, replication, warning and error diagnostics. Failed candidates

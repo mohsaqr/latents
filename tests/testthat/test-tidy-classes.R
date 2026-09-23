@@ -93,7 +93,7 @@ test_that("an enumeration summary names the minimising candidate per criterion",
                 "-- criteria", fixed = TRUE)
   criteria <- get_results(summary_object, "criteria")
   expect_identical(names(criteria), c("criterion", "convention", "n_profiles",
-                                      "n_group_classes", "structure", "value"))
+                                      "n_group_classes", "model", "value"))
   expect_identical(nrow(criteria), 14L)
   expect_setequal(unique(criteria$criterion),
                   c("aic", "kic", "bic", "sabic", "caic", "awe", "icl", "clc"))
@@ -111,27 +111,27 @@ test_that("an enumeration summary names the minimising candidate per criterion",
   named <- vapply(seq_len(nrow(criteria)), function(row) {
     candidate <- subset(grid, n_profiles == criteria$n_profiles[row] &
                           n_group_classes == criteria$n_group_classes[row] &
-                          structure == criteria$structure[row])
+                          model == criteria$model[row])
     candidate[[column[row]]]
   }, numeric(1))
   expect_equal(criteria$value, named)
   expect_identical(nrow(get_results(summary_object, "candidates")), nrow(grid))
   expect_identical(as.data.frame(summary_object), grid)
 
-  # The same class counts under different covariance structures identify two
+  # The same class counts under different covariance models identify two
   # candidates. Criterion minima and the printed disagreement count retain
   # that distinction.
   competing <- candidates
   competing$table <- rbind(grid[1L, , drop = FALSE], grid[1L, , drop = FALSE])
-  competing$table$structure <- c("EII", "VII")
+  competing$table$model <- c("EII", "VII")
   competing$table$converged <- TRUE
   competing$table$aic <- c(0, 1)
   competing$table$kic <- c(1, 0)
   competing$fits <- rep(candidates$fits[1L], 2L)
   compared <- summary.multilpa_enumeration(competing)
   winners <- get_results(compared, "criteria")
-  expect_identical(winners$structure[winners$criterion == "aic"], "EII")
-  expect_identical(winners$structure[winners$criterion == "kic"], "VII")
+  expect_identical(winners$model[winners$criterion == "aic"], "EII")
+  expect_identical(winners$model[winners$criterion == "kic"], "VII")
   expect_output(print.summary_multilpa_enumeration(compared),
                 "2 distinct candidate(s)", fixed = TRUE)
 })

@@ -1,3 +1,33 @@
+# multilpa 0.7.0
+
+## Behaviour changes
+
+* `enumerate_classes(structure =)` and `candidate_fit(structure =)` are now
+  `model =`, and the candidate grid's `structure` column is `model`. An
+  argument `multilpa()` does not take, including the old `structure`, is
+  refused with `multilpa_bad_argument` before any candidate is fitted, instead
+  of failing inside every candidate.
+* Printing an enumeration grid shows AIC, BIC under both conventions, ICL,
+  entropy at both levels, and the diagnostics `boundary` and
+  `n_best_replicated`.
+* `plot()` on an enumeration grid draws several criteria as line plots, one
+  panel per criterion and one line per covariance model and group-class
+  count; the default shows AIC, both BICs and ICL. `combine = FALSE` draws
+  each criterion as a separate figure.
+
+## Documentation
+
+* `?course_engagement` and the case studies now say that the indicators are
+  simulated on the `log1p` scale, not transformed from counts.
+* New case study on two-level latent class analysis of `student_esm`; the two
+  latent transition case studies are merged into one. Case studies and
+  vignettes print whole tables instead of filtering them.
+
+## Tests
+
+* The bivariate-residual test for a covariate fit no longer asserts whether
+  a separated fixture converges, which differed on R-devel.
+
 # multilpa 0.6.1
 
 ## Tests

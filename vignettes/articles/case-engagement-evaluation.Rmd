@@ -27,7 +27,7 @@ library(multilpa)
 
 ## Data and starting model
 
-The `course_engagement` dataset contains repeated course enrolments nested within students. The bundled data are synthetic, and their relationship to the longitudinal engagement study is described in the [introductory vignette](case-engagement-profiles.html). Engagement is measured using five course-level indicators: course-page views (`browse`), lecture-video views (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and days active (`attendance`). Each indicator is represented as a `log1p`-transformed count and standardized within course. The vector `vars` holds their names.
+The `course_engagement` dataset contains repeated course enrolments nested within students. The bundled data are synthetic, and their relationship to the longitudinal engagement study is described in the [introductory vignette](case-engagement-profiles.html). Engagement is measured using five course-level indicators: course-page views (`browse`), lecture-video views (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and days active (`attendance`). Each indicator is simulated on the `log1p` scale of an activity count and standardized within course. The vector `vars` holds their names.
 
 ```{r variables}
 vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
@@ -155,7 +155,7 @@ $$
 
 where $\ell$ is the maximized log likelihood, $q$ is the number of freely estimated parameters, and $N$ is the sample size used in the penalty term. Lower BIC values indicate a more favorable balance between model fit and complexity within the set of candidate models being compared. In the present analysis, `bic_groups` uses the number of students as $N$ for every candidate, so the BIC values are calculated on a consistent basis across models.
 
-The comparison also examines whether assumptions about the covariance structure affect the preferred numbers of profiles and student classes. With `structure = "VVI"`, each profile has its own indicator variances, but residual covariances between indicators are fixed to zero. This specification corresponds to the conditional-independence assumption examined in the preceding section. By contrast, `structure = "VVV"` estimates a separate unrestricted covariance matrix for each profile, so the indicators can remain correlated within profiles.
+The comparison also examines whether assumptions about the covariance structure affect the preferred numbers of profiles and student classes. With `model = "VVI"`, each profile has its own indicator variances, but residual covariances between indicators are fixed to zero. This specification corresponds to the conditional-independence assumption examined in the preceding section. By contrast, `model = "VVV"` estimates a separate unrestricted covariance matrix for each profile, so the indicators can remain correlated within profiles.
 
 Both covariance structures retain Gaussian enrolment-level profiles and use common measurement parameters across student classes. The main difference is therefore the amount of within-profile dependence that the measurement model is permitted to capture. Because unrestricted covariance matrices require substantially more parameters, full-covariance models can be more difficult to estimate. Numerical instability is particularly likely when some profiles contain relatively few observations or when several likelihood maxima provide similar fits.
 
@@ -167,7 +167,7 @@ These diagnostics should be considered before interpreting differences in BIC. C
 candidates <- enumerate_classes(course_engagement, vars, id = "student",
                                 time = "sequence", n_profiles = 2:3,
                                 n_group_classes = 2:3,
-                                structure = c("VVI", "VVV"), n_starts = 6,
+                                model = c("VVI", "VVV"), n_starts = 6,
                                 max_iter = 2000, tol = 1e-10, seed = 1)
 get_results(candidates, "candidates")
 ```
@@ -182,7 +182,7 @@ The `candidate_fit()` function can be used to retrieve a fitted candidate with a
 
 ```{r covariance-check}
 full <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 3,
-                      structure = "VVV")
+                      model = "VVV")
 get_results(full, "residuals") |> head(4)
 ```
 
@@ -206,12 +206,10 @@ These intervals provide a local approximation to parameter uncertainty within th
 
 The intervals are also conditional on the specified latent structure. In particular, they treat the selected numbers of enrolment-level profiles and student-level classes, together with the assumed covariance structure, as fixed. A parameter estimate can therefore have a narrow confidence interval even when an alternative model specification supports a different number of profiles. Wald intervals describe uncertainty about parameters within a chosen model; they do not incorporate uncertainty about the choice of model itself.
 
-The `parameter_inference()` function calculates standard errors and confidence intervals for the fitted model. The output below is restricted to the attendance means from the original three-profile, three-class model.
+The `parameter_inference()` function calculates standard errors and confidence intervals for every parameter of the original three-profile, three-class model. The discussion below uses the rows for the attendance means.
 
 ```{r inference}
-inference <- parameter_inference(fit)
-subset(inference, parameter == "mean" & term == "attendance",
-       select = c(outcome, term, estimate, standard_error, conf_low, conf_high))
+parameter_inference(fit)
 ```
 
 For Profile 1, the estimated attendance mean is 1.133 standard deviations above the course mean, with a standard error of 0.061 and a 95% Wald interval from 1.013 to 1.252. Profile 2 has an interval from 0.155 to 0.357, while Profile 3 has an interval from $-0.993$ to $-0.887$.

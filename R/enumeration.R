@@ -9,12 +9,12 @@
 #' @param id Group identifier column name.
 #' @param n_profiles Positive integer profile counts to try.
 #' @param n_group_classes Positive integer group-class counts to try.
-#' @param structure Covariance structures to try, as the three-letter model
-#'   codes [multilpa()]'s `volume`, `shape` and `orientation` name: any of
+#' @param model Covariance models to try, as the three-letter codes
+#'   [multilpa()]'s `volume`, `shape` and `orientation` name: any of
 #'   `"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
 #'   `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`. Naming them crosses
-#'   the structures with the class counts, which is the grid model-based
-#'   clustering is usually selected over, and adds a `structure` column to the
+#'   the models with the class counts, which is the grid model-based
+#'   clustering is usually selected over, and adds a `model` column to the
 #'   candidate table. `NULL`, the default, fits whatever the other arguments
 #'   already asked for, and the grid is the one this verb has always fitted.
 #' @param seed Optional reproducible seed for each fit.
@@ -36,7 +36,7 @@
 #' summary(candidates)
 #' @export
 enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
-                              n_group_classes = 1:3, structure = NULL,
+                              n_group_classes = 1:3, model = NULL,
                               seed = NULL, ...) {
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.numeric(n_profiles), length(n_profiles) > 0L,
@@ -44,14 +44,14 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
             is.numeric(n_group_classes), length(n_group_classes) > 0L,
             all(is.finite(n_group_classes)), all(n_group_classes >= 1),
             all(n_group_classes == as.integer(n_group_classes)),
-            "`structure` must name covariance structures, or be NULL" =
-              is.null(structure) || (is.character(structure) &&
-                                       length(structure) > 0L &&
-                                       !anyNA(structure)))
-  unknown <- setdiff(structure %||% character(), .multilpa_structures())
+            "`model` must name covariance models, or be NULL" =
+              is.null(model) || (is.character(model) &&
+                                   length(model) > 0L &&
+                                   !anyNA(model)))
+  unknown <- setdiff(model %||% character(), .multilpa_structures())
   if (length(unknown) > 0L) {
     stop(errorCondition(sprintf(
-      "`structure` names %s, which this package does not fit. It has %s.",
+      "`model` names %s, which this package does not fit. It has %s.",
       paste(sprintf("`%s`", unknown), collapse = ", "),
       paste(.multilpa_structures(), collapse = ", ")),
       class = "multilpa_bad_argument", call = NULL))
@@ -59,16 +59,28 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   # Every name this guard used to reject is now a formal, so R refuses the call
   # with "matched by multiple actual arguments" before `...` is assembled.
   extra <- list(...)
+  # Anything `multilpa()` does not take would otherwise fail inside every
+  # candidate and be recorded as a grid of failures; refuse it here instead.
+  unknown_arguments <- setdiff(names(extra), names(formals(multilpa)))
+  if (length(unknown_arguments) > 0L) {
+    hint <- if ("structure" %in% unknown_arguments)
+      " Covariance models are named with `model`." else ""
+    stop(errorCondition(sprintf(
+      "%s %s not an argument of multilpa().%s",
+      paste(sprintf("`%s`", unknown_arguments), collapse = ", "),
+      if (length(unknown_arguments) == 1L) "is" else "are", hint),
+      class = "multilpa_bad_argument", call = NULL))
+  }
   # `NA` stands for "whatever the other arguments already said", so a grid
-  # without `structure` is the grid this verb has always fitted.
+  # without `model` is the grid this verb has always fitted.
   grid <- expand.grid(n_profiles = unique(n_profiles),
                       n_group_classes = unique(n_group_classes),
-                      structure = unique(structure) %||% NA_character_,
+                      model = unique(model) %||% NA_character_,
                       stringsAsFactors = FALSE)
   runs <- lapply(seq_len(nrow(grid)), function(i) {
     warnings <- character()
     error_text <- NA_character_
-    requested <- .multilpa_structure_arguments(grid$structure[i])
+    requested <- .multilpa_structure_arguments(grid$model[i])
     fit <- tryCatch(withCallingHandlers(do.call(multilpa,
       c(list(data = data, vars = vars, id = id,
              n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed),
@@ -81,7 +93,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       })
     row <- cbind(
       data.frame(n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
-        structure = if (is.null(fit)) grid$structure[i] else fit$covariance_structure,
+        model = if (is.null(fit)) grid$model[i] else fit$covariance_structure,
         log_likelihood = if (is.null(fit)) NA_real_ else fit$log_likelihood,
         n_parameters = if (is.null(fit)) NA_integer_ else fit$n_parameters,
         stringsAsFactors = FALSE),
@@ -112,11 +124,11 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' @param x An `multilpa_enumeration` result from [enumerate_classes()].
 #' @param n_profiles Number of individual profiles identifying the candidate.
 #' @param n_group_classes Number of group classes identifying the candidate.
-#' @param structure The covariance structure identifying the candidate, needed
-#'   when [enumerate_classes()] was given a `structure` grid and the class
-#'   counts alone name several. Naming counts that match more than one
-#'   candidate raises `multilpa_unknown_candidate` listing the structures it
-#'   could have meant.
+#' @param model The covariance model identifying the candidate, needed when
+#'   [enumerate_classes()] was given several `model`s and the class counts
+#'   alone name several candidates. Naming counts that match more than one
+#'   candidate raises `multilpa_unknown_candidate` listing the models it could
+#'   have meant.
 #' @return The fitted model for that cell of the grid: an object of class
 #'   `multilpa`, exactly as [multilpa()] returned it, with every verb of this
 #'   package available on it.
@@ -134,7 +146,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' candidate_fit(candidates, n_profiles = 2, n_group_classes = 1)
 #' @export
 candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
-                          structure = NULL) {
+                          model = NULL) {
   stopifnot(
     "`x` must be an `multilpa_enumeration` result" =
       inherits(x, "multilpa_enumeration"),
@@ -146,24 +158,24 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
       is.numeric(n_group_classes) && length(n_group_classes) == 1L &&
       is.finite(n_group_classes) && n_group_classes >= 1 &&
       n_group_classes == floor(n_group_classes),
-    "`structure` must be a single model code, or NULL" =
-      is.null(structure) || (is.character(structure) &&
-                               length(structure) == 1L && !is.na(structure)))
+    "`model` must be a single model code, or NULL" =
+      is.null(model) || (is.character(model) &&
+                           length(model) == 1L && !is.na(model)))
   grid <- x$table
   at <- which(grid$n_profiles == n_profiles &
                 grid$n_group_classes == n_group_classes)
   described <- sprintf("%d profiles and %d group classes",
                        as.integer(n_profiles), as.integer(n_group_classes))
-  if (!is.null(structure)) {
-    at <- at[grid$structure[at] %in% structure]
-    described <- sprintf("%s under %s", described, structure)
+  if (!is.null(model)) {
+    at <- at[grid$model[at] %in% model]
+    described <- sprintf("%s under %s", described, model)
   }
   if (length(at) > 1L) {
     # A grid crossed with covariance structures has several candidates per
     # pair of class counts, so the counts alone no longer name one.
     stop(errorCondition(sprintf(paste(
-      "%d candidates have %s: %s. Name one with `structure`."),
-      length(at), described, paste(grid$structure[at], collapse = ", ")),
+      "%d candidates have %s: %s. Name one with `model`."),
+      length(at), described, paste(grid$model[at], collapse = ", ")),
       class = "multilpa_unknown_candidate", call = NULL))
   }
   if (length(at) != 1L) {
@@ -244,8 +256,8 @@ summary.multilpa_enumeration <- function(object, ...) {
         as.integer(grid$n_profiles[best]),
       n_group_classes = if (is.na(best)) NA_integer_ else
         as.integer(grid$n_group_classes[best]),
-      structure = if (is.na(best)) NA_character_ else
-        as.character(grid$structure[best]),
+      model = if (is.na(best)) NA_character_ else
+        as.character(grid$model[best]),
       value = if (is.na(best)) NA_real_ else values[best],
       row.names = NULL, stringsAsFactors = FALSE)
   })
@@ -275,7 +287,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   .multilpa_check_print_arguments(digits, rows)
   cat(sprintf("Class enumeration: %d candidates, %d converged, %d failed to fit\n",
               x$n_candidates, x$n_converged, x$n_failed))
-  identified <- c("n_profiles", "n_group_classes", "structure")
+  identified <- c("n_profiles", "n_group_classes", "model")
   present <- x$criteria[!is.na(x$criteria$n_profiles), identified, drop = FALSE]
   disagreement <- unique(present)
   cat(sprintf("%d distinct candidate(s) are minimal under some criterion.\n",
@@ -557,7 +569,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   if (!is.null(seed)) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
     if (had_seed) old_seed <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)
+    on.exit(if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
             else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
               rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     set.seed(seed)

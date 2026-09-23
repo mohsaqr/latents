@@ -1,165 +1,239 @@
 ---
-title: "Case study: Changes in engagement across successive courses"
+title: "Case study: Latent transition analysis of course engagement"
 output:
-  rmarkdown::html_vignette:
+  rmarkdown::html_document:
     toc: true
-    toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Case study: Changes in engagement across successive courses}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+    toc_float: true
 ---
 
 ```{r options, include = FALSE}
-knitr::opts_chunk$set(collapse = FALSE, comment = "#>")
-options(digits = 4, width = 120)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 4, width = 100)
 ```
 
-Latent transition analysis (LTA) extends latent profile modeling by estimating the probabilities of moving between latent profiles across successive observations. In this tutorial, the repeated observations are students' engagement patterns in successive courses, while higher-level student classes are used to distinguish broader patterns of persistence and change over time.
+Latent transition analysis (LTA) estimates the probability of moving from one
+latent profile to another between consecutive occasions (Collins & Lanza,
+2010). With group classes, each class has its own starting distribution and its
+own transition matrix, so the classes separate students who differ in how their
+engagement changes from students who differ only in where it starts.
 
-The central question is whether students tend to remain in the same engagement profile from one course to the next or instead move between profiles as their course experiences change. The analysis also examines whether these transition patterns differ across student classes: some groups of students may show greater stability and others more frequent movement between engagement states.
+## Data and model
 
-The [introductory vignette](case-engagement-profiles.html) introduces the corresponding two-level latent profile model, in which course-level engagement profiles are nested within student-level latent classes. The present analysis builds on that framework by incorporating the temporal ordering of courses, so transitions between profiles across successive enrolments can be studied in addition to their overall distribution within students.
+`course_engagement` holds 1,422 course enrolments of 106 students, ordered
+within each student by `sequence`. The five indicators are simulated on the
+`log1p` scale of activity counts and standardized within course. The data are
+synthetic and revisit the design of Saqr and López-Pernas (2021), who asked how
+students' online engagement develops across a program. That study
+identified course-level engagement states and longer-term trajectories with
+latent class analysis and hidden Markov models. Here, three profiles and two
+student classes are working choices for illustrating the transition model;
+they do not establish the number of profiles or reproduce the published
+estimates.
 
-## Course engagement over time
+For student $i$ at course position $t$, $C_{it}$ is the latent profile and
+$G_i$ the student's class. The model estimates
 
-The longitudinal analysis is motivated by the question examined by Saqr and López-Pernas (2021): how does students' online engagement develop across an academic program? Their study identified three course-level engagement states and three longer-term engagement trajectories using latent class analysis and hidden Markov models. The present tutorial addresses a related question using the bundled synthetic `course_engagement` dataset, with three engagement profiles and three student-level classes specified as candidate dimensions of the model. These choices provide a useful starting point for illustrating the transition analysis; they should not be interpreted as establishing the true number of profiles or as reproducing the estimates reported in the original study.
+- the initial probabilities $\delta_{k\mid m}=P(C_{i1}=k\mid G_i=m)$,
+- the transition probabilities
+  $a_{kl\mid m}=P(C_{i,t+1}=l\mid C_{it}=k,G_i=m)$, which sum to one across
+  destinations $l$,
+- and a Gaussian mean and variance for each profile and indicator.
 
-The data have a longitudinal multilevel structure in which repeated course enrolments are nested within students. The variable `student` identifies the higher-level unit, `course` identifies the course associated with each enrolment, and `sequence` records the position of that course within the student's observed course history. Students may contribute different numbers of enrolments. The model therefore follows each student through their own ordered sequence of observed courses, and a transition is defined as movement between latent engagement profiles in two successive observed enrolments.
+The transitions are first order and homogeneous: the next profile depends only
+on the current profile and the student's class, and the probabilities are the
+same at every position. Profile means and variances are shared across positions
+and classes, so a change of profile is a change of state. Indicators are
+independent within a profile under the default diagonal covariance. The fit can
+fail to reach the global maximum from a single start, and a transition that is
+rare within a class is estimated from little information; the expected count
+of each transition shows how much.
 
-Engagement within each course is represented by five activity indicators. The variable `browse` measures course-page views, `lectures` records lecture videos viewed, `forum_read` measures forum posts read, `forum_post` records posts written, and `attendance` measures the number of days on which the student was active online. Together, these indicators describe different dimensions of students' participation in the online learning environment.
-
-Each indicator is stored as the `log1p` transformation of its underlying activity count and then standardized within course. Consequently, an indicator value represents the enrolment's position relative to the average activity level in that particular course, expressed in course-specific standard deviation units. Positive values indicate activity above the course average, whereas negative values indicate activity below the course average. This within-course standardization allows engagement patterns to be compared across courses even when their overall levels of online activity differ.
-
-The five indicator names are collected in the vector `vars`, which specifies the activity measures used to define the latent engagement profiles. These profiles provide the states between which transitions are estimated as students progress through their observed course sequences.
-
-```{r variables}
+```{r fit}
 library(multilpa)
 vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+
+moves <- lta(course_engagement, vars, "student", n_profiles = 3,
+             n_group_classes = 2, time = "sequence", n_starts = 10, seed = 1)
+get_results(moves, "starts")
 ```
 
-## Estimating persistence and change
+All ten starts converge to the same log likelihood, so the solution is
+replicated within this seed's starts.
 
-The transition model represents student $i$'s latent engagement profile at course position $t$ by $C_{it}$, and the student's higher-level latent class by $G_i$. Two sets of probabilities describe how engagement develops over time: the probabilities of beginning in each profile and the probabilities of moving between profiles across successive courses.
+## The profiles
 
-For students in class $m$, the initial probability
+`plot()` draws the profile means across the indicators, with point size showing
+profile prevalence.
 
-$$
-\delta_{k\mid m}
-=
-P(C_{i1}=k\mid G_i=m)
-$$
-
-gives the probability that the first observed course enrolment belongs to profile $k$. These initial probabilities describe how students in each latent class are distributed across the engagement profiles at the beginning of their observed course sequence.
-
-Subsequent changes in engagement are described by the transition probabilities
-
-$$
-a_{kl\mid m}
-=
-P(C_{i,t+1}=l\mid C_{it}=k,G_i=m).
-$$
-
-This quantity gives the probability that a student in class $m$ moves to profile $l$ at the next observed course, conditional on currently being in profile $k$. Each transition probability lies between zero and one. For a given student class and starting profile, the probabilities across all possible destination profiles sum to one.
-
-The diagonal elements of the transition matrix have a particularly useful interpretation. A value $a_{kk\mid m}$ represents the probability of remaining in profile $k$ across two successive courses and therefore measures profile persistence. The off-diagonal elements represent transitions from one engagement profile to another. Because each student class has its own initial probabilities and transition matrix, the model allows persistence and change to differ systematically between groups of students.
-
-The transition model makes several assumptions about the longitudinal process. Students are assumed to be independent of one another, and the next latent profile is assumed to depend on the student's current profile and higher-level class. This is a first-order Markov assumption: once the current profile and student class are known, earlier profiles do not contribute additional information about the next state. The transition probabilities are also assumed to remain constant across course positions.
-
-The measurement component is held constant across the longitudinal sequence. Profile means and variances are shared across course positions and student classes, so a given profile has the same statistical definition throughout the program. The continuous engagement indicators are modeled using Gaussian distributions within profiles. Under the default diagonal covariance structure, the indicators are additionally assumed to be conditionally independent within each profile.
-
-These assumptions make the transition probabilities easier to interpret, but they may also be restrictive. Residual associations among indicators, changes in the meaning of a profile across courses, or transition probabilities that vary with course position can all affect the estimated patterns of persistence and change. The resulting transition matrices should therefore be interpreted as summaries under the specified longitudinal measurement model.
-
-The `lta()` function estimates the profile distributions, student-class probabilities, initial probabilities, and transition probabilities jointly by maximum likelihood. The indicators listed in `vars` define the engagement profiles, observations are grouped by `student`, and `sequence` determines their temporal ordering. Course positions must be observed and uniquely identified within each student so that successive enrolments can be ordered unambiguously.
-
-As with other finite-mixture models, the likelihood may contain multiple local maxima. Using several starting values reduces sensitivity to the initial parameter values, although it does not guarantee that the global maximum has been identified. The model below estimates three engagement profiles and three student classes using six starts.
-
-```{r transition-model}
-moves <- lta(
-  course_engagement,
-  vars = vars,
-  id = "student",
-  time = "sequence",
-  n_profiles = 3,
-  n_group_classes = 3,
-  n_starts = 6,
-  max_iter = 2000,
-  seed = 1
-)
-
-moves
+```{r profiles}
+plot(moves)
 ```
 
-The fitted model uses 1,422 course enrolments contributed by 106 students, with observed histories extending to as many as 15 courses. The selected solution converges after 276 iterations.
+```{r profile-means}
+get_results(moves)
+```
 
-The estimated profile means distinguish three ordered patterns of engagement. Profile 1 has the highest mean on every activity indicator, Profile 2 has intermediate means, and Profile 3 has the lowest means. For example, the mean `attendance` values are 1.091, 0.244, and $-0.928$ standard deviations relative to the corresponding course mean for Profiles 1, 2, and 3, respectively.
+Profile 1 is the lowest on every indicator, profile 2 the highest, and profile
+3 lies between them; their attendance means are -0.929, 1.122 and 0.252. The
+profiles are therefore lower, higher and intermediate activity. The heatmap
+shows the same means as standard deviations from each indicator's grand mean.
 
-For ease of interpretation, these profiles are referred to as the higher-, intermediate-, and lower-activity profiles. These labels are descriptive summaries of the estimated means in this particular fitted model. Because profile numbering and profile characteristics can change across alternative model specifications, the meaning of each profile should be re-established whenever a different model is fitted.
+```{r heatmap}
+plot(moves, what = "heatmap")
+```
 
-## Engagement at the beginning of the sequence
+The contrast between profiles is present on all five indicators, so the
+profiles differ in overall activity more than in its composition.
 
-The initial probabilities $\delta_{k\mid m}$, defined above, describe how students are distributed across engagement profiles at the beginning of their observed course histories. These probabilities characterize the starting configuration of engagement for each student class before subsequent transitions are considered.
+## Where students start
 
-The command `get_results(moves, "initial")` extracts the estimated initial probabilities together with additional summaries of the fitted latent structure. The `probability` column reports $\delta_{k\mid m}$, the probability of beginning in each profile conditional on student class. The `prevalence` column reports the posterior expected proportion of enrolments belonging to each profile within that class across the full observed course histories. These two quantities serve different purposes: the initial probability describes where students begin, whereas prevalence summarizes the overall distribution of profiles across their observed sequences.
+In the `"initial"` table, `probability` is $\delta_{k\mid m}$, the chance of
+starting in each profile. `prevalence` is the expected share of all of a
+class's enrolments in that profile, across the whole history, and
+`group_class_probability` is the share of students in the class.
 
-The output also reports `group_class_probability`, which gives the estimated proportion of students belonging to each higher-level latent class. These are population-level probabilities from the fitted model rather than deterministic assignments of individual students. Each student retains a posterior probability of belonging to each class, so uncertainty in student-class membership remains part of the analysis.
-
-```{r initial-probabilities}
+```{r initial}
 get_results(moves, "initial")
 ```
 
-The estimated starting distributions differ substantially across the three student classes. Students in Class 1 begin in the lower-activity profile with probability 0.841, while the corresponding probability for Class 3 is 0.747. Thus, both classes are characterized by a high probability of beginning their observed course histories in the lower-activity state.
+Student class 1, with 30.1% of students, starts in the lower-activity profile
+with probability 0.762 and in the higher-activity profile with probability
+0.238; its probability of starting in the intermediate profile is effectively
+zero. Class 2, with 69.9% of students, starts across all three profiles, with
+probabilities 0.204, 0.445 and 0.351. Starting and overall shares differ: class
+1 starts in the lower profile with probability 0.762, but 0.819 of its
+enrolments are expected there over the whole history, while class 2 starts in
+the higher profile with probability 0.445 and spends 0.334 of its enrolments
+there.
 
-Class 2 shows a different starting pattern. Students in this class begin in the higher-activity profile with probability 0.605 and in the intermediate-activity profile with probability 0.371, while the probability of beginning in the lower-activity profile is close to zero. The estimated probability of belonging to Class 2 is 0.550, compared with 0.194 for Class 1 and 0.256 for Class 3.
+## How engagement changes
 
-These estimates indicate that the student classes differ not only in their subsequent transition patterns but also in their initial engagement distributions. The initial probabilities describe where students are most likely to begin their observed sequences; the transition probabilities considered next determine how those engagement states tend to persist or change across successive courses.
+The `"transitions"` table gives $a_{kl\mid m}$ for every class and pair of
+profiles. `stable` marks staying in the same profile. `expected_count` is the
+posterior expected number of such transitions in the data, so it can be
+fractional, and it shows how much information supports each estimate.
+`estimated = FALSE` would mark a row the data cannot inform, because the
+profile is never occupied before a student's last course; such a row holds
+uniform placeholder values. Every row is estimated in this fit.
 
-## Movement between engagement profiles
-
-Transition probabilities describe how engagement changes from one course to the next, conditional on both the student's current engagement profile and their higher-level latent class. They are the probabilities $a_{kl\mid m}$ defined above.
-
-The command `get_results(moves, "transitions")` extracts the estimated transition probabilities. The columns `from` and `to` identify the current and destination profiles, while `stable` indicates whether the transition remains in the same profile. Diagonal transitions therefore represent persistence, whereas off-diagonal transitions represent movement between different engagement states.
-
-The output also reports `expected_count`, which is the posterior expected number of transitions of each type. Because latent profile membership is uncertain, these counts can be fractional. They provide useful context for interpreting the transition probabilities: an estimate supported by many expected transitions is generally more informative than one based on very little occupancy or movement.
-
-A further diagnostic is the `estimated` flag, which indicates whether an outgoing transition row is supported by the observed data. If a profile is never occupied before a student's final observation, there is no information about what profile would follow it. In such cases, the corresponding transition row cannot be estimated from the data. The software assigns uniform probabilities to that row and marks it as unestimated. These uniform values are placeholders and should not be interpreted as evidence that all destination profiles are equally likely.
-
-```{r transition-probabilities}
+```{r transitions}
 get_results(moves, "transitions")
 ```
 
-The estimated transition matrices reveal substantial differences in persistence across student classes. For Class 3, the probability of remaining in the lower-activity profile is 0.947, while the corresponding probability for Class 1 is 0.746. Because both classes also have a high probability of beginning in the lower-activity profile, their fitted trajectories combine frequent low-activity entry with substantial persistence once that state is reached.
+The transition plot draws each class's matrix as a heatmap, with the origin
+profile in rows and the destination in columns.
 
-Class 2 shows a different pattern. Its probability of remaining in the lower-activity profile is 0.597, while the probabilities of moving from lower activity to the higher- and intermediate-activity profiles are 0.186 and 0.216, respectively. Lower activity is therefore less persistent in this class than in Classes 1 and 3, with greater probability of movement toward more active engagement states.
-
-Transitions within Class 2 also show considerable movement between the two more active profiles. The probability of moving from the higher-activity profile to the intermediate-activity profile is 0.459, while the reverse transition has probability 0.395. These estimates suggest that students in this class can remain within the more active portion of the engagement distribution while changing between distinct patterns of activity from one course to the next.
-
-The transition plot draws each class's transition matrix as a heatmap, with the current profile in rows and the next profile in columns.
-
-```{r transition-plot, fig.width = 7, fig.height = 4}
+```{r transition-plot}
 plot(moves, what = "transitions")
 ```
 
-The plot shows the same pattern as the table: a strongly persistent lower-activity profile in classes 1 and 3, and movement between the two more active profiles in class 2.
+In class 1, lower activity persists with probability 0.938, estimated from 303
+expected transitions. Each of its other transitions rests on fewer than 20
+expected transitions, because class-1 students rarely leave the lower profile.
+Class 2 moves between profiles. Its students remain in the lower profile with
+probability 0.614, move from higher to intermediate activity with probability
+0.494, and from intermediate to higher with probability 0.362. Class 1 is
+therefore a persistently low-engagement class, and class 2 a class whose
+engagement changes from course to course.
 
-This distinction illustrates the separate roles of the two latent structures. The course-level profiles describe engagement within an individual course, whereas the student-level classes describe broader patterns in how those profiles are entered, maintained, and changed across successive courses.
+## Sparse and boundary estimates
 
-Some estimated transitions require additional caution because they occur at or near parameter boundaries and are supported by very small expected counts. In Class 3, for example, the transition from the higher-activity profile to the intermediate-activity profile lies at its lower bound and has an expected count close to zero. Similarly, the Class 1 transition from higher activity to lower activity is estimated near zero.
+Some estimates rest on very little information. Class 1's probability of
+starting in the intermediate profile is at its lower bound, because no class-1
+student is expected to start there. Class 1's transitions out of the higher
+and intermediate profiles rest on between 4.8 and 19.0 expected transitions
+each, because its students rarely leave the lower profile. A probability near
+zero shows that the data carry little information about that movement, not
+that the movement is impossible. Estimates like these can also mean that the
+chosen number of classes divides the available transitions too finely.
 
-Such estimates show that the observed data provide little or no information about those particular movements. Sparse transition cells can arise when certain profiles are rarely occupied within a student class and may also signal that the chosen number of student classes is dividing the available transition information too finely. Boundary estimates should therefore be interpreted alongside expected transition counts, model stability, and alternative specifications.
+## Assigned sequences
+
+The sequence plot shows each student's modal profile at each course position,
+one row per student. Modal assignment discards classification uncertainty.
+
+```{r sequences, fig.height = 6}
+plot(moves, what = "sequences")
+```
+
+```{r sequence-summary}
+get_results(moves, "sequence_summary")
+```
+
+The summary gives the number of students and courses in each assigned class.
+Sequence lengths differ between students, so the rows of the plot end at
+different positions.
+
+## Classification uncertainty
+
+```{r entropy-table}
+get_results(moves, "entropy")
+```
+
+Relative entropy is 0.802 for enrolments and 0.777 for students. The entropy
+plot shows, within each profile, how the per-case entropy contributions are
+distributed, and the posterior plot shows the posterior probability of each
+case's assigned profile.
+
+```{r entropy-plot}
+plot(moves, what = "entropy")
+```
+
+```{r posteriors-plot}
+plot(moves, what = "posteriors")
+```
+
+Both levels retain uncertainty, so an analysis that replaces the posteriors by
+modal assignments treats some enrolments and students as more certain than
+the model estimates them to be.
+
+## Transition networks
+
+`get_tna()` returns the marginal transition matrix as a model of the tna
+package (Tikka et al., 2025). It pools the posterior expected transition counts
+across classes and normalizes them, so it uses the estimated transitions, not
+transitions counted from modal assignments. `get_group_tna()` returns one
+network per class.
+
+```{r network, message = FALSE}
+network <- get_tna(moves)
+plot(network)
+```
+
+```{r group-network, message = FALSE, fig.height = 4}
+per_class <- get_group_tna(moves)
+plot(per_class)
+```
+
+The class networks show the two patterns of the transition table: a dominant
+self-loop on the lower profile in class 1, and movement among all three
+profiles in class 2.
 
 ## Limitations
 
-The three-profile, three-class specification examined in this tutorial represents one candidate model of the underlying engagement process. In particular, the diagonal covariance assumption may be consequential because the engagement indicators can remain associated even after profile membership has been taken into account. Model selection should therefore consider the number of profiles together with evidence of residual dependence, as discussed in the [model evaluation](case-engagement-evaluation.html) vignette. If residual associations are ignored, additional latent profiles may partly absorb that dependence, which can change both the apparent profile structure and the estimated transition patterns.
+The model assumes constant transition probabilities across course positions,
+so change specific to one stage of the program is averaged over positions.
+Transitions are between successive observed courses, which can differ in
+duration, content and assessment. Class differences describe patterns in
+engagement histories and do not identify their causes.
+Standard errors, likelihood-ratio tests and class enumeration are not available
+for transition models, so the number of profiles and classes here is a working
+choice. The diagonal covariance ignores the association between `attendance`
+and the click measures, which the evaluation vignette shows is present in
+these data; unmodelled dependence can be absorbed by extra profiles and change
+the apparent transitions. Transitions supported by few expected counts, such as those out of
+the higher and intermediate profiles in class 1, should not be interpreted.
 
-The transition probabilities also describe movement only between successive observed courses. Courses may differ in duration, content, assessment structure, or other contextual features, and the present model does not distinguish among these sources of variation. Because the transition probabilities are assumed to remain constant across the observed sequence, the model does not capture changes that are specific to a particular course, program stage, or point in time.
+## References
 
-Differences between student classes should likewise be interpreted descriptively. The classes summarize recurring patterns in students' engagement histories, including differences in starting profiles and subsequent transitions, but they do not identify the causes of those differences. Observed variation between classes may reflect academic, contextual, or individual factors that are not represented directly in the transition model.
-
-Inference is also limited by the functionality currently available for this model family. The package does not provide standard errors or likelihood-ratio tests for the transition parameters, so the estimated probabilities should be interpreted as descriptive features of the fitted model. Analyses involving predictors of latent membership or auxiliary variables are addressed separately for the two-level profile model in the [covariates vignette](case-engagement-covariates.html).
-
-## Reference
+Collins, L. M., & Lanza, S. T. (2010). *Latent class and latent transition
+analysis*. Wiley.
 
 Saqr, M., & López-Pernas, S. (2021). The longitudinal trajectories of online
 engagement over a full program. *Computers & Education, 175*, 104325.
 <https://doi.org/10.1016/j.compedu.2021.104325>
+
+Tikka, S., López-Pernas, S., & Saqr, M. (2025). tna: An R package for
+transition network analysis. *Applied Psychological Measurement*.
+<https://doi.org/10.1177/01466216251348840>

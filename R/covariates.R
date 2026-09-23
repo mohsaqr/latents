@@ -255,7 +255,7 @@
   if (!is.null(seed)) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
     if (had_seed) old_seed <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)
+    on.exit(if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
             else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
               rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     set.seed(seed)

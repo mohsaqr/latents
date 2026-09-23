@@ -194,7 +194,7 @@ profile: \code{group_class}, \code{profile}, \code{probability}, \code{prevalenc
 \item{\code{"candidates"}, \code{"criteria"}}{An enumeration grid.
 \code{"criteria"} has one row per information criterion, naming the candidate
 that minimises it. \code{"candidates"} has one row per candidate model,
-with its class counts, its covariance \code{structure}, log likelihood,
+with its class counts, its covariance \code{model}, log likelihood,
 parameter count, every criterion
 under both sample-size conventions, both entropies, and the convergence,
 boundary, replication, warning and error diagnostics. Failed candidates
