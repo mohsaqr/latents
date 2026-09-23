@@ -1,3 +1,8 @@
+# latents 0.8.3
+
+* The README opens with the package description, and every vignette and
+  article names its authors.
+
 # latents 0.8.2
 
 * The package description is rewritten.

@@ -1,5 +1,6 @@
 ---
 title: "Multilevel latent profile analysis"
+author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Multilevel latent profile analysis}

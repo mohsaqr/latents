@@ -1,6 +1,6 @@
 Package: latents
 Title: Multilevel Latent Profile, Class and Transition Models
-Version: 0.8.2
+Version: 0.8.3
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),
