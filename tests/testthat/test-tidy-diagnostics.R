@@ -58,7 +58,7 @@ test_that("formulas are documentation, available only on request", {
   # A formula per row needs rows; the wide form has one, so the combination is
   # refused rather than quietly ignored.
   expect_error(get_results(fit, "information_criteria", definitions = TRUE),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("the wide and long forms are the same numbers", {
@@ -112,7 +112,7 @@ test_that("classification_table has one shape and average_posteriors the other",
   expect_equal(diagonal$average_posterior, summary_table$average_posterior)
   # The removed flag is refused by class, not by an "unused argument" message.
   expect_error(get_results(fit, "classification", detail = TRUE),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("average_posteriors is not classification_errors under another name", {

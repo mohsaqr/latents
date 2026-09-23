@@ -42,7 +42,7 @@
 
 #' Refuse a seed argument that `set.seed()` would not take exactly
 #' @param seed The supplied seed, or `NULL`.
-#' @return `NULL`, invisibly; raises `multilpa_bad_argument` otherwise.
+#' @return `NULL`, invisibly; raises `latents_bad_argument` otherwise.
 #' @noRd
 .multilpa_check_seed <- function(seed) {
   if (is.null(seed) || (length(seed) == 1L && .multilpa_is_seed(seed))) {
@@ -51,5 +51,5 @@
   stop(errorCondition(sprintf(
     "`seed` must be NULL or a single whole number between -%d and %d.",
     .Machine$integer.max, .Machine$integer.max),
-    class = "multilpa_bad_argument", call = NULL))
+    class = "latents_bad_argument", call = NULL))
 }

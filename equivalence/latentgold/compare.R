@@ -30,7 +30,7 @@ if (length(target_files) == 0L) {
 returned <- file.path(directory, "returned")
 targets <- lapply(target_files, readRDS)
 built_with <- lg_target_versions(targets)
-current <- as.character(utils::packageVersion("multilpa"))
+current <- as.character(utils::packageVersion("latents"))
 if (!identical(built_with, current)) {
   warning(warningCondition(sprintf(
     "Targets were built with multilpa %s but %s is loaded; rebuild the kit if the fitting code changed.",

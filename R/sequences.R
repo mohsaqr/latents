@@ -10,7 +10,7 @@
     stop(errorCondition(
       paste("This fit carries no ordering. Refit with `time =` naming the column",
             "that gives each observation's position within its group."),
-      class = "multilpa_no_time", call = NULL))
+      class = "latents_no_time", call = NULL))
   }
   object$time_values
 }

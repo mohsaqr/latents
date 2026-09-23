@@ -129,12 +129,12 @@ test_that("a broken contract is refused", {
   expect_error(three_step(fit, data, "absent"), "must name a single column")
   # `y` varies within a group, so it cannot be a group-level outcome.
   expect_error(three_step(fit, data, "y", level = "groups"),
-               class = "multilpa_bad_outcome")
+               class = "latents_bad_outcome")
   missing_outcome <- data
   missing_outcome$y[1L] <- NA
   expect_error(three_step(fit, missing_outcome, "y"), "must not be missing")
   expect_error(three_step(fit, data[1:10, ], "y"),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   expect_error(three_step(fit, data, "y", ci_level = 1), "`ci_level` must be")
 })
 
@@ -144,9 +144,9 @@ test_that("inseparable classes are refused rather than inverted", {
   # A degenerate error matrix means the assignment carries no information.
   broken <- fit
   broken$subject_profiles <- rep(1L, fit$n_observations)
-  expect_error(get_results(broken, "bch_weights", level = "individuals"), class = "multilpa_inseparable_classes")
+  expect_error(get_results(broken, "bch_weights", level = "individuals"), class = "latents_inseparable_classes")
   expect_error(three_step(broken, data, "y"),
-               class = "multilpa_inseparable_classes")
+               class = "latents_inseparable_classes")
 })
 
 test_that("classification errors remain available for covariate fits", {
@@ -157,7 +157,7 @@ test_that("classification errors remain available for covariate fits", {
                         n_starts = 1, max_iter = 20, seed = 1))
   expect_equal(nrow(get_results(fit, "classification_errors", level = "individuals")), 4L)
   expect_error(three_step(fit, data, "y"),
-               class = "multilpa_unsupported_three_step")
+               class = "latents_unsupported_three_step")
 })
 
 test_that("a one-class level is degenerate but does not error", {
@@ -298,7 +298,7 @@ test_that("R3STEP works at the group level and refuses a varying covariate", {
   expect_identical(result$level[1L], "groups")
   expect_lt(result$p_value[result$term == "w"], 0.05)
   expect_error(r3step(fit, data, "varying", level = "groups"),
-               class = "multilpa_bad_covariate")
+               class = "latents_bad_covariate")
 })
 
 test_that("a broken contract is refused", {
@@ -313,7 +313,7 @@ test_that("a broken contract is refused", {
   expect_error(r3step(fit, missing_covariate, "x"), "must not be missing")
   data$copy <- data$x
   expect_error(r3step(fit, data, c("x", "copy")),
-               class = "multilpa_bad_covariate")
+               class = "latents_bad_covariate")
   expect_error(r3step(fit, data, "x", level = "groups"),
-               class = "multilpa_inseparable_classes")
+               class = "latents_inseparable_classes")
 })

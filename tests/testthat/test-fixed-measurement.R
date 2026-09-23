@@ -178,27 +178,27 @@ test_that("a `fixed` request that cannot be met is refused by class", {
   expect_error(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                         n_group_classes = 2L, n_starts = 1, seed = 1,
                         start = start, fixed = "profile_probabilities"),
-               class = "multilpa_bad_fixed")
+               class = "latents_bad_fixed")
   expect_error(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                         n_group_classes = 2L, n_starts = 1, seed = 1,
                         fixed = "means"),
-               class = "multilpa_bad_fixed")
+               class = "latents_bad_fixed")
   # The model has no categorical block to hold.
   expect_error(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                         n_group_classes = 2L, n_starts = 1, seed = 1,
                         start = start, fixed = "response_probabilities"),
-               class = "multilpa_bad_fixed")
+               class = "latents_bad_fixed")
   # The start carries no variances to hold.
   bare <- start
   bare$variances <- NULL
   expect_error(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                         n_group_classes = 2L, n_starts = 1, seed = 1,
                         start = bare, fixed = "variances"),
-               class = "multilpa_bad_fixed")
+               class = "latents_bad_fixed")
   expect_error(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                         n_group_classes = 2L, n_starts = 1, seed = 1,
                         start = start, fixed = TRUE),
-               class = "multilpa_bad_fixed")
+               class = "latents_bad_fixed")
 })
 
 test_that("a staged fit holds its first stage and improves on it", {
@@ -232,15 +232,15 @@ test_that("a supplied first stage is used, and a mismatched one is refused", {
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
                           n_group_classes = 2L, n_starts = 2, seed = 2,
                           measurement = staged),
-               class = "multilpa_bad_stage")
+               class = "latents_bad_stage")
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 3L,
                                      n_group_classes = 2L, n_starts = 2, seed = 2,
                                      measurement = measurement),
-               class = "multilpa_bad_stage")
+               class = "latents_bad_stage")
   expect_error(fit_staged(data, "a", "school", n_profiles = 2L,
                                      n_group_classes = 2L, n_starts = 2, seed = 2,
                                      measurement = measurement),
-               class = "multilpa_bad_stage")
+               class = "latents_bad_stage")
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
                                      n_group_classes = 1L, n_starts = 2, seed = 2))
 })
@@ -326,7 +326,7 @@ test_that("a constrained measurement is refused, not fitted as a wider one", {
   expect_error(
     fit_staged(data, c("x", "y"), "unit", n_profiles = 2L, n_group_classes = 2L,
                measurement = constrained, n_starts = 2L, seed = 1L),
-    class = "multilpa_bad_stage")
+    class = "latents_bad_stage")
 
   # The four the two switches can name still stage as they always did.
   free <- multilpa(data, c("x", "y"), "unit", n_profiles = 2L,

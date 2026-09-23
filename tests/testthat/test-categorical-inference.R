@@ -9,8 +9,8 @@
 test_that("categorical coordinates round-trip through encode and decode", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-categorical.rds"))
   fit <- .categorical_fit(fixture$data)
-  theta <- multilpa:::.multilpa_coefficients(fit, "unconstrained")
-  rebuilt <- multilpa:::.multilpa_decode(theta, fit)
+  theta <- latents:::.multilpa_coefficients(fit, "unconstrained")
+  rebuilt <- latents:::.multilpa_decode(theta, fit)
 
   expect_length(theta, fit$n_parameters)
   expect_equal(rebuilt$response_probabilities, fit$response_probabilities)
@@ -27,15 +27,15 @@ test_that("categorical coordinates round-trip through encode and decode", {
 test_that("the categorical score agrees with a numerical gradient", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-categorical.rds"))
   fit <- .categorical_fit(fixture$data)
-  codes <- multilpa:::.multilpa_encode_categorical(
+  codes <- latents:::.multilpa_encode_categorical(
     fixture$data[, .categorical_indicators(), drop = FALSE])$codes
   x <- matrix(numeric(0), nrow(fixture$data), 0L)
-  theta <- multilpa:::.multilpa_coefficients(fit, "unconstrained")
+  theta <- latents:::.multilpa_coefficients(fit, "unconstrained")
   likelihood <- function(parameters) {
-    multilpa:::.multilpa_expectation(x, fit$group_index,
-      multilpa:::.multilpa_decode(parameters, fit), codes)$log_likelihood
+    latents:::.multilpa_expectation(x, fit$group_index,
+      latents:::.multilpa_decode(parameters, fit), codes)$log_likelihood
   }
-  analytic <- unname(-multilpa:::.multilpa_score(theta, x, fit, codes))
+  analytic <- unname(-latents:::.multilpa_score(theta, x, fit, codes))
   numerical <- vapply(seq_along(theta), function(j) {
     step <- 1e-5 * max(1, abs(theta[j]))
     up <- theta; up[j] <- up[j] + step
@@ -101,7 +101,7 @@ test_that("the wrong categorical data is refused", {
   altered$u1 <- 1L - altered$u1
 
   expect_error(parameter_inference(fit, altered),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 })
 
 test_that("the robust sandwich is available for categorical measurement", {

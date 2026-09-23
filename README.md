@@ -4,15 +4,15 @@
 
 
 
-# multilpa <img src="man/figures/logo.png" align="right" height="139" alt="multilpa logo" />
+# latents <img src="man/figures/logo.png" align="right" height="139" alt="latents logo" />
 
 Multilevel latent profile analysis (MLPA) is a model-based method for identifying unobserved subgroups in continuous multivariate data when observations are nested within higher-level units. It is applicable to designs such as repeated measurements within individuals, students within schools, and patients within clinics. In these settings, observations from the same unit may be dependent, and the distribution of latent profiles may vary systematically between units.
 
-Ordinary latent profile analysis represents heterogeneity among observations through a finite mixture of distributions. Each component, or latent profile, is characterized by a set of indicator means and variances. The two-level formulation implemented in `multilpa` extends this representation by introducing latent classes at the group level. Observation-level profiles describe patterns in the indicators; group-level classes describe differences in the probabilities of those profiles. This allows the analysis to distinguish variation among observations from variation in profile composition across groups.
+Ordinary latent profile analysis represents heterogeneity among observations through a finite mixture of distributions. Each component, or latent profile, is characterized by a set of indicator means and variances. The two-level formulation implemented in `multilpa()` extends this representation by introducing latent classes at the group level. Observation-level profiles describe patterns in the indicators; group-level classes describe differences in the probabilities of those profiles. This allows the analysis to distinguish variation among observations from variation in profile composition across groups.
 
 For example, in repeated measurements of student engagement, an observation-level profile may represent a pattern of relatively high activity across several indicators. A student-level class may then represent students whose observations frequently belong to that profile. Membership in this student class does not require every observation from a student to have the same engagement profile. The distinction is useful whenever within-person variation is itself part of the research question.
 
-The `multilpa` package provides estimation, result extraction, visualization, and diagnostic procedures for this two-level mixture. Its extensions include categorical and mixed indicators, membership covariates, missing-indicator likelihoods, staged estimation, and latent transition analysis. This tutorial develops the continuous two-level model first, then examines these extensions in relation to their analytical purposes.
+The `latents` package provides estimation, result extraction, visualization, and diagnostic procedures for this two-level mixture. Its extensions include categorical and mixed indicators, membership covariates, missing-indicator likelihoods, staged estimation, and latent transition analysis. This tutorial develops the continuous two-level model first, then examines these extensions in relation to their analytical purposes.
 
 ## Model formulation and scope
 
@@ -66,7 +66,7 @@ The development version can be installed from the package repository. This insta
 
 ``` r
 install.packages("remotes")
-remotes::install_github("mohsaqr/multilpa")
+remotes::install_github("mohsaqr/latents")
 ```
 
 ### Example data and variables
@@ -75,7 +75,7 @@ The tutorial uses `course_engagement`, a simulated dataset containing 1,422 cour
 
 
 ``` r
-library(multilpa)
+library(latents)
 vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 ```
 
@@ -711,7 +711,7 @@ The fitted transitions can be exported through `get_tna()` and `get_group_tna()`
 
 For categorical indicators, the measurement model estimates category-response probabilities within profiles. Specifying all indicators as categorical yields two-level latent class analysis. Specifying a subset yields a mixture of Gaussian and categorical measurement components.
 
-The `student_esm` dataset provides repeated reports of leisure activities nested within students. The following example uses prompts from the first week, selected by `day <= 6`, and treats each activity indicator as categorical.
+The `student_esm` dataset provides repeated reports of leisure activities nested within students. The following example uses prompts from the first week, selected by `day <= 6`, and fits a two-level latent class model with `multilca()`, which treats every indicator as categorical.
 
 
 ``` r
@@ -719,10 +719,10 @@ activities <- c("time_with_friends", "on_social_media", "tv_video_games",
                 "listened_music", "sports", "walking", "reading",
                 "part_time_job")
 first_week <- subset(student_esm, day <= 6)
-lca <- multilpa(
+lca <- multilca(
   first_week, activities, "student",
   n_profiles = 2, n_group_classes = 2,
-  categorical = activities, n_starts = 10, seed = 1
+  n_starts = 10, seed = 1
 )
 get_results(lca, "responses")
 #>    profile         indicator category probability threshold
@@ -840,18 +840,18 @@ Additional package vignettes develop the individual parts of this workflow in gr
 
 
 ``` r
-vignette("multilpa")
-vignette("multilpa-evaluation")
-vignette("multilpa-covariates")
-vignette("multilpa-categorical")
-vignette("lta")
-citation("multilpa")
+vignette("lpa", package = "latents")
+vignette("evaluation", package = "latents")
+vignette("covariates", package = "latents")
+vignette("lca", package = "latents")
+vignette("lta", package = "latents")
+citation("latents")
 ```
 
 ## Authors and citation
 
-`multilpa` is written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me/). Mohammed Saqr maintains the package. Questions and bug reports can be submitted through the [repository issue tracker](https://github.com/mohsaqr/multilpa/issues).
+`latents` is written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me/). Mohammed Saqr maintains the package. Questions and bug reports can be submitted through the [repository issue tracker](https://github.com/mohsaqr/latents/issues).
 
-The source repository contains further worked examples and software comparison studies. The package citation is available through `citation("multilpa")`.
+The source repository contains further worked examples and software comparison studies. The package citation is available through `citation("latents")`.
 
 

@@ -53,14 +53,14 @@ the summary of any of them.}
 \item{what}{Which table to return, or \code{"all"} for every table the object can
 produce. The tables an object offers depend on its class and are listed
 under \emph{Tables} below; asking for one it does not have raises
-\code{multilpa_bad_argument} naming the ones it does. \code{NULL}, the default,
+\code{latents_bad_argument} naming the ones it does. \code{NULL}, the default,
 gives the object's primary table: the measurement model for a fit, the
 candidate grid for an enumeration, the test row for a bootstrap
 comparison, and the entropy summary for a diagnostics object.}
 
 \item{...}{Arguments for the requested table. Each table accepts only the
 arguments listed for it below, and any other name raises
-\code{multilpa_bad_argument} saying which that table takes, rather than being
+\code{latents_bad_argument} saying which that table takes, rather than being
 dropped on the way to a table that would then answer a different question.}
 }
 \value{
@@ -148,11 +148,11 @@ the within-profile independence the measurement model assumes: \code{profile},
 package computes. Takes \code{format} and \code{definitions}.}
 \item{\code{"sequences"}}{The assignments in occasion order, one row per
 observation: \code{group}, \code{group_class}, \code{time}, \code{profile}. Takes \code{format}.
-Raises \code{multilpa_no_time} for a fit made without \code{time}.}
+Raises \code{latents_no_time} for a fit made without \code{time}.}
 \item{\code{"sequence_summary"}}{One row per group class, summarizing how much
 data it contributes: \code{group_class}, \code{groups}, \code{observations},
 \code{mean_length}, \code{median_length}, \code{shortest}, \code{longest}, \code{complete},
-\code{gaps}. Raises \code{multilpa_no_time} for a fit made without \code{time}.}
+\code{gaps}. Raises \code{latents_no_time} for a fit made without \code{time}.}
 \item{\code{"starts"}}{One row per EM start: \code{start}, \code{log_likelihood},
 \code{converged}, \code{iterations}, \code{error} and, where the family records it,
 \code{boundary}.}
@@ -212,7 +212,7 @@ ordered pair of continuous indicators: \code{profile}, \code{indicator},
 produce, in catalogue order, built from the same definitions a single
 \code{what} uses, so the two can never disagree. It takes no further arguments:
 every table is built with its defaults, and supplying anything else raises
-\code{multilpa_bad_argument}. A table this particular object cannot produce is
+\code{latents_bad_argument}. A table this particular object cannot produce is
 left out rather than erroring -- a sequence table for a fit made without
 \code{time}, bivariate residuals for a family with no discrete group classes --
 so the names of the list say what was available. Only the classed
@@ -338,7 +338,7 @@ level has a single class, where it is undefined rather than perfect.
 
 A fit with individual profiles but no discrete group classes returns
 individuals only for \code{level = "both"}, and raises
-\code{multilpa_no_group_classes} for \code{level = "groups"}.
+\code{latents_no_group_classes} for \code{level = "groups"}.
 }
 
 \section{Bivariate residuals}{

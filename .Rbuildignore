@@ -31,3 +31,4 @@
 ^vignettes/.*\.tex$
 ^vignettes/figure$
 ^vignettes/articles$
+^ROADMAP\.md$

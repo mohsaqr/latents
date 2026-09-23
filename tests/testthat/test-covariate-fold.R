@@ -57,7 +57,7 @@ test_that("every forwarded argument reaches the estimator unchanged", {
     n_group_classes = 2, profile_covariates = "previous_grade",
     variance_model = "equal", covariance_model = "full", min_variance = 1e-4,
     tol = 1e-6, max_iter = 300L, n_starts = 1, seed = 1, time = "sequence"))
-  direct <- quietly(multilpa:::.multilpa_fit_covariates(
+  direct <- quietly(latents:::.multilpa_fit_covariates(
     small, activity, "student", n_profiles = 2,
     n_group_classes = 2, profile_covariates = "previous_grade",
     variance_model = "equal", covariance_model = "full", min_variance = 1e-4,
@@ -82,9 +82,9 @@ test_that("the three arguments the covariate path cannot honour are refused", {
                     n_group_classes = 2, n_starts = 1, max_iter = 20,
                     seed = 1))
   expect_error(call_with(start = starting_values(plain)),
-               class = "multilpa_bad_argument")
-  expect_error(call_with(missing = "fiml"), class = "multilpa_bad_argument")
-  expect_error(call_with(fixed = "means"), class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
+  expect_error(call_with(missing = "fiml"), class = "latents_bad_argument")
+  expect_error(call_with(fixed = "means"), class = "latents_bad_argument")
   # The message names the argument, so the caller is told which one to drop.
   expect_error(call_with(missing = "fiml"), "`missing`")
   # All three at once are named together rather than one refusal at a time.
@@ -110,7 +110,7 @@ test_that("a covariate fit offers the tables its family defines", {
   # unit's covariates, so the table the covariate-free model has is absent.
   expect_false("profile_probabilities" %in% names(tables))
   expect_error(get_results(fit, "profile_probabilities"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_named(get_results(fit, "coefficients"),
                c("level", "outcome", "term", "parameter", "estimate"))
 })

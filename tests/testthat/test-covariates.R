@@ -85,11 +85,11 @@ test_that("no predictors agrees with the base model and single-level works", {
   # case of the covariate estimator, which `multilpa()` cannot be asked for:
   # naming no covariate is a request for the covariate-free model. The
   # estimator is reached directly so the edge case stays covered.
-  fit <- multilpa:::.multilpa_fit_covariates(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 2, seed = 42, tol = 1e-10)
+  fit <- latents:::.multilpa_fit_covariates(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 2, seed = 42, tol = 1e-10)
   expect_equal(fit$log_likelihood, base$log_likelihood, tolerance = 1e-7)
   expect_equal(fit$n_parameters, base$n_parameters)
   expect_equal(ncol(fit$group_coefficients), 0L)
-  single <- multilpa:::.multilpa_fit_covariates(d, "y", "g", 1, 1, n_starts = 1, seed = 42)
+  single <- latents:::.multilpa_fit_covariates(d, "y", "g", 1, 1, n_starts = 1, seed = 42)
   expect_equal(as.numeric(single$means), mean(d$y), tolerance = 1e-12)
   expect_equal(single$n_parameters, 2L)
   expect_error(multilpa(d, "y", "g", 1, 1, "z", n_starts = 1), "at least two profiles")

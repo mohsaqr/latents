@@ -121,7 +121,7 @@ test_that("full-covariance inference survives an indicator held in large units",
     rescaled <- frame
     rescaled$b <- frame$b * unit
     .scaling_fit_recording(
-      multilpa:::.multilpa_fit_covariates(rescaled, c("a", "b"), "g", n_profiles = 1, n_group_classes = 1, covariance_model = "full", n_starts = 1, tol = 1e-10, seed = 1))
+      latents:::.multilpa_fit_covariates(rescaled, c("a", "b"), "g", n_profiles = 1, n_group_classes = 1, covariance_model = "full", n_starts = 1, tol = 1e-10, seed = 1))
   })
   expect_true(all(vapply(fitted, function(recorded) recorded$fit$converged,
                          logical(1))))
@@ -192,10 +192,10 @@ test_that("a non-finite membership design is refused by class, not by message", 
   design <- cbind(1, c(0.5, NA_real_, -0.5))
   counts <- matrix(c(0.6, 0.4, 0.5, 0.5, 0.2, 0.8), 3L, 2L, byrow = TRUE)
   expect_error(.multilpa_weighted_logits(design, counts, matrix(0, 2L, 1L)),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
   expect_error(
     .multilpa_weighted_logits(cbind(1, c(0, 1, 2)),
                               matrix(c(0.5, Inf, 0.5, 0.5, 0.5, 0.5), 3L, 2L),
                               matrix(0, 2L, 1L)),
-    class = "multilpa_bad_data")
+    class = "latents_bad_data")
 })

@@ -48,7 +48,7 @@
 #'   out of the described frame, so an indicator of the caller's own that is
 #'   named `profile` or `group_class` is summarized as itself, not replaced by
 #'   the assignment. A `by` whose name is one of the summary's own columns
-#'   cannot be told apart from them and raises `multilpa_bad_data`.
+#'   cannot be told apart from them and raises `latents_bad_data`.
 #' @references Bliese, P. D. (2000). Within-group agreement, non-independence,
 #'   and reliability. In K. J. Klein & S. W. J. Kozlowski (Eds.), *Multilevel
 #'   theory, research, and methods in organizations*.
@@ -95,7 +95,7 @@ descriptives.data.frame <- function(x, vars = NULL, id = NULL, by = NULL, ...) {
   vars <- unique(vars)
   if (length(vars) == 0L) {
     stop(errorCondition("There are no variables to describe.",
-                        class = "multilpa_nothing_to_describe", call = NULL))
+                        class = "latents_nothing_to_describe", call = NULL))
   }
   if (is.null(by)) return(.multilpa_describe(x, vars, id))
   .multilpa_describe_by(x, vars, id, x[[by]], by)
@@ -141,7 +141,7 @@ descriptives.multilpa_covariates <- descriptives.multilpa
   if (is.null(values) || length(values) != x$n_observations) {
     stop(errorCondition(sprintf(
       "This fit carries no `%s` assignment for each of its observations.", by),
-      class = "multilpa_incomplete_fit", call = NULL))
+      class = "latents_incomplete_fit", call = NULL))
   }
   values
 }
@@ -178,7 +178,7 @@ descriptives.multilpa_covariates <- descriptives.multilpa
   if (by_label %in% summary_columns) {
     stop(errorCondition(sprintf(
       "`by` names the column `%s`, which the summary itself uses, so the two could not be told apart in the result.",
-      by_label), class = "multilpa_bad_data", call = NULL))
+      by_label), class = "latents_bad_data", call = NULL))
   }
   observed_levels <- unique(by_values[!is.na(by_values)])
   keys <- match(by_values, observed_levels)

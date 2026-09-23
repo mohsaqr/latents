@@ -25,13 +25,13 @@ requested <- commandArgs(trailingOnly = TRUE)
 stale <- check_validation_api(root = ".")
 if (nrow(stale) > 0L) {
   cat(sprintf("%d validation call site(s) do not match multilpa %s:\n\n",
-              nrow(stale), utils::packageVersion("multilpa")))
+              nrow(stale), utils::packageVersion("latents")))
   print(stale)
   cat("\nFix these before the harness can be believed.\n")
   quit(status = 1L, save = "no")
 }
 cat(sprintf("API check: every validation call matches multilpa %s.\n",
-            utils::packageVersion("multilpa")))
+            utils::packageVersion("latents")))
 
 run <- run_equivalence(if (length(requested) > 0L) requested else NULL,
                        check_api = FALSE)

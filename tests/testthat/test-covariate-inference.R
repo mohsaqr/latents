@@ -14,15 +14,15 @@ test_that("the analytic scores agree with a numerical gradient", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
   fit <- .covariate_fit(fixture$data)
   x <- sweep(as.matrix(fixture$data[fit$vars]), 2L, fit$center, "-")
-  theta <- multilpa:::.multilpa_cov_encode(fit)
+  theta <- latents:::.multilpa_cov_encode(fit)
   likelihood <- function(parameters) {
-    pieces <- multilpa:::.multilpa_cov_decode(parameters, fit)
-    multilpa:::.multilpa_cov_expectation(
+    pieces <- latents:::.multilpa_cov_decode(parameters, fit)
+    latents:::.multilpa_cov_expectation(
       x, fit$group_index, pieces$parameters, fit$profile_design,
       fit$group_design, pieces$beta, pieces$gamma)$log_likelihood
   }
   score <- function(parameters) {
-    unname(colSums(multilpa:::.multilpa_cov_group_scores(parameters, x, fit)))
+    unname(colSums(latents:::.multilpa_cov_group_scores(parameters, x, fit)))
   }
   # At the maximum both gradients are near zero, so they are compared at a
   # fixed point away from it, where a relative tolerance is meaningful.
@@ -140,13 +140,13 @@ test_that("a broken contract is refused rather than answered", {
   wrong <- fixture$data
   wrong$y1 <- wrong$y1 + 1
   expect_error(parameter_inference(fit, wrong),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   expect_error(parameter_inference(fit, fixture$data[c("y1", "z", "w", "g")]),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   stale <- fit
   stale$profile_design <- NULL
   expect_error(parameter_inference(stale, fixture$data),
-               class = "multilpa_unsupported_inference")
+               class = "latents_unsupported_inference")
 })
 
 test_that("confidence level widens the interval as asked", {

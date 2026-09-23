@@ -12,9 +12,9 @@ two_level <- function(...) {
 
 test_that("every table in a fit's catalogue is a data frame", {
   fit <- two_level()
-  catalogue <- setdiff(names(multilpa:::.multilpa_catalogue(fit)), "all")
+  catalogue <- setdiff(names(latents:::.multilpa_catalogue(fit)), "all")
   expect_gt(length(catalogue), 15L)
-  absent <- c("multilpa_no_time", "multilpa_no_group_classes")
+  absent <- c("latents_no_time", "latents_no_group_classes")
   for (what in catalogue) {
     table <- tryCatch(get_results(fit, what), error = function(condition) {
       if (inherits(condition, absent)) NULL else stop(condition)
@@ -48,13 +48,13 @@ test_that("`all` omits only the tables this fit cannot produce", {
 
 test_that("a table a fit cannot produce still refuses by class when named", {
   fit <- two_level()
-  expect_error(get_results(fit, "sequences"), class = "multilpa_no_time")
-  expect_error(get_results(fit, "sequence_summary"), class = "multilpa_no_time")
+  expect_error(get_results(fit, "sequences"), class = "latents_no_time")
+  expect_error(get_results(fit, "sequence_summary"), class = "latents_no_time")
 })
 
 test_that("an unknown table names the ones this object has", {
   fit <- two_level()
-  expect_error(get_results(fit, "nonsense"), class = "multilpa_bad_argument")
+  expect_error(get_results(fit, "nonsense"), class = "latents_bad_argument")
   expect_error(get_results(fit, "nonsense"), "profile_probabilities")
   expect_error(get_results(fit, c("entropy", "profiles")),
                "must be a single table name")
@@ -63,17 +63,17 @@ test_that("an unknown table names the ones this object has", {
 test_that("an argument a table does not take is named, not dropped", {
   fit <- two_level()
   expect_error(get_results(fit, "entropy", level = "groups"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(get_results(fit, "profiles", nonsense = 1),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(get_results(fit, "profiles", "standardized"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(get_results(fit, "all", data = engagement_small),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("get_results has no method for an unrelated object", {
-  expect_error(get_results(data.frame(a = 1)), class = "multilpa_bad_argument")
+  expect_error(get_results(data.frame(a = 1)), class = "latents_bad_argument")
 })
 
 test_that("the classification tables default to every level the fit has", {
@@ -93,9 +93,9 @@ test_that("as.data.frame coerces to the primary table and takes nothing else", {
   fit <- two_level()
   expect_identical(as.data.frame(fit), get_results(fit, "profiles"))
   expect_error(as.data.frame(fit, what = "entropy"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(as.data.frame(fit, scale = "standardized"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   moves <- lta(engagement_small, activity, "student",
                            n_profiles = 2, n_group_classes = 2,
                            time = "sequence", n_starts = 2, seed = 1)
@@ -154,7 +154,7 @@ test_that("a starting-value set and a diagnostics object have catalogues", {
   expect_identical(get_results(quality, "entropy"), get_results(fit, "entropy"))
   # The gathered table is named for what it holds, not for the individual
   # posteriors it used to collide with.
-  expect_error(get_results(quality, "posteriors"), class = "multilpa_bad_argument")
+  expect_error(get_results(quality, "posteriors"), class = "latents_bad_argument")
 })
 
 test_that("the tables the summaries used to own are on the fit", {
@@ -259,9 +259,9 @@ test_that("truth reproduces the cross-tabulation it replaces", {
 test_that("truth refuses a column it cannot use", {
   fit <- two_level()
   expect_error(get_results(fit, "assignments", data = engagement_small,
-                        truth = "absent"), class = "multilpa_bad_data")
+                        truth = "absent"), class = "latents_bad_data")
   expect_error(get_results(fit, "assignments", data = engagement_small,
-                        truth = "profile"), class = "multilpa_bad_data")
+                        truth = "profile"), class = "latents_bad_data")
   expect_error(get_results(fit, "assignments", data = engagement_small,
                         truth = c("engagement", "engagement")),
                "must not be duplicated")
@@ -285,7 +285,7 @@ test_that("plot draws every supported view under what = \"all\"", {
   expect_s3_class(evalq(plot(fit, what = "all"), clean), "multilpa")
   # "all" is a request, not a view, so it must not appear among the views it
   # walks: it would otherwise call itself.
-  expect_false("all" %in% multilpa:::.multilpa_supported_views(fit))
+  expect_false("all" %in% latents:::.multilpa_supported_views(fit))
 })
 
 test_that("a fit prints its means one row per profile, not one per cell", {
@@ -295,7 +295,7 @@ test_that("a fit prints its means one row per profile, not one per cell", {
   fit <- quietly(multilpa(engagement_small, indicators, "student",
                           n_profiles = 3L, n_group_classes = 1L, n_starts = 3L,
                           seed = 1L, max_iter = 5000))
-  wide <- multilpa:::.multilpa_wide_means(fit)
+  wide <- latents:::.multilpa_wide_means(fit)
   expect_identical(nrow(wide), 3L)
   expect_identical(names(wide), c("profile", indicators))
 

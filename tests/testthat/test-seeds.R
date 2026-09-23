@@ -31,7 +31,7 @@ seed_fingerprint <- function(seed) {
 }
 
 test_that("the seed rule is exactly the set of values set.seed() takes", {
-  is_seed <- multilpa:::.multilpa_is_seed
+  is_seed <- latents:::.multilpa_is_seed
   largest <- .Machine$integer.max
   expect_identical(is_seed(c(0, 1, -1, largest, -largest, 7L)), rep(TRUE, 6L))
   expect_identical(is_seed(c(1.5, -0.5, NA, Inf, -Inf, NaN, largest + 1,
@@ -63,21 +63,21 @@ test_that("every verb refuses a seed set.seed() would not take exactly", {
   data <- seed_data()
   bad <- list(1.5, -0.5, .Machine$integer.max + 1, NA_real_, c(1, 2), "1")
   lapply(bad, \(seed) expect_error(seed_fit(seed),
-                                   class = "multilpa_bad_argument"))
+                                   class = "latents_bad_argument"))
   expect_error(seed_fit(1.5, profile_covariates = "x"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   fit <- seed_fit(1)
   expect_error(parameter_inference(fit, method = "bootstrap", iter = 2L,
                                    seed = 1.5),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   one_class <- multilpa(data, c("a", "b"), "g", n_profiles = 1L,
                         n_group_classes = 1L, n_starts = 1L, seed = 1)
   expect_error(bootstrap_lrt(one_class, fit, iter = 2L, seed = 0.5),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(sensitivity(fit, seeds = c(1.2, 2.4)),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(sensitivity(fit, seeds = c(1, .Machine$integer.max + 1)),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("the covariate fit and the bootstraps accept a negative seed", {

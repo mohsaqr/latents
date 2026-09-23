@@ -105,16 +105,16 @@ test_that("the standardized profile means the plot draws are available as data",
 test_that("standardizing errors where the plot would, and only where it applies", {
   fit <- tidy_fit()
   expect_error(get_results(fit, "posteriors", scale = "standardized"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(get_results(fit, "profiles", scale = "nonsense"))
   stripped <- fit
   stripped$indicator_data <- NULL
   expect_error(get_results(stripped, "profiles", scale = "standardized"),
-               class = "multilpa_no_indicator_data")
+               class = "latents_no_indicator_data")
   flat <- fit
   flat$indicator_data[, 1L] <- 1
   expect_error(get_results(flat, "profiles", scale = "standardized"),
-               class = "multilpa_bad_scale")
+               class = "latents_bad_scale")
 })
 
 test_that("an unestimated stage is missing, not a sentinel level", {
@@ -367,11 +367,11 @@ test_that("printing a starting-value set describes it and returns it", {
 
 test_that("starting_values still refuses an incomplete object by class", {
   expect_error(starting_values(list(means = matrix(0, 2L, 2L))),
-               class = "multilpa_bad_start")
+               class = "latents_bad_start")
   expect_error(starting_values(list(means = matrix(0, 2L, 2L),
                                     variances = matrix(1, 2L, 2L),
                                     profile_probabilities = matrix(0.5, 1L, 2L),
                                     group_probabilities = 1),
                                covariance = "keep"),
-               class = "multilpa_bad_start")
+               class = "latents_bad_start")
 })

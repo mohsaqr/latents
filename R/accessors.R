@@ -7,7 +7,7 @@
 #' @param x A fitted multilevel latent profile model.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped, because `what =` used to live on
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
@@ -70,7 +70,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     stop(errorCondition(sprintf(
       "`data` already has a column named %s, which the assignments would overwrite.",
       paste(sprintf("`%s`", clashes), collapse = ", ")),
-      class = "multilpa_bad_data", call = NULL))
+      class = "latents_bad_data", call = NULL))
   }
   result <- cbind(frame, added)
   row.names(result) <- NULL
@@ -98,14 +98,14 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     stop(errorCondition(sprintf(
       "`truth` names %s, which `data` has not.",
       paste(sprintf("`%s`", absent), collapse = ", ")),
-      class = "multilpa_bad_data", call = NULL))
+      class = "latents_bad_data", call = NULL))
   }
   assignment_columns <- intersect(c("profile", "group_class"), truth)
   if (length(assignment_columns) > 0L) {
     stop(errorCondition(sprintf(
       "`truth` names %s, which is the model's own label, not a known one.",
       paste(sprintf("`%s`", assignment_columns), collapse = ", ")),
-      class = "multilpa_bad_data", call = NULL))
+      class = "latents_bad_data", call = NULL))
   }
   rows <- lapply(truth, .multilpa_recovery_rows, joined = joined, x = x)
   result <- do.call(rbind, rows)
@@ -195,7 +195,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   if (is.null(x$indicator_data) && is.null(x$categorical_data)) {
     stop(errorCondition(
       "This fit carries no indicator data, so the data it was fitted to cannot be rebuilt.",
-      class = "multilpa_incomplete_fit", call = NULL))
+      class = "latents_incomplete_fit", call = NULL))
   }
   columns <- list()
   columns[[x$id]] <- x$group_values[x$group_index]
@@ -277,14 +277,14 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #'
 #' @param x A fitted model of this package.
 #' @param data The frame supplied with it.
-#' @return `NULL`, invisibly; raises `multilpa_bad_inference_data` otherwise.
+#' @return `NULL`, invisibly; raises `latents_bad_inference_data` otherwise.
 #' @noRd
 .multilpa_check_row_count <- function(x, data) {
   if (!identical(as.integer(NROW(data)), as.integer(x$n_observations))) {
     stop(errorCondition(sprintf(
       "`data` must have one row per observation of the fit: %d rows supplied, %d expected.",
       NROW(data), x$n_observations),
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   invisible(NULL)
 }
@@ -336,7 +336,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       "`data` is not in the order the model was fitted in: %s disagree%s with the fit row by row.",
       paste(sprintf("`%s`", disagreeing), collapse = ", "),
       if (length(disagreeing) == 1L) "s" else ""),
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   # A fit that carries no row-level record of its own has nothing to compare
   # against. Otherwise the supplied columns establish order if their observed
@@ -355,7 +355,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     warning(warningCondition(sprintf(
       "`data` does not establish its row order uniquely against the fit; include more fitted columns (for example %s) to have it verified.",
       paste(sprintf("`%s`", checkable), collapse = ", ")),
-      class = "multilpa_unverified_alignment"))
+      class = "latents_unverified_alignment"))
   }
   invisible(checked)
 }
@@ -457,7 +457,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   if (is.null(observed) || ncol(observed) != length(vars)) {
     stop(errorCondition(
       "This fit did not retain indicator data, so it cannot be standardized.",
-      class = "multilpa_no_indicator_data", call = NULL))
+      class = "latents_no_indicator_data", call = NULL))
   }
   spread <- vapply(seq_along(vars), function(index) {
     stats::sd(observed[, index], na.rm = TRUE)
@@ -465,7 +465,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   if (any(!is.finite(spread)) || any(spread <= 0)) {
     stop(errorCondition(
       "An indicator has zero or undefined standard deviation.",
-      class = "multilpa_bad_scale", call = NULL))
+      class = "latents_bad_scale", call = NULL))
   }
   list(centre = unname(colMeans(observed, na.rm = TRUE)), spread = spread)
 }
@@ -620,7 +620,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' @param x An object of class `multilpa_enumeration`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped, because `what =` used to live on
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
@@ -730,7 +730,7 @@ print.multilpa_enumeration <- function(x, ...) {
 #'   it was estimated for rather than to whichever item happens to sit in that
 #'   position. A fit that names its categorical indicators in another order, or
 #'   that has other categories, therefore refuses the start with
-#'   `multilpa_bad_start` instead of reporting a likelihood for a measurement
+#'   `latents_bad_start` instead of reporting a likelihood for a measurement
 #'   model it never held. The list payload is unchanged by the class, so a
 #'   `multilpa_start` can be passed straight back as `start`.
 #' @seealso [get_results()] for the values as tidy tables.
@@ -764,12 +764,12 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
   if (length(missing_fields) > 0L) {
     stop(errorCondition(sprintf("`object` is missing starting values for %s.",
                                 paste(missing_fields, collapse = ", ")),
-                        class = "multilpa_bad_start", call = NULL))
+                        class = "latents_bad_start", call = NULL))
   }
   has_covariances <- !is.null(x$covariances)
   if (identical(covariance, "keep") && !has_covariances) {
     stop(errorCondition("`object` carries no covariances to keep.",
-                        class = "multilpa_bad_start", call = NULL))
+                        class = "latents_bad_start", call = NULL))
   }
   use_covariances <- has_covariances && !identical(covariance, "drop")
   n_profiles <- ncol(as.matrix(x$profile_probabilities))
@@ -780,7 +780,7 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
       variances <- matrix(0, n_profiles, 0L)
     } else if (!has_covariances) {
       stop(errorCondition("`object` is missing starting values for variances.",
-                          class = "multilpa_bad_start", call = NULL))
+                          class = "latents_bad_start", call = NULL))
     } else {
     dimension <- dim(x$covariances)[1L]
     variances <- t(matrix(vapply(seq_len(dim(x$covariances)[3L]), function(profile) {
@@ -867,7 +867,7 @@ print.multilpa_start <- function(x, ...) {
 #' @param x An object of class `multilpa_start`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped, because `what =` used to live on
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
@@ -1009,7 +1009,7 @@ as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, 
 #' @param x A fitted covariate model.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped, because `what =` used to live on
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.

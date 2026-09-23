@@ -23,10 +23,10 @@ Consider a repeated-measures application. A person may occupy different profiles
 
 This distinction is also central to VaSSTra (López-Pernas & Saqr, 2023), which separates **state diversity** from **person heterogeneity** using a sequential estimation strategy. VaSSTra first establishes a common state space across all observations and then summarizes each person's repeated observations within that space. MLPA takes a different approach: the observation-level profiles and person-level classes are estimated jointly within a single model. Both approaches allow the same person to occupy several states across repeated observations, but they differ in how the states and the person-level representation are constructed.
 
-The `multilpa` package fits MLPA models using maximum likelihood with multiple expectation-maximization starting values. In this vignette, we work through a three-profile, three-student-class example using longitudinal data on course engagement. The focus is on specifying, estimating, and interpreting the model. The companion guides cover [model evaluation](case-engagement-evaluation.html), [covariates and staged estimation](case-engagement-covariates.html), and [latent transitions](case-engagement-transitions.html).
+The `latents` package fits MLPA models using maximum likelihood with multiple expectation-maximization starting values. In this vignette, we work through a three-profile, three-student-class example using longitudinal data on course engagement. The focus is on specifying, estimating, and interpreting the model. The companion guides cover [model evaluation](case-engagement-evaluation.html), [covariates and staged estimation](case-engagement-covariates.html), and [latent transitions](case-engagement-transitions.html).
 
 ```{r setup}
-library(multilpa)
+library(latents)
 ```
 
 ## Longitudinal course engagement

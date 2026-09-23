@@ -32,7 +32,7 @@ differently over time.
   course average.
 
 ```{r setup}
-library(multilpa)
+library(latents)
 ```
 
 ## Fit

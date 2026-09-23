@@ -78,7 +78,7 @@
     stop(errorCondition(paste(
       "The membership design and the expected class counts must be finite;",
       "a non-finite entry reaches the multinomial optimizer as an undefined",
-      "objective."), class = "multilpa_bad_data", call = NULL))
+      "objective."), class = "latents_bad_data", call = NULL))
   }
   if (ncol(counts) == 1L) {
     return(list(coefficients = initial, converged = TRUE, scaled_score = 0))
@@ -126,7 +126,7 @@
   if (value > baseline + 1e-8) {
     stop(errorCondition(
       "Multinomial M-step decreased the expected log likelihood.",
-      class = "multilpa_no_converge", call = NULL))
+      class = "latents_no_converge", call = NULL))
   }
   list(coefficients = sweep(unpack(current), 1L, scale, "/"),
        converged = score <= threshold, scaled_score = score)
@@ -345,23 +345,23 @@
   if (any(!is.finite(starts$log_likelihood))) {
     warning(warningCondition(paste(
       "Some covariate starts failed; summary() reports every start."),
-      class = "multilpa_failed_starts"))
+      class = "latents_failed_starts"))
   }
   if (!result$converged) {
     warning(warningCondition(paste(
       "The best covariate start had not converged when `max_iter` was reached,",
       "or its membership logits still carry a non-negligible score, so the",
       "returned estimate is not a maximum."),
-      class = "multilpa_unconverged"))
+      class = "latents_unconverged"))
   }
   if (result$boundary) {
     warning(warningCondition("A residual variance reached min_variance.",
-                             class = "multilpa_boundary", call = NULL))
+                             class = "latents_boundary", call = NULL))
   }
   if (result$extreme_logits) {
     warning(warningCondition(
       "Extreme logit coefficients: inspect scaling, sparse classes and separation.",
-      class = "multilpa_extreme_coefficients", call = NULL))
+      class = "latents_extreme_coefficients", call = NULL))
   }
   result
 }
@@ -499,7 +499,7 @@ print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
 #' @param x An object of class `summary_multilpa_covariates`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: one row per profile and continuous indicator.
 #' @seealso [get_results()] for every other table this summary holds.
@@ -538,7 +538,7 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
     stop(errorCondition(paste(
       "This fit does not store its indicators and membership designs, so the",
       "fitting data cannot be rebuilt; supply `data`."),
-      class = "multilpa_no_indicator_data", call = NULL))
+      class = "latents_no_indicator_data", call = NULL))
   }
   result <- as.data.frame(object$indicator_data)
   result[[object$id]] <- object$group_values[object$group_index]

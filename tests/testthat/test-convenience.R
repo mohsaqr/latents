@@ -94,7 +94,7 @@ test_that("inference no longer has to be handed data it already holds", {
   # catches the wrong data has not been traded away for the convenience.
   wrong <- transform(engagement_small, browse = browse + 1)
   expect_error(quietly(parameter_inference(fit, wrong)),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 })
 
 test_that("descriptives describes what is there and says how it is nested", {
@@ -195,7 +195,7 @@ test_that("report prints everything and returns the fit", {
     # fixture has to be genuinely loose to trip it.
     loose <- .convenience_fit(tol = 1e-4)
     expect_warning(report(loose, plots = TRUE),
-                   class = "multilpa_unconverged")
+                   class = "latents_unconverged")
     tight <- .convenience_fit(tol = 1e-10)
     # No warning, rather than no noise: report() prints by design, so
     # expect_silent() would fail on its own output.
@@ -255,8 +255,8 @@ test_that("assignments refuse a frame that cannot be aligned", {
   # Too few rows: silently recycling or truncating would be the alignment bug
   # this verb exists to prevent.
   expect_error(get_results(fit, "assignments", data = head(engagement_small, 10L)),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   # A column the assignments would overwrite is an error, not a replacement.
   expect_error(get_results(fit, "assignments", data = transform(engagement_small, profile = 1L)),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
 })

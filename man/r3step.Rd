@@ -38,7 +38,7 @@ the covariates are measured on observations nested inside them. \code{"robust"}
 needs more independent groups than the regression has coefficients, because
 the group score contributions sum to zero at the estimate and so span at
 most one dimension fewer than there are groups; with too few it is refused
-with \code{multilpa_too_few_groups} rather than reporting a variance that is
+with \code{latents_too_few_groups} rather than reporting a variance that is
 singular, or, with a single group, numerically zero. \code{"observed"} remains
 available there and does not allow for the nesting.}
 

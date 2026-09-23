@@ -27,7 +27,7 @@ deferred_verb <- function(file, name, root = ".") {
     stop(errorCondition(sprintf("No deferred source at `%s`.", path),
                         class = "multilpa_missing_deferred", call = NULL))
   }
-  environment <- new.env(parent = asNamespace("multilpa"))
+  environment <- new.env(parent = asNamespace("latents"))
   sys.source(path, envir = environment, keep.source = FALSE)
   if (!exists(name, envir = environment, inherits = FALSE)) {
     stop(errorCondition(sprintf("`%s` does not define `%s()`.", path, name),

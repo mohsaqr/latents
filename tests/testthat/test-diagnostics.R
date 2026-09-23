@@ -229,14 +229,14 @@ test_that("starting_values round-trips a fitted solution", {
 
 test_that("starting_values rejects incomplete input by condition class", {
   expect_error(starting_values(list(means = matrix(0, 2, 2))),
-               class = "multilpa_bad_start")
+               class = "latents_bad_start")
   expect_error(starting_values(list(means = matrix(0, 2, 2),
     profile_probabilities = matrix(0.5, 1, 2), group_probabilities = 1)),
-    class = "multilpa_bad_start")
+    class = "latents_bad_start")
   expect_error(starting_values(list(means = matrix(0, 2, 2),
     variances = matrix(1, 2, 2), profile_probabilities = matrix(0.5, 1, 2),
     group_probabilities = 1), covariance = "keep"),
-    class = "multilpa_bad_start")
+    class = "latents_bad_start")
 })
 
 test_that("every result class has a working tidy accessor", {
@@ -300,7 +300,7 @@ test_that("preparation helpers enforce their own contracts", {
                "finite positive")
   expect_error(.multilpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, 1e-8, 1e-6,
                                        1e-10, 1.5, character()),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   # A negative seed is one set.seed() accepts, so it is not refused.
   expect_no_error(.multilpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, 1e-8, 1e-6,
                                             1e-10, -1, character()))

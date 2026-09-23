@@ -13,7 +13,7 @@
 #'   are drawn without this being supplied; pass it only to draw them from a
 #'   different frame. A model family whose standard errors are not implemented
 #'   gets bars without whiskers rather than an error.
-#' @param what Which view to draw. [multilpa_plot_types()] lists every value
+#' @param what Which view to draw. [plot_views()] lists every value
 #'   with its group and a one-line description; the `"enumeration"` row it also
 #'   lists belongs to [plot.multilpa_enumeration()], not to this method.
 #'
@@ -45,7 +45,7 @@
 #'   ridge height compares shapes and not profile sizes; prevalence is printed
 #'   in each profile's label instead. Both read the individual posteriors alone,
 #'   so every family of this package can draw them; a one-profile fit refuses
-#'   them with an error of class `multilpa_nothing_to_plot`, because every case
+#'   them with an error of class `latents_nothing_to_plot`, because every case
 #'   then belongs to the single profile with probability one. `"avepp"` draws
 #'   the average posterior probability matrix: one row per assigned profile, one
 #'   column per profile, each cell the mean posterior that group puts on that
@@ -95,8 +95,8 @@
 #' plot(fit, what = "entropy")
 #' plot(fit, what = "sizes")
 #' plot(fit, what = "avepp")
-#' multilpa_plot_types()
-#' @seealso [multilpa_plot_types()] for the catalogue of views.
+#' plot_views()
+#' @seealso [plot_views()] for the catalogue of views.
 #' @export
 plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses",
                                       "probabilities", "sequences", "sizes",
@@ -199,14 +199,14 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
     stop(errorCondition(sprintf(
       "This fit carries no individual posteriors, so `what = \"%s\"` has nothing to draw. Views available for this fit: %s.",
       what, .multilpa_available_views_text(x)),
-      class = "multilpa_nothing_to_plot", call = NULL))
+      class = "latents_nothing_to_plot", call = NULL))
   }
   if (ncol(posteriors) < 2L) {
     stop(errorCondition(sprintf(
       paste("A single-profile fit assigns every case to that profile with probability one,",
             "so `what = \"%s\"` has nothing to separate. Views available for this fit: %s."),
       what, .multilpa_available_views_text(x)),
-      class = "multilpa_nothing_to_plot", call = NULL))
+      class = "latents_nothing_to_plot", call = NULL))
   }
   invisible(NULL)
 }
@@ -226,7 +226,7 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
   blocks <- x$response_probabilities
   if (is.null(blocks) || length(blocks) == 0L) {
     stop(errorCondition("This model has no categorical indicators.",
-                        class = "multilpa_no_categorical", call = NULL))
+                        class = "latents_no_categorical", call = NULL))
   }
   vars <- names(blocks)
   n_profiles <- x$n_profiles
@@ -238,7 +238,7 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
     if (is.na(index) || index < 1L || index > ncol(block)) {
       stop(errorCondition(sprintf("`category` does not match a category of an indicator with categories %s.",
                                   paste(colnames(block), collapse = ", ")),
-                          class = "multilpa_unknown_category", call = NULL))
+                          class = "latents_unknown_category", call = NULL))
     }
     index
   }, integer(1))
@@ -308,13 +308,13 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
   means <- x$means
   if (length(vars) == 0L) {
     stop(errorCondition("This model has no continuous indicators; plot `what = \"responses\"` instead.",
-                        class = "multilpa_no_continuous", call = NULL))
+                        class = "latents_no_continuous", call = NULL))
   }
   if (identical(scale, "standardized")) {
     observed <- x$indicator_data
     if (is.null(observed)) {
       stop(errorCondition("This fit did not retain indicator data, so it cannot be standardized.",
-                          class = "multilpa_no_indicator_data", call = NULL))
+                          class = "latents_no_indicator_data", call = NULL))
     }
     centre <- colMeans(observed, na.rm = TRUE)
     spread <- vapply(seq_along(vars), function(index) {
@@ -322,7 +322,7 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
     }, numeric(1))
     if (any(!is.finite(spread)) || any(spread <= 0)) {
       stop(errorCondition("An indicator has zero or undefined standard deviation.",
-                          class = "multilpa_bad_scale", call = NULL))
+                          class = "latents_bad_scale", call = NULL))
     }
     means <- sweep(sweep(means, 2L, centre, "-"), 2L, spread, "/")
   }
@@ -488,7 +488,7 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
     stop(errorCondition(sprintf(
       "%s is not an information criterion in the enumeration grid.",
       paste(sprintf("`%s`", unknown), collapse = ", ")),
-      class = "multilpa_unknown_criterion", call = NULL))
+      class = "latents_unknown_criterion", call = NULL))
   }
   empty <- criterion[!vapply(criterion, function(name) {
     any(grid$converged %in% TRUE & is.finite(grid[[name]]))
@@ -497,7 +497,7 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
     stop(errorCondition(sprintf(
       "No converged candidate has a finite %s; nothing to plot.",
       paste(sprintf("`%s`", empty), collapse = ", ")),
-      class = "multilpa_nothing_to_plot", call = NULL))
+      class = "latents_nothing_to_plot", call = NULL))
   }
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
@@ -543,7 +543,7 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
   if (!any(eligible)) {
     stop(errorCondition(sprintf("No converged candidate has a finite `%s`; nothing to plot.",
                                 criterion),
-                        class = "multilpa_nothing_to_plot", call = NULL))
+                        class = "latents_nothing_to_plot", call = NULL))
   }
   graphics::par(xpd = NA)
   series_model <- grid$model
@@ -758,7 +758,7 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
     stop(errorCondition(
       paste("A covariate model has no single profile prevalence: it varies with",
             "each unit's covariates. Use parameter_inference() for the logits."),
-      class = "multilpa_nothing_to_plot", call = NULL))
+      class = "latents_nothing_to_plot", call = NULL))
   }
   what <- match.arg(what)
   if (identical(what, "all")) {
@@ -803,7 +803,7 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
   if (length(vars) == 0L) {
     stop(errorCondition(
       "This model has no continuous indicators; plot `what = \"responses\"` instead.",
-      class = "multilpa_no_continuous", call = NULL))
+      class = "latents_no_continuous", call = NULL))
   }
   # One standardization map for the whole package, so the heatmap, the bars and
   # as.data.frame(scale = "standardized") cannot disagree about what z means.
@@ -861,7 +861,7 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
   if (is.null(probabilities) || ncol(probabilities) < 1L) {
     stop(errorCondition(
       "This model carries no individual posteriors to average.",
-      class = "multilpa_nothing_to_plot", call = NULL))
+      class = "latents_nothing_to_plot", call = NULL))
   }
   averages <- .multilpa_average_posterior_matrix(probabilities)
   n_classes <- ncol(averages)
@@ -913,7 +913,7 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
   if (is.null(counts) || length(counts) == 0L) {
     stop(errorCondition(
       "This model carries no effective profile counts to draw.",
-      class = "multilpa_nothing_to_plot", call = NULL))
+      class = "latents_nothing_to_plot", call = NULL))
   }
   n_profiles <- length(counts)
   share <- counts / sum(counts)
@@ -1057,9 +1057,9 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
 #'   `type` (the value to pass as `what`), `group` (`"measurement"`,
 #'   `"structure"`, `"diagnostics"` or `"selection"`), and `description`.
 #' @examples
-#' multilpa_plot_types()
+#' plot_views()
 #' @export
-multilpa_plot_types <- function() {
+plot_views <- function() {
   data.frame(
     type = c("profiles", "bars", "heatmap", "responses", "probabilities",
              "sequences", "transitions", "sizes", "entropy", "posteriors",
@@ -1110,7 +1110,7 @@ multilpa_plot_types <- function() {
   if (length(vars) == 0L) {
     stop(errorCondition(
       "This model has no continuous indicators; plot `what = \"responses\"` instead.",
-      class = "multilpa_no_continuous", call = NULL))
+      class = "latents_no_continuous", call = NULL))
   }
   n_profiles <- x$n_profiles
   means <- x$means
@@ -1191,11 +1191,11 @@ multilpa_plot_types <- function() {
   # "no errors" rather than propagated out of a plot call.
   errors <- tryCatch(
     .multilpa_measurement_errors(x, .multilpa_resolve_data(x, data)),
-    multilpa_unsupported_inference = function(condition) NULL,
-    multilpa_no_inference = function(condition) NULL,
-    multilpa_singular_information = function(condition) NULL,
-    multilpa_incomplete_fit = function(condition) NULL,
-    multilpa_bad_inference_data = function(condition) NULL)
+    latents_unsupported_inference = function(condition) NULL,
+    latents_no_inference = function(condition) NULL,
+    latents_singular_information = function(condition) NULL,
+    latents_incomplete_fit = function(condition) NULL,
+    latents_bad_inference_data = function(condition) NULL)
   if (is.null(errors)) return(NULL)
   vars <- .multilpa_continuous_names(x)
   cells <- expand.grid(indicator = vars, profile = seq_len(x$n_profiles),
@@ -1229,7 +1229,7 @@ multilpa_plot_types <- function() {
   if (length(views) == 0L || anyNA(views)) {
     stop(errorCondition(
       "This model family has no named plot views to draw.",
-      class = "multilpa_no_plot", call = NULL))
+      class = "latents_no_plot", call = NULL))
   }
   drawn <- vapply(views, function(view) {
     call$what <- view
@@ -1237,12 +1237,12 @@ multilpa_plot_types <- function() {
       eval(call, env)
       TRUE
     },
-    multilpa_no_plot = function(condition) FALSE,
-    multilpa_nothing_to_plot = function(condition) FALSE,
-    multilpa_no_time = function(condition) FALSE,
-    multilpa_no_categorical = function(condition) FALSE,
-    multilpa_no_continuous = function(condition) FALSE,
-    multilpa_no_indicator_data = function(condition) FALSE)
+    latents_no_plot = function(condition) FALSE,
+    latents_nothing_to_plot = function(condition) FALSE,
+    latents_no_time = function(condition) FALSE,
+    latents_no_categorical = function(condition) FALSE,
+    latents_no_continuous = function(condition) FALSE,
+    latents_no_indicator_data = function(condition) FALSE)
   }, logical(1))
   if (!all(drawn)) {
     message(sprintf("Not drawn for this model: %s.",

@@ -24,8 +24,8 @@ test_that("a fit carries the ordering only when asked, and refuses it otherwise"
   expect_null(bare$time_values)
   expect_identical(timed$time, "wave")
   expect_identical(timed$time_values, data$wave)
-  expect_error(get_results(bare, "sequences"), class = "multilpa_no_time")
-  expect_error(get_results(bare, "sequence_summary"), class = "multilpa_no_time")
+  expect_error(get_results(bare, "sequences"), class = "latents_no_time")
+  expect_error(get_results(bare, "sequence_summary"), class = "latents_no_time")
   # The ordering is metadata: carrying it must not move the estimates.
   expect_equal(bare$log_likelihood, timed$log_likelihood)
   expect_equal(bare$means, timed$means)
@@ -134,11 +134,11 @@ test_that("a broken ordering is refused rather than silently reshaped", {
   missing_time <- data
   missing_time$wave[3L] <- NA
   expect_error(.sequence_fit(missing_time, time = "wave"),
-               class = "multilpa_bad_time")
+               class = "latents_bad_time")
   repeated <- data
   repeated$wave[2L] <- repeated$wave[1L]
   expect_error(.sequence_fit(repeated, time = "wave"),
-               class = "multilpa_bad_time")
+               class = "latents_bad_time")
 })
 
 test_that("the sequence panel draws and respects the no-ordering contract", {
@@ -152,7 +152,7 @@ test_that("the sequence panel draws and respects the no-ordering contract", {
   grDevices::dev.off()
   expect_gt(file.size(file), 1000)
   expect_error(draw(plot(.sequence_fit(data), what = "sequences")),
-               class = "multilpa_no_time")
+               class = "latents_no_time")
 })
 
 test_that("the ordering is imposed, not inherited from the input row order", {

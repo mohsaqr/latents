@@ -25,7 +25,7 @@ test_that("permuting a fit moves its assignments, not only its parameters", {
   # The regression test for the defect above, stated on the helper itself so it
   # holds for every caller rather than only through sensitivity().
   fit <- separated_fit()
-  swapped <- multilpa:::.multilpa_permute_profiles(fit, c(2L, 1L))
+  swapped <- latents:::.multilpa_permute_profiles(fit, c(2L, 1L))
   expect_equal(unname(swapped$means), unname(fit$means[c(2L, 1L), ]))
   expect_equal(unname(swapped$standard_deviations),
                unname(fit$standard_deviations[c(2L, 1L), ]))
@@ -41,7 +41,7 @@ test_that("permuting a fit moves its assignments, not only its parameters", {
   expect_equal(unname(swapped$effective_profile_counts),
                unname(fit$effective_profile_counts[c(2L, 1L)]))
   # Permuting twice is the identity, which no partial permutation satisfies.
-  back <- multilpa:::.multilpa_permute_profiles(swapped, c(2L, 1L))
+  back <- latents:::.multilpa_permute_profiles(swapped, c(2L, 1L))
   expect_identical(back$subject_profiles, fit$subject_profiles)
   expect_equal(unname(back$means), unname(fit$means))
 })
@@ -52,7 +52,7 @@ test_that("permuting group classes keeps their posterior tables and labels align
                            n_group_classes = 3L, n_starts = 2L,
                            max_iter = 80L, seed = 1L))
   permutation <- c(3L, 1L, 2L)
-  moved <- multilpa:::.multilpa_permute_group_classes(fit, permutation)
+  moved <- latents:::.multilpa_permute_group_classes(fit, permutation)
   expect_equal(unname(moved$group_posteriors),
                unname(fit$group_posteriors[, permutation]))
   expect_identical(moved$group_classes,
@@ -68,7 +68,7 @@ test_that("permuting group classes keeps their posterior tables and labels align
                unname(moved$effective_group_counts))
   expect_identical(get_results(moved, "assignments")$group_class,
                    moved$group_classes[moved$group_index])
-  restored <- multilpa:::.multilpa_permute_group_classes(
+  restored <- latents:::.multilpa_permute_group_classes(
     moved, order(permutation))
   expect_equal(restored$group_posteriors, fit$group_posteriors)
   expect_identical(restored$group_classes, fit$group_classes)
@@ -135,7 +135,7 @@ test_that("optimum counts basins, not distinct doubles", {
   # Hand-computed against the definition: sorted downwards, a new optimum begins
   # where the drop exceeds the tolerance. Values within tolerance of each other
   # are one basin even when they are not equal, which is why `==` would be wrong.
-  index <- multilpa:::.multilpa_optimum_index
+  index <- latents:::.multilpa_optimum_index
   expect_identical(index(c(-100, -100, -100), tolerance = 1e-4),
                    c(1L, 1L, 1L))
   # A chain each within tolerance of the last is one basin, not three.
@@ -158,18 +158,18 @@ test_that("a family that cannot be refit is refused by class, not attempted", {
                              time = "sequence", n_profiles = 2L,
                              n_starts = 2L, max_iter = 300L, seed = 1L))
   expect_error(sensitivity(transitions, seeds = 1:3),
-               class = "multilpa_unsupported_sensitivity")
+               class = "latents_unsupported_sensitivity")
 })
 
 test_that("the argument contract is enforced before anything is refitted", {
   fit <- separated_fit()
-  expect_error(sensitivity(fit, seeds = 1L), class = "multilpa_bad_argument")
+  expect_error(sensitivity(fit, seeds = 1L), class = "latents_bad_argument")
   expect_error(sensitivity(fit, seeds = c(1L, 1L)),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(sensitivity(fit, seeds = c(1.2, 2.4)),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(sensitivity(fit, seeds = c("1", "2")),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(sensitivity(fit, seeds = 1:3, n_starts = 0L), "positive whole")
   expect_error(sensitivity(fit, seeds = 1:3, n_starts = 1.5), "positive whole")
   expect_error(sensitivity(fit, seeds = 1:3, tolerance = -1), "positive number")
@@ -180,9 +180,9 @@ test_that("agreement refuses data whose rows no longer match the reference", {
   data <- separated_data()
   fit <- separated_fit()
   expect_error(sensitivity(fit, data = data[nrow(data):1L, ], seeds = 1:2),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   expect_error(sensitivity(fit, data = head(data, -1L), seeds = 1:2),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 })
 
 test_that("a staged sensitivity refits the conditional second stage", {
@@ -205,5 +205,5 @@ test_that("a partially fixed fit is not silently refitted as a joint model", {
                             n_group_classes = 2L, n_starts = 2L, seed = 1L,
                             start = starting_values(initial), fixed = "means"))
   expect_error(sensitivity(held, seeds = 1:2),
-               class = "multilpa_unsupported_sensitivity")
+               class = "latents_unsupported_sensitivity")
 })

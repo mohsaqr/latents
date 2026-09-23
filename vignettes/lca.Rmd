@@ -19,9 +19,9 @@ choices. Like multilevel latent profile analysis, it estimates latent classes
 of observations, called profiles in the output, and latent group classes that
 differ in how probable each profile is for their observations. The difference
 is in how a profile is described: by the probability of each answer to each
-item, instead of a mean and a variance. `multilpa()` fits LCA when the
-indicators are named in `categorical`; naming only some of them gives a mixed
-model with both kinds of indicator.
+item, instead of a mean and a variance. `multilca()` fits LCA, treating every
+indicator as categorical; `multilpa()` with some indicators named in
+`categorical` fits a mixed model with both kinds of indicator.
 
 ## What the package supports
 
@@ -54,7 +54,7 @@ since the previous prompt, and four items rate affect from 1 to 7. `day` is the
 study day, from 0 to 13. `?student_esm` gives the source.
 
 ```{r setup}
-library(multilpa)
+library(latents)
 ```
 
 To keep the example short, we call `subset()` with `day <= 6`, which keeps the
@@ -64,8 +64,8 @@ first week and all 100 students.
 first_week <- subset(student_esm, day <= 6)
 ```
 
-The eight activity items are named in two arguments of each fit, so we store
-their names once.
+The eight activity items are used in several fits, so we store their names
+once.
 
 ```{r activities}
 activities <- c("time_with_friends", "on_social_media", "tv_video_games",
@@ -75,15 +75,15 @@ activities <- c("time_with_friends", "on_social_media", "tv_video_games",
 
 ## Fitting the model
 
-To fit the model, we call `multilpa()` with `vars` for the indicators,
-`categorical` for the indicators to treat as categorical, `id` for the group,
-`n_profiles`, `n_group_classes`, `n_starts`, `seed`, and `tol` for a tighter
-convergence tolerance, which standard errors need.
+To fit the model, we call `multilca()` with `vars` for the categorical
+indicators, `id` for the group, `n_profiles`, `n_group_classes`, `n_starts`,
+`seed`, and `tol` for a tighter convergence tolerance, which standard errors
+need.
 
 ```{r lca}
-lca <- multilpa(first_week, vars = activities, categorical = activities,
-                id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 10, tol = 1e-10, seed = 1)
+lca <- multilca(first_week, vars = activities, id = "student",
+                n_profiles = 2, n_group_classes = 2, n_starts = 10,
+                tol = 1e-10, seed = 1)
 lca
 ```
 
@@ -158,9 +158,8 @@ enumerate_classes(first_week, vars = activities, categorical = activities,
                   n_group_classes = 1:2, seed = 1)  # compare numbers of classes (slow)
 plot(mixed)                                      # means of the continuous indicators
 plot(mixed, what = "responses")                  # answers to the categorical ones
-multilpa(first_week, vars = activities, categorical = activities,
-         id = "student", n_profiles = 2, n_group_classes = 2,
-         missing = "fiml")                       # incomplete answers, if any
+multilca(first_week, vars = activities, id = "student", n_profiles = 2,
+         n_group_classes = 2, missing = "fiml")  # incomplete answers, if any
 ```
 
 ## Assumptions

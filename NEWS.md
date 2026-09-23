@@ -1,3 +1,23 @@
+# latents 0.8.0
+
+## Package renamed
+
+* The package is renamed from multilpa to **latents**, a name that covers
+  latent profile, latent class and latent transition models and the planned
+  extensions. The model functions keep their names (`multilpa()`,
+  `multilca()`, `lta()`), as do the result classes. Condition classes now use
+  the `latents_` prefix (for example `latents_bad_argument`, previously
+  `multilpa_bad_argument`), `multilpa_plot_types()` is `plot_views()`,
+  and the conditions catalogue is `?"latents-conditions"`. The vignettes are
+  `vignette("lpa", package = "latents")`, `"evaluation"`, `"covariates"`,
+  `"lca"` and `"lta"`.
+
+## New features
+
+* `multilca()` fits a two-level latent class model: `multilpa()` with every
+  indicator categorical, so the items are named once. Mixed models remain
+  `multilpa(categorical = )`.
+
 # multilpa 0.7.0
 
 ## Behaviour changes

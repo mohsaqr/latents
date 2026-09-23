@@ -25,7 +25,7 @@
 \arguments{
 \item{x}{A fitted \code{multilpa} model.}
 
-\item{what}{Which view to draw. \code{\link[=multilpa_plot_types]{multilpa_plot_types()}} lists every value
+\item{what}{Which view to draw. \code{\link[=plot_views]{plot_views()}} lists every value
 with its group and a one-line description; the \code{"enumeration"} row it also
 lists belongs to \code{\link[=plot.multilpa_enumeration]{plot.multilpa_enumeration()}}, not to this method.
 
@@ -57,7 +57,7 @@ scaled to their own maximum, following the usual ridgeline convention, so
 ridge height compares shapes and not profile sizes; prevalence is printed
 in each profile's label instead. Both read the individual posteriors alone,
 so every family of this package can draw them; a one-profile fit refuses
-them with an error of class \code{multilpa_nothing_to_plot}, because every case
+them with an error of class \code{latents_nothing_to_plot}, because every case
 then belongs to the single profile with probability one. \code{"avepp"} draws
 the average posterior probability matrix: one row per assigned profile, one
 column per profile, each cell the mean posterior that group puts on that
@@ -134,8 +134,8 @@ plot(fit, what = "heatmap")
 plot(fit, what = "entropy")
 plot(fit, what = "sizes")
 plot(fit, what = "avepp")
-multilpa_plot_types()
+plot_views()
 }
 \seealso{
-\code{\link[=multilpa_plot_types]{multilpa_plot_types()}} for the catalogue of views.
+\code{\link[=plot_views]{plot_views()}} for the catalogue of views.
 }

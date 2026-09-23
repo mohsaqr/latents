@@ -99,7 +99,7 @@ dir.create(targets_dir, recursive = TRUE)
          get_results(fit, "residuals"),
        steps = steps,
        data = case$data,
-       multilpa_version = as.character(utils::packageVersion("multilpa")))
+       multilpa_version = as.character(utils::packageVersion("latents")))
 }
 
 #' Write lines with Windows line endings
@@ -174,7 +174,7 @@ dir.create(targets_dir, recursive = TRUE)
 #' @return The manifest's lines.
 .kit_manifest <- function(kit, syntax) {
   files <- setdiff(sort(list.files(kit)), "MANIFEST.txt")
-  c(sprintf("multilpa %s, R %s, built %s", utils::packageVersion("multilpa"),
+  c(sprintf("multilpa %s, R %s, built %s", utils::packageVersion("latents"),
             getRversion(), format(Sys.Date())),
     "",
     "Run order:",

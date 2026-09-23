@@ -49,7 +49,7 @@ writeLines(c(
   "",
   sprintf("Each model was estimated in batch as `%s`, from a directory inside the", command),
   "Wine drive. The kit that produced it was built by `make-kit.R` under multilpa",
-  sprintf("%s.", utils::packageVersion("multilpa")),
+  sprintf("%s.", utils::packageVersion("latents")),
   "",
   "## Why it is kept",
   "",

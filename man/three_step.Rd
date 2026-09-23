@@ -102,7 +102,7 @@ A cluster-robust variance is the sum of one outer product per independent
 unit, and those contributions sum to zero at the estimate, so it has rank
 at most one less than the number of units. With a single group it is
 exactly zero and with as many groups as classes it is singular. Both are
-refused with \code{multilpa_too_few_groups} rather than reported as a very
+refused with \code{latents_too_few_groups} rather than reported as a very
 small standard error; \code{vcov_type = "independent"} is the labelled way to
 ask for the unclustered variance instead.
 

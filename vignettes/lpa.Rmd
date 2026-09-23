@@ -36,7 +36,7 @@ generated them: `engagement` for each enrolment and `student_type` for each
 student.
 
 ```{r setup}
-library(multilpa)
+library(latents)
 ```
 
 ## Clustering within groups
@@ -193,7 +193,7 @@ BIC(fit)                             # BIC with the number of groups
 nobs(fit)                            # number of groups
 
 # Plots: plot(fit, what)
-multilpa_plot_types()                # every view and what it shows
+plot_views()                # every view and what it shows
 plot(fit, what = "bars")             # profile means with 95% intervals
 plot(fit, what = "heatmap")          # means in standard deviations
 plot(fit, what = "sizes")            # effective size of each profile

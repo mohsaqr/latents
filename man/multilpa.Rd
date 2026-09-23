@@ -39,17 +39,17 @@ multilpa(
 \item{id}{Name of the observed group identifier column. Character, factor, or
 numeric identifiers are supported; missing identifiers are not.
 
-\code{id} has no default: omitting it raises \code{multilpa_bad_argument}, because a
+\code{id} has no default: omitting it raises \code{latents_bad_argument}, because a
 forgotten grouping would otherwise be fitted as a different model without
 saying so. Passing \code{id = NULL} explicitly fits a \strong{single-level} model:
 the observations are treated as independent, each row is its own unit, and
-\code{n_group_classes} becomes one. That fit raises a \code{multilpa_single_level}
+\code{n_group_classes} becomes one. That fit raises a \code{latents_single_level}
 warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
 two-level model reduces to, and every verb of this package works on it. The
 unit column is fabricated internally as \code{.observation}; it is not returned
 by \code{get_results(x, "data")}, and a \code{data} that already has a column of that
-name raises \code{multilpa_bad_data}. Asking for more than one group class
-without an \code{id} raises \code{multilpa_bad_argument}, because one observation per
+name raises \code{latents_bad_data}. Asking for more than one group class
+without an \code{id} raises \code{latents_bad_argument}, because one observation per
 unit leaves no composition for a second-level class to differ in.}
 
 \item{n_profiles}{Positive integer number of individual profiles.}
@@ -111,7 +111,7 @@ indicators, or its columns after the categories, and each block is matched
 to the indicator and category its labels name, so a differently ordered
 \code{categorical} or a differently ordered set of factor levels cannot attach a
 distribution to the wrong item. A label naming an indicator or a category
-this fit does not have raises \code{multilpa_bad_start} rather than being
+this fit does not have raises \code{latents_bad_start} rather than being
 aligned by position.}
 
 \item{missing}{\code{"error"} rejects missing indicators; \code{"fiml"} maximizes the
@@ -163,7 +163,7 @@ the within-group structure. The offsets are kept on the fit, so
 \code{get_results(x, "data")} still returns the columns you supplied and every
 verb that checks row alignment still checks it. Centring removes exactly
 the between-unit variation, so \code{"person"} refuses with
-\code{multilpa_bad_data} when it leaves an indicator constant --- which is what
+\code{latents_bad_data} when it leaves an indicator constant --- which is what
 happens when a unit has one observation of it. With \code{"person"} the group
 classes become types of \emph{change pattern}, not types of unit.}
 
@@ -199,7 +199,7 @@ Parameter counts match \code{mclust}'s own for all fourteen.
 Anything other than EEI, VVI, EEE or VVV is maximized across every profile
 at once, so it cannot be combined with a held \code{variances} block, and
 \code{parameter_inference(method = "wald")} refuses it with
-\code{multilpa_unsupported_inference}: the free coordinates are log variances,
+\code{latents_unsupported_inference}: the free coordinates are log variances,
 which is the wrong chart for a constrained volume, shape or orientation.
 \code{parameter_inference(method = "bootstrap")} reports all fourteen: it
 resamples groups and refits inside the same family, so it needs no chart.}
@@ -268,4 +268,7 @@ get_results(fit, what = "profile_probabilities")
 Vermunt, J. K. (2003). Multilevel latent class models.
 Sociological Methodology, 33, 213--239.
 doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+}
+\seealso{
+\code{\link[=multilca]{multilca()}} for a model in which every indicator is categorical.
 }

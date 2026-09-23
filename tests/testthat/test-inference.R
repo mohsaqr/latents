@@ -70,38 +70,38 @@ test_that("inference refuses data mismatches and nonregular fits", {
   expect_equal(vcov(fit), vcov(fit, dat))
   expect_equal(vcov(fit), vcov(fit, data = get_results(fit, "data")))
   expect_error(parameter_inference(fit, dat[-1, ]),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   altered <- dat
   altered$y[1] <- altered$y[1] + 1
   expect_error(parameter_inference(fit, altered),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   if (!is.null(fit$indicator_data)) {
     altered <- dat
     altered$y[1:2] <- rev(altered$y[1:2])
     expect_error(parameter_inference(fit, altered),
-                 class = "multilpa_bad_inference_data")
+                 class = "latents_bad_inference_data")
   }
   older_fit <- fit
   older_fit$indicator_data <- NULL
   expect_equal(parameter_inference(older_fit, dat)$standard_error,
     parameter_inference(fit, dat)$standard_error)
   expect_error(parameter_inference(fit, dat[100:1, ]),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   altered <- dat
   altered$y[1] <- Inf
   expect_error(parameter_inference(fit, altered),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   altered$y[1] <- NA_real_
   expect_error(parameter_inference(fit, altered),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   altered_fit <- fit
   altered_fit$converged <- FALSE
   expect_error(parameter_inference(altered_fit, dat),
-               class = "multilpa_no_converge")
+               class = "latents_no_converge")
   altered_fit <- fit
   altered_fit$boundary <- TRUE
   expect_error(parameter_inference(altered_fit, dat),
-               class = "multilpa_boundary_fit")
+               class = "latents_boundary_fit")
   expect_error(parameter_inference(fit, dat, step = 0))
   expect_error(parameter_inference(fit, dat, level = 0))
   # Identical components are an intentionally unidentified mixture.
@@ -112,7 +112,7 @@ test_that("inference refuses data mismatches and nonregular fits", {
   repeated_fit$variances <- rbind(fit$variances, fit$variances)
   repeated_fit$profile_probabilities <- matrix(c(0.5, 0.5), 1L)
   expect_error(parameter_inference(repeated_fit, dat),
-               class = "multilpa_singular_information")
+               class = "latents_singular_information")
 })
 
 test_that("full-covariance inference matches analytic multivariate Gaussian information", {

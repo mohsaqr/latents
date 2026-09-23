@@ -38,7 +38,7 @@ test_that("a reordered frame is refused rather than silently misaligned", {
   fit <- .aligned_fit(data)
   reversed <- data[rev(seq_len(nrow(data))), , drop = FALSE]
   expect_error(get_results(fit, "assignments", data = reversed),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 
   # A permutation within the fitted group order is caught by the indicators,
   # not by the identifier, so the check is not merely a group-order check.
@@ -46,7 +46,7 @@ test_that("a reordered frame is refused rather than silently misaligned", {
   shuffled <- data
   shuffled$a <- sample(data$a)
   expect_error(get_results(fit, "assignments", data = shuffled),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 })
 
 test_that("a frame with no column of the fit warns that it cannot be checked", {
@@ -55,7 +55,7 @@ test_that("a frame with no column of the fit warns that it cannot be checked", {
   # Nothing here can be compared with the fit, so the row order is assumed;
   # saying so is the contract, and it is a warning rather than silence.
   expect_warning(get_results(fit, "assignments", data = data.frame(outcome = data$outcome)),
-                 class = "multilpa_unverified_alignment")
+                 class = "latents_unverified_alignment")
 })
 
 test_that("repeated group IDs alone cannot verify within-group order", {
@@ -63,7 +63,7 @@ test_that("repeated group IDs alone cannot verify within-group order", {
   fit <- .aligned_fit(data)
   thin <- data[c("g", "outcome")]
   expect_warning(get_results(fit, "assignments", data = thin),
-                 class = "multilpa_unverified_alignment")
+                 class = "latents_unverified_alignment")
   expect_silent(get_results(fit, "assignments", data = data))
 })
 
@@ -71,9 +71,9 @@ test_that("the row-count contract is unchanged", {
   data <- .aligned_data()
   fit <- .aligned_fit(data)
   # A wrong number of rows is a data contract failure, not a model-nesting one;
-  # `multilpa_bad_nesting` is reserved for comparing two models.
+  # `latents_bad_nesting` is reserved for comparing two models.
   expect_error(get_results(fit, "assignments", data = head(data, 10L)),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 })
 
 test_that("bivariate residuals accept the fitted frame and refuse another order", {
@@ -88,9 +88,9 @@ test_that("bivariate residuals accept the fitted frame and refuse another order"
 
   reversed <- data[rev(seq_len(nrow(data))), , drop = FALSE]
   expect_error(get_results(fit, "residuals", data = reversed),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
   expect_error(get_results(fit, "residuals", data = reversed, by = "overall"),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 })
 
 test_that("starting values carry the labels a categorical block is held by", {
@@ -128,7 +128,7 @@ test_that("starting values carry the labels a categorical block is held by", {
   expect_error(multilpa(data, items, "g", n_profiles = 2, n_group_classes = 1,
                         categorical = items, fixed = "measurement",
                         start = mislabelled, n_starts = 1, seed = 1),
-               class = "multilpa_bad_start")
+               class = "latents_bad_start")
 
   # The tidy view reports the labels the start carries, matching what the fitted
   # object's own response table reports for the same quantity.

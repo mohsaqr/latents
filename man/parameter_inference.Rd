@@ -101,7 +101,7 @@ is a fresh fit, so \code{n_starts} buys the same protection against a local
 maximum here as it does in \code{\link[=multilpa]{multilpa()}}, at the same multiple of the cost.}
 
 \item{seed}{Optional seed for the resampling: any whole number \code{set.seed()}
-accepts; a fraction raises \code{multilpa_bad_argument}. The stream is restored on exit,
+accepts; a fraction raises \code{latents_bad_argument}. The stream is restored on exit,
 so a seeded call leaves the caller's random state exactly as it found it.}
 }
 \value{
@@ -186,22 +186,22 @@ standard error together will reveal.
 }
 \section{Conditions}{
 
-\code{multilpa_no_converge} for an unconverged fit, \code{multilpa_boundary_fit} when
+\code{latents_no_converge} for an unconverged fit, \code{latents_boundary_fit} when
 a variance, a response probability or a mixing probability sits at its
-bound, \code{multilpa_singular_information} when the observed information cannot
-be inverted, \code{multilpa_no_free_parameters} when \code{fixed} held every
-parameter, \code{multilpa_bad_inference_data} when a supplied \code{data} does not
-reproduce the fit, and \code{multilpa_too_few_groups} for \code{vcov_type = "robust"}
+bound, \code{latents_singular_information} when the observed information cannot
+be inverted, \code{latents_no_free_parameters} when \code{fixed} held every
+parameter, \code{latents_bad_inference_data} when a supplied \code{data} does not
+reproduce the fit, and \code{latents_too_few_groups} for \code{vcov_type = "robust"}
 with fewer independent groups than reported parameters. A fit whose score
-is still far from zero is reported with a \code{multilpa_unconverged} warning
+is still far from zero is reported with a \code{latents_unconverged} warning
 rather than refused.
 
-\code{method = "bootstrap"} adds \code{multilpa_unsupported_inference} for a fit that
+\code{method = "bootstrap"} adds \code{latents_unsupported_inference} for a fit that
 holds a measurement block --- the held values came from another fit and
 resampling these data does not resample them --- and
-\code{multilpa_bootstrap_failed} when fewer than two resamples produced a usable
+\code{latents_bootstrap_failed} when fewer than two resamples produced a usable
 fit, whose message carries the first reason one gave. Resamples that fail
-or do not converge are dropped with a \code{multilpa_bootstrap_dropped} warning
+or do not converge are dropped with a \code{latents_bootstrap_dropped} warning
 naming how many, rather than being silently left out of the count.
 }
 

@@ -54,7 +54,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       "`model` names %s, which this package does not fit. It has %s.",
       paste(sprintf("`%s`", unknown), collapse = ", "),
       paste(.multilpa_structures(), collapse = ", ")),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   # Every name this guard used to reject is now a formal, so R refuses the call
   # with "matched by multiple actual arguments" before `...` is assembled.
@@ -69,7 +69,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       "%s %s not an argument of multilpa().%s",
       paste(sprintf("`%s`", unknown_arguments), collapse = ", "),
       if (length(unknown_arguments) == 1L) "is" else "are", hint),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   # `NA` stands for "whatever the other arguments already said", so a grid
   # without `model` is the grid this verb has always fitted.
@@ -127,14 +127,14 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' @param model The covariance model identifying the candidate, needed when
 #'   [enumerate_classes()] was given several `model`s and the class counts
 #'   alone name several candidates. Naming counts that match more than one
-#'   candidate raises `multilpa_unknown_candidate` listing the models it could
+#'   candidate raises `latents_unknown_candidate` listing the models it could
 #'   have meant.
 #' @return The fitted model for that cell of the grid: an object of class
 #'   `multilpa`, exactly as [multilpa()] returned it, with every verb of this
 #'   package available on it.
 #' @section Conditions:
-#'   `multilpa_unknown_candidate` when the requested class counts are not in
-#'   the grid, and `multilpa_failed_candidate` when they are in the grid but
+#'   `latents_unknown_candidate` when the requested class counts are not in
+#'   the grid, and `latents_failed_candidate` when they are in the grid but
 #'   that fit raised an error, so no model exists to return. Neither situation
 #'   returns `NULL`, because a `NULL` would flow silently into whatever the
 #'   caller did next.
@@ -176,19 +176,19 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
     stop(errorCondition(sprintf(paste(
       "%d candidates have %s: %s. Name one with `model`."),
       length(at), described, paste(grid$model[at], collapse = ", ")),
-      class = "multilpa_unknown_candidate", call = NULL))
+      class = "latents_unknown_candidate", call = NULL))
   }
   if (length(at) != 1L) {
     stop(errorCondition(sprintf("No candidate with %s was enumerated.",
                                 described),
-                        class = "multilpa_unknown_candidate", call = NULL))
+                        class = "latents_unknown_candidate", call = NULL))
   }
   fit <- x$fits[[at]]
   if (is.null(fit)) {
     stop(errorCondition(sprintf(
       "The candidate with %s could not be fitted: %s", described,
       grid$error[at]),
-      class = "multilpa_failed_candidate", call = NULL))
+      class = "latents_failed_candidate", call = NULL))
   }
   fit
 }
@@ -307,7 +307,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
 #' @param x An object of class `summary_multilpa_enumeration`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: one row per candidate model in the grid.
 #' @seealso [get_results()] for every other table this summary holds.
@@ -423,7 +423,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' @return A list with `start`, the `multilpa_start` carrying the held
 #'   measurement values (`NULL` when nothing is held), and `fixed`, the
 #'   character vector of held block names (`character(0)` when nothing is
-#'   held). Raises `multilpa_bad_nesting` when the two constrained models are
+#'   held). Raises `latents_bad_nesting` when the two constrained models are
 #'   not nested.
 #' @noRd
 .multilpa_bootstrap_constraint <- function(null_model, alternative_model) {
@@ -441,7 +441,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
       "One model holds measurement blocks fixed and the other estimates them,",
       "so the smaller is not nested in the larger. Fit both with the same",
       "`fixed` specification, or neither."),
-      class = "multilpa_bad_nesting", call = NULL))
+      class = "latents_bad_nesting", call = NULL))
   }
   if (!identical(sort(held_null), sort(held_alternative))) {
     stop(errorCondition(sprintf(paste(
@@ -449,7 +449,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
       "they are not nested. Give both the same `fixed` specification."),
       paste(sprintf("\"%s\"", sort(held_null)), collapse = ", "),
       paste(sprintf("\"%s\"", sort(held_alternative)), collapse = ", ")),
-      class = "multilpa_bad_nesting", call = NULL))
+      class = "latents_bad_nesting", call = NULL))
   }
   if (!identical(null_model$n_profiles, alternative_model$n_profiles)) {
     stop(errorCondition(sprintf(paste(
@@ -458,7 +458,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
       "the alternative. Compare models that differ by one group class, or",
       "refit both without `fixed`."),
       null_model$n_profiles, alternative_model$n_profiles),
-      class = "multilpa_bad_nesting", call = NULL))
+      class = "latents_bad_nesting", call = NULL))
   }
   covariance_model <- null_model$covariance_model %||% "diagonal"
   start <- starting_values(null_model, what = "measurement")
@@ -472,14 +472,14 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
       "The models hold the same blocks at different values, so they are not",
       "nested: %s. Hold both at one measurement solution, as fit_staged()",
       "does."), paste(agreement, collapse = "; ")),
-      class = "multilpa_bad_nesting", call = NULL))
+      class = "latents_bad_nesting", call = NULL))
   }
   if (alternative_model$n_parameters <= null_model$n_parameters) {
     stop(errorCondition(sprintf(paste(
       "The alternative must estimate more free parameters than the null; with",
       "this constraint it estimates %d against %d."),
       alternative_model$n_parameters, null_model$n_parameters),
-      class = "multilpa_bad_nesting", call = NULL))
+      class = "latents_bad_nesting", call = NULL))
   }
   list(start = start, fixed = held_null)
 }
@@ -505,15 +505,15 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' not propagated. A constrained pair whose nesting cannot be established is
 #' refused rather than given a p-value.
 #' @section Conditions:
-#'   `multilpa_bad_nesting` when only one of the two models holds measurement
+#'   `latents_bad_nesting` when only one of the two models holds measurement
 #'   blocks fixed, when they hold different blocks, when they hold the same
 #'   blocks at different values, when they hold a measurement fixed while
 #'   differing in the number of profiles (the held blocks then have different
 #'   shapes, so the null is not a restriction of the alternative), or when the
 #'   alternative does not estimate more free parameters than the null.
-#'   `multilpa_failed_replicates` is warned when some replicate fails
+#'   `latents_failed_replicates` is warned when some replicate fails
 #'   validation, and the p-value is `NA`.
-#'   `multilpa_unsupported_bootstrap` refuses person-centred fits, for which
+#'   `latents_unsupported_bootstrap` refuses person-centred fits, for which
 #'   this simulator has no group-baseline distribution.
 #' @param null_model Smaller, converged [multilpa()] model on complete data.
 #' @param alternative_model Larger model fitted to exactly the same data.
@@ -587,19 +587,19 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       !identical(structure_for(null_model), structure_for(alternative_model)) ||
       !identical(centering_for(null_model), centering_for(alternative_model))) {
     stop(errorCondition("Models must use the same observations, group layout, covariance structure and centering mode.",
-        class = "multilpa_incomparable_models", call = NULL))
+        class = "latents_incomparable_models", call = NULL))
   }
   if (identical(centering_for(null_model), "person")) {
     stop(errorCondition(paste(
       "A person-centred fit removes each group's baseline, but this bootstrap",
       "does not model those baselines for simulation. Compare fits without",
       "person centering."),
-      class = "multilpa_unsupported_bootstrap", call = NULL))
+      class = "latents_unsupported_bootstrap", call = NULL))
   }
   delta <- c(alternative_model$n_profiles - null_model$n_profiles,
              alternative_model$n_group_classes - null_model$n_group_classes)
   if (!all(delta >= 0) || sum(delta) != 1) stop(errorCondition("Models must differ by exactly one class at one level.",
-        class = "multilpa_bad_nesting", call = NULL))
+        class = "latents_bad_nesting", call = NULL))
   # The observed statistic compares two constrained fits whenever the models
   # hold measurement blocks fixed, so every replicate must be refitted under
   # the same constraint or the reference distribution belongs to a different
@@ -610,42 +610,42 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     if (!isTRUE(model$converged) || isTRUE(model$boundary)) {
       stop(errorCondition(
         "Original models must be converged with inactive variance bounds.",
-        class = "multilpa_no_converge", call = NULL))
+        class = "latents_no_converge", call = NULL))
     }
     if (!all(c(model$vars, model$id) %in% names(data)) ||
         nrow(data) != model$n_observations ||
         !identical(data[[model$id]], model$group_values[model$group_index])) {
       stop(errorCondition("data must preserve the original observations and group ordering.",
-        class = "multilpa_bad_inference_data", call = NULL))
+        class = "latents_bad_inference_data", call = NULL))
     }
     continuous <- .multilpa_continuous_names(model)
     x <- if (length(continuous) == 0L) matrix(numeric(0), nrow(data), 0L) else
       .multilpa_center_like(null_model, as.matrix(data[continuous]))
     if (!is.numeric(x) || any(!is.finite(x))) stop(errorCondition("Bootstrap currently requires complete finite indicators.",
-        class = "multilpa_bad_data", call = NULL))
+        class = "latents_bad_data", call = NULL))
     if (!is.null(model$indicator_data) && length(continuous) > 0L &&
         !identical(x, model$indicator_data)) {
       stop(errorCondition("data must reproduce the original indicator data and row order.",
-        class = "multilpa_bad_inference_data", call = NULL))
+        class = "latents_bad_inference_data", call = NULL))
     }
     encoded <- if (length(model$categorical %||% character()) == 0L) NULL else
       .multilpa_encode_categorical(data[, model$categorical, drop = FALSE])
     codes <- encoded$codes
     if (anyNA(codes)) stop(errorCondition("Bootstrap currently requires complete finite indicators.",
-        class = "multilpa_bad_data", call = NULL))
+        class = "latents_bad_data", call = NULL))
     if (!is.null(encoded) && !identical(encoded$levels, model$categorical_levels)) {
       stop(errorCondition("data must reproduce the original categorical levels and coding.",
-        class = "multilpa_bad_inference_data", call = NULL))
+        class = "latents_bad_inference_data", call = NULL))
     }
     if (!is.null(codes) && !identical(unname(codes), unname(model$categorical_data))) {
       stop(errorCondition("data must reproduce the original categorical indicators and row order.",
-        class = "multilpa_bad_inference_data", call = NULL))
+        class = "latents_bad_inference_data", call = NULL))
     }
     likelihood <- .multilpa_expectation(x, model$group_index, model,
                                         codes)$log_likelihood
     if (abs(likelihood - model$log_likelihood) > 1e-7 * (1 + abs(likelihood))) {
       stop(errorCondition("data do not reproduce the fitted model likelihood.",
-        class = "multilpa_bad_inference_data", call = NULL))
+        class = "latents_bad_inference_data", call = NULL))
     }
   }))
   # How far below zero a statistic may dip and still be convergence noise rather
@@ -663,7 +663,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       paste("Alternative has lower likelihood by %.3g, beyond the %.3g that",
             "`tol = %.3g` can explain; improve its optimization first."),
       -observed, reversal_window, tol),
-      class = "multilpa_reversed_likelihood", call = NULL))
+      class = "latents_reversed_likelihood", call = NULL))
   }
   observed <- max(0, observed)
   replicates <- do.call(rbind, lapply(seq_len(iter), function(i) {
@@ -718,7 +718,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     warning(warningCondition(paste(
       "Some bootstrap fits failed validation, so p_value is NA.",
       "summary() reports every replicate; improve fitting and rerun."),
-      class = "multilpa_failed_replicates"))
+      class = "latents_failed_replicates"))
   }
   result <- list(statistic = observed, p_value = p_value,
        monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (iter + 1)) else NA_real_,
@@ -883,7 +883,7 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
 #' @param x An object of class `multilpa_bootstrap_lrt`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped, because `what =` used to live on
 #'   this generic and silently returning the primary table instead of the one
 #'   that was asked for is the one outcome worth refusing.
@@ -918,7 +918,7 @@ as.data.frame.multilpa_bootstrap_lrt <- function(x, row.names = NULL, optional =
 #' @param x An object of class `summary_multilpa_bootstrap_lrt`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: the one-row test result.
 #' @seealso [get_results()] for every other table this summary holds.
@@ -957,7 +957,7 @@ as.data.frame.summary_multilpa_bootstrap_lrt <- function(x, row.names = NULL, op
 #' @param ... Further named visual constants, merged into `style`.
 #' @return The input, invisibly. Called for the side effect of drawing.
 #' @section Conditions:
-#'   `multilpa_nothing_to_plot` when no replicate produced a finite statistic.
+#'   `latents_nothing_to_plot` when no replicate produced a finite statistic.
 #' @examples
 #' set.seed(1)
 #' example_data <- data.frame(
@@ -983,7 +983,7 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
   if (length(values) == 0L) {
     stop(errorCondition(
       "No replicate produced a finite statistic; there is nothing to plot.",
-      class = "multilpa_nothing_to_plot", call = NULL))
+      class = "latents_nothing_to_plot", call = NULL))
   }
   style <- utils::modifyList(style, list(...))
   colours <- if (is.null(palette)) .multilpa_palette(2L) else

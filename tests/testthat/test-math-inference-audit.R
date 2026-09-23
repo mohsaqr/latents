@@ -46,7 +46,7 @@ test_that("all-categorical full covariance inference has no Gaussian parameters"
   renamed <- dat
   renamed$u <- letters[dat$u]
   expect_error(parameter_inference(fits[[1]], renamed),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 })
 
 test_that("full covariance inference is invariant to indicator units", {
@@ -81,7 +81,7 @@ test_that("covariate inference supports empty membership coefficient blocks", {
   dat <- data.frame(g = rep(seq_len(30), each = 8), y = rnorm(240, 3, 2))
   # The covariate estimator with no covariates, which `multilpa()` cannot be
   # asked for: naming no covariate requests the covariate-free model.
-  fit <- multilpa:::.multilpa_fit_covariates(dat, "y", "g", 1, 1, n_starts = 1)
+  fit <- latents:::.multilpa_fit_covariates(dat, "y", "g", 1, 1, n_starts = 1)
   information <- parameter_inference(fit, dat)
   variance <- mean((dat$y - mean(dat$y))^2)
   expect_equal(information$estimate, c(mean(dat$y), variance))
@@ -100,7 +100,7 @@ test_that("covariate inference supports empty membership coefficient blocks", {
                ignore_attr = TRUE, tolerance = 1e-7)
 
   dat$y <- dat$y * 1e6
-  scaled_fit <- multilpa:::.multilpa_fit_covariates(dat, "y", "g", 1, 1, n_starts = 1)
+  scaled_fit <- latents:::.multilpa_fit_covariates(dat, "y", "g", 1, 1, n_starts = 1)
   scaled <- parameter_inference(scaled_fit, dat)
   expect_equal(scaled$standard_error / c(1e6, 1e12), information$standard_error,
                tolerance = 1e-7)
@@ -125,7 +125,7 @@ test_that("covariate inference refuses nonregular fits and altered fitting data"
   few_groups <- fit
   few_groups$n_groups <- fit$n_parameters
   expect_error(parameter_inference(few_groups, dat, vcov_type = "robust"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   wrong_group <- dat
   wrong_group$g[1] <- 2L
   wrong_covariate <- dat
@@ -134,7 +134,7 @@ test_that("covariate inference refuses nonregular fits and altered fitting data"
   wrong_indicator$y[1:2] <- rev(wrong_indicator$y[1:2])
   invisible(lapply(list(wrong_group, wrong_covariate, wrong_indicator, dat[-1, ]),
     function(wrong) {
-      expect_error(parameter_inference(fit, wrong), class = "multilpa_bad_inference_data")
+      expect_error(parameter_inference(fit, wrong), class = "latents_bad_inference_data")
     }))
 
   # Changing predictor units rescales only that coefficient and its error.

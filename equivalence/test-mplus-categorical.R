@@ -10,10 +10,10 @@ test_that("thresholds and their standard errors reproduce a genuine Mplus run", 
   fixture <- readRDS(equivalence_fixture("mplus", "twolevel-categorical.rds"))
   fit <- .categorical_fit(fixture$data)
   inference <- parameter_inference(fit, fixture$data)
-  theta <- multilpa:::.multilpa_coefficients(fit, "unconstrained")
+  theta <- latents:::.multilpa_coefficients(fit, "unconstrained")
   # The tidy decomposition is the canonical one, so the block is selected by
   # its `parameter` column rather than by parsing a name back apart.
-  labels <- multilpa:::.multilpa_coefficient_labels(fit, "unconstrained")
+  labels <- latents:::.multilpa_coefficient_labels(fit, "unconstrained")
   logits <- which(labels$parameter == "response_logit")
   errors <- sqrt(diag(attr(inference, "covariance_unconstrained")))[logits]
 

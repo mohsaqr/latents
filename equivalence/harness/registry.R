@@ -285,9 +285,9 @@ require_suite_files <- function(..., reason = NULL) {
 check_validation_api <- function(root = ".", paths = NULL) {
   stopifnot("multilpa must be loaded before its signatures can be checked" =
               "multilpa" %in% loadedNamespaces())
-  verbs <- getNamespaceExports("multilpa")
+  verbs <- getNamespaceExports("latents")
   verbs <- verbs[vapply(verbs, function(name) {
-    is.function(get(name, envir = asNamespace("multilpa")))
+    is.function(get(name, envir = asNamespace("latents")))
   }, logical(1))]
   if (is.null(paths)) {
     # Both trees call the package's verbs: the equivalence material and what
@@ -303,7 +303,7 @@ check_validation_api <- function(root = ".", paths = NULL) {
                       stringsAsFactors = FALSE)
   if (is.null(used) || nrow(used) == 0L) return(rbind(empty, removed))
   known <- vapply(seq_len(nrow(used)), function(index) {
-    formal_names <- names(formals(get(used$call[[index]], envir = asNamespace("multilpa"))))
+    formal_names <- names(formals(get(used$call[[index]], envir = asNamespace("latents"))))
     argument <- used$argument[[index]]
     dots <- match("...", formal_names)
     # Arguments before `...` may be abbreviated, exactly as R matches them;
@@ -344,7 +344,7 @@ check_validation_api <- function(root = ".", paths = NULL) {
                    stale$replacement)
   stop(errorCondition(
     paste(c(sprintf("%d validation call site(s) do not match multilpa %s:",
-                    nrow(stale), utils::packageVersion("multilpa")),
+                    nrow(stale), utils::packageVersion("latents")),
             lines), collapse = "\n"),
     class = "multilpa_stale_validation_api", stale = stale, call = NULL))
 }
@@ -548,7 +548,7 @@ run_equivalence <- function(suites = NULL, root = ".", check_api = TRUE) {
     writeLines(paste(basename(sources), tools::md5sum(sources)), manifest)
     unname(tools::md5sum(manifest))
   }
-  version <- tryCatch(as.character(utils::packageVersion("multilpa")),
+  version <- tryCatch(as.character(utils::packageVersion("latents")),
                       error = function(condition) {
                         # The DESCRIPTION is the only place the version lives;
                         # if it cannot be read, say so rather than invent one.
@@ -603,7 +603,7 @@ equivalence_provenance <- function(run, component = "multilpa") {
     stop(errorCondition(
       sprintf("`component` must be one of: %s",
               paste(run$session$component, collapse = ", ")),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   run$session$value[[matched]]
 }

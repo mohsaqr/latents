@@ -287,7 +287,7 @@
           as.integer(n_indicators), as.integer(n_profiles))) || any(!is.finite(covariances))) {
       stop(errorCondition(
       "start$covariances must be a finite indicators x indicators x profiles array.",
-      class = "multilpa_bad_start", call = NULL))
+      class = "latents_bad_start", call = NULL))
     }
     invisible(lapply(seq_len(n_profiles), function(profile) {
       covariance <- matrix(covariances[, , profile], n_indicators, n_indicators)
@@ -295,11 +295,11 @@
           min(eigen(covariance, symmetric = TRUE, only.values = TRUE)$values) < min_variance * (1 - 1e-8)) {
         stop(errorCondition(
           "Starting covariances must be symmetric with eigenvalues at least min_variance.",
-          class = "multilpa_bad_start", call = NULL))
+          class = "latents_bad_start", call = NULL))
       }
       if (variance_model == "equal" && max(abs(covariance - covariances[, , 1L])) > 1e-12) {
         stop(errorCondition("Starting covariances must be equal across profiles.",
-                            class = "multilpa_bad_start", call = NULL))
+                            class = "latents_bad_start", call = NULL))
       }
     }))
     variances <- t(matrix(vapply(seq_len(n_profiles), function(profile) {
@@ -307,7 +307,7 @@
     }, numeric(n_indicators)), n_indicators, n_profiles))
     if (!is.null(start$variances) && !isTRUE(all.equal(unname(start$variances), variances, tolerance = 1e-12))) {
       stop(errorCondition("Starting variances must agree with covariance diagonals.",
-                          class = "multilpa_bad_start", call = NULL))
+                          class = "latents_bad_start", call = NULL))
     }
     start$variances <- variances
     start$covariances <- NULL
@@ -323,7 +323,7 @@
   if (!setequal(names(start), required) || anyDuplicated(names(start))) {
     stop(errorCondition(sprintf("start must contain exactly %s.",
                                 paste(required, collapse = ", ")),
-                        class = "multilpa_bad_start", call = NULL))
+                        class = "latents_bad_start", call = NULL))
   }
   dimensions <- list(means = c(n_profiles, n_indicators),
                      variances = c(n_profiles, n_indicators),
@@ -336,18 +336,18 @@
       stop(errorCondition(sprintf(
         "start$%s must be a finite numeric matrix with dimensions %s.",
         field, paste(dimensions[[field]], collapse = " x ")),
-        class = "multilpa_bad_start", call = NULL))
+        class = "latents_bad_start", call = NULL))
     }
   }))
   if (any(start$variances < min_variance)) {
     stop(errorCondition("start$variances must be at least min_variance.",
-                        class = "multilpa_bad_start", call = NULL))
+                        class = "latents_bad_start", call = NULL))
   }
   if (variance_model == "equal" &&
       any(abs(sweep(start$variances, 2L, start$variances[1L, ], "-")) > 1e-12)) {
     stop(errorCondition(
       "start$variances must be equal across profiles for variance_model = 'equal'.",
-      class = "multilpa_bad_start", call = NULL))
+      class = "latents_bad_start", call = NULL))
   }
   group_probabilities <- start$group_probabilities
   if (!is.numeric(group_probabilities) || !is.null(dim(group_probabilities)) ||
@@ -357,7 +357,7 @@
       any(abs(rowSums(start$profile_probabilities) - 1) > 1e-8)) {
     stop(errorCondition(
       "Starting probabilities must be strictly positive and sum to one (within each profile-probability row).",
-      class = "multilpa_bad_start", call = NULL))
+      class = "latents_bad_start", call = NULL))
   }
   # Normalize only roundoff admitted by the validation tolerance.
   result <- list(means = unname(start$means), variances = unname(start$variances),
@@ -396,7 +396,7 @@
 #' @param levels Named list of category labels per indicator, in code order, or
 #'   `NULL` to align the blocks only.
 #' @return The block list, unnamed, in this fit's item order with each block's
-#'   columns in this fit's category order. Raises `multilpa_bad_start` when a
+#'   columns in this fit's category order. Raises `latents_bad_start` when a
 #'   supplied label cannot be aligned.
 #' @noRd
 .multilpa_align_response_start <- function(response_probabilities, categorical,
@@ -414,7 +414,7 @@
         "start$response_probabilities is labelled %s, but this fit's categorical indicators are %s.",
         paste(sprintf("\"%s\"", block_names), collapse = ", "),
         paste(sprintf("\"%s\"", categorical), collapse = ", ")),
-        class = "multilpa_bad_start", call = NULL))
+        class = "latents_bad_start", call = NULL))
     }
     response_probabilities <- response_probabilities[categorical]
   }
@@ -431,7 +431,7 @@
         paste(sprintf("\"%s\"", observed), collapse = ", "),
         categorical[[index]],
         paste(sprintf("\"%s\"", wanted), collapse = ", ")),
-        class = "multilpa_bad_start", call = NULL))
+        class = "latents_bad_start", call = NULL))
     }
     block[, match(wanted, observed), drop = FALSE]
   }))
@@ -452,7 +452,7 @@
       length(response_probabilities) != length(n_categories)) {
     stop(errorCondition(sprintf(
       "start$response_probabilities must be a list of %d matrices, one per categorical indicator.",
-      length(n_categories)), class = "multilpa_bad_start", call = NULL))
+      length(n_categories)), class = "latents_bad_start", call = NULL))
   }
   unname(lapply(seq_along(n_categories), function(indicator) {
     block <- response_probabilities[[indicator]]
@@ -463,12 +463,12 @@
       stop(errorCondition(sprintf(
         "start$response_probabilities[[%d]] must be a finite numeric %d x %d matrix.",
         indicator, n_profiles, n_categories[[indicator]]),
-        class = "multilpa_bad_start", call = NULL))
+        class = "latents_bad_start", call = NULL))
     }
     if (any(block < 0) || any(abs(rowSums(block) - 1) > 1e-8)) {
       stop(errorCondition(sprintf(
         "start$response_probabilities[[%d]] rows must be nonnegative and sum to one.",
-        indicator), class = "multilpa_bad_start", call = NULL))
+        indicator), class = "latents_bad_start", call = NULL))
     }
     bounded <- t(apply(block / rowSums(block), 1L, .multilpa_bound_probabilities,
                        min_probability = min_probability))
@@ -547,7 +547,7 @@
   values <- data[[time]]
   if (anyNA(values)) {
     stop(errorCondition("`time` must not contain missing values.",
-                        class = "multilpa_bad_time", call = NULL))
+                        class = "latents_bad_time", call = NULL))
   }
   # split() first converts numeric keys to factor labels, which can collapse
   # distinct numeric identifiers that print identically. Match the native keys.
@@ -557,7 +557,7 @@
   if (duplicated_within) {
     stop(errorCondition(
       "`time` must be unique within each group; a position cannot occur twice.",
-      class = "multilpa_bad_time", call = NULL))
+      class = "latents_bad_time", call = NULL))
   }
   values
 }
@@ -588,7 +588,7 @@
       "`id = NULL` gives every observation its own unit and names that unit",
       "`%s`, which these data already have as a column. Rename it, or pass it",
       "as `id` if it is the nesting unit."), name),
-      class = "multilpa_bad_data", call = NULL))
+      class = "latents_bad_data", call = NULL))
   }
   if (!is.null(n_group_classes) && !isTRUE(as.integer(n_group_classes) == 1L)) {
     stop(errorCondition(sprintf(paste(
@@ -597,13 +597,13 @@
       "`n_group_classes = %s` has nothing to estimate. Pass `id` to fit group",
       "classes, or leave `n_group_classes` alone for a single-level fit."),
       format(n_group_classes)),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   warning(warningCondition(paste(
     "`id = NULL` fits a single-level model: every observation is its own unit",
     "and no second level is estimated. This package exists for the two-level",
     "model; pass the nesting column as `id` to fit it."),
-    class = "multilpa_single_level", call = NULL))
+    class = "latents_single_level", call = NULL))
   data[[name]] <- seq_len(nrow(data))
   list(data = data, id = name, n_group_classes = 1L)
 }
@@ -622,17 +622,17 @@
 #' @param id Name of the observed group identifier column. Character, factor, or
 #'   numeric identifiers are supported; missing identifiers are not.
 #'
-#'   `id` has no default: omitting it raises `multilpa_bad_argument`, because a
+#'   `id` has no default: omitting it raises `latents_bad_argument`, because a
 #'   forgotten grouping would otherwise be fitted as a different model without
 #'   saying so. Passing `id = NULL` explicitly fits a **single-level** model:
 #'   the observations are treated as independent, each row is its own unit, and
-#'   `n_group_classes` becomes one. That fit raises a `multilpa_single_level`
+#'   `n_group_classes` becomes one. That fit raises a `latents_single_level`
 #'   warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
 #'   two-level model reduces to, and every verb of this package works on it. The
 #'   unit column is fabricated internally as `.observation`; it is not returned
 #'   by `get_results(x, "data")`, and a `data` that already has a column of that
-#'   name raises `multilpa_bad_data`. Asking for more than one group class
-#'   without an `id` raises `multilpa_bad_argument`, because one observation per
+#'   name raises `latents_bad_data`. Asking for more than one group class
+#'   without an `id` raises `latents_bad_argument`, because one observation per
 #'   unit leaves no composition for a second-level class to differ in.
 #' @param n_profiles Positive integer number of individual profiles.
 #' @param n_group_classes Positive integer number of latent group classes. With
@@ -684,7 +684,7 @@
 #'   to the indicator and category its labels name, so a differently ordered
 #'   `categorical` or a differently ordered set of factor levels cannot attach a
 #'   distribution to the wrong item. A label naming an indicator or a category
-#'   this fit does not have raises `multilpa_bad_start` rather than being
+#'   this fit does not have raises `latents_bad_start` rather than being
 #'   aligned by position.
 #' @param categorical Character vector naming indicators to treat as
 #'   categorical. Each is modelled by unrestricted, profile-specific response
@@ -725,7 +725,7 @@
 #'   Anything other than EEI, VVI, EEE or VVV is maximized across every profile
 #'   at once, so it cannot be combined with a held `variances` block, and
 #'   `parameter_inference(method = "wald")` refuses it with
-#'   `multilpa_unsupported_inference`: the free coordinates are log variances,
+#'   `latents_unsupported_inference`: the free coordinates are log variances,
 #'   which is the wrong chart for a constrained volume, shape or orientation.
 #'   `parameter_inference(method = "bootstrap")` reports all fourteen: it
 #'   resamples groups and refits inside the same family, so it needs no chart.
@@ -740,7 +740,7 @@
 #'   `get_results(x, "data")` still returns the columns you supplied and every
 #'   verb that checks row alignment still checks it. Centring removes exactly
 #'   the between-unit variation, so `"person"` refuses with
-#'   `multilpa_bad_data` when it leaves an indicator constant --- which is what
+#'   `latents_bad_data` when it leaves an indicator constant --- which is what
 #'   happens when a unit has one observation of it. With `"person"` the group
 #'   classes become types of *change pattern*, not types of unit.
 #' @param time Optional name of a column giving each observation's position
@@ -818,6 +818,7 @@
 #' summary(fit)
 #' as.data.frame(fit)
 #' get_results(fit, what = "profile_probabilities")
+#' @seealso [multilca()] for a model in which every indicator is categorical.
 #' @export
 #' @importFrom stats setNames
 multilpa <- function(data, vars, id, n_profiles,
@@ -840,7 +841,7 @@ multilpa <- function(data, vars, id, n_profiles,
       "`id` names the column the observations are nested in, and this model",
       "needs it. Pass it, or pass `id = NULL` to say the observations are",
       "independent and fit a single-level model."),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
@@ -893,7 +894,7 @@ multilpa <- function(data, vars, id, n_profiles,
       "A constrained covariance structure is maximized across every profile at",
       "once, so holding one profile's variances would not leave the others at",
       "their maximum. Use `fixed = \"means\"`, or the unconstrained structure."),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   if (length(profile_covariates) > 0L || length(group_covariates) > 0L) {
     return(.multilpa_covariate_model(
@@ -942,16 +943,16 @@ multilpa <- function(data, vars, id, n_profiles,
   if (n_profiles > distinct_rows) {
     stop(errorCondition(
       "n_profiles cannot exceed the number of distinct observed indicator rows.",
-      class = "multilpa_unidentified", call = NULL))
+      class = "latents_unidentified", call = NULL))
   }
   if (n_group_classes > n_groups) {
     stop(errorCondition("n_group_classes cannot exceed the number of groups.",
-                        class = "multilpa_unidentified", call = NULL))
+                        class = "latents_unidentified", call = NULL))
   }
   if (n_group_classes > 1L && (n_profiles == 1L || all(group_sizes == 1L))) {
     stop(errorCondition(
       "Multiple group classes are not identifiable with one profile or only singleton groups.",
-      class = "multilpa_unidentified", call = NULL))
+      class = "latents_unidentified", call = NULL))
   }
   if (length(fixed) > 0L) {
     start <- .multilpa_complete_start(start, n_profiles, n_group_classes)
@@ -985,7 +986,7 @@ multilpa <- function(data, vars, id, n_profiles,
   if (any(!is.finite(x[!is.na(x)]^2))) {
     stop(errorCondition(
       "Indicator scales overflow squared residuals; rescale the data.",
-      class = "multilpa_bad_data", call = NULL))
+      class = "latents_bad_data", call = NULL))
   }
   if (!is.null(start)) start$means <- sweep(start$means, 2L, centers, "-")
   held <- .multilpa_held_parameters(start, fixed, covariance_model)
@@ -1016,7 +1017,7 @@ multilpa <- function(data, vars, id, n_profiles,
     stop(errorCondition(sprintf(
       "All %d starts failed: %s", n_starts,
       paste(unique(vapply(attempts, `[[`, character(1), "error")), collapse = "; ")),
-      class = "multilpa_all_starts_failed", call = NULL))
+      class = "latents_all_starts_failed", call = NULL))
   }
   scores <- vapply(attempts, function(attempt) {
     if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
@@ -1115,25 +1116,25 @@ multilpa <- function(data, vars, id, n_profiles,
   if (any(!valid)) {
     warning(warningCondition(sprintf(
       "%d of %d starts failed; see get_results(fit, \"starts\").",
-      sum(!valid), n_starts), class = "multilpa_failed_starts", call = NULL))
+      sum(!valid), n_starts), class = "latents_failed_starts", call = NULL))
   }
   # max_iter = 0 is a deliberate evaluate-only call, so non-convergence is
   # expected rather than an anomaly worth reporting.
   if (!best$converged && max_iter > 0L) {
     warning(warningCondition(
       "The best start did not converge; increase max_iter and see get_results(fit, \"starts\").",
-      class = "multilpa_unconverged", call = NULL))
+      class = "latents_unconverged", call = NULL))
   }
   if (boundary) {
     warning(warningCondition(if (covariance_model == "full")
       "A covariance eigenvalue reached min_variance; this is a bound-active constrained fit." else
       "A variance reached min_variance; this is a bound-active constrained fit.",
-      class = "multilpa_boundary", call = NULL))
+      class = "latents_boundary", call = NULL))
   }
   if (small_classes) {
     warning(warningCondition(
       "A profile or group class has effective membership below one.",
-      class = "multilpa_small_classes", call = NULL))
+      class = "latents_small_classes", call = NULL))
   }
   result
 }
@@ -1151,7 +1152,7 @@ multilpa <- function(data, vars, id, n_profiles,
       !all(c(vars, id) %in% names(data))) {
     stop(errorCondition(
       "Supply at least two rows, unique existing indicators, and one distinct group column.",
-      class = "multilpa_bad_data", call = NULL))
+      class = "latents_bad_data", call = NULL))
   }
   counts <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
                  n_starts = n_starts)
@@ -1160,7 +1161,7 @@ multilpa <- function(data, vars, id, n_profiles,
     if (!is.numeric(value) || length(value) != 1L || !is.finite(value) ||
         value < 1 || value != floor(value) || value > .Machine$integer.max) {
       stop(errorCondition(sprintf("%s must be a positive integer.", field),
-                          class = "multilpa_bad_argument", call = NULL))
+                          class = "latents_bad_argument", call = NULL))
     }
   }))
   # max_iter = 0 evaluates the likelihood at the supplied start without moving.
@@ -1168,18 +1169,18 @@ multilpa <- function(data, vars, id, n_profiles,
       max_iter < 0 || max_iter != floor(max_iter) ||
       max_iter > .Machine$integer.max) {
     stop(errorCondition("max_iter must be a nonnegative integer.",
-                        class = "multilpa_bad_argument", call = NULL))
+                        class = "latents_bad_argument", call = NULL))
   }
   if (!is.numeric(tol) || length(tol) != 1L || !is.finite(tol) || tol <= 0 ||
       !is.numeric(min_variance) || length(min_variance) != 1L ||
       !is.finite(min_variance) || min_variance <= 0) {
     stop(errorCondition("tol and min_variance must be finite positive numbers.",
-                        class = "multilpa_bad_argument", call = NULL))
+                        class = "latents_bad_argument", call = NULL))
   }
   .multilpa_check_seed(seed)
   if (anyDuplicated(categorical) || !all(categorical %in% vars)) {
     stop(errorCondition("`categorical` must name distinct indicators listed in `vars`.",
-                        class = "multilpa_bad_categorical", call = NULL))
+                        class = "latents_bad_categorical", call = NULL))
   }
   invisible(NULL)
 }
@@ -1205,33 +1206,33 @@ multilpa <- function(data, vars, id, n_profiles,
     stop(errorCondition(sprintf(
       "`min_probability` of %g leaves no room for an indicator with %d categories.",
       min_probability, max(n_categories)),
-      class = "multilpa_bad_categorical", call = NULL))
+      class = "latents_bad_categorical", call = NULL))
   }
   if (!is.null(codes) && missing == "error" && anyNA(codes)) {
     stop(errorCondition("Indicators contain missing or non-finite values.",
-                        class = "multilpa_bad_data", call = NULL))
+                        class = "latents_bad_data", call = NULL))
   }
   frame <- data[, continuous, drop = FALSE]
   if (!all(vapply(frame, is.numeric, logical(1))) ||
       any(vapply(frame, function(value) !is.null(dim(value)), logical(1)))) {
     stop(errorCondition(
       "Every indicator must be a numeric vector; factors are not continuous indicators.",
-      class = "multilpa_bad_data", call = NULL))
+      class = "latents_bad_data", call = NULL))
   }
   x <- matrix(as.matrix(frame), nrow = nrow(data), ncol = length(continuous),
               dimnames = list(NULL, continuous))
   if (any(is.infinite(x)) || any(is.nan(x)) || (missing == "error" && anyNA(x))) {
     stop(errorCondition("Indicators contain missing or non-finite values.",
-                        class = "multilpa_bad_data", call = NULL))
+                        class = "latents_bad_data", call = NULL))
   }
   if (any(colSums(!is.na(x)) == 0L)) {
     stop(errorCondition("Every indicator must have observed values.",
-                        class = "multilpa_bad_data", call = NULL))
+                        class = "latents_bad_data", call = NULL))
   }
   if (any(vapply(frame, function(value) length(unique(value[!is.na(value)])) < 2L,
                  logical(1)))) {
     stop(errorCondition("Constant indicators cannot identify Gaussian profiles.",
-                        class = "multilpa_bad_data", call = NULL))
+                        class = "latents_bad_data", call = NULL))
   }
   list(continuous = continuous, frame = frame, x = x, encoded = encoded,
        codes = codes, n_categories = n_categories)
@@ -1246,7 +1247,7 @@ multilpa <- function(data, vars, id, n_profiles,
       (is.numeric(raw_groups) && any(!is.finite(raw_groups)))) {
     stop(errorCondition(
       "group must contain nonmissing, finite numeric, factor, or character identifiers.",
-      class = "multilpa_bad_data", call = NULL))
+      class = "latents_bad_data", call = NULL))
   }
   values <- unique(raw_groups)
   index <- match(raw_groups, values)
@@ -1345,7 +1346,7 @@ multilpa <- function(data, vars, id, n_profiles,
       "covariate-free model and use three_step() or r3step()."),
       paste(sprintf("`%s`", names(unsupported)[unsupported]), collapse = ", "),
       if (sum(unsupported) > 1L) "them" else "it"),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   .multilpa_fit_covariates(
     data = data, vars = vars, id = id, n_profiles = n_profiles,

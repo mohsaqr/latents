@@ -40,7 +40,7 @@ test_that("every result class of this sweep defines all four verbs", {
                          stringsAsFactors = FALSE)
   defined$method <- paste(defined$verb, defined$class, sep = ".")
   found <- vapply(defined$method, exists, logical(1),
-                  envir = asNamespace("multilpa"), inherits = FALSE)
+                  envir = asNamespace("latents"), inherits = FALSE)
   expect_true(all(found), info = paste("missing:",
     paste(subset(defined, !found)$method, collapse = ", ")))
 })
@@ -68,7 +68,7 @@ test_that("a covariate summary is a classed, tidy, fully named object", {
   expect_identical(nrow(get_results(summary_object, "starts")), 2L)
   expect_identical(nrow(get_results(summary_object, "profiles")), 4L)
   expect_error(get_results(summary_object, "nonsense"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("a covariate fit carries the data its inference verbs ask for", {
@@ -145,7 +145,7 @@ test_that("a candidate fit is reached by its class counts, never by position", {
   expect_equal(chosen$bic, subset(as.data.frame(candidates),
                                   n_profiles == 2L)$bic_groups)
   expect_error(candidate_fit(candidates, n_profiles = 9),
-               class = "multilpa_unknown_candidate")
+               class = "latents_unknown_candidate")
   expect_error(candidate_fit(candidates, n_profiles = "two"),
                "single positive integer")
   expect_error(candidate_fit(candidates, n_profiles = 1.5),

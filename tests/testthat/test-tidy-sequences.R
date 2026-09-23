@@ -98,8 +98,8 @@ test_that("sequence_summary refuses a fit without an ordering", {
   data <- .tidy_panel()
   bare <- multilpa(data, c("a", "b"), "school", n_profiles = 2,
                    n_group_classes = 2, n_starts = 2, seed = 1)
-  expect_error(get_results(bare, "sequence_summary"), class = "multilpa_no_time")
-  expect_error(get_results(bare, "sequences", format = "wide"), class = "multilpa_no_time")
+  expect_error(get_results(bare, "sequence_summary"), class = "latents_no_time")
+  expect_error(get_results(bare, "sequences", format = "wide"), class = "latents_no_time")
 })
 
 test_that("the occasion columns are named after the ordering column", {

@@ -22,7 +22,7 @@ In the course-engagement example, the primary research question is whether stude
 These approaches differ in the extent to which the external variable is allowed to influence the latent profile solution. In the three-step approaches, the measurement model is estimated first, and the resulting profile definitions are held fixed while associations with previous grades are examined. This preserves the original interpretation of the engagement profiles. In one-step estimation, previous grade enters the latent profile model and can change the profiles. The final section turns to staged estimation, which holds the profile definitions fixed while the student classes are estimated.
 
 ```{r setup}
-library(multilpa)
+library(latents)
 ```
 
 ## Data and engagement profiles

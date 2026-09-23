@@ -103,7 +103,7 @@ test_that("a stratifier that cannot be told apart from the summary is refused", 
   # would be unaddressable in the result.
   expect_error(descriptives(data.frame(mean = c("a", "b"), y = 1:2),
                             vars = "y", by = "mean"),
-               class = "multilpa_bad_data")
+               class = "latents_bad_data")
 })
 
 test_that("missing group IDs do not become a group in ICC calculations", {

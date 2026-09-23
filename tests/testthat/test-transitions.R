@@ -237,21 +237,21 @@ test_that("broken contracts raise their own condition classes", {
   data <- .transition_fixture()
   expect_error(lta(data, c("y1", "y2"), "g", n_profiles = 1L,
                                time = "t", n_starts = 1, seed = 1),
-               class = "multilpa_bad_transition")
+               class = "latents_bad_transition")
   one_occasion <- data[data$t == 1L, ]
   expect_error(lta(one_occasion, c("y1", "y2"), "g", n_profiles = 2L,
                                time = "t", n_starts = 1, seed = 1),
-               class = "multilpa_bad_transition")
+               class = "latents_bad_transition")
   repeated <- data
   repeated$t[2L] <- 1L
   expect_error(lta(repeated, c("y1", "y2"), "g", n_profiles = 2L,
                                time = "t", n_starts = 1, seed = 1),
-               class = "multilpa_bad_time")
+               class = "latents_bad_time")
   absent <- data
   absent$t[3L] <- NA
   expect_error(lta(absent, c("y1", "y2"), "g", n_profiles = 2L,
                                time = "t", n_starts = 1, seed = 1),
-               class = "multilpa_bad_time")
+               class = "latents_bad_time")
   expect_error(lta(data, c("y1", "y2"), "g", n_profiles = 2L,
                                time = NULL, n_starts = 1, seed = 1))
   expect_error(get_results(data, "transitions"))
@@ -342,7 +342,7 @@ test_that("transitions() restricts by argument instead of by bracket", {
   # and a restriction belongs to the table that defines it, so asking another
   # table for it is refused by name rather than dropped
   expect_error(get_results(fit, "profiles", stable = FALSE),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 
   expect_error(get_results(fit, "transitions", stable = NA),
                "`stable` must be NULL, TRUE or FALSE")
@@ -370,16 +370,16 @@ test_that("the summary keeps named fields only, and reports its own tables", {
   # A summary serves its stored tables, so a restriction that would rebuild
   # one is refused rather than silently ignored.
   expect_error(get_results(digest, "transitions", stable = TRUE),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_identical(get_results(digest, "initial"),
                    get_results(fit, "initial"))
   expect_identical(get_results(digest, "starts"), fit$starts)
-  expect_error(get_results(digest, "nonsense"), class = "multilpa_bad_argument")
+  expect_error(get_results(digest, "nonsense"), class = "latents_bad_argument")
 
   # a fit missing a mandatory field is refused, not summarized with a hole
   broken <- fit
   broken$aic <- NULL
-  expect_error(summary(broken), class = "multilpa_incomplete_fit")
+  expect_error(summary(broken), class = "latents_incomplete_fit")
 })
 
 test_that("the shared sequence and diagnostic verbs accept a transition fit", {
@@ -504,9 +504,9 @@ test_that("the generics either answer or refuse, and never answer emptily", {
 
   # Refusals are classed, so that a caller can catch them, and are raised
   # instead of a default method returning nothing useful.
-  expect_error(vcov(fit), class = "multilpa_no_inference")
-  expect_error(confint(fit), class = "multilpa_no_inference")
-  expect_error(parameter_inference(fit, data), class = "multilpa_no_inference")
+  expect_error(vcov(fit), class = "latents_no_inference")
+  expect_error(confint(fit), class = "latents_no_inference")
+  expect_error(parameter_inference(fit, data), class = "latents_no_inference")
   expect_s3_class(draw(plot(fit, what = "transitions")), "multilpa_transitions")
   expect_s3_class(draw(plot(fit, what = "profiles")), "multilpa_transitions")
 })

@@ -138,7 +138,7 @@
               is.matrix(scores) && is.numeric(scores))
   if (any(!is.finite(scores))) {
     stop(errorCondition("Per-group scores are not finite; robust inference is unavailable.",
-                        class = "multilpa_bad_scores", call = NULL))
+                        class = "latents_bad_scores", call = NULL))
   }
   ## A single row cannot support a sandwich: at the estimate the rows sum to
   ## zero, so one row is itself the zero vector up to rounding and the meat is
@@ -173,7 +173,7 @@
 #' @param alternative A sentence naming a legitimate non-clustered alternative,
 #'   or `NULL` when there is none.
 #' @return `invisible(TRUE)` when the rule holds. Otherwise raises
-#'   `multilpa_too_few_groups`.
+#'   `latents_too_few_groups`.
 #' @references Cameron, A. C., & Miller, D. L. (2015). A practitioner's guide
 #'   to cluster-robust inference. *Journal of Human Resources*, 50, 317--372.
 #' @noRd
@@ -209,5 +209,5 @@
     paste(c(sprintf("%s needs more %s than the %d quantit%s it covers; this fit has %d.",
                     what, unit, n_quantities, plural, n_units),
             reason, alternative), collapse = " "),
-    class = "multilpa_too_few_groups", call = NULL))
+    class = "latents_too_few_groups", call = NULL))
 }

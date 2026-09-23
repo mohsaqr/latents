@@ -36,7 +36,7 @@ statistic and are counted in the subtitle rather than dropped silently.
 }
 \section{Conditions}{
 
-\code{multilpa_nothing_to_plot} when no replicate produced a finite statistic.
+\code{latents_nothing_to_plot} when no replicate produced a finite statistic.
 }
 
 \examples{

@@ -50,9 +50,9 @@ test_that("an argument the reporting surface cannot forward is refused", {
   skip_on_cran()
   fit <- .surface_fit()
   expect_error(diagnostics(fit, nonsense = 1),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(report(fit, plots = FALSE, nonsense = 1),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   # The refusal names the argument, so the caller knows which one was refused.
   expect_error(diagnostics(fit, nonsense = 1), regexp = "nonsense")
   # A value outside the contract of an argument that *is* forwarded still
@@ -82,7 +82,7 @@ test_that("a single-profile fit refuses the case diagnostics by class", {
     multilpa(.surface_data(), c("a", "b"), "school", n_profiles = 1L,
              n_group_classes = 1L, n_starts = 2L, seed = 1))
   draw(invisible(lapply(fits, function(fit) {
-    expect_error(plot(diagnostics(fit)), class = "multilpa_nothing_to_plot")
+    expect_error(plot(diagnostics(fit)), class = "latents_nothing_to_plot")
     # The refusal names what can be drawn instead, so it is a signpost and not
     # just a wall.
     expect_error(plot(diagnostics(fit)), regexp = "profiles")

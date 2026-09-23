@@ -11,7 +11,7 @@
 
 \item{parm}{Optional coefficient names or indices; defaults to every
 coefficient the fit estimated. Naming a coefficient that \code{fixed} held
-raises \code{multilpa_held_parameter}, because a held value has no interval.}
+raises \code{latents_held_parameter}, because a held value has no interval.}
 
 \item{level}{Confidence level strictly between zero and one.}
 

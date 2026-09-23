@@ -19,18 +19,18 @@
     value <- frame[[indicator]]
     if (!is.null(dim(value))) {
       stop(errorCondition(sprintf("Categorical indicator `%s` must be a vector.", indicator),
-                          class = "multilpa_bad_categorical", call = NULL))
+                          class = "latents_bad_categorical", call = NULL))
     }
     if (is.numeric(value) && any(!is.finite(value[!is.na(value)]))) {
       stop(errorCondition(sprintf("Categorical indicator `%s` contains non-finite values.", indicator),
-                          class = "multilpa_bad_categorical", call = NULL))
+                          class = "latents_bad_categorical", call = NULL))
     }
     levels_observed <- if (is.factor(value)) {
       levels(droplevels(value))
     } else sort(unique(value[!is.na(value)]))
     if (length(levels_observed) < 2L) {
       stop(errorCondition(sprintf("Categorical indicator `%s` has fewer than two observed categories.", indicator),
-                          class = "multilpa_bad_categorical", call = NULL))
+                          class = "latents_bad_categorical", call = NULL))
     }
     code <- if (is.factor(value)) {
       match(as.character(value), levels_observed)
@@ -126,7 +126,7 @@
     totals <- rowSums(counts)
     if (any(totals <= 0)) {
       stop(errorCondition("A profile has no observed responses for an indicator.",
-                          class = "multilpa_empty_profile", call = NULL))
+                          class = "latents_empty_profile", call = NULL))
     }
     # Normalizing after a simple pmax would push a bounded share back below the
     # bound, so the exact constrained solution is used instead.

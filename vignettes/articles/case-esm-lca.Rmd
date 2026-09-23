@@ -41,7 +41,7 @@ The eight activities are yes/no items, and they are named once so that each
 model can refer to them.
 
 ```{r setup}
-library(multilpa)
+library(latents)
 activities <- c("time_with_friends", "on_social_media", "tv_video_games",
                 "listened_music", "sports", "walking", "reading",
                 "part_time_job")
@@ -114,13 +114,13 @@ continues with that model.
 
 ## The chosen model
 
-`multilpa()` fits it with `categorical` naming the items, ten random starts,
-and a tight convergence tolerance, which the standard errors below need.
+`multilca()` fits it, treating every item as categorical, with ten random
+starts and a tight convergence tolerance, which the standard errors below need.
 
 ```{r fit}
-lca <- multilpa(student_esm, vars = activities, categorical = activities,
-                id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 10, tol = 1e-10, seed = 1)
+lca <- multilca(student_esm, vars = activities, id = "student",
+                n_profiles = 2, n_group_classes = 2, n_starts = 10,
+                tol = 1e-10, seed = 1)
 get_results(lca, "model")
 ```
 

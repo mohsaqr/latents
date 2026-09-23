@@ -128,5 +128,5 @@
     "`centering = \"%s\"` every unit needs more than one observation of an",
     "indicator for anything of it to survive."),
     paste(sprintf("`%s`", colnames(x)[flat]), collapse = ", "), centering),
-    class = "multilpa_bad_data", call = NULL))
+    class = "latents_bad_data", call = NULL))
 }

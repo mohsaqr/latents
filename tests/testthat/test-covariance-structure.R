@@ -14,7 +14,7 @@ structure_fit <- function(..., n_profiles = 3L) {
 }
 
 test_that("volume, shape and orientation resolve to all fourteen codes", {
-  resolve <- multilpa:::.multilpa_resolve_structure
+  resolve <- latents:::.multilpa_resolve_structure
   spherical <- c(EII = "equal", VII = "varying")
   for (code in names(spherical)) {
     expect_identical(resolve("varying", "diagonal", volume = spherical[[code]],
@@ -34,14 +34,14 @@ test_that("volume, shape and orientation resolve to all fourteen codes", {
   }
   # A spherical shape is a multiple of the identity, so it has no orientation.
   expect_error(resolve("varying", "diagonal", shape = "spherical",
-                       orientation = "equal"), class = "multilpa_bad_argument")
+                       orientation = "equal"), class = "latents_bad_argument")
   # And an axis-parallel orientation is not a full covariance.
   expect_error(resolve("varying", "full", orientation = "axis"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("legacy arguments still resolve as they always did", {
-  resolve <- multilpa:::.multilpa_resolve_structure
+  resolve <- latents:::.multilpa_resolve_structure
   expect_identical(resolve("varying", "diagonal"), "VVI")
   expect_identical(resolve("equal", "diagonal"), "EEI")
   expect_identical(resolve("varying", "full"), "VVV")
@@ -57,7 +57,7 @@ test_that("legacy arguments still resolve as they always did", {
 })
 
 test_that("each M-step solves the formula it claims to", {
-  solve <- multilpa:::.multilpa_structure_variances
+  solve <- latents:::.multilpa_structure_variances
   # Scatter chosen so the profiles differ in both volume and shape.
   diagonals <- rbind(c(4, 1, 1), c(1, 1, 9))
   weights <- c(10, 20)
@@ -129,8 +129,8 @@ test_that("relaxing a constraint cannot lower the maximized likelihood", {
 test_that("a constrained structure refuses inference rather than misreporting it", {
   fit <- structure_fit(volume = "equal", shape = "varying", n_profiles = 2L)
   expect_error(parameter_inference(fit),
-               class = "multilpa_unsupported_inference")
-  expect_error(vcov(fit), class = "multilpa_unsupported_inference")
+               class = "latents_unsupported_inference")
+  expect_error(vcov(fit), class = "latents_unsupported_inference")
   # The two structures the coordinates do cover still work.
   free <- structure_fit(variance_model = "varying", n_profiles = 2L)
   expect_s3_class(parameter_inference(free), "data.frame")
@@ -143,7 +143,7 @@ test_that("a constrained structure refuses a held variance block", {
     multilpa(engagement_small, activity, "student", n_profiles = 2,
              n_group_classes = 1, n_starts = 1, seed = 1, start = start,
              fixed = "variances", volume = "equal", shape = "varying"),
-    class = "multilpa_bad_argument")
+    class = "latents_bad_argument")
   # Holding only the means leaves the spread free, so it is allowed.
   expect_s3_class(
     multilpa(engagement_small, activity, "student", n_profiles = 2,
@@ -164,13 +164,13 @@ test_that("the structure is reported, and the default one is unchanged", {
 })
 
 test_that("the equal-shape iteration is bounded and says when it stops short", {
-  solve <- multilpa:::.multilpa_structure_variances
+  solve <- latents:::.multilpa_structure_variances
   diagonals <- rbind(c(4, 1, 1), c(1, 1, 9))
   # One iteration cannot reach the fixed point from this start, and the
   # estimator says so instead of returning the last value as if it were the
   # maximiser.
   expect_warning(solve(diagonals, c(10, 20), "VEI", 1e-10, max_iter = 1L),
-                 class = "multilpa_no_converge")
+                 class = "latents_no_converge")
   expect_silent(solve(diagonals, c(10, 20), "VEI", 1e-10))
 })
 
@@ -186,7 +186,7 @@ test_that("the structure grid crosses models with class counts", {
   # The class counts alone no longer name one candidate, and saying so beats
   # returning whichever came first.
   expect_error(candidate_fit(candidates, n_profiles = 3, n_group_classes = 1),
-               class = "multilpa_unknown_candidate")
+               class = "latents_unknown_candidate")
   fitted <- candidate_fit(candidates, n_profiles = 3, n_group_classes = 1,
                           model = "EVI")
   expect_identical(fitted$covariance_structure, "EVI")
@@ -198,7 +198,7 @@ test_that("the grid refuses a model code this package does not fit", {
   expect_error(
     enumerate_classes(engagement_small, activity, "student", n_profiles = 2,
                       n_group_classes = 1, model = "XYZ", n_starts = 1),
-    class = "multilpa_bad_argument")
+    class = "latents_bad_argument")
 })
 
 test_that("an ellipsoidal structure keeps a full covariance array", {
@@ -241,12 +241,12 @@ test_that("a warm-started M-step lands where a cold one does", {
     crossprod(residuals, residuals * z[, profile])
   })
   invisible(lapply(c("VEE", "EVE", "VVE"), function(code) {
-    cold <- multilpa:::.multilpa_structure_covariances(scatter, weights, code, 1e-12)
+    cold <- latents:::.multilpa_structure_covariances(scatter, weights, code, 1e-12)
     # Seeding with the answer must be a fixed point, and seeding with something
     # else must still arrive at it: a warm start may only save work.
-    warm <- multilpa:::.multilpa_structure_covariances(scatter, weights, code,
+    warm <- latents:::.multilpa_structure_covariances(scatter, weights, code,
                                                        1e-12, start = cold)
-    elsewhere <- multilpa:::.multilpa_structure_covariances(
+    elsewhere <- latents:::.multilpa_structure_covariances(
       scatter, weights, code, 1e-12, start = cold[, , k:1, drop = FALSE])
     expect_equal(warm, cold, tolerance = 1e-6, info = code)
     expect_equal(elsewhere, cold, tolerance = 1e-6, info = code)
@@ -254,9 +254,9 @@ test_that("a warm-started M-step lands where a cold one does", {
 })
 
 test_that("capped M-steps are counted and reported once, not once each", {
-  reset <- multilpa:::.multilpa_reset_structure_log
-  note <- multilpa:::.multilpa_warn_structure
-  report <- multilpa:::.multilpa_report_structure_log
+  reset <- latents:::.multilpa_reset_structure_log
+  note <- latents:::.multilpa_warn_structure
+  report <- latents:::.multilpa_report_structure_log
   reset()
   expect_silent(report())
   note("VVE", 1000L)
@@ -264,7 +264,7 @@ test_that("capped M-steps are counted and reported once, not once each", {
   note("VVE", 1000L)
   # One warning, carrying the count: an M-step runs hundreds of times per fit,
   # so warning from inside one would say the same thing hundreds of times.
-  expect_warning(report(), "3 M-step", class = "multilpa_no_converge")
+  expect_warning(report(), "3 M-step", class = "latents_no_converge")
   reset()
   expect_silent(report())
 })
@@ -282,15 +282,15 @@ test_that("every structure's defining constraint holds in the fitted parameters"
                    decreasing = TRUE)
     values / prod(values)^(1 / d)
   }
-  invisible(lapply(multilpa:::.multilpa_structures(), function(code) {
-    arguments <- multilpa:::.multilpa_structure_arguments(code)
+  invisible(lapply(latents:::.multilpa_structures(), function(code) {
+    arguments <- latents:::.multilpa_structure_arguments(code)
     # The two shared-orientation models legitimately report M-steps that stop
     # at their cap on a fixture this small; that is the package saying so, not
     # a failure, and every other warning still reaches testthat.
     fit <- quietly(do.call(multilpa, c(
       list(engagement_small, indicators, "student", n_profiles = 3,
            n_group_classes = 1, n_starts = 1, seed = 1, max_iter = 50),
-      arguments)), c(.multilpa_expected_warnings, "multilpa_no_converge"))
+      arguments)), c(.multilpa_expected_warnings, "latents_no_converge"))
     expect_identical(fit$covariance_structure, code)
     d <- length(indicators)
     blocks <- lapply(seq_len(3L), function(profile) {
@@ -341,7 +341,7 @@ test_that("a structure named by its pieces fits what the old arguments fit", {
   invisible(lapply(names(legacy), function(code) {
     old <- quietly(do.call(multilpa, c(common, legacy[[code]])))
     new <- quietly(do.call(multilpa, c(
-      common, multilpa:::.multilpa_structure_arguments(code))))
+      common, latents:::.multilpa_structure_arguments(code))))
     expect_identical(old$covariance_structure, code)
     expect_identical(new$covariance_structure, code)
     expect_equal(new$log_likelihood, old$log_likelihood, info = code)

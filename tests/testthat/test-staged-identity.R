@@ -116,7 +116,7 @@ test_that("a first stage whose categories are not these categories is refused", 
     fit_staged(relabelled, indicators, "school", n_profiles = 2,
                n_group_classes = 2, categorical = items,
                measurement = measurement, n_starts = 2, seed = 1),
-    class = "multilpa_bad_stage")
+    class = "latents_bad_stage")
 
   # An extra category the first stage never saw cannot be held either.
   extended <- frame
@@ -126,7 +126,7 @@ test_that("a first stage whose categories are not these categories is refused", 
     fit_staged(extended, indicators, "school", n_profiles = 2,
                n_group_classes = 2, categorical = items,
                measurement = measurement, n_starts = 2, seed = 1),
-    class = "multilpa_bad_stage")
+    class = "latents_bad_stage")
 })
 
 test_that("a labelled start is aligned by label, and a label that cannot be aligned is refused", {
@@ -159,7 +159,7 @@ test_that("a labelled start is aligned by label, and a label that cannot be alig
     multilpa(frame, indicators, "school", n_profiles = 2, n_group_classes = 2,
              categorical = items, n_starts = 1, seed = 1, start = wrong_item,
              fixed = "measurement"),
-    class = "multilpa_bad_start")
+    class = "latents_bad_start")
 
   # A category label this indicator does not have is refused too.
   wrong_category <- labelled
@@ -168,7 +168,7 @@ test_that("a labelled start is aligned by label, and a label that cannot be alig
     multilpa(frame, indicators, "school", n_profiles = 2, n_group_classes = 2,
              categorical = items, n_starts = 1, seed = 1,
              start = wrong_category, fixed = "measurement"),
-    class = "multilpa_bad_start")
+    class = "latents_bad_start")
 })
 
 test_that("an unlabelled start keeps the documented positional contract", {

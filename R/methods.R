@@ -160,7 +160,7 @@ summary.multilpa <- function(object, ...) {
 #' @param x An object of class `summary_multilpa`.
 #' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
 #' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `multilpa_bad_argument`
+#' @param ... Must be empty. An argument here raises `latents_bad_argument`
 #'   naming it, rather than being dropped.
 #' @return A base `data.frame`: one row per profile and continuous indicator.
 #' @seealso [get_results()] for every other table this summary holds.

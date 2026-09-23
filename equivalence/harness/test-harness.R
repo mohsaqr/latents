@@ -193,10 +193,10 @@ test_that("a run records the version and fingerprint it was produced under", {
   expect_true(all(c("multilpa", "multilpa at end", "R/ fingerprint",
                     "source unchanged during run") %in% session$component))
   expect_equal(equivalence_provenance(run, "multilpa"),
-               as.character(utils::packageVersion("multilpa")))
+               as.character(utils::packageVersion("latents")))
   expect_equal(equivalence_provenance(run, "source unchanged during run"), "yes")
   expect_error(equivalence_provenance(run, "not a component"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("a source edit during a run is reported, not hidden", {

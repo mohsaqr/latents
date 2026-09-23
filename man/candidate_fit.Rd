@@ -16,7 +16,7 @@ candidate_fit(x, n_profiles, n_group_classes = 1L, model = NULL)
 \item{model}{The covariance model identifying the candidate, needed when
 \code{\link[=enumerate_classes]{enumerate_classes()}} was given several \code{model}s and the class counts
 alone name several candidates. Naming counts that match more than one
-candidate raises \code{multilpa_unknown_candidate} listing the models it could
+candidate raises \code{latents_unknown_candidate} listing the models it could
 have meant.}
 }
 \value{
@@ -31,8 +31,8 @@ names it by its class counts instead of indexing the grid by position.
 }
 \section{Conditions}{
 
-\code{multilpa_unknown_candidate} when the requested class counts are not in
-the grid, and \code{multilpa_failed_candidate} when they are in the grid but
+\code{latents_unknown_candidate} when the requested class counts are not in
+the grid, and \code{latents_failed_candidate} when they are in the grid but
 that fit raised an error, so no model exists to return. Neither situation
 returns \code{NULL}, because a \code{NULL} would flow silently into whatever the
 caller did next.

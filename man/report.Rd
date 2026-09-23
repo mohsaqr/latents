@@ -30,7 +30,7 @@ to \code{print(summary(x))}. A first look at a fit with thousands of
 observations would otherwise be mostly posteriors.}
 
 \item{...}{Nothing further is accepted. An argument this function cannot
-forward raises an error of class \code{multilpa_bad_argument} naming it, before
+forward raises an error of class \code{latents_bad_argument} naming it, before
 anything has been printed, rather than being dropped.}
 }
 \value{
@@ -61,5 +61,5 @@ report(fit, plots = FALSE)
 }
 \seealso{
 \code{\link[=summary]{summary()}}, \code{\link[=diagnostics]{diagnostics()}}, \code{\link[=descriptives]{descriptives()}},
-\code{\link[=multilpa_plot_types]{multilpa_plot_types()}}.
+\code{\link[=plot_views]{plot_views()}}.
 }

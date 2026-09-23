@@ -31,8 +31,8 @@ fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
                 n_starts = 6, seed = 1)
 posteriors <- fit$subject_posteriors
 
-mine <- multilpa:::.multilpa_error_matrix(
-  multilpa:::.multilpa_level_assignments(fit, "individuals"))
+mine <- latents:::.multilpa_error_matrix(
+  latents:::.multilpa_level_assignments(fit, "individuals"))
 theirs <- as.matrix(tidySEM:::classification_probs_mostlikely(posteriors))
 # `bch_weights()` returns one row per unit and class since the public returns
 # were tidied; it used to return one `weight_class_k` column per class. The

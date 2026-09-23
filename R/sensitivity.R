@@ -17,7 +17,7 @@
 #' not there.
 #'
 #' A seed whose refit fails contributes a row with `NA` estimates rather than
-#' being dropped silently, and a `multilpa_sensitivity_dropped` warning names
+#' being dropped silently, and a `latents_sensitivity_dropped` warning names
 #' how many failed, so the table is never quietly shorter than `seeds`.
 #'
 #' @param x A fitted `multilpa` model to use as the reference.
@@ -32,7 +32,7 @@
 #'   against the fit before assignment agreement is calculated.
 #' @param seeds Seeds to refit under: at least two distinct whole numbers of
 #'   either sign, as `set.seed()` accepts. Anything else raises
-#'   `multilpa_bad_argument`. The reference fit's own seed may
+#'   `latents_bad_argument`. The reference fit's own seed may
 #'   be among them, in which case that row reproduces it and is the arithmetic
 #'   check that the refit is the same model.
 #' @param n_starts Starts per refit. Defaults to the number the reference fit
@@ -74,7 +74,7 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
       "Seed sensitivity is implemented for `multilpa()` fits only. Refitting",
       "this family needs arguments the shared refit does not carry, and its",
       "profile labels cannot yet be aligned between two fits."),
-      class = "multilpa_unsupported_sensitivity", call = NULL))
+      class = "latents_unsupported_sensitivity", call = NULL))
   }
   stopifnot(
     "`x` must be a fitted `multilpa` model" = inherits(x, "multilpa"),
@@ -91,14 +91,14 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
       "`seeds` must be at least two distinct whole numbers between -%d and %d,",
       "the seeds set.seed() accepts."),
       .Machine$integer.max, .Machine$integer.max),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   if (length(x$fixed %||% character()) > 0L && !isTRUE(x$staged)) {
     stop(errorCondition(paste(
       "Seed sensitivity for a directly fixed fit cannot replay its original",
       "free starting values. Use a joint fit or a fit_staged() result, whose",
       "conditional second-stage search can be repeated."),
-      class = "multilpa_unsupported_sensitivity", call = NULL))
+      class = "latents_unsupported_sensitivity", call = NULL))
   }
   frame <- .multilpa_resolve_data(x, data)
   .multilpa_check_row_count(x, frame)
@@ -124,7 +124,7 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
       sprintf("%d of %d seeds did not produce a fit; their rows are NA. First reason: %s",
               sum(failed), length(seeds),
               conditionMessage(refits[[which(failed)[1L]]])),
-      class = "multilpa_sensitivity_dropped", call = NULL))
+      class = "latents_sensitivity_dropped", call = NULL))
   }
   likelihood <- vapply(refits, function(fit)
     if (inherits(fit, "condition")) NA_real_ else fit$log_likelihood, numeric(1))

@@ -50,7 +50,7 @@ rare within a class is estimated from little information; the expected count
 of each transition shows how much.
 
 ```{r fit}
-library(multilpa)
+library(latents)
 vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 moves <- lta(course_engagement, vars, "student", n_profiles = 3,

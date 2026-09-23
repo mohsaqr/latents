@@ -45,13 +45,13 @@ test_that("a single independent group is refused, not given a zero standard erro
   expect_equal(parts$fit$n_groups, 1)
 
   expect_error(three_step(parts$fit, parts$data, "y"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   expect_error(three_step(parts$fit, parts$data, "y", method = "modal"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   expect_error(three_step(parts$fit, parts$data, "y", method = "proportional"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   expect_error(three_step(parts$fit, parts$data, "y", contrast = "pairs"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
 })
 
 test_that("the sole group's influence contributions really do cancel to nothing", {
@@ -128,14 +128,14 @@ test_that("the refusal threshold is the rank the cluster sums can reach", {
   # the same as asking the meat to have full rank for them.
   expect_true(.multilpa_require_clusters(5L, 4L, "A variance"))
   expect_error(.multilpa_require_clusters(4L, 4L, "A variance"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   expect_error(.multilpa_require_clusters(1L, 1L, "A variance"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   expect_error(.multilpa_require_clusters(0L, 1L, "A variance"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   # A one-row score matrix cannot make a sandwich, whoever asks for it.
   expect_error(.multilpa_cross_product(matrix(c(1, 2, 3), 1L, 3L)),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   expect_equal(.multilpa_cross_product(matrix(c(1, 2), 2L, 1L)),
                matrix(5, 1L, 1L))
 })
@@ -157,9 +157,9 @@ test_that("two groups cannot carry a variance for two classes", {
 
   # Two groups leave one independent contribution for a two-by-two covariance,
   # so one contrast between the class means would have variance exactly zero.
-  expect_error(three_step(fit, data, "y"), class = "multilpa_too_few_groups")
+  expect_error(three_step(fit, data, "y"), class = "latents_too_few_groups")
   expect_error(three_step(fit, data, "y", contrast = "pairs"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   # Treating the 120 observations as independent is a different assumption and
   # is available under its own name.
   unclustered <- three_step(fit, data, "y", vcov_type = "independent")
@@ -176,7 +176,7 @@ test_that("r3step refuses a robust covariance its groups cannot support", {
   fit <- multilpa(one_group, "a", "g", n_profiles = 2, n_group_classes = 1,
                   n_starts = 4, seed = 1)
   expect_error(r3step(fit, one_group, "x", vcov_type = "robust"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   # The model-based alternative is still available and is labelled as such.
   observed <- r3step(fit, one_group, "x", vcov_type = "observed")
   expect_identical(attr(observed, "vcov_type"), "observed")
@@ -196,7 +196,7 @@ test_that("r3step refuses a robust covariance its groups cannot support", {
                     n_group_classes = 1, n_starts = 4, seed = 1)
   expect_equal(small$n_groups, 3)
   expect_error(r3step(small, three, c("x", "w"), vcov_type = "robust"),
-               class = "multilpa_too_few_groups")
+               class = "latents_too_few_groups")
   # Two coefficients against three groups is within the rule and goes through.
   expect_true(all(r3step(small, three, "x", vcov_type = "robust")$standard_error > 0))
 })

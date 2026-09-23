@@ -249,7 +249,7 @@
     stop(errorCondition(sprintf(
       "This fit holds %s, which is not a measurement block inference can restore.",
       paste(sprintf("`%s`", unknown), collapse = " or ")),
-      class = "multilpa_bad_fixed", call = NULL))
+      class = "latents_bad_fixed", call = NULL))
   }
   offsets <- cumsum(c(0, widths[measurement]))
   frozen <- unlist(lapply(seq_along(measurement), function(position) {
@@ -595,7 +595,7 @@
 #'   is a fresh fit, so `n_starts` buys the same protection against a local
 #'   maximum here as it does in [multilpa()], at the same multiple of the cost.
 #' @param seed Optional seed for the resampling: any whole number `set.seed()`
-#'   accepts; a fraction raises `multilpa_bad_argument`. The stream is restored on exit,
+#'   accepts; a fraction raises `latents_bad_argument`. The stream is restored on exit,
 #'   so a seeded call leaves the caller's random state exactly as it found it.
 #' @return A base `data.frame` with one row per reported parameter and the
 #'   columns `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`,
@@ -643,22 +643,22 @@
 #'   correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
 #'   difference tests.
 #' @section Conditions:
-#'   `multilpa_no_converge` for an unconverged fit, `multilpa_boundary_fit` when
+#'   `latents_no_converge` for an unconverged fit, `latents_boundary_fit` when
 #'   a variance, a response probability or a mixing probability sits at its
-#'   bound, `multilpa_singular_information` when the observed information cannot
-#'   be inverted, `multilpa_no_free_parameters` when `fixed` held every
-#'   parameter, `multilpa_bad_inference_data` when a supplied `data` does not
-#'   reproduce the fit, and `multilpa_too_few_groups` for `vcov_type = "robust"`
+#'   bound, `latents_singular_information` when the observed information cannot
+#'   be inverted, `latents_no_free_parameters` when `fixed` held every
+#'   parameter, `latents_bad_inference_data` when a supplied `data` does not
+#'   reproduce the fit, and `latents_too_few_groups` for `vcov_type = "robust"`
 #'   with fewer independent groups than reported parameters. A fit whose score
-#'   is still far from zero is reported with a `multilpa_unconverged` warning
+#'   is still far from zero is reported with a `latents_unconverged` warning
 #'   rather than refused.
 #'
-#'   `method = "bootstrap"` adds `multilpa_unsupported_inference` for a fit that
+#'   `method = "bootstrap"` adds `latents_unsupported_inference` for a fit that
 #'   holds a measurement block --- the held values came from another fit and
 #'   resampling these data does not resample them --- and
-#'   `multilpa_bootstrap_failed` when fewer than two resamples produced a usable
+#'   `latents_bootstrap_failed` when fewer than two resamples produced a usable
 #'   fit, whose message carries the first reason one gave. Resamples that fail
-#'   or do not converge are dropped with a `multilpa_bootstrap_dropped` warning
+#'   or do not converge are dropped with a `latents_bootstrap_dropped` warning
 #'   naming how many, rather than being silently left out of the count.
 #' @examples
 #' set.seed(42)
@@ -740,7 +740,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   if (length(free) == 0L) {
     stop(errorCondition(
       "This fit holds every parameter it has, so there is nothing to report a standard error for.",
-      class = "multilpa_no_free_parameters", call = NULL))
+      class = "latents_no_free_parameters", call = NULL))
   }
   stopifnot("the free coordinates must match the parameters the fit counts" =
               length(free) == x$n_parameters)
@@ -770,7 +770,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   if (abs(fitted_likelihood - x$log_likelihood) > 1e-8 * (1 + abs(x$log_likelihood))) {
     stop(errorCondition(
       "data do not reproduce the fitted log likelihood; supply the original fitting data.",
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   parameter_scale <- c(as.vector(t(sqrt(x$variances))),
                        rep(1, length(full_theta) - length(x$means)))
@@ -839,7 +839,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
       paste("The fitted likelihood still carries a score worth %.1f%% of a",
             "standard error; refit with a tighter `tol` before using Wald",
             "inference."), 100 * score_displacement),
-      class = "multilpa_unconverged", call = NULL))
+      class = "latents_unconverged", call = NULL))
   }
   statistic <- unname(estimates / standard_errors)
   result <- data.frame(
@@ -954,7 +954,7 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
 #' @param object A fitted `multilpa` model.
 #' @param parm Optional coefficient names or indices; defaults to every
 #'   coefficient the fit estimated. Naming a coefficient that `fixed` held
-#'   raises `multilpa_held_parameter`, because a held value has no interval.
+#'   raises `latents_held_parameter`, because a held value has no interval.
 #' @param level Confidence level strictly between zero and one.
 #' @param data Optional, exactly as for [vcov()].
 #' @param ... Additional arguments passed to [parameter_inference()], including
@@ -1009,7 +1009,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       if (length(held) == 1L) "was" else "were",
       if (length(held) == 1L) "it" else "they",
       if (length(held) == 1L) "ies" else "y"),
-      class = "multilpa_held_parameter", call = NULL))
+      class = "latents_held_parameter", call = NULL))
   }
   intervals <- if (identical(attr(information, "method"), "bootstrap")) {
     percentile <- cbind(information$conf_low, information$conf_high)
@@ -1038,11 +1038,11 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
     stop(errorCondition(sprintf(
       "Robust inference needs more groups than parameters; this fit has %d groups and %d parameters.",
       object$n_groups, object$n_parameters),
-      class = "multilpa_too_few_groups", call = NULL))
+      class = "latents_too_few_groups", call = NULL))
   }
   if (!isTRUE(object$converged)) {
     stop(errorCondition("Inference requires a converged fit.",
-                        class = "multilpa_no_converge", call = NULL))
+                        class = "latents_no_converge", call = NULL))
   }
   ## A bound-active value that this fit held fixed is a constant of the
   ## conditional likelihood, not an estimate sitting on its boundary, so it does
@@ -1050,7 +1050,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   held <- object$fixed %||% character()
   if (isTRUE(object$boundary) && !("variances" %in% held)) {
     stop(errorCondition("Wald inference is unavailable for a bound-active fit.",
-                        class = "multilpa_boundary_fit", call = NULL))
+                        class = "latents_boundary_fit", call = NULL))
   }
   response <- if ("response_probabilities" %in% held) NULL else
     unlist(object$response_probabilities, use.names = FALSE)
@@ -1058,12 +1058,12 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       any(response <= (object$min_probability %||% 0) * (1 + 1e-7))) {
     stop(errorCondition(
       "Wald inference is unavailable for bound-active categorical response probabilities.",
-      class = "multilpa_boundary_fit", call = NULL))
+      class = "latents_boundary_fit", call = NULL))
   }
   if (any(object$profile_probabilities <= 0) || any(object$group_probabilities <= 0)) {
     stop(errorCondition(
       "Wald inference requires strictly positive mixing probabilities.",
-      class = "multilpa_boundary_fit", call = NULL))
+      class = "latents_boundary_fit", call = NULL))
   }
   invisible(NULL)
 }
@@ -1085,13 +1085,13 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
                   is.numeric, logical(1)))) {
     stop(errorCondition(
       "data must contain the original numeric indicators and group column.",
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   group_index <- match(data[[object$id]], object$group_values)
   if (!identical(group_index, object$group_index)) {
     stop(errorCondition(
       "data must retain the original group identifiers and row order.",
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   ## Only the Gaussian indicators form the numeric matrix; the categorical ones
   ## are re-encoded from `data` rather than taken from the fit, so that supplying
@@ -1105,13 +1105,13 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       (anyNA(x) && !identical(object$missing, "fiml"))) {
     stop(errorCondition(
       "data contain unsupported missing or non-finite indicators.",
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   if (!is.null(object$indicator_data) && ncol(x) > 0L &&
       !identical(x, object$indicator_data)) {
     stop(errorCondition(
       "data must reproduce the original indicator data, including row order and names.",
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "latents_bad_inference_data", call = NULL))
   }
   codes <- NULL
   if (length(object$categorical %||% character()) > 0L) {
@@ -1121,7 +1121,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
         !identical(encoded$levels, object$categorical_levels)) {
       stop(errorCondition(
         "data must reproduce the original categorical indicators, including their categories and row order.",
-        class = "multilpa_bad_inference_data", call = NULL))
+        class = "latents_bad_inference_data", call = NULL))
     }
   }
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
@@ -1154,7 +1154,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       min(scaled_eigenvalues) <= 0 || condition_ratio <= 1e-10) {
     stop(errorCondition(
       "Observed information is not positive definite or is numerically singular; Wald inference is unavailable.",
-      class = "multilpa_singular_information", call = NULL))
+      class = "latents_singular_information", call = NULL))
   }
   inverse <- tryCatch(solve(scaled), error = function(error) {
     stop(sprintf("Observed information could not be inverted: %s",

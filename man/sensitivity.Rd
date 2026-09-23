@@ -29,7 +29,7 @@ against the fit before assignment agreement is calculated.}
 
 \item{seeds}{Seeds to refit under: at least two distinct whole numbers of
 either sign, as \code{set.seed()} accepts. Anything else raises
-\code{multilpa_bad_argument}. The reference fit's own seed may
+\code{latents_bad_argument}. The reference fit's own seed may
 be among them, in which case that row reproduces it and is the arithmetic
 check that the refit is the same model.}
 
@@ -69,7 +69,7 @@ differently, so comparing labels directly would report disagreement that is
 not there.
 
 A seed whose refit fails contributes a row with \code{NA} estimates rather than
-being dropped silently, and a \code{multilpa_sensitivity_dropped} warning names
+being dropped silently, and a \code{latents_sensitivity_dropped} warning names
 how many failed, so the table is never quietly shorter than \code{seeds}.
 }
 \examples{

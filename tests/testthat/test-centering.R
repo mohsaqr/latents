@@ -86,7 +86,7 @@ test_that("alignment is still checked against the frame the caller has", {
   # A reordered frame must still be caught.
   shuffled <- engagement_small[rev(seq_len(nrow(engagement_small))), ]
   expect_error(get_results(fit, "assignments", data = shuffled),
-               class = "multilpa_bad_inference_data")
+               class = "latents_bad_inference_data")
 })
 
 test_that("the diagnostics work on the scale the model was fitted on", {
@@ -124,7 +124,7 @@ test_that("centring that leaves nothing to model is refused", {
   expect_error(
     multilpa(single, activity, "student", n_profiles = 2, n_group_classes = 1,
              n_starts = 1, seed = 1, centering = "person"),
-    class = "multilpa_bad_data")
+    class = "latents_bad_data")
 })
 
 test_that("the fit says which scale it is on", {

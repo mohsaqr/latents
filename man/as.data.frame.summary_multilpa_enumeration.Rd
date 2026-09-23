@@ -13,7 +13,7 @@
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{...}{Must be empty. An argument here raises \code{multilpa_bad_argument}
+\item{...}{Must be empty. An argument here raises \code{latents_bad_argument}
 naming it, rather than being dropped.}
 }
 \value{

@@ -23,7 +23,7 @@
 #'   `level` the classification tables use is not an argument here: it follows
 #'   from whether the fit has discrete group classes.
 #' @param ... For `diagnostics()`, nothing further is accepted. An argument this
-#'   function cannot forward raises an error of class `multilpa_bad_argument`
+#'   function cannot forward raises an error of class `latents_bad_argument`
 #'   naming it, rather than being dropped on the way to a table that then means
 #'   something other than what was asked for. For `plot()`, style overrides, as
 #'   in [plot.multilpa()].
@@ -31,7 +31,7 @@
 #'   `get_results(result, what = )`, which offers `"entropy"`, `"classification"`,
 #'   `"average_posteriors"`, `"residuals"` and `"all"`, and never with `$`. A
 #'   model family that has no bivariate residuals leaves that table out of
-#'   `"all"`, and asking for it by name raises `multilpa_no_group_classes`.
+#'   `"all"`, and asking for it by name raises `latents_no_group_classes`.
 #'
 #'   `print()` returns the object invisibly, having printed one line per
 #'   diagnostic: relative entropy, smallest class, lowest average posterior and
@@ -72,7 +72,7 @@ diagnostics <- function(x, data = NULL, plots = FALSE,
     # Residuals need a discrete group-class model; a fit without one refuses
     # rather than returning a table of a different meaning.
     residuals = tryCatch(.multilpa_bivariate_residuals(x, data, by = by),
-                         multilpa_no_group_classes = function(condition) NULL),
+                         latents_no_group_classes = function(condition) NULL),
     fit = x)
   class(result) <- "multilpa_diagnostics"
   if (isTRUE(plots)) plot(result)
@@ -161,7 +161,7 @@ print.multilpa_diagnostics <- function(x, ...) {
   labels <- ifelse(nzchar(supplied), sprintf("`%s`", supplied), "an unnamed argument")
   stop(errorCondition(
     sprintf("%s does not use %s. %s", verb, paste(labels, collapse = ", "), advice),
-    class = "multilpa_bad_argument", call = NULL))
+    class = "latents_bad_argument", call = NULL))
 }
 
 #' @rdname diagnostics
@@ -198,7 +198,7 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #'   the bivariate residuals: `"profile"`, the default, assesses each profile
 #'   separately, `"overall"` pools them.
 #' @param ... Nothing further is accepted. An argument this function cannot
-#'   forward raises an error of class `multilpa_bad_argument` naming it, before
+#'   forward raises an error of class `latents_bad_argument` naming it, before
 #'   anything has been printed, rather than being dropped.
 #' @section What it prints: `summary()`, which is every table the fit can
 #'   produce, then `descriptives()`, then the condensed reading of
@@ -207,7 +207,7 @@ plot.multilpa_diagnostics <- function(x, ...) {
 #'   rather than from here.
 #' @return The fitted model, invisibly. Called for the printing and drawing.
 #' @seealso [summary()], [diagnostics()], [descriptives()],
-#'   [multilpa_plot_types()].
+#'   [plot_views()].
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -245,11 +245,11 @@ report <- function(x, data = NULL, plots = TRUE,
         if (is.na(view)) plot(x) else plot(x, what = view)
         NULL
       },
-      multilpa_no_plot = function(condition) view,
-      multilpa_nothing_to_plot = function(condition) view,
-      multilpa_no_time = function(condition) view,
-      multilpa_no_categorical = function(condition) view,
-      multilpa_no_indicator_data = function(condition) view)
+      latents_no_plot = function(condition) view,
+      latents_nothing_to_plot = function(condition) view,
+      latents_no_time = function(condition) view,
+      latents_no_categorical = function(condition) view,
+      latents_no_indicator_data = function(condition) view)
       drawn
     }))
     if (length(refused) > 0L) {
@@ -263,7 +263,7 @@ report <- function(x, data = NULL, plots = TRUE,
 
 #' The plot views a given fit can actually draw
 #'
-#' `multilpa_plot_types()` lists every view the methods accept; this filters it
+#' `plot_views()` lists every view the methods accept; this filters it
 #' to the ones this fit has the ingredients for, so `report()` does not stop on
 #' the first refusal.
 #'

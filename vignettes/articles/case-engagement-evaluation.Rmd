@@ -22,7 +22,7 @@ Model evaluation therefore involves several related questions. First, it is impo
 The three-profile, three-class model introduced in [the introductory vignette](case-engagement-profiles.html) serves as the starting point for these evaluation procedures. The following sections use this model as a reference while examining profile separation, measurement assumptions, and alternative model specifications.
 
 ```{r setup, message = FALSE}
-library(multilpa)
+library(latents)
 ```
 
 ## Data and starting model

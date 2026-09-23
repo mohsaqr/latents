@@ -118,7 +118,7 @@ test_that("with no covariates the covariate model is the covariate-free one", {
     # The covariate estimator with no covariates: `multilpa()` cannot be
     # asked for it, because naming no covariate requests the covariate-free
     # model, which is exactly what this compares it against.
-    covariate <- quietly(do.call(multilpa:::.multilpa_fit_covariates, c(list(
+    covariate <- quietly(do.call(latents:::.multilpa_fit_covariates, c(list(
       data, case$vars, "g", 2L, 2L, n_starts = 1, seed = 4,
       max_iter = 3000, tol = 1e-12), case$extra)))
     expect_equal(plain$log_likelihood, covariate$log_likelihood, tolerance = 1e-6)
@@ -211,8 +211,8 @@ test_that("inference refuses a categorical covariate fit rather than miscounting
   fit <- quietly(multilpa(data, c("y1", "y2", "q"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 2, seed = 3, categorical = "q"))
   expect_error(parameter_inference(fit, data),
-               class = "multilpa_unsupported_inference")
-  expect_error(vcov(fit, data), class = "multilpa_unsupported_inference")
+               class = "latents_unsupported_inference")
+  expect_error(vcov(fit, data), class = "latents_unsupported_inference")
   # The fit itself is still usable; only the standard errors are withheld.
   expect_s3_class(get_results(fit, "posteriors"), "data.frame")
   expect_true(is.finite(fit$log_likelihood))
@@ -225,7 +225,7 @@ test_that("natural covariance errors agree with the covariate-free model's own",
   # is therefore a cross-implementation check on the transformation, which
   # comparing a fit with itself could never provide.
   plain <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L, n_starts = 1, seed = 4, max_iter = 4000, tol = 1e-12, covariance_model = "full"))
-  covariate <- quietly(multilpa:::.multilpa_fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
+  covariate <- quietly(latents:::.multilpa_fit_covariates(data, c("y1", "y2"), "g", 2L, 1L,
     n_starts = 1, seed = 4, max_iter = 4000, tol = 1e-12,
     covariance_model = "full"))
   from_plain <- parameter_inference(plain, data)

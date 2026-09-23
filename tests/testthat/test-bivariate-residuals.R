@@ -139,7 +139,7 @@ test_that("a broken contract is refused", {
   expect_error(get_results(fit, "residuals", data = subset(data, select = c(school, a))),
                "must contain the fitted indicators")
   expect_error(get_results("not a fit", "residuals", data = data),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("a single indicator has no pair to assess", {

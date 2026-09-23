@@ -13,7 +13,7 @@
 
 \item{optional}{Ignored, present for generic compatibility.}
 
-\item{...}{Must be empty. An argument here raises \code{multilpa_bad_argument}
+\item{...}{Must be empty. An argument here raises \code{latents_bad_argument}
 naming it, rather than being dropped, because \verb{what =} used to live on
 this generic and silently returning the primary table instead of the one
 that was asked for is the one outcome worth refusing.}

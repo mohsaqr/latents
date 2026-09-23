@@ -27,13 +27,13 @@ test_that("every M-step reproduces mclust's own, or beats it", {
         sum(chol2inv(chol(block)) * scatter[[profile]])
     }, numeric(1)))
   }
-  invisible(lapply(multilpa:::.multilpa_structures(), function(code) {
+  invisible(lapply(latents:::.multilpa_structures(), function(code) {
     # `mstep()` resolves its per-model worker from the calling frame, so the
     # call is evaluated in mclust's own namespace.
     reference <- do.call(mclust::mstep, list(modelName = code, data = X, z = z),
                          envir = asNamespace("mclust"))
     theirs <- reference$parameters$variance$sigma
-    ours <- multilpa:::.multilpa_structure_covariances(scatter, weights, code,
+    ours <- latents:::.multilpa_structure_covariances(scatter, weights, code,
                                                        1e-12)
     # The twelve with a closed form or a scalar fixed point agree exactly. The
     # two whose orientation has no closed form need only be no worse.
@@ -54,9 +54,9 @@ test_that("the parameter counts are the ones mclust reports", {
   # `Mclust()` resolves `mclustBIC` from the calling frame, so a namespaced
   # call needs it bound here.
   mclustBIC <- mclust::mclustBIC
-  count <- multilpa:::.multilpa_structure_parameters
+  count <- latents:::.multilpa_structure_parameters
   X <- as.matrix(course_engagement[activity])
-  codes <- multilpa:::.multilpa_structures()
+  codes <- latents:::.multilpa_structures()
   invisible(lapply(codes, function(code) {
     reference <- mclust::Mclust(X, G = 3L, modelNames = code, verbose = FALSE)
     skip_if(is.null(reference))

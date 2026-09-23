@@ -108,7 +108,7 @@
 #'   is across a student's courses -- but only those aggregate constants were
 #'   used. No row, identifier or value of any real student is present, and the
 #'   source is not distributed.
-#' @seealso `vignette("multilpa")` for the analysis these data are used in,
+#' @seealso `vignette("lpa", package = "latents")` for the analysis these data are used in,
 #'   [multilpa()] for the two-level model, [lta()] for the
 #'   sequence, and `multilpa(profile_covariates = )` for `previous_grade`.
 #' @examples

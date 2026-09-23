@@ -26,7 +26,7 @@ and whether a different number of profiles or group classes fits better.
 indicators, each standardized within course.
 
 ```{r setup}
-library(multilpa)
+library(latents)
 ```
 
 ## The model to evaluate

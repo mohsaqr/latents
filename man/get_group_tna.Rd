@@ -25,7 +25,7 @@ An object of class \code{group_tna}, one \code{tna} model per latent class:
 Builds one \code{\link[tna:build_model]{tna::tna()}} model per latent group class of a fitted transition
 model, collected into the \code{group_tna} object tna's grouped verbs expect.
 A class row with no expected outgoing moves keeps the fit's unestimated
-transition probabilities and raises \code{multilpa_empty_transition_row}.
+transition probabilities and raises \code{latents_empty_transition_row}.
 }
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {

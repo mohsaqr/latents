@@ -97,7 +97,7 @@
         "A spherical shape is a multiple of the identity, so it has no",
         "orientation to constrain. Drop `orientation`, or name a shape that",
         "is not spherical."),
-        class = "multilpa_bad_argument", call = NULL))
+        class = "latents_bad_argument", call = NULL))
     }
     return(if (identical(volume, "equal")) "EII" else "VII")
   }
@@ -105,7 +105,7 @@
     stop(errorCondition(paste(
       "`orientation = \"axis\"` is a diagonal covariance and",
       "`covariance_model = \"full\"` is not. Name one of them."),
-      class = "multilpa_bad_argument", call = NULL))
+      class = "latents_bad_argument", call = NULL))
   }
   letter <- function(value) if (identical(value, "equal")) "E" else "V"
   paste0(letter(volume), letter(shape),
@@ -234,7 +234,7 @@
     warning(warningCondition(sprintf(paste(
       "The equal-shape covariance did not settle in %d iterations, so this",
       "M-step returns the last shape it reached rather than the maximiser."),
-      max_iter), class = "multilpa_no_converge"))
+      max_iter), class = "latents_no_converge"))
   }
   volumes <- rowSums(sweep(bounded, 2L, shape, "/")) / (weights * d)
   outer(volumes, shape)
@@ -282,7 +282,7 @@
     "`method = \"bootstrap\"`, which resamples groups and needs no such chart,",
     "or refit with `variance_model` alone for EEI or VVI, or",
     "`covariance_model = \"full\"` for EEE or VVV."), structure),
-    class = "multilpa_unsupported_inference", call = NULL))
+    class = "latents_unsupported_inference", call = NULL))
 }
 
 #' Put starting variances inside the family they will be maximized in
@@ -649,7 +649,7 @@
     "reported separately."),
     capped, .multilpa_structure_log$structure,
     .multilpa_structure_log$max_iter),
-    class = "multilpa_no_converge"))
+    class = "latents_no_converge"))
   invisible(NULL)
 }
 

@@ -137,7 +137,7 @@ get_results(fit, what = "assignments", data = course_engagement,
          truth = "engagement")
 }
 \seealso{
-\code{vignette("multilpa")} for the analysis these data are used in,
+\code{vignette("lpa", package = "latents")} for the analysis these data are used in,
 \code{\link[=multilpa]{multilpa()}} for the two-level model, \code{\link[=lta]{lta()}} for the
 sequence, and \code{multilpa(profile_covariates = )} for \code{previous_grade}.
 }

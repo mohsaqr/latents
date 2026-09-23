@@ -7,7 +7,7 @@ test_that("enumeration retains failures and both BIC conventions", {
   expect_equal(nrow(grid), 4L)
   expect_match(grid$error[3], "profile")
   expect_error(candidate_fit(result, n_profiles = 1, n_group_classes = 2),
-               class = "multilpa_failed_candidate")
+               class = "latents_failed_candidate")
   # Every criterion the grid names must actually carry numbers. `aic` was
   # silently an all-missing column named `NA.`, so a finiteness assertion on
   # `grid$aic` passed vacuously against a column that did not exist.
@@ -31,7 +31,7 @@ test_that("enumeration retains failures and both BIC conventions", {
   # so the refusal is visible at once instead of as a grid of failed fits.
   expect_error(enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
                                  nonsense = 1, seed = 1),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
 })
 
 test_that("simulation preserves group layout and full covariance moments", {
@@ -79,7 +79,7 @@ test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
   large <- multilpa(d, "y", "g", 2, 1, n_starts = 2, seed = 12)
   testthat::local_mocked_bindings(multilpa = function(...) stop("test optimization failure"))
   expect_warning(result <- bootstrap_lrt(small, large, d, iter = 2, seed = 1),
-                 class = "multilpa_failed_replicates")
+                 class = "latents_failed_replicates")
   expect_s3_class(result, "multilpa_bootstrap_lrt")
   ## Methods added in this sweep reach the generic only after the NAMESPACE is
   ## regenerated, so they are exercised by explicit call here. Dispatch itself
@@ -91,7 +91,7 @@ test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
   replicates <- get_results(result, "replicates")
   expect_true(all(replicates$error == "test optimization failure"))
   expect_error(plot.multilpa_bootstrap_lrt(result),
-               class = "multilpa_nothing_to_plot")
+               class = "latents_nothing_to_plot")
 })
 
 test_that("bootstrap refits generated data and reports finite simulation correction", {
@@ -170,7 +170,7 @@ test_that("boundary convergence noise is not mistaken for a reversed likelihood"
   # An unconverged model is refused before any statistic is formed, by class.
   # This guard fires ahead of the reversed-likelihood one, and correctly so: a
   # reversal means the alternative was badly optimised, which is what this
-  # catches. That ordering makes `multilpa_reversed_likelihood` hard to reach
+  # catches. That ordering makes `latents_reversed_likelihood` hard to reach
   # from here, so it is not asserted in this test.
   poor_start <- list(means = matrix(rep(c(0, 1), each = length(vars)),
                                     nrow = 2, byrow = TRUE),
@@ -183,7 +183,7 @@ test_that("boundary convergence noise is not mistaken for a reversed likelihood"
                                   start = poor_start, tol = 1e-8))
   expect_error(bootstrap_lrt(null_fit, unconverged, iter = 2, n_starts = 1,
                              seed = 1),
-               class = "multilpa_no_converge")
+               class = "latents_no_converge")
 })
 
 test_that("covariance models are named with `model`, and a stray argument is refused", {
@@ -200,7 +200,7 @@ test_that("covariance models are named with `model`, and a stray argument is ref
   expect_error(enumerate_classes(engagement_small, "browse", "student",
                                  n_profiles = 2, n_group_classes = 1,
                                  structure = "VVI"),
-               class = "multilpa_bad_argument")
+               class = "latents_bad_argument")
   expect_error(enumerate_classes(engagement_small, "browse", "student",
                                  n_profiles = 2, n_group_classes = 1,
                                  structure = "VVI"),
@@ -236,5 +236,5 @@ test_that("the enumeration plot draws several criteria and restores the device",
   expect_identical(graphics::par("mfrow"), before)
   expect_error(plot(grid, combine = NA))
   expect_error(plot(grid, criterion = c("aic", "not_a_criterion")),
-               class = "multilpa_unknown_criterion")
+               class = "latents_unknown_criterion")
 })

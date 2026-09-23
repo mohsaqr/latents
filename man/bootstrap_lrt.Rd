@@ -70,15 +70,15 @@ refused rather than given a p-value.
 }
 \section{Conditions}{
 
-\code{multilpa_bad_nesting} when only one of the two models holds measurement
+\code{latents_bad_nesting} when only one of the two models holds measurement
 blocks fixed, when they hold different blocks, when they hold the same
 blocks at different values, when they hold a measurement fixed while
 differing in the number of profiles (the held blocks then have different
 shapes, so the null is not a restriction of the alternative), or when the
 alternative does not estimate more free parameters than the null.
-\code{multilpa_failed_replicates} is warned when some replicate fails
+\code{latents_failed_replicates} is warned when some replicate fails
 validation, and the p-value is \code{NA}.
-\code{multilpa_unsupported_bootstrap} refuses person-centred fits, for which
+\code{latents_unsupported_bootstrap} refuses person-centred fits, for which
 this simulator has no group-baseline distribution.
 }
 

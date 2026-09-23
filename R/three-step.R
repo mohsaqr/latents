@@ -20,7 +20,7 @@
 
 #' Require a first-stage fit whose classification error is not predictor-dependent
 #' @param object A fitted model of this package.
-#' @return `NULL`, invisibly, or `multilpa_unsupported_three_step`.
+#' @return `NULL`, invisibly, or `latents_unsupported_three_step`.
 #' @noRd
 .multilpa_check_three_step_fit <- function(object) {
   stopifnot("`x` must be a fitted model of this package" =
@@ -31,7 +31,7 @@
       "membership covariates: this method has no classification-error",
       "adjustment conditional on those covariates. Fit the measurement model",
       "without membership covariates before using three_step() or r3step()."),
-      class = "multilpa_unsupported_three_step", call = NULL))
+      class = "latents_unsupported_three_step", call = NULL))
   }
   invisible(NULL)
 }
@@ -135,12 +135,12 @@
       paste("The classification error matrix cannot be inverted, so the classes",
             "are not separated well enough for a three-step correction.",
             "Inspect get_results(x, \"classification_errors\")."),
-      class = "multilpa_inseparable_classes", call = NULL))
+      class = "latents_inseparable_classes", call = NULL))
   })
   if (min(abs(eigen(as.matrix(errors), only.values = TRUE)$values)) < 1e-8) {
     stop(errorCondition(
       "The classification error matrix is numerically singular; the classes are not separable.",
-      class = "multilpa_inseparable_classes", call = NULL))
+      class = "latents_inseparable_classes", call = NULL))
   }
   inverse
 }
@@ -219,7 +219,7 @@
 #'   unit, and those contributions sum to zero at the estimate, so it has rank
 #'   at most one less than the number of units. With a single group it is
 #'   exactly zero and with as many groups as classes it is singular. Both are
-#'   refused with `multilpa_too_few_groups` rather than reported as a very
+#'   refused with `latents_too_few_groups` rather than reported as a very
 #'   small standard error; `vcov_type = "independent"` is the labelled way to
 #'   ask for the unclustered variance instead.
 #'
@@ -277,7 +277,7 @@ three_step <- function(x, data, outcome,
   if (outcome %in% x$vars) {
     stop(errorCondition(sprintf(
       "`%s` helped define the fitted classes, so it is not a distal outcome.",
-      outcome), class = c("multilpa_indicator_reused", "multilpa_bad_outcome"),
+      outcome), class = c("multilpa_indicator_reused", "latents_bad_outcome"),
       call = NULL))
   }
   pieces <- .multilpa_level_assignments(x, level)
@@ -291,7 +291,7 @@ three_step <- function(x, data, outcome,
   totals <- colSums(weights)
   if (any(!is.finite(totals)) || any(totals <= 0)) {
     stop(errorCondition("A class has no positive total outcome weight.",
-                        class = "multilpa_inseparable_classes", call = NULL))
+                        class = "latents_inseparable_classes", call = NULL))
   }
   # BCH weights may be negative. Multiplying and summing a constant outcome
   # directly can then leave a few ulps of cancellation, which looks like a
@@ -353,7 +353,7 @@ three_step <- function(x, data, outcome,
   if (n_classes < 2L) {
     stop(errorCondition(
       "A single class has no other class to be compared with.",
-      class = "multilpa_inseparable_classes", call = NULL))
+      class = "latents_inseparable_classes", call = NULL))
   }
   pairs <- utils::combn(n_classes, 2L)
   difference <- estimates[pairs[2L, ]] - estimates[pairs[1L, ]]
@@ -389,7 +389,7 @@ three_step <- function(x, data, outcome,
   if (!all(constant)) {
     stop(errorCondition(
       "For `level = \"groups\"` the outcome must be constant within each group.",
-      class = "multilpa_bad_outcome", call = NULL))
+      class = "latents_bad_outcome", call = NULL))
   }
   vapply(by_group, function(v) v[[1L]], numeric(1))
 }
@@ -447,7 +447,7 @@ three_step <- function(x, data, outcome,
 #'   needs more independent groups than the regression has coefficients, because
 #'   the group score contributions sum to zero at the estimate and so span at
 #'   most one dimension fewer than there are groups; with too few it is refused
-#'   with `multilpa_too_few_groups` rather than reporting a variance that is
+#'   with `latents_too_few_groups` rather than reporting a variance that is
 #'   singular, or, with a single group, numerically zero. `"observed"` remains
 #'   available there and does not allow for the nesting.
 #' @param adjust Multiplicity correction applied across the covariate terms,
@@ -537,7 +537,7 @@ r3step <- function(x, data, covariates,
     stop(errorCondition(sprintf(
       "Measurement indicator(s) %s already helped define the fitted classes and cannot be used as external predictors.",
       paste(sprintf("`%s`", reused), collapse = ", ")),
-      class = c("multilpa_indicator_reused", "multilpa_bad_covariate"),
+      class = c("multilpa_indicator_reused", "latents_bad_covariate"),
       call = NULL))
   }
   pieces <- .multilpa_level_assignments(x, level)
@@ -546,7 +546,7 @@ r3step <- function(x, data, covariates,
   if (pieces$n_classes < 2L) {
     stop(errorCondition(
       "A single class has no membership to predict.",
-      class = "multilpa_inseparable_classes", call = NULL))
+      class = "latents_inseparable_classes", call = NULL))
   }
   design <- .multilpa_r3step_design(x, data, covariates, level)
   errors <- .multilpa_error_matrix(pieces)
@@ -584,7 +584,7 @@ r3step <- function(x, data, covariates,
     stop(errorCondition(
       sprintf("The membership regression did not converge (optim code %d).",
               fitted$convergence),
-      class = "multilpa_no_converge", call = NULL))
+      class = "latents_no_converge", call = NULL))
   }
   information <- .multilpa_observed_hessian(
     function(step) objective(fitted$par + step),
@@ -613,7 +613,7 @@ r3step <- function(x, data, covariates,
     if (!all(constant)) {
       stop(errorCondition(
         "For `level = \"groups\"` every covariate must be constant within a group.",
-        class = "multilpa_bad_covariate", call = NULL))
+        class = "latents_bad_covariate", call = NULL))
     }
     values <- values[!duplicated(object$group_index), , drop = FALSE]
   }
@@ -621,7 +621,7 @@ r3step <- function(x, data, covariates,
   if (qr(design)$rank < ncol(design)) {
     stop(errorCondition(
       "The covariate design is rank deficient; remove constant or collinear predictors.",
-      class = "multilpa_bad_covariate", call = NULL))
+      class = "latents_bad_covariate", call = NULL))
   }
   design
 }

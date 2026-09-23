@@ -64,7 +64,7 @@ returned. Describing by a class the model assigned keeps that assignment
 out of the described frame, so an indicator of the caller's own that is
 named \code{profile} or \code{group_class} is summarized as itself, not replaced by
 the assignment. A \code{by} whose name is one of the summary's own columns
-cannot be told apart from them and raises \code{multilpa_bad_data}.
+cannot be told apart from them and raises \code{latents_bad_data}.
 }
 \description{
 One row per variable, with the summaries you would look at before fitting and

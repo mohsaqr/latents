@@ -30,7 +30,7 @@ each enrolment; it is not an indicator, so it can serve as an external
 variable.
 
 ```{r setup}
-library(multilpa)
+library(latents)
 ```
 
 ## The measurement model

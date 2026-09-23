@@ -43,7 +43,7 @@ because those labels are what lets \code{\link[=multilpa]{multilpa()}} attach a 
 it was estimated for rather than to whichever item happens to sit in that
 position. A fit that names its categorical indicators in another order, or
 that has other categories, therefore refuses the start with
-\code{multilpa_bad_start} instead of reporting a likelihood for a measurement
+\code{latents_bad_start} instead of reporting a likelihood for a measurement
 model it never held. The list payload is unchanged by the class, so a
 \code{multilpa_start} can be passed straight back as \code{start}.
 }
