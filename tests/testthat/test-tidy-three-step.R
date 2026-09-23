@@ -15,10 +15,21 @@
              y = stats::rnorm(n, ifelse(truth == 2L, difference, 0)))
 }
 
-.tidy_step_fit <- function(data, n_profiles = 2L) {
-  multilpa(data, c("a", "b"), "g", n_profiles = n_profiles, n_group_classes = 1,
-           n_starts = 6, seed = 1)
-}
+# The fixture separates its classes clearly, so one start is enough, and most
+# tests fit the same data: each fit is computed once and reused.
+.tidy_step_fit <- local({
+  cache <- list()
+  function(data, n_profiles = 2L) {
+    hit <- Filter(function(entry) entry$n_profiles == n_profiles &&
+                    identical(entry$data, data), cache)
+    if (length(hit)) return(hit[[1L]]$fit)
+    fit <- multilpa(data, c("a", "b"), "g", n_profiles = n_profiles,
+                    n_group_classes = 1, n_starts = 1, seed = 1)
+    cache[[length(cache) + 1L]] <<- list(data = data, n_profiles = n_profiles,
+                                         fit = fit)
+    fit
+  }
+})
 
 test_that("the weight frame is long, so its columns do not grow with K", {
   data <- .tidy_step_data()

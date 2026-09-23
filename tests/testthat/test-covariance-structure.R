@@ -6,10 +6,11 @@
 activity <- c("browse", "lectures", "forum_read")
 
 structure_fit <- function(..., n_profiles = 3L) {
-  # The constrained structures alternate two closed forms, so they take more
-  # iterations to settle than a free diagonal does.
-  multilpa(course_engagement, activity, "student", n_profiles = n_profiles,
-           n_group_classes = 1, n_starts = 5, seed = 1, max_iter = 5000, ...)
+  # The constraints are imposed by every M-step, so they hold at any iterate:
+  # one start and a short run are enough to test them.
+  quietly(multilpa(engagement_small, activity, "student",
+                   n_profiles = n_profiles, n_group_classes = 1, n_starts = 1,
+                   seed = 1, max_iter = 50, ...))
 }
 
 test_that("volume, shape and orientation resolve to all fourteen codes", {
@@ -92,28 +93,36 @@ test_that("each M-step solves the formula it claims to", {
 })
 
 test_that("relaxing a constraint cannot lower the maximized likelihood", {
-  skip_on_cran()
-  fits <- list(
-    EII = structure_fit(volume = "equal", shape = "spherical"),
-    VII = structure_fit(volume = "varying", shape = "spherical"),
-    EEI = structure_fit(variance_model = "equal"),
-    VEI = structure_fit(volume = "varying", shape = "equal"),
-    EVI = structure_fit(volume = "equal", shape = "varying"),
-    VVI = structure_fit(variance_model = "varying"))
-  likelihood <- vapply(fits, `[[`, numeric(1), "log_likelihood")
-  parameters <- vapply(fits, `[[`, numeric(1), "n_parameters")
+  specification <- list(
+    EII = list(volume = "equal", shape = "spherical"),
+    VII = list(volume = "varying", shape = "spherical"),
+    EEI = list(variance_model = "equal"),
+    VEI = list(volume = "varying", shape = "equal"),
+    EVI = list(volume = "equal", shape = "varying"),
+    VVI = list(variance_model = "varying"))
+  fit_code <- function(code, start = NULL) {
+    quietly(do.call(multilpa, c(list(
+      engagement_small, activity, "student", n_profiles = 3L,
+      n_group_classes = 1, n_starts = 1,
+      seed = 1, max_iter = 100, start = start), specification[[code]])))
+  }
+  fits <- lapply(stats::setNames(nm = names(specification)), fit_code)
   expect_identical(vapply(fits, `[[`, character(1), "covariance_structure"),
                    c(EII = "EII", VII = "VII", EEI = "EEI", VEI = "VEI",
                      EVI = "EVI", VVI = "VVI"))
-  # Every edge of the nesting lattice: the wider model must fit at least as
-  # well, and must cost more parameters.
+  # Every edge of the nesting lattice. The wider model is started from the
+  # narrower model's solution, which satisfies the wider constraints, so EM
+  # can only raise the likelihood: the inequality holds by construction and
+  # does not depend on random starts finding the global maximum.
   nested <- list(c("EII", "VII"), c("EII", "EEI"), c("VII", "VEI"),
                  c("EEI", "VEI"), c("EEI", "EVI"), c("VEI", "VVI"),
                  c("EVI", "VVI"))
   invisible(lapply(nested, function(edge) {
-    expect_lte(likelihood[[edge[1L]]], likelihood[[edge[2L]]] + 1e-6,
+    narrow <- fits[[edge[1L]]]
+    wide <- fit_code(edge[2L], start = starting_values(narrow))
+    expect_lte(narrow$log_likelihood, wide$log_likelihood + 1e-6,
                label = paste(edge, collapse = " in "))
-    expect_lt(parameters[[edge[1L]]], parameters[[edge[2L]]])
+    expect_lt(narrow$n_parameters, wide$n_parameters)
   }))
 })
 
@@ -131,13 +140,13 @@ test_that("a constrained structure refuses a held variance block", {
   free <- structure_fit(variance_model = "varying", n_profiles = 2L)
   start <- starting_values(free)
   expect_error(
-    multilpa(course_engagement, activity, "student", n_profiles = 2,
+    multilpa(engagement_small, activity, "student", n_profiles = 2,
              n_group_classes = 1, n_starts = 1, seed = 1, start = start,
              fixed = "variances", volume = "equal", shape = "varying"),
     class = "multilpa_bad_argument")
   # Holding only the means leaves the spread free, so it is allowed.
   expect_s3_class(
-    multilpa(course_engagement, activity, "student", n_profiles = 2,
+    multilpa(engagement_small, activity, "student", n_profiles = 2,
              n_group_classes = 1, n_starts = 1, seed = 1, start = start,
              fixed = "means", volume = "equal", shape = "varying"),
     "multilpa")
@@ -166,11 +175,10 @@ test_that("the equal-shape iteration is bounded and says when it stops short", {
 })
 
 test_that("the structure grid crosses models with class counts", {
-  skip_on_cran()
-  candidates <- enumerate_classes(
-    course_engagement, activity, "student", n_profiles = 2:3,
+  candidates <- quietly(enumerate_classes(
+    engagement_small, activity, "student", n_profiles = 2:3,
     n_group_classes = 1, structure = c("EEI", "EVI", "EEE"),
-    n_starts = 2, seed = 1, max_iter = 2000)
+    n_starts = 2, seed = 1, max_iter = 50))
   grid <- get_results(candidates, "candidates")
   expect_true("structure" %in% names(grid))
   expect_identical(nrow(grid), 6L)
@@ -188,13 +196,12 @@ test_that("the structure grid crosses models with class counts", {
 
 test_that("the grid refuses a model code this package does not fit", {
   expect_error(
-    enumerate_classes(course_engagement, activity, "student", n_profiles = 2,
+    enumerate_classes(engagement_small, activity, "student", n_profiles = 2,
                       n_group_classes = 1, structure = "XYZ", n_starts = 1),
     class = "multilpa_bad_argument")
 })
 
 test_that("an ellipsoidal structure keeps a full covariance array", {
-  skip_on_cran()
   fit <- structure_fit(volume = "equal", shape = "varying",
                        orientation = "varying", n_profiles = 2L)
   expect_identical(fit$covariance_structure, "EVV")
@@ -221,7 +228,6 @@ test_that("the assignments table carries what modal assignment discards", {
 })
 
 test_that("a warm-started M-step lands where a cold one does", {
-  skip_on_cran()
   set.seed(3)
   n <- 400L; d <- 3L; k <- 3L
   X <- matrix(stats::rnorm(n * d), n, d)
@@ -248,7 +254,6 @@ test_that("a warm-started M-step lands where a cold one does", {
 })
 
 test_that("capped M-steps are counted and reported once, not once each", {
-  skip_on_cran()
   reset <- multilpa:::.multilpa_reset_structure_log
   note <- multilpa:::.multilpa_warn_structure
   report <- multilpa:::.multilpa_report_structure_log
@@ -265,7 +270,6 @@ test_that("capped M-steps are counted and reported once, not once each", {
 })
 
 test_that("every structure's defining constraint holds in the fitted parameters", {
-  skip_on_cran()
   # Counting a structure's parameters and reporting its name proves nothing
   # about what was fitted. Each model is defined by a constraint on the
   # covariances, and that is what is checked here: a fit reported as EEI whose
@@ -284,8 +288,8 @@ test_that("every structure's defining constraint holds in the fitted parameters"
     # at their cap on a fixture this small; that is the package saying so, not
     # a failure, and every other warning still reaches testthat.
     fit <- quietly(do.call(multilpa, c(
-      list(course_engagement, indicators, "student", n_profiles = 3,
-           n_group_classes = 1, n_starts = 3, seed = 1, max_iter = 4000),
+      list(engagement_small, indicators, "student", n_profiles = 3,
+           n_group_classes = 1, n_starts = 1, seed = 1, max_iter = 50),
       arguments)), c(.multilpa_expected_warnings, "multilpa_no_converge"))
     expect_identical(fit$covariance_structure, code)
     d <- length(indicators)
@@ -323,10 +327,9 @@ test_that("every structure's defining constraint holds in the fitted parameters"
 })
 
 test_that("a structure named by its pieces fits what the old arguments fit", {
-  skip_on_cran()
   indicators <- c("browse", "lectures", "forum_read")
-  common <- list(course_engagement, indicators, "student", n_profiles = 3,
-                 n_group_classes = 1, n_starts = 3, seed = 1, max_iter = 4000)
+  common <- list(engagement_small, indicators, "student", n_profiles = 3,
+                 n_group_classes = 1, n_starts = 1, seed = 1, max_iter = 50)
   # The four structures `variance_model` and `covariance_model` already named
   # are maximized by a different branch of the M-step from the constrained
   # ones, so the two routes to them have to be checked against each other.

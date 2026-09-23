@@ -152,9 +152,9 @@ test_that("inseparable classes are refused rather than inverted", {
 test_that("classification errors remain available for covariate fits", {
   data <- .step_data()
   data$x <- stats::rnorm(nrow(data))
-  fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2,
+  fit <- quietly(multilpa(data, c("a", "b"), "g", n_profiles = 2,
                         n_group_classes = 2, profile_covariates = "x",
-                        n_starts = 4, seed = 1)
+                        n_starts = 1, max_iter = 20, seed = 1))
   expect_equal(nrow(get_results(fit, "classification_errors", level = "individuals")), 4L)
   expect_error(three_step(fit, data, "y"),
                class = "multilpa_unsupported_three_step")

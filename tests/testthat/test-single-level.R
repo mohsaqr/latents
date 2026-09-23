@@ -90,7 +90,7 @@ test_that("a column already called .observation is refused", {
 
 test_that("the package's verbs work on a single-level fit", {
   skip_on_cran()
-  fit <- flat_fit(n_starts = 5L, seed = 1L)
+  fit <- flat_fit(n_starts = 2L, seed = 1L)
   # Inference, classification and the tables, on a fit with no second level.
   inference <- parameter_inference(fit)
   expect_true(all(is.finite(inference$standard_error)))
@@ -106,8 +106,8 @@ test_that("the package's verbs work on a single-level fit", {
   # rows with two starts a resample occasionally fails to converge, and the
   # warning saying how many were dropped is the one this fixture expects.
   boot <- quietly(
-    parameter_inference(fit, method = "bootstrap", iter = 25L,
-                        n_starts = 2L, seed = 2L),
+    parameter_inference(fit, method = "bootstrap", iter = 10L,
+                        n_starts = 1L, seed = 2L),
     c("multilpa_bootstrap_dropped", "multilpa_unconverged"))
   expect_true(all(boot$conf_low <= boot$estimate & boot$estimate <= boot$conf_high))
 })

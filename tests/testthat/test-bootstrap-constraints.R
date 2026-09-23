@@ -89,12 +89,12 @@ test_that("bootstrap refits retain grand centering", {
   data <- data.frame(g = rep(seq_len(20L), each = 6L),
                      y = c(stats::rnorm(60L, 28), stats::rnorm(60L, 32)))
   small <- multilpa(data, "y", "g", 1L, 1L, centering = "grand",
-                    n_starts = 2L, seed = 1L)
+                    n_starts = 1L, seed = 1L)
   large <- multilpa(data, "y", "g", 2L, 1L, centering = "grand",
-                    n_starts = 2L, seed = 1L)
+                    n_starts = 1L, seed = 1L)
   recorder <- refit_recorder()
   testthat::local_mocked_bindings(multilpa = recorder$mock)
-  quietly(bootstrap_lrt(small, large, data, iter = 2L, n_starts = 2L,
+  quietly(bootstrap_lrt(small, large, data, iter = 2L, n_starts = 1L,
                         seed = 2L))
   calls <- recorder$calls()
   expect_identical(length(calls), 4L)
@@ -155,7 +155,7 @@ test_that("a constrained pair that is not nested is refused", {
 test_that("a held measurement is refused across different profile counts", {
   skip_on_cran()
   models <- constrained_pair()
-  three <- multilpa(models$data, c("a", "b"), "g", 3, 1, n_starts = 3, seed = 5,
+  three <- multilpa(models$data, c("a", "b"), "g", 3, 1, n_starts = 1, seed = 5,
                     tol = 1e-10)
   larger <- multilpa(models$data, c("a", "b"), "g", 3, 1, n_starts = 1,
                      start = starting_values(three, what = "measurement"),

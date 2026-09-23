@@ -99,10 +99,10 @@ test_that("bootstrap refits generated data and reports finite simulation correct
   set.seed(53)
   d <- data.frame(g = rep(1:30, each = 8), y = rnorm(240))
   small <- multilpa(d, "y", "g", 1, 1, variance_model = "equal", n_starts = 2, seed = 8)
-  large <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 3, seed = 8,
+  large <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 1, seed = 8,
                       max_iter = 3000, tol = 1e-7)
   rng <- .Random.seed
-  result <- bootstrap_lrt(small, large, d, iter = 3, n_starts = 3,
+  result <- bootstrap_lrt(small, large, d, iter = 3, n_starts = 1,
                                   max_iter = 3000, tol = 1e-7, seed = 42)
   expect_identical(.Random.seed, rng)
   test <- get_results(result, "test")
@@ -137,9 +137,9 @@ test_that("full covariance print and summary expose residual matrices", {
 test_that("boundary convergence noise is not mistaken for a reversed likelihood", {
   skip_on_cran()
   vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-  null_fit <- multilpa(course_engagement, vars, "student", n_profiles = 2,
+  null_fit <- multilpa(engagement_small, vars, "student", n_profiles = 2,
                        n_group_classes = 1, n_starts = 3, seed = 1, tol = 1e-8)
-  alt_fit <- multilpa(course_engagement, vars, "student", n_profiles = 2,
+  alt_fit <- multilpa(engagement_small, vars, "student", n_profiles = 2,
                       n_group_classes = 2, n_starts = 3, seed = 1, tol = 1e-8)
   # Under the null the alternative converges to the null solution, so every
   # replicate statistic sits at zero plus EM noise. EM stops on a RELATIVE
@@ -178,7 +178,7 @@ test_that("boundary convergence noise is not mistaken for a reversed likelihood"
                      variances = matrix(1, 2, length(vars)),
                      profile_probabilities = matrix(0.5, 2, 2),
                      group_probabilities = c(0.5, 0.5))
-  unconverged <- quietly(multilpa(course_engagement, vars, "student",
+  unconverged <- quietly(multilpa(engagement_small, vars, "student",
                                   n_profiles = 2, n_group_classes = 2,
                                   n_starts = 1, seed = 1, max_iter = 0,
                                   start = poor_start, tol = 1e-8))

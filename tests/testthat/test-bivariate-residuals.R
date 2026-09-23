@@ -125,7 +125,7 @@ test_that("a covariate fit is assessed too", {
   expect_warning(
     fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
                           n_group_classes = 2, profile_covariates = "x",
-                          n_starts = 4, seed = 1),
+                          n_starts = 1, max_iter = 50, seed = 1),
     class = "multilpa_unconverged")
   expect_false(fit$converged)
   residuals <- get_results(fit, "residuals", data = data)
@@ -165,7 +165,7 @@ activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 test_that("the residual table corrects for the number of pairs it tests", {
   skip_on_cran()
   activity <- activity
-  fit <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+  fit <- multilpa(engagement_small, activity, "student", n_profiles = 2,
                   n_group_classes = 2, n_starts = 4, seed = 1)
 
   # `attendance` is generated from the click measures, so these indicators are

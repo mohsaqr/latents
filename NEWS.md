@@ -1,3 +1,16 @@
+# multilpa 0.6.1
+
+## Tests
+
+* Two score tests compared the analytic and numerical gradients at the fitted
+  maximum, where both are near zero; they failed on Linux and Windows. They now
+  compare at a point away from the maximum, where a wrong score is detected.
+* The test suite runs on small data with few starts and iterations: no test
+  fits the full bundled dataset, shared fixtures are fitted once, and tests
+  whose inequality depended on random starts reaching the global maximum now
+  warm-start the wider model. The full suite takes about a fifth of its
+  previous time, and slow tests no longer need to be skipped on CRAN.
+
 # multilpa 0.6.0
 
 ## New data

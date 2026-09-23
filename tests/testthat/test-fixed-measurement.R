@@ -119,12 +119,16 @@ test_that("every measurement model can be held, exactly and with the right count
     fit_one <- function(classes, ...) {
       quietly(multilpa(data, case$vars, "school", n_profiles = 2L,
         n_group_classes = classes, categorical = case$categorical,
-        covariance_model = case$covariance_model, n_starts = 3, seed = 1, ...))
+        covariance_model = case$covariance_model, n_starts = 1, seed = 1,
+        max_iter = 50, ...))
     }
     stage_one <- fit_one(1L)
     held <- fit_one(2L, start = starting_values(stage_one, what = "measurement"),
                     fixed = case$fixed)
-    free <- fit_one(2L)
+    # Started from the held solution, which the free model can represent, EM
+    # can only raise the likelihood, so the comparison below does not depend
+    # on random starts finding the global maximum.
+    free <- fit_one(2L, start = starting_values(held))
     drift <- max(vapply(case$blocks, function(block) {
       max(abs(unlist(held[[block]]) - unlist(stage_one[[block]])))
     }, numeric(1)))
@@ -144,9 +148,9 @@ test_that("incomplete indicators can be fitted with the measurement held", {
   data$a[c(3L, 9L, 40L)] <- NA
   data$b[c(5L, 9L)] <- NA
   stage_one <- quietly(multilpa(data, c("a", "b"), "school",
-    n_profiles = 2L, n_group_classes = 1L, n_starts = 3, seed = 1, missing = "fiml"))
+    n_profiles = 2L, n_group_classes = 1L, n_starts = 1, seed = 1, max_iter = 50, missing = "fiml"))
   held <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-    n_group_classes = 2L, n_starts = 3, seed = 1, missing = "fiml",
+    n_group_classes = 2L, n_starts = 1, seed = 1, max_iter = 50, missing = "fiml",
     start = starting_values(stage_one, what = "measurement"), fixed = "measurement"))
   expect_equal(held$means, stage_one$means)
   expect_equal(held$variances, stage_one$variances)
@@ -156,7 +160,7 @@ test_that("incomplete indicators can be fitted with the measurement held", {
 test_that("a measurement-only start carries no mixing values", {
   data <- .fixed_fixture()
   fit <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                                   n_group_classes = 1L, n_starts = 2, seed = 1))
+                                   n_group_classes = 1L, n_starts = 1, max_iter = 20, seed = 1))
   everything <- starting_values(fit)
   measurement <- starting_values(fit, what = "measurement")
   expect_true(all(c("profile_probabilities", "group_probabilities") %in%
@@ -286,7 +290,7 @@ test_that("held values survive a fit that performs no update at all", {
 test_that("held values survive every random restart when EM does run", {
   data <- .fixed_fixture()
   stage_one <- quietly(multilpa(data, c("a", "b"), "school",
-    n_profiles = 2L, n_group_classes = 1L, n_starts = 2, seed = 1))
+    n_profiles = 2L, n_group_classes = 1L, n_starts = 1, max_iter = 20, seed = 1))
   start <- starting_values(stage_one, what = "measurement")
   # With `max_iter > 0` every one of the `n_starts` restarts runs a real EM
   # sequence, so the held blocks have to be reinstated at each of them. This is

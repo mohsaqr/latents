@@ -68,7 +68,7 @@ test_that("every measurement model reproduces the likelihood written from its de
   invisible(lapply(cases, function(case) {
     fit <- quietly(do.call(multilpa, c(list(
       data, case$vars, "g", 2L, 2L, profile_covariates = "z",
-      n_starts = 2, seed = 3, max_iter = 400), case$extra)))
+      n_starts = 2, seed = 3, max_iter = 50), case$extra)))
     expect_equal(fit$log_likelihood, .cov_independent_likelihood(fit, data),
                  tolerance = 1e-10, label = case$label)
     expect_false(is.unsorted(fit$log_likelihood_history))
@@ -78,13 +78,13 @@ test_that("every measurement model reproduces the likelihood written from its de
 test_that("the measurement blocks and parameter counts match the model fitted", {
   data <- .cov_measurement_fixture()
   gaussian <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3))
+    profile_covariates = "z", n_starts = 2, seed = 3, max_iter = 50))
   full <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, covariance_model = "full"))
+    profile_covariates = "z", n_starts = 2, seed = 3, max_iter = 50, covariance_model = "full"))
   mixed <- quietly(multilpa(data, c("y1", "y2", "q", "r"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, categorical = c("q", "r")))
+    profile_covariates = "z", n_starts = 2, seed = 3, max_iter = 50, categorical = c("q", "r")))
   categorical <- quietly(multilpa(data, c("q", "r"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, categorical = c("q", "r")))
+    profile_covariates = "z", n_starts = 2, seed = 3, max_iter = 50, categorical = c("q", "r")))
 
   expect_identical(gaussian$measurement_model, "gaussian")
   expect_identical(mixed$measurement_model, "mixed")
@@ -140,10 +140,14 @@ test_that("the full-covariance score is the derivative of the likelihood", {
                               fit$profile_design, fit$group_design,
                               pieces$beta, pieces$gamma)$log_likelihood
   }
-  analytic <- colSums(.multilpa_cov_group_scores(theta, x, fit))
+  # At the maximum the score is zero, and comparing two near-zero vectors with
+  # a relative tolerance fails on floating-point noise that differs between
+  # platforms. A fixed perturbation gives a clearly non-zero gradient.
+  probe <- theta + 0.05 * rep_len(c(1, -1), length(theta))
+  analytic <- colSums(.multilpa_cov_group_scores(probe, x, fit))
   step <- 1e-5
-  numerical <- vapply(seq_along(theta), function(index) {
-    up <- theta; down <- theta
+  numerical <- vapply(seq_along(probe), function(index) {
+    up <- probe; down <- probe
     up[index] <- up[index] + step
     down[index] <- down[index] - step
     (log_likelihood(up) - log_likelihood(down)) / (2 * step)

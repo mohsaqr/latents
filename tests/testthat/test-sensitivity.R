@@ -154,7 +154,7 @@ test_that("optimum counts basins, not distinct doubles", {
 test_that("a family that cannot be refit is refused by class, not attempted", {
   skip_on_cran()
   activity <- c("browse", "lectures")
-  transitions <- quietly(lta(course_engagement, vars = activity, id = "student",
+  transitions <- quietly(lta(engagement_small, vars = activity, id = "student",
                              time = "sequence", n_profiles = 2L,
                              n_starts = 2L, max_iter = 300L, seed = 1L))
   expect_error(sensitivity(transitions, seeds = 1:3),

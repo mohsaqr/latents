@@ -161,8 +161,8 @@ test_that("a bootstrap comparison is classed and plots its simulated null", {
   small <- multilpa(data, "y", "g", 1, 1, variance_model = "equal",
                     n_starts = 2, seed = 8)
   large <- multilpa(data, "y", "g", 2, 1, variance_model = "equal",
-                    n_starts = 3, seed = 8, max_iter = 3000, tol = 1e-7)
-  result <- bootstrap_lrt(small, large, data, iter = 3, n_starts = 3,
+                    n_starts = 1, seed = 8, max_iter = 3000, tol = 1e-7)
+  result <- bootstrap_lrt(small, large, data, iter = 3, n_starts = 1,
                           max_iter = 3000, tol = 1e-7, seed = 42)
   expect_s3_class(result, "multilpa_bootstrap_lrt")
   summary_object <- summary.multilpa_bootstrap_lrt(result)

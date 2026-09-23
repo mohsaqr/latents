@@ -170,15 +170,15 @@ test_that("a seed makes the table reproducible and leaves the stream alone", {
   set.seed(99L)
   before <- stats::runif(1L)
   state <- get(".Random.seed", envir = .GlobalEnv)
-  first <- parameter_inference(fit, method = "bootstrap", iter = 20L,
+  first <- parameter_inference(fit, method = "bootstrap", iter = 5L,
                                n_starts = 2L, seed = 4L)
   expect_identical(get(".Random.seed", envir = .GlobalEnv), state)
-  second <- parameter_inference(fit, method = "bootstrap", iter = 20L,
+  second <- parameter_inference(fit, method = "bootstrap", iter = 5L,
                                 n_starts = 2L, seed = 4L)
   expect_equal(first$standard_error, second$standard_error)
   expect_equal(first$conf_low, second$conf_low)
   # A different seed moves the replicates, so the two are not the same draw.
-  third <- parameter_inference(fit, method = "bootstrap", iter = 20L,
+  third <- parameter_inference(fit, method = "bootstrap", iter = 5L,
                                n_starts = 2L, seed = 5L)
   expect_false(isTRUE(all.equal(first$standard_error, third$standard_error)))
   expect_identical(before, {

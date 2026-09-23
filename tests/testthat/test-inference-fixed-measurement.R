@@ -213,9 +213,9 @@ test_that("held-measurement standard errors match an independent numerical infor
 test_that("holding only the means leaves the variances estimated and correct", {
   skip_on_cran()
   prepared <- fixed_measurement_data()
-  stage <- multilpa(prepared$data, c("a", "b"), "g", 2, 1, n_starts = 4,
+  stage <- multilpa(prepared$data, c("a", "b"), "g", 2, 1, n_starts = 2,
                     seed = 11, tol = 1e-12)
-  held <- multilpa(prepared$data, c("a", "b"), "g", 2, 2, n_starts = 3,
+  held <- multilpa(prepared$data, c("a", "b"), "g", 2, 2, n_starts = 2,
                    start = starting_values(stage, what = "measurement"),
                    fixed = "means", seed = 11, tol = 1e-12)
   expect_true(held$converged)

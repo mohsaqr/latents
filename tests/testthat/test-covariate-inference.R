@@ -1,7 +1,14 @@
-.covariate_fit <- function(data, ...) {
-  multilpa(data, c("y1", "y2"), "g", 2, 2, "z", "w",
-                 n_starts = 10, seed = 812, tol = 1e-12, ...)
-}
+# Every test uses the same fit on the same data, so it is fitted once.
+.covariate_fit <- local({
+  cached <- NULL
+  function(data) {
+    if (is.null(cached)) {
+      cached <<- multilpa(data, c("y1", "y2"), "g", 2, 2, "z", "w",
+                          n_starts = 3, seed = 812, tol = 1e-12)
+    }
+    cached
+  }
+})
 
 test_that("the analytic scores agree with a numerical gradient", {
   fixture <- readRDS(test_path("..", "fixtures", "mplus", "twolevel-covariates.rds"))
@@ -14,18 +21,23 @@ test_that("the analytic scores agree with a numerical gradient", {
       x, fit$group_index, pieces$parameters, fit$profile_design,
       fit$group_design, pieces$beta, pieces$gamma)$log_likelihood
   }
-  analytic <- unname(colSums(multilpa:::.multilpa_cov_group_scores(theta, x, fit)))
-  numerical <- vapply(seq_along(theta), function(j) {
-    step <- 1e-5 * max(1, abs(theta[j]))
-    up <- theta; up[j] <- up[j] + step
-    down <- theta; down[j] <- down[j] - step
+  score <- function(parameters) {
+    unname(colSums(multilpa:::.multilpa_cov_group_scores(parameters, x, fit)))
+  }
+  # At the maximum both gradients are near zero, so they are compared at a
+  # fixed point away from it, where a relative tolerance is meaningful.
+  probe <- theta + 0.05 * rep_len(c(1, -1), length(theta))
+  numerical <- vapply(seq_along(probe), function(j) {
+    step <- 1e-5 * max(1, abs(probe[j]))
+    up <- probe; up[j] <- up[j] + step
+    down <- probe; down[j] <- down[j] - step
     (likelihood(up) - likelihood(down)) / (2 * step)
   }, numeric(1))
 
   # The formula, not the plumbing: every block of the score must match.
-  expect_equal(analytic, numerical, tolerance = 1e-4)
+  expect_equal(score(probe), numerical, tolerance = 1e-4)
   # and at the maximum the gradient is zero
-  expect_true(max(abs(analytic)) < 1e-3)
+  expect_true(max(abs(score(theta))) < 1e-3)
 })
 
 test_that("the table is tidy and covers every level", {

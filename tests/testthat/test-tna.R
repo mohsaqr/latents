@@ -2,13 +2,22 @@
 # that the aggregate is the marginal transition matrix and not an average of the
 # class matrices -- and that the objects are the ones tna's own verbs accept.
 
-transition_fit <- function() {
-  activity <- c("browse", "lectures", "forum_read")
-  quietly(lta(course_engagement, vars = activity, id = "student",
-                          time = "sequence", n_profiles = 3,
-                          n_group_classes = 2, n_starts = 3, max_iter = 1000,
-                          seed = 1))
-}
+# A small fixture: 20 students, one start and 20 iterations exercise the
+# hand-over to tna. No test modifies the fit, so it is fitted once and reused.
+transition_fit <- local({
+  cached <- NULL
+  function() {
+    if (is.null(cached)) {
+      activity <- c("browse", "lectures", "forum_read")
+      cached <<- quietly(lta(subset(course_engagement, student <= 20),
+                             vars = activity, id = "student",
+                             time = "sequence", n_profiles = 3,
+                             n_group_classes = 2, n_starts = 1,
+                             max_iter = 20, seed = 1))
+    }
+    cached
+  }
+})
 
 test_that("the aggregate is the marginal, not the mean of the class matrices", {
   fit <- transition_fit()

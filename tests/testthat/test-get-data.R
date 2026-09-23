@@ -6,7 +6,7 @@
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 two_level <- function(...) {
-  multilpa(course_engagement, vars = activity, id = "student", n_profiles = 2,
+  multilpa(engagement_small, vars = activity, id = "student", n_profiles = 2,
            n_group_classes = 2, n_starts = 2, seed = 1, ...)
 }
 
@@ -68,7 +68,7 @@ test_that("an argument a table does not take is named, not dropped", {
                class = "multilpa_bad_argument")
   expect_error(get_results(fit, "profiles", "standardized"),
                class = "multilpa_bad_argument")
-  expect_error(get_results(fit, "all", data = course_engagement),
+  expect_error(get_results(fit, "all", data = engagement_small),
                class = "multilpa_bad_argument")
 })
 
@@ -96,7 +96,7 @@ test_that("as.data.frame coerces to the primary table and takes nothing else", {
                class = "multilpa_bad_argument")
   expect_error(as.data.frame(fit, scale = "standardized"),
                class = "multilpa_bad_argument")
-  moves <- lta(course_engagement, activity, "student",
+  moves <- lta(engagement_small, activity, "student",
                            n_profiles = 2, n_group_classes = 2,
                            time = "sequence", n_starts = 2, seed = 1)
   # The primary table is the measurement model for every fitted family, so a
@@ -130,7 +130,7 @@ test_that("the summary print shows every table and honours `rows`", {
 })
 
 test_that("the enumeration and bootstrap objects carry their own tables", {
-  candidates <- enumerate_classes(course_engagement, activity, "student",
+  candidates <- enumerate_classes(engagement_small, activity, "student",
                                   n_profiles = 1:2, n_group_classes = 1,
                                   n_starts = 2, seed = 1)
   expect_identical(as.data.frame(candidates), get_results(candidates, "candidates"))
@@ -182,7 +182,7 @@ test_that("the tables the summaries used to own are on the fit", {
 })
 
 test_that("`model` reports the columns of the family, not a padded union", {
-  covariates <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+  covariates <- multilpa(engagement_small, activity, "student", n_profiles = 2,
                          n_group_classes = 2,
                          profile_covariates = "previous_grade",
                          n_starts = 2, seed = 1)
@@ -201,7 +201,7 @@ test_that("`model` reports the columns of the family, not a padded union", {
 
 test_that("truth cross-tabulates against the level each column describes", {
   fit <- two_level()
-  recovery <- get_results(fit, "assignments", data = course_engagement,
+  recovery <- get_results(fit, "assignments", data = engagement_small,
                        truth = c("engagement", "student_type"))
   expect_named(recovery, c("assignment", "class", "truth", "value", "n",
                            "proportion"))
@@ -213,9 +213,9 @@ test_that("truth cross-tabulates against the level each column describes", {
                    "group_class")
   # Observation-level truth counts enrolments; group-level truth counts students.
   expect_equal(sum(recovery$n[recovery$truth == "engagement"]),
-               nrow(course_engagement))
+               nrow(engagement_small))
   expect_equal(sum(recovery$n[recovery$truth == "student_type"]),
-               length(unique(course_engagement$student)))
+               length(unique(engagement_small$student)))
   # The proportions are shares within a truth value, so they sum to one.
   shares <- as.vector(tapply(recovery$proportion,
                              paste(recovery$truth, recovery$value), sum))
@@ -224,7 +224,7 @@ test_that("truth cross-tabulates against the level each column describes", {
 
 test_that("group recovery gives each group one vote and omits unused truth levels", {
   fit <- two_level()
-  data <- course_engagement
+  data <- engagement_small
   data$known_group <- factor(data$student_type,
                              levels = c(as.character(unique(data$student_type)),
                                         "unused"))
@@ -247,9 +247,9 @@ test_that("group recovery gives each group one vote and omits unused truth level
 
 test_that("truth reproduces the cross-tabulation it replaces", {
   fit <- two_level()
-  joined <- get_results(fit, "assignments", data = course_engagement)
+  joined <- get_results(fit, "assignments", data = engagement_small)
   expected <- table(joined$profile, joined$engagement)
-  recovery <- get_results(fit, "assignments", data = course_engagement,
+  recovery <- get_results(fit, "assignments", data = engagement_small,
                        truth = "engagement")
   taken <- recovery$n[recovery$class == 1L & recovery$value == "engaged"]
   expect_equal(taken, as.integer(expected["1", "engaged"]))
@@ -258,11 +258,11 @@ test_that("truth reproduces the cross-tabulation it replaces", {
 
 test_that("truth refuses a column it cannot use", {
   fit <- two_level()
-  expect_error(get_results(fit, "assignments", data = course_engagement,
+  expect_error(get_results(fit, "assignments", data = engagement_small,
                         truth = "absent"), class = "multilpa_bad_data")
-  expect_error(get_results(fit, "assignments", data = course_engagement,
+  expect_error(get_results(fit, "assignments", data = engagement_small,
                         truth = "profile"), class = "multilpa_bad_data")
-  expect_error(get_results(fit, "assignments", data = course_engagement,
+  expect_error(get_results(fit, "assignments", data = engagement_small,
                         truth = c("engagement", "engagement")),
                "must not be duplicated")
 })
@@ -292,7 +292,7 @@ test_that("a fit prints its means one row per profile, not one per cell", {
   # Three profiles over five indicators is fifteen console lines for a table
   # that has three rows. The long table is still what `get_results()` returns.
   indicators <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
-  fit <- quietly(multilpa(course_engagement, indicators, "student",
+  fit <- quietly(multilpa(engagement_small, indicators, "student",
                           n_profiles = 3L, n_group_classes = 1L, n_starts = 3L,
                           seed = 1L, max_iter = 5000))
   wide <- multilpa:::.multilpa_wide_means(fit)
@@ -310,8 +310,11 @@ test_that("a fit prints its means one row per profile, not one per cell", {
   expect_true(any(grepl("proportion", printed, fixed = TRUE)))
   sizes <- get_results(fit, "counts")
   individuals <- sizes[sizes$level == "individuals", , drop = FALSE]
-  expect_true(any(grepl(format(individuals$effective_count[1L], digits = 7),
-                        printed, fixed = TRUE)))
+  # The count is printed to the column's precision; its value truncated to two
+  # decimals is a prefix of the printed number whatever its size.
+  shown <- formatC(trunc(individuals$effective_count[1L] * 100) / 100,
+                   format = "f", digits = 2)
+  expect_true(any(grepl(shown, printed, fixed = TRUE)))
   # The spread columns belong to the long table, and are pointed at, not shown.
   expect_false(any(grepl("standard_deviation", printed, fixed = TRUE)))
   expect_true(any(grepl("get_results(x, \"profiles\")", printed, fixed = TRUE)))

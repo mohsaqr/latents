@@ -252,7 +252,7 @@ test_that("every result class has a working tidy accessor", {
                     resources = rep(stats::rnorm(30L), each = 10L))
   covariate_fit <- quietly(multilpa(
     dat, c("a", "b"), "school", 2, 2, profile_covariates = "age",
-    group_covariates = "resources", n_starts = 4, seed = 1))
+    group_covariates = "resources", n_starts = 1, max_iter = 20, seed = 1))
   profiles <- as.data.frame(covariate_fit)
   expect_identical(names(profiles),
     c("profile", "indicator", "mean", "variance", "standard_deviation"))
