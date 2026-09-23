@@ -32,3 +32,5 @@
 ^vignettes/figure$
 ^vignettes/articles$
 ^ROADMAP\.md$
+^_pkgdown\.yml$
+^pkgdown$

@@ -1,3 +1,8 @@
+# latents 0.8.1
+
+* A documentation website, built with pkgdown, is published at
+  <https://pak.dynasite.org/latents/>.
+
 # latents 0.8.0
 
 ## Package renamed

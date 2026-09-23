@@ -1,0 +1,92 @@
+url: https://pak.dynasite.org/latents
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+
+reference:
+- title: Fitting models
+  desc: Two-level latent profile, latent class and latent transition models.
+  contents:
+  - multilpa
+  - multilca
+  - lta
+  - fit_staged
+  - starting_values
+
+- title: Results
+  desc: Every table of a fitted model, retrieved by name.
+  contents:
+  - get_results
+  - descriptives
+  - diagnostics
+  - report
+
+- title: Evaluating a model
+  contents:
+  - enumerate_classes
+  - candidate_fit
+  - bootstrap_lrt
+  - sensitivity
+  - starts_with("parameter_inference")
+
+- title: External variables
+  desc: Three-step analysis with a correction for classification error.
+  contents:
+  - three_step
+  - r3step
+
+- title: Plots
+  contents:
+  - plot_views
+  - starts_with("plot.")
+
+- title: Transition networks
+  desc: Latent transitions handed to the tna package.
+  contents:
+  - get_tna
+  - get_group_tna
+
+- title: Data
+  contents:
+  - course_engagement
+  - student_esm
+
+- title: Methods
+  desc: Standard generics for fitted models, enumeration grids and summaries.
+  contents:
+  - starts_with("print.")
+  - starts_with("summary.")
+  - starts_with("as.data.frame.")
+  - starts_with("coef.")
+  - starts_with("confint.")
+  - starts_with("vcov.")
+  - starts_with("logLik.")
+  - starts_with("nobs.")
+
+- title: Conditions
+  contents:
+  - latents-conditions
+
+articles:
+- title: Vignettes
+  navbar: Vignettes
+  contents:
+  - lpa
+  - evaluation
+  - covariates
+  - lca
+  - lta
+
+- title: Case studies
+  navbar: Case studies
+  contents:
+  - articles/case-engagement-profiles
+  - articles/case-engagement-evaluation
+  - articles/case-engagement-covariates
+  - articles/case-engagement-transitions
+  - articles/case-esm-lca
