@@ -669,7 +669,8 @@
 #' @param min_variance Positive lower bound on each variance, or each covariance
 #'   eigenvalue for full covariance, in squared input units. This defines a constrained maximum-likelihood problem. Bound-active
 #'   estimates are explicitly reported and generate a warning.
-#' @param seed Optional nonnegative integer random seed. With a supplied seed,
+#' @param seed Optional random seed: any whole number `set.seed()` accepts,
+#'   negative ones included. With a supplied seed,
 #'   the caller's random-number state is restored on exit.
 #' @param start Optional list of `means` and `variances` (profiles by indicators),
 #'   `profile_probabilities` (group classes by profiles), and
@@ -1175,12 +1176,7 @@ multilpa <- function(data, vars, id, n_profiles,
     stop(errorCondition("tol and min_variance must be finite positive numbers.",
                         class = "multilpa_bad_argument", call = NULL))
   }
-  if (!is.null(seed) && (!is.numeric(seed) || length(seed) != 1L ||
-      !is.finite(seed) || seed < 0 || seed != floor(seed) ||
-      seed > .Machine$integer.max)) {
-    stop(errorCondition("seed must be a nonnegative integer or NULL.",
-                        class = "multilpa_bad_argument", call = NULL))
-  }
+  .multilpa_check_seed(seed)
   if (anyDuplicated(categorical) || !all(categorical %in% vars)) {
     stop(errorCondition("`categorical` must name distinct indicators listed in `vars`.",
                         class = "multilpa_bad_categorical", call = NULL))

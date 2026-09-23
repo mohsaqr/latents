@@ -277,11 +277,11 @@ three_step <- function(x, data, outcome,
   if (outcome %in% x$vars) {
     stop(errorCondition(sprintf(
       "`%s` helped define the fitted classes, so it is not a distal outcome.",
-      outcome), class = "multilpa_bad_outcome", call = NULL))
+      outcome), class = c("multilpa_indicator_reused", "multilpa_bad_outcome"),
+      call = NULL))
   }
   pieces <- .multilpa_level_assignments(x, level)
-  stopifnot("`data` must have one row per observation of the fit" =
-              nrow(data) == x$n_observations)
+  .multilpa_check_row_count(x, data)
   .multilpa_check_alignment(x, data)
   values <- .multilpa_outcome_values(x, data, outcome, level)
   weights <- .multilpa_step_weights(pieces, method)
@@ -382,8 +382,7 @@ three_step <- function(x, data, outcome,
 #' @noRd
 .multilpa_outcome_values <- function(object, data, outcome, level) {
   values <- data[[outcome]]
-  stopifnot("`data` must have one row per observation of the fit" =
-              length(values) == object$n_observations)
+  .multilpa_check_row_count(object, data)
   if (identical(level, "individuals")) return(values)
   by_group <- split(values, object$group_index)
   constant <- vapply(by_group, function(v) length(unique(v)) == 1L, logical(1))
@@ -538,11 +537,11 @@ r3step <- function(x, data, covariates,
     stop(errorCondition(sprintf(
       "Measurement indicator(s) %s already helped define the fitted classes and cannot be used as external predictors.",
       paste(sprintf("`%s`", reused), collapse = ", ")),
-      class = "multilpa_bad_argument", call = NULL))
+      class = c("multilpa_indicator_reused", "multilpa_bad_covariate"),
+      call = NULL))
   }
   pieces <- .multilpa_level_assignments(x, level)
-  stopifnot("`data` must have one row per observation of the fit" =
-              nrow(data) == x$n_observations)
+  .multilpa_check_row_count(x, data)
   .multilpa_check_alignment(x, data)
   if (pieces$n_classes < 2L) {
     stop(errorCondition(
@@ -604,8 +603,7 @@ r3step <- function(x, data, covariates,
 #' @return A model matrix with an intercept.
 #' @noRd
 .multilpa_r3step_design <- function(object, data, covariates, level) {
-  stopifnot("`data` must have one row per observation of the fit" =
-              nrow(data) == object$n_observations)
+  .multilpa_check_row_count(object, data)
   values <- data[covariates]
   if (identical(level, "groups")) {
     constant <- vapply(values, function(column) {
@@ -615,7 +613,7 @@ r3step <- function(x, data, covariates,
     if (!all(constant)) {
       stop(errorCondition(
         "For `level = \"groups\"` every covariate must be constant within a group.",
-        class = "multilpa_bad_outcome", call = NULL))
+        class = "multilpa_bad_covariate", call = NULL))
     }
     values <- values[!duplicated(object$group_index), , drop = FALSE]
   }
@@ -623,7 +621,7 @@ r3step <- function(x, data, covariates,
   if (qr(design)$rank < ncol(design)) {
     stop(errorCondition(
       "The covariate design is rank deficient; remove constant or collinear predictors.",
-      class = "multilpa_bad_inference_data", call = NULL))
+      class = "multilpa_bad_covariate", call = NULL))
   }
   design
 }

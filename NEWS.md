@@ -1,3 +1,42 @@
+# multilpa (development version)
+
+## New data
+
+* `student_esm`: experience-sampling data on the leisure activities of 100
+  university students at 2,582 non-study prompts, with four affect ratings,
+  from openESM dataset 0062 (Neubauer & Schmiedek, 2024; CC-BY 4.0). Eight
+  yes/no activity items make it the categorical counterpart of
+  `course_engagement`, used for two-level latent class and mixed-measurement
+  examples.
+
+## Behaviour changes
+
+* One seed rule for every verb: `seed` (and each of `sensitivity()`'s `seeds`)
+  is any whole number that `set.seed()` accepts, negative ones included.
+  `multilpa()`, `fit_staged()`, `lta()`, the covariate fit, `bootstrap_lrt()`
+  and `sensitivity()` previously refused negative seeds, and the bootstrap in
+  `parameter_inference()` accepted a fraction that `set.seed()` truncates, so
+  seeds 1.2 and 1.7 drew the same stream. Every refusal is now
+  `multilpa_bad_argument`.
+* Consistent condition classes for the three-step verbs:
+  - A measurement indicator offered as an external variable raises
+    `multilpa_indicator_reused` from both verbs, alongside
+    `multilpa_bad_outcome` from `three_step()` and the new
+    `multilpa_bad_covariate` from `r3step()` (previously
+    `multilpa_bad_argument`).
+  - `r3step()` raises `multilpa_bad_covariate` for a predictor that varies
+    within a group at `level = "groups"` (previously `multilpa_bad_outcome`)
+    and for a rank-deficient design (previously `multilpa_bad_inference_data`).
+  - `data` with the wrong number of rows raises `multilpa_bad_inference_data`
+    from `three_step()`, `r3step()` and the bivariate residuals, as it already
+    did from the assignments table and `sensitivity()`. These were unclassed.
+
+## Internal
+
+* The fallback row for a transition state with no outgoing moves in
+  `get_tna()` is computed for every state in one matrix product rather than a
+  loop; the result is bit-identical.
+
 # multilpa 0.5.0
 
 ## Behaviour changes

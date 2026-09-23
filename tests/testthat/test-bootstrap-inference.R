@@ -158,7 +158,10 @@ test_that("the resample count is validated before anything is fitted", {
   expect_error(parameter_inference(fit, method = "bootstrap", iter = 10L, n_starts = 0L),
                "positive integer")
   expect_error(parameter_inference(fit, method = "bootstrap", iter = 10L, seed = c(1, 2)),
-               "single number")
+               class = "multilpa_bad_argument")
+  # set.seed() would truncate 1.5 to 1 without notice.
+  expect_error(parameter_inference(fit, method = "bootstrap", iter = 10L, seed = 1.5),
+               class = "multilpa_bad_argument")
 })
 
 test_that("a seed makes the table reproducible and leaves the stream alone", {

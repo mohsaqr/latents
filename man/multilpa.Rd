@@ -95,7 +95,8 @@ absolute change no greater than `tol * (1 + abs(previous log likelihood))`.}
 eigenvalue for full covariance, in squared input units. This defines a constrained maximum-likelihood problem. Bound-active
 estimates are explicitly reported and generate a warning.}
 
-\item{seed}{Optional nonnegative integer random seed. With a supplied seed,
+\item{seed}{Optional random seed: any whole number `set.seed()` accepts,
+negative ones included. With a supplied seed,
 the caller's random-number state is restored on exit.}
 
 \item{start}{Optional list of `means` and `variances` (profiles by indicators),

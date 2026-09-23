@@ -251,9 +251,8 @@
     "`min_probability` must be a single number in (0, 1)" =
       is.numeric(min_probability) && length(min_probability) == 1L &&
       is.finite(min_probability) && min_probability > 0 && min_probability < 1)
+  .multilpa_check_seed(seed)
   if (!is.null(seed)) {
-    stopifnot(is.numeric(seed), length(seed) == 1L, is.finite(seed),
-              seed >= 0, seed <= .Machine$integer.max, seed == as.integer(seed))
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
     if (had_seed) old_seed <- get(".Random.seed", envir = .GlobalEnv)
     on.exit(if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)

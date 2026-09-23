@@ -163,9 +163,13 @@ test_that("a family that cannot be refit is refused by class, not attempted", {
 
 test_that("the argument contract is enforced before anything is refitted", {
   fit <- separated_fit()
-  expect_error(sensitivity(fit, seeds = 1L), "at least two")
-  expect_error(sensitivity(fit, seeds = c(1L, 1L)), "at least two")
-  expect_error(sensitivity(fit, seeds = c(1.2, 2.4)), "whole numbers")
+  expect_error(sensitivity(fit, seeds = 1L), class = "multilpa_bad_argument")
+  expect_error(sensitivity(fit, seeds = c(1L, 1L)),
+               class = "multilpa_bad_argument")
+  expect_error(sensitivity(fit, seeds = c(1.2, 2.4)),
+               class = "multilpa_bad_argument")
+  expect_error(sensitivity(fit, seeds = c("1", "2")),
+               class = "multilpa_bad_argument")
   expect_error(sensitivity(fit, seeds = 1:3, n_starts = 0L), "positive whole")
   expect_error(sensitivity(fit, seeds = 1:3, n_starts = 1.5), "positive whole")
   expect_error(sensitivity(fit, seeds = 1:3, tolerance = -1), "positive number")

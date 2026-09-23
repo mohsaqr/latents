@@ -100,7 +100,8 @@ is steadier at 999 and above.}
 is a fresh fit, so `n_starts` buys the same protection against a local
 maximum here as it does in [multilpa()], at the same multiple of the cost.}
 
-\item{seed}{Optional seed for the resampling. The stream is restored on exit,
+\item{seed}{Optional seed for the resampling: any whole number `set.seed()`
+accepts; a fraction raises `multilpa_bad_argument`. The stream is restored on exit,
 so a seeded call leaves the caller's random state exactly as it found it.}
 }
 \value{

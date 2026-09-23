@@ -139,3 +139,26 @@ test_that("the transition panel is the fitted matrix, per class", {
                         seed = 1))
   expect_s3_class(draw(plot(single, what = "transitions")), "multilpa_transitions")
 })
+
+test_that("several empty rows each keep their own row, and estimated rows are untouched", {
+  # Two empty rows of three. A fallback computed with the from and to margins
+  # swapped, or for the wrong row, would still give rows summing to one; the
+  # values themselves are what distinguishes it.
+  fit <- transition_fit()
+  reference <- multilpa:::.multilpa_aggregate_transitions(fit)
+  fit$transition_counts[c(1L, 3L), , ] <- 0
+  fit$transition_probabilities[1L, , 1L] <- c(.6, .3, .1)
+  fit$transition_probabilities[1L, , 2L] <- c(.2, .2, .6)
+  fit$transition_probabilities[3L, , 1L] <- c(.05, .15, .8)
+  fit$transition_probabilities[3L, , 2L] <- c(.5, .25, .25)
+  aggregate <- multilpa:::.multilpa_aggregate_transitions(fit)
+  weight <- fit$group_probabilities
+  class_average <- function(from) {
+    as.vector(fit$transition_probabilities[from, , ] %*% weight)
+  }
+  expect_equal(unname(aggregate$probabilities[1L, ]), class_average(1L))
+  expect_equal(unname(aggregate$probabilities[3L, ]), class_average(3L))
+  expect_identical(unname(aggregate$estimated), c(FALSE, TRUE, FALSE))
+  # Row 2 still has its moves; zeroing rows 1 and 3 does not change it.
+  expect_equal(aggregate$probabilities[2L, ], reference$probabilities[2L, ])
+})

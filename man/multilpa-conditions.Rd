@@ -22,7 +22,8 @@ stable, the messages are not.
     values under `missing = "error"`, or a missing group identifier.}
   \item{`multilpa_bad_argument`}{A scalar argument is outside its contract:
     `n_profiles`, `n_group_classes`, `n_starts`, `max_iter`, `tol`,
-    `min_variance` or `seed`.}
+    `min_variance`, or a `seed` or `seeds` that is not a whole number
+    `set.seed()` accepts.}
   \item{`multilpa_bad_time`}{`time` is missing, or repeats a position within
     a group, so the ordering it is supposed to supply does not exist.}
   \item{`multilpa_bad_categorical`}{A categorical indicator cannot be
@@ -38,9 +39,9 @@ stable, the messages are not.
     indicators, profiles or measurement options than the stage requested.}
   \item{`multilpa_bad_transition`}{A transition model was asked for with
     fewer than two profiles, or with no group observed at two occasions.}
-  \item{`multilpa_bad_inference_data`}{The data passed to an inference verb
-    do not reproduce the fit: different rows, different values, or a
-    different group ordering. Raised for a plain `multilpa` fit and for a
+  \item{`multilpa_bad_inference_data`}{The data passed to a verb alongside
+    a fit do not reproduce the fit: a different number of rows, different
+    values, or a different group ordering. Raised for a plain `multilpa` fit and for a
     covariate fit alike.}
   \item{`multilpa_no_indicator_data`}{A fit carries no stored indicators, so
     the request cannot be answered without the original data.}
@@ -106,10 +107,19 @@ stable, the messages are not.
   \item{`multilpa_reversed_likelihood`}{The model with more parameters has
     the lower likelihood, so at least one fit is at a local optimum and the
     comparison is meaningless.}
-  \item{`multilpa_bad_outcome`}{A distal outcome is not of a type the
-    requested three-step method can handle, varies within a group when a
-    group-level outcome is requested, or is a measurement indicator that
-    already helped define the classes.}
+  \item{`multilpa_bad_outcome`}{A distal outcome given to [three_step()]
+    is not of a type the requested method can handle, varies within a group
+    when a group-level outcome is requested, or is a measurement indicator
+    that already helped define the classes.}
+  \item{`multilpa_bad_covariate`}{A predictor given to [r3step()] varies
+    within a group when group-level membership is predicted, makes the
+    design rank deficient, or is a measurement indicator that already
+    helped define the classes. The counterpart of `multilpa_bad_outcome`.}
+  \item{`multilpa_indicator_reused`}{A measurement indicator was offered
+    as an external variable, to [three_step()] as an outcome or to
+    [r3step()] as a predictor. Raised alongside `multilpa_bad_outcome` or
+    `multilpa_bad_covariate`, so one handler catches the mistake from
+    either verb.}
   \item{`multilpa_bad_scores`}{Score contributions could not be formed for
     the robust sandwich.}
 }

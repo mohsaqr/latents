@@ -134,7 +134,7 @@ test_that("a broken contract is refused", {
   missing_outcome$y[1L] <- NA
   expect_error(three_step(fit, missing_outcome, "y"), "must not be missing")
   expect_error(three_step(fit, data[1:10, ], "y"),
-               "one row per observation")
+               class = "multilpa_bad_inference_data")
   expect_error(three_step(fit, data, "y", ci_level = 1), "`ci_level` must be")
 })
 
@@ -298,7 +298,7 @@ test_that("R3STEP works at the group level and refuses a varying covariate", {
   expect_identical(result$level[1L], "groups")
   expect_lt(result$p_value[result$term == "w"], 0.05)
   expect_error(r3step(fit, data, "varying", level = "groups"),
-               class = "multilpa_bad_outcome")
+               class = "multilpa_bad_covariate")
 })
 
 test_that("a broken contract is refused", {
@@ -313,7 +313,7 @@ test_that("a broken contract is refused", {
   expect_error(r3step(fit, missing_covariate, "x"), "must not be missing")
   data$copy <- data$x
   expect_error(r3step(fit, data, c("x", "copy")),
-               class = "multilpa_bad_inference_data")
+               class = "multilpa_bad_covariate")
   expect_error(r3step(fit, data, "x", level = "groups"),
                class = "multilpa_inseparable_classes")
 })

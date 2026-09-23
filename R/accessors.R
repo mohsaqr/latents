@@ -52,12 +52,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 .multilpa_assignments <- function(x, data = NULL, truth = NULL) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
   frame <- .multilpa_resolve_data(x, data)
-  if (nrow(frame) != x$n_observations) {
-    stop(errorCondition(sprintf(
-      "`data` must have one row per observation of the fit: %d rows supplied, %d expected.",
-      nrow(frame), x$n_observations),
-      class = "multilpa_bad_inference_data", call = NULL))
-  }
+  .multilpa_check_row_count(x, frame)
   .multilpa_check_alignment(x, frame)
   posteriors <- as.data.frame(unname(x$subject_posteriors))
   names(posteriors) <- sprintf("posterior_profile_%d", seq_len(x$n_profiles))
@@ -272,6 +267,26 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
                             as.numeric(stored[observed]))))
   }
   identical(as.character(supplied[observed]), as.character(stored[observed]))
+}
+
+#' Refuse data with a different number of rows from the fit
+#'
+#' Every verb that reads `data` alongside a fit's posteriors pairs them row by
+#' row, so a different row count is the first way data can fail to reproduce
+#' the fit, and it is reported with the same class as the others.
+#'
+#' @param x A fitted model of this package.
+#' @param data The frame supplied with it.
+#' @return `NULL`, invisibly; raises `multilpa_bad_inference_data` otherwise.
+#' @noRd
+.multilpa_check_row_count <- function(x, data) {
+  if (!identical(as.integer(NROW(data)), as.integer(x$n_observations))) {
+    stop(errorCondition(sprintf(
+      "`data` must have one row per observation of the fit: %d rows supplied, %d expected.",
+      NROW(data), x$n_observations),
+      class = "multilpa_bad_inference_data", call = NULL))
+  }
+  invisible(NULL)
 }
 
 #' Check that a frame really is in the fit's own row order

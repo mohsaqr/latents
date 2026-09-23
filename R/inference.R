@@ -594,7 +594,8 @@
 #' @param n_starts,max_iter,tol Passed to each bootstrap refit. Each replicate
 #'   is a fresh fit, so `n_starts` buys the same protection against a local
 #'   maximum here as it does in [multilpa()], at the same multiple of the cost.
-#' @param seed Optional seed for the resampling. The stream is restored on exit,
+#' @param seed Optional seed for the resampling: any whole number `set.seed()`
+#'   accepts; a fraction raises `multilpa_bad_argument`. The stream is restored on exit,
 #'   so a seeded call leaves the caller's random state exactly as it found it.
 #' @return A base `data.frame` with one row per reported parameter and the
 #'   columns `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`,
@@ -718,9 +719,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
         max_iter >= 1 && max_iter == floor(max_iter),
       "`tol` must be a single positive number" =
         is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
+    .multilpa_check_seed(seed)
     if (!is.null(seed)) {
-      stopifnot("`seed` must be a single number" =
-                  is.numeric(seed) && length(seed) == 1L && is.finite(seed))
       previous <- if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
         get(".Random.seed", envir = .GlobalEnv) else NULL
       on.exit(if (!is.null(previous))

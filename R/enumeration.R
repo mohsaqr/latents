@@ -512,7 +512,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' @param n_starts Number of starts for each simulated fit.
 #' @param max_iter Maximum EM iterations for each simulated fit.
 #' @param tol Relative likelihood convergence tolerance.
-#' @param seed Optional seed, with caller RNG state restored.
+#' @param seed Optional seed: any whole number `set.seed()` accepts. The
+#'   caller's random-number state is restored on exit.
 #' @return An object of class `multilpa_bootstrap_lrt`, carrying the observed
 #'   statistic, the finite-simulation corrected p-value, its Monte Carlo
 #'   standard error, the measurement blocks held fixed in every fit, and one
@@ -552,9 +553,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
             is.numeric(max_iter), length(max_iter) == 1L, is.finite(max_iter),
             max_iter >= 1, max_iter == as.integer(max_iter),
             is.numeric(tol), length(tol) == 1L, is.finite(tol), tol > 0)
+  .multilpa_check_seed(seed)
   if (!is.null(seed)) {
-    stopifnot(is.numeric(seed), length(seed) == 1L, is.finite(seed),
-              seed >= 0, seed <= .Machine$integer.max, seed == as.integer(seed))
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
     if (had_seed) old_seed <- get(".Random.seed", envir = .GlobalEnv)
     on.exit(if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)

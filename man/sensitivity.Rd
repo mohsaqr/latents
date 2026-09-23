@@ -27,7 +27,9 @@ order. A fit carries the columns it was built from, so this is only needed
 to override them. Shared identifier and indicator columns are checked
 against the fit before assignment agreement is calculated.}
 
-\item{seeds}{Integer seeds to refit under. The reference fit's own seed may
+\item{seeds}{Seeds to refit under: at least two distinct whole numbers of
+either sign, as `set.seed()` accepts. Anything else raises
+`multilpa_bad_argument`. The reference fit's own seed may
 be among them, in which case that row reproduces it and is the arithmetic
 check that the refit is the same model.}
 

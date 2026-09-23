@@ -157,13 +157,16 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
   ## Keep the model's own row as a labelled fallback. A self-transition of one
   ## would falsely turn missing transition information into evidence of staying.
   probabilities <- counts / ifelse(totals > 0, totals, 1)
-  empty <- which(totals <= 0)
-  for (from in empty) {
-    rows <- matrix(x$transition_probabilities[from, , ],
-                   nrow = x$n_profiles, ncol = x$n_group_classes)
-    fallback <- as.vector(rows %*% x$group_probabilities)
-    probabilities[from, ] <- fallback / sum(fallback)
-  }
+  ## The fallback for every row at once: flattening the from x to x class
+  ## array to (from, to) x class turns the class-probability average into one
+  ## matrix product. Only the empty rows keep it.
+  n_states <- x$n_profiles
+  averaged <- matrix(matrix(x$transition_probabilities,
+                            n_states * n_states, x$n_group_classes) %*%
+                       x$group_probabilities, n_states, n_states)
+  empty <- totals <= 0
+  probabilities[empty, ] <- averaged[empty, , drop = FALSE] /
+    rowSums(averaged[empty, , drop = FALSE])
   dimnames(probabilities) <- list(states, states)
   initial <- as.numeric(x$group_probabilities %*% x$initial_probabilities)
   list(probabilities = probabilities,

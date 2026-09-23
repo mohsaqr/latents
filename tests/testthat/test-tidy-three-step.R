@@ -158,7 +158,12 @@ test_that("three-step variables must be external to the measurement model", {
   expect_error(three_step(fit, data, "a"),
                class = "multilpa_bad_outcome")
   expect_error(r3step(fit, data, "b"),
-               class = "multilpa_bad_argument")
+               class = "multilpa_bad_covariate")
+  # The same mistake is one class in both verbs, so one handler catches it.
+  expect_error(three_step(fit, data, "a"), class = "multilpa_indicator_reused")
+  expect_error(r3step(fit, data, "b"), class = "multilpa_indicator_reused")
+  expect_error(r3step(fit, data, c("x", "a")),
+               class = "multilpa_indicator_reused")
 
   predicted <- quietly(multilpa(
     data, c("a", "b"), "g", n_profiles = 2L, n_group_classes = 1L,
@@ -248,4 +253,31 @@ test_that("a single class is refused a contrast by condition class", {
                class = "multilpa_inseparable_classes")
   expect_error(three_step(fit, data, "y", contrast = "nonsense"),
                "'arg' should be one of")
+})
+
+test_that("a wrong row count is the same classed error in every verb", {
+  data <- .tidy_step_data()
+  fit <- .tidy_step_fit(data)
+  short <- data[-1L, ]
+  expect_error(three_step(fit, short, "y"), class = "multilpa_bad_inference_data")
+  expect_error(r3step(fit, short, "x"), class = "multilpa_bad_inference_data")
+  expect_error(get_results(fit, "residuals", data = short),
+               class = "multilpa_bad_inference_data")
+  expect_error(get_results(fit, "assignments", data = short),
+               class = "multilpa_bad_inference_data")
+  # The message still says what was supplied and what was expected.
+  expect_error(three_step(fit, short, "y"),
+               sprintf("%d rows supplied, %d expected", nrow(data) - 1L, nrow(data)))
+})
+
+test_that("an unusable r3step predictor is a covariate problem, not an outcome one", {
+  data <- .tidy_step_data()
+  fit <- .tidy_step_fit(data)
+  data$x_copy <- 2 * data$x
+  expect_error(r3step(fit, data, c("x", "x_copy")),
+               class = "multilpa_bad_covariate")
+  collinear <- tryCatch(r3step(fit, data, c("x", "x_copy")),
+                        multilpa_bad_covariate = identity)
+  expect_false(inherits(collinear, "multilpa_bad_outcome"))
+  expect_false(inherits(collinear, "multilpa_bad_inference_data"))
 })

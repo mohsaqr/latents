@@ -86,7 +86,7 @@ test_that("a scalar argument outside its contract is refused by class", {
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
                         min_variance = -1), class = "multilpa_bad_argument")
   expect_error(multilpa(data, c("a", "b"), "school", 2L, 1L, n_starts = 1,
-                        seed = -1), class = "multilpa_bad_argument")
+                        seed = 1.5), class = "multilpa_bad_argument")
 })
 
 test_that("an unidentifiable request is refused by class", {

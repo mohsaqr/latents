@@ -32,7 +32,8 @@ model stores.}
 
 \item{tol}{Relative likelihood convergence tolerance.}
 
-\item{seed}{Optional seed, with caller RNG state restored.}
+\item{seed}{Optional seed: any whole number `set.seed()` accepts. The
+caller's random-number state is restored on exit.}
 }
 \value{
 An object of class `multilpa_bootstrap_lrt`, carrying the observed

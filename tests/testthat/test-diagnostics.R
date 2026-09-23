@@ -299,8 +299,11 @@ test_that("preparation helpers enforce their own contracts", {
                                        1e-10, NULL, character()),
                "finite positive")
   expect_error(.multilpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, 1e-8, 1e-6,
-                                       1e-10, -1, character()),
-               "nonnegative integer")
+                                       1e-10, 1.5, character()),
+               class = "multilpa_bad_argument")
+  # A negative seed is one set.seed() accepts, so it is not refused.
+  expect_no_error(.multilpa_check_arguments(dat, "y", "g", 2, 1, 1, 1, 1e-8, 1e-6,
+                                            1e-10, -1, character()))
 })
 
 test_that("the null-default operator behaves like base %||%", {
