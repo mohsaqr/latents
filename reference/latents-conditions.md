@@ -1,0 +1,408 @@
+# Conditions this package raises
+
+Every error a caller might reasonably want to handle carries a class, so
+it can be caught by what went wrong rather than by matching message
+text, which changes between versions. This page is the contract: the
+classes below are stable, the messages are not.
+
+## Value
+
+Nothing; this page documents conditions rather than a function.
+
+## Input and data contracts
+
+- `latents_bad_data`:
+
+  The data frame, the indicator columns or the group column break the
+  input contract: too few rows, a duplicated or absent column name, an
+  indicator that is not a numeric vector, an indicator that is constant
+  or wholly unobserved, missing or non-finite values under
+  `missing = "error"`, or a missing group identifier.
+
+- `latents_bad_argument`:
+
+  A scalar argument is outside its contract: `n_profiles`,
+  `n_group_classes`, `n_starts`, `max_iter`, `tol`, `min_variance`, or a
+  `seed` or `seeds` that is not a whole number
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts.
+
+- `latents_bad_time`:
+
+  `time` is missing, or repeats a position within a group, so the
+  ordering it is supposed to supply does not exist.
+
+- `latents_bad_categorical`:
+
+  A categorical indicator cannot be encoded, or `min_probability` leaves
+  no room for its number of categories.
+
+- `latents_bad_start`:
+
+  Supplied starting values are missing a block the model needs, do not
+  have the shape it requires, or carry labels that name an indicator or
+  a category this fit does not have.
+
+- `latents_bad_fixed`:
+
+  A `fixed` request names a block the model does not have, or one that
+  `start` does not supply, or `start` is absent.
+
+- `latents_bad_stage`:
+
+  A `measurement` fit offered to
+  [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
+  has already estimated multiple group classes, or was fitted to
+  different indicators, profiles or measurement options than the stage
+  requested.
+
+- `latents_bad_transition`:
+
+  A transition model was asked for with fewer than two profiles, or with
+  no group observed at two occasions.
+
+- `latents_bad_inference_data`:
+
+  The data passed to a verb alongside a fit do not reproduce the fit: a
+  different number of rows, different values, or a different group
+  ordering. Raised for a plain `multilpa` fit and for a covariate fit
+  alike.
+
+- `latents_no_indicator_data`:
+
+  A fit carries no stored indicators, so the request cannot be answered
+  without the original data.
+
+- `latents_incomplete_fit`:
+
+  A fit is missing fields the request needs, usually because it was made
+  by an older version. Raised instead of letting a list subset by an
+  absent name yield a `NULL` element keyed `NA`, which would leave a
+  hole in the result.
+
+## Estimation and identification
+
+- `latents_unidentified`:
+
+  The requested model cannot be identified from these data: more
+  profiles than distinct observed indicator rows, more group classes
+  than groups, or more than one group class with only one profile or
+  only singleton groups.
+
+- `latents_all_starts_failed`:
+
+  Every EM start raised, so no fit was produced. The message carries the
+  distinct start errors.
+
+- `latents_empty_profile`:
+
+  A profile has no observed responses for an indicator, so its response
+  probabilities are not identified; or a group class has no effective
+  membership, so the profile prevalence within it is not defined.
+
+- `latents_too_few_groups`:
+
+  Fewer independent groups than the quantities being reported, so the
+  covariance cannot be formed. Raised by robust
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  and by
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+  and
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
+  whose cluster-robust contributions sum to zero at the estimate and so
+  span at most one dimension fewer than the number of groups.
+
+- `latents_inseparable_classes`:
+
+  Classes cannot be separated well enough for the requested three-step
+  correction.
+
+- `latents_no_converge`:
+
+  A fit required by the request did not converge, and using it would
+  report an unconverged estimate as final. Raised for a plain `multilpa`
+  fit and for a covariate fit alike.
+
+- `latents_boundary_fit`:
+
+  A variance or a response probability sits at its bound, or a mixing
+  probability is zero, so the parameter is on the edge of its space and
+  the asymptotic normal approximation Wald inference relies on does not
+  hold. The standard error is refused rather than reported.
+
+- `latents_singular_information`:
+
+  The observed information is not positive definite, or is numerically
+  singular, so it cannot be inverted and no standard error can be
+  formed.
+
+- `latents_unknown_candidate`:
+
+  The requested profile and group-class combination was never
+  enumerated.
+
+- `latents_failed_candidate`:
+
+  An enumerated candidate could not be fitted. The message carries that
+  candidate's error.
+
+- `latents_no_group_classes`:
+
+  A verb that needs discrete group classes was called on a model that
+  has none. Every model family this version fits has them, so this is a
+  guard against a future family rather than a refusal the current
+  surface can produce.
+
+## Model comparison
+
+- `latents_bad_nesting`:
+
+  Two models are not nested in the way the comparison requires,
+  including a
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  pair whose held measurement blocks differ, are held at different
+  values, or are held in only one of the two models.
+
+- `latents_incomparable_models`:
+
+  Two models were fitted to different data, or differ in covariance
+  structure or centering mode where the comparison requires them to
+  match.
+
+- `latents_reversed_likelihood`:
+
+  The model with more parameters has the lower likelihood, so at least
+  one fit is at a local optimum and the comparison is meaningless.
+
+- `latents_bad_outcome`:
+
+  A distal outcome given to
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+  is not of a type the requested method can handle, varies within a
+  group when a group-level outcome is requested, or is a measurement
+  indicator that already helped define the classes.
+
+- `latents_bad_covariate`:
+
+  A predictor given to
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  varies within a group when group-level membership is predicted, makes
+  the design rank deficient, or is a measurement indicator that already
+  helped define the classes. The counterpart of `latents_bad_outcome`.
+
+- `multilpa_indicator_reused`:
+
+  A measurement indicator was offered as an external variable, to
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+  as an outcome or to
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) as
+  a predictor. Raised alongside `latents_bad_outcome` or
+  `latents_bad_covariate`, so one handler catches the mistake from
+  either verb.
+
+- `latents_bad_scores`:
+
+  Score contributions could not be formed for the robust sandwich.
+
+## Unsupported requests
+
+These name capabilities the package does not have. They are raised in
+place of returning a number that would be wrong.
+
+- `latents_no_inference`:
+
+  Standard errors are not available for this model family. Raised by
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html) and
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  on a `multilpa_transitions` fit.
+
+- `latents_unsupported_inference`:
+
+  Standard errors are not available for this particular fit. Raised for
+  a covariate fit with categorical indicators, where no score is
+  implemented for the response probabilities, for fits made by an older
+  version, for a covariance structure the Wald coordinates cannot
+  express — which `parameter_inference(method = "bootstrap")` reports
+  instead — and by that bootstrap itself for a fit holding a measurement
+  block, whose held values came from a fit these data do not resample.
+
+- `latents_bootstrap_failed`:
+
+  Fewer than two resamples produced a usable fit, so there is nothing to
+  read a spread from. Raised by
+  `parameter_inference(method = "bootstrap")`; the message carries the
+  first reason a resample gave.
+
+- `latents_no_free_parameters`:
+
+  The fit holds every parameter it has, so there is no free coordinate
+  to report a standard error for. Raised by
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  and [`vcov()`](https://rdrr.io/r/stats/vcov.html) on a fully held fit.
+
+- `latents_held_parameter`:
+
+  A named parameter was held fixed by this fit, so it has no sampling
+  distribution and no confidence interval. Raised by
+  [`confint()`](https://rdrr.io/r/stats/confint.html) when `parm` names
+  a held coordinate.
+
+- `latents_unsupported_sensitivity`:
+
+  [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  was called on a model family whose refit needs arguments the shared
+  refit does not carry, whose profile labels cannot yet be aligned
+  between two fits, or a directly fixed fit whose original free starts
+  cannot be replayed.
+
+- `latents_unsupported_three_step`:
+
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+  or [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  was called on a membership-covariate fit. Its classification errors
+  depend on the fitted predictors, but the correction here uses one
+  unconditional error matrix.
+
+- `latents_unsupported_bootstrap`:
+
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  was called on a person-centred fit. Group baselines were removed
+  before estimation and no distribution for them is available to
+  simulate raw data under the null model.
+
+- `latents_no_plot`:
+
+  `plot(x, what = "all")` was called on an object whose plot method
+  names no views to draw.
+
+- `latents_no_time`:
+
+  A sequence verb was called on a fit made without `time`, so it carries
+  no ordering.
+
+- `latents_missing_package`:
+
+  A verb needs a package listed in `Suggests` that is not installed.
+  Raised by
+  [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md)
+  and
+  [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
+  when the `tna` package is absent; the message names the package and
+  how to install it.
+
+## Plotting
+
+- `latents_no_continuous`, `latents_no_categorical`:
+
+  The requested panel needs indicators of a kind this fit does not have.
+
+- `latents_nothing_to_describe`:
+
+  [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
+  was given no variables to describe: either `vars` named none, or the
+  frame has no numeric column outside `id` and `by` to fall back on.
+
+- `latents_nothing_to_plot`:
+
+  The requested panel has no rows to draw.
+
+- `latents_unknown_category`, `latents_unknown_criterion`:
+
+  A named category or information criterion does not exist in this fit.
+
+- `latents_bad_scale`:
+
+  An unrecognised plotting scale was requested.
+
+## Warnings
+
+A fit that is returned but qualified warns rather than errors, so that a
+simulation loop can catch the qualification it cares about and let the
+others through.
+
+- `latents_failed_starts`:
+
+  Some, but not all, EM starts raised. The surviving starts are in
+  `get_results(fit, "starts")`.
+
+- `latents_unconverged`:
+
+  The best start had not converged when `max_iter` was reached, so the
+  returned estimate is not a maximum.
+
+- `latents_boundary`:
+
+  A variance, or a covariance eigenvalue, sits at `min_variance`, so the
+  fit is bound-active and its standard errors are not valid at that
+  parameter.
+
+- `latents_small_classes`:
+
+  A profile or group class has effective membership below one, so it is
+  supported by less than one observation.
+
+- `latents_failed_replicates`:
+
+  Some bootstrap replicates failed validation, so the bootstrap p-value
+  is `NA`.
+
+- `latents_single_level`:
+
+  `id = NULL` was passed, so the fit has one observation per unit and no
+  second level. Raised by
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  on every such fit: this package is for the two-level model, and
+  fitting the one-level reduction of it is a choice worth stating out
+  loud.
+
+- `latents_bootstrap_dropped`:
+
+  Some resamples did not produce a usable fit and were left out of the
+  interval. Raised by `parameter_inference(method = "bootstrap")`,
+  naming how many, so the count the interval rests on is never quietly
+  smaller than `iter`.
+
+- `latents_sensitivity_dropped`:
+
+  One or more seeds did not produce a fit in
+  [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md).
+  Their rows are `NA` rather than absent, and the warning names how many
+  failed and the first reason, so the table is never quietly shorter
+  than `seeds`.
+
+- `latents_extreme_coefficients`:
+
+  A membership logit coefficient is large enough that the class is close
+  to separated, so the estimate is driven by scaling, a sparse class or
+  separation rather than by the data.
+
+- `latents_empty_transition_row`:
+
+  A profile is never occupied before a final occasion, so its transition
+  row is uniform by construction rather than estimated.
+  `get_results(fit, "transitions", estimated = FALSE)` lists them. The
+  transition-network handoff also warns when it includes such a row,
+  because it cannot be read as evidence of persistence.
+
+- `latents_unverified_alignment`:
+
+  A supplied `data` frame has too little fitted information to establish
+  row order, for example only a repeated group identifier. The result is
+  returned on the caller's assurance that the rows are in fitting order.
+
+## Examples
+
+``` r
+set.seed(1)
+example_data <- data.frame(
+  school = rep(seq_len(8), each = 6),
+  score_a = stats::rnorm(48), score_b = stats::rnorm(48)
+)
+fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+# A sequence verb on a fit made without `time` is catchable by class.
+tryCatch(get_results(fit, "sequences"),
+         latents_no_time = function(condition) {
+  "this fit carries no ordering"
+})
+#> [1] "this fit carries no ordering"
+```

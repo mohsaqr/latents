@@ -1,0 +1,182 @@
+# Relate a latent class to an outcome it did not help define
+
+The three-step approach: the measurement model is fitted first, units
+are assigned to classes, and only then is the outcome brought in,
+corrected for the fact that some assignments are wrong. Doing it in one
+step instead lets the outcome pull the classes toward itself; doing it
+naively by modal class instead attenuates every difference. This does
+neither.
+
+## Usage
+
+``` r
+three_step(
+  x,
+  data,
+  outcome,
+  level = c("individuals", "groups"),
+  method = c("bch", "proportional", "modal"),
+  ci_level = 0.95,
+  contrast = c("none", "pairs"),
+  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
+  vcov_type = c("cluster", "independent")
+)
+```
+
+## Arguments
+
+- x:
+
+  A covariate-free fitted
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) model.
+  A fit that already uses membership covariates cannot be corrected by
+  the fixed, unconditional classification-error matrix used here.
+
+- data:
+
+  The data frame carrying the outcome, in the fit's row order. Shared
+  fit columns are checked row by row; a frame with too little
+  identifying information warns that alignment cannot be verified.
+
+- outcome:
+
+  Name of a numeric outcome column not used as a measurement indicator
+  in `x`. For `level = "groups"` it must be constant within each group.
+
+- level:
+
+  `"individuals"` relates the outcome to profiles, `"groups"` to group
+  classes.
+
+- method:
+
+  `"bch"` applies the Bolck-Croon-Hagenaars weights; `"proportional"`
+  weights by the posteriors, which is simpler and attenuated; `"modal"`
+  is the naive assignment, shown for comparison.
+
+- ci_level:
+
+  Confidence level for the intervals.
+
+- contrast:
+
+  `"none"` (the default) reports one outcome mean per class. `"pairs"`
+  reports the difference between every pair of classes instead, which is
+  the quantity a three-step analysis is usually run to test, with a
+  statistic and a p-value against a difference of zero.
+
+- adjust:
+
+  Multiplicity correction applied across the pairwise differences,
+  passed to
+  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html). `"BH"`
+  by default; `"none"` leaves the p-values uncorrected. Ignored for
+  `contrast = "none"`, which tests nothing.
+
+- vcov_type:
+
+  `"cluster"`, the default, sums the influence contributions within the
+  fit's groups and takes those groups as the independent units, which is
+  the honest choice when the outcome is measured on observations nested
+  inside them. `"independent"` treats every observation as its own
+  independent unit instead. That ignores the nesting the model was
+  fitted to and is only defensible when there is no nesting left to
+  ignore, such as a fit with a single group; it is never substituted
+  silently, and the choice is recorded in the result's `vcov_type`
+  attribute.
+
+## Value
+
+A base `data.frame`. For `contrast = "none"` it has one row per class
+and the columns `level`, `method`, `class`, `estimate`,
+`standard_error`, `conf_low`, `conf_high` and `effective_n`. It carries
+no `statistic` or `p_value`, unlike
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md): an
+outcome mean has no meaningful null value to be tested against, and a
+p-value for "this class's mean is zero" would answer a question nobody
+asked. The comparison that does have a null is the difference between
+two classes, and that is what `contrast = "pairs"` returns: one row per
+pair with the columns `level`, `method`, `class`, `reference_class`,
+`estimate` (the mean of `class` minus the mean of `reference_class`),
+`standard_error`, `statistic`, `p_value`, `p_value_adjusted`, `conf_low`
+and `conf_high`, matching
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md). A
+contrast with zero standard error has no defined test statistic or
+p-value; those columns are `NA_real_` rather than a spurious finite
+test.
+
+Standard errors are cluster-robust in both shapes under the default
+`vcov_type = "cluster"`, taking the fit's groups as the independent
+units, so they remain honest when the outcome is measured on
+observations nested inside those groups; `vcov_type = "independent"`
+gives the unclustered variance instead. The variance that was used is
+recorded in the result's `vcov_type` attribute, and for
+`contrast = "pairs"` the correction applied to `p_value_adjusted` is
+recorded in its `adjust` attribute. A `contrast = "none"` table tests
+nothing, so it carries no `adjust` attribute.
+
+## Details
+
+The correction assumes the outcome is independent of the assigned class
+given the true one, which is what makes a three-step method valid. On a
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit,
+`level = "individuals"` uses one row per occasion and relates the
+outcome to the profile at that occasion. The default group-clustered
+variance accounts for repeated occasions within a group. This is a
+marginal profile-outcome analysis; it does not estimate an outcome
+effect on transitions or a sequence-level outcome model.
+
+A cluster-robust variance is the sum of one outer product per
+independent unit, and those contributions sum to zero at the estimate,
+so it has rank at most one less than the number of units. With a single
+group it is exactly zero and with as many groups as classes it is
+singular. Both are refused with `latents_too_few_groups` rather than
+reported as a very small standard error; `vcov_type = "independent"` is
+the labelled way to ask for the unclustered variance instead.
+
+The error matrix is treated as known rather than estimated, so the
+intervals are optimistic and the amount is worth stating. Over 60
+replications of a two-profile design with 8% misclassification and a
+true class difference of 10, `"bch"` recovered that difference with a
+bias of -0.13 against -1.28 for `"modal"` and -1.82 for
+`"proportional"`, and its nominal 95% intervals covered the truth 85% of
+the time. Treat the point estimate as close to unbiased and the interval
+as somewhat too narrow; the other two methods are biased enough that
+their intervals covered the truth in none of the 60.
+
+## References
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: two
+improved three-step approaches. *Political Analysis*, 18, 450–469. Bakk,
+Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
+modeling with continuous distal outcomes. *Structural Equation
+Modeling*, 23, 20–31.
+
+## Examples
+
+``` r
+set.seed(11)
+group <- rep(seq_len(40), each = 10)
+truth <- 1L + as.integer(runif(400) > 0.5)
+example_data <- data.frame(
+  g = group,
+  a = rnorm(400, ifelse(truth == 2L, 1.1, -1.1)),
+  b = rnorm(400, ifelse(truth == 2L, 1.1, -1.1)),
+  y = rnorm(400, ifelse(truth == 2L, 10, 0))
+)
+fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
+                n_group_classes = 1, n_starts = 4, seed = 1)
+three_step(fit, example_data, "y")
+#>         level method class   estimate standard_error   conf_low conf_high
+#> 1 individuals    bch     1  9.9710163      0.2219561  9.5359903 10.406042
+#> 2 individuals    bch     2 -0.0696936      0.1987387 -0.4592142  0.319827
+#>   effective_n
+#> 1    170.3967
+#> 2    182.7121
+three_step(fit, example_data, "y", contrast = "pairs")
+#>         level method class reference_class  estimate standard_error statistic
+#> 1 individuals    bch     2               1 -10.04071      0.3404084 -29.49607
+#>         p_value p_value_adjusted conf_low conf_high
+#> 1 3.233219e-191    3.233219e-191 -10.7079 -9.373522
+```
