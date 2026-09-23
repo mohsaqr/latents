@@ -1,5 +1,21 @@
 # latents
 
+The `latents` R package provides functions for fitting multilevel latent
+profile analysis, latent class, and latent transition models for
+continuous, categorical, and mixed-type variables. Models are estimated
+by expectation-maximization, handle missing data, and provide standard
+and robust standard errors. Model selection is supported by information
+criteria, entropy, classification diagnostics, and a parametric
+bootstrap likelihood ratio test. Covariates can be related to latent
+class membership using three-step methods with correction for
+classification error. Latent transition models estimate transitions
+between latent profiles across ordered occasions and are compatible with
+the ‘tna’ package for network and sequence analysis. The multilevel
+mixture formulation follows Vermunt (2003)
+[doi:10.1111/j.0081-1750.2003.t01-1-00131.x](https://doi.org/10.1111/j.0081-1750.2003.t01-1-00131.x).
+
+## Multilevel latent profile analysis (MLPA)
+
 Multilevel latent profile analysis (MLPA) is a model-based method for
 identifying unobserved subgroups in continuous multivariate data when
 observations are nested within higher-level units. It is applicable to

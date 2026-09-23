@@ -376,16 +376,16 @@ largest are shown.
 
 get_results(lca, "residuals") |> head(10)
 #>      profile       indicator_1   indicator_2        kind observed expected residual effective_n
-#> 1  profile_2            sports       walking categorical   0.1707 1.97e-16   0.1707         678
-#> 2  profile_2 time_with_friends       walking categorical   0.1404 1.86e-16   0.1404         678
-#> 3  profile_2    listened_music       walking categorical   0.1334 2.21e-16   0.1334         678
+#> 1  profile_2            sports       walking categorical   0.1707 1.05e-16   0.1707         678
+#> 2  profile_2 time_with_friends       walking categorical   0.1404 3.58e-17   0.1404         678
+#> 3  profile_2    listened_music       walking categorical   0.1334 1.11e-16   0.1334         678
 #> 4  profile_2    listened_music       reading categorical   0.1063 4.44e-17   0.1063         678
-#> 5  profile_2    listened_music        sports categorical   0.1045 1.09e-16   0.1045         678
+#> 5  profile_2    listened_music        sports categorical   0.1045 1.31e-16   0.1045         678
 #> 6  profile_1    tv_video_games       walking categorical   0.0940 4.35e-17   0.0940        1904
-#> 7  profile_1    tv_video_games part_time_job categorical   0.0925 1.08e-17   0.0925        1904
-#> 8  profile_1 time_with_friends part_time_job categorical   0.0865 4.18e-17   0.0865        1904
-#> 9  profile_1 time_with_friends       reading categorical   0.0727 8.08e-17   0.0727        1904
-#> 10 profile_1           reading part_time_job categorical   0.0682 3.74e-17   0.0682        1904
+#> 7  profile_1    tv_video_games part_time_job categorical   0.0925 3.59e-17   0.0925        1904
+#> 8  profile_1 time_with_friends part_time_job categorical   0.0865 0.00e+00   0.0865        1904
+#> 9  profile_1 time_with_friends       reading categorical   0.0727 8.48e-17   0.0727        1904
+#> 10 profile_1           reading part_time_job categorical   0.0682 2.64e-17   0.0682        1904
 #>    statistic df  p_value p_adjusted
 #> 1      19.75  1 8.82e-06   8.82e-06
 #> 2      13.37  1 2.55e-04   2.55e-04
