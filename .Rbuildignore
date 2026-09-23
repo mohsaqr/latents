@@ -20,7 +20,11 @@
 ^audit\.zip$
 ^AGENT-NOTE.*\.md$
 ^README\.html$
+^README\.Rmd$
+^tools$
 ^equivalence$
+^.*\.Rproj$
+^\.Rproj\.user$
 ^future$
 ^docs$
 ^vignettes/\.beatrina
