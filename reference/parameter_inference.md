@@ -364,13 +364,10 @@ parameter_inference(fit, adjust = "BH")
 shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
                    n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1,
                    volume = "varying", shape = "equal", orientation = "axis")
-parameter_inference(shaped, method = "bootstrap", iter = 25, n_starts = 1,
+parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
                     seed = 1)
 #> Warning: A variance reached min_variance; this is a bound-active constrained fit.
 #> Warning: A profile or group class has effective membership below one.
-#> Warning: A variance reached min_variance; this is a bound-active constrained fit.
-#> Warning: A variance reached min_variance; this is a bound-active constrained fit.
-#> Warning: A variance reached min_variance; this is a bound-active constrained fit.
 #>          level       outcome          term   parameter    estimate
 #> 1  measurement     profile_1       score_a        mean  0.25072096
 #> 2  measurement     profile_1       score_b        mean -0.06201221
@@ -384,15 +381,15 @@ parameter_inference(shaped, method = "bootstrap", iter = 25, n_starts = 1,
 #> 10     profile     profile_2 group_class_1 probability  0.13626928
 #> 11       group group_class_1          <NA> probability  1.00000000
 #>    standard_error statistic p_value p_adjusted     conf_low   conf_high
-#> 1       0.2815684        NA      NA         NA  0.009757405  0.95956673
-#> 2       0.3211286        NA      NA         NA -0.806014785  0.22873666
-#> 3       0.8919691        NA      NA         NA -2.656455421 -0.02630648
-#> 4       1.2720478        NA      NA         NA -1.469341542  2.70189100
-#> 5       0.2697118        NA      NA         NA  0.178736398  1.12373873
-#> 6       0.1842587        NA      NA         NA  0.153965744  0.79686152
-#> 7       0.6568495        NA      NA         NA  0.000001000  2.00176569
-#> 8       0.6118955        NA      NA         NA  0.000001000  1.72261008
-#> 9       0.2507399        NA      NA         NA  0.216873847  0.98400000
-#> 10      0.2507399        NA      NA         NA  0.016000000  0.78312615
+#> 1       0.2901831        NA      NA         NA  0.126069083  0.95194025
+#> 2       0.4654784        NA      NA         NA -1.235677029  0.08222165
+#> 3       0.8585431        NA      NA         NA -2.611810624 -0.11067044
+#> 4       1.2097879        NA      NA         NA -1.606513935  2.16366280
+#> 5       0.2542890        NA      NA         NA  0.079133222  0.78339327
+#> 6       0.2229643        NA      NA         NA  0.133035001  0.78017714
+#> 7       0.6034291        NA      NA         NA  0.008600376  1.73200855
+#> 8       0.5990528        NA      NA         NA  0.008641422  1.68372007
+#> 9       0.2976784        NA      NA         NA  0.143494035  0.98374406
+#> 10      0.2976784        NA      NA         NA  0.016255939  0.85650597
 #> 11      0.0000000        NA      NA         NA  1.000000000  1.00000000
 ```

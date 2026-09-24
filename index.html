@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -128,16 +128,19 @@ L_j = \sum_{h=1}^{H}\eta_h
 <div class="section level2">
 <h2 id="installation-and-data-preparation">Installation and data preparation<a class="anchor" aria-label="anchor" href="#installation-and-data-preparation"></a>
 </h2>
-<p>The development version can be installed from the package repository. This installation command is provided for reference and is not evaluated when the tutorial is rendered.</p>
+<p>The released version can be installed from CRAN, and the development version from GitHub. These installation commands are provided for reference and are not evaluated when the tutorial is rendered.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"latents"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># development version</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"mohsaqr/latents"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="example-data-and-variables">Example data and variables<a class="anchor" aria-label="anchor" href="#example-data-and-variables"></a>
 </h3>
 <p>The tutorial uses <code>course_engagement</code>, a simulated dataset containing 1,422 course enrolments from 106 students across 32 courses. Each row represents one student’s enrolment in one course, with up to fifteen enrolments per student. Enrolments form Level 1 and students form Level 2.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents">latents</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span>
 <span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">course_engagement</span><span class="op">)</span></span>

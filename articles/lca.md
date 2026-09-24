@@ -89,35 +89,35 @@ tighter convergence tolerance, which standard errors need.
 ``` r
 
 lca <- multilca(first_week, vars = activities, id = "student",
-                n_profiles = 2, n_group_classes = 2, n_starts = 10,
+                n_profiles = 2, n_group_classes = 2, n_starts = 3,
                 tol = 1e-10, seed = 1)
 lca
 #> Two-level latent profile analysis: 2 profiles, 2 group classes
 #> 1422 individuals in 100 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -4315.734845 | AIC: 8669.470 | BIC (groups): 8718.968
-#> Converged: TRUE | iterations: 89 | best start: 8/10
+#> Log likelihood: -4315.734849 | AIC: 8669.470 | BIC (groups): 8718.968
+#> Converged: TRUE | iterations: 299 | best start: 2/3
 #> 
 #>  profile         indicator category probability threshold
-#>        1 time_with_friends       no      0.8324     1.603
-#>        2 time_with_friends       no      0.9368     2.696
-#>        1 time_with_friends      yes      0.1676        NA
-#>        2 time_with_friends      yes      0.0632        NA
-#>        1   on_social_media       no      0.9235     2.491
-#>        2   on_social_media       no      0.3365    -0.679
-#>        1   on_social_media      yes      0.0765        NA
-#>        2   on_social_media      yes      0.6635        NA
-#>        1    tv_video_games       no      0.8664     1.870
-#>        2    tv_video_games       no      0.6313     0.538
-#>        1    tv_video_games      yes      0.1336        NA
-#>        2    tv_video_games      yes      0.3687        NA
-#>        1    listened_music       no      0.9406     2.762
-#>        2    listened_music       no      0.6464     0.603
-#>        1    listened_music      yes      0.0594        NA
-#>        2    listened_music      yes      0.3536        NA
-#>        1            sports       no      0.9159     2.388
-#>        2            sports       no      0.9406     2.762
-#>        1            sports      yes      0.0841        NA
-#>        2            sports      yes      0.0594        NA
+#>        1 time_with_friends       no      0.9368     2.696
+#>        2 time_with_friends       no      0.8324     1.603
+#>        1 time_with_friends      yes      0.0632        NA
+#>        2 time_with_friends      yes      0.1676        NA
+#>        1   on_social_media       no      0.3366    -0.679
+#>        2   on_social_media       no      0.9236     2.492
+#>        1   on_social_media      yes      0.6634        NA
+#>        2   on_social_media      yes      0.0764        NA
+#>        1    tv_video_games       no      0.6314     0.538
+#>        2    tv_video_games       no      0.8665     1.870
+#>        1    tv_video_games      yes      0.3686        NA
+#>        2    tv_video_games      yes      0.1335        NA
+#>        1    listened_music       no      0.6464     0.603
+#>        2    listened_music       no      0.9406     2.762
+#>        1    listened_music      yes      0.3536        NA
+#>        2    listened_music      yes      0.0594        NA
+#>        1            sports       no      0.9406     2.762
+#>        2            sports       no      0.9159     2.388
+#>        1            sports      yes      0.0594        NA
+#>        2            sports      yes      0.0841        NA
 #>    ... 12 more rows.  get_results(x, "responses")
 #> 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
@@ -132,38 +132,38 @@ with `"responses"`. There is one row per profile, item and category;
 
 get_results(lca, "responses")
 #>    profile         indicator category probability threshold
-#> 1        1 time_with_friends       no      0.8324     1.603
-#> 2        2 time_with_friends       no      0.9368     2.696
-#> 3        1 time_with_friends      yes      0.1676        NA
-#> 4        2 time_with_friends      yes      0.0632        NA
-#> 5        1   on_social_media       no      0.9235     2.491
-#> 6        2   on_social_media       no      0.3365    -0.679
-#> 7        1   on_social_media      yes      0.0765        NA
-#> 8        2   on_social_media      yes      0.6635        NA
-#> 9        1    tv_video_games       no      0.8664     1.870
-#> 10       2    tv_video_games       no      0.6313     0.538
-#> 11       1    tv_video_games      yes      0.1336        NA
-#> 12       2    tv_video_games      yes      0.3687        NA
-#> 13       1    listened_music       no      0.9406     2.762
-#> 14       2    listened_music       no      0.6464     0.603
-#> 15       1    listened_music      yes      0.0594        NA
-#> 16       2    listened_music      yes      0.3536        NA
-#> 17       1            sports       no      0.9159     2.388
-#> 18       2            sports       no      0.9406     2.762
-#> 19       1            sports      yes      0.0841        NA
-#> 20       2            sports      yes      0.0594        NA
-#> 21       1           walking       no      0.8365     1.633
-#> 22       2           walking       no      0.8865     2.056
-#> 23       1           walking      yes      0.1635        NA
-#> 24       2           walking      yes      0.1135        NA
-#> 25       1           reading       no      0.8917     2.108
-#> 26       2           reading       no      0.8790     1.983
-#> 27       1           reading      yes      0.1083        NA
-#> 28       2           reading      yes      0.1210        NA
-#> 29       1     part_time_job       no      0.9587     3.144
-#> 30       2     part_time_job       no      0.9838     4.103
-#> 31       1     part_time_job      yes      0.0413        NA
-#> 32       2     part_time_job      yes      0.0162        NA
+#> 1        1 time_with_friends       no      0.9368     2.696
+#> 2        2 time_with_friends       no      0.8324     1.603
+#> 3        1 time_with_friends      yes      0.0632        NA
+#> 4        2 time_with_friends      yes      0.1676        NA
+#> 5        1   on_social_media       no      0.3366    -0.679
+#> 6        2   on_social_media       no      0.9236     2.492
+#> 7        1   on_social_media      yes      0.6634        NA
+#> 8        2   on_social_media      yes      0.0764        NA
+#> 9        1    tv_video_games       no      0.6314     0.538
+#> 10       2    tv_video_games       no      0.8665     1.870
+#> 11       1    tv_video_games      yes      0.3686        NA
+#> 12       2    tv_video_games      yes      0.1335        NA
+#> 13       1    listened_music       no      0.6464     0.603
+#> 14       2    listened_music       no      0.9406     2.762
+#> 15       1    listened_music      yes      0.3536        NA
+#> 16       2    listened_music      yes      0.0594        NA
+#> 17       1            sports       no      0.9406     2.762
+#> 18       2            sports       no      0.9159     2.388
+#> 19       1            sports      yes      0.0594        NA
+#> 20       2            sports      yes      0.0841        NA
+#> 21       1           walking       no      0.8865     2.056
+#> 22       2           walking       no      0.8365     1.633
+#> 23       1           walking      yes      0.1135        NA
+#> 24       2           walking      yes      0.1635        NA
+#> 25       1           reading       no      0.8790     1.983
+#> 26       2           reading       no      0.8917     2.108
+#> 27       1           reading      yes      0.1210        NA
+#> 28       2           reading      yes      0.1083        NA
+#> 29       1     part_time_job       no      0.9838     4.103
+#> 30       2     part_time_job       no      0.9587     3.144
+#> 31       1     part_time_job      yes      0.0162        NA
+#> 32       2     part_time_job      yes      0.0413        NA
 ```
 
 To see them, we call
@@ -187,10 +187,10 @@ with `"profile_probabilities"`, and to compare the classes,
 
 get_results(lca, "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1      0.9249                   0.517
-#> 2           1       2      0.0751                   0.517
-#> 3           2       1      0.2919                   0.483
-#> 4           2       2      0.7081                   0.483
+#> 1           1       1      0.7082                   0.483
+#> 2           1       2      0.2918                   0.483
+#> 3           2       1      0.0752                   0.517
+#> 4           2       2      0.9248                   0.517
 ```
 
 ``` r
@@ -226,7 +226,7 @@ are 1, which can push a profile’s variance to its lower bound.
 mixed <- multilpa(first_week,
                   vars = c("happy", "relaxed", "exhausted", activities),
                   categorical = activities, id = "student", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 10, seed = 1)
+                  n_group_classes = 2, n_starts = 3, seed = 1)
 ```
 
 To obtain the means and variances of the continuous indicators, we call

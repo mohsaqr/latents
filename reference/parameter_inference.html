@@ -27,7 +27,7 @@ boundary solutions and unidentified Hessians do not admit this calculation."><me
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -418,13 +418,10 @@ naming how many, rather than being silently left out of the count.</p>
 <span class="r-in"><span><span class="va">shaped</span> <span class="op">&lt;-</span> <span class="fu"><a href="multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">example_data</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"score_a"</span>, <span class="st">"score_b"</span><span class="op">)</span>, <span class="st">"school"</span>,</span></span>
 <span class="r-in"><span>                   n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>                   volume <span class="op">=</span> <span class="st">"varying"</span>, shape <span class="op">=</span> <span class="st">"equal"</span>, orientation <span class="op">=</span> <span class="st">"axis"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">parameter_inference</span><span class="op">(</span><span class="va">shaped</span>, method <span class="op">=</span> <span class="st">"bootstrap"</span>, iter <span class="op">=</span> <span class="fl">25</span>, n_starts <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span><span class="fu">parameter_inference</span><span class="op">(</span><span class="va">shaped</span>, method <span class="op">=</span> <span class="st">"bootstrap"</span>, iter <span class="op">=</span> <span class="fl">10</span>, n_starts <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>                    seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A variance reached min_variance; this is a bound-active constrained fit.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A profile or group class has effective membership below one.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A variance reached min_variance; this is a bound-active constrained fit.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A variance reached min_variance; this is a bound-active constrained fit.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>A variance reached min_variance; this is a bound-active constrained fit.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          level       outcome          term   parameter    estimate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  measurement     profile_1       score_a        mean  0.25072096</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  measurement     profile_1       score_b        mean -0.06201221</span>
@@ -438,16 +435,16 @@ naming how many, rather than being silently left out of the count.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10     profile     profile_2 group_class_1 probability  0.13626928</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 11       group group_class_1          &lt;NA&gt; probability  1.00000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    standard_error statistic p_value p_adjusted     conf_low   conf_high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       0.2815684        NA      NA         NA  0.009757405  0.95956673</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       0.3211286        NA      NA         NA -0.806014785  0.22873666</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       0.8919691        NA      NA         NA -2.656455421 -0.02630648</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       1.2720478        NA      NA         NA -1.469341542  2.70189100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       0.2697118        NA      NA         NA  0.178736398  1.12373873</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6       0.1842587        NA      NA         NA  0.153965744  0.79686152</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7       0.6568495        NA      NA         NA  0.000001000  2.00176569</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8       0.6118955        NA      NA         NA  0.000001000  1.72261008</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9       0.2507399        NA      NA         NA  0.216873847  0.98400000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10      0.2507399        NA      NA         NA  0.016000000  0.78312615</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       0.2901831        NA      NA         NA  0.126069083  0.95194025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       0.4654784        NA      NA         NA -1.235677029  0.08222165</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       0.8585431        NA      NA         NA -2.611810624 -0.11067044</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       1.2097879        NA      NA         NA -1.606513935  2.16366280</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       0.2542890        NA      NA         NA  0.079133222  0.78339327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       0.2229643        NA      NA         NA  0.133035001  0.78017714</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7       0.6034291        NA      NA         NA  0.008600376  1.73200855</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8       0.5990528        NA      NA         NA  0.008641422  1.68372007</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9       0.2976784        NA      NA         NA  0.143494035  0.98374406</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10      0.2976784        NA      NA         NA  0.016255939  0.85650597</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 11      0.0000000        NA      NA         NA  1.000000000  1.00000000</span>
 </code></pre></div>
     </div>

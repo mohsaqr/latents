@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -110,7 +110,7 @@ different numbers of occasions.</li>
 within course, so 0 is the course average.</li>
 </ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents">latents</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fit">Fit<a class="anchor" aria-label="anchor" href="#fit"></a>
@@ -126,17 +126,17 @@ the occasion order, <code>n_profiles</code> for the number of profiles,
 <span>             vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>,</span>
 <span>                      <span class="st">"attendance"</span><span class="op">)</span>,</span>
 <span>             id <span class="op">=</span> <span class="st">"student"</span>, time <span class="op">=</span> <span class="st">"sequence"</span>,</span>
-<span>             n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>             n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">moves</span></span>
 <span><span class="co">#&gt; Latent transition model: 3 profiles, 2 group classes</span></span>
 <span><span class="co">#&gt; 1422 observations in 106 groups, up to 15 occasions (unbalanced, observed grid)</span></span>
-<span><span class="co">#&gt; Log likelihood: -8242.967626; 47 parameters; BIC (groups): 16705.1169</span></span>
-<span><span class="co">#&gt; Converged: TRUE after 100 iterations; best of 10 starts</span></span>
+<span><span class="co">#&gt; Log likelihood: -8242.967685; 47 parameters; BIC (groups): 16705.1170</span></span>
+<span><span class="co">#&gt; Converged: TRUE after 99 iterations; best of 3 starts</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile browse lectures forum_read forum_post attendance count proportion</span></span>
-<span><span class="co">#&gt;        1 -0.776   -0.612     -0.888     -0.761     -0.929   579      0.407</span></span>
-<span><span class="co">#&gt;        2  0.705    0.711      0.806      0.746      1.122   374      0.263</span></span>
-<span><span class="co">#&gt;        3  0.395    0.188      0.453      0.344      0.252   469      0.330</span></span>
+<span><span class="co">#&gt;        1  0.705    0.711      0.806      0.746      1.122   374      0.263</span></span>
+<span><span class="co">#&gt;        2  0.395    0.188      0.453      0.344      0.252   469      0.330</span></span>
+<span><span class="co">#&gt;        3 -0.776   -0.612     -0.888     -0.761     -0.929   579      0.407</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles"). </span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
@@ -145,17 +145,10 @@ with <code>"starts"</code>. Starts that reach the same log likelihood
 support the solution.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"starts"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    start log_likelihood converged iterations error</span></span>
-<span><span class="co">#&gt; 1      1          -8243      TRUE         91  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2      2          -8243      TRUE         84  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3      3          -8243      TRUE         99  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4      4          -8243      TRUE        121  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 5      5          -8243      TRUE         99  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6      6          -8243      TRUE         90  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 7      7          -8243      TRUE        100  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 8      8          -8243      TRUE        189  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 9      9          -8243      TRUE         83  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 10    10          -8243      TRUE         83  &lt;NA&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;   start log_likelihood converged iterations error</span></span>
+<span><span class="co">#&gt; 1     1          -8243      TRUE         91  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2     2          -8243      TRUE         84  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3     3          -8243      TRUE         99  &lt;NA&gt;</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="profiles">Profiles<a class="anchor" aria-label="anchor" href="#profiles"></a>
@@ -185,12 +178,12 @@ class.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"initial"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   group_class profile probability prevalence group_class_probability</span></span>
-<span><span class="co">#&gt; 1           1       1    7.62e-01     0.8189                   0.301</span></span>
-<span><span class="co">#&gt; 2           1       2    2.38e-01     0.0969                   0.301</span></span>
-<span><span class="co">#&gt; 3           1       3    3.45e-10     0.0842                   0.301</span></span>
-<span><span class="co">#&gt; 4           2       1    2.03e-01     0.2296                   0.699</span></span>
-<span><span class="co">#&gt; 5           2       2    4.45e-01     0.3345                   0.699</span></span>
-<span><span class="co">#&gt; 6           2       3    3.51e-01     0.4359                   0.699</span></span></code></pre></div>
+<span><span class="co">#&gt; 1           1       1    2.38e-01     0.0969                   0.301</span></span>
+<span><span class="co">#&gt; 2           1       2    4.14e-10     0.0842                   0.301</span></span>
+<span><span class="co">#&gt; 3           1       3    7.62e-01     0.8189                   0.301</span></span>
+<span><span class="co">#&gt; 4           2       1    4.45e-01     0.3345                   0.699</span></span>
+<span><span class="co">#&gt; 5           2       2    3.51e-01     0.4359                   0.699</span></span>
+<span><span class="co">#&gt; 6           2       3    2.03e-01     0.2296                   0.699</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="transitions">Transitions<a class="anchor" aria-label="anchor" href="#transitions"></a>
@@ -206,24 +199,24 @@ expected number of such moves in the data, and
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"transitions"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    group_class from to probability expected_count stable estimated group_class_probability</span></span>
-<span><span class="co">#&gt; 1            1    1  1      0.9385         303.37   TRUE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 2            1    1  2      0.0313          10.12  FALSE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 3            1    1  3      0.0302           9.76  FALSE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 4            1    2  1      0.2965          11.69  FALSE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 5            1    2  2      0.4824          19.01   TRUE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 6            1    2  3      0.2211           8.72  FALSE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 7            1    3  1      0.3374          11.40  FALSE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 8            1    3  2      0.1419           4.79  FALSE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 9            1    3  3      0.5207          17.58   TRUE      TRUE                   0.301</span></span>
-<span><span class="co">#&gt; 10           2    1  1      0.6144         127.79   TRUE      TRUE                   0.699</span></span>
-<span><span class="co">#&gt; 11           2    1  2      0.1764          36.67  FALSE      TRUE                   0.699</span></span>
-<span><span class="co">#&gt; 12           2    1  3      0.2092          43.52  FALSE      TRUE                   0.699</span></span>
-<span><span class="co">#&gt; 13           2    2  1      0.1276          38.97  FALSE      TRUE                   0.699</span></span>
-<span><span class="co">#&gt; 14           2    2  2      0.3786         115.61   TRUE      TRUE                   0.699</span></span>
-<span><span class="co">#&gt; 15           2    2  3      0.4938         150.82  FALSE      TRUE                   0.699</span></span>
-<span><span class="co">#&gt; 16           2    3  1      0.1141          46.33  FALSE      TRUE                   0.699</span></span>
-<span><span class="co">#&gt; 17           2    3  2      0.3622         147.07  FALSE      TRUE                   0.699</span></span>
-<span><span class="co">#&gt; 18           2    3  3      0.5238         212.79   TRUE      TRUE                   0.699</span></span></code></pre></div>
+<span><span class="co">#&gt; 1            1    1  1      0.4824          19.02   TRUE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 2            1    1  2      0.2210           8.72  FALSE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 3            1    1  3      0.2966          11.69  FALSE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 4            1    2  1      0.1420           4.79  FALSE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 5            1    2  2      0.5207          17.58   TRUE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 6            1    2  3      0.3373          11.39  FALSE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 7            1    3  1      0.0313          10.12  FALSE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 8            1    3  2      0.0302           9.76  FALSE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 9            1    3  3      0.9385         303.37   TRUE      TRUE                   0.301</span></span>
+<span><span class="co">#&gt; 10           2    1  1      0.3787         115.64   TRUE      TRUE                   0.699</span></span>
+<span><span class="co">#&gt; 11           2    1  2      0.4937         150.83  FALSE      TRUE                   0.699</span></span>
+<span><span class="co">#&gt; 12           2    1  3      0.1276          38.98  FALSE      TRUE                   0.699</span></span>
+<span><span class="co">#&gt; 13           2    2  1      0.3622         147.08  FALSE      TRUE                   0.699</span></span>
+<span><span class="co">#&gt; 14           2    2  2      0.5237         212.73   TRUE      TRUE                   0.699</span></span>
+<span><span class="co">#&gt; 15           2    2  3      0.1141          46.32  FALSE      TRUE                   0.699</span></span>
+<span><span class="co">#&gt; 16           2    3  1      0.1764          36.68  FALSE      TRUE                   0.699</span></span>
+<span><span class="co">#&gt; 17           2    3  2      0.2092          43.52  FALSE      TRUE                   0.699</span></span>
+<span><span class="co">#&gt; 18           2    3  3      0.6144         127.78   TRUE      TRUE                   0.699</span></span></code></pre></div>
 <p>To draw the transition matrices, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
 <code>what = "transitions"</code>: one heatmap per group class, current
 profile in rows and next profile in columns.</p>

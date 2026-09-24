@@ -49,7 +49,7 @@ smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
 larger <- multilpa(example_data, "score", "school", n_profiles = 2,
                    n_group_classes = 1, n_starts = 2, seed = 1)
 # `iter` is small so the example runs quickly; use many more for inference.
-comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
                             max_iter = 2000, tol = 1e-6, seed = 1)
 print(summary(comparison))
 #> Parametric bootstrap likelihood-ratio comparison
@@ -64,15 +64,15 @@ print(summary(comparison))
 #> 
 #> -- replicates ------------------------------------------------------
 #>  replicate statistic valid boundary null_replications alternative_replications
-#>          1    6.3351  TRUE    FALSE                 2                        2
-#>          2    1.0521  TRUE    FALSE                 2                        2
-#>          3    0.9975  TRUE    FALSE                 2                        1
-#>          4    0.2128  TRUE    FALSE                 2                        2
-#>          5    9.2209  TRUE    FALSE                 2                        2
-#>          6    1.2794  TRUE    FALSE                 2                        2
-#>          7    1.7191  TRUE    FALSE                 2                        2
-#>          8    3.6272  TRUE    FALSE                 2                        2
-#>          9    6.5931  TRUE    FALSE                 2                        2
+#>          1    6.3351  TRUE    FALSE                 1                        1
+#>          2    9.5081  TRUE    FALSE                 1                        1
+#>          3   17.2293  TRUE    FALSE                 1                        1
+#>          4    0.1777  TRUE    FALSE                 1                        1
+#>          5    7.9339  TRUE    FALSE                 1                        1
+#>          6    2.8515  TRUE    FALSE                 1                        1
+#>          7    0.2956  TRUE    FALSE                 1                        1
+#>          8    3.6494  TRUE    FALSE                 1                        1
+#>          9    5.5056  TRUE    FALSE                 1                        1
 #>  warnings error
 #>      <NA>  <NA>
 #>      <NA>  <NA>

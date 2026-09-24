@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,7 +91,7 @@ one-row test table by default and one row per replicate with
 <span class="r-in"><span><span class="va">larger</span> <span class="op">&lt;-</span> <span class="fu"><a href="multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">example_data</span>, <span class="st">"score"</span>, <span class="st">"school"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>                   n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># `iter` is small so the example runs quickly; use many more for inference.</span></span></span>
-<span class="r-in"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">smaller</span>, <span class="va">larger</span>, iter <span class="op">=</span> <span class="fl">9</span>, n_starts <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">smaller</span>, <span class="va">larger</span>, iter <span class="op">=</span> <span class="fl">9</span>, n_starts <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>                            max_iter <span class="op">=</span> <span class="fl">2000</span>, tol <span class="op">=</span> <span class="fl">1e-6</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Parametric bootstrap likelihood-ratio comparison</span>
@@ -106,15 +106,15 @@ one-row test table by default and one row per replicate with
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- replicates ------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  replicate statistic valid boundary null_replications alternative_replications</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          1    6.3351  TRUE    FALSE                 2                        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          2    1.0521  TRUE    FALSE                 2                        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          3    0.9975  TRUE    FALSE                 2                        1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          4    0.2128  TRUE    FALSE                 2                        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          5    9.2209  TRUE    FALSE                 2                        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          6    1.2794  TRUE    FALSE                 2                        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          7    1.7191  TRUE    FALSE                 2                        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          8    3.6272  TRUE    FALSE                 2                        2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          9    6.5931  TRUE    FALSE                 2                        2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          1    6.3351  TRUE    FALSE                 1                        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          2    9.5081  TRUE    FALSE                 1                        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          3   17.2293  TRUE    FALSE                 1                        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          4    0.1777  TRUE    FALSE                 1                        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          5    7.9339  TRUE    FALSE                 1                        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          6    2.8515  TRUE    FALSE                 1                        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          7    0.2956  TRUE    FALSE                 1                        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          8    3.6494  TRUE    FALSE                 1                        1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          9    5.5056  TRUE    FALSE                 1                        1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  warnings error</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;NA&gt;  &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      &lt;NA&gt;  &lt;NA&gt;</span>

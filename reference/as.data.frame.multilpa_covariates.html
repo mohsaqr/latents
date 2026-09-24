@@ -11,7 +11,7 @@ get_results(), which takes what and refuses a name this object has not."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,23 +101,23 @@ profile and continuous indicator.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="multilpa.html">multilpa</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">course_engagement</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">30</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
-<span class="r-in"><span>  profile_covariates <span class="op">=</span> <span class="st">"sequence"</span>, n_starts <span class="op">=</span> <span class="fl">4</span>, seed <span class="op">=</span> <span class="fl">1</span></span></span>
+<span class="r-in"><span>  profile_covariates <span class="op">=</span> <span class="st">"sequence"</span>, n_starts <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    profile  indicator       mean  variance standard_deviation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1     browse  0.5395857 0.5898775          0.7680348</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        1   lectures  0.4274301 0.8446567          0.9190521</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 forum_read  0.6198229 0.4814994          0.6939016</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        1 forum_post  0.5304968 0.6887881          0.8299326</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1 attendance  0.6490624 0.3841107          0.6197666</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2     browse -0.7655862 0.5284633          0.7269548</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7        2   lectures -0.6065034 0.5383714          0.7337380</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2 forum_read -0.8791818 0.3631316          0.6026040</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        2 forum_post -0.7526746 0.4211726          0.6489781</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2 attendance -0.9206473 0.3736434          0.6112638</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1     browse -0.7884408 0.5794605          0.7612230</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        1   lectures -0.5808858 0.5564737          0.7459717</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 forum_read -0.8371850 0.3376948          0.5811152</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        1 forum_post -0.8129060 0.3733900          0.6110565</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1 attendance -0.9009078 0.3996484          0.6321775</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2     browse  0.5923999 0.5158958          0.7182589</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7        2   lectures  0.4581977 0.8189790          0.9049746</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2 forum_read  0.6002542 0.4758876          0.6898461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        2 forum_post  0.6050098 0.6336240          0.7960050</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2 attendance  0.6665197 0.4406563          0.6638195</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

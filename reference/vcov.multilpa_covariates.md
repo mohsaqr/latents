@@ -98,7 +98,7 @@ vcov(fit, example_data, scale = "unconstrained")
 #> measurement.mean.profile_1.y2                                8.118727e-03
 #> measurement.mean.profile_2.y1                                2.772009e-07
 #> measurement.mean.profile_2.y2                                1.335890e-07
-#> measurement.log_variance.profile_1.y1                       -1.028549e-06
+#> measurement.log_variance.profile_1.y1                       -1.028548e-06
 #> measurement.log_variance.profile_1.y2                       -8.065075e-07
 #> measurement.log_variance.profile_2.y1                        1.206184e-06
 #> measurement.log_variance.profile_2.y2                        1.865068e-07
@@ -134,13 +134,13 @@ vcov(fit, example_data, scale = "unconstrained")
 #> group.coefficient.group_class_1.(Intercept)                 -2.301938e-07
 #>                                             measurement.log_variance.profile_1.y1
 #> measurement.mean.profile_1.y1                                       -1.002597e-06
-#> measurement.mean.profile_1.y2                                       -1.028549e-06
+#> measurement.mean.profile_1.y2                                       -1.028548e-06
 #> measurement.mean.profile_2.y1                                       -7.737152e-07
 #> measurement.mean.profile_2.y2                                       -3.188608e-07
 #> measurement.log_variance.profile_1.y1                                2.899095e-02
 #> measurement.log_variance.profile_1.y2                                3.920008e-06
 #> measurement.log_variance.profile_2.y1                               -2.186615e-06
-#> measurement.log_variance.profile_2.y2                                1.232113e-08
+#> measurement.log_variance.profile_2.y2                                1.232112e-08
 #> profile.coefficient.profile_1.group_class_1                          8.528568e-08
 #> profile.coefficient.profile_1.group_class_2                          4.308015e-06
 #> profile.coefficient.profile_1.x                                      2.874842e-07
@@ -176,7 +176,7 @@ vcov(fit, example_data, scale = "unconstrained")
 #> measurement.mean.profile_1.y2                                        1.865068e-07
 #> measurement.mean.profile_2.y1                                        5.823837e-07
 #> measurement.mean.profile_2.y2                                        3.560258e-07
-#> measurement.log_variance.profile_1.y1                                1.232113e-08
+#> measurement.log_variance.profile_1.y1                                1.232112e-08
 #> measurement.log_variance.profile_1.y2                               -1.642744e-07
 #> measurement.log_variance.profile_2.y1                                3.470684e-06
 #> measurement.log_variance.profile_2.y2                                3.389929e-02

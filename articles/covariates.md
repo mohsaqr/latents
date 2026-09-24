@@ -34,16 +34,16 @@ fit <- multilpa(course_engagement,
                 vars = c("browse", "lectures", "forum_read", "forum_post",
                          "attendance"),
                 id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 10, seed = 1)
+                n_starts = 3, seed = 1)
 fit
 #> Two-level latent profile analysis: 2 profiles, 2 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -8439.816434 | AIC: 16925.633 | BIC (groups): 16986.892
-#> Converged: TRUE | iterations: 8 | best start: 8/10
+#> Log likelihood: -8439.816436 | AIC: 16925.633 | BIC (groups): 16986.892
+#> Converged: TRUE | iterations: 10 | best start: 1/3
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
-#>        1 -0.766   -0.606     -0.879     -0.753     -0.921   588      0.413
-#>        2  0.540    0.427      0.620      0.531      0.649   834      0.587
+#>        1  0.540    0.427      0.620      0.531      0.649   834      0.587
+#>        2 -0.766   -0.606     -0.879     -0.753     -0.921   588      0.413
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
@@ -62,10 +62,10 @@ misclassification.
 
 get_results(fit, "classification_errors", level = "individuals")
 #>         level true_class assigned_class probability
-#> 1 individuals          1              1      0.9786
-#> 2 individuals          1              2      0.0214
-#> 3 individuals          2              1      0.0128
-#> 4 individuals          2              2      0.9872
+#> 1 individuals          1              1      0.9872
+#> 2 individuals          1              2      0.0128
+#> 3 individuals          2              1      0.0214
+#> 4 individuals          2              2      0.9786
 ```
 
 ## Class means of an external variable
@@ -80,8 +80,8 @@ are clustered on groups.
 
 three_step(fit, data = course_engagement, outcome = "previous_grade")
 #>         level method class estimate standard_error conf_low conf_high effective_n
-#> 1 individuals    bch     1   -0.315         0.0359   -0.385    -0.244         564
-#> 2 individuals    bch     2    0.222         0.0347    0.154     0.290         810
+#> 1 individuals    bch     1    0.222         0.0347    0.154     0.290         810
+#> 2 individuals    bch     2   -0.315         0.0359   -0.385    -0.244         564
 ```
 
 To compare the profiles, we call
@@ -94,9 +94,9 @@ means with a Benjamini-Hochberg adjusted p-value.
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            contrast = "pairs")
 #>         level method class reference_class estimate standard_error statistic  p_value
-#> 1 individuals    bch     2               1    0.536          0.052      10.3 5.72e-25
+#> 1 individuals    bch     2               1   -0.536          0.052     -10.3 5.72e-25
 #>   p_value_adjusted conf_low conf_high
-#> 1         5.72e-25    0.435     0.638
+#> 1         5.72e-25   -0.638    -0.435
 ```
 
 To see the effect of ignoring classification error, we call
@@ -109,8 +109,8 @@ as known.
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            method = "modal")
 #>         level method class estimate standard_error conf_low conf_high effective_n
-#> 1 individuals  modal     1   -0.305         0.0357   -0.375    -0.235         586
-#> 2 individuals  modal     2    0.214         0.0343    0.146     0.281         836
+#> 1 individuals  modal     1    0.214         0.0343    0.146     0.281         836
+#> 2 individuals  modal     2   -0.305         0.0357   -0.375    -0.235         586
 ```
 
 ## Predicting class membership
@@ -126,11 +126,11 @@ error. `vcov_type = "robust"` clusters the standard errors on groups.
 r3step(fit, data = course_engagement, covariates = "previous_grade",
        vcov_type = "robust")
 #>         level outcome           term estimate standard_error statistic  p_value p_value_adjusted
-#> 1 individuals class_1    (Intercept)   -0.376         0.1303     -2.89 3.91e-03               NA
-#> 2 individuals class_1 previous_grade   -0.575         0.0593     -9.69 3.35e-22         3.35e-22
+#> 1 individuals class_1    (Intercept)    0.376         0.1303      2.89 3.91e-03               NA
+#> 2 individuals class_1 previous_grade    0.575         0.0593      9.69 3.35e-22         3.35e-22
 #>   conf_low conf_high
-#> 1   -0.631    -0.121
-#> 2   -0.691    -0.459
+#> 1    0.121     0.631
+#> 2    0.459     0.691
 ```
 
 ## One-step estimation
@@ -148,11 +148,11 @@ one_step <- multilpa(course_engagement,
                      vars = c("browse", "lectures", "forum_read",
                               "forum_post", "attendance"),
                      id = "student", n_profiles = 2, n_group_classes = 2,
-                     profile_covariates = "previous_grade", n_starts = 10,
+                     profile_covariates = "previous_grade", n_starts = 3,
                      seed = 1)
 one_step
 #> Multilevel LPA with covariates: 2 profiles, 2 group classes
-#> Log likelihood -8422.837634; AIC 16893.675; BIC (groups) 16957.598; converged TRUE
+#> Log likelihood -8422.837640; AIC 16893.675; BIC (groups) 16957.598; converged TRUE
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1 -0.766   -0.609     -0.879     -0.753     -0.920   588      0.413
@@ -171,22 +171,22 @@ with `"coefficients"`, and for their standard errors and intervals,
 
 get_results(one_step, "coefficients")
 #>     level       outcome           term parameter estimate
-#> 1 profile     profile_1  group_class_1     logit    1.538
-#> 2 profile     profile_1  group_class_2     logit   -1.268
+#> 1 profile     profile_1  group_class_1     logit    1.539
+#> 2 profile     profile_1  group_class_2     logit   -1.267
 #> 3 profile     profile_1 previous_grade     logit   -0.422
-#> 4   group group_class_1    (Intercept)     logit   -0.762
+#> 4   group group_class_1    (Intercept)     logit   -0.763
 parameter_inference(one_step)
 #>          level       outcome           term   parameter estimate standard_error statistic   p_value
-#> 1  measurement     profile_1         browse        mean   -0.766         0.0311    -24.65 3.78e-134
+#> 1  measurement     profile_1         browse        mean   -0.766         0.0311    -24.65 4.08e-134
 #> 2  measurement     profile_1       lectures        mean   -0.609         0.0309    -19.71  1.67e-86
-#> 3  measurement     profile_1     forum_read        mean   -0.879         0.0261    -33.65 3.00e-248
-#> 4  measurement     profile_1     forum_post        mean   -0.753         0.0277    -27.14 3.54e-162
-#> 5  measurement     profile_1     attendance        mean   -0.920         0.0264    -34.87 2.03e-266
-#> 6  measurement     profile_2         browse        mean    0.540         0.0271     19.88  6.40e-88
-#> 7  measurement     profile_2       lectures        mean    0.429         0.0324     13.24  4.85e-40
-#> 8  measurement     profile_2     forum_read        mean    0.619         0.0248     25.02 3.95e-138
-#> 9  measurement     profile_2     forum_post        mean    0.530         0.0294     18.02  1.42e-72
-#> 10 measurement     profile_2     attendance        mean    0.648         0.0223     29.12 2.05e-186
+#> 3  measurement     profile_1     forum_read        mean   -0.879         0.0261    -33.65 3.50e-248
+#> 4  measurement     profile_1     forum_post        mean   -0.753         0.0277    -27.14 3.75e-162
+#> 5  measurement     profile_1     attendance        mean   -0.920         0.0264    -34.87 2.30e-266
+#> 6  measurement     profile_2         browse        mean    0.540         0.0271     19.88  6.23e-88
+#> 7  measurement     profile_2       lectures        mean    0.429         0.0324     13.25  4.75e-40
+#> 8  measurement     profile_2     forum_read        mean    0.619         0.0247     25.02 3.76e-138
+#> 9  measurement     profile_2     forum_post        mean    0.530         0.0294     18.02  1.38e-72
+#> 10 measurement     profile_2     attendance        mean    0.648         0.0223     29.12 1.90e-186
 #> 11 measurement     profile_1         browse    variance    0.526         0.0321        NA        NA
 #> 12 measurement     profile_1       lectures    variance    0.538         0.0320        NA        NA
 #> 13 measurement     profile_1     forum_read    variance    0.363         0.0227        NA        NA
@@ -197,21 +197,21 @@ parameter_inference(one_step)
 #> 18 measurement     profile_2     forum_read    variance    0.483         0.0245        NA        NA
 #> 19 measurement     profile_2     forum_post    variance    0.688         0.0347        NA        NA
 #> 20 measurement     profile_2     attendance    variance    0.385         0.0196        NA        NA
-#> 21     profile     profile_1  group_class_1 coefficient    1.538         0.1676      9.17  4.53e-20
-#> 22     profile     profile_1  group_class_2 coefficient   -1.268         0.0943    -13.44  3.44e-41
-#> 23     profile     profile_1 previous_grade coefficient   -0.422         0.0736     -5.73  9.79e-09
-#> 24       group group_class_1    (Intercept) coefficient   -0.762         0.2212     -3.44  5.73e-04
+#> 21     profile     profile_1  group_class_1 coefficient    1.539         0.1677      9.18  4.36e-20
+#> 22     profile     profile_1  group_class_2 coefficient   -1.267         0.0943    -13.44  3.60e-41
+#> 23     profile     profile_1 previous_grade coefficient   -0.422         0.0736     -5.74  9.73e-09
+#> 24       group group_class_1    (Intercept) coefficient   -0.763         0.2213     -3.45  5.65e-04
 #>    p_adjusted conf_low conf_high
-#> 1   3.78e-134   -0.827    -0.705
+#> 1   4.08e-134   -0.827    -0.705
 #> 2    1.67e-86   -0.669    -0.548
-#> 3   3.00e-248   -0.930    -0.828
-#> 4   3.54e-162   -0.807    -0.699
-#> 5   2.03e-266   -0.972    -0.868
-#> 6    6.40e-88    0.486     0.593
-#> 7    4.85e-40    0.365     0.492
-#> 8   3.95e-138    0.571     0.668
-#> 9    1.42e-72    0.473     0.588
-#> 10  2.05e-186    0.605     0.692
+#> 3   3.50e-248   -0.930    -0.828
+#> 4   3.75e-162   -0.807    -0.698
+#> 5   2.30e-266   -0.972    -0.868
+#> 6    6.23e-88    0.486     0.593
+#> 7    4.75e-40    0.365     0.492
+#> 8   3.76e-138    0.571     0.668
+#> 9    1.38e-72    0.473     0.588
+#> 10  1.90e-186    0.605     0.692
 #> 11         NA    0.463     0.589
 #> 12         NA    0.475     0.600
 #> 13         NA    0.318     0.407
@@ -221,11 +221,11 @@ parameter_inference(one_step)
 #> 17         NA    0.760     0.924
 #> 18         NA    0.435     0.531
 #> 19         NA    0.620     0.756
-#> 20         NA    0.347     0.424
-#> 21   4.53e-20    1.209     1.866
-#> 22   3.44e-41   -1.453    -1.083
-#> 23   9.79e-09   -0.567    -0.278
-#> 24   5.73e-04   -1.195    -0.328
+#> 20         NA    0.347     0.423
+#> 21   4.36e-20    1.211     1.868
+#> 22   3.60e-41   -1.452    -1.082
+#> 23   9.73e-09   -0.567    -0.278
+#> 24   5.65e-04   -1.197    -0.329
 ```
 
 ## Staged estimation
@@ -244,12 +244,12 @@ staged <- fit_staged(course_engagement,
                      vars = c("browse", "lectures", "forum_read",
                               "forum_post", "attendance"),
                      id = "student", n_profiles = 2, n_group_classes = 2,
-                     n_starts = 10, seed = 1)
+                     n_starts = 3, seed = 1)
 staged
 #> Two-level latent profile analysis: 2 profiles, 2 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8440.081199 | AIC: 16886.162 | BIC (groups): 16894.153
-#> Converged: TRUE | iterations: 10 | best start: 3/10
+#> Converged: TRUE | iterations: 10 | best start: 3/3
 #> Held fixed, not estimated here: means, variances (first stage)
 #> Parameters estimated here: 3; with the held measurement: 23
 #> 

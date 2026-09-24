@@ -73,27 +73,27 @@ for continuous and mixed indicators, and
 
 ``` r
 activities <- c("time_with_friends", "on_social_media", "tv_video_games")
-fit <- multilca(subset(student_esm, day <= 2), vars = activities,
+fit <- multilca(subset(student_esm, day <= 1), vars = activities,
                 id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 2, seed = 1)
+                n_starts = 1, seed = 1)
 get_results(fit, "responses")
-#>    profile         indicator category  probability  threshold
-#> 1        1 time_with_friends       no 0.9182008581  2.4181494
-#> 2        2 time_with_friends       no 0.8283759283  1.5741606
-#> 3        1 time_with_friends      yes 0.0817991419         NA
-#> 4        2 time_with_friends      yes 0.1716240717         NA
-#> 5        1   on_social_media       no 0.6796397279  0.7521166
-#> 6        2   on_social_media       no 0.3816937499 -0.4823653
-#> 7        1   on_social_media      yes 0.3203602721         NA
-#> 8        2   on_social_media      yes 0.6183062501         NA
-#> 9        1    tv_video_games       no 0.9012128285  2.2107737
-#> 10       2    tv_video_games       no 0.0001699083 -8.6800819
-#> 11       1    tv_video_games      yes 0.0987871715         NA
-#> 12       2    tv_video_games      yes 0.9998300917         NA
+#>    profile         indicator category probability threshold
+#> 1        1 time_with_friends       no  0.97598029  3.704567
+#> 2        2 time_with_friends       no  0.83034660  1.588086
+#> 3        1 time_with_friends      yes  0.02401971        NA
+#> 4        2 time_with_friends      yes  0.16965340        NA
+#> 5        1   on_social_media       no  0.37231410 -0.522302
+#> 6        2   on_social_media       no  0.98998036  4.593138
+#> 7        1   on_social_media      yes  0.62768590        NA
+#> 8        2   on_social_media      yes  0.01001964        NA
+#> 9        1    tv_video_games       no  0.73677805  1.029289
+#> 10       2    tv_video_games       no  0.86637631  1.869292
+#> 11       1    tv_video_games      yes  0.26322195        NA
+#> 12       2    tv_video_games      yes  0.13362369        NA
 get_results(fit, "profile_probabilities")
-#>   group_class profile probability group_class_probability
-#> 1           1       1  0.44351791               0.1895611
-#> 2           1       2  0.55648209               0.1895611
-#> 3           2       1  0.98991622               0.8104389
-#> 4           2       2  0.01008378               0.8104389
+#>   group_class profile  probability group_class_probability
+#> 1           1       1 1.000000e+00               0.4532333
+#> 2           1       2 3.822445e-11               0.4532333
+#> 3           2       1 2.195735e-01               0.5467667
+#> 4           2       2 7.804265e-01               0.5467667
 ```

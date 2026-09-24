@@ -19,7 +19,7 @@ categorical argument."><meta property="og:image" content="https://pak.dynasite.o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -133,29 +133,29 @@ indicator is categorical by definition here. Every condition of
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time_with_friends"</span>, <span class="st">"on_social_media"</span>, <span class="st">"tv_video_games"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">multilca</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">day</span> <span class="op">&lt;=</span> <span class="fl">2</span><span class="op">)</span>, vars <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">multilca</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">day</span> <span class="op">&lt;=</span> <span class="fl">1</span><span class="op">)</span>, vars <span class="op">=</span> <span class="va">activities</span>,</span></span>
 <span class="r-in"><span>                id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
-<span class="r-in"><span>                n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                n_starts <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"responses"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    profile         indicator category  probability  threshold</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1 time_with_friends       no 0.9182008581  2.4181494</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        2 time_with_friends       no 0.8283759283  1.5741606</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 time_with_friends      yes 0.0817991419         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        2 time_with_friends      yes 0.1716240717         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1   on_social_media       no 0.6796397279  0.7521166</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2   on_social_media       no 0.3816937499 -0.4823653</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7        1   on_social_media      yes 0.3203602721         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2   on_social_media      yes 0.6183062501         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        1    tv_video_games       no 0.9012128285  2.2107737</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2    tv_video_games       no 0.0001699083 -8.6800819</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11       1    tv_video_games      yes 0.0987871715         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12       2    tv_video_games      yes 0.9998300917         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    profile         indicator category probability threshold</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1 time_with_friends       no  0.97598029  3.704567</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        2 time_with_friends       no  0.83034660  1.588086</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 time_with_friends      yes  0.02401971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        2 time_with_friends      yes  0.16965340        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1   on_social_media       no  0.37231410 -0.522302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2   on_social_media       no  0.98998036  4.593138</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7        1   on_social_media      yes  0.62768590        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2   on_social_media      yes  0.01001964        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        1    tv_video_games       no  0.73677805  1.029289</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2    tv_video_games       no  0.86637631  1.869292</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11       1    tv_video_games      yes  0.26322195        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12       2    tv_video_games      yes  0.13362369        NA</span>
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   group_class profile probability group_class_probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1       1  0.44351791               0.1895611</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1       2  0.55648209               0.1895611</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2       1  0.98991622               0.8104389</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2       2  0.01008378               0.8104389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   group_class profile  probability group_class_probability</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1       1 1.000000e+00               0.4532333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1       2 3.822445e-11               0.4532333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2       1 2.195735e-01               0.5467667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2       2 7.804265e-01               0.5467667</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

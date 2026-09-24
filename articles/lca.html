@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -143,7 +143,7 @@ yes/no items record the leisure activities done since the previous
 prompt, and four items rate affect from 1 to 7. <code>day</code> is the
 study day, from 0 to 13. <code><a href="../reference/student_esm.html">?student_esm</a></code> gives the source.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents">latents</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span></code></pre></div>
 <p>To keep the example short, we call <code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> with
 <code>day &lt;= 6</code>, which keeps the first week and all 100
 students.</p>
@@ -166,35 +166,35 @@ the group, <code>n_profiles</code>, <code>n_group_classes</code>,
 tighter convergence tolerance, which standard errors need.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">first_week</span>, vars <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
-<span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>                tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">lca</span></span>
 <span><span class="co">#&gt; Two-level latent profile analysis: 2 profiles, 2 group classes</span></span>
 <span><span class="co">#&gt; 1422 individuals in 100 groups; varying diagonal residual covariance (VVI)</span></span>
-<span><span class="co">#&gt; Log likelihood: -4315.734845 | AIC: 8669.470 | BIC (groups): 8718.968</span></span>
-<span><span class="co">#&gt; Converged: TRUE | iterations: 89 | best start: 8/10</span></span>
+<span><span class="co">#&gt; Log likelihood: -4315.734849 | AIC: 8669.470 | BIC (groups): 8718.968</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 299 | best start: 2/3</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile         indicator category probability threshold</span></span>
-<span><span class="co">#&gt;        1 time_with_friends       no      0.8324     1.603</span></span>
-<span><span class="co">#&gt;        2 time_with_friends       no      0.9368     2.696</span></span>
-<span><span class="co">#&gt;        1 time_with_friends      yes      0.1676        NA</span></span>
-<span><span class="co">#&gt;        2 time_with_friends      yes      0.0632        NA</span></span>
-<span><span class="co">#&gt;        1   on_social_media       no      0.9235     2.491</span></span>
-<span><span class="co">#&gt;        2   on_social_media       no      0.3365    -0.679</span></span>
-<span><span class="co">#&gt;        1   on_social_media      yes      0.0765        NA</span></span>
-<span><span class="co">#&gt;        2   on_social_media      yes      0.6635        NA</span></span>
-<span><span class="co">#&gt;        1    tv_video_games       no      0.8664     1.870</span></span>
-<span><span class="co">#&gt;        2    tv_video_games       no      0.6313     0.538</span></span>
-<span><span class="co">#&gt;        1    tv_video_games      yes      0.1336        NA</span></span>
-<span><span class="co">#&gt;        2    tv_video_games      yes      0.3687        NA</span></span>
-<span><span class="co">#&gt;        1    listened_music       no      0.9406     2.762</span></span>
-<span><span class="co">#&gt;        2    listened_music       no      0.6464     0.603</span></span>
-<span><span class="co">#&gt;        1    listened_music      yes      0.0594        NA</span></span>
-<span><span class="co">#&gt;        2    listened_music      yes      0.3536        NA</span></span>
-<span><span class="co">#&gt;        1            sports       no      0.9159     2.388</span></span>
-<span><span class="co">#&gt;        2            sports       no      0.9406     2.762</span></span>
-<span><span class="co">#&gt;        1            sports      yes      0.0841        NA</span></span>
-<span><span class="co">#&gt;        2            sports      yes      0.0594        NA</span></span>
+<span><span class="co">#&gt;        1 time_with_friends       no      0.9368     2.696</span></span>
+<span><span class="co">#&gt;        2 time_with_friends       no      0.8324     1.603</span></span>
+<span><span class="co">#&gt;        1 time_with_friends      yes      0.0632        NA</span></span>
+<span><span class="co">#&gt;        2 time_with_friends      yes      0.1676        NA</span></span>
+<span><span class="co">#&gt;        1   on_social_media       no      0.3366    -0.679</span></span>
+<span><span class="co">#&gt;        2   on_social_media       no      0.9236     2.492</span></span>
+<span><span class="co">#&gt;        1   on_social_media      yes      0.6634        NA</span></span>
+<span><span class="co">#&gt;        2   on_social_media      yes      0.0764        NA</span></span>
+<span><span class="co">#&gt;        1    tv_video_games       no      0.6314     0.538</span></span>
+<span><span class="co">#&gt;        2    tv_video_games       no      0.8665     1.870</span></span>
+<span><span class="co">#&gt;        1    tv_video_games      yes      0.3686        NA</span></span>
+<span><span class="co">#&gt;        2    tv_video_games      yes      0.1335        NA</span></span>
+<span><span class="co">#&gt;        1    listened_music       no      0.6464     0.603</span></span>
+<span><span class="co">#&gt;        2    listened_music       no      0.9406     2.762</span></span>
+<span><span class="co">#&gt;        1    listened_music      yes      0.3536        NA</span></span>
+<span><span class="co">#&gt;        2    listened_music      yes      0.0594        NA</span></span>
+<span><span class="co">#&gt;        1            sports       no      0.9406     2.762</span></span>
+<span><span class="co">#&gt;        2            sports       no      0.9159     2.388</span></span>
+<span><span class="co">#&gt;        1            sports      yes      0.0594        NA</span></span>
+<span><span class="co">#&gt;        2            sports      yes      0.0841        NA</span></span>
 <span><span class="co">#&gt;    ... 12 more rows.  get_results(x, "responses")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
@@ -205,38 +205,38 @@ chance of that answer in that profile.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"responses"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    profile         indicator category probability threshold</span></span>
-<span><span class="co">#&gt; 1        1 time_with_friends       no      0.8324     1.603</span></span>
-<span><span class="co">#&gt; 2        2 time_with_friends       no      0.9368     2.696</span></span>
-<span><span class="co">#&gt; 3        1 time_with_friends      yes      0.1676        NA</span></span>
-<span><span class="co">#&gt; 4        2 time_with_friends      yes      0.0632        NA</span></span>
-<span><span class="co">#&gt; 5        1   on_social_media       no      0.9235     2.491</span></span>
-<span><span class="co">#&gt; 6        2   on_social_media       no      0.3365    -0.679</span></span>
-<span><span class="co">#&gt; 7        1   on_social_media      yes      0.0765        NA</span></span>
-<span><span class="co">#&gt; 8        2   on_social_media      yes      0.6635        NA</span></span>
-<span><span class="co">#&gt; 9        1    tv_video_games       no      0.8664     1.870</span></span>
-<span><span class="co">#&gt; 10       2    tv_video_games       no      0.6313     0.538</span></span>
-<span><span class="co">#&gt; 11       1    tv_video_games      yes      0.1336        NA</span></span>
-<span><span class="co">#&gt; 12       2    tv_video_games      yes      0.3687        NA</span></span>
-<span><span class="co">#&gt; 13       1    listened_music       no      0.9406     2.762</span></span>
-<span><span class="co">#&gt; 14       2    listened_music       no      0.6464     0.603</span></span>
-<span><span class="co">#&gt; 15       1    listened_music      yes      0.0594        NA</span></span>
-<span><span class="co">#&gt; 16       2    listened_music      yes      0.3536        NA</span></span>
-<span><span class="co">#&gt; 17       1            sports       no      0.9159     2.388</span></span>
-<span><span class="co">#&gt; 18       2            sports       no      0.9406     2.762</span></span>
-<span><span class="co">#&gt; 19       1            sports      yes      0.0841        NA</span></span>
-<span><span class="co">#&gt; 20       2            sports      yes      0.0594        NA</span></span>
-<span><span class="co">#&gt; 21       1           walking       no      0.8365     1.633</span></span>
-<span><span class="co">#&gt; 22       2           walking       no      0.8865     2.056</span></span>
-<span><span class="co">#&gt; 23       1           walking      yes      0.1635        NA</span></span>
-<span><span class="co">#&gt; 24       2           walking      yes      0.1135        NA</span></span>
-<span><span class="co">#&gt; 25       1           reading       no      0.8917     2.108</span></span>
-<span><span class="co">#&gt; 26       2           reading       no      0.8790     1.983</span></span>
-<span><span class="co">#&gt; 27       1           reading      yes      0.1083        NA</span></span>
-<span><span class="co">#&gt; 28       2           reading      yes      0.1210        NA</span></span>
-<span><span class="co">#&gt; 29       1     part_time_job       no      0.9587     3.144</span></span>
-<span><span class="co">#&gt; 30       2     part_time_job       no      0.9838     4.103</span></span>
-<span><span class="co">#&gt; 31       1     part_time_job      yes      0.0413        NA</span></span>
-<span><span class="co">#&gt; 32       2     part_time_job      yes      0.0162        NA</span></span></code></pre></div>
+<span><span class="co">#&gt; 1        1 time_with_friends       no      0.9368     2.696</span></span>
+<span><span class="co">#&gt; 2        2 time_with_friends       no      0.8324     1.603</span></span>
+<span><span class="co">#&gt; 3        1 time_with_friends      yes      0.0632        NA</span></span>
+<span><span class="co">#&gt; 4        2 time_with_friends      yes      0.1676        NA</span></span>
+<span><span class="co">#&gt; 5        1   on_social_media       no      0.3366    -0.679</span></span>
+<span><span class="co">#&gt; 6        2   on_social_media       no      0.9236     2.492</span></span>
+<span><span class="co">#&gt; 7        1   on_social_media      yes      0.6634        NA</span></span>
+<span><span class="co">#&gt; 8        2   on_social_media      yes      0.0764        NA</span></span>
+<span><span class="co">#&gt; 9        1    tv_video_games       no      0.6314     0.538</span></span>
+<span><span class="co">#&gt; 10       2    tv_video_games       no      0.8665     1.870</span></span>
+<span><span class="co">#&gt; 11       1    tv_video_games      yes      0.3686        NA</span></span>
+<span><span class="co">#&gt; 12       2    tv_video_games      yes      0.1335        NA</span></span>
+<span><span class="co">#&gt; 13       1    listened_music       no      0.6464     0.603</span></span>
+<span><span class="co">#&gt; 14       2    listened_music       no      0.9406     2.762</span></span>
+<span><span class="co">#&gt; 15       1    listened_music      yes      0.3536        NA</span></span>
+<span><span class="co">#&gt; 16       2    listened_music      yes      0.0594        NA</span></span>
+<span><span class="co">#&gt; 17       1            sports       no      0.9406     2.762</span></span>
+<span><span class="co">#&gt; 18       2            sports       no      0.9159     2.388</span></span>
+<span><span class="co">#&gt; 19       1            sports      yes      0.0594        NA</span></span>
+<span><span class="co">#&gt; 20       2            sports      yes      0.0841        NA</span></span>
+<span><span class="co">#&gt; 21       1           walking       no      0.8865     2.056</span></span>
+<span><span class="co">#&gt; 22       2           walking       no      0.8365     1.633</span></span>
+<span><span class="co">#&gt; 23       1           walking      yes      0.1135        NA</span></span>
+<span><span class="co">#&gt; 24       2           walking      yes      0.1635        NA</span></span>
+<span><span class="co">#&gt; 25       1           reading       no      0.8790     1.983</span></span>
+<span><span class="co">#&gt; 26       2           reading       no      0.8917     2.108</span></span>
+<span><span class="co">#&gt; 27       1           reading      yes      0.1210        NA</span></span>
+<span><span class="co">#&gt; 28       2           reading      yes      0.1083        NA</span></span>
+<span><span class="co">#&gt; 29       1     part_time_job       no      0.9838     4.103</span></span>
+<span><span class="co">#&gt; 30       2     part_time_job       no      0.9587     3.144</span></span>
+<span><span class="co">#&gt; 31       1     part_time_job      yes      0.0162        NA</span></span>
+<span><span class="co">#&gt; 32       2     part_time_job      yes      0.0413        NA</span></span></code></pre></div>
 <p>To see them, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
 <code>what = "responses"</code>: one line per profile across the
 items.</p>
@@ -250,10 +250,10 @@ and to compare the classes, <code><a href="https://rdrr.io/r/graphics/plot.defau
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   group_class profile probability group_class_probability</span></span>
-<span><span class="co">#&gt; 1           1       1      0.9249                   0.517</span></span>
-<span><span class="co">#&gt; 2           1       2      0.0751                   0.517</span></span>
-<span><span class="co">#&gt; 3           2       1      0.2919                   0.483</span></span>
-<span><span class="co">#&gt; 4           2       2      0.7081                   0.483</span></span></code></pre></div>
+<span><span class="co">#&gt; 1           1       1      0.7082                   0.483</span></span>
+<span><span class="co">#&gt; 2           1       2      0.2918                   0.483</span></span>
+<span><span class="co">#&gt; 3           2       1      0.0752                   0.517</span></span>
+<span><span class="co">#&gt; 4           2       2      0.9248                   0.517</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lca</span>, what <span class="op">=</span> <span class="st">"probabilities"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lca_files/figure-html/probability-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
@@ -278,7 +278,7 @@ bound.</p>
 <code class="sourceCode R"><span><span class="va">mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">first_week</span>,</span>
 <span>                  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"exhausted"</span>, <span class="va">activities</span><span class="op">)</span>,</span>
 <span>                  categorical <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                  n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span>                  n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p>To obtain the means and variances of the continuous indicators, we
 call <code><a href="../reference/get_results.html">get_results()</a></code> on the fit; for the answer probabilities
 of the categorical ones, <code><a href="../reference/get_results.html">get_results()</a></code> with

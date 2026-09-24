@@ -1,5 +1,13 @@
 # Changelog
 
+## latents 0.8.4
+
+- The website URL in DESCRIPTION ends in a slash, and the README gives
+  the CRAN installation command.
+- The package check is about a third faster: vignettes use fewer random
+  starts, the slowest examples use smaller data, and six exhaustive test
+  files are skipped on CRAN (they run on GitHub Actions).
+
 ## latents 0.8.3
 
 - The README opens with the package description, and every vignette and

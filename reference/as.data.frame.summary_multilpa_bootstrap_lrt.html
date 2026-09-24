@@ -11,7 +11,7 @@ get_results() names them."><meta property="og:image" content="https://pak.dynasi
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,7 +107,7 @@ naming it, rather than being dropped.</p></dd>
 <span class="r-in"><span><span class="va">larger</span> <span class="op">&lt;-</span> <span class="fu"><a href="multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">example_data</span>, <span class="st">"score"</span>, <span class="st">"school"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>                   n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># `iter` is small so the example runs quickly; use many more for inference.</span></span></span>
-<span class="r-in"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">smaller</span>, <span class="va">larger</span>, iter <span class="op">=</span> <span class="fl">9</span>, n_starts <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">smaller</span>, <span class="va">larger</span>, iter <span class="op">=</span> <span class="fl">9</span>, n_starts <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>                            max_iter <span class="op">=</span> <span class="fl">2000</span>, tol <span class="op">=</span> <span class="fl">1e-6</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   null_profiles null_group_classes alternative_profiles</span>
