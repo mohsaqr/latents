@@ -26,10 +26,10 @@ A summary carries every table the object it describes can produce, and
 }
 \examples{
 fit <- multilpa(
-  course_engagement,
+  subset(course_engagement, student <= 30),
   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
   id = "student", n_profiles = 2, n_group_classes = 2,
-  profile_covariates = "sequence", n_starts = 4, seed = 1
+  profile_covariates = "sequence", n_starts = 1, seed = 1
 )
 as.data.frame(summary(fit))
 }

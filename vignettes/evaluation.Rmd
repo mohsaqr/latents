@@ -42,7 +42,7 @@ fit <- multilpa(course_engagement,
                 vars = c("browse", "lectures", "forum_read", "forum_post",
                          "attendance"),
                 id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 10, seed = 1)
+                n_starts = 3, seed = 1)
 ```
 
 ## Estimation
@@ -68,7 +68,7 @@ distinct maxima found, and `agreement` is the share of observations assigned
 as in the original fit, after matching the arbitrary profile labels.
 
 ```{r sensitivity}
-sensitivity(fit, seeds = 1:5)
+sensitivity(fit, seeds = 1:3)
 ```
 
 ## Classification
@@ -123,7 +123,7 @@ full <- multilpa(course_engagement,
                  vars = c("browse", "lectures", "forum_read", "forum_post",
                           "attendance"),
                  id = "student", n_profiles = 2, n_group_classes = 2,
-                 covariance_model = "full", n_starts = 10, seed = 1)
+                 covariance_model = "full", n_starts = 3, seed = 1)
 get_results(fit, "information_criteria")
 get_results(full, "information_criteria")
 get_results(full, "residuals", by = "overall")
@@ -140,7 +140,7 @@ candidates <- enumerate_classes(course_engagement,
                                 vars = c("browse", "lectures", "forum_read",
                                          "forum_post", "attendance"),
                                 id = "student", n_profiles = 2:4,
-                                n_group_classes = 1:3, n_starts = 5, seed = 1)
+                                n_group_classes = 1:3, n_starts = 3, seed = 1)
 as.data.frame(candidates)
 ```
 

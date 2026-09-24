@@ -83,7 +83,7 @@ need.
 
 ```{r lca}
 lca <- multilca(first_week, vars = activities, id = "student",
-                n_profiles = 2, n_group_classes = 2, n_starts = 10,
+                n_profiles = 2, n_group_classes = 2, n_starts = 3,
                 tol = 1e-10, seed = 1)
 lca
 ```
@@ -133,7 +133,7 @@ its ratings are 1, which can push a profile's variance to its lower bound.
 mixed <- multilpa(first_week,
                   vars = c("happy", "relaxed", "exhausted", activities),
                   categorical = activities, id = "student", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 10, seed = 1)
+                  n_group_classes = 2, n_starts = 3, seed = 1)
 ```
 
 To obtain the means and variances of the continuous indicators, we call

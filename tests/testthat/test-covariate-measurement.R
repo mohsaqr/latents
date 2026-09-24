@@ -4,6 +4,10 @@
 # and the analytic score against numerical differentiation of that likelihood,
 # so neither is compared with the machinery under test.
 
+# Exhaustive property checks: they run on CI and locally, and are skipped on
+# CRAN to keep the check within its time budget.
+skip_on_cran()
+
 .cov_measurement_fixture <- function(n_groups = 20L, size = 8L, seed = 6L) {
   set.seed(seed)
   frame <- data.frame(g = rep(seq_len(n_groups), each = size),

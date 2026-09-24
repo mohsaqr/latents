@@ -48,9 +48,9 @@ indicator is categorical by definition here. Every condition of
 
 \examples{
 activities <- c("time_with_friends", "on_social_media", "tv_video_games")
-fit <- multilca(subset(student_esm, day <= 2), vars = activities,
+fit <- multilca(subset(student_esm, day <= 1), vars = activities,
                 id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 2, seed = 1)
+                n_starts = 1, seed = 1)
 get_results(fit, "responses")
 get_results(fit, "profile_probabilities")
 }

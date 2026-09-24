@@ -65,10 +65,13 @@ The model implemented here represents higher-level heterogeneity through discret
 
 ## Installation and data preparation
 
-The development version can be installed from the package repository. This installation command is provided for reference and is not evaluated when the tutorial is rendered.
+The released version can be installed from CRAN, and the development version from GitHub. These installation commands are provided for reference and are not evaluated when the tutorial is rendered.
 
 
 ``` r
+install.packages("latents")
+
+# development version
 install.packages("remotes")
 remotes::install_github("mohsaqr/latents")
 ```

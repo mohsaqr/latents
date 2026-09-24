@@ -1,3 +1,7 @@
+# Exhaustive property checks: they run on CI and locally, and are skipped on
+# CRAN to keep the check within its time budget.
+skip_on_cran()
+
 test_that("failed starts are counted and do not hide a valid restart", {
   set.seed(381)
   synthetic <- data.frame(group = rep(seq_len(10), each = 8),

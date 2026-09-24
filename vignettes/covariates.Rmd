@@ -45,7 +45,7 @@ fit <- multilpa(course_engagement,
                 vars = c("browse", "lectures", "forum_read", "forum_post",
                          "attendance"),
                 id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 10, seed = 1)
+                n_starts = 3, seed = 1)
 fit
 ```
 
@@ -114,7 +114,7 @@ one_step <- multilpa(course_engagement,
                      vars = c("browse", "lectures", "forum_read",
                               "forum_post", "attendance"),
                      id = "student", n_profiles = 2, n_group_classes = 2,
-                     profile_covariates = "previous_grade", n_starts = 10,
+                     profile_covariates = "previous_grade", n_starts = 3,
                      seed = 1)
 one_step
 ```
@@ -140,7 +140,7 @@ staged <- fit_staged(course_engagement,
                      vars = c("browse", "lectures", "forum_read",
                               "forum_post", "attendance"),
                      id = "student", n_profiles = 2, n_group_classes = 2,
-                     n_starts = 10, seed = 1)
+                     n_starts = 3, seed = 1)
 staged
 ```
 

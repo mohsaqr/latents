@@ -48,7 +48,7 @@ moves <- lta(course_engagement,
              vars = c("browse", "lectures", "forum_read", "forum_post",
                       "attendance"),
              id = "student", time = "sequence",
-             n_profiles = 3, n_group_classes = 2, n_starts = 10, seed = 1)
+             n_profiles = 3, n_group_classes = 2, n_starts = 3, seed = 1)
 moves
 ```
 

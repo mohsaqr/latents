@@ -505,10 +505,10 @@ print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
 #' @seealso [get_results()] for every other table this summary holds.
 #' @examples
 #' fit <- multilpa(
-#'   course_engagement,
+#'   subset(course_engagement, student <= 30),
 #'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
 #'   id = "student", n_profiles = 2, n_group_classes = 2,
-#'   profile_covariates = "sequence", n_starts = 4, seed = 1
+#'   profile_covariates = "sequence", n_starts = 1, seed = 1
 #' )
 #' as.data.frame(summary(fit))
 #' @export

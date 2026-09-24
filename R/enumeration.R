@@ -547,7 +547,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
 #'                    n_group_classes = 1, n_starts = 2, seed = 1)
 #' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
 #'                             max_iter = 2000, tol = 1e-6, seed = 1)
 #' comparison
 #' @export
@@ -751,7 +751,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
 #' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
 #'                    n_group_classes = 1, n_starts = 2, seed = 1)
 #' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
 #'                             max_iter = 2000, tol = 1e-6, seed = 1)
 #' print(comparison)
 #' @export
@@ -796,7 +796,7 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
 #' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
 #'                    n_group_classes = 1, n_starts = 2, seed = 1)
 #' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
 #'                             max_iter = 2000, tol = 1e-6, seed = 1)
 #' summary(comparison)
 #' @export
@@ -856,7 +856,7 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
 #' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
 #'                    n_group_classes = 1, n_starts = 2, seed = 1)
 #' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
 #'                             max_iter = 2000, tol = 1e-6, seed = 1)
 #' print(summary(comparison))
 #' @export
@@ -900,7 +900,7 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
 #' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
 #'                    n_group_classes = 1, n_starts = 2, seed = 1)
 #' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
 #'                             max_iter = 2000, tol = 1e-6, seed = 1)
 #' as.data.frame(comparison)
 #' @export
@@ -933,7 +933,7 @@ as.data.frame.multilpa_bootstrap_lrt <- function(x, row.names = NULL, optional =
 #' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
 #'                    n_group_classes = 1, n_starts = 2, seed = 1)
 #' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
 #'                             max_iter = 2000, tol = 1e-6, seed = 1)
 #' as.data.frame(summary(comparison))
 #' @export
@@ -969,7 +969,7 @@ as.data.frame.summary_multilpa_bootstrap_lrt <- function(x, row.names = NULL, op
 #' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
 #'                    n_group_classes = 1, n_starts = 2, seed = 1)
 #' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 2,
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
 #'                             max_iter = 2000, tol = 1e-6, seed = 1)
 #' plot(comparison)
 #' @export

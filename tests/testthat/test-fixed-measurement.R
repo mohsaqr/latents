@@ -2,6 +2,10 @@
 # built on it. The constrained M-step is checked against the formula it is
 # supposed to solve, not against itself.
 
+# Exhaustive property checks: they run on CI and locally, and are skipped on
+# CRAN to keep the check within its time budget.
+skip_on_cran()
+
 .fixed_fixture <- function(n_groups = 40L, size = 8L, seed = 33L) {
   set.seed(seed)
   frame <- data.frame(school = rep(seq_len(n_groups), each = size))

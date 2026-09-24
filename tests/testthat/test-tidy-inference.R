@@ -3,6 +3,10 @@
 # caller can write code against `coef()` or `parameter_inference()` once and
 # have it keep working when the fit changes family.
 
+# Exhaustive property checks: they run on CI and locally, and are skipped on
+# CRAN to keep the check within its time budget.
+skip_on_cran()
+
 .tidy_inference_columns <- c("level", "outcome", "term", "parameter",
                              "estimate", "standard_error", "statistic",
                              "p_value", "p_adjusted", "conf_low", "conf_high")

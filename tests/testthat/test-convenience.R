@@ -1,3 +1,7 @@
+# Exhaustive property checks: they run on CI and locally, and are skipped on
+# CRAN to keep the check within its time budget.
+skip_on_cran()
+
 .activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 
 .convenience_fit <- function(...) {

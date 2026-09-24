@@ -3,6 +3,10 @@
 # and the nesting lattice the six models form. The comparisons against mclust
 # live in equivalence/test-mclust.R, which does not ship.
 
+# Exhaustive property checks: they run on CI and locally, and are skipped on
+# CRAN to keep the check within its time budget.
+skip_on_cran()
+
 activity <- c("browse", "lectures", "forum_read")
 
 structure_fit <- function(..., n_profiles = 3L) {

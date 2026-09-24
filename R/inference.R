@@ -678,7 +678,7 @@
 #' shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                    n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1,
 #'                    volume = "varying", shape = "equal", orientation = "axis")
-#' parameter_inference(shaped, method = "bootstrap", iter = 25, n_starts = 1,
+#' parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
 #'                     seed = 1)
 #' @export
 parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
