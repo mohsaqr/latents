@@ -446,7 +446,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   designs <- .multilpa_cov_designs(data, object$vars,
     object$profile_covariates, object$group_covariates, first_rows,
     object$n_group_classes, categorical = categorical,
-    missing = object$missing %||% "error")
+    missing = object$missing %||% "error",
+    profile_slopes = object$profile_slopes %||% "shared")
   codes <- designs$codes
   same <- function(left, right) identical(unname(left), unname(right))
   if ((!is.null(object$indicator_data) &&

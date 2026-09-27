@@ -242,6 +242,7 @@
                                   categorical = character(),
                                   min_probability = 1e-10,
                                   missing = c("error", "fiml"),
+                                  profile_slopes = c("shared", "group_class"),
                                   select_start = "likelihood", call = NULL) {
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.character(profile_covariates), is.character(group_covariates),
@@ -252,6 +253,7 @@
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
+  profile_slopes <- match.arg(profile_slopes)
   stopifnot(
     "`categorical` must be a character vector of indicator names" =
       is.character(categorical) && !anyNA(categorical),
@@ -290,14 +292,16 @@
   }
   designs <- .multilpa_cov_designs(data, vars, profile_covariates,
                                  group_covariates, first_rows, n_group_classes,
-                                 categorical, min_probability, missing)
+                                 categorical, min_probability, missing,
+                                 profile_slopes)
   x <- designs$x
   center <- designs$center
   control <- list(variance_model = variance_model, min_variance = min_variance,
                   max_iter = max_iter, tol = tol,
                   covariance_model = covariance_model,
                   min_probability = min_probability,
-                  n_profile_covariates = length(profile_covariates),
+                  n_profile_covariates = ncol(designs$stacked_design) -
+                    n_group_classes,
                   n_group_covariates = length(group_covariates))
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch(.multilpa_cov_start(start_index, x, group_index, n_profiles,
@@ -349,6 +353,8 @@
   result$min_probability <- min_probability
   ## Read by inference to accept, and integrate over, the same missing values.
   result$missing <- missing
+  ## Read by inference to rebuild the same design.
+  result$profile_slopes <- profile_slopes
   ## The same effective counts the Gaussian fit carries, so the shared
   ## diagnostics and plot panels need no special case for this class.
   result$effective_profile_counts <- colSums(result$subject_posteriors)
@@ -563,8 +569,10 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
   result[[object$id]] <- object$group_values[object$group_index]
   ## The profile design is the group-class indicator block followed by the
   ## profile covariates, in the order they were named.
+  ## With slopes by group class the covariates repeat once per class; group
+  ## class 1's design holds them unmasked in the first of those blocks.
   profile_block <- object$profile_design[[1L]][,
-    -seq_len(object$n_group_classes), drop = FALSE]
+    object$n_group_classes + seq_along(object$profile_covariates), drop = FALSE]
   if (ncol(profile_block) > 0L) {
     colnames(profile_block) <- object$profile_covariates
     result <- cbind(result, as.data.frame(profile_block))
@@ -654,12 +662,20 @@ nobs.multilpa_covariates <- function(object, ...) {
 #' so that stacking it gives the weighted multinomial regression its rows. The
 #' group design takes one row per group, at its first occurrence.
 #'
+#' With `profile_slopes = "shared"` the covariates follow the indicators once,
+#' so every group class uses the same slopes. With `"group_class"` they follow
+#' once per group class, and group class `h`'s design carries them only in its
+#' own block: the slopes are then the covariates' interactions with the group
+#' classes. Either way the first block after the indicators holds the
+#' covariates themselves in group class 1's design.
+#'
 #' @return A list with `x`, `center`, `w`, `profile_design` and `stacked_design`.
 #' @noRd
 .multilpa_cov_designs <- function(data, vars, profile_covariates,
                                 group_covariates, first_rows, n_group_classes,
                                 categorical = character(),
-                                min_probability = 1e-10, missing = "error") {
+                                min_probability = 1e-10, missing = "error",
+                                profile_slopes = "shared") {
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                               missing, min_probability)
   x <- measurement$x
@@ -671,8 +687,14 @@ nobs.multilpa_covariates <- function(object, ...) {
   w <- cbind(`(Intercept)` = 1,
              as.matrix(data[first_rows, group_covariates, drop = FALSE]))
   profile_design <- lapply(seq_len(n_group_classes), function(group_class) {
-    cbind(matrix(as.numeric(seq_len(n_group_classes) == group_class), nrow(data),
-                 n_group_classes, byrow = TRUE), z)
+    indicators <- matrix(as.numeric(seq_len(n_group_classes) == group_class),
+                         nrow(data), n_group_classes, byrow = TRUE)
+    slopes <- if (identical(profile_slopes, "group_class")) {
+      do.call(cbind, lapply(seq_len(n_group_classes), function(block) {
+        z * as.numeric(block == group_class)
+      }))
+    } else z
+    cbind(indicators, slopes)
   })
   stacked_design <- do.call(rbind, profile_design)
   if (qr(stacked_design)$rank != ncol(stacked_design) || qr(w)$rank != ncol(w)) {
@@ -680,6 +702,7 @@ nobs.multilpa_covariates <- function(object, ...) {
   }
   list(x = sweep(x, 2L, center, "-"), center = center, w = w,
        profile_design = profile_design, stacked_design = stacked_design,
+       profile_slopes = profile_slopes,
        continuous = measurement$continuous, codes = measurement$codes,
        n_categories = measurement$n_categories,
        categorical_levels = measurement$encoded$levels,
@@ -790,8 +813,12 @@ nobs.multilpa_covariates <- function(object, ...) {
   n_indicators <- ncol(designs$x)
   result$means <- sweep(result$means, 2L, designs$center, "+")
   result$profile_coefficients <- best$beta
+  slope_terms <- if (identical(designs$profile_slopes, "group_class")) {
+    paste0(rep(profile_covariates, times = n_group_classes), ":group_class_",
+           rep(seq_len(n_group_classes), each = length(profile_covariates)))
+  } else profile_covariates
   dimnames(result$profile_coefficients) <- list(
-    c(paste0("group_class_", seq_len(n_group_classes)), profile_covariates),
+    c(paste0("group_class_", seq_len(n_group_classes)), slope_terms),
     if (n_profiles > 1L) paste0("profile_", seq_len(n_profiles - 1L)))
   result$group_coefficients <- best$gamma
   dimnames(result$group_coefficients) <- list(

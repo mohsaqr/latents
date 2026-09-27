@@ -1,5 +1,16 @@
 # latents (development version)
 
+## Profile-covariate slopes by group class
+
+* `multilpa(profile_covariates = , profile_slopes = "group_class")` lets each
+  group class have its own profile-covariate slopes, so a covariate can predict
+  profile membership differently in different kinds of group (a cross-level
+  interaction). The coefficients are reported with terms such as
+  `z:group_class_1`, and inference, robust and OPG covariances cover them.
+  The default, `"shared"`, is the previous model. With one group class the two
+  are the same model. Naming it without `profile_covariates` raises
+  `latents_bad_argument`.
+
 ## Missing indicators in membership-covariate models
 
 * `multilpa(profile_covariates = , group_covariates = , missing = "fiml")`

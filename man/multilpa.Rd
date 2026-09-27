@@ -20,6 +20,7 @@ multilpa(
   seed = NULL,
   start = NULL,
   missing = c("error", "fiml"),
+  profile_slopes = c("shared", "group_class"),
   covariance_model = c("diagonal", "full"),
   categorical = character(),
   min_probability = 1e-10,
@@ -65,14 +66,15 @@ unit leaves no composition for a second-level class to differ in.}
 \code{data} predicting individual-profile and group-class membership through
 multinomial logits, with the final class as reference. Naming either one
 fits the one-step covariate model and returns a \code{multilpa_covariates}
-object: profile slopes are shared across group classes, profile
-intercepts differ by group class, and a \code{group_covariate} must be
-constant within each group. Covariates enter in their supplied units, so
-centre or scale them beforehand if that is what you want. This is one-step
-maximum likelihood, not a regression on assigned classes; \code{\link[=three_step]{three_step()}}
-and \code{\link[=r3step]{r3step()}} are the staged alternatives. The covariate path supports
-neither \code{start}, nor \code{missing = "fiml"}, nor \code{fixed}, and refuses them by
-name rather than ignoring them.
+object: profile intercepts differ by group class, profile slopes are
+shared across group classes unless \code{profile_slopes = "group_class"}, and a
+\code{group_covariate} must be constant within each group. Covariates enter in
+their supplied units, so centre or scale them beforehand if that is what
+you want. This is one-step maximum likelihood, not a regression on
+assigned classes; \code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}} are the staged
+alternatives. The covariate path supports neither \code{start} nor \code{fixed},
+and refuses them by name rather than ignoring them; it supports
+\code{missing = "fiml"} for the indicators, but covariates must be complete.
 Use one for an ordinary, pooled LPA.}
 
 \item{variance_model}{Either \code{"varying"} (profile-specific variances or
@@ -128,6 +130,16 @@ observed-data likelihood under an ignorable missingness mechanism (MAR).
 Missing indicators are integrated out, not filled in for likelihood fitting.
 This holds with membership covariates too; the covariates themselves must
 be complete (\code{latents_bad_data}).}
+
+\item{profile_slopes}{\code{"shared"} (the default) gives each profile
+covariate one slope per profile logit, common to every group class.
+\code{"group_class"} lets each group class have its own slopes, so a covariate
+can predict profile membership differently in different kinds of group
+(a cross-level interaction); its coefficients are reported with terms such
+as \code{z:group_class_1}. It adds \code{(n_group_classes - 1)} times as many slope
+parameters again, each estimated from the groups in its class, so it needs
+enough groups per class. Naming it without \code{profile_covariates} raises
+\code{latents_bad_argument}.}
 
 \item{covariance_model}{\code{"diagonal"} assumes conditional independence;
 \code{"full"} estimates within-profile residual covariances.}

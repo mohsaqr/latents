@@ -768,15 +768,25 @@
 #'   `data` predicting individual-profile and group-class membership through
 #'   multinomial logits, with the final class as reference. Naming either one
 #'   fits the one-step covariate model and returns a `multilpa_covariates`
-#'   object: profile slopes are shared across group classes, profile
-#'   intercepts differ by group class, and a `group_covariate` must be
-#'   constant within each group. Covariates enter in their supplied units, so
-#'   centre or scale them beforehand if that is what you want. This is one-step
-#'   maximum likelihood, not a regression on assigned classes; [three_step()]
-#'   and [r3step()] are the staged alternatives. The covariate path supports
-#'   neither `start`, nor `missing = "fiml"`, nor `fixed`, and refuses them by
-#'   name rather than ignoring them.
+#'   object: profile intercepts differ by group class, profile slopes are
+#'   shared across group classes unless `profile_slopes = "group_class"`, and a
+#'   `group_covariate` must be constant within each group. Covariates enter in
+#'   their supplied units, so centre or scale them beforehand if that is what
+#'   you want. This is one-step maximum likelihood, not a regression on
+#'   assigned classes; [three_step()] and [r3step()] are the staged
+#'   alternatives. The covariate path supports neither `start` nor `fixed`,
+#'   and refuses them by name rather than ignoring them; it supports
+#'   `missing = "fiml"` for the indicators, but covariates must be complete.
 #'   Use one for an ordinary, pooled LPA.
+#' @param profile_slopes `"shared"` (the default) gives each profile
+#'   covariate one slope per profile logit, common to every group class.
+#'   `"group_class"` lets each group class have its own slopes, so a covariate
+#'   can predict profile membership differently in different kinds of group
+#'   (a cross-level interaction); its coefficients are reported with terms such
+#'   as `z:group_class_1`. It adds `(n_group_classes - 1)` times as many slope
+#'   parameters again, each estimated from the groups in its class, so it needs
+#'   enough groups per class. Naming it without `profile_covariates` raises
+#'   `latents_bad_argument`.
 #' @param variance_model Either `"varying"` (profile-specific variances or
 #'   covariance matrices) or `"equal"` (shared across profiles).
 #' @param n_starts Positive integer number of EM starts. The first is
@@ -1049,6 +1059,7 @@ multilpa <- function(data, vars, id, n_profiles,
                        n_starts = 10L, max_iter = 1000L, tol = 1e-8,
                        min_variance = 1e-6, seed = NULL, start = NULL,
                        missing = c("error", "fiml"),
+                       profile_slopes = c("shared", "group_class"),
                        covariance_model = c("diagonal", "full"),
                        categorical = character(), min_probability = 1e-10,
                        time = NULL, fixed = character(),
@@ -1097,6 +1108,13 @@ multilpa <- function(data, vars, id, n_profiles,
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
   centering <- match.arg(centering)
+  profile_slopes <- match.arg(profile_slopes)
+  if (identical(profile_slopes, "group_class") && length(profile_covariates) == 0L) {
+    stop(errorCondition(paste(
+      "`profile_slopes = \"group_class\"` lets profile-covariate slopes differ",
+      "across group classes, so it needs `profile_covariates`."),
+      class = "latents_bad_argument", call = NULL))
+  }
   structure <- .multilpa_resolve_structure(variance_model, covariance_model,
                                            volume, shape, orientation)
   # An ellipsoidal structure has an orientation, which a diagonal parameter
@@ -1133,7 +1151,8 @@ multilpa <- function(data, vars, id, n_profiles,
       group_covariates = group_covariates, variance_model = variance_model,
       n_starts = n_starts, max_iter = max_iter, tol = tol,
       min_variance = min_variance, seed = seed, start = start,
-      missing = missing, covariance_model = covariance_model,
+      missing = missing, profile_slopes = profile_slopes,
+      covariance_model = covariance_model,
       categorical = categorical, min_probability = min_probability,
       time = time, fixed = fixed, select_start = select_start, call = call))
   }
@@ -1619,7 +1638,7 @@ multilpa <- function(data, vars, id, n_profiles,
 #' @param variance_model,n_starts,max_iter,tol,min_variance As in [multilpa()].
 #' @param seed,time,covariance_model,categorical,min_probability As in
 #'   [multilpa()].
-#' @param missing As in [multilpa()].
+#' @param missing,profile_slopes As in [multilpa()].
 #' @param start,fixed Refused when they are anything but their default.
 #' @param call The user's call, recorded on the result.
 #' @return An object of class `multilpa_covariates`.
@@ -1628,7 +1647,8 @@ multilpa <- function(data, vars, id, n_profiles,
                                       n_group_classes, profile_covariates,
                                       group_covariates, variance_model,
                                       n_starts, max_iter, tol, min_variance,
-                                      seed, start, missing, covariance_model,
+                                      seed, start, missing,
+                                      profile_slopes = "shared", covariance_model,
                                       categorical, min_probability, time,
                                       fixed, select_start = "likelihood",
                                       call) {
@@ -1653,5 +1673,5 @@ multilpa <- function(data, vars, id, n_profiles,
     min_variance = min_variance, seed = seed, time = time,
     covariance_model = covariance_model, categorical = categorical,
     min_probability = min_probability, missing = missing,
-    select_start = select_start, call = call)
+    profile_slopes = profile_slopes, select_start = select_start, call = call)
 }
