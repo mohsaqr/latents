@@ -141,12 +141,17 @@ test_that("group classes are relabelled once their profiles agree", {
   expect_equal(aligned$group_probabilities, fit$group_probabilities)
 })
 
-test_that("a held measurement block is refused rather than resampled", {
+test_that("a block held from another fit is refused rather than resampled", {
   fit <- small_fit()
-  staged <- fit_staged(clustered_data(), c("x", "y"), "unit", n_profiles = 2L,
-                       n_group_classes = 2L, n_starts = 2L, seed = 1L)
+  # Held by hand, not through fit_staged(): nothing records how the held values
+  # were produced, so a resample cannot reproduce them. A staged fit can, and
+  # is bootstrapped by staging again (test-staged-bootstrap.R).
+  held <- multilpa(clustered_data(), c("x", "y"), "unit", n_profiles = 2L,
+                   n_group_classes = 2L, n_starts = 1L, seed = 1L,
+                   start = starting_values(fit, what = "measurement"),
+                   fixed = "means")
   expect_error(
-    parameter_inference(staged, method = "bootstrap", iter = 5L, n_starts = 1L),
+    parameter_inference(held, method = "bootstrap", iter = 5L, n_starts = 1L),
     class = "latents_unsupported_inference")
 })
 

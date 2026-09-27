@@ -667,7 +667,10 @@
 #'   drops. The held values still enter the likelihood at
 #'   the values they were held at, so every standard error, interval and p-value
 #'   is conditional on that measurement solution and does not propagate its
-#'   uncertainty. See [fit_staged()] for what that conditioning means.
+#'   uncertainty. See [fit_staged()] for what that conditioning means. For a
+#'   [fit_staged()] result, `method = "bootstrap"` does propagate it: each
+#'   resample refits both stages, and the table has a row for every
+#'   parameter, the measurement included (attribute `stages_resampled` is 2).
 #'
 #'   With `method = "bootstrap"` the table has the same columns and the same
 #'   rows, `estimate` is still the fitted value, `standard_error` is the
@@ -706,8 +709,9 @@
 #'   a noise component by either path with `latents_unsupported_noise`.
 #'
 #'   `method = "bootstrap"` adds `latents_unsupported_inference` for a fit that
-#'   holds a measurement block --- the held values came from another fit and
-#'   resampling these data does not resample them --- and
+#'   holds a measurement block through `multilpa(fixed = )` --- the held values
+#'   came from another fit and resampling these data does not resample them;
+#'   a [fit_staged()] result is bootstrapped by staging again instead --- and
 #'   `latents_bootstrap_failed` when fewer than two resamples produced a usable
 #'   fit, whose message carries the first reason one gave. Resamples that fail
 #'   or do not converge are dropped with a `latents_bootstrap_dropped` warning

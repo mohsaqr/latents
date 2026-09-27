@@ -116,12 +116,19 @@ the grouping question is asked, so that adding group classes cannot move the
 profiles they are meant to describe.
 }
 \details{
-First-stage uncertainty is \strong{not} propagated. The second stage
-treats the measurement solution as known, so its standard errors,
-information criteria and likelihood-ratio comparisons are conditional on
-that solution and are narrower than they would be if the measurement had
-been estimated jointly. This is a property of staging itself, not of this
-implementation, and it is the reason both parameter counts are reported:
+The second stage treats the measurement solution as known, so its
+Wald standard errors (\code{\link[=parameter_inference]{parameter_inference()}}'s default), information
+criteria and likelihood-ratio comparisons are conditional on that solution
+and are narrower than they would be if the measurement had been estimated
+jointly. \code{parameter_inference(fit, method = "bootstrap")} removes that
+conditioning for the standard errors and intervals: every resample of the
+groups is staged again, measurement first, so the replicates carry the
+first stage's sampling variability into the second stage, and the table
+also reports the measurement parameters with their own errors. A
+\code{measurement} supplied by the caller is re-estimated on each resample
+with the same options, since the resample is new data. The conditioning
+of the criteria and likelihood comparisons is a property of staging
+itself, and it is the reason both parameter counts are reported:
 compare staged fits with one another using \code{n_parameters}, and compare a
 staged fit with a jointly estimated one using
 \code{n_parameters_with_measurement}, remembering that the staged likelihood is

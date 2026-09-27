@@ -248,6 +248,29 @@
   c(shared, .multilpa_structure_arguments(structure))
 }
 
+#' The `fit_staged()` arguments that refit a staged model as it was fitted
+#'
+#' A staged fit is refitted by staging again, so that each resample estimates
+#' its own measurement before its own group-class structure. That is what
+#' carries the first stage's sampling variability into the second stage's
+#' replicates; refitting with the measurement held would carry none of it.
+#'
+#' @param x A `multilpa` fit from [fit_staged()].
+#' @return A named list of arguments for [fit_staged()], without `data` and the
+#'   start and convergence controls.
+#' @noRd
+.multilpa_staged_refit_arguments <- function(x) {
+  stopifnot(inherits(x, "multilpa"), isTRUE(x$staged))
+  list(vars = x$vars, id = x$id, n_profiles = x$n_profiles,
+       n_group_classes = x$n_group_classes,
+       variance_model = x$variance_model,
+       covariance_model = x$covariance_model %||% "diagonal",
+       categorical = x$categorical %||% character(),
+       min_variance = x$min_variance,
+       min_probability = x$min_probability %||% 1e-10,
+       missing = x$missing %||% "error", time = x$time)
+}
+
 #' One resample of the groups, as a data frame
 #'
 #' A group drawn twice has to become two groups, or the refit would pool the two
@@ -271,6 +294,9 @@
 
 #' Bootstrap replicates of the natural coefficients
 #'
+#' A staged fit is refitted through [fit_staged()], both stages on every
+#' resample; any other fit through [multilpa()].
+#'
 #' @param x A fitted `multilpa` model.
 #' @param data The fitting data.
 #' @param iter How many resamples to draw.
@@ -280,14 +306,17 @@
 #' @noRd
 .multilpa_bootstrap_replicates <- function(x, data, iter, n_starts, max_iter, tol) {
   rows_by_group <- split(seq_len(nrow(data)), x$group_index)
-  arguments <- .multilpa_refit_arguments(x)
+  staged <- isTRUE(x$staged)
+  estimator <- if (staged) fit_staged else multilpa
+  arguments <- if (staged) .multilpa_staged_refit_arguments(x) else
+    .multilpa_refit_arguments(x)
   reference_names <- names(.multilpa_coefficients(x, "natural"))
   replicates <- lapply(seq_len(iter), function(i) {
     drawn <- sample.int(x$n_groups, x$n_groups, replace = TRUE)
     resampled <- .multilpa_resample_groups(data, rows_by_group, x$id, drawn)
     fit <- tryCatch(
-      do.call(multilpa, c(list(data = resampled), arguments,
-                          list(n_starts = n_starts, max_iter = max_iter, tol = tol))),
+      do.call(estimator, c(list(data = resampled), arguments,
+                           list(n_starts = n_starts, max_iter = max_iter, tol = tol))),
       error = function(error) conditionMessage(error))
     if (is.character(fit)) {
       return(list(estimate = rep(NA_real_, length(reference_names)), message = fit))
@@ -313,6 +342,11 @@
 #' standard deviation, so both are read off the same replicates and neither
 #' assumes the estimate is normal around its truth.
 #'
+#' A [fit_staged()] result is bootstrapped by staging every resample again, so
+#' the replicates vary the measurement as well as the group-class structure.
+#' Its table therefore has a row for every parameter, the held measurement
+#' included, and the second-stage errors carry the first stage's uncertainty.
+#'
 #' @param x A fitted `multilpa` model.
 #' @param data The fitting data.
 #' @param level Interval level.
@@ -323,11 +357,13 @@
 #' @noRd
 .multilpa_bootstrap_inference <- function(x, data, level, iter, n_starts,
                                           max_iter, tol, adjust) {
-  if (length(x$fixed %||% character()) > 0L) {
+  staged <- isTRUE(x$staged)
+  if (length(x$fixed %||% character()) > 0L && !staged) {
     stop(errorCondition(paste(
       "A fit that holds a block fixed cannot be bootstrapped here: the held",
       "values came from another fit, and resampling these data does not",
-      "resample them. Bootstrap the fit the measurement came from."),
+      "resample them. Bootstrap the fit the measurement came from, or fit",
+      "both stages with fit_staged(), whose bootstrap refits each stage."),
       class = "latents_unsupported_inference", call = NULL))
   }
   if (!isTRUE(x$converged)) {
@@ -335,7 +371,10 @@
       "The original fit did not converge; bootstrap it only once it has.",
       class = "latents_no_converge", call = NULL))
   }
-  free_natural <- .multilpa_free_index(x, "natural")
+  ## Every coefficient of a staged fit is resampled, the held measurement
+  ## included, so every one of them gets a row.
+  free_natural <- if (staged) seq_along(.multilpa_coefficients(x, "natural")) else
+    .multilpa_free_index(x, "natural")
   drawn <- .multilpa_bootstrap_replicates(x, data, iter, n_starts, max_iter, tol)
   estimates <- drawn$estimates[, free_natural, drop = FALSE]
   valid <- stats::complete.cases(estimates)
@@ -374,6 +413,7 @@
     level = level, method = "bootstrap", iter = iter, n_valid = sum(valid),
     replicates = kept, messages = drawn$messages,
     structure = x$covariance_structure,
-    fixed = x$fixed %||% character()))
+    fixed = x$fixed %||% character(),
+    stages_resampled = if (staged) 2L else 1L))
   result
 }

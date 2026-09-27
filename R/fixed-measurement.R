@@ -212,12 +212,19 @@
 #'   estimated; and `n_parameters_with_measurement`, which adds the held
 #'   measurement back. Use [get_results()] with `what = "stages"` for a tidy
 #'   two-row summary of both stages.
-#' @details First-stage uncertainty is **not** propagated. The second stage
-#'   treats the measurement solution as known, so its standard errors,
-#'   information criteria and likelihood-ratio comparisons are conditional on
-#'   that solution and are narrower than they would be if the measurement had
-#'   been estimated jointly. This is a property of staging itself, not of this
-#'   implementation, and it is the reason both parameter counts are reported:
+#' @details The second stage treats the measurement solution as known, so its
+#'   Wald standard errors ([parameter_inference()]'s default), information
+#'   criteria and likelihood-ratio comparisons are conditional on that solution
+#'   and are narrower than they would be if the measurement had been estimated
+#'   jointly. `parameter_inference(fit, method = "bootstrap")` removes that
+#'   conditioning for the standard errors and intervals: every resample of the
+#'   groups is staged again, measurement first, so the replicates carry the
+#'   first stage's sampling variability into the second stage, and the table
+#'   also reports the measurement parameters with their own errors. A
+#'   `measurement` supplied by the caller is re-estimated on each resample
+#'   with the same options, since the resample is new data. The conditioning
+#'   of the criteria and likelihood comparisons is a property of staging
+#'   itself, and it is the reason both parameter counts are reported:
 #'   compare staged fits with one another using `n_parameters`, and compare a
 #'   staged fit with a jointly estimated one using
 #'   `n_parameters_with_measurement`, remembering that the staged likelihood is

@@ -1,5 +1,17 @@
 # latents (development version)
 
+## First-stage uncertainty in staged fits
+
+* `parameter_inference(method = "bootstrap")` now accepts a `fit_staged()`
+  result instead of refusing it. Every resample of the groups refits both
+  stages, so the standard errors and percentile intervals carry the
+  measurement's sampling variability into the group-class estimates; the
+  Wald default still conditions on the measurement. The table reports every
+  parameter, the measurement included. On a simulated two-class design the
+  within-class profile probabilities' errors were 14% and 32% wider than the
+  conditional ones, and a bootstrap that held the first stage reproduced the
+  conditional Wald errors to within 3%.
+
 ## Profile-covariate slopes by group class
 
 * `multilpa(profile_covariates = , profile_slopes = "group_class")` lets each

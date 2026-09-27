@@ -168,7 +168,10 @@ each set of probabilities whose reference category the estimation scale
 drops. The held values still enter the likelihood at
 the values they were held at, so every standard error, interval and p-value
 is conditional on that measurement solution and does not propagate its
-uncertainty. See \code{\link[=fit_staged]{fit_staged()}} for what that conditioning means.
+uncertainty. See \code{\link[=fit_staged]{fit_staged()}} for what that conditioning means. For a
+\code{\link[=fit_staged]{fit_staged()}} result, \code{method = "bootstrap"} does propagate it: each
+resample refits both stages, and the table has a row for every
+parameter, the measurement included (attribute \code{stages_resampled} is 2).
 
 With \code{method = "bootstrap"} the table has the same columns and the same
 rows, \code{estimate} is still the fitted value, \code{standard_error} is the
@@ -231,8 +234,9 @@ posterior mode, where the likelihood's score is not zero), and a fit with
 a noise component by either path with \code{latents_unsupported_noise}.
 
 \code{method = "bootstrap"} adds \code{latents_unsupported_inference} for a fit that
-holds a measurement block --- the held values came from another fit and
-resampling these data does not resample them --- and
+holds a measurement block through \code{multilpa(fixed = )} --- the held values
+came from another fit and resampling these data does not resample them;
+a \code{\link[=fit_staged]{fit_staged()}} result is bootstrapped by staging again instead --- and
 \code{latents_bootstrap_failed} when fewer than two resamples produced a usable
 fit, whose message carries the first reason one gave. Resamples that fail
 or do not converge are dropped with a \code{latents_bootstrap_dropped} warning
