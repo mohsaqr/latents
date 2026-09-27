@@ -54,12 +54,16 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   frame <- .multilpa_resolve_data(x, data)
   .multilpa_check_row_count(x, frame)
   .multilpa_check_alignment(x, frame)
-  posteriors <- as.data.frame(unname(x$subject_posteriors))
-  names(posteriors) <- sprintf("posterior_profile_%d", seq_len(x$n_profiles))
+  # A noise component is one more class: profile 0, as mclust numbers it, with
+  # its own posterior column.
+  class_posteriors <- .multilpa_class_posteriors(x)
+  posteriors <- as.data.frame(unname(class_posteriors))
+  names(posteriors) <- c(sprintf("posterior_profile_%d", seq_len(x$n_profiles)),
+                         if (isTRUE(x$noise)) "posterior_noise")
   # How much of this row's membership the modal profile did not account for.
   # Modal assignment throws it away, so the table that reports the assignment
   # reports what reporting it cost.
-  uncertainty <- 1 - apply(x$subject_posteriors, 1L, max)
+  uncertainty <- 1 - apply(class_posteriors, 1L, max)
   labels <- data.frame(profile = x$subject_profiles)
   if (!is.null(x$group_classes)) {
     labels$group_class <- x$group_classes[x$group_index]
@@ -543,11 +547,16 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
               inherits(x, "multilpa") || inherits(x, "summary_multilpa"))
   n_types <- x$n_group_classes
   n_profiles <- x$n_profiles
-  data.frame(
+  frame <- data.frame(
     group_class = rep(seq_len(n_types), each = n_profiles),
     profile = rep(seq_len(n_profiles), times = n_types),
     probability = as.vector(t(x$profile_probabilities)),
     group_class_probability = rep(unname(x$group_probabilities), each = n_profiles))
+  if (!isTRUE(x$noise)) return(frame)
+  # The noise component's share, as profile 0 (one group class only).
+  rbind(frame, data.frame(group_class = 1L, profile = 0L,
+                          probability = x$noise_probability,
+                          group_class_probability = unname(x$group_probabilities[1L])))
 }
 
 #' Individual posteriors as a tidy table
@@ -557,10 +566,14 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 .multilpa_posterior_frame <- function(x, format = "long") {
   stopifnot("`format` must be \"long\" or \"wide\"" =
               format %in% c("long", "wide"))
-  modal <- max.col(x$subject_posteriors, ties.method = "first")
+  # A noise component is class 0, the last posterior column.
+  class_posteriors <- .multilpa_class_posteriors(x)
+  classes <- c(seq_len(x$n_profiles), if (isTRUE(x$noise)) 0L)
+  modal <- classes[max.col(class_posteriors, ties.method = "first")]
   if (identical(format, "wide")) {
-    posteriors <- as.data.frame(unname(x$subject_posteriors))
-    names(posteriors) <- sprintf("posterior_profile_%d", seq_len(x$n_profiles))
+    posteriors <- as.data.frame(unname(class_posteriors))
+    names(posteriors) <- c(sprintf("posterior_profile_%d", seq_len(x$n_profiles)),
+                           if (isTRUE(x$noise)) "posterior_noise")
     return(cbind(data.frame(row = seq_len(x$n_observations),
                             group = x$group_values[x$group_index],
                             profile = modal),
@@ -571,12 +584,12 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   # available because joining posteriors back onto the fitting data wants one row
   # per individual, but it is no longer what the accessor hands back by default.
   data.frame(
-    row = rep(seq_len(x$n_observations), times = x$n_profiles),
-    group = rep(x$group_values[x$group_index], times = x$n_profiles),
-    profile = rep(seq_len(x$n_profiles), each = x$n_observations),
-    posterior = as.vector(x$subject_posteriors),
-    modal = rep(seq_len(x$n_profiles), each = x$n_observations) ==
-      rep(modal, times = x$n_profiles))
+    row = rep(seq_len(x$n_observations), times = length(classes)),
+    group = rep(x$group_values[x$group_index], times = length(classes)),
+    profile = rep(classes, each = x$n_observations),
+    posterior = as.vector(class_posteriors),
+    modal = rep(classes, each = x$n_observations) ==
+      rep(modal, times = length(classes)))
 }
 
 #' Group posteriors as a tidy table
@@ -752,6 +765,7 @@ print.multilpa_enumeration <- function(x, ...) {
 starting_values <- function(x, covariance = c("auto", "drop", "keep"),
                             what = c("all", "measurement")) {
   stopifnot("`object` must be a list or an `multilpa` fit" = is.list(x))
+  .multilpa_refuse_noise(x, "starting_values()")
   covariance <- match.arg(covariance)
   what <- match.arg(what)
   has_responses <- !is.null(x$response_probabilities)

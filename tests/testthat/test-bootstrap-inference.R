@@ -82,10 +82,9 @@ test_that("a refit reproduces the structure it was fitted with", {
   expect_identical(again$n_parameters, fit$n_parameters)
 })
 
-test_that("a constrained structure reports intervals the Wald path refuses", {
+test_that("a constrained structure reports bootstrap intervals", {
   skip_on_cran()
   fit <- small_fit(volume = "varying", shape = "equal", orientation = "axis")
-  expect_error(parameter_inference(fit), class = "latents_unsupported_inference")
   boot <- parameter_inference(fit, method = "bootstrap", iter = 25L,
                               n_starts = 2L, seed = 5L)
   expect_s3_class(boot, "data.frame")

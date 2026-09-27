@@ -503,6 +503,16 @@
 #' @param n_group_classes Positive integer number of latent group classes. One
 #'   gives an ordinary single-level latent transition model; more than one fits
 #'   a mixture of transition models over groups.
+#' @param select_start Which start the fit reports. `"likelihood"`, the
+#'   default, takes the highest log likelihood across starts, preferring a
+#'   converged start only among those tied with it to within a relative
+#'   `1e-10`. `"converged"` takes the highest log likelihood among the converged
+#'   starts whenever at least one converged, and falls back to every start when
+#'   none did. Use it when an unconverged start edges out a converged one by a
+#'   negligible amount, which happens when a membership logit creeps along a flat
+#'   ridge of the likelihood: the converged start is then a maximum that
+#'   the standard errors can work with, and the other is not. `summary()`
+#'   and `get_results(fit, "starts")` show every start either way.
 #' @param occasions How a group's occasions are placed on the transition grid.
 #'   `"observed"` numbers each group's own observations consecutively, so a
 #'   transition always links two adjacent observations. `"grid"` places them on
@@ -566,7 +576,9 @@ lta <- function(data, vars, id, n_profiles, time,
                             missing = c("error", "fiml"),
                             covariance_model = c("diagonal", "full"),
                             categorical = character(), min_probability = 1e-10,
-                            occasions = c("observed", "grid")) {
+                            occasions = c("observed", "grid"),
+                            select_start = c("likelihood", "converged")) {
+  select_start <- match.arg(select_start)
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
@@ -659,7 +671,9 @@ lta <- function(data, vars, id, n_profiles, time,
   scores <- vapply(attempts, function(attempt) {
     if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
   }, numeric(1))
-  best_start <- which.max(scores)
+  best_start <- .multilpa_select_start(
+    scores, vapply(attempts, function(attempt) isTRUE(attempt$converged), logical(1)),
+    select_start)
   best <- attempts[[best_start]]
   parameters <- best$parameters
   parameters$means <- sweep(parameters$means, 2L, centers, "+")

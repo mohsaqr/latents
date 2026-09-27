@@ -72,7 +72,7 @@
     n = c(x$n_groups, x$n_informative %||% x$n_observations))
   entropies <- c(groups = if (is.null(x$group_posteriors)) NA_real_ else
                    .multilpa_entropy_sum(x$group_posteriors),
-                 individuals = .multilpa_entropy_sum(x$subject_posteriors))
+                 individuals = .multilpa_entropy_sum(.multilpa_class_posteriors(x)))
   scale_free <- data.frame(
     criterion = c("deviance", "aic", "kic"),
     convention = NA_character_, n = NA_integer_,
@@ -155,7 +155,7 @@
 #' @return A named list of posterior matrices, in reporting order.
 #' @noRd
 .multilpa_posterior_levels <- function(object, level) {
-  posteriors <- list(individuals = object$subject_posteriors,
+  posteriors <- list(individuals = .multilpa_class_posteriors(object),
                      groups = object$group_posteriors)
   posteriors[.multilpa_classification_levels(object, level)]
 }
@@ -251,7 +251,8 @@
   estimated_n <- colSums(probabilities)
   estimated_proportion <- estimated_n / nrow(probabilities)
   diagonal <- average[cbind(classes, classes)]
-  data.frame(level = level, class = classes, n_modal = n_modal,
+  data.frame(level = level, class = .multilpa_class_labels(probabilities),
+             n_modal = n_modal,
              proportion_modal = n_modal / nrow(probabilities),
              estimated_n = estimated_n,
              estimated_proportion = estimated_proportion,
@@ -270,12 +271,30 @@
   n_classes <- ncol(probabilities)
   classes <- seq_len(n_classes)
   assigned <- max.col(probabilities, ties.method = "first")
+  labels <- .multilpa_class_labels(probabilities)
   data.frame(level = level,
-             assigned_class = rep(classes, each = n_classes),
-             class = rep(classes, times = n_classes),
+             assigned_class = rep(labels, each = n_classes),
+             class = rep(labels, times = n_classes),
              n_assigned = rep(tabulate(assigned, nbins = n_classes),
                               each = n_classes),
              average_posterior = as.vector(t(average)))
+}
+
+#' The class numbers a posterior matrix reports
+#'
+#' Its columns in order, except that a final `noise` column --- a fit's noise
+#' component --- is class 0, the number mclust gives it.
+#'
+#' @param probabilities Posterior probability matrix.
+#' @return An integer vector, one label per column.
+#' @noRd
+.multilpa_class_labels <- function(probabilities) {
+  labels <- seq_len(ncol(probabilities))
+  names <- colnames(probabilities)
+  if (!is.null(names) && identical(names[length(names)], "noise")) {
+    labels[length(labels)] <- 0L
+  }
+  labels
 }
 
 #' Odds of correct classification
@@ -304,7 +323,7 @@
 #' @noRd
 .multilpa_entropy_table <- function(x) {
   stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
-  posteriors <- list(individuals = x$subject_posteriors,
+  posteriors <- list(individuals = .multilpa_class_posteriors(x),
                      groups = x$group_posteriors)
   posteriors <- Filter(Negate(is.null), posteriors)
   result <- do.call(rbind, lapply(names(posteriors), function(level) {

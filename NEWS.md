@@ -1,3 +1,108 @@
+# latents (development version)
+
+## Mixture regression
+
+* New `mixture_regression()` fits finite mixtures of regressions (clusterwise, latent
+  class or regression-mixture models) for `"gaussian"`, `"binomial"` (0/1,
+  factor or `cbind(successes, failures)`) and `"poisson"` (with `offset()`)
+  outcomes. Classes can belong to each row, to a whole group
+  (`class_level = "group"`, flexmix's `y ~ x | id`), or to each row with a
+  second-level group class that shifts the class shares within groups
+  (`n_group_classes`, Vermunt 2003). Membership covariates at both levels
+  (`membership`, `group_membership`), coefficients shared across classes
+  (`common`), and equal residual variances (`variance = "equal"`).
+* Analytic scores (Fisher's identity) give observed-information, sandwich
+  (clustered on the independent unit, or on `id` for a single-level fit) and
+  outer-product standard errors; validated against a numerical Hessian of the
+  likelihood in every nesting. A Monte Carlo study
+  (`validation/mixture-regression-recovery.R`, 200 replications) found 91.5--97% coverage
+  of nominal 95% intervals for the two-level model.
+* `get_results()` tables: `coefficients` (with Benjamini-Hochberg-adjusted
+  slopes and odds/rate ratios), `classes`, `membership`, `group_classes`,
+  `fit` (AIC, BIC, SABIC, ICL, entropy), `assignments`, `groups`, `fitted`,
+  `starts`, `classification` and `recovery` (against a known classification).
+  `predict()`, `simulate()`, `plot()`, `summary()`, `coef()`, `vcov()`,
+  `confint()`, `logLik()` and `nobs()` methods.
+* New `enumerate_regressions()` compares class counts in one table, with an
+  optional parametric bootstrap likelihood-ratio test.
+* A binary outcome with one trial per class assignment is refused
+  (`latents_not_identified`), since that mixture is not identified.
+* Single-level and group-level fits reproduce flexmix's likelihood at its
+  estimates and its binomial and Poisson estimates
+  (`equivalence/test-mixture-regression-flexmix.R`).
+* New dataset `study_hours` and `vignette("mixture-regression")`.
+
+## Fixes
+
+* `multilca(id = NULL)` now fits one group class by default, as `multilpa()`
+  does, instead of refusing the default `n_group_classes = 2`.
+* `equivalence/run.R` evaluated tests in the retired `multilpa` package's
+  namespace when it was still installed; it now uses `latents`.
+
+## mclust parity
+
+* `parameter_inference()`, `vcov()` and `confint()` give Wald standard errors
+  for all fourteen covariance structures, not only EEI, VVI, EEE and VVV. The
+  ten that constrain the volume, the shape or the orientation across profiles
+  are differentiated in their own free coordinates --- log volumes, log shapes
+  with the determinant-one constraint built in, and Cayley-transform
+  orientations (log-Cholesky factors for VEE and EVV) --- with exactly as many
+  dimensions as the structure has parameters, and carried to the reported
+  variances and covariances by the delta method. Robust (`"robust"`, `"opg"`)
+  errors work for them too. Validated against an independent numerical Hessian
+  of the observed-data likelihood in a different chart.
+* `multilpa(prior = prior_control())` gives maximum a posteriori estimates
+  under the conjugate prior of Fraley and Raftery (2007), mclust's
+  `priorControl()`: the same default hyperparameters and the same M-steps as
+  `mclust::me()`, for the ten structures mclust defines a prior for.
+  `log_likelihood`, and the criteria built from it, are the unpenalized
+  likelihood at the posterior mode, as in mclust. Wald inference is refused for
+  such a fit; the bootstrap refits with the prior. New condition class
+  `latents_unsupported_prior`.
+* `multilpa(noise = TRUE)` adds mclust's uniform noise component over the
+  data's hypervolume (`hypvol()`), for one group class and continuous, complete
+  indicators, with any covariance structure and with or without `prior`. The
+  noise is profile `0` in `get_results(fit, "assignments")` (with a
+  `posterior_noise` column), `"posteriors"`, `"profile_probabilities"` and the
+  classification diagnostics. The component counts two parameters, as in
+  mclust, so BIC equals mclust's. New condition class
+  `latents_unsupported_noise`, raised also by the verbs that do not yet account
+  for a noise component.
+
+## New controls
+
+* `parameter_inference()` and `vcov()` give standard errors for a one-step
+  covariate model with categorical or mixed indicators
+  (`multilca(profile_covariates = )`, `multilpa(categorical = , profile_covariates = )`).
+  Each category's probability is reported with a delta-method standard error
+  and no Wald test, as for the covariate-free model.
+* `parameter_inference(vcov_type = "opg")` inverts the outer product of the
+  group scores (the BHHH estimate). It is the estimator `glca` reports, and
+  reproduces its standard errors; `"observed"` remains the default.
+* `parameter_inference(boundary = "fix")` holds categorical response
+  probabilities that sit on `min_probability` at that bound and reports the
+  other parameters conditionally on them. The default, `"error"`, refuses as
+  before, now with a message that names the alternative.
+* `multilpa()`, `multilca()` and `lta()` gain `select_start`. `"converged"`
+  reports the best converged start whenever one converged, instead of an
+  unconverged start that edges it out by a negligible likelihood.
+* `r3step()` gains `by_group_class`. `TRUE` gives every group class its own
+  profile intercepts, with shared slopes and one latent group class per group,
+  the two-level form of the one-step model. The pooled regression attenuates
+  the slopes when group classes differ in their profile mix.
+
+## Changed defaults
+
+* `r3step()` now defaults to `vcov_type = "robust"`, standard errors clustered
+  on groups, matching `three_step()`. Pass `vcov_type = "observed"` for the
+  previous behaviour.
+
+## Bug fixes
+
+* A covariate fit now stores `min_probability`, so inference recognises
+  response probabilities on their bound and refuses with
+  `latents_boundary_fit` instead of a numerically singular information.
+
 # latents 0.8.4
 
 * The website URL in DESCRIPTION ends in a slash, and the README gives the

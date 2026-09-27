@@ -263,6 +263,7 @@ three_step <- function(x, data, outcome,
   contrast <- match.arg(contrast)
   adjust <- match.arg(adjust)
   vcov_type <- match.arg(vcov_type)
+  .multilpa_refuse_noise(x, "three_step()")
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`outcome` must name a single column of `data`" =
@@ -441,20 +442,33 @@ three_step <- function(x, data, outcome,
 #' @param level `"individuals"` predicts profile membership, `"groups"`
 #'   predicts group-class membership.
 #' @param ci_level Confidence level for the intervals.
-#' @param vcov_type `"observed"` uses the observed information; `"robust"` uses
-#'   the sandwich clustered on the fit's groups, which is the honest choice when
-#'   the covariates are measured on observations nested inside them. `"robust"`
-#'   needs more independent groups than the regression has coefficients, because
-#'   the group score contributions sum to zero at the estimate and so span at
-#'   most one dimension fewer than there are groups; with too few it is refused
-#'   with `latents_too_few_groups` rather than reporting a variance that is
-#'   singular, or, with a single group, numerically zero. `"observed"` remains
-#'   available there and does not allow for the nesting.
+#' @param vcov_type `"robust"`, the default, uses the sandwich clustered on the
+#'   fit's groups, which is the honest choice when the covariates are measured
+#'   on observations nested inside them, and matches the default of
+#'   [three_step()]. `"observed"` uses the observed information; for the pooled
+#'   regression it treats every observation as independent, and with
+#'   `by_group_class = TRUE` it is the model-based variance of the two-level
+#'   likelihood. `"robust"` needs more independent groups than the regression
+#'   has coefficients, because the group score contributions sum to zero at the
+#'   estimate and so span at most one dimension fewer than there are groups;
+#'   with too few it is refused with `latents_too_few_groups` rather than
+#'   reporting a variance that is singular, or, with a single group, numerically
+#'   zero. `"observed"` remains available there.
 #' @param adjust Multiplicity correction applied across the covariate terms,
 #'   passed to [stats::p.adjust()]. `"BH"` by default; `"none"` leaves the
 #'   p-values uncorrected. The family is every covariate term of every
 #'   non-reference class, which is the set of tests this call computes; the
 #'   intercepts are not part of it.
+#' @param by_group_class `FALSE`, the default, fits one pooled multinomial logit
+#'   with a single intercept per profile. `TRUE` fits the two-level form of the
+#'   one-step model instead: every group class has its own profile intercepts,
+#'   the covariate slopes are shared across group classes, and a group's
+#'   observations share one latent group class whose proportions are estimated
+#'   alongside. Differences between groups that the covariates do not explain
+#'   are then absorbed by the group classes rather than left in the residual,
+#'   where the pooled regression attenuates the slopes and inflates their
+#'   clustered standard errors. For `level = "individuals"` on a covariate-free
+#'   [multilpa()] fit only; refused with `latents_bad_argument` otherwise.
 #' @return A base `data.frame` with one row per non-reference class and term,
 #'   and the columns `level`, `outcome`, `term`, `estimate`, `standard_error`,
 #'   `statistic`, `p_value`, `p_value_adjusted`, `conf_low` and `conf_high`.
@@ -467,7 +481,11 @@ three_step <- function(x, data, outcome,
 #'   matching `multilpa(profile_covariates = )`; that class is named in the
 #'   result's
 #'   `reference_class` attribute, and the variance that was used in its
-#'   `vcov_type` attribute.
+#'   `vcov_type` attribute. With `by_group_class = TRUE` the intercept rows are
+#'   one per group class, named `group_class_1`, `group_class_2`, ..., followed
+#'   by the shared slopes and, at `level = "groups"`, the group-class logits
+#'   against the last group class; the result also carries `by_group_class` and
+#'   the maximised `log_likelihood` as attributes.
 #' @details The error matrix is held fixed rather than estimated jointly, which
 #'   is what makes this a three-step method and what keeps the covariates from
 #'   reshaping the classes.
@@ -512,12 +530,14 @@ three_step <- function(x, data, outcome,
 #' @export
 r3step <- function(x, data, covariates,
                    level = c("individuals", "groups"), ci_level = 0.95,
-                   vcov_type = c("observed", "robust"),
+                   vcov_type = c("robust", "observed"),
                    adjust = c("BH", "holm", "hochberg", "hommel",
-                                "bonferroni", "BY", "none")) {
+                                "bonferroni", "BY", "none"),
+                   by_group_class = FALSE) {
   level <- match.arg(level)
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
+  .multilpa_refuse_noise(x, "r3step()")
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`covariates` must name columns of `data`" =
@@ -529,9 +549,24 @@ r3step <- function(x, data, covariates,
     "`covariates` must be finite" =
       all(vapply(data[covariates], function(value) all(is.finite(value)), logical(1))),
     "`ci_level` must be a single number in (0, 1)" =
-      is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1
+      is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1,
+    "`by_group_class` must be TRUE or FALSE" =
+      is.logical(by_group_class) && length(by_group_class) == 1L &&
+      !is.na(by_group_class)
   )
   .multilpa_check_three_step_fit(x)
+  if (by_group_class && !identical(level, "individuals")) {
+    stop(errorCondition(paste(
+      "`by_group_class = TRUE` gives each group class its own profile",
+      "intercepts, so it applies to `level = \"individuals\"` only."),
+      class = "latents_bad_argument", call = NULL))
+  }
+  if (by_group_class && inherits(x, "multilpa_transitions")) {
+    stop(errorCondition(paste(
+      "`by_group_class = TRUE` is not available for a transition fit, whose",
+      "group classes govern transitions rather than a profile mix."),
+      class = "latents_bad_argument", call = NULL))
+  }
   reused <- intersect(covariates, x$vars)
   if (length(reused) > 0L) {
     stop(errorCondition(sprintf(
@@ -550,6 +585,20 @@ r3step <- function(x, data, covariates,
   }
   design <- .multilpa_r3step_design(x, data, covariates, level)
   errors <- .multilpa_error_matrix(pieces)
+  if (by_group_class) {
+    if (identical(vcov_type, "robust")) {
+      .multilpa_require_clusters(
+        length(unique(pieces$group_index)),
+        (x$n_group_classes + length(covariates)) * (pieces$n_classes - 1L) +
+          x$n_group_classes - 1L,
+        what = "A cluster-robust covariance for the membership regression",
+        alternative = paste("`vcov_type = \"observed\"` uses the model-based",
+                            "information instead."))
+    }
+    return(.multilpa_r3step_by_group_class(
+      x, design[, -1L, drop = FALSE], pieces, errors, ci_level, vcov_type,
+      adjust))
+  }
   ## The likelihood of the assigned class, given the covariates and an error
   ## matrix fixed at its step-one value.
   by_assigned <- t(errors)[pieces$modal, , drop = FALSE]
@@ -657,5 +706,196 @@ r3step <- function(x, data, covariates,
   attr(result, "reference_class") <- n_classes
   attr(result, "vcov_type") <- vcov_type
   attr(result, "adjust") <- adjust
+  result
+}
+
+#' R3STEP with an intercept for every group class
+#'
+#' The membership regression of [r3step()] for profiles, with the two-level
+#' structure the one-step model has: each group class has its own profile
+#' intercepts, the covariate slopes are shared across group classes, and a
+#' group's observations share one latent group class. With the step-one error
+#' matrix `E` held fixed, a group's likelihood is
+#' `sum_h eta_h prod_i sum_k pi_hk(z_i) E[k, a_i]`, where `a_i` is the assigned
+#' profile. Its scores are posterior-weighted residuals, summed within group,
+#' so the observed information and the group-clustered sandwich both come from
+#' the same per-group rows.
+#'
+#' @param x The step-one fit.
+#' @param z The covariate matrix, one row per observation, no intercept.
+#' @param pieces The result of [.multilpa_level_assignments()] for individuals.
+#' @param errors The step-one classification-error matrix.
+#' @param ci_level,vcov_type,adjust As for [r3step()].
+#' @return The tidy table [r3step()] returns, with group-class intercept rows
+#'   and the group-class logits.
+#' @noRd
+.multilpa_r3step_by_group_class <- function(x, z, pieces, errors, ci_level,
+                                            vcov_type, adjust) {
+  model <- .multilpa_r3step_group_model(x, z, pieces, errors)
+  n_classes <- pieces$n_classes
+  n_free <- n_classes - 1L
+  n_group_classes <- x$n_group_classes
+  fitted <- stats::optim(model$start, model$objective, model$gradient,
+                         method = "BFGS",
+                         control = list(maxit = 1000L, reltol = 1e-12))
+  if (!identical(fitted$convergence, 0L)) {
+    stop(errorCondition(
+      sprintf("The membership regression did not converge (optim code %d).",
+              fitted$convergence),
+      class = "latents_no_converge", call = NULL))
+  }
+  information <- .multilpa_observed_hessian(
+    function(step) model$objective(fitted$par + step),
+    function(step) model$gradient(fitted$par + step),
+    rep(1, length(fitted$par)), 1e-4)
+  covariance <- information$inverse
+  if (identical(vcov_type, "robust")) {
+    covariance <- covariance %*%
+      .multilpa_cross_product(model$group_scores(fitted$par)) %*% covariance
+  }
+  ## Back to the units the covariates arrived in.
+  estimates <- fitted$par * model$unit
+  covariance <- covariance * tcrossprod(model$unit)
+  .multilpa_r3step_group_frame(estimates, covariance, colnames(z), n_free,
+                               n_group_classes, n_classes, ci_level, vcov_type,
+                               adjust, -fitted$value)
+}
+
+#' The likelihood of R3STEP with group-class intercepts
+#'
+#' @param x The step-one fit.
+#' @param z The covariate matrix, one row per observation, no intercept.
+#' @param pieces The result of [.multilpa_level_assignments()] for individuals.
+#' @param errors The step-one classification-error matrix.
+#' @return A list with `objective` (negative log likelihood), `gradient`,
+#'   `group_scores` (one row per group), `start`, and `unit`, the factors that
+#'   return the coordinates to the covariates' own units.
+#' @noRd
+.multilpa_r3step_group_model <- function(x, z, pieces, errors) {
+  n_classes <- pieces$n_classes
+  n_free <- n_classes - 1L
+  n_group_classes <- x$n_group_classes
+  n_covariates <- ncol(z)
+  group_index <- pieces$group_index
+  n_groups <- max(group_index)
+  by_assigned <- t(errors)[pieces$modal, , drop = FALSE]
+  ## The search runs on unit-free covariates, as every other membership
+  ## regression in the package does, and the slopes are divided back afterwards.
+  z_scale <- .multilpa_design_scale(z)
+  scaled_z <- sweep(z, 2L, z_scale, "/")
+  n_alpha <- n_group_classes * n_free
+  n_beta <- n_covariates * n_free
+  unpack <- function(theta) {
+    list(alpha = matrix(theta[seq_len(n_alpha)], n_group_classes, n_free),
+         beta = matrix(theta[n_alpha + seq_len(n_beta)], n_covariates, n_free),
+         gamma = theta[n_alpha + n_beta + seq_len(n_group_classes - 1L)])
+  }
+  pieces_at <- function(theta) {
+    parameters <- unpack(theta)
+    slope_part <- scaled_z %*% parameters$beta
+    per_class <- lapply(seq_len(n_group_classes), function(h) {
+      linear <- cbind(sweep(slope_part, 2L, parameters$alpha[h, ], "+"), 0)
+      prior <- exp(linear - apply(linear, 1L, max))
+      prior <- prior / rowSums(prior)
+      joint <- prior * by_assigned
+      marginal <- pmax(rowSums(joint), 1e-300)
+      list(prior = prior, posterior = joint / marginal,
+           evidence = as.vector(rowsum(log(marginal), group_index, reorder = FALSE)))
+    })
+    log_eta <- c(parameters$gamma, 0)
+    log_eta <- log_eta - .multilpa_log_sum_exp(matrix(log_eta, 1L))
+    scores <- sweep(vapply(per_class, `[[`, numeric(n_groups), "evidence"),
+                    2L, log_eta, "+")
+    log_group <- .multilpa_log_sum_exp(scores)
+    list(per_class = per_class, eta = exp(log_eta),
+         group_posteriors = exp(sweep(scores, 1L, log_group, "-")),
+         log_likelihood = sum(log_group))
+  }
+  group_scores <- function(theta) {
+    state <- pieces_at(theta)
+    residuals <- lapply(state$per_class, function(piece) {
+      (piece$posterior - piece$prior)[, seq_len(n_free), drop = FALSE]
+    })
+    alpha_block <- do.call(cbind, lapply(seq_len(n_free), function(k) {
+      vapply(seq_len(n_group_classes), function(h) {
+        state$group_posteriors[, h] *
+          as.vector(rowsum(residuals[[h]][, k], group_index, reorder = FALSE))
+      }, numeric(n_groups))
+    }))
+    beta_block <- do.call(cbind, lapply(seq_len(n_free), function(k) {
+      Reduce(`+`, lapply(seq_len(n_group_classes), function(h) {
+        state$group_posteriors[, h] *
+          rowsum(scaled_z * residuals[[h]][, k], group_index, reorder = FALSE)
+      }))
+    }))
+    gamma_block <- sweep(state$group_posteriors[, seq_len(n_group_classes - 1L),
+                                                drop = FALSE],
+                         2L, state$eta[seq_len(n_group_classes - 1L)], "-")
+    cbind(alpha_block, beta_block, gamma_block)
+  }
+  objective <- function(theta) -pieces_at(theta)$log_likelihood
+  gradient <- function(theta) -colSums(group_scores(theta))
+
+  ## Started from the step-one solution: the profile mix within each group
+  ## class, no slopes, and the group-class proportions.
+  mix <- pmax(x$profile_probabilities, 1e-8)
+  start <- c(as.vector(log(mix[, seq_len(n_free), drop = FALSE] / mix[, n_classes])),
+             rep(0, n_beta),
+             log(pmax(x$group_probabilities[seq_len(n_group_classes - 1L)], 1e-8) /
+                   max(x$group_probabilities[n_group_classes], 1e-8)))
+  list(objective = objective, gradient = gradient, group_scores = group_scores,
+       start = start,
+       unit = c(rep(1, n_alpha), rep(1 / z_scale, n_free),
+                rep(1, n_group_classes - 1L)))
+}
+
+#' Assemble the table of R3STEP with group-class intercepts
+#' @return One row per coefficient: profile intercepts for every group class,
+#'   the shared slopes, then the group-class logits.
+#' @noRd
+.multilpa_r3step_group_frame <- function(estimates, covariance, terms, n_free,
+                                         n_group_classes, n_classes, ci_level,
+                                         vcov_type, adjust, log_likelihood) {
+  errors_se <- sqrt(pmax(diag(covariance), 0))
+  ## Alpha is group classes by free classes and beta covariates by free
+  ## classes, both stored column-major, so `expand.grid()` with the row index
+  ## varying fastest labels them in the order they are packed.
+  alpha_labels <- expand.grid(term = paste0("group_class_", seq_len(n_group_classes)),
+                              outcome = paste0("class_", seq_len(n_free)),
+                              stringsAsFactors = FALSE)
+  beta_labels <- expand.grid(term = terms,
+                             outcome = paste0("class_", seq_len(n_free)),
+                             stringsAsFactors = FALSE)
+  labels <- rbind(
+    data.frame(level = "individuals", outcome = alpha_labels$outcome,
+               term = alpha_labels$term, stringsAsFactors = FALSE),
+    data.frame(level = "individuals", outcome = beta_labels$outcome,
+               term = beta_labels$term, stringsAsFactors = FALSE),
+    data.frame(level = rep("groups", n_group_classes - 1L),
+               outcome = paste0("group_class_", seq_len(n_group_classes - 1L)),
+               term = rep("(Intercept)", n_group_classes - 1L),
+               stringsAsFactors = FALSE))
+  statistic <- rep(NA_real_, length(estimates))
+  valid <- is.finite(errors_se) & errors_se > 0
+  statistic[valid] <- estimates[valid] / errors_se[valid]
+  raw <- rep(NA_real_, length(estimates))
+  raw[valid] <- 2 * stats::pnorm(-abs(statistic[valid]))
+  ## Only the covariate slopes are tested; intercepts and the group-class
+  ## logits are estimated, not hypotheses, as in the pooled regression.
+  tested <- labels$level == "individuals" & labels$term %in% terms
+  adjusted <- rep(NA_real_, length(raw))
+  adjusted[tested] <- stats::p.adjust(raw[tested], method = adjust)
+  quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
+  result <- data.frame(
+    labels, estimate = estimates, standard_error = errors_se,
+    statistic = statistic, p_value = raw, p_value_adjusted = adjusted,
+    conf_low = estimates - quantile * errors_se,
+    conf_high = estimates + quantile * errors_se,
+    row.names = NULL, stringsAsFactors = FALSE)
+  attr(result, "reference_class") <- n_classes
+  attr(result, "vcov_type") <- vcov_type
+  attr(result, "adjust") <- adjust
+  attr(result, "by_group_class") <- TRUE
+  attr(result, "log_likelihood") <- log_likelihood
   result
 }

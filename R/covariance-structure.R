@@ -38,15 +38,13 @@
 
 #' The structures whose free parameters the inference code covers
 #'
-#' Standard errors are derived for a free diagonal, a shared diagonal and the
-#' two unrestricted ones. The constrained diagonals reparameterize the block as
-#' a volume and a determinant-one shape, which the score and the encode/decode
-#' pair do not yet express, so a standard error for them is refused rather than
-#' computed from the wrong coordinates.
+#' All fourteen. The four separable structures are charted by log variances or
+#' log-Cholesky coordinates; the ten that tie profiles together by log volumes,
+#' determinant-one log shapes and Cayley orientations (R/structure-inference.R).
 #'
 #' @return A character vector of mclust model codes.
 #' @noRd
-.multilpa_inferable_structures <- function() c("EEI", "VVI", "EEE", "VVV")
+.multilpa_inferable_structures <- function() .multilpa_structures()
 
 #' Resolve the requested covariance structure
 #'
@@ -259,12 +257,9 @@
 
 #' Refuse a standard error the coordinates cannot express
 #'
-#' A constrained structure reparameterizes the spread block as one volume and a
-#' determinant-one shape. The free coordinates this package differentiates are
-#' log variances, one per profile and indicator, which is the wrong chart for
-#' that block: it has more coordinates than the model has parameters, and the
-#' information matrix in it is singular by construction. Reporting a standard
-#' error from it would be reporting a number from the wrong model.
+#' Every structure this package fits has a chart, so this refuses only a fit
+#' recording a structure code it does not know, such as one made by a newer
+#' version.
 #'
 #' @param x A fitted model of this package.
 #' @return `NULL`, invisibly, when the structure is one that is covered.
@@ -275,13 +270,10 @@
     return(invisible(NULL))
   }
   stop(errorCondition(sprintf(paste(
-    "Wald standard errors are not available for the %s covariance structure.",
-    "It constrains the volume, the shape or the orientation across profiles,",
-    "and the free coordinates this package differentiates -- one log variance",
-    "per profile and indicator -- do not express that constraint. Use",
-    "`method = \"bootstrap\"`, which resamples groups and needs no such chart,",
-    "or refit with `variance_model` alone for EEI or VVI, or",
-    "`covariance_model = \"full\"` for EEE or VVV."), structure),
+    "Wald standard errors are not available for the %s covariance structure,",
+    "which this version of the package does not know. Use",
+    "`method = \"bootstrap\"`, which refits inside the recorded family."),
+    structure),
     class = "latents_unsupported_inference", call = NULL))
 }
 
@@ -303,7 +295,7 @@
 #' @noRd
 .multilpa_project_start <- function(parameters, structure, n_observations,
                                     min_variance) {
-  if (is.null(structure) || structure %in% .multilpa_inferable_structures()) {
+  if (is.null(structure) || structure %in% .multilpa_separable_structures()) {
     return(parameters)
   }
   variances <- parameters$variances

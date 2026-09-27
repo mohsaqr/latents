@@ -195,3 +195,49 @@
 #' get_results(lca, what = "profile_probabilities")
 #' }
 "student_esm"
+
+#' Study hours and quiz scores under two study strategies
+#'
+#' A simulated dataset for [mixture_regression()], built so that every nesting of the
+#' mixture regression has a model that generated some of its columns, and the
+#' truth is kept for checking recovery.
+#'
+#' 150 students each report six study weeks. In every week a student studies
+#' with one of two strategies, and the strategy decides how hours become a quiz
+#' `score`: a deep week gains about 4.5 points per hour from a base of 35, a
+#' surface week under one point per hour from a base of 55. Students are of two
+#' kinds that differ in their *mix* of strategies -- steady students study
+#' deeply in about 85% of weeks, erratic ones in about 25% -- and higher
+#' `motivation` makes a student more likely to be steady. More `sleep` makes a
+#' deep week more likely.
+#'
+#' So `score ~ hours` is a two-class mixture at the level of the week
+#' (`class_level = "observation"`), whose class shares differ by student (the
+#' two-level model, `id = "student"`, `n_group_classes = 2`). `passed` depends
+#' on the student's kind, not the week's strategy, so it is a mixture at the
+#' level of the student (`class_level = "group"`). `questions` is a count whose
+#' Poisson regression depends on the week's strategy.
+#'
+#' @format A data frame with 900 rows (150 students by 6 weeks) and 10
+#'   columns:
+#' \describe{
+#'   \item{student}{Integer student identifier, 1 to 150.}
+#'   \item{week}{Integer study week, 1 to 6.}
+#'   \item{hours}{Hours studied that week, 0 to 12.}
+#'   \item{sleep}{Hours slept the night before the quiz.}
+#'   \item{motivation}{Standardized motivation, constant within student.}
+#'   \item{score}{Quiz score.}
+#'   \item{passed}{Integer 0/1: passed the weekly check.}
+#'   \item{questions}{Count of questions the student asked that week.}
+#'   \item{strategy}{Factor, `"deep"` or `"surface"`: the week's generating
+#'     strategy. Not for fitting; kept to check recovery.}
+#'   \item{student_type}{Factor, `"steady"` or `"erratic"`: the student's
+#'     generating kind. Not for fitting; kept to check recovery.}
+#' }
+#' @source Simulated by `data-raw/study-hours.R` in the source repository.
+#' @seealso [mixture_regression()], [enumerate_regressions()].
+#' @examples
+#' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
+#'                           n_starts = 3, seed = 1)
+#' get_results(fit, "coefficients")
+"study_hours"

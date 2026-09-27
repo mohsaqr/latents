@@ -13,6 +13,7 @@
 .multilpa_bivariate_residuals <- function(x, data = NULL, by = c("profile", "overall"),
                                adjust = .multilpa_p_adjust_methods) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  .multilpa_refuse_noise(x, "Bivariate residuals")
   data <- .multilpa_resolve_data(x, data)
   stopifnot("`data` must be a data frame" = is.data.frame(data))
   .multilpa_check_row_count(x, data)

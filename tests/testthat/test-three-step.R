@@ -264,7 +264,7 @@ test_that("the robust sandwich runs and more covariates are supported", {
   data$w <- stats::rnorm(nrow(data))
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
                   n_starts = 5, seed = 1)
-  observed <- r3step(fit, data, c("x", "w"))
+  observed <- r3step(fit, data, c("x", "w"), vcov_type = "observed")
   robust <- r3step(fit, data, c("x", "w"), vcov_type = "robust")
 
   expect_equal(nrow(observed), 3L)

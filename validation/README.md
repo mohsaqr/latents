@@ -10,6 +10,7 @@ control.
 |---|---|---|
 | `MATH_AUDIT.md` | The mathematical audit: numerical fixes, independent regression checks and what they established. | — |
 | `simulab-recovery/` | A Monte Carlo recovery study. It measures bias and coverage against the generating values, not agreement with a fixed number. | `Rscript validation/simulab-recovery/recovery-study.R` |
+| `mixture-regression-recovery.R` | Monte Carlo recovery and 95% interval coverage for the two-level mixture regression, the one `mixture_regression()` model with no external implementation to compare against. 200 replications, labels aligned to the truth; writes `mixture-regression-recovery.csv`. | `Rscript validation/mixture-regression-recovery.R` |
 | `synthetic-demo.R` | The synthetic demonstration data, also the input to the generated Mplus runs in `equivalence/mplus/generated/`. | `Rscript validation/synthetic-demo.R` |
 
 The harness's API check (`equivalence/harness/registry.R`,

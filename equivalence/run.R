@@ -20,5 +20,5 @@ Sys.setenv(NOT_CRAN = "true")
 # mode sources the helpers of tests/testthat/ and skips this folder's own.
 pkgload::load_all(".", quiet = TRUE)
 testthat::test_dir(file.path("equivalence"), filter = filter,
-                   package = "multilpa", load_package = "none",
+                   package = "latents", load_package = "none",
                    stop_on_failure = TRUE)

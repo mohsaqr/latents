@@ -8,8 +8,9 @@
   object,
   data = NULL,
   step = 1e-04,
-  vcov_type = c("observed", "robust"),
+  vcov_type = c("observed", "robust", "opg"),
   scale = c("natural", "unconstrained"),
+  boundary = c("error", "fix"),
   ...
 )
 }
@@ -22,7 +23,8 @@ Supplying it is the stronger check that the caller still holds that frame.}
 
 \item{step}{Finite-difference step for the observed information.}
 
-\item{vcov_type}{\code{"observed"} or \code{"robust"}.}
+\item{vcov_type}{\code{"observed"}, \code{"robust"} or \code{"opg"}, as for
+\code{\link[=parameter_inference]{parameter_inference()}}.}
 
 \item{scale}{Which parameter scale the covariance is on, matching
 \code{\link[=vcov.multilpa]{vcov.multilpa()}}. \code{"natural"}, the default, is the covariance of the
@@ -31,6 +33,10 @@ residual covariances in their own units, carried from the estimation scale
 by the delta method. \code{"unconstrained"} is the covariance on the scale the
 model is estimated on, with log variances and log-Cholesky coordinates.
 Means and membership coefficients are the same on both scales.}
+
+\item{boundary}{\code{"error"} or \code{"fix"}, as for \code{\link[=parameter_inference]{parameter_inference()}}: \code{"fix"}
+holds response probabilities on their bound, whose rows and columns are
+then zero.}
 
 \item{...}{Ignored, present for generic compatibility.}
 }

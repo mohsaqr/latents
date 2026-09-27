@@ -53,3 +53,41 @@
     .Machine$integer.max, .Machine$integer.max),
     class = "latents_bad_argument", call = NULL))
 }
+
+#' Choose the start a fit reports
+#'
+#' Restarts of a mixture routinely reach the same optimum under different label
+#' permutations, and then differ only in the last bits of the likelihood.
+#' Picking by `which.max()` alone makes the reported labelling turn on
+#' floating-point noise, so the maximum is taken up to a relative tolerance far
+#' below any difference that could matter, a converged start is preferred among
+#' those tied, and then the earliest.
+#'
+#' @param log_likelihood Numeric vector, one entry per start; `-Inf` for a
+#'   start that failed.
+#' @param converged Logical vector of the same length.
+#' @param rule `"likelihood"` takes the highest likelihood whether or not that
+#'   start converged. `"converged"` takes the highest likelihood among the
+#'   converged starts, falling back to every start when none converged.
+#' @return A single integer index.
+#' @noRd
+.multilpa_select_start <- function(log_likelihood, converged,
+                                   rule = c("likelihood", "converged")) {
+  rule <- match.arg(rule)
+  stopifnot(
+    "`log_likelihood` must be numeric" = is.numeric(log_likelihood),
+    "`converged` must be logical and match `log_likelihood`" =
+      is.logical(converged) && length(converged) == length(log_likelihood),
+    "at least one start must have a finite likelihood" =
+      any(is.finite(log_likelihood))
+  )
+  usable <- is.finite(log_likelihood)
+  settled <- usable & converged
+  candidates <- if (identical(rule, "converged") && any(settled)) {
+    which(settled)
+  } else which(usable)
+  best <- max(log_likelihood[candidates])
+  tied <- candidates[log_likelihood[candidates] >= best - 1e-10 * (1 + abs(best))]
+  preferred <- tied[converged[tied]]
+  if (length(preferred) > 0L) preferred[1L] else tied[1L]
+}

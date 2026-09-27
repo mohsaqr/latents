@@ -1,0 +1,250 @@
+---
+title: "Mixture regression"
+author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Mixture regression}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
+                      fig.height = 4.5, fig.align = "center", dpi = 96)
+options(digits = 3, width = 100)
+```
+
+A single regression assumes that one line describes everyone. Mixture
+regression drops that assumption: the data are taken to come from a small
+number of latent classes, each with its own regression, and the model
+estimates the regressions, how common each class is, and how probably each
+observation belongs to each class — all at once. The method goes by several
+names: clusterwise regression, latent class regression, regression mixture
+(DeSarbo and Cron 1988; Wedel and DeSarbo 1995).
+
+`mixture_regression()` fits it for continuous (`"gaussian"`), binary or binomial
+(`"binomial"`) and count (`"poisson"`) outcomes, at one level or two:
+
+| Question | Call |
+|---|---|
+| Do observations follow different regressions? | `mixture_regression(y ~ x, data, n_classes)` |
+| Do *groups* (persons, schools) follow different regressions? | `mixture_regression(..., id = "person", class_level = "group")` |
+| Do groups differ in how often their observations follow each regression? | `mixture_regression(..., id = "person", n_group_classes = 2)` |
+| What predicts which class an observation (or group) is in? | `membership = ~ z`, `group_membership = ~ v` |
+| Is some effect the same in every class? | `common = ~ x2` |
+| How many classes? | `enumerate_regressions(..., n_classes = 1:4)` |
+
+## The data
+
+`study_hours` is simulated so that the truth is known. 150 students report
+six weeks each. In each week a student studies with a *deep* or a *surface*
+strategy, and the strategy decides how hours turn into a quiz score: deep
+weeks gain about 4.5 points per hour from a base of 35, surface weeks under a
+point per hour from a base of 55. Steady students study deeply in most weeks,
+erratic students in few. The generating strategy and student type are kept in
+the data so recovery can be checked; the models never see them.
+
+```{r data}
+library(latents)
+head(study_hours)
+```
+
+## One class per observation
+
+```{r single}
+fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
+                          n_starts = 5, seed = 1)
+fit
+```
+
+The two classes are the two strategies: a steep regression from a low base and
+a flat one from a high base. Every table comes from `get_results()`; the
+class table gives each class's share, its residual standard deviation and how
+certainly its members are assigned.
+
+```{r classes}
+get_results(fit, "classes")
+```
+
+`get_results(fit, "assignments")` gives one row per observation. Because
+these data carry the generating strategy, the recovery table cross-tabulates
+the assigned classes against it:
+
+```{r recovery}
+get_results(fit, "recovery", data = study_hours, truth = "strategy")
+```
+
+```{r plot-fitted}
+plot(fit)
+```
+
+## How many classes?
+
+`enumerate_regressions()` fits a range of class counts and returns their fit
+statistics in one table, marking the minimum-BIC model.
+
+```{r enumerate}
+classes <- enumerate_regressions(score ~ hours, data = study_hours,
+                                 n_classes = 1:4, n_starts = 3, seed = 1)
+classes
+```
+
+With `bootstrap = B`, each row also gets a parametric bootstrap
+likelihood-ratio test of one class fewer (McLachlan 1987): outcomes are
+simulated from the smaller model, both models are refitted, and the p-value
+is the share of simulated statistics at least as large as the observed one.
+It is slow — `2 B` refits per row — so it is not run here.
+
+## What predicts the class?
+
+`membership` adds a multinomial logit for class membership. Here sleep before
+the quiz makes a deep week more likely, so it should lower the odds of the
+surface class:
+
+```{r membership}
+with_sleep <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
+                                 membership = ~ sleep, n_starts = 5, seed = 1)
+get_results(with_sleep, "membership")
+```
+
+The coefficients are estimated jointly with the regressions — a one-step
+model, not a regression on assigned classes — so classification error does
+not attenuate them.
+
+## Groups that share a class
+
+When every row of a group belongs to the same class, pass `id` and
+`class_level = "group"`. A group's evidence for a class is the product of its
+rows' likelihoods, so classes of *students* are separated far more sharply
+than classes of weeks could be. The binary `passed` outcome in these data
+depends on the student's type, not on the week:
+
+```{r group}
+students <- mixture_regression(passed ~ hours, data = study_hours, n_classes = 2,
+                               family = "binomial", id = "student",
+                               class_level = "group", membership = ~ motivation,
+                               n_starts = 5, seed = 1)
+students
+get_results(students, "membership")
+```
+
+A mixture of logistic regressions with a single binary outcome per class
+assignment is not identified — any mixture of Bernoulli distributions is a
+Bernoulli distribution (Follmann and Lambert 1991) — so `mixture_regression()` refuses
+`family = "binomial"` with one trial per row unless the class is shared by a
+group:
+
+```{r not-identified, error = TRUE}
+mixture_regression(passed ~ hours, data = study_hours, n_classes = 2,
+                   family = "binomial")
+```
+
+## Two levels: groups that differ in their mix
+
+The deep/surface strategy changes from week to week, but steady and erratic
+students use the strategies in different proportions. That is a two-level
+mixture (Vermunt 2003): rows keep their own regression class, and a latent
+*group class* shifts the class probabilities of all rows in its groups.
+
+```{r two-level}
+two_level <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
+                                id = "student", n_group_classes = 2,
+                                membership = ~ sleep, group_membership = ~ motivation,
+                                n_starts = 5, seed = 1)
+summary(two_level)
+```
+
+The `group_classes` table is the heart of it: within each group class, the
+probability of each regression class. The group-class membership model shows
+motivation separating the two kinds of student, and the class model shows the
+week-level effect of sleep.
+
+```{r two-level-recovery}
+get_results(two_level, "recovery", data = study_hours,
+            truth = "student_type", by = "group_class")
+```
+
+## Counts, shared effects and equal variances
+
+The Poisson family takes counts, and `offset()` terms for exposure. `common`
+names predictors whose coefficient is the same in every class; for the
+Gaussian family `variance = "equal"` shares one residual standard deviation.
+
+```{r counts}
+asked <- mixture_regression(questions ~ hours + sleep, data = study_hours, n_classes = 2,
+                            family = "poisson", common = ~ sleep, n_starts = 5, seed = 1)
+get_results(asked, "coefficients")
+```
+
+`exp_estimate` is the rate ratio of each coefficient.
+
+## Uncertainty
+
+Standard errors come from the observed information by default. Scores are
+analytic (the posterior expectation of the complete-data score), and the
+information is their numerical derivative. `vcov_type = "robust"` gives the
+sandwich estimator, clustered on the independent unit — the row, or the group
+when `id` defines one, including a single-level fit given `id`.
+
+```{r robust}
+get_results(fit, "coefficients", vcov_type = "robust")
+plot(fit, what = "coefficients")
+```
+
+`p_adjusted` applies the Benjamini-Hochberg correction across the slopes.
+
+## Prediction and simulation
+
+`predict()` gives the class-averaged mean (`"response"`), every class's mean
+(`"class_response"`), or — when the outcome is present — the posterior class
+probabilities of new rows (`"posterior"`). `simulate()` draws new outcomes
+from the fitted model, which is what the bootstrap test uses.
+
+```{r predict}
+new_weeks <- data.frame(hours = c(1, 6, 11))
+predict(fit, new_weeks, type = "class_response")
+```
+
+## Checking a solution
+
+Mixture likelihoods have local maxima. `mixture_regression()` starts EM from the
+residuals of a pooled regression and from `n_starts` random partitions, and
+the `starts` table shows how many starts reached the best likelihood. A
+solution reached by one start only deserves more starts.
+
+```{r starts}
+get_results(fit, "starts")
+plot(fit, what = "posteriors")
+```
+
+## How this compares with other software
+
+The single-level and group-level models match `flexmix` (Leisch 2004): the
+same likelihood at the same parameters, and the same binomial and Poisson
+estimates. `flexmix` divides the Gaussian residual sum of squares by
+`n - p`, so its Gaussian estimates are not quite the maximum-likelihood ones
+and `mixture_regression()` reaches a slightly higher likelihood. `flexmix` has no
+two-level model, no analytic standard errors (it refits with `optim()`), and
+no bootstrap likelihood-ratio test.
+
+## References
+
+DeSarbo, W. S., & Cron, W. L. (1988). A maximum likelihood methodology for
+clusterwise linear regression. *Journal of Classification*, 5, 249–282.
+
+Follmann, D. A., & Lambert, D. (1991). Identifiability of finite mixtures of
+logistic regression models. *Journal of Statistical Planning and Inference*,
+27, 375–381.
+
+Leisch, F. (2004). FlexMix: A general framework for finite mixture models and
+latent class regression in R. *Journal of Statistical Software*, 11(8).
+
+McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test statistic
+for the number of components in a normal mixture. *Applied Statistics*, 36,
+318–324.
+
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213–239.
+
+Wedel, M., & DeSarbo, W. S. (1995). A mixture likelihood approach for
+generalized linear models. *Journal of Classification*, 12, 21–55.

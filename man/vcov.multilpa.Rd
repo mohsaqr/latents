@@ -20,12 +20,13 @@ in their own units and probabilities as probabilities -- carried from the
 estimation scale by the delta method with
 \code{.multilpa_inference_jacobian()}. \code{"unconstrained"} is the covariance on
 the scale the model is actually estimated on: log variances for a diagonal
-fit, log-Cholesky coordinates for a full-covariance fit, and
+fit, log-Cholesky coordinates for a full-covariance fit, the structure's
+own log volumes, log shapes and orientations for one of the ten
+constrained covariance structures, and
 baseline-category logits for the mixing and response probabilities.}
 
 \item{...}{Additional arguments passed to \code{\link[=parameter_inference]{parameter_inference()}}, including
-\code{method = "bootstrap"}, which is how a covariance structure the Wald path
-cannot chart reports one here.}
+\code{method = "bootstrap"}.}
 }
 \value{
 A square numeric matrix with one row and column per \emph{estimated}

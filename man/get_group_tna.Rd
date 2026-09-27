@@ -3,14 +3,21 @@
 \name{get_group_tna}
 \alias{get_group_tna}
 \alias{get_group_tna.multilpa_transitions}
+\alias{get_group_tna.multilpa}
+\alias{get_group_tna.multilpa_covariates}
 \title{A transition network for each latent group class}
 \usage{
 get_group_tna(x, ...)
 
 \method{get_group_tna}{multilpa_transitions}(x, label = "Group class", ...)
+
+\method{get_group_tna}{multilpa}(x, label = "Group class", ...)
+
+\method{get_group_tna}{multilpa_covariates}(x, label = "Group class", ...)
 }
 \arguments{
-\item{x}{A fitted model from \code{\link[=lta]{lta()}}.}
+\item{x}{A fitted model from \code{\link[=lta]{lta()}}, or a \code{\link[=multilpa]{multilpa()}} / \code{\link[=multilca]{multilca()}} fit
+made with \verb{time =}, whose modal profile sequences are then used.}
 
 \item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}} for each class.}
 

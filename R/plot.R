@@ -115,6 +115,10 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
   if (identical(what, "all")) {
     return(.multilpa_plot_every_view(x, match.call(), parent.frame()))
   }
+  if (what %in% c("entropy", "posteriors", "avepp")) {
+    .multilpa_refuse_noise(x, sprintf("plot(what = \"%s\")", what),
+                           class = "latents_nothing_to_plot")
+  }
   scale <- match.arg(scale)
   style <- utils::modifyList(style, list(...))
   previous <- graphics::par(no.readonly = TRUE)
@@ -719,8 +723,10 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
 #'   with `time =`. `"entropy"` and `"posteriors"` draw the two case-level
 #'   classification diagnostics exactly as [plot.multilpa()] draws them: they
 #'   read the individual posteriors, which a covariate fit has, and say nothing
-#'   about prevalence, which it does not.
-#' @param scale,labels,cell_labels,main,subtitle,palette,symbols,linetypes,style,...
+#'   about prevalence, which it does not. `"responses"` draws the categorical
+#'   response probabilities, one line per profile, as [plot.multilpa()] does;
+#'   the measurement model does not depend on the covariates.
+#' @param scale,labels,cell_labels,main,subtitle,palette,symbols,linetypes,style,category,...
 #'   Passed through as in [plot.multilpa()].
 #' @return The fitted model, invisibly. Called for the side effect of drawing.
 #' @examples
@@ -743,8 +749,9 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
 #' @export
 plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
                                                  "entropy", "posteriors",
-                                                 "all"),
+                                                 "responses", "all"),
                                      scale = c("raw", "standardized"),
+                                     category = "last",
                                      labels = TRUE, main = NULL, subtitle = NULL,
                                      palette = NULL, symbols = NULL,
                                      linetypes = NULL, style = .multilpa_style(),
@@ -781,7 +788,9 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
                                          style, cell_labels),
     entropy = ,
     posteriors = .multilpa_plot_case_diagnostic(x, what, main, subtitle,
-                                                palette, style))
+                                                palette, style),
+    responses = .multilpa_plot_responses(x, category, labels, main, subtitle,
+                                         palette, symbols, linetypes, style))
   invisible(x)
 }
 
@@ -1192,6 +1201,7 @@ plot_views <- function() {
   errors <- tryCatch(
     .multilpa_measurement_errors(x, .multilpa_resolve_data(x, data)),
     latents_unsupported_inference = function(condition) NULL,
+    latents_unsupported_noise = function(condition) NULL,
     latents_no_inference = function(condition) NULL,
     latents_singular_information = function(condition) NULL,
     latents_incomplete_fit = function(condition) NULL,

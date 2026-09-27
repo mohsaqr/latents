@@ -3,11 +3,17 @@
 \name{get_tna}
 \alias{get_tna}
 \alias{get_tna.multilpa_transitions}
+\alias{get_tna.multilpa}
+\alias{get_tna.multilpa_covariates}
 \title{A transition network for the whole sample}
 \usage{
 get_tna(x, ...)
 
 \method{get_tna}{multilpa_transitions}(x, ...)
+
+\method{get_tna}{multilpa}(x, ...)
+
+\method{get_tna}{multilpa_covariates}(x, ...)
 }
 \arguments{
 \item{x}{A fitted model from \code{\link[=lta]{lta()}}.}
@@ -34,6 +40,13 @@ the latter. If a profile has no expected outgoing moves in any class, its
 transition row has no count-based estimate; the network uses the fitted
 class rows averaged by class probability and warns that the row is
 unestimated. It never interprets absent moves as a certain self-transition.
+
+For a \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit made with \verb{time =}, there is
+no estimated transition matrix: the network is built by \code{\link[tna:build_model]{tna::tna()}} from
+each group's sequence of modal profiles in time order, the observed
+transitions between the profiles the observations were assigned to.
+\code{get_group_tna()} splits those sequences by each group's modal group class.
+A fit made without \code{time} has no order and is refused.
 }
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {

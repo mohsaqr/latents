@@ -4,8 +4,9 @@
 #' Hessian both work on an unbounded space; the delta method returns them.
 #'
 #' @param object A fitted `multilpa_covariates` model.
-#' @param means,variances,beta,gamma Optional replacements, for decoding.
-#' @return A numeric vector: means, log variances, profile logits, group logits.
+#' @return A numeric vector: means, log variances, categorical response logits,
+#'   profile logits, group logits. A block is empty when the fit has no
+#'   indicator of that kind.
 #' @noRd
 .multilpa_cov_encode <- function(object) {
   variances <- if (identical(object$variance_model, "equal")) {
@@ -14,11 +15,16 @@
   ## The fit reports means in input units; the likelihood is evaluated on
   ## centred indicators, so the centre comes off here and goes back on in the
   ## reported estimates. A location shift leaves the standard errors alone.
-  centred_means <- sweep(object$means, 2L, object$center, "-")
+  centred_means <- if (ncol(object$means) > 0L) {
+    sweep(object$means, 2L, object$center, "-")
+  } else object$means
   spread <- if (.multilpa_cov_is_full(object)) {
     .multilpa_cov_cholesky_coordinates(object)
   } else as.vector(t(log(variances)))
-  c(as.vector(t(centred_means)), spread,
+  ## Response probabilities as multinomial logits against each indicator's last
+  ## category: the coordinates the covariate-free model is estimated on.
+  response <- unname(.multilpa_response_coordinates(object, "unconstrained"))
+  c(as.vector(t(centred_means)), spread, response,
     as.vector(object$profile_coefficients), as.vector(object$group_coefficients))
 }
 
@@ -111,12 +117,19 @@
       variances <- matrix(variances, n_profiles, n_indicators, byrow = TRUE)
     }
   }
+  response_width <- .multilpa_response_width(object)
+  response_probabilities <- if (response_width > 0L) {
+    .multilpa_response_decode(take(response_width), object)
+  } else NULL
   beta <- matrix(take(length(object$profile_coefficients)),
                  nrow(object$profile_coefficients), ncol(object$profile_coefficients))
   gamma <- matrix(take(length(object$group_coefficients)),
                   nrow(object$group_coefficients), ncol(object$group_coefficients))
   parameters <- list(means = means, variances = variances)
   if (!is.null(covariances)) parameters$covariances <- covariances
+  if (!is.null(response_probabilities)) {
+    parameters$response_probabilities <- response_probabilities
+  }
   list(parameters = parameters, beta = beta, gamma = gamma)
 }
 
@@ -129,15 +142,16 @@
 #' summed within group because groups are the independent units.
 #'
 #' @param theta Parameter vector.
-#' @param x Centred indicator matrix.
+#' @param x Centred continuous indicator matrix, possibly with no columns.
 #' @param object The fit, supplying designs and shapes.
+#' @param codes Integer code matrix of the categorical indicators, or `NULL`.
 #' @return A matrix with one row per group and one column per parameter.
 #' @noRd
-.multilpa_cov_group_scores <- function(theta, x, object) {
+.multilpa_cov_group_scores <- function(theta, x, object, codes = NULL) {
   pieces <- .multilpa_cov_decode(theta, object)
   expectation <- .multilpa_cov_expectation(
     x, object$group_index, pieces$parameters, object$profile_design,
-    object$group_design, pieces$beta, pieces$gamma)
+    object$group_design, pieces$beta, pieces$gamma, codes)
   n_groups <- nrow(object$group_design)
   n_profiles <- object$n_profiles
   n_group_classes <- object$n_group_classes
@@ -184,7 +198,14 @@
                              expectation$group_priors[, h])
   }))
 
-  scores <- cbind(mean_block, variance_block, beta_block, gamma_block)
+  ## Categorical response logits: the posterior-weighted residual of the
+  ## observed category, the same score the covariate-free model uses.
+  response_block <- .multilpa_response_scores(
+    codes, posteriors, pieces$parameters$response_probabilities,
+    object$group_index)
+
+  scores <- cbind(mean_block, variance_block, response_block, beta_block,
+                  gamma_block)
   stopifnot("scores must be one row per group" = nrow(scores) == n_groups,
             "scores must be one column per parameter" = ncol(scores) == length(theta))
   scores
@@ -265,7 +286,8 @@
 #' @param step Finite-difference step for the observed information.
 #' @param vcov_type `"observed"` uses the observed information;
 #'   `"robust"` uses the group-clustered sandwich, which is the appropriate
-#'   choice when the measurement model may be misspecified.
+#'   choice when the measurement model may be misspecified; `"opg"` inverts the
+#'   outer product of the group scores, as `glca` does.
 #' @param adjust Multiplicity correction applied to `p_value` to produce
 #'   `p_adjusted`, defaulting to `"none"`; see [parameter_inference()].
 #' @return A base `data.frame` with one row per free parameter and the same
@@ -273,11 +295,16 @@
 #'   other fitted class: `level` (`"measurement"`, `"profile"` or `"group"`),
 #'   `outcome` (which profile or group class the coefficient predicts, or which
 #'   profile a measurement parameter belongs to), `term`, `parameter`
-#'   (`"mean"`, `"variance"`, `"covariance"` or `"coefficient"`), `estimate`,
+#'   (`"mean"`, `"variance"`, `"covariance"`, `"response"` or
+#'   `"coefficient"`), `estimate`,
 #'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
 #'   `conf_high`. Variances and covariances are reported in their natural units,
 #'   with standard errors carried through the delta method from the log and
-#'   log-Cholesky coordinates on which they are estimated.
+#'   log-Cholesky coordinates on which they are estimated. Categorical
+#'   indicators contribute one `"response"` row per profile, indicator and
+#'   category, named `indicator:category`: the probability of that category,
+#'   with its standard error carried from the multinomial logits it is
+#'   estimated on, and no Wald test, as for the covariate-free model.
 #' @details Class-membership coefficients are on the multinomial logit scale
 #'   with the final profile and the final group class as references, so a
 #'   coefficient is a log odds against that reference. The tests are Wald tests
@@ -306,12 +333,13 @@
 #' @export
 parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95,
                                                     step = 1e-4,
-                                                    vcov_type = c("observed", "robust"),
+                                                    vcov_type = c("observed", "robust", "opg"),
                                                     adjust = .multilpa_p_adjust_methods,
                                                     method = c("wald", "bootstrap"),
                                                     iter = 199L, n_starts = 10L,
                                                     max_iter = 1000L, tol = 1e-8,
-                                                    seed = NULL) {
+                                                    seed = NULL,
+                                                    boundary = c("error", "fix")) {
   stopifnot(
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
@@ -331,9 +359,12 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   }
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
-  covariance <- .multilpa_cov_covariance(x, data, step, vcov_type)
+  boundary <- match.arg(boundary)
+  covariance <- .multilpa_cov_covariance(x, data, step, vcov_type, boundary)
+  held <- if (identical(boundary, "fix")) .multilpa_response_bound(x)$natural else
+    character()
   .multilpa_cov_inference_frame(x, .multilpa_cov_encode(x), covariance,
-                                level, vcov_type, adjust)
+                                level, vcov_type, adjust, held)
 }
 
 #' Covariance of a covariate fit's free parameters
@@ -342,10 +373,12 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
 #'   it is rebuilt from the indicators, group index and designs the fit stores.
 #'   Supplying it is the stronger check that the caller still holds that frame.
 #' @param step Finite-difference step for the observed information.
-#' @param vcov_type `"observed"` or `"robust"`.
+#' @param vcov_type `"observed"`, `"robust"` or `"opg"`.
+#' @param boundary `"error"` or `"fix"`, as for [parameter_inference()].
 #' @return A square matrix, ordered as [.multilpa_cov_encode()].
 #' @noRd
-.multilpa_cov_covariance <- function(object, data = NULL, step, vcov_type) {
+.multilpa_cov_covariance <- function(object, data = NULL, step, vcov_type,
+                                     boundary = "error") {
   stopifnot(
     "`object` must be a fitted `multilpa_covariates` model" =
       inherits(object, "multilpa_covariates"))
@@ -364,22 +397,20 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       "This fit predates covariate inference; refit with the current version.",
       class = "latents_unsupported_inference", call = NULL))
   }
-  if (!is.null(object$categorical) && length(object$categorical) > 0L) {
-    stop(errorCondition(paste(
-      "Standard errors are not available for a covariate fit with categorical",
-      "indicators. The measurement block has no score implemented for its",
-      "response probabilities, and reporting the other blocks alone would",
-      "understate the parameter count."),
-      class = "latents_unsupported_inference", call = NULL))
-  }
-  .multilpa_check_regularity(object, vcov_type)
+  .multilpa_check_regularity(object, vcov_type, boundary)
+  categorical <- object$categorical %||% character()
+  continuous <- .multilpa_continuous_names(object)
   columns <- unique(c(object$vars, object$id,
                       object$profile_covariates, object$group_covariates))
+  ## Categorical indicators may arrive as factors or characters; only the
+  ## continuous indicators and the covariates must be finite numbers.
+  numeric_columns <- setdiff(columns, c(object$id, categorical))
   if (!all(columns %in% names(data)) || anyDuplicated(names(data)) ||
       nrow(data) != object$n_observations ||
-      !all(vapply(data[setdiff(columns, object$id)], function(column) {
+      !all(vapply(data[numeric_columns], function(column) {
         is.numeric(column) && is.null(dim(column)) && all(is.finite(column))
       }, logical(1))) ||
+      anyNA(data[categorical]) ||
       !identical(match(data[[object$id]], object$group_values), object$group_index)) {
     stop(errorCondition(
       "`data` must contain the original finite indicators, covariates and group identifiers in fitting order.",
@@ -388,10 +419,12 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   first_rows <- match(seq_len(object$n_groups), object$group_index)
   designs <- .multilpa_cov_designs(data, object$vars,
     object$profile_covariates, object$group_covariates, first_rows,
-    object$n_group_classes)
+    object$n_group_classes, categorical = categorical)
+  codes <- designs$codes
   same <- function(left, right) identical(unname(left), unname(right))
   if ((!is.null(object$indicator_data) &&
-       !same(as.matrix(data[object$vars]), object$indicator_data)) ||
+       !same(as.matrix(data[continuous]), object$indicator_data)) ||
+      (length(categorical) > 0L && !same(codes, object$categorical_data)) ||
       !all(vapply(seq_along(designs$profile_design), function(index) {
         same(designs$profile_design[[index]], object$profile_design[[index]])
       }, logical(1))) || !same(designs$w, object$group_design) ||
@@ -401,13 +434,14 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     stop(errorCondition("`data` must reproduce the original indicators and covariates.",
                         class = "latents_bad_inference_data", call = NULL))
   }
-  x <- sweep(as.matrix(data[object$vars]), 2L, object$center, "-")
+  x <- as.matrix(data[continuous])
+  if (ncol(x) > 0L) x <- sweep(x, 2L, object$center, "-")
   theta <- .multilpa_cov_encode(object)
   objective <- function(parameters) {
     pieces <- .multilpa_cov_decode(parameters, object)
     -.multilpa_cov_expectation(x, object$group_index, pieces$parameters,
                                object$profile_design, object$group_design,
-                               pieces$beta, pieces$gamma)$log_likelihood
+                               pieces$beta, pieces$gamma, codes)$log_likelihood
   }
   reproduced <- -objective(theta)
   if (abs(reproduced - object$log_likelihood) >
@@ -417,7 +451,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       class = "latents_bad_inference_data", call = NULL))
   }
   gradient <- function(parameters) {
-    -colSums(.multilpa_cov_group_scores(parameters, x, object))
+    -colSums(.multilpa_cov_group_scores(parameters, x, object, codes))
   }
   ## Every block of the parameter vector is put on its own unit before the
   ## finite-difference Hessian sees it, or the information matrix's condition
@@ -442,17 +476,36 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   scale[membership + seq_len(length(theta) - membership)] <-
     c(rep(profile_scale, ncol(object$profile_coefficients)),
       rep(group_scale, ncol(object$group_coefficients)))
+  ## Coordinates held at their bound (`boundary = "fix"`) are constants of the
+  ## conditional likelihood: the information is taken over the rest, and the
+  ## held rows and columns of the covariance stay zero.
+  estimation_names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
+  held <- if (identical(boundary, "fix")) {
+    estimation_names %in% .multilpa_response_bound(object)$unconstrained
+  } else rep(FALSE, length(theta))
+  free <- which(!held)
+  embed <- function(displacement) replace(numeric(length(theta)), free, displacement)
   information <- .multilpa_observed_hessian(
-    function(displacement) objective(theta + displacement * scale),
-    function(displacement) gradient(theta + displacement * scale) * scale, scale, step)
-  covariance <- information$inverse
-  if (identical(vcov_type, "robust")) {
-    scores <- sweep(.multilpa_cov_group_scores(theta, x, object), 2L, scale, "*")
-    covariance <- covariance %*% .multilpa_cross_product(scores) %*% covariance
+    function(displacement) objective(theta + embed(displacement) * scale),
+    function(displacement) {
+      (gradient(theta + embed(displacement) * scale) * scale)[free]
+    }, scale[free], step)
+  free_covariance <- information$inverse
+  if (vcov_type %in% c("robust", "opg")) {
+    scores <- sweep(.multilpa_cov_group_scores(theta, x, object, codes), 2L,
+                    scale, "*")[, free, drop = FALSE]
+    cross <- .multilpa_cross_product(scores)
+    free_covariance <- if (identical(vcov_type, "opg")) {
+      .multilpa_opg_inverse(cross)
+    } else free_covariance %*% cross %*% free_covariance
   }
+  covariance <- matrix(0, length(theta), length(theta))
+  covariance[free, free] <- free_covariance
   covariance <- covariance * tcrossprod(scale)
-  dimnames(covariance) <- list(.multilpa_cov_parameter_names(object),
-                               .multilpa_cov_parameter_names(object))
+  ## The covariance is of the estimated coordinates, so it is named for them;
+  ## vcov() maps it to natural units and renames it there.
+  estimation_names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
+  dimnames(covariance) <- list(estimation_names, estimation_names)
   covariance
 }
 
@@ -476,7 +529,11 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
 #'   it is rebuilt from the indicators, group index and designs the fit stores.
 #'   Supplying it is the stronger check that the caller still holds that frame.
 #' @param step Finite-difference step for the observed information.
-#' @param vcov_type `"observed"` or `"robust"`.
+#' @param vcov_type `"observed"`, `"robust"` or `"opg"`, as for
+#'   [parameter_inference()].
+#' @param boundary `"error"` or `"fix"`, as for [parameter_inference()]: `"fix"`
+#'   holds response probabilities on their bound, whose rows and columns are
+#'   then zero.
 #' @param scale Which parameter scale the covariance is on, matching
 #'   [vcov.multilpa()]. `"natural"`, the default, is the covariance of the
 #'   estimates [coef()] and [parameter_inference()] report: variances and
@@ -507,10 +564,12 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
 #' vcov(fit, example_data, scale = "unconstrained")
 #' @export
 vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
-                                     vcov_type = c("observed", "robust"),
-                                     scale = c("natural", "unconstrained"), ...) {
+                                     vcov_type = c("observed", "robust", "opg"),
+                                     scale = c("natural", "unconstrained"),
+                                     boundary = c("error", "fix"), ...) {
   scale <- match.arg(scale)
-  covariance <- .multilpa_cov_covariance(object, data, step, match.arg(vcov_type))
+  covariance <- .multilpa_cov_covariance(object, data, step, match.arg(vcov_type),
+                                         match.arg(boundary))
   if (identical(scale, "unconstrained")) {
     ## The kind in the name has to name the scale, or a log variance is served
     ## under a name that says `variance`.
@@ -522,7 +581,8 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   jacobian <- .multilpa_cov_natural_jacobian(object, theta,
                                              .multilpa_cov_labels(object))
   natural <- jacobian %*% covariance %*% t(jacobian)
-  dimnames(natural) <- dimnames(covariance)
+  natural_names <- .multilpa_cov_parameter_names(object)
+  dimnames(natural) <- list(natural_names, natural_names)
   natural
 }
 
@@ -538,7 +598,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @return A data frame with `level`, `outcome`, `term` and `parameter`.
 #' @noRd
 .multilpa_cov_estimation_labels <- function(object) {
-  labels <- .multilpa_cov_labels(object)
+  labels <- .multilpa_cov_labels(object, response = "free")
   on_diagonal <- vapply(strsplit(labels$term, ":", fixed = TRUE), function(pair) {
     length(pair) == 2L && identical(pair[[1L]], pair[[2L]])
   }, logical(1))
@@ -555,9 +615,9 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @return One row per free parameter, at every level.
 #' @noRd
 .multilpa_cov_inference_frame <- function(object, theta, covariance, level,
-                                          vcov_type, adjust) {
+                                          vcov_type, adjust,
+                                          held = character()) {
   labels <- .multilpa_cov_labels(object)
-  stopifnot("every parameter must be labelled" = nrow(labels) == length(theta))
 
   ## Variances and covariances are estimated as logs and log-Cholesky
   ## coordinates; one Jacobian returns every block, and the covariance it
@@ -567,6 +627,10 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   errors <- sqrt(pmax(diag(jacobian %*% covariance %*% t(jacobian)), 0))
   is_variance <- labels$parameter == "variance"
   is_covariance <- labels$parameter == "covariance"
+  ## A response probability against zero is no hypothesis anyone asked; the
+  ## covariate-free model reports it with an interval and no test, and so does
+  ## this one.
+  is_response <- labels$parameter == "response"
 
   quantile <- stats::qnorm(1 - (1 - level) / 2)
   statistic <- estimate / errors
@@ -585,11 +649,16 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     vapply(strsplit(labels$term, ":", fixed = TRUE), function(pair) {
       length(pair) == 2L && identical(pair[1L], pair[2L])
     }, logical(1))
-  result$statistic[is_variance | on_diagonal] <- NA_real_
-  result$p_value[is_variance | on_diagonal] <- NA_real_
+  result$statistic[is_variance | on_diagonal | is_response] <- NA_real_
+  result$p_value[is_variance | on_diagonal | is_response] <- NA_real_
+  ## A probability held at its bound was not estimated in this inference, so
+  ## it has no standard error to report rather than a spurious zero.
+  at_bound <- .multilpa_cov_parameter_names(object) %in% held
+  result[at_bound, c("standard_error", "conf_low", "conf_high")] <- NA_real_
   result <- .multilpa_adjust_p(result, adjust)
   attr(result, "vcov_type") <- vcov_type
   attr(result, "level") <- level
+  attr(result, "fixed_at_bound") <- held
   result
 }
 
@@ -604,7 +673,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @param labels The tidy labels of `theta`, in the same order.
 #' @return A numeric vector the same length as `theta`.
 #' @noRd
-.multilpa_cov_natural_estimate <- function(object, theta, labels) {
+.multilpa_cov_front_estimate <- function(object, theta, labels) {
   estimate <- theta
   is_mean <- labels$parameter == "mean"
   is_variance <- labels$parameter == "variance"
@@ -636,7 +705,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @return A square matrix, rows natural coordinates and columns estimation
 #'   coordinates, in the order [.multilpa_cov_encode()] packs them.
 #' @noRd
-.multilpa_cov_natural_jacobian <- function(object, theta, labels) {
+.multilpa_cov_front_jacobian <- function(object, theta, labels) {
   jacobian <- diag(1, length(theta))
   is_variance <- labels$parameter == "variance"
   is_covariance <- labels$parameter == "covariance"
@@ -650,6 +719,98 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
       jacobian[at, at] <<- .multilpa_cov_cholesky_jacobian(theta[at], dimension)
     }))
   }
+  jacobian
+}
+
+#' Where the categorical response block sits in the parameter vector
+#'
+#' The encoding packs means, spread, response logits, profile logits and group
+#' logits, so the response block is located by counting back from the end.
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @param n_theta Length of the estimation-scale parameter vector.
+#' @return A list of integer positions: `front` (means and spread), `response`
+#'   (the free logits) and `back` (the membership logits).
+#' @noRd
+.multilpa_cov_blocks <- function(object, n_theta) {
+  n_response <- .multilpa_response_width(object)
+  n_back <- length(object$profile_coefficients) + length(object$group_coefficients)
+  n_front <- n_theta - n_response - n_back
+  stopifnot("the parameter vector must hold every block" = n_front >= 0L)
+  list(front = seq_len(n_front), response = n_front + seq_len(n_response),
+       back = n_front + n_response + seq_len(n_back))
+}
+
+#' Natural-unit estimates of a covariate fit's parameters
+#'
+#' Means come back to input units, variances out of logs and covariances out of
+#' log-Cholesky coordinates, and each categorical response logit block becomes
+#' the probabilities of every category; the membership coefficients are already
+#' the logits they are reported as.
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @param theta The estimation-scale parameter vector.
+#' @param labels The natural labels, one row per natural parameter.
+#' @return A numeric vector with one entry per row of `labels`.
+#' @noRd
+.multilpa_cov_natural_estimate <- function(object, theta, labels) {
+  at <- .multilpa_cov_blocks(object, length(theta))
+  front_labels <- labels[at$front, , drop = FALSE]
+  response <- if (length(at$response) > 0L) {
+    unlist(lapply(.multilpa_response_decode(theta[at$response], object),
+                  function(block) as.vector(t(block))), use.names = FALSE)
+  } else numeric(0)
+  estimate <- c(.multilpa_cov_front_estimate(object, theta[at$front], front_labels),
+                response, theta[at$back])
+  stopifnot("every natural parameter must be labelled" =
+              length(estimate) == nrow(labels))
+  estimate
+}
+
+#' Delta-method Jacobian from estimation to natural coordinates
+#'
+#' Block diagonal. The measurement block is square and handled by
+#' [.multilpa_cov_front_jacobian()]; each profile-by-indicator response row is
+#' a simplex of `K` probabilities driven by `K - 1` logits, with derivative
+#' `p_c * (1{c = j} - p_j)`; the membership logits map to themselves.
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @param theta The estimation-scale parameter vector.
+#' @param labels The natural labels, one row per natural parameter.
+#' @return A matrix with one row per natural parameter and one column per
+#'   estimated coordinate.
+#' @noRd
+.multilpa_cov_natural_jacobian <- function(object, theta, labels) {
+  at <- .multilpa_cov_blocks(object, length(theta))
+  blocks <- if (length(at$response) > 0L) {
+    .multilpa_response_decode(theta[at$response], object)
+  } else list()
+  n_natural_response <- sum(vapply(blocks, length, integer(1)))
+  n_front <- length(at$front)
+  jacobian <- matrix(0, n_front + n_natural_response + length(at$back),
+                     length(theta))
+  jacobian[seq_len(n_front), at$front] <- .multilpa_cov_front_jacobian(
+    object, theta[at$front], labels[seq_len(n_front), , drop = FALSE])
+  ## One simplex per profile and indicator, walked in the order both the
+  ## natural labels and the free logits use: indicator, then profile.
+  row_at <- n_front
+  column_at <- n_front
+  invisible(lapply(blocks, function(block) {
+    n_categories <- ncol(block)
+    invisible(lapply(seq_len(nrow(block)), function(profile) {
+      probabilities <- block[profile, ]
+      free <- seq_len(n_categories - 1L)
+      derivative <- diag(probabilities, n_categories)[, free, drop = FALSE] -
+        outer(probabilities, probabilities[free])
+      jacobian[row_at + seq_len(n_categories), column_at + free] <<- derivative
+      row_at <<- row_at + n_categories
+      column_at <<- column_at + length(free)
+    }))
+  }))
+  back_rows <- n_front + n_natural_response + seq_along(at$back)
+  jacobian[cbind(back_rows, at$back)] <- 1
+  stopifnot("every natural parameter must be labelled" =
+              nrow(jacobian) == nrow(labels))
   jacobian
 }
 
@@ -690,11 +851,20 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   matrix(unlist(columns, use.names = FALSE), length(values), length(values))
 }
 
-#' Level, outcome, term and kind for every free parameter
+#' Level, outcome, term and kind for every parameter
+#'
+#' Categorical response probabilities are the one block whose natural and
+#' estimation coordinates differ in number: every category has a probability,
+#' but only all but the last carry a free logit. `response = "natural"` labels
+#' every category, as [parameter_inference()] reports them; `"free"` labels the
+#' logits in the order [.multilpa_cov_encode()] packs them.
+#'
 #' @param object A fitted `multilpa_covariates` model.
-#' @return A data frame in the order [.multilpa_cov_encode()] packs them.
+#' @param response `"natural"` or `"free"`.
+#' @return A data frame with `level`, `outcome`, `term` and `parameter`.
 #' @noRd
-.multilpa_cov_labels <- function(object) {
+.multilpa_cov_labels <- function(object, response = c("natural", "free")) {
+  response <- match.arg(response)
   vars <- object$vars
   profiles <- paste0("profile_", seq_len(object$n_profiles))
   variance_rows <- if (identical(object$variance_model, "equal")) "shared" else profiles
@@ -710,9 +880,19 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     pairs <- sprintf("%s:%s", continuous[positions[, 1L]], continuous[positions[, 2L]])
     block(pairs, variance_rows, "measurement", "covariance")
   } else block(continuous, variance_rows, "measurement", "variance")
+  blocks <- object$response_probabilities %||% list()
+  responses <- do.call(rbind, c(
+    list(block(character(), profiles, "measurement", "response")),
+    lapply(names(blocks), function(indicator) {
+      categories <- colnames(blocks[[indicator]])
+      if (identical(response, "free")) categories <- categories[-length(categories)]
+      block(sprintf("%s:%s", indicator, categories), profiles, "measurement",
+            if (identical(response, "free")) "response_logit" else "response")
+    })))
   rbind(
     block(continuous, profiles, "measurement", "mean"),
     spread,
+    responses,
     block(rownames(object$profile_coefficients),
           colnames(object$profile_coefficients), "profile", "coefficient"),
     block(rownames(object$group_coefficients),

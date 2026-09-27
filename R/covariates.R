@@ -236,7 +236,8 @@
                                   time = NULL,
                                   covariance_model = c("diagonal", "full"),
                                   categorical = character(),
-                                  min_probability = 1e-10, call = NULL) {
+                                  min_probability = 1e-10,
+                                  select_start = "likelihood", call = NULL) {
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
@@ -316,12 +317,11 @@
   ## earliest start attaining it wins. The first start is the one resumed from
   ## the covariate-free fit, so ties resolve towards the reproducible mode.
   ## A converged start is preferred over an unconverged one that reached the
-  ## same likelihood, because only the converged one is a maximum.
-  best_likelihood <- max(starts$log_likelihood)
-  tied <- which(starts$log_likelihood >=
-    best_likelihood - 1e-10 * (1 + abs(best_likelihood)))
-  settled <- tied[starts$converged[tied]]
-  best_index <- if (length(settled)) settled[1L] else tied[1L]
+  ## same likelihood, because only the converged one is a maximum;
+  ## `select_start = "converged"` goes further and refuses an unconverged start
+  ## whenever any start converged.
+  best_index <- .multilpa_select_start(starts$log_likelihood, starts$converged,
+                                       select_start)
   result <- .multilpa_cov_assemble(
     best = attempts[[best_index]], best_index = best_index, starts = starts,
     designs = designs, base = base, data = data, vars = vars,
@@ -338,6 +338,9 @@
   ## resolve to stats::time instead of this argument.
   result$time <- time
   result$time_values <- .multilpa_time_values(data, time, id, vars)
+  ## The floor the response probabilities were held at; inference needs it to
+  ## tell an estimate on that boundary from one merely close to it.
+  result$min_probability <- min_probability
   ## The same effective counts the Gaussian fit carries, so the shared
   ## diagnostics and plot panels need no special case for this class.
   result$effective_profile_counts <- colSums(result$subject_posteriors)
@@ -540,7 +543,15 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
       "fitting data cannot be rebuilt; supply `data`."),
       class = "latents_no_indicator_data", call = NULL))
   }
-  result <- as.data.frame(object$indicator_data)
+  result <- data.frame(row.names = seq_len(object$n_observations))
+  result <- cbind(result, as.data.frame(object$indicator_data))
+  ## Categorical indicators come back from their codes through the one typed
+  ## value stored for each category, so a factor returns as that factor and a
+  ## number as that number.
+  invisible(lapply(object$categorical %||% character(), function(name) {
+    result[[name]] <<- object$categorical_values[[name]][
+      object$categorical_data[, name]]
+  }))
   result[[object$id]] <- object$group_values[object$group_index]
   ## The profile design is the group-class indicator block followed by the
   ## profile covariates, in the order they were named.

@@ -6,8 +6,9 @@
 \usage{
 \method{plot}{multilpa_covariates}(
   x,
-  what = c("profiles", "sequences", "entropy", "posteriors", "all"),
+  what = c("profiles", "sequences", "entropy", "posteriors", "responses", "all"),
   scale = c("raw", "standardized"),
+  category = "last",
   labels = TRUE,
   main = NULL,
   subtitle = NULL,
@@ -27,9 +28,11 @@
 with \verb{time =}. \code{"entropy"} and \code{"posteriors"} draw the two case-level
 classification diagnostics exactly as \code{\link[=plot.multilpa]{plot.multilpa()}} draws them: they
 read the individual posteriors, which a covariate fit has, and say nothing
-about prevalence, which it does not.}
+about prevalence, which it does not. \code{"responses"} draws the categorical
+response probabilities, one line per profile, as \code{\link[=plot.multilpa]{plot.multilpa()}} does;
+the measurement model does not depend on the covariates.}
 
-\item{scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, ...}{Passed through as in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
+\item{scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, category, ...}{Passed through as in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
 }
 \value{
 The fitted model, invisibly. Called for the side effect of drawing.

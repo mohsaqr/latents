@@ -274,9 +274,10 @@ fit_staged <- function(data, vars, id, n_profiles,
         "a fit with group classes has already estimated membership structure."),
         class = "latents_bad_stage", call = NULL))
     }
+    .multilpa_refuse_noise(measurement, "fit_staged(measurement = )")
     held_structure <- measurement$covariance_structure %||% NA_character_
     if (!is.na(held_structure) &&
-        !held_structure %in% .multilpa_inferable_structures()) {
+        !held_structure %in% .multilpa_separable_structures()) {
       stop(errorCondition(sprintf(paste(
         "`measurement` was fitted with the %s covariance structure, which is",
         "maximized across every profile at once, so holding it would not leave",

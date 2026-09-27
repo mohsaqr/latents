@@ -555,6 +555,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
   stopifnot(inherits(null_model, "multilpa"), inherits(alternative_model, "multilpa"))
+  .multilpa_refuse_noise(null_model, "bootstrap_lrt()")
+  .multilpa_refuse_noise(alternative_model, "bootstrap_lrt()")
   # The null model is the one being simulated from, so its own columns are the
   # ones that matter when the caller does not supply data.
   data <- .multilpa_resolve_data(null_model, data)

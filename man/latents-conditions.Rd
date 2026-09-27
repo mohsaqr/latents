@@ -136,11 +136,24 @@ model family. Raised by \code{\link[=vcov]{vcov()}} and \code{\link[=parameter_i
 \item{\code{latents_unsupported_inference}}{Standard errors are not available
 for this particular fit. Raised for a covariate fit with categorical
 indicators, where no score is implemented for the response
-probabilities, for fits made by an older version, for a covariance
-structure the Wald coordinates cannot express --- which
-\code{parameter_inference(method = "bootstrap")} reports instead --- and by
-that bootstrap itself for a fit holding a measurement block, whose held
-values came from a fit these data do not resample.}
+probabilities, for fits made by an older version, for a fit recording
+a covariance structure code this version does not know, and by
+\code{parameter_inference(method = "bootstrap")} for a fit holding a
+measurement block, whose held values came from a fit these data do not
+resample, and by \code{\link[=parameter_inference]{parameter_inference()}} for a fit made with \code{prior},
+which sits at a posterior mode rather than a likelihood maximum.}
+\item{\code{latents_unsupported_prior}}{\code{multilpa(prior = )} was asked for a
+combination the conjugate prior is not defined for: the VEE, EVE, VVE
+or EVV covariance structure (mclust defines none), categorical
+indicators, a \code{fixed} block, membership covariates, or missing
+indicator values.}
+\item{\code{latents_unsupported_noise}}{\code{multilpa(noise = TRUE)} was asked
+for more than one group class, categorical indicators, a \code{fixed} block,
+membership covariates or missing indicator values; or a verb that does
+not yet account for a noise component --- \code{\link[=parameter_inference]{parameter_inference()}},
+\code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=starting_values]{starting_values()}},
+bivariate residuals, \code{\link[=fit_staged]{fit_staged()}} or a posterior plot --- was given a
+fit that has one.}
 \item{\code{latents_bootstrap_failed}}{Fewer than two resamples produced a
 usable fit, so there is nothing to read a spread from. Raised by
 \code{parameter_inference(method = "bootstrap")}; the message carries the
@@ -197,6 +210,23 @@ others through.
 \describe{
 \item{\code{latents_failed_starts}}{Some, but not all, EM starts raised. The
 surviving starts are in \code{get_results(fit, "starts")}.}
+\item{\code{latents_not_identified}}{\code{\link[=mixture_regression]{mixture_regression()}} with a binary outcome and one
+trial per class assignment: a mixture of Bernoulli regressions is not
+identified there.}
+\item{\code{latents_missing_data}}{\code{\link[=mixture_regression]{mixture_regression()}} with \code{missing = "error"} met a
+missing value in a variable the model uses.}
+\item{\code{latents_rows_dropped}}{Warning. \code{\link[=mixture_regression]{mixture_regression()}} with
+\code{missing = "omit"} dropped incomplete rows; the message states how
+many.}
+\item{\code{latents_no_valid_start}}{Every \code{\link[=mixture_regression]{mixture_regression()}} start degenerated: a
+class emptied or its variance collapsed.}
+\item{\code{latents_degenerate_start}}{Warning. Some \code{\link[=mixture_regression]{mixture_regression()}} starts
+degenerated and were set aside.}
+\item{\code{latents_separation}}{Warning. A \code{\link[=mixture_regression]{mixture_regression()}} logit or log-link
+coefficient diverged (perfect separation); it and its standard error
+are unreliable.}
+\item{\code{latents_em_decrease}}{The \code{\link[=mixture_regression]{mixture_regression()}} EM likelihood decreased
+beyond roundoff. This indicates a defect and should be reported.}
 \item{\code{latents_unconverged}}{The best start had not converged when
 \code{max_iter} was reached, so the returned estimate is not a maximum.}
 \item{\code{latents_boundary}}{A variance, or a covariance eigenvalue, sits at

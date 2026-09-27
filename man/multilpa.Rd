@@ -28,7 +28,10 @@ multilpa(
   centering = c("none", "person", "grand"),
   volume = NULL,
   shape = NULL,
-  orientation = NULL
+  orientation = NULL,
+  select_start = c("likelihood", "converged"),
+  prior = NULL,
+  noise = FALSE
 )
 }
 \arguments{
@@ -197,12 +200,78 @@ and use the minorize-maximize step of Browne and McNicholas (2014).
 Parameter counts match \code{mclust}'s own for all fourteen.
 
 Anything other than EEI, VVI, EEE or VVV is maximized across every profile
-at once, so it cannot be combined with a held \code{variances} block, and
-\code{parameter_inference(method = "wald")} refuses it with
-\code{latents_unsupported_inference}: the free coordinates are log variances,
-which is the wrong chart for a constrained volume, shape or orientation.
-\code{parameter_inference(method = "bootstrap")} reports all fourteen: it
-resamples groups and refits inside the same family, so it needs no chart.}
+at once, so it cannot be combined with a held \code{variances} block.
+\code{\link[=parameter_inference]{parameter_inference()}} reports Wald standard errors for all fourteen: a
+constrained structure is differentiated in its own free coordinates (log
+volumes, determinant-one log shapes and orientations), which have exactly
+as many dimensions as the structure has parameters, and carried to the
+reported variances and covariances by the delta method.
+\code{method = "bootstrap"} is available for all fourteen as well.}
+
+\item{select_start}{Which start the fit reports. \code{"likelihood"}, the
+default, takes the highest log likelihood across starts, preferring a
+converged start only among those tied with it to within a relative
+\code{1e-10}. \code{"converged"} takes the highest log likelihood among the converged
+starts whenever at least one converged, and falls back to every start when
+none did. Use it when an unconverged start edges out a converged one by a
+negligible amount, which happens when a membership logit creeps along a flat
+ridge of the likelihood: the converged start is then a maximum that
+\code{\link[=parameter_inference]{parameter_inference()}} can work with, and the other is not. \code{summary()}
+and \code{get_results(fit, "starts")} show every start either way.}
+
+\item{prior}{\code{NULL}, the default, for maximum likelihood, or
+\code{\link[=prior_control]{prior_control()}} for maximum a posteriori estimation of the Gaussian
+means and covariances under the conjugate prior of Fraley and Raftery
+(2007) --- mclust's \code{priorControl()}. The hyperparameters default to
+mclust's \code{defaultPrior()} computed from the indicators being fitted, and
+each M-step is mclust's own, so a fit from the same start reproduces
+\code{mclust::Mclust(..., prior = priorControl())}. It is defined for EII,
+VII, EEI, VEI, EVI, VVI, EEE, EEV, VEV and VVV (mclust has none for VEE,
+EVE, VVE and EVV), for complete continuous indicators without \code{fixed}
+or membership covariates; anything else raises
+\code{latents_unsupported_prior}. The mixing proportions are not given a
+prior. Following mclust, the fit's \code{log_likelihood} is the \emph{unpenalized}
+log likelihood evaluated at the posterior mode, and \code{aic}, \code{bic} and
+their variants are computed from it with the usual parameter count; EM
+convergence is judged on its relative change. A prior's MAP step can
+lower that likelihood, so the decrease check made under maximum
+likelihood is not applied. \code{parameter_inference(method = "wald")} is
+refused for such a fit (\code{latents_unsupported_inference}), because the
+likelihood's score is not zero at a posterior mode;
+\code{method = "bootstrap"} refits every resample with the same prior. The
+fit records the request as \code{prior} and the resolved hyperparameters, in
+the indicators' units, as \code{prior_parameters}.}
+
+\item{noise}{\code{FALSE}, the default, or \code{TRUE} to add a noise component: one
+more mixture component with a constant density \code{1 / V} over the
+hypervolume \code{V} of the data, which absorbs observations no Gaussian
+profile explains --- outliers and scatter --- instead of letting them
+distort a profile (Banfield & Raftery, 1993; mclust's
+\code{initialization = list(noise = )} and \code{Vinv}). \code{V} is mclust's
+\code{hypvol()}: the smaller of the volumes of the data's axis-aligned and
+principal-component-aligned bounding boxes. The component has no
+measurement parameters; its mixing proportion is estimated with the
+others, and, as mclust counts it, the model has two more parameters (the
+proportion and the hypervolume), so its criteria equal mclust's. A random
+start puts a tenth of the mass on the noise; a \code{start} supplies
+\code{noise_probability} beside \code{profile_probabilities}, the two summing to
+one. Available for continuous, complete indicators with one group class
+(\code{id = NULL}, or \code{n_group_classes = 1}) and any of the fourteen
+covariance structures, alone or with \code{prior}; otherwise
+\code{latents_unsupported_noise}. In the fit, the noise component is profile
+\code{0}, as in mclust's classification: \code{subject_profiles} is \code{0} for an
+observation assigned to it, \code{get_results(fit, "assignments")} adds a
+\code{posterior_noise} column, \code{get_results(fit, "posteriors")} and
+\code{get_results(fit, "profile_probabilities")} have profile-\code{0} rows, and
+the classification diagnostics count it as a class. \code{means},
+\code{variances}, \code{covariances}, \code{profile_probabilities} and
+\code{subject_posteriors} describe the Gaussian profiles only, so the latter
+two sum to one minus the noise share; the fit adds \code{noise_probability},
+\code{noise_posteriors}, \code{n_noise} and \code{hypervolume}. Verbs that do not yet
+account for the component --- \code{\link[=parameter_inference]{parameter_inference()}}, \code{\link[=three_step]{three_step()}},
+\code{\link[=r3step]{r3step()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=starting_values]{starting_values()}}, bivariate residuals,
+\code{\link[=fit_staged]{fit_staged()}} and the posterior plots --- refuse such a fit with
+\code{latents_unsupported_noise}.}
 }
 \value{
 An \code{multilpa} object containing \code{means}, \code{variances}, optional
@@ -241,9 +310,10 @@ identification; no general identification guarantee is made. Initialization
 alone uses indicator-mean filling. EM uses conditional Gaussian sufficient
 statistics and observed marginal densities. More than one group class requires more than one profile
 and at least one group with multiple individuals; these checks are necessary
-but do not establish identification. The highest finite likelihood across
-starts is returned, even if that start did not converge; inspect \code{converged}
-and \code{starts}. Profile and group-class labels are arbitrary.
+but do not establish identification. By default the highest finite
+likelihood across starts is returned, even if that start did not converge;
+\code{select_start = "converged"} prefers a converged start, and \code{converged} and
+\code{starts} show which was chosen. Profile and group-class labels are arbitrary.
 }
 \examples{
 set.seed(7)
@@ -268,6 +338,13 @@ get_results(fit, what = "profile_probabilities")
 Vermunt, J. K. (2003). Multilevel latent class models.
 Sociological Methodology, 33, 213--239.
 doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+
+Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
+non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.
+
+Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
+mixture estimation and model-based clustering. Journal of
+Classification, 24, 155--181. doi:10.1007/s00357-007-0004-5.
 }
 \seealso{
 \code{\link[=multilca]{multilca()}} for a model in which every indicator is categorical.

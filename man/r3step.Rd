@@ -10,8 +10,9 @@ r3step(
   covariates,
   level = c("individuals", "groups"),
   ci_level = 0.95,
-  vcov_type = c("observed", "robust"),
-  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+  vcov_type = c("robust", "observed"),
+  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
+  by_group_class = FALSE
 )
 }
 \arguments{
@@ -32,21 +33,35 @@ predicts group-class membership.}
 
 \item{ci_level}{Confidence level for the intervals.}
 
-\item{vcov_type}{\code{"observed"} uses the observed information; \code{"robust"} uses
-the sandwich clustered on the fit's groups, which is the honest choice when
-the covariates are measured on observations nested inside them. \code{"robust"}
-needs more independent groups than the regression has coefficients, because
-the group score contributions sum to zero at the estimate and so span at
-most one dimension fewer than there are groups; with too few it is refused
-with \code{latents_too_few_groups} rather than reporting a variance that is
-singular, or, with a single group, numerically zero. \code{"observed"} remains
-available there and does not allow for the nesting.}
+\item{vcov_type}{\code{"robust"}, the default, uses the sandwich clustered on the
+fit's groups, which is the honest choice when the covariates are measured
+on observations nested inside them, and matches the default of
+\code{\link[=three_step]{three_step()}}. \code{"observed"} uses the observed information; for the pooled
+regression it treats every observation as independent, and with
+\code{by_group_class = TRUE} it is the model-based variance of the two-level
+likelihood. \code{"robust"} needs more independent groups than the regression
+has coefficients, because the group score contributions sum to zero at the
+estimate and so span at most one dimension fewer than there are groups;
+with too few it is refused with \code{latents_too_few_groups} rather than
+reporting a variance that is singular, or, with a single group, numerically
+zero. \code{"observed"} remains available there.}
 
 \item{adjust}{Multiplicity correction applied across the covariate terms,
 passed to \code{\link[stats:p.adjust]{stats::p.adjust()}}. \code{"BH"} by default; \code{"none"} leaves the
 p-values uncorrected. The family is every covariate term of every
 non-reference class, which is the set of tests this call computes; the
 intercepts are not part of it.}
+
+\item{by_group_class}{\code{FALSE}, the default, fits one pooled multinomial logit
+with a single intercept per profile. \code{TRUE} fits the two-level form of the
+one-step model instead: every group class has its own profile intercepts,
+the covariate slopes are shared across group classes, and a group's
+observations share one latent group class whose proportions are estimated
+alongside. Differences between groups that the covariates do not explain
+are then absorbed by the group classes rather than left in the residual,
+where the pooled regression attenuates the slopes and inflates their
+clustered standard errors. For \code{level = "individuals"} on a covariate-free
+\code{\link[=multilpa]{multilpa()}} fit only; refused with \code{latents_bad_argument} otherwise.}
 }
 \value{
 A base \code{data.frame} with one row per non-reference class and term,
@@ -61,7 +76,11 @@ Coefficients are log odds against the final class, which is the reference,
 matching \code{multilpa(profile_covariates = )}; that class is named in the
 result's
 \code{reference_class} attribute, and the variance that was used in its
-\code{vcov_type} attribute.
+\code{vcov_type} attribute. With \code{by_group_class = TRUE} the intercept rows are
+one per group class, named \code{group_class_1}, \code{group_class_2}, ..., followed
+by the shared slopes and, at \code{level = "groups"}, the group-class logits
+against the last group class; the result also carries \code{by_group_class} and
+the maximised \code{log_likelihood} as attributes.
 }
 \description{
 The R3STEP approach. A multinomial logit of class membership on covariates,

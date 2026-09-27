@@ -11,14 +11,15 @@
   data = NULL,
   level = 0.95,
   step = 1e-04,
-  vcov_type = c("observed", "robust"),
+  vcov_type = c("observed", "robust", "opg"),
   adjust = .multilpa_p_adjust_methods,
   method = c("wald", "bootstrap"),
   iter = 199L,
   n_starts = 10L,
   max_iter = 1000L,
   tol = 1e-08,
-  seed = NULL
+  seed = NULL,
+  boundary = c("error", "fix")
 )
 
 parameter_inference(
@@ -26,14 +27,15 @@ parameter_inference(
   data = NULL,
   level = 0.95,
   step = 1e-04,
-  vcov_type = c("observed", "robust"),
+  vcov_type = c("observed", "robust", "opg"),
   adjust = .multilpa_p_adjust_methods,
   method = c("wald", "bootstrap"),
   iter = 199L,
   n_starts = 10L,
   max_iter = 1000L,
   tol = 1e-08,
-  seed = NULL
+  seed = NULL,
+  boundary = c("error", "fix")
 )
 
 \method{parameter_inference}{multilpa}(
@@ -41,14 +43,15 @@ parameter_inference(
   data = NULL,
   level = 0.95,
   step = 1e-04,
-  vcov_type = c("observed", "robust"),
+  vcov_type = c("observed", "robust", "opg"),
   adjust = .multilpa_p_adjust_methods,
   method = c("wald", "bootstrap"),
   iter = 199L,
   n_starts = 10L,
   max_iter = 1000L,
   tol = 1e-08,
-  seed = NULL
+  seed = NULL,
+  boundary = c("error", "fix")
 )
 }
 \arguments{
@@ -71,7 +74,14 @@ provides a weaker consistency check.}
 accumulates the outer product of the per-group scores. Groups are the
 independent units, so robust errors relax the assumption that the Gaussian
 within-group model is correctly specified. They do not relax the assumption
-that groups are independent.}
+that groups are independent.
+\code{"opg"} inverts the outer product of the per-group scores (the BHHH or
+outer-product-of-gradients estimate), which estimates the information by
+the variance of the score rather than by the curvature of the likelihood.
+It is the estimator \code{glca} reports, so it reproduces that package's
+standard errors; the two agree with \code{"observed"} in large samples and can
+differ noticeably in small ones, where \code{"observed"} is usually the more
+reliable. \code{"robust"} and \code{"opg"} need more groups than parameters.}
 
 \item{adjust}{Multiplicity correction applied to \code{p_value} to produce
 \code{p_adjusted}, one of the methods \code{\link[stats:p.adjust]{stats::p.adjust()}} accepts. The default
@@ -83,12 +93,19 @@ and do not count towards the family.}
 
 \item{method}{How uncertainty is measured. \code{"wald"}, the default, inverts the
 observed information in the estimation coordinates, and is available for
-the four covariance structures those coordinates can express: EEI, VVI, EEE
-and VVV. \code{"bootstrap"} resamples \emph{groups} with replacement, refits inside
+all fourteen covariance structures. EEI, VVI, EEE and VVV are estimated in
+log variances or log-Cholesky coordinates; the ten structures that
+constrain the volume, the shape or the orientation across profiles are
+estimated in log volumes, log shapes whose determinant-one constraint is
+written into the coordinates, and Cayley-transform orientations (or, for
+VEE and EVV, determinant-one log-Cholesky factors), so the information has
+one row per free parameter of the structure. The reported variances and
+covariances are then carried from those coordinates by the delta method,
+and their natural-scale covariance is singular, as it is for the class
+probabilities. \code{"bootstrap"} resamples \emph{groups} with replacement, refits inside
 the same covariance family, undoes the relabelling each refit comes back
 with, and reports the percentile interval and the standard deviation of the
-replicates. It is available for all fourteen structures, because it needs
-no coordinate chart for the constraint. Groups are the resampling unit
+replicates. It is available for all fourteen structures. Groups are the resampling unit
 rather than rows, so the interval carries the same independence assumption
 as \code{vcov_type = "robust"} and not the stronger one \code{"observed"} makes.}
 
@@ -103,6 +120,15 @@ maximum here as it does in \code{\link[=multilpa]{multilpa()}}, at the same mult
 \item{seed}{Optional seed for the resampling: any whole number \code{set.seed()}
 accepts; a fraction raises \code{latents_bad_argument}. The stream is restored on exit,
 so a seeded call leaves the caller's random state exactly as it found it.}
+
+\item{boundary}{What to do when categorical response probabilities sit on
+their lower bound, \code{min_probability}. There the likelihood is flat in the
+logit and the information is singular, so \code{"error"}, the default, refuses
+with \code{latents_boundary_fit}. \code{"fix"} holds those probabilities at the bound
+and reports every other parameter conditionally on them, the convention
+Mplus follows; the held probabilities are left out of the table (or, for a
+covariate fit, reported with \code{NA} standard errors) and named in the
+result's \code{fixed_at_bound} attribute.}
 }
 \value{
 A base \code{data.frame} with one row per free parameter and the same
@@ -110,11 +136,16 @@ columns, in the same order, that \code{\link[=parameter_inference]{parameter_inf
 other fitted class: \code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}),
 \code{outcome} (which profile or group class the coefficient predicts, or which
 profile a measurement parameter belongs to), \code{term}, \code{parameter}
-(\code{"mean"}, \code{"variance"}, \code{"covariance"} or \code{"coefficient"}), \code{estimate},
+(\code{"mean"}, \code{"variance"}, \code{"covariance"}, \code{"response"} or
+\code{"coefficient"}), \code{estimate},
 \code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
 \code{conf_high}. Variances and covariances are reported in their natural units,
 with standard errors carried through the delta method from the log and
-log-Cholesky coordinates on which they are estimated.
+log-Cholesky coordinates on which they are estimated. Categorical
+indicators contribute one \code{"response"} row per profile, indicator and
+category, named \code{indicator:category}: the probability of that category,
+with its standard error carried from the multinomial logits it is
+estimated on, and no Wald test, as for the covariate-free model.
 
 A base \code{data.frame} with one row per reported parameter and the
 columns \code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}), \code{outcome},
@@ -194,7 +225,10 @@ parameter, \code{latents_bad_inference_data} when a supplied \code{data} does no
 reproduce the fit, and \code{latents_too_few_groups} for \code{vcov_type = "robust"}
 with fewer independent groups than reported parameters. A fit whose score
 is still far from zero is reported with a \code{latents_unconverged} warning
-rather than refused.
+rather than refused. A fit made with \code{multilpa(prior = )} is refused by
+the Wald path with \code{latents_unsupported_inference} (it sits at a
+posterior mode, where the likelihood's score is not zero), and a fit with
+a noise component by either path with \code{latents_unsupported_noise}.
 
 \code{method = "bootstrap"} adds \code{latents_unsupported_inference} for a fit that
 holds a measurement block --- the held values came from another fit and
@@ -235,11 +269,14 @@ parameter_inference(fit)
 # Many tests in one table: name the correction, do not apply one by stealth.
 parameter_inference(fit, adjust = "BH")
 
-# A structure that constrains the shape has no Wald chart. The bootstrap
-# resamples schools and refits inside the same family, so it reports one.
+# A structure that constrains the shape across profiles (VEI) is charted in
+# its own free coordinates, so it has Wald standard errors too.
 shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
                    n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1,
                    volume = "varying", shape = "equal", orientation = "axis")
+parameter_inference(shaped)
+
+# The bootstrap resamples schools and refits inside the same family.
 parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
                     seed = 1)
 }

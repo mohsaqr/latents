@@ -323,7 +323,7 @@ The `sensitivity()` function extends this inspection by refitting under differen
 sensitivity(fit, seeds = 1:3)
 #>   seed log_likelihood converged iterations optimum best agreement
 #> 1    1          -8440      TRUE          8       1 TRUE         1
-#> 2    2          -8440      TRUE         14       1 TRUE         1
+#> 2    2          -8440      TRUE         10       1 TRUE         1
 #> 3    3          -8440      TRUE         13       1 TRUE         1
 ```
 
@@ -576,11 +576,11 @@ three_step(fit, data = course_engagement, outcome = "previous_grade")
 #> 2 individuals    bch     2    0.222         0.0347    0.154     0.290         810
 r3step(fit, data = course_engagement, covariates = "previous_grade")
 #>         level outcome           term estimate standard_error statistic  p_value
-#> 1 individuals class_1    (Intercept)   -0.376         0.0582     -6.46 1.05e-10
-#> 2 individuals class_1 previous_grade   -0.575         0.0622     -9.25 2.34e-20
+#> 1 individuals class_1    (Intercept)   -0.376         0.1303     -2.89 3.91e-03
+#> 2 individuals class_1 previous_grade   -0.575         0.0593     -9.69 3.35e-22
 #>   p_value_adjusted conf_low conf_high
-#> 1               NA   -0.490    -0.262
-#> 2         2.34e-20   -0.697    -0.453
+#> 1               NA   -0.631    -0.121
+#> 2         3.35e-22   -0.691    -0.459
 ```
 
 The first call compares previous-grade means between enrolment profiles. The argument name `outcome` identifies the variable whose means are estimated; it does not imply that engagement precedes or causes previous grade. The second call estimates the association of previous grade with profile membership while preserving the original profile definitions.
@@ -820,6 +820,24 @@ get_results(staged, "stages")
 This separation is useful when a common observation-level representation is to be retained while examining heterogeneity in its distribution across groups. It also connects to the distinction between state diversity and person heterogeneity discussed in the VaSSTra approach. The `fit_staged()` procedure specifically implements staged estimation of the package's multilevel mixture; its output should be interpreted within that model.
 
 Standard errors and information criteria from the staged fit are conditional on the fixed measurement parameters. Uncertainty from estimating those parameters in the first stage is not propagated, which should be stated when reporting inferential results.
+
+## Mixture regression
+
+`mixture_regression()` fits regressions whose coefficients differ across latent classes, for continuous (`"gaussian"`), binary or binomial (`"binomial"`) and count (`"poisson"`) outcomes. The class can belong to each row, to a whole group (`class_level = "group"`), or to each row with a second-level group class that shifts how often each regression class occurs within a group (`n_group_classes`). Covariates can predict class membership (`membership`, `group_membership`), and terms can share one coefficient across classes (`common`).
+
+
+``` r
+regressions <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
+                                  n_starts = 3, seed = 1)
+get_results(regressions, "coefficients")
+#>     class        term estimate std_error statistic  p_value conf_low conf_high p_adjusted
+#> 1 class_1 (Intercept)   34.355     0.719     47.76 0.00e+00   32.945     35.76         NA
+#> 2 class_1       hours    4.566     0.105     43.60 0.00e+00    4.361      4.77   0.00e+00
+#> 3 class_2 (Intercept)   54.895     1.093     50.24 0.00e+00   52.753     57.04         NA
+#> 4 class_2       hours    0.808     0.170      4.77 1.88e-06    0.476      1.14   1.88e-06
+```
+
+`enumerate_regressions()` compares numbers of classes, with an optional parametric bootstrap likelihood-ratio test. Standard errors come from analytic scores, with observed-information, sandwich and outer-product estimators. Single-level and group-level models reproduce `flexmix`'s likelihood at the same parameters; `vignette("mixture-regression")` walks through every nesting.
 
 ## Retrieving results and reporting an analysis
 

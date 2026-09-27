@@ -40,6 +40,16 @@ print.multilpa <- function(x, rows = 20L, ...) {
     cat(sprintf("Indicators %s-centred, so the profiles are profiles of change\n",
                 x$centering))
   }
+  if (isTRUE(x$noise)) {
+    cat(sprintf(paste("Noise component: proportion %.4f, %d observation%s",
+                      "assigned to it (profile 0); hypervolume %.6g\n"),
+                x$noise_probability, x$n_noise, if (x$n_noise == 1L) "" else "s",
+                x$hypervolume))
+  }
+  if (!is.null(x$prior)) {
+    cat(paste("Posterior mode under mclust's conjugate prior; the log likelihood",
+              "and criteria below are unpenalized\n"))
+  }
   cat(sprintf("Log likelihood: %.6f | AIC: %.3f | BIC (groups): %.3f\n",
               x$log_likelihood, x$aic, x$bic))
   cat(sprintf("Converged: %s | iterations: %d | best start: %d/%d\n",

@@ -455,6 +455,18 @@ This separation is useful when a common observation-level representation is to b
 
 Standard errors and information criteria from the staged fit are conditional on the fixed measurement parameters. Uncertainty from estimating those parameters in the first stage is not propagated, which should be stated when reporting inferential results.
 
+## Mixture regression
+
+`mixture_regression()` fits regressions whose coefficients differ across latent classes, for continuous (`"gaussian"`), binary or binomial (`"binomial"`) and count (`"poisson"`) outcomes. The class can belong to each row, to a whole group (`class_level = "group"`), or to each row with a second-level group class that shifts how often each regression class occurs within a group (`n_group_classes`). Covariates can predict class membership (`membership`, `group_membership`), and terms can share one coefficient across classes (`common`).
+
+```{r mixture_regression}
+regressions <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
+                                  n_starts = 3, seed = 1)
+get_results(regressions, "coefficients")
+```
+
+`enumerate_regressions()` compares numbers of classes, with an optional parametric bootstrap likelihood-ratio test. Standard errors come from analytic scores, with observed-information, sandwich and outer-product estimators. Single-level and group-level models reproduce `flexmix`'s likelihood at the same parameters; `vignette("mixture-regression")` walks through every nesting.
+
 ## Retrieving results and reporting an analysis
 
 The package provides a consistent result interface across supported model families. `get_results(fit)` retrieves the primary measurement table, and the `what` argument selects other available tables. The names of those tables can be inspected directly.

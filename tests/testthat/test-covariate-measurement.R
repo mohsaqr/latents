@@ -210,16 +210,20 @@ test_that("covariance estimates are reported in natural units with their own tes
   expect_identical(nrow(confint(fit, data = data)), nrow(inference))
 })
 
-test_that("inference refuses a categorical covariate fit rather than miscounting it", {
+test_that("inference counts every parameter of a mixed covariate fit", {
   data <- .cov_measurement_fixture()
   fit <- quietly(multilpa(data, c("y1", "y2", "q"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, categorical = "q"))
-  expect_error(parameter_inference(fit, data),
-               class = "latents_unsupported_inference")
-  expect_error(vcov(fit, data), class = "latents_unsupported_inference")
-  # The fit itself is still usable; only the standard errors are withheld.
-  expect_s3_class(get_results(fit, "posteriors"), "data.frame")
-  expect_true(is.finite(fit$log_likelihood))
+    profile_covariates = "z", n_starts = 2, seed = 3, categorical = "q",
+    select_start = "converged"))
+  skip_if_not(fit$converged, "no start converged on this fixture")
+  # The categorical block used to be refused because it had no score; it is
+  # now counted, so the estimated coordinates are exactly the fit's parameters.
+  expect_identical(length(.multilpa_cov_encode(fit)), as.integer(fit$n_parameters))
+  expect_identical(nrow(vcov(fit, data, scale = "unconstrained")),
+                   as.integer(fit$n_parameters))
+  inference <- parameter_inference(fit, data)
+  expect_true(all(c("mean", "variance", "response") %in% inference$parameter))
+  expect_identical(nrow(confint(fit, data = data)), nrow(inference))
 })
 
 test_that("natural covariance errors agree with the covariate-free model's own", {

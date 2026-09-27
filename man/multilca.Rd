@@ -18,7 +18,8 @@ model.}
 
 \item{n_profiles}{Number of observation-level latent classes (profiles).}
 
-\item{n_group_classes}{Number of group-level latent classes.}
+\item{n_group_classes}{Number of group-level latent classes. Defaults to 2,
+or to 1 when \code{id = NULL} (a single-level model has no second level).}
 
 \item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}, such as \code{n_starts}, \code{seed},
 \code{missing}, \code{tol} or \code{profile_covariates}. \code{categorical} is set to \code{vars}

@@ -21,7 +21,8 @@ lta(
   covariance_model = c("diagonal", "full"),
   categorical = character(),
   min_probability = 1e-10,
-  occasions = c("observed", "grid")
+  occasions = c("observed", "grid"),
+  select_start = c("likelihood", "converged")
 )
 }
 \arguments{
@@ -98,6 +99,17 @@ the grid of every position seen in the data, so a group that skips a
 position still consumes a transition across the gap and contributes no
 measurement information at it. The two agree whenever every group is
 observed at every position.}
+
+\item{select_start}{Which start the fit reports. \code{"likelihood"}, the
+default, takes the highest log likelihood across starts, preferring a
+converged start only among those tied with it to within a relative
+\code{1e-10}. \code{"converged"} takes the highest log likelihood among the converged
+starts whenever at least one converged, and falls back to every start when
+none did. Use it when an unconverged start edges out a converged one by a
+negligible amount, which happens when a membership logit creeps along a flat
+ridge of the likelihood: the converged start is then a maximum that
+the standard errors can work with, and the other is not. \code{summary()}
+and \code{get_results(fit, "starts")} show every start either way.}
 }
 \value{
 A \code{multilpa_transitions} object containing \code{means}, \code{variances},

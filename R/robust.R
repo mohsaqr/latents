@@ -19,7 +19,13 @@
   expectation <- .multilpa_expectation(x, group_index, parameters, codes)
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
-  measurement <- if (identical(object$covariance_model, "full")) {
+  measurement <- if (.multilpa_uses_chart(object)) {
+    .multilpa_chart_scores(
+      parameters, expectation, x, object,
+      theta[length(parameters$means) +
+              seq_len(.multilpa_coordinate_widths(object, "unconstrained")[["variances"]])],
+      group_index)
+  } else if (identical(object$covariance_model, "full")) {
     .multilpa_full_measurement_group_score(parameters, expectation, object)
   } else {
     observed <- !is.na(x)

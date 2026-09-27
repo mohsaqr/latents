@@ -65,7 +65,8 @@ get_tna.multilpa_transitions <- function(x, ...) {
 #' A class row with no expected outgoing moves keeps the fit's unestimated
 #' transition probabilities and raises `latents_empty_transition_row`.
 #'
-#' @param x A fitted model from [lta()].
+#' @param x A fitted model from [lta()], or a [multilpa()] / [multilca()] fit
+#'   made with `time =`, whose modal profile sequences are then used.
 #' @param label What the classes are called in tna's output.
 #' @param ... Passed to [tna::tna()] for each class.
 #' @return An object of class `group_tna`, one `tna` model per latent class:
@@ -197,4 +198,62 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
             type = "relative",
             scaling = character(0L),
             class = "group_tna")
+}
+
+#' @rdname get_tna
+#' @details For a [multilpa()] or [multilca()] fit made with `time =`, there is
+#'   no estimated transition matrix: the network is built by [tna::tna()] from
+#'   each group's sequence of modal profiles in time order, the observed
+#'   transitions between the profiles the observations were assigned to.
+#'   `get_group_tna()` splits those sequences by each group's modal group class.
+#'   A fit made without `time` has no order and is refused.
+#' @export
+get_tna.multilpa <- function(x, ...) {
+  .multilpa_require_tna()
+  tna::tna(.multilpa_modal_sequences(x)$states, ...)
+}
+
+#' @rdname get_tna
+#' @export
+get_tna.multilpa_covariates <- get_tna.multilpa
+
+#' @rdname get_group_tna
+#' @export
+get_group_tna.multilpa <- function(x, label = "Group class", ...) {
+  .multilpa_require_tna()
+  stopifnot("`label` must be a single string" =
+              is.character(label) && length(label) == 1L && !is.na(label))
+  sequences <- .multilpa_modal_sequences(x)
+  grouped <- cbind(sequences$states,
+                   .group = sprintf("%s %d", label, sequences$group_class))
+  tna::group_tna(grouped, group = ".group", ...)
+}
+
+#' @rdname get_group_tna
+#' @export
+get_group_tna.multilpa_covariates <- get_group_tna.multilpa
+
+#' Each group's modal profiles in time order, one row per group
+#'
+#' @param x A fitted model made with `time =`.
+#' @return A list with `states`, a data frame with one row per group and one
+#'   column per position (`T1`, `T2`, ...), holding `profile_k` labels and `NA`
+#'   after a group's last observation; and `group_class`, each group's modal
+#'   group class, in the same row order.
+#' @noRd
+.multilpa_modal_sequences <- function(x) {
+  sequences <- get_results(x, "sequences")
+  sequences <- sequences[order(sequences$group, sequences$time), , drop = FALSE]
+  groups <- factor(sequences$group, levels = unique(sequences$group))
+  by_group <- split(sprintf("profile_%d", sequences$profile), groups)
+  width <- max(lengths(by_group))
+  states <- as.data.frame(
+    do.call(rbind, lapply(by_group, function(profiles) {
+      c(profiles, rep(NA_character_, width - length(profiles)))
+    })), stringsAsFactors = FALSE)
+  names(states) <- paste0("T", seq_len(width))
+  rownames(states) <- NULL
+  first <- match(levels(groups), as.character(sequences$group))
+  stopifnot("one row per group" = nrow(states) == nlevels(groups))
+  list(states = states, group_class = sequences$group_class[first])
 }

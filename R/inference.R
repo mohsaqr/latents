@@ -66,10 +66,11 @@
   n_indicators <- length(continuous)
   mean_names <- as.vector(t(outer(seq_len(n_profiles), continuous,
     function(profile, indicator) sprintf("mean[%s,%s]", profile, indicator))))
-  variance_names <- if (object$variance_model == "equal") {
+  shared <- .multilpa_spread_shared(object)
+  variance_names <- if (shared) {
     sprintf("variance[shared,%s]", continuous)
   } else sub("^mean", "variance", mean_names)
-  variance_values <- if (object$variance_model == "equal") object$variances[1L, ] else
+  variance_values <- if (shared) object$variances[1L, ] else
     as.vector(t(object$variances))
   profile_indices <- if (scale == "natural") seq_len(n_profiles) else seq_len(n_profiles - 1L)
   group_indices <- if (scale == "natural") seq_len(n_types) else seq_len(n_types - 1L)
@@ -91,6 +92,13 @@
     covariance_coordinates <- .multilpa_covariance_coordinates(object, scale)
     variance_values <- unname(covariance_coordinates)
     variance_names <- names(covariance_coordinates)
+  }
+  ## A constrained structure is estimated in its own chart: log volumes, log
+  ## shapes and orientations, one coordinate per parameter it has.
+  if (scale == "unconstrained" && .multilpa_uses_chart(object)) {
+    chart <- .multilpa_chart_encode(object)$values
+    variance_values <- unname(chart)
+    variance_names <- names(chart)
   }
   response <- .multilpa_response_coordinates(object, scale)
   stats::setNames(c(as.vector(t(object$means)), variance_values,
@@ -167,7 +175,8 @@
             scale %in% c("natural", "unconstrained"))
   dimension <- length(.multilpa_continuous_names(object))
   if (dimension == 0L) return(stats::setNames(numeric(0), character(0)))
-  profiles <- if (object$variance_model == "equal") 1L else seq_len(object$n_profiles)
+  shared <- .multilpa_spread_shared(object)
+  profiles <- if (shared) 1L else seq_len(object$n_profiles)
   lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
   positions <- which(lower, arr.ind = TRUE)
   unlist(lapply(profiles, function(profile) {
@@ -177,7 +186,7 @@
     if (scale == "unconstrained") diag(values) <- log(diag(values))
     prefix <- if (scale == "natural") "covariance" else "cholesky"
     labels <- sprintf("%s[%s,%s,%s]", prefix,
-      if (object$variance_model == "equal") "shared" else profile,
+      if (shared) "shared" else profile,
       .multilpa_continuous_names(object)[positions[, 1L]],
       .multilpa_continuous_names(object)[positions[, 2L]])
     if (scale == "unconstrained") {
@@ -213,8 +222,12 @@
     n_continuous * (n_continuous + 1L) / 2L
   } else n_continuous
   blocks <- object$response_probabilities %||% list()
+  spread_width <- if (scale == "unconstrained" && .multilpa_uses_chart(object)) {
+    .multilpa_structure_parameters(object$covariance_structure, n_profiles,
+                                   n_continuous)
+  } else spread * if (.multilpa_spread_shared(object)) 1L else n_profiles
   c(means = n_profiles * n_continuous,
-    variances = spread * if (object$variance_model == "equal") 1L else n_profiles,
+    variances = spread_width,
     response_probabilities = if (scale == "natural") {
       sum(vapply(blocks, length, numeric(1)))
     } else .multilpa_response_width(object),
@@ -305,11 +318,15 @@
   n_means <- n_profiles * n_indicators
   n_covariance <- if (identical(object$covariance_model, "full"))
     n_indicators * (n_indicators + 1L) / 2L else n_indicators
-  n_variances <- n_covariance * if (object$variance_model == "equal") 1L else n_profiles
+  n_variances <- .multilpa_coordinate_widths(object, "unconstrained")[["variances"]]
   n_logits <- n_types * (n_profiles - 1L)
   means <- matrix(theta[seq_len(n_means)], n_profiles, byrow = TRUE)
   covariances <- NULL
-  if (identical(object$covariance_model, "full") && n_indicators > 0L) {
+  if (.multilpa_uses_chart(object)) {
+    spread <- .multilpa_chart_decode(theta[n_means + seq_len(n_variances)], object)
+    variances <- spread$variances
+    covariances <- spread$covariances
+  } else if (identical(object$covariance_model, "full") && n_indicators > 0L) {
     lower <- lower.tri(matrix(0, n_indicators, n_indicators), diag = TRUE)
     covariance_list <- lapply(seq_len(n_profiles), function(profile) {
       stopifnot(is.numeric(profile), length(profile) == 1L)
@@ -397,7 +414,14 @@
   stopifnot(is.numeric(theta), is.matrix(x), inherits(object, "multilpa"))
   parameters <- .multilpa_decode(theta, object)
   expectation <- .multilpa_expectation(x, object$group_index, parameters, codes)
-  if (identical(object$covariance_model, "full")) {
+  if (.multilpa_uses_chart(object)) {
+    measurement <- .multilpa_chart_scores(
+      parameters, expectation, x, object,
+      theta[length(parameters$means) +
+              seq_len(.multilpa_coordinate_widths(object, "unconstrained")[["variances"]])])
+    mean_score <- as.vector(measurement$means)
+    variance_score <- as.vector(measurement$covariances)
+  } else if (identical(object$covariance_model, "full")) {
     measurement <- .multilpa_full_measurement_score(parameters, expectation, object)
     mean_score <- measurement$means
     variance_score <- measurement$covariances
@@ -484,17 +508,20 @@
   full_covariance <- identical(object$covariance_model, "full")
   dimension <- length(.multilpa_continuous_names(object))
   n_covariance <- if (full_covariance) dimension * (dimension + 1L) / 2L else dimension
-  n_variances <- if (dimension == 0L) 0L else
-    n_covariance * if (object$variance_model == "equal") 1L else object$n_profiles
+  n_variances <- .multilpa_coordinate_widths(object, "natural")[["variances"]]
+  n_chart <- .multilpa_coordinate_widths(object, "unconstrained")[["variances"]]
   n_measurement <- n_means + n_variances
   blocks <- object$response_probabilities %||% list()
   natural_response <- sum(vapply(blocks, length, numeric(1)))
   free_response <- .multilpa_response_width(object)
   natural_offset <- n_measurement + natural_response
-  free_offset <- n_measurement + free_response
+  free_offset <- n_means + n_chart + free_response
   jacobian <- matrix(0, length(natural), length(theta), dimnames = list(names(natural), names(theta)))
   diag(jacobian)[seq_len(n_means)] <- 1
-  if (full_covariance && dimension > 0L) {
+  if (.multilpa_uses_chart(object)) {
+    jacobian[n_means + seq_len(n_variances), n_means + seq_len(n_chart)] <-
+      .multilpa_chart_natural_jacobian(object)
+  } else if (full_covariance && dimension > 0L) {
     lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
     positions <- which(lower, arr.ind = TRUE)
     invisible(lapply(seq_len(n_variances / n_covariance), function(profile) {
@@ -518,7 +545,7 @@
   ## Each profile-by-indicator row is its own simplex, with the same
   ## diag(p) - p p' derivative the mixing weights use.
   natural_at <- n_measurement
-  free_at <- n_measurement
+  free_at <- n_means + n_chart
   invisible(lapply(blocks, function(block) {
     invisible(lapply(seq_len(nrow(block)), function(profile) {
       probabilities <- block[profile, ]
@@ -571,6 +598,13 @@
 #'   independent units, so robust errors relax the assumption that the Gaussian
 #'   within-group model is correctly specified. They do not relax the assumption
 #'   that groups are independent.
+#'   `"opg"` inverts the outer product of the per-group scores (the BHHH or
+#'   outer-product-of-gradients estimate), which estimates the information by
+#'   the variance of the score rather than by the curvature of the likelihood.
+#'   It is the estimator `glca` reports, so it reproduces that package's
+#'   standard errors; the two agree with `"observed"` in large samples and can
+#'   differ noticeably in small ones, where `"observed"` is usually the more
+#'   reliable. `"robust"` and `"opg"` need more groups than parameters.
 #' @param adjust Multiplicity correction applied to `p_value` to produce
 #'   `p_adjusted`, one of the methods [stats::p.adjust()] accepts. The default
 #'   `"none"` leaves the two columns equal: a correction changes what a p-value
@@ -580,12 +614,19 @@
 #'   and do not count towards the family.
 #' @param method How uncertainty is measured. `"wald"`, the default, inverts the
 #'   observed information in the estimation coordinates, and is available for
-#'   the four covariance structures those coordinates can express: EEI, VVI, EEE
-#'   and VVV. `"bootstrap"` resamples *groups* with replacement, refits inside
+#'   all fourteen covariance structures. EEI, VVI, EEE and VVV are estimated in
+#'   log variances or log-Cholesky coordinates; the ten structures that
+#'   constrain the volume, the shape or the orientation across profiles are
+#'   estimated in log volumes, log shapes whose determinant-one constraint is
+#'   written into the coordinates, and Cayley-transform orientations (or, for
+#'   VEE and EVV, determinant-one log-Cholesky factors), so the information has
+#'   one row per free parameter of the structure. The reported variances and
+#'   covariances are then carried from those coordinates by the delta method,
+#'   and their natural-scale covariance is singular, as it is for the class
+#'   probabilities. `"bootstrap"` resamples *groups* with replacement, refits inside
 #'   the same covariance family, undoes the relabelling each refit comes back
 #'   with, and reports the percentile interval and the standard deviation of the
-#'   replicates. It is available for all fourteen structures, because it needs
-#'   no coordinate chart for the constraint. Groups are the resampling unit
+#'   replicates. It is available for all fourteen structures. Groups are the resampling unit
 #'   rather than rows, so the interval carries the same independence assumption
 #'   as `vcov_type = "robust"` and not the stronger one `"observed"` makes.
 #' @param iter Number of resamples when `method = "bootstrap"`, at least two.
@@ -597,6 +638,14 @@
 #' @param seed Optional seed for the resampling: any whole number `set.seed()`
 #'   accepts; a fraction raises `latents_bad_argument`. The stream is restored on exit,
 #'   so a seeded call leaves the caller's random state exactly as it found it.
+#' @param boundary What to do when categorical response probabilities sit on
+#'   their lower bound, `min_probability`. There the likelihood is flat in the
+#'   logit and the information is singular, so `"error"`, the default, refuses
+#'   with `latents_boundary_fit`. `"fix"` holds those probabilities at the bound
+#'   and reports every other parameter conditionally on them, the convention
+#'   Mplus follows; the held probabilities are left out of the table (or, for a
+#'   covariate fit, reported with `NA` standard errors) and named in the
+#'   result's `fixed_at_bound` attribute.
 #' @return A base `data.frame` with one row per reported parameter and the
 #'   columns `level` (`"measurement"`, `"profile"` or `"group"`), `outcome`,
 #'   `term`, `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
@@ -651,7 +700,10 @@
 #'   reproduce the fit, and `latents_too_few_groups` for `vcov_type = "robust"`
 #'   with fewer independent groups than reported parameters. A fit whose score
 #'   is still far from zero is reported with a `latents_unconverged` warning
-#'   rather than refused.
+#'   rather than refused. A fit made with `multilpa(prior = )` is refused by
+#'   the Wald path with `latents_unsupported_inference` (it sits at a
+#'   posterior mode, where the likelihood's score is not zero), and a fit with
+#'   a noise component by either path with `latents_unsupported_noise`.
 #'
 #'   `method = "bootstrap"` adds `latents_unsupported_inference` for a fit that
 #'   holds a measurement block --- the held values came from another fit and
@@ -673,32 +725,37 @@
 #' # Many tests in one table: name the correction, do not apply one by stealth.
 #' parameter_inference(fit, adjust = "BH")
 #'
-#' # A structure that constrains the shape has no Wald chart. The bootstrap
-#' # resamples schools and refits inside the same family, so it reports one.
+#' # A structure that constrains the shape across profiles (VEI) is charted in
+#' # its own free coordinates, so it has Wald standard errors too.
 #' shaped <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                    n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1,
 #'                    volume = "varying", shape = "equal", orientation = "axis")
+#' parameter_inference(shaped)
+#'
+#' # The bootstrap resamples schools and refits inside the same family.
 #' parameter_inference(shaped, method = "bootstrap", iter = 10, n_starts = 1,
 #'                     seed = 1)
 #' @export
 parameter_inference <- function(x, data = NULL, level = 0.95, step = 1e-4,
-                                vcov_type = c("observed", "robust"),
+                                vcov_type = c("observed", "robust", "opg"),
                                 adjust = .multilpa_p_adjust_methods,
                                 method = c("wald", "bootstrap"), iter = 199L,
                                 n_starts = 10L, max_iter = 1000L, tol = 1e-8,
-                                seed = NULL) {
+                                seed = NULL, boundary = c("error", "fix")) {
   UseMethod("parameter_inference")
 }
 
 #' @rdname parameter_inference
 #' @export
 parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e-4,
-                             vcov_type = c("observed", "robust"),
+                             vcov_type = c("observed", "robust", "opg"),
                              adjust = .multilpa_p_adjust_methods,
                              method = c("wald", "bootstrap"), iter = 199L,
                              n_starts = 10L, max_iter = 1000L, tol = 1e-8,
-                             seed = NULL) {
+                             seed = NULL, boundary = c("error", "fix")) {
   stopifnot(inherits(x, "multilpa"))
+  .multilpa_refuse_noise(x, "parameter_inference()")
+  boundary <- match.arg(boundary)
   data <- .multilpa_resolve_data(x, data)
   stopifnot(is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
@@ -733,17 +790,34 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
                                          as.integer(n_starts),
                                          as.integer(max_iter), tol, adjust))
   }
-  .multilpa_check_regularity(x, vcov_type)
+  .multilpa_check_regularity(x, vcov_type, boundary)
   .multilpa_check_structure_inference(x)
+  if (!is.null(x$prior)) {
+    stop(errorCondition(paste(
+      "Wald standard errors invert the curvature of the likelihood at its",
+      "maximum, and a fit made with `prior` sits at the posterior mode instead,",
+      "where the likelihood's score is not zero. Use `method = \"bootstrap\"`,",
+      "which refits every resample with the same prior."),
+      class = "latents_unsupported_inference", call = NULL))
+  }
   free <- .multilpa_free_index(x, "unconstrained")
   free_natural <- .multilpa_free_index(x, "natural")
+  counted_free <- length(free)
   if (length(free) == 0L) {
     stop(errorCondition(
       "This fit holds every parameter it has, so there is nothing to report a standard error for.",
       class = "latents_no_free_parameters", call = NULL))
   }
   stopifnot("the free coordinates must match the parameters the fit counts" =
-              length(free) == x$n_parameters)
+              counted_free == x$n_parameters)
+  ## Response probabilities on their bound are held there, like a block the
+  ## fit held, and the rest is inferred conditionally on them.
+  at_bound <- if (identical(boundary, "fix")) .multilpa_response_bound(x) else
+    list(natural = character(), unconstrained = character())
+  free <- setdiff(free, match(at_bound$unconstrained,
+                              names(.multilpa_coefficients(x, "unconstrained"))))
+  free_natural <- setdiff(free_natural, match(
+    at_bound$natural, names(.multilpa_coefficients(x, "natural"))))
   full_theta <- .multilpa_coefficients(x, "unconstrained")
   theta <- full_theta[free]
   prepared <- .multilpa_inference_matrix(x, data)
@@ -775,7 +849,10 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   parameter_scale <- c(as.vector(t(sqrt(x$variances))),
                        rep(1, length(full_theta) - length(x$means)))
   dimension <- length(.multilpa_continuous_names(x))
-  if (identical(x$covariance_model, "full") && dimension > 0L) {
+  if (.multilpa_uses_chart(x)) {
+    chart_scale <- .multilpa_chart_encode(x)$scale
+    parameter_scale[length(x$means) + seq_along(chart_scale)] <- chart_scale
+  } else if (identical(x$covariance_model, "full") && dimension > 0L) {
     # Shared with the covariate path, which lacked this scaling and reported a
     # singular information for an indicator in large units. One rule, one place.
     covariance_scale <- .multilpa_covariance_coordinate_scale(
@@ -800,12 +877,14 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   scaled_inverse <- information$inverse
   group_scores <- NULL
   scaling_correction <- NA_real_
-  if (identical(vcov_type, "robust")) {
+  if (vcov_type %in% c("robust", "opg")) {
     group_scores <- .multilpa_group_scores(restore(centered_theta), observed,
                                            x, codes)[, free, drop = FALSE]
     scaled_cross <- .multilpa_cross_product(sweep(group_scores, 2L, parameter_scale, "*"))
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
-    scaled_inverse <- scaled_inverse %*% scaled_cross %*% scaled_inverse
+    scaled_inverse <- if (identical(vcov_type, "opg")) {
+      .multilpa_opg_inverse(scaled_cross)
+    } else scaled_inverse %*% scaled_cross %*% scaled_inverse
   }
   covariance_unconstrained <- scaled_inverse * tcrossprod(parameter_scale)
   dimnames(hessian) <- dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
@@ -866,14 +945,73 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     condition_ratio = condition_ratio, level = level, step = step,
     method = "wald", vcov_type = vcov_type, group_scores = group_scores,
     scaling_correction = scaling_correction,
-    fixed = x$fixed %||% character()))
+    fixed = x$fixed %||% character(),
+    fixed_at_bound = at_bound$natural))
   result
+}
+
+#' Invert the outer product of the group scores
+#'
+#' The outer-product-of-gradients (BHHH) estimate of the information: the
+#' cross-product of the per-group scores, which estimates the information by the
+#' variance of the score rather than by the curvature of the likelihood. It is
+#' what `glca` reports.
+#'
+#' @param cross The (scaled) cross-product of the group scores.
+#' @return Its inverse, or `latents_singular_information` when it has none.
+#' @noRd
+.multilpa_opg_inverse <- function(cross) {
+  factor <- tryCatch(chol(cross), error = function(error) NULL)
+  if (is.null(factor) ||
+      min(diag(factor))^2 < 1e-12 * max(diag(factor))^2) {
+    stop(errorCondition(paste(
+      "The outer product of the group scores is singular; OPG inference is",
+      "unavailable. `vcov_type = \"observed\"` uses the curvature instead."),
+      class = "latents_singular_information", call = NULL))
+  }
+  chol2inv(factor)
+}
+
+#' Response probabilities sitting on their lower bound
+#'
+#' A probability held at `min_probability` has a logit on the edge of the
+#' space, where the likelihood is flat and the information singular. The free
+#' logit of a category is on the bound when that category's probability is, or
+#' when the reference (last) category's is, since every logit of that row is then
+#' measured against a vanishing denominator; in the second case every
+#' probability of the row is on the bound too.
+#'
+#' @param object A fitted model with `response_probabilities`.
+#' @return A list of two character vectors of parameter names, `natural`
+#'   (probabilities) and `unconstrained` (logits), in the
+#'   `level.parameter.outcome.term` spelling every fitted class uses.
+#' @noRd
+.multilpa_response_bound <- function(object) {
+  blocks <- object$response_probabilities %||% list()
+  floor <- (object$min_probability %||% 1e-10) * (1 + 1e-7)
+  pieces <- lapply(names(blocks), function(indicator) {
+    block <- blocks[[indicator]]
+    categories <- colnames(block)
+    at <- block <= floor
+    held <- at | at[, ncol(block)]
+    spell <- function(positions, kind) {
+      sprintf("measurement.%s.profile_%d.%s:%s", kind, positions[, 1L],
+              indicator, categories[positions[, 2L]])
+    }
+    list(natural = spell(which(held, arr.ind = TRUE), "response"),
+         unconstrained = spell(which(held[, -ncol(block), drop = FALSE],
+                                     arr.ind = TRUE), "response_logit"))
+  })
+  list(natural = unlist(lapply(pieces, `[[`, "natural")) %||% character(),
+       unconstrained = unlist(lapply(pieces, `[[`, "unconstrained")) %||% character())
 }
 
 #' Extract multilevel LPA coefficients
 #' @param object A fitted `multilpa` model.
 #' @param scale Natural coefficients or unconstrained log variances (diagonal),
-#'   log-Cholesky coordinates (full covariance), and baseline-category logits.
+#'   log-Cholesky coordinates (full covariance), log volumes, log shapes and
+#'   orientations (a structure that constrains them across profiles), and
+#'   baseline-category logits.
 #' @param ... Reserved for generic compatibility.
 #' @return A named numeric vector of every coefficient the model has, held ones
 #'   included: a block `fixed` held is part of the model and is reported here,
@@ -913,11 +1051,12 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
 #'   estimation scale by the delta method with
 #'   `.multilpa_inference_jacobian()`. `"unconstrained"` is the covariance on
 #'   the scale the model is actually estimated on: log variances for a diagonal
-#'   fit, log-Cholesky coordinates for a full-covariance fit, and
+#'   fit, log-Cholesky coordinates for a full-covariance fit, the structure's
+#'   own log volumes, log shapes and orientations for one of the ten
+#'   constrained covariance structures, and
 #'   baseline-category logits for the mixing and response probabilities.
 #' @param ... Additional arguments passed to [parameter_inference()], including
-#'   `method = "bootstrap"`, which is how a covariance structure the Wald path
-#'   cannot chart reports one here.
+#'   `method = "bootstrap"`.
 #' @return A square numeric matrix with one row and column per *estimated*
 #'   coefficient, named as [coef()] names them, on the scale `scale` asks for. A
 #'   fit made with `fixed` held part of its measurement model at supplied
@@ -958,7 +1097,7 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
 #' @param level Confidence level strictly between zero and one.
 #' @param data Optional, exactly as for [vcov()].
 #' @param ... Additional arguments passed to [parameter_inference()], including
-#'   `method = "bootstrap"` for a structure the Wald path cannot chart.
+#'   `method = "bootstrap"`.
 #' @return A two-column matrix on the natural scale, one row per requested
 #'   coefficient and named as [coef()] names them. Wald intervals by default;
 #'   with `method = "bootstrap"` the percentile interval the replicates give,
@@ -1033,10 +1172,10 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #'
 #' @return `NULL`, invisibly; raises on the first broken contract.
 #' @noRd
-.multilpa_check_regularity <- function(object, vcov_type) {
-  if (identical(vcov_type, "robust") && object$n_groups <= object$n_parameters) {
+.multilpa_check_regularity <- function(object, vcov_type, boundary = "error") {
+  if (vcov_type %in% c("robust", "opg") && object$n_groups <= object$n_parameters) {
     stop(errorCondition(sprintf(
-      "Robust inference needs more groups than parameters; this fit has %d groups and %d parameters.",
+      "Robust and OPG inference need more groups than parameters; this fit has %d groups and %d parameters.",
       object$n_groups, object$n_parameters),
       class = "latents_too_few_groups", call = NULL))
   }
@@ -1052,12 +1191,17 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
     stop(errorCondition("Wald inference is unavailable for a bound-active fit.",
                         class = "latents_boundary_fit", call = NULL))
   }
-  response <- if ("response_probabilities" %in% held) NULL else
+  ## `boundary = "fix"` asks for the bound-active response probabilities to be
+  ## held at their bound and the rest estimated conditionally on them.
+  response <- if ("response_probabilities" %in% held ||
+                  identical(boundary, "fix")) NULL else
     unlist(object$response_probabilities, use.names = FALSE)
   if (length(response) > 0L &&
-      any(response <= (object$min_probability %||% 0) * (1 + 1e-7))) {
+      any(response <= (object$min_probability %||% 1e-10) * (1 + 1e-7))) {
     stop(errorCondition(
-      "Wald inference is unavailable for bound-active categorical response probabilities.",
+      paste("Wald inference is unavailable for bound-active categorical response",
+            "probabilities. `boundary = \"fix\"` holds them at their bound and",
+            "reports the other parameters conditionally on them."),
       class = "latents_boundary_fit", call = NULL))
   }
   if (any(object$profile_probabilities <= 0) || any(object$group_probabilities <= 0)) {
@@ -1222,11 +1366,14 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' @noRd
 .multilpa_measurement_kinds <- c("mean", "variance", "log_variance",
                                  "covariance", "cholesky", "log_cholesky",
+                                 "log_volume", "log_shape", "rotation",
+                                 "shape_cholesky", "log_shape_cholesky",
                                  "response", "response_logit")
 
 #' Parameter kinds whose term names a pair, written `a:b`
 #' @noRd
 .multilpa_paired_kinds <- c("covariance", "cholesky", "log_cholesky",
+                            "rotation", "shape_cholesky", "log_shape_cholesky",
                             "response", "response_logit")
 
 #' Multiplicity corrections an inference verb accepts

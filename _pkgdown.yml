@@ -17,6 +17,7 @@ reference:
   - lta
   - fit_staged
   - starting_values
+  - prior_control
 
 - title: Results
   desc: Every table of a fitted model, retrieved by name.
@@ -33,6 +34,16 @@ reference:
   - bootstrap_lrt
   - sensitivity
   - starts_with("parameter_inference")
+
+- title: Mixture regression
+  desc: Regressions whose coefficients differ across latent classes, at one or
+    two levels, for continuous, binary and count outcomes.
+  contents:
+  - mixture_regression
+  - enumerate_regressions
+  - get_results.latents_mixture_regression
+  - predict.latents_mixture_regression
+  - simulate.latents_mixture_regression
 
 - title: External variables
   desc: Three-step analysis with a correction for classification error.
@@ -55,6 +66,7 @@ reference:
   contents:
   - course_engagement
   - student_esm
+  - study_hours
 
 - title: Methods
   desc: Standard generics for fitted models, enumeration grids and summaries.
@@ -81,6 +93,7 @@ articles:
   - covariates
   - lca
   - lta
+  - mixture-regression
 
 - title: Case studies
   navbar: Case studies

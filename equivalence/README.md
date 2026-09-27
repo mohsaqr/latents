@@ -43,6 +43,7 @@ non-zero exit status if any test fails.
 | `test-mplus-covariates.R`, `test-mplus-inference.R`, `test-mplus-robust.R` | Mplus covariate estimates and their standard errors: ML Hessian and MLR sandwich |
 | `test-mplus-categorical.R`, `test-mplus-random-intercept.R`, `test-mplus-lmr.R` | Mplus categorical two-level LCA, the one-profile random intercept model, and TECH11 |
 | `test-mclust.R` | mclust: the M-steps, parameter counts and likelihood for all 14 covariance structures, and the VVV/EEE limits of the full-covariance model |
+| `test-mixture-regression-flexmix.R` | flexmix: `mixture_regression()`'s likelihood at flexmix's estimates, its optimum, binomial and Poisson estimates, shared coefficients and parameter counts, for row-level and group-level classes with and without a concomitant model |
 | `test-tidysem-bch.R` | tidySEM's classification error matrix and BCH estimate |
 | `test-numerical-equivalence.R` | The in-house exhaustive-enumeration likelihood (`tests/testthat/helper-independent-likelihood.R`) |
 | `test-jstats-lta.R` | Latent transition references pinned by JStats: depmixS4 (Gaussian and binary), two Mplus LTA runs, and Table 5 of Muthen & Asparouhov (2022) |

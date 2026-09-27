@@ -15,7 +15,8 @@
 #' @param id Name of the group identifier column, or `NULL` for a single-level
 #'   model.
 #' @param n_profiles Number of observation-level latent classes (profiles).
-#' @param n_group_classes Number of group-level latent classes.
+#' @param n_group_classes Number of group-level latent classes. Defaults to 2,
+#'   or to 1 when `id = NULL` (a single-level model has no second level).
 #' @param ... Further arguments to [multilpa()], such as `n_starts`, `seed`,
 #'   `missing`, `tol` or `profile_covariates`. `categorical` is set to `vars`
 #'   and cannot be supplied.
@@ -46,8 +47,12 @@ multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
       "`vars` is categorical. Use multilpa() for mixed indicators."),
       class = "latents_bad_argument", call = NULL))
   }
-  fit <- multilpa(data, vars = vars, id = id, n_profiles = n_profiles,
-                  n_group_classes = n_group_classes, categorical = vars, ...)
+  # Forward `n_group_classes` only when it was given, so that `id = NULL`
+  # resolves to one group class exactly as it does in multilpa().
+  arguments <- list(data = data, vars = vars, id = id, n_profiles = n_profiles,
+                    categorical = vars, ...)
+  if (!missing(n_group_classes)) arguments$n_group_classes <- n_group_classes
+  fit <- do.call(multilpa, arguments)
   # Report the call the caller wrote, as multilpa() does for its own calls.
   fit$call <- match.call()
   fit

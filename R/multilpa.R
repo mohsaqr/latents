@@ -36,6 +36,11 @@
                     matrix(log(2 * pi) + log(parameters$variances[profile, ]),
                            nrow(x), ncol(x), byrow = TRUE))
   }, numeric(nrow(x)))
+  # A noise component is one more column: a constant density over the data's
+  # hypervolume, with its own mixing proportion last in the profile row.
+  if (!is.null(parameters$noise_log_density)) {
+    log_density <- cbind(log_density, parameters$noise_log_density)
+  }
   # Remove the common measurement offset before adding log priors. Otherwise
   # a very small density (for example log(f) = -5e15) rounds away the priors,
   # and subtracting the absolute log marginal can produce posteriors above one.
@@ -98,7 +103,7 @@
                                   covariance_model = "diagonal", codes = NULL,
                                   n_categories = NULL, min_probability = 1e-10,
                                   held = NULL, structure = NULL,
-                                  previous = NULL) {
+                                  previous = NULL, prior = NULL) {
   stopifnot(is.matrix(x), is.list(expectation),
             variance_model %in% c("varying", "equal"), min_variance > 0,
             is.null(held) || is.list(held))
@@ -107,8 +112,22 @@
   if (any(weights <= 0) || any(group_weights <= 0)) {
     stop("A profile or group class has zero effective membership.")
   }
-  gaussian <- if (!is.null(expectation$gaussian_moments)) {
-    .multilpa_maximize_moments(x, expectation, variance_model, min_variance,
+  # A noise component (the last posterior column) has a mixing proportion but
+  # no Gaussian parameters, so the Gaussian M-step sees the other columns only
+  # and its shared blocks average over their total weight, not over n.
+  noisy <- !is.null(previous$noise_log_density)
+  gaussian_expectation <- expectation
+  if (noisy) {
+    gaussian_expectation$subject_posteriors <- expectation$subject_posteriors[
+      , -ncol(expectation$subject_posteriors), drop = FALSE]
+    weights <- colSums(gaussian_expectation$subject_posteriors)
+  }
+  gaussian <- if (!is.null(prior)) {
+    # Maximum a posteriori under mclust's conjugate prior; complete data only.
+    .multilpa_prior_maximize(x, gaussian_expectation$subject_posteriors, structure,
+                             prior, min_variance)
+  } else if (!is.null(expectation$gaussian_moments)) {
+    .multilpa_maximize_moments(x, gaussian_expectation, variance_model, min_variance,
                                covariance_model, held, structure, previous)
   } else NULL
   if (ncol(x) == 0L) {
@@ -118,10 +137,10 @@
     # A held mean is the point the spread is measured around, so it replaces the
     # weighted mean before the residuals are formed rather than afterwards.
     means <- held$means %||%
-      sweep(crossprod(expectation$subject_posteriors, x), 1L, weights, "/")
+      sweep(crossprod(gaussian_expectation$subject_posteriors, x), 1L, weights, "/")
     variance_sums <- t(matrix(vapply(seq_along(weights), function(profile) {
       residuals <- sweep(x, 2L, means[profile, ], "-")
-      colSums(residuals^2 * expectation$subject_posteriors[, profile])
+      colSums(residuals^2 * gaussian_expectation$subject_posteriors[, profile])
     }, numeric(ncol(x))), nrow = ncol(x), ncol = length(weights)))
     # A constrained structure ties the profiles together, so it is solved for
     # all of them at once rather than profile by profile.
@@ -134,7 +153,7 @@
       } else if (variance_model == "varying") {
         sweep(variance_sums, 1L, weights, "/")
       } else {
-        matrix(colSums(variance_sums) / nrow(x),
+        matrix(colSums(variance_sums) / if (noisy) sum(weights) else nrow(x),
                length(weights), ncol(x), byrow = TRUE)
       }
     # This is the exact M-step for the stated variance >= min_variance constraint.
@@ -145,13 +164,15 @@
     means <- gaussian$means
     variances <- gaussian$variances
   }
-  profile_counts <- t(matrix(vapply(expectation$joint, colSums, numeric(length(weights))),
-                             nrow = length(weights), ncol = length(group_weights)))
+  n_columns <- ncol(expectation$subject_posteriors)
+  profile_counts <- t(matrix(vapply(expectation$joint, colSums, numeric(n_columns)),
+                             nrow = n_columns, ncol = length(group_weights)))
   profile_probabilities <- profile_counts / rowSums(profile_counts)
   parameters <- list(means = means, variances = variances,
                      profile_probabilities = profile_probabilities,
                      group_probabilities = group_weights / sum(group_weights))
   if (!is.null(gaussian$covariances)) parameters$covariances <- gaussian$covariances
+  if (noisy) parameters$noise_log_density <- previous$noise_log_density
   if (!is.null(codes)) {
     parameters$response_probabilities <- held$response_probabilities %||%
       .multilpa_categorical_maximize(codes, expectation$subject_posteriors,
@@ -490,7 +511,7 @@
 .multilpa_em <- function(x, group_index, parameters, variance_model,
                         min_variance, max_iter, tol, covariance_model = "diagonal",
                         codes = NULL, n_categories = NULL, min_probability = 1e-10,
-                        held = NULL, structure = NULL) {
+                        held = NULL, structure = NULL, prior = NULL) {
   # `parameters` is the current point, which the M-step uses to warm start the
   # covariance structures that iterate.
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
@@ -504,10 +525,14 @@
     parameters <- .multilpa_maximization(x, expectation, variance_model, min_variance,
                                        covariance_model, codes, n_categories,
                                        min_probability, held, structure,
-                                       parameters)
+                                       parameters, prior)
     updated <- .multilpa_expectation(x, group_index, parameters, codes)
     improvement <- updated$log_likelihood - expectation$log_likelihood
-    if (improvement < -1e-10 * (1 + abs(expectation$log_likelihood))) {
+    # Under a prior the iteration climbs the posterior, not the likelihood, so
+    # the likelihood may legitimately fall; convergence is still read off the
+    # likelihood's relative change, which is mclust's rule.
+    if (is.null(prior) &&
+        improvement < -1e-10 * (1 + abs(expectation$log_likelihood))) {
       stop("EM likelihood decreased beyond numerical roundoff.")
     }
     converged <- abs(improvement) <= tol * (1 + abs(expectation$log_likelihood))
@@ -723,12 +748,75 @@
 #'   Parameter counts match `mclust`'s own for all fourteen.
 #'
 #'   Anything other than EEI, VVI, EEE or VVV is maximized across every profile
-#'   at once, so it cannot be combined with a held `variances` block, and
-#'   `parameter_inference(method = "wald")` refuses it with
-#'   `latents_unsupported_inference`: the free coordinates are log variances,
-#'   which is the wrong chart for a constrained volume, shape or orientation.
-#'   `parameter_inference(method = "bootstrap")` reports all fourteen: it
-#'   resamples groups and refits inside the same family, so it needs no chart.
+#'   at once, so it cannot be combined with a held `variances` block.
+#'   [parameter_inference()] reports Wald standard errors for all fourteen: a
+#'   constrained structure is differentiated in its own free coordinates (log
+#'   volumes, determinant-one log shapes and orientations), which have exactly
+#'   as many dimensions as the structure has parameters, and carried to the
+#'   reported variances and covariances by the delta method.
+#'   `method = "bootstrap"` is available for all fourteen as well.
+#' @param select_start Which start the fit reports. `"likelihood"`, the
+#'   default, takes the highest log likelihood across starts, preferring a
+#'   converged start only among those tied with it to within a relative
+#'   `1e-10`. `"converged"` takes the highest log likelihood among the converged
+#'   starts whenever at least one converged, and falls back to every start when
+#'   none did. Use it when an unconverged start edges out a converged one by a
+#'   negligible amount, which happens when a membership logit creeps along a flat
+#'   ridge of the likelihood: the converged start is then a maximum that
+#'   [parameter_inference()] can work with, and the other is not. `summary()`
+#'   and `get_results(fit, "starts")` show every start either way.
+#' @param prior `NULL`, the default, for maximum likelihood, or
+#'   [prior_control()] for maximum a posteriori estimation of the Gaussian
+#'   means and covariances under the conjugate prior of Fraley and Raftery
+#'   (2007) --- mclust's `priorControl()`. The hyperparameters default to
+#'   mclust's `defaultPrior()` computed from the indicators being fitted, and
+#'   each M-step is mclust's own, so a fit from the same start reproduces
+#'   `mclust::Mclust(..., prior = priorControl())`. It is defined for EII,
+#'   VII, EEI, VEI, EVI, VVI, EEE, EEV, VEV and VVV (mclust has none for VEE,
+#'   EVE, VVE and EVV), for complete continuous indicators without `fixed`
+#'   or membership covariates; anything else raises
+#'   `latents_unsupported_prior`. The mixing proportions are not given a
+#'   prior. Following mclust, the fit's `log_likelihood` is the *unpenalized*
+#'   log likelihood evaluated at the posterior mode, and `aic`, `bic` and
+#'   their variants are computed from it with the usual parameter count; EM
+#'   convergence is judged on its relative change. A prior's MAP step can
+#'   lower that likelihood, so the decrease check made under maximum
+#'   likelihood is not applied. `parameter_inference(method = "wald")` is
+#'   refused for such a fit (`latents_unsupported_inference`), because the
+#'   likelihood's score is not zero at a posterior mode;
+#'   `method = "bootstrap"` refits every resample with the same prior. The
+#'   fit records the request as `prior` and the resolved hyperparameters, in
+#'   the indicators' units, as `prior_parameters`.
+#' @param noise `FALSE`, the default, or `TRUE` to add a noise component: one
+#'   more mixture component with a constant density `1 / V` over the
+#'   hypervolume `V` of the data, which absorbs observations no Gaussian
+#'   profile explains --- outliers and scatter --- instead of letting them
+#'   distort a profile (Banfield & Raftery, 1993; mclust's
+#'   `initialization = list(noise = )` and `Vinv`). `V` is mclust's
+#'   `hypvol()`: the smaller of the volumes of the data's axis-aligned and
+#'   principal-component-aligned bounding boxes. The component has no
+#'   measurement parameters; its mixing proportion is estimated with the
+#'   others, and, as mclust counts it, the model has two more parameters (the
+#'   proportion and the hypervolume), so its criteria equal mclust's. A random
+#'   start puts a tenth of the mass on the noise; a `start` supplies
+#'   `noise_probability` beside `profile_probabilities`, the two summing to
+#'   one. Available for continuous, complete indicators with one group class
+#'   (`id = NULL`, or `n_group_classes = 1`) and any of the fourteen
+#'   covariance structures, alone or with `prior`; otherwise
+#'   `latents_unsupported_noise`. In the fit, the noise component is profile
+#'   `0`, as in mclust's classification: `subject_profiles` is `0` for an
+#'   observation assigned to it, `get_results(fit, "assignments")` adds a
+#'   `posterior_noise` column, `get_results(fit, "posteriors")` and
+#'   `get_results(fit, "profile_probabilities")` have profile-`0` rows, and
+#'   the classification diagnostics count it as a class. `means`,
+#'   `variances`, `covariances`, `profile_probabilities` and
+#'   `subject_posteriors` describe the Gaussian profiles only, so the latter
+#'   two sum to one minus the noise share; the fit adds `noise_probability`,
+#'   `noise_posteriors`, `n_noise` and `hypervolume`. Verbs that do not yet
+#'   account for the component --- [parameter_inference()], [three_step()],
+#'   [r3step()], [bootstrap_lrt()], [starting_values()], bivariate residuals,
+#'   [fit_staged()] and the posterior plots --- refuse such a fit with
+#'   `latents_unsupported_noise`.
 #' @param centering How to centre the continuous indicators before fitting.
 #'   `"none"`, the default, fits them as supplied. `"person"` subtracts each
 #'   group's own mean from its rows, so a value reads as a deviation from that
@@ -794,12 +882,20 @@
 #'   alone uses indicator-mean filling. EM uses conditional Gaussian sufficient
 #'   statistics and observed marginal densities. More than one group class requires more than one profile
 #'   and at least one group with multiple individuals; these checks are necessary
-#'   but do not establish identification. The highest finite likelihood across
-#'   starts is returned, even if that start did not converge; inspect `converged`
-#'   and `starts`. Profile and group-class labels are arbitrary.
+#'   but do not establish identification. By default the highest finite
+#'   likelihood across starts is returned, even if that start did not converge;
+#'   `select_start = "converged"` prefers a converged start, and `converged` and
+#'   `starts` show which was chosen. Profile and group-class labels are arbitrary.
 #' @references Vermunt, J. K. (2003). Multilevel latent class models.
 #'   Sociological Methodology, 33, 213--239.
 #'   doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+#'
+#'   Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
+#'   non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.
+#'
+#'   Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
+#'   mixture estimation and model-based clustering. Journal of
+#'   Classification, 24, 155--181. doi:10.1007/s00357-007-0004-5.
 #' @examples
 #' set.seed(7)
 #' # Two kinds of school, differing only in how often a pupil scores highly.
@@ -833,7 +929,10 @@ multilpa <- function(data, vars, id, n_profiles,
                        categorical = character(), min_probability = 1e-10,
                        time = NULL, fixed = character(),
                        centering = c("none", "person", "grand"),
-                       volume = NULL, shape = NULL, orientation = NULL) {
+                       volume = NULL, shape = NULL, orientation = NULL,
+                       select_start = c("likelihood", "converged"),
+                       prior = NULL, noise = FALSE) {
+  select_start <- match.arg(select_start)
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
   if (missing(id)) {
@@ -888,7 +987,7 @@ multilpa <- function(data, vars, id, n_profiles,
   # Counted across every M-step of every start, and reported once at the end.
   .multilpa_reset_structure_log()
   on.exit(.multilpa_report_structure_log(), add = TRUE)
-  if (!structure %in% .multilpa_inferable_structures() &&
+  if (!structure %in% .multilpa_separable_structures() &&
       any(c("variances", "measurement") %in% fixed)) {
     stop(errorCondition(paste(
       "A constrained covariance structure is maximized across every profile at",
@@ -896,6 +995,10 @@ multilpa <- function(data, vars, id, n_profiles,
       "their maximum. Use `fixed = \"means\"`, or the unconstrained structure."),
       class = "latents_bad_argument", call = NULL))
   }
+  .multilpa_check_prior(prior, structure, categorical, fixed,
+                        length(profile_covariates) + length(group_covariates))
+  .multilpa_check_noise(noise, n_group_classes, categorical, fixed,
+                        length(profile_covariates) + length(group_covariates))
   if (length(profile_covariates) > 0L || length(group_covariates) > 0L) {
     return(.multilpa_covariate_model(
       data = data, vars = vars, id = id, n_profiles = n_profiles,
@@ -906,7 +1009,7 @@ multilpa <- function(data, vars, id, n_profiles,
       min_variance = min_variance, seed = seed, start = start,
       missing = missing, covariance_model = covariance_model,
       categorical = categorical, min_probability = min_probability,
-      time = time, fixed = fixed, call = call))
+      time = time, fixed = fixed, select_start = select_start, call = call))
   }
   # The data contract comes first: `time` is checked against the `id` column,
   # so an `id` that does not name a column of `data` must be reported as
@@ -962,6 +1065,14 @@ multilpa <- function(data, vars, id, n_profiles,
   # that, rather than as a generic complaint about the start's contents.
   fixed <- .multilpa_validate_fixed(fixed, start, covariance_model, ncol(x),
                                     n_categories)
+  # A noise start carries its proportion beside the profile probabilities;
+  # it is taken out here so the ordinary validation sees the ordinary shape.
+  noise_start <- NULL
+  if (isTRUE(noise) && !is.null(start)) {
+    split_start <- .multilpa_noise_start(start)
+    start <- split_start$start
+    noise_start <- split_start$noise_probability
+  }
   if (!is.null(start)) {
     start <- .multilpa_validate_start(start, n_profiles, n_group_classes,
                                     ncol(x), variance_model, min_variance,
@@ -990,6 +1101,28 @@ multilpa <- function(data, vars, id, n_profiles,
   }
   if (!is.null(start)) start$means <- sweep(start$means, 2L, centers, "-")
   held <- .multilpa_held_parameters(start, fixed, covariance_model)
+  # The prior is resolved on the indicators the EM sees, so its default mean is
+  # their (centred) column means and a supplied mean moves with the centring.
+  prior_parameters <- if (is.null(prior)) NULL else {
+    if (anyNA(x)) {
+      stop(errorCondition(paste(
+        "`prior` is defined for complete indicators, as in mclust; these have",
+        "missing values. Drop `prior`, or use complete rows."),
+        class = "latents_unsupported_prior", call = NULL))
+    }
+    .multilpa_prior_parameters(prior, x, n_profiles, structure, offset = centers)
+  }
+  # The noise component's density is the reciprocal of mclust's hypervolume of
+  # the data, which a translation does not change.
+  noise_log_density <- if (isTRUE(noise)) {
+    if (anyNA(x)) {
+      stop(errorCondition(paste(
+        "A noise component is a uniform density over the complete indicator",
+        "space, as in mclust; these indicators have missing values."),
+        class = "latents_unsupported_noise", call = NULL))
+    }
+    -.multilpa_log_hypervolume(x)
+  } else NULL
   # `max_iter = 0` performs no update, so a restart cannot improve on anything:
   # scoring extra random initializations and keeping the highest would return a
   # parameter set nobody supplied in place of the one the caller asked to have
@@ -1007,9 +1140,17 @@ multilpa <- function(data, vars, id, n_profiles,
       # report a measurement solution that was neither estimated nor supplied.
       initial <- .multilpa_apply_held(initial, held)
       initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
+      # A random start begins with a tenth of the mass on the noise component;
+      # a supplied start with the proportion it supplied.
+      if (!is.null(noise_log_density)) {
+        initial <- .multilpa_add_noise(
+          initial,
+          if (start_index == 1L && !is.null(noise_start)) noise_start else 0.1,
+          noise_log_density)
+      }
       .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
                  tol, covariance_model, codes, n_categories, min_probability,
-                 held, structure)
+                 held, structure, prior_parameters)
     }, error = function(error) list(error = conditionMessage(error)))
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
@@ -1022,9 +1163,25 @@ multilpa <- function(data, vars, id, n_profiles,
   scores <- vapply(attempts, function(attempt) {
     if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
   }, numeric(1))
-  best_start <- which.max(scores)
+  best_start <- .multilpa_select_start(
+    scores, vapply(attempts, function(attempt) isTRUE(attempt$converged), logical(1)),
+    select_start)
   best <- attempts[[best_start]]
   parameters <- best$parameters
+  subject_posteriors <- best$expectation$subject_posteriors
+  subject_profiles <- max.col(subject_posteriors, ties.method = "first")
+  noise_fields <- list(noise = isTRUE(noise))
+  if (isTRUE(noise)) {
+    split <- .multilpa_split_noise(parameters, subject_posteriors)
+    parameters <- split$parameters
+    subject_posteriors <- split$posteriors
+    subject_profiles <- split$classes
+    noise_fields <- list(
+      noise = TRUE, noise_probability = split$noise_probability,
+      noise_posteriors = stats::setNames(split$noise_posteriors, rownames(data)),
+      hypervolume = exp(-noise_log_density),
+      n_noise = sum(subject_profiles == 0L))
+  }
   parameters$means <- sweep(parameters$means, 2L, centers, "+")
   profile_names <- paste0("profile_", seq_len(n_profiles))
   type_names <- paste0("group_class_", seq_len(n_group_classes))
@@ -1032,13 +1189,16 @@ multilpa <- function(data, vars, id, n_profiles,
                                          categorical, encoded$levels)
   dimnames(parameters$profile_probabilities) <- list(type_names, profile_names)
   names(parameters$group_probabilities) <- type_names
-  subject_posteriors <- best$expectation$subject_posteriors
   group_posteriors <- best$expectation$group_posteriors
   dimnames(subject_posteriors) <- list(rownames(data), profile_names)
   dimnames(group_posteriors) <- list(group_ids, type_names)
+  # A noise component adds its mixing proportion and, as mclust counts it
+  # (`nMclustParams(noise = TRUE)`), the hypervolume estimated from the data:
+  # two, so that every criterion equals mclust's.
   n_parameters_unconstrained <- .multilpa_count_parameters(structure = structure,
     n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
     covariance_model)
+  if (isTRUE(noise)) n_parameters_unconstrained <- n_parameters_unconstrained + 2L
   n_parameters <- n_parameters_unconstrained -
     .multilpa_fixed_parameters(fixed, n_profiles, ncol(x), n_categories,
                                variance_model, covariance_model)
@@ -1085,6 +1245,10 @@ multilpa <- function(data, vars, id, n_profiles,
     n_groups = n_groups, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes), variance_model = variance_model,
     covariance_model = covariance_model, covariance_structure = structure,
+    prior = prior,
+    prior_parameters = if (is.null(prior_parameters)) NULL else
+      utils::modifyList(prior_parameters,
+                        list(mean = unname(prior_parameters$mean + centers))),
     missing = missing, max_iter = max_iter, tol = tol,
     n_observed_by_indicator = setNames(
       c(colSums(!is.na(x)), if (is.null(codes)) NULL else colSums(!is.na(codes))),
@@ -1094,7 +1258,7 @@ multilpa <- function(data, vars, id, n_profiles,
     measurement_model = if (is.null(codes)) "gaussian" else
       if (ncol(x) == 0L) "categorical" else "mixed",
     subject_posteriors = subject_posteriors, group_posteriors = group_posteriors,
-    subject_profiles = max.col(subject_posteriors, ties.method = "first"),
+    subject_profiles = subject_profiles,
     group_classes = max.col(group_posteriors, ties.method = "first"),
     log_likelihood = log_likelihood,
     group_log_likelihood = setNames(best$expectation$group_log_likelihood, group_ids),
@@ -1111,7 +1275,7 @@ multilpa <- function(data, vars, id, n_profiles,
     effective_group_counts = colSums(group_posteriors),
     n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
                              1e-6 * (1 + abs(log_likelihood))),
-    replication_tolerance = 1e-6 * (1 + abs(log_likelihood))))
+    replication_tolerance = 1e-6 * (1 + abs(log_likelihood))), noise_fields)
   class(result) <- "multilpa"
   if (any(!valid)) {
     warning(warningCondition(sprintf(
@@ -1334,7 +1498,8 @@ multilpa <- function(data, vars, id, n_profiles,
                                       n_starts, max_iter, tol, min_variance,
                                       seed, start, missing, covariance_model,
                                       categorical, min_probability, time,
-                                      fixed, call) {
+                                      fixed, select_start = "likelihood",
+                                      call) {
   unsupported <- c(
     start = !is.null(start),
     missing = !identical(missing, "error"),
@@ -1356,5 +1521,5 @@ multilpa <- function(data, vars, id, n_profiles,
     n_starts = n_starts, max_iter = max_iter, tol = tol,
     min_variance = min_variance, seed = seed, time = time,
     covariance_model = covariance_model, categorical = categorical,
-    min_probability = min_probability, call = call)
+    min_probability = min_probability, select_start = select_start, call = call)
 }

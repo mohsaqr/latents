@@ -130,14 +130,23 @@ test_that("relaxing a constraint cannot lower the maximized likelihood", {
   }))
 })
 
-test_that("a constrained structure refuses inference rather than misreporting it", {
-  fit <- structure_fit(volume = "equal", shape = "varying", n_profiles = 2L)
-  expect_error(parameter_inference(fit),
+test_that("a constrained structure is inferred in its own coordinates", {
+  fit <- quietly(multilpa(engagement_small, activity, "student", n_profiles = 2L,
+                          n_group_classes = 1, n_starts = 1, seed = 1,
+                          tol = 1e-12, max_iter = 5000L,
+                          volume = "equal", shape = "varying"))
+  expect_identical(fit$covariance_structure, "EVI")
+  # One estimation coordinate per parameter the structure has: the chart
+  # carries the constraint rather than adding a singular direction.
+  expect_identical(dim(vcov(fit, scale = "unconstrained")),
+                   rep(as.integer(fit$n_parameters), 2L))
+  inference <- parameter_inference(fit)
+  expect_true(all(is.finite(inference$standard_error)))
+  # A structure code this version does not know is refused, not guessed at.
+  unknown <- fit
+  unknown$covariance_structure <- "XYZ"
+  expect_error(parameter_inference(unknown),
                class = "latents_unsupported_inference")
-  expect_error(vcov(fit), class = "latents_unsupported_inference")
-  # The two structures the coordinates do cover still work.
-  free <- structure_fit(variance_model = "varying", n_profiles = 2L)
-  expect_s3_class(parameter_inference(free), "data.frame")
 })
 
 test_that("a constrained structure refuses a held variance block", {

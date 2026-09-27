@@ -10,7 +10,9 @@
 \item{object}{A fitted \code{multilpa} model.}
 
 \item{scale}{Natural coefficients or unconstrained log variances (diagonal),
-log-Cholesky coordinates (full covariance), and baseline-category logits.}
+log-Cholesky coordinates (full covariance), log volumes, log shapes and
+orientations (a structure that constrains them across profiles), and
+baseline-category logits.}
 
 \item{...}{Reserved for generic compatibility.}
 }

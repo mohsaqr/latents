@@ -31,3 +31,23 @@ test_that("multilca() refuses `categorical` and checks `vars`", {
   expect_error(multilca(.lca_data, vars = character(), id = "student",
                         n_profiles = 2))
 })
+
+test_that("multilca() with id = NULL fits one group class without being told", {
+  activities <- c("time_with_friends", "on_social_media", "tv_video_games")
+  sample_data <- subset(student_esm, day <= 1)
+  expect_warning(
+    implicit <- multilca(sample_data, vars = activities, id = NULL,
+                         n_profiles = 2, n_starts = 1, seed = 1),
+    class = "latents_single_level")
+  explicit <- suppressWarnings(
+    multilca(sample_data, vars = activities, id = NULL, n_profiles = 2,
+             n_group_classes = 1, n_starts = 1, seed = 1))
+  expect_identical(implicit$n_group_classes, 1L)
+  expect_equal(implicit$log_likelihood, explicit$log_likelihood)
+  # Naming a second level on single-level data is still refused.
+  expect_error(
+    suppressWarnings(multilca(sample_data, vars = activities, id = NULL,
+                              n_profiles = 2, n_group_classes = 2,
+                              n_starts = 1, seed = 1)),
+    class = "latents_bad_argument")
+})

@@ -18,7 +18,7 @@ raises \code{latents_held_parameter}, because a held value has no interval.}
 \item{data}{Optional, exactly as for \code{\link[=vcov]{vcov()}}.}
 
 \item{...}{Additional arguments passed to \code{\link[=parameter_inference]{parameter_inference()}}, including
-\code{method = "bootstrap"} for a structure the Wald path cannot chart.}
+\code{method = "bootstrap"}.}
 }
 \value{
 A two-column matrix on the natural scale, one row per requested

@@ -24,7 +24,7 @@ License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: stats, graphics, grDevices, utils
-Suggests: testthat (>= 3.0.0), knitr, rmarkdown, tna
+Suggests: testthat (>= 3.0.0), knitr, rmarkdown, tna, mclust
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
