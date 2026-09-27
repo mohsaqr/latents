@@ -6,7 +6,7 @@
   stopifnot(is.matrix(log_values), is.numeric(log_values),
             nrow(log_values) > 0L, ncol(log_values) > 0L,
             !anyNA(log_values))
-  row_max <- apply(log_values, 1L, max)
+  row_max <- .multilpa_row_max(log_values)
   if (any(!is.finite(row_max))) {
     stop("All component densities vanished, or a density overflowed.")
   }
@@ -44,7 +44,7 @@
   # Remove the common measurement offset before adding log priors. Otherwise
   # a very small density (for example log(f) = -5e15) rounds away the priors,
   # and subtracting the absolute log marginal can produce posteriors above one.
-  density_offset <- apply(log_density, 1L, max)
+  density_offset <- .multilpa_row_max(log_density)
   if (any(!is.finite(density_offset))) {
     stop("All component densities vanished, or a density overflowed.")
   }
@@ -61,7 +61,7 @@
     log_joint <- sweep(log_density, 2L,
                        log(parameters$profile_probabilities[group_type, ]), "+")
     log_marginal <- .multilpa_log_sum_exp(log_joint)
-    posterior <- exp(sweep(log_joint, 1L, apply(log_joint, 1L, max), "-"))
+    posterior <- exp(sweep(log_joint, 1L, .multilpa_row_max(log_joint), "-"))
     list(log_marginal = log_marginal,
          posterior = posterior / rowSums(posterior))
   })
@@ -69,12 +69,12 @@
     as.numeric(rowsum(conditional[[group_type]]$log_marginal,
                       group_index, reorder = FALSE))
   }, numeric(max(group_index))), nrow = max(group_index), ncol = n_types)
-  group_offset <- apply(group_scores, 1L, max)
+  group_offset <- .multilpa_row_max(group_scores)
   group_scores <- sweep(sweep(group_scores, 1L, group_offset, "-"), 2L,
                         log(parameters$group_probabilities), "+")
   group_log_likelihood <- .multilpa_log_sum_exp(group_scores) + group_offset +
     as.numeric(rowsum(density_offset, group_index, reorder = FALSE))
-  group_posteriors <- exp(sweep(group_scores, 1L, apply(group_scores, 1L, max), "-"))
+  group_posteriors <- exp(sweep(group_scores, 1L, .multilpa_row_max(group_scores), "-"))
   group_posteriors <- group_posteriors / rowSums(group_posteriors)
   joint <- lapply(seq_len(n_types), function(group_type) {
     conditional[[group_type]]$posterior * group_posteriors[group_index, group_type]
@@ -511,34 +511,58 @@
 .multilpa_em <- function(x, group_index, parameters, variance_model,
                         min_variance, max_iter, tol, covariance_model = "diagonal",
                         codes = NULL, n_categories = NULL, min_probability = 1e-10,
-                        held = NULL, structure = NULL, prior = NULL) {
+                        held = NULL, structure = NULL, prior = NULL,
+                        accelerate_em = TRUE) {
   # `parameters` is the current point, which the M-step uses to warm start the
   # covariance structures that iterate.
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
-  expectation <- .multilpa_expectation(x, group_index, parameters, codes)
+  evaluate <- function(point) .multilpa_expectation(x, group_index, point, codes)
+  # One plain EM step, with the monotonicity guard. Under a prior the
+  # iteration climbs the posterior, not the likelihood, so the likelihood may
+  # legitimately fall; convergence is still read off the likelihood's
+  # relative change, which is mclust's rule.
+  step <- function(point, point_expectation) {
+    updated_parameters <- .multilpa_maximization(
+      x, point_expectation, variance_model, min_variance, covariance_model,
+      codes, n_categories, min_probability, held, structure, point, prior)
+    updated <- evaluate(updated_parameters)
+    if (is.null(prior) &&
+        updated$log_likelihood - point_expectation$log_likelihood <
+        -1e-10 * (1 + abs(point_expectation$log_likelihood))) {
+      stop("EM likelihood decreased beyond numerical roundoff.")
+    }
+    list(parameters = updated_parameters, expectation = updated)
+  }
+  expectation <- evaluate(parameters)
   history <- expectation$log_likelihood
   converged <- FALSE
   iteration <- 0L
+  # SQUAREM needs three EM evaluations per cycle and a likelihood objective,
+  # so a prior fit, or a budget with fewer than three steps left, takes plain
+  # steps. The loop is sequential by nature: each step starts from the last.
   while (iteration < max_iter && !converged) {
-    parameters <- .multilpa_maximization(x, expectation, variance_model, min_variance,
-                                       covariance_model, codes, n_categories,
-                                       min_probability, held, structure,
-                                       parameters, prior)
-    updated <- .multilpa_expectation(x, group_index, parameters, codes)
-    improvement <- updated$log_likelihood - expectation$log_likelihood
-    # Under a prior the iteration climbs the posterior, not the likelihood, so
-    # the likelihood may legitimately fall; convergence is still read off the
-    # likelihood's relative change, which is mclust's rule.
-    if (is.null(prior) &&
-        improvement < -1e-10 * (1 + abs(expectation$log_likelihood))) {
-      stop("EM likelihood decreased beyond numerical roundoff.")
+    accelerate <- isTRUE(accelerate_em) && is.null(prior) &&
+      max_iter - iteration >= 3L
+    if (accelerate) {
+      cycle <- .multilpa_squarem_cycle(step, parameters, expectation, evaluate)
+      evaluations <- 3L
+    } else {
+      plain <- step(parameters, expectation)
+      cycle <- list(parameters = plain$parameters,
+                    expectation = plain$expectation,
+                    history = plain$expectation$log_likelihood)
+      evaluations <- 1L
     }
+    # The gain is read over the whole cycle, which is at least one plain
+    # step's gain, so an accelerated fit never stops earlier than plain EM.
+    improvement <- cycle$expectation$log_likelihood - expectation$log_likelihood
     converged <- abs(improvement) <= tol * (1 + abs(expectation$log_likelihood))
-    iteration <- iteration + 1L
-    history <- c(history, updated$log_likelihood)
-    expectation <- updated
+    iteration <- iteration + evaluations
+    history <- c(history, cycle$history)
+    parameters <- cycle$parameters
+    expectation <- cycle$expectation
   }
   list(parameters = parameters, expectation = expectation,
        converged = converged, iterations = iteration, history = history)
@@ -817,6 +841,20 @@
 #'   [r3step()], [bootstrap_lrt()], [starting_values()], bivariate residuals,
 #'   [fit_staged()] and the posterior plots --- refuse such a fit with
 #'   `latents_unsupported_noise`.
+#' @param acceleration `"squarem"`, the default, accelerates EM with SQUAREM
+#'   (Varadhan & Roland, 2008): each cycle extrapolates along the last two EM
+#'   steps and finishes with an ordinary EM step, and falls back to plain EM
+#'   whenever the extrapolated point would lower the likelihood, so the
+#'   iteration stays monotone and converges to the same kind of maximum. The
+#'   convergence test is read over a whole cycle, so it is never looser than
+#'   plain EM's. `"none"` runs plain EM, which follows the same path as other
+#'   EM implementations from the same start (mclust, Mplus) and is the choice
+#'   for step-by-step reproduction. `iterations` and `max_iter` count EM steps
+#'   either way. Fits with `prior`, models with membership covariates, and
+#'   the EVE and VVE structures always use plain EM: their shared orientation
+#'   is found by an inner iteration, so their EM step is not the exact map
+#'   the extrapolation assumes, and accelerating it was seen to stop at a
+#'   lower likelihood than plain EM from the same start.
 #' @param centering How to centre the continuous indicators before fitting.
 #'   `"none"`, the default, fits them as supplied. `"person"` subtracts each
 #'   group's own mean from its rows, so a value reads as a deviation from that
@@ -931,8 +969,10 @@ multilpa <- function(data, vars, id, n_profiles,
                        centering = c("none", "person", "grand"),
                        volume = NULL, shape = NULL, orientation = NULL,
                        select_start = c("likelihood", "converged"),
-                       prior = NULL, noise = FALSE) {
+                       prior = NULL, noise = FALSE,
+                       acceleration = c("squarem", "none")) {
   select_start <- match.arg(select_start)
+  acceleration <- match.arg(acceleration)
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
   if (missing(id)) {
@@ -1150,7 +1190,9 @@ multilpa <- function(data, vars, id, n_profiles,
       }
       .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
                  tol, covariance_model, codes, n_categories, min_probability,
-                 held, structure, prior_parameters)
+                 held, structure, prior_parameters,
+                 accelerate_em = identical(acceleration, "squarem") &&
+                   !identical(structure, "EVE") && !identical(structure, "VVE"))
     }, error = function(error) list(error = conditionMessage(error)))
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
@@ -1245,7 +1287,7 @@ multilpa <- function(data, vars, id, n_profiles,
     n_groups = n_groups, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes), variance_model = variance_model,
     covariance_model = covariance_model, covariance_structure = structure,
-    prior = prior,
+    prior = prior, acceleration = acceleration,
     prior_parameters = if (is.null(prior_parameters)) NULL else
       utils::modifyList(prior_parameters,
                         list(mean = unname(prior_parameters$mean + centers))),

@@ -6,7 +6,11 @@
 .multilpa_gaussian_moments <- function(x, parameters) {
   stopifnot(is.matrix(x), is.numeric(x), is.list(parameters),
             !any(is.infinite(x)))
-  patterns <- split(seq_len(nrow(x)), apply(!is.na(x), 1L, paste0, collapse = ""))
+  # Rows sharing a missingness pattern share one Cholesky factor. Complete
+  # data have a single pattern, and skipping the per-row paste matters because
+  # this runs on every EM iteration.
+  patterns <- if (!anyNA(x)) list(seq_len(nrow(x))) else
+    split(seq_len(nrow(x)), apply(!is.na(x), 1L, paste0, collapse = ""))
   components <- lapply(seq_len(nrow(parameters$means)), function(profile) {
     covariance <- if (is.null(parameters$covariances)) {
       diag(parameters$variances[profile, ], ncol(x))

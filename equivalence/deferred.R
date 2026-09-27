@@ -15,11 +15,11 @@
 #' @param file Basename of a file in `future/R/`.
 #' @param name The function to return from it.
 #' @param root Project root directory.
-#' @return The function, with its enclosure's parent set to the multilpa
+#' @return The function, with its enclosure's parent set to the latents
 #'   namespace.
 deferred_verb <- function(file, name, root = ".") {
   stopifnot(
-    "multilpa must be loaded first" = "multilpa" %in% loadedNamespaces(),
+    "latents must be loaded first" = "latents" %in% loadedNamespaces(),
     "`file` must be a single file name" = is.character(file) && length(file) == 1L,
     "`name` must be a single function name" = is.character(name) && length(name) == 1L)
   path <- file.path(root, "future", "R", file)

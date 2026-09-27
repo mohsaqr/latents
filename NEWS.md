@@ -1,5 +1,25 @@
 # latents (development version)
 
+## Faster estimation
+
+* `multilpa(acceleration = "squarem")`, the new default, accelerates EM with
+  SQUAREM (Varadhan & Roland 2008). A cycle extrapolates along the last two
+  EM steps and finishes with an ordinary EM step, falling back to plain EM
+  whenever the extrapolation would lower the likelihood, so the path stays
+  monotone; convergence is judged over the whole cycle, so it is never looser
+  than plain EM's. `acceleration = "none"` reproduces plain EM's path (use it
+  to follow mclust or Mplus step by step). Prior fits, membership-covariate
+  models and the EVE and VVE structures always use plain EM. Results can
+  differ slightly from earlier versions: the accelerated fit usually ends
+  closer to the maximum, and on a flat, weakly identified likelihood it may
+  stop at a different point of the ridge.
+* The E-step no longer computes a missingness pattern per row for complete
+  data and takes row maxima without a per-row `apply()`: about 14 times faster
+  per iteration, with identical results.
+* On 5,000 rows, 4 indicators and 3 profiles, 10 of the 14 covariance
+  structures now fit faster than `mclust::Mclust()` from one start, and every
+  accelerated fit reached at least plain EM's likelihood.
+
 ## Mixture regression
 
 * New `mixture_regression()` fits finite mixtures of regressions (clusterwise, latent

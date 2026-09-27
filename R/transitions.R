@@ -79,7 +79,7 @@
     block[observed, ] <- log_density[rows[observed], , drop = FALSE]
     block
   })
-  offsets <- lapply(blocks, function(block) apply(block, 1L, max))
+  offsets <- lapply(blocks, function(block) .multilpa_row_max(block))
   if (any(!is.finite(unlist(offsets, use.names = FALSE)))) {
     stop("All component densities vanished, or a density overflowed.")
   }
@@ -273,7 +273,7 @@
                          n_groups, n_types)
   weighted <- sweep(group_scores, 2L, log(parameters$group_probabilities), "+")
   group_log_likelihood <- .multilpa_log_sum_exp(weighted) + emission$offset
-  group_posteriors <- exp(sweep(weighted, 1L, apply(weighted, 1L, max), "-"))
+  group_posteriors <- exp(sweep(weighted, 1L, .multilpa_row_max(weighted), "-"))
   group_posteriors <- group_posteriors / rowSums(group_posteriors)
   sequence <- lapply(seq_len(n_types), function(type) {
     .multilpa_sequence_moments(passes[[type]], emission$log_density, layout,

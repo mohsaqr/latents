@@ -129,7 +129,7 @@ test_that("a noise fit reproduces mclust's EM from the same start", {
     fit <- quietly(do.call(multilpa, c(
       list(data = data, vars = c("a", "b", "c"), id = NULL, n_profiles = 2L,
            n_starts = 1L, start = start, tol = 1e-13, max_iter = 20000L,
-           noise = TRUE),
+           noise = TRUE, acceleration = "none"),
       latents:::.multilpa_structure_arguments(code))))
     expect_equal(fit$log_likelihood, reference$loglik, tolerance = 1e-10, info = code)
     expect_equal(fit$noise_probability, reference$parameters$pro[3L],

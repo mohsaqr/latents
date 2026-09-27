@@ -36,7 +36,8 @@ noise_compare <- function(x, z, code, prior = FALSE) {
   fit <- suppressWarnings(do.call(multilpa, c(
     list(data = as.data.frame(x), vars = colnames(x), id = NULL, n_profiles = k,
          n_starts = 1L, start = start, tol = 1e-13, max_iter = 20000L,
-         noise = TRUE, prior = if (prior) prior_control()),
+         noise = TRUE, prior = if (prior) prior_control(),
+         acceleration = "none"),
     latents:::.multilpa_structure_arguments(code))))
   sigma <- if (is.null(fit$covariances)) {
     array(unlist(lapply(seq_len(k), function(profile) diag(fit$variances[profile, ]))),

@@ -197,7 +197,9 @@ test_that("report prints everything and returns the fit", {
     # a sample this size fires at a displacement of a fraction of a percent of
     # a standard error. The criterion is now that displacement itself, so the
     # fixture has to be genuinely loose to trip it.
-    loose <- .convenience_fit(tol = 1e-4)
+    # Plain EM stops early at this tolerance; SQUAREM would carry the fit
+    # close enough to the maximum that it is no longer loose.
+    loose <- .convenience_fit(tol = 1e-4, acceleration = "none")
     expect_warning(report(loose, plots = TRUE),
                    class = "latents_unconverged")
     tight <- .convenience_fit(tol = 1e-10)

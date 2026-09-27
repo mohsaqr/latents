@@ -31,7 +31,8 @@ multilpa(
   orientation = NULL,
   select_start = c("likelihood", "converged"),
   prior = NULL,
-  noise = FALSE
+  noise = FALSE,
+  acceleration = c("squarem", "none")
 )
 }
 \arguments{
@@ -272,6 +273,21 @@ account for the component --- \code{\link[=parameter_inference]{parameter_infere
 \code{\link[=r3step]{r3step()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=starting_values]{starting_values()}}, bivariate residuals,
 \code{\link[=fit_staged]{fit_staged()}} and the posterior plots --- refuse such a fit with
 \code{latents_unsupported_noise}.}
+
+\item{acceleration}{\code{"squarem"}, the default, accelerates EM with SQUAREM
+(Varadhan & Roland, 2008): each cycle extrapolates along the last two EM
+steps and finishes with an ordinary EM step, and falls back to plain EM
+whenever the extrapolated point would lower the likelihood, so the
+iteration stays monotone and converges to the same kind of maximum. The
+convergence test is read over a whole cycle, so it is never looser than
+plain EM's. \code{"none"} runs plain EM, which follows the same path as other
+EM implementations from the same start (mclust, Mplus) and is the choice
+for step-by-step reproduction. \code{iterations} and \code{max_iter} count EM steps
+either way. Fits with \code{prior}, models with membership covariates, and
+the EVE and VVE structures always use plain EM: their shared orientation
+is found by an inner iteration, so their EM step is not the exact map
+the extrapolation assumes, and accelerating it was seen to stop at a
+lower likelihood than plain EM from the same start.}
 }
 \value{
 An \code{multilpa} object containing \code{means}, \code{variances}, optional

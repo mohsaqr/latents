@@ -146,6 +146,11 @@ test_that("direct labels are spread apart but keep their order and centre", {
   expect_equal(.multilpa_spread_labels(7, 1), 7)
 })
 
+# Twelve schools do not identify the group-class split in this fixture: the
+# likelihood is flat along it (a 3/9 and a 0.3/11.7 split agree to 1e-5).
+# Plain EM stops partway along that ridge; SQUAREM follows it to the
+# boundary and rightly warns of a near-empty group class. The plot tests are
+# about drawing, so their fits use plain EM.
 .sequence_plot_fixture <- function(n_groups = 12L, n_waves = 10L) {
   set.seed(7)
   n <- n_groups * n_waves
@@ -157,7 +162,8 @@ test_that("direct labels are spread apart but keep their order and centre", {
 test_that("the sequence plot draws and returns its fit invisibly", {
   data <- .sequence_plot_fixture()
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 3, seed = 1, time = "wave")
+                  n_group_classes = 2, n_starts = 3, seed = 1, time = "wave",
+                  acceleration = "none")
   draw({
     expect_invisible(plot(fit, what = "sequences"))
     expect_identical(plot(fit, what = "sequences"), fit)
@@ -171,7 +177,8 @@ test_that("the sequence plot draws and returns its fit invisibly", {
 test_that("every plot's data is reachable through a tidy verb", {
   data <- .sequence_plot_fixture()
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 3, seed = 1, time = "wave")
+                  n_group_classes = 2, n_starts = 3, seed = 1, time = "wave",
+                  acceleration = "none")
   candidates <- enumerate_classes(data, c("score_a", "score_b"), "school",
                                   n_profiles = 1:2, n_group_classes = 1,
                                   n_starts = 2, seed = 3)
@@ -410,7 +417,8 @@ test_that("a family without standard errors gets bars, not an error", {
                            n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
   expect_null(.multilpa_mean_error_matrix(moves, NULL))
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 3, seed = 1)
+                  n_group_classes = 2, n_starts = 3, seed = 1,
+                  acceleration = "none")
   draw(expect_identical(plot(fit, what = "bars"), fit))
 })
 

@@ -48,7 +48,10 @@ test_that("per-group scores sum to the aggregate gradient in every model family"
     fit <- do.call(multilpa, c(list(data = specification$data,
       vars = c("a", "b"), id = "g", n_profiles = 2,
       n_group_classes = 2, n_starts = 5, seed = 5), specification$arguments))
-    theta <- centered_theta(fit, specification$data)
+    # The identity holds at any parameter value. At the estimate both sides
+    # are near zero and a relative tolerance compares roundoff, so it is
+    # checked at a perturbed point, where the scores are of order one.
+    theta <- centered_theta(fit, specification$data) + 0.05
     x <- centered_matrix(fit, specification$data)
     aggregate_gradient <- -.multilpa_score(theta, x, fit)
     scores <- .multilpa_group_scores(theta, x, fit)

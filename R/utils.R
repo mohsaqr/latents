@@ -91,3 +91,18 @@
   preferred <- tied[converged[tied]]
   if (length(preferred) > 0L) preferred[1L] else tied[1L]
 }
+
+#' Row maxima of a numeric matrix
+#'
+#' `pmax()` over the columns: the same values as `apply(x, 1L, max)`,
+#' including `NA` propagation, without one R call per row. The E-steps call
+#' this every iteration, where the per-row version dominated their cost.
+#'
+#' @param x A numeric matrix.
+#' @return A numeric vector with one value per row.
+#' @noRd
+.multilpa_row_max <- function(x) {
+  stopifnot("`x` must be a numeric matrix" = is.matrix(x) && is.numeric(x))
+  if (ncol(x) == 0L) return(rep(-Inf, nrow(x)))
+  do.call(pmax, lapply(seq_len(ncol(x)), function(column) x[, column]))
+}

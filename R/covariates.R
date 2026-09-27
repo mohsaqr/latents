@@ -16,7 +16,7 @@
   stopifnot(is.matrix(design), is.matrix(coefficients),
             ncol(design) == nrow(coefficients))
   scores <- cbind(design %*% coefficients, 0)
-  scores <- sweep(scores, 1L, apply(scores, 1L, max), "-")
+  scores <- sweep(scores, 1L, .multilpa_row_max(scores), "-")
   sweep(scores, 1L, log(rowSums(exp(scores))), "-")
 }
 
@@ -161,7 +161,7 @@
                              nrow(x), ncol(x), byrow = TRUE))
     }, numeric(nrow(x))), nrow(x), n_profiles)
   }
-  density_offset <- apply(log_density, 1L, max)
+  density_offset <- .multilpa_row_max(log_density)
   log_density <- sweep(log_density, 1L, density_offset, "-")
   # Categorical indicators are conditionally independent of the continuous ones
   # given the profile, and are added after the Gaussian offset comes off so
@@ -174,7 +174,7 @@
     log_prior <- .multilpa_log_softmax(design, beta)
     prior <- exp(log_prior)
     scores <- log_density + log_prior
-    offset <- apply(scores, 1L, max)
+    offset <- .multilpa_row_max(scores)
     weights <- exp(sweep(scores, 1L, offset, "-"))
     total <- rowSums(weights)
     marginal <- offset + log(total)
@@ -186,9 +186,9 @@
   evidence <- matrix(vapply(seq_along(conditional), function(h) {
     as.vector(rowsum(conditional[[h]]$marginal, group_index, reorder = FALSE))
   }, numeric(nrow(group_design))), nrow(group_design))
-  evidence_offset <- apply(evidence, 1L, max)
+  evidence_offset <- .multilpa_row_max(evidence)
   scores <- sweep(evidence, 1L, evidence_offset, "-") + group_log_prior
-  score_offset <- apply(scores, 1L, max)
+  score_offset <- .multilpa_row_max(scores)
   weights <- exp(sweep(scores, 1L, score_offset, "-"))
   total <- rowSums(weights)
   group_posteriors <- weights / total
