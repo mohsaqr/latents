@@ -133,7 +133,7 @@
 }
 
 #' Covariate-dependent nested expectation
-#' @param x Complete indicator matrix.
+#' @param x Centred continuous indicator matrix, `NA` where unobserved.
 #' @param group_index Group indices.
 #' @param parameters Measurement parameters.
 #' @param profile_design List of profile design matrices, one per group class.
@@ -144,13 +144,15 @@
 #' @noRd
 .multilpa_cov_expectation <- function(x, group_index, parameters, profile_design,
                                     group_design, beta, gamma, codes = NULL) {
-  stopifnot(is.matrix(x), !anyNA(x), is.list(parameters), is.list(profile_design),
-            is.matrix(group_design), is.matrix(beta), is.matrix(gamma))
+  stopifnot(is.matrix(x), !any(is.infinite(x)), is.list(parameters),
+            is.list(profile_design), is.matrix(group_design), is.matrix(beta),
+            is.matrix(gamma))
   n_profiles <- nrow(parameters$means)
   # The measurement model is the covariate-free one; only the mixing weights
-  # differ here. Residual covariances need the conditional moments, which the
-  # maximization step then reuses, so they are computed once and carried.
-  gaussian <- if (ncol(x) > 0L && !is.null(parameters$covariances)) {
+  # differ here. Residual covariances and missing indicators need the
+  # conditional moments, which the maximization step and the scores then
+  # reuse, so they are computed once and carried.
+  gaussian <- if (ncol(x) > 0L && (anyNA(x) || !is.null(parameters$covariances))) {
     .multilpa_gaussian_moments(x, parameters)
   } else NULL
   log_density <- if (!is.null(gaussian)) gaussian$log_density else {
@@ -214,7 +216,9 @@
 #' class. The measurement model is the one [multilpa()] fits and stays
 #' invariant across group classes. This is one-step maximum likelihood, not
 #' regression on assigned classes. Covariates are used in their supplied units.
-#' Only complete data are supported; missing indicators are not integrated out.
+#' Under `missing = "fiml"` missing indicators are integrated out of the
+#' measurement density, exactly as in the covariate-free model; covariates must
+#' still be complete.
 #'
 #' @param data,vars,id,n_profiles,n_group_classes As in [multilpa()].
 #' @param profile_covariates,group_covariates Names of numeric predictors of
@@ -237,6 +241,7 @@
                                   covariance_model = c("diagonal", "full"),
                                   categorical = character(),
                                   min_probability = 1e-10,
+                                  missing = c("error", "fiml"),
                                   select_start = "likelihood", call = NULL) {
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.character(profile_covariates), is.character(group_covariates),
@@ -246,6 +251,7 @@
             is.finite(n_starts), n_starts >= 1, n_starts == as.integer(n_starts))
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
+  missing <- match.arg(missing)
   stopifnot(
     "`categorical` must be a character vector of indicator names" =
       is.character(categorical) && !anyNA(categorical),
@@ -270,7 +276,7 @@
                      tol = tol, min_variance = min_variance,
                      covariance_model = covariance_model,
                      categorical = categorical,
-                     min_probability = min_probability)
+                     min_probability = min_probability, missing = missing)
   group_index <- base$group_index
   first_rows <- match(seq_len(base$n_groups), group_index)
   if (length(group_covariates) && any(vapply(group_covariates, function(name) {
@@ -284,7 +290,7 @@
   }
   designs <- .multilpa_cov_designs(data, vars, profile_covariates,
                                  group_covariates, first_rows, n_group_classes,
-                                 categorical, min_probability)
+                                 categorical, min_probability, missing)
   x <- designs$x
   center <- designs$center
   control <- list(variance_model = variance_model, min_variance = min_variance,
@@ -341,6 +347,8 @@
   ## The floor the response probabilities were held at; inference needs it to
   ## tell an estimate on that boundary from one merely close to it.
   result$min_probability <- min_probability
+  ## Read by inference to accept, and integrate over, the same missing values.
+  result$missing <- missing
   ## The same effective counts the Gaussian fit carries, so the shared
   ## diagnostics and plot panels need no special case for this class.
   result$effective_profile_counts <- colSums(result$subject_posteriors)
@@ -629,7 +637,10 @@ nobs.multilpa_covariates <- function(object, ...) {
   if (length(predictors) && !all(vapply(data[predictors], function(column) {
     is.numeric(column) && is.null(dim(column)) && all(is.finite(column))
   }, logical(1)))) {
-    stop("Covariates must be finite numeric columns without missing values.")
+    stop(errorCondition(paste(
+      "Covariates must be finite numeric columns without missing values;",
+      "`missing = \"fiml\"` integrates out missing indicators, not missing",
+      "covariates."), class = "latents_bad_data", call = NULL))
   }
   if (any(predictors %in% c(vars, id))) {
     stop("Covariates must be distinct from indicators and the group identifier.")
@@ -648,11 +659,14 @@ nobs.multilpa_covariates <- function(object, ...) {
 .multilpa_cov_designs <- function(data, vars, profile_covariates,
                                 group_covariates, first_rows, n_group_classes,
                                 categorical = character(),
-                                min_probability = 1e-10) {
+                                min_probability = 1e-10, missing = "error") {
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
-                                              "error", min_probability)
+                                              missing, min_probability)
   x <- measurement$x
-  center <- if (ncol(x) > 0L) colMeans(x) else numeric(0)
+  # The centre is only a location shift that is added back to the reported
+  # means, so the observed values' mean serves; every indicator has some,
+  # which the indicator check above guarantees.
+  center <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
   z <- as.matrix(data[profile_covariates])
   w <- cbind(`(Intercept)` = 1,
              as.matrix(data[first_rows, group_covariates, drop = FALSE]))

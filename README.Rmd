@@ -358,7 +358,7 @@ get_results(missing_fit)
 
 Each observation contributes the density of its observed indicators, obtained by marginalizing over its missing components. Estimation therefore uses partially observed indicator vectors without imputing values. The resulting inference assumes that the missingness mechanism is ignorable for the fitted analysis; the likelihood option itself does not establish that assumption.
 
-Missing-data handling should be described together with the pattern and extent of missingness and the information available to explain it. Without `missing = "fiml"`, missing indicators produce an error. Membership-covariate models and parametric bootstrap procedures require complete data in this implementation.
+Missing-data handling should be described together with the pattern and extent of missingness and the information available to explain it. Without `missing = "fiml"`, missing indicators produce an error. Membership-covariate models accept `missing = "fiml"` for their indicators, but the covariates themselves must be complete; parametric bootstrap procedures require complete data in this implementation.
 
 ## Ordered observations and latent transitions
 

@@ -1,5 +1,17 @@
 # latents (development version)
 
+## Missing indicators in membership-covariate models
+
+* `multilpa(profile_covariates = , group_covariates = , missing = "fiml")`
+  now fits: missing indicators are integrated out of the measurement density
+  exactly as in the covariate-free model, for diagonal and full residual
+  covariance and for categorical and mixed indicators. Previously this
+  combination was refused with `latents_bad_argument`. Standard errors
+  (observed, robust and OPG) cover it through the Fisher identity: a missing
+  value enters the scores through its conditional mean and covariance given
+  the row's observed values. Covariates themselves must still be complete; a
+  missing covariate now raises the classed `latents_bad_data`.
+
 ## Faster estimation
 
 * `multilpa(acceleration = "squarem")`, the new default, accelerates EM with

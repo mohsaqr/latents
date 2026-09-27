@@ -73,7 +73,9 @@ the caller's random-number state is restored on exit.}
 
 \item{missing}{\code{"error"} rejects missing indicators; \code{"fiml"} maximizes the
 observed-data likelihood under an ignorable missingness mechanism (MAR).
-Missing indicators are integrated out, not filled in for likelihood fitting.}
+Missing indicators are integrated out, not filled in for likelihood fitting.
+This holds with membership covariates too; the covariates themselves must
+be complete (\code{latents_bad_data}).}
 
 \item{covariance_model}{\code{"diagonal"} assumes conditional independence;
 \code{"full"} estimates within-profile residual covariances.}

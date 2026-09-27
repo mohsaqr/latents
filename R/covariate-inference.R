@@ -160,20 +160,26 @@
 
   ## Measurement: means, then the spread on the scale it is estimated on.
   if (.multilpa_cov_is_full(object)) {
-    measurement <- .multilpa_cov_full_scores(x, pieces$parameters, posteriors, object)
+    measurement <- .multilpa_cov_full_scores(x, pieces$parameters, posteriors,
+                                             object, expectation$gaussian_moments)
     mean_block <- measurement$means
     variance_block <- measurement$covariances
   } else {
+  ## A diagonal density factorizes over indicators, so an unobserved value
+  ## drops out of the likelihood and contributes nothing to its scores.
+  observed <- !is.na(x)
   mean_block <- do.call(cbind, lapply(seq_len(n_profiles), function(k) {
     residual <- sweep(x, 2L, pieces$parameters$means[k, ], "-")
+    residual[!observed] <- 0
     weighted <- residual * posteriors[, k]
     rowsum(sweep(weighted, 2L, pieces$parameters$variances[k, ], "/"),
            object$group_index, reorder = FALSE)
   }))
   variance_pieces <- lapply(seq_len(n_profiles), function(k) {
     residual <- sweep(x, 2L, pieces$parameters$means[k, ], "-")
+    residual[!observed] <- 0
     standardized <- sweep(residual^2, 2L, pieces$parameters$variances[k, ], "/")
-    rowsum(0.5 * (standardized - 1) * posteriors[, k], object$group_index,
+    rowsum(0.5 * (standardized - observed) * posteriors[, k], object$group_index,
            reorder = FALSE)
   })
   variance_block <- if (equal) Reduce(`+`, variance_pieces) else
@@ -215,18 +221,23 @@
 #'
 #' The same quantities the covariate-free model forms, but kept one row per
 #' group rather than summed, because groups are the independent units the
-#' sandwich resamples over. Covariate fits are complete-data only, so the
-#' conditional-moment corrections the missing-data model needs are all zero and
-#' the scatter is formed directly from the residuals.
+#' sandwich resamples over. By the Fisher identity the observed-data score is
+#' the complete-data score's conditional expectation, so a missing value enters
+#' through its conditional mean given the row's observed values, and the
+#' scatter gains that conditional covariance. With complete data the moments
+#' are the data and the corrections vanish.
 #'
-#' @param x Centred continuous indicator matrix.
+#' @param x Centred continuous indicator matrix, `NA` where unobserved.
 #' @param parameters Decoded means and covariances.
 #' @param posteriors Observation-by-profile responsibilities.
 #' @param object The fit, supplying the group index and shapes.
+#' @param moments The E-step's conditional moments, one element per profile,
+#'   from [.multilpa_gaussian_moments()].
 #' @return A list with `means` and `covariances`, each a groups-by-parameters
 #'   matrix in encode order.
 #' @noRd
-.multilpa_cov_full_scores <- function(x, parameters, posteriors, object) {
+.multilpa_cov_full_scores <- function(x, parameters, posteriors, object,
+                                      moments) {
   dimension <- ncol(x)
   n_groups <- nrow(object$group_design)
   lower <- lower.tri(matrix(0, dimension, dimension), diag = TRUE)
@@ -235,13 +246,22 @@
     covariance <- matrix(parameters$covariances[, , k], dimension, dimension)
     precision <- chol2inv(chol(covariance))
     weights <- posteriors[, k]
-    residual <- sweep(x, 2L, parameters$means[k, ], "-")
+    residual <- sweep(moments[[k]]$expected, 2L, parameters$means[k, ], "-")
     mean_score <- rowsum(residual * weights, index, reorder = FALSE) %*% precision
     # Every entry of the per-group scatter is a weighted sum of a product of
     # two residual columns, so all of them come from one rowsum.
     pairs <- residual[, rep(seq_len(dimension), each = dimension), drop = FALSE] *
       residual[, rep(seq_len(dimension), times = dimension), drop = FALSE]
-    scatter <- rowsum(pairs * weights, index, reorder = FALSE)
+    # Rows sharing a missingness pattern share one conditional covariance, so
+    # each pattern adds it once per group, weighted by that group's rows.
+    correction <- Reduce(`+`, lapply(moments[[k]]$adjustments, function(pattern) {
+      group_weight <- rowsum(weights[pattern$rows], index[pattern$rows],
+                             reorder = FALSE)
+      per_group <- numeric(n_groups)
+      per_group[as.integer(rownames(group_weight))] <- group_weight
+      outer(per_group, as.vector(pattern$covariance))
+    }))
+    scatter <- rowsum(pairs * weights, index, reorder = FALSE) + correction
     totals <- as.vector(rowsum(weights, index, reorder = FALSE))
     list(means = mean_score, scatter = scatter, totals = totals,
          precision = precision, covariance = covariance)
@@ -403,14 +423,20 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   columns <- unique(c(object$vars, object$id,
                       object$profile_covariates, object$group_covariates))
   ## Categorical indicators may arrive as factors or characters; only the
-  ## continuous indicators and the covariates must be finite numbers.
+  ## continuous indicators and the covariates must be numbers. A fit made under
+  ## `missing = "fiml"` integrated its missing indicators out, so the same
+  ## values may be missing here; covariates never may.
+  fiml <- identical(object$missing, "fiml")
   numeric_columns <- setdiff(columns, c(object$id, categorical))
+  may_be_missing <- if (fiml) c(continuous, categorical) else character()
   if (!all(columns %in% names(data)) || anyDuplicated(names(data)) ||
       nrow(data) != object$n_observations ||
-      !all(vapply(data[numeric_columns], function(column) {
-        is.numeric(column) && is.null(dim(column)) && all(is.finite(column))
+      !all(vapply(numeric_columns, function(name) {
+        column <- data[[name]]
+        present <- if (name %in% may_be_missing) column[!is.na(column)] else column
+        is.numeric(column) && is.null(dim(column)) && all(is.finite(present))
       }, logical(1))) ||
-      anyNA(data[categorical]) ||
+      (!fiml && anyNA(data[categorical])) ||
       !identical(match(data[[object$id]], object$group_values), object$group_index)) {
     stop(errorCondition(
       "`data` must contain the original finite indicators, covariates and group identifiers in fitting order.",
@@ -419,7 +445,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   first_rows <- match(seq_len(object$n_groups), object$group_index)
   designs <- .multilpa_cov_designs(data, object$vars,
     object$profile_covariates, object$group_covariates, first_rows,
-    object$n_group_classes, categorical = categorical)
+    object$n_group_classes, categorical = categorical,
+    missing = object$missing %||% "error")
   codes <- designs$codes
   same <- function(left, right) identical(unname(left), unname(right))
   if ((!is.null(object$indicator_data) &&

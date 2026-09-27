@@ -72,7 +72,7 @@ test_that("every forwarded argument reaches the estimator unchanged", {
   expect_identical(through_multilpa$time, "sequence")
 })
 
-test_that("the three arguments the covariate path cannot honour are refused", {
+test_that("the two arguments the covariate path cannot honour are refused", {
   call_with <- function(...) {
     multilpa(small, activity, "student", n_profiles = 2,
              n_group_classes = 2, profile_covariates = "previous_grade",
@@ -83,12 +83,14 @@ test_that("the three arguments the covariate path cannot honour are refused", {
                     seed = 1))
   expect_error(call_with(start = starting_values(plain)),
                class = "latents_bad_argument")
-  expect_error(call_with(missing = "fiml"), class = "latents_bad_argument")
   expect_error(call_with(fixed = "means"), class = "latents_bad_argument")
   # The message names the argument, so the caller is told which one to drop.
-  expect_error(call_with(missing = "fiml"), "`missing`")
-  # All three at once are named together rather than one refusal at a time.
-  expect_error(call_with(missing = "fiml", fixed = "means"), "`fixed`")
+  expect_error(call_with(fixed = "means"), "`fixed`")
+  # Both at once are named together rather than one refusal at a time.
+  expect_error(call_with(start = starting_values(plain), fixed = "means"),
+               "`start`, `fixed`")
+  # `missing = "fiml"` used to be refused here; it is now a supported model.
+  expect_s3_class(quietly(call_with(missing = "fiml")), "multilpa_covariates")
 })
 
 test_that("a non-character covariate name is refused before any fitting", {

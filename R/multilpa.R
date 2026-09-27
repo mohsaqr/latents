@@ -976,6 +976,8 @@
 #' @param missing `"error"` rejects missing indicators; `"fiml"` maximizes the
 #'   observed-data likelihood under an ignorable missingness mechanism (MAR).
 #'   Missing indicators are integrated out, not filled in for likelihood fitting.
+#'   This holds with membership covariates too; the covariates themselves must
+#'   be complete (`latents_bad_data`).
 #' @param covariance_model `"diagonal"` assumes conditional independence;
 #'   `"full"` estimates within-profile residual covariances.
 #' @return An `multilpa` object containing `means`, `variances`, optional
@@ -1605,19 +1607,20 @@ multilpa <- function(data, vars, id, n_profiles,
 #'
 #' `multilpa()` is one verb over one model, and membership covariates are part
 #' of that model rather than a different one, so they are arguments and not a
-#' separate entry point. Three of `multilpa()`'s own arguments have no meaning
-#' on this path: the covariate likelihood has no observed-data form, no
-#' starting-value contract of the shape the covariate-free EM uses, and no
-#' held-measurement machinery. Each is refused by name instead of being
-#' accepted and ignored, which would return a fit that is not the one asked
-#' for.
+#' separate entry point. Two of `multilpa()`'s own arguments have no meaning
+#' on this path: the covariate likelihood has no starting-value contract of
+#' the shape the covariate-free EM uses, and no held-measurement machinery.
+#' Each is refused by name instead of being accepted and ignored, which would
+#' return a fit that is not the one asked for. `missing = "fiml"` is supported:
+#' the measurement density is the covariate-free model's observed-data one.
 #'
 #' @param data,vars,id,n_profiles,n_group_classes As in [multilpa()].
 #' @param profile_covariates,group_covariates The requested predictors.
 #' @param variance_model,n_starts,max_iter,tol,min_variance As in [multilpa()].
 #' @param seed,time,covariance_model,categorical,min_probability As in
 #'   [multilpa()].
-#' @param start,missing,fixed Refused when they are anything but their default.
+#' @param missing As in [multilpa()].
+#' @param start,fixed Refused when they are anything but their default.
 #' @param call The user's call, recorded on the result.
 #' @return An object of class `multilpa_covariates`.
 #' @noRd
@@ -1631,7 +1634,6 @@ multilpa <- function(data, vars, id, n_profiles,
                                       call) {
   unsupported <- c(
     start = !is.null(start),
-    missing = !identical(missing, "error"),
     fixed = length(fixed) > 0L)
   if (any(unsupported)) {
     stop(errorCondition(sprintf(paste(
@@ -1650,5 +1652,6 @@ multilpa <- function(data, vars, id, n_profiles,
     n_starts = n_starts, max_iter = max_iter, tol = tol,
     min_variance = min_variance, seed = seed, time = time,
     covariance_model = covariance_model, categorical = categorical,
-    min_probability = min_probability, select_start = select_start, call = call)
+    min_probability = min_probability, missing = missing,
+    select_start = select_start, call = call)
 }
