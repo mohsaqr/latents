@@ -34,6 +34,8 @@ reference:
   - bootstrap_lrt
   - sensitivity
   - starts_with("parameter_inference")
+  - pool_imputations
+  - get_results.latents_pooled
 
 - title: Mixture regression
   desc: Regressions whose coefficients differ across latent classes, at one or

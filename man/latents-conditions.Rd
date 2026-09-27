@@ -154,6 +154,10 @@ not yet account for a noise component --- \code{\link[=parameter_inference]{para
 \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=starting_values]{starting_values()}},
 bivariate residuals, \code{\link[=fit_staged]{fit_staged()}} or a posterior plot --- was given a
 fit that has one.}
+\item{\code{latents_pooling_failed}}{An imputation's fit or inference failed
+in \code{\link[=pool_imputations]{pool_imputations()}}, or the imputations' fits report different
+parameters. Rubin's rules need every imputation, so none is dropped; the
+message names the imputation and carries the original reason.}
 \item{\code{latents_bootstrap_failed}}{Fewer than two resamples produced a
 usable fit, so there is nothing to read a spread from. Raised by
 \code{parameter_inference(method = "bootstrap")}; the message carries the

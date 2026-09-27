@@ -140,6 +140,10 @@
 #'     [three_step()], [r3step()], [bootstrap_lrt()], [starting_values()],
 #'     bivariate residuals, [fit_staged()] or a posterior plot --- was given a
 #'     fit that has one.}
+#'   \item{`latents_pooling_failed`}{An imputation's fit or inference failed
+#'     in [pool_imputations()], or the imputations' fits report different
+#'     parameters. Rubin's rules need every imputation, so none is dropped; the
+#'     message names the imputation and carries the original reason.}
 #'   \item{`latents_bootstrap_failed`}{Fewer than two resamples produced a
 #'     usable fit, so there is nothing to read a spread from. Raised by
 #'     `parameter_inference(method = "bootstrap")`; the message carries the

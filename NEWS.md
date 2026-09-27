@@ -1,5 +1,20 @@
 # latents (development version)
 
+## Multiple imputation for missing covariates
+
+* New `pool_imputations()`: fits `multilpa()` to every completed data set
+  (a list of data frames, or a `mids` object from mice), aligns each fit's
+  profile and group-class labels to the first, and pools with Rubin's rules.
+  The table adds `df`, `within`, `between`, `riv` and `fmi` to the columns of
+  `parameter_inference()`; `get_results(x, "imputations")` and
+  `get_results(x, "fits")` show each imputation and the relabelling it needed,
+  and `plot()` shows the imputations' estimates beside the pooled interval.
+  This is the route for missing covariates, which `missing = "fiml"` cannot
+  integrate out. Aligning a covariate fit reparameterizes its membership
+  logits, whose reference category moves with the labels. Pooled values agree
+  with `mice::pool.scalar()` to machine precision. A failing imputation raises
+  `latents_pooling_failed` rather than being dropped.
+
 ## First-stage uncertainty in staged fits
 
 * `parameter_inference(method = "bootstrap")` now accepts a `fit_staged()`
