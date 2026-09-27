@@ -123,3 +123,18 @@ test_that("repeating a requested variable still returns one row per variable", {
   expect_identical(described$variable, c("y", "y"))
   expect_identical(sum(described$n + described$n_missing), 3L)
 })
+
+test_that("strata are listed in a fixed order, not the data's row order", {
+  data <- data.frame(g = rep(1:4, each = 3), y = c(1:6, 11:16),
+                     stratum = rep(c(2L, 1L, 2L, 1L), each = 3))
+  reordered <- data[rev(seq_len(nrow(data))), ]
+  forward <- descriptives(data, vars = "y", id = "g", by = "stratum")
+  backward <- descriptives(reordered, vars = "y", id = "g", by = "stratum")
+  expect_identical(forward$stratum, c(1L, 2L))
+  expect_equal(forward, backward, ignore_attr = TRUE)
+  # A factor keeps its declared level order.
+  data$level <- factor(ifelse(data$stratum == 1L, "low", "high"),
+                       levels = c("low", "high"))
+  by_factor <- descriptives(data, vars = "y", id = "g", by = "level")
+  expect_identical(as.character(by_factor$level), c("low", "high"))
+})

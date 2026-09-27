@@ -20,11 +20,14 @@ enumerate_classes(
 
 \item{vars}{Continuous indicator names.}
 
-\item{id}{Group identifier column name.}
+\item{id}{Group identifier column name, or \code{NULL} to enumerate
+single-level models (every observation its own unit), the grid
+\code{mclust::mclustBIC()} searches.}
 
 \item{n_profiles}{Positive integer profile counts to try.}
 
-\item{n_group_classes}{Positive integer group-class counts to try.}
+\item{n_group_classes}{Positive integer group-class counts to try. With
+\code{id = NULL} it is 1 and may be left out.}
 
 \item{model}{Covariance models to try, as the three-letter codes
 \code{\link[=multilpa]{multilpa()}}'s \code{volume}, \code{shape} and \code{orientation} name: any of
@@ -60,6 +63,13 @@ candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
                               n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(candidates)
 summary(candidates)
+
+# Single level, crossing class counts with covariance structures:
+flowers <- setNames(iris[1:4], c("sepal_l", "sepal_w", "petal_l", "petal_w"))
+single <- enumerate_classes(flowers, names(flowers), id = NULL,
+                            n_profiles = 1:3, model = c("VVV", "EEE"),
+                            n_starts = 2, seed = 1)
+summary(single)
 }
 \seealso{
 \code{\link[=candidate_fit]{candidate_fit()}} to take one fitted model out of the grid,

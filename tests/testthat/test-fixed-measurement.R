@@ -141,7 +141,11 @@ test_that("every measurement model can be held, exactly and with the right count
     # by two; the comparison is on value, not on storage mode.
     expect_equal(free$n_parameters - held$n_parameters, case$removed,
                  ignore_attr = TRUE, label = case$label)
-    expect_false(is.unsorted(held$log_likelihood_history))
+    # Monotone up to roundoff: the EM loop's own guard allows a change of
+    # 1e-10 relative at convergence, and an exact comparison would test the
+    # last bit of a sum rather than the algorithm.
+    history <- held$log_likelihood_history
+    expect_true(all(diff(history) >= -1e-10 * (1 + abs(history[-1L]))))
     # A constrained maximum cannot exceed the unconstrained one.
     expect_lte(held$log_likelihood, free$log_likelihood + 1e-8)
   }))

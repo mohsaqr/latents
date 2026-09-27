@@ -432,10 +432,12 @@
                                             covariance_model = "diagonal",
                                             codes = NULL, n_categories = NULL,
                                             min_probability = 1e-10) {
+  # The first start is Ward's hierarchical clustering, as in multilpa().
   parameters <- .multilpa_initialize(x, group_index, n_profiles, n_types,
                                      variance_model, min_variance, start_index,
                                      covariance_model, codes, n_categories,
-                                     min_probability)
+                                     min_probability,
+                                     hierarchical = start_index == 1L)
   initial <- parameters$profile_probabilities
   persistence <- if (start_index == 1L) 0.7 else stats::runif(1L, 0.4, 0.9)
   transition <- array(vapply(seq_len(n_types), function(type) {

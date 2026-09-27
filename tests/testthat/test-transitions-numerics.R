@@ -177,9 +177,12 @@ test_that("the prevalence reported is the one the final expectation implies", {
   expect_equal(unname(drop(single$profile_prevalence)),
                unname(shares / sum(shares)), tolerance = 1e-10)
 
+  # The identity below holds to the EM tolerance, so the fit must converge;
+  # a capped fit leaves a gap that depends on where the path stopped.
   nested <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
-    n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 60))
+    n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 5000))
+  expect_true(nested$converged)
   expect_true(all(is.finite(nested$profile_prevalence)))
   expect_equal(unname(rowSums(nested$profile_prevalence)), rep(1, 2),
                tolerance = 1e-10)

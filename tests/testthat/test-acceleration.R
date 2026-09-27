@@ -46,28 +46,81 @@ test_that("a budget below one cycle takes plain steps", {
   expect_length(one$log_likelihood_history, 3L)
 })
 
-test_that("EVE, VVE and prior fits run plain EM whatever is requested", {
+test_that("prior fits run plain EM whatever is requested", {
   fixture <- acceleration_data()
   x <- stats::na.omit(fixture$data[fixture$vars])
-  paired <- function(...) {
-    arguments <- list(data = x, vars = fixture$vars, id = NULL,
-                      n_profiles = 2, n_starts = 1, seed = 1, max_iter = 40,
-                      ...)
-    quiet <- function(expression) {
-      withCallingHandlers(expression, latents_single_level = function(w) {
-        invokeRestart("muffleWarning")
-      }, latents_unconverged = function(w) invokeRestart("muffleWarning"))
-    }
-    list(squarem = quiet(do.call(multilpa, c(arguments,
-                                             acceleration = "squarem"))),
-         none = quiet(do.call(multilpa, c(arguments, acceleration = "none"))))
+  quiet <- function(expression) {
+    withCallingHandlers(expression, latents_single_level = function(w) {
+      invokeRestart("muffleWarning")
+    }, latents_unconverged = function(w) invokeRestart("muffleWarning"))
   }
-  eve <- paired(volume = "equal", shape = "varying", orientation = "equal")
-  expect_identical(eve$squarem$log_likelihood_history,
-                   eve$none$log_likelihood_history)
-  map <- paired(prior = prior_control())
-  expect_identical(map$squarem$log_likelihood_history,
-                   map$none$log_likelihood_history)
+  fit <- function(acceleration) {
+    quiet(multilpa(x, fixture$vars, id = NULL, n_profiles = 2, n_starts = 1,
+                   seed = 1, max_iter = 40, prior = prior_control(),
+                   acceleration = acceleration))
+  }
+  expect_identical(fit("squarem")$log_likelihood_history,
+                   fit("none")$log_likelihood_history)
+})
+
+test_that("a capped EVE/VVE orientation step never lowers the M-step objective", {
+  # The objective the covariance M-step maximizes, given scatter W_k and
+  # effective sizes n_k: -sum_k [n_k log|Sigma_k| + tr(Sigma_k^-1 W_k)] / 2.
+  objective <- function(covariances, scatter, weights) {
+    -sum(vapply(seq_along(weights), function(k) {
+      block <- covariances[, , k]
+      weights[k] * as.numeric(determinant(block, logarithm = TRUE)$modulus) +
+        sum(solve(block) * scatter[[k]])
+    }, numeric(1))) / 2
+  }
+  scatter_set <- latents:::.mixture_with_seed(4, {
+    lapply(1:3, function(k) {
+      z <- matrix(stats::rnorm(60 * 3), 60) %*% matrix(stats::runif(9), 3)
+      crossprod(z)
+    })
+  })
+  weights <- c(60, 60, 60)
+  invisible(lapply(c("EVE", "VVE"), function(code) {
+    start <- latents:::.multilpa_structure_covariances(
+      scatter_set, weights, code, 1e-8, inner_steps = 1L)
+    previous <- objective(start, scatter_set, weights)
+    # Each capped step from the last answer must not go downhill.
+    values <- vapply(1:15, function(i) {
+      start <<- latents:::.multilpa_structure_covariances(
+        scatter_set, weights, code, 1e-8, start = start, inner_steps = 5L)
+      objective(start, scatter_set, weights)
+    }, numeric(1))
+    expect_true(all(diff(c(previous, values)) >= -1e-8), info = code)
+    full <- latents:::.multilpa_structure_covariances(scatter_set, weights,
+                                                      code, 1e-8)
+    expect_gte(objective(full, scatter_set, weights) + 1e-6,
+               max(values))
+  }))
+})
+
+test_that("a converged EVE/VVE fit is a fixed point of the full orientation solve", {
+  fixture <- acceleration_data()
+  x <- stats::na.omit(fixture$data[fixture$vars])
+  invisible(lapply(c("EVE", "VVE"), function(code) {
+    fit <- withCallingHandlers(
+      do.call(multilpa, c(list(data = x, vars = fixture$vars, id = NULL,
+                               n_profiles = 2, n_starts = 2, seed = 1,
+                               tol = 1e-12, max_iter = 20000),
+                          latents:::.multilpa_structure_arguments(code))),
+      latents_single_level = function(w) invokeRestart("muffleWarning"))
+    expect_true(fit$converged, info = code)
+    posteriors <- fit$subject_posteriors
+    data_matrix <- as.matrix(x)
+    scatter <- lapply(seq_len(ncol(posteriors)), function(k) {
+      residuals <- sweep(data_matrix, 2L, fit$means[k, ], "-")
+      crossprod(residuals, residuals * posteriors[, k])
+    })
+    solved <- latents:::.multilpa_structure_covariances(
+      scatter, colSums(posteriors), code, fit$min_variance,
+      start = fit$covariances, tol = 1e-12, max_iter = 100000L)
+    expect_equal(unname(solved), unname(fit$covariances), tolerance = 1e-4,
+                 info = code)
+  }))
 })
 
 test_that("flattening and refilling parameters is lossless", {

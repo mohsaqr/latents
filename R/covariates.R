@@ -699,10 +699,12 @@ nobs.multilpa_covariates <- function(object, ...) {
     }
     resumed
   } else {
+    # The first start is Ward's hierarchical clustering, as in multilpa().
     .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                        control$variance_model, control$min_variance, start_index,
                        control$covariance_model, designs$codes,
-                       designs$n_categories, control$min_probability)
+                       designs$n_categories, control$min_probability,
+                       hierarchical = start_index == 1L)
   }
   beta <- rbind(
     log(parameters$profile_probabilities[, seq_len(n_profiles - 1L), drop = FALSE] /

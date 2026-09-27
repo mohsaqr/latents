@@ -9,16 +9,38 @@
   monotone; convergence is judged over the whole cycle, so it is never looser
   than plain EM's. `acceleration = "none"` reproduces plain EM's path (use it
   to follow mclust or Mplus step by step). Prior fits, membership-covariate
-  models and the EVE and VVE structures always use plain EM. Results can
+  models always use plain EM. Results can
   differ slightly from earlier versions: the accelerated fit usually ends
   closer to the maximum, and on a flat, weakly identified likelihood it may
   stop at a different point of the ridge.
+* The first start of `multilpa()` is now Ward's hierarchical clustering, with
+  each cluster's own means and spread; the rest remain random k-means. Over
+  14 structures on 3 datasets it never lowered the best-of-10 likelihood and
+  raised it in 3 of 36 cases, for example on iris VVV from -186.57 to
+  mclust's -180.19. Fits may therefore land on a better maximum, or on the
+  same maximum with profiles numbered differently.
+* EVE and VVE take a fixed number of warm-started orientation steps per EM
+  iteration (a generalized EM step) instead of solving the orientation to
+  convergence inside every M-step, which took a median of 220 inner steps per
+  iteration. The same maxima are reached 3.5 to 8 times faster, and SQUAREM
+  now applies to them.
+* `enumerate_classes(id = NULL)` enumerates single-level models, the search
+  `mclust::mclustBIC()` performs, with one single-level notice for the grid.
+* New `predict()` method for `multilpa()` and `multilca()` fits: the modal
+  profile (`"class"`), every profile's probability (`"posterior"`), or each
+  row's log density under the fitted mixture (`"density"`) for new rows,
+  prepared as the fit prepared its own (categorical levels, centering,
+  missing data, noise). Groups in the new data are classified as new groups.
+  On the training rows it reproduces the fit's posteriors, and it matches
+  `mclust::estep()` at the same parameters.
+* `descriptives(by = )` lists strata in a fixed order (a factor's levels,
+  otherwise sorted) rather than in order of first appearance.
 * The E-step no longer computes a missingness pattern per row for complete
   data and takes row maxima without a per-row `apply()`: about 14 times faster
   per iteration, with identical results.
-* On 5,000 rows, 4 indicators and 3 profiles, 10 of the 14 covariance
-  structures now fit faster than `mclust::Mclust()` from one start, and every
-  accelerated fit reached at least plain EM's likelihood.
+* On 5,000 rows, 4 indicators and 3 profiles, 13 of the 14 covariance
+  structures now fit faster than `mclust::Mclust()` from one start (VVV is
+  the exception), and 13 of 14 reach a higher likelihood.
 
 ## Mixture regression
 

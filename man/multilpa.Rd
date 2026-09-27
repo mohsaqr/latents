@@ -78,8 +78,13 @@ Use one for an ordinary, pooled LPA.}
 \item{variance_model}{Either \code{"varying"} (profile-specific variances or
 covariance matrices) or \code{"equal"} (shared across profiles).}
 
-\item{n_starts}{Positive integer number of EM starts. When \code{start} is supplied,
-it supplies the first start; remaining starts are random initializations.
+\item{n_starts}{Positive integer number of EM starts. The first is
+deterministic: Ward's hierarchical clustering of the standardized
+indicators (on at most 2000 evenly spaced rows), each cluster described by
+its own means and spread, which is the start mclust's name refers to and
+finds solutions whose profiles differ in shape. The rest are k-means from
+random centres. When \code{start} is supplied, it supplies the first start
+instead; remaining starts are random initializations.
 It is ignored when \code{max_iter = 0} and \code{start} is supplied: that call
 evaluates the supplied parameters and nothing else, so exactly one start is
 run whatever \code{n_starts} says.}
@@ -283,11 +288,12 @@ convergence test is read over a whole cycle, so it is never looser than
 plain EM's. \code{"none"} runs plain EM, which follows the same path as other
 EM implementations from the same start (mclust, Mplus) and is the choice
 for step-by-step reproduction. \code{iterations} and \code{max_iter} count EM steps
-either way. Fits with \code{prior}, models with membership covariates, and
-the EVE and VVE structures always use plain EM: their shared orientation
-is found by an inner iteration, so their EM step is not the exact map
-the extrapolation assumes, and accelerating it was seen to stop at a
-lower likelihood than plain EM from the same start.}
+either way. Fits with \code{prior}, and models with membership covariates,
+always use plain EM. For EVE and VVE, whose shared orientation has no
+closed form, each EM iteration takes a fixed number of warm-started
+orientation steps rather than solving it (a generalized EM step), under
+either setting; this keeps every iteration monotone and makes the EM map
+a fixed function, which SQUAREM requires.}
 }
 \value{
 An \code{multilpa} object containing \code{means}, \code{variances}, optional

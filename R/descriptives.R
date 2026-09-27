@@ -180,7 +180,13 @@ descriptives.multilpa_covariates <- descriptives.multilpa
       "`by` names the column `%s`, which the summary itself uses, so the two could not be told apart in the result.",
       by_label), class = "latents_bad_data", call = NULL))
   }
-  observed_levels <- unique(by_values[!is.na(by_values)])
+  # Strata in a fixed order -- a factor's own level order, otherwise sorted --
+  # so the table reads class 1, 2, ... whatever order the rows came in.
+  present <- by_values[!is.na(by_values)]
+  observed_levels <- if (is.factor(by_values)) {
+    factor(intersect(levels(by_values), as.character(present)),
+           levels = levels(by_values))
+  } else sort(unique(present))
   keys <- match(by_values, observed_levels)
   missing_stratum <- anyNA(keys)
   strata <- c(lapply(seq_along(observed_levels), \(index) which(keys == index)),

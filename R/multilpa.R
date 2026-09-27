@@ -198,7 +198,8 @@
 .multilpa_initialize <- function(x, group_index, n_profiles, n_types,
                                variance_model, min_variance, start_index,
                                covariance_model = "diagonal", codes = NULL,
-                               n_categories = NULL, min_probability = 1e-10) {
+                               n_categories = NULL, min_probability = 1e-10,
+                               hierarchical = FALSE) {
   stopifnot(is.matrix(x), length(group_index) == nrow(x),
             n_profiles >= 1L, n_types >= 1L, start_index >= 1L,
             variance_model %in% c("varying", "equal"), min_variance > 0)
@@ -224,18 +225,49 @@
     # a mixed-mode model is initialized from all of its indicators at once.
     clustering_input <- if (is.null(codes)) standardized else
       cbind(standardized, .multilpa_categorical_design(codes, n_categories))
-    initial_fit <- stats::kmeans(clustering_input, centers = n_profiles,
-                                iter.max = 100L, algorithm = "Lloyd")
-    if (!is.null(initial_fit$ifault) && initial_fit$ifault != 0L) {
-      stop("Initial k-means did not converge.")
+    if (hierarchical) {
+      assignments <- .multilpa_ward_assignments(clustering_input, n_profiles)
+      centers <- t(vapply(seq_len(n_profiles), function(profile) {
+        colMeans(clustering_input[assignments == profile, seq_len(ncol(x)),
+                                  drop = FALSE])
+      }, numeric(ncol(x))))
+      centers <- matrix(centers, n_profiles, ncol(x))
+    } else {
+      initial_fit <- stats::kmeans(clustering_input, centers = n_profiles,
+                                  iter.max = 100L, algorithm = "Lloyd")
+      if (!is.null(initial_fit$ifault) && initial_fit$ifault != 0L) {
+        stop("Initial k-means did not converge.")
+      }
+      assignments <- initial_fit$cluster
+      centers <- initial_fit$centers[, seq_len(ncol(x)), drop = FALSE]
     }
-    assignments <- initial_fit$cluster
-    centers <- initial_fit$centers[, seq_len(ncol(x)), drop = FALSE]
     means <- sweep(sweep(centers, 2L, sqrt(overall_variances), "*"),
                    2L, overall_means, "+")
   }
   variances <- matrix(pmax(overall_variances, min_variance),
                       n_profiles, ncol(x), byrow = TRUE)
+  # The hierarchical start describes each cluster by its own spread, which is
+  # what lets it reach solutions whose profiles differ in shape. A cluster too
+  # small to estimate a spread keeps the overall one.
+  cluster_spread <- function(profile) {
+    rows <- assignments == profile
+    if (sum(rows) <= ncol(x) + 1L) return(NULL)
+    stats::cov(x[rows, , drop = FALSE]) * (sum(rows) - 1) / sum(rows)
+  }
+  spreads <- if (hierarchical && n_profiles > 1L && ncol(x) > 0L) {
+    lapply(seq_len(n_profiles), cluster_spread)
+  } else NULL
+  if (!is.null(spreads)) {
+    variances <- t(vapply(seq_len(n_profiles), function(profile) {
+      if (is.null(spreads[[profile]])) variances[profile, ] else
+        pmax(diag(spreads[[profile]]), min_variance)
+    }, numeric(ncol(x))))
+    variances <- matrix(variances, n_profiles, ncol(x))
+    if (identical(variance_model, "equal")) {
+      variances <- matrix(colMeans(variances), n_profiles, ncol(x),
+                          byrow = TRUE)
+    }
+  }
   indicator <- vapply(seq_len(n_profiles), function(profile) {
     as.numeric(assignments == profile)
   }, numeric(nrow(x)))
@@ -268,10 +300,56 @@
   if (ncol(x) > 0L && covariance_model == "full") {
     residuals <- sweep(x, 2L, overall_means, "-")
     covariance <- .multilpa_bound_covariance(crossprod(residuals) / nrow(x), min_variance)
-    result$covariances <- array(rep(covariance, n_profiles), c(ncol(x), ncol(x), n_profiles))
-    result$variances <- matrix(diag(covariance), n_profiles, ncol(x), byrow = TRUE)
+    blocks <- rep(list(covariance), n_profiles)
+    if (!is.null(spreads)) {
+      blocks <- lapply(seq_len(n_profiles), function(profile) {
+        if (is.null(spreads[[profile]])) covariance else
+          .multilpa_bound_covariance(spreads[[profile]], min_variance)
+      })
+      if (identical(variance_model, "equal")) {
+        blocks <- rep(list(Reduce(`+`, blocks) / n_profiles), n_profiles)
+      }
+    }
+    result$covariances <- array(unlist(blocks, use.names = FALSE),
+                                c(ncol(x), ncol(x), n_profiles))
+    result$variances <- t(vapply(blocks, diag, numeric(ncol(x))))
+    result$variances <- matrix(result$variances, n_profiles, ncol(x))
   }
   result
+}
+
+#' Assign rows to clusters by Ward's hierarchical clustering
+#'
+#' The deterministic start mclust takes its name from (model-based
+#' hierarchical agglomeration), in its common Ward form. Agglomeration needs
+#' every pairwise distance, so at most 2000 evenly spaced rows are clustered
+#' and every row is then assigned to the nearest cluster centre.
+#'
+#' @param input Standardized numeric matrix, one row per observation.
+#' @param n_clusters Number of clusters.
+#' @return Integer cluster labels, one per row, every cluster non-empty.
+#' @noRd
+.multilpa_ward_assignments <- function(input, n_clusters) {
+  stopifnot("`input` must be a numeric matrix" = is.matrix(input),
+            "`n_clusters` must not exceed the rows" = n_clusters <= nrow(input))
+  used <- unique(round(seq(1, nrow(input),
+                           length.out = min(nrow(input), 2000L))))
+  tree <- stats::hclust(stats::dist(input[used, , drop = FALSE]), "ward.D2")
+  labels <- stats::cutree(tree, n_clusters)
+  centres <- rowsum(input[used, , drop = FALSE], labels) /
+    as.vector(tabulate(labels, n_clusters))
+  distance <- vapply(seq_len(n_clusters), function(cluster) {
+    colSums((t(input) - centres[cluster, ])^2)
+  }, numeric(nrow(input)))
+  assignments <- max.col(-matrix(distance, nrow(input)), ties.method = "first")
+  # Nearest-centre assignment can leave a small cluster empty on the full
+  # data; its sampled members keep it.
+  empty <- setdiff(seq_len(n_clusters), assignments)
+  if (length(empty) > 0L) {
+    keep <- labels %in% empty
+    assignments[used[keep]] <- labels[keep]
+  }
+  assignments
 }
 
 #' Validate user-supplied initial parameters
@@ -701,8 +779,13 @@
 #'   Use one for an ordinary, pooled LPA.
 #' @param variance_model Either `"varying"` (profile-specific variances or
 #'   covariance matrices) or `"equal"` (shared across profiles).
-#' @param n_starts Positive integer number of EM starts. When `start` is supplied,
-#'   it supplies the first start; remaining starts are random initializations.
+#' @param n_starts Positive integer number of EM starts. The first is
+#'   deterministic: Ward's hierarchical clustering of the standardized
+#'   indicators (on at most 2000 evenly spaced rows), each cluster described by
+#'   its own means and spread, which is the start mclust's name refers to and
+#'   finds solutions whose profiles differ in shape. The rest are k-means from
+#'   random centres. When `start` is supplied, it supplies the first start
+#'   instead; remaining starts are random initializations.
 #'   It is ignored when `max_iter = 0` and `start` is supplied: that call
 #'   evaluates the supplied parameters and nothing else, so exactly one start is
 #'   run whatever `n_starts` says.
@@ -850,11 +933,12 @@
 #'   plain EM's. `"none"` runs plain EM, which follows the same path as other
 #'   EM implementations from the same start (mclust, Mplus) and is the choice
 #'   for step-by-step reproduction. `iterations` and `max_iter` count EM steps
-#'   either way. Fits with `prior`, models with membership covariates, and
-#'   the EVE and VVE structures always use plain EM: their shared orientation
-#'   is found by an inner iteration, so their EM step is not the exact map
-#'   the extrapolation assumes, and accelerating it was seen to stop at a
-#'   lower likelihood than plain EM from the same start.
+#'   either way. Fits with `prior`, and models with membership covariates,
+#'   always use plain EM. For EVE and VVE, whose shared orientation has no
+#'   closed form, each EM iteration takes a fixed number of warm-started
+#'   orientation steps rather than solving it (a generalized EM step), under
+#'   either setting; this keeps every iteration monotone and makes the EM map
+#'   a fixed function, which SQUAREM requires.
 #' @param centering How to centre the continuous indicators before fitting.
 #'   `"none"`, the default, fits them as supplied. `"person"` subtracts each
 #'   group's own mean from its rows, so a value reads as a deviation from that
@@ -1172,9 +1256,13 @@ multilpa <- function(data, vars, id, n_profiles,
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
       initial <- if (start_index == 1L && !is.null(start)) start else {
+        # The first start is Ward's hierarchical clustering, deterministic
+        # and good at profiles that differ in shape; the rest are k-means
+        # from random centres.
         .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                            variance_model, min_variance, start_index,
-                           covariance_model, codes, n_categories, min_probability)
+                           covariance_model, codes, n_categories, min_probability,
+                           hierarchical = start_index == 1L)
       }
       # Every restart begins from the held values, so a random start cannot
       # report a measurement solution that was neither estimated nor supplied.
@@ -1191,8 +1279,7 @@ multilpa <- function(data, vars, id, n_profiles,
       .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
                  tol, covariance_model, codes, n_categories, min_probability,
                  held, structure, prior_parameters,
-                 accelerate_em = identical(acceleration, "squarem") &&
-                   !identical(structure, "EVE") && !identical(structure, "VVE"))
+                 accelerate_em = identical(acceleration, "squarem"))
     }, error = function(error) list(error = conditionMessage(error)))
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))

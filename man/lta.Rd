@@ -48,8 +48,13 @@ a mixture of transition models over groups.}
 \item{variance_model}{Either \code{"varying"} (profile-specific variances or
 covariance matrices) or \code{"equal"} (shared across profiles).}
 
-\item{n_starts}{Positive integer number of EM starts. When \code{start} is supplied,
-it supplies the first start; remaining starts are random initializations.
+\item{n_starts}{Positive integer number of EM starts. The first is
+deterministic: Ward's hierarchical clustering of the standardized
+indicators (on at most 2000 evenly spaced rows), each cluster described by
+its own means and spread, which is the start mclust's name refers to and
+finds solutions whose profiles differ in shape. The rest are k-means from
+random centres. When \code{start} is supplied, it supplies the first start
+instead; remaining starts are random initializations.
 It is ignored when \code{max_iter = 0} and \code{start} is supplied: that call
 evaluates the supplied parameters and nothing else, so exactly one start is
 run whatever \code{n_starts} says.}

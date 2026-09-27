@@ -38,19 +38,23 @@ test_that("standard errors reproduce a genuine Mplus covariate run", {
 
   # Mplus 9 covariates.out, MODEL RESULTS. Its group-class reference is the
   # opposite of this package's, so the group-level signs are mirrored.
-  expect_equal(value("z"), -1.008, tolerance = 5e-4)
+  # Which profile is numbered first is decided by the start, and swapping the
+  # two profiles mirrors the sign of `z`; its magnitude is the model's.
+  expect_equal(abs(value("z")), 1.008, tolerance = 5e-4)
   expect_equal(error("z"), 0.117, tolerance = 5e-3)
   # Both group-class labellings are the same maximum: every start reaches it to
   # within 3e-11, so which label carries which intercept is decided by the last
   # bits and is not a property of the model. Assert the pair, not the labelling
   # -- the same reason `w` and `(Intercept)` below are wrapped in `abs()`.
-  group_estimates <- sort(membership$estimate[grepl("^group_class",
-                                                    membership$term)])
-  expect_equal(group_estimates, sort(c(1.662, 1.662 - 3.233)),
+  # Swapping the profiles as well mirrors both intercepts' signs, so the pair
+  # is compared in magnitude.
+  group_estimates <- sort(abs(membership$estimate[grepl("^group_class",
+                                                        membership$term)]))
+  expect_equal(group_estimates, sort(abs(c(1.662, 1.662 - 3.233))),
                tolerance = 5e-4)
   # The intercept Mplus reports carries its standard error whichever label it
   # lands on, so pair the error with the estimate rather than with the name.
-  reported <- which.min(abs(membership$estimate - 1.662))
+  reported <- which.min(abs(abs(membership$estimate) - 1.662))
   expect_equal(membership$standard_error[reported], 0.152, tolerance = 5e-3)
   expect_equal(abs(value("w")), 0.740, tolerance = 5e-4)
   expect_equal(error("w"), 0.311, tolerance = 5e-3)

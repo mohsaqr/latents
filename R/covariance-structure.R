@@ -357,12 +357,17 @@
 #' @param min_variance The eigenvalue lower bound.
 #' @param max_iter Iterations allowed for the structures that need them.
 #' @param tol Relative convergence tolerance for those.
+#' @param inner_steps `NULL` to solve EVE and VVE's orientation to `tol`, or a
+#'   number of minorize-maximize steps to take from the warm start. The EM
+#'   loop passes a small number: a generalized EM step that improves the
+#'   M-step objective without solving it, which keeps every EM iteration
+#'   monotone and makes the EM map a fixed function of its input.
 #' @return A `d` by `d` by `k` array of covariances.
 #' @noRd
 .multilpa_structure_covariances <- function(scatter, weights, structure,
                                             min_variance, max_iter = 1000L,
                                             tol = sqrt(.Machine$double.eps),
-                                            start = NULL) {
+                                            start = NULL, inner_steps = NULL) {
   stopifnot(
     "`structure` must be a supported covariance structure" =
       length(structure) == 1L && structure %in% .multilpa_structures(),
@@ -380,10 +385,14 @@
     EVV = .multilpa_evv_covariances(symmetric, n, d),
     VEE = .multilpa_vee_covariances(symmetric, weights, d, max_iter, tol,
                                     .multilpa_seed_block(start, d)),
-    EVE = .multilpa_eve_covariances(symmetric, weights, d, max_iter, tol, TRUE,
-                                    .multilpa_seed_block(start, d)),
-    VVE = .multilpa_eve_covariances(symmetric, weights, d, max_iter, tol, FALSE,
-                                    .multilpa_seed_block(start, d)),
+    EVE = .multilpa_eve_covariances(symmetric, weights, d,
+                                    inner_steps %||% max_iter, tol, TRUE,
+                                    .multilpa_seed_block(start, d),
+                                    capped_by_design = !is.null(inner_steps)),
+    VVE = .multilpa_eve_covariances(symmetric, weights, d,
+                                    inner_steps %||% max_iter, tol, FALSE,
+                                    .multilpa_seed_block(start, d),
+                                    capped_by_design = !is.null(inner_steps)),
     # The axis-parallel models are diagonal, and are solved as variances.
     lapply(seq_len(k), function(profile) {
       diag(.multilpa_structure_variances(
@@ -536,7 +545,8 @@
 #' @return A list of covariance matrices.
 #' @noRd
 .multilpa_eve_covariances <- function(scatter, weights, d, max_iter, tol,
-                                      equal_volume, start = NULL) {
+                                      equal_volume, start = NULL,
+                                      capped_by_design = FALSE) {
   k <- length(weights)
   n <- sum(weights)
   largest <- vapply(scatter, function(block) {
@@ -550,9 +560,8 @@
   shapes <- lapply(seq_len(k), function(profile) rep(1, d))
   volumes <- rep(1, k)
   converged <- FALSE
-  # Two nested fixed points: the shapes and volumes given the orientation, and
-  # the orientation given them. Each step needs the previous one.
-  for (iteration in seq_len(max_iter)) {
+  # The shapes and volumes that maximize the objective at a given orientation.
+  shape_and_volume <- function(orientation) {
     rotated <- lapply(scatter, function(block) {
       diag(crossprod(orientation, block %*% orientation))
     })
@@ -569,6 +578,14 @@
         sum(rotated[[profile]] / shapes[[profile]]) / (weights[profile] * d)
       }, numeric(1))
     }
+    list(shapes = shapes, volumes = volumes)
+  }
+  # Two nested fixed points: the shapes and volumes given the orientation, and
+  # the orientation given them. Each step needs the previous one.
+  for (iteration in seq_len(max_iter)) {
+    conditional <- shape_and_volume(orientation)
+    shapes <- conditional$shapes
+    volumes <- conditional$volumes
     # One MM step: majorize each trace term linearly at the current
     # orientation, then maximize the linear surrogate over the orthogonal
     # matrices, which is an orthogonal Procrustes problem.
@@ -582,9 +599,14 @@
     orientation <- updated
     if (converged) break
   }
-  if (!converged) {
+  if (!converged && !capped_by_design) {
     .multilpa_warn_structure(if (equal_volume) "EVE" else "VVE", max_iter)
   }
+  # The shapes and volumes that go with the final orientation: an exact
+  # conditional maximization, so it can only raise the objective.
+  conditional <- shape_and_volume(orientation)
+  shapes <- conditional$shapes
+  volumes <- conditional$volumes
   lapply(seq_len(k), function(profile) {
     volumes[profile] * orientation %*% diag(shapes[[profile]], d) %*%
       t(orientation)
@@ -690,3 +712,18 @@
   if (any(!is.finite(block))) return(NULL)
   (block + t(block)) / 2
 }
+
+#' Orientation steps per EM iteration for EVE and VVE
+#'
+#' Their shared orientation has no closed form. Solving it to convergence in
+#' every M-step spent a median of 220 minorize-maximize steps per EM
+#' iteration on work the next iteration discards; a few warm-started steps
+#' per iteration reach the same maximum (a generalized EM step). Over 18
+#' fits (three datasets, EVE and VVE, three seeds), 3, 5 and 10 steps landed
+#' within 1e-5 to 3e-3 of the full solve's likelihood whenever they reached
+#' the same maximum, and took 3.5 to 8 times less time; which maximum a fit
+#' reached varied without pattern across settings, the full solve included.
+#'
+#' @return A single positive integer.
+#' @noRd
+.multilpa_orientation_steps <- function() 5L

@@ -238,3 +238,30 @@ test_that("the enumeration plot draws several criteria and restores the device",
   expect_error(plot(grid, criterion = c("aic", "not_a_criterion")),
                class = "latents_unknown_criterion")
 })
+
+test_that("enumerate_classes() enumerates single-level models with id = NULL", {
+  flowers <- stats::setNames(iris[1:4], c("sl", "sw", "pl", "pw"))
+  expect_warning(
+    grid <- enumerate_classes(flowers, names(flowers), id = NULL,
+                              n_profiles = 1:3, model = c("VVV", "EEE"),
+                              n_starts = 2, seed = 1),
+    class = "latents_single_level")
+  table <- as.data.frame(grid)
+  expect_identical(nrow(table), 6L)
+  expect_true(all(table$n_group_classes == 1L))
+  expect_true(all(is.na(table$error)))
+  # The single-level notice is given once, not recorded against every row.
+  expect_false(any(grepl("single-level", table$warnings)))
+  # Each cell is the fit multilpa() makes on its own.
+  alone <- withCallingHandlers(
+    multilpa(flowers, names(flowers), id = NULL, n_profiles = 3, n_starts = 2,
+             seed = 1, volume = "varying", shape = "varying",
+             orientation = "varying"),
+    latents_single_level = function(w) invokeRestart("muffleWarning"))
+  expect_equal(candidate_fit(grid, n_profiles = 3, n_group_classes = 1,
+                             model = "VVV")$log_likelihood,
+               alone$log_likelihood)
+  expect_error(enumerate_classes(flowers, names(flowers), id = NULL,
+                                 n_profiles = 1:2, n_group_classes = 1:2),
+               class = "latents_bad_argument")
+})

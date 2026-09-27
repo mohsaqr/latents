@@ -122,7 +122,8 @@
     # The previous iteration's answer seeds the structures that iterate, so
     # each M-step continues where the last one stopped rather than restarting.
     .multilpa_structure_covariances(covariance_sums, weights, structure,
-                                    min_variance, start = previous$covariances)
+                                    min_variance, start = previous$covariances,
+                                    inner_steps = .multilpa_orientation_steps())
   } else NULL
   covariances <- lapply(seq_along(weights), function(profile) {
     held_covariance <- if (!is.null(held$covariances)) {

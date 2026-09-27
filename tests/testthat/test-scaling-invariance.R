@@ -101,8 +101,9 @@ test_that("a covariate fit is invariant to the units its covariate arrives in", 
   expect_equal(unname(table["variance_1", ]),
                rep(unname(table["variance_1", 1L]), length(units)), tolerance = 1e-10)
   # The effect is real, so a fit that quietly lost it would be caught here even
-  # if every scale agreed on some other value.
-  expect_lt(unname(table["slope_original_units", 1L]), -1)
+  # if every scale agreed on some other value. Its sign depends on which
+  # profile is numbered first, which the start decides, so its size is tested.
+  expect_gt(abs(unname(table["slope_original_units", 1L])), 1)
 
   # Nothing is suppressed: at 1e-7 units the coefficient genuinely is above the
   # extreme-logit threshold, and the fit says so, at every other unit it is not.

@@ -6,9 +6,12 @@
 #' boundary, and unreplicated fits are reported, not silently selected.
 #' @param data Data frame.
 #' @param vars Continuous indicator names.
-#' @param id Group identifier column name.
+#' @param id Group identifier column name, or `NULL` to enumerate
+#'   single-level models (every observation its own unit), the grid
+#'   `mclust::mclustBIC()` searches.
 #' @param n_profiles Positive integer profile counts to try.
-#' @param n_group_classes Positive integer group-class counts to try.
+#' @param n_group_classes Positive integer group-class counts to try. With
+#'   `id = NULL` it is 1 and may be left out.
 #' @param model Covariance models to try, as the three-letter codes
 #'   [multilpa()]'s `volume`, `shape` and `orientation` name: any of
 #'   `"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
@@ -34,11 +37,33 @@
 #'                               n_group_classes = 1, n_starts = 2, seed = 1)
 #' as.data.frame(candidates)
 #' summary(candidates)
+#'
+#' # Single level, crossing class counts with covariance structures:
+#' flowers <- setNames(iris[1:4], c("sepal_l", "sepal_w", "petal_l", "petal_w"))
+#' single <- enumerate_classes(flowers, names(flowers), id = NULL,
+#'                             n_profiles = 1:3, model = c("VVV", "EEE"),
+#'                             n_starts = 2, seed = 1)
+#' summary(single)
 #' @export
 enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                               n_group_classes = 1:3, model = NULL,
                               seed = NULL, ...) {
-  stopifnot(is.data.frame(data), is.character(vars), is.character(id),
+  single_level <- is.null(id)
+  if (single_level) {
+    # One observation per unit leaves no composition for a group class to
+    # differ in, so the only group-class count is 1.
+    if (!missing(n_group_classes) &&
+        !isTRUE(all(as.integer(n_group_classes) == 1L))) {
+      stop(errorCondition(paste(
+        "`id = NULL` fits single-level models, which have one group class;",
+        "leave `n_group_classes` out, or pass `id` to enumerate group classes."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    n_group_classes <- 1L
+  }
+  stopifnot(is.data.frame(data), is.character(vars),
+            "`id` must be a single column name, or NULL for single-level models" =
+              single_level || (is.character(id) && length(id) == 1L),
             is.numeric(n_profiles), length(n_profiles) > 0L,
             all(is.finite(n_profiles)), all(n_profiles >= 1), all(n_profiles == as.integer(n_profiles)),
             is.numeric(n_group_classes), length(n_group_classes) > 0L,
@@ -86,6 +111,11 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
              n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed),
         requested, extra)),
       warning = function(warning) {
+        # A single-level grid asked for single-level fits; that notice is
+        # given once for the whole grid below, not once per candidate.
+        if (single_level && inherits(warning, "latents_single_level")) {
+          invokeRestart("muffleWarning")
+        }
         warnings <<- c(warnings, conditionMessage(warning))
       }), error = function(error) {
         error_text <<- conditionMessage(error)
@@ -109,6 +139,12 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
         warnings = paste(unique(warnings), collapse = "; "), error = error_text))
     list(fit = fit, row = row)
   })
+  if (single_level) {
+    warning(warningCondition(paste(
+      "`id = NULL` enumerates single-level models: every observation is its",
+      "own unit and no group classes are estimated."),
+      class = "latents_single_level", call = NULL))
+  }
   result <- list(table = do.call(rbind, lapply(runs, `[[`, "row")),
        fits = lapply(runs, `[[`, "fit"), call = match.call())
   class(result) <- "multilpa_enumeration"
