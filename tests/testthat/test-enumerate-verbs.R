@@ -84,19 +84,18 @@ test_that("the two-level verbs name the analysis they fitted with id = NULL", {
     multilpa(srl, srl_indicators, id = NULL, n_profiles = 1, n_starts = 1,
              seed = 1),
     latents_single_level = conditionMessage)
-  expect_match(profile_notice, "latent profile analysis", fixed = TRUE)
-  expect_match(profile_notice, "`lpa()`", fixed = TRUE)
+  expect_match(profile_notice, "single-level latent profile model",
+               fixed = TRUE)
   class_notice <- tryCatch(
     multilca(student_esm, esm_activities, id = NULL, n_profiles = 1,
              n_starts = 1, seed = 1),
     latents_single_level = conditionMessage)
-  expect_match(class_notice, "latent class analysis", fixed = TRUE)
-  expect_match(class_notice, "`enumerate_lca()`", fixed = TRUE)
+  expect_match(class_notice, "single-level latent class model", fixed = TRUE)
   grid_notice <- tryCatch(
     enumerate_classes(student_esm, esm_activities, id = NULL, n_profiles = 1,
                       categorical = esm_activities, n_starts = 1, seed = 1),
     latents_single_level = conditionMessage)
-  expect_match(grid_notice, "latent class analysis", fixed = TRUE)
+  expect_match(grid_notice, "single-level latent class model", fixed = TRUE)
 })
 
 test_that("a two-level verb without `id` points to the single-level verbs", {

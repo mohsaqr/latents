@@ -24,7 +24,7 @@ test_that("a forgotten id raises, and a stated one warns", {
   expect_error(multilpa(data, c("x", "y"), n_profiles = 2L, n_starts = 2L),
                class = "latents_bad_argument")
   expect_error(multilpa(data, c("x", "y"), n_profiles = 2L, n_starts = 2L),
-               "pass `id = NULL`")
+               "needs `id`")
   # Saying it explicitly works, and says so back.
   expect_message(multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L,
                           n_starts = 2L, seed = 1L),

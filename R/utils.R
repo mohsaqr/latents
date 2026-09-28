@@ -127,10 +127,10 @@
 #'
 #' `multilpa()`, `multilca()` and `enumerate_classes()` are the verbs for
 #' observations nested in groups. Given `id = NULL` they fit the single-level
-#' model, which is a legitimate choice, so this is a message rather than a
-#' warning; it names the analysis that was estimated and the verbs that fit it
-#' by name. `lpa()`, `lca()`, `enumerate_lpa()` and `enumerate_lca()` muffle
-#' it, since their names already say it.
+#' model, which is a legitimate choice, so this is a one-line message rather
+#' than a warning, naming the model that was estimated. `lpa()`, `lca()`,
+#' `enumerate_lpa()` and `enumerate_lca()` muffle it, since their names
+#' already say it.
 #'
 #' @param latent_class Whether every indicator is categorical.
 #' @return `NULL`, invisibly, after signalling a `latents_single_level`
@@ -138,13 +138,7 @@
 #' @noRd
 .multilpa_single_level_notice <- function(latent_class = FALSE) {
   analysis <- if (isTRUE(latent_class)) "latent class" else "latent profile"
-  verbs <- if (isTRUE(latent_class)) "`lca()` and `enumerate_lca()`" else
-    "`lpa()` and `enumerate_lpa()`"
-  .multilpa_notice(sprintf(paste(
-    "A single-level %s analysis was estimated: every row is an independent",
-    "observation and no group classes are estimated. For single-level data",
-    "use %s; for observations nested in groups, pass the grouping column as",
-    "`id`."), analysis, verbs),
+  .multilpa_notice(sprintf("Fitted a single-level %s model.", analysis),
     class = "latents_single_level")
   invisible(NULL)
 }
@@ -160,9 +154,8 @@
 #' @return Does not return; raises `latents_bad_argument`.
 #' @noRd
 .multilpa_missing_id <- function(verb, single) {
-  stop(errorCondition(sprintf(paste(
-    "`%s()` is for observations nested in groups and needs the grouping",
-    "column as `id`. For single-level data use %s, or pass `id = NULL`."),
+  stop(errorCondition(sprintf(
+    "`%s()` needs `id` (grouping column). For single-level data use %s.",
     verb, single),
     class = "latents_bad_argument", call = NULL))
 }
