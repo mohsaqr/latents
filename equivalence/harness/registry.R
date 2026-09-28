@@ -283,8 +283,8 @@ require_suite_files <- function(..., reason = NULL) {
 #'   `file`, `line`, `call`, `argument` and `replacement`. Zero rows means
 #'   every call matches the loaded package's signatures.
 check_validation_api <- function(root = ".", paths = NULL) {
-  stopifnot("multilpa must be loaded before its signatures can be checked" =
-              "multilpa" %in% loadedNamespaces())
+  stopifnot("latents must be loaded before its signatures can be checked" =
+              "latents" %in% loadedNamespaces())
   verbs <- getNamespaceExports("latents")
   verbs <- verbs[vapply(verbs, function(name) {
     is.function(get(name, envir = asNamespace("latents")))

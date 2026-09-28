@@ -34,6 +34,26 @@ skip_on_cran()
                             "latents_extreme_coefficients", "latents_boundary"))
 }
 
+test_that("a likelihood-ratio bootstrap refuses posterior-mode estimates", {
+  set.seed(7)
+  frame <- data.frame(g = seq_len(150),
+                      y = c(rnorm(75, -2), rnorm(75, 2)))
+  fit <- function(k, prior = NULL) {
+    .lrt_quietly(multilpa(frame, "y", "g", k, 1, prior = prior,
+                          n_starts = 2, seed = 1))
+  }
+  null <- fit(1)
+  alternative <- fit(2)
+  map_null <- fit(1, prior_control())
+  map_alternative <- fit(2, prior_control())
+  expect_error(bootstrap_lrt(map_null, alternative, iter = 2),
+               class = "latents_unsupported_prior")
+  expect_error(bootstrap_lrt(null, map_alternative, iter = 2),
+               class = "latents_unsupported_prior")
+  expect_error(bootstrap_lrt(map_null, map_alternative, iter = 2),
+               class = "latents_unsupported_prior")
+})
+
 test_that("simulated data carry the observed missing cells, and only those", {
   frame <- .lrt_fixture()
   fit <- .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", 2L, 1L, missing = "fiml",

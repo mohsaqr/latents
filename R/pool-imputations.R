@@ -19,12 +19,14 @@
 #' the group identifier in the imputation model), then pass the completed data
 #' here.
 #'
-#' Pooling is on the reported (natural) scale, the scale
-#' [parameter_inference()] tests and bounds on: for each parameter the pooled
+#' Pooling is on the reported (natural) scale: for each parameter the pooled
 #' estimate is the mean over imputations, and its variance is the mean
 #' within-imputation variance plus `(1 + 1/m)` times the between-imputation
 #' variance. Degrees of freedom follow Rubin (1987) with a large complete-data
 #' sample, which is what maximum-likelihood inference assumes.
+#' Pooled intervals are symmetric t intervals on this scale; unlike the
+#' transformed Wald intervals of [parameter_inference()], they can extend
+#' outside the parameter space for probabilities or variances.
 #'
 #' @section Choosing the imputation model:
 #' Rubin's rules are only as good as the imputations. The covariate and the
@@ -34,15 +36,18 @@
 #' of its covariate missing at random given the indicators, 200 replications,
 #' ten imputations) 95% intervals covered 0.925 under predictive mean
 #' matching and 0.935 under Bayesian linear regression, against 0.995 when the
-#' covariate was drawn from its exact conditional distribution under the
-#' generating model. The last shows the pooling itself is sound; the shortfall
-#' is the imputation model's (Meng, 1994). Give the imputation model what the
-#' latent structure implies: every indicator, and interactions or nonlinear
-#' terms among them, or impute within classes assigned by a covariate-free
-#' fit. When missingness depends only on the indicators, complete-case
-#' analysis of the membership slope is not biased (covered 0.955 in the same
-#' study), because selecting on the outcome side of a logit leaves its slope
-#' intact; imputation then buys precision, not validity.
+#' covariate was approximately drawn from its conditional distribution using
+#' known generating parameters. That oracle arm omits uncertainty in the
+#' imputation parameters and is not a validation of proper multiple
+#' imputation or nominal interval coverage. The study is one design, not a
+#' general guarantee for any method. Use an imputation model that accounts for
+#' the latent structure and clustering, includes the indicators and relevant
+#' nonlinearities, and propagates parameter uncertainty. Imputing separately
+#' within assigned classes alone ignores classification uncertainty.
+#' Complete-case coverage was 0.955 in that design, but selecting on the
+#' indicators changes their within-class distributions; the usual logistic
+#' case-control slope argument does not guarantee unbiased slopes when the
+#' outcome is latent and its measurement model is estimated.
 #'
 #' @param imputed The completed data sets: a list of at least two data frames
 #'   with the same columns and rows in the same order, or a `mids` object from
@@ -233,7 +238,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
 
 #' What a covariate fit's profile looks like, for matching
 #'
-#' As [.multilpa_profile_signature()], with the profile's overall share taken
+#' As `.multilpa_profile_signature()`, with the profile's overall share taken
 #' from the posteriors, since a covariate fit has no constant mixing
 #' probabilities.
 #' @param x,reference `multilpa_covariates` fits.
@@ -358,7 +363,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
 #'
 #' Rubin (1987): the pooled estimate is the mean `Q`, the total variance
 #' `T = U + (1 + 1/m) B` with `U` the mean within-imputation variance and `B`
-#' the between-imputation variance, `r = (1 + 1/m) B / U`, degrees of freedom
+#' the between-imputation variance, `r=(1 + 1/m) * B / U`, degrees of freedom
 #' `(m - 1)(1 + 1/r)^2` (infinite when `B` is zero), and the fraction of
 #' missing information `(r + 2 / (df + 3)) / (r + 1)`.
 #'
@@ -443,7 +448,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
 
 #' One row per imputation: its fit and the relabelling that aligned it
 #' @param fits The unaligned fits.
-#' @param alignments The alignments from [.multilpa_pool_align()].
+#' @param alignments The alignments from `.multilpa_pool_align()`.
 #' @return A data frame.
 #' @noRd
 .multilpa_pool_fit_frame <- function(fits, alignments) {

@@ -347,7 +347,7 @@
 .mixture_multinomial <- function(design, counts, start, max_newton = 100L) {
   n_categories <- ncol(counts)
   r <- ncol(design)
-  if (n_categories == 1L) {
+  if (n_categories == 1L || r == 0L) {
     return(list(coefficients = start, separation = FALSE))
   }
   totals <- rowSums(counts)

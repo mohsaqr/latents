@@ -28,7 +28,7 @@
 #' stalls the search while the score is still large, and `optim()` still returns
 #' convergence code zero. Because the logit is the same model under any linear
 #' rescaling of a predictor, the entire search is moved onto columns divided by
-#' their root-mean-square (see [.multilpa_design_scale()]) and the coefficients
+#' their root-mean-square (see `.multilpa_design_scale()`) and the coefficients
 #' are divided back afterwards, so the caller receives estimates in the units
 #' the covariates arrived in and the search itself no longer depends on those
 #' units. Convergence is then judged by the score in those unit-free

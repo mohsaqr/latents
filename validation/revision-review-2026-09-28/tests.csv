@@ -1,0 +1,664 @@
+"file","test","nb","failed","skipped","error","warning","passed"
+"test-acceleration.R","SQUAREM reaches plain EM's maximum from the same start",4,0,FALSE,FALSE,0,4
+"test-acceleration.R","the accelerated path is monotone and counts every EM step",3,0,FALSE,FALSE,0,3
+"test-acceleration.R","a budget below one cycle takes plain steps",3,0,FALSE,FALSE,0,3
+"test-acceleration.R","prior fits run plain EM whatever is requested",1,0,FALSE,FALSE,0,1
+"test-acceleration.R","a capped EVE/VVE orientation step never lowers the M-step objective",4,0,FALSE,FALSE,0,4
+"test-acceleration.R","a converged EVE/VVE fit is a fixed point of the full orientation solve",4,0,FALSE,FALSE,0,4
+"test-acceleration.R","flattening and refilling parameters is lossless",2,0,FALSE,FALSE,0,2
+"test-acceleration.R","an extrapolated point outside the parameter space is recognised",3,0,FALSE,FALSE,0,3
+"test-acceleration.R","an extrapolation that lowers the likelihood falls back to plain EM",5,0,FALSE,FALSE,0,5
+"test-assignment-alignment.R","a conforming frame is joined exactly as before",5,0,FALSE,FALSE,0,5
+"test-assignment-alignment.R","a reordered frame is refused rather than silently misaligned",2,0,FALSE,FALSE,0,2
+"test-assignment-alignment.R","a frame with no column of the fit warns that it cannot be checked",1,0,FALSE,FALSE,0,1
+"test-assignment-alignment.R","repeated group IDs alone cannot verify within-group order",2,0,FALSE,FALSE,0,2
+"test-assignment-alignment.R","the row-count contract is unchanged",1,0,FALSE,FALSE,0,1
+"test-assignment-alignment.R","bivariate residuals accept the fitted frame and refuse another order",4,0,FALSE,FALSE,0,4
+"test-assignment-alignment.R","starting values carry the labels a categorical block is held by",9,0,FALSE,FALSE,0,9
+"test-assignment-alignment.R","alignment survives a round trip that changes storage, not order",2,0,FALSE,FALSE,0,2
+"test-bivariate-residuals.R","a planted dependence is found and the innocent pairs are not",6,0,FALSE,FALSE,0,6
+"test-bivariate-residuals.R","estimating the association makes the residual vanish",5,0,FALSE,FALSE,0,5
+"test-bivariate-residuals.R","the table is tidy, complete and correctly weighted",6,0,FALSE,FALSE,0,6
+"test-bivariate-residuals.R","pooling gives one row per pair",3,0,FALSE,FALSE,0,3
+"test-bivariate-residuals.R","categorical pairs are assessed with a chi-square",6,0,FALSE,FALSE,0,6
+"test-bivariate-residuals.R","a covariate fit is assessed too",2,0,FALSE,FALSE,0,2
+"test-bivariate-residuals.R","a broken contract is refused",3,0,FALSE,FALSE,0,3
+"test-bivariate-residuals.R","a single indicator has no pair to assess",3,0,FALSE,FALSE,0,3
+"test-bivariate-residuals.R","the residual table corrects for the number of pairs it tests",7,0,FALSE,FALSE,0,7
+"test-bootstrap-constraints.R","every bootstrap refit carries the held blocks and their values",6,0,FALSE,FALSE,0,6
+"test-bootstrap-constraints.R","an unconstrained comparison is refitted without a constraint",3,0,FALSE,FALSE,0,3
+"test-bootstrap-constraints.R","bootstrap refits retain grand centering",2,0,FALSE,FALSE,0,2
+"test-bootstrap-constraints.R","bootstrap refuses incomparable structures and person centering",3,0,FALSE,FALSE,0,3
+"test-bootstrap-constraints.R","the held constraint is named on the public surface",2,0,FALSE,FALSE,0,2
+"test-bootstrap-constraints.R","a constrained pair that is not nested is refused",1,0,FALSE,FALSE,0,1
+"test-bootstrap-constraints.R","a held measurement is refused across different profile counts",1,0,FALSE,FALSE,0,1
+"test-bootstrap-constraints.R","a constraint on only one of the two models is refused",2,0,FALSE,FALSE,0,2
+"test-bootstrap-constraints.R","models holding different blocks are refused",1,0,FALSE,FALSE,0,1
+"test-bootstrap-inference.R","every permutation of the profiles appears exactly once",17,0,FALSE,FALSE,0,17
+"test-bootstrap-inference.R","matching recovers a relabelling that was applied on purpose",2,0,FALSE,FALSE,0,2
+"test-bootstrap-inference.R","permuting profiles is invertible",3,0,FALSE,FALSE,0,3
+"test-bootstrap-inference.R","a resample carries one group per draw, whatever repeats",3,0,FALSE,FALSE,0,3
+"test-bootstrap-inference.R","a refit reproduces the structure it was fitted with",4,0,FALSE,FALSE,0,4
+"test-bootstrap-inference.R","a constrained structure reports bootstrap intervals",7,0,FALSE,FALSE,0,7
+"test-bootstrap-inference.R","the bootstrap agrees with the sandwich where both are available",3,0,FALSE,FALSE,0,3
+"test-bootstrap-inference.R","a replicate is relabelled onto the original before it is read",4,0,FALSE,FALSE,0,4
+"test-bootstrap-inference.R","group classes are relabelled once their profiles agree",2,0,FALSE,FALSE,0,2
+"test-bootstrap-inference.R","a block held from another fit is refused rather than resampled",1,0,FALSE,FALSE,0,1
+"test-bootstrap-inference.R","the resample count is validated before anything is fitted",4,0,FALSE,FALSE,0,4
+"test-bootstrap-inference.R","a seed makes the table reproducible and leaves the stream alone",5,0,FALSE,FALSE,0,5
+"test-bootstrap-inference.R","confint reports the interval parameter_inference reports",2,0,FALSE,FALSE,0,2
+"test-bootstrap-inference.R","vcov and confint reach the bootstrap for a constrained structure",7,0,FALSE,FALSE,0,7
+"test-bootstrap-inference.R","a covariate fit refuses the bootstrap rather than ignoring it",2,0,FALSE,FALSE,0,2
+"test-bootstrap-lrt-extended.R","a likelihood-ratio bootstrap refuses posterior-mode estimates",3,0,FALSE,FALSE,0,3
+"test-bootstrap-lrt-extended.R","simulated data carry the observed missing cells, and only those",3,0,FALSE,FALSE,0,3
+"test-bootstrap-lrt-extended.R","a FIML comparison is bootstrapped with the same missingness",4,0,FALSE,FALSE,0,4
+"test-bootstrap-lrt-extended.R","covariate simulation holds the covariates and follows the logits",3,0,FALSE,FALSE,0,3
+"test-bootstrap-lrt-extended.R","covariate models are bootstrapped, one group class against two",2,0,FALSE,FALSE,0,2
+"test-bootstrap-lrt-extended.R","covariate models that are not nested are refused by class",3,0,FALSE,FALSE,0,3
+"test-bootstrap-lrt-extended.R","a covariate replicate is valid once its likelihood has converged",5,0,FALSE,FALSE,0,5
+"test-categorical-inference.R","categorical coordinates round-trip through encode and decode",5,0,FALSE,FALSE,0,5
+"test-categorical-inference.R","the categorical score agrees with a numerical gradient",3,0,FALSE,FALSE,0,3
+"test-categorical-inference.R","the tidy table carries the response block at the measurement level",8,0,FALSE,FALSE,0,8
+"test-categorical-inference.R","mixed continuous and categorical measurement is supported",6,0,FALSE,FALSE,0,6
+"test-categorical-inference.R","the wrong categorical data is refused",1,0,FALSE,FALSE,0,1
+"test-categorical-inference.R","the robust sandwich is available for categorical measurement",4,0,FALSE,FALSE,0,4
+"test-categorical.R","categorical encoding is deterministic and type agnostic",6,0,FALSE,FALSE,0,6
+"test-categorical.R","categorical encoding rejects unusable indicators by condition class",3,0,FALSE,FALSE,0,3
+"test-categorical.R","the categorical M-step is the posterior-weighted response share",6,0,FALSE,FALSE,0,6
+"test-categorical.R","missing categorical cells contribute nothing to the log density",4,0,FALSE,FALSE,0,4
+"test-categorical.R","thresholds invert to the cumulative response probabilities",4,0,FALSE,FALSE,0,4
+"test-categorical.R","two-level latent class analysis recovers its generating structure",10,0,FALSE,FALSE,0,10
+"test-categorical.R","ordinal and mixed-mode measurement fit and count parameters correctly",9,0,FALSE,FALSE,0,9
+"test-categorical.R","categorical indicators support observed-data maximum likelihood",6,0,FALSE,FALSE,0,6
+"test-categorical.R","the responses accessor reports probabilities and thresholds",6,0,FALSE,FALSE,0,6
+"test-categorical.R","unsupported categorical combinations are refused by condition class",9,0,FALSE,FALSE,0,9
+"test-categorical.R","categorical models plot their response probabilities",6,0,FALSE,FALSE,0,6
+"test-centering.R","person centring subtracts each unit's own mean",4,0,FALSE,FALSE,0,4
+"test-centering.R","grand centring moves the origin and nothing else",5,0,FALSE,FALSE,0,5
+"test-centering.R","the default leaves the fit exactly as it was",4,0,FALSE,FALSE,0,4
+"test-centering.R","centring reproduces the transform done by hand",3,0,FALSE,FALSE,0,3
+"test-centering.R","the caller's own scale comes back from the fit",2,0,FALSE,FALSE,0,2
+"test-centering.R","alignment is still checked against the frame the caller has",3,0,FALSE,FALSE,0,3
+"test-centering.R","the diagnostics work on the scale the model was fitted on",2,0,FALSE,FALSE,0,2
+"test-centering.R","inference works on a centred fit and reports the centred scale",3,0,FALSE,FALSE,0,3
+"test-centering.R","centring that leaves nothing to model is refused",1,0,FALSE,FALSE,0,1
+"test-centering.R","the fit says which scale it is on",4,0,FALSE,FALSE,0,4
+"test-centering.R","centring and a constrained structure compose",3,0,FALSE,FALSE,0,3
+"test-convenience.R","a fit carries the data it was built from, exactly",2,0,FALSE,FALSE,0,2
+"test-convenience.R","the round trip is exact for every model family",5,0,FALSE,FALSE,0,5
+"test-convenience.R","mixed fits retain numeric indicators and typed categorical values",7,0,FALSE,FALSE,0,7
+"test-convenience.R","inference no longer has to be handed data it already holds",5,0,FALSE,FALSE,0,5
+"test-convenience.R","descriptives describes what is there and says how it is nested",7,0,FALSE,FALSE,0,7
+"test-convenience.R","the icc reports group structure where there is some, and none where there is not",3,0,FALSE,FALSE,0,3
+"test-convenience.R","splitting by profile shows the grouping the model claims to explain",7,0,FALSE,FALSE,0,7
+"test-convenience.R","diagnostics gathers the verbs without changing what they return",8,0,FALSE,FALSE,0,8
+"test-convenience.R","diagnostics draws only when asked",4,0,FALSE,FALSE,0,4
+"test-convenience.R","report prints everything and returns the fit",6,0,FALSE,FALSE,0,6
+"test-convenience.R","report draws only the views a given fit can supply",4,0,FALSE,FALSE,0,4
+"test-convenience.R","assignments put the estimate and the truth in the same row",9,0,FALSE,FALSE,0,9
+"test-convenience.R","assignments refuse a frame that cannot be aligned",2,0,FALSE,FALSE,0,2
+"test-covariance-structure.R","volume, shape and orientation resolve to all fourteen codes",16,0,FALSE,FALSE,0,16
+"test-covariance-structure.R","legacy arguments still resolve as they always did",10,0,FALSE,FALSE,0,10
+"test-covariance-structure.R","each M-step solves the formula it claims to",8,0,FALSE,FALSE,0,8
+"test-covariance-structure.R","relaxing a constraint cannot lower the maximized likelihood",15,0,FALSE,FALSE,0,15
+"test-covariance-structure.R","a constrained structure is inferred in its own coordinates",4,0,FALSE,FALSE,0,4
+"test-covariance-structure.R","a constrained structure refuses a held variance block",2,0,FALSE,FALSE,0,2
+"test-covariance-structure.R","the structure is reported, and the default one is unchanged",5,0,FALSE,FALSE,0,5
+"test-covariance-structure.R","the equal-shape iteration is bounded and says when it stops short",2,0,FALSE,FALSE,0,2
+"test-covariance-structure.R","the structure grid crosses models with class counts",6,0,FALSE,FALSE,0,6
+"test-covariance-structure.R","the grid refuses a model code this package does not fit",1,0,FALSE,FALSE,0,1
+"test-covariance-structure.R","an ellipsoidal structure keeps a full covariance array",4,0,FALSE,FALSE,0,4
+"test-covariance-structure.R","the assignments table carries what modal assignment discards",3,0,FALSE,FALSE,0,3
+"test-covariance-structure.R","a warm-started M-step lands where a cold one does",6,0,FALSE,FALSE,0,6
+"test-covariance-structure.R","capped M-steps are counted and reported once, not once each",3,0,FALSE,FALSE,0,3
+"test-covariance-structure.R","every structure's defining constraint holds in the fitted parameters",59,0,FALSE,FALSE,0,59
+"test-covariance-structure.R","a structure named by its pieces fits what the old arguments fit",20,0,FALSE,FALSE,0,20
+"test-covariate-fold.R","naming a covariate returns a covariate fit, not a plain one",4,0,FALSE,FALSE,0,4
+"test-covariate-fold.R","a group covariate alone also takes the covariate path",5,0,FALSE,FALSE,0,5
+"test-covariate-fold.R","no covariate leaves the covariate-free path untouched",3,0,FALSE,FALSE,0,3
+"test-covariate-fold.R","every forwarded argument reaches the estimator unchanged",7,0,FALSE,FALSE,0,7
+"test-covariate-fold.R","the two arguments the covariate path cannot honour are refused",5,0,FALSE,FALSE,0,5
+"test-covariate-fold.R","a non-character covariate name is refused before any fitting",2,0,FALSE,FALSE,0,2
+"test-covariate-fold.R","a covariate fit offers the tables its family defines",4,0,FALSE,FALSE,0,4
+"test-covariate-inference.R","the analytic scores agree with a numerical gradient",2,0,FALSE,FALSE,0,2
+"test-covariate-inference.R","the table is tidy and covers every level",12,0,FALSE,FALSE,0,12
+"test-covariate-inference.R","vcov is a named, symmetric matrix over the same parameters",5,0,FALSE,FALSE,0,5
+"test-covariate-inference.R","vcov agrees with the tidy table on whichever scale is asked for",3,0,FALSE,FALSE,0,3
+"test-covariate-inference.R","a named multiplicity correction is applied and nothing is corrected by stealth",7,0,FALSE,FALSE,0,7
+"test-covariate-inference.R","the robust sandwich runs and differs from the observed information",5,0,FALSE,FALSE,0,5
+"test-covariate-inference.R","a broken contract is refused rather than answered",4,0,FALSE,FALSE,0,4
+"test-covariate-inference.R","confidence level widens the interval as asked",2,0,FALSE,FALSE,0,2
+"test-covariate-measurement.R","every measurement model reproduces the likelihood written from its definition",10,0,FALSE,FALSE,0,10
+"test-covariate-measurement.R","the measurement blocks and parameter counts match the model fitted",11,0,FALSE,FALSE,0,11
+"test-covariate-measurement.R","with no covariates the covariate model is the covariate-free one",6,0,FALSE,FALSE,0,6
+"test-covariate-measurement.R","the full-covariance score is the derivative of the likelihood",3,0,FALSE,FALSE,0,3
+"test-covariate-measurement.R","full-covariance standard errors match an independent information matrix",3,0,FALSE,FALSE,0,3
+"test-covariate-measurement.R","covariance estimates are reported in natural units with their own tests",6,0,FALSE,FALSE,0,6
+"test-covariate-measurement.R","inference counts every parameter of a mixed covariate fit",4,0,FALSE,FALSE,0,4
+"test-covariate-measurement.R","natural covariance errors agree with the covariate-free model's own",3,0,FALSE,FALSE,0,3
+"test-covariate-missing.R","a FIML covariate fit reproduces the observed-data likelihood",4,0,FALSE,FALSE,0,4
+"test-covariate-missing.R","without covariates the FIML fit is the covariate-free FIML model",2,0,FALSE,FALSE,0,2
+"test-covariate-missing.R","scores and standard errors with missing indicators match numerical ones",4,0,FALSE,FALSE,0,4
+"test-covariate-missing.R","on complete data `missing = ""fiml""` changes nothing",8,0,FALSE,FALSE,0,8
+"test-covariate-missing.R","inference accepts the fitting data with its missing values",4,0,FALSE,FALSE,0,4
+"test-covariate-missing.R","missing covariates and unhandled missing indicators are refused by class",2,0,FALSE,FALSE,0,2
+"test-covariate-slopes.R","slopes by group class reproduce the likelihood written from its definition",3,0,FALSE,FALSE,0,3
+"test-covariate-slopes.R","the coefficients are named by group class and counted once each",3,0,FALSE,FALSE,0,3
+"test-covariate-slopes.R","the recovered slopes carry the simulated cross-level interaction",4,0,FALSE,FALSE,0,4
+"test-covariate-slopes.R","scores and standard errors with slopes by group class match numerical ones",3,0,FALSE,FALSE,0,3
+"test-covariate-slopes.R","with one group class the slopes by group class are the shared slopes",2,0,FALSE,FALSE,0,2
+"test-covariate-slopes.R","rescaling a covariate rescales its group-class slopes and nothing else",3,0,FALSE,FALSE,0,3
+"test-covariate-slopes.R","slopes by group class without a profile covariate are refused by class",2,0,FALSE,FALSE,0,2
+"test-covariate-surface.R","coef reports every parameter rather than silently nothing",9,0,FALSE,FALSE,0,9
+"test-covariate-surface.R","confint matches the tidy interval and honours parm",9,0,FALSE,FALSE,0,9
+"test-covariate-surface.R","the shared diagnostics accept a covariate fit",7,0,FALSE,FALSE,0,7
+"test-covariate-surface.R","a covariate fit can carry and report its ordering",10,0,FALSE,FALSE,0,10
+"test-covariate-surface.R","plot draws what a covariate model has and refuses what it has not",4,0,FALSE,FALSE,0,4
+"test-covariate-surface.R","direct labels are measured in the weight they are drawn",2,0,FALSE,FALSE,0,2
+"test-covariates.R","weighted multinomial optimizer reproduces fractional counts",5,0,FALSE,FALSE,0,5
+"test-covariates.R","covariate expectation reduces to the independently verified original",3,0,FALSE,FALSE,0,3
+"test-covariates.R","one-step covariates recover slopes and have consistent diagnostics",21,0,FALSE,FALSE,0,21
+"test-covariates.R","no predictors agrees with the base model and single-level works",7,0,FALSE,FALSE,0,7
+"test-data-student-esm.R","student_esm has the documented shape and types",9,0,FALSE,FALSE,0,9
+"test-data-student-esm.R","student_esm nests 15 to 51 prompts in each of 100 students",6,0,FALSE,FALSE,0,6
+"test-data-student-esm.R","the documented floor on `worried` is in the data",1,0,FALSE,FALSE,0,1
+"test-data-student-esm.R","the first week supports a two-level latent class model",5,0,FALSE,FALSE,0,5
+"test-data.R","the bundled data have the shape they are documented with",19,0,FALSE,FALSE,0,19
+"test-data.R","the sequence runs 1..n inside every student, and the panel is ragged",6,0,FALSE,FALSE,0,6
+"test-data.R","the indicators are standardized within course, the covariate across the cohort",5,0,FALSE,FALSE,0,5
+"test-data.R","the shipped truth columns describe the data they came with",11,0,FALSE,FALSE,0,11
+"test-data.R","a fit recovers the measurement model the data were generated from",7,0,FALSE,FALSE,0,7
+"test-data.R","attendance is locally dependent on the clicks, deliberately",4,0,FALSE,FALSE,0,4
+"test-data.R","the dependence is exactly what bivariate_residuals reports",4,0,FALSE,FALSE,0,4
+"test-data.R","the truth joins onto the assignments without a name clash",6,0,FALSE,FALSE,0,6
+"test-data.R","a fit recovers the two-level structure, not just the profiles",4,0,FALSE,FALSE,0,4
+"test-data.R","the sequence recovers the persistence it was generated with",2,0,FALSE,FALSE,0,2
+"test-data.R","previous_grade predicts engagement, as the data are documented to",6,0,FALSE,FALSE,0,6
+"test-descriptives-safety.R","a missing stratifier neither invents missingness nor loses a value",7,0,FALSE,FALSE,0,7
+"test-descriptives-safety.R","strata account for every input row, whatever the stratifier's type",10,0,FALSE,FALSE,0,10
+"test-descriptives-safety.R","a complete stratifier is summarized exactly as before",3,0,FALSE,FALSE,0,3
+"test-descriptives-safety.R","an indicator named `profile` is summarized as itself",4,0,FALSE,FALSE,0,4
+"test-descriptives-safety.R","an indicator named `group_class` is summarized as itself",3,0,FALSE,FALSE,0,3
+"test-descriptives-safety.R","a stratifier that cannot be told apart from the summary is refused",1,0,FALSE,FALSE,0,1
+"test-descriptives-safety.R","missing group IDs do not become a group in ICC calculations",3,0,FALSE,FALSE,0,3
+"test-descriptives-safety.R","repeating a requested variable still returns one row per variable",3,0,FALSE,FALSE,0,3
+"test-descriptives-safety.R","strata are listed in a fixed order, not the data's row order",3,0,FALSE,FALSE,0,3
+"test-diagnostics.R","information criteria match their documented formulas",15,0,FALSE,FALSE,0,15
+"test-diagnostics.R","information criteria order candidate models sensibly",1,0,FALSE,FALSE,0,1
+"test-diagnostics.R","classification diagnostics are internally consistent",10,0,FALSE,FALSE,0,10
+"test-diagnostics.R","classification diagnostics handle a class with no modal members",3,0,FALSE,FALSE,0,3
+"test-diagnostics.R","entropy is bounded and undefined for a single class",7,0,FALSE,FALSE,0,7
+"test-diagnostics.R","tidy accessors return the documented shapes",20,0,FALSE,FALSE,0,20
+"test-diagnostics.R","enumeration and inference tidy and print",18,0,FALSE,FALSE,0,18
+"test-diagnostics.R","starting_values round-trips a fitted solution",8,0,FALSE,FALSE,0,8
+"test-diagnostics.R","starting_values rejects incomplete input by condition class",3,0,FALSE,FALSE,0,3
+"test-diagnostics.R","every result class has a working tidy accessor",10,0,FALSE,FALSE,0,10
+"test-diagnostics.R","preparation helpers enforce their own contracts",15,0,FALSE,FALSE,0,15
+"test-diagnostics.R","the null-default operator behaves like base %||%",4,0,FALSE,FALSE,0,4
+"test-diagnostics.R","extracted covariate and inference helpers keep their contracts",19,0,FALSE,FALSE,0,19
+"test-enumerate-verbs.R","enumerate_lpa preserves an omitted model argument",5,0,FALSE,FALSE,0,5
+"test-enumerate-verbs.R","enumerate_lpa() is the single-level grid, fitted without a notice",7,0,FALSE,FALSE,0,7
+"test-enumerate-verbs.R","enumerate_lca() treats every indicator as categorical",5,0,FALSE,FALSE,0,5
+"test-enumerate-verbs.R","the single-level verbs refuse two-level and misplaced arguments",6,0,FALSE,FALSE,0,6
+"test-enumerate-verbs.R","the two-level verbs name the analysis they fitted with id = NULL",5,0,FALSE,FALSE,0,5
+"test-enumerate-verbs.R","a two-level verb without `id` points to the single-level verbs",3,0,FALSE,FALSE,0,3
+"test-enumeration.R","enumeration retains failures and both BIC conventions",14,0,FALSE,FALSE,0,14
+"test-enumeration.R","simulation preserves group layout and full covariance moments",7,0,FALSE,FALSE,0,7
+"test-enumeration.R","simulation preserves categorical types and declared factor order",6,0,FALSE,FALSE,0,6
+"test-enumeration.R","bootstrap withholds p-values if a replicate cannot be fitted",7,0,FALSE,FALSE,0,7
+"test-enumeration.R","bootstrap refits generated data and reports finite simulation correction",13,0,FALSE,FALSE,0,13
+"test-enumeration.R","full covariance print and summary expose residual matrices",3,0,FALSE,FALSE,0,3
+"test-enumeration.R","boundary convergence noise is not mistaken for a reversed likelihood",6,0,FALSE,FALSE,0,6
+"test-enumeration.R","covariance models are named with `model`, and a stray argument is refused",5,0,FALSE,FALSE,0,5
+"test-enumeration.R","printing a grid shows the criteria and the diagnostics",7,0,FALSE,FALSE,0,7
+"test-enumeration.R","the enumeration plot draws several criteria and restores the device",8,0,FALSE,FALSE,0,8
+"test-enumeration.R","enumerate_classes() enumerates single-level models with id = NULL",8,0,FALSE,FALSE,0,8
+"test-enumeration.R","`model` takes the basic set by default, all 14, or codes",8,0,FALSE,FALSE,0,8
+"test-enumeration.R","`model = ""all""` fits the 14 structures",1,0,FALSE,FALSE,0,1
+"test-enumeration.R","structures the data cannot distinguish are fitted once",5,0,FALSE,FALSE,0,5
+"test-enumeration.R","a structure set another way replaces the basic set",2,0,FALSE,FALSE,0,2
+"test-evaluate-only-start.R","max_iter = 0 scores the supplied start, and the closed form agrees",3,0,FALSE,FALSE,0,3
+"test-evaluate-only-start.R","evaluate-only ignores n_starts and never substitutes a random start",7,0,FALSE,FALSE,0,7
+"test-evaluate-only-start.R","a start supplied for a fit that does iterate still only seeds the first start",2,0,FALSE,FALSE,0,2
+"test-evaluate-only-start.R","max_iter = 0 without a start still scores every requested start",2,0,FALSE,FALSE,0,2
+"test-evaluate-only-start.R","evaluate-only with a held measurement returns the held values",5,0,FALSE,FALSE,0,5
+"test-evaluate-only.R","starting_values round-trips a categorical fit exactly",6,0,FALSE,FALSE,0,6
+"test-evaluate-only.R","max_iter = 0 scores externally supplied parameters without moving",2,0,FALSE,FALSE,0,2
+"test-evaluate-only.R","max_iter = 0 does not warn about convergence it was not asked to reach",1,0,FALSE,FALSE,0,1
+"test-evaluate-only.R","a malformed categorical start is refused",3,0,FALSE,FALSE,0,3
+"test-evaluate-only.R","max_iter must be a nonnegative integer",2,0,FALSE,FALSE,0,2
+"test-evaluate-only.R","rows with no observed indicator are excluded from the BIC sample size",7,0,FALSE,FALSE,0,7
+"test-fixed-measurement.R","a held mean is the point the spread is measured around",3,0,FALSE,FALSE,0,3
+"test-fixed-measurement.R","a held variance is returned as supplied and leaves the mean free",2,0,FALSE,FALSE,0,2
+"test-fixed-measurement.R","holding nothing leaves the maximization step exactly as it was",4,0,FALSE,FALSE,0,4
+"test-fixed-measurement.R","every measurement model can be held, exactly and with the right count",16,0,FALSE,FALSE,0,16
+"test-fixed-measurement.R","incomplete indicators can be fitted with the measurement held",3,0,FALSE,FALSE,0,3
+"test-fixed-measurement.R","a measurement-only start carries no mixing values",3,0,FALSE,FALSE,0,3
+"test-fixed-measurement.R","a `fixed` request that cannot be met is refused by class",5,0,FALSE,FALSE,0,5
+"test-fixed-measurement.R","a staged fit holds its first stage and improves on it",8,0,FALSE,FALSE,0,8
+"test-fixed-measurement.R","a supplied first stage is used, and a mismatched one is refused",5,0,FALSE,FALSE,0,5
+"test-fixed-measurement.R","the stages table describes staged and ordinary fits alike",9,0,FALSE,FALSE,0,9
+"test-fixed-measurement.R","held values survive a fit that performs no update at all",4,0,FALSE,FALSE,0,4
+"test-fixed-measurement.R","held values survive every random restart when EM does run",4,0,FALSE,FALSE,0,4
+"test-fixed-measurement.R","a constrained measurement is refused, not fitted as a wider one",5,0,FALSE,FALSE,0,5
+"test-get-data.R","every table in a fit's catalogue is a data frame",39,0,FALSE,FALSE,0,39
+"test-get-data.R","`all` is built from the same definitions as a single `what`",23,0,FALSE,FALSE,0,23
+"test-get-data.R","`all` omits only the tables this fit cannot produce",3,0,FALSE,FALSE,0,3
+"test-get-data.R","a table a fit cannot produce still refuses by class when named",2,0,FALSE,FALSE,0,2
+"test-get-data.R","an unknown table names the ones this object has",3,0,FALSE,FALSE,0,3
+"test-get-data.R","an argument a table does not take is named, not dropped",4,0,FALSE,FALSE,0,4
+"test-get-data.R","get_results has no method for an unrelated object",1,0,FALSE,FALSE,0,1
+"test-get-data.R","the classification tables default to every level the fit has",16,0,FALSE,FALSE,0,16
+"test-get-data.R","as.data.frame coerces to the primary table and takes nothing else",5,0,FALSE,FALSE,0,5
+"test-get-data.R","a summary serves back exactly the tables its fit produced",21,0,FALSE,FALSE,0,21
+"test-get-data.R","the summary print shows every table and honours `rows`",22,0,FALSE,FALSE,0,22
+"test-get-data.R","the enumeration and bootstrap objects carry their own tables",4,0,FALSE,FALSE,0,4
+"test-get-data.R","a starting-value set and a diagnostics object have catalogues",5,0,FALSE,FALSE,0,5
+"test-get-data.R","the tables the summaries used to own are on the fit",9,0,FALSE,FALSE,0,9
+"test-get-data.R","`model` reports the columns of the family, not a padded union",5,0,FALSE,FALSE,0,5
+"test-get-data.R","truth cross-tabulates against the level each column describes",6,0,FALSE,FALSE,0,6
+"test-get-data.R","group recovery gives each group one vote and omits unused truth levels",8,0,FALSE,FALSE,0,8
+"test-get-data.R","truth reproduces the cross-tabulation it replaces",2,0,FALSE,FALSE,0,2
+"test-get-data.R","truth refuses a column it cannot use",3,0,FALSE,FALSE,0,3
+"test-get-data.R","plot draws every supported view under what = ""all""",4,0,FALSE,FALSE,0,4
+"test-get-data.R","a fit prints its means one row per profile, not one per cell",9,0,FALSE,FALSE,0,9
+"test-inference-fixed-measurement.R","a held-measurement fit reports exactly the parameters it estimated",13,0,FALSE,FALSE,0,13
+"test-inference-fixed-measurement.R","held-measurement standard errors match an independent numerical information",7,0,FALSE,FALSE,0,7
+"test-inference-fixed-measurement.R","holding only the means leaves the variances estimated and correct",8,0,FALSE,FALSE,0,8
+"test-inference-fixed-measurement.R","an unheld fit takes the unconstrained path unchanged",9,0,FALSE,FALSE,0,9
+"test-inference-fixed-measurement.R","inference refuses what a held fit cannot answer",6,0,FALSE,FALSE,0,6
+"test-inference-fixed-measurement.R","fit_staged makes good on its promise of conditional standard errors",5,0,FALSE,FALSE,0,5
+"test-inference.R","observed information reproduces analytic Gaussian standard errors",14,0,FALSE,FALSE,0,14
+"test-inference.R","score and probability Jacobian agree with independent central differences",6,0,FALSE,FALSE,0,6
+"test-inference.R","inference refuses data mismatches and nonregular fits",14,0,FALSE,FALSE,0,14
+"test-inference.R","full-covariance inference matches analytic multivariate Gaussian information",4,0,FALSE,FALSE,0,4
+"test-inference.R","diagonal FIML standard errors use each indicator's observed sample size",2,0,FALSE,FALSE,0,2
+"test-inference.R","full-covariance score and Jacobian match numerical derivatives with missingness",12,0,FALSE,FALSE,0,12
+"test-inference.R","centered inference is stable for indicators with large location offsets",2,0,FALSE,FALSE,0,2
+"test-latents-controls.R","the start rule takes the best converged start only when asked",5,0,FALSE,FALSE,0,5
+"test-latents-controls.R","the start rule is invariant to failed starts and refuses bad input",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","select_start reaches every fitting path",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","the two-level R3STEP gradient is the derivative of its likelihood",2,0,FALSE,FALSE,0,2
+"test-latents-controls.R","the two-level R3STEP recovers the slope the pooled one attenuates",8,0,FALSE,FALSE,0,8
+"test-latents-controls.R","the two-level R3STEP is refused where it does not apply",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","r3step now defaults to standard errors clustered on groups",1,0,FALSE,FALSE,0,1
+"test-latents-controls.R","the categorical covariate score is the derivative of the likelihood",2,0,FALSE,FALSE,0,2
+"test-latents-controls.R","categorical covariate inference reports every category coherently",12,0,FALSE,FALSE,0,12
+"test-latents-controls.R","a mixed covariate fit carries both measurement blocks",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","OPG standard errors reproduce glca on the same data",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","bound-active response probabilities are refused or held on request",4,0,FALSE,FALSE,0,4
+"test-latents-controls.R","an unconverged covariate fit is still refused for inference",1,0,FALSE,FALSE,0,1
+"test-math-core-audit.R","extreme common Gaussian densities retain profile and group priors",7,0,FALSE,FALSE,0,7
+"test-math-core-audit.R","all-categorical starts have no Gaussian covariance requirement",5,0,FALSE,FALSE,0,5
+"test-math-core-audit.R","mixed full-covariance FIML agrees with exhaustive latent assignments",5,0,FALSE,FALSE,0,5
+"test-math-core-audit.R","bounded multinomial M-steps satisfy the constrained optimum",18,0,FALSE,FALSE,0,18
+"test-math-core-audit.R","time uniqueness respects distinct native numeric group identifiers",5,0,FALSE,FALSE,0,5
+"test-math-extensions-audit.R","pooled Gaussian residuals exclude association explained by profile means",7,0,FALSE,FALSE,0,7
+"test-math-extensions-audit.R","categorical profile residuals compare to their own product probabilities",7,0,FALSE,FALSE,0,7
+"test-math-extensions-audit.R","Gaussian residuals use the complete rows of each pair",6,0,FALSE,FALSE,0,6
+"test-math-extensions-audit.R","three-step methods reject nonfinite outcomes and empty modal classes",3,0,FALSE,FALSE,0,3
+"test-math-inference-audit.R","mixed full covariance inference matches Gaussian and binomial information",6,0,FALSE,FALSE,0,6
+"test-math-inference-audit.R","all-categorical full covariance inference has no Gaussian parameters",4,0,FALSE,FALSE,0,4
+"test-math-inference-audit.R","full covariance inference is invariant to indicator units",2,0,FALSE,FALSE,0,2
+"test-math-inference-audit.R","Wald inference refuses active categorical probability constraints",2,0,FALSE,FALSE,0,2
+"test-math-inference-audit.R","covariate inference supports empty membership coefficient blocks",8,0,FALSE,FALSE,0,8
+"test-math-inference-audit.R","covariate inference refuses nonregular fits and altered fitting data",9,0,FALSE,FALSE,0,9
+"test-math-inference-audit.R","covariate posteriors preserve priors under huge common density offsets",3,0,FALSE,FALSE,0,3
+"test-math-inference-audit.R","covariate likelihood retains finite log priors below probability underflow",2,0,FALSE,FALSE,0,2
+"test-math-inference-audit.R","large common logits and group evidence preserve multinomial normalization",4,0,FALSE,FALSE,0,4
+"test-math-inference-audit.R","observed information rejects a negative definite Hessian",1,0,FALSE,FALSE,0,1
+"test-math-plot-audit.R","single-profile response lines carry every indicator's probability",4,0,FALSE,FALSE,0,4
+"test-math-plot-audit.R","sequence images align profile rows and group classes with factor identifiers",5,0,FALSE,FALSE,0,5
+"test-math-plot-audit.R","one-group sequence images preserve dimensions and text time labels",4,0,FALSE,FALSE,0,4
+"test-math-plot-audit.R","sequence plots preserve groups with identical printed numeric identifiers",2,0,FALSE,FALSE,0,2
+"test-math-results-audit.R","missing-row information criteria agree across all result accessors",6,0,FALSE,FALSE,0,6
+"test-math-results-audit.R","dropping a univariate covariance preserves one variance per profile",2,0,FALSE,FALSE,0,2
+"test-math-results-audit.R","categorical bootstraps preserve probability constraints and data identity",4,0,FALSE,FALSE,0,4
+"test-math-results-audit.R","a categorical bootstrap accepts the observations FIML integrated out",2,0,FALSE,FALSE,0,2
+"test-math-results-audit.R","sequence totals count observed groups rather than unused factor levels",5,0,FALSE,FALSE,0,5
+"test-math-results-audit.R","sequence outputs keep distinct numeric groups with identical printed labels",4,0,FALSE,FALSE,0,4
+"test-missing-covariance.R","Gaussian missing-pattern moments agree with conditional normal formulas",8,0,FALSE,FALSE,0,8
+"test-missing-covariance.R","diagonal FIML single-profile estimates equal available-case Gaussian ML",8,0,FALSE,FALSE,0,8
+"test-missing-covariance.R","full covariance complete-data Gaussian ML has analytic means and covariance",8,0,FALSE,FALSE,0,8
+"test-missing-covariance.R","full covariance FIML agrees with independent direct Gaussian likelihood",5,0,FALSE,FALSE,0,5
+"test-missing-covariance.R","FIML multilevel rows use their observed group context",11,0,FALSE,FALSE,0,11
+"test-missing-covariance.R","covariance eigenvalue bounds and invalid missing-data inputs are explicit",14,0,FALSE,FALSE,0,14
+"test-missing-covariance.R","FIML rejects NaN consistently with inference",1,0,FALSE,FALSE,0,1
+"test-mixture-regression-labels.R","relabelling classes and group classes leaves the likelihood unchanged",3,0,FALSE,FALSE,0,3
+"test-mixture-regression-labels.R","group classes are ordered by their share of the first class",1,0,FALSE,FALSE,0,1
+"test-mixture-regression-labels.R","a three-class relabelling permutes every block consistently",3,0,FALSE,FALSE,0,3
+"test-mixture-regression-prediction-design.R","membership predictions retain training factor coding",6,0,FALSE,FALSE,0,6
+"test-mixture-regression-prediction-design.R","two-level membership designs retain factors and transformed terms",3,0,FALSE,FALSE,0,3
+"test-mixture-regression-prediction-design.R","regression plots carry membership columns and raw transformed predictors",2,0,FALSE,FALSE,0,2
+"test-mixture-regression-prediction-design.R","a single group slope is optimized as a slope rather than an intercept",1,0,FALSE,FALSE,0,1
+"test-mixture-regression.R","the likelihood is the mixture likelihood, in every nesting",5,0,FALSE,FALSE,0,5
+"test-mixture-regression.R","one class reduces to lm() and glm()",5,0,FALSE,FALSE,0,5
+"test-mixture-regression.R","a two-class Gaussian mixture recovers the generating regressions",2,0,FALSE,FALSE,0,2
+"test-mixture-regression.R","standard errors match a numerical Hessian of the likelihood",5,0,FALSE,FALSE,0,5
+"test-mixture-regression.R","the score vanishes at the estimate",1,0,FALSE,FALSE,0,1
+"test-mixture-regression.R","the robust covariance is the sandwich clustered on the unit",2,0,FALSE,FALSE,0,2
+"test-mixture-regression.R","classes are ordered by size and the order is invariant to starts",2,0,FALSE,FALSE,0,2
+"test-mixture-regression.R","row order does not change the fit",1,0,FALSE,FALSE,0,1
+"test-mixture-regression.R","posteriors and priors are probability distributions",2,0,FALSE,FALSE,0,2
+"test-mixture-regression.R","a seed makes the fit reproducible and restores the caller's state",2,0,FALSE,FALSE,0,2
+"test-mixture-regression.R","predict() on the fitted rows agrees with the fitted table",2,0,FALSE,FALSE,0,2
+"test-mixture-regression.R","simulate() reproduces the fitted class structure",3,0,FALSE,FALSE,0,3
+"test-mixture-regression.R","shared coefficients are equal across classes and counted once",3,0,FALSE,FALSE,0,3
+"test-mixture-regression.R","enumeration returns one tidy row per model and marks the BIC choice",5,0,FALSE,FALSE,0,5
+"test-mixture-regression.R","the bootstrap test is a valid p-value",3,0,FALSE,FALSE,0,3
+"test-mixture-regression.R","every tidy table is a data frame",3,0,FALSE,FALSE,0,3
+"test-mixture-regression.R","print and summary are stable",2,0,FALSE,FALSE,0,2
+"test-mixture-regression.R","plots draw for every view",3,0,FALSE,FALSE,0,3
+"test-mixture-regression.R","misspecified requests are refused by class",9,0,FALSE,FALSE,0,9
+"test-mixture-regression.R","binomial counts with several trials are identified row by row",2,0,FALSE,FALSE,0,2
+"test-mixture-regression.R","the recovery table cross-tabulates assignments against the truth",6,0,FALSE,FALSE,0,6
+"test-mixture-regression.R","the classification table's rows are probability distributions",3,0,FALSE,FALSE,0,3
+"test-multilca.R","multilca() is multilpa() with every indicator categorical",7,0,FALSE,FALSE,0,7
+"test-multilca.R","multilca() refuses `categorical` and checks `vars`",2,0,FALSE,FALSE,0,2
+"test-multilca.R","multilca() with id = NULL fits one group class without being told",4,0,FALSE,FALSE,0,4
+"test-multilpa.R","a multilevel Gaussian population is recovered with valid posteriors",36,0,FALSE,FALSE,0,36
+"test-multilpa.R","one profile gives the analytic maximum likelihood solution",25,0,FALSE,FALSE,0,25
+"test-multilpa.R","equal variances are shared across profiles and counted correctly",3,0,FALSE,FALSE,0,3
+"test-multilpa.R","explicit starts give the independently calculated initial likelihood",6,0,FALSE,FALSE,0,6
+"test-multilpa.R","group identifiers preserve first occurrence without unused levels",3,0,FALSE,FALSE,0,3
+"test-multilpa.R","nearby numeric group identifiers are not merged during display conversion",6,0,FALSE,FALSE,0,6
+"test-multilpa.R","a single group class permits singleton groups and one indicator",5,0,FALSE,FALSE,0,5
+"test-multilpa.R","a two-observation one-profile fit does not lose matrix dimensions",5,0,FALSE,FALSE,0,5
+"test-multilpa.R","large indicator offsets preserve variances and likelihood",3,0,FALSE,FALSE,0,3
+"test-multilpa.R","seeded fitting is repeatable and preserves an existing RNG state",6,0,FALSE,FALSE,0,6
+"test-multilpa.R","permuting input rows permutes posteriors without changing the fit",5,0,FALSE,FALSE,0,5
+"test-multilpa.R","seeded fitting restores the absence of an RNG state",2,0,FALSE,FALSE,0,2
+"test-multilpa.R","seed restoration also runs when fitting fails",2,0,FALSE,FALSE,0,2
+"test-multilpa.R","invalid data and unidentifiable specifications fail explicitly",17,0,FALSE,FALSE,0,17
+"test-multilpa.R","invalid numeric controls and variance models are rejected",20,0,FALSE,FALSE,0,20
+"test-multilpa.R","malformed explicit starting values are rejected",13,0,FALSE,FALSE,0,13
+"test-multilpa.R","a binding variance floor is reported and uses constrained ML",5,0,FALSE,FALSE,0,5
+"test-noise.R","the hypervolume is mclust's",2,0,FALSE,FALSE,0,2
+"test-noise.R","the likelihood is the mixture with a uniform component",5,0,FALSE,FALSE,0,5
+"test-noise.R","the noise component is visible through the tidy accessors",9,0,FALSE,FALSE,0,9
+"test-noise.R","unsupported combinations are refused by class",5,0,FALSE,FALSE,0,5
+"test-noise.R","a noise fit is translation invariant",3,0,FALSE,FALSE,0,3
+"test-noise.R","a noise fit reproduces mclust's EM from the same start",8,0,FALSE,FALSE,0,8
+"test-numerical-safeguards.R","failed starts are counted and do not hide a valid restart",7,0,FALSE,FALSE,0,7
+"test-numerical-safeguards.R","three profiles and group classes retain all matrix dimensions",12,0,FALSE,FALSE,0,12
+"test-numerical-safeguards.R","an unbalanced-group update agrees with exhaustive assignments",5,0,FALSE,FALSE,0,5
+"test-plot-polish.R","the profile plot draws intervals, and the raincloud the data",11,0,FALSE,FALSE,0,11
+"test-plot-polish.R","a fit without intervals says why instead of failing",4,0,FALSE,FALSE,0,4
+"test-plot-polish.R","an all-categorical fit gets a response heatmap",2,0,FALSE,FALSE,0,2
+"test-plot-polish.R","covariate fits draw the measurement and classification views",8,0,FALSE,FALSE,0,8
+"test-plot-polish.R","a single-level grid draws one BIC panel, named for display",2,0,FALSE,FALSE,0,2
+"test-plot-polish.R","the enumeration print shows a compact candidates table",3,0,FALSE,FALSE,0,3
+"test-plot-polish.R","a latent class model is printed as one",3,0,FALSE,FALSE,0,3
+"test-plot-polish.R","with one group class the membership intercept is named as one",1,0,FALSE,FALSE,0,1
+"test-plot-polish.R","lpa() and lca() are the single-level fits, without the notice",8,0,FALSE,FALSE,0,8
+"test-plot-polish.R","`model` names the covariance structure as enumerate_classes() does",5,0,FALSE,FALSE,0,5
+"test-plot-polish.R","the measurement tables carry standard errors without being given data",15,0,FALSE,FALSE,0,15
+"test-plot-polish.R","diagnostics() draws its plots by default",3,0,FALSE,FALSE,0,3
+"test-plot.R","plot methods draw and return their input invisibly",9,0,FALSE,FALSE,0,9
+"test-plot.R","plotting restores the caller's graphical parameters",2,0,FALSE,FALSE,0,2
+"test-plot.R","a refused view leaves the device as it found it",4,0,FALSE,FALSE,0,4
+"test-plot.R","plot arguments override every visual constant",2,0,FALSE,FALSE,0,2
+"test-plot.R","standardizing uses the observed indicator scales",3,0,FALSE,FALSE,0,3
+"test-plot.R","enumeration plotting rejects unusable criteria by condition class",3,0,FALSE,FALSE,0,3
+"test-plot.R","the palette, symbols and line types stay aligned and recycle",16,0,FALSE,FALSE,0,16
+"test-plot.R","direct labels are spread apart but keep their order and centre",6,0,FALSE,FALSE,0,6
+"test-plot.R","the sequence plot draws and returns its fit invisibly",5,0,FALSE,FALSE,0,5
+"test-plot.R","every plot's data is reachable through a tidy verb",6,0,FALSE,FALSE,0,6
+"test-plot.R","a filled grid carries its code as text, not by colour alone",4,0,FALSE,FALSE,0,4
+"test-plot.R","cell ink is chosen for contrast against its background",5,0,FALSE,FALSE,0,5
+"test-plot.R","the label margin grows with the widest label",5,0,FALSE,FALSE,0,5
+"test-plot.R","the catalogue lists exactly the views the methods accept",11,0,FALSE,FALSE,0,11
+"test-plot.R","every view of a Gaussian fit draws and returns the fit invisibly",4,0,FALSE,FALSE,0,4
+"test-plot.R","a view a fit cannot supply is refused by condition class",3,0,FALSE,FALSE,0,3
+"test-plot.R","point area encodes prevalence absolutely, not stretched to the plot",8,0,FALSE,FALSE,0,8
+"test-plot.R","the diverging scale is white at zero and symmetric about it",6,0,FALSE,FALSE,0,6
+"test-plot.R","the label gap is measured in the type it labels",2,0,FALSE,FALSE,0,2
+"test-plot.R","ridge views agree with the entropy the package reports",6,0,FALSE,FALSE,0,6
+"test-plot.R","bar intervals come from the fit's own data, not from the caller",4,0,FALSE,FALSE,0,4
+"test-plot.R","a transition fit gets bars without whiskers, not an error",3,0,FALSE,FALSE,0,3
+"test-plot.R","sizes and avepp draw, and are in the catalogue and in `all`",5,0,FALSE,FALSE,0,5
+"test-plot.R","the avepp panel reads the average posterior matrix",2,0,FALSE,FALSE,0,2
+"test-plot.R","a one-profile fit has no avepp to draw",1,0,FALSE,FALSE,0,1
+"test-pool-imputations.R","Rubin's rules agree with mice::pool.scalar for every parameter",40,0,FALSE,FALSE,0,40
+"test-pool-imputations.R","identical imputations pool to the single fit, with no missing information",3,0,FALSE,FALSE,0,3
+"test-pool-imputations.R","relabelling a covariate fit leaves its likelihood and inference intact",5,0,FALSE,FALSE,0,5
+"test-pool-imputations.R","alignment undoes a scrambled imputation before pooling",4,0,FALSE,FALSE,0,4
+"test-pool-imputations.R","imputations that come back relabelled are aligned inside the verb",3,0,FALSE,FALSE,0,3
+"test-pool-imputations.R","covariate-free fits are pooled too",3,0,FALSE,FALSE,0,3
+"test-pool-imputations.R","the methods return what they document",7,0,FALSE,FALSE,0,7
+"test-pool-imputations.R","bad input and a failing imputation are refused by class",5,0,FALSE,FALSE,0,5
+"test-predict.R","predicting the training rows reproduces the fit's posteriors",12,0,FALSE,FALSE,0,12
+"test-predict.R","a single-level fit's densities sum to its log likelihood",1,0,FALSE,FALSE,0,1
+"test-predict.R","a new group is classified from its own rows alone",2,0,FALSE,FALSE,0,2
+"test-predict.R","predictions match mclust's E-step at the same parameters",2,0,FALSE,FALSE,0,2
+"test-predict.R","new rows the fit cannot handle are refused by class",4,0,FALSE,FALSE,0,4
+"test-prior.R","prior_control() carries mclust's defaults",10,0,FALSE,FALSE,0,10
+"test-prior.R","the MAP M-step matches mclust's EM step from the same posteriors",12,0,FALSE,FALSE,0,12
+"test-prior.R","a prior the package does not define is refused by class",7,0,FALSE,FALSE,0,7
+"test-prior.R","a MAP fit is translation equivariant and reports its convention",7,0,FALSE,FALSE,0,7
+"test-prior.R","shrinkage pulls the means towards the prior mean",1,0,FALSE,FALSE,0,1
+"test-release-items.R","KIC and CLC are the criteria their definitions say they are",10,0,FALSE,FALSE,0,10
+"test-release-items.R","the criteria table keeps its shape as criteria are added",9,0,FALSE,FALSE,0,9
+"test-release-items.R","the measurement tables carry their own standard errors when asked",8,0,FALSE,FALSE,0,8
+"test-release-items.R","asking for errors a fit cannot supply raises rather than returning blanks",2,0,FALSE,FALSE,0,2
+"test-report-surface.R","diagnostics() forwards `by` instead of dropping it",5,0,FALSE,FALSE,0,5
+"test-report-surface.R","report() forwards `by` through to the residual it prints",3,0,FALSE,FALSE,0,3
+"test-report-surface.R","an argument the reporting surface cannot forward is refused",4,0,FALSE,FALSE,0,4
+"test-report-surface.R","plot(diagnostics()) draws for a covariate fit",4,0,FALSE,FALSE,0,4
+"test-report-surface.R","a single-profile fit refuses the case diagnostics by class",3,0,FALSE,FALSE,0,3
+"test-report-surface.R","report() draws every view it offers, for every family",2,0,FALSE,FALSE,0,2
+"test-robust.R","per-group scores sum to the aggregate gradient in every model family",14,0,FALSE,FALSE,0,14
+"test-robust.R","per-group scores are localized to their own group",2,0,FALSE,FALSE,0,2
+"test-robust.R","robust and observed covariances differ only through the score product",13,0,FALSE,FALSE,0,13
+"test-robust.R","robust inference refuses fits with too few groups",2,0,FALSE,FALSE,0,2
+"test-robust.R","the cross-product matrix rejects non-finite scores",2,0,FALSE,FALSE,0,2
+"test-robust.R","robust standard errors are invariant to indicator location",2,0,FALSE,FALSE,0,2
+"test-scaling-invariance.R","the multinomial M-step is invariant to the units of a covariate",5,0,FALSE,FALSE,0,5
+"test-scaling-invariance.R","a covariate fit is invariant to the units its covariate arrives in",10,0,FALSE,FALSE,0,10
+"test-scaling-invariance.R","full-covariance inference survives an indicator held in large units",10,0,FALSE,FALSE,0,10
+"test-scaling-invariance.R","covariance coordinate scales name the units of each coordinate",4,0,FALSE,FALSE,0,4
+"test-scaling-invariance.R","design scales are proportional to a column's units and never zero",5,0,FALSE,FALSE,0,5
+"test-scaling-invariance.R","a non-finite membership design is refused by class, not by message",2,0,FALSE,FALSE,0,2
+"test-seeds.R","the seed rule is exactly the set of values set.seed() takes",6,0,FALSE,FALSE,0,6
+"test-seeds.R","a negative seed fits, reproduces itself and is its own stream",2,0,FALSE,FALSE,0,2
+"test-seeds.R","a supplied seed leaves the caller's random stream where it was",1,0,FALSE,FALSE,0,1
+"test-seeds.R","every verb refuses a seed set.seed() would not take exactly",11,0,FALSE,FALSE,0,11
+"test-seeds.R","the covariate fit and the bootstraps accept a negative seed",6,0,FALSE,FALSE,0,6
+"test-sensitivity.R","permuting a fit moves its assignments, not only its parameters",9,0,FALSE,FALSE,0,9
+"test-sensitivity.R","permuting group classes keeps their posterior tables and labels aligned",10,0,FALSE,FALSE,0,10
+"test-sensitivity.R","seeds reaching the same maximum agree, whatever they numbered it",5,0,FALSE,FALSE,0,5
+"test-sensitivity.R","agreement is a proportion and the reference seed reproduces itself",3,0,FALSE,FALSE,0,3
+"test-sensitivity.R","a short original run is replayed with its own iteration settings",4,0,FALSE,FALSE,0,4
+"test-sensitivity.R","a categorical refit preserves declared factor coding",3,0,FALSE,FALSE,0,3
+"test-sensitivity.R","optimum counts basins, not distinct doubles",5,0,FALSE,FALSE,0,5
+"test-sensitivity.R","a family that cannot be refit is refused by class, not attempted",1,0,FALSE,FALSE,0,1
+"test-sensitivity.R","the argument contract is enforced before anything is refitted",8,0,FALSE,FALSE,0,8
+"test-sensitivity.R","agreement refuses data whose rows no longer match the reference",2,0,FALSE,FALSE,0,2
+"test-sensitivity.R","a staged sensitivity refits the conditional second stage",3,0,FALSE,FALSE,0,3
+"test-sensitivity.R","a partially fixed fit is not silently refitted as a joint model",1,0,FALSE,FALSE,0,1
+"test-sequences.R","a fit carries the ordering only when asked, and refuses it otherwise",8,0,FALSE,FALSE,0,8
+"test-sequences.R","the long form is one tidy row per observation, in sequence order",9,0,FALSE,FALSE,0,9
+"test-sequences.R","the wide form is one row per group, carrying the group identifier",8,0,FALSE,FALSE,0,8
+"test-sequences.R","the wide form loses nothing the long form carries",3,0,FALSE,FALSE,0,3
+"test-sequences.R","an unbalanced group leaves NA at the positions it never reached",4,0,FALSE,FALSE,0,4
+"test-sequences.R","the summary counts each class's groups and their lengths",10,0,FALSE,FALSE,0,10
+"test-sequences.R","a broken ordering is refused rather than silently reshaped",3,0,FALSE,FALSE,0,3
+"test-sequences.R","the sequence panel draws and respects the no-ordering contract",3,0,FALSE,FALSE,0,3
+"test-sequences.R","the ordering is imposed, not inherited from the input row order",4,0,FALSE,FALSE,0,4
+"test-single-level.R","a forgotten id raises, and a stated one warns",3,0,FALSE,FALSE,0,3
+"test-single-level.R","id = NULL is the fit you get by numbering the rows yourself",5,0,FALSE,FALSE,0,5
+"test-single-level.R","a single-level fit records what it is",6,0,FALSE,FALSE,0,6
+"test-single-level.R","the fabricated unit column is not handed back",3,0,FALSE,FALSE,0,3
+"test-single-level.R","group classes without an id are refused, not silently dropped",2,0,FALSE,FALSE,0,2
+"test-single-level.R","a column already called .observation is refused",1,0,FALSE,FALSE,0,1
+"test-single-level.R","the package's verbs work on a single-level fit",6,0,FALSE,FALSE,0,6
+"test-single-level.R","a truth column cross-tabulates against profiles, not a single class",4,0,FALSE,FALSE,0,4
+"test-staged-bootstrap.R","a staged bootstrap reports every parameter, the held measurement included",6,0,FALSE,FALSE,0,6
+"test-staged-bootstrap.R","each resample re-estimates the measurement rather than holding it",1,0,FALSE,FALSE,0,1
+"test-staged-bootstrap.R","propagating the first stage widens the second-stage errors",1,0,FALSE,FALSE,0,1
+"test-staged-bootstrap.R","a staged bootstrap is reproducible from its seed",1,0,FALSE,FALSE,0,1
+"test-staged-identity.R","the staged fit does not depend on the order `categorical` names",36,0,FALSE,FALSE,0,36
+"test-staged-identity.R","the staged fit does not depend on the order the factor levels are declared",5,0,FALSE,FALSE,0,5
+"test-staged-identity.R","a first stage whose categories are not these categories is refused",2,0,FALSE,FALSE,0,2
+"test-staged-identity.R","a labelled start is aligned by label, and a label that cannot be aligned is refused",6,0,FALSE,FALSE,0,6
+"test-staged-identity.R","an unlabelled start keeps the documented positional contract",5,0,FALSE,FALSE,0,5
+"test-structure-inference.R","constrained-structure standard errors match an independent Hessian",56,0,FALSE,FALSE,0,56
+"test-structure-inference.R","the chart has one coordinate per structure parameter",36,0,FALSE,FALSE,0,36
+"test-structure-inference.R","robust scores sum to the analytic score in every chart",4,0,FALSE,FALSE,0,4
+"test-structure-inference.R","mean standard errors scale with the indicators",2,0,FALSE,FALSE,0,2
+"test-three-step-clusters.R","a single independent group is refused, not given a zero standard error",5,0,FALSE,FALSE,0,5
+"test-three-step-clusters.R","the sole group's influence contributions really do cancel to nothing",3,0,FALSE,FALSE,0,3
+"test-three-step-clusters.R","the unclustered variance is offered explicitly and is the right size",5,0,FALSE,FALSE,0,5
+"test-three-step-clusters.R","enough groups give a standard error of a plausible size",5,0,FALSE,FALSE,0,5
+"test-three-step-clusters.R","the refusal threshold is the rank the cluster sums can reach",8,0,FALSE,FALSE,0,8
+"test-three-step-clusters.R","two groups cannot carry a variance for two classes",5,0,FALSE,FALSE,0,5
+"test-three-step-clusters.R","r3step refuses a robust covariance its groups cannot support",6,0,FALSE,FALSE,0,6
+"test-three-step-clusters.R","a robust r3step with many groups is unchanged and comparable",4,0,FALSE,FALSE,0,4
+"test-three-step.R","the error matrix conditions on the true class and is a distribution",5,0,FALSE,FALSE,0,5
+"test-three-step.R","BCH weights sum to one within a unit and are signed",7,0,FALSE,FALSE,0,7
+"test-three-step.R","BCH removes the attenuation that modal assignment creates",5,0,FALSE,FALSE,0,5
+"test-three-step.R","the result is tidy, with cluster-robust intervals",8,0,FALSE,FALSE,0,8
+"test-three-step.R","a group-level outcome is related to the group classes",6,0,FALSE,FALSE,0,6
+"test-three-step.R","a broken contract is refused",5,0,FALSE,FALSE,0,5
+"test-three-step.R","inseparable classes are refused rather than inverted",2,0,FALSE,FALSE,0,2
+"test-three-step.R","classification errors remain available for covariate fits",2,0,FALSE,FALSE,0,2
+"test-three-step.R","a one-class level is degenerate but does not error",3,0,FALSE,FALSE,0,3
+"test-three-step.R","the weights satisfy the identities that define the BCH method",4,0,FALSE,FALSE,0,4
+"test-three-step.R","the per-unit weights agree with the original table formulation",1,0,FALSE,FALSE,0,1
+"test-three-step.R","R3STEP recovers a covariate effect the naive regression attenuates",4,0,FALSE,FALSE,0,4
+"test-three-step.R","the R3STEP table is tidy and its intervals are consistent",7,0,FALSE,FALSE,0,7
+"test-three-step.R","the robust sandwich runs and more covariates are supported",6,0,FALSE,FALSE,0,6
+"test-three-step.R","R3STEP works at the group level and refuses a varying covariate",4,0,FALSE,FALSE,0,4
+"test-three-step.R","a broken contract is refused",5,0,FALSE,FALSE,0,5
+"test-tidy-accessors.R","every table of a fit is tidy",58,0,FALSE,FALSE,0,58
+"test-tidy-accessors.R","the standardized profile means the plot draws are available as data",12,0,FALSE,FALSE,0,12
+"test-tidy-accessors.R","standardizing errors where the plot would, and only where it applies",4,0,FALSE,FALSE,0,4
+"test-tidy-accessors.R","an unestimated stage is missing, not a sentinel level",4,0,FALSE,FALSE,0,4
+"test-tidy-accessors.R","a summary carries no unnamed field, whatever the fit omits",18,0,FALSE,FALSE,0,18
+"test-tidy-accessors.R","a summary defaults its absent fields rather than dropping them",5,0,FALSE,FALSE,0,5
+"test-tidy-accessors.R","every table of a summary is tidy",38,0,FALSE,FALSE,0,38
+"test-tidy-accessors.R","the summary tables report the quantities the summary was built from",13,0,FALSE,FALSE,0,13
+"test-tidy-accessors.R","the summary reports a covariance matrix under either parameterization",8,0,FALSE,FALSE,0,8
+"test-tidy-accessors.R","a categorical summary reports responses and no empty Gaussian block",12,0,FALSE,FALSE,0,12
+"test-tidy-accessors.R","the summary print method is a report and returns its input",4,0,FALSE,FALSE,0,4
+"test-tidy-accessors.R","the tidy accessors refuse an object of the wrong class",5,0,FALSE,FALSE,0,5
+"test-tidy-accessors.R","starting values are a classed object that still round-trips",6,0,FALSE,FALSE,0,6
+"test-tidy-accessors.R","a measurement-only start round-trips into a fit that holds it",5,0,FALSE,FALSE,0,5
+"test-tidy-accessors.R","every table of a starting-value set is tidy",26,0,FALSE,FALSE,0,26
+"test-tidy-accessors.R","a categorical starting-value set tabulates its response blocks",9,0,FALSE,FALSE,0,9
+"test-tidy-accessors.R","a full-covariance start tabulates the variances it implies",11,0,FALSE,FALSE,0,11
+"test-tidy-accessors.R","printing a starting-value set describes it and returns it",8,0,FALSE,FALSE,0,8
+"test-tidy-accessors.R","starting_values still refuses an incomplete object by class",2,0,FALSE,FALSE,0,2
+"test-tidy-classes.R","every result class of this sweep defines all four verbs",1,0,FALSE,FALSE,0,1
+"test-tidy-classes.R","a covariate summary is a classed, tidy, fully named object",13,0,FALSE,FALSE,0,13
+"test-tidy-classes.R","a covariate fit carries the data its inference verbs ask for",5,0,FALSE,FALSE,0,5
+"test-tidy-classes.R","an enumeration summary names the minimising candidate per criterion",13,0,FALSE,FALSE,0,13
+"test-tidy-classes.R","a candidate fit is reached by its class counts, never by position",8,0,FALSE,FALSE,0,8
+"test-tidy-classes.R","a bootstrap comparison is classed and plots its simulated null",8,0,FALSE,FALSE,0,8
+"test-tidy-classes.R","the new methods dispatch through their generics",4,0,FALSE,FALSE,0,4
+"test-tidy-core.R","multilpa() gives every match.arg argument a vector default",6,0,FALSE,FALSE,0,6
+"test-tidy-core.R","match.arg rejects an unlisted choice for every such argument",3,0,FALSE,FALSE,0,3
+"test-tidy-core.R","a broken data contract is refused by class, not by message",7,0,FALSE,FALSE,0,7
+"test-tidy-core.R","a scalar argument outside its contract is refused by class",7,0,FALSE,FALSE,0,7
+"test-tidy-core.R","an unidentifiable request is refused by class",4,0,FALSE,FALSE,0,4
+"test-tidy-core.R","the data contract is checked before `time` is",1,0,FALSE,FALSE,0,1
+"test-tidy-core.R","`time` may not name an indicator, as its contract says",2,0,FALSE,FALSE,0,2
+"test-tidy-core.R","a repeated or missing position is refused by class",2,0,FALSE,FALSE,0,2
+"test-tidy-core.R","a malformed start is refused by class",3,0,FALSE,FALSE,0,3
+"test-tidy-core.R","a qualified fit warns by class and never tells the caller to use $",4,0,FALSE,FALSE,0,4
+"test-tidy-core.R","an unconverged fit raises a catchable latents_unconverged warning",1,0,FALSE,FALSE,0,1
+"test-tidy-core.R","the starts diagnostics are reachable as a tidy frame, not by $",3,0,FALSE,FALSE,0,3
+"test-tidy-core.R","multilpa() returns a tidy frame for each `what`",5,0,FALSE,FALSE,0,5
+"test-tidy-core.R","fit_staged() reaches the staged workflow in one call",7,0,FALSE,FALSE,0,7
+"test-tidy-core.R","fit_staged() refuses a staging request it cannot meet",4,0,FALSE,FALSE,0,4
+"test-tidy-core.R","the categorical and utility helpers stay internal",3,0,FALSE,FALSE,0,3
+"test-tidy-core.R","every condition class raised in R/ is documented, and every documented class is raised",1,0,FALSE,FALSE,0,1
+"test-tidy-core.R","every warning the package raises carries a class",1,0,FALSE,FALSE,0,1
+"test-tidy-diagnostics.R","a criterion that uses no sample size says NA, not a third level",5,0,FALSE,FALSE,0,5
+"test-tidy-diagnostics.R","the value column points one way on every row",4,0,FALSE,FALSE,0,4
+"test-tidy-diagnostics.R","formulas are documentation, available only on request",6,0,FALSE,FALSE,0,6
+"test-tidy-diagnostics.R","the wide and long forms are the same numbers",5,0,FALSE,FALSE,0,5
+"test-tidy-diagnostics.R","a single fit and its enumeration grid name the same things",2,0,FALSE,FALSE,0,2
+"test-tidy-diagnostics.R","classification_table has one shape and average_posteriors the other",6,0,FALSE,FALSE,0,6
+"test-tidy-diagnostics.R","average_posteriors is not classification_errors under another name",2,0,FALSE,FALSE,0,2
+"test-tidy-diagnostics.R","a class with no modal members reports undefined, not zero",5,0,FALSE,FALSE,0,5
+"test-tidy-diagnostics.R","Cramer's V matches an independent computation",6,0,FALSE,FALSE,0,6
+"test-tidy-diagnostics.R","a mixed fit puts both kinds of pair on one scale",8,0,FALSE,FALSE,0,8
+"test-tidy-diagnostics.R","df is a column that does not apply to a Gaussian pair",7,0,FALSE,FALSE,0,7
+"test-tidy-examples.R","help-page examples use verbs, not subsetting",2,0,FALSE,FALSE,0,2
+"test-tidy-inference.R","a coefficient name is its tidy decomposition, in every class",2,0,FALSE,FALSE,0,2
+"test-tidy-inference.R","the four name parts read back into the tidy columns",4,0,FALSE,FALSE,0,4
+"test-tidy-inference.R","the unconstrained coefficients carry names of the same shape",4,0,FALSE,FALSE,0,4
+"test-tidy-inference.R","vcov and confint are named exactly as coef is",6,0,FALSE,FALSE,0,6
+"test-tidy-inference.R","one generic returns one column set, whichever class it dispatches on",14,0,FALSE,FALSE,0,14
+"test-tidy-inference.R","a correction is named, never applied by stealth",5,0,FALSE,FALSE,0,5
+"test-tidy-inference.R","the natural-scale covariance is what the reported intervals are built from",6,0,FALSE,FALSE,0,6
+"test-tidy-inference.R","the delta method is invertible: the two covariate scales agree through the Jacobian",2,0,FALSE,FALSE,0,2
+"test-tidy-inference.R","coef reports the same numbers the tidy table does, on both spread models",12,0,FALSE,FALSE,0,12
+"test-tidy-inference.R","a transition fit reports standard errors named as its coefficients",3,0,FALSE,FALSE,0,3
+"test-tidy-sequences.R","the wide form attributes every row without relying on row order",7,0,FALSE,FALSE,0,7
+"test-tidy-sequences.R","two groups that print alike stay two groups in every shape",4,0,FALSE,FALSE,0,4
+"test-tidy-sequences.R","a gapped panel is summarized as gapped, not merely as short",5,0,FALSE,FALSE,0,5
+"test-tidy-sequences.R","a group class with no groups is still a row, with NA lengths",7,0,FALSE,FALSE,0,7
+"test-tidy-sequences.R","sequence_summary refuses a fit without an ordering",2,0,FALSE,FALSE,0,2
+"test-tidy-sequences.R","the occasion columns are named after the ordering column",1,0,FALSE,FALSE,0,1
+"test-tidy-three-step.R","the weight frame is long, so its columns do not grow with K",8,0,FALSE,FALSE,0,8
+"test-tidy-three-step.R","three_step keeps one shape across methods, levels and class counts",9,0,FALSE,FALSE,0,9
+"test-tidy-three-step.R","pairwise contrasts carry the inference columns r3step carries",6,0,FALSE,FALSE,0,6
+"test-tidy-three-step.R","a contrast is exactly the difference of the two class means",2,0,FALSE,FALSE,0,2
+"test-tidy-three-step.R","the estimator is equivariant under an affine change of outcome",4,0,FALSE,FALSE,0,4
+"test-tidy-three-step.R","a constant outcome cannot manufacture a significant class contrast",4,0,FALSE,FALSE,0,4
+"test-tidy-three-step.R","a zero-variance membership coefficient has no Wald test",5,0,FALSE,FALSE,0,5
+"test-tidy-three-step.R","three-step outcomes and covariates retain the fit's row order",5,0,FALSE,FALSE,0,5
+"test-tidy-three-step.R","three-step variables must be external to the measurement model",8,0,FALSE,FALSE,0,8
+"test-tidy-three-step.R","the pairwise standard error agrees with a cluster bootstrap",3,0,FALSE,FALSE,0,3
+"test-tidy-three-step.R","multiplicity is corrected, named, and can be turned off",6,0,FALSE,FALSE,0,6
+"test-tidy-three-step.R","r3step corrects across its covariate terms and not its intercepts",6,0,FALSE,FALSE,0,6
+"test-tidy-three-step.R","a single class is refused a contrast by condition class",3,0,FALSE,FALSE,0,3
+"test-tidy-three-step.R","a wrong row count is the same classed error in every verb",5,0,FALSE,FALSE,0,5
+"test-tidy-three-step.R","an unusable r3step predictor is a covariate problem, not an outcome one",3,0,FALSE,FALSE,0,3
+"test-tna-fits.R","the network is the row-normalised count of consecutive profiles",2,0,FALSE,FALSE,0,2
+"test-tna-fits.R","the grouped networks follow each group's modal group class",3,0,FALSE,FALSE,0,3
+"test-tna-fits.R","a covariate fit gives networks and draws its response probabilities",3,0,FALSE,FALSE,0,3
+"test-tna-fits.R","a fit without an order has no network",2,0,FALSE,FALSE,0,2
+"test-tna.R","the aggregate is the marginal, not the mean of the class matrices",4,0,FALSE,FALSE,0,4
+"test-tna.R","get_tna returns a tna model of the whole sample",6,0,FALSE,FALSE,0,6
+"test-tna.R","get_group_tna returns one model per latent class",10,0,FALSE,FALSE,0,10
+"test-tna.R","the class label is the caller's",4,0,FALSE,FALSE,0,4
+"test-tna.R","a state with no moves keeps the fit's row, not invented persistence",8,0,FALSE,FALSE,0,8
+"test-tna.R","a transition fit draws every view its catalogue claims",11,0,FALSE,FALSE,0,11
+"test-tna.R","the transition panel is the fitted matrix, per class",3,0,FALSE,FALSE,0,3
+"test-tna.R","several empty rows each keep their own row, and estimated rows are untouched",4,0,FALSE,FALSE,0,4
+"test-transition-inference.R","the analytic score is the derivative of the forward-backward likelihood",7,0,FALSE,FALSE,0,7
+"test-transition-inference.R","standard errors match a Hessian of the likelihood alone",2,0,FALSE,FALSE,0,2
+"test-transition-inference.R","transition score indexing also holds with three profiles",1,0,FALSE,FALSE,0,1
+"test-transition-inference.R","coef(), vcov() and parameter_inference() name every parameter alike",8,0,FALSE,FALSE,0,8
+"test-transition-inference.R","the probability rows are internally consistent",4,0,FALSE,FALSE,0,4
+"test-transition-inference.R","inference refuses what it cannot answer, by class",3,0,FALSE,FALSE,0,3
+"test-transitions-numerics.R","a long sequence returns finite, nonnegative expected counts",4,0,FALSE,FALSE,0,4
+"test-transitions-numerics.R","expected counts and posteriors satisfy their own invariants",12,0,FALSE,FALSE,0,12
+"test-transitions-numerics.R","a fitted model's counts total its within-sequence transitions",5,0,FALSE,FALSE,0,5
+"test-transitions-numerics.R","expected counts match explicit path enumeration",1,0,FALSE,FALSE,0,1
+"test-transitions-numerics.R","zero iterations evaluate the start instead of failing to assemble",7,0,FALSE,FALSE,0,7
+"test-transitions-numerics.R","the prevalence reported is the one the final expectation implies",5,0,FALSE,FALSE,0,5
+"test-transitions-numerics.R","two very long sequences fit rather than overflowing",5,0,FALSE,FALSE,0,5
+"test-transitions-numerics.R","broken contracts of the moment step raise by class",6,0,FALSE,FALSE,0,6
+"test-transitions.R","the recursion reproduces the likelihood enumeration gives",4,0,FALSE,FALSE,0,4
+"test-transitions.R","enumeration agrees for categorical, mixed and incomplete indicators",4,0,FALSE,FALSE,0,4
+"test-transitions.R","known transition probabilities are recovered across seeds",2,0,FALSE,FALSE,0,2
+"test-transitions.R","the ordering comes from time, so input row order changes nothing",2,0,FALSE,FALSE,0,2
+"test-transitions.R","enough starts reach the same maximum from either row order",1,0,FALSE,FALSE,0,1
+"test-transitions.R","a grid of occasions differs from consecutive ones only when a wave is skipped",7,0,FALSE,FALSE,0,7
+"test-transitions.R","the fitted quantities satisfy their own definitions",9,0,FALSE,FALSE,0,9
+"test-transitions.R","the free parameter count is the one the model actually has",6,0,FALSE,FALSE,0,6
+"test-transitions.R","broken contracts raise their own condition classes",6,0,FALSE,FALSE,0,6
+"test-transitions.R","the accessors return the tidy tables they promise",27,0,FALSE,FALSE,0,27
+"test-transitions.R","transitions() restricts by argument instead of by bracket",14,0,FALSE,FALSE,0,14
+"test-transitions.R","the summary keeps named fields only, and reports its own tables",10,0,FALSE,FALSE,0,10
+"test-transitions.R","the shared sequence and diagnostic verbs accept a transition fit",7,0,FALSE,FALSE,0,7
+"test-transitions.R","groups of one occasion contribute an initial state and no transition",3,0,FALSE,FALSE,0,3
+"test-transitions.R","the per-occasion offset keeps extreme densities from erasing the priors",4,0,FALSE,FALSE,0,4
+"test-transitions.R","the emission layout removes an offset it can add back exactly",3,0,FALSE,FALSE,0,3
+"test-transitions.R","the generics either answer or refuse, and never answer emptily",18,0,FALSE,FALSE,0,18
+"test-vignette-claims.R","the numbers in the latent profile workflow hold",12,0,FALSE,FALSE,0,12
+"test-vignette-claims.R","the numbers in the latent class workflow hold",13,0,FALSE,FALSE,0,13

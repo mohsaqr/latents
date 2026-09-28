@@ -1,4 +1,23 @@
-# latents (development version)
+# latents 0.8.6
+
+## Revision review fixes
+
+* Mixture-regression prediction retains the training membership factor levels,
+  contrasts and transformed terms. Posterior predictions rebuild group IDs
+  for new rows; fitted plots retain grouping and membership columns and accept
+  transformed regression predictors.
+* A group-membership formula with one slope and no intercept is optimized as
+  a slope, rather than mistaken for an intercept-only model.
+* `r3step(by_group_class = TRUE)` now handles the one-group-class limit and
+  agrees with the pooled regression for both observed and robust covariance.
+* `enumerate_lpa()` preserves an omitted `model`, allowing the documented
+  covariance switches and all-categorical inputs through the wrapper.
+* `bootstrap_lrt()` refuses prior-fitted models whose likelihoods are evaluated
+  at posterior modes. Its fixed-mask missingness assumptions are clarified,
+  and multiple-imputation guidance distinguishes algebraic equivalence from
+  evidence about coverage and imputation-model validity.
+
+# latents 0.8.5
 
 ## Single-level verbs, covariance-structure grids and workflow vignettes
 

@@ -56,7 +56,7 @@
 #'
 #' @param data The original fitting data frame.
 #' @param categorical Names of its categorical indicators.
-#' @param encoded The result of [.multilpa_encode_categorical()], or `NULL`.
+#' @param encoded The result of `.multilpa_encode_categorical()`, or `NULL`.
 #' @return A named list of typed vectors, one value per observed category.
 #' @noRd
 .multilpa_categorical_values <- function(data, categorical, encoded) {

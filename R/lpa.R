@@ -137,6 +137,12 @@ lca <- function(data, vars, n_classes, ...) {
 #' @export
 enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
   .multilpa_single_level_call("enumerate_lpa", "enumerate_classes", list(...))
+  # Preserve omission: the default gives way to legacy covariance switches
+  # and to all-categorical data, whereas an explicit model does not.
+  if (missing(model)) {
+    return(.multilpa_quiet_single_level(
+      enumerate_classes(data, vars, id = NULL, n_profiles = n_profiles, ...)))
+  }
   .multilpa_quiet_single_level(
     enumerate_classes(data, vars, id = NULL, n_profiles = n_profiles,
                       model = model, ...))

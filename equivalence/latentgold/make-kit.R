@@ -80,7 +80,9 @@ dir.create(targets_dir, recursive = TRUE)
          distal_modal = three_step(fit, case$data, "distal", method = "modal"),
          distal_proportional = three_step(fit, case$data, "distal",
                                           method = "proportional"),
-         covariate_ml = r3step(fit, case$data, "x"))
+         # The retained listing reports model-based information SEs. The
+         # package's default is now robust, a different covariance estimator.
+         covariate_ml = r3step(fit, case$data, "x", vcov_type = "observed"))
   }
   list(case = name, description = case$description, anchors = case$anchors,
        lgs = names(case$files), data_file = case$data_file,

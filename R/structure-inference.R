@@ -156,7 +156,7 @@
 #' combination is too, and unequal weights keep its eigenvalues apart.
 #'
 #' @param blocks The fitted covariance matrices.
-#' @param chart The chart, from [.multilpa_chart()].
+#' @param chart The chart, from `.multilpa_chart()`.
 #' @return A list of orthogonal matrices, one per rotation row, or `NULL`.
 #' @noRd
 .multilpa_chart_anchor <- function(blocks, chart) {
@@ -260,7 +260,7 @@
 
 #' Map chart coordinates to covariance matrices, and differentiate the map
 #'
-#' @param phi The chart coordinates, in [.multilpa_chart_encode()] order.
+#' @param phi The chart coordinates, in `.multilpa_chart_encode()` order.
 #' @param chart The chart.
 #' @param anchor The orientations the rotation chart is centred on.
 #' @param derivatives Whether to return the Jacobian as well.
@@ -478,7 +478,7 @@
 #'
 #' @param object A fit whose structure uses a chart.
 #' @return A matrix with one row per natural spread coefficient, in
-#'   [.multilpa_coefficients()] order, and one column per chart coordinate.
+#'   `.multilpa_coefficients()` order, and one column per chart coordinate.
 #' @noRd
 .multilpa_chart_natural_jacobian <- function(object) {
   encoded <- .multilpa_chart_encode(object)

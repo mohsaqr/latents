@@ -85,7 +85,7 @@
 }
 
 #' Unpack a parameter vector for a covariate fit
-#' @param theta Numeric vector as built by [.multilpa_cov_encode()].
+#' @param theta Numeric vector as built by `.multilpa_cov_encode()`.
 #' @param object The fit supplying the shapes.
 #' @return A list with `parameters` (means, variances), `beta` and `gamma`.
 #' @noRd
@@ -232,7 +232,7 @@
 #' @param posteriors Observation-by-profile responsibilities.
 #' @param object The fit, supplying the group index and shapes.
 #' @param moments The E-step's conditional moments, one element per profile,
-#'   from [.multilpa_gaussian_moments()].
+#'   from `.multilpa_gaussian_moments()`.
 #' @return A list with `means` and `covariances`, each a groups-by-parameters
 #'   matrix in encode order.
 #' @noRd
@@ -395,7 +395,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
 #' @param step Finite-difference step for the observed information.
 #' @param vcov_type `"observed"`, `"robust"` or `"opg"`.
 #' @param boundary `"error"` or `"fix"`, as for [parameter_inference()].
-#' @return A square matrix, ordered as [.multilpa_cov_encode()].
+#' @return A square matrix, ordered as `.multilpa_cov_encode()`.
 #' @noRd
 .multilpa_cov_covariance <- function(object, data = NULL, step, vcov_type,
                                      boundary = "error") {
@@ -539,7 +539,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
 
 #' Names for the free parameters of a covariate fit
 #' @param object A fitted `multilpa_covariates` model.
-#' @return A character vector, ordered as [.multilpa_cov_encode()].
+#' @return A character vector, ordered as `.multilpa_cov_encode()`.
 #' @noRd
 .multilpa_cov_parameter_names <- function(object) {
   ## One spelling for every class in the package: the same four tidy columns,
@@ -616,7 +616,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 
 #' Tidy labels of a covariate fit on the scale it is estimated on
 #'
-#' The same rows as [.multilpa_cov_labels()], with the spread block renamed to
+#' The same rows as `.multilpa_cov_labels()`, with the spread block renamed to
 #' the coordinate it really is: a log variance, or a Cholesky entry whose
 #' diagonal is logged. This is the vocabulary [coef.multilpa()] already uses for
 #' the covariate-free model, so both classes spell an estimation-scale
@@ -737,7 +737,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @param theta The estimation-scale parameter vector.
 #' @param labels The tidy labels of `theta`, in the same order.
 #' @return A square matrix, rows natural coordinates and columns estimation
-#'   coordinates, in the order [.multilpa_cov_encode()] packs them.
+#'   coordinates, in the order `.multilpa_cov_encode()` packs them.
 #' @noRd
 .multilpa_cov_front_jacobian <- function(object, theta, labels) {
   jacobian <- diag(1, length(theta))
@@ -804,7 +804,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' Delta-method Jacobian from estimation to natural coordinates
 #'
 #' Block diagonal. The measurement block is square and handled by
-#' [.multilpa_cov_front_jacobian()]; each profile-by-indicator response row is
+#' `.multilpa_cov_front_jacobian()`; each profile-by-indicator response row is
 #' a simplex of `K` probabilities driven by `K - 1` logits, with derivative
 #' `p_c * (1{c = j} - p_j)`; the membership logits map to themselves.
 #'
@@ -891,7 +891,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' estimation coordinates differ in number: every category has a probability,
 #' but only all but the last carry a free logit. `response = "natural"` labels
 #' every category, as [parameter_inference()] reports them; `"free"` labels the
-#' logits in the order [.multilpa_cov_encode()] packs them.
+#' logits in the order `.multilpa_cov_encode()` packs them.
 #'
 #' @param object A fitted `multilpa_covariates` model.
 #' @param response `"natural"` or `"free"`.

@@ -73,7 +73,7 @@
 }
 
 #' The classification error matrix, rows indexed by the true class
-#' @param pieces The list from [.multilpa_level_assignments()].
+#' @param pieces The list from `.multilpa_level_assignments()`.
 #' @return A square matrix whose rows sum to one.
 #' @noRd
 .multilpa_error_matrix <- function(pieces) {
@@ -126,7 +126,7 @@
 }
 
 #' Invert a classification error matrix, refusing a singular one
-#' @param errors The matrix from [.multilpa_error_matrix()].
+#' @param errors The matrix from `.multilpa_error_matrix()`.
 #' @return Its inverse.
 #' @noRd
 .multilpa_invert_errors <- function(errors) {
@@ -725,7 +725,7 @@ r3step <- function(x, data, covariates,
 #'
 #' @param x The step-one fit.
 #' @param z The covariate matrix, one row per observation, no intercept.
-#' @param pieces The result of [.multilpa_level_assignments()] for individuals.
+#' @param pieces The result of `.multilpa_level_assignments()` for individuals.
 #' @param errors The step-one classification-error matrix.
 #' @param ci_level,vcov_type,adjust As for [r3step()].
 #' @return The tidy table [r3step()] returns, with group-class intercept rows
@@ -767,7 +767,7 @@ r3step <- function(x, data, covariates,
 #'
 #' @param x The step-one fit.
 #' @param z The covariate matrix, one row per observation, no intercept.
-#' @param pieces The result of [.multilpa_level_assignments()] for individuals.
+#' @param pieces The result of `.multilpa_level_assignments()` for individuals.
 #' @param errors The step-one classification-error matrix.
 #' @return A list with `objective` (negative log likelihood), `gradient`,
 #'   `group_scores` (one row per group), `start`, and `unit`, the factors that
@@ -874,7 +874,7 @@ r3step <- function(x, data, covariates,
     data.frame(level = "individuals", outcome = beta_labels$outcome,
                term = beta_labels$term, stringsAsFactors = FALSE),
     data.frame(level = rep("groups", n_group_classes - 1L),
-               outcome = paste0("group_class_", seq_len(n_group_classes - 1L)),
+               outcome = sprintf("group_class_%d", seq_len(n_group_classes - 1L)),
                term = rep("(Intercept)", n_group_classes - 1L),
                stringsAsFactors = FALSE))
   statistic <- rep(NA_real_, length(estimates))

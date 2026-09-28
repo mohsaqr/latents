@@ -106,14 +106,14 @@ suite_mclust <- function() {
   # implementations.
   reference <- mclust::Mclust(model_data, G = g, modelNames = model,
                               verbose = FALSE,
-                              control = mclust::emControl(tol = c(1e-13, 1e-13),
+                              control = mclust::emControl(tol = c(1e-15, 1e-15),
                                                           itmax = c(1e5, 1e5)))
   as_published <- mclust::Mclust(model_data, G = g, modelNames = model,
                                  verbose = FALSE)
   covariance <- .mclust_covariance(model)
   fit <- multilpa(frame, vars = indicators, id = "unit", n_profiles = g,
                   n_group_classes = 1L, n_starts = 60L, seed = 1L,
-                  tol = 1e-13, max_iter = 20000L,
+                  tol = 1e-15, max_iter = 20000L,
                   covariance_model = covariance$covariance_model,
                   variance_model = covariance$variance_model)
 

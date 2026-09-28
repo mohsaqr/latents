@@ -506,7 +506,7 @@ larger <- multilpa(course_engagement, vars, "student",
 bootstrap_lrt(smaller, larger, iter = 199, seed = 42)
 ```
 
-Both models must be fitted to complete data. The package withholds the bootstrap p-value if any replicate fails to converge, making optimization of the replicate fits part of the validity of the comparison.
+Both models must be fitted by maximum likelihood to the same data. FIML fits are supported by preserving the missingness pattern; this bootstrap assumes missingness independent of indicators and latent classes conditional on fixed covariates, and is not generally calibrated under indicator-dependent MAR. The package withholds the p-value if any replicate fails validation. For membership-covariate replicates, likelihood convergence is sufficient even when separated logits continue to drift; this is recorded in `logits_settled`.
 
 ## Parameter uncertainty
 
@@ -628,7 +628,7 @@ get_results(missing_fit)
 
 Each observation contributes the density of its observed indicators, obtained by marginalizing over its missing components. Estimation therefore uses partially observed indicator vectors without imputing values. The resulting inference assumes that the missingness mechanism is ignorable for the fitted analysis; the likelihood option itself does not establish that assumption.
 
-Missing-data handling should be described together with the pattern and extent of missingness and the information available to explain it. Without `missing = "fiml"`, missing indicators produce an error. Membership-covariate models accept `missing = "fiml"` for their indicators, but the covariates themselves must be complete; parametric bootstrap procedures require complete data in this implementation.
+Missing-data handling should be described together with the pattern and extent of missingness and the information available to explain it. Without `missing = "fiml"`, missing indicators produce an error. Membership-covariate models accept `missing = "fiml"` for their indicators, but the covariates themselves must be complete or imputed before fitting with `pool_imputations()`. The FIML bootstrap likelihood-ratio test preserves the observed missingness mask, subject to the calibration assumptions described above.
 
 ## Ordered observations and latent transitions
 

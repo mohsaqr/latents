@@ -174,8 +174,8 @@ print.latents_prior <- function(x, ...) {
 #'
 #' @param x The complete indicator matrix.
 #' @param posteriors Observation-by-profile posterior probabilities.
-#' @param structure The mclust model code, one of [.multilpa_prior_structures()].
-#' @param hyper Hyperparameters from [.multilpa_prior_parameters()].
+#' @param structure The mclust model code, one of `.multilpa_prior_structures()`.
+#' @param hyper Hyperparameters from `.multilpa_prior_parameters()`.
 #' @param min_variance The variance or eigenvalue lower bound.
 #' @param max_iter,tol The inner iteration of VEI and VEV.
 #' @return A list with `means`, `variances` and, for an ellipsoidal structure,

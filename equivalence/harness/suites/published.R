@@ -127,18 +127,21 @@ suite_published <- function() {
 
   # Zhou & Lange publish the dominant mode and an inferior local mode of the
   # four-class likelihood, which makes this a test of the optimizer rather than
-  # of the likelihood. Each seed is a single start, so the collected optima are
-  # the modes this implementation actually reaches.
-  single_starts <- vapply(seq_len(120L), function(seed) {
+  # of the likelihood. The first start is now deterministic Ward clustering;
+  # retain the likelihood of each start, including one random start per seed.
+  # Plain EM deliberately probes local basins that acceleration can escape.
+  single_starts <- unlist(lapply(seq_len(120L), function(seed) {
     raw <- get(utils::data(list = "carcinoma", package = "poLCA",
                            envir = environment()), envir = environment())
     frame <- raw[, items, drop = FALSE]
     frame$unit <- factor(seq_len(nrow(frame)))
-    as.numeric(logLik(multilpa(frame, vars = items, id = "unit",
+    fit <- multilpa(frame, vars = items, id = "unit",
                                n_profiles = 4L, n_group_classes = 1L,
-                               categorical = items, n_starts = 1L, seed = seed,
-                               tol = 1e-13, max_iter = 20000L)))
-  }, numeric(1))
+                               categorical = items, n_starts = 2L, seed = seed,
+                               acceleration = "none",
+                               tol = 1e-13, max_iter = 20000L)
+    fit$starts$log_likelihood
+  }), use.names = FALSE)
   modes <- sort(unique(round(single_starts, 4L)), decreasing = TRUE)
   inferior <- modes[which.min(abs(modes - (-293.3200)))]
 

@@ -421,10 +421,10 @@ lg_cases <- function() {
     data = data,
     fit = function() {
       # A single-level fit is deliberate here: Step-3 is defined on it, and
-      # this is the one warning the call is expected to raise.
+      # this is the one message the call is expected to raise.
       withCallingHandlers(
         .lg_fit(data, c("y1", "y2"), id = NULL, n_profiles = 2, n_group_classes = 1),
-        latents_single_level = function(w) invokeRestart("muffleWarning"))
+        latents_single_level = function(w) invokeRestart("muffleMessage"))
     },
     # One model per file, so each listing holds one result and none has to be
     # split apart by title. Step one must run first: the rest read its file.

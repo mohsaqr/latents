@@ -1,0 +1,15 @@
+"file","test","nb","failed","skipped","error","warning","passed"
+"test-latents-controls.R","the start rule takes the best converged start only when asked",5,0,FALSE,FALSE,0,5
+"test-latents-controls.R","the start rule is invariant to failed starts and refuses bad input",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","select_start reaches every fitting path",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","group-class R3STEP reduces to the pooled regression with one group class",6,0,FALSE,FALSE,0,6
+"test-latents-controls.R","the two-level R3STEP gradient is the derivative of its likelihood",2,0,FALSE,FALSE,0,2
+"test-latents-controls.R","the two-level R3STEP recovers the slope the pooled one attenuates",8,0,FALSE,FALSE,0,8
+"test-latents-controls.R","the two-level R3STEP is refused where it does not apply",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","r3step now defaults to standard errors clustered on groups",1,0,FALSE,FALSE,0,1
+"test-latents-controls.R","the categorical covariate score is the derivative of the likelihood",2,0,FALSE,FALSE,0,2
+"test-latents-controls.R","categorical covariate inference reports every category coherently",12,0,FALSE,FALSE,0,12
+"test-latents-controls.R","a mixed covariate fit carries both measurement blocks",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","OPG standard errors reproduce glca on the same data",3,0,FALSE,FALSE,0,3
+"test-latents-controls.R","bound-active response probabilities are refused or held on request",4,0,FALSE,FALSE,0,4
+"test-latents-controls.R","an unconverged covariate fit is still refused for inference",1,0,FALSE,FALSE,0,1

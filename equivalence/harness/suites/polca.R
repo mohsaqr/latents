@@ -71,16 +71,24 @@ suite_polca <- function() {
 
   formula <- stats::as.formula(paste("cbind(", paste(items, collapse = ","), ") ~ 1"))
   set.seed(20260919L)
-  # poLCA's convergence test is on the absolute log-likelihood change; 1e-10 is
-  # the tightest it reaches in practice, and asking for less simply exhausts
-  # maxiter on every replication.
+  # Search at the ordinary reference tolerance, then refine the winning
+  # solution. A likelihood change below 1e-10 can still leave probabilities
+  # more than 1e-4 from their limit on the carcinoma four-class surface.
   reference <- poLCA::poLCA(formula, data = observed, nclass = k, nrep = 30L,
                             maxiter = 10000L, tol = 1e-10, verbose = FALSE,
                             na.rm = TRUE, calc.se = FALSE)
+  refined <- poLCA::poLCA(formula, data = observed, nclass = k, nrep = 1L,
+                          probs.start = reference$probs, maxiter = 20000L,
+                          tol = 1e-12, verbose = FALSE, na.rm = TRUE,
+                          calc.se = FALSE)
+  stopifnot("the refined poLCA reference must converge without losing likelihood" =
+              refined$numiter < 20000L &&
+              refined$llik >= reference$llik - 1e-8)
+  reference <- refined
 
   fit <- multilpa(frame, vars = items, id = "unit", n_profiles = k,
                   n_group_classes = 1L, categorical = items, n_starts = 30L,
-                  seed = 20260919L, tol = 1e-12, max_iter = 20000L)
+                  seed = 20260919L, tol = 1e-14, max_iter = 20000L)
 
   # Score poLCA's own estimates under the multilpa likelihood.
   at_reference <- multilpa(frame, vars = items, id = "unit", n_profiles = k,
@@ -146,9 +154,8 @@ suite_polca <- function() {
     return(transform(fit_rows, source = "poLCA 1.6.0.1", dataset = dataset))
   }
   rbind(fit_rows,
-    # poLCA's convergence test is on the absolute change in the log-likelihood
-    # and reaches about 1e-10, which leaves its parameters determined to roughly
-    # 1e-5. Tightening it further only exhausts maxiter.
+    # The parameter threshold is unchanged; refine the reference above rather
+    # than forgiving a larger gap caused by its likelihood stopping rule.
     compare_values(sprintf("%s: class share %d", label, seq_len(k)),
                    sort(reference$P), sort(as.numeric(fit$profile_probabilities)),
                    tolerance = 1e-4),

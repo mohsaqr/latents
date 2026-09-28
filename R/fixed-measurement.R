@@ -110,7 +110,7 @@
 #' supplied.
 #'
 #' @param parameters Initial parameters from the initializer or the start.
-#' @param held Held values from [.multilpa_held_parameters()], or `NULL`.
+#' @param held Held values from `.multilpa_held_parameters()`, or `NULL`.
 #' @return The parameters with every held block replaced.
 #' @noRd
 .multilpa_apply_held <- function(parameters, held) {

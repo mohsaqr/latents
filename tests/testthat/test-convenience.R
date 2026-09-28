@@ -200,8 +200,15 @@ test_that("report prints everything and returns the fit", {
     # Plain EM stops early at this tolerance; SQUAREM would carry the fit
     # close enough to the maximum that it is no longer loose.
     loose <- .convenience_fit(tol = 1e-4, acceleration = "none")
-    expect_warning(report(loose, plots = TRUE),
-                   class = "latents_unconverged")
+    convergence_warnings <- 0L
+    withCallingHandlers(report(loose, plots = TRUE),
+      latents_unconverged = function(warning) {
+        convergence_warnings <<- convergence_warnings + 1L
+        invokeRestart("muffleWarning")
+      })
+    # Several panels can request inference; assert every warning's class
+    # through the handler, without leaking later ones after expect_warning().
+    expect_gte(convergence_warnings, 1L)
     tight <- .convenience_fit(tol = 1e-10)
     # No warning, rather than no noise: report() prints by design, so
     # expect_silent() would fail on its own output.

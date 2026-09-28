@@ -326,7 +326,9 @@ mixture_regression <- function(formula, data, n_classes,
   group_index <- if (!is.null(id)) match(group_values, group_levels) else NULL
   n_groups <- length(group_levels)
 
-  row_membership <- stats::model.matrix(membership, data = data)
+  membership_design <- .mixture_membership_design(membership, data)
+  group_membership_design <- .mixture_membership_design(group_membership, data)
+  row_membership <- membership_design$matrix
   w <- row_membership
   v <- matrix(1, max(n_groups, 1L), 1L, dimnames = list(NULL, "(Intercept)"))
   if (identical(nesting, "group")) {
@@ -335,8 +337,7 @@ mixture_regression <- function(formula, data, n_classes,
   if (identical(nesting, "two-level")) {
     w <- row_membership[, colnames(row_membership) != "(Intercept)",
                         drop = FALSE]
-    v <- .mixture_group_design(stats::model.matrix(group_membership,
-                                                  data = data),
+    v <- .mixture_group_design(group_membership_design$matrix,
                               group_index, "group_membership")
   }
 
@@ -377,7 +378,8 @@ mixture_regression <- function(formula, data, n_classes,
     x = x, z = z, offset = as.numeric(offset),
     w = w, v = v,
     intercept_only = ncol(w) == 1L && identical(colnames(w), "(Intercept)"),
-    group_intercept_only = ncol(v) == 1L,
+    group_intercept_only = ncol(v) == 1L &&
+      identical(colnames(v), "(Intercept)"),
     id = id, group_index = group_index, group_levels = group_levels,
     n_groups = n_groups,
     min_variance = min_variance * max(y_variance, .Machine$double.eps),
@@ -385,8 +387,21 @@ mixture_regression <- function(formula, data, n_classes,
     terms = model_terms, xlevels = stats::.getXlevels(model_terms, frame),
     contrasts = attr(full_design, "contrasts"), model_data = data[used],
     formula = formula, common = common, membership = membership,
+    membership_design = membership_design,
+    group_membership_design = group_membership_design,
     group_membership = group_membership, response_name =
       deparse1(formula[[2L]]))
+}
+
+#' Retain the membership design's coding for prediction
+#' @noRd
+.mixture_membership_design <- function(formula, data) {
+  frame <- stats::model.frame(formula, data, na.action = stats::na.fail)
+  terms <- stats::terms(frame)
+  design <- stats::model.matrix(terms, frame)
+  list(matrix = design, terms = terms,
+       xlevels = stats::.getXlevels(terms, frame),
+       contrasts = attr(design, "contrasts"))
 }
 
 #' Resolve the outcome to counts and trials

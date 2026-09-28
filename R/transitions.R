@@ -62,7 +62,7 @@
 #' back once to the log likelihood.
 #'
 #' @param log_density Observation-by-profile matrix of measurement log densities.
-#' @param layout Sequence layout from [.multilpa_sequence_layout()].
+#' @param layout Sequence layout from `.multilpa_sequence_layout()`.
 #' @return A list with `log_density` (one groups-by-profiles matrix per
 #'   occasion, offset removed) and `offset` (one total per group).
 #' @noRd
@@ -94,8 +94,8 @@
 #' ended keeps its state unchanged, which leaves its likelihood and posteriors
 #' identical to those of the shorter sequence it actually has.
 #'
-#' @param emission Offset-removed emission list from [.multilpa_sequence_emission()].
-#' @param layout Sequence layout from [.multilpa_sequence_layout()].
+#' @param emission Offset-removed emission list from `.multilpa_sequence_emission()`.
+#' @param layout Sequence layout from `.multilpa_sequence_layout()`.
 #' @param initial Initial profile probabilities for one group class.
 #' @param transition Profile transition matrix for one group class, rows from.
 #' @return A list with `alpha`, `beta` (one groups-by-profiles matrix per
@@ -139,7 +139,7 @@
 
 #' Posterior occupancy and transition counts for one group class
 #'
-#' @param pass Forward and backward recursions from [.multilpa_forward_backward()].
+#' @param pass Forward and backward recursions from `.multilpa_forward_backward()`.
 #' @param emission Offset-removed emission list.
 #' @param layout Sequence layout.
 #' @param transition Profile transition matrix for this group class.
@@ -152,7 +152,7 @@
 .multilpa_sequence_moments <- function(pass, emission, layout, transition,
                                        weights, n_observations) {
   stopifnot(
-    "`pass` must be the list [.multilpa_forward_backward()] returns" =
+    "`pass` must be the list `.multilpa_forward_backward()` returns" =
       is.list(pass) && all(c("alpha", "beta", "log_scaled") %in% names(pass)),
     "`weights` must give one group-class posterior per group" =
       is.numeric(weights) && length(weights) == nrow(layout$slot),
@@ -348,7 +348,7 @@
   # The prevalence of each profile within a group class is a summary of the
   # expectation rather than a free parameter of the model. It is carried here
   # so that a single M-step is self-describing, but the fitted object reports
-  # the one [.multilpa_transition_prevalence()] reads off the final
+  # the one `.multilpa_transition_prevalence()` reads off the final
   # expectation, which the last M-step never saw -- and which, when `max_iter`
   # is zero, is the only one there is.
   parameters <- c(parameters[setdiff(names(parameters), "profile_probabilities")],

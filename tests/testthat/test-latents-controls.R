@@ -84,6 +84,22 @@ test_that("select_start reaches every fitting path", {
 
 # ---- r3step(by_group_class = TRUE) ------------------------------------------
 
+test_that("group-class R3STEP reduces to the pooled regression with one group class", {
+  data <- subset(course_engagement, student <= 40)
+  fit <- multilpa(data, c("browse", "lectures", "forum_read"), "student", 2, 1,
+                  n_starts = 2, seed = 1)
+  for (type in c("observed", "robust")) {
+    pooled <- r3step(fit, data, "previous_grade", vcov_type = type)
+    nested <- r3step(fit, data, "previous_grade", vcov_type = type,
+                     by_group_class = TRUE)
+    expect_true(all(nested$level == "individuals"))
+    # The two BFGS paths use different starts and stop on likelihood change;
+    # their coefficients agree to optimization precision, not bit for bit.
+    expect_equal(nested$estimate, pooled$estimate, tolerance = 1e-4)
+    expect_equal(nested$standard_error, pooled$standard_error, tolerance = 1e-5)
+  }
+})
+
 .two_level_membership <- function(seed = 11, n_groups = 80, per = 10, slope = 1) {
   set.seed(seed)
   g <- rep(seq_len(n_groups), each = per)

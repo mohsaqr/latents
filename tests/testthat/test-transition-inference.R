@@ -112,6 +112,15 @@ test_that("standard errors match a Hessian of the likelihood alone", {
   }))
 })
 
+test_that("transition score indexing also holds with three profiles", {
+  fit <- quietly(lta(.lta_inference_fixture(), c("a", "b"), "person", 3L,
+                      n_group_classes = 2L, time = "wave", n_starts = 1,
+                      seed = 4, max_iter = 20))
+  # A derivative identity holds away from an optimum too. Three profiles
+  # exercise distinct transition rows and columns beyond a binary swap.
+  .lta_check_score(fit, "three profiles, two group classes")
+})
+
 test_that("coef(), vcov() and parameter_inference() name every parameter alike", {
   invisible(lapply(c("diagonal", "full"), function(covariance_model) {
     fit <- .lta_inference_fit(.lta_inference_fixture(),

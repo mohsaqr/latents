@@ -10,12 +10,14 @@
 # model includes and complete-case analysis does not. Four analyses of each
 # data set: complete cases; and ten imputations each from mice's predictive
 # mean matching (`pmm`, its default) and Bayesian linear regression (`norm`),
-# the group identifier excluded as a predictor, and from the exact conditional
+# the group identifier excluded as a predictor, and from an approximate conditional
 # distribution of z given the indicators under the generating model (`exact`,
-# sampling-importance-resampling with the true parameters). The last isolates
-# the pooling from the imputation model: a linear imputation model ignores the
-# latent class through which z and the indicators are related, which is the
-# uncongeniality Meng (1994) shows Rubin's rules are not robust to. Profiles
+# sampling-importance-resampling with the true parameters). The legacy `exact`
+# label denotes a finite 400-proposal approximation, not an exact sampler.
+# This oracle arm holds imputation parameters at their known values; it omits
+# their estimation uncertainty and does not establish proper MI coverage.
+# A linear imputation model can miss the latent structure, but this comparison
+# alone does not isolate the cause of a coverage difference. Profiles
 # are aligned to the generating labels by the first indicator's mean.
 pkgload::load_all(".", quiet = TRUE)
 stopifnot("this study needs the mice package" = requireNamespace("mice", quietly = TRUE))

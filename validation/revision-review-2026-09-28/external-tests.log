@@ -1,0 +1,331 @@
+✔ | F W  S  OK | Context
+
+⠏ |          0 | depmixs4-standard-errors
+⠋ |          1 | depmixs4-standard-errors
+⠙ |          2 | depmixs4-standard-errors
+⠴ |          6 | depmixs4-standard-errors
+⠦ |          7 | depmixs4-standard-errors
+⠋ |         11 | depmixs4-standard-errors
+⠙ |         12 | depmixs4-standard-errors
+✔ |         15 | depmixs4-standard-errors [3.1s]
+
+⠏ |          0 | jstats-lta
+⠋ |          1 | jstats-lta
+⠏ |         10 | jstats-lta
+⠇ |         19 | jstats-lta
+⠦ |         27 | jstats-lta
+⠋ |         31 | jstats-lta
+⠏ |         40 | jstats-lta
+⠇ |         49 | jstats-lta
+✔ |         57 | jstats-lta [44.9s]
+
+⠏ |          0 | mclust-noise                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+   code prior converged    loglik    means covariances    noise posteriors
+1   EII FALSE      TRUE  2.27e-13 3.55e-15    1.11e-15 1.39e-17   2.55e-15
+2   VII FALSE      TRUE  0.00e+00 3.55e-15    4.44e-16 5.55e-17   1.44e-15
+3   EEI FALSE      TRUE  6.82e-13 2.22e-15    2.22e-16 1.39e-17   1.44e-15
+4   VEI FALSE      TRUE -2.05e-12 2.10e-12    1.11e-10 2.21e-13   5.63e-11
+5   EVI FALSE      TRUE  0.00e+00 1.33e-15    5.55e-16 0.00e+00   1.78e-15
+6   VVI FALSE      TRUE -2.27e-13 1.78e-15    1.33e-15 0.00e+00   7.77e-16
+7   EEE FALSE      TRUE  4.55e-13 3.11e-15    2.55e-15 1.80e-16   4.80e-15
+8   VEE FALSE      TRUE -9.09e-13 1.67e-10    6.83e-09 5.08e-11   7.23e-09
+9   EVE FALSE      TRUE -3.27e-11 1.19e-07    8.43e-07 6.03e-08   3.32e-06
+10  VVE FALSE      TRUE  2.17e-03 1.54e-04    7.51e-03 1.05e-04   7.31e-03
+11  EEV FALSE      TRUE -6.82e-13 2.66e-15    2.44e-15 2.78e-17   2.97e-15
+12  VEV FALSE      TRUE -1.82e-12 1.00e-12    9.56e-11 5.02e-13   3.96e-11
+13  EVV FALSE      TRUE  0.00e+00 3.55e-15    1.11e-15 5.55e-17   3.11e-15
+14  VVV FALSE      TRUE -4.55e-13 3.11e-15    2.22e-15 1.39e-17   2.55e-15
+   parameters       bic
+1           0 -4.55e-13
+2           0  0.00e+00
+3           0 -1.36e-12
+4           0  4.09e-12
+5           0  0.00e+00
+6           0  4.55e-13
+7           0 -9.09e-13
+8           0  1.82e-12
+9           0  6.55e-11
+10          0 -4.35e-03
+11          0  1.36e-12
+12          0  3.64e-12
+13          0  0.00e+00
+14          0  9.09e-13
+
+⠙ |          2 | mclust-noise                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+   code prior converged    loglik    means covariances    noise posteriors
+1   EII  TRUE      TRUE  2.27e-13 3.11e-15    1.33e-15 4.16e-17   3.89e-15
+2   VII  TRUE      TRUE  0.00e+00 3.55e-15    6.66e-16 6.94e-17   2.78e-15
+3   EEI  TRUE      TRUE  0.00e+00 3.11e-15    2.22e-16 9.71e-17   3.44e-15
+4   VEI  TRUE      TRUE  9.09e-13 4.88e-15    4.82e-14 0.00e+00   5.15e-14
+5   EVI  TRUE      TRUE -4.55e-13 3.11e-15    8.88e-16 1.39e-17   1.83e-15
+6   VVI  TRUE      TRUE  0.00e+00 2.66e-15    8.88e-16 1.39e-17   1.11e-15
+7   EEE  TRUE      TRUE  0.00e+00 3.55e-15    4.00e-15 2.78e-17   4.77e-15
+8   EEV  TRUE      TRUE -2.27e-13 4.44e-15    4.22e-15 1.39e-17   2.66e-15
+9   VEV  TRUE      TRUE  2.27e-13 2.66e-15    3.04e-14 1.80e-16   3.60e-14
+10  VVV  TRUE      TRUE  2.27e-13 1.78e-15    2.22e-15 1.39e-17   1.89e-15
+   parameters       bic
+1           0 -4.55e-13
+2           0  0.00e+00
+3           0  0.00e+00
+4           0 -1.82e-12
+5           0  9.09e-13
+6           0  0.00e+00
+7           0  0.00e+00
+8           0  4.55e-13
+9           0 -9.09e-13
+10          0 -4.55e-13
+
+⠧ |          8 | mclust-noise                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+  code prior converged  loglik    means covariances    noise posteriors
+1  VVV FALSE      TRUE 2.5e-12 3.11e-15    2.89e-15 5.55e-17   5.11e-15
+  parameters    bic
+1          0 -5e-12
+
+✔ |         12 | mclust-noise
+
+⠏ |          0 | mclust-prior                                                   max |covariance difference| of one M-step, by structure:
+EII 6.22e-15
+VII 3.55e-15
+EEI 8.88e-16
+VEI 1.78e-15
+EVI 1.78e-15
+VVI 1.78e-15
+EEE 1.15e-14
+EEV 1.33e-14
+VEV 1.42e-14
+VVV 1.15e-14
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠋ |         21 | mclust-prior                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠸ |         24 | mclust-prior                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠏ |         30 | mclust-prior                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠴ |         36 | mclust-prior                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠇ |         39 | mclust-prior                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠙ |         42 | mclust-prior                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠼ |         45 | mclust-prior                                                   A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠧ |         48 | mclust-prior                                                      code   loglik    means covariances proportions posteriors
+1   EII 2.27e-13 5.11e-15    6.66e-16    4.72e-16   2.78e-15
+2   VII 2.27e-13 2.22e-15    8.88e-16    1.11e-16   2.05e-15
+3   EEI 2.27e-13 5.33e-15    8.88e-16    1.67e-16   1.22e-15
+4   VEI 2.27e-13 4.82e-14    1.95e-13    1.57e-14   1.70e-13
+5   EVI 4.55e-13 2.66e-15    3.11e-15    1.11e-16   2.11e-15
+6   VVI 9.09e-13 3.11e-15    1.78e-15    8.33e-17   2.22e-15
+7   EEE 2.27e-13 7.11e-15    2.89e-15    4.44e-16   3.94e-15
+8   EEV 1.41e-10 4.44e-10    2.39e-10    8.73e-11   8.42e-10
+9   VEV 2.27e-13 8.88e-15    3.06e-14    2.22e-15   1.71e-14
+10  VVV 6.82e-13 7.99e-15    6.66e-15    6.66e-16   1.53e-14
+
+✔ |         51 | mclust-prior [1.6s]
+
+⠏ |          0 | mclust
+⠦ |         17 | mclust
+⠧ |         18 | mclust
+⠇ |         19 | mclust
+⠏ |         20 | mclust
+⠋ |         21 | mclust
+⠙ |         22 | mclust
+⠹ |         23 | mclust
+⠸ |         24 | mclust
+⠼ |         25 | mclust
+⠴ |         26 | mclust
+⠦ |         27 | mclust
+⠧ |         28 | mclust
+⠇ |         29 | mclust
+⠏ |         30 | mclust
+⠋ |         31 | mclust
+✔ |         41 | mclust [6.6s]
+
+⠏ |          0 | mixture-regression-flexmix
+⠋ |          1 | mixture-regression-flexmix
+⠹ |          3 | mixture-regression-flexmix
+⠼ |          5 | mixture-regression-flexmix
+⠦ |          7 | mixture-regression-flexmix
+⠏ |         10 | mixture-regression-flexmix
+⠹ |         13 | mixture-regression-flexmix
+⠴ |         16 | mixture-regression-flexmix
+⠇ |         19 | mixture-regression-flexmix
+⠋ |         21 | mixture-regression-flexmix
+⠙ |         22 | mixture-regression-flexmix
+✔ |         22 | mixture-regression-flexmix [3.7s]
+
+⠏ |          0 | mplus-categorical
+⠋ |          1 | mplus-categorical
+⠸ |          4 | mplus-categorical
+✔ |          9 | mplus-categorical [1.2s]
+
+⠏ |          0 | mplus-covariates
+⠋ |          1 | mplus-covariates
+⠹ |         13 | mplus-covariates
+⠋ |         21 | mplus-covariates
+✔ |         22 | mplus-covariates [1.7s]
+
+⠏ |          0 | mplus-inference
+⠹ |          3 | mplus-inference
+⠦ |          7 | mplus-inference
+⠇ |          9 | mplus-inference
+✔ |         10 | mplus-inference
+
+⠏ |          0 | mplus-lmr
+✔ |          2 | mplus-lmr
+
+⠏ |          0 | mplus-missing-full
+⠋ |          1 | mplus-missing-full
+⠼ |         15 | mplus-missing-full
+✔ |         28 | mplus-missing-full
+
+⠏ |          0 | mplus-public-parser
+✔ |         12 | mplus-public-parser
+
+⠏ |          0 | mplus-public
+⠴ |          6 | mplus-public
+⠦ |         17 | mplus-public
+✔ |         22 | mplus-public
+
+⠏ |          0 | mplus-random-intercept
+⠋ |          1 | mplus-random-intercept
+✔ |          5 | mplus-random-intercept
+
+⠏ |          0 | mplus-robust
+✔ |          6 | mplus-robust
+
+⠏ |          0 | mplus-twolevel-public
+⠋ |          1 | mplus-twolevel-public
+⠇ |         19 | mplus-twolevel-public
+✔ |         36 | mplus-twolevel-public [1.0s]
+
+⠏ |          0 | mplus-twolevel-synthetic
+⠋ |          1 | mplus-twolevel-synthetic
+⠼ |         15 | mplus-twolevel-synthetic
+✔ |         28 | mplus-twolevel-synthetic
+
+⠏ |          0 | numerical-equivalence
+⠦ |         17 | numerical-equivalence
+⠼ |         25 | numerical-equivalence
+✔ |         39 | numerical-equivalence
+
+⠏ |          0 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠙ |          2 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠼ |          5 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠧ |          8 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠋ |         11 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠸ |         14 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠦ |         17 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠏ |         20 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠙ |         22 | structure-inference
+⠹ |         23 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠼ |         25 | structure-inference
+⠴ |         26 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠧ |         28 | structure-inference
+⠇ |         29 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠙ |         32 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠸ |         34 | structure-inference
+⠼ |         35 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠧ |         38 | structure-inference                                            A single-level latent profile analysis was estimated: every row is an independent observation and no group classes are estimated. For single-level data use `lpa()` and `enumerate_lpa()`; for observations nested in groups, pass the grouping column as `id`.
+
+⠏ |         40 | structure-inference
+⠋ |         41 | structure-inference                                            single-level max relative SE difference by structure:
+EII 3.28e-07
+VII 2.42e-07
+EEI 1.30e-07
+VEI 1.82e-07
+EVI 3.62e-07
+VVI 7.29e-07
+EEE 1.59e-07
+VEE 9.67e-08
+EVE 3.64e-07
+VVE 5.46e-07
+EEV 2.11e-06
+VEV 2.32e-06
+EVV 3.69e-07
+VVV 1.82e-06
+
+⠸ |         44 | structure-inference
+⠦ |         47 | structure-inference
+⠏ |         50 | structure-inference
+⠹ |         53 | structure-inference
+⠴ |         56 | structure-inference
+⠇ |         59 | structure-inference
+⠙ |         62 | structure-inference
+⠸ |         64 | structure-inference
+⠼ |         65 | structure-inference
+⠦ |         67 | structure-inference
+⠧ |         68 | structure-inference
+⠏ |         70 | structure-inference
+⠋ |         71 | structure-inference
+⠹ |         73 | structure-inference
+⠸ |         74 | structure-inference
+⠴ |         76 | structure-inference
+⠦ |         77 | structure-inference
+⠏ |         80 | structure-inference
+⠹ |         83 | structure-inference                                            two-level max relative SE difference by structure:
+EII 1.19e-06
+VII 2.01e-07
+EEI 5.50e-07
+VEI 1.50e-06
+EVI 6.10e-07
+VVI 3.39e-07
+EEE 3.11e-07
+VEE 2.57e-07
+EVE 1.32e-06
+VVE 3.17e-07
+EEV 7.81e-07
+VEV 1.09e-06
+EVV 5.25e-07
+VVV 1.70e-06
+
+✔ |         84 | structure-inference [11.5s]
+
+⠏ |          0 | tidysem-bch
+⠋ |          1 | tidysem-bch
+✔ |          2 | tidysem-bch
+
+══ Results ═════════════════════════════════════════════════════════════════════
+Duration: 78.8 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 503 ]
+
+🧿 Your tests look perfect 🧿

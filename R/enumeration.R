@@ -787,10 +787,12 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'
 #' Fits made with `missing = "fiml"` are supported when both models were: every
 #' replicate is given the observed data's missing cells before it is refitted,
-#' so the simulated statistics lose the same information the observed one did.
-#' This treats the missingness pattern as fixed, that is independent of the
-#' profiles and of the values that went missing; under missingness that
-#' depends on the latent classes the reference distribution is approximate.
+#' preserving the pattern of available measurements. Calibration requires
+#' missingness independent of the indicators and latent classes, conditional
+#' on any fixed covariates. Carrying a fixed mask does not reproduce a general
+#' MAR mechanism that depends on observed indicators, or an MNAR mechanism.
+#' FIML estimation under MAR does not by itself validate this bootstrap under
+#' MAR; the retained size study covers MCAR only.
 #'
 #' Membership-covariate fits (`multilpa(profile_covariates = ,
 #' group_covariates = )`) are supported: the covariates are held at their
@@ -826,6 +828,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'   validation, and the p-value is `NA`.
 #'   `latents_unsupported_bootstrap` refuses person-centred fits, for which
 #'   this simulator has no group-baseline distribution.
+#'   `latents_unsupported_prior` refuses fits estimated with a prior: their
+#'   likelihoods are evaluated at posterior modes, not ML estimates.
 #'   `latents_incomparable_models` when the two models differ in their
 #'   observations, grouping, covariance structure, centering or missing-data
 #'   handling; `latents_bad_data` when the data have missing indicators and
@@ -879,6 +883,12 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       (covariate_family && inherits(alternative_model, "multilpa_covariates")))
   .multilpa_refuse_noise(null_model, "bootstrap_lrt()")
   .multilpa_refuse_noise(alternative_model, "bootstrap_lrt()")
+  if (!is.null(null_model$prior) || !is.null(alternative_model$prior)) {
+    stop(errorCondition(paste(
+      "bootstrap_lrt() requires maximum-likelihood fits; a fit with `prior`",
+      "is estimated at a posterior mode. Refit both models without `prior`."),
+      class = "latents_unsupported_prior", call = NULL))
+  }
   # The null model is the one being simulated from, so its own columns are the
   # ones that matter when the caller does not supply data.
   # A covariate alternative carries every covariate the null does (the nesting

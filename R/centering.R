@@ -31,7 +31,7 @@
 #' @param x The numeric indicator matrix, possibly containing `NA`.
 #' @param group_index One group index per row.
 #' @param n_groups How many groups there are.
-#' @param centering One of [.multilpa_centering_schemes()].
+#' @param centering One of `.multilpa_centering_schemes()`.
 #' @return A list with the centred matrix `x`, and `offsets`, the matrix that
 #'   was subtracted: one row per group under `"person"`, one row overall under
 #'   `"grand"`, and `NULL` under `"none"`.

@@ -45,7 +45,7 @@
 #'
 #' Everything but the profile block, which the transition model replaces with
 #' its initial and transition logits.
-#' @param view A view from [.multilpa_transition_view()].
+#' @param view A view from `.multilpa_transition_view()`.
 #' @param scale `"natural"` or `"unconstrained"`.
 #' @return A list of integer positions: `measurement`, `profile`, `group`.
 #' @noRd
@@ -99,10 +99,10 @@
 }
 
 #' Decode a transition parameter vector into the parameters the E-step reads
-#' @param theta Unconstrained vector in [.multilpa_transition_encode()] order.
+#' @param theta Unconstrained vector in `.multilpa_transition_encode()` order.
 #' @param view The measurement view the vector was encoded from.
 #' @param n_measurement,n_group Widths of the measurement and group blocks.
-#' @return A parameter list for [.multilpa_transition_expectation()].
+#' @return A parameter list for `.multilpa_transition_expectation()`.
 #' @noRd
 .multilpa_transition_decode <- function(theta, view, n_measurement, n_group) {
   n_profiles <- view$n_profiles
@@ -137,7 +137,7 @@
 
 #' Per-group scores of a transition model's observed-data log likelihood
 #'
-#' @param theta Unconstrained vector in [.multilpa_transition_encode()] order.
+#' @param theta Unconstrained vector in `.multilpa_transition_encode()` order.
 #' @param x Centred continuous indicator matrix, `NA` where unobserved.
 #' @param layout The sequence layout.
 #' @param view The measurement view.
@@ -206,7 +206,7 @@
 
 #' Expected first-occasion and move counts, one row per group
 #'
-#' The per-group terms that [.multilpa_sequence_moments()] sums over groups,
+#' The per-group terms that `.multilpa_sequence_moments()` sums over groups,
 #' kept apart because the sandwich estimators need each group's own score.
 #'
 #' @param x Centred continuous indicator matrix.
@@ -298,7 +298,7 @@
 }
 
 #' Tidy labels for a transition fit's coefficients
-#' @param names Internal names from [.multilpa_transition_encode()].
+#' @param names Internal names from `.multilpa_transition_encode()`.
 #' @param view The measurement view.
 #' @return A data frame with `level`, `outcome`, `term` and `parameter`.
 #' @noRd

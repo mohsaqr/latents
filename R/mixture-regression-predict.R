@@ -38,13 +38,26 @@
     new$trials <- rep(1, new$n)
     new$log_normalizer <- rep(0, new$n)
   }
-  row_membership <- stats::model.matrix(stats::delete.response(
-    stats::terms(spec$membership)), newdata)
-  if (!is.null(spec$id) && !identical(spec$nesting, "observation")) {
+  membership_matrix <- function(name) {
+    blueprint <- spec[[paste0(name, "_design")]] %||%
+      .mixture_membership_design(spec[[name]], spec$model_data)
+    frame <- stats::model.frame(blueprint$terms, newdata,
+                                xlev = blueprint$xlevels,
+                                na.action = stats::na.fail)
+    stats::model.matrix(blueprint$terms, frame,
+                        contrasts.arg = blueprint$contrasts)
+  }
+  row_membership <- membership_matrix("membership")
+  if (!is.null(spec$id) && (!identical(spec$nesting, "observation") ||
+                            with_response || spec$id %in% names(newdata))) {
     if (!spec$id %in% names(newdata)) {
       stop(errorCondition(sprintf(
         "`newdata` needs the grouping column `%s` for this model.", spec$id),
         class = "latents_bad_data", call = NULL))
+    }
+    if (anyNA(newdata[[spec$id]])) {
+      stop(errorCondition("The grouping column in `newdata` has missing values.",
+                          class = "latents_bad_data", call = NULL))
     }
     new$group_levels <- sort(unique(newdata[[spec$id]]))
     new$group_index <- match(newdata[[spec$id]], new$group_levels)
@@ -57,8 +70,7 @@
     "two-level" = row_membership[, colnames(spec$w), drop = FALSE])
   if (identical(spec$nesting, "two-level")) {
     new$v <- .mixture_group_design(
-      stats::model.matrix(stats::delete.response(
-        stats::terms(spec$group_membership)), newdata),
+      membership_matrix("group_membership"),
       new$group_index, "group_membership")
   }
   new
@@ -229,10 +241,9 @@ plot.latents_mixture_regression <- function(x, what = c("fitted", "coefficients"
 #' @noRd
 .mixture_plot_fitted <- function(x, predictor, main) {
   spec <- x$spec
-  frame <- stats::model.frame(spec$terms,
-                              data = .mixture_model_data(x))
-  numeric_columns <- names(frame)[-1L][vapply(frame[-1L], is.numeric,
-                                              logical(1))]
+  frame <- .mixture_model_data(x)
+  predictors <- all.vars(stats::delete.response(spec$terms))
+  numeric_columns <- predictors[vapply(frame[predictors], is.numeric, logical(1))]
   predictor <- predictor %||% numeric_columns[1L]
   if (is.na(predictor) || !predictor %in% numeric_columns) {
     stop(errorCondition(paste(
@@ -254,7 +265,7 @@ plot.latents_mixture_regression <- function(x, what = c("fitted", "coefficients"
                  main = main %||% sprintf("%d-class mixture regression", k))
   grid_values <- seq(min(frame[[predictor]]), max(frame[[predictor]]),
                      length.out = 100L)
-  typical <- .mixture_typical_rows(frame[-1L], predictor, grid_values)
+  typical <- .mixture_typical_rows(frame, predictor, grid_values)
   new_spec <- .mixture_new_spec(x, typical, with_response = FALSE)
   means <- .mixture_class_means(new_spec, x$params)
   if (identical(spec$family, "binomial")) means <- stats::plogis(

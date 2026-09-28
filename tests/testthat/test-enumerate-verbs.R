@@ -5,6 +5,24 @@ srl_indicators <- c("cognitive_strategies", "intrinsic_value",
                     "self_efficacy", "self_regulation", "test_anxiety")
 esm_activities <- c("time_with_friends", "on_social_media", "sports")
 
+test_that("enumerate_lpa preserves an omitted model argument", {
+  data <- iris[c("Sepal.Length", "Sepal.Width")]
+  grid <- enumerate_lpa(data, names(data), n_profiles = 1,
+                        variance_model = "equal", n_starts = 1, seed = 1)
+  expect_identical(as.data.frame(grid)$model, "EEI")
+  expect_equal(candidate_fit(grid, 1)$log_likelihood,
+               lpa(data, names(data), 1, variance_model = "equal",
+                   n_starts = 1, seed = 1)$log_likelihood)
+  expect_error(enumerate_lpa(data, names(data), 1, model = "basic",
+                            variance_model = "equal"),
+               class = "latents_bad_argument")
+  categorical <- data.frame(a = rep(c("yes", "no"), 10))
+  grid <- enumerate_lpa(categorical, "a", 1, categorical = "a",
+                        n_starts = 1, seed = 1)
+  expect_true(is.na(as.data.frame(grid)$model))
+  expect_true(is.na(as.data.frame(grid)$error))
+})
+
 test_that("enumerate_lpa() is the single-level grid, fitted without a notice", {
   expect_no_message(
     models <- enumerate_lpa(srl, srl_indicators, n_profiles = 1:2,

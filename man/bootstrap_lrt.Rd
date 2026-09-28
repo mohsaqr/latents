@@ -63,10 +63,12 @@ replicate makes the p-value NA, avoiding silent deletion of difficult fits.
 \details{
 Fits made with \code{missing = "fiml"} are supported when both models were: every
 replicate is given the observed data's missing cells before it is refitted,
-so the simulated statistics lose the same information the observed one did.
-This treats the missingness pattern as fixed, that is independent of the
-profiles and of the values that went missing; under missingness that
-depends on the latent classes the reference distribution is approximate.
+preserving the pattern of available measurements. Calibration requires
+missingness independent of the indicators and latent classes, conditional
+on any fixed covariates. Carrying a fixed mask does not reproduce a general
+MAR mechanism that depends on observed indicators, or an MNAR mechanism.
+FIML estimation under MAR does not by itself validate this bootstrap under
+MAR; the retained size study covers MCAR only.
 
 Membership-covariate fits (\code{multilpa(profile_covariates = , group_covariates = )}) are supported: the covariates are held at their
 observed values, group classes are drawn from the fitted group logits and
@@ -103,6 +105,8 @@ alternative does not estimate more free parameters than the null.
 validation, and the p-value is \code{NA}.
 \code{latents_unsupported_bootstrap} refuses person-centred fits, for which
 this simulator has no group-baseline distribution.
+\code{latents_unsupported_prior} refuses fits estimated with a prior: their
+likelihoods are evaluated at posterior modes, not ML estimates.
 \code{latents_incomparable_models} when the two models differ in their
 observations, grouping, covariance structure, centering or missing-data
 handling; \code{latents_bad_data} when the data have missing indicators and

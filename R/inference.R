@@ -27,7 +27,7 @@
 #' @param object A fitted `multilpa` model.
 #' @param scale Natural estimates or unconstrained fitting coordinates.
 #' @return A data frame with `level`, `outcome`, `term` and `parameter`, one row
-#'   per coefficient, in the order [.multilpa_coefficients()] returns them.
+#'   per coefficient, in the order `.multilpa_coefficients()` returns them.
 #' @noRd
 .multilpa_coefficient_labels <- function(object, scale) {
   .multilpa_tidy_labels(names(.multilpa_coefficients_raw(object, scale)), object)
@@ -37,7 +37,7 @@
 #' @param object A fitted `multilpa` model.
 #' @param scale Natural estimates or unconstrained fitting coordinates.
 #' @return A named numeric parameter vector, named as
-#'   [.multilpa_parameter_names()] spells them.
+#'   `.multilpa_parameter_names()` spells them.
 #' @noRd
 .multilpa_coefficients <- function(object, scale) {
   values <- .multilpa_coefficients_raw(object, scale)
@@ -49,8 +49,8 @@
 #'
 #' The generated `kind[index,...]` labels are an implementation detail: they are
 #' compact to build alongside the values and they are parsed straight back into
-#' tidy columns by [.multilpa_tidy_labels()]. Nothing user facing sees them;
-#' [.multilpa_coefficients()] renames them before they leave the package.
+#' tidy columns by `.multilpa_tidy_labels()`. Nothing user facing sees them;
+#' `.multilpa_coefficients()` renames them before they leave the package.
 #'
 #' @param object A fitted `multilpa` model.
 #' @param scale Natural estimates or unconstrained fitting coordinates.
@@ -199,7 +199,7 @@
 
 #' Widths of the coefficient blocks, in the order they are encoded
 #'
-#' [.multilpa_coefficients_raw()] lays a fit out as means, spread, categorical
+#' `.multilpa_coefficients_raw()` lays a fit out as means, spread, categorical
 #' responses, profile mixing and group mixing, in that order, on either scale.
 #' Counting those widths arithmetically -- rather than encoding the fit and
 #' measuring the result -- is what lets the free-coordinate map below be built
@@ -209,7 +209,7 @@
 #' @param scale `"natural"` or `"unconstrained"`.
 #' @return A named numeric vector with `means`, `variances`,
 #'   `response_probabilities`, `profile` and `group`, whose sum is the length of
-#'   [.multilpa_coefficients()] on that scale.
+#'   `.multilpa_coefficients()` on that scale.
 #' @noRd
 .multilpa_coordinate_widths <- function(object, scale) {
   stopifnot("`object` must be a fitted multilpa model" = inherits(object, "multilpa"),
@@ -248,7 +248,7 @@
 #'
 #' @param object A fitted `multilpa` model.
 #' @param scale `"natural"` or `"unconstrained"`.
-#' @return An integer vector of positions into [.multilpa_coefficients()] on that
+#' @return An integer vector of positions into `.multilpa_coefficients()` on that
 #'   scale, ascending, naming the coordinates this fit estimated.
 #' @noRd
 .multilpa_free_index <- function(object, scale) {
@@ -377,7 +377,7 @@
 #' @param blocks The fitted response probabilities, one matrix per indicator.
 #' @param group_index Group indices, or `NULL` for a pooled total.
 #' @return A matrix with one row per group (or one row overall) and one column
-#'   per free response parameter, in [.multilpa_coefficients()] order.
+#'   per free response parameter, in `.multilpa_coefficients()` order.
 #' @noRd
 .multilpa_response_scores <- function(codes, posteriors, blocks, group_index = NULL) {
   if (is.null(blocks) || length(blocks) == 0L) {
@@ -1475,7 +1475,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' parameters that do.
 #'
 #' @param result An inference table carrying `statistic` and `p_value`.
-#' @param adjust One of [.multilpa_p_adjust_methods].
+#' @param adjust One of `.multilpa_p_adjust_methods`.
 #' @return `result` with `p_adjusted` inserted after `p_value` and the
 #'   `adjust` attribute recorded.
 #' @noRd

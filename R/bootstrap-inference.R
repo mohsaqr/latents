@@ -80,7 +80,7 @@
 #' Exhaustive for the profile counts latent profile analysis actually uses; a
 #' greedy nearest match above that, because `factorial(k)` stops being free.
 #' Both signatures arrive already in comparable units, so nothing is rescaled
-#' here; see [.multilpa_profile_signature()] for why that scaling is its job.
+#' here; see `.multilpa_profile_signature()` for why that scaling is its job.
 #'
 #' @param reference,candidate Profiles-by-features matrices with the same shape.
 #' @return An integer vector `order` with `candidate[order, ]` matched to

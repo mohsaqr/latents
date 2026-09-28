@@ -97,7 +97,7 @@ together with a `compare.R` that checks the package against each.
 | `glca` | glca 1.4.2 | An independent implementation of the same Vermunt (2003) nonparametric model, on real data **with missing responses**. |
 | `multilevlca` | multilevLCA 2.1.6 and Lyrvall et al. (2025) | A third independent two-level implementation, plus peer-reviewed published values on CRAN-bundled public data. Fixes the correspondence between its `BIClow`/`BIChigh` and multilpa's two sample-size conventions. |
 | `polca` | poLCA 1.6.0.1 | The single-level categorical limit across five datasets, and a likelihood written here from the definition as a third opinion. |
-| `mclust` | mclust 6.1.2 and Scrucca et al. (2023) | The Gaussian limit, across all four covariance parameterizations multilpa can express. |
+| `mclust` | mclust 6.1.2 and Scrucca et al. (2023) | The Gaussian limit across the four basic covariance structures in this harness. The parent folder's `test-mclust.R` and `test-structure-inference.R` cover all 14 fitted structures. |
 
 ## Three claims that a converged-to-converged comparison cannot separate
 
@@ -110,7 +110,8 @@ the optimizer, and agreement of the parameterization. The suites separate them:
    the other program's own published estimates.
 2. **The optimizer.** Zhou & Lange (2010) publish the dominant mode of the
    carcinoma four-class likelihood *and* an inferior local mode. The `published`
-   suite runs 120 single starts and checks that both appear.
+   suite runs a deterministic and a random start under each of 120 seeds,
+   with plain EM, retains each start's likelihood and checks that both appear.
 3. **The parameterization.** Free-parameter counts are compared everywhere. The
    Mplus example 10.7 count of 99 decomposes as 4 x 10 x 2 thresholds, 4
    group-class logits and 5 x 3 prevalence logits, which pins the model

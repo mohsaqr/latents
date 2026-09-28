@@ -1,0 +1,1019 @@
+"suite","source","precision","dataset","quantity","reference","obtained","difference","tolerance","agrees","seconds"
+"depmixs4","depmixS4","machine","gaussian-2-profile","log likelihood at multilpa's estimates",-1457.50420464559,-1457.50420464559,4.6800621511453e-16,1e-08,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-2-profile","maximized log likelihood",-1457.50420464559,-1457.50420464559,4.6800621511453e-16,1e-06,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-2-profile","transition 1 to 1",0.755719478988616,0.755719479446903,4.58286963933574e-10,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-2-profile","transition 1 to 2",0.244280521011384,0.244280520553097,4.58286714133394e-10,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-2-profile","transition 2 to 1",0.279160899635679,0.279160896140637,3.49504170049642e-09,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-2-profile","transition 2 to 2",0.720839100364322,0.720839103859363,3.49504147845181e-09,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-2-profile","state 1 mean of y1",-2.01397522080752,-2.01397520636366,1.44438616622722e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-2-profile","state 2 mean of y1",1.8858770231455,1.8858770373856,1.42400968794476e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","log likelihood at multilpa's estimates",-1960.5058882773,-1960.5058882773,4.63908171462878e-16,1e-08,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","maximized log likelihood",-1960.50588827711,-1960.5058882773,9.91603716502e-14,1e-06,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 1 to 1",0.74049140269597,0.740491354563189,4.81327807611009e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 1 to 2",0.129951145930705,0.129951177311016,3.13803111273714e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 1 to 3",0.129557451373325,0.129557468125795,1.67524697725074e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 2 to 1",0.0934378269625363,0.0934378731356347,4.61730984002706e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 2 to 2",0.768175710700359,0.768175678032759,3.26676001805026e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 2 to 3",0.138386462337104,0.138386448831607,1.35054974148563e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 3 to 1",0.099857963682907,0.0998580055869948,4.19040877969179e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 3 to 2",0.112611660017896,0.11261161872676,4.12911360520019e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","transition 3 to 3",0.787530376299198,0.787530375686245,6.12952688605617e-10,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","state 1 mean of y1",-1.9610375711056,-1.96103745065186,1.20453739205217e-07,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","state 2 mean of y1",-0.0230289635352713,-0.023028750600799,2.12934472321874e-07,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-3-profile","state 3 mean of y1",2.05236088346203,2.05236089320741,9.74538538756065e-09,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-unbalanced","log likelihood at multilpa's estimates",-1123.72515054934,-1123.72515054934,4.04678448875296e-16,1e-08,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-unbalanced","maximized log likelihood",-1123.72515054934,-1123.72515054934,7.48655130419293e-15,1e-06,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-unbalanced","transition 1 to 1",0.670615092509807,0.670615059281973,3.32278339287839e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-unbalanced","transition 1 to 2",0.329384907490192,0.329384940718027,3.32278349279846e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-unbalanced","transition 2 to 1",0.252481206160716,0.252481220270642,1.41099262829236e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-unbalanced","transition 2 to 2",0.747518793839285,0.747518779729358,1.41099265604794e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-unbalanced","state 1 mean of y1",-1.96951391679734,-1.96951395760408,4.08067357682285e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","gaussian-unbalanced","state 2 mean of y1",1.97357034500164,1.97357029158634,5.34152984066338e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","mixed-2-profile","log likelihood at multilpa's estimates",-1860.5820314055,-1860.5820314055,2.44411341833148e-16,1e-08,TRUE,1.5
+"depmixs4","depmixS4","machine","mixed-2-profile","maximized log likelihood",-1860.5820314055,-1860.5820314055,1.09985103824917e-15,1e-06,TRUE,1.5
+"depmixs4","depmixS4","machine","mixed-2-profile","transition 1 to 1",0.728387926536605,0.728387934452983,7.91637744246287e-09,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","mixed-2-profile","transition 1 to 2",0.271612073463394,0.271612065547017,7.91637699837366e-09,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","mixed-2-profile","transition 2 to 1",0.233898460501438,0.233898457909091,2.59234683719356e-09,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","mixed-2-profile","transition 2 to 2",0.766101539498562,0.766101542090909,2.5923464486155e-09,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","mixed-2-profile","state 1 mean of y1",-1.92382341182178,-1.92382343216427,2.03424912470496e-08,1e-05,TRUE,1.5
+"depmixs4","depmixS4","machine","mixed-2-profile","state 2 mean of y1",2.03521235685428,2.03521233198479,2.48694882465372e-08,1e-05,TRUE,1.5
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: maximised log-likelihood",-1955.4866279869,-1955.486627987,9.2086338554509e-11,1e-05,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: AIC",3950.97325597381,3950.97325597399,1.84172677109018e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: BIC",4060.13697912062,4060.1369791208,1.84172677109018e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: group-class probability 1",0.379303449007531,0.379303424187806,2.48197248864379e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: group-class probability 2",0.62069655099247,0.620696575812194,2.48197246088822e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(profile 1 | group class 1)",0.00876020372170646,0.00876020201445947,1.70724699308233e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(profile 1 | group class 2)",0.141370604129769,0.141370572475657,3.1654111415369e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(profile 2 | group class 1)",0.0612918995690149,0.0612918732741472,2.62948676651997e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(profile 2 | group class 2)",0.346866360574102,0.34686635572469,4.84941242717696e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(profile 3 | group class 1)",0.929947896709279,0.929947924711393,2.8002114627057e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(profile 3 | group class 2)",0.511763035296129,0.511763071799653,3.65035237592792e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGT = level 1 | profile 1)",0.911233057512879,0.911233105685364,4.81724850009968e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGT = level 1 | profile 2)",0.348841196159667,0.348841282337219,8.61775519833685e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGT = level 1 | profile 3)",0.00620832583387514,0.00620833232128932,6.48741417790671e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGT = level 2 | profile 1)",0.0887669424871214,0.0887668943146365,4.81724849316079e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGT = level 2 | profile 2)",0.651158803840333,0.651158717662781,8.61775518723462e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGT = level 2 | profile 3)",0.993791674166125,0.993791667678711,6.48741427244914e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGAR = level 1 | profile 1)",0.974978200732465,0.974978227338915,2.66064499321317e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGAR = level 1 | profile 2)",0.200618547845192,0.200618653392009,1.05546817036339e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGAR = level 1 | profile 3)",0.00429449212494745,0.00429449287412326,7.49175810797753e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGAR = level 2 | profile 1)",0.0250217992675352,0.0250217726610852,2.660644994254e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGAR = level 2 | profile 2)",0.799381452154808,0.799381346607991,1.05546817064095e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ECIGAR = level 2 | profile 3)",0.995705507875053,0.995705507125877,7.49175721459494e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ESLT = level 1 | profile 1)",0.565102743346714,0.56510282685147,8.35047553326973e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ESLT = level 1 | profile 2)",0.123556177447,0.123556203658016,2.62110161908247e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ESLT = level 1 | profile 3)",0.0087730369978347,0.00877303971634083,2.71850612507119e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ESLT = level 2 | profile 1)",0.434897256653286,0.43489717314853,8.35047553326973e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ESLT = level 2 | profile 2)",0.876443822553,0.876443796341984,2.62110162463358e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(ESLT = level 2 | profile 3)",0.991226963002165,0.991226960283659,2.71850608690727e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EELCIGT = level 1 | profile 1)",0.977767783969371,0.977767785503001,1.53362966770487e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EELCIGT = level 1 | profile 2)",0.778324309749204,0.778324408855777,9.91065729483154e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EELCIGT = level 1 | profile 3)",0.0413158312200919,0.0413158514270498,2.02069579055553e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EELCIGT = level 2 | profile 1)",0.0222322160306286,0.022232214496999,1.53362960872427e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EELCIGT = level 2 | profile 2)",0.221675690250796,0.221675591144223,9.9106572976071e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EELCIGT = level 2 | profile 3)",0.958684168779908,0.95868414857295,2.02069577737163e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EHOOKAH = level 1 | profile 1)",0.536360769053747,0.536360876316336,1.07262589255086e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EHOOKAH = level 1 | profile 2)",0.0443003462989222,0.0443003601046677,1.38057454635021e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EHOOKAH = level 1 | profile 3)",0.00571112535825837,0.00571112602174665,6.63488279942226e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EHOOKAH = level 2 | profile 1)",0.463639230946253,0.463639123683664,1.07262589144064e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EHOOKAH = level 2 | profile 2)",0.955699653701078,0.955699639895332,1.38057454357465e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 3 profiles x 2 group classes: P(EHOOKAH = level 2 | profile 3)",0.994288874641742,0.994288873978253,6.63488264329715e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: maximised log-likelihood",-2017.80837420182,-2017.80837420176,5.47970557818189e-11,1e-05,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: AIC",4061.61674840364,4061.61674840353,1.09594111563638e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: BIC",4132.57316844906,4132.57316844896,1.09139364212751e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: group-class probability 1",0.352367836418088,0.352367837719545,1.3014569422154e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: group-class probability 2",0.647632163581911,0.647632162280455,1.30145660914849e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(profile 1 | group class 1)",0.962631880950752,0.962631880461261,4.89490892263689e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(profile 1 | group class 2)",0.645750532583792,0.64575053401374,1.42994871499269e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(profile 2 | group class 1)",0.0373681190492484,0.0373681195387392,4.89490746546917e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(profile 2 | group class 2)",0.354249467416209,0.35424946598626,1.42994877050384e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ECIGT = level 1 | profile 1)",0.0161005505755293,0.0161005504310194,1.4450994220705e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ECIGT = level 1 | profile 2)",0.695215597508783,0.695215597461897,4.68860505975499e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ECIGT = level 2 | profile 1)",0.983899449424471,0.983899449568981,1.44509959554284e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ECIGT = level 2 | profile 2)",0.304784402491217,0.304784402538103,4.68860505975499e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ECIGAR = level 1 | profile 1)",0.00884345601232411,0.00884345584355796,1.68766152094935e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ECIGAR = level 1 | profile 2)",0.583389259552402,0.583389259831889,2.79486656040717e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ECIGAR = level 2 | profile 1)",0.991156543987676,0.991156544156442,1.68766223218597e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ECIGAR = level 2 | profile 2)",0.416610740447597,0.416610740168111,2.79486545018415e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ESLT = level 1 | profile 1)",0.0122472440460732,0.0122472441917245,1.45651355559773e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ESLT = level 1 | profile 2)",0.338933584904828,0.338933583753127,1.15170029069134e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ESLT = level 2 | profile 1)",0.987752755953927,0.987752755808275,1.45651379845901e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(ESLT = level 2 | profile 2)",0.661066415095172,0.661066416246872,1.15170029069134e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(EELCIGT = level 1 | profile 1)",0.096657273450261,0.0966572733098363,1.40424769035086e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(EELCIGT = level 1 | profile 2)",0.93329477891902,0.933294778779928,1.39091960171811e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(EELCIGT = level 2 | profile 1)",0.903342726549739,0.903342726690164,1.40424782912874e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(EELCIGT = level 2 | profile 2)",0.0667052210809797,0.0667052212200716,1.39091890782872e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(EHOOKAH = level 1 | profile 1)",0.0063702551131419,0.00637025499162798,1.21513929127182e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(EHOOKAH = level 1 | profile 2)",0.254590648801523,0.254590649205929,4.04405953169373e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(EHOOKAH = level 2 | profile 1)",0.993629744886858,0.993629745008372,1.21514021067526e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","nyts18","nyts18, 2 profiles x 2 group classes: P(EHOOKAH = level 2 | profile 2)",0.745409351198477,0.745409350794071,4.04405842147071e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: maximised log-likelihood",-683.530353699002,-683.530353763061,6.40596908851876e-08,1e-05,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: AIC",1413.060707398,1413.06070752612,1.28119381770375e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: BIC",1501.92422443676,1501.92422456488,1.28119381770375e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: group-class probability 1",0.116446553521609,0.116446556710658,3.18904941343234e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: group-class probability 2",0.883553446478391,0.883553443289342,3.18904924689889e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(profile 1 | group class 1)",0.193554223495122,0.19355414762184,7.58732820183017e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(profile 1 | group class 2)",0.16317410881439,0.163174059084922,4.97294680990024e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(profile 2 | group class 1)",0.379681008460606,0.379681079699045,7.12384386480913e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(profile 2 | group class 2)",0.138286210173922,0.138286260345773,5.01718511736193e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(profile 3 | group class 1)",0.426764768044271,0.426764772679115,4.63484328694364e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(profile 3 | group class 2)",0.698539681011688,0.698539680569305,4.42383130128121e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(DEFECT = level 1 | profile 1)",0.0494340977498775,0.0494339829760417,1.14773835817317e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(DEFECT = level 1 | profile 2)",0.822456429710043,0.822456331080704,9.86293389182435e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(DEFECT = level 1 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(DEFECT = level 2 | profile 1)",0.950565902250122,0.950566017023958,1.14773835768744e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(DEFECT = level 2 | profile 2)",0.177543570289957,0.177543668919296,9.86293389459991e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(DEFECT = level 2 | profile 3)",3.38596269660954e-97,1e-10,1e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(HLTH = level 1 | profile 1)",0.362065875154214,0.36206573049543,1.44658783618468e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(HLTH = level 1 | profile 2)",0.946441997447019,0.946441959541251,3.79057677468708e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(HLTH = level 1 | profile 3)",1,0.9999999999,9.99998972517346e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(HLTH = level 2 | profile 1)",0.637934124845786,0.63793426950457,1.4465878372949e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(HLTH = level 2 | profile 2)",0.053558002552981,0.0535580404587488,3.79057677607486e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(HLTH = level 2 | profile 3)",3.14341335819104e-240,1e-10,1e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(RAPE = level 1 | profile 1)",0.0952015715160085,0.0952014208868256,1.50629182835149e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(RAPE = level 1 | profile 2)",0.793533278174732,0.793533216049235,6.21254974131347e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(RAPE = level 1 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(RAPE = level 2 | profile 1)",0.904798428483992,0.904798579113174,1.50629182904538e-07,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(RAPE = level 2 | profile 2)",0.206466721825268,0.206466783950765,6.21254974408902e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(RAPE = level 2 | profile 3)",0,1e-10,1e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(POOR = level 1 | profile 1)",2.48418173598759e-194,1e-10,1e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(POOR = level 1 | profile 2)",0.0646940710191128,0.0646940508611889,2.01579238995331e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(POOR = level 1 | profile 3)",0.981285263944064,0.981285260112916,3.83114762136927e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(POOR = level 2 | profile 1)",1,0.9999999999,1.0000011929634e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(POOR = level 2 | profile 2)",0.935305928980887,0.935305949138811,2.01579238856553e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(POOR = level 2 | profile 3)",0.018714736055936,0.0187147398870838,3.83114772545268e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(SINGLE = level 1 | profile 1)",4.96988502586607e-231,1e-10,1e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(SINGLE = level 1 | profile 2)",0.0394707052695611,0.039470692029452,1.32401091409995e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(SINGLE = level 1 | profile 3)",0.928914909293657,0.928914904152578,5.14107911797623e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(SINGLE = level 2 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(SINGLE = level 2 | profile 2)",0.960529294730439,0.960529307970548,1.32401092312051e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(SINGLE = level 2 | profile 3)",0.0710850907063432,0.0710850958474225,5.14107928450969e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(NOMORE = level 1 | profile 1)",2.51984715059671e-161,1e-10,1e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(NOMORE = level 1 | profile 2)",0.133794038745943,0.133794002570056,3.61758876743501e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(NOMORE = level 1 | profile 3)",0.96646487987799,0.966464877730952,2.14703788081749e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(NOMORE = level 2 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(NOMORE = level 2 | profile 2)",0.866205961254057,0.866205997429944,3.61758877298612e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 3 profiles x 2 group classes: P(NOMORE = level 2 | profile 3)",0.0335351201220105,0.0335351222690485,2.14703797796201e-09,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: maximised log-likelihood",-735.60079385596,-735.600793897026,4.10660732086399e-08,1e-05,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: AIC",1505.20158771192,1505.20158779405,8.21321464172797e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: BIC",1570.88331769709,1570.88331777922,8.21321464172797e-08,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: group-class probability 1",0.12240542526442,0.122405424869126,3.95293839328126e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: group-class probability 2",0.2325921433473,0.232592143517481,1.70181008174453e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: group-class probability 3",0.64500243138828,0.645002431613393,2.25112817275885e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(profile 1 | group class 1)",0.301925099515025,0.301925099012473,5.02551222858472e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(profile 1 | group class 2)",0.78988946563436,0.789889465579728,5.46314105065449e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(profile 1 | group class 3)",0.526252061719654,0.526252061561111,1.58543067563244e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(profile 2 | group class 1)",0.698074900484975,0.698074900987526,5.02551222858472e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(profile 2 | group class 2)",0.21011053436564,0.210110534420272,5.46316047955742e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(profile 2 | group class 3)",0.473747938280345,0.473747938438889,1.58543067563244e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(DEFECT = level 1 | profile 1)",0.534445385150434,0.5344453851386,1.18338672194795e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(DEFECT = level 1 | profile 2)",0.999999999999987,0.9999999999,9.99866855977416e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(DEFECT = level 2 | profile 1)",0.465554614849566,0.4655546148614,1.1833978241782e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(DEFECT = level 2 | profile 2)",1.33578405731127e-14,1e-10,9.99866421594269e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(HLTH = level 1 | profile 1)",0.746891958548995,0.746891958515736,3.32588401263934e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(HLTH = level 1 | profile 2)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(HLTH = level 2 | profile 1)",0.253108041451005,0.253108041484264,3.32588956375446e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(HLTH = level 2 | profile 2)",9.3719161007233e-131,1e-10,1e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(RAPE = level 1 | profile 1)",0.541139584246186,0.541139584184347,6.18388673601089e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(RAPE = level 1 | profile 2)",1,0.9999999999,1.0000011929634e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(RAPE = level 2 | profile 1)",0.458860415753814,0.458860415815653,6.18388673601089e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(RAPE = level 2 | profile 2)",7.35938564049388e-153,1e-10,1e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(POOR = level 1 | profile 1)",0.028918377316708,0.0289183773126773,4.03072367149981e-12,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(POOR = level 1 | profile 2)",0.96996190821298,0.969961908081178,1.3180256885903e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(POOR = level 2 | profile 1)",0.971081622683292,0.971081622687323,4.03077571320409e-12,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(POOR = level 2 | profile 2)",0.0300380917870195,0.030038091918822,1.31802544572901e-10,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(SINGLE = level 1 | profile 1)",0.0207173034210929,0.0207173033552613,6.58316907931056e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(SINGLE = level 1 | profile 2)",0.908277565853449,0.908277565798897,5.45522516048891e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(SINGLE = level 2 | profile 1)",0.979282696578907,0.979282696644739,6.58316734458708e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(SINGLE = level 2 | profile 2)",0.091722434146551,0.0917224342011033,5.45522516048891e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(NOMORE = level 1 | profile 1)",0.0760603238565209,0.0760603237605851,9.59357732144284e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(NOMORE = level 1 | profile 2)",0.954165439994174,0.954165439973225,2.0949020296257e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(NOMORE = level 2 | profile 1)",0.923939676143479,0.923939676239415,9.59358148477918e-11,1e-04,TRUE,10.36
+"glca","glca 1.4.2","machine","gss08","gss08, 2 profiles x 3 group classes: P(NOMORE = level 2 | profile 2)",0.0458345600058263,0.0458345600267752,2.09489786628936e-11,1e-04,TRUE,10.36
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: free parameters",32,32,0,0.5,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: log-likelihood shortfall against mclust",0,0,0,1e-04,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: maximised log-likelihood",-2303.02233063122,-2303.02233063121,1.04591890703887e-11,1e-08,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: BIC on mclust's sign convention",-4777.90507816252,-4777.9050781625,2.09183781407773e-11,1e-07,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mixing proportion 1",0.129425105084862,0.129425108959973,3.8751103159651e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mixing proportion 2",0.16290820512149,0.162908167645003,3.74764871913236e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mixing proportion 3",0.707666689793647,0.707666723395024,3.36013766810694e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of RT3U in component 1",95.5308845424197,95.5308834360788,1.15809760835193e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of RT3U in component 2",110.343432192038,110.343431653134,4.88387749438795e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of RT3U in component 3",123.208032108381,123.208031773224,2.7202486716199e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of T4 in component 1",17.6864306063097,17.6864321466834,8.70935329759746e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of T4 in component 2",9.08853620580207,9.08853631215599,1.17019851698903e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of T4 in component 3",3.79935689879407,3.79935702637713,3.35801729849262e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of T3 in component 1",4.26492718507514,4.26492761380817,1.00525288298503e-07,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of T3 in component 2",1.72194617903477,1.72194621408232,2.03534478512532e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of T3 in component 3",1.05757667984884,1.05757670480851,2.36008142484919e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of TSH in component 1",0.969989711815999,0.969989681027432,3.07885666961383e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of TSH in component 2",1.30509866018825,1.30509863666447,1.8024527844539e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of TSH in component 3",13.8953402214586,13.8953399148368,2.20665256680245e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of DTSH in component 1",-0.0172348491831319,-0.017234813815894,3.53672378848591e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of DTSH in component 2",2.495227736199,2.49522759743117,5.56132898978314e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVI, 3 components: mean of DTSH in component 3",18.8223753948917,18.8223748927634,2.66772017146086e-08,1e-06,TRUE,5.75
+"mclust","Scrucca et al. (2023) mclust book, Example 3.2","printed","thyroid","thyroid, VVI, 3 components: published BIC reproduced by mclust at its default tolerance",-4777.9069,-4777.90685822634,0.835473219922278,1,TRUE,5.75
+"mclust","Scrucca et al. (2023) mclust book, Example 3.2","printed","thyroid","thyroid, VVI, 3 components: published log-likelihood reproduced by mclust at its default tolerance",-2303.0232,-2303.02322066313,0.413262532674707,1,TRUE,5.75
+"mclust","Scrucca et al. (2023) mclust book, Example 3.2","printed","thyroid","thyroid, VVI, 3 components: published free parameters reproduced by mclust at its default tolerance",32,32,0,1,TRUE,5.75
+"mclust","mclust 6.1.2","machine","acidity","acidity, E, 2 components: free parameters",4,4,0,0.5,TRUE,5.75
+"mclust","mclust 6.1.2","machine","acidity","acidity, E, 2 components: log-likelihood shortfall against mclust",0,0,0,1e-04,TRUE,5.75
+"mclust","mclust 6.1.2","machine","acidity","acidity, E, 2 components: maximised log-likelihood",-185.949264496483,-185.949264496483,5.40012479177676e-13,1e-08,TRUE,5.75
+"mclust","mclust 6.1.2","machine","acidity","acidity, E, 2 components: BIC on mclust's sign convention",-392.072229460644,-392.072229460643,1.08002495835535e-12,1e-07,TRUE,5.75
+"mclust","mclust 6.1.2","machine","acidity","acidity, E, 2 components: mixing proportion 1",0.376584398799896,0.376584377781537,2.10183588866819e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","acidity","acidity, E, 2 components: mixing proportion 2",0.623415601200104,0.623415622218462,2.10183589421931e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","acidity","acidity, E, 2 components: mean of y in component 1",4.371036923812,4.37103695785523,7.7883634553975e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","acidity","acidity, E, 2 components: mean of y in component 2",6.32029321479318,6.32029326723054,8.29666518577047e-09,1e-06,TRUE,5.75
+"mclust","mclust vignette, density estimation","printed","acidity","acidity, E, 2 components: published BIC reproduced by mclust at its default tolerance",-392.0723108,-392.072310814359,0.287183183900197,1,TRUE,5.75
+"mclust","mclust vignette, density estimation","printed","acidity","acidity, E, 2 components: published log-likelihood reproduced by mclust at its default tolerance",-185.9493052,-185.949305173341,0.533178194928041,1,TRUE,5.75
+"mclust","mclust vignette, density estimation","printed","acidity","acidity, E, 2 components: published free parameters reproduced by mclust at its default tolerance",4,4,0,1,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: free parameters",11,11,0,0.5,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: log-likelihood shortfall against mclust",0,0,0,1e-04,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: maximised log-likelihood",-1126.31592782384,-1126.31592782341,4.3473846744746e-10,1e-08,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: BIC on mclust's sign convention",-2314.29567837694,-2314.29567837607,8.6947693489492e-10,1e-07,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mixing proportion 1",0.168604339647307,0.168605704616561,1.36496925381979e-06,1e-06,FALSE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mixing proportion 2",0.356378107425048,0.356378116721546,9.29649807135391e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mixing proportion 3",0.475017552927645,0.475016178661893,1.37426575186339e-06,1e-06,FALSE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mean of eruptions in component 1",3.79775581382779,3.7977582282199,6.35741797389863e-07,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mean of eruptions in component 2",2.03761470903771,2.03761473222575,1.1379989363309e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mean of eruptions in component 3",4.46573750877362,4.4657386013754,2.4466323409006e-07,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mean of waiting in component 1",77.4688390286444,77.4688612116842,2.8634790612663e-07,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mean of waiting in component 2",54.4912847240345,54.4912849723246,4.55650976898813e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, EEE, 3 components: mean of waiting in component 3",80.872749265756,80.8727515031869,2.76660668957254e-08,1e-06,TRUE,5.75
+"mclust","mclust vignette, clustering","printed","faithful","faithful, EEE, 3 components: published BIC reproduced by mclust at its default tolerance",-2314.316,-2314.31629566578,0.591331556279329,1,TRUE,5.75
+"mclust","mclust vignette, clustering","printed","faithful","faithful, EEE, 3 components: published log-likelihood reproduced by mclust at its default tolerance",-1126.326,-1126.32623646826,0.472936521873635,1,TRUE,5.75
+"mclust","mclust vignette, clustering","printed","faithful","faithful, EEE, 3 components: published free parameters reproduced by mclust at its default tolerance",11,11,0,1,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: free parameters",62,62,0,0.5,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: log-likelihood shortfall against mclust",0,0,0,1e-04,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: maximised log-likelihood",-2238.39044019431,-2238.39044019427,3.68345354218036e-11,1e-08,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: BIC on mclust's sign convention",-4809.76043813253,-4809.76043813245,7.36690708436072e-11,1e-07,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mixing proportion 1",0.13041691206284,0.130416911959285,1.03555441999248e-10,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mixing proportion 2",0.176877176083299,0.176877095759367,8.03239321722771e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mixing proportion 3",0.692705911853861,0.692705992281348,8.04274873367206e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of RT3U in component 1",95.9487182864198,95.9487148409884,3.59090932727416e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of RT3U in component 2",110.531950782468,110.531949975762,7.29839247163279e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of RT3U in component 3",123.128775924418,123.12877591023,1.15231176144957e-10,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of T4 in component 1",17.1185980574737,17.1186012374209,1.85759794876626e-07,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of T4 in component 2",9.061012307492,9.06101242961356,1.34776948693076e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of T4 in component 3",3.83497108763326,3.83497108473191,7.56550060042387e-10,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of T3 in component 1",4.11621635811249,4.11621718213459,2.0018920985723e-07,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of T3 in component 2",1.70828395381314,1.70828402259178,4.02618294672022e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of T3 in component 3",1.0645048747234,1.06450487437009,3.31899992283389e-10,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of TSH in component 1",0.982798786239155,0.982798662317792,1.23921363170965e-07,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of TSH in component 2",1.30517707430551,1.3051770684424,4.49219828617755e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of TSH in component 3",13.8176975833937,13.8176975939852,7.66517708716151e-10,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of DTSH in component 1",-0.0298191941769729,-0.0298191389271265,5.52498463750328e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of DTSH in component 2",2.54921706064266,2.54921674924358,1.221547923679e-07,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, VVV, 3 components: mean of DTSH in component 3",18.6976239141447,18.6976239175913,1.84335548174734e-10,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, EEI, 2 components: free parameters",16,16,0,0.5,TRUE,5.75
+"mclust","mclust 6.1.2","machine","thyroid","thyroid, EEI, 2 components: log-likelihood shortfall against mclust",0,0,0,1e-04,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: free parameters",11,11,0,0.5,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: log-likelihood shortfall against mclust",0,0,0,1e-04,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: maximised log-likelihood",-1130.26396018475,-1130.26396018474,4.54747350886464e-12,1e-08,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: BIC on mclust's sign convention",-2322.19174309875,-2322.19174309874,9.09494701772928e-12,1e-07,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: mixing proportion 1",0.355872867829741,0.355872857161708,1.06680327349729e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: mixing proportion 2",0.644127132170259,0.644127142838292,1.06680330125286e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: mean of eruptions in component 1",4.28966199619099,4.28966197321659,5.35576000637831e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: mean of eruptions in component 2",2.03638848071935,2.03638845475625,1.27495813319401e-08,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: mean of waiting in component 1",79.9681154531944,79.9681151753151,3.47487647461122e-09,1e-06,TRUE,5.75
+"mclust","mclust 6.1.2","machine","faithful","faithful, VVV, 2 components: mean of waiting in component 2",54.4785166394832,54.4785163783385,4.79353463035648e-09,1e-06,TRUE,5.75
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","maximised log-likelihood",-98736.127,-98736.1212684371,5.80492983551259e-08,1e-06,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","free parameters",99,99,0,0.5,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","Akaike (AIC)",197670.253,197670.242536874,5.29322224321502e-08,1e-06,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","Bayesian (BIC)",198384.077,198384.0662337,5.42699812543359e-08,1e-06,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","log-likelihood at Mplus's published estimates",-98736.127,-98736.1581490048,3.15477279766746e-07,1e-06,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","group-class probability 1",0.143651069987418,0.140569760659631,0.00308130932778691,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","group-class probability 2",0.259404140598561,0.26202673471851,0.00262259411994892,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","group-class probability 3",0.11667440987498,0.116551056919642,0.000123352955338787,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","group-class probability 4",0.267037002240843,0.267665863036574,0.000628860795730268,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","group-class probability 5",0.213233377298197,0.213186584665644,4.67926325534995e-05,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 1 | group class 1)",0.23812504170387,0.237442561155676,0.000682480548193976,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 1 | group class 2)",0.301649123119104,0.301006098371399,0.000643024747705334,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 1 | group class 3)",0.0633102981072851,0.063188565285633,0.000121732821652121,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 1 | group class 4)",0.346038574528039,0.345878705596155,0.000159868931883911,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 1 | group class 5)",0.117925833039463,0.117894003243576,3.18297958870201e-05,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 2 | group class 1)",0.133994120351627,0.132559726788851,0.00143439356277583,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 2 | group class 2)",0.206905982224033,0.206615900185712,0.000290082038321343,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 2 | group class 3)",0.192876097954389,0.193721423701391,0.000845325747001802,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 2 | group class 4)",0.38473325727541,0.384949514709155,0.000216257433745703,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 2 | group class 5)",0.199747864413331,0.200140340821842,0.000392476408510534,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 3 | group class 1)",0.531549284683385,0.534625524802688,0.00307624011930241,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 3 | group class 2)",0.322552043346591,0.32433778093684,0.00178573759024953,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 3 | group class 3)",0.644224973760144,0.643595562901454,0.000629410858689616,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 3 | group class 4)",0.117278360176752,0.117423874087221,0.000145513910468978,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 3 | group class 5)",0.282889367398858,0.282931582911081,4.22155122238865e-05,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 4 | group class 1)",0.0963315532611183,0.0953721872527857,0.000959366008332657,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 4 | group class 2)",0.168892851310272,0.168040220506049,0.000852630804222626,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 4 | group class 3)",0.099588630178182,0.099494448111522,9.41820666599952e-05,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 4 | group class 4)",0.151949808019799,0.151747905607468,0.000201902412330784,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","profile prevalence P(profile 4 | group class 5)",0.399436935148348,0.3990340730235,0.00040286212484747,0.005,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 1 | profile 1)",0.181,0.180968852363336,3.1147636664175e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 1 | profile 2)",0.504,0.504329355322178,0.000329355322177705,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 1 | profile 3)",0.821,0.821412653641539,0.000412653641538974,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 1 | profile 4)",0.833166833166833,0.833824467577657,0.000657634410823893,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 2 | profile 1)",0.198,0.197984623982639,1.53760173609296e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 2 | profile 2)",0.318,0.317992597305419,7.40269458077147e-06,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 2 | profile 3)",0.104,0.103898554533279,0.000101445466720904,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 2 | profile 4)",0.100899100899101,0.100630125277396,0.00026897562170515,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 3 | profile 1)",0.621,0.621046523654025,4.65236540251324e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 3 | profile 2)",0.178,0.177678047372403,0.000321952627596989,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 3 | profile 3)",0.075,0.074688791825182,0.000311208174818056,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u1 = 3 | profile 4)",0.065934065934066,0.065545407144947,0.000388658789118937,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 1 | profile 1)",0.188,0.187768166190091,0.000231833809908794,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 1 | profile 2)",0.486,0.485961920904035,3.80790959652044e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 1 | profile 3)",0.814,0.814084124436412,8.41244364122584e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 1 | profile 4)",0.828,0.827711063293172,0.000288936706828391,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 2 | profile 1)",0.192,0.191917781686234,8.2218313766258e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 2 | profile 2)",0.316,0.316203371060517,0.000203371060516822,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 2 | profile 3)",0.107,0.107148063719386,0.000148063719385791,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 2 | profile 4)",0.107,0.107351955744553,0.000351955744553087,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 3 | profile 1)",0.62,0.620314052123675,0.000314052123675079,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 3 | profile 2)",0.198,0.197834708035448,0.000165291964551673,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 3 | profile 3)",0.079,0.0787678118442019,0.00023218815579816,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u2 = 3 | profile 4)",0.065,0.0649369809622754,6.30190377245571e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 1 | profile 1)",0.183,0.182990473218895,9.52678110466287e-06,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 1 | profile 2)",0.506506506506507,0.506284610527008,0.000221895979498843,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 1 | profile 3)",0.821,0.820762751957804,0.00023724804219627,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 1 | profile 4)",0.806,0.805893808029545,0.000106191970455027,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 2 | profile 1)",0.188,0.187770970287704,0.00022902971229613,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 2 | profile 2)",0.311311311311311,0.311367496785179,5.61854738679313e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 2 | profile 3)",0.105,0.104776705665367,0.000223294334632904,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 2 | profile 4)",0.118,0.117751790973916,0.000248209026083759,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 3 | profile 1)",0.629,0.629238556493401,0.000238556493400877,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 3 | profile 2)",0.182182182182182,0.182347892687813,0.000165710505630745,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 3 | profile 3)",0.074,0.0744605423768291,0.000460542376829118,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u3 = 3 | profile 4)",0.076,0.0763544009965387,0.00035440099653869,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 1 | profile 1)",0.186186186186186,0.18643024749315,0.00024406130696375,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 1 | profile 2)",0.504,0.503813030731733,0.00018696926826689,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 1 | profile 3)",0.172,0.172089383403237,8.93834032370255e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 1 | profile 4)",0.825,0.825042351316798,4.23513167980838e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 2 | profile 1)",0.168168168168168,0.16823799089138,6.98227232113213e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 2 | profile 2)",0.318,0.31822677976676,0.000226779766759722,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 2 | profile 3)",0.441,0.440767631622374,0.000232368377625691,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 2 | profile 4)",0.093,0.0928335215273242,0.000166478472675799,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 3 | profile 1)",0.645645645645646,0.64533176161547,0.000313884030175182,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 3 | profile 2)",0.178,0.177960189501507,3.98104984928871e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 3 | profile 3)",0.387,0.387142984974389,0.000142984974388638,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u4 = 3 | profile 4)",0.082,0.0821241271558777,0.000124127155877646,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 1 | profile 1)",0.187,0.186635281648731,0.000364718351268806,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 1 | profile 2)",0.505,0.505661170954136,0.000661170954135537,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 1 | profile 3)",0.188,0.187777988410753,0.000222011589246979,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 1 | profile 4)",0.812812812812813,0.812600293587793,0.000212519225019525,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 2 | profile 1)",0.191,0.190893462627564,0.000106537372435683,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 2 | profile 2)",0.319,0.318399525490775,0.000600474509225069,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 2 | profile 3)",0.418,0.417971800861636,2.8199138364382e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 2 | profile 4)",0.12012012012012,0.1202240491528,0.000103929032680111,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 3 | profile 1)",0.622,0.622471255723704,0.000471255723704433,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 3 | profile 2)",0.176,0.17593930355509,6.06964449104685e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 3 | profile 3)",0.394,0.394250210727611,0.000250210727611333,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u5 = 3 | profile 4)",0.0670670670670671,0.0671756572594064,0.000108590192339317,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 1 | profile 1)",0.19,0.189905246490258,9.47535097423624e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 1 | profile 2)",0.512,0.512353242813809,0.00035324281380944,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 1 | profile 3)",0.179,0.179128557233084,0.000128557233084442,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 1 | profile 4)",0.819,0.818959439443322,4.05605566776712e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 2 | profile 1)",0.194,0.193787240186865,0.0002127598131349,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 2 | profile 2)",0.297,0.29674374078424,0.000256259215760168,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 2 | profile 3)",0.458,0.457829375539413,0.00017062446058691,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 2 | profile 4)",0.105,0.105352360590801,0.000352360590800752,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 3 | profile 1)",0.616,0.616307513322877,0.000307513322877151,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 3 | profile 2)",0.191,0.190903016401951,9.69835980492162e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 3 | profile 3)",0.363,0.363042067227502,4.20672275024403e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u6 = 3 | profile 4)",0.076,0.0756881999658768,0.000311800034123177,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 1 | profile 1)",0.169169169169169,0.169199645474767,3.04763055978541e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 1 | profile 2)",0.499,0.49893934504567,6.06549543302193e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 1 | profile 3)",0.175,0.175192354922628,0.000192354922627619,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 1 | profile 4)",0.814185814185814,0.815026782212375,0.000840968026560418,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 2 | profile 1)",0.179179179179179,0.179328975744776,0.000149796565596799,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 2 | profile 2)",0.32,0.319626144253724,0.00037385574627613,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 2 | profile 3)",0.45,0.449513157411136,0.000486842588864111,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 2 | profile 4)",0.104895104895105,0.104499506160057,0.000395598735047811,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 3 | profile 1)",0.651651651651652,0.651471378780457,0.000180272871194709,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 3 | profile 2)",0.181,0.181434510700606,0.000434510700606378,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 3 | profile 3)",0.375,0.375294487666236,0.000294487666236409,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u7 = 3 | profile 4)",0.0809190809190809,0.0804737116275683,0.000445369291512607,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 1 | profile 1)",0.199,0.199070399541521,7.03995415210212e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 1 | profile 2)",0.51,0.510120791482375,0.000120791482374538,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 1 | profile 3)",0.179179179179179,0.179411223608725,0.000232044429545719,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 1 | profile 4)",0.179,0.178915647619554,8.43523804464896e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 2 | profile 1)",0.187,0.186898960429677,0.000101039570322869,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 2 | profile 2)",0.314,0.314227426737149,0.00022742673714915,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 2 | profile 3)",0.44944944944945,0.449406624255203,4.28251942465319e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 2 | profile 4)",0.462,0.461625747794176,0.000374252205824432,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 3 | profile 1)",0.614,0.614030640028802,3.06400288018205e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 3 | profile 2)",0.176,0.175651781780476,0.00034821821952366,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 3 | profile 3)",0.371371371371371,0.371182152136072,0.000189219235299132,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u8 = 3 | profile 4)",0.359,0.359458604586271,0.00045860458627095,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 1 | profile 1)",0.184184184184184,0.184362636560027,0.000178452375842686,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 1 | profile 2)",0.484,0.483900326057043,9.9673942956624e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 1 | profile 3)",0.188811188811189,0.18869610100274,0.0001150878084486,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 1 | profile 4)",0.193,0.193171807152,0.00017180715200027,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 2 | profile 1)",0.197197197197197,0.197302597677219,0.000105400480021833,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 2 | profile 2)",0.332,0.332205387240666,0.000205387240666266,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 2 | profile 3)",0.440559440559441,0.440628913223961,6.9472664520509e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 2 | profile 4)",0.414,0.414207124643935,0.000207124643934575,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 3 | profile 1)",0.618618618618619,0.618334765762754,0.000283852855864519,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 3 | profile 2)",0.184,0.18389428670229,0.00010571329770967,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 3 | profile 3)",0.370629370629371,0.370674985773299,4.5615143927924e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u9 = 3 | profile 4)",0.393,0.392621068204065,0.000378931795934845,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 1 | profile 1)",0.194,0.193686688893022,0.000313311106978076,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 1 | profile 2)",0.498,0.498284959892136,0.000284959892136061,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 1 | profile 3)",0.185814185814186,0.185649283800885,0.000164902013301188,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 1 | profile 4)",0.188,0.188116546925281,0.00011654692528057,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 2 | profile 1)",0.2,0.199817295363485,0.000182704636515429,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 2 | profile 2)",0.319,0.318976727188837,2.32728111632663e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 2 | profile 3)",0.424575424575425,0.424823972169033,0.000248547593608206,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 2 | profile 4)",0.437,0.437104755141513,0.000104755141512924,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 3 | profile 1)",0.606,0.606496015743494,0.000496015743493561,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 3 | profile 2)",0.183,0.182738312919027,0.000261687080972767,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 3 | profile 3)",0.38961038961039,0.389526744030083,8.36455803071567e-05,0.0015,TRUE,28.35
+"mplus-twolevel-lca","Mplus 8.8 (UG example 10.7)","printed","ex10.7","item-response P(u10 = 3 | profile 4)",0.375,0.374778697933207,0.000221302066793438,0.0015,TRUE,28.35
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: maximised log-likelihood",-17019.8015695602,-17019.8015695513,8.92759999260306e-09,1e-05,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: AIC",34109.6031391204,34109.6031391025,1.78551999852061e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: BIC, individual sample size",34319.8260039881,34319.8260039703,1.78551999852061e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: BIC, group sample size",34158.6450474786,34158.6450474607,1.78551999852061e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: group-class probability 1",0.333333333333333,0.333333333333333,0,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: group-class probability 2",0.666666666666667,0.666666666666667,0,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(profile 1 | group class 1)",0.0853707571913244,0.0853709928617553,2.35670430837054e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(profile 1 | group class 2)",0.719549766518894,0.719550217380681,4.50861787237855e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(profile 2 | group class 1)",0.29143426147727,0.291433330893015,9.30584255209865e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(profile 2 | group class 2)",0.180903618425791,0.180902961963395,6.56462396775304e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(profile 3 | group class 1)",0.623194981331405,0.62319567624523,6.94913824261789e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(profile 3 | group class 2)",0.0995466150553143,0.0995468206559239,2.0560060959296e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_1 = 1 | profile 1)",0.792624136804421,0.792623864756433,2.72047987470714e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_1 = 1 | profile 2)",0.231402866373501,0.231402505240167,3.61133334125796e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_1 = 1 | profile 3)",0.196587702258501,0.196587743872767,4.16142660886187e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_2 = 1 | profile 1)",0.817509506074342,0.817509250599686,2.55474656096766e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_2 = 1 | profile 2)",0.19146484541496,0.19146432025488,5.25160079728471e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_2 = 1 | profile 3)",0.214677945818306,0.214677956348903,1.0530596949998e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_3 = 1 | profile 1)",0.807748260553254,0.80774787101504,3.89538213574347e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_3 = 1 | profile 2)",0.184481145192568,0.18448087954031,2.65652258357729e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_3 = 1 | profile 3)",0.210238143343845,0.210238094179576,4.91642687949767e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_4 = 1 | profile 1)",0.785673193600059,0.785672900610186,2.92989873029725e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_4 = 1 | profile 2)",0.208132540394049,0.208132209362431,3.31031617256672e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_4 = 1 | profile 3)",0.180213669832298,0.180213688861054,1.90287560986047e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_5 = 1 | profile 1)",0.789427970863279,0.789427692571859,2.78291419131271e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_5 = 1 | profile 2)",0.219448204097457,0.219447794856913,4.09240543286504e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_5 = 1 | profile 3)",0.208457620158238,0.208457658959437,3.88011993368576e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_6 = 1 | profile 1)",0.794751180109138,0.794751098089589,8.20195492634568e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_6 = 1 | profile 2)",0.806216204254536,0.806216907839661,7.03585125605422e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_6 = 1 | profile 3)",0.226366146939964,0.226366497124446,3.50184481773264e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_7 = 1 | profile 1)",0.80028942683448,0.80028938142501,4.54094701840546e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_7 = 1 | profile 2)",0.82695088709456,0.826951547970884,6.60876324110049e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_7 = 1 | profile 3)",0.20945062041254,0.209451025657811,4.05245271117849e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_8 = 1 | profile 1)",0.80200386545151,0.802003880490344,1.50388344000163e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_8 = 1 | profile 2)",0.832012971653925,0.832013586684064,6.15030138595429e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_8 = 1 | profile 3)",0.188355548485546,0.188355973061827,4.24576281105038e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_9 = 1 | profile 1)",0.783906258222328,0.783906196690116,6.15322116592765e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_9 = 1 | profile 2)",0.810139440319571,0.810140156963765,7.16644194653782e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_9 = 1 | profile 3)",0.202337288858495,0.202337661332974,3.72474478399498e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_10 = 1 | profile 1)",0.825851832666105,0.825851814361084,1.83050210544877e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_10 = 1 | profile 2)",0.799825728218892,0.799826344831045,6.16612152115614e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 2 group classes: P(Y_10 = 1 | profile 3)",0.223537059523313,0.223537387007205,3.27483891615632e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: maximised log-likelihood",-17742.0176273856,-17742.0176273526,3.29891918227077e-08,1e-05,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: AIC",35530.0352547712,35530.0352547052,6.59783836454153e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: BIC, individual sample size",35668.1817088272,35668.1817087612,6.59783836454153e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: BIC, group sample size",35562.2627945495,35562.2627944835,6.59783836454153e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: group-class probability 1",0.333333333333333,0.333333333333333,0,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: group-class probability 2",0.666666666666667,0.666666666666667,0,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(profile 1 | group class 1)",0.184567623447925,0.184564892501046,2.73094687935904e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(profile 1 | group class 2)",0.848851344150528,0.848849753060503,1.59109002484392e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(profile 2 | group class 1)",0.815432376552075,0.815435107498954,2.73094687930353e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(profile 2 | group class 2)",0.151148655849472,0.151150246939497,1.59109002487168e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_1 = 1 | profile 1)",0.671718504218922,0.671721051442141,2.54722321912926e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_1 = 1 | profile 2)",0.184541747694661,0.184541934888922,1.87194261286328e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_2 = 1 | profile 1)",0.672754832005776,0.672757516204708,2.68419893156846e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_2 = 1 | profile 2)",0.192812037119889,0.192812102062675,6.4942786703881e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_3 = 1 | profile 1)",0.665274931087573,0.665277729544142,2.79845656925293e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_3 = 1 | profile 2)",0.186701207131428,0.186701188562548,1.8568880461034e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_4 = 1 | profile 1)",0.656150542183968,0.656153145388335,2.60320436673567e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_4 = 1 | profile 2)",0.169368780501679,0.169368927870481,1.47368801356462e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_5 = 1 | profile 1)",0.664330954386219,0.664333476484653,2.52209843421003e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_5 = 1 | profile 2)",0.191835708880145,0.191835855139418,1.46259273692273e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_6 = 1 | profile 1)",0.815802767998595,0.815802607445958,1.60552636963018e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_6 = 1 | profile 2)",0.355981141585058,0.355983071228613,1.92964355555381e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_7 = 1 | profile 1)",0.821212424184142,0.821212319078885,1.05105256387183e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_7 = 1 | profile 2)",0.351161374992386,0.351163307225238,1.93223285138711e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_8 = 1 | profile 1)",0.832550855594601,0.832550682393119,1.73201482378538e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_8 = 1 | profile 2)",0.330504932545607,0.330507037952193,2.10540658579506e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_9 = 1 | profile 1)",0.810917317573835,0.810917046038658,2.71535177565063e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_9 = 1 | profile 2)",0.337434936082133,0.337436995647624,2.0595654911526e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_10 = 1 | profile 1)",0.84380036683713,0.843800427679757,6.08426266035522e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 2 profiles x 2 group classes: P(Y_10 = 1 | profile 2)",0.347507187409989,0.347509110083014,1.92267302512317e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: maximised log-likelihood",-17018.9004766132,-17018.9004765548,5.84368535783142e-08,1e-05,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: AIC",34113.8009532265,34113.8009531096,1.16873707156628e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: BIC, individual sample size",34342.0429207972,34342.0429206803,1.16873707156628e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: BIC, group sample size",34167.0464537296,34167.0464536127,1.16873707156628e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: group-class probability 1",0.156385676702273,0.156332916980973,5.27597213005881e-05,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: group-class probability 2",0.333333333333333,0.333333333333333,2.77555756156289e-16,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: group-class probability 3",0.510280989964394,0.510333749685694,5.27597213003661e-05,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 1 | group class 1)",0.0782501335374141,0.0782514314642719,1.29792685781005e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 1 | group class 2)",0.718971765632404,0.718971895557567,1.29925162739575e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 1 | group class 3)",0.106126744140877,0.106132387149994,5.64300911733151e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 2 | group class 1)",0.311571449592636,0.311566369808131,5.07978450453583e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 2 | group class 2)",0.181482274728278,0.181482103202122,1.71526156833579e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 2 | group class 3)",0.228048777895588,0.228035809645439,1.29682501492923e-05,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 3 | group class 1)",0.61017841686995,0.610182198727597,3.78185764660088e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 3 | group class 2)",0.0995459596393174,0.0995460012403114,4.1600993982982e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(profile 3 | group class 3)",0.665824477963535,0.665831803204567,7.32524103197463e-06,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_1 = 1 | profile 1)",0.792994333149869,0.792994195287318,1.37862551374823e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_1 = 1 | profile 2)",0.232540571997909,0.232540458940871,1.13057037481878e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_1 = 1 | profile 3)",0.196424031078889,0.19642405242268,2.1343791123396e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_2 = 1 | profile 1)",0.81797769957291,0.817977628909882,7.06630280955522e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_2 = 1 | profile 2)",0.192340101923101,0.192339826573566,2.75349534062386e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_2 = 1 | profile 3)",0.214679519207703,0.214679551510198,3.23024949844264e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_3 = 1 | profile 1)",0.807876706894385,0.807876494193994,2.12700391188925e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_3 = 1 | profile 2)",0.185650362206059,0.185650360987706,1.21835275201931e-09,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_3 = 1 | profile 3)",0.210293098847147,0.210293069126841,2.97203061327966e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_4 = 1 | profile 1)",0.786557987380554,0.786557945656389,4.17241651229361e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_4 = 1 | profile 2)",0.208433416610941,0.208433160029491,2.56581449586957e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_4 = 1 | profile 3)",0.180206908008833,0.180206940200404,3.21915702150566e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_5 = 1 | profile 1)",0.790094890974942,0.790094827421266,6.35536762105815e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_5 = 1 | profile 2)",0.219961291283831,0.219961017646038,2.73637793535286e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_5 = 1 | profile 3)",0.208463310289838,0.208463362965771,5.26759328933757e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_6 = 1 | profile 1)",0.795069494979256,0.79506953085076,3.5871503101248e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_6 = 1 | profile 2)",0.805263867915748,0.805263962263956,9.43482086901426e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_6 = 1 | profile 3)",0.226714185753135,0.226714308605633,1.22852498812831e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_7 = 1 | profile 1)",0.800427307259201,0.800427299250983,8.00821797763973e-09,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_7 = 1 | profile 2)",0.826717723457609,0.826717922065845,1.98608235413289e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_7 = 1 | profile 3)",0.209491183988903,0.209491293924346,1.09935442443865e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_8 = 1 | profile 1)",0.80175079311573,0.801750799649599,6.53386933446853e-09,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_8 = 1 | profile 2)",0.832566357804285,0.832566482661576,1.24857290950686e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_8 = 1 | profile 3)",0.188203992788538,0.188204145510048,1.52721509660836e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_9 = 1 | profile 1)",0.783811628375619,0.783811603513247,2.48623723830832e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_9 = 1 | profile 2)",0.810395572508455,0.81039569441597,1.21907515637787e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_9 = 1 | profile 3)",0.202253119698976,0.202253281353254,1.61654278379997e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_10 = 1 | profile 1)",0.82584728407227,0.825847256027724,2.80445461298129e-08,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_10 = 1 | profile 2)",0.79989563328229,0.799895997217368,3.63935077407618e-07,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataTOY","dataTOY, 3 profiles x 3 group classes: P(Y_10 = 1 | profile 3)",0.223565203586925,0.223565205133698,1.5467732650265e-09,1e-04,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataIEA","dataIEA 5 profiles x 2 group classes: analysis sample size",83060,83060,0,0.5,TRUE,35.25
+"multilevlca","multilevLCA 2.1.6","machine","dataIEA","dataIEA 5 profiles x 2 group classes: log-likelihood at multilevLCA's estimates",-434170.669715276,-434170.669715263,1.28056854009628e-08,1e-04,TRUE,35.25
+"multilevlca","Lyrvall et al. (2025) Multivar Behav Res 60(4):731-747","printed","dataIEA","dataIEA 5 profiles x 2 group classes: published BIC, individual sample size",869122.92,869122.924408211,0.881642219610512,1,TRUE,35.25
+"multilevlca","Lyrvall et al. (2025) Multivar Behav Res 60(4):731-747","printed","dataIEA","dataIEA 5 profiles x 2 group classes: published BIC, group sample size",868554.62,868554.621359807,0.271961442194879,1,TRUE,35.25
+"multilevlca","Lyrvall et al. (2025) Multivar Behav Res 60(4):731-747","printed","dataIEA","dataIEA 5 profiles x 2 group classes: published AIC",868479.34,868479.339430525,0.113894906826317,1,TRUE,35.25
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: maximised log-likelihood",-317.256837299602,-317.256837323383,2.37812400882831e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: free parameters",15,15,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: BIC",706.073943966189,706.073944013752,4.75624801765662e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: AIC",664.513674599204,664.513674646767,4.75624801765662e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: log-likelihood at poLCA's estimates",-317.256837299602,-317.256837323383,2.37814106185397e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: textbook log-likelihood at poLCA's estimates",-317.256837299602,-317.256837299606,3.80850906367414e-12,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: residual degrees of freedom",103,103,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: class share 1",0.498787613449824,0.498787613403256,4.65685823236583e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: class share 2",0.501212386550176,0.501212386596744,4.65686378348096e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(A = 1 | profile 1)",0.883498214903832,0.883498214927521,2.3688606631822e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(A = 1 | profile 2)",5.25165827695823e-12,1e-10,9.47483417230418e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(A = 2 | profile 1)",0.116501785096168,0.116501785072479,2.36883568316415e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(A = 2 | profile 2)",0.999999999994748,0.9999999999,9.47483203006527e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(B = 1 | profile 1)",0.645633310895119,0.645633310956386,6.12669914801245e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(B = 1 | profile 2)",0.0169081541051222,0.0169081541025673,2.55485216316131e-12,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(B = 2 | profile 1)",0.354366689104881,0.354366689043614,6.12669359689733e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(B = 2 | profile 2)",0.983091845894878,0.983091845897433,2.55484522426741e-12,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(C = 1 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(C = 1 | profile 2)",0.239133065269501,0.239133065341301,7.17996495591677e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(C = 2 | profile 1)",3.6592926890491e-118,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(C = 2 | profile 2)",0.760866934730498,0.760866934658699,7.17995662924409e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(D = 1 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(D = 1 | profile 2)",0.45893906863609,0.45893906869042,5.43298184219054e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(D = 2 | profile 1)",5.86745777614181e-86,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(D = 2 | profile 2)",0.54106093136391,0.54106093130958,5.43299849553591e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(E = 1 | profile 1)",0.777079391955249,0.777079392022252,6.70027366922454e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(E = 1 | profile 2)",0.0213632177868999,0.0213632177904361,3.53616094739273e-12,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(E = 2 | profile 1)",0.222920608044751,0.222920607977748,6.7002764447821e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(E = 2 | profile 2)",0.9786367822131,0.978636782209564,3.53606033343112e-12,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(F = 1 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(F = 1 | profile 2)",0.577296147371945,0.57729614741126,3.93144405919088e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(F = 2 | profile 1)",2.12132022550337e-204,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(F = 2 | profile 2)",0.422703852628055,0.42270385258874,3.93144405919088e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(G = 1 | profile 1)",0.88349821490911,0.883498214965836,5.67264013540125e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(G = 1 | profile 2)",1.38471026007339e-35,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(G = 2 | profile 1)",0.11650178509089,0.116501785034164,5.67265540096784e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 2 classes: P(G = 2 | profile 2)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: maximised log-likelihood",-293.70497878076,-293.704978815961,3.52011397808383e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: free parameters",23,23,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: BIC",697.13570392423,697.135703994632,7.04022795616766e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: AIC",633.409957561519,633.409957631922,7.04022795616766e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: log-likelihood at poLCA's estimates",-293.70497878076,-293.704978815995,3.52355300492491e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: textbook log-likelihood at poLCA's estimates",-293.70497878076,-293.704978780764,4.14956957683899e-12,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: residual degrees of freedom",95,95,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: class share 1",0.181707829741065,0.181707915360268,8.56192035048053e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: class share 2",0.373564590013854,0.373564427645575,1.62368278433522e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: class share 3",0.444727580245082,0.444727656994156,7.67490747066724e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(A = 1 | profile 1)",0.942690197069897,0.942690292857012,9.57871153506318e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(A = 1 | profile 2)",0.487168270345559,0.48716868622134,4.15875781201169e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(A = 1 | profile 3)",4.21171729511418e-81,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(A = 2 | profile 1)",0.0573098029301028,0.0573097071429875,9.57871153714485e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(A = 2 | profile 2)",0.512831729654441,0.51283131377866,4.15875780812591e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(A = 2 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(B = 1 | profile 1)",0.862056808685057,0.862057183364142,3.74679084980123e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(B = 1 | profile 2)",1.51568780496582e-19,1e-10,9.99999998484312e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(B = 1 | profile 3)",0.019055657098029,0.0190556538094904,3.28853857686773e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(B = 2 | profile 1)",0.137943191314942,0.137942816635858,3.74679084480523e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(B = 2 | profile 2)",1,0.9999999999,1.0000011929634e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(B = 2 | profile 3)",0.980944342901971,0.98094434619051,3.2885385525816e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(C = 1 | profile 1)",1,0.9999999999,9.99998972517346e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(C = 1 | profile 2)",0.999999999999978,0.9999999999,9.99785809696618e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(C = 1 | profile 3)",0.142495430588705,0.14249557858606,1.47997355620655e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(C = 2 | profile 1)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(C = 2 | profile 2)",2.13324231905836e-14,1e-10,9.99786675768094e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(C = 2 | profile 3)",0.857504569411295,0.85750442141394,1.47997355814944e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(D = 1 | profile 1)",1,0.9999999999,9.99998972517346e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(D = 1 | profile 2)",0.942401173164371,0.942401280515605,1.07351233458175e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(D = 1 | profile 3)",0.413752835580033,0.413752903979027,6.83989940242213e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(D = 2 | profile 1)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(D = 2 | profile 2)",0.0575988268356294,0.0575987194843952,1.07351234159003e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(D = 2 | profile 3)",0.586247164419967,0.586247096020973,6.8398993913199e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(E = 1 | profile 1)",0.94491762189923,0.94491769094469,6.90454606822044e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(E = 1 | profile 2)",0.249396631882561,0.249397216659489,5.84776927853303e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(E = 1 | profile 3)",9.95328278236305e-24,1e-10,9.999999999999e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(E = 2 | profile 1)",0.0550823781007703,0.0550823090553098,6.90454605503654e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(E = 2 | profile 2)",0.750603368117439,0.750602783340511,5.84776927659014e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(E = 2 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(F = 1 | profile 1)",1,0.9999999999,9.99998972517346e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(F = 1 | profile 2)",1,0.9999999999,1.0000011929634e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(F = 1 | profile 3)",0.523608572549276,0.523608654770041,8.22207656403506e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(F = 2 | profile 1)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(F = 2 | profile 2)",1.3720737550339e-29,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(F = 2 | profile 3)",0.476391427450724,0.476391345229959,8.22207658068841e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(G = 1 | profile 1)",1,0.9999999999,9.99998972517346e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(G = 1 | profile 2)",0.369347739079149,0.369348458626937,7.19547787797481e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(G = 1 | profile 3)",6.0692459184457e-88,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(G = 2 | profile 1)",3.22671696602503e-40,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(G = 2 | profile 2)",0.630652260920851,0.630651541373063,7.19547787353392e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 3 classes: P(G = 2 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: maximised log-likelihood",-289.285848810868,-289.28584883364,2.27719283429906e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: free parameters",31,31,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: BIC",726.462920980172,726.462921025716,4.55438566859812e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: AIC",640.571697621736,640.57169766728,4.55438566859812e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: log-likelihood at poLCA's estimates",-289.285848810868,-289.285848850689,3.9820463371143e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: textbook log-likelihood at poLCA's estimates",-289.285848810868,-289.285848810872,4.32009983342141e-12,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: residual degrees of freedom",87,87,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: class share 1",0.0936495900626735,0.0936358740307128,1.37160319606117e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: class share 2",0.188215031134511,0.188225842177517,1.08110430063202e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: class share 3",0.342994697191192,0.342995332090974,6.34899782359089e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: class share 4",0.375140681611625,0.375142951700796,2.27008917169647e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(A = 1 | profile 1)",0.942209162357791,0.942208456329775,7.06028015939886e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(A = 1 | profile 2)",0.463390082016056,0.463353510161285,3.6571854770906e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(A = 1 | profile 3)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(A = 1 | profile 4)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(A = 2 | profile 1)",0.057790837642209,0.0577915436702251,7.06028016057847e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(A = 2 | profile 2)",0.536609917983943,0.536646489838715,3.65718547714611e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(A = 2 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(A = 2 | profile 4)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(B = 1 | profile 1)",0.85843501942154,0.858429824794677,5.19462686277006e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(B = 1 | profile 2)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(B = 1 | profile 3)",0.0904924011468173,0.0905056566853564,1.32555385390642e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(B = 1 | profile 4)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(B = 2 | profile 1)",0.14156498057846,0.141570175205323,5.19462686315864e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(B = 2 | profile 2)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(B = 2 | profile 3)",0.909507598853183,0.909494343314644,1.32555385392585e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(B = 2 | profile 4)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(C = 1 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(C = 1 | profile 2)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(C = 1 | profile 3)",0.0186263534175341,0.0184913676699455,0.000134985747588516,1e-04,FALSE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(C = 1 | profile 4)",0.156107383370753,0.156106551722209,8.31648544169505e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(C = 2 | profile 1)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(C = 2 | profile 2)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(C = 2 | profile 3)",0.981373646582466,0.981508632330054,0.000134985747588412,1e-04,FALSE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(C = 2 | profile 4)",0.843892616629247,0.843893448277791,8.31648544252772e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(D = 1 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(D = 1 | profile 2)",0.940352181993295,0.940353265378291,1.08338499538174e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(D = 1 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(D = 1 | profile 4)",0.242087918899159,0.242090607393117,2.68849395804183e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(D = 2 | profile 1)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(D = 2 | profile 2)",0.0596478180067045,0.0596467346217092,1.08338499531235e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(D = 2 | profile 3)",1.14635114003464e-62,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(D = 2 | profile 4)",0.75791208110084,0.757909392606883,2.68849395790305e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(E = 1 | profile 1)",0.944304297028689,0.944303345072372,9.51956317774005e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(E = 1 | profile 2)",0.234083998733063,0.234061062232583,2.29365004796034e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(E = 1 | profile 3)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(E = 1 | profile 4)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(E = 2 | profile 1)",0.0556957029713104,0.0556966549276284,9.51956318037683e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(E = 2 | profile 2)",0.765916001266937,0.765938937767417,2.29365004800197e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(E = 2 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(E = 2 | profile 4)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(F = 1 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(F = 1 | profile 2)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(F = 1 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(F = 1 | profile 4)",0.382309964222088,0.382311107633985,1.14341189677569e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(F = 2 | profile 1)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(F = 2 | profile 2)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(F = 2 | profile 3)",7.4788127481727e-82,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(F = 2 | profile 4)",0.617690035777911,0.617688892366015,1.14341189660916e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(G = 1 | profile 1)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(G = 1 | profile 2)",0.348204307036632,0.348172246945428,3.20600912035451e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(G = 1 | profile 3)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(G = 1 | profile 4)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(G = 2 | profile 1)",0,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(G = 2 | profile 2)",0.651795692963367,0.651827753054572,3.20600912040447e-05,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(G = 2 | profile 3)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","carcinoma","carcinoma, 4 classes: P(G = 2 | profile 4)",1,0.9999999999,1.00000008274037e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: maximised log-likelihood",-440.027112413208,-440.027112411539,1.66909330800991e-09,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: free parameters",9,9,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: BIC",931.940944751479,931.940944748141,3.33818661601981e-09,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: AIC",898.054224826415,898.054224823077,3.33818661601981e-09,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: log-likelihood at poLCA's estimates",-440.027112413208,-440.027112413224,1.62572177941911e-11,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: textbook log-likelihood at poLCA's estimates",-440.027112413208,-440.027112413224,1.67119651450776e-11,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: residual degrees of freedom",6,6,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: class share 1",0.160562314382255,0.160566456771009,4.14238875315331e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: class share 2",0.839437685617743,0.839433543228991,4.14238875157125e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(LIEEXAM = 1 | profile 1)",0.983384314758995,0.983385560346308,1.24558731362523e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(LIEEXAM = 1 | profile 2)",0.423057396170119,0.423065339947282,7.94377716356598e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(LIEEXAM = 2 | profile 1)",0.0166156852410062,0.0166144396536919,1.24558731433994e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(LIEEXAM = 2 | profile 2)",0.576942603829881,0.576934660052718,7.94377716328842e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(LIEPAPER = 1 | profile 1)",0.970771214174112,0.970772563012409,1.34883829672194e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(LIEPAPER = 1 | profile 2)",0.410904650383854,0.410912042493453,7.39210959965764e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(LIEPAPER = 2 | profile 1)",0.029228785825887,0.0292274369875908,1.34883829617377e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(LIEPAPER = 2 | profile 2)",0.589095349616146,0.589087957506547,7.39210959921355e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(FRAUD = 1 | profile 1)",0.962902336594039,0.962902689100633,3.52506594691882e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(FRAUD = 1 | profile 2)",0.783949649547138,0.783952423387624,2.77384048619211e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(FRAUD = 2 | profile 1)",0.0370976634059609,0.0370973108993667,3.52506594185342e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(FRAUD = 2 | profile 2)",0.216050350452862,0.216047576612376,2.77384048635865e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(COPYEXAM = 1 | profile 1)",0.818049553878277,0.818049917221848,3.63343571341268e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(COPYEXAM = 1 | profile 2)",0.62363470504527,0.623637821132594,3.11608732361801e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(COPYEXAM = 2 | profile 1)",0.181950446121724,0.181950082778152,3.63343572090669e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 2 classes: P(COPYEXAM = 2 | profile 2)",0.376365294954729,0.376362178867406,3.11608732334046e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 3 classes: maximised log-likelihood",-436.235577812828,-436.235577805848,6.97929181114887e-09,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 3 classes: free parameters",14,14,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 3 classes: BIC",953.183831064643,953.183831050684,1.39585836222977e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 3 classes: AIC",900.471155625655,900.471155611697,1.39585836222977e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 3 classes: log-likelihood at poLCA's estimates",-436.235577812828,-436.235577812828,2.8421709430404e-13,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 3 classes: textbook log-likelihood at poLCA's estimates",-436.235577812828,-436.235577812824,3.35376171278767e-12,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","cheating","cheating, 3 classes: residual degrees of freedom",1,1,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: maximised log-likelihood",-2783.26800959464,-2783.26800959257,2.07410266739316e-09,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: free parameters",13,13,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: BIC",5658.72866668552,5658.72866668137,4.14729584008455e-09,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: AIC",5592.53601918929,5592.53601918514,4.14820533478633e-09,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: log-likelihood at poLCA's estimates",-2783.26800959464,-2783.26800959464,1.36424205265939e-12,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: textbook log-likelihood at poLCA's estimates",-2783.26800959464,-2783.26800959465,1.04591890703887e-11,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: residual degrees of freedom",22,22,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: class share 1",0.192264935203757,0.192262943546552,1.99165720471406e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: class share 2",0.80773506479625,0.807737056453448,1.99165719816374e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(PURPOSE = 1 | profile 1)",0.89527210748794,0.895271230528748,8.7695919182007e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(PURPOSE = 1 | profile 2)",0.215413145531193,0.215409787143185,3.35838800813448e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(PURPOSE = 2 | profile 1)",0.0579424144678181,0.0579426558240179,2.41356199796872e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(PURPOSE = 2 | profile 2)",0.206591714790257,0.206592240664369,5.25874111784175e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(PURPOSE = 3 | profile 1)",0.0467854780442389,0.0467861136472341,6.35602995180395e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(PURPOSE = 3 | profile 2)",0.577995139678552,0.577997972192445,2.83251389310291e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(ACCURACY = 1 | profile 1)",0.636657462025237,0.63665680202559,6.59999647045773e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(ACCURACY = 1 | profile 2)",0.0297306723233573,0.0297271579491008,3.51437425657672e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(ACCURACY = 2 | profile 1)",0.363342537974754,0.36334319797441,6.59999656149601e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(ACCURACY = 2 | profile 2)",0.970269327676643,0.970272842050899,3.51437425660794e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(UNDERSTA = 1 | profile 1)",0.832703521633433,0.832703298238309,2.23395124177017e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(UNDERSTA = 1 | profile 2)",0.742225758147873,0.742225759416087,1.26821431134516e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(UNDERSTA = 2 | profile 1)",0.167296478366566,0.167296701761691,2.2339512503744e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(UNDERSTA = 2 | profile 2)",0.257774241852127,0.257774240583913,1.26821342316674e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(COOPERAT = 1 | profile 1)",0.884011827965098,0.884011353148149,4.74816948869972e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(COOPERAT = 1 | profile 2)",0.647829923729365,0.647829471920265,4.51809099577538e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(COOPERAT = 2 | profile 1)",0.104303644056885,0.104304005019748,3.60962862017145e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(COOPERAT = 2 | profile 2)",0.249810623908842,0.249810614738833,9.17000900213516e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(COOPERAT = 3 | profile 1)",0.0116845279780151,0.0116846418321039,1.13854088832147e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 2 classes: P(COOPERAT = 3 | profile 2)",0.102359452361794,0.102359913340902,4.60979107913539e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: maximised log-likelihood",-2754.5454047956,-2754.54540481943,2.38351276493631e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: free parameters",20,20,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: BIC",5650.92565189309,5650.92565194076,4.76702552987263e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: AIC",5549.09080959119,5549.09080963886,4.76702552987263e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: log-likelihood at poLCA's estimates",-2754.5454047956,-2754.54540480069,5.09044184582308e-09,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: textbook log-likelihood at poLCA's estimates",-2754.5454047956,-2754.54540479558,1.59161572810262e-11,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: residual degrees of freedom",15,15,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: class share 1",0.172287553150466,0.172287553910696,7.60229323937267e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: class share 2",0.20696053482434,0.206960530088352,4.73598779637818e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: class share 3",0.620751912025197,0.620751916000952,3.9757546144159e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 1 | profile 1)",0.911661713472226,0.911661714102452,6.3022531637813e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 1 | profile 2)",0.888114274521972,0.888114274920353,3.98381772015455e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 1 | profile 3)",0.142682613831669,0.142682615575765,1.74409681141796e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 2 | profile 1)",0.0716051507092965,0.0716051505058425,2.03454017522198e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 2 | profile 2)",0.0531767667946137,0.05317676685038,5.57663498712557e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 2 | profile 3)",0.224586407461225,0.224586407254919,2.06305555972008e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 3 | profile 1)",0.0167331358184789,0.0167331353917058,4.26773082151666e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 3 | profile 2)",0.0587089586834203,0.0587089582292666,4.54153645246258e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(PURPOSE = 3 | profile 3)",0.632730978707109,0.632730977169315,1.53779400324794e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(ACCURACY = 1 | profile 1)",0.647758263304224,0.647758263999938,6.95713597842484e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(ACCURACY = 1 | profile 2)",0.612984247490147,0.612984247940486,4.50339099344887e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(ACCURACY = 1 | profile 3)",0.0313149832937261,0.0313149843579713,1.06424521278958e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(ACCURACY = 2 | profile 1)",0.352241736695763,0.352241736000062,6.95701329878062e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(ACCURACY = 2 | profile 2)",0.387015752509856,0.387015752059514,4.50342096947054e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(ACCURACY = 2 | profile 3)",0.968685016706274,0.968685015642029,1.06424513646175e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(UNDERSTA = 1 | profile 1)",0.313102969814151,0.31310295978068,1.00334713870609e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(UNDERSTA = 1 | profile 2)",0.999999999288384,0.999999997668183,1.62020097338456e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(UNDERSTA = 1 | profile 3)",0.753135953558377,0.753135953655955,9.75780567458173e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(UNDERSTA = 2 | profile 1)",0.68689703018584,0.68689704021932,1.00334808239566e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(UNDERSTA = 2 | profile 2)",7.11615910536941e-10,2.33181718099112e-09,1.62020127045418e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(UNDERSTA = 2 | profile 3)",0.246864046441623,0.246864046344045,9.75786673684809e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 1 | profile 1)",0.689694086636748,0.689694084801828,1.83491954963699e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 1 | profile 2)",0.943105598045533,0.94310559702409,1.02144237512647e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 1 | profile 3)",0.640953261960337,0.640953262188692,2.28355778730815e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 2 | profile 1)",0.255349249038894,0.255349250189663,1.15076870255137e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 2 | profile 2)",0.0568944019544643,0.0568944028759097,9.21445364454598e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 2 | profile 3)",0.25605452836423,0.256054528236991,1.27239885294728e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 3 | profile 1)",0.054956664324341,0.0549566650085085,6.84167535125457e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 3 | profile 2)",2.63294103976547e-46,1e-10,1e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","gss82","gss82, 3 classes: P(COOPERAT = 3 | profile 3)",0.102992209675435,0.102992209574317,1.01118294293379e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: maximised log-likelihood",-504.467670118731,-504.467670118361,3.69539066014113e-10,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: free parameters",9,9,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: BIC",1057.31284590662,1057.31284590588,7.38964445190504e-10,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: AIC",1026.93534023746,1026.93534023672,7.39191818865947e-10,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: log-likelihood at poLCA's estimates",-504.467670118731,-504.467670118735,4.2632564145606e-12,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: textbook log-likelihood at poLCA's estimates",-504.467670118731,-504.467670118735,3.97903932025656e-12,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: residual degrees of freedom",6,6,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: class share 1",0.279247488816855,0.2792461263407,1.36247615539764e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: class share 2",0.720752511183145,0.7207538736593,1.36247615489804e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(A = 1 | profile 1)",0.00680705783659705,0.00680669497550835,3.62861088700622e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(A = 1 | profile 2)",0.286412431900327,0.286412043934183,3.87966144155261e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(A = 2 | profile 1)",0.993192942163403,0.993193305024492,3.62861088620825e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(A = 2 | profile 2)",0.713587568099672,0.713587956065817,3.87966144987928e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(B = 1 | profile 1)",0.0602367500519786,0.0602355373786562,1.2126733223497e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(B = 1 | profile 2)",0.67038134632419,0.670380662771656,6.83552533686793e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(B = 2 | profile 1)",0.939763249948023,0.939764462621344,1.21267332053865e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(B = 2 | profile 2)",0.329618653675811,0.329619337228344,6.83552533409237e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(C = 1 | profile 1)",0.0734701972280293,0.073469120792983,1.07643504630717e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(C = 1 | profile 2)",0.645984212067486,0.645983546866236,6.65201249305802e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(C = 2 | profile 1)",0.926529802771971,0.926530879207017,1.07643504565491e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(C = 2 | profile 2)",0.354015787932514,0.354016453133764,6.65201249361314e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(D = 1 | profile 1)",0.230869483179339,0.230867991049997,1.49212934227871e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(D = 1 | profile 2)",0.86762804387044,0.867627418279606,6.25590834468781e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(D = 2 | profile 1)",0.769130516820662,0.769132008950003,1.49212934119625e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","values","values, 2 classes: P(D = 2 | profile 2)",0.13237195612956,0.132372581720394,6.25590834274492e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: maximised log-likelihood",-9539.0148549049,-9539.01485490181,3.09228198602796e-09,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: free parameters",37,37,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: BIC",19348.2220774877,19348.2220774815,6.18456397205591e-09,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: AIC",19152.0297098098,19152.0297098036,6.18456397205591e-09,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: log-likelihood at poLCA's estimates",-9539.0148549049,-9539.01485490496,5.82076609134674e-11,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: textbook log-likelihood at poLCA's estimates",-9539.0148549049,-9539.01485490496,6.00266503170133e-11,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: residual degrees of freedom",1447,1447,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: class share 1",0.415893770052537,0.415897029076963,3.25902442616099e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: class share 2",0.584106229947464,0.584102970923037,3.25902442699366e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(MORALG = 1 | profile 1)",0.0692778446187943,0.0692773410830927,5.03535701620872e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(MORALG = 1 | profile 2)",0.53946270264196,0.539459725397232,2.97724472830829e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(MORALG = 2 | profile 1)",0.508762885430749,0.508761234525864,1.65090488568609e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(MORALG = 2 | profile 2)",0.440705447583304,0.440708299489466,2.85190616289288e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(MORALG = 3 | profile 1)",0.290716741627904,0.290718188868865,1.44724096096116e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(MORALG = 3 | profile 2)",0.012966523635747,0.0129666675583911,1.43922644073313e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(MORALG = 4 | profile 1)",0.131242528322551,0.131243235522179,7.07199628108279e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(MORALG = 4 | profile 2)",0.00686532613899105,0.00686530755491075,1.85840803024195e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(CARESG = 1 | profile 1)",0.0175235301491074,0.01752338498761,1.45161497388385e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(CARESG = 1 | profile 2)",0.386933967533347,0.38693127665484,2.69087850701677e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(CARESG = 2 | profile 1)",0.344920240699658,0.344917352195618,2.88850403984409e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(CARESG = 2 | profile 2)",0.54119542058307,0.541197939279077,2.51869600653709e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(CARESG = 3 | profile 1)",0.429286772870641,0.42928872074402,1.9478733790379e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(CARESG = 3 | profile 2)",0.0549078366567238,0.0549080346660021,1.98009278376543e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(CARESG = 4 | profile 1)",0.208269456280591,0.208270542072752,1.08579216048788e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(CARESG = 4 | profile 2)",0.0169627752268591,0.0169627494000812,2.58267779107424e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(KNOWG = 1 | profile 1)",0.071985555287201,0.0719855055125042,4.97746967670354e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(KNOWG = 1 | profile 2)",0.574545978994933,0.574542110770263,3.86822466991177e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(KNOWG = 2 | profile 1)",0.655051855941911,0.655050557408727,1.29853318486806e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(KNOWG = 2 | profile 2)",0.418337364295237,0.418341042935126,3.67863988814943e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(KNOWG = 3 | profile 1)",0.217431465955617,0.217432547964798,1.08200918153001e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(KNOWG = 3 | profile 2)",0.00247484150114001,0.00247500631143587,1.64810295867276e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(KNOWG = 4 | profile 1)",0.05553112281527,0.0555313891139713,2.66298701229184e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(KNOWG = 4 | profile 2)",0.00464181520869182,0.00464183998317514,2.47744833198685e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(LEADG = 1 | profile 1)",0.0116899531460454,0.0116898192484331,1.33897612374437e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(LEADG = 1 | profile 2)",0.365962382932694,0.365959794858162,2.58807453168419e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(LEADG = 2 | profile 1)",0.327179223599128,0.327176417037271,2.80656185708272e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(LEADG = 2 | profile 2)",0.57097274077418,0.570974772027189,2.03125300934914e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(LEADG = 3 | profile 1)",0.48184218481349,0.481844147603433,1.96278994235577e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(LEADG = 3 | profile 2)",0.0572478945427869,0.05724846509682,5.70554033040016e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(LEADG = 4 | profile 1)",0.179288638441334,0.179289616110864,9.77669529778069e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(LEADG = 4 | profile 2)",0.00581698175034014,0.00581696801782932,1.37325108255301e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(DISHONG = 1 | profile 1)",0.121542561400916,0.121543200567299,6.39166382404577e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(DISHONG = 1 | profile 2)",0.0285898240685142,0.0285896547868498,1.69281664373633e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(DISHONG = 2 | profile 1)",0.262546555280549,0.262547395805266,8.40524717271585e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(DISHONG = 2 | profile 2)",0.0719735020534399,0.0719738149415883,3.12888148432111e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(DISHONG = 3 | profile 1)",0.428831215514267,0.428830826730275,3.88783991223107e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(DISHONG = 3 | profile 2)",0.318029148527563,0.318030562811594,1.41428403088728e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(DISHONG = 4 | profile 1)",0.187079667804266,0.18707857689716,1.09090710648241e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(DISHONG = 4 | profile 2)",0.581407525350485,0.581405967459968,1.55789051681232e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(INTELG = 1 | profile 1)",0.0852279267324174,0.0852279053642979,2.13681195376791e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(INTELG = 1 | profile 2)",0.598074256352293,0.598070267630526,3.98872176687881e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(INTELG = 2 | profile 1)",0.673194088844684,0.673192805196037,1.28364864671049e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(INTELG = 2 | profile 2)",0.392857321008395,0.392861320573778,3.99956538382762e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(INTELG = 3 | profile 1)",0.185349488161903,0.185350495818016,1.00765611327214e-06,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(INTELG = 3 | profile 2)",0.00378578447923035,0.00378579204267919,7.56344883771909e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(INTELG = 4 | profile 1)",0.0562284962609956,0.056228793621649,2.97360653371548e-07,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 2 classes: P(INTELG = 4 | profile 2)",0.00528263816008506,0.00528261975301669,1.84070683669282e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: maximised log-likelihood",-9035.30707347865,-9035.3070735036,2.49438016908243e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: free parameters",56,56,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: BIC",18479.553946686,18479.5539467359,4.98876033816487e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: AIC",18182.6141469573,18182.6141470072,4.98876033816487e-08,1e-05,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: log-likelihood at poLCA's estimates",-9035.30707347865,-9035.30707350362,2.49656295636669e-08,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: textbook log-likelihood at poLCA's estimates",-9035.30707347865,-9035.3070734787,5.27506927028298e-11,1e-06,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: residual degrees of freedom",1428,1428,0,0.5,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: class share 1",0.260777835101632,0.26077778668321,4.84184228266571e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: class share 2",0.272007968920628,0.272007972578839,3.65821151149248e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: class share 3",0.467214195977738,0.467214240737951,4.47602134800995e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 1 | profile 1)",0.0445300493614178,0.0445300451564496,4.20496817227223e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 1 | profile 2)",0.162494404676323,0.16249439124127,1.34350530700544e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 1 | profile 3)",0.651792136995188,0.651792136524641,4.7054760088372e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 2 | profile 1)",0.258306893069481,0.258306858730876,3.43386055146055e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 2 | profile 2)",0.697946202483086,0.697946179127206,2.33558805629031e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 2 | profile 3)",0.319869800778921,0.319869800644313,1.34608324486862e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 3 | profile 1)",0.413595551082152,0.413595544134176,6.94797580580442e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 3 | profile 2)",0.136286404802197,0.136286438977749,3.41755521382492e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 3 | profile 3)",0.0134946813785373,0.0134946803515174,1.02701987886311e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 4 | profile 1)",0.283567506486948,0.283567551978499,4.54915506931108e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 4 | profile 2)",0.00327298803839668,0.00327299065377517,2.61537849493773e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(MORALG = 4 | profile 3)",0.0148433808473573,0.0148433824795287,1.63217139977079e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 1 | profile 1)",0.0117552526910788,0.0117552510679831,1.62309563705998e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 1 | profile 2)",0.0542429182375195,0.0542429120972917,6.1402277984346e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 1 | profile 3)",0.524802488090226,0.524802486301591,1.7886354619634e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 2 | profile 1)",0.0729652855041602,0.0729652613342764,2.41698837749604e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 2 | profile 2)",0.643824208476886,0.643824162884848,4.559203747867e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 2 | profile 3)",0.392335292773617,0.392335296023991,3.25037374793169e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 3 | profile 1)",0.51576766754418,0.515767652027343,1.5516837370555e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 3 | profile 2)",0.264258786789469,0.264258824292059,3.75025895893444e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 3 | profile 3)",0.0574199107653749,0.057419908776558,1.98881688895369e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 4 | profile 1)",0.399511794260579,0.399511835570398,4.13098189544492e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 4 | profile 2)",0.0376740864961283,0.0376741007258012,1.42296728289359e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(CARESG = 4 | profile 3)",0.0254423083707851,0.0254423088978602,5.2707518558015e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 1 | profile 1)",0.0833777971606206,0.0833777903623865,6.79823404514668e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 1 | profile 2)",0.0875904370981287,0.0875904406150262,3.51689748157025e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 1 | profile 3)",0.802662982137441,0.802662972227547,9.90989401650211e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 2 | profile 1)",0.439852553543248,0.43985251035394,4.31893077412759e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 2 | profile 2)",0.837723694889873,0.837723678082,1.6807873315372e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 2 | profile 3)",0.185669466041404,0.185669474225567,8.18416268089095e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 3 | profile 1)",0.357154768171315,0.357154797942785,2.97714701225082e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 3 | profile 2)",0.074685868010735,0.0746858812029739,1.31922388429961e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 3 | profile 3)",3.88272930170799e-15,1e-10,9.99961172706983e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 4 | profile 1)",0.119614881124813,0.119614901340888,2.02160749251945e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 4 | profile 2)",1.26481978734377e-12,1e-10,9.87351802126562e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(KNOWG = 4 | profile 3)",0.0116675518211542,0.0116675534468859,1.62573172285407e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 1 | profile 1)",0.0107289059415802,0.0107289035752673,2.3663128869561e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 1 | profile 2)",0.0277040647986347,0.0277040627047414,2.09389329833276e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 1 | profile 3)",0.526778891587677,0.526778887719212,3.86846443767297e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 2 | profile 1)",0.0694883984794675,0.0694883693010412,2.91784262584915e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 2 | profile 2)",0.634691420189006,0.634691377386389,4.28026174503771e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 2 | profile 3)",0.418787557312112,0.418787561101189,3.78907766274139e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 3 | profile 1)",0.561525491993746,0.561525474068951,1.79247943155048e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 3 | profile 2)",0.315208050917917,0.315208089303407,3.83854900642966e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 3 | profile 3)",0.0424729705678788,0.0424729693332269,1.23465192930494e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 4 | profile 1)",0.358257203585204,0.35825725305474,4.94695361341613e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 4 | profile 2)",0.0223964640944453,0.0223964706054619,6.51101664944642e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(LEADG = 4 | profile 3)",0.0119605805323361,0.0119605818463714,1.31403527989238e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 1 | profile 1)",0.25468393668991,0.254683974186184,3.74962738636242e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 1 | profile 2)",0.00871350489354847,0.00871350908033426,4.1867857878547e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 1 | profile 3)",0.0455762316673696,0.0455762318156282,1.48258565146886e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 2 | profile 1)",0.364027674713292,0.364027678119135,3.40584360714047e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 2 | profile 2)",0.153203209701472,0.153203231683161,2.19816892188529e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 2 | profile 3)",0.0616869660083562,0.0616869637446247,2.26373146616776e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 3 | profile 1)",0.233738461892778,0.233738418400838,4.3491939744067e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 3 | profile 2)",0.529329944457073,0.529329942048172,2.40890130065452e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 3 | profile 3)",0.273834079061309,0.273834075715039,3.34627059395132e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 4 | profile 1)",0.147549926704019,0.147549929293843,2.58982346679204e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 4 | profile 2)",0.308753340947911,0.308753317188333,2.37595782492939e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(DISHONG = 4 | profile 3)",0.618902723262968,0.618902728724708,5.46174006021971e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 1 | profile 1)",0.102017925824874,0.102017912966091,1.28587829967275e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 1 | profile 2)",0.0935114824824841,0.093511491990699,9.50821485434794e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 1 | profile 3)",0.839032823855685,0.839032811339526,1.25161584429989e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 2 | profile 1)",0.459914487816312,0.459914447731856,4.00844559766966e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 2 | profile 2)",0.849973894251218,0.849973875215715,1.9035502618614e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 2 | profile 3)",0.145394267942133,0.14539427911178,1.11696471793987e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 3 | profile 1)",0.317742343369095,0.3177423771312,3.37621046675451e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 3 | profile 2)",0.0548087762498667,0.0548087849936729,8.74380618604009e-09,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 3 | profile 3)",0.00503910303082754,0.00503910311633552,8.5507975700061e-11,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 4 | profile 1)",0.120325242989715,0.120325262170852,1.918113724797e-08,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 4 | profile 2)",0.0017058470164327,0.00170584779991297,7.83480277833856e-10,1e-04,TRUE,45.73
+"polca","poLCA 1.6.0.1","machine","election","election, 3 classes: P(INTELG = 4 | profile 3)",0.0105338051713591,0.0105338064323585,1.26099941946678e-09,1e-04,TRUE,45.73
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: log-likelihood",-293.705,-293.704978815961,0.0423680783114833,1,TRUE,40.92
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: free parameters",23,23,0,0.5,TRUE,40.92
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: AIC",633.41,633.409957631922,0.00847361566229665,1,TRUE,40.92
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: BIC",697.1357,697.135703994632,0.0798926384959486,1,TRUE,40.92
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: likelihood-ratio G-squared",15.26171,15.2617123958367,0.479167331590702,1,TRUE,40.92
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: Pearson chi-squared",20.50336,20.5033569629812,0.607403752184155,1,TRUE,40.92
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: class share 1",0.1817,0.181707915360268,0.158307205364583,1,TRUE,40.92
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: class share 2",0.3736,0.373564427645575,0.71144708849058,1,TRUE,40.92
+"published","Linzer & Lewis (2011) JSS 42(10) pp. 21-22","printed","carcinoma","carcinoma 3-class: class share 3",0.4447,0.444727656994156,0.553139883128217,1,TRUE,40.92
+"published","Agresti & Lang (1993) Biometrics 49(1) Table 2","printed","carcinoma","carcinoma 1-class: G-squared",476.8,476.781390641071,0.372187178575132,1,TRUE,40.92
+"published","Agresti & Lang (1993) Biometrics 49(1) Table 2","printed","carcinoma","carcinoma 2-class: G-squared",62.4,62.3654294106831,0.691411786337568,1,TRUE,40.92
+"published","Agresti & Lang (1993) Biometrics 49(1) Table 2","printed","carcinoma","carcinoma 3-class: G-squared",15.3,15.2617123958367,0.76575208326684,1,TRUE,40.92
+"published","Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4","printed","carcinoma","carcinoma 4-class: shortfall of the dominant mode against Zhou & Lange",0,0,0,1e-06,TRUE,40.92
+"published","Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4","printed","carcinoma","carcinoma 4-class: inferior local mode log-likelihood",-293.32,-289.2858,80684,1,FALSE,40.92
+"published","Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4","printed","carcinoma","carcinoma 4-class: dominant mode class share 1",0.0938,0.0936358740307128,0.000164125969287152,5e-04,TRUE,40.92
+"published","Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4","printed","carcinoma","carcinoma 4-class: dominant mode class share 2",0.1881,0.188225842177517,0.000125842177516849,5e-04,TRUE,40.92
+"published","Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4","printed","carcinoma","carcinoma 4-class: dominant mode class share 3",0.343,0.342995332090974,4.66790902609038e-06,5e-04,TRUE,40.92
+"published","Zhou & Lange (2010) Scand J Stat 37(4) Tables 3-4","printed","carcinoma","carcinoma 4-class: dominant mode class share 4",0.3751,0.375142951700796,4.29517007964342e-05,5e-04,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: likelihood-ratio G-squared",2.72,2.71992187165969,0.0156256680627465,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: Pearson chi-squared",2.72,2.71976179687066,0.0476406258689721,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: class share 1",0.28,0.2792461263407,0.150774731860037,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: class share 2",0.72,0.7207538736593,0.150774731860048,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: P(item A = category 2 | smaller class)",0.993,0.993193305024492,0.386610048983327,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: P(item B = category 2 | smaller class)",0.94,0.939764462621344,0.471074757312451,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: P(item C = category 2 | smaller class)",0.927,0.926530879207017,0.938241585966004,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: P(item D = category 2 | smaller class)",0.769,0.769132008950003,0.26401790000663,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: P(item A = category 2 | larger class)",0.714,0.713587956065817,0.824087868366297,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: P(item B = category 2 | larger class)",0.33,0.329619337228344,0.761325543311542,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: P(item C = category 2 | larger class)",0.354,0.354016453133764,0.0329062675274994,1,TRUE,40.92
+"published","Goodman (2002) in Applied Latent Class Analysis, Tables 5a and 6","printed","values","values 2-class: P(item D = category 2 | larger class)",0.132,0.132372581720394,0.745163440788177,1,TRUE,40.92
+"published","Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32","printed","cheating","cheating 2-class: log-likelihood",-440.027,-440.027112411525,0.224823049279621,1,TRUE,40.92
+"published","Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32","printed","cheating","cheating 2-class: free parameters",9,9,0,0.5,TRUE,40.92
+"published","Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32","printed","cheating","cheating 2-class: AIC",898.054,898.054224823049,0.449646098559242,1,TRUE,40.92
+"published","Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32","printed","cheating","cheating 2-class: BIC",931.941,931.940944748113,0.110503774294557,1,TRUE,40.92
+"published","Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32","printed","cheating","cheating 2-class: likelihood-ratio G-squared",7.7642,7.76424217838523,0.84356770461369,1,TRUE,40.92
+"published","Dayton (1998) Latent Class Scaling Analysis, Table 3.3 p. 32","printed","cheating","cheating 2-class: Pearson chi-squared",8.3234,8.3234270648658,0.541297316054568,1,TRUE,40.92
+"published","McCutcheon (1987) Latent Class Analysis, Sage","printed","gss82","gss82 2-class: log-likelihood",-2783.268,-2783.26800959251,0.0191850222108769,1,TRUE,40.92
+"published","McCutcheon (1987) Latent Class Analysis, Sage","printed","gss82","gss82 2-class: free parameters",13,13,0,0.5,TRUE,40.92
+"published","McCutcheon (1987) Latent Class Analysis, Sage","printed","gss82","gss82 2-class: likelihood-ratio L-squared",79.3,79.337229727342,0.744594546839039,1,TRUE,40.92
+"published","McCutcheon (1987) Latent Class Analysis, Sage","printed","gss82","gss82 2-class: class share 1",0.1923,0.192262901549143,0.741969017143962,1,TRUE,40.92
+"published","McCutcheon (1987) Latent Class Analysis, Sage","printed","gss82","gss82 2-class: class share 2",0.8077,0.807737098450857,0.741969017146182,1,TRUE,40.92
+"stability","multilpa, refitted across seeds","machine","carcinoma","carcinoma, 3 classes, 30 starts: spread of the maximised log-likelihood across 6 seeds",0,0,0,1e-05,TRUE,35.45
+"stability","multilpa, refitted across seeds","machine","carcinoma","carcinoma, 3 classes, 30 starts: distinct optima reached across 6 seeds",1,1,0,0.5,TRUE,35.45
+"stability","multilpa, refitted across seeds","machine","faithful","faithful, 3 components, EEE, 60 starts: spread of the maximised log-likelihood across 6 seeds",0,0,0,1e-05,TRUE,35.45
+"stability","multilpa, refitted across seeds","machine","faithful","faithful, 3 components, EEE, 60 starts: distinct optima reached across 6 seeds",1,1,0,0.5,TRUE,35.45
+"stability","multilpa, refitted across seeds","machine","dataTOY","dataTOY, 3 profiles x 2 group classes, 30 starts: spread of the maximised log-likelihood across 6 seeds",0,0,0,1e-05,TRUE,35.45
+"stability","multilpa, refitted across seeds","machine","dataTOY","dataTOY, 3 profiles x 2 group classes, 30 starts: distinct optima reached across 6 seeds",1,1,0,0.5,TRUE,35.45
