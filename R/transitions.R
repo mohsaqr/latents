@@ -1150,10 +1150,13 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
 #'
 #' @param object A fitted `multilpa_transitions` model.
 #' @param ... Reserved for compatibility with `coef()`.
-#' @return A named numeric vector of every free parameter on its natural scale:
-#'   profile means and variances, categorical response probabilities where
-#'   present, each group class's initial profile probabilities, its transition
-#'   probabilities, and the group-class probabilities.
+#' @return A named numeric vector of every parameter on its natural scale, in
+#'   the order and with the names [vcov.multilpa_transitions()] and
+#'   [parameter_inference()] use: profile means, then variances (one shared set
+#'   under `variance_model = "equal"`, the covariance matrices under
+#'   `covariance_model = "full"`), categorical response probabilities where
+#'   present, the group-class probabilities, each group class's initial profile
+#'   probabilities, and its transition probabilities row by row.
 #'
 #'   Names follow the package-wide `level.parameter.outcome.term` grammar shared
 #'   with [coef.multilpa()], so one pattern matches across fit classes: for
@@ -1164,10 +1167,9 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
 #'   name parses back into the columns [parameter_inference()] reports even when
 #'   an indicator name itself contains a dot.
 #'
-#'   No standard errors accompany these: [vcov.multilpa_transitions()] refuses
-#'   rather than returning an invalid matrix. [get_results()] gives the same
-#'   quantities as tidy
-#'   tables, which is the form to prefer.
+#'   Their standard errors come from [parameter_inference()] or
+#'   [vcov.multilpa_transitions()]. [get_results()] gives the same quantities
+#'   as tidy tables, which is the form to prefer.
 #' @examples
 #' set.seed(7)
 #' example_data <- data.frame(
@@ -1181,105 +1183,12 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
 #' @export
 coef.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
-  # Names follow the package-wide `level.parameter.outcome.term` grammar, which is
-  # parameter_inference()'s tidy decomposition written on one line. level, parameter
-  # and outcome never contain a dot, so everything after the third dot is the term
-  # and the name parses back even when an indicator name contains a dot.
-  measurement <- c(
-    stats::setNames(as.vector(t(object$means)),
-                    sprintf("measurement.mean.%s.%s",
-                            rep(rownames(object$means), each = ncol(object$means)),
-                            rep(colnames(object$means), nrow(object$means)))),
-    stats::setNames(as.vector(t(object$variances)),
-                    sprintf("measurement.variance.%s.%s",
-                            rep(rownames(object$variances), each = ncol(object$variances)),
-                            rep(colnames(object$variances), nrow(object$variances)))))
-  responses <- unlist(lapply(names(object$response_probabilities), function(indicator) {
-    block <- object$response_probabilities[[indicator]]
-    stats::setNames(as.vector(t(block)),
-                    sprintf("measurement.response.%s.%s:%s",
-                            rep(rownames(block), each = ncol(block)), indicator,
-                            rep(colnames(block), nrow(block))))
-  }), use.names = TRUE)
-  moves <- .multilpa_transitions_table(object)
-  c(measurement, responses,
-    stats::setNames(as.vector(t(object$initial_probabilities)),
-                    sprintf("profile.initial_probability.%s.%s",
-                            rep(colnames(object$initial_probabilities),
-                                object$n_group_classes),
-                            rep(rownames(object$initial_probabilities),
-                                each = object$n_profiles))),
-    stats::setNames(moves$probability,
-                    sprintf("profile.transition_probability.profile_%d.group_class_%d:profile_%d",
-                            moves$to, moves$group_class, moves$from)),
-    stats::setNames(object$group_probabilities,
-                    sprintf("group.probability.group_class_%d",
-                            seq_along(object$group_probabilities))))
-}
-
-#' Standard errors are not available for a latent transition model
-#'
-#' @param object A fitted `multilpa_transitions` model. `vcov()` and
-#'   `confint()` are base generics, so their first formal is `object`.
-#' @param x The same fitted model, under the name this package's own verbs
-#'   use; `parameter_inference()` is documented on this page too.
-#' @param ... Ignored.
-#' @return Nothing; `vcov()`, `confint()` and `parameter_inference()` all raise
-#'   a `latents_no_inference` condition on a latent transition fit. The
-#'   analytic score and Jacobian this package uses for observed-information and
-#'   sandwich standard errors do not yet cover the initial and transition
-#'   multinomial logits, so no interval is reported rather than an invalid one.
-#'   `confint()` refuses explicitly instead of letting `confint.default()`
-#'   reach `vcov()` and refuse by accident.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-#' )
-#' example_data$score_a <- stats::rnorm(nrow(example_data))
-#' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- lta(example_data, c("score_a", "score_b"), "person",
-#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
-#' tryCatch(confint(fit), latents_no_inference = function(condition) {
-#'   conditionMessage(condition)
-#' })
-#' @export
-#' @importFrom stats vcov
-vcov.multilpa_transitions <- function(object, ...) {
-  stopifnot(inherits(object, "multilpa_transitions"))
-  .multilpa_refuse_transition_inference()
-}
-
-#' @rdname vcov.multilpa_transitions
-#' @param data Ignored; present for compatibility with the generic.
-#' @export
-parameter_inference.multilpa_transitions <- function(x, data = NULL, ...) {
-  stopifnot(inherits(x, "multilpa_transitions"))
-  .multilpa_refuse_transition_inference()
-}
-
-#' @rdname vcov.multilpa_transitions
-#' @param parm Ignored; present for compatibility with the generic.
-#' @param level Ignored; present for compatibility with the generic.
-#' @export
-#' @importFrom stats confint
-confint.multilpa_transitions <- function(object, parm, level = 0.95, ...) {
-  stopifnot(inherits(object, "multilpa_transitions"))
-  .multilpa_refuse_transition_inference()
-}
-
-#' Refuse to report standard errors for a latent transition model
-#'
-#' One definition so that `vcov()`, `confint()` and `parameter_inference()`
-#' cannot drift apart in what they say or in the class they raise.
-#'
-#' @return Nothing; always raises `latents_no_inference`.
-#' @noRd
-.multilpa_refuse_transition_inference <- function() {
-  stop(errorCondition(
-    paste("Standard errors are not available for a latent transition model.",
-          "Read the estimates with get_results()."),
-    class = "latents_no_inference", call = NULL))
+  # One encoding and one set of labels for coef(), vcov() and
+  # parameter_inference(), so their names agree entry for entry.
+  estimates <- .multilpa_transition_encode(object, "natural")
+  stats::setNames(unname(estimates), .multilpa_parameter_names(
+    .multilpa_transition_labels(names(estimates),
+                                .multilpa_transition_view(object))))
 }
 
 #' Plot a fitted latent transition model
@@ -1298,7 +1207,7 @@ confint.multilpa_transitions <- function(object, parm, level = 0.95, ...) {
 #'   `"all"` draws every view this fit has the ingredients for.
 #' @param data Optional. The data the model was fitted to. Accepted for
 #'   consistency with [plot.multilpa()]; `"bars"` draws point estimates without
-#'   intervals here, because this family has no standard errors.
+#'   intervals here. [parameter_inference()] reports the standard errors.
 #' @param scale `"raw"` keeps the indicators in their own units;
 #'   `"standardized"` divides by each indicator's observed standard deviation.
 #' @param category For `"responses"`, which category to draw.
@@ -1354,9 +1263,9 @@ plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
     transitions = .multilpa_plot_transitions(x, main, subtitle, style),
     profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
                                        symbols, linetypes, style),
-    # No error matrix: this family has no standard errors, so the bars carry
-    # point estimates and say so by having no whiskers, rather than borrowing
-    # an interval from an inference this fit cannot do.
+    # No error matrix: the bars carry point estimates only. Standard errors
+    # are available from parameter_inference(); drawing them here is not yet
+    # wired up for this family.
     bars = .multilpa_plot_bars(x, scale, NULL, main, subtitle, palette, style),
     heatmap = .multilpa_plot_heatmap(x, main, subtitle, style),
     responses = .multilpa_plot_responses(x, category, labels, main, subtitle,

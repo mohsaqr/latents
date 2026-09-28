@@ -112,9 +112,10 @@ test_that("asking for errors a fit cannot supply raises rather than returning bl
   transitions_data$t <- rep(seq_len(8), times = 20)
   transition_fit <- quietly(lta(transitions_data,
     c("a", "b"), "g", n_profiles = 2L, time = "t", n_starts = 2, seed = 1))
-  # The transition family has no standard errors, so the measurement table
-  # must refuse the request instead of filling the columns with NA.
-  expect_error(get_results(transition_fit, "profiles", data = data),
-               class = "latents_no_inference")
+  # Transition fits now have standard errors, so asking the measurement table
+  # for them fills the columns rather than refusing.
+  profiles <- get_results(transition_fit, "profiles", data = transitions_data)
+  expect_true(all(is.finite(profiles$mean_standard_error) &
+                    profiles$mean_standard_error > 0))
   expect_s3_class(get_results(transition_fit, "profiles"), "data.frame")
 })

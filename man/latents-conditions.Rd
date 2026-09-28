@@ -130,9 +130,6 @@ the robust sandwich.}
 These name capabilities the package does not have. They are raised in place
 of returning a number that would be wrong.
 \describe{
-\item{\code{latents_no_inference}}{Standard errors are not available for this
-model family. Raised by \code{\link[=vcov]{vcov()}} and \code{\link[=parameter_inference]{parameter_inference()}} on a
-\code{multilpa_transitions} fit.}
 \item{\code{latents_unsupported_inference}}{Standard errors are not available
 for this particular fit. Raised for a covariate fit with categorical
 indicators, where no score is implemented for the response

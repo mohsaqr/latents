@@ -408,14 +408,16 @@ test_that("bar intervals come from the fit's own data, not from the caller", {
   expect_true(all(carried > 0))
 })
 
-test_that("a family without standard errors gets bars, not an error", {
+test_that("a transition fit gets bars without whiskers, not an error", {
   data <- .sequence_plot_fixture()
-  # A transition fit has no implemented standard errors, so the whiskers cannot
-  # be drawn. The bars still can, and a plot must not fail over a missing
-  # ornament.
+  # The transition bars carry point estimates only, even where inference
+  # would refuse: on these pure-noise data a probability sits at its bound and
+  # parameter_inference() raises latents_boundary_fit. A plot must not fail
+  # over a missing ornament.
   moves <- lta(data, c("score_a", "score_b"), "school",
                            n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
-  expect_null(.multilpa_mean_error_matrix(moves, NULL))
+  expect_error(parameter_inference(moves), class = "latents_boundary_fit")
+  draw(expect_identical(plot(moves, what = "bars"), moves))
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
                   n_group_classes = 2, n_starts = 3, seed = 1,
                   acceleration = "none")

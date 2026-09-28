@@ -12,10 +12,13 @@
 \item{...}{Reserved for compatibility with \code{coef()}.}
 }
 \value{
-A named numeric vector of every free parameter on its natural scale:
-profile means and variances, categorical response probabilities where
-present, each group class's initial profile probabilities, its transition
-probabilities, and the group-class probabilities.
+A named numeric vector of every parameter on its natural scale, in
+the order and with the names \code{\link[=vcov.multilpa_transitions]{vcov.multilpa_transitions()}} and
+\code{\link[=parameter_inference]{parameter_inference()}} use: profile means, then variances (one shared set
+under \code{variance_model = "equal"}, the covariance matrices under
+\code{covariance_model = "full"}), categorical response probabilities where
+present, the group-class probabilities, each group class's initial profile
+probabilities, and its transition probabilities row by row.
 
 Names follow the package-wide \code{level.parameter.outcome.term} grammar shared
 with \code{\link[=coef.multilpa]{coef.multilpa()}}, so one pattern matches across fit classes: for
@@ -26,10 +29,9 @@ never contain a dot, so everything after the third dot is the term and the
 name parses back into the columns \code{\link[=parameter_inference]{parameter_inference()}} reports even when
 an indicator name itself contains a dot.
 
-No standard errors accompany these: \code{\link[=vcov.multilpa_transitions]{vcov.multilpa_transitions()}} refuses
-rather than returning an invalid matrix. \code{\link[=get_results]{get_results()}} gives the same
-quantities as tidy
-tables, which is the form to prefer.
+Their standard errors come from \code{\link[=parameter_inference]{parameter_inference()}} or
+\code{\link[=vcov.multilpa_transitions]{vcov.multilpa_transitions()}}. \code{\link[=get_results]{get_results()}} gives the same quantities
+as tidy tables, which is the form to prefer.
 }
 \description{
 Fitted parameters of a latent transition model

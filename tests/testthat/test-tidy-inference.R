@@ -219,7 +219,7 @@ test_that("coef reports the same numbers the tidy table does, on both spread mod
   }))
 })
 
-test_that("a fit with no standard errors says so by class rather than by number", {
+test_that("a transition fit reports standard errors named as its coefficients", {
   set.seed(7)
   data <- data.frame(person = rep(seq_len(30), each = 5),
                      wave = rep(seq_len(5), times = 30))
@@ -228,6 +228,8 @@ test_that("a fit with no standard errors says so by class rather than by number"
   fit <- lta(data, c("score_a", "score_b"), "person",
                          n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
 
-  expect_error(parameter_inference(fit, data), class = "latents_no_inference")
-  expect_error(vcov(fit), class = "latents_no_inference")
+  inference <- parameter_inference(fit, data)
+  expect_identical(.multilpa_parameter_names(inference), names(coef(fit)))
+  expect_identical(rownames(vcov(fit)), names(coef(fit)))
+  expect_equal(inference$estimate, unname(coef(fit)))
 })

@@ -298,7 +298,7 @@ head(inference)
 
 `confint(fit)` provides confidence intervals, while `parameter_inference(fit, vcov_type = "robust")` requests a sandwich covariance estimator clustered by the observed groups. These procedures quantify uncertainty conditional on the fitted class count and measurement specification. They do not incorporate uncertainty from choosing among candidate models.
 
-Inference requires an adequately identified solution. A variance estimate at its lower bound or a non-positive-definite information matrix can prevent the package from reporting intervals. Such results should prompt examination of class sizes, parameter constraints, and solution stability. Standard errors are not available for the latent transition models described below.
+Inference requires an adequately identified solution. A variance estimate at its lower bound or a non-positive-definite information matrix can prevent the package from reporting intervals. Such results should prompt examination of class sizes, parameter constraints, and solution stability. The latent transition models described below report standard errors for their initial and transition probabilities as well as for the measurement model.
 
 ## Covariates and external variables
 
@@ -400,7 +400,7 @@ The implemented model is first order and time homogeneous: the next profile depe
 
 In this dataset, consecutive observations are successive course enrolments. A transition therefore concerns adjacent observed enrolments, which need not be separated by equal calendar intervals. This distinction is part of the substantive interpretation of the estimated transition probabilities.
 
-The fitted transitions can be exported through `get_tna()` and `get_group_tna()` for further analysis with `tna`. Standard errors, likelihood-ratio testing, and class enumeration are not available for these transition models.
+The fitted transitions can be exported through `get_tna()` and `get_group_tna()` for further analysis with `tna`. `parameter_inference()` reports standard errors and intervals for every transition-model parameter; likelihood-ratio testing and class enumeration are not available for these models.
 
 ## Categorical and mixed measurement models
 

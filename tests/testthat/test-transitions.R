@@ -502,11 +502,11 @@ test_that("the generics either answer or refuse, and never answer emptily", {
   expect_identical(digest$n_profiles, 2L)
   expect_output(print(digest), "-- transitions", fixed = TRUE)
 
-  # Refusals are classed, so that a caller can catch them, and are raised
-  # instead of a default method returning nothing useful.
-  expect_error(vcov(fit), class = "latents_no_inference")
-  expect_error(confint(fit), class = "latents_no_inference")
-  expect_error(parameter_inference(fit, data), class = "latents_no_inference")
+  # Stopped after 30 iterations, so the inference verbs refuse by class
+  # rather than report errors for a point that is not a maximum.
+  expect_error(vcov(fit), class = "latents_no_converge")
+  expect_error(confint(fit), class = "latents_no_converge")
+  expect_error(parameter_inference(fit, data), class = "latents_no_converge")
   expect_s3_class(draw(plot(fit, what = "transitions")), "multilpa_transitions")
   expect_s3_class(draw(plot(fit, what = "profiles")), "multilpa_transitions")
 })

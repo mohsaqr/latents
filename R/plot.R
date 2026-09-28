@@ -1202,7 +1202,6 @@ plot_views <- function() {
     .multilpa_measurement_errors(x, .multilpa_resolve_data(x, data)),
     latents_unsupported_inference = function(condition) NULL,
     latents_unsupported_noise = function(condition) NULL,
-    latents_no_inference = function(condition) NULL,
     latents_singular_information = function(condition) NULL,
     latents_incomplete_fit = function(condition) NULL,
     latents_bad_inference_data = function(condition) NULL)

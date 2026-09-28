@@ -228,7 +228,8 @@ test_that("broken contracts of the moment step raise by class", {
   expect_error(lta(data, c("y1", "y2"), "g", n_profiles = 1L,
                                time = "t", n_starts = 1, seed = 6),
                class = "latents_bad_transition")
-  expect_error(parameter_inference(fit), class = "latents_no_inference")
+  # Stopped after 20 iterations: inference refuses an unconverged fit.
+  expect_error(parameter_inference(fit), class = "latents_no_converge")
   # A transition fit draws: the measurement views it shares with multilpa(),
   # plus its own transition matrix. This used to refuse outright.
   expect_s3_class(draw(plot(fit, what = "transitions")), "multilpa_transitions")

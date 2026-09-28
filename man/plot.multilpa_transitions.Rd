@@ -34,7 +34,7 @@ draw the measurement model, \code{"responses"} the categorical response curves,
 
 \item{data}{Optional. The data the model was fitted to. Accepted for
 consistency with \code{\link[=plot.multilpa]{plot.multilpa()}}; \code{"bars"} draws point estimates without
-intervals here, because this family has no standard errors.}
+intervals here. \code{\link[=parameter_inference]{parameter_inference()}} reports the standard errors.}
 
 \item{scale}{\code{"raw"} keeps the indicators in their own units;
 \code{"standardized"} divides by each indicator's observed standard deviation.}

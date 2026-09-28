@@ -40,8 +40,8 @@ indicator as categorical; `multilpa()` with some indicators named in
 - **External variables.** `three_step()` and `r3step()` work on a categorical
   fit.
 - **Membership covariates.** `profile_covariates` and `group_covariates` work
-  with categorical indicators; standard errors are not available for these
-  fits.
+  with categorical indicators, and `parameter_inference()` reports their
+  standard errors.
 - **Transitions.** `lta()` accepts categorical indicators.
 - **Bounds.** `min_probability` keeps every response probability above a
   lower bound.

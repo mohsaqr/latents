@@ -116,9 +116,6 @@
 #' These name capabilities the package does not have. They are raised in place
 #' of returning a number that would be wrong.
 #' \describe{
-#'   \item{`latents_no_inference`}{Standard errors are not available for this
-#'     model family. Raised by [vcov()] and [parameter_inference()] on a
-#'     `multilpa_transitions` fit.}
 #'   \item{`latents_unsupported_inference`}{Standard errors are not available
 #'     for this particular fit. Raised for a covariate fit with categorical
 #'     indicators, where no score is implemented for the response
