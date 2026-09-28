@@ -372,6 +372,68 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
                             replace = TRUE, prob = object$group_probabilities)
   profile <- .multilpa_draw_rows(
     object$profile_probabilities[group_class[object$group_index], , drop = FALSE])
+  result <- .multilpa_draw_indicators(object, profile)
+  result[[object$id]] <- object$group_values[object$group_index]
+  result
+}
+
+#' Generate observations from a fitted covariate model, holding the covariates
+#'
+#' The model conditions on its covariates, so the simulation does too: every
+#' group keeps its observed group covariates and every row its profile
+#' covariates. The group class is drawn from the group logits, the profile from
+#' the row's profile logits in that class, and the indicators from the profile.
+#'
+#' @param object A fitted `multilpa_covariates` model.
+#' @param frame The fitting data; its indicator columns are replaced, and every
+#'   other column (identifier and covariates) is kept as observed.
+#' @return `frame` with simulated indicators.
+#' @noRd
+.multilpa_cov_simulate <- function(object, frame) {
+  stopifnot(inherits(object, "multilpa_covariates"))
+  group_prior <- .multilpa_softmax(object$group_design, object$group_coefficients)
+  group_class <- .multilpa_draw_rows(group_prior)[object$group_index]
+  priors <- lapply(object$profile_design, function(design) {
+    .multilpa_softmax(design, object$profile_coefficients)
+  })
+  # Each row's profile distribution is its own group class's.
+  profile_prior <- Reduce(`+`, lapply(seq_along(priors), function(class) {
+    priors[[class]] * (group_class == class)
+  }))
+  profile <- .multilpa_draw_rows(profile_prior)
+  simulated <- .multilpa_draw_indicators(object, profile)
+  frame[object$vars] <- simulated[object$vars]
+  frame
+}
+
+#' Give simulated data the observed data's missing values
+#'
+#' A bootstrap of a `missing = "fiml"` fit must refit replicates that lose the
+#' same information the observed data lost, or the reference distribution is
+#' that of a complete-data statistic. The observed pattern is carried over
+#' cell for cell, which treats it as fixed: independent of the profiles and of
+#' the values that went missing (missing completely at random given the
+#' pattern).
+#'
+#' @param simulated The simulated data frame.
+#' @param observed The fitting data, in the same row order.
+#' @param vars The indicator columns.
+#' @return `simulated` with `NA` wherever `observed` has one among `vars`.
+#' @noRd
+.multilpa_carry_missingness <- function(simulated, observed, vars) {
+  simulated[vars] <- Map(function(values, reference) {
+    values[is.na(reference)] <- NA
+    values
+  }, simulated[vars], observed[vars])
+  simulated
+}
+
+#' Draw indicators for given profiles from a fitted measurement model
+#' @param object A fitted model carrying the measurement blocks.
+#' @param profile Integer profile per observation.
+#' @return A data frame with one column per indicator, in `object$vars` order.
+#' @noRd
+.multilpa_draw_indicators <- function(object, profile) {
   continuous <- .multilpa_continuous_names(object)
   dimension <- length(continuous)
   result <- data.frame(row.names = seq_len(object$n_observations))
@@ -414,9 +476,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
     names(drawn) <- names(blocks)
     result <- cbind(result, as.data.frame(drawn, stringsAsFactors = FALSE))
   }
-  result <- result[, object$vars, drop = FALSE]
-  result[[object$id]] <- object$group_values[object$group_index]
-  result
+  result[, object$vars, drop = FALSE]
 }
 
 #' Draw one category per row from a matrix of row-wise probabilities
@@ -520,10 +580,84 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
   list(start = start, fixed = held_null)
 }
 
+#' Are two covariate models nested for a bootstrap comparison
+#'
+#' The alternative must be the null with one more profile or group class and
+#' the same membership regressions. A null with one group class cannot carry
+#' group covariates or slopes by group class (both need a second class), and it
+#' is still the alternative with one class emptied, so there the alternative
+#' may add them.
+#'
+#' @param null_model,alternative_model Fitted `multilpa_covariates` models.
+#' @return `NULL`, invisibly; raises `latents_bad_nesting`.
+#' @noRd
+.multilpa_check_covariate_nesting <- function(null_model, alternative_model) {
+  refuse <- function(message) {
+    stop(errorCondition(message, class = "latents_bad_nesting", call = NULL))
+  }
+  if (!identical(null_model$profile_covariates, alternative_model$profile_covariates)) {
+    refuse("The models use different profile covariates, so they are not nested.")
+  }
+  one_class_null <- null_model$n_group_classes == 1L
+  if (!one_class_null &&
+      !identical(null_model$group_covariates, alternative_model$group_covariates)) {
+    refuse("The models use different group covariates, so they are not nested.")
+  }
+  if (one_class_null && length(null_model$group_covariates) > 0L) {
+    refuse("A one-group-class null cannot carry group covariates.")
+  }
+  slopes <- function(model) model$profile_slopes %||% "shared"
+  if (!one_class_null && !identical(slopes(null_model), slopes(alternative_model))) {
+    refuse(paste(
+      "One model lets profile slopes differ by group class and the other does",
+      "not, so they differ by more than one class."))
+  }
+  invisible(NULL)
+}
+
+#' Check that data reproduce a covariate fit's likelihood
+#' @param model A fitted `multilpa_covariates` model.
+#' @param data The fitting data.
+#' @return `NULL`, invisibly; raises `latents_bad_inference_data`.
+#' @noRd
+.multilpa_cov_check_likelihood <- function(model, data) {
+  broken <- function() {
+    stop(errorCondition("data do not reproduce the fitted model likelihood.",
+                        class = "latents_bad_inference_data", call = NULL))
+  }
+  needed <- unique(c(model$vars, model$id, model$profile_covariates,
+                     model$group_covariates))
+  if (!is.data.frame(data) || !all(needed %in% names(data)) ||
+      nrow(data) != model$n_observations ||
+      !identical(match(data[[model$id]], model$group_values), model$group_index)) {
+    broken()
+  }
+  first_rows <- match(seq_len(model$n_groups), model$group_index)
+  designs <- tryCatch(
+    .multilpa_cov_designs(data, model$vars, model$profile_covariates,
+                          model$group_covariates, first_rows,
+                          model$n_group_classes, model$categorical %||% character(),
+                          model$min_probability %||% 1e-10,
+                          model$missing %||% "error",
+                          model$profile_slopes %||% "shared"),
+    latents_bad_data = function(condition) broken())
+  parameters <- model[intersect(c("variances", "covariances",
+                                  "response_probabilities"), names(model))]
+  parameters$means <- if (ncol(designs$x) > 0L) {
+    sweep(model$means, 2L, designs$center, "-")
+  } else model$means
+  likelihood <- .multilpa_cov_expectation(
+    designs$x, model$group_index, parameters, designs$profile_design,
+    designs$w, model$profile_coefficients, model$group_coefficients,
+    designs$codes)$log_likelihood
+  if (abs(likelihood - model$log_likelihood) > 1e-7 * (1 + abs(likelihood))) broken()
+  invisible(NULL)
+}
+
 #' Parametric bootstrap likelihood-ratio comparison
 #'
-#' Simulates complete indicators under the null model while preserving observed
-#' group sizes, refits both models, and compares their likelihood differences.
+#' Simulates indicators under the null model while preserving observed group
+#' sizes, refits both models, and compares their likelihood differences.
 #' Models must differ by exactly one individual profile or one group class, with
 #' the other count, covariance structure and centering mode fixed. Grand-mean
 #' centering is repeated in every simulated refit. Person-centred fits are
@@ -532,6 +666,29 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' parametric bootstrap, not an implementation of Mplus TECH14. It does not use
 #' a chi-square reference distribution. Any failed/nonconverged or reversed
 #' replicate makes the p-value NA, avoiding silent deletion of difficult fits.
+#'
+#' Fits made with `missing = "fiml"` are supported when both models were: every
+#' replicate is given the observed data's missing cells before it is refitted,
+#' so the simulated statistics lose the same information the observed one did.
+#' This treats the missingness pattern as fixed, that is independent of the
+#' profiles and of the values that went missing; under missingness that
+#' depends on the latent classes the reference distribution is approximate.
+#'
+#' Membership-covariate fits (`multilpa(profile_covariates = ,
+#' group_covariates = )`) are supported: the covariates are held at their
+#' observed values, group classes are drawn from the fitted group logits and
+#' profiles from each row's profile logits, as the model conditions on the
+#' covariates. Both models must use the same profile covariates, group
+#' covariates and slope specification, except that a one-group-class null,
+#' which cannot carry group covariates or slopes by group class, may be
+#' compared with an alternative that adds them. When `data` is omitted it is
+#' rebuilt from the alternative, whose columns include the null's. A
+#' covariate replicate counts as valid when its likelihood has converged even
+#' if a membership logit is still drifting, as it does for an empty or
+#' separated class in an over-fitted alternative: the statistic reads only the
+#' maximized likelihood, which such a fit has reached. The replicate table's
+#' `logits_settled` column records whether both refits' logits had also
+#' converged. The original models must be fully converged.
 #'
 #' Models fitted with `fixed`, including those from [fit_staged()], are
 #' supported: every replicate is refitted with the same blocks held at the same
@@ -551,7 +708,14 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'   validation, and the p-value is `NA`.
 #'   `latents_unsupported_bootstrap` refuses person-centred fits, for which
 #'   this simulator has no group-baseline distribution.
-#' @param null_model Smaller, converged [multilpa()] model on complete data.
+#'   `latents_incomparable_models` when the two models differ in their
+#'   observations, grouping, covariance structure, centering or missing-data
+#'   handling; `latents_bad_data` when the data have missing indicators and
+#'   the models were not fitted with `missing = "fiml"`; `latents_bad_nesting`
+#'   also when two covariate models use different covariates or slope
+#'   specifications (other than a one-group-class null).
+#' @param null_model Smaller, converged [multilpa()] model, with or without
+#'   membership covariates.
 #' @param alternative_model Larger model fitted to exactly the same data.
 #' @param data Optional. The data both models were fitted to, used to verify
 #'   both fitted likelihoods; when omitted it is rebuilt from what the null
@@ -590,12 +754,21 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
-  stopifnot(inherits(null_model, "multilpa"), inherits(alternative_model, "multilpa"))
+  covariate_family <- inherits(null_model, "multilpa_covariates")
+  stopifnot(
+    "both models must be multilpa() fits of one family, with or without membership covariates" =
+      (inherits(null_model, "multilpa") && inherits(alternative_model, "multilpa")) ||
+      (covariate_family && inherits(alternative_model, "multilpa_covariates")))
   .multilpa_refuse_noise(null_model, "bootstrap_lrt()")
   .multilpa_refuse_noise(alternative_model, "bootstrap_lrt()")
   # The null model is the one being simulated from, so its own columns are the
   # ones that matter when the caller does not supply data.
-  data <- .multilpa_resolve_data(null_model, data)
+  # A covariate alternative carries every covariate the null does (the nesting
+  # rules below require it) and possibly group covariates the one-class null
+  # cannot, so its stored columns are the ones both refits need.
+  data <- if (covariate_family && is.null(data)) {
+    .multilpa_cov_stored_data(alternative_model)
+  } else .multilpa_resolve_data(null_model, data)
   stopifnot(is.data.frame(data), is.numeric(iter), length(iter) == 1L,
             is.finite(iter), iter >= 2L, iter == as.integer(iter),
             is.numeric(n_starts), length(n_starts) == 1L, is.finite(n_starts),
@@ -615,6 +788,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   fields <- c("vars", "id", "group_values", "group_index", "variance_model",
               "min_variance", "covariance_model")
   fields <- c(fields, "categorical", "categorical_levels", "min_probability")
+  missing_for <- function(model) model$missing %||% "error"
   structure_for <- function(model) model$covariance_structure %||%
     .multilpa_resolve_structure(model$variance_model,
                                 model$covariance_model %||% "diagonal")
@@ -623,10 +797,14 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     identical(null_model[[field]], alternative_model[[field]]), logical(1)))
   if (!same_fields ||
       !identical(structure_for(null_model), structure_for(alternative_model)) ||
-      !identical(centering_for(null_model), centering_for(alternative_model))) {
-    stop(errorCondition("Models must use the same observations, group layout, covariance structure and centering mode.",
+      !identical(centering_for(null_model), centering_for(alternative_model)) ||
+      !identical(missing_for(null_model), missing_for(alternative_model))) {
+    stop(errorCondition(paste(
+      "Models must use the same observations, group layout, covariance",
+      "structure, centering mode and missing-data handling."),
         class = "latents_incomparable_models", call = NULL))
   }
+  if (covariate_family) .multilpa_check_covariate_nesting(null_model, alternative_model)
   if (identical(centering_for(null_model), "person")) {
     stop(errorCondition(paste(
       "A person-centred fit removes each group's baseline, but this bootstrap",
@@ -643,8 +821,19 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   # the same constraint or the reference distribution belongs to a different
   # pair of models than the statistic it is being compared against. Nesting is
   # a property of the two models, so it is settled before the data are read.
-  constraint <- .multilpa_bootstrap_constraint(null_model, alternative_model)
-  invisible(lapply(list(null_model, alternative_model), function(model) {
+  constraint <- if (covariate_family) list(start = NULL, fixed = character()) else
+    .multilpa_bootstrap_constraint(null_model, alternative_model)
+  fiml <- identical(missing_for(null_model), "fiml")
+  if (covariate_family) {
+    invisible(lapply(list(null_model, alternative_model), function(model) {
+      if (!isTRUE(model$converged) || isTRUE(model$boundary)) {
+        stop(errorCondition(
+          "Original models must be converged with inactive variance bounds.",
+          class = "latents_no_converge", call = NULL))
+      }
+      .multilpa_cov_check_likelihood(model, data)
+    }))
+  } else invisible(lapply(list(null_model, alternative_model), function(model) {
     if (!isTRUE(model$converged) || isTRUE(model$boundary)) {
       stop(errorCondition(
         "Original models must be converged with inactive variance bounds.",
@@ -659,8 +848,15 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     continuous <- .multilpa_continuous_names(model)
     x <- if (length(continuous) == 0L) matrix(numeric(0), nrow(data), 0L) else
       .multilpa_center_like(null_model, as.matrix(data[continuous]))
-    if (!is.numeric(x) || any(!is.finite(x))) stop(errorCondition("Bootstrap currently requires complete finite indicators.",
+    # Missing values are the ones the fit integrated out; anything else that
+    # is not finite is a broken contract.
+    if (!is.numeric(x) || any(is.infinite(x)) || any(is.nan(x)) ||
+        (!fiml && anyNA(x))) {
+      stop(errorCondition(paste(
+        "Bootstrap needs finite indicators; missing values are allowed only",
+        "when both models were fitted with `missing = \"fiml\"`."),
         class = "latents_bad_data", call = NULL))
+    }
     if (!is.null(model$indicator_data) && length(continuous) > 0L &&
         !identical(x, model$indicator_data)) {
       stop(errorCondition("data must reproduce the original indicator data and row order.",
@@ -669,8 +865,11 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     encoded <- if (length(model$categorical %||% character()) == 0L) NULL else
       .multilpa_encode_categorical(data[, model$categorical, drop = FALSE])
     codes <- encoded$codes
-    if (anyNA(codes)) stop(errorCondition("Bootstrap currently requires complete finite indicators.",
-        class = "latents_bad_data", call = NULL))
+    if (!fiml && anyNA(codes)) {
+      stop(errorCondition(paste(
+        "Bootstrap needs complete indicators unless both models were fitted",
+        "with `missing = \"fiml\"`."), class = "latents_bad_data", call = NULL))
+    }
     if (!is.null(encoded) && !identical(encoded$levels, model$categorical_levels)) {
       stop(errorCondition("data must reproduce the original categorical levels and coding.",
         class = "latents_bad_inference_data", call = NULL))
@@ -707,7 +906,11 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   replicates <- do.call(rbind, lapply(seq_len(iter), function(i) {
     warning_text <- character()
     tryCatch(withCallingHandlers({
-      simulated <- .multilpa_simulate(null_model)
+      simulated <- if (covariate_family) .multilpa_cov_simulate(null_model, data) else
+        .multilpa_simulate(null_model)
+      if (fiml) {
+        simulated <- .multilpa_carry_missingness(simulated, data, null_model$vars)
+      }
       models <- lapply(list(null_model, alternative_model), function(model) {
         ## `variance_model` and `covariance_model` cannot express a structure
         ## that constrains the volume, the shape or the orientation: refitting
@@ -730,15 +933,33 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                centering = model$centering %||% "none",
                categorical = model$categorical %||% character(),
                min_probability = model$min_probability %||% 1e-10,
-               start = constraint$start, fixed = constraint$fixed)))
+               missing = missing_for(model),
+               start = constraint$start, fixed = constraint$fixed),
+          if (covariate_family) list(
+            profile_covariates = model$profile_covariates,
+            group_covariates = model$group_covariates,
+            profile_slopes = model$profile_slopes %||% "shared")))
       })
       statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
-      valid <- all(vapply(models, `[[`, logical(1), "converged")) &&
+      # The statistic reads only the maximized likelihoods. A covariate refit
+      # whose likelihood has settled but whose membership logits still drift
+      # (an empty or separated class in an over-fitted alternative) sits at
+      # the likelihood's supremum, so it is a valid replicate; the logits'
+      # state is recorded rather than silently accepted.
+      at_maximum <- function(model) {
+        isTRUE(model$converged) ||
+          (covariate_family && isTRUE(model$likelihood_converged))
+      }
+      logits_settled <- all(vapply(models, function(model) isTRUE(model$converged),
+                                   logical(1)))
+      valid <- all(vapply(models, at_maximum, logical(1))) &&
         statistic >= -reversal_window
       data.frame(replicate = i, statistic = if (valid) max(0, statistic) else NA_real_,
         valid = valid, boundary = any(vapply(models, `[[`, logical(1), "boundary")),
-        null_replications = models[[1L]]$n_best_replicated,
-        alternative_replications = models[[2L]]$n_best_replicated,
+        logits_settled = logits_settled,
+        # Covariate fits do not count replicated maxima.
+        null_replications = models[[1L]]$n_best_replicated %||% NA_integer_,
+        alternative_replications = models[[2L]]$n_best_replicated %||% NA_integer_,
         warnings = if (length(warning_text) == 0L) NA_character_ else
           paste(unique(warning_text), collapse = "; "),
         error = if (valid) NA_character_ else "Nonconvergence or reversed likelihood")
@@ -746,6 +967,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       warning_text <<- c(warning_text, conditionMessage(warning))
     }), error = function(error) {
       data.frame(replicate = i, statistic = NA_real_, valid = FALSE, boundary = NA,
+        logits_settled = NA,
         null_replications = NA_integer_, alternative_replications = NA_integer_,
         warnings = paste(unique(warning_text), collapse = "; "), error = conditionMessage(error))
     })

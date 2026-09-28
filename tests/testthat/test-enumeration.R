@@ -121,7 +121,9 @@ test_that("bootstrap refits generated data and reports finite simulation correct
   changed$y <- d$y + 1
   expect_error(bootstrap_lrt(small, large, changed, iter = 2), "reproduce")
   changed$y[1] <- NA_real_
-  expect_error(bootstrap_lrt(small, large, changed, iter = 2), "complete")
+  # Missing values are refused unless both fits integrated them out.
+  expect_error(bootstrap_lrt(small, large, changed, iter = 2),
+               class = "latents_bad_data")
 })
 
 test_that("full covariance print and summary expose residual matrices", {

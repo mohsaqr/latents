@@ -1,5 +1,42 @@
 # latents (development version)
 
+## Bootstrap likelihood-ratio tests with missing data and covariates
+
+* `bootstrap_lrt()` now accepts fits made with `missing = "fiml"`: every
+  simulated replicate is given the observed missing cells before it is
+  refitted, so the reference distribution loses the same information as the
+  observed statistic. The pattern is treated as fixed (independent of the
+  profiles).
+* `bootstrap_lrt()` now accepts membership-covariate fits: the covariates are
+  held at their observed values and memberships are drawn from the fitted
+  logits. A one-group-class null may be compared with an alternative that adds
+  group covariates or slopes by group class; otherwise both models must use the
+  same membership regressions (`latents_bad_nesting`). A covariate replicate
+  whose likelihood has converged counts as valid even if a membership logit is
+  still drifting (an over-fitted class), since the statistic reads only the
+  maximized likelihood; the replicate table's new `logits_settled` column
+  records it.
+* Models with different missing-data handling are now refused as
+  incomparable (`latents_incomparable_models`).
+
+## Standard errors for latent transition models
+
+* `parameter_inference()`, `vcov()` and `confint()` now work on `lta()` fits
+  instead of refusing them: observed-information, robust (clustered on
+  sequences) and OPG standard errors for the measurement model, the
+  group-class shares, the initial profile probabilities and the transition
+  probabilities. The scores follow the Fisher identity (expected counts from
+  the forward-backward pass minus the counts the fitted probabilities imply)
+  and match numerical differentiation of the likelihood; the standard errors
+  match a Richardson-extrapolated Hessian to 1e-6 and depmixS4's numerical
+  ones to within its own finite-difference error. Over 300 simulated panels,
+  95% intervals covered 0.947-0.960. The `latents_no_inference` condition is
+  retired.
+* `coef()` on an `lta()` fit now uses the names and order of `vcov()`: under
+  `variance_model = "equal"` it reports the shared variances once, under
+  `covariance_model = "full"` the covariance matrices, and the group-class
+  shares come before the initial and transition probabilities.
+
 ## Multiple imputation for missing covariates
 
 * New `pool_imputations()`: fits `multilpa()` to every completed data set

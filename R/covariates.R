@@ -757,6 +757,7 @@ nobs.multilpa_covariates <- function(object, ...) {
   history <- expectation$log_likelihood
   iteration <- 0L
   converged <- FALSE
+  settled <- FALSE
   ## Sweeps spent waiting only on the membership logits are bounded separately
   ## from `max_iter`: a coefficient drifting to infinity leaves that step
   ## unsolved for ever while the observed likelihood has stopped moving, and
@@ -794,6 +795,7 @@ nobs.multilpa_covariates <- function(object, ...) {
   }
   list(parameters = parameters, expectation = expectation, beta = beta,
        gamma = gamma, iterations = iteration, converged = converged,
+       likelihood_settled = settled,
        history = history, error = NA_character_)
 }
 
@@ -882,6 +884,11 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$center <- designs$center
   result$min_variance <- min_variance
   result$converged <- best$converged
+  ## Whether the likelihood itself stopped moving, apart from the membership
+  ## logits. A logit drifting to infinity on an empty or separated class leaves
+  ## the likelihood at its supremum, which is all a likelihood-ratio statistic
+  ## reads; bootstrap_lrt() accepts such a replicate, inference does not.
+  result$likelihood_converged <- isTRUE(best$likelihood_settled)
   result$iterations <- best$iterations
   result$starts <- starts
   result$best_start <- best_index
