@@ -7,7 +7,7 @@
 \alias{plot.multilpa_diagnostics}
 \title{Every classification diagnostic, in one call}
 \usage{
-diagnostics(x, data = NULL, plots = FALSE, by = c("profile", "overall"), ...)
+diagnostics(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
 
 \method{as.data.frame}{multilpa_diagnostics}(x, row.names = NULL, optional = FALSE, ...)
 
@@ -21,8 +21,10 @@ diagnostics(x, data = NULL, plots = FALSE, by = c("profile", "overall"), ...)
 \item{data}{Optional. The data the model was fitted to. A fit carries the
 columns it was built from, so this is only needed to override them.}
 
-\item{plots}{\code{TRUE} also draws the classification plots, as a side effect,
-before returning. Equivalent to calling \code{plot()} on the result.}
+\item{plots}{\code{TRUE}, the default, also draws the four classification plots
+(effective profile sizes, posterior probabilities of the assigned
+profiles, entropy contributions, and the average posterior probability
+matrix), as \code{plot()} on the result does. \code{FALSE} returns the tables only.}
 
 \item{by}{\code{"profile"}, the default, assesses each profile's bivariate
 residuals separately; \code{"overall"} pools them. It is the one argument of a
@@ -49,8 +51,11 @@ model family that has no bivariate residuals leaves that table out of
 
 \code{print()} returns the object invisibly, having printed one line per
 diagnostic: relative entropy, smallest class, lowest average posterior and
-largest residual, at each level the fit has. \code{plot()} returns the object
-invisibly, having drawn the case-level entropy and posterior panels.
+largest residual, at each level the fit has. \code{plot()} draws every
+classification plot in one call -- the effective profile sizes, the
+posterior probability of each case's assigned profile, each case's entropy
+contribution, and the average posterior probability matrix -- and returns
+the object invisibly.
 \code{as.data.frame()} returns the entropy table, the primary one.
 }
 \description{

@@ -35,11 +35,11 @@ test_that("multilca() refuses `categorical` and checks `vars`", {
 test_that("multilca() with id = NULL fits one group class without being told", {
   activities <- c("time_with_friends", "on_social_media", "tv_video_games")
   sample_data <- subset(student_esm, day <= 1)
-  expect_warning(
+  expect_message(
     implicit <- multilca(sample_data, vars = activities, id = NULL,
                          n_profiles = 2, n_starts = 1, seed = 1),
     class = "latents_single_level")
-  explicit <- suppressWarnings(
+  explicit <- suppressMessages(
     multilca(sample_data, vars = activities, id = NULL, n_profiles = 2,
              n_group_classes = 1, n_starts = 1, seed = 1))
   expect_identical(implicit$n_group_classes, 1L)

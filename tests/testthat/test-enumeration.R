@@ -2,7 +2,7 @@ test_that("enumeration retains failures and both BIC conventions", {
   set.seed(12)
   d <- data.frame(g = rep(1:30, each = 10), y = c(rnorm(150, -2), rnorm(150, 2)))
   result <- enumerate_classes(d, "y", "g", n_profiles = 1:2, n_group_classes = 1:2,
-                             n_starts = 2, seed = 12)
+                             model = NULL, n_starts = 2, seed = 12)
   grid <- as.data.frame(result)
   expect_equal(nrow(grid), 4L)
   expect_match(grid$error[3], "profile")
@@ -25,7 +25,7 @@ test_that("enumeration retains failures and both BIC conventions", {
   # value is a one-row grid rather than the error the old `profiles =` spelling
   # had to raise when the same word arrived through `...`.
   single <- enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
-                              n_starts = 2, seed = 1)
+                              model = "VVI", n_starts = 2, seed = 1)
   expect_equal(nrow(as.data.frame(single)), 1L)
   # A name multilpa() does not take is refused before any candidate is fitted,
   # so the refusal is visible at once instead of as a grid of failed fits.
@@ -243,11 +243,15 @@ test_that("the enumeration plot draws several criteria and restores the device",
 
 test_that("enumerate_classes() enumerates single-level models with id = NULL", {
   flowers <- stats::setNames(iris[1:4], c("sl", "sw", "pl", "pw"))
-  expect_warning(
+  # The two-level verb says what it fitted and which verbs fit it by name.
+  expect_message(
     grid <- enumerate_classes(flowers, names(flowers), id = NULL,
                               n_profiles = 1:3, model = c("VVV", "EEE"),
                               n_starts = 2, seed = 1),
     class = "latents_single_level")
+  # Leaving `id` out is refused and points to the single-level verbs.
+  expect_error(enumerate_classes(flowers, names(flowers), n_profiles = 1:2),
+               class = "latents_bad_argument")
   table <- as.data.frame(grid)
   expect_identical(nrow(table), 6L)
   expect_true(all(table$n_group_classes == 1L))
@@ -259,11 +263,83 @@ test_that("enumerate_classes() enumerates single-level models with id = NULL", {
     multilpa(flowers, names(flowers), id = NULL, n_profiles = 3, n_starts = 2,
              seed = 1, volume = "varying", shape = "varying",
              orientation = "varying"),
-    latents_single_level = function(w) invokeRestart("muffleWarning"))
+    latents_single_level = function(w) invokeRestart("muffleMessage"))
   expect_equal(candidate_fit(grid, n_profiles = 3, n_group_classes = 1,
                              model = "VVV")$log_likelihood,
                alone$log_likelihood)
   expect_error(enumerate_classes(flowers, names(flowers), id = NULL,
                                  n_profiles = 1:2, n_group_classes = 1:2),
+               class = "latents_bad_argument")
+})
+
+test_that("`model` takes the basic set by default, all 14, or codes", {
+  flowers <- stats::setNames(iris[1:4], c("sl", "sw", "pl", "pw"))
+  enumerate <- function(...) {
+    suppressMessages(enumerate_classes(flowers, names(flowers), id = NULL,
+                                       n_profiles = 1:2, n_starts = 2,
+                                       seed = 1, ...))
+  }
+  basic <- as.data.frame(enumerate())
+  # Equal or varying variances, crossed with covariances absent or present.
+  expect_identical(unique(basic$model), c("EEI", "VVI", "EEE", "VVV"))
+  expect_identical(nrow(basic), 8L)
+  # The default is the set named "basic", not a separate path.
+  expect_equal(as.data.frame(enumerate(model = "basic"))$log_likelihood,
+               basic$log_likelihood)
+  # Codes still work, and a set combines with codes without duplicates.
+  expect_identical(unique(as.data.frame(enumerate(model = "VEV"))$model), "VEV")
+  expect_identical(unique(as.data.frame(enumerate(model = c("basic", "EEE",
+                                                             "VEV")))$model),
+                   c("EEI", "VVI", "EEE", "VVV", "VEV"))
+  # NULL crosses nothing and fits what multilpa() fits by default.
+  plain <- as.data.frame(enumerate(model = NULL))
+  expect_identical(nrow(plain), 2L)
+  default_fit <- lpa(flowers, names(flowers), n_profiles = 2, n_starts = 2,
+                     seed = 1)
+  expect_identical(unique(plain$model), default_fit$covariance_structure)
+  expect_error(enumerate(model = "most"), class = "latents_bad_argument")
+})
+
+test_that("`model = \"all\"` fits the 14 structures", {
+  flowers <- stats::setNames(iris[1:4], c("sl", "sw", "pl", "pw"))
+  grid <- suppressMessages(enumerate_classes(flowers, names(flowers),
+    id = NULL, n_profiles = 2, model = "all", n_starts = 2, seed = 1))
+  expect_setequal(as.data.frame(grid)$model, latents:::.multilpa_structures())
+})
+
+test_that("structures the data cannot distinguish are fitted once", {
+  set.seed(3)
+  one <- data.frame(y = c(rnorm(50), rnorm(50, 3, 2)))
+  # One indicator: only equal or varying variance remains.
+  grid <- suppressMessages(enumerate_classes(one, "y", id = NULL,
+    n_profiles = 2, n_starts = 2, seed = 1))
+  expect_identical(as.data.frame(grid)$model, c("EEI", "VVI"))
+  grid_all <- suppressMessages(enumerate_classes(one, "y", id = NULL,
+    n_profiles = 2, model = "all", n_starts = 2, seed = 1))
+  expect_identical(nrow(as.data.frame(grid_all)), 2L)
+  # Only categorical indicators: no structure, one candidate per count, and
+  # candidate_fit() needs no `model`.
+  answers <- data.frame(a = factor(sample(c("x", "y"), 100, TRUE)),
+                        b = factor(sample(c("x", "y"), 100, TRUE)))
+  classes <- suppressMessages(enumerate_classes(answers, c("a", "b"),
+    id = NULL, n_profiles = 1:2, categorical = c("a", "b"), n_starts = 2,
+    seed = 1))
+  expect_identical(nrow(as.data.frame(classes)), 2L)
+  expect_s3_class(candidate_fit(classes, n_profiles = 2), "multilpa")
+  expect_error(enumerate_classes(answers, c("a", "b"), id = NULL,
+                                 n_profiles = 1:2, model = "basic",
+                                 categorical = c("a", "b")),
+               class = "latents_bad_argument")
+})
+
+test_that("a structure set another way replaces the basic set", {
+  flowers <- stats::setNames(iris[1:4], c("sl", "sw", "pl", "pw"))
+  grid <- suppressMessages(enumerate_classes(flowers, names(flowers),
+    id = NULL, n_profiles = 1:2, covariance_model = "full", n_starts = 2,
+    seed = 1))
+  expect_identical(nrow(as.data.frame(grid)), 2L)
+  expect_error(enumerate_classes(flowers, names(flowers), id = NULL,
+                                 n_profiles = 1:2, model = "EEE",
+                                 covariance_model = "full"),
                class = "latents_bad_argument")
 })

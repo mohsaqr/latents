@@ -74,11 +74,11 @@ test_that("pairwise contrasts carry the inference columns r3step carries", {
   pairs <- three_step(fit, data, "y", contrast = "pairs")
   covariate <- r3step(fit, data, "x")
   shared <- c("level", "estimate", "standard_error", "statistic", "p_value",
-              "p_value_adjusted", "conf_low", "conf_high")
+              "p_adjusted", "conf_low", "conf_high")
 
   expect_named(pairs, c("level", "method", "class", "reference_class",
                         "estimate", "standard_error", "statistic", "p_value",
-                        "p_value_adjusted", "conf_low", "conf_high"))
+                        "p_adjusted", "conf_low", "conf_high"))
   expect_true(all(shared %in% names(covariate)))
   expect_equal(nrow(pairs), 1L)
   expect_equal(nrow(three_step(.tidy_step_fit(data, 3L), data, "y",
@@ -129,7 +129,7 @@ test_that("a constant outcome cannot manufacture a significant class contrast", 
   expect_equal(means$estimate, c(1, 1))
   expect_identical(pairs$estimate, 0)
   expect_identical(pairs$standard_error, 0)
-  expect_true(all(is.na(pairs[c("statistic", "p_value", "p_value_adjusted")])))
+  expect_true(all(is.na(pairs[c("statistic", "p_value", "p_adjusted")])))
 })
 
 test_that("a zero-variance membership coefficient has no Wald test", {
@@ -228,12 +228,12 @@ test_that("multiplicity is corrected, named, and can be turned off", {
 
   expect_identical(attr(adjusted, "adjust"), "BH")
   expect_identical(attr(raw, "adjust"), "none")
-  expect_equal(raw$p_value_adjusted, raw$p_value)
-  expect_true(all(adjusted$p_value_adjusted >= adjusted$p_value))
+  expect_equal(raw$p_adjusted, raw$p_value)
+  expect_true(all(adjusted$p_adjusted >= adjusted$p_value))
   expect_equal(adjusted$p_value, raw$p_value)
   strict <- three_step(fit, data, "y", contrast = "pairs",
                        adjust = "bonferroni")
-  expect_true(all(strict$p_value_adjusted >= adjusted$p_value_adjusted))
+  expect_true(all(strict$p_adjusted >= adjusted$p_adjusted))
 })
 
 test_that("r3step corrects across its covariate terms and not its intercepts", {
@@ -245,14 +245,14 @@ test_that("r3step corrects across its covariate terms and not its intercepts", {
   none <- r3step(fit, data, c("x", "w", "v"), adjust = "none")
 
   expect_identical(attr(result, "adjust"), "BH")
-  expect_true(all(is.na(result$p_value_adjusted[result$term == "(Intercept)"])))
+  expect_true(all(is.na(result$p_adjusted[result$term == "(Intercept)"])))
   tested <- result$term != "(Intercept)"
   expect_equal(sum(tested), 3L)
-  expect_true(all(result$p_value_adjusted[tested] >= result$p_value[tested]))
+  expect_true(all(result$p_adjusted[tested] >= result$p_value[tested]))
   # the correction is over the three covariate terms alone, not over four rows
-  expect_equal(result$p_value_adjusted[tested],
+  expect_equal(result$p_adjusted[tested],
                stats::p.adjust(result$p_value[tested], method = "BH"))
-  expect_equal(none$p_value_adjusted[tested], none$p_value[tested])
+  expect_equal(none$p_adjusted[tested], none$p_value[tested])
 })
 
 test_that("a single class is refused a contrast by condition class", {

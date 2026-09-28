@@ -6,8 +6,8 @@
 \usage{
 \method{plot}{multilpa}(
   x,
-  what = c("profiles", "bars", "heatmap", "responses", "probabilities", "sequences",
-    "sizes", "entropy", "posteriors", "avepp", "all"),
+  what = c("profiles", "bars", "heatmap", "raincloud", "responses", "probabilities",
+    "sequences", "sizes", "entropy", "posteriors", "avepp", "all"),
   data = NULL,
   scale = c("raw", "standardized"),
   category = "last",
@@ -19,6 +19,7 @@
   linetypes = NULL,
   style = .multilpa_style(),
   cell_labels = TRUE,
+  intervals = TRUE,
   ...
 )
 }
@@ -36,6 +37,15 @@ bars, one bar per profile within each indicator, with a 95\% interval on
 every bar when \code{data} is supplied. \code{"heatmap"} draws them as a diverging
 grid of standard deviations from each indicator's grand mean, which is the
 quickest read when there are many indicators or many profiles.
+\code{"raincloud"} shows what the means summarize: one panel per indicator,
+and in it, for the cases assigned to each profile, a density of the
+indicator, a box of its quartiles and median, and the observations
+themselves. It shows the spread within each profile and how far the
+profiles overlap. For a fit
+whose indicators are all categorical, \code{"heatmap"} draws the response
+probabilities instead: one row per profile and one column per category
+(a binary indicator shows its last category), each cell printing its
+probability.
 \code{"responses"} is the categorical counterpart of \code{"profiles"}, one line per
 profile across the categorical indicators, showing the probability of a
 chosen category.
@@ -99,6 +109,13 @@ pass named elements to override individual constants.}
 inside each cell, so the profile is never carried by colour alone. The
 numbers are drawn only where the cell is wide and tall enough to hold one.}
 
+\item{intervals}{For \code{what = "profiles"} and \code{"responses"}, \code{TRUE} draws a
+95\% interval on every mean or probability when the fit has standard
+errors (a probability's interval is clipped to \verb{[0, 1]}); the profiles are then dodged
+apart so the whiskers stay readable. A fit without them (a bound-active or
+unconverged fit, or a family without inference) is drawn without whiskers
+and its subtitle says why.}
+
 \item{...}{Further named visual constants, merged into \code{style}.}
 }
 \value{
@@ -112,9 +129,10 @@ greyscale and needs no legend; the sequence grid carries the profile number
 in each cell for the same reason.
 }
 \details{
-The plot shows point estimates only. It carries no standard errors,
-and profile order is arbitrary, so two fits must have their labels aligned
-before their plots are compared. With \code{scale = "standardized"} the
+\code{"profiles"} and \code{"bars"} draw 95\% Wald intervals when the fit has
+standard errors; the other views show point estimates. Profile order is
+arbitrary, so two fits must have their labels aligned before their plots
+are compared. With \code{scale = "standardized"} the
 standard deviations are the observed indicator standard deviations, not
 the within-profile residual standard deviations, so the plotted values are
 comparable across indicators but are not effect sizes.

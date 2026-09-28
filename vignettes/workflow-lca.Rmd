@@ -1,0 +1,171 @@
+---
+title: "Latent class analysis: a complete workflow"
+author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Latent class analysis: a complete workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
+                      fig.height = 4.6, fig.align = "center", dpi = 96)
+options(digits = 3, width = 90)
+```
+
+Latent class analysis (LCA) is a mixture model for categorical indicators.
+It assumes that the observations come from a small number of unobserved
+classes, and that within each class the indicators are independent, each
+with its own response probabilities. This vignette presents a complete
+single-level analysis: description of the data, selection of the number of
+classes, estimation, interpretation, evaluation of the classification, and
+the relation of the classes to a distal outcome. The final section extends
+the model to two levels. In the output of this package the classes of
+observations are labelled `profile_1`, `profile_2`, and so on.
+
+```{r package}
+library(latents)
+set.seed(1)
+```
+
+The estimation uses random starting values, so the seed is set once to make
+the results reproducible.
+
+## Data
+
+The `student_esm` data contain 2,582 experience-sampling reports from
+university students. At each report a student indicated whether they had
+been engaged in each of eight activities, and rated how happy, relaxed,
+worried and exhausted they felt. The aim of the analysis is to identify
+typical combinations of activities.
+
+```{r data}
+activities <- c("time_with_friends", "on_social_media", "tv_video_games",
+                "listened_music", "sports", "walking", "reading",
+                "part_time_job")
+descriptives(student_esm, activities)
+```
+
+The reports are nested in students. The first part of this vignette treats
+each report as an independent observation, which corresponds to the
+conventional single-level model. The nesting is taken into account in the
+final section.
+
+## Selecting the number of classes
+
+`enumerate_lca()` estimates models with one to six classes and returns the
+results in one table.
+
+```{r enumerate}
+models <- enumerate_lca(student_esm, activities, n_classes = 1:6)
+plot(models)
+```
+
+```{r choose}
+summary(models)
+```
+
+The BIC is lowest for four classes, 13.2 points below the three-class
+model. The fourth class, however, contains 1.3% of the reports (about 32),
+which describe many activities at once; a class of this size is poorly
+supported, and the ICL, which penalizes classification uncertainty, is lower
+for three classes than for four. The ICL is lowest for one class, which has
+no uncertainty to penalize, and among the models with more than one class it
+is lowest for two; the two-class solution, however, has a relative entropy
+below 0.5 and therefore separates the reports poorly. The three-class model
+is retained.
+
+## Estimation
+
+`lca()` fits a single-level latent class model.
+
+```{r fit}
+fit <- lca(student_esm, activities, n_classes = 3)
+fit
+```
+
+## Interpretation of the classes
+
+The heatmap shows, for each class, the estimated probability that the
+activity was reported.
+
+```{r heatmap, fig.height = 3.4}
+plot(fit, what = "heatmap")
+```
+
+The largest class, comprising 58% of the reports, is characterized by
+screen-based activities: social media, television and video games, and
+music. The smallest class, 4% of the reports, consists almost entirely of
+reports of working at a part-time job. The third class, 39% of the reports,
+has elevated probabilities of spending time with friends, walking and
+sport, and a probability of social media use close to zero. The same
+probabilities are shown below as profiles across the activities, with 95%
+confidence intervals where the probability is not on its boundary.
+
+```{r responses}
+plot(fit, what = "responses")
+```
+
+The probabilities with their standard errors. Several are estimated at zero
+or one; a standard error is not defined on the boundary of the parameter
+space, so those are held at their bound and have none.
+
+```{r response-table}
+head(get_results(fit, "responses"), 8)
+```
+
+## Classification quality
+
+`diagnostics()` reports the classification measures and draws the four
+classification plots: the effective size of each class, the distribution of
+the posterior probability of each report's assigned class, each report's
+contribution to the classification entropy, and the average posterior
+probability matrix, which shows which classes are confused with which.
+
+```{r diagnostics, fig.height = 3.6}
+diagnostics(fit)
+```
+
+The relative entropy of 0.66 indicates a moderately clear classification.
+
+## Classes and a distal outcome
+
+`three_step()` estimates the mean of an outcome within each class. It uses
+the BCH method, which weights each observation by its posterior class
+probabilities and corrects for classification error (Bolck, Croon and
+Hagenaars, 2004). The outcome here is the happiness rating.
+
+```{r three-step}
+happiness <- three_step(fit, student_esm, outcome = "happy")
+happiness
+```
+
+Happiness is highest in the class of reports away from screens (5.30 on
+the seven-point scale), and lower in the screen-based class (4.63) and the
+work class (4.53).
+
+## Extension to two levels
+
+Each student contributes many reports, so the reports are not independent.
+When the student identifier is supplied as `id`, `multilca()` estimates a
+two-level model: the classes of reports are retained, and the students are
+in addition grouped into latent classes that differ in the proportion of
+their reports belonging to each class.
+
+```{r two-level, message = FALSE}
+two_level <- multilca(student_esm, activities, id = "student",
+                      n_profiles = 3, n_group_classes = 2)
+get_results(two_level, "profile_probabilities")
+```
+
+The two-level model is presented in detail in `vignette("lca")`.
+
+## References
+
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
+models with categorical variables: One-step versus three-step estimators.
+*Political Analysis*, 12(1), 3–27.

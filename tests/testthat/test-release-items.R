@@ -78,11 +78,10 @@ test_that("the measurement tables carry their own standard errors when asked", {
     categorical = "q", n_starts = 3, seed = 1))
   bare <- as.data.frame(fit)
   with_errors <- get_results(fit, "profiles", data = data)
-  # Adding errors must not change the estimates or the shape.
+  # Supplying the data must not change the estimates or the shape.
   expect_identical(nrow(bare), nrow(with_errors))
   expect_equal(bare$mean, with_errors$mean)
-  expect_named(with_errors, c(names(bare), "mean_standard_error",
-                              "variance_standard_error"))
+  expect_named(with_errors, names(bare))
   expect_false(anyNA(with_errors$mean_standard_error))
 
   # The errors must be the ones parameter_inference() reports, put in the

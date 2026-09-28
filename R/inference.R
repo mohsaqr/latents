@@ -656,7 +656,13 @@
 #'   for `statistic`, `p_value` and `p_adjusted`, because a Wald test against
 #'   that boundary is not a question worth asking; the interval still is. All
 #'   class probabilities are reported; their sum constraints make the natural
-#'   covariance singular. Wald intervals are not clipped to parameter bounds.
+#'   covariance singular. Wald intervals for probabilities are formed on the
+#'   logit scale and for variances (and covariance diagonals) on the log
+#'   scale, then mapped back with the same standard error, so they stay inside
+#'   the parameter's range and widen towards the far side of a bound; every
+#'   other interval is `estimate +/- z * standard_error`. `confint()` returns
+#'   the same intervals. A probability at or below 1e-6 is treated as on its
+#'   bound (refused, or held by `boundary = "fix"`).
 #'
 #'   A fit made with `fixed` reports only the parameters it estimated: a held
 #'   measurement block is a constant of this likelihood, so it contributes no
@@ -931,9 +937,14 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     statistic = statistic, p_value = 2 * stats::pnorm(-abs(statistic)),
     conf_low = unname(intervals[, 1L]), conf_high = unname(intervals[, 2L]),
     row.names = NULL, stringsAsFactors = FALSE)
+  continuous <- .multilpa_continuous_names(x)
+  bounds <- .multilpa_wald_bounds(
+    result$estimate, result$standard_error,
+    .multilpa_interval_kind(result$parameter, result$term, continuous), critical)
+  result$conf_low <- bounds$low
+  result$conf_high <- bounds$high
   ## A Wald test of a variance against zero is not a question worth asking; the
   ## interval still is.
-  continuous <- .multilpa_continuous_names(x)
   bounded <- result$parameter %in% c("variance", "probability", "response") |
     (result$parameter == "covariance" &
        result$term %in% paste(continuous, continuous, sep = ":"))
@@ -992,7 +1003,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
 #' @noRd
 .multilpa_response_bound <- function(object) {
   blocks <- object$response_probabilities %||% list()
-  floor <- (object$min_probability %||% 1e-10) * (1 + 1e-7)
+  floor <- .multilpa_probability_floor(object)
   pieces <- lapply(names(blocks), function(indicator) {
     block <- blocks[[indicator]]
     categories <- colnames(block)
@@ -1008,6 +1019,71 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   })
   list(natural = unlist(lapply(pieces, `[[`, "natural")) %||% character(),
        unconstrained = unlist(lapply(pieces, `[[`, "unconstrained")) %||% character())
+}
+
+#' Wald intervals on the scale where each parameter is unbounded
+#'
+#' A symmetric interval around a probability of 0.98 with a standard error of
+#' 0.015 runs past one, and one around a small variance runs below zero:
+#' neither is a set of values the parameter can take. Each interval is formed
+#' where the parameter is unbounded and mapped back -- the logit of a
+#' probability, the log of a variance -- by the delta method, with the same
+#' standard error. It stays inside the parameter's range and becomes
+#' asymmetric near a bound, as the sampling distribution does. Every other
+#' parameter keeps the symmetric interval.
+#' @param estimate,standard_error Numeric vectors.
+#' @param kind `"probability"`, `"positive"` or anything else, per row.
+#' @param critical The normal quantile for the level.
+#' @return A list with `low` and `high`.
+#' @noRd
+.multilpa_wald_bounds <- function(estimate, standard_error, kind, critical) {
+  low <- estimate - critical * standard_error
+  high <- estimate + critical * standard_error
+  probability <- kind == "probability" & is.finite(standard_error) &
+    estimate > 0 & estimate < 1
+  if (any(probability)) {
+    centre <- stats::qlogis(estimate[probability])
+    spread <- critical * standard_error[probability] /
+      (estimate[probability] * (1 - estimate[probability]))
+    low[probability] <- stats::plogis(centre - spread)
+    high[probability] <- stats::plogis(centre + spread)
+  }
+  positive <- kind == "positive" & is.finite(standard_error) & estimate > 0
+  if (any(positive)) {
+    spread <- critical * standard_error[positive] / estimate[positive]
+    low[positive] <- estimate[positive] * exp(-spread)
+    high[positive] <- estimate[positive] * exp(spread)
+  }
+  list(low = low, high = high)
+}
+
+#' Which scale a parameter's interval is formed on
+#' @param parameter,term The tidy label columns.
+#' @param continuous The continuous indicator names.
+#' @return `"probability"`, `"positive"` or `"real"`, per row.
+#' @noRd
+.multilpa_interval_kind <- function(parameter, term, continuous) {
+  on_diagonal <- parameter == "covariance" &
+    term %in% paste(continuous, continuous, sep = ":")
+  ifelse(parameter %in% c("probability", "response", "initial_probability",
+                          "transition_probability"), "probability",
+         ifelse(parameter == "variance" | on_diagonal, "positive", "real"))
+}
+
+#' The probability below which an estimate is on its boundary
+#'
+#' EM approaches a zero probability slowly, so a fit rarely lands exactly on
+#' `min_probability`; it stops a little above it, at a logit of -15 or -20
+#' where the likelihood is flat. Treating only the exact floor as the bound
+#' left such an estimate free, and the observed information was then singular.
+#' At or below 1e-6 a probability's expected count is far below one
+#' observation at any realistic sample size, so the data cannot tell it from
+#' zero and it is treated as on its bound.
+#' @param object A fitted model.
+#' @return A single probability.
+#' @noRd
+.multilpa_probability_floor <- function(object) {
+  max((object$min_probability %||% 1e-10) * (1 + 1e-7), 1e-6)
 }
 
 #' Extract multilevel LPA coefficients
@@ -1154,16 +1230,12 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       if (length(held) == 1L) "ies" else "y"),
       class = "latents_held_parameter", call = NULL))
   }
-  intervals <- if (identical(attr(information, "method"), "bootstrap")) {
-    percentile <- cbind(information$conf_low, information$conf_high)
-    rownames(percentile) <- rownames(covariance)
-    percentile[parm, , drop = FALSE]
-  } else {
-    standard_errors <- sqrt(pmax(diag(covariance)[parm], 0))
-    critical <- stats::qnorm((1 + level) / 2)
-    cbind(estimates[parm] - critical * standard_errors,
-          estimates[parm] + critical * standard_errors)
-  }
+  # The intervals parameter_inference() reports, whichever path made them:
+  # percentile for the bootstrap, and for Wald ones formed where the parameter
+  # is unbounded, so the two verbs can never disagree.
+  intervals <- cbind(information$conf_low, information$conf_high)
+  rownames(intervals) <- rownames(covariance)
+  intervals <- intervals[parm, , drop = FALSE]
   colnames(intervals) <- paste0(format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%")
   intervals
 }
@@ -1201,7 +1273,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
                   identical(boundary, "fix")) NULL else
     unlist(object$response_probabilities, use.names = FALSE)
   if (length(response) > 0L &&
-      any(response <= (object$min_probability %||% 1e-10) * (1 + 1e-7))) {
+      any(response <= .multilpa_probability_floor(object))) {
     stop(errorCondition(
       paste("Wald inference is unavailable for bound-active categorical response",
             "probabilities. `boundary = \"fix\"` holds them at their bound and",
@@ -1226,6 +1298,12 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' @return A list with the centred matrix `x` and the `centers` removed from it.
 #' @noRd
 .multilpa_inference_matrix <- function(object, data) {
+  # A single-level fit numbered its rows itself; the caller's frame has no
+  # such column, and its row order is what the numbering was.
+  if (isTRUE(object$single_level) && !object$id %in% names(data) &&
+      nrow(data) == object$n_observations) {
+    data[[object$id]] <- object$group_values[seq_len(nrow(data))]
+  }
   if (nrow(data) != object$n_observations ||
       !all(c(object$vars, object$id) %in% names(data)) ||
       anyDuplicated(names(data)) ||

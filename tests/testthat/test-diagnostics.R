@@ -137,7 +137,8 @@ test_that("tidy accessors return the documented shapes", {
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
   profiles <- as.data.frame(fit)
   expect_identical(names(profiles),
-    c("profile", "indicator", "mean", "variance", "standard_deviation"))
+    c("profile", "indicator", "mean", "variance", "standard_deviation",
+      "mean_standard_error", "variance_standard_error"))
   expect_identical(nrow(profiles), 4L)
   expect_equal(profiles$mean, as.vector(t(fit$means)))
   expect_equal(profiles$standard_deviation, sqrt(profiles$variance))
@@ -176,7 +177,8 @@ test_that("tidy accessors return the documented shapes", {
 test_that("enumeration and inference tidy and print", {
   dat <- make_two_level()
   candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
-                                 n_group_classes = 1:2, n_starts = 3, seed = 3)
+                                 n_group_classes = 1:2, model = NULL, n_starts = 3,
+                                 seed = 3)
   expect_s3_class(candidates, "multilpa_enumeration")
   grid <- as.data.frame(candidates)
   expect_identical(nrow(grid), 4L)
@@ -196,8 +198,26 @@ test_that("enumeration and inference tidy and print", {
   estimates <- information
   expect_identical(nrow(estimates), length(coef(fit)))
   expect_equal(estimates$estimate, unname(coef(fit)))
-  expect_equal(estimates$conf_high - estimates$conf_low,
-               2 * stats::qnorm(0.975) * estimates$standard_error)
+  # Means get the symmetric interval; variances and probabilities get it on
+  # the log and logit scales, where it is symmetric instead.
+  z <- stats::qnorm(0.975)
+  kind <- latents:::.multilpa_interval_kind(estimates$parameter, estimates$term,
+                                            c("a", "b"))
+  real <- kind == "real"
+  expect_equal((estimates$conf_high - estimates$conf_low)[real],
+               2 * z * estimates$standard_error[real])
+  probability <- kind == "probability"
+  p <- estimates$estimate[probability]
+  expect_equal(stats::qlogis(estimates$conf_high[probability]) -
+                 stats::qlogis(estimates$conf_low[probability]),
+               2 * z * estimates$standard_error[probability] / (p * (1 - p)))
+  positive <- kind == "positive"
+  v <- estimates$estimate[positive]
+  expect_equal(log(estimates$conf_high[positive]) - log(estimates$conf_low[positive]),
+               2 * z * estimates$standard_error[positive] / v)
+  expect_true(all(estimates$conf_low[probability] > 0 &
+                    estimates$conf_high[probability] < 1))
+  expect_true(all(estimates$conf_low[positive] > 0))
   # Mixing probabilities are boundary hypotheses and carry no Wald test.
   expect_true(all(is.na(subset(estimates,
     grepl("probability", estimates$parameter))$p_value)))
@@ -255,7 +275,8 @@ test_that("every result class has a working tidy accessor", {
     group_covariates = "resources", n_starts = 1, max_iter = 20, seed = 1))
   profiles <- as.data.frame(covariate_fit)
   expect_identical(names(profiles),
-    c("profile", "indicator", "mean", "variance", "standard_deviation"))
+    c("profile", "indicator", "mean", "variance", "standard_deviation",
+      "mean_standard_error", "variance_standard_error"))
   expect_identical(nrow(profiles), 4L)
   expect_equal(profiles$standard_deviation, sqrt(profiles$variance))
   coefficients <- get_results(covariate_fit, "coefficients")

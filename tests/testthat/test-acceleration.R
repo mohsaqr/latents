@@ -51,7 +51,7 @@ test_that("prior fits run plain EM whatever is requested", {
   x <- stats::na.omit(fixture$data[fixture$vars])
   quiet <- function(expression) {
     withCallingHandlers(expression, latents_single_level = function(w) {
-      invokeRestart("muffleWarning")
+      invokeRestart("muffleMessage")
     }, latents_unconverged = function(w) invokeRestart("muffleWarning"))
   }
   fit <- function(acceleration) {
@@ -107,7 +107,7 @@ test_that("a converged EVE/VVE fit is a fixed point of the full orientation solv
                                n_profiles = 2, n_starts = 2, seed = 1,
                                tol = 1e-12, max_iter = 20000),
                           latents:::.multilpa_structure_arguments(code))),
-      latents_single_level = function(w) invokeRestart("muffleWarning"))
+      latents_single_level = function(w) invokeRestart("muffleMessage"))
     expect_true(fit$converged, info = code)
     posteriors <- fit$subject_posteriors
     data_matrix <- as.matrix(x)

@@ -20,22 +20,40 @@ print.multilpa <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa"))
   ## A single-level fit has one observation per unit and one group class, so
   ## naming either would describe machinery rather than the model asked for.
+  ## The header names the model that was fitted: a latent class analysis when
+  ## every indicator is categorical, where a residual covariance means nothing,
+  ## and a latent profile analysis otherwise.
+  n_continuous <- length(.multilpa_continuous_names(x))
+  n_categorical <- length(x$categorical %||% character())
+  class_model <- n_continuous == 0L
+  unit <- if (class_model) "class" else "profile"
+  plural <- function(n, word) sprintf("%d %s%s", n, word,
+                                      if (n == 1L) "" else if (endsWith(word, "s")) "es" else "s")
+  kind <- if (class_model) "latent class analysis" else "latent profile analysis"
   if (isTRUE(x$single_level)) {
-    cat(sprintf("Latent profile analysis: %d profile%s\n",
-                x$n_profiles, if (x$n_profiles == 1L) "" else "s"))
+    cat(sprintf("%s%s: %s\n", toupper(substr(kind, 1L, 1L)), substring(kind, 2L),
+                plural(x$n_profiles, unit)))
   } else {
-    cat(sprintf("Two-level latent profile analysis: %d profile%s, %d group class%s\n",
-                x$n_profiles, if (x$n_profiles == 1L) "" else "s",
-                x$n_group_classes, if (x$n_group_classes == 1L) "" else "es"))
+    cat(sprintf("Two-level %s: %s, %s\n", kind, plural(x$n_profiles, unit),
+                plural(x$n_group_classes, "group class")))
   }
-  covariance_model <- x$covariance_model %||% "diagonal"
-  cat(sprintf("%d %s; %s %s residual covariance%s\n",
-              x$n_observations,
-              if (isTRUE(x$single_level)) "observations" else
-                sprintf("individuals in %d groups", x$n_groups),
-              x$variance_model, covariance_model,
-              if (is.null(x$covariance_structure)) "" else
-                sprintf(" (%s)", x$covariance_structure)))
+  units <- if (isTRUE(x$single_level)) "observations" else
+    sprintf("individuals in %d groups", x$n_groups)
+  measurement <- if (class_model) {
+    plural(n_categorical, "categorical indicator")
+  } else {
+    covariance_model <- x$covariance_model %||% "diagonal"
+    paste0(sprintf("%s %s residual covariance%s", x$variance_model,
+                   covariance_model,
+                   if (is.null(x$covariance_structure)) "" else
+                     sprintf(" (%s)", x$covariance_structure)),
+           if (n_categorical > 0L) sprintf(", %s",
+             plural(n_categorical, "categorical indicator")) else "")
+  }
+  cat(sprintf("%d %s; %s\n", x$n_observations, units, measurement))
+  if (class_model) {
+    cat("Classes are labelled profile_1, profile_2, ... in every table.\n")
+  }
   if (!identical(x$centering %||% "none", "none")) {
     cat(sprintf("Indicators %s-centred, so the profiles are profiles of change\n",
                 x$centering))
@@ -50,8 +68,9 @@ print.multilpa <- function(x, rows = 20L, ...) {
     cat(paste("Posterior mode under mclust's conjugate prior; the log likelihood",
               "and criteria below are unpenalized\n"))
   }
-  cat(sprintf("Log likelihood: %.6f | AIC: %.3f | BIC (groups): %.3f\n",
-              x$log_likelihood, x$aic, x$bic))
+  cat(sprintf("Log likelihood: %.6f | AIC: %.3f | %s: %.3f\n",
+              x$log_likelihood, x$aic,
+              if (isTRUE(x$single_level)) "BIC" else "BIC (groups)", x$bic))
   cat(sprintf("Converged: %s | iterations: %d | best start: %d/%d\n",
               x$converged, x$iterations, x$best_start, nrow(x$starts)))
   if (!is.null(x$n_informative) && x$n_informative < x$n_observations) {

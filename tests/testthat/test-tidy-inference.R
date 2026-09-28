@@ -143,8 +143,14 @@ test_that("the natural-scale covariance is what the reported intervals are built
   estimation <- vcov(plain$fit, data = plain$data, scale = "unconstrained")
 
   expect_equal(inference$standard_error, unname(sqrt(pmax(diag(natural), 0))))
-  expect_equal(inference$conf_low,
-               inference$estimate - stats::qnorm(0.975) * inference$standard_error)
+  # Symmetric where the parameter is unbounded; the bounded ones are formed
+  # on the logit or log scale (test-diagnostics.R checks that transform).
+  real <- latents:::.multilpa_interval_kind(
+    inference$parameter, inference$term,
+    latents:::.multilpa_continuous_names(plain$fit)) == "real"
+  expect_equal(inference$conf_low[real],
+               inference$estimate[real] - stats::qnorm(0.975) *
+                 inference$standard_error[real])
   # The natural matrix is singular because every set of probabilities sums to
   # one; the estimation-scale matrix drops those references and is not.
   expect_equal(nrow(natural), length(coef(plain$fit)))

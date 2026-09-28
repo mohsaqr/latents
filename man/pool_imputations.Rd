@@ -96,18 +96,15 @@ Warnings from the individual fits are passed on as they are raised.
 
 \examples{
 set.seed(1)
-example_data <- data.frame(group = rep(seq_len(30), each = 8),
-                           z = rnorm(240))
-example_data$y <- rnorm(240,
-  ifelse(runif(240) < plogis(example_data$z), -2, 2))
-# Two stand-in "imputations" of a covariate with a few values missing.
+# Two stand-in completed data sets. With real missing covariates, pass the
+# `mids` object mice::mice() returns instead.
 completed <- lapply(1:2, function(i) {
-  copy <- example_data
-  copy$z[1:5] <- rnorm(5)
-  copy
+  within(subset(course_engagement, student <= 40),
+         previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))
 })
-pooled <- pool_imputations(completed, "y", "group", n_profiles = 2,
-                           n_group_classes = 1, profile_covariates = "z",
+pooled <- pool_imputations(completed, c("browse", "lectures", "forum_read"),
+                           "student", n_profiles = 2, n_group_classes = 1,
+                           profile_covariates = "previous_grade",
                            n_starts = 2, seed = 1)
 pooled
 get_results(pooled, "fits")

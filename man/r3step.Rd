@@ -66,8 +66,8 @@ clustered standard errors. For \code{level = "individuals"} on a covariate-free
 \value{
 A base \code{data.frame} with one row per non-reference class and term,
 and the columns \code{level}, \code{outcome}, \code{term}, \code{estimate}, \code{standard_error},
-\code{statistic}, \code{p_value}, \code{p_value_adjusted}, \code{conf_low} and \code{conf_high}.
-\code{p_value} is uncorrected and \code{p_value_adjusted} carries the correction named
+\code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and \code{conf_high}.
+\code{p_value} is uncorrected and \code{p_adjusted} carries the correction named
 by \code{adjust}, which is also recorded in the result's \code{adjust} attribute;
 it is \code{NA} on the intercept rows, which are not part of the tested family.
 A coefficient with zero standard error has an undefined Wald statistic and

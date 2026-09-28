@@ -87,17 +87,8 @@ groups than parameters.
 }
 
 \examples{
-set.seed(1)
-panel <- data.frame(person = rep(seq_len(60), each = 4),
-                    wave = rep(seq_len(4), 60))
-state <- unlist(lapply(seq_len(60), function(person) {
-  Reduce(function(previous, wave) {
-    if (stats::runif(1) < 0.2) 3L - previous else previous
-  }, 2:4, init = sample(1:2, 1), accumulate = TRUE)
-}))
-panel$score_a <- stats::rnorm(240, c(0, 2)[state])
-panel$score_b <- stats::rnorm(240, c(0, 2)[state])
-fit <- lta(panel, c("score_a", "score_b"), "person", n_profiles = 2,
-           time = "wave", n_starts = 2, seed = 1)
+fit <- lta(subset(course_engagement, student <= 40),
+           c("browse", "lectures", "forum_read"), "student",
+           n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 parameter_inference(fit)
 }

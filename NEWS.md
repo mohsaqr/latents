@@ -1,5 +1,87 @@
 # latents (development version)
 
+## Single-level verbs, covariance-structure grids and workflow vignettes
+
+* New `lpa()` and `lca()` fit single-level latent profile and latent class
+  models. They are `multilpa(id = NULL)` and `multilca(id = NULL)` under
+  their ordinary names, return the same object, and refuse `id` and
+  `n_group_classes`.
+* `multilpa()` and `lpa()` take `model`, the three-letter covariance code
+  (`"EEE"`, `"VVI"`, ...), as an alternative to `variance_model` /
+  `covariance_model` or `volume` / `shape` / `orientation`; giving both is an
+  error.
+* New `enumerate_lpa()` and `enumerate_lca()` compare single-level latent
+  profile and latent class models, as `lpa()` and `lca()` fit one:
+  `enumerate_lpa(data, vars, n_profiles = 1:6)` crosses the counts with the
+  covariance structures, and `enumerate_lca(data, vars, n_classes = 1:6)`
+  treats every indicator as categorical. `enumerate_classes()` remains the
+  verb for nested data and needs `id`.
+* The two-level verbs (`multilpa()`, `multilca()`, `enumerate_classes()`)
+  with `id = NULL` say which analysis was estimated -- a single-level latent
+  profile or latent class analysis -- and name the single-level verbs; called
+  without `id` they are refused with the same pointer.
+* `enumerate_classes(model = )` now defaults to `"basic"`: the four
+  structures that combine equal or varying variances with covariances absent
+  or present (`EEI`, `VVI`, `EEE`, `VVV`). `"all"` fits the 14 structures;
+  codes can still be named. With one continuous indicator the structures that
+  coincide are fitted once; with only categorical indicators no structure is
+  crossed; a structure set through the other arguments replaces the default,
+  and `model = NULL` restores the previous grid. Because a grid now holds
+  several structures per class count, `candidate_fit()` needs `model` to
+  pick one of them.
+* New data set `srl`: five self-regulated learning scales for 300
+  respondents simulated by a large language model.
+* New vignettes `vignette("workflow-lpa")` and `vignette("workflow-lca")`:
+  a latent profile and a latent class analysis from the data to a reported
+  model.
+* `get_results(fit, "profiles")` and `get_results(fit, "responses")` carry
+  `mean_standard_error`, `variance_standard_error` and
+  `probability_standard_error` without the data being passed; they are `NA`,
+  with a message, when the information matrix cannot be formed.
+* `diagnostics()` draws its classification plots by default
+  (`plots = TRUE`): profile sizes, posterior probabilities, entropy
+  contributions and the average posterior probability matrix.
+* `plot(what = "raincloud")`: for each profile and indicator, the density,
+  a quartile box and the observations.
+* Wald intervals for probabilities are formed on the logit scale and for
+  variances on the log scale, so they stay inside the parameter's range;
+  `confint()` returns exactly the intervals `parameter_inference()` reports.
+* A probability at or below 1e-6 counts as on its bound for inference: EM
+  approaches zero slowly and stopped at 1e-8, leaving a singular information
+  matrix that `boundary = "fix"` could not hold.
+* `r3step()` and `three_step()` name their adjusted p-value `p_adjusted` and
+  their classes `profile_1`, `group_class_1`, as `parameter_inference()` does
+  (were `p_value_adjusted` and `class_1`).
+* `id = NULL` now raises its `latents_single_level` notice as a message, not
+  a warning: a single-level model is a legitimate choice.
+* `diagnostics()` prints only the individual level for a fit with one group
+  class, and a single-level fit's assignments carry no `group_class` column.
+* `plot(what = "profiles")` draws 95% intervals when the fit has standard
+  errors (`intervals = TRUE`, profiles dodged apart);
+  `plot(what = "responses")` draws intervals too.
+* `plot(what = "bars")` and the profile plot no longer fail on a bound-active
+  or unconverged fit: they draw without whiskers and the subtitle says why.
+* `plot(what = "heatmap")` on an all-categorical fit draws the response
+  probabilities: one row per class, one column per category, values printed
+  where they fit.
+* Covariate fits draw every measurement and classification view
+  (`"bars"`, `"heatmap"`, `"raincloud"`, `"sizes"`, `"avepp"` are new for
+  them).
+* The enumeration plot uses display names (AIC, BIC, ICL), draws one BIC
+  panel when the group-level and individual-level values coincide (a
+  single-level grid), labels series only by what distinguishes them, and
+  spaces labels by the text height. Gridlines and zero lines stay inside the
+  panel. Okabe-Ito yellow now comes seventh, after the six colours that read
+  well on the light panel.
+* `summary()` of an enumeration prints a compact candidates table and names
+  `get_results()` for the rest.
+* An all-categorical fit prints as a latent class analysis rather than with
+  a residual covariance, and a single-level fit's header reads "BIC".
+* A covariate fit with one group class names its membership intercept
+  `(Intercept)`, not `group_class_1`.
+* Help-page examples use the bundled data sets and verbs, with no `$` or
+  bracket indexing; a test keeps it that way.
+
 ## Bootstrap likelihood-ratio tests with missing data and covariates
 
 * `bootstrap_lrt()` now accepts fits made with `missing = "fiml"`: every

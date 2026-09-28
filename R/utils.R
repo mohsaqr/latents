@@ -106,3 +106,63 @@
   if (ncol(x) == 0L) return(rep(-Inf, nrow(x)))
   do.call(pmax, lapply(seq_len(ncol(x)), function(column) x[, column]))
 }
+
+#' Raise a classed message
+#'
+#' Base R builds classed errors and warnings (`errorCondition()`,
+#' `warningCondition()`) but has no constructor for a message, so a notice
+#' that a caller may want to silence by class is built here.
+#' @param text The message text.
+#' @param class The condition class, first in the class vector.
+#' @return `NULL`, invisibly. Called for its side effect.
+#' @noRd
+.multilpa_notice <- function(text, class) {
+  condition <- structure(list(message = paste0(text, "\n"), call = NULL),
+                         class = c(class, "message", "condition"))
+  message(condition)
+  invisible(NULL)
+}
+
+#' Say that a two-level verb fitted a single-level model
+#'
+#' `multilpa()`, `multilca()` and `enumerate_classes()` are the verbs for
+#' observations nested in groups. Given `id = NULL` they fit the single-level
+#' model, which is a legitimate choice, so this is a message rather than a
+#' warning; it names the analysis that was estimated and the verbs that fit it
+#' by name. `lpa()`, `lca()`, `enumerate_lpa()` and `enumerate_lca()` muffle
+#' it, since their names already say it.
+#'
+#' @param latent_class Whether every indicator is categorical.
+#' @return `NULL`, invisibly, after signalling a `latents_single_level`
+#'   message.
+#' @noRd
+.multilpa_single_level_notice <- function(latent_class = FALSE) {
+  analysis <- if (isTRUE(latent_class)) "latent class" else "latent profile"
+  verbs <- if (isTRUE(latent_class)) "`lca()` and `enumerate_lca()`" else
+    "`lpa()` and `enumerate_lpa()`"
+  .multilpa_notice(sprintf(paste(
+    "A single-level %s analysis was estimated: every row is an independent",
+    "observation and no group classes are estimated. For single-level data",
+    "use %s; for observations nested in groups, pass the grouping column as",
+    "`id`."), analysis, verbs),
+    class = "latents_single_level")
+  invisible(NULL)
+}
+
+#' Refuse a two-level verb called without `id`
+#'
+#' R's own error for a missing argument names the argument but not what to do.
+#' A caller who left `id` out usually has single-level data and wants the verb
+#' that fits it by name.
+#'
+#' @param verb The two-level verb, and `single` the single-level verbs to
+#'   point to.
+#' @return Does not return; raises `latents_bad_argument`.
+#' @noRd
+.multilpa_missing_id <- function(verb, single) {
+  stop(errorCondition(sprintf(paste(
+    "`%s()` is for observations nested in groups and needs the grouping",
+    "column as `id`. For single-level data use %s, or pass `id = NULL`."),
+    verb, single),
+    class = "latents_bad_argument", call = NULL))
+}

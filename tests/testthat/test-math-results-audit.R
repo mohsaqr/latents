@@ -14,7 +14,7 @@ test_that("missing-row information criteria agree across all result accessors", 
                -2 * ll + 2 * log(length(y)), tolerance = 1e-8)
   expect_equal(individual$value[individual$criterion == "bic"], fit$bic_individual)
   grid <- enumerate_classes(d, "y", "g", n_profiles = 1, n_group_classes = 1,
-                            missing = "fiml", n_starts = 1)
+                            missing = "fiml", model = NULL, n_starts = 1)
   expect_equal(grid$table$bic_individual, grid$fits[[1]]$bic_individual)
   expect_equal(get_results(fit, "information_criteria", format = "long"),
                criteria)

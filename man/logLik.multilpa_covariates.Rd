@@ -20,13 +20,9 @@ parameter count as \code{df}, and the number of observed groups as \code{nobs}, 
 Extract a covariate LPA log likelihood
 }
 \examples{
-set.seed(1)
-example_data <- data.frame(group = rep(seq_len(20), each = 10),
-                           z = rnorm(200))
-example_data$y <- rnorm(200,
-  ifelse(runif(200) < plogis(example_data$z), -3, 3))
-fit <- multilpa(example_data, "y", "group", n_profiles = 2,
-                n_group_classes = 1, profile_covariates = "z",
-                n_starts = 2, seed = 1)
+fit <- multilpa(subset(course_engagement, student <= 40),
+                c("browse", "lectures", "forum_read"), "student",
+                n_profiles = 2, n_group_classes = 1,
+                profile_covariates = "previous_grade", n_starts = 2, seed = 1)
 logLik(fit)
 }

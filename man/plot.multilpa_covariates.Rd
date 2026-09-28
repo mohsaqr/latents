@@ -6,7 +6,9 @@
 \usage{
 \method{plot}{multilpa_covariates}(
   x,
-  what = c("profiles", "sequences", "entropy", "posteriors", "responses", "all"),
+  what = c("profiles", "bars", "heatmap", "raincloud", "responses", "sequences", "sizes",
+    "entropy", "posteriors", "avepp", "all"),
+  data = NULL,
   scale = c("raw", "standardized"),
   category = "last",
   labels = TRUE,
@@ -17,22 +19,26 @@
   linetypes = NULL,
   style = .multilpa_style(),
   cell_labels = TRUE,
+  intervals = TRUE,
   ...
 )
 }
 \arguments{
 \item{x}{A fitted \code{multilpa_covariates} model.}
 
-\item{what}{\code{"profiles"} (the default) draws the measurement model;
-\code{"sequences"} draws the assignments in course order and needs a fit made
-with \verb{time =}. \code{"entropy"} and \code{"posteriors"} draw the two case-level
+\item{what}{\code{"profiles"} (the default) draws the measurement model, and
+\code{"bars"} and \code{"heatmap"} draw it as \code{\link[=plot.multilpa]{plot.multilpa()}} does (for an
+all-categorical fit the heatmap shows the response probabilities);
+\code{"sizes"} and \code{"avepp"} draw the effective profile sizes and the average
+posterior matrix. \code{"sequences"} draws the assignments in course order and
+needs a fit made with \verb{time =}. \code{"entropy"} and \code{"posteriors"} draw the two case-level
 classification diagnostics exactly as \code{\link[=plot.multilpa]{plot.multilpa()}} draws them: they
 read the individual posteriors, which a covariate fit has, and say nothing
 about prevalence, which it does not. \code{"responses"} draws the categorical
 response probabilities, one line per profile, as \code{\link[=plot.multilpa]{plot.multilpa()}} does;
 the measurement model does not depend on the covariates.}
 
-\item{scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, category, ...}{Passed through as in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
+\item{data, scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, category, intervals, ...}{As in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
 }
 \value{
 The fitted model, invisibly. Called for the side effect of drawing.

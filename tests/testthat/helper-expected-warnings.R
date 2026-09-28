@@ -39,6 +39,10 @@ quietly <- function(expr, classes = .multilpa_expected_warnings) {
     expr,
     warning = function(w) {
       if (inherits(w, classes)) invokeRestart("muffleWarning")
+    },
+    # The single-level notice is a message; it is muffled with the rest.
+    message = function(m) {
+      if (inherits(m, classes)) invokeRestart("muffleMessage")
     }
   )
 }

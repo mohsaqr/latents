@@ -39,6 +39,7 @@
 #' get_results(fit, "profile_probabilities")
 #' @export
 multilca <- function(data, vars, id, n_profiles, n_group_classes = 2L, ...) {
+  if (missing(id)) .multilpa_missing_id("multilca", "`lca()`")
   stopifnot("`vars` must be a character vector of column names" =
               is.character(vars) && length(vars) >= 1L && !anyNA(vars))
   if ("categorical" %in% names(list(...))) {

@@ -14,8 +14,10 @@
 #' @param x A fitted model of this package.
 #' @param data Optional. The data the model was fitted to. A fit carries the
 #'   columns it was built from, so this is only needed to override them.
-#' @param plots `TRUE` also draws the classification plots, as a side effect,
-#'   before returning. Equivalent to calling `plot()` on the result.
+#' @param plots `TRUE`, the default, also draws the four classification plots
+#'   (effective profile sizes, posterior probabilities of the assigned
+#'   profiles, entropy contributions, and the average posterior probability
+#'   matrix), as `plot()` on the result does. `FALSE` returns the tables only.
 #' @param by `"profile"`, the default, assesses each profile's bivariate
 #'   residuals separately; `"overall"` pools them. It is the one argument of a
 #'   gathered table this function forwards, because it is the one that changes
@@ -35,8 +37,11 @@
 #'
 #'   `print()` returns the object invisibly, having printed one line per
 #'   diagnostic: relative entropy, smallest class, lowest average posterior and
-#'   largest residual, at each level the fit has. `plot()` returns the object
-#'   invisibly, having drawn the case-level entropy and posterior panels.
+#'   largest residual, at each level the fit has. `plot()` draws every
+#'   classification plot in one call -- the effective profile sizes, the
+#'   posterior probability of each case's assigned profile, each case's entropy
+#'   contribution, and the average posterior probability matrix -- and returns
+#'   the object invisibly.
 #'   `as.data.frame()` returns the entropy table, the primary one.
 #' @seealso [get_results()] for these tables and every other one, [descriptives()]
 #'   for the before-the-fit counterpart, and [summary()] for what the model
@@ -53,7 +58,7 @@
 #' get_results(quality, what = "classification")
 #' get_results(diagnostics(fit, by = "overall"), what = "residuals")
 #' @export
-diagnostics <- function(x, data = NULL, plots = FALSE,
+diagnostics <- function(x, data = NULL, plots = TRUE,
                         by = c("profile", "overall"), ...) {
   stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x),
             "`plots` must be TRUE or FALSE" = isTRUE(plots) || isFALSE(plots))
@@ -100,12 +105,17 @@ print.multilpa_diagnostics <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
   fit <- x$fit
   cat(sprintf("Classification quality: %d profiles", fit$n_profiles))
-  if (!is.null(fit$n_group_classes)) cat(sprintf(", %d group classes", fit$n_group_classes))
+  one_group_class <- is.null(fit$n_group_classes) ||
+    identical(as.integer(fit$n_group_classes), 1L)
+  if (!one_group_class) cat(sprintf(", %d group classes", fit$n_group_classes))
   cat("\n\n")
   # `split()` orders alphabetically, which would print groups before
   # individuals on one line and after it on the next. The reporting order is
   # fixed once here so every line reads the same way.
   entropy <- x$entropy
+  # With one group class the group level classifies nothing, so only the
+  # individual level is worth a column.
+  if (one_group_class) entropy <- entropy[entropy$level == "individuals", , drop = FALSE]
   levels_in_order <- entropy$level
   line <- function(label, values) {
     cat(sprintf("  %-20s %s\n", label, paste(values, collapse = "    ")))
@@ -169,14 +179,22 @@ print.multilpa_diagnostics <- function(x, ...) {
 plot.multilpa_diagnostics <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
   # Drawn from the fit's posteriors directly rather than through
-  # `plot(fit, what = )`. The two panels need only the individual posteriors and
+  # `plot(fit, what = )`. The panels need only the individual posteriors and
   # the effective profile counts, which every family carries, while not every
   # family's `plot()` method offers the full `what` catalogue -- a covariate
   # fit's takes "profiles" and "sequences" only -- so dispatching through the
   # generic asked those fits for a view their method had never heard of and
   # failed on the match.
-  .multilpa_plot_case_diagnostic(x$fit, what = "entropy", ...)
-  .multilpa_plot_case_diagnostic(x$fit, what = "posteriors", ...)
+  style <- utils::modifyList(.multilpa_style(), list(...))
+  previous <- graphics::par(no.readonly = TRUE)
+  previous$mfg <- NULL
+  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
+  graphics::par(xpd = NA)
+  fit <- x$fit
+  .multilpa_plot_sizes(fit, NULL, NULL, NULL, style)
+  .multilpa_plot_case_diagnostic(fit, what = "posteriors", ...)
+  .multilpa_plot_case_diagnostic(fit, what = "entropy", ...)
+  .multilpa_plot_avepp(fit, NULL, NULL, style)
   invisible(x)
 }
 

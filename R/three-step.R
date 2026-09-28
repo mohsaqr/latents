@@ -194,7 +194,7 @@
 #'   returns: one row per pair with the columns `level`, `method`, `class`,
 #'   `reference_class`, `estimate` (the mean of `class` minus the mean of
 #'   `reference_class`), `standard_error`, `statistic`, `p_value`,
-#'   `p_value_adjusted`, `conf_low` and `conf_high`, matching [r3step()].
+#'   `p_adjusted`, `conf_low` and `conf_high`, matching [r3step()].
 #'   A contrast with zero standard error has no defined test statistic or
 #'   p-value; those columns are `NA_real_` rather than a spurious finite test.
 #'
@@ -204,7 +204,7 @@
 #'   inside those groups; `vcov_type = "independent"` gives the unclustered
 #'   variance instead. The variance that was used is recorded in the result's
 #'   `vcov_type` attribute, and for `contrast = "pairs"` the correction applied
-#'   to `p_value_adjusted` is recorded in its `adjust` attribute. A
+#'   to `p_adjusted` is recorded in its `adjust` attribute. A
 #'   `contrast = "none"` table tests nothing, so it carries no `adjust`
 #'   attribute.
 #' @details The correction assumes the outcome is independent of the assigned
@@ -369,7 +369,7 @@ three_step <- function(x, data, outcome,
     level = level, method = method, class = pairs[2L, ],
     reference_class = pairs[1L, ], estimate = difference,
     standard_error = errors, statistic = statistic, p_value = raw,
-    p_value_adjusted = stats::p.adjust(raw, method = adjust),
+    p_adjusted = stats::p.adjust(raw, method = adjust),
     conf_low = difference - quantile * errors,
     conf_high = difference + quantile * errors,
     row.names = NULL, stringsAsFactors = FALSE)
@@ -471,8 +471,8 @@ three_step <- function(x, data, outcome,
 #'   [multilpa()] fit only; refused with `latents_bad_argument` otherwise.
 #' @return A base `data.frame` with one row per non-reference class and term,
 #'   and the columns `level`, `outcome`, `term`, `estimate`, `standard_error`,
-#'   `statistic`, `p_value`, `p_value_adjusted`, `conf_low` and `conf_high`.
-#'   `p_value` is uncorrected and `p_value_adjusted` carries the correction named
+#'   `statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`.
+#'   `p_value` is uncorrected and `p_adjusted` carries the correction named
 #'   by `adjust`, which is also recorded in the result's `adjust` attribute;
 #'   it is `NA` on the intercept rows, which are not part of the tested family.
 #'   A coefficient with zero standard error has an undefined Wald statistic and
@@ -686,7 +686,9 @@ r3step <- function(x, data, covariates,
   valid <- is.finite(errors) & errors > 0
   statistic[valid] <- estimates[valid] / errors[valid]
   quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
-  labels <- expand.grid(term = terms, outcome = paste0("class_", seq_len(n_free)),
+  # Named as parameter_inference() names the same classes.
+  prefix <- if (identical(level, "groups")) "group_class_" else "profile_"
+  labels <- expand.grid(term = terms, outcome = paste0(prefix, seq_len(n_free)),
                         stringsAsFactors = FALSE)
   raw <- rep(NA_real_, length(errors))
   raw[valid] <- 2 * stats::pnorm(-abs(statistic[valid]))
@@ -699,7 +701,7 @@ r3step <- function(x, data, covariates,
   result <- data.frame(
     level = level, outcome = labels$outcome, term = labels$term,
     estimate = estimates, standard_error = errors, statistic = statistic,
-    p_value = raw, p_value_adjusted = adjusted,
+    p_value = raw, p_adjusted = adjusted,
     conf_low = estimates - quantile * errors,
     conf_high = estimates + quantile * errors,
     row.names = NULL, stringsAsFactors = FALSE)
@@ -861,10 +863,10 @@ r3step <- function(x, data, covariates,
   ## classes, both stored column-major, so `expand.grid()` with the row index
   ## varying fastest labels them in the order they are packed.
   alpha_labels <- expand.grid(term = paste0("group_class_", seq_len(n_group_classes)),
-                              outcome = paste0("class_", seq_len(n_free)),
+                              outcome = paste0("profile_", seq_len(n_free)),
                               stringsAsFactors = FALSE)
   beta_labels <- expand.grid(term = terms,
-                             outcome = paste0("class_", seq_len(n_free)),
+                             outcome = paste0("profile_", seq_len(n_free)),
                              stringsAsFactors = FALSE)
   labels <- rbind(
     data.frame(level = "individuals", outcome = alpha_labels$outcome,
@@ -888,7 +890,7 @@ r3step <- function(x, data, covariates,
   quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
   result <- data.frame(
     labels, estimate = estimates, standard_error = errors_se,
-    statistic = statistic, p_value = raw, p_value_adjusted = adjusted,
+    statistic = statistic, p_value = raw, p_adjusted = adjusted,
     conf_low = estimates - quantile * errors_se,
     conf_high = estimates + quantile * errors_se,
     row.names = NULL, stringsAsFactors = FALSE)

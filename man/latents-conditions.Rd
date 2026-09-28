@@ -237,10 +237,11 @@ not valid at that parameter.}
 membership below one, so it is supported by less than one observation.}
 \item{\code{latents_failed_replicates}}{Some bootstrap replicates failed
 validation, so the bootstrap p-value is \code{NA}.}
-\item{\code{latents_single_level}}{\code{id = NULL} was passed, so the fit has one
-observation per unit and no second level. Raised by \code{\link[=multilpa]{multilpa()}} on every
-such fit: this package is for the two-level model, and fitting the
-one-level reduction of it is a choice worth stating out loud.}
+\item{\code{latents_single_level}}{A message, not a warning: \code{id = NULL} was
+passed, so the fit has one observation per unit and no second level.
+Raised by \code{\link[=multilpa]{multilpa()}} on every such fit and once by an
+\code{\link[=enumerate_classes]{enumerate_classes()}} grid; \code{suppressMessages()} or a
+\code{latents_single_level} handler silences it.}
 \item{\code{latents_bootstrap_dropped}}{Some resamples did not produce a usable
 fit and were left out of the interval. Raised by
 \code{parameter_inference(method = "bootstrap")}, naming how many, so the

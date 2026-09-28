@@ -4,7 +4,7 @@
 activity <- c("browse", "lectures", "forum_read")
 quiet_single <- function(expression) {
   withCallingHandlers(expression, latents_single_level = function(w) {
-    invokeRestart("muffleWarning")
+    invokeRestart("muffleMessage")
   })
 }
 

@@ -650,10 +650,12 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   list(
     profiles = .multilpa_table(
       function(x, data = NULL, scale = c("raw", "standardized"))
-        .multilpa_profile_frame(x, data = data, scale = match.arg(scale)),
+        .multilpa_profile_frame(x, data = data, scale = match.arg(scale),
+                                standard_errors = TRUE),
       c("data", "scale")),
     responses = .multilpa_table(
-      function(x, data = NULL) .multilpa_response_frame(x, data = data),
+      function(x, data = NULL) .multilpa_response_frame(x, data = data,
+                                                        standard_errors = TRUE),
       "data"),
     covariances = .multilpa_table(.multilpa_covariance_frame))
 }
@@ -919,8 +921,11 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   stopifnot("`rows` must be a single non-negative whole number" =
               is.numeric(rows) && length(rows) == 1L && is.finite(rows) &&
               rows >= 0 && rows == as.integer(rows))
-  table <- get_results(x)
   name <- names(.multilpa_catalogue(x))[1L]
+  # Printing shows the estimates; the standard errors belong to the tables
+  # asked for by name, and computing them on every print would be slow.
+  table <- if (identical(name, "profiles")) .multilpa_profile_frame(x) else
+    get_results(x)
   ## The Gaussian measurement is printed one row per profile. Everything else
   ## keeps the catalogue's own shape, which is already one row per thing.
   if (identical(name, "profiles") && nrow(table) > 0L) {
@@ -943,7 +948,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     return(invisible(NULL))
   }
   if (nrow(table) == 0L && length(x$categorical %||% character()) > 0L) {
-    table <- get_results(x, "responses")
+    table <- .multilpa_response_frame(x)
     name <- "responses"
   }
   if (nrow(table) == 0L) return(invisible(NULL))

@@ -30,6 +30,7 @@ multilpa(
   volume = NULL,
   shape = NULL,
   orientation = NULL,
+  model = NULL,
   select_start = c("likelihood", "converged"),
   prior = NULL,
   noise = FALSE,
@@ -49,7 +50,7 @@ forgotten grouping would otherwise be fitted as a different model without
 saying so. Passing \code{id = NULL} explicitly fits a \strong{single-level} model:
 the observations are treated as independent, each row is its own unit, and
 \code{n_group_classes} becomes one. That fit raises a \code{latents_single_level}
-warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
+message saying so. This is the ordinary Gaussian or latent-class mixture that the
 two-level model reduces to, and every verb of this package works on it. The
 unit column is fabricated internally as \code{.observation}; it is not returned
 by \code{get_results(x, "data")}, and a \code{data} that already has a column of that
@@ -228,6 +229,15 @@ as many dimensions as the structure has parameters, and carried to the
 reported variances and covariances by the delta method.
 \code{method = "bootstrap"} is available for all fourteen as well.}
 
+\item{model}{The covariance structure named by its mclust code, one of
+\code{"EII"}, \code{"VII"}, \code{"EEI"}, \code{"VEI"}, \code{"EVI"}, \code{"VVI"}, \code{"EEE"}, \code{"VEE"},
+\code{"EVE"}, \code{"VVE"}, \code{"EEV"}, \code{"VEV"}, \code{"EVV"}, \code{"VVV"}: the first letter is
+the volume, the second the shape and the third the orientation, each
+equal (\code{E}) or varying (\code{V}) across profiles, with \code{I} for axis-aligned
+(no covariances). The same codes \code{\link[=enumerate_classes]{enumerate_classes()}} takes. Use it
+instead of \code{variance_model}/\code{covariance_model} or
+\code{volume}/\code{shape}/\code{orientation}, not together with them.}
+
 \item{select_start}{Which start the fit reports. \code{"likelihood"}, the
 default, takes the highest log likelihood across starts, preferring a
 converged start only among those tied with it to within a relative
@@ -352,18 +362,10 @@ likelihood across starts is returned, even if that start did not converge;
 \code{starts} show which was chosen. Profile and group-class labels are arbitrary.
 }
 \examples{
-set.seed(7)
-# Two kinds of school, differing only in how often a pupil scores highly.
-example_data <- data.frame(
-  school = rep(seq_len(24), each = 10),
-  school_type = rep(c("mixed", "high"), each = 120)
-)
-example_data$high <- rbinom(240, 1L,
-  ifelse(example_data$school_type == "high", 0.8, 0.2))
-example_data$score_a <- rnorm(240, mean = 2 * example_data$high)
-example_data$score_b <- rnorm(240, mean = 2 * example_data$high)
-
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+# Course sessions nested in students: engagement profiles of sessions, and
+# classes of students that differ in how often they are engaged.
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit <- multilpa(course_engagement, activity, "student",
                 n_profiles = 2, n_group_classes = 2, n_starts = 4,
                 seed = 42)
 summary(fit)

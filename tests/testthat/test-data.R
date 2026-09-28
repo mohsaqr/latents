@@ -293,7 +293,7 @@ test_that("previous_grade predicts engagement, as the data are documented to", {
                                        covariates = "previous_grade")),
                   term == "previous_grade")
   expect_identical(nrow(slope), 1L)
-  expect_identical(slope$outcome, "class_1")
+  expect_identical(slope$outcome, "profile_1")
   # A student who did well in the previous course is more likely to be engaged
   # in this one. Reported with its interval, not its p-value alone.
   expect_gt(slope$estimate, 0)

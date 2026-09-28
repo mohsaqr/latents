@@ -157,7 +157,13 @@ probability, a residual variance on the covariance diagonal -- carries \code{NA}
 for \code{statistic}, \code{p_value} and \code{p_adjusted}, because a Wald test against
 that boundary is not a question worth asking; the interval still is. All
 class probabilities are reported; their sum constraints make the natural
-covariance singular. Wald intervals are not clipped to parameter bounds.
+covariance singular. Wald intervals for probabilities are formed on the
+logit scale and for variances (and covariance diagonals) on the log
+scale, then mapped back with the same standard error, so they stay inside
+the parameter's range and widen towards the far side of a bound; every
+other interval is \verb{estimate +/- z * standard_error}. \code{confint()} returns
+the same intervals. A probability at or below 1e-6 is treated as on its
+bound (refused, or held by \code{boundary = "fix"}).
 
 A fit made with \code{fixed} reports only the parameters it estimated: a held
 measurement block is a constant of this likelihood, so it contributes no

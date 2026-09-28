@@ -10,7 +10,7 @@ enumerate_classes(
   id,
   n_profiles = 1:4,
   n_group_classes = 1:3,
-  model = NULL,
+  model = "basic",
   seed = NULL,
   ...
 )
@@ -20,23 +20,34 @@ enumerate_classes(
 
 \item{vars}{Continuous indicator names.}
 
-\item{id}{Group identifier column name, or \code{NULL} to enumerate
-single-level models (every observation its own unit), the grid
-\code{mclust::mclustBIC()} searches.}
+\item{id}{The column that identifies the groups the observations are
+nested in (students in schools, reports in students). \code{NULL} enumerates
+single-level models, with a message; \code{\link[=enumerate_lpa]{enumerate_lpa()}} and
+\code{\link[=enumerate_lca]{enumerate_lca()}} fit those by name.}
 
 \item{n_profiles}{Positive integer profile counts to try.}
 
 \item{n_group_classes}{Positive integer group-class counts to try. With
 \code{id = NULL} it is 1 and may be left out.}
 
-\item{model}{Covariance models to try, as the three-letter codes
-\code{\link[=multilpa]{multilpa()}}'s \code{volume}, \code{shape} and \code{orientation} name: any of
-\code{"EII"}, \code{"VII"}, \code{"EEI"}, \code{"VEI"}, \code{"EVI"}, \code{"VVI"}, \code{"EEE"}, \code{"VEE"},
-\code{"EVE"}, \code{"VVE"}, \code{"EEV"}, \code{"VEV"}, \code{"EVV"}, \code{"VVV"}. Naming them crosses
-the models with the class counts, which is the grid model-based
-clustering is usually selected over, and adds a \code{model} column to the
-candidate table. \code{NULL}, the default, fits whatever the other arguments
-already asked for, and the grid is the one this verb has always fitted.}
+\item{model}{The covariance structures to cross with the class counts.
+\code{"basic"}, the default, fits the four structures that combine variances
+equal or varying across profiles with covariances absent or present:
+\code{"EEI"} (equal variances, no covariances), \code{"VVI"} (varying variances, no
+covariances), \code{"EEE"} (one covariance matrix shared by all profiles) and
+\code{"VVV"} (a covariance matrix for each profile). They are the choices that
+matter most in practice, since omitting covariances between correlated
+indicators makes the grid favour additional profiles. \code{"all"} fits all
+14 structures of Celeux and Govaert (1995). Otherwise name the structures
+by their three-letter codes, as \code{\link[=multilpa]{multilpa()}}'s \code{model} takes them: the
+letters give the volume, shape and orientation of each profile's
+covariance matrix, each equal (\code{E}) or varying (\code{V}) across profiles,
+with \code{I} for no covariances. \code{NULL} crosses no structures and fits
+whatever the other arguments ask for. With one continuous indicator the
+structures reduce to equal or varying variance, and codes that coincide
+are fitted once; with only categorical indicators there is no structure
+to cross. A structure set through \code{variance_model}, \code{covariance_model},
+\code{volume}, \code{shape} or \code{orientation} replaces the default.}
 
 \item{seed}{Optional reproducible seed for each fit.}
 
@@ -56,6 +67,13 @@ successful fits. Information criteria are descriptive: neither the smallest
 BIC nor high entropy guarantees the correct number of classes. Unconverged,
 boundary, and unreplicated fits are reported, not silently selected.
 }
+\section{Conditions}{
+
+\code{latents_bad_argument} when \code{model} names an unknown structure, when it is
+given together with another way of setting the structure, or when it is
+given although every indicator is categorical.
+}
+
 \examples{
 set.seed(1)
 d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
@@ -64,12 +82,16 @@ candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
 as.data.frame(candidates)
 summary(candidates)
 
-# Single level, crossing class counts with covariance structures:
-flowers <- setNames(iris[1:4], c("sepal_l", "sepal_w", "petal_l", "petal_w"))
-single <- enumerate_classes(flowers, names(flowers), id = NULL,
-                            n_profiles = 1:3, model = c("VVV", "EEE"),
-                            n_starts = 2, seed = 1)
+# Single level, crossing class counts with two named structures:
+single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
+                                "Petal.Length", "Petal.Width"),
+                        n_profiles = 1:3, model = c("VVV", "EEE"),
+                        n_starts = 2, seed = 1)
 summary(single)
+}
+\references{
+Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
+\emph{Pattern Recognition}, 28(5), 781--793.
 }
 \seealso{
 \code{\link[=candidate_fit]{candidate_fit()}} to take one fitted model out of the grid,

@@ -670,6 +670,12 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     conf_high = estimate + quantile * errors,
     row.names = NULL, stringsAsFactors = FALSE
   )
+  bounds <- .multilpa_wald_bounds(
+    result$estimate, result$standard_error,
+    .multilpa_interval_kind(result$parameter, result$term,
+                            .multilpa_continuous_names(object)), quantile)
+  result$conf_low <- bounds$low
+  result$conf_high <- bounds$high
   ## A Wald test of a variance against zero is meaningless; the interval is not.
   ## The same applies to a covariance on the diagonal, which is a variance; an
   ## off-diagonal covariance is a real hypothesis and keeps its test.

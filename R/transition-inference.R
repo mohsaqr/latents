@@ -377,18 +377,9 @@
 #'   the fit; `latents_too_few_groups` for robust or OPG errors with no more
 #'   groups than parameters.
 #' @examples
-#' set.seed(1)
-#' panel <- data.frame(person = rep(seq_len(60), each = 4),
-#'                     wave = rep(seq_len(4), 60))
-#' state <- unlist(lapply(seq_len(60), function(person) {
-#'   Reduce(function(previous, wave) {
-#'     if (stats::runif(1) < 0.2) 3L - previous else previous
-#'   }, 2:4, init = sample(1:2, 1), accumulate = TRUE)
-#' }))
-#' panel$score_a <- stats::rnorm(240, c(0, 2)[state])
-#' panel$score_b <- stats::rnorm(240, c(0, 2)[state])
-#' fit <- lta(panel, c("score_a", "score_b"), "person", n_profiles = 2,
-#'            time = "wave", n_starts = 2, seed = 1)
+#' fit <- lta(subset(course_engagement, student <= 40),
+#'            c("browse", "lectures", "forum_read"), "student",
+#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 #' parameter_inference(fit)
 #' @rdname parameter_inference.multilpa_transitions
 #' @export
@@ -419,6 +410,11 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
     conf_high = unname(estimates + critical * standard_errors),
     row.names = NULL, stringsAsFactors = FALSE)
   continuous <- .multilpa_continuous_names(x)
+  bounds <- .multilpa_wald_bounds(
+    result$estimate, result$standard_error,
+    .multilpa_interval_kind(result$parameter, result$term, continuous), critical)
+  result$conf_low <- bounds$low
+  result$conf_high <- bounds$high
   bounded <- result$parameter %in% c("variance", "probability", "response",
                                      "initial_probability",
                                      "transition_probability") |
@@ -539,7 +535,7 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
       "group before its last occasion, so its outgoing probabilities are not",
       "estimated and have no standard error."), "latents_boundary_fit")
   }
-  floor <- (x$min_probability %||% 1e-10) * (1 + 1e-7)
+  floor <- .multilpa_probability_floor(x)
   probabilities <- c(unlist(x$response_probabilities, use.names = FALSE),
                      x$initial_probabilities, x$transition_probabilities,
                      x$group_probabilities)

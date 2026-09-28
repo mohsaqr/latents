@@ -68,7 +68,7 @@ difference between two classes, and that is what \code{contrast = "pairs"}
 returns: one row per pair with the columns \code{level}, \code{method}, \code{class},
 \code{reference_class}, \code{estimate} (the mean of \code{class} minus the mean of
 \code{reference_class}), \code{standard_error}, \code{statistic}, \code{p_value},
-\code{p_value_adjusted}, \code{conf_low} and \code{conf_high}, matching \code{\link[=r3step]{r3step()}}.
+\code{p_adjusted}, \code{conf_low} and \code{conf_high}, matching \code{\link[=r3step]{r3step()}}.
 A contrast with zero standard error has no defined test statistic or
 p-value; those columns are \code{NA_real_} rather than a spurious finite test.
 
@@ -78,7 +78,7 @@ so they remain honest when the outcome is measured on observations nested
 inside those groups; \code{vcov_type = "independent"} gives the unclustered
 variance instead. The variance that was used is recorded in the result's
 \code{vcov_type} attribute, and for \code{contrast = "pairs"} the correction applied
-to \code{p_value_adjusted} is recorded in its \code{adjust} attribute. A
+to \code{p_adjusted} is recorded in its \code{adjust} attribute. A
 \code{contrast = "none"} table tests nothing, so it carries no \code{adjust}
 attribute.
 }

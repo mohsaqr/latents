@@ -213,7 +213,7 @@
 #' `max_iter = 0` there is no M-step at all, which previously left the field
 #' absent and the assembled fit unusable.
 #'
-#' @param expectation Expected counts from [.multilpa_transition_expectation()].
+#' @param expectation Expected counts from `.multilpa_transition_expectation()`.
 #' @return A group-classes-by-profiles numeric matrix whose rows sum to one.
 #' @noRd
 .multilpa_transition_prevalence <- function(expectation) {
@@ -309,7 +309,7 @@
 #' probabilities are new, and both are bounded multinomial shares.
 #'
 #' @param x Observation-by-indicator matrix.
-#' @param expectation Expected counts from [.multilpa_transition_expectation()].
+#' @param expectation Expected counts from `.multilpa_transition_expectation()`.
 #' @param variance_model Either varying or equal across profiles.
 #' @param min_variance Lower bound on every indicator variance.
 #' @param covariance_model Diagonal or full residual covariance.
@@ -939,14 +939,9 @@ as.data.frame.multilpa_transitions <- function(x, row.names = NULL, optional = F
 #'   return the fitted quantities.
 #' @seealso [get_results()], [lta()].
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-#' )
-#' example_data$score_a <- stats::rnorm(nrow(example_data))
-#' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- lta(example_data, c("score_a", "score_b"), "person",
-#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' fit <- lta(subset(course_engagement, student <= 40),
+#'            c("browse", "lectures", "forum_read"), "student",
+#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 #' print(fit)
 #' @export
 print.multilpa_transitions <- function(x, rows = 20L, ...) {
@@ -975,14 +970,9 @@ print.multilpa_transitions <- function(x, rows = 20L, ...) {
 #'   `nobs`. Groups are the independent units, because a group's occasions are
 #'   dependent by construction in this model.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-#' )
-#' example_data$score_a <- stats::rnorm(nrow(example_data))
-#' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- lta(example_data, c("score_a", "score_b"), "person",
-#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' fit <- lta(subset(course_engagement, student <= 40),
+#'            c("browse", "lectures", "forum_read"), "student",
+#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 #' logLik(fit)
 #' @export
 logLik.multilpa_transitions <- function(object, ...) {
@@ -999,14 +989,9 @@ logLik.multilpa_transitions <- function(object, ...) {
 #'   group are dependent by construction, so they are not independent
 #'   observations.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-#' )
-#' example_data$score_a <- stats::rnorm(nrow(example_data))
-#' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- lta(example_data, c("score_a", "score_b"), "person",
-#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' fit <- lta(subset(course_engagement, student <= 40),
+#'            c("browse", "lectures", "forum_read"), "student",
+#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 #' nobs(fit)
 #' @export
 nobs.multilpa_transitions <- function(object, ...) {
@@ -1025,14 +1010,9 @@ nobs.multilpa_transitions <- function(object, ...) {
 #'   `print()` reports the whole model.
 #' @seealso [get_results()] for the transition probabilities as a tidy table.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-#' )
-#' example_data$score_a <- stats::rnorm(nrow(example_data))
-#' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- lta(example_data, c("score_a", "score_b"), "person",
-#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' fit <- lta(subset(course_engagement, student <= 40),
+#'            c("browse", "lectures", "forum_read"), "student",
+#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 #' summary(fit)
 #' @export
 summary.multilpa_transitions <- function(object, ...) {
@@ -1109,14 +1089,9 @@ as.data.frame.summary_multilpa_transitions <- function(x, row.names = NULL, opti
 #' @param ... Additional arguments passed to matrix printing.
 #' @return The summary, invisibly; called for what it prints.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-#' )
-#' example_data$score_a <- stats::rnorm(nrow(example_data))
-#' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- lta(example_data, c("score_a", "score_b"), "person",
-#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' fit <- lta(subset(course_engagement, student <= 40),
+#'            c("browse", "lectures", "forum_read"), "student",
+#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 #' print(summary(fit), digits = 3)
 #' @export
 print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) {
@@ -1171,14 +1146,9 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
 #'   [vcov.multilpa_transitions()]. [get_results()] gives the same quantities
 #'   as tidy tables, which is the form to prefer.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-#' )
-#' example_data$score_a <- stats::rnorm(nrow(example_data))
-#' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- lta(example_data, c("score_a", "score_b"), "person",
-#'                        n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' fit <- lta(subset(course_engagement, student <= 40),
+#'            c("browse", "lectures", "forum_read"), "student",
+#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 #' coef(fit)
 #' @export
 coef.multilpa_transitions <- function(object, ...) {
@@ -1221,14 +1191,9 @@ coef.multilpa_transitions <- function(object, ...) {
 #'   network instead, and [plot.multilpa()] for the same views on a
 #'   cross-sectional fit.
 #' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-#' )
-#' example_data$score_a <- stats::rnorm(nrow(example_data))
-#' example_data$score_b <- stats::rnorm(nrow(example_data))
-#' fit <- lta(example_data, c("score_a", "score_b"), "person",
-#'            n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+#' fit <- lta(subset(course_engagement, student <= 40),
+#'            c("browse", "lectures", "forum_read"), "student",
+#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 #' plot(fit, what = "transitions")
 #' plot(fit, what = "profiles")
 #' @export

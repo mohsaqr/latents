@@ -65,7 +65,9 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   # reports what reporting it cost.
   uncertainty <- 1 - apply(class_posteriors, 1L, max)
   labels <- data.frame(profile = x$subject_profiles)
-  if (!is.null(x$group_classes)) {
+  # A single-level fit has one group class that every row belongs to, so the
+  # column would say nothing.
+  if (!is.null(x$group_classes) && !isTRUE(x$single_level)) {
     labels$group_class <- x$group_classes[x$group_index]
   }
   added <- cbind(labels, uncertainty = uncertainty, posteriors)
@@ -348,7 +350,10 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   # fitted input (indistinguishable duplicate input rows then share a fitted
   # posterior). A repeated group identifier alone cannot distinguish a swap
   # of two different observations within that group.
-  checkable <- c(if (!is.null(x$group_values) && !is.null(x$group_index)) x$id,
+  # A single-level fit's identifier is generated internally, so no caller's
+  # frame carries it; it is not a column the caller can be asked for.
+  checkable <- c(if (!is.null(x$group_values) && !is.null(x$group_index) &&
+                     !isTRUE(x$single_level)) x$id,
                  if (!is.null(x$time_values)) x$time,
                  colnames(x$indicator_data), colnames(x$categorical_data))
   measurements <- c(colnames(x$indicator_data), colnames(x$categorical_data))
@@ -408,7 +413,8 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' @return One row per profile and continuous indicator.
 #' @noRd
 .multilpa_profile_frame <- function(x, data = NULL,
-                                    scale = c("raw", "standardized")) {
+                                    scale = c("raw", "standardized"),
+                                    standard_errors = !is.null(data)) {
   scale <- match.arg(scale)
   vars <- .multilpa_continuous_names(x)
   n_profiles <- x$n_profiles
@@ -430,15 +436,20 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     # Derived rather than read from the fit, because not every result class
     # stores a standard-deviation matrix.
     standard_deviation = sqrt(as.vector(t(variances))))
-  if (is.null(data)) return(frame)
-  errors <- .multilpa_measurement_errors(x, data)
+  if (!isTRUE(standard_errors) || nrow(frame) == 0L) return(frame)
+  errors <- .multilpa_table_errors(x, data)
+  if (is.null(errors)) {
+    frame$mean_standard_error <- NA_real_
+    frame$variance_standard_error <- NA_real_
+    return(frame)
+  }
   row_spread <- rep(basis$spread, times = n_profiles)
   # Standardizing divides each estimate by a constant, so its standard error
   # divides by the same constant; a table must not mix the two scales.
   frame$mean_standard_error <- .multilpa_match_error(errors, "mean",
     frame$profile, frame$indicator) / row_spread
-  frame$variance_standard_error <- .multilpa_match_error(errors, "variance",
-    frame$profile, frame$indicator) / row_spread^2
+  frame$variance_standard_error <- .multilpa_variance_error(
+    errors, frame$profile, frame$indicator) / row_spread^2
   frame
 }
 
@@ -482,12 +493,43 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #' their own errors in the shape they already have.
 #'
 #' @param x A fitted model of this package.
-#' @param data The data frame the model was fitted to.
+#' @param data The data frame the model was fitted to, or `NULL` for the
+#'   columns the fit stores.
+#' @param boundary Passed to [parameter_inference()].
 #' @return The inference table, restricted to measurement parameters.
 #' @noRd
-.multilpa_measurement_errors <- function(x, data) {
-  inference <- parameter_inference(x, data)
+.multilpa_measurement_errors <- function(x, data, boundary = "error") {
+  inference <- parameter_inference(x, data, boundary = boundary)
   inference[inference$level == "measurement", , drop = FALSE]
+}
+
+#' Standard errors for a measurement table, or the reason there are none
+#'
+#' A measurement table carries its standard errors by default, computed from
+#' the data the fit stores. When the caller passed `data`, a fit that cannot
+#' supply them raises, as asked. By default the table is still returned, with
+#' the error columns missing-valued, and a classed message gives the reason
+#' (a bound-active or unconverged fit, singular information, or a family
+#' without inference).
+#' @param x A fitted model of this package.
+#' @param data The caller's `data`, or `NULL`.
+#' @param boundary Passed to [parameter_inference()].
+#' @return The measurement rows of the inference table, or `NULL`.
+#' @noRd
+.multilpa_table_errors <- function(x, data, boundary = "error") {
+  if (!is.null(data)) return(.multilpa_measurement_errors(x, data, boundary))
+  refusals <- c("latents_boundary_fit", "latents_no_converge",
+                "latents_singular_information", "latents_unsupported_inference",
+                "latents_unsupported_noise", "latents_incomplete_fit",
+                "latents_too_few_groups", "latents_bad_inference_data")
+  tryCatch(.multilpa_measurement_errors(x, NULL, boundary),
+           error = function(condition) {
+             if (!inherits(condition, refusals)) stop(condition)
+             .multilpa_notice(sprintf(
+               "No standard errors in this table: %s", conditionMessage(condition)),
+               class = "latents_no_standard_errors")
+             NULL
+           })
 }
 
 #' Look up one measurement standard error per requested cell
@@ -504,11 +546,38 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   wanted$standard_error[match(paste(profile, term, sep = "\r"), key)]
 }
 
+#' The standard error of each profile's variance on each indicator
+#'
+#' A variance is reported under different labels depending on the structure:
+#' as `variance` when the covariance is diagonal, as the diagonal `a:a` of the
+#' covariance when it is full, and with outcome `shared` when it is equal
+#' across profiles. All three are the variance the profile table reports.
+#' @param errors Measurement rows of an inference table.
+#' @param profile,indicator One value per output row.
+#' @return A numeric vector, `NA_real_` where no error is reported.
+#' @noRd
+.multilpa_variance_error <- function(errors, profile, indicator) {
+  diagonal <- errors$parameter == "covariance" &
+    vapply(strsplit(errors$term, ":", fixed = TRUE), function(pair) {
+      length(pair) == 2L && identical(pair[1L], pair[2L])
+    }, logical(1))
+  wanted <- errors[errors$parameter == "variance" | diagonal, , drop = FALSE]
+  if (nrow(wanted) == 0L) return(rep(NA_real_, length(profile)))
+  term <- sub(":.*$", "", wanted$term)
+  owner <- sub("^profile_", "", wanted$outcome)
+  specific <- match(paste(profile, indicator, sep = "\r"),
+                    paste(owner, term, sep = "\r"))
+  shared <- match(indicator, term[owner == "shared"])
+  shared_errors <- wanted$standard_error[owner == "shared"]
+  ifelse(is.na(specific), shared_errors[shared], wanted$standard_error[specific])
+}
+
 #' Categorical response probabilities as a tidy table
 #' @param x A fitted `multilpa` model.
 #' @return One row per profile, categorical indicator and category.
 #' @noRd
-.multilpa_response_frame <- function(x, data = NULL) {
+.multilpa_response_frame <- function(x, data = NULL,
+                                     standard_errors = !is.null(data)) {
   stopifnot("`x` must be a fitted model of this package, or its summary" =
               .multilpa_any_fit(x) || inherits(x, "summary_multilpa"))
   blocks <- x$response_probabilities
@@ -531,8 +600,14 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       threshold = as.vector(thresholds))
   })
   frame <- do.call(rbind, rows)
-  if (is.null(data)) return(frame)
-  errors <- .multilpa_measurement_errors(x, data)
+  if (!isTRUE(standard_errors)) return(frame)
+  # A probability on its bound has no standard error; it is held there and
+  # reported as missing, and every other probability keeps its error.
+  errors <- .multilpa_table_errors(x, data, boundary = "fix")
+  if (is.null(errors)) {
+    frame$probability_standard_error <- NA_real_
+    return(frame)
+  }
   frame$probability_standard_error <- .multilpa_match_error(errors, "response",
     frame$profile, paste(frame$indicator, frame$category, sep = ":"))
   frame

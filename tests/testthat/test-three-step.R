@@ -248,7 +248,7 @@ test_that("the R3STEP table is tidy and its intervals are consistent", {
 
   expect_named(result, c("level", "outcome", "term", "estimate",
                          "standard_error", "statistic", "p_value",
-                         "p_value_adjusted", "conf_low", "conf_high"))
+                         "p_adjusted", "conf_low", "conf_high"))
   # one non-reference class, two terms
   expect_equal(nrow(result), 2L)
   expect_setequal(result$term, c("(Intercept)", "x"))

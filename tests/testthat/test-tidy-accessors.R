@@ -165,7 +165,8 @@ test_that("every table of a summary is tidy", {
   }))
   expect_identical(names(as.data.frame(summarized)),
                    c("profile", "indicator", "mean", "variance",
-                     "standard_deviation"))
+                     "standard_deviation", "mean_standard_error",
+                     "variance_standard_error"))
   expect_identical(names(get_results(summarized, "counts")),
                    c("level", "class", "effective_count",
                      "effective_proportion"))
@@ -229,7 +230,7 @@ test_that("a categorical summary reports responses and no empty Gaussian block",
   expect_tidy_frame(responses)
   expect_identical(names(responses),
                    c("profile", "indicator", "category", "probability",
-                     "threshold"))
+                     "threshold", "probability_standard_error"))
   expect_identical(nrow(responses), 12L)
   expect_identical(nrow(get_results(summarized, "profiles")), 0L)
   expect_identical(nrow(get_results(summarized, "covariances")), 0L)

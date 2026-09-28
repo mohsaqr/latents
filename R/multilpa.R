@@ -705,9 +705,12 @@
 #'
 #' @param data The caller's data frame.
 #' @param n_group_classes What the caller asked for, or `NULL` if they did not.
+#' @param latent_class Whether every indicator is categorical, which makes the
+#'   model a latent class rather than a latent profile analysis.
 #' @return A list with `data`, `id` and `n_group_classes`.
 #' @noRd
-.multilpa_single_level <- function(data, n_group_classes) {
+.multilpa_single_level <- function(data, n_group_classes,
+                                   latent_class = FALSE) {
   stopifnot("`data` must be a data frame" = is.data.frame(data))
   name <- ".observation"
   if (name %in% names(data)) {
@@ -726,11 +729,7 @@
       format(n_group_classes)),
       class = "latents_bad_argument", call = NULL))
   }
-  warning(warningCondition(paste(
-    "`id = NULL` fits a single-level model: every observation is its own unit",
-    "and no second level is estimated. This package exists for the two-level",
-    "model; pass the nesting column as `id` to fit it."),
-    class = "latents_single_level", call = NULL))
+  .multilpa_single_level_notice(latent_class)
   data[[name]] <- seq_len(nrow(data))
   list(data = data, id = name, n_group_classes = 1L)
 }
@@ -754,7 +753,7 @@
 #'   saying so. Passing `id = NULL` explicitly fits a **single-level** model:
 #'   the observations are treated as independent, each row is its own unit, and
 #'   `n_group_classes` becomes one. That fit raises a `latents_single_level`
-#'   warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
+#'   message saying so. This is the ordinary Gaussian or latent-class mixture that the
 #'   two-level model reduces to, and every verb of this package works on it. The
 #'   unit column is fabricated internally as `.observation`; it is not returned
 #'   by `get_results(x, "data")`, and a `data` that already has a column of that
@@ -835,6 +834,14 @@
 #'   by the same unrestricted parameterization; numeric, integer, logical,
 #'   character and factor columns are accepted. Indicators not named here stay
 #'   Gaussian, so naming a subset fits a mixed-mode model.
+#' @param model The covariance structure named by its mclust code, one of
+#'   `"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
+#'   `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`: the first letter is
+#'   the volume, the second the shape and the third the orientation, each
+#'   equal (`E`) or varying (`V`) across profiles, with `I` for axis-aligned
+#'   (no covariances). The same codes [enumerate_classes()] takes. Use it
+#'   instead of `variance_model`/`covariance_model` or
+#'   `volume`/`shape`/`orientation`, not together with them.
 #' @param volume,shape,orientation The covariance structure, in the three
 #'   pieces it is made of. Each profile's covariance decomposes as
 #'   `Sigma_k = lambda_k * D_k * A_k * D_k'`: a *volume*
@@ -1031,18 +1038,10 @@
 #'   mixture estimation and model-based clustering. Journal of
 #'   Classification, 24, 155--181. doi:10.1007/s00357-007-0004-5.
 #' @examples
-#' set.seed(7)
-#' # Two kinds of school, differing only in how often a pupil scores highly.
-#' example_data <- data.frame(
-#'   school = rep(seq_len(24), each = 10),
-#'   school_type = rep(c("mixed", "high"), each = 120)
-#' )
-#' example_data$high <- rbinom(240, 1L,
-#'   ifelse(example_data$school_type == "high", 0.8, 0.2))
-#' example_data$score_a <- rnorm(240, mean = 2 * example_data$high)
-#' example_data$score_b <- rnorm(240, mean = 2 * example_data$high)
-#'
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+#' # Course sessions nested in students: engagement profiles of sessions, and
+#' # classes of students that differ in how often they are engaged.
+#' activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+#' fit <- multilpa(course_engagement, activity, "student",
 #'                 n_profiles = 2, n_group_classes = 2, n_starts = 4,
 #'                 seed = 42)
 #' summary(fit)
@@ -1065,6 +1064,7 @@ multilpa <- function(data, vars, id, n_profiles,
                        time = NULL, fixed = character(),
                        centering = c("none", "person", "grand"),
                        volume = NULL, shape = NULL, orientation = NULL,
+                       model = NULL,
                        select_start = c("likelihood", "converged"),
                        prior = NULL, noise = FALSE,
                        acceleration = c("squarem", "none")) {
@@ -1072,13 +1072,7 @@ multilpa <- function(data, vars, id, n_profiles,
   acceleration <- match.arg(acceleration)
   ## Before `stopifnot()`, which reads `id` and would otherwise force the
   ## missing argument into R's own bare "argument \"id\" is missing" error.
-  if (missing(id)) {
-    stop(errorCondition(paste(
-      "`id` names the column the observations are nested in, and this model",
-      "needs it. Pass it, or pass `id = NULL` to say the observations are",
-      "independent and fit a single-level model."),
-      class = "latents_bad_argument", call = NULL))
-  }
+  if (missing(id)) .multilpa_missing_id("multilpa", "`lpa()`")
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`vars` must be a character vector of column names" =
@@ -1099,10 +1093,34 @@ multilpa <- function(data, vars, id, n_profiles,
   single_level <- is.null(id)
   if (single_level) {
     resolved <- .multilpa_single_level(
-      data, if (missing(n_group_classes)) NULL else n_group_classes)
+      data, if (missing(n_group_classes)) NULL else n_group_classes,
+      latent_class = length(vars) > 0L && all(vars %in% categorical))
     data <- resolved$data
     id <- resolved$id
     n_group_classes <- resolved$n_group_classes
+  }
+  # `model` names the whole covariance structure in mclust's three letters,
+  # the same codes enumerate_classes() takes; it replaces the switches and the
+  # pieces rather than combining with them.
+  if (!is.null(model)) {
+    if (!is.character(model) || length(model) != 1L ||
+        !model %in% .multilpa_structures()) {
+      stop(errorCondition(sprintf(
+        "`model` must be one of the covariance structures %s.",
+        paste(sprintf("\"%s\"", .multilpa_structures()), collapse = ", ")),
+        class = "latents_bad_argument", call = NULL))
+    }
+    if (!missing(variance_model) || !missing(covariance_model) ||
+        !is.null(volume) || !is.null(shape) || !is.null(orientation)) {
+      stop(errorCondition(paste(
+        "Give the covariance structure either as `model` or through",
+        "`variance_model`/`covariance_model` or `volume`/`shape`/`orientation`,",
+        "not both."), class = "latents_bad_argument", call = NULL))
+    }
+    pieces <- .multilpa_structure_arguments(model)
+    volume <- pieces$volume
+    shape <- pieces$shape
+    orientation <- pieces$orientation
   }
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)

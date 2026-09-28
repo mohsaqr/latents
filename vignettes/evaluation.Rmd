@@ -133,7 +133,9 @@ get_results(full, "residuals", by = "overall")
 
 To compare numbers of profiles and group classes, we call
 `enumerate_classes()` with `n_profiles` and `n_group_classes` for the counts to
-cross. It fits every combination and does not choose a model.
+cross. It crosses the counts with four covariance structures, equal or
+varying variances with and without covariances, fits every combination, and
+does not choose a model.
 
 ```{r enumerate}
 candidates <- enumerate_classes(course_engagement,
@@ -160,10 +162,10 @@ plot(candidates, criterion = "bic_groups")
 ```
 
 To take one candidate out of the grid as a fitted model, we call
-`candidate_fit()` with its `n_profiles` and `n_group_classes`.
+`candidate_fit()` with its `n_profiles`, `n_group_classes` and `model`.
 
 ```{r candidate}
-candidate_fit(candidates, n_profiles = 3, n_group_classes = 2)
+candidate_fit(candidates, n_profiles = 3, n_group_classes = 2, model = "VVI")
 ```
 
 ## Parameter uncertainty
@@ -189,7 +191,8 @@ get_results(fit, "classification_errors")       # P(assigned class | true class)
 get_results(fit, "residuals")                   # residuals within each profile
 get_results(candidates, "candidates")           # the full enumeration grid
 summary(candidates)                             # the best candidate on each criterion
-bootstrap_lrt(fit, candidate_fit(candidates, n_profiles = 3, n_group_classes = 2),
+bootstrap_lrt(fit, candidate_fit(candidates, n_profiles = 3,
+                                n_group_classes = 2, model = "VVI"),
               iter = 199, seed = 42)            # bootstrap test of one more class (slow)
 enumerate_classes(course_engagement, vars = c("browse", "lectures"),
                   id = "student", n_profiles = 2:3,

@@ -6,20 +6,31 @@
 #' boundary, and unreplicated fits are reported, not silently selected.
 #' @param data Data frame.
 #' @param vars Continuous indicator names.
-#' @param id Group identifier column name, or `NULL` to enumerate
-#'   single-level models (every observation its own unit), the grid
-#'   `mclust::mclustBIC()` searches.
+#' @param id The column that identifies the groups the observations are
+#'   nested in (students in schools, reports in students). `NULL` enumerates
+#'   single-level models, with a message; [enumerate_lpa()] and
+#'   [enumerate_lca()] fit those by name.
 #' @param n_profiles Positive integer profile counts to try.
 #' @param n_group_classes Positive integer group-class counts to try. With
 #'   `id = NULL` it is 1 and may be left out.
-#' @param model Covariance models to try, as the three-letter codes
-#'   [multilpa()]'s `volume`, `shape` and `orientation` name: any of
-#'   `"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
-#'   `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`. Naming them crosses
-#'   the models with the class counts, which is the grid model-based
-#'   clustering is usually selected over, and adds a `model` column to the
-#'   candidate table. `NULL`, the default, fits whatever the other arguments
-#'   already asked for, and the grid is the one this verb has always fitted.
+#' @param model The covariance structures to cross with the class counts.
+#'   `"basic"`, the default, fits the four structures that combine variances
+#'   equal or varying across profiles with covariances absent or present:
+#'   `"EEI"` (equal variances, no covariances), `"VVI"` (varying variances, no
+#'   covariances), `"EEE"` (one covariance matrix shared by all profiles) and
+#'   `"VVV"` (a covariance matrix for each profile). They are the choices that
+#'   matter most in practice, since omitting covariances between correlated
+#'   indicators makes the grid favour additional profiles. `"all"` fits all
+#'   14 structures of Celeux and Govaert (1995). Otherwise name the structures
+#'   by their three-letter codes, as [multilpa()]'s `model` takes them: the
+#'   letters give the volume, shape and orientation of each profile's
+#'   covariance matrix, each equal (`E`) or varying (`V`) across profiles,
+#'   with `I` for no covariances. `NULL` crosses no structures and fits
+#'   whatever the other arguments ask for. With one continuous indicator the
+#'   structures reduce to equal or varying variance, and codes that coincide
+#'   are fitted once; with only categorical indicators there is no structure
+#'   to cross. A structure set through `variance_model`, `covariance_model`,
+#'   `volume`, `shape` or `orientation` replaces the default.
 #' @param seed Optional reproducible seed for each fit.
 #' @param ... Further arguments to [multilpa()].
 #' @return An object of class `multilpa_enumeration`. Read it with the verbs
@@ -30,6 +41,13 @@
 #'   [candidate_fit()] returns the fitted model for one cell of the grid.
 #' @seealso [candidate_fit()] to take one fitted model out of the grid,
 #'   [summary.multilpa_enumeration()] for the criterion-by-criterion comparison.
+#' @section Conditions:
+#'   `latents_bad_argument` when `model` names an unknown structure, when it is
+#'   given together with another way of setting the structure, or when it is
+#'   given although every indicator is categorical.
+#' @references
+#' Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
+#' *Pattern Recognition*, 28(5), 781--793.
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
@@ -38,16 +56,21 @@
 #' as.data.frame(candidates)
 #' summary(candidates)
 #'
-#' # Single level, crossing class counts with covariance structures:
-#' flowers <- setNames(iris[1:4], c("sepal_l", "sepal_w", "petal_l", "petal_w"))
-#' single <- enumerate_classes(flowers, names(flowers), id = NULL,
-#'                             n_profiles = 1:3, model = c("VVV", "EEE"),
-#'                             n_starts = 2, seed = 1)
+#' # Single level, crossing class counts with two named structures:
+#' single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
+#'                                 "Petal.Length", "Petal.Width"),
+#'                         n_profiles = 1:3, model = c("VVV", "EEE"),
+#'                         n_starts = 2, seed = 1)
 #' summary(single)
 #' @export
 enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
-                              n_group_classes = 1:3, model = NULL,
+                              n_group_classes = 1:3, model = "basic",
                               seed = NULL, ...) {
+  if (missing(id)) {
+    .multilpa_missing_id("enumerate_classes",
+                         "`enumerate_lpa()` or `enumerate_lca()`")
+  }
+  model_given <- !missing(model)
   single_level <- is.null(id)
   if (single_level) {
     # One observation per unit leaves no composition for a group class to
@@ -69,18 +92,10 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
             is.numeric(n_group_classes), length(n_group_classes) > 0L,
             all(is.finite(n_group_classes)), all(n_group_classes >= 1),
             all(n_group_classes == as.integer(n_group_classes)),
-            "`model` must name covariance models, or be NULL" =
+            "`model` must be \"basic\", \"all\", covariance model codes, or NULL" =
               is.null(model) || (is.character(model) &&
                                    length(model) > 0L &&
                                    !anyNA(model)))
-  unknown <- setdiff(model %||% character(), .multilpa_structures())
-  if (length(unknown) > 0L) {
-    stop(errorCondition(sprintf(
-      "`model` names %s, which this package does not fit. It has %s.",
-      paste(sprintf("`%s`", unknown), collapse = ", "),
-      paste(.multilpa_structures(), collapse = ", ")),
-      class = "latents_bad_argument", call = NULL))
-  }
   # Every name this guard used to reject is now a formal, so R refuses the call
   # with "matched by multiple actual arguments" before `...` is assembled.
   extra <- list(...)
@@ -96,11 +111,12 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       if (length(unknown_arguments) == 1L) "is" else "are", hint),
       class = "latents_bad_argument", call = NULL))
   }
-  # `NA` stands for "whatever the other arguments already said", so a grid
-  # without `model` is the grid this verb has always fitted.
+  # `NA` stands for "whatever the other arguments already said": no structure
+  # is crossed, and each candidate is fitted as `multilpa()` would fit it.
   grid <- expand.grid(n_profiles = unique(n_profiles),
                       n_group_classes = unique(n_group_classes),
-                      model = unique(model) %||% NA_character_,
+                      model = .multilpa_enumeration_models(
+                        model, model_given, vars, extra),
                       stringsAsFactors = FALSE)
   runs <- lapply(seq_len(nrow(grid)), function(i) {
     warnings <- character()
@@ -110,12 +126,10 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       c(list(data = data, vars = vars, id = id,
              n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i], seed = seed),
         requested, extra)),
+      # The single-level notice is given once for the whole grid below,
+      # not once per candidate.
+      latents_single_level = function(notice) invokeRestart("muffleMessage"),
       warning = function(warning) {
-        # A single-level grid asked for single-level fits; that notice is
-        # given once for the whole grid below, not once per candidate.
-        if (single_level && inherits(warning, "latents_single_level")) {
-          invokeRestart("muffleWarning")
-        }
         warnings <<- c(warnings, conditionMessage(warning))
       }), error = function(error) {
         error_text <<- conditionMessage(error)
@@ -123,7 +137,11 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       })
     row <- cbind(
       data.frame(n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
-        model = if (is.null(fit)) grid$model[i] else fit$covariance_structure,
+        # A latent class model has no covariance structure; naming one (the
+        # default the fit records for its absent Gaussian block) misleads.
+        model = if (is.null(fit)) grid$model[i] else
+          if (length(.multilpa_continuous_names(fit)) == 0L) NA_character_ else
+            fit$covariance_structure,
         log_likelihood = if (is.null(fit)) NA_real_ else fit$log_likelihood,
         n_parameters = if (is.null(fit)) NA_integer_ else fit$n_parameters,
         stringsAsFactors = FALSE),
@@ -140,15 +158,74 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
     list(fit = fit, row = row)
   })
   if (single_level) {
-    warning(warningCondition(paste(
-      "`id = NULL` enumerates single-level models: every observation is its",
-      "own unit and no group classes are estimated."),
-      class = "latents_single_level", call = NULL))
+    .multilpa_single_level_notice(
+      latent_class = all(vars %in% extra$categorical))
   }
   result <- list(table = do.call(rbind, lapply(runs, `[[`, "row")),
        fits = lapply(runs, `[[`, "fit"), call = match.call())
   class(result) <- "multilpa_enumeration"
   result
+}
+
+#' The covariance structures an enumeration crosses
+#'
+#' Expands the named sets and drops the structures the data cannot tell apart:
+#' with one continuous indicator there are no covariances and no orientation,
+#' so only the volume (equal or varying variance) distinguishes two codes, and
+#' with none there is no covariance structure at all.
+#'
+#' @param model `enumerate_classes()`'s `model`.
+#' @param model_given Whether the caller passed `model` rather than taking the
+#'   default.
+#' @param vars The indicator names.
+#' @param extra The further arguments for `multilpa()`, as `list(...)`.
+#' @return A character vector of structure codes, or `NA_character_` when no
+#'   structure is to be crossed.
+#' @noRd
+.multilpa_enumeration_models <- function(model, model_given, vars, extra) {
+  switches <- intersect(names(extra), c("variance_model", "covariance_model",
+                                        "volume", "shape", "orientation"))
+  if (length(switches) > 0L) {
+    # The structure was set the other way; the default set gives way to it,
+    # an explicit `model` contradicts it.
+    if (model_given && !is.null(model)) {
+      stop(errorCondition(sprintf(paste(
+        "`model` and %s both set the covariance structure;",
+        "name the structures with `model` alone."),
+        paste(sprintf("`%s`", switches), collapse = ", ")),
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(NA_character_)
+  }
+  if (is.null(model)) return(NA_character_)
+  sets <- list(basic = c("EEI", "VVI", "EEE", "VVV"),
+               all = .multilpa_structures())
+  codes <- unique(unlist(lapply(model, \(name) sets[[name]] %||% name),
+                         use.names = FALSE))
+  unknown <- setdiff(codes, .multilpa_structures())
+  if (length(unknown) > 0L) {
+    stop(errorCondition(sprintf(paste(
+      "`model` names %s, which this package does not fit. Use \"basic\",",
+      "\"all\", or codes from %s."),
+      paste(sprintf("`%s`", unknown), collapse = ", "),
+      paste(.multilpa_structures(), collapse = ", ")),
+      class = "latents_bad_argument", call = NULL))
+  }
+  continuous <- setdiff(vars, extra$categorical)
+  if (length(continuous) == 0L) {
+    if (model_given) {
+      stop(errorCondition(paste(
+        "Every indicator is categorical, so there is no covariance structure",
+        "for `model` to choose; leave `model` out."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(NA_character_)
+  }
+  if (length(continuous) == 1L) {
+    # One variable: every code reduces to its volume letter.
+    codes <- codes[!duplicated(substr(codes, 1L, 1L))]
+  }
+  codes
 }
 
 #' Take one fitted model out of an enumeration grid
@@ -179,7 +256,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
 #' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
 #'                               n_group_classes = 1, n_starts = 2, seed = 1)
-#' candidate_fit(candidates, n_profiles = 2, n_group_classes = 1)
+#' candidate_fit(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
 #' @export
 candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
                           model = NULL) {
@@ -329,9 +406,50 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   cat(sprintf("%d distinct candidate(s) are minimal under some criterion.\n",
               nrow(disagreement)))
   cat("No candidate is selected automatically. Choose one convention and keep it.\n")
-  .multilpa_print_tables(x$tables, rows = rows, digits = digits)
-  .multilpa_print_table_footer(x$tables)
+  tables <- x$tables
+  if (!is.null(tables$candidates)) {
+    full_width <- ncol(tables$candidates)
+    tables$candidates <- .multilpa_compact_candidates(tables$candidates)
+    cat(sprintf(paste(
+      "The candidates table shows %d of its %d columns;",
+      "get_results(x, what = \"candidates\") returns all of them.\n"),
+      ncol(tables$candidates), full_width))
+  }
+  .multilpa_print_tables(tables, rows = rows, digits = digits)
+  .multilpa_print_table_footer(tables)
   invisible(x)
+}
+
+#' The columns of an enumeration grid worth printing
+#'
+#' The grid carries every criterion at both levels, which wraps a printed
+#' table across several screens. The print keeps the columns a reader compares
+#' candidates on, drops identifiers that do not vary, and shows a criterion
+#' once where its group-level and individual-level versions are the same
+#' numbers, as they are in a single-level grid. The full table is unchanged.
+#'
+#' @param grid The enumeration table.
+#' @return A data frame with fewer columns.
+#' @noRd
+.multilpa_compact_candidates <- function(grid) {
+  varies <- function(name) name %in% names(grid) &&
+    length(unique(grid[[name]])) > 1L
+  same_levels <- function(stem) {
+    both <- paste0(stem, c("_groups", "_individual"))
+    all(both %in% names(grid)) &&
+      isTRUE(all.equal(grid[[both[1L]]], grid[[both[2L]]]))
+  }
+  bic <- if (same_levels("bic")) "bic_groups" else c("bic_groups", "bic_individual")
+  keep <- c("n_profiles",
+            if (varies("n_group_classes")) "n_group_classes",
+            if (varies("model")) "model",
+            "log_likelihood", "n_parameters", "aic", bic, "icl_individual",
+            "profile_entropy",
+            if (!all(is.na(grid$group_entropy))) "group_entropy",
+            "converged", "boundary")
+  compact <- grid[, intersect(keep, names(grid)), drop = FALSE]
+  if (same_levels("bic")) names(compact)[names(compact) == "bic_groups"] <- "bic"
+  compact
 }
 
 #' Coerce a class-enumeration summary to its primary table
@@ -1019,9 +1137,16 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
   stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
               inherits(x, "multilpa_bootstrap_lrt"))
   cat(sprintf("Parametric bootstrap likelihood-ratio comparison\n"))
-  cat(sprintf("Null: %d profiles, %d group classes; alternative: %d profiles, %d group classes\n",
-              x$null_profiles, x$null_group_classes,
-              x$alternative_profiles, x$alternative_group_classes))
+  count <- function(n, word) sprintf("%d %s%s", n, word, if (n == 1L) "" else
+    if (endsWith(word, "s")) "es" else "s")
+  model <- function(profiles, group_classes) {
+    paste0(count(profiles, "profile"),
+           if (x$null_group_classes == 1L && x$alternative_group_classes == 1L) ""
+           else paste0(", ", count(group_classes, "group class")))
+  }
+  cat(sprintf("Null: %s; alternative: %s\n",
+              model(x$null_profiles, x$null_group_classes),
+              model(x$alternative_profiles, x$alternative_group_classes)))
   cat(sprintf("Observed statistic: %.6f\n", x$statistic))
   cat(sprintf("p-value: %s (Monte Carlo SE %s) from %d of %d valid replicates\n",
               format(x$p_value, digits = 4L), format(x$monte_carlo_se, digits = 3L),

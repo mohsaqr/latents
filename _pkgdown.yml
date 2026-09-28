@@ -12,6 +12,8 @@ reference:
 - title: Fitting models
   desc: Two-level latent profile, latent class and latent transition models.
   contents:
+  - lpa
+  - lca
   - multilpa
   - multilca
   - lta
@@ -29,6 +31,8 @@ reference:
 
 - title: Evaluating a model
   contents:
+  - enumerate_lpa
+  - enumerate_lca
   - enumerate_classes
   - candidate_fit
   - bootstrap_lrt
@@ -69,6 +73,7 @@ reference:
   - course_engagement
   - student_esm
   - study_hours
+  - srl
 
 - title: Methods
   desc: Standard generics for fitted models, enumeration grids and summaries.
@@ -81,6 +86,7 @@ reference:
   - starts_with("vcov.")
   - starts_with("logLik.")
   - starts_with("nobs.")
+  - starts_with("predict.")
 
 - title: Conditions
   contents:
@@ -90,6 +96,8 @@ articles:
 - title: Vignettes
   navbar: Vignettes
   contents:
+  - workflow-lpa
+  - workflow-lca
   - lpa
   - evaluation
   - covariates

@@ -129,7 +129,7 @@ test_that("the two-level R3STEP recovers the slope the pooled one attenuates", {
   expect_identical(attr(nested, "vcov_type"), "robust")
   expect_true(all(nested$standard_error > 0))
   # Only the slopes are tested and corrected.
-  expect_identical(!is.na(nested$p_value_adjusted), nested$term == "z")
+  expect_identical(!is.na(nested$p_adjusted), nested$term == "z")
 })
 
 test_that("the two-level R3STEP is refused where it does not apply", {

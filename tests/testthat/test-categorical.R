@@ -166,7 +166,8 @@ test_that("the responses accessor reports probabilities and thresholds", {
                     n_starts = 10, seed = 6)
   responses <- get_results(fit, "responses")
   expect_identical(names(responses),
-    c("profile", "indicator", "category", "probability", "threshold"))
+    c("profile", "indicator", "category", "probability", "threshold",
+      "probability_standard_error"))
   expect_identical(nrow(responses), 2L * 5L * 2L)
   totals <- tapply(responses$probability,
                    list(responses$profile, responses$indicator), sum)

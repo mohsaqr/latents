@@ -391,14 +391,10 @@
 #'   class counts, the covariate counts, the log likelihood with the
 #'   information criteria, and the convergence diagnostics.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
-#'                            z = rnorm(200))
-#' example_data$y <- rnorm(200,
-#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
-#'                 n_group_classes = 1, profile_covariates = "z",
-#'                 n_starts = 2, seed = 1)
+#' fit <- multilpa(subset(course_engagement, student <= 40),
+#'                 c("browse", "lectures", "forum_read"), "student",
+#'                 n_profiles = 2, n_group_classes = 1,
+#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
 #' print(fit)
 #' @export
 print.multilpa_covariates <- function(x, rows = 20L, ...) {
@@ -426,14 +422,10 @@ print.multilpa_covariates <- function(x, rows = 20L, ...) {
 #'   and the restart diagnostics. The membership coefficients carry no standard
 #'   errors here; [parameter_inference()] reports those.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
-#'                            z = rnorm(200))
-#' example_data$y <- rnorm(200,
-#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
-#'                 n_group_classes = 1, profile_covariates = "z",
-#'                 n_starts = 2, seed = 1)
+#' fit <- multilpa(subset(course_engagement, student <= 40),
+#'                 c("browse", "lectures", "forum_read"), "student",
+#'                 n_profiles = 2, n_group_classes = 1,
+#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
 #' summary(fit)
 #' get_results(fit, what = "coefficients")
 #' @export
@@ -471,14 +463,10 @@ summary.multilpa_covariates <- function(object, ...) {
 #'   effective memberships at both levels, the likelihood and information
 #'   criteria, any warnings, and the restart diagnostics.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
-#'                            z = rnorm(200))
-#' example_data$y <- rnorm(200,
-#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
-#'                 n_group_classes = 1, profile_covariates = "z",
-#'                 n_starts = 2, seed = 1)
+#' fit <- multilpa(subset(course_engagement, student <= 40),
+#'                 c("browse", "lectures", "forum_read"), "student",
+#'                 n_profiles = 2, n_group_classes = 1,
+#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
 #' print(summary(fit), digits = 3)
 #' @export
 print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
@@ -595,14 +583,10 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
 #'   parameter count as `df`, and the number of observed groups as `nobs`, so
 #'   `stats::BIC()` uses the group-count BIC.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
-#'                            z = rnorm(200))
-#' example_data$y <- rnorm(200,
-#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
-#'                 n_group_classes = 1, profile_covariates = "z",
-#'                 n_starts = 2, seed = 1)
+#' fit <- multilpa(subset(course_engagement, student <= 40),
+#'                 c("browse", "lectures", "forum_read"), "student",
+#'                 n_profiles = 2, n_group_classes = 1,
+#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
 #' logLik(fit)
 #' @export
 logLik.multilpa_covariates <- function(object, ...) {
@@ -617,14 +601,10 @@ logLik.multilpa_covariates <- function(object, ...) {
 #' @return A single integer: the number of observed groups, which are the
 #'   independent units of this likelihood.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(group = rep(seq_len(20), each = 10),
-#'                            z = rnorm(200))
-#' example_data$y <- rnorm(200,
-#'   ifelse(runif(200) < plogis(example_data$z), -3, 3))
-#' fit <- multilpa(example_data, "y", "group", n_profiles = 2,
-#'                 n_group_classes = 1, profile_covariates = "z",
-#'                 n_starts = 2, seed = 1)
+#' fit <- multilpa(subset(course_engagement, student <= 40),
+#'                 c("browse", "lectures", "forum_read"), "student",
+#'                 n_profiles = 2, n_group_classes = 1,
+#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
 #' nobs(fit)
 #' @export
 nobs.multilpa_covariates <- function(object, ...) {
@@ -820,7 +800,9 @@ nobs.multilpa_covariates <- function(object, ...) {
            rep(seq_len(n_group_classes), each = length(profile_covariates)))
   } else profile_covariates
   dimnames(result$profile_coefficients) <- list(
-    c(paste0("group_class_", seq_len(n_group_classes)), slope_terms),
+    # With one group class the class intercept is simply the intercept.
+    c(if (n_group_classes == 1L) "(Intercept)" else
+        paste0("group_class_", seq_len(n_group_classes)), slope_terms),
     if (n_profiles > 1L) paste0("profile_", seq_len(n_profiles - 1L)))
   result$group_coefficients <- best$gamma
   dimnames(result$group_coefficients) <- list(

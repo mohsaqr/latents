@@ -24,6 +24,15 @@
 #'   every bar when `data` is supplied. `"heatmap"` draws them as a diverging
 #'   grid of standard deviations from each indicator's grand mean, which is the
 #'   quickest read when there are many indicators or many profiles.
+#'   `"raincloud"` shows what the means summarize: one panel per indicator,
+#'   and in it, for the cases assigned to each profile, a density of the
+#'   indicator, a box of its quartiles and median, and the observations
+#'   themselves. It shows the spread within each profile and how far the
+#'   profiles overlap. For a fit
+#'   whose indicators are all categorical, `"heatmap"` draws the response
+#'   probabilities instead: one row per profile and one column per category
+#'   (a binary indicator shows its last category), each cell printing its
+#'   probability.
 #'   `"responses"` is the categorical counterpart of `"profiles"`, one line per
 #'   profile across the categorical indicators, showing the probability of a
 #'   chosen category.
@@ -62,6 +71,12 @@
 #'   choice for binary indicators, `"first"` uses the lowest, or give a single
 #'   category label or index used for every indicator.
 #' @param labels `TRUE` prints a direct label at the right end of each series.
+#' @param intervals For `what = "profiles"` and `"responses"`, `TRUE` draws a
+#'   95% interval on every mean or probability when the fit has standard
+#'   errors (a probability's interval is clipped to `[0, 1]`); the profiles are then dodged
+#'   apart so the whiskers stay readable. A fit without them (a bound-active or
+#'   unconverged fit, or a family without inference) is drawn without whiskers
+#'   and its subtitle says why.
 #' @param cell_labels For `what = "sequences"`, `TRUE` prints the profile number
 #'   inside each cell, so the profile is never carried by colour alone. The
 #'   numbers are drawn only where the cell is wide and tall enough to hold one.
@@ -74,9 +89,10 @@
 #'   pass named elements to override individual constants.
 #' @param ... Further named visual constants, merged into `style`.
 #' @return The fitted model, invisibly. Called for the side effect of drawing.
-#' @details The plot shows point estimates only. It carries no standard errors,
-#'   and profile order is arbitrary, so two fits must have their labels aligned
-#'   before their plots are compared. With `scale = "standardized"` the
+#' @details `"profiles"` and `"bars"` draw 95% Wald intervals when the fit has
+#'   standard errors; the other views show point estimates. Profile order is
+#'   arbitrary, so two fits must have their labels aligned before their plots
+#'   are compared. With `scale = "standardized"` the
 #'   standard deviations are the observed indicator standard deviations, not
 #'   the within-profile residual standard deviations, so the plotted values are
 #'   comparable across indicators but are not effect sizes.
@@ -98,15 +114,18 @@
 #' plot_views()
 #' @seealso [plot_views()] for the catalogue of views.
 #' @export
-plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses",
+plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud",
+                                      "responses",
                                       "probabilities", "sequences", "sizes",
                                       "entropy", "posteriors", "avepp", "all"),
                         data = NULL,
                         scale = c("raw", "standardized"), category = "last",
                         labels = TRUE, main = NULL, subtitle = NULL,
                         palette = NULL, symbols = NULL, linetypes = NULL,
-                        style = .multilpa_style(), cell_labels = TRUE, ...) {
+                        style = .multilpa_style(), cell_labels = TRUE,
+                        intervals = TRUE, ...) {
   stopifnot("`x` must be an `multilpa` fit" = inherits(x, "multilpa"),
+            "`intervals` must be TRUE or FALSE" = isTRUE(intervals) || isFALSE(intervals),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
             "`cell_labels` must be TRUE or FALSE" =
               isTRUE(cell_labels) || isFALSE(cell_labels),
@@ -131,16 +150,28 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
   graphics::par(xpd = NA)
   switch(what,
     profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
-                                     symbols, linetypes, style),
+                                     symbols, linetypes, style,
+                                     errors = if (isTRUE(intervals))
+                                       .multilpa_mean_error_matrix(x, data)),
     responses = .multilpa_plot_responses(x, category, labels, main, subtitle,
-                                       palette, symbols, linetypes, style),
+                                       palette, symbols, linetypes, style,
+                                       errors = if (isTRUE(intervals))
+                                         .multilpa_response_error_table(x, data)),
     probabilities = .multilpa_plot_probabilities(x, labels, main, subtitle,
                                                palette, symbols, linetypes, style),
     sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
                                         style, cell_labels),
     bars = .multilpa_plot_bars(x, scale, .multilpa_mean_error_matrix(x, data),
                                main, subtitle, palette, style),
-    heatmap = .multilpa_plot_heatmap(x, main, subtitle, style),
+    heatmap = if (length(.multilpa_continuous_names(x)) == 0L) {
+      .multilpa_plot_response_heatmap(x, main, subtitle, style)
+    } else .multilpa_plot_heatmap(x, main, subtitle, style),
+    raincloud = .multilpa_plot_raincloud(
+      x, scale, main = main %||% "Indicator distributions by profile",
+      subtitle = subtitle %||% paste(
+        "density, quartiles and observations of each indicator among the",
+        "cases assigned to each profile"),
+      palette, symbols, style),
     sizes = .multilpa_plot_sizes(x, main, subtitle, palette, style),
     avepp = .multilpa_plot_avepp(x, main, subtitle, style),
     entropy = ,
@@ -226,7 +257,9 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
 #' @return `NULL`, invisibly.
 #' @noRd
 .multilpa_plot_responses <- function(x, category, labels, main, subtitle, palette,
-                                   symbols, linetypes, style) {
+                                   symbols, linetypes, style, errors = NULL) {
+  missing_reason <- if (is.character(errors)) errors else NULL
+  if (is.character(errors)) errors <- NULL
   blocks <- x$response_probabilities
   if (is.null(blocks) || length(blocks) == 0L) {
     stop(errorCondition("This model has no categorical indicators.",
@@ -252,6 +285,19 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
   category_labels <- vapply(seq_along(blocks), function(index) {
     colnames(blocks[[index]])[chosen[[index]]]
   }, character(1))
+  # One standard error per plotted probability, profiles in columns like
+  # `values`; NA where the fit reports none.
+  spread <- if (is.null(errors)) NULL else {
+    t(matrix(vapply(seq_along(blocks), function(index) {
+      .multilpa_match_error(errors, "response", seq_len(n_profiles),
+                            rep(sprintf("%s:%s", vars[[index]],
+                                        category_labels[[index]]), n_profiles))
+    }, numeric(n_profiles)), n_profiles, length(blocks)))
+  }
+  held_any <- isTRUE(attr(errors, "held"))
+  if (!is.null(spread) && all(is.na(spread))) spread <- NULL
+  dodge <- if (is.null(spread)) numeric(n_profiles) else
+    (seq_len(n_profiles) - (n_profiles + 1) / 2) * min(0.08, 0.3 / n_profiles)
   colours <- if (is.null(palette)) .multilpa_palette(n_profiles) else
     rep(palette, length.out = n_profiles)
   points <- if (is.null(symbols)) .multilpa_symbols(n_profiles) else
@@ -273,22 +319,41 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
     ylab = if (shared) sprintf("P(response = %s)", category_labels[[1L]]) else
       "Response probability",
     main = if (is.null(main)) "Response probabilities by profile" else main,
-    subtitle = if (is.null(subtitle)) sprintf(
-      "%d profiles, %d group class%s, %d categorical indicator%s", n_profiles,
-      x$n_group_classes, if (x$n_group_classes == 1L) "" else "es",
-      length(vars), if (length(vars) == 1L) "" else "s") else subtitle,
-    x_at = positions, x_labels = axis_labels, y_at = seq(0, 1, by = 0.25),
-    style = style)
+    subtitle = if (is.null(subtitle)) paste0(sprintf(
+      "%d profiles%s, %d categorical indicator%s", n_profiles,
+      if (x$n_group_classes == 1L) "" else sprintf(", %d group classes",
+                                                    x$n_group_classes),
+      length(vars), if (length(vars) == 1L) "" else "s"),
+      if (!is.null(spread)) {
+        if (held_any) "; whiskers: 95% intervals where estimable" else
+          "; whiskers: 95% intervals"
+      } else
+        if (!is.null(missing_reason)) paste0("; ", missing_reason) else "") else
+      subtitle,
+    x_at = positions, x_labels = rep("", length(positions)),
+    y_at = seq(0, 1, by = 0.25), style = style)
+  .multilpa_block_names(axis_labels, positions, 1, style,
+                        line = style$axis_line + 0.4)
   invisible(lapply(seq_len(n_profiles), function(profile) {
-    graphics::lines(positions, values[, profile], col = colours[profile],
+    at <- positions + dodge[profile]
+    graphics::lines(at, values[, profile], col = colours[profile],
                     lwd = style$line_width, lty = lines[profile])
-    graphics::points(positions, values[, profile], pch = points[profile],
+    if (!is.null(spread)) {
+      # A probability's interval is clipped to [0, 1], where it lives.
+      low <- pmax(0, values[, profile] - 1.96 * spread[, profile])
+      high <- pmin(1, values[, profile] + 1.96 * spread[, profile])
+      shown <- !is.na(low)
+      graphics::segments(at[shown], low[shown], at[shown], high[shown],
+                         col = colours[profile], lwd = 1.6)
+    }
+    graphics::points(at, values[, profile], pch = points[profile],
                      bg = colours[profile], col = style$panel_fill,
                      cex = style$point_size, lwd = 1.4)
   }))
   if (isTRUE(labels)) {
-    label_y <- .multilpa_spread_labels(values[length(vars), ], 0.055)
-    graphics::text(length(vars) + .multilpa_label_offset(style), label_y,
+    label_y <- .multilpa_spread_labels(values[length(vars), ],
+                                       max(0.055, .multilpa_label_gap(style)))
+    graphics::text(length(vars) + max(dodge) + .multilpa_label_offset(style), label_y,
                    label_text,
                    adj = c(0, 0.5), col = colours,
                    cex = style$label_text_size, font = 2L)
@@ -306,7 +371,7 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
 #' @return `NULL`, invisibly.
 #' @noRd
 .multilpa_plot_profiles <- function(x, scale, labels, main, subtitle, palette,
-                                  symbols, linetypes, style) {
+                                  symbols, linetypes, style, errors = NULL) {
   vars <- .multilpa_continuous_names(x)
   n_profiles <- x$n_profiles
   means <- x$means
@@ -314,21 +379,16 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
     stop(errorCondition("This model has no continuous indicators; plot `what = \"responses\"` instead.",
                         class = "latents_no_continuous", call = NULL))
   }
+  missing_reason <- if (is.character(errors)) errors else NULL
+  if (is.character(errors)) errors <- NULL
   if (identical(scale, "standardized")) {
-    observed <- x$indicator_data
-    if (is.null(observed)) {
-      stop(errorCondition("This fit did not retain indicator data, so it cannot be standardized.",
-                          class = "latents_no_indicator_data", call = NULL))
+    standardization <- .multilpa_standardization(x, vars)
+    rescale <- function(values) {
+      sweep(sweep(values, 2L, standardization$centre, "-"), 2L,
+            standardization$spread, "/")
     }
-    centre <- colMeans(observed, na.rm = TRUE)
-    spread <- vapply(seq_along(vars), function(index) {
-      stats::sd(observed[, index], na.rm = TRUE)
-    }, numeric(1))
-    if (any(!is.finite(spread)) || any(spread <= 0)) {
-      stop(errorCondition("An indicator has zero or undefined standard deviation.",
-                          class = "latents_bad_scale", call = NULL))
-    }
-    means <- sweep(sweep(means, 2L, centre, "-"), 2L, spread, "/")
+    means <- rescale(means)
+    if (!is.null(errors)) errors <- sweep(errors, 2L, standardization$spread, "/")
   }
   colours <- if (is.null(palette)) .multilpa_palette(n_profiles) else
     rep(palette, length.out = n_profiles)
@@ -336,50 +396,100 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "responses"
     rep(symbols, length.out = n_profiles)
   lines <- if (is.null(linetypes)) .multilpa_linetypes(n_profiles) else
     rep(linetypes, length.out = n_profiles)
+  # With intervals the profiles are dodged apart, so overlapping whiskers stay
+  # readable; without them the lines meet at the indicator itself.
+  dodge <- if (is.null(errors)) numeric(n_profiles) else
+    (seq_len(n_profiles) - (n_profiles + 1) / 2) * min(0.08, 0.3 / n_profiles)
   positions <- seq_along(vars)
-  span <- range(means)
+  top <- if (is.null(errors)) means else means + 1.96 * errors
+  bottom <- if (is.null(errors)) means else means - 1.96 * errors
+  span <- range(c(top, bottom), na.rm = TRUE)
   padding <- 0.12 * max(diff(span), .Machine$double.eps)
   ylim <- c(span[1L] - padding, span[2L] + padding)
   xlim <- c(1 - 0.35, length(vars) + 0.35)
   share <- x$effective_profile_counts / sum(x$effective_profile_counts)
+  share <- share[seq_len(n_profiles)]
   label_text <- sprintf("Profile %d (%.0f%%)", seq_len(n_profiles), 100 * share)
   graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
   default_main <- sprintf("Profile means across %d indicator%s",
                           length(vars),
                           if (length(vars) == 1L) "" else "s")
-  default_subtitle <- sprintf("%d profiles, %d group class%s; %s scale",
-    n_profiles, x$n_group_classes,
-    if (x$n_group_classes == 1L) "" else "es",
-    if (identical(scale, "standardized")) "standardized" else "input")
+  default_subtitle <- paste0(sprintf("%d profiles%s; %s scale",
+    n_profiles,
+    if (x$n_group_classes == 1L) "" else sprintf(", %d group classes",
+                                                  x$n_group_classes),
+    if (identical(scale, "standardized")) "standardized" else "input"),
+    if (!is.null(errors)) "; whiskers are 95% intervals" else
+      if (!is.null(missing_reason)) paste0("; ", missing_reason) else "")
   .multilpa_panel(xlim = xlim, ylim = ylim, xlab = "Indicator",
                 ylab = if (identical(scale, "standardized"))
                   "Standardized mean" else "Estimated mean",
                 main = if (is.null(main)) default_main else main,
                 subtitle = if (is.null(subtitle)) default_subtitle else subtitle,
-                x_at = positions, x_labels = vars, style = style)
+                x_at = positions, x_labels = rep("", length(vars)), style = style)
+  .multilpa_block_names(vars, positions, 1, style, line = style$axis_line + 0.4)
   if (identical(scale, "standardized")) {
-    graphics::abline(h = 0, col = style$muted_colour, lwd = 1, lty = 3L)
+    .multilpa_hline(0, col = style$muted_colour, lwd = 1, lty = 3L)
   }
   # Point area carries the profile's share of the sample, so a reader sees how
   # much of the data each line speaks for without consulting a second table.
   sizes <- .multilpa_point_sizes(share, style)
   invisible(lapply(seq_len(n_profiles), function(profile) {
+    at <- positions + dodge[profile]
     values <- means[profile, ]
-    graphics::lines(positions, values, col = colours[profile],
+    graphics::lines(at, values, col = colours[profile],
                     lwd = style$line_width, lty = lines[profile])
-    graphics::points(positions, values, pch = points[profile],
+    if (!is.null(errors)) {
+      graphics::segments(at, bottom[profile, ], at, top[profile, ],
+                         col = colours[profile], lwd = 1.6)
+      graphics::segments(at - 0.035, top[profile, ], at + 0.035, top[profile, ],
+                         col = colours[profile], lwd = 1.6)
+      graphics::segments(at - 0.035, bottom[profile, ], at + 0.035,
+                         bottom[profile, ], col = colours[profile], lwd = 1.6)
+    }
+    graphics::points(at, values, pch = points[profile],
                      bg = colours[profile], col = style$panel_fill,
                      cex = sizes[profile], lwd = 1.4)
   }))
   if (isTRUE(labels)) {
-    label_y <- .multilpa_spread_labels(means[, length(vars)],
-                                     0.055 * diff(ylim))
-    graphics::text(length(vars) + .multilpa_label_offset(style), label_y,
-                   label_text, adj = c(0, 0.5),
+    label_y <- .multilpa_spread_labels(
+      means[, length(vars)],
+      max(0.055 * diff(ylim), .multilpa_label_gap(style)))
+    graphics::text(length(vars) + max(dodge) + .multilpa_label_offset(style),
+                   label_y, label_text, adj = c(0, 0.5),
                    col = colours, cex = style$label_text_size, font = 2L)
   }
   invisible(NULL)
+}
+
+#' The observations behind a profile plot, with each case's assigned profile
+#'
+#' The indicators are taken as the fit stored them, which are the values it was
+#' fitted to. A centred fit reports its means on the centred scale, where the
+#' stored columns would not sit, so it is refused rather than drawn wrongly.
+#' @param x A fitted model.
+#' @param vars The continuous indicators.
+#' @return A list with `values` (cases by indicators) and `profile`.
+#' @noRd
+.multilpa_plot_observations <- function(x, vars) {
+  if (!identical(x$centering %||% "none", "none")) {
+    stop(errorCondition(paste(
+      "The raincloud view draws the indicators as supplied, and this fit was",
+      "centred, so its means are on a different scale."),
+      class = "latents_bad_argument", call = NULL))
+  }
+  values <- x$indicator_data
+  if (is.null(values) || is.null(x$subject_profiles)) {
+    stop(errorCondition("This fit did not retain its indicators, so they cannot be drawn.",
+                        class = "latents_no_indicator_data", call = NULL))
+  }
+  values <- matrix(as.numeric(values), nrow(values), ncol(values),
+                   dimnames = list(NULL, colnames(values)))
+  # A noise component's cases belong to no profile, so they are not drawn.
+  kept <- x$subject_profiles >= 1L & x$subject_profiles <= x$n_profiles
+  list(values = values[kept, vars, drop = FALSE],
+       profile = x$subject_profiles[kept])
 }
 
 #' Draw profile prevalence within each group class
@@ -504,6 +614,7 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
       class = "latents_nothing_to_plot", call = NULL))
   }
   style <- utils::modifyList(style, list(...))
+  criterion <- .multilpa_distinct_criteria(grid, criterion)
   previous <- graphics::par(no.readonly = TRUE)
   # `mfg` is dropped before the state is restored: setting it switches `new` on
   # as a documented side effect, so restoring it on a device nothing has been
@@ -517,15 +628,41 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
     columns <- if (length(criterion) <= 3L) length(criterion) else 2L
     graphics::par(mfrow = c(ceiling(length(criterion) / columns), columns))
   }
-  invisible(lapply(criterion, function(name) {
+  invisible(lapply(seq_along(criterion), function(index) {
+    name <- criterion[[index]]
+    title <- names(criterion)[[index]]
     .multilpa_enumeration_panel(
       grid, name, labels = labels, mark_minimum = mark_minimum,
-      main = if (is.null(main)) (if (several && combine) name else NULL) else main,
+      main = if (is.null(main)) (if (several && combine) title else NULL) else main,
       subtitle = if (is.null(subtitle) && several && combine) "" else subtitle,
       palette = palette, symbols = symbols, linetypes = linetypes,
-      style = style)
+      style = style, title = title, axis_title = !(several && combine))
   }))
   invisible(x)
+}
+
+#' The criteria worth a panel, named for display
+#'
+#' A single-level grid has one unit per observation, so every criterion's
+#' group-level and individual-level versions are the same numbers; drawing both
+#' repeats a panel. Such a pair is kept once under the criterion's plain name.
+#' @param grid The enumeration table.
+#' @param criterion Requested criterion columns.
+#' @return The criteria to draw, named by their display titles.
+#' @noRd
+.multilpa_distinct_criteria <- function(grid, criterion) {
+  base <- sub("_(groups|individual)$", "", criterion)
+  level <- ifelse(grepl("_groups$", criterion), "groups",
+                  ifelse(grepl("_individual$", criterion), "individuals", ""))
+  same_at_both <- vapply(base, function(stem) {
+    both <- paste0(stem, c("_groups", "_individual"))
+    all(both %in% names(grid)) &&
+      isTRUE(all.equal(grid[[both[1L]]], grid[[both[2L]]]))
+  }, logical(1))
+  keep <- !duplicated(ifelse(same_at_both, base, criterion))
+  titles <- ifelse(same_at_both | !nzchar(level), toupper(base),
+                   sprintf("%s (%s)", toupper(base), level))
+  stats::setNames(criterion[keep], titles[keep])
 }
 
 #' Draw one information criterion across an enumeration grid
@@ -541,7 +678,8 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
 #' @noRd
 .multilpa_enumeration_panel <- function(grid, criterion, labels, mark_minimum,
                                         main, subtitle, palette, symbols,
-                                        linetypes, style) {
+                                        linetypes, style, title = criterion,
+                                        axis_title = TRUE) {
   values <- grid[[criterion]]
   eligible <- grid$converged %in% TRUE & is.finite(values)
   if (!any(eligible)) {
@@ -571,16 +709,24 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
   padding <- 0.12 * max(diff(span), .Machine$double.eps)
   xlim <- c(min(profile_counts) - 0.35, max(profile_counts) + 0.35)
   failures <- sum(!grid$converged)
-  label_text <- sprintf("%d group class%s", series_keys$n_group_classes,
+  # A label names only what tells the series apart: the covariance model, the
+  # group-class count, or both; "1 group class" on every line says nothing.
+  group_text <- sprintf("%d group class%s", series_keys$n_group_classes,
                         ifelse(series_keys$n_group_classes == 1L, "", "es"))
-  if (length(unique(series_keys$model)) > 1L) {
-    label_text <- paste(series_keys$model, label_text, sep = ", ")
-  }
+  several_models <- length(unique(series_keys$model)) > 1L
+  several_groups <- length(unique(series_keys$n_group_classes)) > 1L
+  label_text <- if (several_models && several_groups) {
+    paste(series_keys$model, group_text, sep = ", ")
+  } else if (several_models) {
+    as.character(series_keys$model)
+  } else if (several_groups) {
+    group_text
+  } else ""  # one series needs no label
   graphics::par(mar = .multilpa_margins(style, if (isTRUE(labels)) label_text else
     character(), style$label_text_size))
   .multilpa_panel(xlim = xlim, ylim = c(span[1L] - padding, span[2L] + padding),
-    xlab = "Number of profiles", ylab = criterion,
-    main = if (is.null(main)) sprintf("%s by candidate model", criterion) else main,
+    xlab = "Number of profiles", ylab = if (isTRUE(axis_title)) title else "",
+    main = if (is.null(main)) sprintf("%s by candidate model", title) else main,
     subtitle = if (is.null(subtitle)) sprintf(
       "%d candidates%s; lower is preferred, no candidate is selected automatically",
       nrow(grid),
@@ -625,7 +771,8 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
     keep <- !is.na(ends)
     if (any(keep)) {
       graphics::text(max(profile_counts) + .multilpa_label_offset(style),
-                     .multilpa_spread_labels(ends[keep], 0.055 * diff(span)),
+                     .multilpa_spread_labels(ends[keep],
+                       max(0.055 * diff(span), .multilpa_label_gap(style))),
                      label_text[keep],
                      adj = c(0, 0.5), col = colours[keep],
                      cex = style$label_text_size, font = 2L)
@@ -693,7 +840,7 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
   .multilpa_cell_labels(codes, positions, colours, style, cell_labels)
   boundaries <- which(diff(classes) != 0) + 0.5
   if (length(boundaries)) {
-    graphics::abline(h = boundaries, col = style$panel_fill, lwd = 3)
+    .multilpa_hline(boundaries, col = style$panel_fill, lwd = 3)
   }
   if (isTRUE(labels)) {
     graphics::text(max(positions) + 0.6,
@@ -718,16 +865,19 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
 #' answered with an average that no unit has.
 #'
 #' @param x A fitted `multilpa_covariates` model.
-#' @param what `"profiles"` (the default) draws the measurement model;
-#'   `"sequences"` draws the assignments in course order and needs a fit made
-#'   with `time =`. `"entropy"` and `"posteriors"` draw the two case-level
+#' @param what `"profiles"` (the default) draws the measurement model, and
+#'   `"bars"` and `"heatmap"` draw it as [plot.multilpa()] does (for an
+#'   all-categorical fit the heatmap shows the response probabilities);
+#'   `"sizes"` and `"avepp"` draw the effective profile sizes and the average
+#'   posterior matrix. `"sequences"` draws the assignments in course order and
+#'   needs a fit made with `time =`. `"entropy"` and `"posteriors"` draw the two case-level
 #'   classification diagnostics exactly as [plot.multilpa()] draws them: they
 #'   read the individual posteriors, which a covariate fit has, and say nothing
 #'   about prevalence, which it does not. `"responses"` draws the categorical
 #'   response probabilities, one line per profile, as [plot.multilpa()] does;
 #'   the measurement model does not depend on the covariates.
-#' @param scale,labels,cell_labels,main,subtitle,palette,symbols,linetypes,style,category,...
-#'   Passed through as in [plot.multilpa()].
+#' @param data,scale,labels,cell_labels,main,subtitle,palette,symbols,linetypes,style,category,intervals,...
+#'   As in [plot.multilpa()].
 #' @return The fitted model, invisibly. Called for the side effect of drawing.
 #' @examples
 #' set.seed(5)
@@ -747,17 +897,22 @@ plot.multilpa_enumeration <- function(x, criterion = c("aic", "bic_groups",
 #'                 n_starts = 2, seed = 1)
 #' plot(fit)
 #' @export
-plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
-                                                 "entropy", "posteriors",
-                                                 "responses", "all"),
+plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
+                                                 "raincloud",
+                                                 "responses", "sequences",
+                                                 "sizes", "entropy",
+                                                 "posteriors", "avepp", "all"),
+                                     data = NULL,
                                      scale = c("raw", "standardized"),
                                      category = "last",
                                      labels = TRUE, main = NULL, subtitle = NULL,
                                      palette = NULL, symbols = NULL,
                                      linetypes = NULL, style = .multilpa_style(),
-                                     cell_labels = TRUE, ...) {
+                                     cell_labels = TRUE, intervals = TRUE,
+                                     ...) {
   stopifnot("`x` must be a fitted `multilpa_covariates` model" =
               inherits(x, "multilpa_covariates"),
+            "`intervals` must be TRUE or FALSE" = isTRUE(intervals) || isFALSE(intervals),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
             "`cell_labels` must be TRUE or FALSE" =
               isTRUE(cell_labels) || isFALSE(cell_labels))
@@ -781,16 +936,36 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
   previous$mfg <- NULL
   on.exit(graphics::par(previous), add = TRUE, after = FALSE)
   graphics::par(xpd = NA)
+  # The measurement and classification views are the ones plot.multilpa()
+  # draws: the measurement model does not depend on the covariates, and the
+  # classification views read only the posteriors.
   switch(what,
     profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
-                                       symbols, linetypes, style),
+                                       symbols, linetypes, style,
+                                       errors = if (isTRUE(intervals))
+                                         .multilpa_mean_error_matrix(x, data)),
+    bars = .multilpa_plot_bars(x, scale, .multilpa_mean_error_matrix(x, data),
+                               main, subtitle, palette, style),
+    heatmap = if (length(.multilpa_continuous_names(x)) == 0L) {
+      .multilpa_plot_response_heatmap(x, main, subtitle, style)
+    } else .multilpa_plot_heatmap(x, main, subtitle, style),
+    raincloud = .multilpa_plot_raincloud(
+      x, scale, main = main %||% "Indicator distributions by profile",
+      subtitle = subtitle %||% paste(
+        "density, quartiles and observations of each indicator among the",
+        "cases assigned to each profile"),
+      palette, symbols, style),
     sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
                                          style, cell_labels),
+    sizes = .multilpa_plot_sizes(x, main, subtitle, palette, style),
+    avepp = .multilpa_plot_avepp(x, main, subtitle, style),
     entropy = ,
     posteriors = .multilpa_plot_case_diagnostic(x, what, main, subtitle,
                                                 palette, style),
     responses = .multilpa_plot_responses(x, category, labels, main, subtitle,
-                                         palette, symbols, linetypes, style))
+                                         palette, symbols, linetypes, style,
+                                         errors = if (isTRUE(intervals))
+                                           .multilpa_response_error_table(x, data)))
   invisible(x)
 }
 
@@ -1070,15 +1245,17 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "sequences",
 #' @export
 plot_views <- function() {
   data.frame(
-    type = c("profiles", "bars", "heatmap", "responses", "probabilities",
+    type = c("profiles", "bars", "heatmap", "raincloud", "responses",
+             "probabilities",
              "sequences", "transitions", "sizes", "entropy", "posteriors",
              "avepp", "enumeration", "all"),
-    group = c(rep("measurement", 4L), rep("structure", 4L),
+    group = c(rep("measurement", 5L), rep("structure", 4L),
               rep("diagnostics", 3L), "selection", "every"),
     description = c(
       "Profile means across indicators, point size showing profile prevalence",
       "Profile means as grouped bars, with 95% intervals when `data` is given",
       "Profile means as standard deviations from each indicator's grand mean",
+      "Each indicator's distribution by assigned profile: density, box, observations",
       "Categorical response probabilities, one line per profile",
       "Profile prevalence within each group class, the two-level quantity",
       "Each group's profile at each occasion, one row per group",
@@ -1123,6 +1300,8 @@ plot_views <- function() {
   }
   n_profiles <- x$n_profiles
   means <- x$means
+  missing_reason <- if (is.character(errors)) errors else NULL
+  if (is.character(errors)) errors <- NULL
   if (identical(scale, "standardized")) {
     standardization <- .multilpa_standardization(x, vars)
     means <- sweep(sweep(means, 2L, standardization$centre, "-"), 2L,
@@ -1153,9 +1332,12 @@ plot_views <- function() {
     subtitle = if (is.null(subtitle)) sprintf(
       "%d profiles; %s scale%s", n_profiles,
       if (identical(scale, "standardized")) "standardized" else "input",
-      if (is.null(errors)) "" else "; whiskers are 95% intervals") else subtitle,
-    x_at = centres, x_labels = vars, style = style)
-  graphics::abline(h = baseline, col = style$muted_colour, lwd = 1)
+      if (!is.null(errors)) "; whiskers are 95% intervals" else
+        if (!is.null(missing_reason)) paste0("; ", missing_reason) else "") else
+      subtitle,
+    x_at = centres, x_labels = rep("", length(vars)), style = style)
+  .multilpa_block_names(vars, centres, 1, style, line = style$axis_line + 0.4)
+  .multilpa_hline(baseline, col = style$muted_colour, lwd = 1)
   invisible(lapply(seq_len(n_profiles), function(profile) {
     left <- centres + offsets[profile] - width * 0.44
     right <- centres + offsets[profile] + width * 0.44
@@ -1190,7 +1372,8 @@ plot_views <- function() {
 #' @param x A fitted model.
 #' @param data The data frame the model was fitted to, or `NULL` to use the
 #'   columns the fit carries.
-#' @return A profiles-by-indicators matrix of standard errors, or `NULL`.
+#' @return A profiles-by-indicators matrix of standard errors; or a single
+#'   string saying why there are none, for the plot's subtitle.
 #' @noRd
 .multilpa_mean_error_matrix <- function(x, data) {
   # A fit carries the columns it was built from, so the intervals cost the
@@ -1198,20 +1381,176 @@ plot_views <- function() {
   # errors are not implemented refuse by condition class; the bars are still
   # worth drawing without whiskers, so the refusal is caught and reported as
   # "no errors" rather than propagated out of a plot call.
+  # The reason travels to the subtitle, so a plot without whiskers says why
+  # instead of looking like a plot whose intervals were forgotten.
+  because <- function(reason) function(condition) reason
   errors <- tryCatch(
     .multilpa_measurement_errors(x, .multilpa_resolve_data(x, data)),
-    latents_unsupported_inference = function(condition) NULL,
-    latents_unsupported_noise = function(condition) NULL,
-    latents_singular_information = function(condition) NULL,
-    latents_incomplete_fit = function(condition) NULL,
-    latents_bad_inference_data = function(condition) NULL)
-  if (is.null(errors)) return(NULL)
+    latents_unsupported_inference = because("no intervals for this model"),
+    latents_unsupported_noise = because("no intervals with a noise component"),
+    latents_singular_information = because("no intervals: singular information"),
+    latents_incomplete_fit = because("no intervals: incomplete fit"),
+    latents_bad_inference_data = because("no intervals: data do not reproduce the fit"),
+    latents_boundary_fit = because("no intervals: an estimate is at its bound"),
+    latents_no_converge = because("no intervals: the fit did not converge"))
+  if (is.character(errors)) return(errors)
   vars <- .multilpa_continuous_names(x)
   cells <- expand.grid(indicator = vars, profile = seq_len(x$n_profiles),
                        stringsAsFactors = FALSE)
   values <- .multilpa_match_error(errors, "mean", cells$profile, cells$indicator)
-  if (all(is.na(values))) return(NULL)
+  if (all(is.na(values))) return("no intervals for this model")
   matrix(values, x$n_profiles, length(vars), byrow = TRUE)
+}
+
+#' Response-probability standard errors for the responses plot
+#' @param x A fitted model.
+#' @param data The fitting data, or `NULL` for the columns the fit carries.
+#' @return The measurement rows of the inference table; or a string saying
+#'   why there are none.
+#' @noRd
+.multilpa_response_error_table <- function(x, data) {
+  because <- function(reason) function(condition) reason
+  # Probabilities on their bound are held there, so every other one keeps its
+  # interval instead of one bound-active probability removing them all.
+  tryCatch(
+    {
+      inference <- parameter_inference(x, .multilpa_resolve_data(x, data),
+                                       boundary = "fix")
+      inference <- inference[inference$level == "measurement", , drop = FALSE]
+      attr(inference, "held") <- length(attr(inference, "fixed_at_bound") %||%
+                                          character()) > 0L
+      inference
+    },
+    latents_unsupported_inference = because("no intervals for this model"),
+    latents_unsupported_noise = because("no intervals with a noise component"),
+    latents_singular_information = because("no intervals: singular information"),
+    latents_incomplete_fit = because("no intervals: incomplete fit"),
+    latents_bad_inference_data = because("no intervals: data do not reproduce the fit"),
+    latents_boundary_fit = because("no intervals: a probability is at its bound"),
+    latents_no_converge = because("no intervals: the fit did not converge"))
+}
+
+#' Draw every response probability as a heatmap
+#'
+#' The categorical counterpart of the profile-means heatmap, for a fit whose
+#' indicators are all categorical: one row per profile and one column per
+#' category of every indicator, each cell the probability of that response in
+#' that profile. A binary indicator gets one column, its last category, since
+#' the other is its complement; a polytomous one gets a column per category,
+#' so a profile's whole response distribution reads across the row. The fill
+#' is the white-to-blue probability ramp shared with the average posterior
+#' matrix, and every cell prints its value.
+#'
+#' @param x A fitted model with categorical indicators only.
+#' @param main,subtitle Panel title and secondary line.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_response_heatmap <- function(x, main, subtitle, style) {
+  blocks <- x$response_probabilities
+  if (is.null(blocks) || length(blocks) == 0L) {
+    stop(errorCondition("This model has no indicators to draw.",
+                        class = "latents_nothing_to_plot", call = NULL))
+  }
+  n_profiles <- x$n_profiles
+  columns <- do.call(rbind, lapply(names(blocks), function(indicator) {
+    block <- blocks[[indicator]]
+    kept <- if (ncol(block) == 2L) ncol(block) else seq_len(ncol(block))
+    data.frame(indicator = indicator, category = colnames(block)[kept],
+               index = kept, stringsAsFactors = FALSE)
+  }))
+  columns$position <- seq_len(nrow(columns))
+  binary <- all(vapply(blocks, ncol, integer(1)) == 2L)
+  # A polytomous indicator's columns are labelled by category position, and
+  # the indicator is named once under its block; full category labels are
+  # usually too long to sit under a column. When every indicator shares one
+  # set of categories the subtitle keys the positions to them.
+  column_labels <- if (binary) columns$indicator else columns$index
+  category_sets <- unique(lapply(blocks, colnames))
+  key <- if (!binary && length(category_sets) == 1L) {
+    categories <- category_sets[[1L]]
+    # Labels that already begin with their position ("1 Extremely well") are
+    # their own key.
+    numbered <- all(startsWith(categories, as.character(seq_along(categories))))
+    paste(if (numbered) categories else
+      sprintf("%d = %s", seq_along(categories), categories), collapse = ", ")
+  } else NULL
+  share <- x$effective_profile_counts / sum(x$effective_profile_counts)
+  rows <- rev(seq_len(n_profiles))
+  graphics::par(mar = style$margins + c(if (binary) 1 else 1.6, 2.2,
+                                       if (is.null(key)) 0 else 1, 0))
+  .multilpa_panel(
+    xlim = c(0.5, nrow(columns) + 0.5), ylim = c(0.5, n_profiles + 0.5),
+    xlab = if (binary) "Indicator" else "", ylab = "",
+    main = if (is.null(main)) "Response probabilities" else main,
+    subtitle = if (is.null(subtitle)) paste0(sprintf(
+      "probability of each response in each profile%s; %d profile%s",
+      if (binary) sprintf(" (category %s shown)",
+                          paste(unique(columns$category), collapse = "/")) else "",
+      n_profiles, if (n_profiles == 1L) "" else "s"),
+      if (is.null(key)) "" else paste0("\ncategories: ", key)) else subtitle,
+    # A binary indicator's name goes under its column through the same
+    # placement as a polytomous block's, which shrinks and staggers names that
+    # do not fit rather than letting the axis drop every other one.
+    x_at = columns$position,
+    x_labels = if (binary) rep("", nrow(columns)) else column_labels,
+    y_at = rows, y_labels = sprintf("Profile %d\n(%.0f%%)", seq_len(n_profiles),
+                                    100 * share[seq_len(n_profiles)]),
+    style = style)
+  cells <- expand.grid(column = columns$position, profile = seq_len(n_profiles))
+  values <- vapply(seq_len(nrow(cells)), function(cell) {
+    column <- columns[cells$column[cell], ]
+    blocks[[column$indicator]][cells$profile[cell], column$index]
+  }, numeric(1))
+  fills <- .multilpa_diverging(values, limit = 1)
+  graphics::rect(cells$column - 0.5, rows[cells$profile] - 0.5,
+                 cells$column + 0.5, rows[cells$profile] + 0.5,
+                 col = fills, border = style$panel_fill, lwd = 1.5)
+  # Values are printed only where they fit inside a cell; the fill still
+  # carries them when the grid is too dense.
+  value_size <- style$label_text_size * 0.9
+  if (graphics::strwidth("0.00", cex = value_size) < 0.9) {
+    graphics::text(cells$column, rows[cells$profile], sprintf("%.2f", values),
+                   col = .multilpa_ink(fills), cex = value_size)
+  }
+  # A rule between indicators, so a polytomous item's categories read as one
+  # block, and the indicator's name centred under that block.
+  block <- match(columns$indicator, unique(columns$indicator))
+  if (!binary) {
+    edges <- which(diff(block) != 0L) + 0.5
+    graphics::segments(edges, 0.5, edges, n_profiles + 0.5,
+                       col = style$text_colour, lwd = 1.2)
+  }
+  .multilpa_block_names(unique(columns$indicator),
+                        vapply(split(columns$position, block), mean, numeric(1)),
+                        min(tabulate(block)), style,
+                        line = style$axis_line + if (binary) 0.4 else 2.3,
+                        font = if (binary) 1L else 2L)
+  invisible(NULL)
+}
+
+#' Names under blocks of columns, never running together
+#'
+#' Base graphics silently drops axis labels that would overlap. Names that do
+#' not fit the width they label are shrunk, and if still too wide alternate
+#' between two lines, so every name is drawn and none touches its neighbour.
+#' @param names The names, one per block.
+#' @param centres Horizontal centre of each block, in user units.
+#' @param width Width of the narrowest block, in user units.
+#' @param style Visual constants.
+#' @param line Margin line of the first row of names.
+#' @param font Font face.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_block_names <- function(names, centres, width, style, line, font = 1L) {
+  size <- style$axis_size
+  widest <- max(graphics::strwidth(names, cex = size, font = font))
+  if (widest > 0.95 * width) size <- max(0.6, size * 0.95 * width / widest)
+  staggered <- max(graphics::strwidth(names, cex = size, font = font)) > 0.95 * width
+  lines_at <- line + if (staggered) (seq_along(names) + 1L) %% 2L * 0.9 else 0
+  graphics::mtext(names, side = 1L, at = centres, line = lines_at,
+                  col = style$text_colour, cex = size, font = font)
+  invisible(NULL)
 }
 
 #' Draw every view a fit supports, in one call
@@ -1258,4 +1597,105 @@ plot_views <- function() {
                     paste(views[!drawn], collapse = ", ")))
   }
   invisible(x)
+}
+
+#' Draw each indicator's distribution by profile as rainclouds
+#'
+#' One panel per continuous indicator. Within a panel each profile has a row,
+#' and the row shows the indicator's distribution among the observations
+#' assigned to that profile three ways: a density (the cloud), a box of the
+#' quartiles with the median, and the observations themselves (the rain).
+#' Where the profile plot shows the estimated means, this view shows the
+#' spread and shape the means summarize, and how far the profiles overlap.
+#' Profiles are told apart by row, colour and symbol together. The rain is
+#' spread by a fixed function of the row rather than a random jitter, so
+#' drawing leaves the random-number stream untouched.
+#'
+#' @param x A fitted model with continuous indicators.
+#' @param scale `"raw"` or `"standardized"`.
+#' @param main,subtitle Title and secondary line of the whole figure.
+#' @param palette,symbols Per-profile colours and symbols, or `NULL`.
+#' @param style Visual constants.
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_plot_raincloud <- function(x, scale, main, subtitle, palette, symbols,
+                                     style) {
+  vars <- .multilpa_continuous_names(x)
+  if (length(vars) == 0L) {
+    stop(errorCondition(
+      "This model has no continuous indicators; plot `what = \"heatmap\"` instead.",
+      class = "latents_no_continuous", call = NULL))
+  }
+  observed <- .multilpa_plot_observations(x, vars)
+  values <- observed$values
+  if (identical(scale, "standardized")) {
+    standardization <- .multilpa_standardization(x, vars)
+    values <- sweep(sweep(values, 2L, standardization$centre, "-"), 2L,
+                    standardization$spread, "/")
+  }
+  n_profiles <- x$n_profiles
+  colours <- if (is.null(palette)) .multilpa_palette(n_profiles) else
+    rep(palette, length.out = n_profiles)
+  points <- if (is.null(symbols)) .multilpa_symbols(n_profiles) else
+    rep(symbols, length.out = n_profiles)
+  share <- tabulate(observed$profile, nbins = n_profiles) / length(observed$profile)
+  row_labels <- sprintf("Profile %d\n(%.0f%%)", seq_len(n_profiles), 100 * share)
+  columns <- if (length(vars) <= 3L) length(vars) else
+    if (length(vars) == 4L) 2L else 3L
+  graphics::par(mfrow = c(ceiling(length(vars) / columns), columns),
+                oma = c(0.5, 0, if (is.null(subtitle) && is.null(main)) 0 else 3.2, 0),
+                mar = c(3.2, 5.2, 2.2, 0.8))
+  n_rain <- nrow(values)
+  alpha <- max(0.1, min(0.6, 12 / sqrt(n_rain)))
+  offset <- ((seq_len(n_rain) * 0.6180339887) %% 1)
+  invisible(lapply(seq_along(vars), function(index) {
+    column <- values[, index]
+    xlim <- range(column, na.rm = TRUE)
+    xlim <- xlim + c(-1, 1) * 0.04 * max(diff(xlim), .Machine$double.eps)
+    rows <- rev(seq_len(n_profiles))
+    .multilpa_panel(xlim = xlim, ylim = c(0.45, n_profiles + 0.55),
+                    xlab = if (identical(scale, "standardized")) "Standardized value" else "",
+                    ylab = "", main = vars[[index]], subtitle = NULL,
+                    y_at = rows, y_labels = row_labels, style = style)
+    invisible(lapply(seq_len(n_profiles), function(profile) {
+      base <- rows[profile]
+      own <- column[observed$profile == profile]
+      own <- own[!is.na(own)]
+      if (length(own) == 0L) return(NULL)
+      # Cloud: a density above the row, scaled to its own maximum.
+      if (length(unique(own)) > 1L) {
+        density <- stats::density(own, from = min(own), to = max(own), n = 256L)
+        height <- 0.42 * density$y / max(density$y)
+        graphics::polygon(c(density$x, rev(density$x)),
+                          c(base + 0.02 + height, rep(base + 0.02, length(height))),
+                          col = grDevices::adjustcolor(colours[profile], alpha.f = 0.55),
+                          border = colours[profile], lwd = 1)
+      }
+      # Box: quartiles, median and whiskers to the most extreme observation
+      # within 1.5 interquartile ranges.
+      quartiles <- stats::quantile(own, c(0.25, 0.5, 0.75), names = FALSE)
+      reach <- 1.5 * diff(quartiles[c(1L, 3L)])
+      whiskers <- c(min(own[own >= quartiles[1L] - reach]),
+                    max(own[own <= quartiles[3L] + reach]))
+      graphics::segments(whiskers[1L], base - 0.06, whiskers[2L], base - 0.06,
+                         col = style$text_colour, lwd = 1)
+      graphics::rect(quartiles[1L], base - 0.11, quartiles[3L], base - 0.01,
+                     col = style$panel_fill, border = style$text_colour, lwd = 1)
+      graphics::segments(quartiles[2L], base - 0.11, quartiles[2L], base - 0.01,
+                         col = style$title_colour, lwd = 2)
+      # Rain: the observations below the box.
+      band <- offset[observed$profile == profile][seq_along(own)]
+      graphics::points(own, base - 0.16 - 0.26 * band, pch = points[profile],
+                       col = grDevices::adjustcolor(colours[profile], alpha.f = alpha),
+                       bg = grDevices::adjustcolor(colours[profile], alpha.f = alpha * 0.6),
+                       cex = 0.5)
+    }))
+  }))
+  if (!is.null(main) || !is.null(subtitle)) {
+    graphics::mtext(main %||% "", side = 3L, line = 1.7, outer = TRUE, adj = 0.02,
+                    col = style$title_colour, cex = style$title_size, font = 2L)
+    graphics::mtext(subtitle %||% "", side = 3L, line = 0.5, outer = TRUE,
+                    adj = 0.02, col = style$muted_colour, cex = style$subtitle_size)
+  }
+  invisible(NULL)
 }

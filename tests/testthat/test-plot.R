@@ -131,6 +131,8 @@ test_that("the palette, symbols and line types stay aligned and recycle", {
                  "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000")
   expect_true(all(.multilpa_palette(20L) %in% okabe_ito))
   expect_identical(.multilpa_palette(11L)[10L], .multilpa_palette(1L))
+  # Yellow, which barely shows on the light panel, is kept out of the first six.
+  expect_false("#F0E442" %in% .multilpa_palette(6L))
 })
 
 test_that("direct labels are spread apart but keep their order and centre", {

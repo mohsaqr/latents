@@ -10,8 +10,10 @@
 .multilpa_palette <- function(n) {
   stopifnot("`n` must be a single positive integer" =
               is.numeric(n) && length(n) == 1L && is.finite(n) && n >= 1)
-  colours <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442",
-               "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000")
+  # Yellow is Okabe-Ito's least visible colour on a light panel, so it comes
+  # after the six that read well there; it is reached only with seven series.
+  colours <- c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00",
+               "#CC79A7", "#F0E442", "#999999", "#000000")
   rep(colours, length.out = n)
 }
 
@@ -126,9 +128,13 @@
   # A categorical y axis names its own rows, so the reference grid would be
   # drawing lines through the middle of them.
   if (is.null(y_labels)) {
-    graphics::abline(h = grid_at, col = style$grid_colour, lwd = style$grid_width)
+    .multilpa_hline(grid_at, col = style$grid_colour, lwd = style$grid_width)
   }
-  axis_positions <- if (is.null(x_at)) pretty(xlim) else x_at
+  # A numeric axis keeps only the ticks inside the panel; pretty() overshoots.
+  axis_positions <- if (is.null(x_at)) {
+    ticks <- pretty(xlim)
+    ticks[ticks >= min(xlim) & ticks <= max(xlim)]
+  } else x_at
   axis_labels <- if (is.null(x_labels)) TRUE else x_labels
   graphics::axis(1L, at = axis_positions, labels = axis_labels, tick = FALSE,
                  line = style$axis_line, col.axis = style$text_colour,
@@ -142,8 +148,12 @@
                   cex = style$label_size)
   graphics::mtext(ylab, side = 2L, line = style$label_line + 0.8,
                   col = style$text_colour, cex = style$label_size)
+  # A subtitle of several lines pushes the title up by as many lines.
+  extra_lines <- if (is.null(subtitle)) 0 else
+    lengths(regmatches(subtitle, gregexpr("\n", subtitle))) * 0.95
   if (!is.null(main)) {
-    graphics::mtext(main, side = 3L, line = if (is.null(subtitle)) 0.9 else 1.7,
+    graphics::mtext(main, side = 3L,
+                    line = if (is.null(subtitle)) 0.9 else 1.7 + extra_lines,
                     adj = 0, col = style$title_colour, cex = style$title_size,
                     font = 2L)
   }
@@ -188,6 +198,35 @@
          label_text_size = label_text_size, axis_line = axis_line,
          label_line = label_line, point_size = point_size,
          line_width = line_width, margins = margins), list(...))
+}
+
+#' A horizontal rule across the panel only
+#'
+#' The plot methods set `xpd = NA` so that direct labels can sit in the
+#' margin, and `abline()` then runs across the whole device, through the
+#' labels and the title. A segment spanning the plotting region stays inside
+#' the panel.
+#' @param y Heights of the rules.
+#' @param ... Passed to [graphics::segments()].
+#' @return `NULL`, invisibly.
+#' @noRd
+.multilpa_hline <- function(y, ...) {
+  if (length(y) == 0L) return(invisible(NULL))
+  usr <- graphics::par("usr")
+  graphics::segments(usr[1L], y, usr[2L], y, ...)
+  invisible(NULL)
+}
+
+#' The smallest vertical gap that keeps two direct labels apart
+#'
+#' Measured from the text itself, in the panel's own units, so labels stay
+#' clear of each other whatever the panel size or the data range; a fixed share
+#' of the range was too small in a panel of a multi-panel layout.
+#' @param style Visual constants.
+#' @return A single positive number, in user units.
+#' @noRd
+.multilpa_label_gap <- function(style) {
+  1.2 * graphics::strheight("Mg", cex = style$label_text_size, font = 2L)
 }
 
 #' Place direct series labels without overlap
