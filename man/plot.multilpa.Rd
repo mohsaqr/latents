@@ -6,153 +6,137 @@
 \usage{
 \method{plot}{multilpa}(
   x,
-  what = c("profiles", "bars", "heatmap", "raincloud", "responses", "probabilities",
-    "sequences", "sizes", "entropy", "posteriors", "avepp", "all"),
+  what = c("profiles", "bars", "heatmap", "raincloud", "parallel", "pairs", "responses",
+    "probabilities", "sequences", "sizes", "entropy", "posteriors", "avepp", "all"),
   data = NULL,
   scale = c("raw", "standardized"),
   category = "last",
   labels = TRUE,
+  intervals = TRUE,
+  cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  palette = NULL,
-  symbols = NULL,
-  linetypes = NULL,
-  style = .multilpa_style(),
-  cell_labels = TRUE,
-  intervals = TRUE,
   ...
 )
 }
 \arguments{
 \item{x}{A fitted \code{multilpa} model.}
 
-\item{what}{Which view to draw. \code{\link[=plot_views]{plot_views()}} lists every value
-with its group and a one-line description; the \code{"enumeration"} row it also
-lists belongs to \code{\link[=plot.multilpa_enumeration]{plot.multilpa_enumeration()}}, not to this method.
+\item{what}{Which view to draw. \code{\link[=plot_views]{plot_views()}} lists every value with its
+group and a one-line description.
 
-The measurement model, three ways: \code{"profiles"} draws one line per profile
-across the continuous indicators, with each profile's marker area
-proportional to its prevalence. \code{"bars"} draws the same means as grouped
-bars, one bar per profile within each indicator, with a 95\% interval on
-every bar when \code{data} is supplied. \code{"heatmap"} draws them as a diverging
-grid of standard deviations from each indicator's grand mean, which is the
-quickest read when there are many indicators or many profiles.
-\code{"raincloud"} shows what the means summarize: one panel per indicator,
-and in it, for the cases assigned to each profile, a density of the
-indicator, a box of its quartiles and median, and the observations
-themselves. It shows the spread within each profile and how far the
-profiles overlap. For a fit
-whose indicators are all categorical, \code{"heatmap"} draws the response
-probabilities instead: one row per profile and one column per category
-(a binary indicator shows its last category), each cell printing its
-probability.
-\code{"responses"} is the categorical counterpart of \code{"profiles"}, one line per
-profile across the categorical indicators, showing the probability of a
-chosen category.
+The measurement model: \code{"profiles"} draws one line per profile across the
+continuous indicators. \code{"bars"} draws the same means as grouped bars that
+start at zero. \code{"heatmap"} draws them as a diverging grid of observed
+standard deviations from each indicator's observed mean, the quickest read
+when there are many indicators or profiles; for a fit whose indicators are
+all categorical it draws the response probabilities instead.
+\code{"raincloud"} shows what the means summarize: for the cases assigned to
+each profile, a density, the quartiles and the observations of each
+indicator. \code{"parallel"} draws every case as a line across the indicators,
+one panel per profile, faded by the certainty of its assignment.
+\code{"pairs"} draws a scatter-plot matrix of the indicators with each
+profile's 95\% ellipse from the fitted covariances, the view that shows the
+covariance structure. \code{"responses"} is the categorical counterpart of
+\code{"profiles"}: one line per profile, showing the probability of a chosen
+category.
 
 The two-level structure: \code{"probabilities"} plots profile prevalence within
-each group class, one line per group class -- the quantity the second level
-exists to estimate. \code{"sequences"} draws one row per group, one column per
-position, coloured and numbered by the assigned profile, with the groups
-grouped by their latent class; it needs a fit made with \verb{time =}.
+each group class. \code{"sequences"} draws one row per group and one column per
+position, filled with the assigned profile; it needs a fit made with
+\verb{time =}.
 
-How big each profile is: \code{"sizes"} draws one bar per profile holding its
-effective count -- the posterior mass it carries, not the number of cases
-that won a tie -- with the count and the share printed on the bar.
+Classification: \code{"sizes"} draws each profile's effective count, the
+posterior mass it carries. \code{"posteriors"} draws the posterior probability
+of each case's assigned profile and \code{"entropy"} each case's entropy
+relative to a flat posterior, one strip per profile with its mean marked.
+A one-profile fit refuses both with an error of class
+\code{latents_nothing_to_plot}. \code{"avepp"} draws the average posterior
+probability matrix: rows are assigned profiles, columns profiles, and the
+diagonal is the avePP usually reported.
 
-Classification quality: \code{"entropy"} draws each case's entropy contribution
-as one ridge per profile, and \code{"posteriors"} draws the posterior
-probability of each case's assigned profile the same way. Both ridges are
-scaled to their own maximum, following the usual ridgeline convention, so
-ridge height compares shapes and not profile sizes; prevalence is printed
-in each profile's label instead. Both read the individual posteriors alone,
-so every family of this package can draw them; a one-profile fit refuses
-them with an error of class \code{latents_nothing_to_plot}, because every case
-then belongs to the single profile with probability one. \code{"avepp"} draws
-the average posterior probability matrix: one row per assigned profile, one
-column per profile, each cell the mean posterior that group puts on that
-profile. The diagonal is the avePP usually reported, and the off-diagonal
-says which profiles a group is confused with, which the diagonal alone
-cannot show.}
+\code{"all"} returns every view the fit has the ingredients for.}
 
-\item{data}{Optional. The data frame the model was fitted to, used by
-\code{what = "bars"} to put a 95\% interval on every bar and ignored by every
-other view. A fit carries the columns it was built from, so the intervals
-are drawn without this being supplied; pass it only to draw them from a
-different frame. A model family whose standard errors are not implemented
-gets bars without whiskers rather than an error.}
+\item{data}{Optional. The data frame the model was fitted to. A fit carries
+the columns it was built from, so intervals are drawn without it; pass it
+only to compute them from a different frame.}
 
-\item{scale}{For \code{what = "profiles"}, \code{"raw"} plots the estimated means in
-input units, and \code{"standardized"} divides each indicator's deviation from
-its grand mean by that indicator's observed standard deviation. Use
-\code{"standardized"} when indicators are on different scales, where raw means
-make the largest-scale indicator dominate the shape.}
+\item{scale}{For the mean views and \code{"raincloud"}, \code{"raw"} keeps each
+indicator in its input units and \code{"standardized"} divides its deviation
+from the observed mean by its observed standard deviation, the same map
+as \code{as.data.frame(scale = "standardized")}.}
 
 \item{category}{For \code{what = "responses"}, which category's probability to
-plot. \code{"last"} uses each indicator's highest category, which is the usual
-choice for binary indicators, \code{"first"} uses the lowest, or give a single
-category label or index used for every indicator.}
+plot: \code{"last"}, \code{"first"}, or a single category label or index.}
 
-\item{labels}{\code{TRUE} prints a direct label at the right end of each series.}
+\item{labels}{\code{TRUE} labels each series at its right end; \code{FALSE} uses a
+legend instead.}
 
-\item{main, subtitle}{Panel title and secondary line. \code{NULL} for none; pass
-\code{""} to reserve the space without text.}
+\item{intervals}{For \code{"profiles"} and \code{"responses"}, \code{TRUE} draws 95\%
+intervals when the fit has standard errors (a probability's is clipped to
+\verb{[0, 1]}). A fit without them is drawn without whiskers and its subtitle
+says why.}
 
-\item{palette, symbols, linetypes}{Vectors of colours, plotting characters and
-line types, recycled to the number of series. Defaults are the Okabe-Ito
-palette and matched symbol and line-type sequences.}
+\item{cell_labels}{For \code{what = "sequences"}, \code{TRUE} prints the profile
+number in each cell while the grid is sparse enough to hold one, so the
+profile is not carried by colour alone.}
 
-\item{style}{A list of visual constants, as built by \code{.multilpa_style()};
-pass named elements to override individual constants.}
+\item{main, subtitle}{Title and subtitle. \code{NULL} uses the view's own.}
 
-\item{cell_labels}{For \code{what = "sequences"}, \code{TRUE} prints the profile number
-inside each cell, so the profile is never carried by colour alone. The
-numbers are drawn only where the cell is wide and tall enough to hold one.}
-
-\item{intervals}{For \code{what = "profiles"} and \code{"responses"}, \code{TRUE} draws a
-95\% interval on every mean or probability when the fit has standard
-errors (a probability's interval is clipped to \verb{[0, 1]}); the profiles are then dodged
-apart so the whiskers stay readable. A fit without them (a bound-active or
-unconverged fit, or a family without inference) is drawn without whiskers
-and its subtitle says why.}
-
-\item{...}{Further named visual constants, merged into \code{style}.}
+\item{...}{Nothing further is accepted; an unknown argument raises an error
+of class \code{latents_bad_argument}. Style the returned plot with ggplot2.}
 }
 \value{
-The fitted model, invisibly. Called for the side effect of drawing.
+A ggplot object; for \code{what = "all"}, a \code{latents_plots} list of them,
+named by view, that draws every one when printed.
 }
 \description{
-Draws the profile means across indicators, or the profile prevalence within
-each latent group class. Series are distinguished by colour, point symbol and
-line type together, and labelled directly, so a line plot stays readable in
-greyscale and needs no legend; the sequence grid carries the profile number
-in each cell for the same reason.
+Draws one view of a fit as a ggplot object, which can be printed, saved
+with \code{ggplot2::ggsave()} or styled further with \code{+ ggplot2::theme()}.
+Every view shares one profile order (largest first), one profile share (the
+posterior share every table reports) and one set of Okabe-Ito colours
+paired with point shapes, so a profile looks the same in every view.
+Series are labelled directly rather than through a legend.
 }
 \details{
+The plots need the ggplot2 package, which latents suggests rather than
+requires; without it a plot is refused with an error of class
+\code{latents_missing_package}.
+
 \code{"profiles"} and \code{"bars"} draw 95\% Wald intervals when the fit has
-standard errors; the other views show point estimates. Profile order is
-arbitrary, so two fits must have their labels aligned before their plots
-are compared. With \code{scale = "standardized"} the
-standard deviations are the observed indicator standard deviations, not
-the within-profile residual standard deviations, so the plotted values are
-comparable across indicators but are not effect sizes.
+standard errors. Profile numbers are arbitrary, so two fits must have
+their labels aligned before their plots are compared. With
+\code{scale = "standardized"} the standard deviations are the observed
+indicator standard deviations, not the within-profile ones, so the values
+are comparable across indicators but are not effect sizes.
 }
+\section{Errors}{
+ \code{latents_missing_package} without ggplot2;
+\code{latents_no_continuous}, \code{latents_no_categorical}, \code{latents_no_time} and
+\code{latents_nothing_to_plot} when the fit lacks what a view needs;
+\code{latents_bad_argument} for an argument the method does not use.
+}
+
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  school = rep(seq_len(12), each = 10),
-  score_a = rnorm(120), score_b = rnorm(120)
-)
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                  n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-plot(fit)
-plot(fit, scale = "standardized")
-plot(fit, what = "bars")
-plot(fit, what = "heatmap")
-plot(fit, what = "entropy")
-plot(fit, what = "sizes")
-plot(fit, what = "avepp")
-plot_views()
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  set.seed(7)
+  example_data <- data.frame(
+    school = rep(seq_len(12), each = 10),
+    score_a = rnorm(120), score_b = rnorm(120)
+  )
+  fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                  n_profiles = 2, n_group_classes = 1, n_starts = 2)
+  plot(fit)
+  plot(fit, scale = "standardized")
+  plot(fit, what = "bars")
+  plot(fit, what = "pairs")
+  plot(fit, what = "avepp")
+}
+}
+\references{
+Zappia, L. and Oshlack, A. (2018). Clustering trees: a
+visualization for evaluating clusterings at multiple resolutions.
+\emph{GigaScience}, 7(7), giy083.
 }
 \seealso{
 \code{\link[=plot_views]{plot_views()}} for the catalogue of views.

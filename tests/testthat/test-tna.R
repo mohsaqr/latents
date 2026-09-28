@@ -128,8 +128,9 @@ test_that("a transition fit draws every view its catalogue claims", {
   expect_true("transitions" %in% views)
   drawable <- c("transitions", "profiles", "bars", "heatmap", "sequences",
                 "sizes", "entropy", "posteriors", "avepp")
+  skip_if_not_installed("ggplot2")
   invisible(lapply(drawable, function(view) {
-    expect_s3_class(draw(plot(fit, what = view)), "multilpa_transitions")
+    expect_plot(plot(fit, what = view))
   }))
 })
 
@@ -146,7 +147,13 @@ test_that("the transition panel is the fitted matrix, per class", {
                         id = "student", time = "sequence", n_profiles = 2,
                         n_group_classes = 1, n_starts = 2, max_iter = 300,
                         seed = 1))
-  expect_s3_class(draw(plot(single, what = "transitions")), "multilpa_transitions")
+  skip_if_not_installed("ggplot2")
+  panel <- expect_plot(plot(single, what = "transitions"))$data
+  # Every tile is the fitted probability of that row's move.
+  expect_equal(panel$probability,
+               single$transition_probabilities[cbind(panel$from, panel$to,
+                                                     panel$class)])
+  expect_equal(nrow(panel), single$n_profiles^2 * single$n_group_classes)
 })
 
 test_that("several empty rows each keep their own row, and estimated rows are untouched", {

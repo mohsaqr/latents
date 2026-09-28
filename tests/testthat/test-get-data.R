@@ -268,21 +268,18 @@ test_that("truth refuses a column it cannot use", {
 })
 
 test_that("plot draws every supported view under what = \"all\"", {
+  skip_if_not_installed("ggplot2")
   fit <- two_level()
-  file <- tempfile(fileext = ".pdf")
-  grDevices::pdf(file)
-  on.exit({
-    grDevices::dev.off()
-    unlink(file)
-  }, add = TRUE, after = FALSE)
-  drawn <- expect_invisible(plot(fit, what = "all"))
-  expect_s3_class(drawn, "multilpa")
+  drawn <- suppressMessages(plot(fit, what = "all"))
+  expect_plots(drawn)
+  expect_true(all(names(drawn) %in% .multilpa_supported_views(fit)))
   # Evaluated where the package namespace is *not* on the search path, which is
   # every ordinary user session: "all" re-issues the caller's call, and a call
   # naming the unexported method would be unresolvable there.
   clean <- new.env(parent = globalenv())
   assign("fit", fit, envir = clean)
-  expect_s3_class(evalq(plot(fit, what = "all"), clean), "multilpa")
+  expect_s3_class(suppressMessages(evalq(plot(fit, what = "all"), clean)),
+                  "latents_plots")
   # "all" is a request, not a view, so it must not appear among the views it
   # walks: it would otherwise call itself.
   expect_false("all" %in% latents:::.multilpa_supported_views(fit))

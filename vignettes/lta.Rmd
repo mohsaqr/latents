@@ -62,7 +62,7 @@ get_results(moves, "starts")
 ## Profiles
 
 To see the profiles, we call `plot()` on the fit. Each line is a profile's
-mean on each indicator, and point size shows how common the profile is.
+mean on each indicator, and its label gives the profile's share of the cases.
 
 ```{r profiles}
 plot(moves)

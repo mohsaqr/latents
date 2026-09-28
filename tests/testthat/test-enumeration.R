@@ -220,22 +220,25 @@ test_that("printing a grid shows the criteria and the diagnostics", {
                    function(column) expect_match(printed, column, fixed = TRUE)))
 })
 
-test_that("the enumeration plot draws several criteria and restores the device", {
+test_that("the enumeration plot draws several criteria as panels or plots", {
+  skip_if_not_installed("ggplot2")
   grid <- quietly(enumerate_classes(engagement_small, c("browse", "lectures"),
                                     "student", n_profiles = 1:3,
                                     n_group_classes = 1:2, n_starts = 1,
                                     max_iter = 20, seed = 1))
-  path <- tempfile(fileext = ".pdf")
-  grDevices::pdf(path)
-  on.exit({ grDevices::dev.off(); unlink(path) }, add = TRUE)
-  before <- graphics::par("mfrow")
-  expect_invisible(plot(grid))
-  expect_identical(graphics::par("mfrow"), before)
-  expect_invisible(plot(grid, criterion = "bic_groups"))
-  expect_invisible(plot(grid, criterion = c("aic", "bic_individual")))
-  # Separate figures: each criterion starts a page of its own.
-  expect_invisible(plot(grid, criterion = c("aic", "bic_groups"), combine = FALSE))
-  expect_identical(graphics::par("mfrow"), before)
+  combined <- expect_plot(plot(grid))
+  # One panel per distinct criterion.
+  expect_identical(levels(combined$data$title),
+                   names(.multilpa_distinct_criteria(
+                     as.data.frame(grid),
+                     c("aic", "bic_groups", "bic_individual", "icl_individual"))))
+  expect_plot(plot(grid, criterion = "bic_groups"))
+  expect_plot(plot(grid, criterion = c("aic", "bic_individual")))
+  # Separate plots: one per criterion.
+  separate <- expect_plots(plot(grid, criterion = c("aic", "bic_groups"),
+                                combine = FALSE))
+  expect_length(separate, 2L)
+  expect_plot(plot(grid, what = "tree"))
   expect_error(plot(grid, combine = NA))
   expect_error(plot(grid, criterion = c("aic", "not_a_criterion")),
                class = "latents_unknown_criterion")

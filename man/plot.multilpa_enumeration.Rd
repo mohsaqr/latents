@@ -6,64 +6,75 @@
 \usage{
 \method{plot}{multilpa_enumeration}(
   x,
+  what = c("enumeration", "tree"),
   criterion = c("aic", "bic_groups", "bic_individual", "icl_individual"),
   combine = TRUE,
   labels = TRUE,
   mark_minimum = TRUE,
   main = NULL,
   subtitle = NULL,
-  palette = NULL,
-  symbols = NULL,
-  linetypes = NULL,
-  style = .multilpa_style(),
   ...
 )
 }
 \arguments{
-\item{x}{An \code{multilpa_enumeration} result from \code{\link[=enumerate_classes]{enumerate_classes()}}.}
+\item{x}{A \code{multilpa_enumeration} result from \code{\link[=enumerate_classes]{enumerate_classes()}},
+\code{\link[=enumerate_lpa]{enumerate_lpa()}} or \code{\link[=enumerate_lca]{enumerate_lca()}}.}
 
-\item{criterion}{One or more criterion columns of \code{as.data.frame(x)}, such
-as \code{"bic_individual"} or \code{"sabic_groups"}. Several names draw one panel
-each; the default draws AIC, BIC under both sample-size conventions, and
-ICL counted over individuals.}
+\item{what}{\code{"enumeration"} (the default) or \code{"tree"}.}
 
-\item{combine}{\code{TRUE}, the default, draws several criteria as panels of one
-figure. \code{FALSE} draws each criterion as its own full-size figure, one after
-another, so a report shows them as separate images.}
+\item{criterion}{For \code{"enumeration"}, one or more criterion columns of
+\code{as.data.frame(x)}, such as \code{"bic_individual"} or \code{"sabic_groups"}. The
+default draws AIC, BIC under both sample-size conventions and ICL counted
+over individuals; a criterion identical at both levels, as in a
+single-level grid, is drawn once.}
 
-\item{labels}{\code{TRUE} prints a direct label at the right end of each series.}
+\item{combine}{\code{TRUE} draws several criteria as panels of one plot; \code{FALSE}
+returns one plot per criterion.}
 
-\item{mark_minimum}{\code{TRUE} rings the lowest value among converged candidates.
-This marks an extremum, it does not select a model.}
+\item{labels}{\code{TRUE} labels each series at its right end.}
 
-\item{main, subtitle}{Panel title and secondary line.}
+\item{mark_minimum}{\code{TRUE} rings each criterion's lowest value among
+converged candidates. This marks an extremum; it does not select a model.}
 
-\item{palette, symbols, linetypes}{Series aesthetics, recycled over combinations
-of group-class count and covariance model.}
+\item{main, subtitle}{Title and subtitle. \code{NULL} uses the view's own.}
 
-\item{style}{A list of visual constants, as built by \code{.multilpa_style()}.}
-
-\item{...}{Further named visual constants, merged into \code{style}.}
+\item{...}{Nothing further is accepted; an unknown argument raises an error
+of class \code{latents_bad_argument}.}
 }
 \value{
-The enumeration result, invisibly. Called for its drawing side effect.
+A ggplot object, or with \code{combine = FALSE} and several criteria a
+\code{latents_plots} list of them, one per criterion.
 }
 \description{
-Draws information criteria against the number of profiles as line plots,
-one panel per criterion, with one line per number of group classes and
-covariance model. Candidates that failed to converge are marked on the
-baseline, so a gap in a line reads as a failure and not as a missing
-candidate.
+\code{what = "enumeration"} draws information criteria against the number of
+profiles, one panel per criterion and one line per covariance model and
+number of group classes. A candidate that failed to converge is marked with
+a cross on its panel's floor, so a gap in a line reads as a failure and not
+as a missing candidate. \code{what = "tree"} draws how profiles split as more are
+added: each row is one solution divided into its profiles by posterior
+share, and bands carry the posterior mass shared by a profile and one in the
+next solution, coloured by lineage. A band that forks is a profile split in
+two; bands that merge or cross are cases reshuffled.
 }
+\section{Errors}{
+ \code{latents_unknown_criterion} for a criterion that is not a
+column of the grid; \code{latents_nothing_to_plot} when no converged candidate
+has a finite value, or when a tree has fewer than two numbers of profiles
+for every model.
+}
+
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  school = rep(seq_len(12), each = 10),
-  score_a = rnorm(120), score_b = rnorm(120)
-)
-candidates <- enumerate_classes(
-  example_data, c("score_a", "score_b"), "school", n_profiles = 1:3,
-  n_group_classes = 1, n_starts = 2, seed = 1
-)
-plot(candidates)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  set.seed(7)
+  example_data <- data.frame(score_a = rnorm(120), score_b = rnorm(120))
+  candidates <- enumerate_lpa(example_data, c("score_a", "score_b"),
+                              n_profiles = 1:3, n_starts = 2)
+  plot(candidates)
+  plot(candidates, what = "tree")
+}
+}
+\references{
+Zappia, L. and Oshlack, A. (2018). Clustering trees: a
+visualization for evaluating clusterings at multiple resolutions.
+\emph{GigaScience}, 7(7), giy083.
 }

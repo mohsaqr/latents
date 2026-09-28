@@ -25,22 +25,26 @@ test_that("the profile plot draws intervals, and the raincloud the data", {
   observed <- .multilpa_plot_observations(fit, .multilpa_continuous_names(fit))
   expect_identical(nrow(observed$values), length(observed$profile))
   expect_true(all(observed$profile %in% seq_len(fit$n_profiles)))
-  .polish_draw({
-    expect_identical(plot(fit), fit)
-    expect_identical(plot(fit, intervals = FALSE), fit)
-    expect_identical(plot(fit, what = "raincloud"), fit)
-    expect_identical(plot(fit, what = "raincloud", scale = "standardized"), fit)
-  })
+  skip_if_not_installed("ggplot2")
+  with_whiskers <- expect_plot(plot(fit))
+  # The whiskers are the fit's own 95% Wald intervals.
+  drawn <- with_whiskers$data
+  expect_equal(drawn$upper - drawn$mean,
+               stats::qnorm(0.975) * errors[cbind(drawn$profile, drawn$position)])
+  without <- expect_plot(plot(fit, intervals = FALSE))
+  expect_true(all(is.na(without$data$upper)))
+  expect_plot(plot(fit, what = "raincloud"))
+  expect_plot(plot(fit, what = "raincloud", scale = "standardized"))
   # Drawing does not touch the random-number stream.
   set.seed(3)
   before <- stats::runif(1)
   set.seed(3)
-  .polish_draw(plot(fit, what = "raincloud"))
+  ggplot2::ggplot_build(plot(fit, what = "raincloud"))
   expect_identical(stats::runif(1), before)
   categorical <- quietly(multilca(student_esm, c("sports", "walking"), id = NULL,
                                   n_profiles = 2, n_starts = 1, seed = 1))
-  .polish_draw(expect_error(plot(categorical, what = "raincloud"),
-                            class = "latents_no_continuous"))
+  expect_error(plot(categorical, what = "raincloud"),
+               class = "latents_no_continuous")
 })
 
 test_that("a fit without intervals says why instead of failing", {
@@ -51,27 +55,33 @@ test_that("a fit without intervals says why instead of failing", {
   expect_false(fit$converged)
   reason <- .multilpa_mean_error_matrix(fit, NULL)
   expect_identical(reason, "no intervals: the fit did not converge")
-  .polish_draw({
-    expect_identical(plot(fit, what = "bars"), fit)
-    expect_identical(plot(fit), fit)
-  })
+  skip_if_not_installed("ggplot2")
+  # The plot is drawn without whiskers, and its subtitle says why.
+  bars <- expect_plot(plot(fit, what = "bars"))
+  expect_match(bars$labels$subtitle, reason, fixed = TRUE)
+  profiles <- expect_plot(plot(fit))
+  expect_match(profiles$labels$subtitle, reason, fixed = TRUE)
 })
 
 test_that("an all-categorical fit gets a response heatmap", {
   binary <- quietly(multilca(student_esm,
                              c("time_with_friends", "on_social_media", "sports"),
                              id = NULL, n_profiles = 2, n_starts = 2, seed = 1))
-  .polish_draw(expect_identical(plot(binary, what = "heatmap"), binary))
+  skip_if_not_installed("ggplot2")
+  responses <- expect_plot(plot(binary, what = "heatmap"))
+  expect_true(all(responses$data$probability >= 0 &
+                    responses$data$probability <= 1))
   mixed <- .polish_fit(n_group_classes = 1)
-  .polish_draw(expect_identical(plot(mixed, what = "heatmap"), mixed))
+  expect_plot(plot(mixed, what = "heatmap"))
 })
 
 test_that("covariate fits draw the measurement and classification views", {
+  skip_if_not_installed("ggplot2")
   fit <- .polish_fit(n_group_classes = 1, profile_covariates = "previous_grade")
-  .polish_draw(invisible(lapply(
-    c("profiles", "bars", "heatmap", "raincloud", "sizes", "avepp", "entropy",
-      "posteriors"),
-    function(view) expect_identical(plot(fit, what = view), fit))))
+  invisible(lapply(
+    c("profiles", "bars", "heatmap", "raincloud", "parallel", "pairs", "sizes",
+      "avepp", "entropy", "posteriors"),
+    function(view) expect_plot(plot(fit, what = view))))
 })
 
 test_that("a single-level grid draws one BIC panel, named for display", {

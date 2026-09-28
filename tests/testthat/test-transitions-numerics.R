@@ -232,8 +232,10 @@ test_that("broken contracts of the moment step raise by class", {
   expect_error(parameter_inference(fit), class = "latents_no_converge")
   # A transition fit draws: the measurement views it shares with multilpa(),
   # plus its own transition matrix. This used to refuse outright.
-  expect_s3_class(draw(plot(fit, what = "transitions")), "multilpa_transitions")
-  expect_s3_class(draw(plot(fit, what = "profiles")), "multilpa_transitions")
+  if (requireNamespace("ggplot2", quietly = TRUE)) {
+    expect_plot(plot(fit, what = "transitions"))
+    expect_plot(plot(fit, what = "profiles"))
+  }
   # A group class with no effective membership leaves its profile prevalence
   # undefined, and is refused rather than divided by zero.
   expect_error(

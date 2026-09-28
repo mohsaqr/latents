@@ -23,8 +23,10 @@ columns it was built from, so this is only needed to override them.}
 
 \item{plots}{\code{TRUE}, the default, also draws the four classification plots
 (effective profile sizes, posterior probabilities of the assigned
-profiles, entropy contributions, and the average posterior probability
-matrix), as \code{plot()} on the result does. \code{FALSE} returns the tables only.}
+profiles, case entropy, and the average posterior probability matrix), as
+printing \code{plot()} on the result does. Without the ggplot2 package a
+message says so and the tables are still returned. \code{FALSE} returns the
+tables only.}
 
 \item{by}{\code{"profile"}, the default, assesses each profile's bivariate
 residuals separately; \code{"overall"} pools them. It is the one argument of a
@@ -36,8 +38,8 @@ from whether the fit has discrete group classes.}
 \item{...}{For \code{diagnostics()}, nothing further is accepted. An argument this
 function cannot forward raises an error of class \code{latents_bad_argument}
 naming it, rather than being dropped on the way to a table that then means
-something other than what was asked for. For \code{plot()}, style overrides, as
-in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
+something other than what was asked for. For \code{plot()}, nothing further is
+accepted either; style the returned plots with ggplot2.}
 
 \item{row.names, optional}{Passed to the base generic; \code{row.names} is applied
 to the returned table.}
@@ -51,11 +53,11 @@ model family that has no bivariate residuals leaves that table out of
 
 \code{print()} returns the object invisibly, having printed one line per
 diagnostic: relative entropy, smallest class, lowest average posterior and
-largest residual, at each level the fit has. \code{plot()} draws every
-classification plot in one call -- the effective profile sizes, the
-posterior probability of each case's assigned profile, each case's entropy
-contribution, and the average posterior probability matrix -- and returns
-the object invisibly.
+largest residual, at each level the fit has. \code{plot()} returns every
+classification plot as a \code{latents_plots} list of ggplot objects -- the
+effective profile sizes, the posterior probability of each case's assigned
+profile, each case's relative entropy, and the average posterior
+probability matrix -- that draws all four when printed.
 \code{as.data.frame()} returns the entropy table, the primary one.
 }
 \description{

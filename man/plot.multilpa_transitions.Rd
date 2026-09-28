@@ -12,13 +12,9 @@
   scale = c("raw", "standardized"),
   category = "last",
   labels = TRUE,
+  cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  palette = NULL,
-  symbols = NULL,
-  linetypes = NULL,
-  style = .multilpa_style(),
-  cell_labels = TRUE,
   ...
 )
 }
@@ -30,11 +26,11 @@ matrix, one panel per group class. \code{"profiles"}, \code{"bars"} and \code{"h
 draw the measurement model, \code{"responses"} the categorical response curves,
 \code{"sequences"} each group's profile at each occasion, and \code{"sizes"},
 \code{"entropy"}, \code{"posteriors"} and \code{"avepp"} the classification diagnostics.
-\code{"all"} draws every view this fit has the ingredients for.}
+\code{"all"} returns every view this fit has the ingredients for.}
 
-\item{data}{Optional. The data the model was fitted to. Accepted for
-consistency with \code{\link[=plot.multilpa]{plot.multilpa()}}; \code{"bars"} draws point estimates without
-intervals here. \code{\link[=parameter_inference]{parameter_inference()}} reports the standard errors.}
+\item{data}{Optional. Accepted for consistency with \code{\link[=plot.multilpa]{plot.multilpa()}}; this
+family's views draw point estimates, and \code{\link[=parameter_inference]{parameter_inference()}} reports
+the standard errors.}
 
 \item{scale}{\code{"raw"} keeps the indicators in their own units;
 \code{"standardized"} divides by each indicator's observed standard deviation.}
@@ -43,28 +39,32 @@ intervals here. \code{\link[=parameter_inference]{parameter_inference()}} report
 
 \item{labels}{Whether to label series directly.}
 
-\item{main, subtitle}{Panel title and secondary line.}
+\item{cell_labels}{For \code{"sequences"}, whether to print the profile number in
+each cell.}
 
-\item{palette, symbols, linetypes, style, cell_labels}{Visual overrides, as in
-\code{\link[=plot.multilpa]{plot.multilpa()}}.}
+\item{main, subtitle}{Title and subtitle. \code{NULL} uses the view's own.}
 
-\item{...}{Further style overrides.}
+\item{...}{Nothing further is accepted; an unknown argument raises an error
+of class \code{latents_bad_argument}.}
 }
 \value{
-The fitted model, invisibly, having drawn the requested view.
+A ggplot object; for \code{what = "all"}, a \code{latents_plots} list.
 }
 \description{
 The measurement model is the one \code{\link[=multilpa]{multilpa()}} fits, so every measurement and
 classification view it draws is available here. \code{what = "transitions"} is the
 view this family adds: the estimated transition matrix, one panel per group
-class.
+class, with a row that has no data support labelled in parentheses because
+it is uniform by construction rather than estimated.
 }
 \examples{
-fit <- lta(subset(course_engagement, student <= 40),
-           c("browse", "lectures", "forum_read"), "student",
-           n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-plot(fit, what = "transitions")
-plot(fit, what = "profiles")
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  fit <- lta(subset(course_engagement, student <= 40),
+             c("browse", "lectures", "forum_read"), "student",
+             n_profiles = 2, time = "sequence", n_starts = 2)
+  plot(fit, what = "transitions")
+  plot(fit, what = "profiles")
+}
 }
 \seealso{
 \code{\link[=get_tna]{get_tna()}} and \code{\link[=get_group_tna]{get_group_tna()}} to draw the transitions as a

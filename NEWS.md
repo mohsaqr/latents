@@ -1,3 +1,32 @@
+# latents 0.8.8
+
+## plot() returns ggplot objects (breaking)
+
+* `plot()` on a fit (`multilpa`, covariate and transition fits), on an
+  enumeration and on a `diagnostics()` result now returns ggplot objects
+  instead of drawing with base graphics. Print one to draw it, save it with
+  `ggplot2::ggsave()`, or restyle it with `+ ggplot2::theme()`. ggplot2 stays
+  in Suggests: a plot without it raises `latents_missing_package`, and
+  `diagnostics()` and `report()` print a message and carry on.
+* `what = "all"`, `plot()` on a diagnostics result and an enumeration plotted
+  with `combine = FALSE` return a `latents_plots` list, named by view, that
+  draws every plot when printed.
+* The styling arguments `palette`, `symbols`, `linetypes`, `style` and the
+  style constants passed through `...` are gone; an unknown argument now
+  raises `latents_bad_argument` instead of being ignored.
+* Every view shares one profile order (largest first), one profile share
+  (the posterior share every table reports) and Okabe-Ito colours paired with
+  shapes. Bars start at zero, the heatmaps have colour keys, and the case
+  diagnostics are strips of every case with each profile's mean marked.
+* New views: `"parallel"` (every case as a line, one panel per profile),
+  `"pairs"` (scatter-plot matrix with each profile's 95% covariance ellipse)
+  and, for enumerations, `what = "tree"` (an icicle of how profiles split as
+  more are added). `plot_views()` lists them.
+* Model comparison switches from direct labels to a legend beyond five
+  series; failed candidates are marked with a cross on the panel floor.
+* `plot(diagnostics(fit))` on a one-profile fit returns the sizes and average
+  posterior views instead of refusing.
+
 # latents 0.8.7
 
 ## Messages

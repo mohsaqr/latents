@@ -86,7 +86,7 @@ get_results(fit)
 ```
 
 To see the profiles, we call `plot()` on the fit. Each line is a profile's
-mean on each indicator, and point size shows how common the profile is.
+mean on each indicator, and its label gives the profile's share of the cases.
 
 ```{r profile-plot}
 plot(fit)

@@ -144,14 +144,9 @@ test_that("a broken ordering is refused rather than silently reshaped", {
 test_that("the sequence panel draws and respects the no-ordering contract", {
   data <- .sequence_fixture()
   fit <- .sequence_fit(data, time = "wave")
-  file <- tempfile(fileext = ".png")
-  on.exit(unlink(file), add = TRUE)
-
-  grDevices::png(file, width = 900, height = 650)
-  expect_silent(plot(fit, what = "sequences"))
-  grDevices::dev.off()
-  expect_gt(file.size(file), 1000)
-  expect_error(draw(plot(.sequence_fit(data), what = "sequences")),
+  skip_if_not_installed("ggplot2")
+  expect_plot(plot(fit, what = "sequences"))
+  expect_error(plot(.sequence_fit(data), what = "sequences"),
                class = "latents_no_time")
 })
 

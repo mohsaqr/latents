@@ -1166,7 +1166,8 @@ coef.multilpa_transitions <- function(object, ...) {
 #' The measurement model is the one [multilpa()] fits, so every measurement and
 #' classification view it draws is available here. `what = "transitions"` is the
 #' view this family adds: the estimated transition matrix, one panel per group
-#' class.
+#' class, with a row that has no data support labelled in parentheses because
+#' it is uniform by construction rather than estimated.
 #'
 #' @param x A fitted `multilpa_transitions` model.
 #' @param what The view to draw. `"transitions"` draws the estimated transition
@@ -1174,28 +1175,31 @@ coef.multilpa_transitions <- function(object, ...) {
 #'   draw the measurement model, `"responses"` the categorical response curves,
 #'   `"sequences"` each group's profile at each occasion, and `"sizes"`,
 #'   `"entropy"`, `"posteriors"` and `"avepp"` the classification diagnostics.
-#'   `"all"` draws every view this fit has the ingredients for.
-#' @param data Optional. The data the model was fitted to. Accepted for
-#'   consistency with [plot.multilpa()]; `"bars"` draws point estimates without
-#'   intervals here. [parameter_inference()] reports the standard errors.
+#'   `"all"` returns every view this fit has the ingredients for.
+#' @param data Optional. Accepted for consistency with [plot.multilpa()]; this
+#'   family's views draw point estimates, and [parameter_inference()] reports
+#'   the standard errors.
 #' @param scale `"raw"` keeps the indicators in their own units;
 #'   `"standardized"` divides by each indicator's observed standard deviation.
 #' @param category For `"responses"`, which category to draw.
 #' @param labels Whether to label series directly.
-#' @param main,subtitle Panel title and secondary line.
-#' @param palette,symbols,linetypes,style,cell_labels Visual overrides, as in
-#'   [plot.multilpa()].
-#' @param ... Further style overrides.
-#' @return The fitted model, invisibly, having drawn the requested view.
+#' @param cell_labels For `"sequences"`, whether to print the profile number in
+#'   each cell.
+#' @param main,subtitle Title and subtitle. `NULL` uses the view's own.
+#' @param ... Nothing further is accepted; an unknown argument raises an error
+#'   of class `latents_bad_argument`.
+#' @return A ggplot object; for `what = "all"`, a `latents_plots` list.
 #' @seealso [get_tna()] and [get_group_tna()] to draw the transitions as a
 #'   network instead, and [plot.multilpa()] for the same views on a
 #'   cross-sectional fit.
 #' @examples
-#' fit <- lta(subset(course_engagement, student <= 40),
-#'            c("browse", "lectures", "forum_read"), "student",
-#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-#' plot(fit, what = "transitions")
-#' plot(fit, what = "profiles")
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   fit <- lta(subset(course_engagement, student <= 40),
+#'              c("browse", "lectures", "forum_read"), "student",
+#'              n_profiles = 2, time = "sequence", n_starts = 2)
+#'   plot(fit, what = "transitions")
+#'   plot(fit, what = "profiles")
+#' }
 #' @export
 plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
                                                   "bars", "heatmap", "responses",
@@ -1204,99 +1208,22 @@ plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
                                       data = NULL,
                                       scale = c("raw", "standardized"),
                                       category = "last", labels = TRUE,
-                                      main = NULL, subtitle = NULL,
-                                      palette = NULL, symbols = NULL,
-                                      linetypes = NULL,
-                                      style = .multilpa_style(),
-                                      cell_labels = TRUE, ...) {
+                                      cell_labels = TRUE, main = NULL,
+                                      subtitle = NULL, ...) {
   stopifnot("`x` must be a fitted `multilpa_transitions` model" =
-              inherits(x, "multilpa_transitions"),
-            "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
-            "`cell_labels` must be TRUE or FALSE" =
-              isTRUE(cell_labels) || isFALSE(cell_labels))
+              inherits(x, "multilpa_transitions"))
+  .multilpa_check_plot_arguments(list(...), labels, TRUE, cell_labels,
+                                 category)
   what <- match.arg(what)
-  if (identical(what, "all")) {
-    return(.multilpa_plot_every_view(x, match.call(), parent.frame()))
-  }
   scale <- match.arg(scale)
-  style <- utils::modifyList(style, list(...))
-  previous <- graphics::par(no.readonly = TRUE)
-  previous$mfg <- NULL
-  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
-  graphics::par(xpd = NA)
-  switch(what,
-    transitions = .multilpa_plot_transitions(x, main, subtitle, style),
-    profiles = .multilpa_plot_profiles(x, scale, labels, main, subtitle, palette,
-                                       symbols, linetypes, style),
-    # No error matrix: the bars carry point estimates only. Standard errors
-    # are available from parameter_inference(); drawing them here is not yet
-    # wired up for this family.
-    bars = .multilpa_plot_bars(x, scale, NULL, main, subtitle, palette, style),
-    heatmap = .multilpa_plot_heatmap(x, main, subtitle, style),
-    responses = .multilpa_plot_responses(x, category, labels, main, subtitle,
-                                         palette, symbols, linetypes, style),
-    sequences = .multilpa_plot_sequences(x, labels, main, subtitle, palette,
-                                         style, cell_labels),
-    sizes = .multilpa_plot_sizes(x, main, subtitle, palette, style),
-    avepp = .multilpa_plot_avepp(x, main, subtitle, style),
-    entropy = ,
-    posteriors = .multilpa_plot_case_diagnostic(x, what, main, subtitle,
-                                                palette, style))
-  invisible(x)
-}
-
-#' Draw the estimated transition matrix, one panel per group class
-#'
-#' Row is the current profile, column the next one, and the cell is
-#' P(next = column | current = row) for that group class. The diagonal is
-#' persistence. Every cell prints its probability, so nothing rests on reading a
-#' colour, and the fill is the package's shared white-to-blue ramp taken over
-#' the whole probability range, so darker is a higher probability wherever it
-#' sits.
-#'
-#' A row with no data support is drawn with its label parenthesised: such a row
-#' is uniform by construction rather than estimated, and must not be read as
-#' evidence of equal transition chances.
-#'
-#' @param x A fitted `multilpa_transitions` model.
-#' @param main,subtitle Panel title and secondary line.
-#' @param style Visual constants.
-#' @return `NULL`, invisibly.
-#' @noRd
-.multilpa_plot_transitions <- function(x, main, subtitle, style) {
-  probabilities <- x$transition_probabilities
-  n_profiles <- x$n_profiles
-  n_classes <- x$n_group_classes
-  empty <- x$empty_transition_rows
-  columns <- min(n_classes, 2L)
-  graphics::par(mfrow = c(ceiling(n_classes / columns), columns),
-                mar = style$margins + c(0, 1.6, 0, 0))
-  rows <- rev(seq_len(n_profiles))
-  cells <- expand.grid(to = seq_len(n_profiles), from = seq_len(n_profiles))
-  # One panel per class; the loop is over at most a handful of panels and each
-  # iteration draws to a device, so there is nothing to vectorise.
-  invisible(lapply(seq_len(n_classes), function(class) {
-    values <- probabilities[, , class][cbind(cells$from, cells$to)]
-    unestimated <- if (is.null(empty)) rep(FALSE, n_profiles) else
-      as.logical(empty[, class])
-    .multilpa_panel(
-      xlim = c(0.5, n_profiles + 0.5), ylim = c(0.5, n_profiles + 0.5),
-      xlab = "Next profile", ylab = "",
-      main = if (is.null(main)) sprintf("Group class %d", class) else main,
-      subtitle = if (is.null(subtitle)) sprintf(
-        "%.0f%% of groups; rows sum to one",
-        100 * x$group_probabilities[class]) else subtitle,
-      x_at = seq_len(n_profiles), x_labels = sprintf("%d", seq_len(n_profiles)),
-      y_at = rows,
-      y_labels = ifelse(unestimated, sprintf("(Profile %d)", seq_len(n_profiles)),
-                        sprintf("Profile %d", seq_len(n_profiles))),
-      style = style)
-    fills <- .multilpa_diverging(values, limit = 1)
-    graphics::rect(cells$to - 0.5, rows[cells$from] - 0.5,
-                   cells$to + 0.5, rows[cells$from] + 0.5,
-                   col = fills, border = style$panel_fill, lwd = 1.5)
-    graphics::text(cells$to, rows[cells$from], sprintf("%.2f", values),
-                   col = .multilpa_ink(fills), cex = style$label_text_size)
-  }))
-  invisible(NULL)
+  .gg_require()
+  if (identical(what, "all")) {
+    return(.gg_every_view(x, match.call(), parent.frame()))
+  }
+  # Standard errors are not yet wired into this family's plots, so its views
+  # draw point estimates; parameter_inference() reports the errors.
+  .multilpa_draw_view(x, what, data = data, scale = scale,
+                      category = category, labels = labels, intervals = FALSE,
+                      cell_labels = cell_labels, main = main,
+                      subtitle = subtitle, errors_available = FALSE)
 }

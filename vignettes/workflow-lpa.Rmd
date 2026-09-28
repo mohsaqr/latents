@@ -135,8 +135,9 @@ plot(fit, what = "heatmap")
 ```
 
 The means summarize distributions. The raincloud plot shows, for the
-respondents assigned to each profile, the density of each indicator, a box
-of its quartiles and median, and the individual scores. It shows how much
+respondents assigned to each profile, the density of each indicator, a bar
+from its first to its third quartile with the median marked, and the
+individual scores. It shows how much
 the profiles overlap on each indicator: they are well separated on intrinsic
 value and self-efficacy, and overlap almost completely on test anxiety.
 

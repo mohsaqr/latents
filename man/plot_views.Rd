@@ -9,7 +9,8 @@ plot_views()
 \value{
 A base \code{data.frame} with one row per plot type and the columns
 \code{type} (the value to pass as \code{what}), \code{group} (\code{"measurement"},
-\code{"structure"}, \code{"diagnostics"} or \code{"selection"}), and \code{description}.
+\code{"structure"}, \code{"diagnostics"}, \code{"selection"} or \code{"every"}), and
+\code{description}.
 }
 \description{
 Returns the catalogue of \verb{what =} values accepted by the \code{plot()} methods,

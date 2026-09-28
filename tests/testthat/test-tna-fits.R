@@ -51,9 +51,8 @@ test_that("a covariate fit gives networks and draws its response probabilities",
   fit <- suppressWarnings(.sequence_fit(covariates = TRUE)$fit)
   expect_s3_class(get_tna(fit), "tna")
   expect_s3_class(get_group_tna(fit), "group_tna")
-  grDevices::pdf(NULL)
-  on.exit(grDevices::dev.off(), add = TRUE)
-  expect_invisible(plot(fit, what = "responses"))
+  skip_if_not_installed("ggplot2")
+  expect_plot(plot(fit, what = "responses"))
 })
 
 test_that("a fit without an order has no network", {

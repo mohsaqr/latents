@@ -16,8 +16,10 @@
 #'   columns it was built from, so this is only needed to override them.
 #' @param plots `TRUE`, the default, also draws the four classification plots
 #'   (effective profile sizes, posterior probabilities of the assigned
-#'   profiles, entropy contributions, and the average posterior probability
-#'   matrix), as `plot()` on the result does. `FALSE` returns the tables only.
+#'   profiles, case entropy, and the average posterior probability matrix), as
+#'   printing `plot()` on the result does. Without the ggplot2 package a
+#'   message says so and the tables are still returned. `FALSE` returns the
+#'   tables only.
 #' @param by `"profile"`, the default, assesses each profile's bivariate
 #'   residuals separately; `"overall"` pools them. It is the one argument of a
 #'   gathered table this function forwards, because it is the one that changes
@@ -27,8 +29,8 @@
 #' @param ... For `diagnostics()`, nothing further is accepted. An argument this
 #'   function cannot forward raises an error of class `latents_bad_argument`
 #'   naming it, rather than being dropped on the way to a table that then means
-#'   something other than what was asked for. For `plot()`, style overrides, as
-#'   in [plot.multilpa()].
+#'   something other than what was asked for. For `plot()`, nothing further is
+#'   accepted either; style the returned plots with ggplot2.
 #' @return An object of class `multilpa_diagnostics`. Read its tables with
 #'   `get_results(result, what = )`, which offers `"entropy"`, `"classification"`,
 #'   `"average_posteriors"`, `"residuals"` and `"all"`, and never with `$`. A
@@ -37,11 +39,11 @@
 #'
 #'   `print()` returns the object invisibly, having printed one line per
 #'   diagnostic: relative entropy, smallest class, lowest average posterior and
-#'   largest residual, at each level the fit has. `plot()` draws every
-#'   classification plot in one call -- the effective profile sizes, the
-#'   posterior probability of each case's assigned profile, each case's entropy
-#'   contribution, and the average posterior probability matrix -- and returns
-#'   the object invisibly.
+#'   largest residual, at each level the fit has. `plot()` returns every
+#'   classification plot as a `latents_plots` list of ggplot objects -- the
+#'   effective profile sizes, the posterior probability of each case's assigned
+#'   profile, each case's relative entropy, and the average posterior
+#'   probability matrix -- that draws all four when printed.
 #'   `as.data.frame()` returns the entropy table, the primary one.
 #' @seealso [get_results()] for these tables and every other one, [descriptives()]
 #'   for the before-the-fit counterpart, and [summary()] for what the model
@@ -80,7 +82,7 @@ diagnostics <- function(x, data = NULL, plots = TRUE,
                          latents_no_group_classes = function(condition) NULL),
     fit = x)
   class(result) <- "multilpa_diagnostics"
-  if (isTRUE(plots)) plot(result)
+  if (isTRUE(plots) && .gg_available()) print(plot(result))
   result
 }
 
@@ -178,24 +180,20 @@ print.multilpa_diagnostics <- function(x, ...) {
 #' @export
 plot.multilpa_diagnostics <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
-  # Drawn from the fit's posteriors directly rather than through
-  # `plot(fit, what = )`. The panels need only the individual posteriors and
-  # the effective profile counts, which every family carries, while not every
-  # family's `plot()` method offers the full `what` catalogue -- a covariate
-  # fit's takes "profiles" and "sequences" only -- so dispatching through the
-  # generic asked those fits for a view their method had never heard of and
-  # failed on the match.
-  style <- utils::modifyList(.multilpa_style(), list(...))
-  previous <- graphics::par(no.readonly = TRUE)
-  previous$mfg <- NULL
-  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
-  graphics::par(xpd = NA)
+  .multilpa_reject_extra_arguments(
+    list(...), "plot()",
+    "Style the returned plots with ggplot2, for example `+ ggplot2::theme()`.")
+  .gg_require()
+  # Built from the fit's posteriors and effective counts directly rather than
+  # through `plot(fit, what = )`: every family carries those, while not every
+  # family's plot() method offers every view.
   fit <- x$fit
-  .multilpa_plot_sizes(fit, NULL, NULL, NULL, style)
-  .multilpa_plot_case_diagnostic(fit, what = "posteriors", ...)
-  .multilpa_plot_case_diagnostic(fit, what = "entropy", ...)
-  .multilpa_plot_avepp(fit, NULL, NULL, style)
-  invisible(x)
+  views <- list(sizes = .gg_view_sizes, posteriors = .gg_view_posteriors,
+                entropy = .gg_view_entropy, avepp = .gg_view_avepp)
+  if (ncol(fit$subject_posteriors) < 2L) {
+    views <- views[c("sizes", "avepp")]
+  }
+  .gg_plots(lapply(views, \(view) view(fit, NULL, NULL)))
 }
 
 #' Everything about a fit, in one call
@@ -252,7 +250,7 @@ report <- function(x, data = NULL, plots = TRUE,
   cat("\n")
   quality <- diagnostics(x, data = data, plots = FALSE, by = by)
   print(quality)
-  if (isTRUE(plots)) {
+  if (isTRUE(plots) && .gg_available()) {
     views <- .multilpa_supported_views(x)
     # A view can still refuse for a reason only the method knows -- a family
     # with no plot at all, a panel with nothing in it. `report()` is a first
@@ -260,13 +258,14 @@ report <- function(x, data = NULL, plots = TRUE,
     # dropping them silently.
     refused <- unlist(lapply(views, function(view) {
       drawn <- tryCatch({
-        if (is.na(view)) plot(x) else plot(x, what = view)
+        print(if (is.na(view)) plot(x) else plot(x, what = view))
         NULL
       },
       latents_no_plot = function(condition) view,
       latents_nothing_to_plot = function(condition) view,
       latents_no_time = function(condition) view,
       latents_no_categorical = function(condition) view,
+      latents_no_continuous = function(condition) view,
       latents_no_indicator_data = function(condition) view)
       drawn
     }))
@@ -307,6 +306,14 @@ report <- function(x, data = NULL, plots = TRUE,
     if (identical(view, "sequences")) return(!is.null(x$time))
     if (view %in% c("profiles", "bars", "heatmap")) {
       return(!is.null(x$means) && ncol(x$means) > 0L)
+    }
+    # The case-level views draw the stored indicators, which a centred fit
+    # does not sit on, and the two multi-indicator views need two of them.
+    if (view %in% c("raincloud", "parallel", "pairs")) {
+      enough <- if (identical(view, "raincloud")) 1L else 2L
+      return(!is.null(x$indicator_data) &&
+               length(.multilpa_continuous_names(x)) >= enough &&
+               identical(x$centering %||% "none", "none"))
     }
     if (identical(view, "probabilities")) return(!is.null(x$profile_probabilities))
     # The two case-level diagnostics separate cases by profile, so a

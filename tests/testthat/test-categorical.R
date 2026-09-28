@@ -226,15 +226,12 @@ test_that("categorical models plot their response probabilities", {
   vars <- paste0("v", 1:5)
   fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,
                     n_starts = 8, seed = 2)
-  path <- tempfile(fileext = ".png")
-  grDevices::png(path, width = 900, height = 600)
-  on.exit({
-    grDevices::dev.off()
-    unlink(path)
-  }, add = TRUE, after = FALSE)
-  expect_identical(plot(fit, what = "responses"), fit)
-  expect_identical(plot(fit, what = "responses", category = "first"), fit)
-  expect_identical(plot(fit, what = "probabilities"), fit)
+  skip_if_not_installed("ggplot2")
+  last <- expect_plot(plot(fit, what = "responses"))
+  first <- expect_plot(plot(fit, what = "responses", category = "first"))
+  # Each category's curve is its own probability, so the two differ.
+  expect_false(isTRUE(all.equal(sort(last$data$mean), sort(first$data$mean))))
+  expect_plot(plot(fit, what = "probabilities"))
   expect_error(plot(fit, what = "responses", category = "nope"),
                class = "latents_unknown_category")
   # A model with no continuous indicators cannot draw a profile-means plot.

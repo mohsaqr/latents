@@ -174,11 +174,12 @@ test_that("diagnostics gathers the verbs without changing what they return", {
 
 test_that("diagnostics draws only when asked", {
   fit <- .convenience_fit()
+  skip_if_not_installed("ggplot2")
   draw({
     expect_silent(diagnostics(fit))
     expect_s3_class(diagnostics(fit, plots = TRUE), "multilpa_diagnostics")
-    expect_invisible(plot(diagnostics(fit)))
   })
+  expect_plots(plot(diagnostics(fit, plots = FALSE)))
   expect_error(diagnostics(fit, plots = "yes"), "must be TRUE or FALSE")
 })
 

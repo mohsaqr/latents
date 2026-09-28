@@ -65,11 +65,11 @@ test_that("plot(diagnostics()) draws for a covariate fit", {
   fit <- multilpa(.surface_data(), c("a", "b"), "school",
                         n_profiles = 2L, n_group_classes = 1L,
                         profile_covariates = "z", n_starts = 1L, seed = 1)
-  draw({
-    expect_invisible(plot(diagnostics(fit)))
-    expect_invisible(plot(fit, what = "entropy"))
-    expect_invisible(plot(fit, what = "posteriors"))
-  })
+  skip_if_not_installed("ggplot2")
+  drawn <- expect_plots(plot(diagnostics(fit, plots = FALSE)))
+  expect_named(drawn, c("sizes", "posteriors", "entropy", "avepp"))
+  expect_plot(plot(fit, what = "entropy"))
+  expect_plot(plot(fit, what = "posteriors"))
   expect_true(all(c("entropy", "posteriors") %in% .multilpa_supported_views(fit)))
 })
 
@@ -81,14 +81,18 @@ test_that("a single-profile fit refuses the case diagnostics by class", {
   fits <- list(
     multilpa(.surface_data(), c("a", "b"), "school", n_profiles = 1L,
              n_group_classes = 1L, n_starts = 2L, seed = 1))
-  draw(invisible(lapply(fits, function(fit) {
-    expect_error(plot(diagnostics(fit)), class = "latents_nothing_to_plot")
+  skip_if_not_installed("ggplot2")
+  invisible(lapply(fits, function(fit) {
+    expect_error(plot(fit, what = "entropy"), class = "latents_nothing_to_plot")
     # The refusal names what can be drawn instead, so it is a signpost and not
     # just a wall.
-    expect_error(plot(diagnostics(fit)), regexp = "profiles")
+    expect_error(plot(fit, what = "posteriors"), regexp = "profiles")
+    # The diagnostics plot keeps the views that still say something.
+    drawn <- expect_plots(plot(diagnostics(fit, plots = FALSE)))
+    expect_named(drawn, c("sizes", "avepp"))
     expect_false(any(c("entropy", "posteriors") %in%
                        .multilpa_supported_views(fit)))
-  })))
+  }))
 })
 
 test_that("report() draws every view it offers, for every family", {
