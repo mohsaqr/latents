@@ -113,7 +113,8 @@ fit_staged(
   `"error"` rejects missing indicators; `"fiml"` maximizes the
   observed-data likelihood under an ignorable missingness mechanism
   (MAR). Missing indicators are integrated out, not filled in for
-  likelihood fitting.
+  likelihood fitting. This holds with membership covariates too; the
+  covariates themselves must be complete (`latents_bad_data`).
 
 - covariance_model:
 
@@ -158,16 +159,25 @@ with `what = "stages"` for a tidy two-row summary of both stages.
 
 ## Details
 
-First-stage uncertainty is **not** propagated. The second stage treats
-the measurement solution as known, so its standard errors, information
-criteria and likelihood-ratio comparisons are conditional on that
-solution and are narrower than they would be if the measurement had been
-estimated jointly. This is a property of staging itself, not of this
-implementation, and it is the reason both parameter counts are reported:
-compare staged fits with one another using `n_parameters`, and compare a
-staged fit with a jointly estimated one using
-`n_parameters_with_measurement`, remembering that the staged likelihood
-is not the joint maximum and the comparison is descriptive.
+The second stage treats the measurement solution as known, so its Wald
+standard errors
+([`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)'s
+default), information criteria and likelihood-ratio comparisons are
+conditional on that solution and are narrower than they would be if the
+measurement had been estimated jointly.
+`parameter_inference(fit, method = "bootstrap")` removes that
+conditioning for the standard errors and intervals: every resample of
+the groups is staged again, measurement first, so the replicates carry
+the first stage's sampling variability into the second stage, and the
+table also reports the measurement parameters with their own errors. A
+`measurement` supplied by the caller is re-estimated on each resample
+with the same options, since the resample is new data. The conditioning
+of the criteria and likelihood comparisons is a property of staging
+itself, and it is the reason both parameter counts are reported: compare
+staged fits with one another using `n_parameters`, and compare a staged
+fit with a jointly estimated one using `n_parameters_with_measurement`,
+remembering that the staged likelihood is not the joint maximum and the
+comparison is descriptive.
 
 ## See also
 
@@ -189,15 +199,15 @@ staged <- fit_staged(example_data, c("score_a", "score_b"), "school",
                      seed = 1)
 get_results(staged, what = "stages")
 #>         stage group_classes            fixed log_likelihood parameters
-#> 1 measurement             1             <NA>      -671.9067          9
-#> 2  membership             2 means, variances      -670.9827          3
+#> 1 measurement             1             <NA>      -671.8928          9
+#> 2  membership             2 means, variances      -671.8928          3
 #>   parameters_with_measurement converged
 #> 1                           9      TRUE
 #> 2                          11      TRUE
 get_results(staged, what = "profile_probabilities")
-#>   group_class profile  probability group_class_probability
-#> 1           1       1 9.999951e-01                0.844672
-#> 2           1       2 4.946711e-06                0.844672
-#> 3           2       1 8.991468e-01                0.155328
-#> 4           2       2 1.008532e-01                0.155328
+#>   group_class profile probability group_class_probability
+#> 1           1       1  0.97827865                     0.5
+#> 2           1       2  0.02172135                     0.5
+#> 3           2       1  0.97827865                     0.5
+#> 4           2       2  0.02172135                     0.5
 ```

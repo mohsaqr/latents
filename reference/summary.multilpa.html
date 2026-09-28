@@ -19,7 +19,7 @@ the printed form is a human-facing report."><meta property="og:image" content="h
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,11 +32,14 @@ the printed form is a human-facing report."><meta property="og:image" content="h
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -121,16 +124,21 @@ both keep their names in either case. Use
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Multilevel LPA: 2 profiles and 1 group classes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Individuals: 120; groups: 12; parameters: 9; converged: TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log likelihood: -323.019699; AIC: 664.039</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log likelihood: -323.019688; AIC: 664.039</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> BIC (groups): 668.404; BIC (individuals): 689.127</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Best likelihood replicated in 2/2 starts (absolute tolerance 0.000324).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Best likelihood replicated in 1/2 starts (absolute tolerance 0.000324).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- profiles --------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile indicator     mean variance standard_deviation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_a  0.31652   0.7483             0.8650</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_b -0.05305   0.9150             0.9565</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_a -1.11302   0.1021             0.3196</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_b  0.79087   0.2858             0.5346</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile indicator     mean variance standard_deviation mean_standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_a  0.31637   0.7483             0.8650              0.1034</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_b -0.05292   0.9150             0.9565              0.1003</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_a -1.11360   0.1019             0.3192              0.1775</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_b  0.79092   0.2858             0.5346              0.2233</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  variance_standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.11790</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.12865</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.08122</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.14476</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- responses -------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (no rows)</span>
@@ -141,30 +149,30 @@ both keep their names in either case. Use
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_b     score_a     0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_a     score_b     0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_b     score_b     0.9150</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_a     score_a     0.1021</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_a     score_a     0.1019</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_b     score_a     0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_a     score_b     0.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_b     score_b     0.2858</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- profile_probabilities -------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  group_class profile probability group_class_probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1       1      0.8864                       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1       2      0.1136                       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1       1      0.8865                       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1       2      0.1135                       1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- counts ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level class effective_count effective_proportion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     1          106.37               0.8864</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     2           13.63               0.1136</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     1          106.39               0.8865</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     2           13.61               0.1135</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       groups     1           12.00               1.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- posteriors ------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  row group profile posterior modal</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    1     1       1    1.0000  TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    2     1       1    0.1984 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    3     1       1    0.5916  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    4     1       1    0.9846  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    5     1       1    0.2976 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    6     1       1    0.2959 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    3     1       1    0.5928  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    4     1       1    0.9848  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    5     1       1    0.2979 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    6     1       1    0.2963 FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    7     1       1    1.0000  TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    8     1       1    0.9980  TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    9     1       1    1.0000  TRUE</span>
@@ -189,79 +197,79 @@ both keep their names in either case. Use
 <span class="r-out co"><span class="r-pr">#&gt;</span>  school score_a  score_b profile group_class uncertainty posterior_profile_1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       1  2.2872 -1.55472       1           1   0.000e+00              1.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       1 -1.1968  1.56989       2           1   1.984e-01              0.1984</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.6943  0.68845       1           1   4.084e-01              0.5916</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.4123 -0.17760       1           1   1.540e-02              0.9846</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.9707  0.72920       2           1   2.976e-01              0.2976</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.9473  1.53325       2           1   2.959e-01              0.2959</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.7481  0.50658       1           1   3.132e-08              1.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.1170  0.03333       1           1   2.009e-03              0.9980</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.1527 -1.46755       1           1   9.884e-08              1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.6943  0.68845       1           1   4.072e-01              0.5928</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.4123 -0.17760       1           1   1.524e-02              0.9848</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.9707  0.72920       2           1   2.979e-01              0.2979</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.9473  1.53325       2           1   2.963e-01              0.2963</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.7481  0.50658       1           1   2.963e-08              1.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.1170  0.03333       1           1   1.972e-03              0.9980</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.1527 -1.46755       1           1   9.602e-08              1.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       1  2.1900  1.01916       1           1   0.000e+00              1.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  posterior_profile_2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            4.963e-28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            4.187e-28</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            8.016e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            4.084e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1.540e-02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            7.024e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            7.041e-01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            3.132e-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            2.009e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            9.884e-08</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            7.100e-23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            4.072e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1.524e-02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            7.021e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            7.037e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            2.963e-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1.972e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            9.602e-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            6.050e-23</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 110 more rows.  get_results(x, what = "assignments")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification --------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level class n_modal proportion_modal estimated_n estimated_proportion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     1     104           0.8667      106.37               0.8864</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     2      16           0.1333       13.63               0.1136</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     1     104           0.8667      106.39               0.8865</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     2      16           0.1333       13.61               0.1135</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       groups     1      12           1.0000       12.00               1.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  average_posterior odds_correct_classification</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9755                       5.112</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             0.6929                      17.609</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9757                       5.128</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             0.6927                      17.611</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             1.0000                          NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- average_posteriors ----------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level assigned_class class n_assigned average_posterior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     1        104           0.97555</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     2        104           0.02445</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     1         16           0.30710</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     2         16           0.69290</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     1        104           0.97565</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     2        104           0.02435</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     1         16           0.30734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     2         16           0.69266</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       groups              1     1         12           1.00000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification_errors -------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level true_class assigned_class probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              1     0.95381</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              2     0.04619</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              1     0.18658</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              2     0.81342</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              1     0.95378</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              2     0.04622</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              1     0.18599</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              2     0.81401</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       groups          1              1     1.00000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- bch_weights -----------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        level unit assigned_class class   weight</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    1              1     1  1.06021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    1              1     2 -0.06021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    2              2     1 -0.24318</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    2              2     2  1.24318</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    3              1     1  1.06021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    3              1     2 -0.06021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    4              1     1  1.06021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    4              1     2 -0.06021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    5              2     1 -0.24318</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    5              2     2  1.24318</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        level unit assigned_class class  weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    1              1     1  1.0602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    1              1     2 -0.0602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    2              2     1 -0.2422</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    2              2     2  1.2422</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    3              1     1  1.0602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    3              1     2 -0.0602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    4              1     1  1.0602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    4              1     2 -0.0602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    5              2     1 -0.2422</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    5              2     2  1.2422</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 242 more rows.  get_results(x, what = "bch_weights")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- entropy ---------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level n_classes n_units entropy_sum relative_entropy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals         2     120       15.76           0.8105</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals         2     120       15.74           0.8107</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       groups         1      12        0.00               NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- residuals -------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    profile indicator_1 indicator_2     kind observed expected residual</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2     score_a     score_b gaussian 0.222599        0 0.222599</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1     score_a     score_b gaussian 0.008819        0 0.008819</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2     score_a     score_b gaussian 0.223117        0 0.223117</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1     score_a     score_b gaussian 0.008692        0 0.008692</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  effective_n statistic df p_value p_adjusted</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        13.63   0.73809 NA  0.4605     0.4605</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       106.37   0.08967 NA  0.9286     0.9286</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        13.61   0.73936 NA  0.4597     0.4597</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       106.39   0.08838 NA  0.9296     0.9296</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- information_criteria --------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  log_likelihood n_parameters aic kic bic_groups bic_individual sabic_groups</span>
@@ -269,7 +277,7 @@ both keep their names in either case. Use
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sabic_individual caic_groups caic_individual awe_groups awe_individual</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             660.7       677.4           698.1      717.8          790.7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  icl_groups icl_individual clc_groups clc_individual</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       668.4          720.7        646          677.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       668.4          720.6        646          677.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- model -----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n_observations n_informative n_groups n_profiles n_group_classes centering</span>
@@ -277,9 +285,9 @@ both keep their names in either case. Use
 <span class="r-out co"><span class="r-pr">#&gt;</span>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                   VVI            9                             9           -323</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  aic bic_groups bic_individual converged iterations boundary small_classes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  664      668.4          689.1      TRUE        130    FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  664      668.4          689.1      TRUE         30    FALSE         FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  best_start n_best_replicated</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           2                 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           2                 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- stages ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  stage group_classes fixed log_likelihood parameters</span>
@@ -289,8 +297,8 @@ both keep their names in either case. Use
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- starts ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  start log_likelihood converged iterations error boundary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      1           -323      TRUE        114  &lt;NA&gt;    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      2           -323      TRUE        130  &lt;NA&gt;    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      1         -324.9      TRUE         48  &lt;NA&gt;    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      2         -323.0      TRUE         30  &lt;NA&gt;    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- data ------------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  school score_a  score_b</span>

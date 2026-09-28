@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,11 +43,14 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -343,7 +346,7 @@ plot of chunk probabilities
 <code class="sourceCode R"><span><span class="fu"><a href="reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">fit</span>, seeds <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   seed log_likelihood converged iterations optimum best agreement</span></span>
 <span><span class="co">#&gt; 1    1          -8440      TRUE          8       1 TRUE         1</span></span>
-<span><span class="co">#&gt; 2    2          -8440      TRUE         14       1 TRUE         1</span></span>
+<span><span class="co">#&gt; 2    2          -8440      TRUE         10       1 TRUE         1</span></span>
 <span><span class="co">#&gt; 3    3          -8440      TRUE         13       1 TRUE         1</span></span></code></pre></div>
 <p>Replication across seeds strengthens confidence in the numerical solution without proving a global maximum. The number of starts should be increased when the candidate model is difficult to estimate or the best likelihood is poorly replicated.</p>
 </div>
@@ -527,7 +530,7 @@ plot of chunk enumeration
 <span><span class="co">#&gt; 5  6.92e-266   -0.972    -0.869</span></span>
 <span><span class="co">#&gt; 6   3.33e-88    0.486     0.593</span></span></code></pre></div>
 <p><code>confint(fit)</code> provides confidence intervals, while <code>parameter_inference(fit, vcov_type = "robust")</code> requests a sandwich covariance estimator clustered by the observed groups. These procedures quantify uncertainty conditional on the fitted class count and measurement specification. They do not incorporate uncertainty from choosing among candidate models.</p>
-<p>Inference requires an adequately identified solution. A variance estimate at its lower bound or a non-positive-definite information matrix can prevent the package from reporting intervals. Such results should prompt examination of class sizes, parameter constraints, and solution stability. Standard errors are not available for the latent transition models described below.</p>
+<p>Inference requires an adequately identified solution. A variance estimate at its lower bound or a non-positive-definite information matrix can prevent the package from reporting intervals. Such results should prompt examination of class sizes, parameter constraints, and solution stability. The latent transition models described below report standard errors for their initial and transition probabilities as well as for the measurement model.</p>
 </div>
 <div class="section level2">
 <h2 id="covariates-and-external-variables">Covariates and external variables<a class="anchor" aria-label="anchor" href="#covariates-and-external-variables"></a>
@@ -564,11 +567,11 @@ plot of chunk enumeration
 <span><span class="co">#&gt; 2 individuals    bch     2    0.222         0.0347    0.154     0.290         810</span></span>
 <span><span class="fu"><a href="reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level outcome           term estimate standard_error statistic  p_value</span></span>
-<span><span class="co">#&gt; 1 individuals class_1    (Intercept)   -0.376         0.0582     -6.46 1.05e-10</span></span>
-<span><span class="co">#&gt; 2 individuals class_1 previous_grade   -0.575         0.0622     -9.25 2.34e-20</span></span>
+<span><span class="co">#&gt; 1 individuals class_1    (Intercept)   -0.376         0.1303     -2.89 3.91e-03</span></span>
+<span><span class="co">#&gt; 2 individuals class_1 previous_grade   -0.575         0.0593     -9.69 3.35e-22</span></span>
 <span><span class="co">#&gt;   p_value_adjusted conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1               NA   -0.490    -0.262</span></span>
-<span><span class="co">#&gt; 2         2.34e-20   -0.697    -0.453</span></span></code></pre></div>
+<span><span class="co">#&gt; 1               NA   -0.631    -0.121</span></span>
+<span><span class="co">#&gt; 2         3.35e-22   -0.691    -0.459</span></span></code></pre></div>
 <p>The first call compares previous-grade means between enrolment profiles. The argument name <code>outcome</code> identifies the variable whose means are estimated; it does not imply that engagement precedes or causes previous grade. The second call estimates the association of previous grade with profile membership while preserving the original profile definitions.</p>
 <p>Differences from the jointly estimated regression are therefore expected: the two procedures use different constraints on the measurement solution. <code><a href="reference/three_step.html">three_step()</a></code> clusters its variance estimates by group by default, while <code><a href="reference/r3step.html">r3step()</a></code> uses the observed information by default and offers clustered sandwich inference through <code>vcov_type = "robust"</code>.</p>
 <p>The supplied data must preserve the original observation order and include the external variables. The package uses shared fitted columns to check alignment between the data and the stored fit.</p>
@@ -609,7 +612,7 @@ plot of chunk enumeration
 <span><span class="co">#&gt; 9        2 forum_post -0.757    0.413              0.643</span></span>
 <span><span class="co">#&gt; 10       2 attendance -0.926    0.398              0.631</span></span></code></pre></div>
 <p>Each observation contributes the density of its observed indicators, obtained by marginalizing over its missing components. Estimation therefore uses partially observed indicator vectors without imputing values. The resulting inference assumes that the missingness mechanism is ignorable for the fitted analysis; the likelihood option itself does not establish that assumption.</p>
-<p>Missing-data handling should be described together with the pattern and extent of missingness and the information available to explain it. Without <code>missing = "fiml"</code>, missing indicators produce an error. Membership-covariate models and parametric bootstrap procedures require complete data in this implementation.</p>
+<p>Missing-data handling should be described together with the pattern and extent of missingness and the information available to explain it. Without <code>missing = "fiml"</code>, missing indicators produce an error. Membership-covariate models accept <code>missing = "fiml"</code> for their indicators, but the covariates themselves must be complete; parametric bootstrap procedures require complete data in this implementation.</p>
 </div>
 <div class="section level2">
 <h2 id="ordered-observations-and-latent-transitions">Ordered observations and latent transitions<a class="anchor" aria-label="anchor" href="#ordered-observations-and-latent-transitions"></a>
@@ -684,7 +687,7 @@ plot of chunk transitions
 <p>For group class <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi><annotation encoding="application/x-tex">h</annotation></semantics></math>, a transition probability can be expressed as <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>j</mi><mo>,</mo><mi>t</mi></mrow></msub><mo>=</mo><mi>l</mi><mo>∣</mo><msub><mi>C</mi><mrow><mi>j</mi><mo>,</mo><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>=</mo><mi>k</mi><mo>,</mo><msub><mi>G</mi><mi>j</mi></msub><mo>=</mo><mi>h</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">P(C_{j,t}=l\mid C_{j,t-1}=k,G_j=h)</annotation></semantics></math>. Each row of a transition matrix conditions on the preceding profile and sums to one across possible destination profiles. Diagonal entries quantify persistence; off-diagonal entries quantify transitions to other profiles.</p>
 <p>The implemented model is first order and time homogeneous: the next profile depends on the preceding profile, with transition probabilities held constant across sequence positions within each group class. Measurement parameters are invariant across occasions, ensuring that a transition refers to movement between profiles with stable definitions.</p>
 <p>In this dataset, consecutive observations are successive course enrolments. A transition therefore concerns adjacent observed enrolments, which need not be separated by equal calendar intervals. This distinction is part of the substantive interpretation of the estimated transition probabilities.</p>
-<p>The fitted transitions can be exported through <code><a href="reference/get_tna.html">get_tna()</a></code> and <code><a href="reference/get_group_tna.html">get_group_tna()</a></code> for further analysis with <code>tna</code>. Standard errors, likelihood-ratio testing, and class enumeration are not available for these transition models.</p>
+<p>The fitted transitions can be exported through <code><a href="reference/get_tna.html">get_tna()</a></code> and <code><a href="reference/get_group_tna.html">get_group_tna()</a></code> for further analysis with <code>tna</code>. <code><a href="reference/parameter_inference.html">parameter_inference()</a></code> reports standard errors and intervals for every transition-model parameter; likelihood-ratio testing and class enumeration are not available for these models.</p>
 </div>
 </div>
 <div class="section level2">
@@ -781,10 +784,25 @@ plot of chunk categorical
 <p>Standard errors and information criteria from the staged fit are conditional on the fixed measurement parameters. Uncertainty from estimating those parameters in the first stage is not propagated, which should be stated when reporting inferential results.</p>
 </div>
 <div class="section level2">
+<h2 id="mixture-regression">Mixture regression<a class="anchor" aria-label="anchor" href="#mixture-regression"></a>
+</h2>
+<p><code><a href="reference/mixture_regression.html">mixture_regression()</a></code> fits regressions whose coefficients differ across latent classes, for continuous (<code>"gaussian"</code>), binary or binomial (<code>"binomial"</code>) and count (<code>"poisson"</code>) outcomes. The class can belong to each row, to a whole group (<code>class_level = "group"</code>), or to each row with a second-level group class that shifts how often each regression class occurs within a group (<code>n_group_classes</code>). Covariates can predict class membership (<code>membership</code>, <code>group_membership</code>), and terms can share one coefficient across classes (<code>common</code>).</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">regressions</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">hours</span>, data <span class="op">=</span> <span class="va">study_hours</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                                  n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">regressions</span>, <span class="st">"coefficients"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     class        term estimate std_error statistic  p_value conf_low conf_high p_adjusted</span></span>
+<span><span class="co">#&gt; 1 class_1 (Intercept)   34.355     0.719     47.76 0.00e+00   32.945     35.76         NA</span></span>
+<span><span class="co">#&gt; 2 class_1       hours    4.566     0.105     43.60 0.00e+00    4.361      4.77   0.00e+00</span></span>
+<span><span class="co">#&gt; 3 class_2 (Intercept)   54.895     1.093     50.24 0.00e+00   52.753     57.04         NA</span></span>
+<span><span class="co">#&gt; 4 class_2       hours    0.808     0.170      4.77 1.88e-06    0.476      1.14   1.88e-06</span></span></code></pre></div>
+<p><code><a href="reference/enumerate_regressions.html">enumerate_regressions()</a></code> compares numbers of classes, with an optional parametric bootstrap likelihood-ratio test. Standard errors come from analytic scores, with observed-information, sandwich and outer-product estimators. Single-level and group-level models reproduce <code>flexmix</code>’s likelihood at the same parameters; <code><a href="articles/mixture-regression.html">vignette("mixture-regression")</a></code> walks through every nesting.</p>
+</div>
+<div class="section level2">
 <h2 id="retrieving-results-and-reporting-an-analysis">Retrieving results and reporting an analysis<a class="anchor" aria-label="anchor" href="#retrieving-results-and-reporting-an-analysis"></a>
 </h2>
 <p>The package provides a consistent result interface across supported model families. <code>get_results(fit)</code> retrieves the primary measurement table, and the <code>what</code> argument selects other available tables. The names of those tables can be inspected directly.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"all"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "profiles"              "responses"             "covariances"          </span></span>
 <span><span class="co">#&gt;  [4] "profile_probabilities" "counts"                "posteriors"           </span></span>
@@ -797,7 +815,7 @@ plot of chunk categorical
 <p>A methodological report should identify the Level-1 observations and Level-2 units, describe indicator selection and scaling, state the measurement and covariance constraints, and explain treatment of missingness. The estimation account should specify candidate class counts, starting values, convergence criteria, and evidence that the selected likelihood was replicated.</p>
 <p>Interpretation should then distinguish the measurement profiles from the higher-level composition classes. Profile means or response probabilities establish the meaning of the observation-level classes; conditional profile probabilities establish the meaning of the group-level classes. Effective class sizes, posterior classification uncertainty, residual diagnostics, and the rationale for selecting the final model provide the evidence needed to assess that interpretation.</p>
 <p>Additional package vignettes develop the individual parts of this workflow in greater detail.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"lpa"</span>, package <span class="op">=</span> <span class="st">"latents"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"evaluation"</span>, package <span class="op">=</span> <span class="st">"latents"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"covariates"</span>, package <span class="op">=</span> <span class="st">"latents"</span><span class="op">)</span></span>

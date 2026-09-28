@@ -56,15 +56,15 @@ set.seed(1)
 d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
 candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
                               n_group_classes = 1, n_starts = 2, seed = 1)
-candidate_fit(candidates, n_profiles = 2, n_group_classes = 1)
+candidate_fit(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
 #> Two-level latent profile analysis: 2 profiles, 1 group class
 #> 100 individuals in 10 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -130.592099 | AIC: 271.184 | BIC (groups): 272.697
-#> Converged: TRUE | iterations: 268 | best start: 1/2
+#> Log likelihood: -130.591962 | AIC: 271.184 | BIC (groups): 272.697
+#> Converged: TRUE | iterations: 36 | best start: 1/2
 #> 
-#>  profile          y    count proportion
-#>        1  0.3584555 53.72896  0.5372896
-#>        2 -0.1808800 46.27104  0.4627104
+#>  profile          y   count proportion
+#>        1 -0.1928460 44.5831   0.445831
+#>        2  0.3516482 55.4169   0.554169
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").

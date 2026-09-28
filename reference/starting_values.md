@@ -94,10 +94,10 @@ starting_values(fit)
 #> Pass this to multilpa(start = ) as it is.
 as.data.frame(starting_values(fit))
 #>   profile indicator        mean  variance standard_deviation
-#> 1       1         1  0.31651781 0.7482672          0.8650244
-#> 2       1         2 -0.05304516 0.9149716          0.9565415
-#> 3       2         1 -1.11301874 0.1021424          0.3195973
-#> 4       2         2  0.79087174 0.2858249          0.5346260
+#> 1       1         1  0.31636979 0.7483074          0.8650476
+#> 2       1         2 -0.05291982 0.9149785          0.9565451
+#> 3       2         1 -1.11359585 0.1018727          0.3191750
+#> 4       2         2  0.79091589 0.2857973          0.5346002
 refit <- multilpa(example_data, c("score_a", "score_b"), "school",
                     n_profiles = 2, n_group_classes = 1, n_starts = 1,
                     start = starting_values(fit))

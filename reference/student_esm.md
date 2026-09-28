@@ -130,43 +130,76 @@ lca <- multilpa(first_week, vars = activities, id = "student",
                 categorical = activities, n_starts = 3, seed = 1)
 get_results(lca, what = "responses")
 #>    profile         indicator category probability  threshold
-#> 1        1 time_with_friends       no  0.93676665  2.6956024
-#> 2        2 time_with_friends       no  0.83220691  1.6013495
-#> 3        1 time_with_friends      yes  0.06323335         NA
-#> 4        2 time_with_friends      yes  0.16779309         NA
-#> 5        1   on_social_media       no  0.33747581 -0.6745632
-#> 6        2   on_social_media       no  0.92421483  2.5010419
-#> 7        1   on_social_media      yes  0.66252419         NA
-#> 8        2   on_social_media      yes  0.07578517         NA
-#> 9        1    tv_video_games       no  0.63177676  0.5398467
-#> 10       2    tv_video_games       no  0.86666716  1.8718065
-#> 11       1    tv_video_games      yes  0.36822324         NA
-#> 12       2    tv_video_games      yes  0.13333284         NA
-#> 13       1    listened_music       no  0.64700412  0.6058963
-#> 14       2    listened_music       no  0.94083907  2.7665107
-#> 15       1    listened_music      yes  0.35299588         NA
-#> 16       2    listened_music      yes  0.05916093         NA
-#> 17       1            sports       no  0.94062608  2.7626906
-#> 18       2            sports       no  0.91586401  2.3874334
-#> 19       1            sports      yes  0.05937392         NA
-#> 20       2            sports      yes  0.08413599         NA
-#> 21       1           walking       no  0.88651172  2.0555948
-#> 22       2           walking       no  0.83643759  1.6319573
-#> 23       1           walking      yes  0.11348828         NA
-#> 24       2           walking      yes  0.16356241         NA
-#> 25       1           reading       no  0.87910684  1.9839993
-#> 26       2           reading       no  0.89163129  2.1075133
-#> 27       1           reading      yes  0.12089316         NA
-#> 28       2           reading      yes  0.10836871         NA
-#> 29       1     part_time_job       no  0.98376484  4.1042074
-#> 30       2     part_time_job       no  0.95860865  3.1424110
-#> 31       1     part_time_job      yes  0.01623516         NA
-#> 32       2     part_time_job      yes  0.04139135         NA
+#> 1        1 time_with_friends       no  0.83242068  1.6028812
+#> 2        2 time_with_friends       no  0.93678704  2.6959466
+#> 3        1 time_with_friends      yes  0.16757932         NA
+#> 4        2 time_with_friends      yes  0.06321296         NA
+#> 5        1   on_social_media       no  0.92355812  2.4917031
+#> 6        2   on_social_media       no  0.33649814 -0.6789390
+#> 7        1   on_social_media      yes  0.07644188         NA
+#> 8        2   on_social_media      yes  0.66350186         NA
+#> 9        1    tv_video_games       no  0.86644478  1.8698834
+#> 10       2    tv_video_games       no  0.63132094  0.5378878
+#> 11       1    tv_video_games      yes  0.13355522         NA
+#> 12       2    tv_video_games      yes  0.36867906         NA
+#> 13       1    listened_music       no  0.94058177  2.7618976
+#> 14       2    listened_music       no  0.64640069  0.6032552
+#> 15       1    listened_music      yes  0.05941823         NA
+#> 16       2    listened_music      yes  0.35359931         NA
+#> 17       1            sports       no  0.91593266  2.3883247
+#> 18       2            sports       no  0.94060224  2.7622638
+#> 19       1            sports      yes  0.08406734         NA
+#> 20       2            sports      yes  0.05939776         NA
+#> 21       1           walking       no  0.83653079  1.6326387
+#> 22       2           walking       no  0.88653607  2.0558368
+#> 23       1           walking      yes  0.16346921         NA
+#> 24       2           walking      yes  0.11346393         NA
+#> 25       1           reading       no  0.89169019  2.1081230
+#> 26       2           reading       no  0.87897002  1.9827125
+#> 27       1           reading      yes  0.10830981         NA
+#> 28       2           reading      yes  0.12102998         NA
+#> 29       1     part_time_job       no  0.95867090  3.1439809
+#> 30       2     part_time_job       no  0.98375254  4.1034381
+#> 31       1     part_time_job      yes  0.04132910         NA
+#> 32       2     part_time_job      yes  0.01624746         NA
+#>    probability_standard_error
+#> 1                 0.015245913
+#> 2                 0.012813326
+#> 3                 0.015245913
+#> 4                 0.012813326
+#> 5                 0.026626917
+#> 6                 0.045890541
+#> 7                 0.026626917
+#> 8                 0.045890541
+#> 9                 0.016048843
+#> 10                0.028907924
+#> 11                0.016048843
+#> 12                0.028907924
+#> 13                0.014189478
+#> 14                0.031664343
+#> 15                0.014189478
+#> 16                0.031664343
+#> 17                0.010533576
+#> 18                0.012075931
+#> 19                0.010533576
+#> 20                0.012075931
+#> 21                0.014230522
+#> 22                0.016565859
+#> 23                0.014230522
+#> 24                0.016565859
+#> 25                0.011899678
+#> 26                0.016844680
+#> 27                0.011899678
+#> 28                0.016844680
+#> 29                0.007300081
+#> 30                0.006253449
+#> 31                0.007300081
+#> 32                0.006253449
 get_results(lca, what = "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1   0.7093891               0.4830744
-#> 2           1       2   0.2906109               0.4830744
-#> 3           2       1   0.0762557               0.5169256
-#> 4           2       2   0.9237443               0.5169256
+#> 1           1       1  0.29188874               0.4828372
+#> 2           1       2  0.70811126               0.4828372
+#> 3           2       1  0.92482149               0.5171628
+#> 4           2       2  0.07517851               0.5171628
 # }
 ```

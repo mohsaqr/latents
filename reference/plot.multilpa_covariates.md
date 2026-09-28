@@ -13,8 +13,11 @@ for it is refused rather than answered with an average that no unit has.
 # S3 method for class 'multilpa_covariates'
 plot(
   x,
-  what = c("profiles", "sequences", "entropy", "posteriors", "all"),
+  what = c("profiles", "bars", "heatmap", "raincloud", "responses", "sequences", "sizes",
+    "entropy", "posteriors", "avepp", "all"),
+  data = NULL,
   scale = c("raw", "standardized"),
+  category = "last",
   labels = TRUE,
   main = NULL,
   subtitle = NULL,
@@ -23,6 +26,7 @@ plot(
   linetypes = NULL,
   style = .multilpa_style(),
   cell_labels = TRUE,
+  intervals = TRUE,
   ...
 )
 ```
@@ -35,18 +39,27 @@ plot(
 
 - what:
 
-  `"profiles"` (the default) draws the measurement model; `"sequences"`
-  draws the assignments in course order and needs a fit made with
-  `time =`. `"entropy"` and `"posteriors"` draw the two case-level
-  classification diagnostics exactly as
+  `"profiles"` (the default) draws the measurement model, and `"bars"`
+  and `"heatmap"` draw it as
+  [`plot.multilpa()`](https://pak.dynasite.org/latents/reference/plot.multilpa.md)
+  does (for an all-categorical fit the heatmap shows the response
+  probabilities); `"sizes"` and `"avepp"` draw the effective profile
+  sizes and the average posterior matrix. `"sequences"` draws the
+  assignments in course order and needs a fit made with `time =`.
+  `"entropy"` and `"posteriors"` draw the two case-level classification
+  diagnostics exactly as
   [`plot.multilpa()`](https://pak.dynasite.org/latents/reference/plot.multilpa.md)
   draws them: they read the individual posteriors, which a covariate fit
   has, and say nothing about prevalence, which it does not.
+  `"responses"` draws the categorical response probabilities, one line
+  per profile, as
+  [`plot.multilpa()`](https://pak.dynasite.org/latents/reference/plot.multilpa.md)
+  does; the measurement model does not depend on the covariates.
 
-- scale, labels, cell_labels, main, subtitle, palette, symbols,
-  linetypes, style, ...:
+- data, scale, labels, cell_labels, main, subtitle, palette, symbols,
+  linetypes, style, category, intervals, ...:
 
-  Passed through as in
+  As in
   [`plot.multilpa()`](https://pak.dynasite.org/latents/reference/plot.multilpa.md).
 
 ## Value

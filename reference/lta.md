@@ -32,7 +32,8 @@ lta(
   covariance_model = c("diagonal", "full"),
   categorical = character(),
   min_probability = 1e-10,
-  occasions = c("observed", "grid")
+  occasions = c("observed", "grid"),
+  select_start = c("likelihood", "converged")
 )
 ```
 
@@ -78,11 +79,16 @@ lta(
 
 - n_starts:
 
-  Positive integer number of EM starts. When `start` is supplied, it
-  supplies the first start; remaining starts are random initializations.
-  It is ignored when `max_iter = 0` and `start` is supplied: that call
-  evaluates the supplied parameters and nothing else, so exactly one
-  start is run whatever `n_starts` says.
+  Positive integer number of EM starts. The first is deterministic:
+  Ward's hierarchical clustering of the standardized indicators (on at
+  most 2000 evenly spaced rows), each cluster described by its own means
+  and spread, which is the start mclust's name refers to and finds
+  solutions whose profiles differ in shape. The rest are k-means from
+  random centres. When `start` is supplied, it supplies the first start
+  instead; remaining starts are random initializations. It is ignored
+  when `max_iter = 0` and `start` is supplied: that call evaluates the
+  supplied parameters and nothing else, so exactly one start is run
+  whatever `n_starts` says.
 
 - max_iter:
 
@@ -120,7 +126,8 @@ lta(
   `"error"` rejects missing indicators; `"fiml"` maximizes the
   observed-data likelihood under an ignorable missingness mechanism
   (MAR). Missing indicators are integrated out, not filled in for
-  likelihood fitting.
+  likelihood fitting. This holds with membership covariates too; the
+  covariates themselves must be complete (`latents_bad_data`).
 
 - covariance_model:
 
@@ -152,6 +159,20 @@ lta(
   skips a position still consumes a transition across the gap and
   contributes no measurement information at it. The two agree whenever
   every group is observed at every position.
+
+- select_start:
+
+  Which start the fit reports. `"likelihood"`, the default, takes the
+  highest log likelihood across starts, preferring a converged start
+  only among those tied with it to within a relative `1e-10`.
+  `"converged"` takes the highest log likelihood among the converged
+  starts whenever at least one converged, and falls back to every start
+  when none did. Use it when an unconverged start edges out a converged
+  one by a negligible amount, which happens when a membership logit
+  creeps along a flat ridge of the likelihood: the converged start is
+  then a maximum that the standard errors can work with, and the other
+  is not. [`summary()`](https://rdrr.io/r/base/summary.html) and
+  `get_results(fit, "starts")` show every start either way.
 
 ## Value
 
@@ -222,10 +243,10 @@ fit <- lta(
 )
 get_results(fit, what = "transitions")
 #>   group_class from to probability expected_count stable estimated
-#> 1           1    1  1   0.8149795      438.08462   TRUE      TRUE
-#> 2           1    1  2   0.1850205       99.45943  FALSE      TRUE
-#> 3           1    2  1   0.1385963      107.89442  FALSE      TRUE
-#> 4           1    2  2   0.8614037      670.56153   TRUE      TRUE
+#> 1           1    1  1   0.8614039      670.56162   TRUE      TRUE
+#> 2           1    1  2   0.1385961      107.89439  FALSE      TRUE
+#> 3           1    2  1   0.1850203       99.45941  FALSE      TRUE
+#> 4           1    2  2   0.8149797      438.08458   TRUE      TRUE
 #>   group_class_probability
 #> 1                       1
 #> 2                       1
@@ -240,30 +261,41 @@ summary(fit)
 #> Best likelihood replicated in 2/2 starts (absolute tolerance 0.00834).
 #> 
 #> -- profiles --------------------------------------------------------
-#>  profile  indicator    mean variance standard_deviation
-#>        1     browse -0.7720   0.5139             0.7168
-#>        1   lectures -0.6093   0.5456             0.7387
-#>        1 forum_read -0.8814   0.3582             0.5985
-#>        1 forum_post -0.7565   0.4181             0.6466
-#>        1 attendance -0.9189   0.3780             0.6148
-#>        2     browse  0.5405   0.5929             0.7700
-#>        2   lectures  0.4266   0.8376             0.9152
-#>        2 forum_read  0.6173   0.4860             0.6972
-#>        2 forum_post  0.5297   0.6877             0.8293
-#>        2 attendance  0.6436   0.3916             0.6258
+#>  profile  indicator    mean variance standard_deviation mean_standard_error
+#>        1     browse  0.5405   0.5929             0.7700             0.02688
+#>        1   lectures  0.4266   0.8376             0.9152             0.03197
+#>        1 forum_read  0.6173   0.4860             0.6972             0.02454
+#>        1 forum_post  0.5297   0.6877             0.8293             0.02902
+#>        1 attendance  0.6436   0.3916             0.6258             0.02207
+#>        2     browse -0.7720   0.5139             0.7168             0.03027
+#>        2   lectures -0.6093   0.5456             0.7387             0.03095
+#>        2 forum_read -0.8814   0.3582             0.5985             0.02531
+#>        2 forum_post -0.7565   0.4181             0.6466             0.02731
+#>        2 attendance -0.9189   0.3780             0.6148             0.02598
+#>  variance_standard_error
+#>                  0.02930
+#>                  0.04135
+#>                  0.02453
+#>                  0.03411
+#>                  0.01971
+#>                  0.03088
+#>                  0.03266
+#>                  0.02152
+#>                  0.02552
+#>                  0.02257
 #> 
 #> -- responses -------------------------------------------------------
 #>    (no rows)
 #> 
 #> -- covariances -----------------------------------------------------
 #>  profile  indicator indicator_2 covariance
-#>        1     browse      browse     0.5139
+#>        1     browse      browse     0.5929
 #>        1   lectures      browse     0.0000
 #>        1 forum_read      browse     0.0000
 #>        1 forum_post      browse     0.0000
 #>        1 attendance      browse     0.0000
 #>        1     browse    lectures     0.0000
-#>        1   lectures    lectures     0.5456
+#>        1   lectures    lectures     0.8376
 #>        1 forum_read    lectures     0.0000
 #>        1 forum_post    lectures     0.0000
 #>        1 attendance    lectures     0.0000
@@ -271,10 +303,10 @@ summary(fit)
 #> 
 #> -- transitions -----------------------------------------------------
 #>  group_class from to probability expected_count stable estimated
-#>            1    1  1      0.8150         438.08   TRUE      TRUE
-#>            1    1  2      0.1850          99.46  FALSE      TRUE
-#>            1    2  1      0.1386         107.89  FALSE      TRUE
-#>            1    2  2      0.8614         670.56   TRUE      TRUE
+#>            1    1  1      0.8614         670.56   TRUE      TRUE
+#>            1    1  2      0.1386         107.89  FALSE      TRUE
+#>            1    2  1      0.1850          99.46  FALSE      TRUE
+#>            1    2  2      0.8150         438.08   TRUE      TRUE
 #>  group_class_probability
 #>                        1
 #>                        1
@@ -283,27 +315,27 @@ summary(fit)
 #> 
 #> -- initial ---------------------------------------------------------
 #>  group_class profile probability prevalence group_class_probability
-#>            1       1      0.3742     0.4118                       1
-#>            1       2      0.6258     0.5882                       1
+#>            1       1      0.6258     0.5882                       1
+#>            1       2      0.3742     0.4118                       1
 #> 
 #> -- counts ----------------------------------------------------------
 #>        level class effective_count effective_proportion
-#>  individuals     1           585.6               0.4118
-#>  individuals     2           836.4               0.5882
+#>  individuals     1           836.4               0.5882
+#>  individuals     2           585.6               0.4118
 #>       groups     1           106.0               1.0000
 #> 
 #> -- posteriors ------------------------------------------------------
 #>  row group profile posterior modal
-#>    1     1       1 1.174e-05 FALSE
-#>    2     1       1 2.865e-03 FALSE
-#>    3     1       1 1.000e+00  TRUE
-#>    4     1       1 1.000e+00  TRUE
-#>    5     1       1 1.000e+00  TRUE
-#>    6     1       1 1.000e+00  TRUE
-#>    7     1       1 1.000e+00  TRUE
-#>    8     1       1 1.000e+00  TRUE
-#>    9     1       1 1.000e+00  TRUE
-#>   10     1       1 1.000e+00  TRUE
+#>    1     1       1 1.000e+00  TRUE
+#>    2     1       1 9.971e-01  TRUE
+#>    3     1       1 1.387e-05 FALSE
+#>    4     1       1 8.982e-07 FALSE
+#>    5     1       1 1.263e-06 FALSE
+#>    6     1       1 4.927e-06 FALSE
+#>    7     1       1 4.797e-06 FALSE
+#>    8     1       1 2.279e-06 FALSE
+#>    9     1       1 4.709e-07 FALSE
+#>   10     1       1 2.102e-06 FALSE
 #>    ... 2834 more rows.  get_results(x, what = "posteriors")
 #> 
 #> -- group_posteriors ------------------------------------------------
@@ -322,67 +354,67 @@ summary(fit)
 #> 
 #> -- assignments -----------------------------------------------------
 #>  student sequence browse lectures forum_read forum_post attendance profile
-#>        1        1   0.73    -0.08       0.30       0.67       0.72       2
-#>        1        2   0.68     0.53      -0.02      -0.55       0.70       2
-#>        1        3  -1.51    -0.51      -0.91      -0.80      -0.97       1
-#>        1        4   0.64    -1.02      -1.62      -1.20      -1.26       1
-#>        1        5  -0.94    -0.37      -0.71      -0.28      -1.52       1
-#>        1        6  -0.36    -0.46      -0.77      -0.43      -1.34       1
-#>        1        7   0.38    -1.85      -0.84      -1.09      -1.12       1
-#>        1        8  -1.44     0.66      -0.67      -1.67      -1.00       1
-#>        1        9  -0.76    -0.43      -1.04      -0.69      -1.37       1
-#>        1       10   0.26    -0.95      -0.51      -1.89      -1.45       1
+#>        1        1   0.73    -0.08       0.30       0.67       0.72       1
+#>        1        2   0.68     0.53      -0.02      -0.55       0.70       1
+#>        1        3  -1.51    -0.51      -0.91      -0.80      -0.97       2
+#>        1        4   0.64    -1.02      -1.62      -1.20      -1.26       2
+#>        1        5  -0.94    -0.37      -0.71      -0.28      -1.52       2
+#>        1        6  -0.36    -0.46      -0.77      -0.43      -1.34       2
+#>        1        7   0.38    -1.85      -0.84      -1.09      -1.12       2
+#>        1        8  -1.44     0.66      -0.67      -1.67      -1.00       2
+#>        1        9  -0.76    -0.43      -1.04      -0.69      -1.37       2
+#>        1       10   0.26    -0.95      -0.51      -1.89      -1.45       2
 #>  group_class uncertainty posterior_profile_1 posterior_profile_2
-#>            1   1.174e-05           1.174e-05           1.000e+00
-#>            1   2.865e-03           2.865e-03           9.971e-01
-#>            1   1.387e-05           1.000e+00           1.387e-05
-#>            1   8.982e-07           1.000e+00           8.982e-07
-#>            1   1.263e-06           1.000e+00           1.263e-06
-#>            1   4.927e-06           1.000e+00           4.927e-06
-#>            1   4.797e-06           1.000e+00           4.797e-06
-#>            1   2.279e-06           1.000e+00           2.279e-06
-#>            1   4.709e-07           1.000e+00           4.709e-07
-#>            1   2.102e-06           1.000e+00           2.102e-06
+#>            1   1.174e-05           1.000e+00           1.174e-05
+#>            1   2.864e-03           9.971e-01           2.864e-03
+#>            1   1.387e-05           1.387e-05           1.000e+00
+#>            1   8.982e-07           8.982e-07           1.000e+00
+#>            1   1.263e-06           1.263e-06           1.000e+00
+#>            1   4.927e-06           4.927e-06           1.000e+00
+#>            1   4.797e-06           4.797e-06           1.000e+00
+#>            1   2.279e-06           2.279e-06           1.000e+00
+#>            1   4.709e-07           4.709e-07           1.000e+00
+#>            1   2.102e-06           2.102e-06           1.000e+00
 #>    ... 1412 more rows.  get_results(x, what = "assignments")
 #> 
 #> -- classification --------------------------------------------------
 #>        level class n_modal proportion_modal estimated_n estimated_proportion
-#>  individuals     1     585           0.4114       585.6               0.4118
-#>  individuals     2     837           0.5886       836.4               0.5882
+#>  individuals     1     837           0.5886       836.4               0.5882
+#>  individuals     2     585           0.4114       585.6               0.4118
 #>       groups     1     106           1.0000       106.0               1.0000
 #>  average_posterior odds_correct_classification
-#>             0.9890                      128.22
 #>             0.9915                       81.98
+#>             0.9890                      128.22
 #>             1.0000                          NA
 #> 
 #> -- average_posteriors ----------------------------------------------
 #>        level assigned_class class n_assigned average_posterior
-#>  individuals              1     1        585          0.988985
-#>  individuals              1     2        585          0.011015
-#>  individuals              2     1        837          0.008469
-#>  individuals              2     2        837          0.991531
+#>  individuals              1     1        837          0.991531
+#>  individuals              1     2        837          0.008469
+#>  individuals              2     1        585          0.011015
+#>  individuals              2     2        585          0.988985
 #>       groups              1     1        106          1.000000
 #> 
 #> -- classification_errors -------------------------------------------
 #>        level true_class assigned_class probability
-#>  individuals          1              1    0.987896
-#>  individuals          1              2    0.012104
-#>  individuals          2              1    0.007704
-#>  individuals          2              2    0.992296
+#>  individuals          1              1    0.992295
+#>  individuals          1              2    0.007705
+#>  individuals          2              1    0.012104
+#>  individuals          2              2    0.987896
 #>       groups          1              1    1.000000
 #> 
 #> -- bch_weights -----------------------------------------------------
 #>        level unit assigned_class class   weight
-#>  individuals    1              2     1 -0.00786
-#>  individuals    1              2     2  1.00786
-#>  individuals    2              2     1 -0.00786
-#>  individuals    2              2     2  1.00786
-#>  individuals    3              1     1  1.01235
-#>  individuals    3              1     2 -0.01235
-#>  individuals    4              1     1  1.01235
-#>  individuals    4              1     2 -0.01235
-#>  individuals    5              1     1  1.01235
-#>  individuals    5              1     2 -0.01235
+#>  individuals    1              1     1  1.00786
+#>  individuals    1              1     2 -0.00786
+#>  individuals    2              1     1  1.00786
+#>  individuals    2              1     2 -0.00786
+#>  individuals    3              2     1 -0.01235
+#>  individuals    3              2     2  1.01235
+#>  individuals    4              2     1 -0.01235
+#>  individuals    4              2     2  1.01235
+#>  individuals    5              2     1 -0.01235
+#>  individuals    5              2     2  1.01235
 #>    ... 2940 more rows.  get_results(x, what = "bch_weights")
 #> 
 #> -- entropy ---------------------------------------------------------
@@ -392,16 +424,16 @@ summary(fit)
 #> 
 #> -- residuals -------------------------------------------------------
 #>    profile indicator_1 indicator_2     kind observed expected residual
-#>  profile_2    lectures  attendance gaussian  0.23623        0  0.23623
-#>  profile_1  forum_read  attendance gaussian  0.23302        0  0.23302
-#>  profile_2  forum_read  attendance gaussian  0.21662        0  0.21662
-#>  profile_2  forum_post  attendance gaussian  0.20818        0  0.20818
-#>  profile_1      browse  attendance gaussian  0.19679        0  0.19679
-#>  profile_2      browse  attendance gaussian  0.16968        0  0.16968
-#>  profile_1    lectures  attendance gaussian  0.11963        0  0.11963
-#>  profile_1  forum_post  attendance gaussian  0.11548        0  0.11548
-#>  profile_1      browse  forum_read gaussian  0.10229        0  0.10229
-#>  profile_1  forum_read  forum_post gaussian  0.06942        0  0.06942
+#>  profile_1    lectures  attendance gaussian  0.23623        0  0.23623
+#>  profile_2  forum_read  attendance gaussian  0.23302        0  0.23302
+#>  profile_1  forum_read  attendance gaussian  0.21662        0  0.21662
+#>  profile_1  forum_post  attendance gaussian  0.20818        0  0.20818
+#>  profile_2      browse  attendance gaussian  0.19679        0  0.19679
+#>  profile_1      browse  attendance gaussian  0.16968        0  0.16968
+#>  profile_2    lectures  attendance gaussian  0.11963        0  0.11963
+#>  profile_2  forum_post  attendance gaussian  0.11548        0  0.11548
+#>  profile_2      browse  forum_read gaussian  0.10229        0  0.10229
+#>  profile_2  forum_read  forum_post gaussian  0.06942        0  0.06942
 #>  effective_n statistic df   p_value p_adjusted
 #>        836.4     6.951 NA 3.637e-12  3.637e-12
 #>        585.6     5.730 NA 1.005e-08  1.005e-08
@@ -435,16 +467,16 @@ summary(fit)
 #> 
 #> -- sequences -------------------------------------------------------
 #>  group group_class time profile
-#>      1           1    1       2
-#>      1           1    2       2
-#>      1           1    3       1
-#>      1           1    4       1
-#>      1           1    5       1
-#>      1           1    6       1
-#>      1           1    7       1
-#>      1           1    8       1
-#>      1           1    9       1
-#>      1           1   10       1
+#>      1           1    1       1
+#>      1           1    2       1
+#>      1           1    3       2
+#>      1           1    4       2
+#>      1           1    5       2
+#>      1           1    6       2
+#>      1           1    7       2
+#>      1           1    8       2
+#>      1           1    9       2
+#>      1           1   10       2
 #>    ... 1412 more rows.  get_results(x, what = "sequences")
 #> 
 #> -- sequence_summary ------------------------------------------------
@@ -469,7 +501,7 @@ summary(fit)
 #> 
 #> -- starts ----------------------------------------------------------
 #>  start log_likelihood converged iterations error
-#>      1          -8335      TRUE          6  <NA>
+#>      1          -8335      TRUE          4  <NA>
 #>      2          -8335      TRUE          6  <NA>
 #> 
 #> -- data ------------------------------------------------------------

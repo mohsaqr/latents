@@ -99,8 +99,8 @@ asked. The comparison that does have a null is the difference between
 two classes, and that is what `contrast = "pairs"` returns: one row per
 pair with the columns `level`, `method`, `class`, `reference_class`,
 `estimate` (the mean of `class` minus the mean of `reference_class`),
-`standard_error`, `statistic`, `p_value`, `p_value_adjusted`, `conf_low`
-and `conf_high`, matching
+`standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
+`conf_high`, matching
 [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md). A
 contrast with zero standard error has no defined test statistic or
 p-value; those columns are `NA_real_` rather than a spurious finite
@@ -112,9 +112,9 @@ units, so they remain honest when the outcome is measured on
 observations nested inside those groups; `vcov_type = "independent"`
 gives the unclustered variance instead. The variance that was used is
 recorded in the result's `vcov_type` attribute, and for
-`contrast = "pairs"` the correction applied to `p_value_adjusted` is
-recorded in its `adjust` attribute. A `contrast = "none"` table tests
-nothing, so it carries no `adjust` attribute.
+`contrast = "pairs"` the correction applied to `p_adjusted` is recorded
+in its `adjust` attribute. A `contrast = "none"` table tests nothing, so
+it carries no `adjust` attribute.
 
 ## Details
 
@@ -168,15 +168,15 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
 three_step(fit, example_data, "y")
-#>         level method class   estimate standard_error   conf_low conf_high
-#> 1 individuals    bch     1  9.9710163      0.2219561  9.5359903 10.406042
-#> 2 individuals    bch     2 -0.0696936      0.1987387 -0.4592142  0.319827
+#>         level method class   estimate standard_error   conf_low  conf_high
+#> 1 individuals    bch     1 -0.0688436      0.1986710 -0.4582315  0.3205443
+#> 2 individuals    bch     2  9.9718132      0.2220129  9.5366758 10.4069506
 #>   effective_n
-#> 1    170.3967
-#> 2    182.7121
+#> 1    182.7468
+#> 2    170.3665
 three_step(fit, example_data, "y", contrast = "pairs")
-#>         level method class reference_class  estimate standard_error statistic
-#> 1 individuals    bch     2               1 -10.04071      0.3404084 -29.49607
-#>         p_value p_value_adjusted conf_low conf_high
-#> 1 3.233219e-191    3.233219e-191 -10.7079 -9.373522
+#>         level method class reference_class estimate standard_error statistic
+#> 1 individuals    bch     2               1 10.04066      0.3404019  29.49648
+#>         p_value    p_adjusted conf_low conf_high
+#> 1 3.194244e-191 3.194244e-191 9.373481  10.70783
 ```

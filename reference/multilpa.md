@@ -26,6 +26,7 @@ multilpa(
   seed = NULL,
   start = NULL,
   missing = c("error", "fiml"),
+  profile_slopes = c("shared", "group_class"),
   covariance_model = c("diagonal", "full"),
   categorical = character(),
   min_probability = 1e-10,
@@ -34,7 +35,12 @@ multilpa(
   centering = c("none", "person", "grand"),
   volume = NULL,
   shape = NULL,
-  orientation = NULL
+  orientation = NULL,
+  model = NULL,
+  select_start = c("likelihood", "converged"),
+  prior = NULL,
+  noise = FALSE,
+  acceleration = c("squarem", "none")
 )
 ```
 
@@ -58,15 +64,15 @@ multilpa(
   model without saying so. Passing `id = NULL` explicitly fits a
   **single-level** model: the observations are treated as independent,
   each row is its own unit, and `n_group_classes` becomes one. That fit
-  raises a `latents_single_level` warning, since this package exists for
-  the two-level model. This is the ordinary Gaussian or latent-class
-  mixture that the two-level model reduces to, and every verb of this
-  package works on it. The unit column is fabricated internally as
-  `.observation`; it is not returned by `get_results(x, "data")`, and a
-  `data` that already has a column of that name raises
-  `latents_bad_data`. Asking for more than one group class without an
-  `id` raises `latents_bad_argument`, because one observation per unit
-  leaves no composition for a second-level class to differ in.
+  raises a `latents_single_level` message saying so. This is the
+  ordinary Gaussian or latent-class mixture that the two-level model
+  reduces to, and every verb of this package works on it. The unit
+  column is fabricated internally as `.observation`; it is not returned
+  by `get_results(x, "data")`, and a `data` that already has a column of
+  that name raises `latents_bad_data`. Asking for more than one group
+  class without an `id` raises `latents_bad_argument`, because one
+  observation per unit leaves no composition for a second-level class to
+  differ in.
 
 - n_profiles:
 
@@ -82,17 +88,19 @@ multilpa(
   Names of numeric columns of `data` predicting individual-profile and
   group-class membership through multinomial logits, with the final
   class as reference. Naming either one fits the one-step covariate
-  model and returns a `multilpa_covariates` object: profile slopes are
-  shared across group classes, profile intercepts differ by group class,
-  and a `group_covariate` must be constant within each group. Covariates
-  enter in their supplied units, so centre or scale them beforehand if
-  that is what you want. This is one-step maximum likelihood, not a
-  regression on assigned classes;
+  model and returns a `multilpa_covariates` object: profile intercepts
+  differ by group class, profile slopes are shared across group classes
+  unless `profile_slopes = "group_class"`, and a `group_covariate` must
+  be constant within each group. Covariates enter in their supplied
+  units, so centre or scale them beforehand if that is what you want.
+  This is one-step maximum likelihood, not a regression on assigned
+  classes;
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
   and [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
   are the staged alternatives. The covariate path supports neither
-  `start`, nor `missing = "fiml"`, nor `fixed`, and refuses them by name
-  rather than ignoring them. Use one for an ordinary, pooled LPA.
+  `start` nor `fixed`, and refuses them by name rather than ignoring
+  them; it supports `missing = "fiml"` for the indicators, but
+  covariates must be complete. Use one for an ordinary, pooled LPA.
 
 - variance_model:
 
@@ -101,11 +109,16 @@ multilpa(
 
 - n_starts:
 
-  Positive integer number of EM starts. When `start` is supplied, it
-  supplies the first start; remaining starts are random initializations.
-  It is ignored when `max_iter = 0` and `start` is supplied: that call
-  evaluates the supplied parameters and nothing else, so exactly one
-  start is run whatever `n_starts` says.
+  Positive integer number of EM starts. The first is deterministic:
+  Ward's hierarchical clustering of the standardized indicators (on at
+  most 2000 evenly spaced rows), each cluster described by its own means
+  and spread, which is the start mclust's name refers to and finds
+  solutions whose profiles differ in shape. The rest are k-means from
+  random centres. When `start` is supplied, it supplies the first start
+  instead; remaining starts are random initializations. It is ignored
+  when `max_iter = 0` and `start` is supplied: that call evaluates the
+  supplied parameters and nothing else, so exactly one start is run
+  whatever `n_starts` says.
 
 - max_iter:
 
@@ -161,7 +174,20 @@ multilpa(
   `"error"` rejects missing indicators; `"fiml"` maximizes the
   observed-data likelihood under an ignorable missingness mechanism
   (MAR). Missing indicators are integrated out, not filled in for
-  likelihood fitting.
+  likelihood fitting. This holds with membership covariates too; the
+  covariates themselves must be complete (`latents_bad_data`).
+
+- profile_slopes:
+
+  `"shared"` (the default) gives each profile covariate one slope per
+  profile logit, common to every group class. `"group_class"` lets each
+  group class have its own slopes, so a covariate can predict profile
+  membership differently in different kinds of group (a cross-level
+  interaction); its coefficients are reported with terms such as
+  `z:group_class_1`. It adds `(n_group_classes - 1)` times as many slope
+  parameters again, each estimated from the groups in its class, so it
+  needs enough groups per class. Naming it without `profile_covariates`
+  raises `latents_bad_argument`.
 
 - covariance_model:
 
@@ -263,12 +289,127 @@ multilpa(
 
   Anything other than EEI, VVI, EEE or VVV is maximized across every
   profile at once, so it cannot be combined with a held `variances`
-  block, and `parameter_inference(method = "wald")` refuses it with
-  `latents_unsupported_inference`: the free coordinates are log
-  variances, which is the wrong chart for a constrained volume, shape or
-  orientation. `parameter_inference(method = "bootstrap")` reports all
-  fourteen: it resamples groups and refits inside the same family, so it
-  needs no chart.
+  block.
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  reports Wald standard errors for all fourteen: a constrained structure
+  is differentiated in its own free coordinates (log volumes,
+  determinant-one log shapes and orientations), which have exactly as
+  many dimensions as the structure has parameters, and carried to the
+  reported variances and covariances by the delta method.
+  `method = "bootstrap"` is available for all fourteen as well.
+
+- model:
+
+  The covariance structure named by its mclust code, one of `"EII"`,
+  `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
+  `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`: the first letter
+  is the volume, the second the shape and the third the orientation,
+  each equal (`E`) or varying (`V`) across profiles, with `I` for
+  axis-aligned (no covariances). The same codes
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  takes. Use it instead of `variance_model`/`covariance_model` or
+  `volume`/`shape`/`orientation`, not together with them.
+
+- select_start:
+
+  Which start the fit reports. `"likelihood"`, the default, takes the
+  highest log likelihood across starts, preferring a converged start
+  only among those tied with it to within a relative `1e-10`.
+  `"converged"` takes the highest log likelihood among the converged
+  starts whenever at least one converged, and falls back to every start
+  when none did. Use it when an unconverged start edges out a converged
+  one by a negligible amount, which happens when a membership logit
+  creeps along a flat ridge of the likelihood: the converged start is
+  then a maximum that
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  can work with, and the other is not.
+  [`summary()`](https://rdrr.io/r/base/summary.html) and
+  `get_results(fit, "starts")` show every start either way.
+
+- prior:
+
+  `NULL`, the default, for maximum likelihood, or
+  [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
+  for maximum a posteriori estimation of the Gaussian means and
+  covariances under the conjugate prior of Fraley and Raftery (2007) —
+  mclust's `priorControl()`. The hyperparameters default to mclust's
+  `defaultPrior()` computed from the indicators being fitted, and each
+  M-step is mclust's own, so a fit from the same start reproduces
+  `mclust::Mclust(..., prior = priorControl())`. It is defined for EII,
+  VII, EEI, VEI, EVI, VVI, EEE, EEV, VEV and VVV (mclust has none for
+  VEE, EVE, VVE and EVV), for complete continuous indicators without
+  `fixed` or membership covariates; anything else raises
+  `latents_unsupported_prior`. The mixing proportions are not given a
+  prior. Following mclust, the fit's `log_likelihood` is the
+  *unpenalized* log likelihood evaluated at the posterior mode, and
+  `aic`, `bic` and their variants are computed from it with the usual
+  parameter count; EM convergence is judged on its relative change. A
+  prior's MAP step can lower that likelihood, so the decrease check made
+  under maximum likelihood is not applied.
+  `parameter_inference(method = "wald")` is refused for such a fit
+  (`latents_unsupported_inference`), because the likelihood's score is
+  not zero at a posterior mode; `method = "bootstrap"` refits every
+  resample with the same prior. The fit records the request as `prior`
+  and the resolved hyperparameters, in the indicators' units, as
+  `prior_parameters`.
+
+- noise:
+
+  `FALSE`, the default, or `TRUE` to add a noise component: one more
+  mixture component with a constant density `1 / V` over the hypervolume
+  `V` of the data, which absorbs observations no Gaussian profile
+  explains — outliers and scatter — instead of letting them distort a
+  profile (Banfield & Raftery, 1993; mclust's
+  `initialization = list(noise = )` and `Vinv`). `V` is mclust's
+  `hypvol()`: the smaller of the volumes of the data's axis-aligned and
+  principal-component-aligned bounding boxes. The component has no
+  measurement parameters; its mixing proportion is estimated with the
+  others, and, as mclust counts it, the model has two more parameters
+  (the proportion and the hypervolume), so its criteria equal mclust's.
+  A random start puts a tenth of the mass on the noise; a `start`
+  supplies `noise_probability` beside `profile_probabilities`, the two
+  summing to one. Available for continuous, complete indicators with one
+  group class (`id = NULL`, or `n_group_classes = 1`) and any of the
+  fourteen covariance structures, alone or with `prior`; otherwise
+  `latents_unsupported_noise`. In the fit, the noise component is
+  profile `0`, as in mclust's classification: `subject_profiles` is `0`
+  for an observation assigned to it, `get_results(fit, "assignments")`
+  adds a `posterior_noise` column, `get_results(fit, "posteriors")` and
+  `get_results(fit, "profile_probabilities")` have profile-`0` rows, and
+  the classification diagnostics count it as a class. `means`,
+  `variances`, `covariances`, `profile_probabilities` and
+  `subject_posteriors` describe the Gaussian profiles only, so the
+  latter two sum to one minus the noise share; the fit adds
+  `noise_probability`, `noise_posteriors`, `n_noise` and `hypervolume`.
+  Verbs that do not yet account for the component —
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  [`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md),
+  bivariate residuals,
+  [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
+  and the posterior plots — refuse such a fit with
+  `latents_unsupported_noise`.
+
+- acceleration:
+
+  `"squarem"`, the default, accelerates EM with SQUAREM (Varadhan &
+  Roland, 2008): each cycle extrapolates along the last two EM steps and
+  finishes with an ordinary EM step, and falls back to plain EM whenever
+  the extrapolated point would lower the likelihood, so the iteration
+  stays monotone and converges to the same kind of maximum. The
+  convergence test is read over a whole cycle, so it is never looser
+  than plain EM's. `"none"` runs plain EM, which follows the same path
+  as other EM implementations from the same start (mclust, Mplus) and is
+  the choice for step-by-step reproduction. `iterations` and `max_iter`
+  count EM steps either way. Fits with `prior`, and models with
+  membership covariates, always use plain EM. For EVE and VVE, whose
+  shared orientation has no closed form, each EM iteration takes a fixed
+  number of warm-started orientation steps rather than solving it (a
+  generalized EM step), under either setting; this keeps every iteration
+  monotone and makes the EM map a fixed function, which SQUAREM
+  requires.
 
 ## Value
 
@@ -305,14 +446,23 @@ Initialization alone uses indicator-mean filling. EM uses conditional
 Gaussian sufficient statistics and observed marginal densities. More
 than one group class requires more than one profile and at least one
 group with multiple individuals; these checks are necessary but do not
-establish identification. The highest finite likelihood across starts is
-returned, even if that start did not converge; inspect `converged` and
-`starts`. Profile and group-class labels are arbitrary.
+establish identification. By default the highest finite likelihood
+across starts is returned, even if that start did not converge;
+`select_start = "converged"` prefers a converged start, and `converged`
+and `starts` show which was chosen. Profile and group-class labels are
+arbitrary.
 
 ## References
 
 Vermunt, J. K. (2003). Multilevel latent class models. Sociological
 Methodology, 33, 213–239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
+
+Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
+non-Gaussian clustering. Biometrics, 49, 803–821. doi:10.2307/2532201.
+
+Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
+mixture estimation and model-based clustering. Journal of
+Classification, 24, 155–181. doi:10.1007/s00357-007-0004-5.
 
 ## See also
 
@@ -322,233 +472,279 @@ for a model in which every indicator is categorical.
 ## Examples
 
 ``` r
-set.seed(7)
-# Two kinds of school, differing only in how often a pupil scores highly.
-example_data <- data.frame(
-  school = rep(seq_len(24), each = 10),
-  school_type = rep(c("mixed", "high"), each = 120)
-)
-example_data$high <- rbinom(240, 1L,
-  ifelse(example_data$school_type == "high", 0.8, 0.2))
-example_data$score_a <- rnorm(240, mean = 2 * example_data$high)
-example_data$score_b <- rnorm(240, mean = 2 * example_data$high)
-
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+# Course sessions nested in students: engagement profiles of sessions, and
+# classes of students that differ in how often they are engaged.
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit <- multilpa(course_engagement, activity, "student",
                 n_profiles = 2, n_group_classes = 2, n_starts = 4,
                 seed = 42)
 summary(fit)
 #> Multilevel LPA: 2 profiles and 2 group classes
-#> Individuals: 240; groups: 24; parameters: 11; converged: TRUE
-#> Log likelihood: -784.609205; AIC: 1591.218
-#> BIC (groups): 1604.177; BIC (individuals): 1629.505
-#> Best likelihood replicated in 4/4 starts (absolute tolerance 0.000786).
+#> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE
+#> Log likelihood: -8439.816424; AIC: 16925.633
+#> BIC (groups): 16986.892; BIC (individuals): 17046.609
+#> Best likelihood replicated in 4/4 starts (absolute tolerance 0.00844).
 #> 
 #> -- profiles --------------------------------------------------------
-#>  profile indicator     mean variance standard_deviation
-#>        1   score_a  1.82743   1.4076             1.1864
-#>        1   score_b  1.96280   0.9206             0.9595
-#>        2   score_a  0.07696   0.9562             0.9779
-#>        2   score_b -0.04159   1.0240             1.0119
+#>  profile  indicator    mean variance standard_deviation mean_standard_error
+#>        1     browse  0.5396   0.5899             0.7680             0.02710
+#>        1   lectures  0.4274   0.8447             0.9191             0.03249
+#>        1 forum_read  0.6198   0.4815             0.6939             0.02473
+#>        1 forum_post  0.5305   0.6888             0.8299             0.02953
+#>        1 attendance  0.6490   0.3841             0.6198             0.02226
+#>        2     browse -0.7656   0.5285             0.7270             0.03121
+#>        2   lectures -0.6065   0.5384             0.7337             0.03093
+#>        2 forum_read -0.8792   0.3631             0.6026             0.02622
+#>        2 forum_post -0.7527   0.4212             0.6490             0.02768
+#>        2 attendance -0.9207   0.3736             0.6113             0.02643
+#>  variance_standard_error
+#>                  0.02948
+#>                  0.04210
+#>                  0.02440
+#>                  0.03482
+#>                  0.01956
+#>                  0.03222
+#>                  0.03209
+#>                  0.02279
+#>                  0.02608
+#>                  0.02279
 #> 
 #> -- responses -------------------------------------------------------
 #>    (no rows)
 #> 
 #> -- covariances -----------------------------------------------------
-#>  profile indicator indicator_2 covariance
-#>        1   score_a     score_a     1.4076
-#>        1   score_b     score_a     0.0000
-#>        1   score_a     score_b     0.0000
-#>        1   score_b     score_b     0.9206
-#>        2   score_a     score_a     0.9562
-#>        2   score_b     score_a     0.0000
-#>        2   score_a     score_b     0.0000
-#>        2   score_b     score_b     1.0240
+#>  profile  indicator indicator_2 covariance
+#>        1     browse      browse     0.5899
+#>        1   lectures      browse     0.0000
+#>        1 forum_read      browse     0.0000
+#>        1 forum_post      browse     0.0000
+#>        1 attendance      browse     0.0000
+#>        1     browse    lectures     0.0000
+#>        1   lectures    lectures     0.8447
+#>        1 forum_read    lectures     0.0000
+#>        1 forum_post    lectures     0.0000
+#>        1 attendance    lectures     0.0000
+#>    ... 40 more rows.  get_results(x, what = "covariances")
 #> 
 #> -- profile_probabilities -------------------------------------------
 #>  group_class profile probability group_class_probability
-#>            1       1      0.8101                   0.516
-#>            1       2      0.1899                   0.516
-#>            2       1      0.1717                   0.484
-#>            2       2      0.8283                   0.484
+#>            1       1      0.1705                  0.3253
+#>            1       2      0.8295                  0.3253
+#>            2       1      0.7859                  0.6747
+#>            2       2      0.2141                  0.6747
 #> 
 #> -- counts ----------------------------------------------------------
 #>        level class effective_count effective_proportion
-#>  individuals     1          120.27               0.5011
-#>  individuals     2          119.73               0.4989
-#>       groups     1           12.38               0.5160
-#>       groups     2           11.62               0.4840
+#>  individuals     1          834.10               0.5866
+#>  individuals     2          587.90               0.4134
+#>       groups     1           34.48               0.3253
+#>       groups     2           71.52               0.6747
 #> 
 #> -- posteriors ------------------------------------------------------
 #>  row group profile posterior modal
-#>    1     1       1 0.5306745  TRUE
-#>    2     1       1 0.0004077 FALSE
-#>    3     1       1 0.0169366 FALSE
-#>    4     1       1 0.0073025 FALSE
-#>    5     1       1 0.0813076 FALSE
-#>    6     1       1 0.0197391 FALSE
-#>    7     1       1 0.0274373 FALSE
-#>    8     1       1 0.9720359  TRUE
-#>    9     1       1 0.1178553 FALSE
-#>   10     1       1 0.1704138 FALSE
-#>    ... 470 more rows.  get_results(x, what = "posteriors")
+#>    1     1       1 9.996e-01  TRUE
+#>    2     1       1 9.851e-01  TRUE
+#>    3     1       1 2.421e-06 FALSE
+#>    4     1       1 3.863e-06 FALSE
+#>    5     1       1 5.749e-06 FALSE
+#>    6     1       1 2.278e-05 FALSE
+#>    7     1       1 2.301e-05 FALSE
+#>    8     1       1 1.107e-05 FALSE
+#>    9     1       1 2.173e-06 FALSE
+#>   10     1       1 9.510e-06 FALSE
+#>    ... 2834 more rows.  get_results(x, what = "posteriors")
 #> 
 #> -- group_posteriors ------------------------------------------------
 #>  group group_size log_likelihood group_class posterior modal
-#>      1         10         -34.41           1 9.332e-03 FALSE
-#>      2         10         -29.65           1 1.057e-03 FALSE
-#>      3         10         -37.14           1 4.329e-01 FALSE
-#>      4         10         -30.63           1 1.013e-03 FALSE
-#>      5         10         -31.67           1 1.539e-01 FALSE
-#>      6         10         -30.04           1 9.911e-06 FALSE
-#>      7         10         -33.47           1 1.742e-04 FALSE
-#>      8         10         -32.82           1 7.818e-04 FALSE
-#>      9         10         -33.93           1 1.409e-03 FALSE
-#>     10         10         -32.16           1 3.257e-04 FALSE
-#>    ... 38 more rows.  get_results(x, what = "group_posteriors")
+#>      1         13         -61.52           1 1.000e+00  TRUE
+#>      2         13         -71.94           1 1.000e+00  TRUE
+#>      3         14         -76.69           1 6.005e-10 FALSE
+#>      4         13         -67.56           1 1.327e-09 FALSE
+#>      5         14         -78.80           1 1.000e+00  TRUE
+#>      6         12         -80.90           1 1.984e-02 FALSE
+#>      7         15         -89.36           1 1.123e-09 FALSE
+#>      8         14         -85.22           1 9.989e-01  TRUE
+#>      9         14         -83.80           1 4.309e-10 FALSE
+#>     10         15         -82.06           1 1.000e+00  TRUE
+#>    ... 202 more rows.  get_results(x, what = "group_posteriors")
 #> 
 #> -- assignments -----------------------------------------------------
-#>  school score_a  score_b profile group_class uncertainty posterior_profile_1
-#>       1  0.4453  2.20269       1           2   0.4693255           0.5306745
-#>       1  1.5699 -2.30855       2           2   0.0004077           0.0004077
-#>       1  0.6884 -0.05664       2           2   0.0169366           0.0169366
-#>       1 -0.1776  0.06284       2           2   0.0073025           0.0073025
-#>       1  0.7292  0.71023       2           2   0.0813076           0.0813076
-#>       1  1.5333 -0.59231       2           2   0.0197391           0.0197391
-#>       1  0.5066  0.29852       2           2   0.0274373           0.0274373
-#>       1  2.0333  2.64254       1           2   0.0279641           0.9720359
-#>       1 -1.4676  2.11280       2           2   0.1178553           0.1178553
-#>       1  1.0192  0.91778       2           2   0.1704138           0.1704138
-#>  posterior_profile_2
-#>              0.46933
-#>              0.99959
-#>              0.98306
-#>              0.99270
-#>              0.91869
-#>              0.98026
-#>              0.97256
-#>              0.02796
-#>              0.88214
-#>              0.82959
-#>    ... 230 more rows.  get_results(x, what = "assignments")
+#>  student browse lectures forum_read forum_post attendance profile group_class
+#>        1   0.73    -0.08       0.30       0.67       0.72       1           1
+#>        1   0.68     0.53      -0.02      -0.55       0.70       1           1
+#>        1  -1.51    -0.51      -0.91      -0.80      -0.97       2           1
+#>        1   0.64    -1.02      -1.62      -1.20      -1.26       2           1
+#>        1  -0.94    -0.37      -0.71      -0.28      -1.52       2           1
+#>        1  -0.36    -0.46      -0.77      -0.43      -1.34       2           1
+#>        1   0.38    -1.85      -0.84      -1.09      -1.12       2           1
+#>        1  -1.44     0.66      -0.67      -1.67      -1.00       2           1
+#>        1  -0.76    -0.43      -1.04      -0.69      -1.37       2           1
+#>        1   0.26    -0.95      -0.51      -1.89      -1.45       2           1
+#>  uncertainty posterior_profile_1 posterior_profile_2
+#>    4.436e-04           9.996e-01           0.0004436
+#>    1.485e-02           9.851e-01           0.0148535
+#>    2.421e-06           2.421e-06           0.9999976
+#>    3.863e-06           3.863e-06           0.9999961
+#>    5.749e-06           5.749e-06           0.9999943
+#>    2.278e-05           2.278e-05           0.9999772
+#>    2.301e-05           2.301e-05           0.9999770
+#>    1.107e-05           1.107e-05           0.9999889
+#>    2.173e-06           2.173e-06           0.9999978
+#>    9.510e-06           9.510e-06           0.9999905
+#>    ... 1412 more rows.  get_results(x, what = "assignments")
 #> 
 #> -- classification --------------------------------------------------
 #>        level class n_modal proportion_modal estimated_n estimated_proportion
-#>  individuals     1     123           0.5125      120.27               0.5011
-#>  individuals     2     117           0.4875      119.73               0.4989
-#>       groups     1      12           0.5000       12.38               0.5160
-#>       groups     2      12           0.5000       11.62               0.4840
+#>  individuals     1     836           0.5879      834.10               0.5866
+#>  individuals     2     586           0.4121      587.90               0.4134
+#>       groups     1      35           0.3302       34.48               0.3253
+#>       groups     2      71           0.6698       71.52               0.6747
 #>  average_posterior odds_correct_classification
-#>             0.9275                       12.73
-#>             0.9470                       17.97
-#>             0.9818                       50.49
-#>             0.9498                       20.18
+#>             0.9849                       46.08
+#>             0.9818                       76.35
+#>             0.9690                       64.80
+#>             0.9920                       59.89
 #> 
 #> -- average_posteriors ----------------------------------------------
 #>        level assigned_class class n_assigned average_posterior
-#>  individuals              1     1        123           0.92747
-#>  individuals              1     2        123           0.07253
-#>  individuals              2     1        117           0.05296
-#>  individuals              2     2        117           0.94704
-#>       groups              1     1         12           0.98176
-#>       groups              1     2         12           0.01824
-#>       groups              2     1         12           0.05017
-#>       groups              2     2         12           0.94983
+#>  individuals              1     1        836          0.984935
+#>  individuals              1     2        836          0.015065
+#>  individuals              2     1        586          0.018243
+#>  individuals              2     2        586          0.981757
+#>       groups              1     1         35          0.968985
+#>       groups              1     2         35          0.031015
+#>       groups              2     1         71          0.007986
+#>       groups              2     2         71          0.992014
 #> 
 #> -- classification_errors -------------------------------------------
 #>        level true_class assigned_class probability
-#>  individuals          1              1     0.94849
-#>  individuals          1              2     0.05151
-#>  individuals          2              1     0.07451
-#>  individuals          2              2     0.92549
-#>       groups          1              1     0.95138
-#>       groups          1              2     0.04862
-#>       groups          2              1     0.01884
-#>       groups          2              2     0.98116
+#>  individuals          1              1     0.98718
+#>  individuals          1              2     0.01282
+#>  individuals          2              1     0.02142
+#>  individuals          2              2     0.97858
+#>       groups          1              1     0.98356
+#>       groups          1              2     0.01644
+#>       groups          2              1     0.01518
+#>       groups          2              2     0.98482
 #> 
 #> -- bch_weights -----------------------------------------------------
 #>        level unit assigned_class class   weight
-#>  individuals    1              1     1  1.05894
-#>  individuals    1              1     2 -0.05894
-#>  individuals    2              2     1 -0.08526
-#>  individuals    2              2     2  1.08526
-#>  individuals    3              2     1 -0.08526
-#>  individuals    3              2     2  1.08526
-#>  individuals    4              2     1 -0.08526
-#>  individuals    4              2     2  1.08526
-#>  individuals    5              2     1 -0.08526
-#>  individuals    5              2     2  1.08526
-#>    ... 518 more rows.  get_results(x, what = "bch_weights")
+#>  individuals    1              1     1  1.01327
+#>  individuals    1              1     2 -0.01327
+#>  individuals    2              1     1  1.01327
+#>  individuals    2              1     2 -0.01327
+#>  individuals    3              2     1 -0.02218
+#>  individuals    3              2     2  1.02218
+#>  individuals    4              2     1 -0.02218
+#>  individuals    4              2     2  1.02218
+#>  individuals    5              2     1 -0.02218
+#>  individuals    5              2     2  1.02218
+#>    ... 3046 more rows.  get_results(x, what = "bch_weights")
 #> 
 #> -- entropy ---------------------------------------------------------
 #>        level n_classes n_units entropy_sum relative_entropy
-#>  individuals         2     240      40.873           0.7543
-#>       groups         2      24       1.901           0.8857
+#>  individuals         2    1422      60.940           0.9382
+#>       groups         2     106       4.435           0.9396
 #> 
 #> -- residuals -------------------------------------------------------
 #>    profile indicator_1 indicator_2     kind observed expected residual
-#>  profile_1     score_a     score_b gaussian  0.11599        0  0.11599
-#>  profile_2     score_a     score_b gaussian -0.08285        0 -0.08285
-#>  effective_n statistic df p_value p_adjusted
-#>        120.3    1.2618 NA  0.2070     0.2070
-#>        119.7   -0.8971 NA  0.3697     0.3697
+#>  profile_1    lectures  attendance gaussian  0.23393        0  0.23393
+#>  profile_2  forum_read  attendance gaussian  0.22869        0  0.22869
+#>  profile_1  forum_read  attendance gaussian  0.20880        0  0.20880
+#>  profile_1  forum_post  attendance gaussian  0.20314        0  0.20314
+#>  profile_2      browse  attendance gaussian  0.19248        0  0.19248
+#>  profile_1      browse  attendance gaussian  0.17312        0  0.17312
+#>  profile_2    lectures  attendance gaussian  0.12018        0  0.12018
+#>  profile_2  forum_post  attendance gaussian  0.11883        0  0.11883
+#>  profile_2      browse  forum_read gaussian  0.10925        0  0.10925
+#>  profile_2  forum_read  forum_post gaussian  0.06676        0  0.06676
+#>  effective_n statistic df   p_value p_adjusted
+#>        834.1     6.871 NA 6.374e-12  6.374e-12
+#>        587.9     5.630 NA 1.799e-08  1.799e-08
+#>        834.1     6.109 NA 1.001e-09  1.001e-09
+#>        834.1     5.939 NA 2.867e-09  2.867e-09
+#>        587.9     4.714 NA 2.429e-06  2.429e-06
+#>        834.1     5.042 NA 4.619e-07  4.619e-07
+#>        587.9     2.921 NA 3.493e-03  3.493e-03
+#>        587.9     2.888 NA 3.883e-03  3.883e-03
+#>        587.9     2.653 NA 7.983e-03  7.983e-03
+#>        587.9     1.617 NA 1.059e-01  1.059e-01
+#>    ... 10 more rows.  get_results(x, what = "residuals")
 #> 
 #> -- information_criteria --------------------------------------------
-#>  log_likelihood n_parameters  aic  kic bic_groups bic_individual sabic_groups
-#>          -784.6           11 1591 1605       1604           1630         1570
+#>  log_likelihood n_parameters   aic   kic bic_groups bic_individual sabic_groups
+#>           -8440           23 16926 16952      16987          17047        16914
 #>  sabic_individual caic_groups caic_individual awe_groups awe_individual
-#>              1595        1615            1641       1676           1805
+#>             16974       17010           17070      17172          17404
 #>  icl_groups icl_individual clc_groups clc_individual
-#>        1608           1711       1573           1651
+#>       16996          17168      16889          17002
 #> 
 #> -- model -----------------------------------------------------------
 #>  n_observations n_informative n_groups n_profiles n_group_classes centering
-#>             240           240       24          2               2      none
+#>            1422          1422      106          2               2      none
 #>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood
-#>                   VVI           11                            11         -784.6
-#>   aic bic_groups bic_individual converged iterations boundary small_classes
-#>  1591       1604           1630      TRUE         21    FALSE         FALSE
+#>                   VVI           23                            23          -8440
+#>    aic bic_groups bic_individual converged iterations boundary small_classes
+#>  16926      16987          17047      TRUE          9    FALSE         FALSE
 #>  best_start n_best_replicated
 #>           1                 4
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters
-#>  joint             2  <NA>         -784.6         11
+#>  joint             2  <NA>          -8440         23
 #>  parameters_with_measurement converged
-#>                           11      TRUE
+#>                           23      TRUE
 #> 
 #> -- starts ----------------------------------------------------------
 #>  start log_likelihood converged iterations error boundary
-#>      1         -784.6      TRUE         21  <NA>    FALSE
-#>      2         -784.6      TRUE         24  <NA>    FALSE
-#>      3         -784.6      TRUE         21  <NA>    FALSE
-#>      4         -784.6      TRUE         24  <NA>    FALSE
+#>      1          -8440      TRUE          9  <NA>    FALSE
+#>      2          -8440      TRUE         12  <NA>    FALSE
+#>      3          -8440      TRUE          9  <NA>    FALSE
+#>      4          -8440      TRUE          9  <NA>    FALSE
 #> 
 #> -- data ------------------------------------------------------------
-#>  school score_a  score_b
-#>       1  0.4453  2.20269
-#>       1  1.5699 -2.30855
-#>       1  0.6884 -0.05664
-#>       1 -0.1776  0.06284
-#>       1  0.7292  0.71023
-#>       1  1.5333 -0.59231
-#>       1  0.5066  0.29852
-#>       1  2.0333  2.64254
-#>       1 -1.4676  2.11280
-#>       1  1.0192  0.91778
-#>    ... 230 more rows.  get_results(x, what = "data")
+#>  student browse lectures forum_read forum_post attendance
+#>        1   0.73    -0.08       0.30       0.67       0.72
+#>        1   0.68     0.53      -0.02      -0.55       0.70
+#>        1  -1.51    -0.51      -0.91      -0.80      -0.97
+#>        1   0.64    -1.02      -1.62      -1.20      -1.26
+#>        1  -0.94    -0.37      -0.71      -0.28      -1.52
+#>        1  -0.36    -0.46      -0.77      -0.43      -1.34
+#>        1   0.38    -1.85      -0.84      -1.09      -1.12
+#>        1  -1.44     0.66      -0.67      -1.67      -1.00
+#>        1  -0.76    -0.43      -1.04      -0.69      -1.37
+#>        1   0.26    -0.95      -0.51      -1.89      -1.45
+#>    ... 1412 more rows.  get_results(x, what = "data")
 #> 
 #> 19 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 as.data.frame(fit)
-#>   profile indicator        mean  variance standard_deviation
-#> 1       1   score_a  1.82742675 1.4076126          1.1864285
-#> 2       1   score_b  1.96280211 0.9206189          0.9594889
-#> 3       2   score_a  0.07696489 0.9562409          0.9778757
-#> 4       2   score_b -0.04158577 1.0239945          1.0119261
+#>    profile  indicator       mean  variance standard_deviation
+#> 1        1     browse  0.5395773 0.5898715          0.7680309
+#> 2        1   lectures  0.4274030 0.8446923          0.9190714
+#> 3        1 forum_read  0.6198248 0.4814743          0.6938835
+#> 4        1 forum_post  0.5304887 0.6887896          0.8299335
+#> 5        1 attendance  0.6490497 0.3841264          0.6197793
+#> 6        2     browse -0.7655998 0.5284684          0.7269583
+#> 7        2   lectures -0.6064852 0.5383733          0.7337392
+#> 8        2 forum_read -0.8792138 0.3631129          0.6025885
+#> 9        2 forum_post -0.7526883 0.4211623          0.6489702
+#> 10       2 attendance -0.9206600 0.3736293          0.6112522
+#>    mean_standard_error variance_standard_error
+#> 1           0.02710160              0.02948402
+#> 2           0.03248649              0.04210054
+#> 3           0.02473030              0.02439627
+#> 4           0.02953027              0.03481645
+#> 5           0.02226482              0.01955858
+#> 6           0.03121144              0.03221700
+#> 7           0.03093059              0.03209025
+#> 8           0.02621510              0.02279295
+#> 9           0.02768122              0.02607600
+#> 10          0.02642702              0.02278995
 get_results(fit, what = "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1   0.8101391               0.5159839
-#> 2           1       2   0.1898609               0.5159839
-#> 3           2       1   0.1716925               0.4840161
-#> 4           2       2   0.8283075               0.4840161
+#> 1           1       1   0.1704511               0.3252973
+#> 2           1       2   0.8295489               0.3252973
+#> 3           2       1   0.7859319               0.6747027
+#> 4           2       2   0.2140681               0.6747027
 ```

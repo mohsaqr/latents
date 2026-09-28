@@ -15,7 +15,7 @@ enumerate_classes(
   id,
   n_profiles = 1:4,
   n_group_classes = 1:3,
-  model = NULL,
+  model = "basic",
   seed = NULL,
   ...
 )
@@ -33,7 +33,13 @@ enumerate_classes(
 
 - id:
 
-  Group identifier column name.
+  The column that identifies the groups the observations are nested in
+  (students in schools, reports in students). `NULL` enumerates
+  single-level models, with a message;
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  and
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
+  fit those by name.
 
 - n_profiles:
 
@@ -41,19 +47,31 @@ enumerate_classes(
 
 - n_group_classes:
 
-  Positive integer group-class counts to try.
+  Positive integer group-class counts to try. With `id = NULL` it is 1
+  and may be left out.
 
 - model:
 
-  Covariance models to try, as the three-letter codes
+  The covariance structures to cross with the class counts. `"basic"`,
+  the default, fits the four structures that combine variances equal or
+  varying across profiles with covariances absent or present: `"EEI"`
+  (equal variances, no covariances), `"VVI"` (varying variances, no
+  covariances), `"EEE"` (one covariance matrix shared by all profiles)
+  and `"VVV"` (a covariance matrix for each profile). They are the
+  choices that matter most in practice, since omitting covariances
+  between correlated indicators makes the grid favour additional
+  profiles. `"all"` fits all 14 structures of Celeux and Govaert (1995).
+  Otherwise name the structures by their three-letter codes, as
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)'s
-  `volume`, `shape` and `orientation` name: any of `"EII"`, `"VII"`,
-  `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`, `"EVE"`,
-  `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`. Naming them crosses the
-  models with the class counts, which is the grid model-based clustering
-  is usually selected over, and adds a `model` column to the candidate
-  table. `NULL`, the default, fits whatever the other arguments already
-  asked for, and the grid is the one this verb has always fitted.
+  `model` takes them: the letters give the volume, shape and orientation
+  of each profile's covariance matrix, each equal (`E`) or varying (`V`)
+  across profiles, with `I` for no covariances. `NULL` crosses no
+  structures and fits whatever the other arguments ask for. With one
+  continuous indicator the structures reduce to equal or varying
+  variance, and codes that coincide are fitted once; with only
+  categorical indicators there is no structure to cross. A structure set
+  through `variance_model`, `covariance_model`, `volume`, `shape` or
+  `orientation` replaces the default.
 
 - seed:
 
@@ -77,6 +95,17 @@ criterion across the grid, and
 [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
 returns the fitted model for one cell of the grid.
 
+## Conditions
+
+`latents_bad_argument` when `model` names an unknown structure, when it
+is given together with another way of setting the structure, or when it
+is given although every indicator is categorical.
+
+## References
+
+Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering
+models. *Pattern Recognition*, 28(5), 781–793.
+
 ## See also
 
 [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
@@ -93,54 +122,104 @@ candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
                               n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(candidates)
 #>   n_profiles n_group_classes model log_likelihood n_parameters      aic
-#> 1          1               1   VVI      -130.6550            2 265.3100
-#> 2          2               1   VVI      -130.5921            5 271.1842
+#> 1          1               1   EEI      -130.6550            2 265.3100
+#> 2          2               1   EEI      -130.5791            4 269.1581
+#> 3          1               1   VVI      -130.6550            2 265.3100
+#> 4          2               1   VVI      -130.5920            5 271.1839
 #>        kic bic_groups bic_individual sabic_groups sabic_individual caic_groups
 #> 1 270.3100   265.9152       270.5204     259.9237         264.2039    267.9152
-#> 2 279.1842   272.6971       284.2100     257.7185         268.4188    277.6971
+#> 2 276.1581   270.3684       279.5788     258.3855         266.9458    274.3684
+#> 3 270.3100   265.9152       270.5204     259.9237         264.2039    267.9152
+#> 4 279.1839   272.6968       284.2098     257.7182         268.4185    277.6968
 #>   caic_individual awe_groups awe_individual icl_groups icl_individual
 #> 1        272.5204   276.5204       285.7307   265.9152       270.5204
-#> 2        289.2100   299.2100       450.3309   272.6971       412.3050
+#> 2        283.5788   291.5788       386.0639   270.3684       355.6432
+#> 3        272.5204   276.5204       285.7307   265.9152       270.5204
+#> 4        289.2098   299.2098       449.6156   272.6968       411.5897
 #>   clc_groups clc_individual profile_entropy group_entropy converged boundary
 #> 1   261.3100       261.3100              NA            NA      TRUE    FALSE
-#> 2   261.1842       389.2792      0.07599015            NA      TRUE    FALSE
+#> 2   261.1581       337.2225      0.45131114            NA      TRUE    FALSE
+#> 3   261.3100       261.3100              NA            NA      TRUE    FALSE
+#> 4   261.1839       388.5639      0.08114782            NA      TRUE    FALSE
 #>   n_best_replicated warnings error
 #> 1                 2           <NA>
 #> 2                 2           <NA>
+#> 3                 2           <NA>
+#> 4                 2           <NA>
 summary(candidates)
-#> Class enumeration: 2 candidates, 2 converged, 0 failed to fit
-#> 2 distinct candidate(s) are minimal under some criterion.
+#> Class enumeration: 4 candidates, 4 converged, 0 failed to fit
+#> 3 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
+#> The candidates table shows 11 of its 26 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
-#>  n_profiles n_group_classes model log_likelihood n_parameters   aic   kic
-#>           1               1   VVI         -130.7            2 265.3 270.3
-#>           2               1   VVI         -130.6            5 271.2 279.2
-#>  bic_groups bic_individual sabic_groups sabic_individual caic_groups
-#>       265.9          270.5        259.9            264.2       267.9
-#>       272.7          284.2        257.7            268.4       277.7
-#>  caic_individual awe_groups awe_individual icl_groups icl_individual clc_groups
-#>            272.5      276.5          285.7      265.9          270.5      261.3
-#>            289.2      299.2          450.3      272.7          412.3      261.2
-#>  clc_individual profile_entropy group_entropy converged boundary
-#>           261.3              NA            NA      TRUE    FALSE
-#>           389.3         0.07599            NA      TRUE    FALSE
-#>  n_best_replicated warnings error
-#>                  2           <NA>
-#>                  2           <NA>
+#>  n_profiles model log_likelihood n_parameters   aic bic_groups bic_individual
+#>           1   EEI         -130.7            2 265.3      265.9          270.5
+#>           2   EEI         -130.6            4 269.2      270.4          279.6
+#>           1   VVI         -130.7            2 265.3      265.9          270.5
+#>           2   VVI         -130.6            5 271.2      272.7          284.2
+#>  icl_individual profile_entropy converged boundary
+#>           270.5              NA      TRUE    FALSE
+#>           355.6         0.45131      TRUE    FALSE
+#>           270.5              NA      TRUE    FALSE
+#>           411.6         0.08115      TRUE    FALSE
 #> 
 #> -- criteria --------------------------------------------------------
 #>  criterion  convention n_profiles n_group_classes model value
-#>        aic        <NA>          1               1   VVI 265.3
-#>        kic        <NA>          1               1   VVI 270.3
-#>        bic      groups          1               1   VVI 265.9
-#>        bic individuals          1               1   VVI 270.5
+#>        aic        <NA>          1               1   EEI 265.3
+#>        kic        <NA>          1               1   EEI 270.3
+#>        bic      groups          1               1   EEI 265.9
+#>        bic individuals          1               1   EEI 270.5
 #>      sabic      groups          2               1   VVI 257.7
-#>      sabic individuals          1               1   VVI 264.2
-#>       caic      groups          1               1   VVI 267.9
-#>       caic individuals          1               1   VVI 272.5
-#>        awe      groups          1               1   VVI 276.5
-#>        awe individuals          1               1   VVI 285.7
+#>      sabic individuals          1               1   EEI 264.2
+#>       caic      groups          1               1   EEI 267.9
+#>       caic individuals          1               1   EEI 272.5
+#>        awe      groups          1               1   EEI 276.5
+#>        awe individuals          1               1   EEI 285.7
+#>    ... 4 more rows.  get_results(x, what = "criteria")
+#> 
+#> 2 tables above, truncated to fit. get_results(x, what = ) returns any
+#> of them whole, and get_results(x, what = "all") returns every one.
+
+# Single level, crossing class counts with two named structures:
+single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
+                                "Petal.Length", "Petal.Width"),
+                        n_profiles = 1:3, model = c("VVV", "EEE"),
+                        n_starts = 2, seed = 1)
+summary(single)
+#> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
+#> 2 distinct candidate(s) are minimal under some criterion.
+#> No candidate is selected automatically. Choose one convention and keep it.
+#> The candidates table shows 10 of its 26 columns; get_results(x, what = "candidates") returns all of them.
+#> 
+#> -- candidates ------------------------------------------------------
+#>  n_profiles model log_likelihood n_parameters   aic   bic icl_individual
+#>           1   VVV         -379.9           14 787.8 830.0          830.0
+#>           2   VVV         -214.4           29 486.7 574.0          574.0
+#>           3   VVV         -180.2           44 448.4 580.8          590.6
+#>           1   EEE         -379.9           14 787.8 830.0          830.0
+#>           2   EEE         -296.4           19 630.9 688.1          688.1
+#>           3   EEE         -256.4           24 560.7 633.0          645.6
+#>  profile_entropy converged boundary
+#>               NA      TRUE    FALSE
+#>           0.9999      TRUE    FALSE
+#>           0.9704      TRUE    FALSE
+#>               NA      TRUE    FALSE
+#>           0.9999      TRUE    FALSE
+#>           0.9616      TRUE    FALSE
+#> 
+#> -- criteria --------------------------------------------------------
+#>  criterion  convention n_profiles n_group_classes model value
+#>        aic        <NA>          3               1   VVV 448.4
+#>        kic        <NA>          3               1   VVV 495.4
+#>        bic      groups          2               1   VVV 574.0
+#>        bic individuals          2               1   VVV 574.0
+#>      sabic      groups          3               1   VVV 441.6
+#>      sabic individuals          3               1   VVV 441.6
+#>       caic      groups          2               1   VVV 603.0
+#>       caic individuals          2               1   VVV 603.0
+#>        awe      groups          2               1   VVV 806.3
+#>        awe individuals          2               1   VVV 806.3
 #>    ... 4 more rows.  get_results(x, what = "criteria")
 #> 
 #> 2 tables above, truncated to fit. get_results(x, what = ) returns any

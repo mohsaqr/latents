@@ -12,8 +12,8 @@ carries the profile number in each cell for the same reason.
 # S3 method for class 'multilpa'
 plot(
   x,
-  what = c("profiles", "bars", "heatmap", "responses", "probabilities", "sequences",
-    "sizes", "entropy", "posteriors", "avepp", "all"),
+  what = c("profiles", "bars", "heatmap", "raincloud", "responses", "probabilities",
+    "sequences", "sizes", "entropy", "posteriors", "avepp", "all"),
   data = NULL,
   scale = c("raw", "standardized"),
   category = "last",
@@ -25,6 +25,7 @@ plot(
   linetypes = NULL,
   style = .multilpa_style(),
   cell_labels = TRUE,
+  intervals = TRUE,
   ...
 )
 ```
@@ -51,9 +52,17 @@ plot(
   interval on every bar when `data` is supplied. `"heatmap"` draws them
   as a diverging grid of standard deviations from each indicator's grand
   mean, which is the quickest read when there are many indicators or
-  many profiles. `"responses"` is the categorical counterpart of
-  `"profiles"`, one line per profile across the categorical indicators,
-  showing the probability of a chosen category.
+  many profiles. `"raincloud"` shows what the means summarize: one panel
+  per indicator, and in it, for the cases assigned to each profile, a
+  density of the indicator, a box of its quartiles and median, and the
+  observations themselves. It shows the spread within each profile and
+  how far the profiles overlap. For a fit whose indicators are all
+  categorical, `"heatmap"` draws the response probabilities instead: one
+  row per profile and one column per category (a binary indicator shows
+  its last category), each cell printing its probability. `"responses"`
+  is the categorical counterpart of `"profiles"`, one line per profile
+  across the categorical indicators, showing the probability of a chosen
+  category.
 
   The two-level structure: `"probabilities"` plots profile prevalence
   within each group class, one line per group class – the quantity the
@@ -133,6 +142,15 @@ plot(
   cell, so the profile is never carried by colour alone. The numbers are
   drawn only where the cell is wide and tall enough to hold one.
 
+- intervals:
+
+  For `what = "profiles"` and `"responses"`, `TRUE` draws a 95% interval
+  on every mean or probability when the fit has standard errors (a
+  probability's interval is clipped to `[0, 1]`); the profiles are then
+  dodged apart so the whiskers stay readable. A fit without them (a
+  bound-active or unconverged fit, or a family without inference) is
+  drawn without whiskers and its subtitle says why.
+
 - ...:
 
   Further named visual constants, merged into `style`.
@@ -143,12 +161,13 @@ The fitted model, invisibly. Called for the side effect of drawing.
 
 ## Details
 
-The plot shows point estimates only. It carries no standard errors, and
-profile order is arbitrary, so two fits must have their labels aligned
-before their plots are compared. With `scale = "standardized"` the
-standard deviations are the observed indicator standard deviations, not
-the within-profile residual standard deviations, so the plotted values
-are comparable across indicators but are not effect sizes.
+`"profiles"` and `"bars"` draw 95% Wald intervals when the fit has
+standard errors; the other views show point estimates. Profile order is
+arbitrary, so two fits must have their labels aligned before their plots
+are compared. With `scale = "standardized"` the standard deviations are
+the observed indicator standard deviations, not the within-profile
+residual standard deviations, so the plotted values are comparable
+across indicators but are not effect sizes.
 
 ## See also
 
@@ -184,28 +203,30 @@ plot_views()
 #> 1       profiles measurement
 #> 2           bars measurement
 #> 3        heatmap measurement
-#> 4      responses measurement
-#> 5  probabilities   structure
-#> 6      sequences   structure
-#> 7    transitions   structure
-#> 8          sizes   structure
-#> 9        entropy diagnostics
-#> 10    posteriors diagnostics
-#> 11         avepp diagnostics
-#> 12   enumeration   selection
-#> 13           all       every
-#>                                                                  description
-#> 1     Profile means across indicators, point size showing profile prevalence
-#> 2     Profile means as grouped bars, with 95% intervals when `data` is given
-#> 3      Profile means as standard deviations from each indicator's grand mean
-#> 4                   Categorical response probabilities, one line per profile
-#> 5         Profile prevalence within each group class, the two-level quantity
-#> 6                   Each group's profile at each occasion, one row per group
-#> 7  Estimated transition matrix, one panel per group class (a transition fit)
-#> 8                  Effective number of cases in each profile, with its share
-#> 9               Per-case entropy contribution within each profile, as ridges
-#> 10                  Posterior probability of the assigned profile, as ridges
-#> 11      Average posterior probability: assigned profile by posterior profile
-#> 12        Information criteria across a candidate grid (plot an enumeration)
-#> 13       Every view above that this fit has the ingredients for, in one call
+#> 4      raincloud measurement
+#> 5      responses measurement
+#> 6  probabilities   structure
+#> 7      sequences   structure
+#> 8    transitions   structure
+#> 9          sizes   structure
+#> 10       entropy diagnostics
+#> 11    posteriors diagnostics
+#> 12         avepp diagnostics
+#> 13   enumeration   selection
+#> 14           all       every
+#>                                                                      description
+#> 1         Profile means across indicators, point size showing profile prevalence
+#> 2         Profile means as grouped bars, with 95% intervals when `data` is given
+#> 3          Profile means as standard deviations from each indicator's grand mean
+#> 4  Each indicator's distribution by assigned profile: density, box, observations
+#> 5                       Categorical response probabilities, one line per profile
+#> 6             Profile prevalence within each group class, the two-level quantity
+#> 7                       Each group's profile at each occasion, one row per group
+#> 8      Estimated transition matrix, one panel per group class (a transition fit)
+#> 9                      Effective number of cases in each profile, with its share
+#> 10                  Per-case entropy contribution within each profile, as ridges
+#> 11                      Posterior probability of the assigned profile, as ridges
+#> 12          Average posterior probability: assigned profile by posterior profile
+#> 13            Information criteria across a candidate grid (plot an enumeration)
+#> 14           Every view above that this fit has the ingredients for, in one call
 ```

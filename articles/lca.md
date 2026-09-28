@@ -36,8 +36,9 @@ kinds of indicator.
   and [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
   work on a categorical fit.
 - **Membership covariates.** `profile_covariates` and `group_covariates`
-  work with categorical indicators; standard errors are not available
-  for these fits.
+  work with categorical indicators, and
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  reports their standard errors.
 - **Transitions.**
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) accepts
   categorical indicators.
@@ -92,24 +93,25 @@ lca <- multilca(first_week, vars = activities, id = "student",
                 n_profiles = 2, n_group_classes = 2, n_starts = 3,
                 tol = 1e-10, seed = 1)
 lca
-#> Two-level latent profile analysis: 2 profiles, 2 group classes
-#> 1422 individuals in 100 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -4315.734849 | AIC: 8669.470 | BIC (groups): 8718.968
-#> Converged: TRUE | iterations: 299 | best start: 2/3
+#> Two-level latent class analysis: 2 classes, 2 group classes
+#> 1422 individuals in 100 groups; 8 categorical indicators
+#> Classes are labelled profile_1, profile_2, ... in every table.
+#> Log likelihood: -4315.734843 | AIC: 8669.470 | BIC (groups): 8718.968
+#> Converged: TRUE | iterations: 42 | best start: 1/3
 #> 
 #>  profile         indicator category probability threshold
 #>        1 time_with_friends       no      0.9368     2.696
 #>        2 time_with_friends       no      0.8324     1.603
 #>        1 time_with_friends      yes      0.0632        NA
 #>        2 time_with_friends      yes      0.1676        NA
-#>        1   on_social_media       no      0.3366    -0.679
-#>        2   on_social_media       no      0.9236     2.492
-#>        1   on_social_media      yes      0.6634        NA
-#>        2   on_social_media      yes      0.0764        NA
-#>        1    tv_video_games       no      0.6314     0.538
-#>        2    tv_video_games       no      0.8665     1.870
-#>        1    tv_video_games      yes      0.3686        NA
-#>        2    tv_video_games      yes      0.1335        NA
+#>        1   on_social_media       no      0.3364    -0.679
+#>        2   on_social_media       no      0.9235     2.491
+#>        1   on_social_media      yes      0.6636        NA
+#>        2   on_social_media      yes      0.0765        NA
+#>        1    tv_video_games       no      0.6313     0.538
+#>        2    tv_video_games       no      0.8664     1.870
+#>        1    tv_video_games      yes      0.3687        NA
+#>        2    tv_video_games      yes      0.1336        NA
 #>        1    listened_music       no      0.6464     0.603
 #>        2    listened_music       no      0.9406     2.762
 #>        1    listened_music      yes      0.3536        NA
@@ -131,39 +133,39 @@ with `"responses"`. There is one row per profile, item and category;
 ``` r
 
 get_results(lca, "responses")
-#>    profile         indicator category probability threshold
-#> 1        1 time_with_friends       no      0.9368     2.696
-#> 2        2 time_with_friends       no      0.8324     1.603
-#> 3        1 time_with_friends      yes      0.0632        NA
-#> 4        2 time_with_friends      yes      0.1676        NA
-#> 5        1   on_social_media       no      0.3366    -0.679
-#> 6        2   on_social_media       no      0.9236     2.492
-#> 7        1   on_social_media      yes      0.6634        NA
-#> 8        2   on_social_media      yes      0.0764        NA
-#> 9        1    tv_video_games       no      0.6314     0.538
-#> 10       2    tv_video_games       no      0.8665     1.870
-#> 11       1    tv_video_games      yes      0.3686        NA
-#> 12       2    tv_video_games      yes      0.1335        NA
-#> 13       1    listened_music       no      0.6464     0.603
-#> 14       2    listened_music       no      0.9406     2.762
-#> 15       1    listened_music      yes      0.3536        NA
-#> 16       2    listened_music      yes      0.0594        NA
-#> 17       1            sports       no      0.9406     2.762
-#> 18       2            sports       no      0.9159     2.388
-#> 19       1            sports      yes      0.0594        NA
-#> 20       2            sports      yes      0.0841        NA
-#> 21       1           walking       no      0.8865     2.056
-#> 22       2           walking       no      0.8365     1.633
-#> 23       1           walking      yes      0.1135        NA
-#> 24       2           walking      yes      0.1635        NA
-#> 25       1           reading       no      0.8790     1.983
-#> 26       2           reading       no      0.8917     2.108
-#> 27       1           reading      yes      0.1210        NA
-#> 28       2           reading      yes      0.1083        NA
-#> 29       1     part_time_job       no      0.9838     4.103
-#> 30       2     part_time_job       no      0.9587     3.144
-#> 31       1     part_time_job      yes      0.0162        NA
-#> 32       2     part_time_job      yes      0.0413        NA
+#>    profile         indicator category probability threshold probability_standard_error
+#> 1        1 time_with_friends       no      0.9368     2.696                    0.01281
+#> 2        2 time_with_friends       no      0.8324     1.603                    0.01525
+#> 3        1 time_with_friends      yes      0.0632        NA                    0.01281
+#> 4        2 time_with_friends      yes      0.1676        NA                    0.01525
+#> 5        1   on_social_media       no      0.3364    -0.679                    0.04591
+#> 6        2   on_social_media       no      0.9235     2.491                    0.02663
+#> 7        1   on_social_media      yes      0.6636        NA                    0.04591
+#> 8        2   on_social_media      yes      0.0765        NA                    0.02663
+#> 9        1    tv_video_games       no      0.6313     0.538                    0.02891
+#> 10       2    tv_video_games       no      0.8664     1.870                    0.01605
+#> 11       1    tv_video_games      yes      0.3687        NA                    0.02891
+#> 12       2    tv_video_games      yes      0.1336        NA                    0.01605
+#> 13       1    listened_music       no      0.6464     0.603                    0.03167
+#> 14       2    listened_music       no      0.9406     2.762                    0.01419
+#> 15       1    listened_music      yes      0.3536        NA                    0.03167
+#> 16       2    listened_music      yes      0.0594        NA                    0.01419
+#> 17       1            sports       no      0.9406     2.762                    0.01208
+#> 18       2            sports       no      0.9159     2.388                    0.01053
+#> 19       1            sports      yes      0.0594        NA                    0.01208
+#> 20       2            sports      yes      0.0841        NA                    0.01053
+#> 21       1           walking       no      0.8865     2.056                    0.01657
+#> 22       2           walking       no      0.8365     1.633                    0.01423
+#> 23       1           walking      yes      0.1135        NA                    0.01657
+#> 24       2           walking      yes      0.1635        NA                    0.01423
+#> 25       1           reading       no      0.8790     1.983                    0.01685
+#> 26       2           reading       no      0.8917     2.108                    0.01190
+#> 27       1           reading      yes      0.1210        NA                    0.01685
+#> 28       2           reading      yes      0.1083        NA                    0.01190
+#> 29       1     part_time_job       no      0.9838     4.103                    0.00625
+#> 30       2     part_time_job       no      0.9587     3.144                    0.00730
+#> 31       1     part_time_job      yes      0.0162        NA                    0.00625
+#> 32       2     part_time_job      yes      0.0413        NA                    0.00730
 ```
 
 To see them, we call
@@ -187,10 +189,10 @@ with `"profile_probabilities"`, and to compare the classes,
 
 get_results(lca, "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1      0.7082                   0.483
-#> 2           1       2      0.2918                   0.483
-#> 3           2       1      0.0752                   0.517
-#> 4           2       2      0.9248                   0.517
+#> 1           1       1      0.7080                   0.483
+#> 2           1       2      0.2920                   0.483
+#> 3           2       1      0.0751                   0.517
+#> 4           2       2      0.9249                   0.517
 ```
 
 ``` r
@@ -238,47 +240,49 @@ with `"responses"`.
 ``` r
 
 get_results(mixed)
-#>   profile indicator mean variance standard_deviation
-#> 1       1     happy 5.98    0.659              0.812
-#> 2       1   relaxed 5.77    1.017              1.008
-#> 3       1 exhausted 2.33    1.977              1.406
-#> 4       2     happy 3.90    1.963              1.401
-#> 5       2   relaxed 3.66    1.946              1.395
-#> 6       2 exhausted 4.10    2.842              1.686
+#> No standard errors in this table: data must reproduce the original indicator data, including row order and names.
+#>   profile indicator mean variance standard_deviation mean_standard_error variance_standard_error
+#> 1       1     happy 3.90    1.963              1.401                  NA                      NA
+#> 2       1   relaxed 3.66    1.946              1.395                  NA                      NA
+#> 3       1 exhausted 4.10    2.842              1.686                  NA                      NA
+#> 4       2     happy 5.98    0.659              0.812                  NA                      NA
+#> 5       2   relaxed 5.77    1.016              1.008                  NA                      NA
+#> 6       2 exhausted 2.32    1.976              1.406                  NA                      NA
 get_results(mixed, "responses")
-#>    profile         indicator category probability threshold
-#> 1        1 time_with_friends       no      0.8047     1.416
-#> 2        2 time_with_friends       no      0.9309     2.601
-#> 3        1 time_with_friends      yes      0.1953        NA
-#> 4        2 time_with_friends      yes      0.0691        NA
-#> 5        1   on_social_media       no      0.7656     1.184
-#> 6        2   on_social_media       no      0.6381     0.567
-#> 7        1   on_social_media      yes      0.2344        NA
-#> 8        2   on_social_media      yes      0.3619        NA
-#> 9        1    tv_video_games       no      0.8209     1.523
-#> 10       2    tv_video_games       no      0.7369     1.030
-#> 11       1    tv_video_games      yes      0.1791        NA
-#> 12       2    tv_video_games      yes      0.2631        NA
-#> 13       1    listened_music       no      0.8125     1.466
-#> 14       2    listened_music       no      0.8394     1.654
-#> 15       1    listened_music      yes      0.1875        NA
-#> 16       2    listened_music      yes      0.1606        NA
-#> 17       1            sports       no      0.9102     2.316
-#> 18       2            sports       no      0.9385     2.726
-#> 19       1            sports      yes      0.0898        NA
-#> 20       2            sports      yes      0.0615        NA
-#> 21       1           walking       no      0.8252     1.552
-#> 22       2           walking       no      0.8821     2.012
-#> 23       1           walking      yes      0.1748        NA
-#> 24       2           walking      yes      0.1179        NA
-#> 25       1           reading       no      0.9099     2.313
-#> 26       2           reading       no      0.8670     1.874
-#> 27       1           reading      yes      0.0901        NA
-#> 28       2           reading      yes      0.1330        NA
-#> 29       1     part_time_job       no      0.9640     3.288
-#> 30       2     part_time_job       no      0.9721     3.549
-#> 31       1     part_time_job      yes      0.0360        NA
-#> 32       2     part_time_job      yes      0.0279        NA
+#> No standard errors in this table: data must reproduce the original indicator data, including row order and names.
+#>    profile         indicator category probability threshold probability_standard_error
+#> 1        1 time_with_friends       no      0.9309     2.601                         NA
+#> 2        2 time_with_friends       no      0.8046     1.415                         NA
+#> 3        1 time_with_friends      yes      0.0691        NA                         NA
+#> 4        2 time_with_friends      yes      0.1954        NA                         NA
+#> 5        1   on_social_media       no      0.6381     0.567                         NA
+#> 6        2   on_social_media       no      0.7657     1.184                         NA
+#> 7        1   on_social_media      yes      0.3619        NA                         NA
+#> 8        2   on_social_media      yes      0.2343        NA                         NA
+#> 9        1    tv_video_games       no      0.7370     1.030                         NA
+#> 10       2    tv_video_games       no      0.8210     1.523                         NA
+#> 11       1    tv_video_games      yes      0.2630        NA                         NA
+#> 12       2    tv_video_games      yes      0.1790        NA                         NA
+#> 13       1    listened_music       no      0.8394     1.654                         NA
+#> 14       2    listened_music       no      0.8125     1.466                         NA
+#> 15       1    listened_music      yes      0.1606        NA                         NA
+#> 16       2    listened_music      yes      0.1875        NA                         NA
+#> 17       1            sports       no      0.9385     2.726                         NA
+#> 18       2            sports       no      0.9102     2.316                         NA
+#> 19       1            sports      yes      0.0615        NA                         NA
+#> 20       2            sports      yes      0.0898        NA                         NA
+#> 21       1           walking       no      0.8821     2.012                         NA
+#> 22       2           walking       no      0.8251     1.552                         NA
+#> 23       1           walking      yes      0.1179        NA                         NA
+#> 24       2           walking      yes      0.1749        NA                         NA
+#> 25       1           reading       no      0.8670     1.874                         NA
+#> 26       2           reading       no      0.9100     2.313                         NA
+#> 27       1           reading      yes      0.1330        NA                         NA
+#> 28       2           reading      yes      0.0900        NA                         NA
+#> 29       1     part_time_job       no      0.9720     3.549                         NA
+#> 30       2     part_time_job       no      0.9640     3.289                         NA
+#> 31       1     part_time_job      yes      0.0280        NA                         NA
+#> 32       2     part_time_job      yes      0.0360        NA                         NA
 ```
 
 ## Reference

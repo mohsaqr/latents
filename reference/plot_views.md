@@ -25,28 +25,30 @@ plot_views()
 #> 1       profiles measurement
 #> 2           bars measurement
 #> 3        heatmap measurement
-#> 4      responses measurement
-#> 5  probabilities   structure
-#> 6      sequences   structure
-#> 7    transitions   structure
-#> 8          sizes   structure
-#> 9        entropy diagnostics
-#> 10    posteriors diagnostics
-#> 11         avepp diagnostics
-#> 12   enumeration   selection
-#> 13           all       every
-#>                                                                  description
-#> 1     Profile means across indicators, point size showing profile prevalence
-#> 2     Profile means as grouped bars, with 95% intervals when `data` is given
-#> 3      Profile means as standard deviations from each indicator's grand mean
-#> 4                   Categorical response probabilities, one line per profile
-#> 5         Profile prevalence within each group class, the two-level quantity
-#> 6                   Each group's profile at each occasion, one row per group
-#> 7  Estimated transition matrix, one panel per group class (a transition fit)
-#> 8                  Effective number of cases in each profile, with its share
-#> 9               Per-case entropy contribution within each profile, as ridges
-#> 10                  Posterior probability of the assigned profile, as ridges
-#> 11      Average posterior probability: assigned profile by posterior profile
-#> 12        Information criteria across a candidate grid (plot an enumeration)
-#> 13       Every view above that this fit has the ingredients for, in one call
+#> 4      raincloud measurement
+#> 5      responses measurement
+#> 6  probabilities   structure
+#> 7      sequences   structure
+#> 8    transitions   structure
+#> 9          sizes   structure
+#> 10       entropy diagnostics
+#> 11    posteriors diagnostics
+#> 12         avepp diagnostics
+#> 13   enumeration   selection
+#> 14           all       every
+#>                                                                      description
+#> 1         Profile means across indicators, point size showing profile prevalence
+#> 2         Profile means as grouped bars, with 95% intervals when `data` is given
+#> 3          Profile means as standard deviations from each indicator's grand mean
+#> 4  Each indicator's distribution by assigned profile: density, box, observations
+#> 5                       Categorical response probabilities, one line per profile
+#> 6             Profile prevalence within each group class, the two-level quantity
+#> 7                       Each group's profile at each occasion, one row per group
+#> 8      Estimated transition matrix, one panel per group class (a transition fit)
+#> 9                      Effective number of cases in each profile, with its share
+#> 10                  Per-case entropy contribution within each profile, as ridges
+#> 11                      Posterior probability of the assigned profile, as ridges
+#> 12          Average posterior probability: assigned profile by posterior profile
+#> 13            Information criteria across a candidate grid (plot an enumeration)
+#> 14           Every view above that this fit has the ingredients for, in one call
 ```

@@ -19,7 +19,7 @@ categorical argument."><meta property="og:image" content="https://pak.dynasite.o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,11 +32,14 @@ categorical argument."><meta property="og:image" content="https://pak.dynasite.o
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -100,7 +103,8 @@ model.</p></dd>
 
 
 <dt id="arg-n-group-classes">n_group_classes<a class="anchor" aria-label="anchor" href="#arg-n-group-classes"></a></dt>
-<dd><p>Number of group-level latent classes.</p></dd>
+<dd><p>Number of group-level latent classes. Defaults to 2,
+or to 1 when <code>id = NULL</code> (a single-level model has no second level).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -137,25 +141,38 @@ indicator is categorical by definition here. Every condition of
 <span class="r-in"><span>                id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>                n_starts <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"responses"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    profile         indicator category probability threshold</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1 time_with_friends       no  0.97598029  3.704567</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        2 time_with_friends       no  0.83034660  1.588086</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 time_with_friends      yes  0.02401971        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        2 time_with_friends      yes  0.16965340        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1   on_social_media       no  0.37231410 -0.522302</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2   on_social_media       no  0.98998036  4.593138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7        1   on_social_media      yes  0.62768590        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2   on_social_media      yes  0.01001964        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        1    tv_video_games       no  0.73677805  1.029289</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2    tv_video_games       no  0.86637631  1.869292</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11       1    tv_video_games      yes  0.26322195        NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12       2    tv_video_games      yes  0.13362369        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    profile         indicator category probability  threshold</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1 time_with_friends       no 0.829754725  1.5838900</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        2 time_with_friends       no 0.975646057  3.6904061</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 time_with_friends      yes 0.170245275         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        2 time_with_friends      yes 0.024353943         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1   on_social_media       no 0.993592689  5.0438877</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2   on_social_media       no 0.372950953 -0.5195778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7        1   on_social_media      yes 0.006407311         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2   on_social_media      yes 0.627049047         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        1    tv_video_games       no 0.866996085  1.8746559</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2    tv_video_games       no 0.737009549  1.0304831</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11       1    tv_video_games      yes 0.133003915         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12       2    tv_video_games      yes 0.262990451         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    probability_standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                  0.04351232</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                  0.01711346</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                  0.04351232</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                  0.01711346</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                  0.12751236</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                  0.06850839</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                  0.12751236</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                  0.06850839</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                  0.04453705</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                 0.03725211</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                 0.04453705</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                 0.03725211</span>
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   group_class profile  probability group_class_probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1       1 1.000000e+00               0.4532333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1       2 3.822445e-11               0.4532333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2       1 2.195735e-01               0.5467667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2       2 7.804265e-01               0.5467667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1       1 7.761472e-01               0.5456323</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1       2 2.238528e-01               0.5456323</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2       1 7.852852e-08               0.4543677</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2       2 9.999999e-01               0.4543677</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -14,6 +14,12 @@ get_group_tna(x, ...)
 
 # S3 method for class 'multilpa_transitions'
 get_group_tna(x, label = "Group class", ...)
+
+# S3 method for class 'multilpa'
+get_group_tna(x, label = "Group class", ...)
+
+# S3 method for class 'multilpa_covariates'
+get_group_tna(x, label = "Group class", ...)
 ```
 
 ## Arguments
@@ -21,7 +27,11 @@ get_group_tna(x, label = "Group class", ...)
 - x:
 
   A fitted model from
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md).
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md), or a
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  /
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  fit made with `time =`, whose modal profile sequences are then used.
 
 - ...:
 
@@ -63,14 +73,14 @@ if (requireNamespace("tna", quietly = TRUE)) {
 #> 
 #> Transition Probability Matrix :
 #> 
-#>           profile_1  profile_2
-#> profile_1 0.9421132 0.05788681
-#> profile_2 0.2952643 0.70473570
+#>           profile_1 profile_2
+#> profile_1 0.6043454 0.3956546
+#> profile_2 0.1194501 0.8805499
 #> 
 #> Initial Probabilities : 
 #> 
 #> profile_1 profile_2 
-#> 0.7534105 0.2465895 
+#> 0.1913555 0.8086445 
 #> 
 #> Group class 2 :
 #> State Labels : 
@@ -79,13 +89,13 @@ if (requireNamespace("tna", quietly = TRUE)) {
 #> 
 #> Transition Probability Matrix :
 #> 
-#>           profile_1 profile_2
-#> profile_1 0.6043167 0.3956833
-#> profile_2 0.1194480 0.8805520
+#>           profile_1  profile_2
+#> profile_1 0.9421240 0.05787602
+#> profile_2 0.2953049 0.70469511
 #> 
 #> Initial Probabilities : 
 #> 
 #> profile_1 profile_2 
-#>  0.191336  0.808664 
+#> 0.7534435 0.2465565 
 #> 
 ```

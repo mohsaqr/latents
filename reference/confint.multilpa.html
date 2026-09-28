@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,11 +20,14 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -83,7 +86,7 @@ raises <code>latents_held_parameter</code>, because a held value has no interval
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to <code><a href="parameter_inference.html">parameter_inference()</a></code>, including
-<code>method = "bootstrap"</code> for a structure the Wald path cannot chart.</p></dd>
+<code>method = "bootstrap"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -108,18 +111,18 @@ intervals are conditional on the held measurement solution.</p>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">example_data</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"score_a"</span>, <span class="st">"score_b"</span><span class="op">)</span>, <span class="st">"school"</span>,</span></span>
 <span class="r-in"><span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">example_data</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                      2.5%       97.5%</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.mean.profile_1.score_a          -0.5083842790 -0.02206750</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.mean.profile_1.score_b          -0.1391045565  0.38197993</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.mean.profile_2.score_a           0.8825060016  1.15167041</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.mean.profile_2.score_b          -1.0313876060  0.00900769</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.variance.profile_1.score_a       0.3548112819  0.84763384</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.variance.profile_1.score_b       0.6676711274  1.40800776</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.variance.profile_2.score_a       0.0005662474  0.08469865</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.variance.profile_2.score_b       0.1139680930  1.20162877</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile.probability.profile_1.group_class_1  0.6693038676  0.93195638</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile.probability.profile_2.group_class_1  0.0680436177  0.33069613</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> group.probability.group_class_1              1.0000000000  1.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                    2.5%        97.5%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.mean.profile_1.score_a          -0.50822695 -0.021900709</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.mean.profile_1.score_b          -0.13911009  0.381943368</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.mean.profile_2.score_a           0.88251814  1.151708546</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.mean.profile_2.score_b          -1.03179187  0.008913755</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.variance.profile_1.score_a       0.39917942  0.905927249</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.variance.profile_1.score_b       0.72646619  1.482528823</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.variance.profile_2.score_a       0.01589038  0.114255437</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> measurement.variance.profile_2.score_b       0.28766115  1.503720763</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile.probability.profile_1.group_class_1  0.63826878  0.901493808</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile.probability.profile_2.group_class_1  0.09850619  0.361731225</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> group.probability.group_class_1              1.00000000  1.000000000</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

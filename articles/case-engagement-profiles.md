@@ -257,13 +257,13 @@ fit
 
     #> Two-level latent profile analysis: 3 profiles, 3 group classes
     #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-    #> Log likelihood: -8348.428714 | AIC: 16772.857 | BIC (groups): 16874.068
-    #> Converged: TRUE | iterations: 164 | best start: 4/10
+    #> Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068
+    #> Converged: TRUE | iterations: 42 | best start: 1/10
     #> 
     #>  profile  browse lectures forum_read forum_post attendance count proportion
-    #>        1  0.7088   0.7134     0.8109     0.7502     1.1326 369.2     0.2596
-    #>        2  0.3870   0.1855     0.4463     0.3375     0.2562 477.9     0.3361
-    #>        3 -0.7768  -0.6123    -0.8914    -0.7623    -0.9400 575.0     0.4043
+    #>        1  0.3870   0.1856     0.4464     0.3376     0.2564   478     0.3362
+    #>        2 -0.7768  -0.6123    -0.8914    -0.7623    -0.9400   575     0.4043
+    #>        3  0.7089   0.7135     0.8109     0.7503     1.1328   369     0.2595
     #> 
     #> Variances and standard errors: get_results(x, "profiles"). 
     #> Every other table: get_results(x, what = ), or get_results(x, "all").
@@ -308,12 +308,12 @@ get_results(fit, "counts")
 ```
 
     #>         level class effective_count effective_proportion
-    #> 1 individuals     1          369.17               0.2596
-    #> 2 individuals     2          477.88               0.3361
-    #> 3 individuals     3          574.95               0.4043
+    #> 1 individuals     1          478.03               0.3362
+    #> 2 individuals     2          574.96               0.4043
+    #> 3 individuals     3          369.01               0.2595
     #> 4      groups     1           27.65               0.2609
-    #> 5      groups     2           47.32               0.4464
-    #> 6      groups     3           31.03               0.2927
+    #> 5      groups     2           31.03               0.2927
+    #> 6      groups     3           47.32               0.4464
 
 The **lower-activity** profile has the largest effective membership,
 accounting for 575.0 enrolments, or 40.4% of the total. The
@@ -338,15 +338,15 @@ get_results(fit, "profile_probabilities")
 ```
 
     #>   group_class profile probability group_class_probability
-    #> 1           1       1     0.39806                  0.2609
-    #> 2           1       2     0.54671                  0.2609
-    #> 3           1       3     0.05523                  0.2609
-    #> 4           2       1     0.29483                  0.4464
-    #> 5           2       2     0.38802                  0.4464
-    #> 6           2       3     0.31715                  0.4464
-    #> 7           3       1     0.08322                  0.2927
-    #> 8           3       2     0.07012                  0.2927
-    #> 9           3       3     0.84666                  0.2927
+    #> 1           1       1     0.54695                  0.2609
+    #> 2           1       2     0.05523                  0.2609
+    #> 3           1       3     0.39782                  0.2609
+    #> 4           2       1     0.07013                  0.2927
+    #> 5           2       2     0.84667                  0.2927
+    #> 6           2       3     0.08320                  0.2927
+    #> 7           3       1     0.38811                  0.4464
+    #> 8           3       2     0.31716                  0.4464
+    #> 9           3       3     0.29472                  0.4464
 
 Student class 1 is characterized mainly by the **higher-activity** and
 **intermediate-activity** profiles. Conditional on membership in class
@@ -396,16 +396,16 @@ get_results(fit, "starts")
 ```
 
     #>    start log_likelihood converged iterations error boundary
-    #> 1      1          -8348      TRUE        168  <NA>    FALSE
-    #> 2      2          -8348      TRUE        155  <NA>    FALSE
-    #> 3      3          -8348      TRUE        169  <NA>    FALSE
-    #> 4      4          -8348      TRUE        164  <NA>    FALSE
-    #> 5      5          -8348      TRUE        165  <NA>    FALSE
-    #> 6      6          -8348      TRUE        160  <NA>    FALSE
-    #> 7      7          -8348      TRUE        165  <NA>    FALSE
-    #> 8      8          -8348      TRUE        158  <NA>    FALSE
-    #> 9      9          -8348      TRUE        169  <NA>    FALSE
-    #> 10    10          -8348      TRUE        138  <NA>    FALSE
+    #> 1      1          -8348      TRUE         42  <NA>    FALSE
+    #> 2      2          -8348      TRUE         33  <NA>    FALSE
+    #> 3      3          -8348      TRUE         42  <NA>    FALSE
+    #> 4      4          -8348      TRUE         39  <NA>    FALSE
+    #> 5      5          -8348      TRUE         33  <NA>    FALSE
+    #> 6      6          -8348      TRUE         33  <NA>    FALSE
+    #> 7      7          -8348      TRUE         33  <NA>    FALSE
+    #> 8      8          -8348      TRUE         42  <NA>    FALSE
+    #> 9      9          -8348      TRUE         42  <NA>    FALSE
+    #> 10    10          -8348      TRUE         42  <NA>    FALSE
 
 All ten starts converge to a log likelihood of approximately -8348.4,
 and none has an active variance bound. The identical likelihoods across
@@ -453,19 +453,19 @@ get_results(fit, "sequences", format = "wide") |> head(4)
 ```
 
     #>   group group_class sequence_1 sequence_2 sequence_3 sequence_4 sequence_5 sequence_6
-    #> 1     1           3          2          2          3          3          3          3
-    #> 2     2           3          3          3          3          3          3          3
-    #> 3     3           1          1          2          2          2          2          2
-    #> 4     4           1          1          2          1          1          2          2
+    #> 1     1           2          1          1          2          2          2          2
+    #> 2     2           2          2          2          2          2          2          2
+    #> 3     3           1          3          1          1          1          1          1
+    #> 4     4           1          3          1          3          3          1          1
     #>   sequence_7 sequence_8 sequence_9 sequence_10 sequence_11 sequence_12 sequence_13
-    #> 1          3          3          3           3           3           3           3
-    #> 2          3          3          3           3           3           3           3
-    #> 3          2          1          2           2           2           2           1
-    #> 4          2          1          2           1           2           2           2
+    #> 1          2          2          2           2           2           2           2
+    #> 2          2          2          2           2           2           2           2
+    #> 3          1          3          1           1           1           1           3
+    #> 4          1          3          1           3           1           1           1
     #>   sequence_14 sequence_15
     #> 1        <NA>        <NA>
     #> 2        <NA>        <NA>
-    #> 3           1        <NA>
+    #> 3           3        <NA>
     #> 4        <NA>        <NA>
 
 Students 1 and 2 are assigned to student class 3. Student 1 is assigned
@@ -494,8 +494,8 @@ get_results(fit, "sequence_summary")
 
     #>   group_class groups observations mean_length median_length shortest longest complete gaps
     #> 1           1     25          330       13.20          13.0       11      15        4    0
-    #> 2           2     51          689       13.51          14.0       10      15       13    0
-    #> 3           3     30          403       13.43          13.5       10      15        7    0
+    #> 2           2     30          403       13.43          13.5       10      15        7    0
+    #> 3           3     51          689       13.51          14.0       10      15       13    0
 
 The modal assignments place 25, 51, and 30 students in classes 1, 2, and
 3, respectively. Their mean sequence lengths are 13.20, 13.51, and 13.43

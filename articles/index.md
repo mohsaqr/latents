@@ -2,6 +2,10 @@
 
 ### Vignettes
 
+- [Latent profile analysis: a complete
+  workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.md):
+- [Latent class analysis: a complete
+  workflow](https://pak.dynasite.org/latents/articles/workflow-lca.md):
 - [Multilevel latent profile
   analysis](https://pak.dynasite.org/latents/articles/lpa.md):
 - [Evaluating a multilevel latent profile
@@ -12,6 +16,8 @@
   analysis](https://pak.dynasite.org/latents/articles/lca.md):
 - [Latent transition
   analysis](https://pak.dynasite.org/latents/articles/lta.md):
+- [Mixture
+  regression](https://pak.dynasite.org/latents/articles/mixture-regression.md):
 
 ### Case studies
 

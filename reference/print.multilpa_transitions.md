@@ -39,23 +39,18 @@ fitted quantities.
 ## Examples
 
 ``` r
-set.seed(7)
-example_data <- data.frame(
-  person = rep(seq_len(30), each = 5), wave = rep(seq_len(5), times = 30)
-)
-example_data$score_a <- stats::rnorm(nrow(example_data))
-example_data$score_b <- stats::rnorm(nrow(example_data))
-fit <- lta(example_data, c("score_a", "score_b"), "person",
-                       n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+fit <- lta(subset(course_engagement, student <= 40),
+           c("browse", "lectures", "forum_read"), "student",
+           n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
 print(fit)
 #> Latent transition model: 2 profiles, 1 group class
-#> 150 observations in 30 groups, up to 5 occasions (balanced)
-#> Log likelihood: -418.211098; 11 parameters; BIC (groups): 873.8354
-#> Converged: TRUE after 116 iterations; best of 2 starts
+#> 547 observations in 40 groups, up to 15 occasions (unbalanced, observed grid)
+#> Log likelihood: -2025.406100; 15 parameters; BIC (groups): 4106.1454
+#> Converged: TRUE after 8 iterations; best of 2 starts
 #> 
-#>  profile    score_a     score_b     count proportion
-#>        1 0.09137155 -0.09015126 135.99729 0.90664862
-#>        2 0.76447843  0.89468659  14.00271 0.09335138
+#>  profile     browse   lectures forum_read    count proportion
+#>        1  0.5552352  0.4372193  0.6089409 359.9133  0.6579768
+#>        2 -0.8706168 -0.6264837 -0.9319730 187.0867  0.3420232
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").

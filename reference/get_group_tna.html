@@ -13,7 +13,7 @@ transition probabilities and raises latents_empty_transition_row."><meta propert
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,11 +26,14 @@ transition probabilities and raises latents_empty_transition_row."><meta propert
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -67,6 +70,12 @@ transition probabilities and raises <code>latents_empty_transition_row</code>.</
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_group_tna</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa_transitions'</span></span>
+<span><span class="fu">get_group_tna</span><span class="op">(</span><span class="va">x</span>, label <span class="op">=</span> <span class="st">"Group class"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'multilpa'</span></span>
+<span><span class="fu">get_group_tna</span><span class="op">(</span><span class="va">x</span>, label <span class="op">=</span> <span class="st">"Group class"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'multilpa_covariates'</span></span>
 <span><span class="fu">get_group_tna</span><span class="op">(</span><span class="va">x</span>, label <span class="op">=</span> <span class="st">"Group class"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -75,7 +84,8 @@ transition probabilities and raises <code>latents_empty_transition_row</code>.</
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A fitted model from <code><a href="lta.html">lta()</a></code>.</p></dd>
+<dd><p>A fitted model from <code><a href="lta.html">lta()</a></code>, or a <code><a href="multilpa.html">multilpa()</a></code> / <code><a href="multilca.html">multilca()</a></code> fit
+made with <code>time =</code>, whose modal profile sequences are then used.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -113,14 +123,14 @@ transition probabilities and raises <code>latents_empty_transition_row</code>.</
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Transition Probability Matrix :</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           profile_1  profile_2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile_1 0.9421132 0.05788681</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile_2 0.2952643 0.70473570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           profile_1 profile_2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile_1 0.6043454 0.3956546</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile_2 0.1194501 0.8805499</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Initial Probabilities : </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> profile_1 profile_2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.7534105 0.2465895 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.1913555 0.8086445 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Group class 2 :</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> State Labels : </span>
@@ -129,14 +139,14 @@ transition probabilities and raises <code>latents_empty_transition_row</code>.</
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Transition Probability Matrix :</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           profile_1 profile_2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile_1 0.6043167 0.3956833</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile_2 0.1194480 0.8805520</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           profile_1  profile_2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile_1 0.9421240 0.05787602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile_2 0.2953049 0.70469511</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Initial Probabilities : </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> profile_1 profile_2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.191336  0.808664 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.7534435 0.2465565 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>

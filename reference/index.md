@@ -4,6 +4,10 @@
 
 Two-level latent profile, latent class and latent transition models.
 
+- [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) : Latent
+  profile analysis
+- [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) : Latent
+  class analysis
 - [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
   : Fit a two-level latent profile model
 - [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
@@ -14,6 +18,9 @@ Two-level latent profile, latent class and latent transition models.
   : Fit a two-level model in stages, holding the measurement solution
 - [`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md)
   : Build starting values for a multilevel latent profile fit
+- [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
+  [`print(`*`<latents_prior>`*`)`](https://pak.dynasite.org/latents/reference/prior_control.md)
+  : Conjugate prior for Gaussian mixture estimation
 
 ## Results
 
@@ -33,6 +40,10 @@ Every table of a fitted model, retrieved by name.
 
 ## Evaluating a model
 
+- [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  : Compare latent profile models
+- [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
+  : Compare latent class models
 - [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
   : Enumerate numbers of individual profiles and group classes
 - [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
@@ -43,10 +54,40 @@ Every table of a fitted model, retrieved by name.
   : Does the solution survive a different seed?
 - [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
   : Tidy inference for a covariate fit
-- [`vcov(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa_transitions.md)
-  [`parameter_inference(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa_transitions.md)
-  [`confint(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa_transitions.md)
-  : Standard errors are not available for a latent transition model
+- [`parameter_inference(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
+  [`vcov(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
+  [`confint(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
+  : Wald inference for a latent transition model
+- [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
+  : Fit a model to multiply imputed data and pool it with Rubin's rules
+- [`get_results(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
+  [`as.data.frame(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
+  : Tables of a pooled multiply imputed fit
+
+## Mixture regression
+
+Regressions whose coefficients differ across latent classes, at one or
+two levels, for continuous, binary and count outcomes.
+
+- [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  : Fit a finite mixture of regressions
+- [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  [`as.data.frame(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  [`get_results(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  [`print(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  : Compare mixture regressions with different numbers of classes
+- [`get_results(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`as.data.frame(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`coef(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`vcov(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`confint(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`logLik(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`nobs(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  : Tables of a mixture-of-regressions fit
+- [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_mixture_regression.md)
+  : Predict from a mixture-of-regressions fit
+- [`simulate(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/simulate.latents_mixture_regression.md)
+  : Simulate outcomes from a mixture-of-regressions fit
 
 ## External variables
 
@@ -67,6 +108,10 @@ Three-step analysis with a correction for classification error.
   [`print(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`plot(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   : Every classification diagnostic, in one call
+- [`plot(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_mixture_regression.md)
+  : Plot a mixture-of-regressions fit
+- [`plot(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_pooled.md)
+  : Plot a pooled multiply imputed fit
 - [`plot(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa.md)
   : Plot a fitted multilevel latent profile model
 - [`plot(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_bootstrap_lrt.md)
@@ -93,6 +138,10 @@ Latent transitions handed to the tna package.
   : Student engagement across a sequence of courses
 - [`student_esm`](https://pak.dynasite.org/latents/reference/student_esm.md)
   : Leisure activities of university students in daily life
+- [`study_hours`](https://pak.dynasite.org/latents/reference/study_hours.md)
+  : Study hours and quiz scores under two study strategies
+- [`srl`](https://pak.dynasite.org/latents/reference/srl.md) :
+  Self-regulated learning scores simulated by a large language model
 
 ## Methods
 
@@ -103,6 +152,15 @@ Standard generics for fitted models, enumeration grids and summaries.
   [`print(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`plot(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   : Every classification diagnostic, in one call
+- [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  [`as.data.frame(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  [`get_results(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  [`print(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  : Compare mixture regressions with different numbers of classes
+- [`print(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_mixture_regression.md)
+  : Print a mixture-of-regressions fit
+- [`print(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_pooled.md)
+  : Print a pooled multiply imputed fit
 - [`print(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa.md)
   : Print a fitted multilevel latent profile model
 - [`print(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_bootstrap_lrt.md)
@@ -125,6 +183,14 @@ Standard generics for fitted models, enumeration grids and summaries.
   : Print an enumeration summary
 - [`print(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/print.summary_multilpa_transitions.md)
   : Print a latent transition summary
+- [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
+  [`print(`*`<latents_prior>`*`)`](https://pak.dynasite.org/latents/reference/prior_control.md)
+  : Conjugate prior for Gaussian mixture estimation
+- [`summary(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.md)
+  [`print(`*`<summary_latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.md)
+  : Summarize a mixture-of-regressions fit
+- [`summary(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_pooled.md)
+  : Summarize a pooled multiply imputed fit
 - [`summary(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa.md)
   : Summarize a fitted multilevel latent profile model
 - [`summary(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_bootstrap_lrt.md)
@@ -157,6 +223,17 @@ Standard generics for fitted models, enumeration grids and summaries.
   : Coerce a class-enumeration summary to its primary table
 - [`as.data.frame(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.summary_multilpa_transitions.md)
   : Coerce a latent transition model summary to its primary table
+- [`get_results(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`as.data.frame(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`coef(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`vcov(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`confint(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`logLik(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  [`nobs(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
+  : Tables of a mixture-of-regressions fit
+- [`get_results(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
+  [`as.data.frame(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
+  : Tables of a pooled multiply imputed fit
 - [`coef(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/coef.multilpa.md)
   : Extract multilevel LPA coefficients
 - [`coef(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/coef.multilpa_covariates.md)
@@ -167,10 +244,12 @@ Standard generics for fitted models, enumeration grids and summaries.
   : Wald confidence intervals for multilevel LPA coefficients
 - [`confint(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/confint.multilpa_covariates.md)
   : Wald confidence intervals for a covariate fit
-- [`vcov(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa_transitions.md)
-  [`parameter_inference(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa_transitions.md)
-  [`confint(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa_transitions.md)
-  : Standard errors are not available for a latent transition model
+- [`parameter_inference(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
+  [`vcov(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
+  [`confint(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
+  : Wald inference for a latent transition model
+- [`vcov(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/vcov.latents_pooled.md)
+  : Pooled covariance of a multiply imputed fit
 - [`vcov(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa.md)
   : Extract multilevel LPA covariance estimates
 - [`vcov(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa_covariates.md)
@@ -187,6 +266,10 @@ Standard generics for fitted models, enumeration grids and summaries.
   : Count independent groups in a covariate LPA fit
 - [`nobs(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/nobs.multilpa_transitions.md)
   : Number of independent units in a fitted latent transition model
+- [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_mixture_regression.md)
+  : Predict from a mixture-of-regressions fit
+- [`predict(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/predict.multilpa.md)
+  : Classify new observations with a fitted model
 
 ## Conditions
 

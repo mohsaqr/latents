@@ -79,11 +79,11 @@ coef(fit)
 #>           measurement.variance.profile_2.y2 
 #>                                   0.5202968 
 #> profile.coefficient.profile_1.group_class_1 
-#>                                  -0.7082134 
+#>                                  -0.7082122 
 #> profile.coefficient.profile_1.group_class_2 
-#>                                   1.2934651 
+#>                                   1.2934665 
 #>             profile.coefficient.profile_1.x 
-#>                                   0.7401938 
+#>                                   0.7401937 
 #> group.coefficient.group_class_1.(Intercept) 
-#>                                   0.2318505 
+#>                                   0.2318527 
 ```

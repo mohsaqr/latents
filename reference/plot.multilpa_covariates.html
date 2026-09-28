@@ -17,7 +17,7 @@ answered with an average that no unit has."><meta property="og:image" content="h
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,11 +30,14 @@ answered with an average that no unit has."><meta property="og:image" content="h
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -73,8 +76,11 @@ answered with an average that no unit has.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'multilpa_covariates'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profiles"</span>, <span class="st">"sequences"</span>, <span class="st">"entropy"</span>, <span class="st">"posteriors"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
+<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profiles"</span>, <span class="st">"bars"</span>, <span class="st">"heatmap"</span>, <span class="st">"raincloud"</span>, <span class="st">"responses"</span>, <span class="st">"sequences"</span>, <span class="st">"sizes"</span>,</span>
+<span>    <span class="st">"entropy"</span>, <span class="st">"posteriors"</span>, <span class="st">"avepp"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"raw"</span>, <span class="st">"standardized"</span><span class="op">)</span>,</span>
+<span>  category <span class="op">=</span> <span class="st">"last"</span>,</span>
 <span>  labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -83,6 +89,7 @@ answered with an average that no unit has.</p>
 <span>  linetypes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  style <span class="op">=</span> <span class="fu">.multilpa_style</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  cell_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  intervals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -96,16 +103,21 @@ answered with an average that no unit has.</p>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p><code>"profiles"</code> (the default) draws the measurement model;
-<code>"sequences"</code> draws the assignments in course order and needs a fit made
-with <code>time =</code>. <code>"entropy"</code> and <code>"posteriors"</code> draw the two case-level
+<dd><p><code>"profiles"</code> (the default) draws the measurement model, and
+<code>"bars"</code> and <code>"heatmap"</code> draw it as <code><a href="plot.multilpa.html">plot.multilpa()</a></code> does (for an
+all-categorical fit the heatmap shows the response probabilities);
+<code>"sizes"</code> and <code>"avepp"</code> draw the effective profile sizes and the average
+posterior matrix. <code>"sequences"</code> draws the assignments in course order and
+needs a fit made with <code>time =</code>. <code>"entropy"</code> and <code>"posteriors"</code> draw the two case-level
 classification diagnostics exactly as <code><a href="plot.multilpa.html">plot.multilpa()</a></code> draws them: they
 read the individual posteriors, which a covariate fit has, and say nothing
-about prevalence, which it does not.</p></dd>
+about prevalence, which it does not. <code>"responses"</code> draws the categorical
+response probabilities, one line per profile, as <code><a href="plot.multilpa.html">plot.multilpa()</a></code> does;
+the measurement model does not depend on the covariates.</p></dd>
 
 
-<dt id="arg-scale-labels-cell-labels-main-subtitle-palette-symbols-linetypes-style-">scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, ...<a class="anchor" aria-label="anchor" href="#arg-scale-labels-cell-labels-main-subtitle-palette-symbols-linetypes-style-"></a></dt>
-<dd><p>Passed through as in <code><a href="plot.multilpa.html">plot.multilpa()</a></code>.</p></dd>
+<dt id="arg-data-scale-labels-cell-labels-main-subtitle-palette-symbols-linetypes-style-category-intervals-">data, scale, labels, cell_labels, main, subtitle, palette, symbols, linetypes, style, category, intervals, ...<a class="anchor" aria-label="anchor" href="#arg-data-scale-labels-cell-labels-main-subtitle-palette-symbols-linetypes-style-category-intervals-"></a></dt>
+<dd><p>As in <code><a href="plot.multilpa.html">plot.multilpa()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

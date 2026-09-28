@@ -114,13 +114,13 @@ fit <- multilpa(course_engagement, vars, id = "student", time = "sequence",
 fit
 #> Two-level latent profile analysis: 3 profiles, 3 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -8348.428714 | AIC: 16772.857 | BIC (groups): 16874.068
-#> Converged: TRUE | iterations: 164 | best start: 4/10
+#> Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068
+#> Converged: TRUE | iterations: 42 | best start: 1/10
 #> 
 #>  profile  browse lectures forum_read forum_post attendance count proportion
-#>        1  0.7088   0.7134     0.8109     0.7502     1.1326 369.2     0.2596
-#>        2  0.3870   0.1855     0.4463     0.3375     0.2562 477.9     0.3361
-#>        3 -0.7768  -0.6123    -0.8914    -0.7623    -0.9400 575.0     0.4043
+#>        1  0.3870   0.1856     0.4464     0.3376     0.2564   478     0.3362
+#>        2 -0.7768  -0.6123    -0.8914    -0.7623    -0.9400   575     0.4043
+#>        3  0.7089   0.7135     0.8109     0.7503     1.1328   369     0.2595
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
@@ -183,15 +183,15 @@ uncertainty and can make the error correction less stable.
 
 get_results(fit, "classification_errors", level = "individuals")
 #>         level true_class assigned_class probability
-#> 1 individuals          1              1   8.418e-01
-#> 2 individuals          1              2   1.580e-01
-#> 3 individuals          1              3   1.515e-04
-#> 4 individuals          2              1   1.197e-01
-#> 5 individuals          2              2   8.537e-01
-#> 6 individuals          2              3   2.660e-02
-#> 7 individuals          3              1   5.238e-06
-#> 8 individuals          3              2   2.038e-02
-#> 9 individuals          3              3   9.796e-01
+#> 1 individuals          1              1   8.546e-01
+#> 2 individuals          1              2   2.658e-02
+#> 3 individuals          1              3   1.188e-01
+#> 4 individuals          2              1   2.038e-02
+#> 5 individuals          2              2   9.796e-01
+#> 6 individuals          2              3   5.236e-06
+#> 7 individuals          3              1   1.592e-01
+#> 8 individuals          3              2   1.512e-04
+#> 9 individuals          3              3   8.406e-01
 ```
 
 The estimated probabilities of correct profile assignment are 0.842 for
@@ -268,16 +268,16 @@ not adjusted for multiple comparisons.
 ``` r
 
 r3step(fit, data = course_engagement, covariates = "previous_grade", vcov_type = "robust")
-#>         level outcome           term estimate standard_error statistic   p_value p_value_adjusted
-#> 1 individuals class_1    (Intercept)  -0.4456        0.13637   -3.2676 1.085e-03               NA
-#> 2 individuals class_1 previous_grade   0.6769        0.08623    7.8506 4.142e-15        8.284e-15
-#> 3 individuals class_2    (Intercept)  -0.1416        0.14708   -0.9626 3.358e-01               NA
-#> 4 individuals class_2 previous_grade   0.4753        0.06903    6.8854 5.762e-12        5.762e-12
+#>         level   outcome           term estimate standard_error statistic   p_value p_adjusted
+#> 1 individuals profile_1    (Intercept)   0.3065        0.10625     2.884 3.924e-03         NA
+#> 2 individuals profile_1 previous_grade  -0.2085        0.10437    -1.998 4.571e-02  4.571e-02
+#> 3 individuals profile_2    (Intercept)   0.4473        0.13666     3.273 1.063e-03         NA
+#> 4 individuals profile_2 previous_grade  -0.6809        0.08655    -7.867 3.626e-15  7.252e-15
 #>   conf_low conf_high
-#> 1  -0.7129   -0.1783
-#> 2   0.5079    0.8459
-#> 3  -0.4298    0.1467
-#> 4   0.3400    0.6106
+#> 1  0.09821  0.514720
+#> 2 -0.41310 -0.003979
+#> 3  0.17949  0.715181
+#> 4 -0.85059 -0.511301
 ```
 
 In the fitted model, a one-standard-deviation increase in previous grade
@@ -361,14 +361,14 @@ three_step(
   outcome = "previous_grade",
   contrast = "pairs"
 )
-#>         level method class reference_class estimate standard_error statistic   p_value
-#> 1 individuals    bch     2               1  -0.1828        0.09448    -1.935 5.304e-02
-#> 2 individuals    bch     3               1  -0.6287        0.07750    -8.112 4.960e-16
-#> 3 individuals    bch     3               2  -0.4459        0.06048    -7.374 1.661e-13
-#>   p_value_adjusted conf_low conf_high
-#> 1        5.304e-02  -0.3680  0.002397
-#> 2        1.488e-15  -0.7806 -0.476828
-#> 3        2.491e-13  -0.5645 -0.327412
+#>         level method class reference_class estimate standard_error statistic   p_value p_adjusted
+#> 1 individuals    bch     2               1  -0.4432        0.06054    -7.320 2.473e-13  3.710e-13
+#> 2 individuals    bch     3               1   0.1890        0.09458     1.998 4.572e-02  4.572e-02
+#> 3 individuals    bch     3               2   0.6321        0.07748     8.159 3.382e-16  1.015e-15
+#>    conf_low conf_high
+#> 1 -0.561843   -0.3245
+#> 2  0.003597    0.3743
+#> 3  0.480291    0.7840
 ```
 
 The BCH-adjusted estimates show that previous grades in the
@@ -403,14 +403,14 @@ three_step(
   contrast = "pairs",
   method = "modal"
 )
-#>         level method class reference_class estimate standard_error statistic   p_value
-#> 1 individuals  modal     2               1  -0.1430        0.06736    -2.123 3.379e-02
-#> 2 individuals  modal     3               1  -0.5904        0.06669    -8.853 8.551e-19
-#> 3 individuals  modal     3               2  -0.4474        0.05201    -8.602 7.833e-18
-#>   p_value_adjusted conf_low conf_high
-#> 1        3.379e-02  -0.2750  -0.01095
-#> 2        2.565e-18  -0.7211  -0.45969
-#> 3        1.175e-17  -0.5494  -0.34548
+#>         level method class reference_class estimate standard_error statistic   p_value p_adjusted
+#> 1 individuals  modal     2               1  -0.4457        0.05204    -8.564 1.087e-17  1.631e-17
+#> 2 individuals  modal     3               1   0.1474        0.06745     2.185 2.887e-02  2.887e-02
+#> 3 individuals  modal     3               2   0.5931        0.06671     8.890 6.119e-19  1.836e-18
+#>   conf_low conf_high
+#> 1 -0.54768   -0.3437
+#> 2  0.01519    0.2796
+#> 3  0.46231    0.7238
 ```
 
 Modal analysis is simple to interpret, but it treats estimated profile
@@ -511,9 +511,9 @@ covariate_fit
 #> Log likelihood -8331.180650; AIC 16742.361; BIC (groups) 16848.899; converged FALSE
 #> 
 #>  profile  browse lectures forum_read forum_post attendance count proportion
-#>        1  0.7278   0.7277     0.8141     0.7569     1.1587 347.3     0.2442
-#>        2  0.3881   0.2029     0.4610     0.3536     0.2772 498.4     0.3505
-#>        3 -0.7743  -0.6141    -0.8891    -0.7620    -0.9379 576.3     0.4053
+#>        1  0.3881   0.2029     0.4610     0.3536     0.2772 498.4     0.3505
+#>        2 -0.7743  -0.6141    -0.8891    -0.7620    -0.9379 576.3     0.4053
+#>        3  0.7278   0.7277     0.8141     0.7569     1.1587 347.3     0.2442
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
@@ -537,16 +537,16 @@ student-class model.
 
 get_results(covariate_fit, "coefficients")
 #>      level       outcome           term parameter estimate
-#> 1  profile     profile_1  group_class_1     logit -2.25650
-#> 2  profile     profile_1  group_class_2     logit -0.16147
-#> 3  profile     profile_1  group_class_3     logit  1.68877
-#> 4  profile     profile_1 previous_grade     logit  0.53323
-#> 5  profile     profile_2  group_class_1     logit -2.52746
-#> 6  profile     profile_2  group_class_2     logit  0.22908
-#> 7  profile     profile_2  group_class_3     logit  2.25912
-#> 8  profile     profile_2 previous_grade     logit  0.29421
-#> 9    group group_class_1    (Intercept)     logit  0.07867
-#> 10   group group_class_2    (Intercept)     logit  0.53863
+#> 1  profile     profile_1  group_class_1     logit   0.5703
+#> 2  profile     profile_1  group_class_2     logit  -0.2710
+#> 3  profile     profile_1  group_class_3     logit   0.3906
+#> 4  profile     profile_1 previous_grade     logit  -0.2390
+#> 5  profile     profile_2  group_class_1     logit  -1.6888
+#> 6  profile     profile_2  group_class_2     logit   2.2565
+#> 7  profile     profile_2  group_class_3     logit   0.1615
+#> 8  profile     profile_2 previous_grade     logit  -0.5332
+#> 9    group group_class_1    (Intercept)     logit  -0.5386
+#> 10   group group_class_2    (Intercept)     logit  -0.4600
 ```
 
 In a converged fit, a positive slope $`\beta_k`$ indicates higher odds
@@ -619,15 +619,15 @@ staged <- fit_staged(
 staged
 #> Two-level latent profile analysis: 3 profiles, 3 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -8351.807729 | AIC: 16719.615 | BIC (groups): 16740.923
-#> Converged: TRUE | iterations: 58 | best start: 2/6
+#> Log likelihood: -8351.800790 | AIC: 16719.602 | BIC (groups): 16740.909
+#> Converged: TRUE | iterations: 24 | best start: 2/6
 #> Held fixed, not estimated here: means, variances (first stage)
 #> Parameters estimated here: 8; with the held measurement: 38
 #> 
 #>  profile  browse lectures forum_read forum_post attendance count proportion
-#>        1  0.3246   0.1362     0.3715     0.2715     0.1970 437.9     0.3079
+#>        1  0.3247   0.1364     0.3717     0.2717     0.1972 438.0     0.3080
 #>        2 -0.7923  -0.6301    -0.9109    -0.7792    -0.9775 562.3     0.3954
-#>        3  0.6925   0.6824     0.7982     0.7326     1.0747 421.8     0.2966
+#>        3  0.6925   0.6826     0.7983     0.7327     1.0749 421.6     0.2965
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").

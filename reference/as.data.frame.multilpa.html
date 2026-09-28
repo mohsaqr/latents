@@ -11,7 +11,7 @@ get_results(), which takes what and refuses a name this object has not."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,11 +24,14 @@ get_results(), which takes what and refuses a name this object has not."><meta p
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -108,16 +111,27 @@ profile and continuous indicator.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    profile  indicator       mean  variance standard_deviation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1     browse  0.5395948 0.5898645          0.7680263</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        1   lectures  0.4274286 0.8446803          0.9190649</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 forum_read  0.6198475 0.4814627          0.6938751</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        1 forum_post  0.5305152 0.6887698          0.8299216</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1 attendance  0.6490757 0.3841104          0.6197664</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2     browse -0.7655654 0.5284937          0.7269757</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7        2   lectures -0.6064745 0.5383778          0.7337424</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2 forum_read -0.8791779 0.3631402          0.6026112</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        2 forum_post -0.7526676 0.4211809          0.6489846</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2 attendance -0.9206255 0.3736487          0.6112681</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1     browse  0.5395774 0.5898715          0.7680309</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        1   lectures  0.4274032 0.8446922          0.9190714</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 forum_read  0.6198249 0.4814742          0.6938834</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        1 forum_post  0.5304889 0.6887894          0.8299334</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1 attendance  0.6490499 0.3841262          0.6197792</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2     browse -0.7655996 0.5284686          0.7269584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7        2   lectures -0.6064852 0.5383733          0.7337393</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2 forum_read -0.8792135 0.3631131          0.6025887</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        2 forum_post -0.7526882 0.4211624          0.6489703</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2 attendance -0.9206598 0.3736294          0.6112523</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    mean_standard_error variance_standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0.02710160              0.02948401</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           0.03248649              0.04210053</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           0.02473030              0.02439626</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           0.02953027              0.03481644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           0.02226482              0.01955857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6           0.03121145              0.03221701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7           0.03093059              0.03209025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8           0.02621510              0.02279296</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9           0.02768122              0.02607601</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10          0.02642702              0.02278996</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -63,26 +63,26 @@ print(summary(comparison))
 #>                          1      44.2     0.1        0.09487    9       9  <NA>
 #> 
 #> -- replicates ------------------------------------------------------
-#>  replicate statistic valid boundary null_replications alternative_replications
-#>          1    6.3351  TRUE    FALSE                 1                        1
-#>          2    9.5081  TRUE    FALSE                 1                        1
-#>          3   17.2293  TRUE    FALSE                 1                        1
-#>          4    0.1777  TRUE    FALSE                 1                        1
-#>          5    7.9339  TRUE    FALSE                 1                        1
-#>          6    2.8515  TRUE    FALSE                 1                        1
-#>          7    0.2956  TRUE    FALSE                 1                        1
-#>          8    3.6494  TRUE    FALSE                 1                        1
-#>          9    5.5056  TRUE    FALSE                 1                        1
-#>  warnings error
-#>      <NA>  <NA>
-#>      <NA>  <NA>
-#>      <NA>  <NA>
-#>      <NA>  <NA>
-#>      <NA>  <NA>
-#>      <NA>  <NA>
-#>      <NA>  <NA>
-#>      <NA>  <NA>
-#>      <NA>  <NA>
+#>  replicate statistic valid boundary logits_settled null_replications
+#>          1   6.33676  TRUE    FALSE           TRUE                 1
+#>          2   1.04514  TRUE    FALSE           TRUE                 1
+#>          3   0.87194  TRUE    FALSE           TRUE                 1
+#>          4   0.01073  TRUE    FALSE           TRUE                 1
+#>          5   7.98068  TRUE    FALSE           TRUE                 1
+#>          6   1.14032  TRUE    FALSE           TRUE                 1
+#>          7   2.18911  TRUE    FALSE           TRUE                 1
+#>          8   0.22806  TRUE    FALSE           TRUE                 1
+#>          9   8.78147  TRUE    FALSE           TRUE                 1
+#>  alternative_replications warnings error
+#>                         1     <NA>  <NA>
+#>                         1     <NA>  <NA>
+#>                         1     <NA>  <NA>
+#>                         1     <NA>  <NA>
+#>                         1     <NA>  <NA>
+#>                         1     <NA>  <NA>
+#>                         1     <NA>  <NA>
+#>                         1     <NA>  <NA>
+#>                         1     <NA>  <NA>
 #> 
 #> 2 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.

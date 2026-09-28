@@ -17,7 +17,7 @@ reports what changed."><meta property="og:image" content="https://pak.dynasite.o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,11 +30,14 @@ reports what changed."><meta property="og:image" content="https://pak.dynasite.o
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -171,9 +174,9 @@ single solution.</p></div>
 <span class="r-in"><span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">sensitivity</span><span class="op">(</span><span class="va">fit</span>, seeds <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, n_starts <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   seed log_likelihood converged iterations optimum best agreement</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    1      -396.1633      TRUE         13       1 TRUE         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    2      -396.1633      TRUE         13       1 TRUE         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    3      -396.1633      TRUE         13       1 TRUE         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    1      -396.1633      TRUE          9       1 TRUE         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    2      -396.1633      TRUE          9       1 TRUE         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    3      -396.1633      TRUE          9       1 TRUE         1</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

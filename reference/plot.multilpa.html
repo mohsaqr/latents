@@ -15,7 +15,7 @@ in each cell for the same reason."><meta property="og:image" content="https://pa
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,11 +28,14 @@ in each cell for the same reason."><meta property="og:image" content="https://pa
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -70,8 +73,8 @@ in each cell for the same reason.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'multilpa'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profiles"</span>, <span class="st">"bars"</span>, <span class="st">"heatmap"</span>, <span class="st">"responses"</span>, <span class="st">"probabilities"</span>, <span class="st">"sequences"</span>,</span>
-<span>    <span class="st">"sizes"</span>, <span class="st">"entropy"</span>, <span class="st">"posteriors"</span>, <span class="st">"avepp"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
+<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profiles"</span>, <span class="st">"bars"</span>, <span class="st">"heatmap"</span>, <span class="st">"raincloud"</span>, <span class="st">"responses"</span>, <span class="st">"probabilities"</span>,</span>
+<span>    <span class="st">"sequences"</span>, <span class="st">"sizes"</span>, <span class="st">"entropy"</span>, <span class="st">"posteriors"</span>, <span class="st">"avepp"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"raw"</span>, <span class="st">"standardized"</span><span class="op">)</span>,</span>
 <span>  category <span class="op">=</span> <span class="st">"last"</span>,</span>
@@ -83,6 +86,7 @@ in each cell for the same reason.</p>
 <span>  linetypes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  style <span class="op">=</span> <span class="fu">.multilpa_style</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  cell_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  intervals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -106,6 +110,15 @@ bars, one bar per profile within each indicator, with a 95% interval on
 every bar when <code>data</code> is supplied. <code>"heatmap"</code> draws them as a diverging
 grid of standard deviations from each indicator's grand mean, which is the
 quickest read when there are many indicators or many profiles.
+<code>"raincloud"</code> shows what the means summarize: one panel per indicator,
+and in it, for the cases assigned to each profile, a density of the
+indicator, a box of its quartiles and median, and the observations
+themselves. It shows the spread within each profile and how far the
+profiles overlap. For a fit
+whose indicators are all categorical, <code>"heatmap"</code> draws the response
+probabilities instead: one row per profile and one column per category
+(a binary indicator shows its last category), each cell printing its
+probability.
 <code>"responses"</code> is the categorical counterpart of <code>"profiles"</code>, one line per
 profile across the categorical indicators, showing the probability of a
 chosen category.</p>
@@ -183,6 +196,15 @@ inside each cell, so the profile is never carried by colour alone. The
 numbers are drawn only where the cell is wide and tall enough to hold one.</p></dd>
 
 
+<dt id="arg-intervals">intervals<a class="anchor" aria-label="anchor" href="#arg-intervals"></a></dt>
+<dd><p>For <code>what = "profiles"</code> and <code>"responses"</code>, <code>TRUE</code> draws a
+95% interval on every mean or probability when the fit has standard
+errors (a probability's interval is clipped to <code>[0, 1]</code>); the profiles are then dodged
+apart so the whiskers stay readable. A fit without them (a bound-active or
+unconverged fit, or a family without inference) is drawn without whiskers
+and its subtitle says why.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Further named visual constants, merged into <code>style</code>.</p></dd>
 
@@ -193,9 +215,10 @@ numbers are drawn only where the cell is wide and tall enough to hold one.</p></
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The plot shows point estimates only. It carries no standard errors,
-and profile order is arbitrary, so two fits must have their labels aligned
-before their plots are compared. With <code>scale = "standardized"</code> the
+    <p><code>"profiles"</code> and <code>"bars"</code> draw 95% Wald intervals when the fit has
+standard errors; the other views show point estimates. Profile order is
+arbitrary, so two fits must have their labels aligned before their plots
+are compared. With <code>scale = "standardized"</code> the
 standard deviations are the observed indicator standard deviations, not
 the within-profile residual standard deviations, so the plotted values are
 comparable across indicators but are not effect sizes.</p>
@@ -233,30 +256,32 @@ comparable across indicators but are not effect sizes.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       profiles measurement</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2           bars measurement</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3        heatmap measurement</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      responses measurement</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  probabilities   structure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      sequences   structure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7    transitions   structure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8          sizes   structure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        entropy diagnostics</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10    posteriors diagnostics</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11         avepp diagnostics</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12   enumeration   selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13           all       every</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                  description</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     Profile means across indicators, point size showing profile prevalence</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2     Profile means as grouped bars, with 95% intervals when `data` is given</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      Profile means as standard deviations from each indicator's grand mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   Categorical response probabilities, one line per profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5         Profile prevalence within each group class, the two-level quantity</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                   Each group's profile at each occasion, one row per group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  Estimated transition matrix, one panel per group class (a transition fit)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8                  Effective number of cases in each profile, with its share</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9               Per-case entropy contribution within each profile, as ridges</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                  Posterior probability of the assigned profile, as ridges</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11      Average posterior probability: assigned profile by posterior profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12        Information criteria across a candidate grid (plot an enumeration)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13       Every view above that this fit has the ingredients for, in one call</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      raincloud measurement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      responses measurement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  probabilities   structure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7      sequences   structure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8    transitions   structure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9          sizes   structure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       entropy diagnostics</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11    posteriors diagnostics</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12         avepp diagnostics</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13   enumeration   selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14           all       every</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                      description</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         Profile means across indicators, point size showing profile prevalence</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         Profile means as grouped bars, with 95% intervals when `data` is given</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          Profile means as standard deviations from each indicator's grand mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Each indicator's distribution by assigned profile: density, box, observations</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                       Categorical response probabilities, one line per profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6             Profile prevalence within each group class, the two-level quantity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                       Each group's profile at each occasion, one row per group</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8      Estimated transition matrix, one panel per group class (a transition fit)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                      Effective number of cases in each profile, with its share</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10                  Per-case entropy contribution within each profile, as ridges</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                      Posterior probability of the assigned profile, as ridges</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12          Average posterior probability: assigned profile by posterior profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13            Information criteria across a candidate grid (plot an enumeration)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14           Every view above that this fit has the ingredients for, in one call</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

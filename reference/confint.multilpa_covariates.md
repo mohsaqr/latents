@@ -67,12 +67,12 @@ confint(fit, data = example_data)
 #> measurement.mean.profile_1.y2                1.2751549  1.62835603
 #> measurement.mean.profile_2.y1               -2.0085544 -1.66222558
 #> measurement.mean.profile_2.y2               -1.6679427 -1.29982964
-#> measurement.variance.profile_1.y1            0.2660224  0.53250532
-#> measurement.variance.profile_1.y2            0.3732428  0.74710769
-#> measurement.variance.profile_2.y1            0.2942996  0.62673536
-#> measurement.variance.profile_2.y2            0.3325405  0.70805306
-#> profile.coefficient.profile_1.group_class_1 -1.3556252 -0.06080148
-#> profile.coefficient.profile_1.group_class_2  0.4774802  2.10944992
-#> profile.coefficient.profile_1.x              0.2950784  1.18530922
-#> group.coefficient.group_class_1.(Intercept) -0.9400489  1.40374986
+#> measurement.variance.profile_1.y1            0.2859751  0.55743188
+#> measurement.variance.profile_1.y2            0.4012345  0.78207700
+#> measurement.variance.profile_2.y1            0.3209912  0.66069214
+#> measurement.variance.profile_2.y2            0.3626853  0.74640116
+#> profile.coefficient.profile_1.group_class_1 -1.3556241 -0.06080035
+#> profile.coefficient.profile_1.group_class_2  0.4774816  2.10945144
+#> profile.coefficient.profile_1.x              0.2950783  1.18530911
+#> group.coefficient.group_class_1.(Intercept) -0.9400469  1.40375220
 ```

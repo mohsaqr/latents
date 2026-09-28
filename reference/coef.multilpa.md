@@ -18,8 +18,9 @@ coef(object, scale = c("natural", "unconstrained"), ...)
 - scale:
 
   Natural coefficients or unconstrained log variances (diagonal),
-  log-Cholesky coordinates (full covariance), and baseline-category
-  logits.
+  log-Cholesky coordinates (full covariance), log volumes, log shapes
+  and orientations (a structure that constrains them across profiles),
+  and baseline-category logits.
 
 - ...:
 
@@ -53,25 +54,25 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 coef(fit)
 #>          measurement.mean.profile_1.score_a 
-#>                                 -0.26522589 
+#>                                 -0.26506383 
 #>          measurement.mean.profile_1.score_b 
-#>                                  0.12143769 
+#>                                  0.12141664 
 #>          measurement.mean.profile_2.score_a 
-#>                                  1.01708820 
+#>                                  1.01711334 
 #>          measurement.mean.profile_2.score_b 
-#>                                 -0.51118996 
+#>                                 -0.51143906 
 #>      measurement.variance.profile_1.score_a 
-#>                                  0.60122256 
+#>                                  0.60135473 
 #>      measurement.variance.profile_1.score_b 
-#>                                  1.03783944 
+#>                                  1.03778951 
 #>      measurement.variance.profile_2.score_a 
-#>                                  0.04263245 
+#>                                  0.04260942 
 #>      measurement.variance.profile_2.score_b 
-#>                                  0.65779843 
+#>                                  0.65769449 
 #> profile.probability.profile_1.group_class_1 
-#>                                  0.80063012 
+#>                                  0.80073523 
 #> profile.probability.profile_2.group_class_1 
-#>                                  0.19936988 
+#>                                  0.19926477 
 #>             group.probability.group_class_1 
 #>                                  1.00000000 
 ```

@@ -17,7 +17,7 @@ measurement model, a classification diagnostic and a transition matrix."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,11 +30,14 @@ measurement model, a classification diagnostic and a transition matrix."><meta p
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -512,26 +515,37 @@ classification tables gathered with a condensed reading.</p></div>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_results</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    profile  indicator       mean  variance standard_deviation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1     browse  0.5395948 0.5898645          0.7680263</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        1   lectures  0.4274286 0.8446803          0.9190649</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 forum_read  0.6198475 0.4814627          0.6938751</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        1 forum_post  0.5305152 0.6887698          0.8299216</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1 attendance  0.6490757 0.3841104          0.6197664</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2     browse -0.7655654 0.5284937          0.7269757</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7        2   lectures -0.6064745 0.5383778          0.7337424</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2 forum_read -0.8791779 0.3631402          0.6026112</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        2 forum_post -0.7526676 0.4211809          0.6489846</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2 attendance -0.9206255 0.3736487          0.6112681</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1     browse  0.5395774 0.5898715          0.7680309</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        1   lectures  0.4274032 0.8446922          0.9190714</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 forum_read  0.6198249 0.4814742          0.6938834</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        1 forum_post  0.5304889 0.6887894          0.8299334</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1 attendance  0.6490499 0.3841262          0.6197792</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2     browse -0.7655996 0.5284686          0.7269584</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7        2   lectures -0.6064852 0.5383733          0.7337393</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2 forum_read -0.8792135 0.3631131          0.6025887</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        2 forum_post -0.7526882 0.4211624          0.6489703</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2 attendance -0.9206598 0.3736294          0.6112523</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    mean_standard_error variance_standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0.02710160              0.02948401</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           0.03248649              0.04210053</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           0.02473030              0.02439626</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           0.02953027              0.03481644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           0.02226482              0.01955857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6           0.03121145              0.03221701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7           0.03093059              0.03209025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8           0.02621510              0.02279296</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9           0.02768122              0.02607601</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10          0.02642702              0.02278996</span>
 <span class="r-in"><span><span class="fu">get_results</span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"profile_probabilities"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   group_class profile probability group_class_probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1       1   0.1703746               0.3252304</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1       2   0.8296254               0.3252304</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2       1   0.7858826               0.6747696</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2       2   0.2141174               0.6747696</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1       1   0.7859317               0.6747028</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1       2   0.2140683               0.6747028</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2       1   0.1704509               0.3252972</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2       2   0.8295491               0.3252972</span>
 <span class="r-in"><span><span class="fu">get_results</span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"entropy"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         level n_classes n_units entropy_sum relative_entropy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 individuals         2    1422   60.943122        0.9381699</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      groups         2     106    4.433469        0.9396590</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 individuals         2    1422   60.939997        0.9381731</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      groups         2     106    4.434664        0.9396428</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">get_results</span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "profiles"              "responses"             "covariances"          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "profile_probabilities" "counts"                "posteriors"           </span>
@@ -550,10 +564,10 @@ classification tables gathered with a condensed reading.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2     profile     2   engagement disengaged 569 0.97264957</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3     profile     1   engagement    engaged 820 0.97968937</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4     profile     2   engagement    engaged  17 0.02031063</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 group_class     1 student_type  committed   1 0.01612903</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 group_class     2 student_type  committed  61 0.98387097</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7 group_class     1 student_type   wavering  34 0.77272727</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8 group_class     2 student_type   wavering  10 0.22727273</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 group_class     1 student_type  committed  61 0.98387097</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 group_class     2 student_type  committed   1 0.01612903</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 group_class     1 student_type   wavering  10 0.22727273</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8 group_class     2 student_type   wavering  34 0.77272727</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

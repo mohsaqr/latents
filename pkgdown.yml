@@ -12,7 +12,10 @@ articles:
   lca: lca.html
   lpa: lpa.html
   lta: lta.html
-last_built: 2026-09-24T05:24Z
+  mixture-regression: mixture-regression.html
+  workflow-lca: workflow-lca.html
+  workflow-lpa: workflow-lpa.html
+last_built: 2026-09-28T12:39Z
 urls:
   reference: https://pak.dynasite.org/latents/reference
   article: https://pak.dynasite.org/latents/articles

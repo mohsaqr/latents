@@ -13,7 +13,7 @@ stable, the messages are not."><meta property="og:image" content="https://pak.dy
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,11 +26,14 @@ stable, the messages are not."><meta property="og:image" content="https://pak.dy
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -243,20 +246,38 @@ the robust sandwich.</p></dd>
 
 
 <p>These name capabilities the package does not have. They are raised in place
-of returning a number that would be wrong.</p><dl><dt><code>latents_no_inference</code></dt>
-<dd><p>Standard errors are not available for this
-model family. Raised by <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> and <code><a href="parameter_inference.html">parameter_inference()</a></code> on a
-<code>multilpa_transitions</code> fit.</p></dd>
-
-<dt><code>latents_unsupported_inference</code></dt>
+of returning a number that would be wrong.</p><dl><dt><code>latents_unsupported_inference</code></dt>
 <dd><p>Standard errors are not available
 for this particular fit. Raised for a covariate fit with categorical
 indicators, where no score is implemented for the response
-probabilities, for fits made by an older version, for a covariance
-structure the Wald coordinates cannot express — which
-<code>parameter_inference(method = "bootstrap")</code> reports instead — and by
-that bootstrap itself for a fit holding a measurement block, whose held
-values came from a fit these data do not resample.</p></dd>
+probabilities, for fits made by an older version, for a fit recording
+a covariance structure code this version does not know, and by
+<code>parameter_inference(method = "bootstrap")</code> for a fit holding a
+measurement block, whose held values came from a fit these data do not
+resample, and by <code><a href="parameter_inference.html">parameter_inference()</a></code> for a fit made with <code>prior</code>,
+which sits at a posterior mode rather than a likelihood maximum.</p></dd>
+
+<dt><code>latents_unsupported_prior</code></dt>
+<dd><p><code>multilpa(prior = )</code> was asked for a
+combination the conjugate prior is not defined for: the VEE, EVE, VVE
+or EVV covariance structure (mclust defines none), categorical
+indicators, a <code>fixed</code> block, membership covariates, or missing
+indicator values.</p></dd>
+
+<dt><code>latents_unsupported_noise</code></dt>
+<dd><p><code>multilpa(noise = TRUE)</code> was asked
+for more than one group class, categorical indicators, a <code>fixed</code> block,
+membership covariates or missing indicator values; or a verb that does
+not yet account for a noise component — <code><a href="parameter_inference.html">parameter_inference()</a></code>,
+<code><a href="three_step.html">three_step()</a></code>, <code><a href="r3step.html">r3step()</a></code>, <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>, <code><a href="starting_values.html">starting_values()</a></code>,
+bivariate residuals, <code><a href="fit_staged.html">fit_staged()</a></code> or a posterior plot — was given a
+fit that has one.</p></dd>
+
+<dt><code>latents_pooling_failed</code></dt>
+<dd><p>An imputation's fit or inference failed
+in <code><a href="pool_imputations.html">pool_imputations()</a></code>, or the imputations' fits report different
+parameters. Rubin's rules need every imputation, so none is dropped; the
+message names the imputation and carries the original reason.</p></dd>
 
 <dt><code>latents_bootstrap_failed</code></dt>
 <dd><p>Fewer than two resamples produced a
@@ -343,6 +364,37 @@ others through.</p><dl><dt><code>latents_failed_starts</code></dt>
 <dd><p>Some, but not all, EM starts raised. The
 surviving starts are in <code>get_results(fit, "starts")</code>.</p></dd>
 
+<dt><code>latents_not_identified</code></dt>
+<dd><p><code><a href="mixture_regression.html">mixture_regression()</a></code> with a binary outcome and one
+trial per class assignment: a mixture of Bernoulli regressions is not
+identified there.</p></dd>
+
+<dt><code>latents_missing_data</code></dt>
+<dd><p><code><a href="mixture_regression.html">mixture_regression()</a></code> with <code>missing = "error"</code> met a
+missing value in a variable the model uses.</p></dd>
+
+<dt><code>latents_rows_dropped</code></dt>
+<dd><p>Warning. <code><a href="mixture_regression.html">mixture_regression()</a></code> with
+<code>missing = "omit"</code> dropped incomplete rows; the message states how
+many.</p></dd>
+
+<dt><code>latents_no_valid_start</code></dt>
+<dd><p>Every <code><a href="mixture_regression.html">mixture_regression()</a></code> start degenerated: a
+class emptied or its variance collapsed.</p></dd>
+
+<dt><code>latents_degenerate_start</code></dt>
+<dd><p>Warning. Some <code><a href="mixture_regression.html">mixture_regression()</a></code> starts
+degenerated and were set aside.</p></dd>
+
+<dt><code>latents_separation</code></dt>
+<dd><p>Warning. A <code><a href="mixture_regression.html">mixture_regression()</a></code> logit or log-link
+coefficient diverged (perfect separation); it and its standard error
+are unreliable.</p></dd>
+
+<dt><code>latents_em_decrease</code></dt>
+<dd><p>The <code><a href="mixture_regression.html">mixture_regression()</a></code> EM likelihood decreased
+beyond roundoff. This indicates a defect and should be reported.</p></dd>
+
 <dt><code>latents_unconverged</code></dt>
 <dd><p>The best start had not converged when
 <code>max_iter</code> was reached, so the returned estimate is not a maximum.</p></dd>
@@ -361,10 +413,11 @@ membership below one, so it is supported by less than one observation.</p></dd>
 validation, so the bootstrap p-value is <code>NA</code>.</p></dd>
 
 <dt><code>latents_single_level</code></dt>
-<dd><p><code>id = NULL</code> was passed, so the fit has one
-observation per unit and no second level. Raised by <code><a href="multilpa.html">multilpa()</a></code> on every
-such fit: this package is for the two-level model, and fitting the
-one-level reduction of it is a choice worth stating out loud.</p></dd>
+<dd><p>A message, not a warning: <code>id = NULL</code> was
+passed, so the fit has one observation per unit and no second level.
+Raised by <code><a href="multilpa.html">multilpa()</a></code> on every such fit and once by an
+<code><a href="enumerate_classes.html">enumerate_classes()</a></code> grid; <code><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages()</a></code> or a
+<code>latents_single_level</code> handler silences it.</p></dd>
 
 <dt><code>latents_bootstrap_dropped</code></dt>
 <dd><p>Some resamples did not produce a usable

@@ -208,22 +208,48 @@ Nothing; this page documents conditions rather than a function.
 These name capabilities the package does not have. They are raised in
 place of returning a number that would be wrong.
 
-- `latents_no_inference`:
-
-  Standard errors are not available for this model family. Raised by
-  [`vcov()`](https://rdrr.io/r/stats/vcov.html) and
-  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-  on a `multilpa_transitions` fit.
-
 - `latents_unsupported_inference`:
 
   Standard errors are not available for this particular fit. Raised for
   a covariate fit with categorical indicators, where no score is
   implemented for the response probabilities, for fits made by an older
-  version, for a covariance structure the Wald coordinates cannot
-  express — which `parameter_inference(method = "bootstrap")` reports
-  instead — and by that bootstrap itself for a fit holding a measurement
-  block, whose held values came from a fit these data do not resample.
+  version, for a fit recording a covariance structure code this version
+  does not know, and by `parameter_inference(method = "bootstrap")` for
+  a fit holding a measurement block, whose held values came from a fit
+  these data do not resample, and by
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  for a fit made with `prior`, which sits at a posterior mode rather
+  than a likelihood maximum.
+
+- `latents_unsupported_prior`:
+
+  `multilpa(prior = )` was asked for a combination the conjugate prior
+  is not defined for: the VEE, EVE, VVE or EVV covariance structure
+  (mclust defines none), categorical indicators, a `fixed` block,
+  membership covariates, or missing indicator values.
+
+- `latents_unsupported_noise`:
+
+  `multilpa(noise = TRUE)` was asked for more than one group class,
+  categorical indicators, a `fixed` block, membership covariates or
+  missing indicator values; or a verb that does not yet account for a
+  noise component —
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  [`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md),
+  bivariate residuals,
+  [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
+  or a posterior plot — was given a fit that has one.
+
+- `latents_pooling_failed`:
+
+  An imputation's fit or inference failed in
+  [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md),
+  or the imputations' fits report different parameters. Rubin's rules
+  need every imputation, so none is dropped; the message names the
+  imputation and carries the original reason.
 
 - `latents_bootstrap_failed`:
 
@@ -324,6 +350,51 @@ others through.
   Some, but not all, EM starts raised. The surviving starts are in
   `get_results(fit, "starts")`.
 
+- `latents_not_identified`:
+
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  with a binary outcome and one trial per class assignment: a mixture of
+  Bernoulli regressions is not identified there.
+
+- `latents_missing_data`:
+
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  with `missing = "error"` met a missing value in a variable the model
+  uses.
+
+- `latents_rows_dropped`:
+
+  Warning.
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  with `missing = "omit"` dropped incomplete rows; the message states
+  how many.
+
+- `latents_no_valid_start`:
+
+  Every
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  start degenerated: a class emptied or its variance collapsed.
+
+- `latents_degenerate_start`:
+
+  Warning. Some
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  starts degenerated and were set aside.
+
+- `latents_separation`:
+
+  Warning. A
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  logit or log-link coefficient diverged (perfect separation); it and
+  its standard error are unreliable.
+
+- `latents_em_decrease`:
+
+  The
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  EM likelihood decreased beyond roundoff. This indicates a defect and
+  should be reported.
+
 - `latents_unconverged`:
 
   The best start had not converged when `max_iter` was reached, so the
@@ -347,12 +418,13 @@ others through.
 
 - `latents_single_level`:
 
-  `id = NULL` was passed, so the fit has one observation per unit and no
-  second level. Raised by
+  A message, not a warning: `id = NULL` was passed, so the fit has one
+  observation per unit and no second level. Raised by
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  on every such fit: this package is for the two-level model, and
-  fitting the one-level reduction of it is a choice worth stating out
-  loud.
+  on every such fit and once by an
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  grid; [`suppressMessages()`](https://rdrr.io/r/base/message.html) or a
+  `latents_single_level` handler silences it.
 
 - `latents_bootstrap_dropped`:
 

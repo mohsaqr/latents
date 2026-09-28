@@ -1,7 +1,7 @@
 # Parametric bootstrap likelihood-ratio comparison
 
-Simulates complete indicators under the null model while preserving
-observed group sizes, refits both models, and compares their likelihood
+Simulates indicators under the null model while preserving observed
+group sizes, refits both models, and compares their likelihood
 differences. Models must differ by exactly one individual profile or one
 group class, with the other count, covariance structure and centering
 mode fixed. Grand-mean centering is repeated in every simulated refit.
@@ -33,7 +33,7 @@ bootstrap_lrt(
 
   Smaller, converged
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  model on complete data.
+  model, with or without membership covariates.
 
 - alternative_model:
 
@@ -84,6 +84,31 @@ results.
 
 ## Details
 
+Fits made with `missing = "fiml"` are supported when both models were:
+every replicate is given the observed data's missing cells before it is
+refitted, so the simulated statistics lose the same information the
+observed one did. This treats the missingness pattern as fixed, that is
+independent of the profiles and of the values that went missing; under
+missingness that depends on the latent classes the reference
+distribution is approximate.
+
+Membership-covariate fits
+(`multilpa(profile_covariates = , group_covariates = )`) are supported:
+the covariates are held at their observed values, group classes are
+drawn from the fitted group logits and profiles from each row's profile
+logits, as the model conditions on the covariates. Both models must use
+the same profile covariates, group covariates and slope specification,
+except that a one-group-class null, which cannot carry group covariates
+or slopes by group class, may be compared with an alternative that adds
+them. When `data` is omitted it is rebuilt from the alternative, whose
+columns include the null's. A covariate replicate counts as valid when
+its likelihood has converged even if a membership logit is still
+drifting, as it does for an empty or separated class in an over-fitted
+alternative: the statistic reads only the maximized likelihood, which
+such a fit has reached. The replicate table's `logits_settled` column
+records whether both refits' logits had also converged. The original
+models must be fully converged.
+
 Models fitted with `fixed`, including those from
 [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md),
 are supported: every replicate is refitted with the same blocks held at
@@ -104,7 +129,13 @@ the alternative does not estimate more free parameters than the null.
 `latents_failed_replicates` is warned when some replicate fails
 validation, and the p-value is `NA`. `latents_unsupported_bootstrap`
 refuses person-centred fits, for which this simulator has no
-group-baseline distribution.
+group-baseline distribution. `latents_incomparable_models` when the two
+models differ in their observations, grouping, covariance structure,
+centering or missing-data handling; `latents_bad_data` when the data
+have missing indicators and the models were not fitted with
+`missing = "fiml"`; `latents_bad_nesting` also when two covariate models
+use different covariates or slope specifications (other than a
+one-group-class null).
 
 ## Examples
 
@@ -123,7 +154,7 @@ comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
                             max_iter = 2000, tol = 1e-6, seed = 1)
 comparison
 #> Parametric bootstrap likelihood-ratio comparison
-#> Null: 1 profiles, 1 group classes; alternative: 2 profiles, 1 group classes
+#> Null: 1 profile; alternative: 2 profiles
 #> Observed statistic: 44.198110
 #> p-value: 0.1 (Monte Carlo SE 0.0949) from 9 of 9 valid replicates
 ```

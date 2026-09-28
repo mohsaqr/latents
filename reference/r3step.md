@@ -16,8 +16,9 @@ r3step(
   covariates,
   level = c("individuals", "groups"),
   ci_level = 0.95,
-  vcov_type = c("observed", "robust"),
-  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none")
+  vcov_type = c("robust", "observed"),
+  adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
+  by_group_class = FALSE
 )
 ```
 
@@ -53,16 +54,20 @@ r3step(
 
 - vcov_type:
 
-  `"observed"` uses the observed information; `"robust"` uses the
-  sandwich clustered on the fit's groups, which is the honest choice
-  when the covariates are measured on observations nested inside them.
-  `"robust"` needs more independent groups than the regression has
-  coefficients, because the group score contributions sum to zero at the
-  estimate and so span at most one dimension fewer than there are
-  groups; with too few it is refused with `latents_too_few_groups`
-  rather than reporting a variance that is singular, or, with a single
-  group, numerically zero. `"observed"` remains available there and does
-  not allow for the nesting.
+  `"robust"`, the default, uses the sandwich clustered on the fit's
+  groups, which is the honest choice when the covariates are measured on
+  observations nested inside them, and matches the default of
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md).
+  `"observed"` uses the observed information; for the pooled regression
+  it treats every observation as independent, and with
+  `by_group_class = TRUE` it is the model-based variance of the
+  two-level likelihood. `"robust"` needs more independent groups than
+  the regression has coefficients, because the group score contributions
+  sum to zero at the estimate and so span at most one dimension fewer
+  than there are groups; with too few it is refused with
+  `latents_too_few_groups` rather than reporting a variance that is
+  singular, or, with a single group, numerically zero. `"observed"`
+  remains available there.
 
 - adjust:
 
@@ -72,20 +77,40 @@ r3step(
   every covariate term of every non-reference class, which is the set of
   tests this call computes; the intercepts are not part of it.
 
+- by_group_class:
+
+  `FALSE`, the default, fits one pooled multinomial logit with a single
+  intercept per profile. `TRUE` fits the two-level form of the one-step
+  model instead: every group class has its own profile intercepts, the
+  covariate slopes are shared across group classes, and a group's
+  observations share one latent group class whose proportions are
+  estimated alongside. Differences between groups that the covariates do
+  not explain are then absorbed by the group classes rather than left in
+  the residual, where the pooled regression attenuates the slopes and
+  inflates their clustered standard errors. For `level = "individuals"`
+  on a covariate-free
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  fit only; refused with `latents_bad_argument` otherwise.
+
 ## Value
 
 A base `data.frame` with one row per non-reference class and term, and
 the columns `level`, `outcome`, `term`, `estimate`, `standard_error`,
-`statistic`, `p_value`, `p_value_adjusted`, `conf_low` and `conf_high`.
-`p_value` is uncorrected and `p_value_adjusted` carries the correction
-named by `adjust`, which is also recorded in the result's `adjust`
-attribute; it is `NA` on the intercept rows, which are not part of the
-tested family. A coefficient with zero standard error has an undefined
-Wald statistic and p-value, reported as `NA_real_` rather than infinity
-or zero. Coefficients are log odds against the final class, which is the
+`statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`.
+`p_value` is uncorrected and `p_adjusted` carries the correction named
+by `adjust`, which is also recorded in the result's `adjust` attribute;
+it is `NA` on the intercept rows, which are not part of the tested
+family. A coefficient with zero standard error has an undefined Wald
+statistic and p-value, reported as `NA_real_` rather than infinity or
+zero. Coefficients are log odds against the final class, which is the
 reference, matching `multilpa(profile_covariates = )`; that class is
 named in the result's `reference_class` attribute, and the variance that
-was used in its `vcov_type` attribute.
+was used in its `vcov_type` attribute. With `by_group_class = TRUE` the
+intercept rows are one per group class, named `group_class_1`,
+`group_class_2`, ..., followed by the shared slopes and, at
+`level = "groups"`, the group-class logits against the last group class;
+the result also carries `by_group_class` and the maximised
+`log_likelihood` as attributes.
 
 ## Details
 
@@ -141,10 +166,10 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
 r3step(fit, example_data, "x")
-#>         level outcome        term   estimate standard_error statistic
-#> 1 individuals class_1 (Intercept) -0.5699444      0.1069215 -5.330494
-#> 2 individuals class_1           x  1.2187693      0.1354640  8.996995
-#>        p_value p_value_adjusted   conf_low  conf_high
-#> 1 9.794590e-08               NA -0.7795067 -0.3603821
-#> 2 2.319808e-19     2.319808e-19  0.9532646  1.4842739
+#>         level   outcome        term   estimate standard_error statistic
+#> 1 individuals profile_1 (Intercept) -0.5701524      0.1179663 -4.833179
+#> 2 individuals profile_1           x  1.2187719      0.1255513  9.707359
+#>        p_value   p_adjusted   conf_low  conf_high
+#> 1 1.343696e-06           NA -0.8013622 -0.3389427
+#> 2 2.805106e-22 2.805106e-22  0.9726958  1.4648481
 ```

@@ -44,12 +44,12 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 print(fit)
 #> Two-level latent profile analysis: 2 profiles, 1 group class
 #> 120 individuals in 12 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -323.019699 | AIC: 664.039 | BIC (groups): 668.404
-#> Converged: TRUE | iterations: 130 | best start: 2/2
+#> Log likelihood: -323.019688 | AIC: 664.039 | BIC (groups): 668.404
+#> Converged: TRUE | iterations: 30 | best start: 2/2
 #> 
 #>  profile    score_a     score_b     count proportion
-#>        1  0.3165178 -0.05304516 106.37061  0.8864217
-#>        2 -1.1130187  0.79087174  13.62939  0.1135783
+#>        1  0.3163698 -0.05291982 106.38528   0.886544
+#>        2 -1.1135958  0.79091589  13.61472   0.113456
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").

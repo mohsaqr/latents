@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,11 +40,14 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -349,13 +352,13 @@ estimated enrolment membership.</p>
 <code class="sourceCode R"><span><span class="va">fit</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; Two-level latent profile analysis: 3 profiles, 3 group classes</span></span>
 <span><span class="co">#&gt; 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)</span></span>
-<span><span class="co">#&gt; Log likelihood: -8348.428714 | AIC: 16772.857 | BIC (groups): 16874.068</span></span>
-<span><span class="co">#&gt; Converged: TRUE | iterations: 164 | best start: 4/10</span></span>
+<span><span class="co">#&gt; Log likelihood: -8348.428704 | AIC: 16772.857 | BIC (groups): 16874.068</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 42 | best start: 1/10</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile  browse lectures forum_read forum_post attendance count proportion</span></span>
-<span><span class="co">#&gt;        1  0.7088   0.7134     0.8109     0.7502     1.1326 369.2     0.2596</span></span>
-<span><span class="co">#&gt;        2  0.3870   0.1855     0.4463     0.3375     0.2562 477.9     0.3361</span></span>
-<span><span class="co">#&gt;        3 -0.7768  -0.6123    -0.8914    -0.7623    -0.9400 575.0     0.4043</span></span>
+<span><span class="co">#&gt;        1  0.3870   0.1856     0.4464     0.3376     0.2564   478     0.3362</span></span>
+<span><span class="co">#&gt;        2 -0.7768  -0.6123    -0.8914    -0.7623    -0.9400   575     0.4043</span></span>
+<span><span class="co">#&gt;        3  0.7089   0.7135     0.8109     0.7503     1.1328   369     0.2595</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles"). </span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre>
@@ -395,12 +398,12 @@ profile or class, by contrast, would always be integers.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"counts"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;         level class effective_count effective_proportion</span></span>
-<span><span class="co">#&gt; 1 individuals     1          369.17               0.2596</span></span>
-<span><span class="co">#&gt; 2 individuals     2          477.88               0.3361</span></span>
-<span><span class="co">#&gt; 3 individuals     3          574.95               0.4043</span></span>
+<span><span class="co">#&gt; 1 individuals     1          478.03               0.3362</span></span>
+<span><span class="co">#&gt; 2 individuals     2          574.96               0.4043</span></span>
+<span><span class="co">#&gt; 3 individuals     3          369.01               0.2595</span></span>
 <span><span class="co">#&gt; 4      groups     1           27.65               0.2609</span></span>
-<span><span class="co">#&gt; 5      groups     2           47.32               0.4464</span></span>
-<span><span class="co">#&gt; 6      groups     3           31.03               0.2927</span></span></code></pre>
+<span><span class="co">#&gt; 5      groups     2           31.03               0.2927</span></span>
+<span><span class="co">#&gt; 6      groups     3           47.32               0.4464</span></span></code></pre>
 <p>The <strong>lower-activity</strong> profile has the largest effective
 membership, accounting for 575.0 enrolments, or 40.4% of the total. The
 <strong>higher-activity</strong> profile accounts for 369.2 enrolments,
@@ -422,15 +425,15 @@ common is the class in the student population?</strong></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;   group_class profile probability group_class_probability</span></span>
-<span><span class="co">#&gt; 1           1       1     0.39806                  0.2609</span></span>
-<span><span class="co">#&gt; 2           1       2     0.54671                  0.2609</span></span>
-<span><span class="co">#&gt; 3           1       3     0.05523                  0.2609</span></span>
-<span><span class="co">#&gt; 4           2       1     0.29483                  0.4464</span></span>
-<span><span class="co">#&gt; 5           2       2     0.38802                  0.4464</span></span>
-<span><span class="co">#&gt; 6           2       3     0.31715                  0.4464</span></span>
-<span><span class="co">#&gt; 7           3       1     0.08322                  0.2927</span></span>
-<span><span class="co">#&gt; 8           3       2     0.07012                  0.2927</span></span>
-<span><span class="co">#&gt; 9           3       3     0.84666                  0.2927</span></span></code></pre>
+<span><span class="co">#&gt; 1           1       1     0.54695                  0.2609</span></span>
+<span><span class="co">#&gt; 2           1       2     0.05523                  0.2609</span></span>
+<span><span class="co">#&gt; 3           1       3     0.39782                  0.2609</span></span>
+<span><span class="co">#&gt; 4           2       1     0.07013                  0.2927</span></span>
+<span><span class="co">#&gt; 5           2       2     0.84667                  0.2927</span></span>
+<span><span class="co">#&gt; 6           2       3     0.08320                  0.2927</span></span>
+<span><span class="co">#&gt; 7           3       1     0.38811                  0.4464</span></span>
+<span><span class="co">#&gt; 8           3       2     0.31716                  0.4464</span></span>
+<span><span class="co">#&gt; 9           3       3     0.29472                  0.4464</span></span></code></pre>
 <p>Student class 1 is characterized mainly by the
 <strong>higher-activity</strong> and
 <strong>intermediate-activity</strong> profiles. Conditional on
@@ -472,16 +475,16 @@ that this solution is the global maximum.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"starts"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;    start log_likelihood converged iterations error boundary</span></span>
-<span><span class="co">#&gt; 1      1          -8348      TRUE        168  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 2      2          -8348      TRUE        155  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 3      3          -8348      TRUE        169  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 4      4          -8348      TRUE        164  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 5      5          -8348      TRUE        165  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 6      6          -8348      TRUE        160  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 7      7          -8348      TRUE        165  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 8      8          -8348      TRUE        158  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 9      9          -8348      TRUE        169  &lt;NA&gt;    FALSE</span></span>
-<span><span class="co">#&gt; 10    10          -8348      TRUE        138  &lt;NA&gt;    FALSE</span></span></code></pre>
+<span><span class="co">#&gt; 1      1          -8348      TRUE         42  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 2      2          -8348      TRUE         33  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 3      3          -8348      TRUE         42  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 4      4          -8348      TRUE         39  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 5      5          -8348      TRUE         33  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 6      6          -8348      TRUE         33  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 7      7          -8348      TRUE         33  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 8      8          -8348      TRUE         42  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 9      9          -8348      TRUE         42  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 10    10          -8348      TRUE         42  &lt;NA&gt;    FALSE</span></span></code></pre>
 <p>All ten starts converge to a log likelihood of approximately -8348.4,
 and none has an active variance bound. The identical likelihoods across
 starts indicate that the fitted solution is stable with respect to the
@@ -520,19 +523,19 @@ courses appear in columns.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"sequences"</span>, format <span class="op">=</span> <span class="st">"wide"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;   group group_class sequence_1 sequence_2 sequence_3 sequence_4 sequence_5 sequence_6</span></span>
-<span><span class="co">#&gt; 1     1           3          2          2          3          3          3          3</span></span>
-<span><span class="co">#&gt; 2     2           3          3          3          3          3          3          3</span></span>
-<span><span class="co">#&gt; 3     3           1          1          2          2          2          2          2</span></span>
-<span><span class="co">#&gt; 4     4           1          1          2          1          1          2          2</span></span>
+<span><span class="co">#&gt; 1     1           2          1          1          2          2          2          2</span></span>
+<span><span class="co">#&gt; 2     2           2          2          2          2          2          2          2</span></span>
+<span><span class="co">#&gt; 3     3           1          3          1          1          1          1          1</span></span>
+<span><span class="co">#&gt; 4     4           1          3          1          3          3          1          1</span></span>
 <span><span class="co">#&gt;   sequence_7 sequence_8 sequence_9 sequence_10 sequence_11 sequence_12 sequence_13</span></span>
-<span><span class="co">#&gt; 1          3          3          3           3           3           3           3</span></span>
-<span><span class="co">#&gt; 2          3          3          3           3           3           3           3</span></span>
-<span><span class="co">#&gt; 3          2          1          2           2           2           2           1</span></span>
-<span><span class="co">#&gt; 4          2          1          2           1           2           2           2</span></span>
+<span><span class="co">#&gt; 1          2          2          2           2           2           2           2</span></span>
+<span><span class="co">#&gt; 2          2          2          2           2           2           2           2</span></span>
+<span><span class="co">#&gt; 3          1          3          1           1           1           1           3</span></span>
+<span><span class="co">#&gt; 4          1          3          1           3           1           1           1</span></span>
 <span><span class="co">#&gt;   sequence_14 sequence_15</span></span>
 <span><span class="co">#&gt; 1        &lt;NA&gt;        &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 2        &lt;NA&gt;        &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3           1        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3           3        &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 4        &lt;NA&gt;        &lt;NA&gt;</span></span></code></pre>
 <p>Students 1 and 2 are assigned to student class 3. Student 1 is
 assigned to the <strong>intermediate-activity</strong> profile for the
@@ -558,8 +561,8 @@ observed history does not constitute a gap.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"sequence_summary"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt;   group_class groups observations mean_length median_length shortest longest complete gaps</span></span>
 <span><span class="co">#&gt; 1           1     25          330       13.20          13.0       11      15        4    0</span></span>
-<span><span class="co">#&gt; 2           2     51          689       13.51          14.0       10      15       13    0</span></span>
-<span><span class="co">#&gt; 3           3     30          403       13.43          13.5       10      15        7    0</span></span></code></pre>
+<span><span class="co">#&gt; 2           2     30          403       13.43          13.5       10      15        7    0</span></span>
+<span><span class="co">#&gt; 3           3     51          689       13.51          14.0       10      15       13    0</span></span></code></pre>
 <p>The modal assignments place 25, 51, and 30 students in classes 1, 2,
 and 3, respectively. Their mean sequence lengths are 13.20, 13.51, and
 13.43 observed courses. Thus, the classes have similar amounts of

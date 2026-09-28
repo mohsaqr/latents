@@ -34,8 +34,7 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 
   Additional arguments passed to
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
-  including `method = "bootstrap"` for a structure the Wald path cannot
-  chart.
+  including `method = "bootstrap"`.
 
 ## Value
 
@@ -61,16 +60,16 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 confint(fit, data = example_data)
-#>                                                      2.5%       97.5%
-#> measurement.mean.profile_1.score_a          -0.5083842790 -0.02206750
-#> measurement.mean.profile_1.score_b          -0.1391045565  0.38197993
-#> measurement.mean.profile_2.score_a           0.8825060016  1.15167041
-#> measurement.mean.profile_2.score_b          -1.0313876060  0.00900769
-#> measurement.variance.profile_1.score_a       0.3548112819  0.84763384
-#> measurement.variance.profile_1.score_b       0.6676711274  1.40800776
-#> measurement.variance.profile_2.score_a       0.0005662474  0.08469865
-#> measurement.variance.profile_2.score_b       0.1139680930  1.20162877
-#> profile.probability.profile_1.group_class_1  0.6693038676  0.93195638
-#> profile.probability.profile_2.group_class_1  0.0680436177  0.33069613
-#> group.probability.group_class_1              1.0000000000  1.00000000
+#>                                                    2.5%        97.5%
+#> measurement.mean.profile_1.score_a          -0.50822695 -0.021900709
+#> measurement.mean.profile_1.score_b          -0.13911009  0.381943368
+#> measurement.mean.profile_2.score_a           0.88251814  1.151708546
+#> measurement.mean.profile_2.score_b          -1.03179187  0.008913755
+#> measurement.variance.profile_1.score_a       0.39917942  0.905927249
+#> measurement.variance.profile_1.score_b       0.72646619  1.482528823
+#> measurement.variance.profile_2.score_a       0.01589038  0.114255437
+#> measurement.variance.profile_2.score_b       0.28766115  1.503720763
+#> profile.probability.profile_1.group_class_1  0.63826878  0.901493808
+#> profile.probability.profile_2.group_class_1  0.09850619  0.361731225
+#> group.probability.group_class_1              1.00000000  1.000000000
 ```

@@ -44,7 +44,7 @@ comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
                             max_iter = 2000, tol = 1e-6, seed = 1)
 print(comparison)
 #> Parametric bootstrap likelihood-ratio comparison
-#> Null: 1 profiles, 1 group classes; alternative: 2 profiles, 1 group classes
+#> Null: 1 profile; alternative: 2 profiles
 #> Observed statistic: 44.198110
 #> p-value: 0.1 (Monte Carlo SE 0.0949) from 9 of 9 valid replicates
 ```

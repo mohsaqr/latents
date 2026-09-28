@@ -37,186 +37,215 @@ reports those.
 ## Examples
 
 ``` r
-set.seed(1)
-example_data <- data.frame(group = rep(seq_len(20), each = 10),
-                           z = rnorm(200))
-example_data$y <- rnorm(200,
-  ifelse(runif(200) < plogis(example_data$z), -3, 3))
-fit <- multilpa(example_data, "y", "group", n_profiles = 2,
-                n_group_classes = 1, profile_covariates = "z",
-                n_starts = 2, seed = 1)
+fit <- multilpa(subset(course_engagement, student <= 40),
+                c("browse", "lectures", "forum_read"), "student",
+                n_profiles = 2, n_group_classes = 1,
+                profile_covariates = "previous_grade", n_starts = 2, seed = 1)
 summary(fit)
 #> Multilevel LPA with covariates: 2 profiles, 1 group classes
-#> Individuals: 200; groups: 20; parameters: 6; converged: TRUE
+#> Individuals: 547; groups: 40; parameters: 14; converged: TRUE
 #> 1 profile covariate(s); 0 group covariate(s)
-#> Log likelihood: -425.206918; AIC: 862.414
-#> BIC (groups): 868.388; BIC (individuals): 882.204
+#> Log likelihood: -2099.951166; AIC: 4227.902
+#> BIC (groups): 4251.547; BIC (individuals): 4288.165
 #> Membership coefficients carry no standard errors here; parameter_inference() has them.
 #> 
 #> -- profiles --------------------------------------------------------
-#>  profile indicator   mean variance standard_deviation
-#>        1         y  3.009    1.235              1.111
-#>        2         y -3.005    1.114              1.055
+#>  profile  indicator    mean variance standard_deviation mean_standard_error
+#>        1     browse  0.5669   0.5419             0.7361             0.04201
+#>        1   lectures  0.4576   0.8137             0.9020             0.05091
+#>        1 forum_read  0.6311   0.4740             0.6885             0.04049
+#>        2     browse -0.8400   0.4887             0.6991             0.05736
+#>        2   lectures -0.6249   0.5655             0.7520             0.05835
+#>        2 forum_read -0.9163   0.3388             0.5820             0.04877
+#>  variance_standard_error
+#>                  0.04383
+#>                  0.06406
+#>                  0.03928
+#>                  0.05724
+#>                  0.06253
+#>                  0.04172
 #> 
 #> -- responses -------------------------------------------------------
 #>    (no rows)
 #> 
 #> -- covariances -----------------------------------------------------
-#>  profile indicator indicator_2 covariance
-#>        1         y           y      1.235
-#>        2         y           y      1.114
+#>  profile  indicator indicator_2 covariance
+#>        1     browse      browse     0.5419
+#>        1   lectures      browse     0.0000
+#>        1 forum_read      browse     0.0000
+#>        1     browse    lectures     0.0000
+#>        1   lectures    lectures     0.8137
+#>        1 forum_read    lectures     0.0000
+#>        1     browse  forum_read     0.0000
+#>        1   lectures  forum_read     0.0000
+#>        1 forum_read  forum_read     0.4740
+#>        2     browse      browse     0.4887
+#>    ... 8 more rows.  get_results(x, what = "covariances")
 #> 
 #> -- coefficients ----------------------------------------------------
-#>    level   outcome          term parameter  estimate
-#>  profile profile_1 group_class_1     logit  0.004333
-#>  profile profile_1             z     logit -0.826689
+#>    level   outcome           term parameter estimate
+#>  profile profile_1    (Intercept)     logit   0.6143
+#>  profile profile_1 previous_grade     logit   0.6507
 #> 
 #> -- counts ----------------------------------------------------------
 #>        level class effective_count effective_proportion
-#>  individuals     1           99.15               0.4958
-#>  individuals     2          100.85               0.5042
-#>       groups     1           20.00               1.0000
+#>  individuals     1           352.9               0.6451
+#>  individuals     2           194.1               0.3549
+#>       groups     1            40.0               1.0000
 #> 
 #> -- posteriors ------------------------------------------------------
 #>  row group profile posterior modal
-#>    1     1       1 1.000e+00  TRUE
-#>    2     1       1 2.358e-09 FALSE
-#>    3     1       1 1.000e+00  TRUE
-#>    4     1       1 1.000e+00  TRUE
-#>    5     1       1 1.000e+00  TRUE
-#>    6     1       1 1.000e+00  TRUE
-#>    7     1       1 4.294e-07 FALSE
-#>    8     1       1 1.000e+00  TRUE
-#>    9     1       1 1.901e-09 FALSE
-#>   10     1       1 1.000e+00  TRUE
-#>    ... 390 more rows.  get_results(x, what = "posteriors")
+#>    1     1       1  0.994590  TRUE
+#>    2     1       1  0.982315  TRUE
+#>    3     1       1  0.006128 FALSE
+#>    4     1       1  0.013476 FALSE
+#>    5     1       1  0.010921 FALSE
+#>    6     1       1  0.041605 FALSE
+#>    7     1       1  0.083749 FALSE
+#>    8     1       1  0.020653 FALSE
+#>    9     1       1  0.003240 FALSE
+#>   10     1       1  0.110966 FALSE
+#>    ... 1084 more rows.  get_results(x, what = "posteriors")
 #> 
 #> -- group_posteriors ------------------------------------------------
 #>  group group_size log_likelihood group_class posterior modal
-#>      1         10         -22.07           1         1  TRUE
-#>      2         10         -18.94           1         1  TRUE
-#>      3         10         -19.53           1         1  TRUE
-#>      4         10         -20.69           1         1  TRUE
-#>      5         10         -22.77           1         1  TRUE
-#>      6         10         -20.35           1         1  TRUE
-#>      7         10         -20.38           1         1  TRUE
-#>      8         10         -18.84           1         1  TRUE
-#>      9         10         -21.99           1         1  TRUE
-#>     10         10         -19.17           1         1  TRUE
-#>    ... 10 more rows.  get_results(x, what = "group_posteriors")
+#>      1         13         -46.02           1         1  TRUE
+#>      2         13         -52.04           1         1  TRUE
+#>      3         14         -49.04           1         1  TRUE
+#>      4         13         -46.34           1         1  TRUE
+#>      5         14         -52.81           1         1  TRUE
+#>      6         12         -50.38           1         1  TRUE
+#>      7         15         -59.39           1         1  TRUE
+#>      8         14         -56.36           1         1  TRUE
+#>      9         14         -60.18           1         1  TRUE
+#>     10         15         -61.09           1         1  TRUE
+#>    ... 30 more rows.  get_results(x, what = "group_posteriors")
 #> 
 #> -- assignments -----------------------------------------------------
-#>  group      y profile group_class uncertainty posterior_profile_1
-#>      1  3.894       1           1   4.514e-10           1.000e+00
-#>      1 -4.047       2           1   2.358e-09           2.358e-09
-#>      1  4.971       1           1   9.857e-13           1.000e+00
-#>      1  2.616       1           1   2.879e-06           1.000e+00
-#>      1  4.654       1           1   1.506e-11           1.000e+00
-#>      1  4.512       1           1   1.277e-11           1.000e+00
-#>      1 -2.917       2           1   4.294e-07           4.294e-07
-#>      1  3.567       1           1   8.299e-09           1.000e+00
-#>      1 -4.025       2           1   1.901e-09           1.901e-09
-#>      1  3.323       1           1   1.321e-08           1.000e+00
-#>  posterior_profile_2
-#>            4.514e-10
-#>            1.000e+00
-#>            9.856e-13
-#>            2.879e-06
-#>            1.506e-11
-#>            1.277e-11
-#>            1.000e+00
-#>            8.299e-09
-#>            1.000e+00
-#>            1.321e-08
-#>    ... 190 more rows.  get_results(x, what = "assignments")
+#>  student browse lectures forum_read profile group_class uncertainty
+#>        1   0.73    -0.08       0.30       1           1    0.005410
+#>        1   0.68     0.53      -0.02       1           1    0.017685
+#>        1  -1.51    -0.51      -0.91       2           1    0.006128
+#>        1   0.64    -1.02      -1.62       2           1    0.013476
+#>        1  -0.94    -0.37      -0.71       2           1    0.010921
+#>        1  -0.36    -0.46      -0.77       2           1    0.041605
+#>        1   0.38    -1.85      -0.84       2           1    0.083749
+#>        1  -1.44     0.66      -0.67       2           1    0.020653
+#>        1  -0.76    -0.43      -1.04       2           1    0.003240
+#>        1   0.26    -0.95      -0.51       2           1    0.110966
+#>  posterior_profile_1 posterior_profile_2
+#>             0.994590             0.00541
+#>             0.982315             0.01768
+#>             0.006128             0.99387
+#>             0.013476             0.98652
+#>             0.010921             0.98908
+#>             0.041605             0.95840
+#>             0.083749             0.91625
+#>             0.020653             0.97935
+#>             0.003240             0.99676
+#>             0.110966             0.88903
+#>    ... 537 more rows.  get_results(x, what = "assignments")
 #> 
 #> -- classification --------------------------------------------------
 #>        level class n_modal proportion_modal estimated_n estimated_proportion
-#>  individuals     1      99            0.495       99.15               0.4958
-#>  individuals     2     101            0.505      100.85               0.5042
-#>       groups     1      20            1.000       20.00               1.0000
+#>  individuals     1     352           0.6435       352.9               0.6451
+#>  individuals     2     195           0.3565       194.1               0.3549
+#>       groups     1      40           1.0000        40.0               1.0000
 #>  average_posterior odds_correct_classification
-#>             0.9998                      5148.3
-#>             0.9983                       570.9
+#>             0.9734                       20.12
+#>             0.9475                       32.81
 #>             1.0000                          NA
 #> 
 #> -- average_posteriors ----------------------------------------------
 #>        level assigned_class class n_assigned average_posterior
-#>  individuals              1     1         99         0.9998025
-#>  individuals              1     2         99         0.0001975
-#>  individuals              2     1        101         0.0017193
-#>  individuals              2     2        101         0.9982807
-#>       groups              1     1         20         1.0000000
+#>  individuals              1     1        352           0.97338
+#>  individuals              1     2        352           0.02662
+#>  individuals              2     1        195           0.05248
+#>  individuals              2     2        195           0.94752
+#>       groups              1     1         40           1.00000
 #> 
 #> -- classification_errors -------------------------------------------
 #>        level true_class assigned_class probability
-#>  individuals          1              1   0.9982487
-#>  individuals          1              2   0.0017513
-#>  individuals          2              1   0.0001939
-#>  individuals          2              2   0.9998061
-#>       groups          1              1   1.0000000
+#>  individuals          1              1     0.97100
+#>  individuals          1              2     0.02900
+#>  individuals          2              1     0.04827
+#>  individuals          2              2     0.95173
+#>       groups          1              1     1.00000
 #> 
 #> -- bch_weights -----------------------------------------------------
-#>        level unit assigned_class class     weight
-#>  individuals    1              1     1  1.0017547
-#>  individuals    1              1     2 -0.0017547
-#>  individuals    2              2     1 -0.0001943
-#>  individuals    2              2     2  1.0001943
-#>  individuals    3              1     1  1.0017547
-#>  individuals    3              1     2 -0.0017547
-#>  individuals    4              1     1  1.0017547
-#>  individuals    4              1     2 -0.0017547
-#>  individuals    5              1     1  1.0017547
-#>  individuals    5              1     2 -0.0017547
-#>    ... 410 more rows.  get_results(x, what = "bch_weights")
+#>        level unit assigned_class class   weight
+#>  individuals    1              1     1  1.03143
+#>  individuals    1              1     2 -0.03143
+#>  individuals    2              1     1  1.03143
+#>  individuals    2              1     2 -0.03143
+#>  individuals    3              2     1 -0.05231
+#>  individuals    3              2     2  1.05231
+#>  individuals    4              2     1 -0.05231
+#>  individuals    4              2     2  1.05231
+#>  individuals    5              2     1 -0.05231
+#>  individuals    5              2     2  1.05231
+#>    ... 1124 more rows.  get_results(x, what = "bch_weights")
 #> 
 #> -- entropy ---------------------------------------------------------
 #>        level n_classes n_units entropy_sum relative_entropy
-#>  individuals         2     200      0.8458           0.9939
-#>       groups         1      20      0.0000               NA
+#>  individuals         2     547       55.18           0.8545
+#>       groups         1      40        0.00               NA
 #> 
 #> -- residuals -------------------------------------------------------
-#>    (no rows)
+#>    profile indicator_1 indicator_2     kind observed expected residual
+#>  profile_2      browse    lectures gaussian -0.13518        0 -0.13518
+#>  profile_2      browse  forum_read gaussian  0.12265        0  0.12265
+#>  profile_2    lectures  forum_read gaussian -0.05573        0 -0.05573
+#>  profile_1    lectures  forum_read gaussian  0.04555        0  0.04555
+#>  profile_1      browse  forum_read gaussian  0.02828        0  0.02828
+#>  profile_1      browse    lectures gaussian  0.01811        0  0.01811
+#>  effective_n statistic df p_value p_adjusted
+#>        194.1   -1.8804 NA 0.06006    0.06006
+#>        194.1    1.7042 NA 0.08835    0.08835
+#>        194.1   -0.7712 NA 0.44056    0.44056
+#>        352.9    0.8525 NA 0.39394    0.39394
+#>        352.9    0.5291 NA 0.59671    0.59671
+#>        352.9    0.3388 NA 0.73479    0.73479
 #> 
 #> -- information_criteria --------------------------------------------
-#>  log_likelihood n_parameters   aic   kic bic_groups bic_individual sabic_groups
-#>          -425.2            6 862.4 871.4      868.4          882.2        849.9
+#>  log_likelihood n_parameters  aic  kic bic_groups bic_individual sabic_groups
+#>           -2100           14 4228 4245       4252           4288         4208
 #>  sabic_individual caic_groups caic_individual awe_groups awe_individual
-#>             863.2       874.4           888.2      904.4          933.7
+#>              4244        4266            4302       4345           4529
 #>  icl_groups icl_individual clc_groups clc_individual
-#>       868.4          883.9      850.4          852.1
+#>        4252           4399       4200           4310
 #> 
 #> -- model -----------------------------------------------------------
 #>  n_observations n_groups n_profiles n_group_classes n_profile_covariates
-#>             200       20          2               1                    1
+#>             547       40          2               1                    1
 #>  n_group_covariates variance_model covariance_model n_parameters log_likelihood
-#>                   0        varying         diagonal            6         -425.2
-#>    aic bic_groups bic_individual converged boundary extreme_logits n_starts
-#>  862.4      868.4          882.2      TRUE    FALSE          FALSE        2
+#>                   0        varying         diagonal           14          -2100
+#>   aic bic_groups bic_individual converged boundary extreme_logits n_starts
+#>  4228       4252           4288      TRUE    FALSE          FALSE        2
 #> 
 #> -- starts ----------------------------------------------------------
 #>  start log_likelihood converged iterations error
-#>      1         -425.2      TRUE          5  <NA>
-#>      2         -425.2      TRUE          7  <NA>
+#>      1          -2100      TRUE          7  <NA>
+#>      2          -2100      TRUE         15  <NA>
 #> 
 #> -- data ------------------------------------------------------------
-#>  group      y
-#>      1  3.894
-#>      1 -4.047
-#>      1  4.971
-#>      1  2.616
-#>      1  4.654
-#>      1  4.512
-#>      1 -2.917
-#>      1  3.567
-#>      1 -4.025
-#>      1  3.323
-#>    ... 190 more rows.  get_results(x, what = "data")
+#>  student browse lectures forum_read
+#>        1   0.73    -0.08       0.30
+#>        1   0.68     0.53      -0.02
+#>        1  -1.51    -0.51      -0.91
+#>        1   0.64    -1.02      -1.62
+#>        1  -0.94    -0.37      -0.71
+#>        1  -0.36    -0.46      -0.77
+#>        1   0.38    -1.85      -0.84
+#>        1  -1.44     0.66      -0.67
+#>        1  -0.76    -0.43      -1.04
+#>        1   0.26    -0.95      -0.51
+#>    ... 537 more rows.  get_results(x, what = "data")
 #> 
 #> 18 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 get_results(fit, what = "coefficients")
-#>     level   outcome          term parameter     estimate
-#> 1 profile profile_1 group_class_1     logit  0.004333305
-#> 2 profile profile_1             z     logit -0.826689379
+#>     level   outcome           term parameter  estimate
+#> 1 profile profile_1    (Intercept)     logit 0.6143165
+#> 2 profile profile_1 previous_grade     logit 0.6506674
 ```

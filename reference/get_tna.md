@@ -12,6 +12,12 @@ get_tna(x, ...)
 
 # S3 method for class 'multilpa_transitions'
 get_tna(x, ...)
+
+# S3 method for class 'multilpa'
+get_tna(x, ...)
+
+# S3 method for class 'multilpa_covariates'
+get_tna(x, ...)
 ```
 
 ## Arguments
@@ -48,6 +54,19 @@ count-based estimate; the network uses the fitted class rows averaged by
 class probability and warns that the row is unestimated. It never
 interprets absent moves as a certain self-transition.
 
+For a
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+or
+[`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+fit made with `time =`, there is no estimated transition matrix: the
+network is built by
+[`tna::tna()`](http://sonsoles.me/tna/reference/build_model.md) from
+each group's sequence of modal profiles in time order, the observed
+transitions between the profiles the observations were assigned to.
+[`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
+splits those sequences by each group's modal group class. A fit made
+without `time` has no order and is refused.
+
 ## See also
 
 [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
@@ -70,11 +89,11 @@ if (requireNamespace("tna", quietly = TRUE)) {
 #> Transition Probability Matrix :
 #> 
 #>           profile_1 profile_2
-#> profile_1 0.8151867 0.1848133
-#> profile_2 0.1373721 0.8626279
+#> profile_1 0.8151872 0.1848128
+#> profile_2 0.1373717 0.8626283
 #> 
 #> Initial Probabilities : 
 #> 
 #> profile_1 profile_2 
-#>  0.367517  0.632483 
+#> 0.3675166 0.6324834 
 ```

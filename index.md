@@ -511,7 +511,7 @@ comparing the resulting solutions.
 sensitivity(fit, seeds = 1:3)
 #>   seed log_likelihood converged iterations optimum best agreement
 #> 1    1          -8440      TRUE          8       1 TRUE         1
-#> 2    2          -8440      TRUE         14       1 TRUE         1
+#> 2    2          -8440      TRUE         10       1 TRUE         1
 #> 3    3          -8440      TRUE         13       1 TRUE         1
 ```
 
@@ -777,8 +777,9 @@ Inference requires an adequately identified solution. A variance
 estimate at its lower bound or a non-positive-definite information
 matrix can prevent the package from reporting intervals. Such results
 should prompt examination of class sizes, parameter constraints, and
-solution stability. Standard errors are not available for the latent
-transition models described below.
+solution stability. The latent transition models described below report
+standard errors for their initial and transition probabilities as well
+as for the measurement model.
 
 ## Covariates and external variables
 
@@ -843,11 +844,11 @@ three_step(fit, data = course_engagement, outcome = "previous_grade")
 #> 2 individuals    bch     2    0.222         0.0347    0.154     0.290         810
 r3step(fit, data = course_engagement, covariates = "previous_grade")
 #>         level outcome           term estimate standard_error statistic  p_value
-#> 1 individuals class_1    (Intercept)   -0.376         0.0582     -6.46 1.05e-10
-#> 2 individuals class_1 previous_grade   -0.575         0.0622     -9.25 2.34e-20
+#> 1 individuals class_1    (Intercept)   -0.376         0.1303     -2.89 3.91e-03
+#> 2 individuals class_1 previous_grade   -0.575         0.0593     -9.69 3.35e-22
 #>   p_value_adjusted conf_low conf_high
-#> 1               NA   -0.490    -0.262
-#> 2         2.34e-20   -0.697    -0.453
+#> 1               NA   -0.631    -0.121
+#> 2         3.35e-22   -0.691    -0.459
 ```
 
 The first call compares previous-grade means between enrolment profiles.
@@ -919,8 +920,9 @@ not establish that assumption.
 Missing-data handling should be described together with the pattern and
 extent of missingness and the information available to explain it.
 Without `missing = "fiml"`, missing indicators produce an error.
-Membership-covariate models and parametric bootstrap procedures require
-complete data in this implementation.
+Membership-covariate models accept `missing = "fiml"` for their
+indicators, but the covariates themselves must be complete; parametric
+bootstrap procedures require complete data in this implementation.
 
 ## Ordered observations and latent transitions
 
@@ -1029,9 +1031,11 @@ estimated transition probabilities.
 The fitted transitions can be exported through
 [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md) and
 [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
-for further analysis with `tna`. Standard errors, likelihood-ratio
-testing, and class enumeration are not available for these transition
-models.
+for further analysis with `tna`.
+[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+reports standard errors and intervals for every transition-model
+parameter; likelihood-ratio testing and class enumeration are not
+available for these models.
 
 ## Categorical and mixed measurement models
 
@@ -1174,6 +1178,39 @@ Standard errors and information criteria from the staged fit are
 conditional on the fixed measurement parameters. Uncertainty from
 estimating those parameters in the first stage is not propagated, which
 should be stated when reporting inferential results.
+
+## Mixture regression
+
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+fits regressions whose coefficients differ across latent classes, for
+continuous (`"gaussian"`), binary or binomial (`"binomial"`) and count
+(`"poisson"`) outcomes. The class can belong to each row, to a whole
+group (`class_level = "group"`), or to each row with a second-level
+group class that shifts how often each regression class occurs within a
+group (`n_group_classes`). Covariates can predict class membership
+(`membership`, `group_membership`), and terms can share one coefficient
+across classes (`common`).
+
+``` r
+
+regressions <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
+                                  n_starts = 3, seed = 1)
+get_results(regressions, "coefficients")
+#>     class        term estimate std_error statistic  p_value conf_low conf_high p_adjusted
+#> 1 class_1 (Intercept)   34.355     0.719     47.76 0.00e+00   32.945     35.76         NA
+#> 2 class_1       hours    4.566     0.105     43.60 0.00e+00    4.361      4.77   0.00e+00
+#> 3 class_2 (Intercept)   54.895     1.093     50.24 0.00e+00   52.753     57.04         NA
+#> 4 class_2       hours    0.808     0.170      4.77 1.88e-06    0.476      1.14   1.88e-06
+```
+
+[`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+compares numbers of classes, with an optional parametric bootstrap
+likelihood-ratio test. Standard errors come from analytic scores, with
+observed-information, sandwich and outer-product estimators.
+Single-level and group-level models reproduce `flexmix`’s likelihood at
+the same parameters;
+[`vignette("mixture-regression")`](https://pak.dynasite.org/latents/articles/mixture-regression.md)
+walks through every nesting.
 
 ## Retrieving results and reporting an analysis
 

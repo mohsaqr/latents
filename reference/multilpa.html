@@ -17,7 +17,7 @@ missing indicators are available."><meta property="og:image" content="https://pa
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,11 +30,14 @@ missing indicators are available."><meta property="og:image" content="https://pa
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -86,6 +89,7 @@ missing indicators are available.</p>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  start <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  missing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"fiml"</span><span class="op">)</span>,</span>
+<span>  profile_slopes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"shared"</span>, <span class="st">"group_class"</span><span class="op">)</span>,</span>
 <span>  covariance_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"diagonal"</span>, <span class="st">"full"</span><span class="op">)</span>,</span>
 <span>  categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  min_probability <span class="op">=</span> <span class="fl">1e-10</span>,</span>
@@ -94,7 +98,12 @@ missing indicators are available.</p>
 <span>  centering <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"person"</span>, <span class="st">"grand"</span><span class="op">)</span>,</span>
 <span>  volume <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  shape <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  orientation <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  orientation <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  select_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"likelihood"</span>, <span class="st">"converged"</span><span class="op">)</span>,</span>
+<span>  prior <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  noise <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  acceleration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"squarem"</span>, <span class="st">"none"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -118,7 +127,7 @@ forgotten grouping would otherwise be fitted as a different model without
 saying so. Passing <code>id = NULL</code> explicitly fits a <strong>single-level</strong> model:
 the observations are treated as independent, each row is its own unit, and
 <code>n_group_classes</code> becomes one. That fit raises a <code>latents_single_level</code>
-warning, since this package exists for the two-level model. This is the ordinary Gaussian or latent-class mixture that the
+message saying so. This is the ordinary Gaussian or latent-class mixture that the
 two-level model reduces to, and every verb of this package works on it. The
 unit column is fabricated internally as <code>.observation</code>; it is not returned
 by <code>get_results(x, "data")</code>, and a <code>data</code> that already has a column of that
@@ -141,14 +150,15 @@ unit leaves no composition for a second-level class to differ in.</p></dd>
 <code>data</code> predicting individual-profile and group-class membership through
 multinomial logits, with the final class as reference. Naming either one
 fits the one-step covariate model and returns a <code>multilpa_covariates</code>
-object: profile slopes are shared across group classes, profile
-intercepts differ by group class, and a <code>group_covariate</code> must be
-constant within each group. Covariates enter in their supplied units, so
-centre or scale them beforehand if that is what you want. This is one-step
-maximum likelihood, not a regression on assigned classes; <code><a href="three_step.html">three_step()</a></code>
-and <code><a href="r3step.html">r3step()</a></code> are the staged alternatives. The covariate path supports
-neither <code>start</code>, nor <code>missing = "fiml"</code>, nor <code>fixed</code>, and refuses them by
-name rather than ignoring them.
+object: profile intercepts differ by group class, profile slopes are
+shared across group classes unless <code>profile_slopes = "group_class"</code>, and a
+<code>group_covariate</code> must be constant within each group. Covariates enter in
+their supplied units, so centre or scale them beforehand if that is what
+you want. This is one-step maximum likelihood, not a regression on
+assigned classes; <code><a href="three_step.html">three_step()</a></code> and <code><a href="r3step.html">r3step()</a></code> are the staged
+alternatives. The covariate path supports neither <code>start</code> nor <code>fixed</code>,
+and refuses them by name rather than ignoring them; it supports
+<code>missing = "fiml"</code> for the indicators, but covariates must be complete.
 Use one for an ordinary, pooled LPA.</p></dd>
 
 
@@ -158,8 +168,13 @@ covariance matrices) or <code>"equal"</code> (shared across profiles).</p></dd>
 
 
 <dt id="arg-n-starts">n_starts<a class="anchor" aria-label="anchor" href="#arg-n-starts"></a></dt>
-<dd><p>Positive integer number of EM starts. When <code>start</code> is supplied,
-it supplies the first start; remaining starts are random initializations.
+<dd><p>Positive integer number of EM starts. The first is
+deterministic: Ward's hierarchical clustering of the standardized
+indicators (on at most 2000 evenly spaced rows), each cluster described by
+its own means and spread, which is the start mclust's name refers to and
+finds solutions whose profiles differ in shape. The rest are k-means from
+random centres. When <code>start</code> is supplied, it supplies the first start
+instead; remaining starts are random initializations.
 It is ignored when <code>max_iter = 0</code> and <code>start</code> is supplied: that call
 evaluates the supplied parameters and nothing else, so exactly one start is
 run whatever <code>n_starts</code> says.</p></dd>
@@ -212,7 +227,21 @@ aligned by position.</p></dd>
 <dt id="arg-missing">missing<a class="anchor" aria-label="anchor" href="#arg-missing"></a></dt>
 <dd><p><code>"error"</code> rejects missing indicators; <code>"fiml"</code> maximizes the
 observed-data likelihood under an ignorable missingness mechanism (MAR).
-Missing indicators are integrated out, not filled in for likelihood fitting.</p></dd>
+Missing indicators are integrated out, not filled in for likelihood fitting.
+This holds with membership covariates too; the covariates themselves must
+be complete (<code>latents_bad_data</code>).</p></dd>
+
+
+<dt id="arg-profile-slopes">profile_slopes<a class="anchor" aria-label="anchor" href="#arg-profile-slopes"></a></dt>
+<dd><p><code>"shared"</code> (the default) gives each profile
+covariate one slope per profile logit, common to every group class.
+<code>"group_class"</code> lets each group class have its own slopes, so a covariate
+can predict profile membership differently in different kinds of group
+(a cross-level interaction); its coefficients are reported with terms such
+as <code>z:group_class_1</code>. It adds <code>(n_group_classes - 1)</code> times as many slope
+parameters again, each estimated from the groups in its class, so it needs
+enough groups per class. Naming it without <code>profile_covariates</code> raises
+<code>latents_bad_argument</code>.</p></dd>
 
 
 <dt id="arg-covariance-model">covariance_model<a class="anchor" aria-label="anchor" href="#arg-covariance-model"></a></dt>
@@ -295,12 +324,113 @@ a shared orientation and a free shape, EVE and VVE, have no closed form
 and use the minorize-maximize step of Browne and McNicholas (2014).
 Parameter counts match <code>mclust</code>'s own for all fourteen.</p>
 <p>Anything other than EEI, VVI, EEE or VVV is maximized across every profile
-at once, so it cannot be combined with a held <code>variances</code> block, and
-<code>parameter_inference(method = "wald")</code> refuses it with
-<code>latents_unsupported_inference</code>: the free coordinates are log variances,
-which is the wrong chart for a constrained volume, shape or orientation.
-<code>parameter_inference(method = "bootstrap")</code> reports all fourteen: it
-resamples groups and refits inside the same family, so it needs no chart.</p></dd>
+at once, so it cannot be combined with a held <code>variances</code> block.
+<code><a href="parameter_inference.html">parameter_inference()</a></code> reports Wald standard errors for all fourteen: a
+constrained structure is differentiated in its own free coordinates (log
+volumes, determinant-one log shapes and orientations), which have exactly
+as many dimensions as the structure has parameters, and carried to the
+reported variances and covariances by the delta method.
+<code>method = "bootstrap"</code> is available for all fourteen as well.</p></dd>
+
+
+<dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
+<dd><p>The covariance structure named by its mclust code, one of
+<code>"EII"</code>, <code>"VII"</code>, <code>"EEI"</code>, <code>"VEI"</code>, <code>"EVI"</code>, <code>"VVI"</code>, <code>"EEE"</code>, <code>"VEE"</code>,
+<code>"EVE"</code>, <code>"VVE"</code>, <code>"EEV"</code>, <code>"VEV"</code>, <code>"EVV"</code>, <code>"VVV"</code>: the first letter is
+the volume, the second the shape and the third the orientation, each
+equal (<code>E</code>) or varying (<code>V</code>) across profiles, with <code>I</code> for axis-aligned
+(no covariances). The same codes <code><a href="enumerate_classes.html">enumerate_classes()</a></code> takes. Use it
+instead of <code>variance_model</code>/<code>covariance_model</code> or
+<code>volume</code>/<code>shape</code>/<code>orientation</code>, not together with them.</p></dd>
+
+
+<dt id="arg-select-start">select_start<a class="anchor" aria-label="anchor" href="#arg-select-start"></a></dt>
+<dd><p>Which start the fit reports. <code>"likelihood"</code>, the
+default, takes the highest log likelihood across starts, preferring a
+converged start only among those tied with it to within a relative
+<code>1e-10</code>. <code>"converged"</code> takes the highest log likelihood among the converged
+starts whenever at least one converged, and falls back to every start when
+none did. Use it when an unconverged start edges out a converged one by a
+negligible amount, which happens when a membership logit creeps along a flat
+ridge of the likelihood: the converged start is then a maximum that
+<code><a href="parameter_inference.html">parameter_inference()</a></code> can work with, and the other is not. <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>
+and <code>get_results(fit, "starts")</code> show every start either way.</p></dd>
+
+
+<dt id="arg-prior">prior<a class="anchor" aria-label="anchor" href="#arg-prior"></a></dt>
+<dd><p><code>NULL</code>, the default, for maximum likelihood, or
+<code><a href="prior_control.html">prior_control()</a></code> for maximum a posteriori estimation of the Gaussian
+means and covariances under the conjugate prior of Fraley and Raftery
+(2007) — mclust's <code>priorControl()</code>. The hyperparameters default to
+mclust's <code>defaultPrior()</code> computed from the indicators being fitted, and
+each M-step is mclust's own, so a fit from the same start reproduces
+<code>mclust::Mclust(..., prior = priorControl())</code>. It is defined for EII,
+VII, EEI, VEI, EVI, VVI, EEE, EEV, VEV and VVV (mclust has none for VEE,
+EVE, VVE and EVV), for complete continuous indicators without <code>fixed</code>
+or membership covariates; anything else raises
+<code>latents_unsupported_prior</code>. The mixing proportions are not given a
+prior. Following mclust, the fit's <code>log_likelihood</code> is the <em>unpenalized</em>
+log likelihood evaluated at the posterior mode, and <code>aic</code>, <code>bic</code> and
+their variants are computed from it with the usual parameter count; EM
+convergence is judged on its relative change. A prior's MAP step can
+lower that likelihood, so the decrease check made under maximum
+likelihood is not applied. <code>parameter_inference(method = "wald")</code> is
+refused for such a fit (<code>latents_unsupported_inference</code>), because the
+likelihood's score is not zero at a posterior mode;
+<code>method = "bootstrap"</code> refits every resample with the same prior. The
+fit records the request as <code>prior</code> and the resolved hyperparameters, in
+the indicators' units, as <code>prior_parameters</code>.</p></dd>
+
+
+<dt id="arg-noise">noise<a class="anchor" aria-label="anchor" href="#arg-noise"></a></dt>
+<dd><p><code>FALSE</code>, the default, or <code>TRUE</code> to add a noise component: one
+more mixture component with a constant density <code>1 / V</code> over the
+hypervolume <code>V</code> of the data, which absorbs observations no Gaussian
+profile explains — outliers and scatter — instead of letting them
+distort a profile (Banfield &amp; Raftery, 1993; mclust's
+<code>initialization = list(noise = )</code> and <code>Vinv</code>). <code>V</code> is mclust's
+<code>hypvol()</code>: the smaller of the volumes of the data's axis-aligned and
+principal-component-aligned bounding boxes. The component has no
+measurement parameters; its mixing proportion is estimated with the
+others, and, as mclust counts it, the model has two more parameters (the
+proportion and the hypervolume), so its criteria equal mclust's. A random
+start puts a tenth of the mass on the noise; a <code>start</code> supplies
+<code>noise_probability</code> beside <code>profile_probabilities</code>, the two summing to
+one. Available for continuous, complete indicators with one group class
+(<code>id = NULL</code>, or <code>n_group_classes = 1</code>) and any of the fourteen
+covariance structures, alone or with <code>prior</code>; otherwise
+<code>latents_unsupported_noise</code>. In the fit, the noise component is profile
+<code>0</code>, as in mclust's classification: <code>subject_profiles</code> is <code>0</code> for an
+observation assigned to it, <code>get_results(fit, "assignments")</code> adds a
+<code>posterior_noise</code> column, <code>get_results(fit, "posteriors")</code> and
+<code>get_results(fit, "profile_probabilities")</code> have profile-<code>0</code> rows, and
+the classification diagnostics count it as a class. <code>means</code>,
+<code>variances</code>, <code>covariances</code>, <code>profile_probabilities</code> and
+<code>subject_posteriors</code> describe the Gaussian profiles only, so the latter
+two sum to one minus the noise share; the fit adds <code>noise_probability</code>,
+<code>noise_posteriors</code>, <code>n_noise</code> and <code>hypervolume</code>. Verbs that do not yet
+account for the component — <code><a href="parameter_inference.html">parameter_inference()</a></code>, <code><a href="three_step.html">three_step()</a></code>,
+<code><a href="r3step.html">r3step()</a></code>, <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>, <code><a href="starting_values.html">starting_values()</a></code>, bivariate residuals,
+<code><a href="fit_staged.html">fit_staged()</a></code> and the posterior plots — refuse such a fit with
+<code>latents_unsupported_noise</code>.</p></dd>
+
+
+<dt id="arg-acceleration">acceleration<a class="anchor" aria-label="anchor" href="#arg-acceleration"></a></dt>
+<dd><p><code>"squarem"</code>, the default, accelerates EM with SQUAREM
+(Varadhan &amp; Roland, 2008): each cycle extrapolates along the last two EM
+steps and finishes with an ordinary EM step, and falls back to plain EM
+whenever the extrapolated point would lower the likelihood, so the
+iteration stays monotone and converges to the same kind of maximum. The
+convergence test is read over a whole cycle, so it is never looser than
+plain EM's. <code>"none"</code> runs plain EM, which follows the same path as other
+EM implementations from the same start (mclust, Mplus) and is the choice
+for step-by-step reproduction. <code>iterations</code> and <code>max_iter</code> count EM steps
+either way. Fits with <code>prior</code>, and models with membership covariates,
+always use plain EM. For EVE and VVE, whose shared orientation has no
+closed form, each EM iteration takes a fixed number of warm-started
+orientation steps rather than solving it (a generalized EM step), under
+either setting; this keeps every iteration monotone and makes the EM map
+a fixed function, which SQUAREM requires.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -334,15 +464,21 @@ identification; no general identification guarantee is made. Initialization
 alone uses indicator-mean filling. EM uses conditional Gaussian sufficient
 statistics and observed marginal densities. More than one group class requires more than one profile
 and at least one group with multiple individuals; these checks are necessary
-but do not establish identification. The highest finite likelihood across
-starts is returned, even if that start did not converge; inspect <code>converged</code>
-and <code>starts</code>. Profile and group-class labels are arbitrary.</p>
+but do not establish identification. By default the highest finite
+likelihood across starts is returned, even if that start did not converge;
+<code>select_start = "converged"</code> prefers a converged start, and <code>converged</code> and
+<code>starts</code> show which was chosen. Profile and group-class labels are arbitrary.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Vermunt, J. K. (2003). Multilevel latent class models.
 Sociological Methodology, 33, 213–239.
 doi:10.1111/j.0081-1750.2003.t01-1-00131.x.</p>
+<p>Banfield, J. D., &amp; Raftery, A. E. (1993). Model-based Gaussian and
+non-Gaussian clustering. Biometrics, 49, 803–821. doi:10.2307/2532201.</p>
+<p>Fraley, C., &amp; Raftery, A. E. (2007). Bayesian regularization for normal
+mixture estimation and model-based clustering. Journal of
+Classification, 24, 155–181. doi:10.1007/s00357-007-0004-5.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -351,235 +487,281 @@ doi:10.1111/j.0081-1750.2003.t01-1-00131.x.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">7</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Two kinds of school, differing only in how often a pupil scores highly.</span></span></span>
-<span class="r-in"><span><span class="va">example_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  school <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">24</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  school_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mixed"</span>, <span class="st">"high"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">120</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">example_data</span><span class="op">$</span><span class="va">high</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">240</span>, <span class="fl">1L</span>,</span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">example_data</span><span class="op">$</span><span class="va">school_type</span> <span class="op">==</span> <span class="st">"high"</span>, <span class="fl">0.8</span>, <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">example_data</span><span class="op">$</span><span class="va">score_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">240</span>, mean <span class="op">=</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">example_data</span><span class="op">$</span><span class="va">high</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">example_data</span><span class="op">$</span><span class="va">score_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">240</span>, mean <span class="op">=</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">example_data</span><span class="op">$</span><span class="va">high</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">multilpa</span><span class="op">(</span><span class="va">example_data</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"score_a"</span>, <span class="st">"score_b"</span><span class="op">)</span>, <span class="st">"school"</span>,</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Course sessions nested in students: engagement profiles of sessions, and</span></span></span>
+<span class="r-in"><span><span class="co"># classes of students that differ in how often they are engaged.</span></span></span>
+<span class="r-in"><span><span class="va">activity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">multilpa</span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span></span>
 <span class="r-in"><span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">4</span>,</span></span>
 <span class="r-in"><span>                seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Multilevel LPA: 2 profiles and 2 group classes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Individuals: 240; groups: 24; parameters: 11; converged: TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log likelihood: -784.609205; AIC: 1591.218</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> BIC (groups): 1604.177; BIC (individuals): 1629.505</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Best likelihood replicated in 4/4 starts (absolute tolerance 0.000786).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log likelihood: -8439.816424; AIC: 16925.633</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> BIC (groups): 16986.892; BIC (individuals): 17046.609</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Best likelihood replicated in 4/4 starts (absolute tolerance 0.00844).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- profiles --------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile indicator     mean variance standard_deviation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_a  1.82743   1.4076             1.1864</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_b  1.96280   0.9206             0.9595</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_a  0.07696   0.9562             0.9779</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_b -0.04159   1.0240             1.0119</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile  indicator    mean variance standard_deviation mean_standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1     browse  0.5396   0.5899             0.7680             0.02710</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   lectures  0.4274   0.8447             0.9191             0.03249</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 forum_read  0.6198   0.4815             0.6939             0.02473</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 forum_post  0.5305   0.6888             0.8299             0.02953</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 attendance  0.6490   0.3841             0.6198             0.02226</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2     browse -0.7656   0.5285             0.7270             0.03121</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2   lectures -0.6065   0.5384             0.7337             0.03093</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2 forum_read -0.8792   0.3631             0.6026             0.02622</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2 forum_post -0.7527   0.4212             0.6490             0.02768</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2 attendance -0.9207   0.3736             0.6113             0.02643</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  variance_standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.02948</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.04210</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.02440</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.03482</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.01956</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.03222</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.03209</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.02279</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.02608</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  0.02279</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- responses -------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    (no rows)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- covariances -----------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile indicator indicator_2 covariance</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_a     score_a     1.4076</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_b     score_a     0.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_a     score_b     0.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   score_b     score_b     0.9206</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_a     score_a     0.9562</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_b     score_a     0.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_a     score_b     0.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   score_b     score_b     1.0240</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile  indicator indicator_2 covariance</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1     browse      browse     0.5899</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   lectures      browse     0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 forum_read      browse     0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 forum_post      browse     0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 attendance      browse     0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1     browse    lectures     0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   lectures    lectures     0.8447</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 forum_read    lectures     0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 forum_post    lectures     0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 attendance    lectures     0.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 40 more rows.  get_results(x, what = "covariances")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- profile_probabilities -------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  group_class profile probability group_class_probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1       1      0.8101                   0.516</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            1       2      0.1899                   0.516</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            2       1      0.1717                   0.484</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            2       2      0.8283                   0.484</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1       1      0.1705                  0.3253</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1       2      0.8295                  0.3253</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            2       1      0.7859                  0.6747</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            2       2      0.2141                  0.6747</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- counts ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level class effective_count effective_proportion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     1          120.27               0.5011</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     2          119.73               0.4989</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups     1           12.38               0.5160</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups     2           11.62               0.4840</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     1          834.10               0.5866</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     2          587.90               0.4134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups     1           34.48               0.3253</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups     2           71.52               0.6747</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- posteriors ------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  row group profile posterior modal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    1     1       1 0.5306745  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    2     1       1 0.0004077 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    3     1       1 0.0169366 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    4     1       1 0.0073025 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    5     1       1 0.0813076 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    6     1       1 0.0197391 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    7     1       1 0.0274373 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    8     1       1 0.9720359  TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    9     1       1 0.1178553 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   10     1       1 0.1704138 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 470 more rows.  get_results(x, what = "posteriors")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    1     1       1 9.996e-01  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    2     1       1 9.851e-01  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    3     1       1 2.421e-06 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    4     1       1 3.863e-06 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    5     1       1 5.749e-06 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    6     1       1 2.278e-05 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    7     1       1 2.301e-05 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    8     1       1 1.107e-05 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    9     1       1 2.173e-06 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   10     1       1 9.510e-06 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 2834 more rows.  get_results(x, what = "posteriors")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- group_posteriors ------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  group group_size log_likelihood group_class posterior modal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      1         10         -34.41           1 9.332e-03 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      2         10         -29.65           1 1.057e-03 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      3         10         -37.14           1 4.329e-01 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      4         10         -30.63           1 1.013e-03 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      5         10         -31.67           1 1.539e-01 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      6         10         -30.04           1 9.911e-06 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      7         10         -33.47           1 1.742e-04 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      8         10         -32.82           1 7.818e-04 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      9         10         -33.93           1 1.409e-03 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     10         10         -32.16           1 3.257e-04 FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 38 more rows.  get_results(x, what = "group_posteriors")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      1         13         -61.52           1 1.000e+00  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      2         13         -71.94           1 1.000e+00  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      3         14         -76.69           1 6.005e-10 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      4         13         -67.56           1 1.327e-09 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      5         14         -78.80           1 1.000e+00  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      6         12         -80.90           1 1.984e-02 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      7         15         -89.36           1 1.123e-09 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      8         14         -85.22           1 9.989e-01  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      9         14         -83.80           1 4.309e-10 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     10         15         -82.06           1 1.000e+00  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 202 more rows.  get_results(x, what = "group_posteriors")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- assignments -----------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  school score_a  score_b profile group_class uncertainty posterior_profile_1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.4453  2.20269       1           2   0.4693255           0.5306745</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  1.5699 -2.30855       2           2   0.0004077           0.0004077</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.6884 -0.05664       2           2   0.0169366           0.0169366</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.1776  0.06284       2           2   0.0073025           0.0073025</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.7292  0.71023       2           2   0.0813076           0.0813076</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  1.5333 -0.59231       2           2   0.0197391           0.0197391</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.5066  0.29852       2           2   0.0274373           0.0274373</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  2.0333  2.64254       1           2   0.0279641           0.9720359</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -1.4676  2.11280       2           2   0.1178553           0.1178553</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  1.0192  0.91778       2           2   0.1704138           0.1704138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  posterior_profile_2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.46933</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.99959</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.98306</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.99270</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.91869</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.98026</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.97256</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.02796</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.88214</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              0.82959</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 230 more rows.  get_results(x, what = "assignments")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  student browse lectures forum_read forum_post attendance profile group_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.73    -0.08       0.30       0.67       0.72       1           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.68     0.53      -0.02      -0.55       0.70       1           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -1.51    -0.51      -0.91      -0.80      -0.97       2           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.64    -1.02      -1.62      -1.20      -1.26       2           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -0.94    -0.37      -0.71      -0.28      -1.52       2           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -0.36    -0.46      -0.77      -0.43      -1.34       2           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.38    -1.85      -0.84      -1.09      -1.12       2           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -1.44     0.66      -0.67      -1.67      -1.00       2           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -0.76    -0.43      -1.04      -0.69      -1.37       2           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.26    -0.95      -0.51      -1.89      -1.45       2           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  uncertainty posterior_profile_1 posterior_profile_2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    4.436e-04           9.996e-01           0.0004436</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    1.485e-02           9.851e-01           0.0148535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    2.421e-06           2.421e-06           0.9999976</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    3.863e-06           3.863e-06           0.9999961</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    5.749e-06           5.749e-06           0.9999943</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    2.278e-05           2.278e-05           0.9999772</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    2.301e-05           2.301e-05           0.9999770</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    1.107e-05           1.107e-05           0.9999889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    2.173e-06           2.173e-06           0.9999978</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    9.510e-06           9.510e-06           0.9999905</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 1412 more rows.  get_results(x, what = "assignments")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification --------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level class n_modal proportion_modal estimated_n estimated_proportion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     1     123           0.5125      120.27               0.5011</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     2     117           0.4875      119.73               0.4989</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups     1      12           0.5000       12.38               0.5160</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups     2      12           0.5000       11.62               0.4840</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     1     836           0.5879      834.10               0.5866</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals     2     586           0.4121      587.90               0.4134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups     1      35           0.3302       34.48               0.3253</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups     2      71           0.6698       71.52               0.6747</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  average_posterior odds_correct_classification</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9275                       12.73</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9470                       17.97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9818                       50.49</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9498                       20.18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9849                       46.08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9818                       76.35</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9690                       64.80</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             0.9920                       59.89</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- average_posteriors ----------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level assigned_class class n_assigned average_posterior</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     1        123           0.92747</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     2        123           0.07253</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     1        117           0.05296</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     2        117           0.94704</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              1     1         12           0.98176</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              1     2         12           0.01824</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              2     1         12           0.05017</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              2     2         12           0.94983</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     1        836          0.984935</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              1     2        836          0.015065</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     1        586          0.018243</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals              2     2        586          0.981757</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              1     1         35          0.968985</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              1     2         35          0.031015</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              2     1         71          0.007986</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups              2     2         71          0.992014</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification_errors -------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level true_class assigned_class probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              1     0.94849</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              2     0.05151</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              1     0.07451</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              2     0.92549</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups          1              1     0.95138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups          1              2     0.04862</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups          2              1     0.01884</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups          2              2     0.98116</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              1     0.98718</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          1              2     0.01282</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              1     0.02142</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals          2              2     0.97858</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups          1              1     0.98356</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups          1              2     0.01644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups          2              1     0.01518</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups          2              2     0.98482</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- bch_weights -----------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level unit assigned_class class   weight</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    1              1     1  1.05894</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    1              1     2 -0.05894</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    2              2     1 -0.08526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    2              2     2  1.08526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    3              2     1 -0.08526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    3              2     2  1.08526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    4              2     1 -0.08526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    4              2     2  1.08526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    5              2     1 -0.08526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    5              2     2  1.08526</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 518 more rows.  get_results(x, what = "bch_weights")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    1              1     1  1.01327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    1              1     2 -0.01327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    2              1     1  1.01327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    2              1     2 -0.01327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    3              2     1 -0.02218</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    3              2     2  1.02218</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    4              2     1 -0.02218</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    4              2     2  1.02218</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    5              2     1 -0.02218</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals    5              2     2  1.02218</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 3046 more rows.  get_results(x, what = "bch_weights")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- entropy ---------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        level n_classes n_units entropy_sum relative_entropy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals         2     240      40.873           0.7543</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       groups         2      24       1.901           0.8857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  individuals         2    1422      60.940           0.9382</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       groups         2     106       4.435           0.9396</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- residuals -------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    profile indicator_1 indicator_2     kind observed expected residual</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1     score_a     score_b gaussian  0.11599        0  0.11599</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2     score_a     score_b gaussian -0.08285        0 -0.08285</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  effective_n statistic df p_value p_adjusted</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        120.3    1.2618 NA  0.2070     0.2070</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        119.7   -0.8971 NA  0.3697     0.3697</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1    lectures  attendance gaussian  0.23393        0  0.23393</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2  forum_read  attendance gaussian  0.22869        0  0.22869</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1  forum_read  attendance gaussian  0.20880        0  0.20880</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1  forum_post  attendance gaussian  0.20314        0  0.20314</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2      browse  attendance gaussian  0.19248        0  0.19248</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_1      browse  attendance gaussian  0.17312        0  0.17312</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2    lectures  attendance gaussian  0.12018        0  0.12018</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2  forum_post  attendance gaussian  0.11883        0  0.11883</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2      browse  forum_read gaussian  0.10925        0  0.10925</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_2  forum_read  forum_post gaussian  0.06676        0  0.06676</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  effective_n statistic df   p_value p_adjusted</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        834.1     6.871 NA 6.374e-12  6.374e-12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        587.9     5.630 NA 1.799e-08  1.799e-08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        834.1     6.109 NA 1.001e-09  1.001e-09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        834.1     5.939 NA 2.867e-09  2.867e-09</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        587.9     4.714 NA 2.429e-06  2.429e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        834.1     5.042 NA 4.619e-07  4.619e-07</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        587.9     2.921 NA 3.493e-03  3.493e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        587.9     2.888 NA 3.883e-03  3.883e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        587.9     2.653 NA 7.983e-03  7.983e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        587.9     1.617 NA 1.059e-01  1.059e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 10 more rows.  get_results(x, what = "residuals")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- information_criteria --------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  log_likelihood n_parameters  aic  kic bic_groups bic_individual sabic_groups</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          -784.6           11 1591 1605       1604           1630         1570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  log_likelihood n_parameters   aic   kic bic_groups bic_individual sabic_groups</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           -8440           23 16926 16952      16987          17047        16914</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  sabic_individual caic_groups caic_individual awe_groups awe_individual</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              1595        1615            1641       1676           1805</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             16974       17010           17070      17172          17404</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  icl_groups icl_individual clc_groups clc_individual</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1608           1711       1573           1651</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       16996          17168      16889          17002</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- model -----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n_observations n_informative n_groups n_profiles n_group_classes centering</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             240           240       24          2               2      none</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1422          1422      106          2               2      none</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   VVI           11                            11         -784.6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   aic bic_groups bic_individual converged iterations boundary small_classes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1591       1604           1630      TRUE         21    FALSE         FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   VVI           23                            23          -8440</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    aic bic_groups bic_individual converged iterations boundary small_classes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  16926      16987          17047      TRUE          9    FALSE         FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  best_start n_best_replicated</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           1                 4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- stages ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  stage group_classes fixed log_likelihood parameters</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  joint             2  &lt;NA&gt;         -784.6         11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  joint             2  &lt;NA&gt;          -8440         23</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  parameters_with_measurement converged</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                           11      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           23      TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- starts ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  start log_likelihood converged iterations error boundary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      1         -784.6      TRUE         21  &lt;NA&gt;    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      2         -784.6      TRUE         24  &lt;NA&gt;    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      3         -784.6      TRUE         21  &lt;NA&gt;    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      4         -784.6      TRUE         24  &lt;NA&gt;    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      1          -8440      TRUE          9  &lt;NA&gt;    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      2          -8440      TRUE         12  &lt;NA&gt;    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      3          -8440      TRUE          9  &lt;NA&gt;    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      4          -8440      TRUE          9  &lt;NA&gt;    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- data ------------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  school score_a  score_b</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.4453  2.20269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  1.5699 -2.30855</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.6884 -0.05664</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -0.1776  0.06284</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.7292  0.71023</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  1.5333 -0.59231</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  0.5066  0.29852</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  2.0333  2.64254</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1 -1.4676  2.11280</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       1  1.0192  0.91778</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 230 more rows.  get_results(x, what = "data")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  student browse lectures forum_read forum_post attendance</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.73    -0.08       0.30       0.67       0.72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.68     0.53      -0.02      -0.55       0.70</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -1.51    -0.51      -0.91      -0.80      -0.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.64    -1.02      -1.62      -1.20      -1.26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -0.94    -0.37      -0.71      -0.28      -1.52</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -0.36    -0.46      -0.77      -0.43      -1.34</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.38    -1.85      -0.84      -1.09      -1.12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -1.44     0.66      -0.67      -1.67      -1.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1  -0.76    -0.43      -1.04      -0.69      -1.37</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   0.26    -0.95      -0.51      -1.89      -1.45</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 1412 more rows.  get_results(x, what = "data")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 19 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   profile indicator        mean  variance standard_deviation</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1   score_a  1.82742675 1.4076126          1.1864285</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       1   score_b  1.96280211 0.9206189          0.9594889</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       2   score_a  0.07696489 0.9562409          0.9778757</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       2   score_b -0.04158577 1.0239945          1.0119261</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    profile  indicator       mean  variance standard_deviation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1     browse  0.5395773 0.5898715          0.7680309</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        1   lectures  0.4274030 0.8446923          0.9190714</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        1 forum_read  0.6198248 0.4814743          0.6938835</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        1 forum_post  0.5304887 0.6887896          0.8299335</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        1 attendance  0.6490497 0.3841264          0.6197793</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        2     browse -0.7655998 0.5284684          0.7269583</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7        2   lectures -0.6064852 0.5383733          0.7337392</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8        2 forum_read -0.8792138 0.3631129          0.6025885</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        2 forum_post -0.7526883 0.4211623          0.6489702</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10       2 attendance -0.9206600 0.3736293          0.6112522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    mean_standard_error variance_standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           0.02710160              0.02948402</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           0.03248649              0.04210054</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           0.02473030              0.02439627</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           0.02953027              0.03481645</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           0.02226482              0.01955858</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6           0.03121144              0.03221700</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7           0.03093059              0.03209025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8           0.02621510              0.02279295</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9           0.02768122              0.02607600</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10          0.02642702              0.02278995</span>
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"profile_probabilities"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   group_class profile probability group_class_probability</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1       1   0.8101391               0.5159839</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1       2   0.1898609               0.5159839</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2       1   0.1716925               0.4840161</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2       2   0.8283075               0.4840161</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           1       1   0.1704511               0.3252973</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           1       2   0.8295489               0.3252973</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2       1   0.7859319               0.6747027</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2       2   0.2140681               0.6747027</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

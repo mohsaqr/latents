@@ -113,7 +113,7 @@ fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 3, seed = 1)
 sensitivity(fit, seeds = 1:3, n_starts = 3)
 #>   seed log_likelihood converged iterations optimum best agreement
-#> 1    1      -396.1633      TRUE         13       1 TRUE         1
-#> 2    2      -396.1633      TRUE         13       1 TRUE         1
-#> 3    3      -396.1633      TRUE         13       1 TRUE         1
+#> 1    1      -396.1633      TRUE          9       1 TRUE         1
+#> 2    2      -396.1633      TRUE          9       1 TRUE         1
+#> 3    3      -396.1633      TRUE          9       1 TRUE         1
 ```

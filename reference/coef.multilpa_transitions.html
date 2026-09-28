@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,11 +20,14 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -73,10 +76,13 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A named numeric vector of every free parameter on its natural scale:
-profile means and variances, categorical response probabilities where
-present, each group class's initial profile probabilities, its transition
-probabilities, and the group-class probabilities.</p>
+    <p>A named numeric vector of every parameter on its natural scale, in
+the order and with the names <code><a href="parameter_inference.multilpa_transitions.html">vcov.multilpa_transitions()</a></code> and
+<code><a href="parameter_inference.html">parameter_inference()</a></code> use: profile means, then variances (one shared set
+under <code>variance_model = "equal"</code>, the covariance matrices under
+<code>covariance_model = "full"</code>), categorical response probabilities where
+present, the group-class probabilities, each group class's initial profile
+probabilities, and its transition probabilities row by row.</p>
 <p>Names follow the package-wide <code>level.parameter.outcome.term</code> grammar shared
 with <code><a href="coef.multilpa.html">coef.multilpa()</a></code>, so one pattern matches across fit classes: for
 example <code>measurement.mean.profile_1.reading</code> and
@@ -85,53 +91,55 @@ term names the origin the move is from. <code>level</code>, <code>parameter</cod
 never contain a dot, so everything after the third dot is the term and the
 name parses back into the columns <code><a href="parameter_inference.html">parameter_inference()</a></code> reports even when
 an indicator name itself contains a dot.</p>
-<p>No standard errors accompany these: <code><a href="vcov.multilpa_transitions.html">vcov.multilpa_transitions()</a></code> refuses
-rather than returning an invalid matrix. <code><a href="get_results.html">get_results()</a></code> gives the same
-quantities as tidy
-tables, which is the form to prefer.</p>
+<p>Their standard errors come from <code><a href="parameter_inference.html">parameter_inference()</a></code> or
+<code><a href="parameter_inference.multilpa_transitions.html">vcov.multilpa_transitions()</a></code>. <code><a href="get_results.html">get_results()</a></code> gives the same quantities
+as tidy tables, which is the form to prefer.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">7</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">example_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  person <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">30</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>, wave <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>, times <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">example_data</span><span class="op">$</span><span class="va">score_a</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">example_data</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">example_data</span><span class="op">$</span><span class="va">score_b</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">example_data</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="lta.html">lta</a></span><span class="op">(</span><span class="va">example_data</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"score_a"</span>, <span class="st">"score_b"</span><span class="op">)</span>, <span class="st">"person"</span>,</span></span>
-<span class="r-in"><span>                       n_profiles <span class="op">=</span> <span class="fl">2</span>, time <span class="op">=</span> <span class="st">"wave"</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="lta.html">lta</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">40</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>           <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span><span class="op">)</span>, <span class="st">"student"</span>,</span></span>
+<span class="r-in"><span>           n_profiles <span class="op">=</span> <span class="fl">2</span>, time <span class="op">=</span> <span class="st">"sequence"</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                               measurement.mean.profile_1.score_a </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     9.137155e-02 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                               measurement.mean.profile_1.score_b </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                    -9.015126e-02 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                               measurement.mean.profile_2.score_a </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     7.644784e-01 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                               measurement.mean.profile_2.score_b </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     8.946866e-01 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                           measurement.variance.profile_1.score_a </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     7.803627e-01 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                           measurement.variance.profile_1.score_b </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     1.086468e+00 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                           measurement.variance.profile_2.score_a </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     1.159944e+00 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                           measurement.variance.profile_2.score_b </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     5.082751e-01 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              profile.initial_probability.profile_1.group_class_1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     9.066520e-01 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              profile.initial_probability.profile_2.group_class_1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     9.334804e-02 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile.transition_probability.profile_1.group_class_1:profile_1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     9.999980e-01 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile.transition_probability.profile_2.group_class_1:profile_1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     2.012626e-06 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile.transition_probability.profile_1.group_class_1:profile_2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     1.000000e-10 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profile.transition_probability.profile_2.group_class_1:profile_2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     1.000000e+00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                measurement.mean.profile_1.browse </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.5552352 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              measurement.mean.profile_1.lectures </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.4372193 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            measurement.mean.profile_1.forum_read </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.6089409 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                measurement.mean.profile_2.browse </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       -0.8706168 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              measurement.mean.profile_2.lectures </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       -0.6264837 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            measurement.mean.profile_2.forum_read </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       -0.9319730 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            measurement.variance.profile_1.browse </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.5490615 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          measurement.variance.profile_1.lectures </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.8253164 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        measurement.variance.profile_1.forum_read </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.4991390 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            measurement.variance.profile_2.browse </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.4601966 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          measurement.variance.profile_2.lectures </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.5736107 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        measurement.variance.profile_2.forum_read </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.3259582 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                  group.probability.group_class_1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                     1.000000e+00 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        1.0000000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              profile.initial_probability.profile_1.group_class_1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.7421284 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              profile.initial_probability.profile_2.group_class_1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.2578716 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile.transition_probability.profile_1.group_class_1:profile_1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.8906008 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile.transition_probability.profile_2.group_class_1:profile_1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.1093992 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile.transition_probability.profile_1.group_class_1:profile_2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.1896193 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profile.transition_probability.profile_2.group_class_1:profile_2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                        0.8103807 </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
