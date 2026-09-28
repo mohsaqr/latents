@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,19 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.7" id="latents-087">latents 0.8.7<a class="anchor" aria-label="anchor" href="#latents-087"></a></h2>
+<div class="section level3">
+<h3 id="messages-0-8-7">Messages<a class="anchor" aria-label="anchor" href="#messages-0-8-7"></a></h3>
+<ul><li>The single-level notice from <code><a href="../reference/multilpa.html">multilpa()</a></code>, <code><a href="../reference/multilca.html">multilca()</a></code> and <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> with <code>id = NULL</code> is now one line (“Fitted a single-level latent profile model.”). The error for a missing <code>id</code> is shorter too.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="ggplot2-views-in-development-0-8-7">ggplot2 views (in development)<a class="anchor" aria-label="anchor" href="#ggplot2-views-in-development-0-8-7"></a></h3>
+<ul><li>Internal ggplot2 builders for every clustering view: profiles, bars (from zero), heatmap (mixture-standardized, with a colour key), raincloud, sizes, entropy and posteriors (per-case strips), average posterior probability and model comparison. New views: parallel coordinates, a scatter-plot matrix with 95% covariance ellipses and uncertainty-sized points, and an icicle of how profiles split across numbers of profiles (Zappia and Oshlack, 2018), with bands carrying posterior mass and colours following each profile’s lineage.</li>
+<li>Every view uses one profile share (the posterior share), one display order (largest first) and Okabe-Ito colours paired with shapes.</li>
+<li>ggplot2 is in Suggests. <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> still draws the base-graphics views; the switch comes in a later release.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.8.6" id="latents-086">latents 0.8.6<a class="anchor" aria-label="anchor" href="#latents-086"></a></h2>
 <div class="section level3">

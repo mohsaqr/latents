@@ -1,5 +1,33 @@
 # Changelog
 
+## latents 0.8.7
+
+### Messages
+
+- The single-level notice from
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  and
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  with `id = NULL` is now one line (“Fitted a single-level latent
+  profile model.”). The error for a missing `id` is shorter too.
+
+### ggplot2 views (in development)
+
+- Internal ggplot2 builders for every clustering view: profiles, bars
+  (from zero), heatmap (mixture-standardized, with a colour key),
+  raincloud, sizes, entropy and posteriors (per-case strips), average
+  posterior probability and model comparison. New views: parallel
+  coordinates, a scatter-plot matrix with 95% covariance ellipses and
+  uncertainty-sized points, and an icicle of how profiles split across
+  numbers of profiles (Zappia and Oshlack, 2018), with bands carrying
+  posterior mass and colours following each profile’s lineage.
+- Every view uses one profile share (the posterior share), one display
+  order (largest first) and Okabe-Ito colours paired with shapes.
+- ggplot2 is in Suggests.
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) still draws
+  the base-graphics views; the switch comes in a later release.
+
 ## latents 0.8.6
 
 ### Revision review fixes
