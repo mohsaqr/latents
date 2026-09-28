@@ -137,8 +137,8 @@ get_results(fit)
 
 To see the profiles, we call
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the fit.
-Each line is a profile’s mean on each indicator, and point size shows
-how common the profile is.
+Each line is a profile’s mean on each indicator, and its label gives the
+profile’s share of the cases.
 
 ``` r
 

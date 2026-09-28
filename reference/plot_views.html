@@ -11,7 +11,7 @@ than recalled from a help page."><meta property="og:image" content="https://pak.
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,8 @@ than recalled from a help page.</p>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A base <code>data.frame</code> with one row per plot type and the columns
 <code>type</code> (the value to pass as <code>what</code>), <code>group</code> (<code>"measurement"</code>,
-<code>"structure"</code>, <code>"diagnostics"</code> or <code>"selection"</code>), and <code>description</code>.</p>
+<code>"structure"</code>, <code>"diagnostics"</code>, <code>"selection"</code> or <code>"every"</code>), and
+<code>description</code>.</p>
     </div>
 
     <div class="section level2">
@@ -82,31 +83,37 @@ than recalled from a help page.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2           bars measurement</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3        heatmap measurement</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4      raincloud measurement</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      responses measurement</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  probabilities   structure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7      sequences   structure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8    transitions   structure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9          sizes   structure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10       entropy diagnostics</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11    posteriors diagnostics</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12         avepp diagnostics</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13   enumeration   selection</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14           all       every</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       parallel measurement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6          pairs measurement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7      responses measurement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  probabilities   structure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9      sequences   structure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10   transitions   structure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11         sizes diagnostics</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12       entropy diagnostics</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13    posteriors diagnostics</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14         avepp diagnostics</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15   enumeration   selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16          tree   selection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17           all       every</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                                      description</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1         Profile means across indicators, point size showing profile prevalence</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2         Profile means as grouped bars, with 95% intervals when `data` is given</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          Profile means as standard deviations from each indicator's grand mean</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                 Profile means across indicators, one labelled line per profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                    Profile means as grouped bars from zero, with 95% intervals</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           Profile means in observed standard deviations from the observed mean</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4  Each indicator's distribution by assigned profile: density, box, observations</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                       Categorical response probabilities, one line per profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6             Profile prevalence within each group class, the two-level quantity</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7                       Each group's profile at each occasion, one row per group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8      Estimated transition matrix, one panel per group class (a transition fit)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9                      Effective number of cases in each profile, with its share</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10                  Per-case entropy contribution within each profile, as ridges</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11                      Posterior probability of the assigned profile, as ridges</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12          Average posterior probability: assigned profile by posterior profile</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13            Information criteria across a candidate grid (plot an enumeration)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14           Every view above that this fit has the ingredients for, in one call</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                  Every case as a line across indicators, one panel per profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                 Scatter-plot matrix with each profile's 95% covariance ellipse</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                       Categorical response probabilities, one line per profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8             Profile prevalence within each group class, the two-level quantity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                       Each group's profile at each occasion, one row per group</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     Estimated transition matrix, one panel per group class (a transition fit)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                     Effective number of cases in each profile, with its share</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12                  Each case's entropy relative to a flat posterior, by profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13             Posterior probability of each case's assigned profile, by profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14          Average posterior probability: assigned profile by posterior profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15            Information criteria across a candidate grid (plot an enumeration)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                    How profiles split as more are added (plot an enumeration)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17           Every view above that this fit has the ingredients for, in one call</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

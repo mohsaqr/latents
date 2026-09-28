@@ -4,7 +4,9 @@ The measurement model is the one
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 fits, so every measurement and classification view it draws is available
 here. `what = "transitions"` is the view this family adds: the estimated
-transition matrix, one panel per group class.
+transition matrix, one panel per group class, with a row that has no
+data support labelled in parentheses because it is uniform by
+construction rather than estimated.
 
 ## Usage
 
@@ -18,13 +20,9 @@ plot(
   scale = c("raw", "standardized"),
   category = "last",
   labels = TRUE,
+  cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  palette = NULL,
-  symbols = NULL,
-  linetypes = NULL,
-  style = .multilpa_style(),
-  cell_labels = TRUE,
   ...
 )
 ```
@@ -42,15 +40,14 @@ plot(
   `"heatmap"` draw the measurement model, `"responses"` the categorical
   response curves, `"sequences"` each group's profile at each occasion,
   and `"sizes"`, `"entropy"`, `"posteriors"` and `"avepp"` the
-  classification diagnostics. `"all"` draws every view this fit has the
-  ingredients for.
+  classification diagnostics. `"all"` returns every view this fit has
+  the ingredients for.
 
 - data:
 
-  Optional. The data the model was fitted to. Accepted for consistency
-  with
+  Optional. Accepted for consistency with
   [`plot.multilpa()`](https://pak.dynasite.org/latents/reference/plot.multilpa.md);
-  `"bars"` draws point estimates without intervals here.
+  this family's views draw point estimates, and
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
   reports the standard errors.
 
@@ -67,22 +64,22 @@ plot(
 
   Whether to label series directly.
 
+- cell_labels:
+
+  For `"sequences"`, whether to print the profile number in each cell.
+
 - main, subtitle:
 
-  Panel title and secondary line.
-
-- palette, symbols, linetypes, style, cell_labels:
-
-  Visual overrides, as in
-  [`plot.multilpa()`](https://pak.dynasite.org/latents/reference/plot.multilpa.md).
+  Title and subtitle. `NULL` uses the view's own.
 
 - ...:
 
-  Further style overrides.
+  Nothing further is accepted; an unknown argument raises an error of
+  class `latents_bad_argument`.
 
 ## Value
 
-The fitted model, invisibly, having drawn the requested view.
+A ggplot object; for `what = "all"`, a `latents_plots` list.
 
 ## See also
 
@@ -95,10 +92,11 @@ for the same views on a cross-sectional fit.
 ## Examples
 
 ``` r
-fit <- lta(subset(course_engagement, student <= 40),
-           c("browse", "lectures", "forum_read"), "student",
-           n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-plot(fit, what = "transitions")
-
-plot(fit, what = "profiles")
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  fit <- lta(subset(course_engagement, student <= 40),
+             c("browse", "lectures", "forum_read"), "student",
+             n_profiles = 2, time = "sequence", n_starts = 2)
+  plot(fit, what = "transitions")
+  plot(fit, what = "profiles")
+}
 ```

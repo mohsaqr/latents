@@ -36,9 +36,10 @@ plot(x, ...)
 
   `TRUE`, the default, also draws the four classification plots
   (effective profile sizes, posterior probabilities of the assigned
-  profiles, entropy contributions, and the average posterior probability
-  matrix), as [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
-  on the result does. `FALSE` returns the tables only.
+  profiles, case entropy, and the average posterior probability matrix),
+  as printing [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
+  on the result does. Without the ggplot2 package a message says so and
+  the tables are still returned. `FALSE` returns the tables only.
 
 - by:
 
@@ -55,9 +56,8 @@ plot(x, ...)
   function cannot forward raises an error of class
   `latents_bad_argument` naming it, rather than being dropped on the way
   to a table that then means something other than what was asked for.
-  For [`plot()`](https://rdrr.io/r/graphics/plot.default.html), style
-  overrides, as in
-  [`plot.multilpa()`](https://pak.dynasite.org/latents/reference/plot.multilpa.md).
+  For [`plot()`](https://rdrr.io/r/graphics/plot.default.html), nothing
+  further is accepted either; style the returned plots with ggplot2.
 
 - row.names, optional:
 
@@ -77,11 +77,11 @@ leaves that table out of `"all"`, and asking for it by name raises
 invisibly, having printed one line per diagnostic: relative entropy,
 smallest class, lowest average posterior and largest residual, at each
 level the fit has.
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws every
-classification plot in one call – the effective profile sizes, the
-posterior probability of each case's assigned profile, each case's
-entropy contribution, and the average posterior probability matrix – and
-returns the object invisibly.
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) returns every
+classification plot as a `latents_plots` list of ggplot objects – the
+effective profile sizes, the posterior probability of each case's
+assigned profile, each case's relative entropy, and the average
+posterior probability matrix – that draws all four when printed.
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
 the entropy table, the primary one.
 

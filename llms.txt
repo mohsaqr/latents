@@ -1445,6 +1445,8 @@ Standard generics for fitted models, enumeration grids and summaries.
   : Compare mixture regressions with different numbers of classes
 - [`print(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_mixture_regression.md)
   : Print a mixture-of-regressions fit
+- [`print(`*`<latents_plots>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_plots.md)
+  : Print several plots
 - [`print(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_pooled.md)
   : Print a pooled multiply imputed fit
 - [`print(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa.md)

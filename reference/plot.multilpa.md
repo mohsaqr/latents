@@ -1,10 +1,13 @@
 # Plot a fitted multilevel latent profile model
 
-Draws the profile means across indicators, or the profile prevalence
-within each latent group class. Series are distinguished by colour,
-point symbol and line type together, and labelled directly, so a line
-plot stays readable in greyscale and needs no legend; the sequence grid
-carries the profile number in each cell for the same reason.
+Draws one view of a fit as a ggplot object, which can be printed, saved
+with
+[`ggplot2::ggsave()`](https://ggplot2.tidyverse.org/reference/ggsave.html)
+or styled further with `+ ggplot2::theme()`. Every view shares one
+profile order (largest first), one profile share (the posterior share
+every table reports) and one set of Okabe-Ito colours paired with point
+shapes, so a profile looks the same in every view. Series are labelled
+directly rather than through a legend.
 
 ## Usage
 
@@ -12,20 +15,16 @@ carries the profile number in each cell for the same reason.
 # S3 method for class 'multilpa'
 plot(
   x,
-  what = c("profiles", "bars", "heatmap", "raincloud", "responses", "probabilities",
-    "sequences", "sizes", "entropy", "posteriors", "avepp", "all"),
+  what = c("profiles", "bars", "heatmap", "raincloud", "parallel", "pairs", "responses",
+    "probabilities", "sequences", "sizes", "entropy", "posteriors", "avepp", "all"),
   data = NULL,
   scale = c("raw", "standardized"),
   category = "last",
   labels = TRUE,
+  intervals = TRUE,
+  cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
-  palette = NULL,
-  symbols = NULL,
-  linetypes = NULL,
-  style = .multilpa_style(),
-  cell_labels = TRUE,
-  intervals = TRUE,
   ...
 )
 ```
@@ -40,134 +39,115 @@ plot(
 
   Which view to draw.
   [`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md)
-  lists every value with its group and a one-line description; the
-  `"enumeration"` row it also lists belongs to
-  [`plot.multilpa_enumeration()`](https://pak.dynasite.org/latents/reference/plot.multilpa_enumeration.md),
-  not to this method.
+  lists every value with its group and a one-line description.
 
-  The measurement model, three ways: `"profiles"` draws one line per
-  profile across the continuous indicators, with each profile's marker
-  area proportional to its prevalence. `"bars"` draws the same means as
-  grouped bars, one bar per profile within each indicator, with a 95%
-  interval on every bar when `data` is supplied. `"heatmap"` draws them
-  as a diverging grid of standard deviations from each indicator's grand
-  mean, which is the quickest read when there are many indicators or
-  many profiles. `"raincloud"` shows what the means summarize: one panel
-  per indicator, and in it, for the cases assigned to each profile, a
-  density of the indicator, a box of its quartiles and median, and the
-  observations themselves. It shows the spread within each profile and
-  how far the profiles overlap. For a fit whose indicators are all
-  categorical, `"heatmap"` draws the response probabilities instead: one
-  row per profile and one column per category (a binary indicator shows
-  its last category), each cell printing its probability. `"responses"`
-  is the categorical counterpart of `"profiles"`, one line per profile
-  across the categorical indicators, showing the probability of a chosen
-  category.
+  The measurement model: `"profiles"` draws one line per profile across
+  the continuous indicators. `"bars"` draws the same means as grouped
+  bars that start at zero. `"heatmap"` draws them as a diverging grid of
+  observed standard deviations from each indicator's observed mean, the
+  quickest read when there are many indicators or profiles; for a fit
+  whose indicators are all categorical it draws the response
+  probabilities instead. `"raincloud"` shows what the means summarize:
+  for the cases assigned to each profile, a density, the quartiles and
+  the observations of each indicator. `"parallel"` draws every case as a
+  line across the indicators, one panel per profile, faded by the
+  certainty of its assignment. `"pairs"` draws a scatter-plot matrix of
+  the indicators with each profile's 95% ellipse from the fitted
+  covariances, the view that shows the covariance structure.
+  `"responses"` is the categorical counterpart of `"profiles"`: one line
+  per profile, showing the probability of a chosen category.
 
   The two-level structure: `"probabilities"` plots profile prevalence
-  within each group class, one line per group class – the quantity the
-  second level exists to estimate. `"sequences"` draws one row per
-  group, one column per position, coloured and numbered by the assigned
-  profile, with the groups grouped by their latent class; it needs a fit
+  within each group class. `"sequences"` draws one row per group and one
+  column per position, filled with the assigned profile; it needs a fit
   made with `time =`.
 
-  How big each profile is: `"sizes"` draws one bar per profile holding
-  its effective count – the posterior mass it carries, not the number of
-  cases that won a tie – with the count and the share printed on the
-  bar.
+  Classification: `"sizes"` draws each profile's effective count, the
+  posterior mass it carries. `"posteriors"` draws the posterior
+  probability of each case's assigned profile and `"entropy"` each
+  case's entropy relative to a flat posterior, one strip per profile
+  with its mean marked. A one-profile fit refuses both with an error of
+  class `latents_nothing_to_plot`. `"avepp"` draws the average posterior
+  probability matrix: rows are assigned profiles, columns profiles, and
+  the diagonal is the avePP usually reported.
 
-  Classification quality: `"entropy"` draws each case's entropy
-  contribution as one ridge per profile, and `"posteriors"` draws the
-  posterior probability of each case's assigned profile the same way.
-  Both ridges are scaled to their own maximum, following the usual
-  ridgeline convention, so ridge height compares shapes and not profile
-  sizes; prevalence is printed in each profile's label instead. Both
-  read the individual posteriors alone, so every family of this package
-  can draw them; a one-profile fit refuses them with an error of class
-  `latents_nothing_to_plot`, because every case then belongs to the
-  single profile with probability one. `"avepp"` draws the average
-  posterior probability matrix: one row per assigned profile, one column
-  per profile, each cell the mean posterior that group puts on that
-  profile. The diagonal is the avePP usually reported, and the
-  off-diagonal says which profiles a group is confused with, which the
-  diagonal alone cannot show.
+  `"all"` returns every view the fit has the ingredients for.
 
 - data:
 
-  Optional. The data frame the model was fitted to, used by
-  `what = "bars"` to put a 95% interval on every bar and ignored by
-  every other view. A fit carries the columns it was built from, so the
-  intervals are drawn without this being supplied; pass it only to draw
-  them from a different frame. A model family whose standard errors are
-  not implemented gets bars without whiskers rather than an error.
+  Optional. The data frame the model was fitted to. A fit carries the
+  columns it was built from, so intervals are drawn without it; pass it
+  only to compute them from a different frame.
 
 - scale:
 
-  For `what = "profiles"`, `"raw"` plots the estimated means in input
-  units, and `"standardized"` divides each indicator's deviation from
-  its grand mean by that indicator's observed standard deviation. Use
-  `"standardized"` when indicators are on different scales, where raw
-  means make the largest-scale indicator dominate the shape.
+  For the mean views and `"raincloud"`, `"raw"` keeps each indicator in
+  its input units and `"standardized"` divides its deviation from the
+  observed mean by its observed standard deviation, the same map as
+  `as.data.frame(scale = "standardized")`.
 
 - category:
 
-  For `what = "responses"`, which category's probability to plot.
-  `"last"` uses each indicator's highest category, which is the usual
-  choice for binary indicators, `"first"` uses the lowest, or give a
-  single category label or index used for every indicator.
+  For `what = "responses"`, which category's probability to plot:
+  `"last"`, `"first"`, or a single category label or index.
 
 - labels:
 
-  `TRUE` prints a direct label at the right end of each series.
-
-- main, subtitle:
-
-  Panel title and secondary line. `NULL` for none; pass `""` to reserve
-  the space without text.
-
-- palette, symbols, linetypes:
-
-  Vectors of colours, plotting characters and line types, recycled to
-  the number of series. Defaults are the Okabe-Ito palette and matched
-  symbol and line-type sequences.
-
-- style:
-
-  A list of visual constants, as built by `.multilpa_style()`; pass
-  named elements to override individual constants.
-
-- cell_labels:
-
-  For `what = "sequences"`, `TRUE` prints the profile number inside each
-  cell, so the profile is never carried by colour alone. The numbers are
-  drawn only where the cell is wide and tall enough to hold one.
+  `TRUE` labels each series at its right end; `FALSE` uses a legend
+  instead.
 
 - intervals:
 
-  For `what = "profiles"` and `"responses"`, `TRUE` draws a 95% interval
-  on every mean or probability when the fit has standard errors (a
-  probability's interval is clipped to `[0, 1]`); the profiles are then
-  dodged apart so the whiskers stay readable. A fit without them (a
-  bound-active or unconverged fit, or a family without inference) is
-  drawn without whiskers and its subtitle says why.
+  For `"profiles"` and `"responses"`, `TRUE` draws 95% intervals when
+  the fit has standard errors (a probability's is clipped to `[0, 1]`).
+  A fit without them is drawn without whiskers and its subtitle says
+  why.
+
+- cell_labels:
+
+  For `what = "sequences"`, `TRUE` prints the profile number in each
+  cell while the grid is sparse enough to hold one, so the profile is
+  not carried by colour alone.
+
+- main, subtitle:
+
+  Title and subtitle. `NULL` uses the view's own.
 
 - ...:
 
-  Further named visual constants, merged into `style`.
+  Nothing further is accepted; an unknown argument raises an error of
+  class `latents_bad_argument`. Style the returned plot with ggplot2.
 
 ## Value
 
-The fitted model, invisibly. Called for the side effect of drawing.
+A ggplot object; for `what = "all"`, a `latents_plots` list of them,
+named by view, that draws every one when printed.
 
 ## Details
 
+The plots need the ggplot2 package, which latents suggests rather than
+requires; without it a plot is refused with an error of class
+`latents_missing_package`.
+
 `"profiles"` and `"bars"` draw 95% Wald intervals when the fit has
-standard errors; the other views show point estimates. Profile order is
-arbitrary, so two fits must have their labels aligned before their plots
-are compared. With `scale = "standardized"` the standard deviations are
-the observed indicator standard deviations, not the within-profile
-residual standard deviations, so the plotted values are comparable
-across indicators but are not effect sizes.
+standard errors. Profile numbers are arbitrary, so two fits must have
+their labels aligned before their plots are compared. With
+`scale = "standardized"` the standard deviations are the observed
+indicator standard deviations, not the within-profile ones, so the
+values are comparable across indicators but are not effect sizes.
+
+## Errors
+
+`latents_missing_package` without ggplot2; `latents_no_continuous`,
+`latents_no_categorical`, `latents_no_time` and
+`latents_nothing_to_plot` when the fit lacks what a view needs;
+`latents_bad_argument` for an argument the method does not use.
+
+## References
+
+Zappia, L. and Oshlack, A. (2018). Clustering trees: a visualization for
+evaluating clusterings at multiple resolutions. *GigaScience*, 7(7),
+giy083.
 
 ## See also
 
@@ -177,56 +157,18 @@ for the catalogue of views.
 ## Examples
 
 ``` r
-set.seed(7)
-example_data <- data.frame(
-  school = rep(seq_len(12), each = 10),
-  score_a = rnorm(120), score_b = rnorm(120)
-)
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                  n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-plot(fit)
-
-plot(fit, scale = "standardized")
-
-plot(fit, what = "bars")
-
-plot(fit, what = "heatmap")
-
-plot(fit, what = "entropy")
-
-plot(fit, what = "sizes")
-
-plot(fit, what = "avepp")
-
-plot_views()
-#>             type       group
-#> 1       profiles measurement
-#> 2           bars measurement
-#> 3        heatmap measurement
-#> 4      raincloud measurement
-#> 5      responses measurement
-#> 6  probabilities   structure
-#> 7      sequences   structure
-#> 8    transitions   structure
-#> 9          sizes   structure
-#> 10       entropy diagnostics
-#> 11    posteriors diagnostics
-#> 12         avepp diagnostics
-#> 13   enumeration   selection
-#> 14           all       every
-#>                                                                      description
-#> 1         Profile means across indicators, point size showing profile prevalence
-#> 2         Profile means as grouped bars, with 95% intervals when `data` is given
-#> 3          Profile means as standard deviations from each indicator's grand mean
-#> 4  Each indicator's distribution by assigned profile: density, box, observations
-#> 5                       Categorical response probabilities, one line per profile
-#> 6             Profile prevalence within each group class, the two-level quantity
-#> 7                       Each group's profile at each occasion, one row per group
-#> 8      Estimated transition matrix, one panel per group class (a transition fit)
-#> 9                      Effective number of cases in each profile, with its share
-#> 10                  Per-case entropy contribution within each profile, as ridges
-#> 11                      Posterior probability of the assigned profile, as ridges
-#> 12          Average posterior probability: assigned profile by posterior profile
-#> 13            Information criteria across a candidate grid (plot an enumeration)
-#> 14           Every view above that this fit has the ingredients for, in one call
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  set.seed(7)
+  example_data <- data.frame(
+    school = rep(seq_len(12), each = 10),
+    score_a = rnorm(120), score_b = rnorm(120)
+  )
+  fit <- multilpa(example_data, c("score_a", "score_b"), "school",
+                  n_profiles = 2, n_group_classes = 1, n_starts = 2)
+  plot(fit)
+  plot(fit, scale = "standardized")
+  plot(fit, what = "bars")
+  plot(fit, what = "pairs")
+  plot(fit, what = "avepp")
+}
 ```

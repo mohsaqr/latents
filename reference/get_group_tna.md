@@ -1,7 +1,7 @@
 # A transition network for each latent group class
 
 Builds one
-[`tna::tna()`](http://sonsoles.me/tna/reference/build_model.md) model
+[`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html) model
 per latent group class of a fitted transition model, collected into the
 `group_tna` object tna's grouped verbs expect. A class row with no
 expected outgoing moves keeps the fit's unestimated transition
@@ -36,7 +36,7 @@ get_group_tna(x, label = "Group class", ...)
 - ...:
 
   Passed to
-  [`tna::tna()`](http://sonsoles.me/tna/reference/build_model.md) for
+  [`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html) for
   each class.
 
 - label:

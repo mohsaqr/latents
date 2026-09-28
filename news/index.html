@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,22 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.8" id="latents-088">latents 0.8.8<a class="anchor" aria-label="anchor" href="#latents-088"></a></h2>
+<div class="section level3">
+<h3 id="plot-returns-ggplot-objects-breaking-0-8-8">plot() returns ggplot objects (breaking)<a class="anchor" aria-label="anchor" href="#plot-returns-ggplot-objects-breaking-0-8-8"></a></h3>
+<ul><li>
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> on a fit (<code>multilpa</code>, covariate and transition fits), on an enumeration and on a <code><a href="../reference/diagnostics.html">diagnostics()</a></code> result now returns ggplot objects instead of drawing with base graphics. Print one to draw it, save it with <code><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggplot2::ggsave()</a></code>, or restyle it with <code>+ ggplot2::theme()</code>. ggplot2 stays in Suggests: a plot without it raises <code>latents_missing_package</code>, and <code><a href="../reference/diagnostics.html">diagnostics()</a></code> and <code><a href="../reference/report.html">report()</a></code> print a message and carry on.</li>
+<li>
+<code>what = "all"</code>, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> on a diagnostics result and an enumeration plotted with <code>combine = FALSE</code> return a <code>latents_plots</code> list, named by view, that draws every plot when printed.</li>
+<li>The styling arguments <code>palette</code>, <code>symbols</code>, <code>linetypes</code>, <code>style</code> and the style constants passed through <code>...</code> are gone; an unknown argument now raises <code>latents_bad_argument</code> instead of being ignored.</li>
+<li>Every view shares one profile order (largest first), one profile share (the posterior share every table reports) and Okabe-Ito colours paired with shapes. Bars start at zero, the heatmaps have colour keys, and the case diagnostics are strips of every case with each profile’s mean marked.</li>
+<li>New views: <code>"parallel"</code> (every case as a line, one panel per profile), <code>"pairs"</code> (scatter-plot matrix with each profile’s 95% covariance ellipse) and, for enumerations, <code>what = "tree"</code> (an icicle of how profiles split as more are added). <code><a href="../reference/plot_views.html">plot_views()</a></code> lists them.</li>
+<li>Model comparison switches from direct labels to a legend beyond five series; failed candidates are marked with a cross on the panel floor.</li>
+<li>
+<code>plot(diagnostics(fit))</code> on a one-profile fit returns the sizes and average posterior views instead of refusing.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.8.7" id="latents-087">latents 0.8.7<a class="anchor" aria-label="anchor" href="#latents-087"></a></h2>
 <div class="section level3">

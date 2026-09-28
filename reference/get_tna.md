@@ -1,7 +1,7 @@
 # A transition network for the whole sample
 
 Builds one
-[`tna::tna()`](http://sonsoles.me/tna/reference/build_model.md) model
+[`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html) model
 from a fitted transition model, aggregated over every latent group
 class.
 
@@ -30,14 +30,14 @@ get_tna(x, ...)
 - ...:
 
   Passed to
-  [`tna::tna()`](http://sonsoles.me/tna/reference/build_model.md).
+  [`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html).
 
 ## Value
 
 An object of class `tna`, as
-[`tna::tna()`](http://sonsoles.me/tna/reference/build_model.md) returns:
-every verb of that package applies to it, including `centralities()`,
-`communities()`, `cliques()` and
+[`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html)
+returns: every verb of that package applies to it, including
+`centralities()`, `communities()`, `cliques()` and
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
 
 ## Details
@@ -60,7 +60,7 @@ or
 [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
 fit made with `time =`, there is no estimated transition matrix: the
 network is built by
-[`tna::tna()`](http://sonsoles.me/tna/reference/build_model.md) from
+[`tna::tna()`](https://sonsoles.me/tna/reference/build_model.html) from
 each group's sequence of modal profiles in time order, the observed
 transitions between the profiles the observations were assigned to.
 [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
