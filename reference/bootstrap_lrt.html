@@ -25,7 +25,7 @@ replicate makes the p-value NA, avoiding silent deletion of difficult fits."><me
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -154,10 +154,12 @@ boundary flags and likelihood replication before interpreting results.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Fits made with <code>missing = "fiml"</code> are supported when both models were: every
 replicate is given the observed data's missing cells before it is refitted,
-so the simulated statistics lose the same information the observed one did.
-This treats the missingness pattern as fixed, that is independent of the
-profiles and of the values that went missing; under missingness that
-depends on the latent classes the reference distribution is approximate.</p>
+preserving the pattern of available measurements. Calibration requires
+missingness independent of the indicators and latent classes, conditional
+on any fixed covariates. Carrying a fixed mask does not reproduce a general
+MAR mechanism that depends on observed indicators, or an MNAR mechanism.
+FIML estimation under MAR does not by itself validate this bootstrap under
+MAR; the retained size study covers MCAR only.</p>
 <p>Membership-covariate fits (<code>multilpa(profile_covariates = , group_covariates = )</code>) are supported: the covariates are held at their
 observed values, group classes are drawn from the fitted group logits and
 profiles from each row's profile logits, as the model conditions on the
@@ -194,6 +196,8 @@ alternative does not estimate more free parameters than the null.
 validation, and the p-value is <code>NA</code>.
 <code>latents_unsupported_bootstrap</code> refuses person-centred fits, for which
 this simulator has no group-baseline distribution.
+<code>latents_unsupported_prior</code> refuses fits estimated with a prior: their
+likelihoods are evaluated at posterior modes, not ML estimates.
 <code>latents_incomparable_models</code> when the two models differ in their
 observations, grouping, covariance structure, centering or missing-data
 handling; <code>latents_bad_data</code> when the data have missing indicators and

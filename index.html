@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -505,7 +505,7 @@ plot of chunk enumeration
 <span><span class="va">larger</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">vars</span>, <span class="st">"student"</span>,</span>
 <span>                   n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">smaller</span>, <span class="va">larger</span>, iter <span class="op">=</span> <span class="fl">199</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span></code></pre></div>
-<p>Both models must be fitted to complete data. The package withholds the bootstrap p-value if any replicate fails to converge, making optimization of the replicate fits part of the validity of the comparison.</p>
+<p>Both models must be fitted by maximum likelihood to the same data. FIML fits are supported by preserving the missingness pattern; this bootstrap assumes missingness independent of indicators and latent classes conditional on fixed covariates, and is not generally calibrated under indicator-dependent MAR. The package withholds the p-value if any replicate fails validation. For membership-covariate replicates, likelihood convergence is sufficient even when separated logits continue to drift; this is recorded in <code>logits_settled</code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -612,7 +612,7 @@ plot of chunk enumeration
 <span><span class="co">#&gt; 9        2 forum_post -0.757    0.413              0.643</span></span>
 <span><span class="co">#&gt; 10       2 attendance -0.926    0.398              0.631</span></span></code></pre></div>
 <p>Each observation contributes the density of its observed indicators, obtained by marginalizing over its missing components. Estimation therefore uses partially observed indicator vectors without imputing values. The resulting inference assumes that the missingness mechanism is ignorable for the fitted analysis; the likelihood option itself does not establish that assumption.</p>
-<p>Missing-data handling should be described together with the pattern and extent of missingness and the information available to explain it. Without <code>missing = "fiml"</code>, missing indicators produce an error. Membership-covariate models accept <code>missing = "fiml"</code> for their indicators, but the covariates themselves must be complete; parametric bootstrap procedures require complete data in this implementation.</p>
+<p>Missing-data handling should be described together with the pattern and extent of missingness and the information available to explain it. Without <code>missing = "fiml"</code>, missing indicators produce an error. Membership-covariate models accept <code>missing = "fiml"</code> for their indicators, but the covariates themselves must be complete or imputed before fitting with <code><a href="reference/pool_imputations.html">pool_imputations()</a></code>. The FIML bootstrap likelihood-ratio test preserves the observed missingness mask, subject to the calibration assumptions described above.</p>
 </div>
 <div class="section level2">
 <h2 id="ordered-observations-and-latent-transitions">Ordered observations and latent transitions<a class="anchor" aria-label="anchor" href="#ordered-observations-and-latent-transitions"></a>

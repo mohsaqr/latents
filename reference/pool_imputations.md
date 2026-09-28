@@ -78,13 +78,16 @@ convergence and the label permutation that aligned it.
 
 ## Details
 
-Pooling is on the reported (natural) scale, the scale
-[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-tests and bounds on: for each parameter the pooled estimate is the mean
-over imputations, and its variance is the mean within-imputation
-variance plus `(1 + 1/m)` times the between-imputation variance. Degrees
-of freedom follow Rubin (1987) with a large complete-data sample, which
-is what maximum-likelihood inference assumes.
+Pooling is on the reported (natural) scale: for each parameter the
+pooled estimate is the mean over imputations, and its variance is the
+mean within-imputation variance plus `(1 + 1/m)` times the
+between-imputation variance. Degrees of freedom follow Rubin (1987) with
+a large complete-data sample, which is what maximum-likelihood inference
+assumes. Pooled intervals are symmetric t intervals on this scale;
+unlike the transformed Wald intervals of
+[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+they can extend outside the parameter space for probabilities or
+variances.
 
 ## Choosing the imputation model
 
@@ -95,16 +98,19 @@ structure: in `validation/pool-imputations-coverage.R` (a membership
 slope with 30% of its covariate missing at random given the indicators,
 200 replications, ten imputations) 95% intervals covered 0.925 under
 predictive mean matching and 0.935 under Bayesian linear regression,
-against 0.995 when the covariate was drawn from its exact conditional
-distribution under the generating model. The last shows the pooling
-itself is sound; the shortfall is the imputation model's (Meng, 1994).
-Give the imputation model what the latent structure implies: every
-indicator, and interactions or nonlinear terms among them, or impute
-within classes assigned by a covariate-free fit. When missingness
-depends only on the indicators, complete-case analysis of the membership
-slope is not biased (covered 0.955 in the same study), because selecting
-on the outcome side of a logit leaves its slope intact; imputation then
-buys precision, not validity.
+against 0.995 when the covariate was approximately drawn from its
+conditional distribution using known generating parameters. That oracle
+arm omits uncertainty in the imputation parameters and is not a
+validation of proper multiple imputation or nominal interval coverage.
+The study is one design, not a general guarantee for any method. Use an
+imputation model that accounts for the latent structure and clustering,
+includes the indicators and relevant nonlinearities, and propagates
+parameter uncertainty. Imputing separately within assigned classes alone
+ignores classification uncertainty. Complete-case coverage was 0.955 in
+that design, but selecting on the indicators changes their within-class
+distributions; the usual logistic case-control slope argument does not
+guarantee unbiased slopes when the outcome is latent and its measurement
+model is estimated.
 
 ## Conditions
 

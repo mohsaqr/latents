@@ -21,7 +21,7 @@ here."><meta property="og:image" content="https://pak.dynasite.org/latents/logo.
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -138,12 +138,14 @@ permutation that aligned it.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Pooling is on the reported (natural) scale, the scale
-<code><a href="parameter_inference.html">parameter_inference()</a></code> tests and bounds on: for each parameter the pooled
+    <p>Pooling is on the reported (natural) scale: for each parameter the pooled
 estimate is the mean over imputations, and its variance is the mean
 within-imputation variance plus <code>(1 + 1/m)</code> times the between-imputation
 variance. Degrees of freedom follow Rubin (1987) with a large complete-data
-sample, which is what maximum-likelihood inference assumes.</p>
+sample, which is what maximum-likelihood inference assumes.
+Pooled intervals are symmetric t intervals on this scale; unlike the
+transformed Wald intervals of <code><a href="parameter_inference.html">parameter_inference()</a></code>, they can extend
+outside the parameter space for probabilities or variances.</p>
     </div>
     <div class="section level2">
     <h2 id="choosing-the-imputation-model">Choosing the imputation model<a class="anchor" aria-label="anchor" href="#choosing-the-imputation-model"></a></h2>
@@ -156,15 +158,18 @@ in <code>validation/pool-imputations-coverage.R</code> (a membership slope with 
 of its covariate missing at random given the indicators, 200 replications,
 ten imputations) 95% intervals covered 0.925 under predictive mean
 matching and 0.935 under Bayesian linear regression, against 0.995 when the
-covariate was drawn from its exact conditional distribution under the
-generating model. The last shows the pooling itself is sound; the shortfall
-is the imputation model's (Meng, 1994). Give the imputation model what the
-latent structure implies: every indicator, and interactions or nonlinear
-terms among them, or impute within classes assigned by a covariate-free
-fit. When missingness depends only on the indicators, complete-case
-analysis of the membership slope is not biased (covered 0.955 in the same
-study), because selecting on the outcome side of a logit leaves its slope
-intact; imputation then buys precision, not validity.</p>
+covariate was approximately drawn from its conditional distribution using
+known generating parameters. That oracle arm omits uncertainty in the
+imputation parameters and is not a validation of proper multiple
+imputation or nominal interval coverage. The study is one design, not a
+general guarantee for any method. Use an imputation model that accounts for
+the latent structure and clustering, includes the indicators and relevant
+nonlinearities, and propagates parameter uncertainty. Imputing separately
+within assigned classes alone ignores classification uncertainty.
+Complete-case coverage was 0.955 in that design, but selecting on the
+indicators changes their within-class distributions; the usual logistic
+case-control slope argument does not guarantee unbiased slopes when the
+outcome is latent and its measurement model is estimated.</p>
     </div>
     <div class="section level2">
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>

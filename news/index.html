@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,9 +52,23 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="latents-development-version">latents (development version)<a class="anchor" aria-label="anchor" href="#latents-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.8.6" id="latents-086">latents 0.8.6<a class="anchor" aria-label="anchor" href="#latents-086"></a></h2>
 <div class="section level3">
-<h3 id="single-level-verbs-covariance-structure-grids-and-workflow-vignettes-development-version">Single-level verbs, covariance-structure grids and workflow vignettes<a class="anchor" aria-label="anchor" href="#single-level-verbs-covariance-structure-grids-and-workflow-vignettes-development-version"></a></h3>
+<h3 id="revision-review-fixes-0-8-6">Revision review fixes<a class="anchor" aria-label="anchor" href="#revision-review-fixes-0-8-6"></a></h3>
+<ul><li>Mixture-regression prediction retains the training membership factor levels, contrasts and transformed terms. Posterior predictions rebuild group IDs for new rows; fitted plots retain grouping and membership columns and accept transformed regression predictors.</li>
+<li>A group-membership formula with one slope and no intercept is optimized as a slope, rather than mistaken for an intercept-only model.</li>
+<li>
+<code>r3step(by_group_class = TRUE)</code> now handles the one-group-class limit and agrees with the pooled regression for both observed and robust covariance.</li>
+<li>
+<code><a href="../reference/enumerate_lpa.html">enumerate_lpa()</a></code> preserves an omitted <code>model</code>, allowing the documented covariance switches and all-categorical inputs through the wrapper.</li>
+<li>
+<code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> refuses prior-fitted models whose likelihoods are evaluated at posterior modes. Its fixed-mask missingness assumptions are clarified, and multiple-imputation guidance distinguishes algebraic equivalence from evidence about coverage and imputation-model validity.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.5" id="latents-085">latents 0.8.5<a class="anchor" aria-label="anchor" href="#latents-085"></a></h2>
+<div class="section level3">
+<h3 id="single-level-verbs-covariance-structure-grids-and-workflow-vignettes-0-8-5">Single-level verbs, covariance-structure grids and workflow vignettes<a class="anchor" aria-label="anchor" href="#single-level-verbs-covariance-structure-grids-and-workflow-vignettes-0-8-5"></a></h3>
 <ul><li>New <code><a href="../reference/lpa.html">lpa()</a></code> and <code><a href="../reference/lca.html">lca()</a></code> fit single-level latent profile and latent class models. They are <code>multilpa(id = NULL)</code> and <code>multilca(id = NULL)</code> under their ordinary names, return the same object, and refuse <code>id</code> and <code>n_group_classes</code>.</li>
 <li>
 <code><a href="../reference/multilpa.html">multilpa()</a></code> and <code><a href="../reference/lpa.html">lpa()</a></code> take <code>model</code>, the three-letter covariance code (<code>"EEE"</code>, <code>"VVI"</code>, …), as an alternative to <code>variance_model</code> / <code>covariance_model</code> or <code>volume</code> / <code>shape</code> / <code>orientation</code>; giving both is an error.</li>
@@ -93,7 +107,7 @@
 <li>Help-page examples use the bundled data sets and verbs, with no <code>$</code> or bracket indexing; a test keeps it that way.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bootstrap-likelihood-ratio-tests-with-missing-data-and-covariates-development-version">Bootstrap likelihood-ratio tests with missing data and covariates<a class="anchor" aria-label="anchor" href="#bootstrap-likelihood-ratio-tests-with-missing-data-and-covariates-development-version"></a></h3>
+<h3 id="bootstrap-likelihood-ratio-tests-with-missing-data-and-covariates-0-8-5">Bootstrap likelihood-ratio tests with missing data and covariates<a class="anchor" aria-label="anchor" href="#bootstrap-likelihood-ratio-tests-with-missing-data-and-covariates-0-8-5"></a></h3>
 <ul><li>
 <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> now accepts fits made with <code>missing = "fiml"</code>: every simulated replicate is given the observed missing cells before it is refitted, so the reference distribution loses the same information as the observed statistic. The pattern is treated as fixed (independent of the profiles).</li>
 <li>
@@ -101,33 +115,33 @@
 <li>Models with different missing-data handling are now refused as incomparable (<code>latents_incomparable_models</code>).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="standard-errors-for-latent-transition-models-development-version">Standard errors for latent transition models<a class="anchor" aria-label="anchor" href="#standard-errors-for-latent-transition-models-development-version"></a></h3>
+<h3 id="standard-errors-for-latent-transition-models-0-8-5">Standard errors for latent transition models<a class="anchor" aria-label="anchor" href="#standard-errors-for-latent-transition-models-0-8-5"></a></h3>
 <ul><li>
 <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> and <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> now work on <code><a href="../reference/lta.html">lta()</a></code> fits instead of refusing them: observed-information, robust (clustered on sequences) and OPG standard errors for the measurement model, the group-class shares, the initial profile probabilities and the transition probabilities. The scores follow the Fisher identity (expected counts from the forward-backward pass minus the counts the fitted probabilities imply) and match numerical differentiation of the likelihood; the standard errors match a Richardson-extrapolated Hessian to 1e-6 and depmixS4’s numerical ones to within its own finite-difference error. Over 300 simulated panels, 95% intervals covered 0.947-0.960. The <code>latents_no_inference</code> condition is retired.</li>
 <li>
 <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> on an <code><a href="../reference/lta.html">lta()</a></code> fit now uses the names and order of <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>: under <code>variance_model = "equal"</code> it reports the shared variances once, under <code>covariance_model = "full"</code> the covariance matrices, and the group-class shares come before the initial and transition probabilities.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="multiple-imputation-for-missing-covariates-development-version">Multiple imputation for missing covariates<a class="anchor" aria-label="anchor" href="#multiple-imputation-for-missing-covariates-development-version"></a></h3>
+<h3 id="multiple-imputation-for-missing-covariates-0-8-5">Multiple imputation for missing covariates<a class="anchor" aria-label="anchor" href="#multiple-imputation-for-missing-covariates-0-8-5"></a></h3>
 <ul><li>New <code><a href="../reference/pool_imputations.html">pool_imputations()</a></code>: fits <code><a href="../reference/multilpa.html">multilpa()</a></code> to every completed data set (a list of data frames, or a <code>mids</code> object from mice), aligns each fit’s profile and group-class labels to the first, and pools with Rubin’s rules. The table adds <code>df</code>, <code>within</code>, <code>between</code>, <code>riv</code> and <code>fmi</code> to the columns of <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>; <code>get_results(x, "imputations")</code> and <code>get_results(x, "fits")</code> show each imputation and the relabelling it needed, and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> shows the imputations’ estimates beside the pooled interval. This is the route for missing covariates, which <code>missing = "fiml"</code> cannot integrate out. Aligning a covariate fit reparameterizes its membership logits, whose reference category moves with the labels. Pooled values agree with <code><a href="https://amices.org/mice/reference/pool.scalar.html" class="external-link">mice::pool.scalar()</a></code> to machine precision. A failing imputation raises <code>latents_pooling_failed</code> rather than being dropped.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="first-stage-uncertainty-in-staged-fits-development-version">First-stage uncertainty in staged fits<a class="anchor" aria-label="anchor" href="#first-stage-uncertainty-in-staged-fits-development-version"></a></h3>
+<h3 id="first-stage-uncertainty-in-staged-fits-0-8-5">First-stage uncertainty in staged fits<a class="anchor" aria-label="anchor" href="#first-stage-uncertainty-in-staged-fits-0-8-5"></a></h3>
 <ul><li>
 <code>parameter_inference(method = "bootstrap")</code> now accepts a <code><a href="../reference/fit_staged.html">fit_staged()</a></code> result instead of refusing it. Every resample of the groups refits both stages, so the standard errors and percentile intervals carry the measurement’s sampling variability into the group-class estimates; the Wald default still conditions on the measurement. The table reports every parameter, the measurement included. On a simulated two-class design the within-class profile probabilities’ errors were 14% and 32% wider than the conditional ones, and a bootstrap that held the first stage reproduced the conditional Wald errors to within 3%.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="profile-covariate-slopes-by-group-class-development-version">Profile-covariate slopes by group class<a class="anchor" aria-label="anchor" href="#profile-covariate-slopes-by-group-class-development-version"></a></h3>
+<h3 id="profile-covariate-slopes-by-group-class-0-8-5">Profile-covariate slopes by group class<a class="anchor" aria-label="anchor" href="#profile-covariate-slopes-by-group-class-0-8-5"></a></h3>
 <ul><li>
 <code>multilpa(profile_covariates = , profile_slopes = "group_class")</code> lets each group class have its own profile-covariate slopes, so a covariate can predict profile membership differently in different kinds of group (a cross-level interaction). The coefficients are reported with terms such as <code>z:group_class_1</code>, and inference, robust and OPG covariances cover them. The default, <code>"shared"</code>, is the previous model. With one group class the two are the same model. Naming it without <code>profile_covariates</code> raises <code>latents_bad_argument</code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="missing-indicators-in-membership-covariate-models-development-version">Missing indicators in membership-covariate models<a class="anchor" aria-label="anchor" href="#missing-indicators-in-membership-covariate-models-development-version"></a></h3>
+<h3 id="missing-indicators-in-membership-covariate-models-0-8-5">Missing indicators in membership-covariate models<a class="anchor" aria-label="anchor" href="#missing-indicators-in-membership-covariate-models-0-8-5"></a></h3>
 <ul><li>
 <code>multilpa(profile_covariates = , group_covariates = , missing = "fiml")</code> now fits: missing indicators are integrated out of the measurement density exactly as in the covariate-free model, for diagonal and full residual covariance and for categorical and mixed indicators. Previously this combination was refused with <code>latents_bad_argument</code>. Standard errors (observed, robust and OPG) cover it through the Fisher identity: a missing value enters the scores through its conditional mean and covariance given the row’s observed values. Covariates themselves must still be complete; a missing covariate now raises the classed <code>latents_bad_data</code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="faster-estimation-development-version">Faster estimation<a class="anchor" aria-label="anchor" href="#faster-estimation-development-version"></a></h3>
+<h3 id="faster-estimation-0-8-5">Faster estimation<a class="anchor" aria-label="anchor" href="#faster-estimation-0-8-5"></a></h3>
 <ul><li>
 <code>multilpa(acceleration = "squarem")</code>, the new default, accelerates EM with SQUAREM (Varadhan &amp; Roland 2008). A cycle extrapolates along the last two EM steps and finishes with an ordinary EM step, falling back to plain EM whenever the extrapolation would lower the likelihood, so the path stays monotone; convergence is judged over the whole cycle, so it is never looser than plain EM’s. <code>acceleration = "none"</code> reproduces plain EM’s path (use it to follow mclust or Mplus step by step). Prior fits, membership-covariate models always use plain EM. Results can differ slightly from earlier versions: the accelerated fit usually ends closer to the maximum, and on a flat, weakly identified likelihood it may stop at a different point of the ridge.</li>
 <li>The first start of <code><a href="../reference/multilpa.html">multilpa()</a></code> is now Ward’s hierarchical clustering, with each cluster’s own means and spread; the rest remain random k-means. Over 14 structures on 3 datasets it never lowered the best-of-10 likelihood and raised it in 3 of 36 cases, for example on iris VVV from -186.57 to mclust’s -180.19. Fits may therefore land on a better maximum, or on the same maximum with profiles numbered differently.</li>
@@ -141,7 +155,7 @@
 <li>On 5,000 rows, 4 indicators and 3 profiles, 13 of the 14 covariance structures now fit faster than <code><a href="https://mclust-org.github.io/mclust/reference/Mclust.html" class="external-link">mclust::Mclust()</a></code> from one start (VVV is the exception), and 13 of 14 reach a higher likelihood.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="mixture-regression-development-version">Mixture regression<a class="anchor" aria-label="anchor" href="#mixture-regression-development-version"></a></h3>
+<h3 id="mixture-regression-0-8-5">Mixture regression<a class="anchor" aria-label="anchor" href="#mixture-regression-0-8-5"></a></h3>
 <ul><li>New <code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> fits finite mixtures of regressions (clusterwise, latent class or regression-mixture models) for <code>"gaussian"</code>, <code>"binomial"</code> (0/1, factor or <code>cbind(successes, failures)</code>) and <code>"poisson"</code> (with <code><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset()</a></code>) outcomes. Classes can belong to each row, to a whole group (<code>class_level = "group"</code>, flexmix’s <code>y ~ x | id</code>), or to each row with a second-level group class that shifts the class shares within groups (<code>n_group_classes</code>, Vermunt 2003). Membership covariates at both levels (<code>membership</code>, <code>group_membership</code>), coefficients shared across classes (<code>common</code>), and equal residual variances (<code>variance = "equal"</code>).</li>
 <li>Analytic scores (Fisher’s identity) give observed-information, sandwich (clustered on the independent unit, or on <code>id</code> for a single-level fit) and outer-product standard errors; validated against a numerical Hessian of the likelihood in every nesting. A Monte Carlo study (<code>validation/mixture-regression-recovery.R</code>, 200 replications) found 91.5–97% coverage of nominal 95% intervals for the two-level model.</li>
 <li>
@@ -152,14 +166,14 @@
 <li>New dataset <code>study_hours</code> and <code><a href="../articles/mixture-regression.html">vignette("mixture-regression")</a></code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="fixes-development-version">Fixes<a class="anchor" aria-label="anchor" href="#fixes-development-version"></a></h3>
+<h3 id="fixes-0-8-5">Fixes<a class="anchor" aria-label="anchor" href="#fixes-0-8-5"></a></h3>
 <ul><li>
 <code>multilca(id = NULL)</code> now fits one group class by default, as <code><a href="../reference/multilpa.html">multilpa()</a></code> does, instead of refusing the default <code>n_group_classes = 2</code>.</li>
 <li>
 <code>equivalence/run.R</code> evaluated tests in the retired <code>multilpa</code> package’s namespace when it was still installed; it now uses <code>latents</code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="mclust-parity-development-version">mclust parity<a class="anchor" aria-label="anchor" href="#mclust-parity-development-version"></a></h3>
+<h3 id="mclust-parity-0-8-5">mclust parity<a class="anchor" aria-label="anchor" href="#mclust-parity-0-8-5"></a></h3>
 <ul><li>
 <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> and <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> give Wald standard errors for all fourteen covariance structures, not only EEI, VVI, EEE and VVV. The ten that constrain the volume, the shape or the orientation across profiles are differentiated in their own free coordinates — log volumes, log shapes with the determinant-one constraint built in, and Cayley-transform orientations (log-Cholesky factors for VEE and EVV) — with exactly as many dimensions as the structure has parameters, and carried to the reported variances and covariances by the delta method. Robust (<code>"robust"</code>, <code>"opg"</code>) errors work for them too. Validated against an independent numerical Hessian of the observed-data likelihood in a different chart.</li>
 <li>
@@ -168,7 +182,7 @@
 <code>multilpa(noise = TRUE)</code> adds mclust’s uniform noise component over the data’s hypervolume (<code>hypvol()</code>), for one group class and continuous, complete indicators, with any covariance structure and with or without <code>prior</code>. The noise is profile <code>0</code> in <code>get_results(fit, "assignments")</code> (with a <code>posterior_noise</code> column), <code>"posteriors"</code>, <code>"profile_probabilities"</code> and the classification diagnostics. The component counts two parameters, as in mclust, so BIC equals mclust’s. New condition class <code>latents_unsupported_noise</code>, raised also by the verbs that do not yet account for a noise component.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-controls-development-version">New controls<a class="anchor" aria-label="anchor" href="#new-controls-development-version"></a></h3>
+<h3 id="new-controls-0-8-5">New controls<a class="anchor" aria-label="anchor" href="#new-controls-0-8-5"></a></h3>
 <ul><li>
 <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> and <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> give standard errors for a one-step covariate model with categorical or mixed indicators (<code>multilca(profile_covariates = )</code>, <code>multilpa(categorical = , profile_covariates = )</code>). Each category’s probability is reported with a delta-method standard error and no Wald test, as for the covariate-free model.</li>
 <li>
@@ -181,12 +195,12 @@
 <code><a href="../reference/r3step.html">r3step()</a></code> gains <code>by_group_class</code>. <code>TRUE</code> gives every group class its own profile intercepts, with shared slopes and one latent group class per group, the two-level form of the one-step model. The pooled regression attenuates the slopes when group classes differ in their profile mix.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changed-defaults-development-version">Changed defaults<a class="anchor" aria-label="anchor" href="#changed-defaults-development-version"></a></h3>
+<h3 id="changed-defaults-0-8-5">Changed defaults<a class="anchor" aria-label="anchor" href="#changed-defaults-0-8-5"></a></h3>
 <ul><li>
 <code><a href="../reference/r3step.html">r3step()</a></code> now defaults to <code>vcov_type = "robust"</code>, standard errors clustered on groups, matching <code><a href="../reference/three_step.html">three_step()</a></code>. Pass <code>vcov_type = "observed"</code> for the previous behaviour.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-0-8-5">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-8-5"></a></h3>
 <ul><li>A covariate fit now stores <code>min_probability</code>, so inference recognises response probabilities on their bound and refuses with <code>latents_boundary_fit</code> instead of a numerically singular information.</li>
 </ul></div>
 </div>
