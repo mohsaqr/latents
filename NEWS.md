@@ -1,3 +1,16 @@
+# latents 0.9.4
+
+* The membership M-step of covariate fits (`profile_covariates`,
+  `group_covariates`) now solves its weighted multinomial logits by
+  Newton-Raphson with the exact Hessian instead of BFGS. BFGS stalled above
+  its score tolerance on about half of the steps of an ordinary fit, which
+  left fits flagged unconverged (and refused standard errors) on some
+  platforms but not others. Estimates are unchanged; fits converge in fewer
+  EM iterations.
+* Continuous integration passes again: the R 4.1 floor job no longer tries to
+  install `mice` (its current dependency chain needs R >= 4.4), one lint is
+  fixed, and the checkout action is updated.
+
 # latents 0.9.3
 
 ## Sampling weights

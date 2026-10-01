@@ -155,11 +155,20 @@ test_that("a covariate replicate is valid once its likelihood has converged", {
                                      max_iter = 3000, seed = 2))
   replicates <- get_results(test, "replicates")
   expect_true("logits_settled" %in% names(replicates))
-  # A replicate is refused only if a likelihood failed to settle, not because
-  # a logit of the over-fitted third profile kept drifting.
   expect_true(all(replicates$valid))
-  # On this seed one replicate's logits did not settle (measured), so the test
-  # exercises the rule rather than passing because no logit drifted.
-  expect_gte(sum(!replicates$logits_settled), 1L)
   expect_true(is.finite(as.data.frame(test)$p_value))
+  # A replicate is refused only if a likelihood failed to settle, not because
+  # a logit kept drifting. The Newton logit step settles on these data, so the
+  # drifting case is forced: every logit step reports itself unsolved.
+  solve_logits <- .multilpa_weighted_logits
+  local_mocked_bindings(.multilpa_weighted_logits = function(...) {
+    solved <- solve_logits(...)
+    solved$converged <- FALSE
+    solved
+  })
+  drifting <- .lrt_quietly(bootstrap_lrt(null, alternative, iter = 4, n_starts = 2,
+                                         max_iter = 3000, seed = 2))
+  drifting_replicates <- get_results(drifting, "replicates")
+  expect_true(all(!drifting_replicates$logits_settled))
+  expect_true(all(drifting_replicates$valid))
 })

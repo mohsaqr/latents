@@ -250,7 +250,7 @@ mixture_regression <- function(formula, data, n_classes,
   old_seed <- if (had_seed) get(".Random.seed", envir = globalenv())
   on.exit({
     if (had_seed) {
-      assign(".Random.seed", old_seed, envir = globalenv())
+      assign(".Random.seed", old_seed, envir = globalenv())  # nolint: object_name_linter. R's name for the RNG state.
     } else if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
       rm(".Random.seed", envir = globalenv())
     }

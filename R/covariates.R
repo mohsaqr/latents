@@ -22,11 +22,14 @@
 
 #' Fit weighted multinomial logits
 #'
-#' The search runs on unit-free coordinates, not on the covariates as supplied.
-#' BFGS stops on a relative tolerance measured in the coordinates it is given,
-#' so a covariate held in units a few orders of magnitude away from the rest
-#' stalls the search while the score is still large, and `optim()` still returns
-#' convergence code zero. Because the logit is the same model under any linear
+#' Newton-Raphson with the exact Hessian and step halving: the weighted
+#' multinomial log likelihood is concave, so each accepted step cannot lower it
+#' and the score falls quadratically to the tolerance. (BFGS, used before,
+#' stalled above the tolerance on about half of the steps of an ordinary fit,
+#' at small coefficients and differently on each platform.) The search runs on
+#' unit-free coordinates, not on the covariates as supplied: a covariate held
+#' in units a few orders of magnitude away from the rest would otherwise make
+#' the Hessian badly scaled. Because the logit is the same model under any linear
 #' rescaling of a predictor, the entire search is moved onto columns divided by
 #' their root-mean-square (see `.multilpa_design_scale()`) and the coefficients
 #' are divided back afterwards, so the caller receives estimates in the units
@@ -44,13 +47,12 @@
 #'   what stops the outer EM iteration; a step that cannot reach it is one whose
 #'   coefficient is drifting towards infinity, and that is reported rather than
 #'   passed off as a maximum.
-#' @param max_restarts How many times BFGS may be restarted from its own
-#'   stopping point before the step is declared unconverged.
+#' @param max_newton Most Newton steps before the step is declared unconverged.
 #' @return A list with `coefficients` (in the units of `design`), `converged`,
 #'   and `scaled_score`, the largest absolute unit-free score at the solution.
 #' @noRd
 .multilpa_weighted_logits <- function(design, counts, initial,
-                                      score_tol = 1e-8, max_restarts = 10L) {
+                                      score_tol = 1e-8, max_newton = 100L) {
   stopifnot(
     "`design` must be a numeric matrix" =
       is.matrix(design) && is.numeric(design),
@@ -68,10 +70,10 @@
     "`score_tol` must be a single positive number" =
       is.numeric(score_tol) && length(score_tol) == 1L &&
       is.finite(score_tol) && score_tol > 0,
-    "`max_restarts` must be a single non-negative whole number" =
-      is.numeric(max_restarts) && length(max_restarts) == 1L &&
-      is.finite(max_restarts) && max_restarts >= 0 &&
-      max_restarts == as.integer(max_restarts))
+    "`max_newton` must be a single positive whole number" =
+      is.numeric(max_newton) && length(max_newton) == 1L &&
+      is.finite(max_newton) && max_newton >= 1 &&
+      max_newton == as.integer(max_newton))
   ## A non-finite design or count would reach the optimizer as a silent `NaN`
   ## objective, which BFGS reports as a completed search.
   if (!all(is.finite(design)) || !all(is.finite(counts))) {
@@ -105,23 +107,49 @@
   ## The score is a sum over the expected counts, so the tolerance it is judged
   ## against scales with them; the `1 +` keeps an empty step well defined.
   threshold <- score_tol * (1 + sum(counts))
+  # Minus the Hessian of the log likelihood, block (a, b) over the free
+  # categories: sum_i t_i p_ia (1[a = b] - p_ib) x_i x_i'.
+  information <- function(values) {
+    probabilities <- .multilpa_softmax(scaled_design, unpack(values))
+    totals <- rowSums(counts)
+    cells <- expand.grid(a = seq_len(n_free), b = seq_len(n_free))
+    blocks <- lapply(seq_len(nrow(cells)), function(cell) {
+      a <- cells$a[cell]
+      b <- cells$b[cell]
+      crossprod(scaled_design, scaled_design *
+                  (totals * probabilities[, a] * ((a == b) - probabilities[, b])))
+    })
+    do.call(rbind, lapply(seq_len(n_free), function(a) {
+      do.call(cbind, blocks[cells$a == a])
+    }))
+  }
   current <- start
   value <- baseline
   score <- max(abs(gradient(current)))
-  attempt <- 0L
-  # Each restart resets the BFGS curvature approximation, which is what lets the
-  # search move again after it has stopped on its own relative tolerance. This
-  # refines one estimate in sequence, so there is nothing here to vectorize.
-  while (attempt < max_restarts && score > threshold) {
-    fit <- stats::optim(current, objective, gradient, method = "BFGS",
-                        control = list(maxit = 500L, reltol = 1e-11))
+  iteration <- 0L
+  # Newton steps refine one estimate in sequence, so there is nothing here to
+  # vectorize. A ridge far below the data scale keeps an empty category
+  # solvable without moving a determined solution.
+  while (iteration < max_newton && score > threshold) {
+    hessian <- information(current)
+    ridge <- 1e-10 * (1 + max(abs(diag(hessian))))
+    factor <- chol(hessian + diag(ridge, nrow(hessian)))
+    direction <- -backsolve(factor, forwardsolve(t(factor), gradient(current)))
     ## Never move to a worse point: the M-step has to be monotone for EM's
     ## ascent guarantee to hold.
-    if (!is.finite(fit$value) || fit$value >= value) break
-    current <- fit$par
-    value <- fit$value
+    step <- 1
+    candidate_value <- Inf
+    while (step > 1e-10) {
+      candidate <- current + step * direction
+      candidate_value <- objective(candidate)
+      if (is.finite(candidate_value) && candidate_value <= value) break
+      step <- step / 2
+    }
+    if (!is.finite(candidate_value) || candidate_value > value) break
+    current <- candidate
+    value <- candidate_value
     score <- max(abs(gradient(current)))
-    attempt <- attempt + 1L
+    iteration <- iteration + 1L
   }
   if (value > baseline + 1e-8) {
     stop(errorCondition(

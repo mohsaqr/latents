@@ -177,7 +177,7 @@ precondition for everything here.
 ## Priority 5 — Release and infrastructure
 
 - [x] Bump `DESCRIPTION` (0.8.4) before any push. **S**
-- [ ] CI has never run: GitHub Actions on release, devel and oldrel across
+- [x] (2026-10-01, 0.9.4: CI repaired) CI has never run: GitHub Actions on release, devel and oldrel across
   Linux, macOS and Windows; only macOS with R 4.5.2 so far. **S**
 - [ ] Re-audit the README feature matrix. Its residual-covariance row still
   says four of fourteen structures; all fourteen are fitted with Wald standard

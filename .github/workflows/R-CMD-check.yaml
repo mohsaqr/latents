@@ -25,15 +25,19 @@ jobs:
           - {os: ubuntu-latest,  r: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel-1'}
           # DESCRIPTION declares Depends: R (>= 4.1.0); check that floor directly
-          # rather than trusting that oldrel-1 happens to sit on it.
-          - {os: ubuntu-latest,  r: '4.1'}
+          # rather than trusting that oldrel-1 happens to sit on it. The
+          # suggested mice needs lme4, whose current Matrix needs R >= 4.4, so
+          # this job drops mice (its tests and code guard it) and does not
+          # force suggested packages.
+          - {os: ubuntu-latest,  r: '4.1', ignore: 'mice=?ignore', force-suggests: 'false'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      _R_CHECK_FORCE_SUGGESTS_: ${{ matrix.config.force-suggests || 'true' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -47,7 +51,9 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: |
+            any::rcmdcheck
+            ${{ matrix.config.ignore }}
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
