@@ -1,0 +1,89 @@
+LTA extension simulation: 1000 datasets per cell, 21.3 minutes; R version 4.5.2 (2025-10-31)
+
+         cell attempted errors converged boundary
+    covariate      1000      0      1000        0
+     occasion      1000      0      1000        0
+ second_order      1000      0      1000        0
+  categorical      1000      0      1000        0
+
+         cell                         key truth availability bias_over_sd
+    covariate         initial (Intercept)   0.3            1      0.04463
+    covariate                   initial w   0.8            1      0.08803
+    covariate transition 1->2 (Intercept)  -1.2            1     -0.01179
+    covariate           transition 1->2 z   0.8            1      0.08356
+    covariate transition 2->1 (Intercept)  -1.0            1     -0.04436
+    covariate           transition 2->1 z  -0.6            1     -0.04972
+     occasion         initial (Intercept)   0.2            1      0.03062
+     occasion  transition 1->2 occasion_2  -1.5            1     -0.09059
+     occasion  transition 1->2 occasion_3  -0.8            1     -0.06500
+     occasion  transition 1->2 occasion_4  -0.3            1     -0.01905
+     occasion  transition 2->1 occasion_2  -1.2            1     -0.12263
+     occasion  transition 2->1 occasion_3  -1.2            1     -0.09770
+     occasion  transition 2->1 occasion_4  -0.5            1     -0.03085
+ second_order         initial (Intercept)   0.0            1     -0.01692
+ second_order transition 1->2 (Intercept)  -1.0            1     -0.11840
+ second_order transition 2->1 (Intercept)  -1.0            1     -0.05646
+ second_order               second 1-1->2  -2.0            1     -0.09363
+ second_order               second 1-2->1   0.3            1      0.01714
+ second_order               second 2-1->2   0.3            1      0.00522
+ second_order               second 2-2->1  -2.0            1     -0.11344
+  categorical         initial (Intercept)   0.0            1     -0.02099
+  categorical                   initial w   0.6            1      0.03000
+  categorical transition 1->2 (Intercept)  -1.3            1     -0.02119
+  categorical           transition 1->2 z   0.7            1      0.00645
+  categorical transition 2->1 (Intercept)  -1.1            1     -0.07340
+  categorical           transition 2->1 z  -0.5            1     -0.05022
+ se_ratio_observed coverage_observed se_ratio_robust coverage_robust
+             0.993             0.955           0.999           0.955
+             0.934             0.935           0.938           0.936
+             0.966             0.944           0.976           0.946
+             0.977             0.940           0.984           0.942
+             1.032             0.959           1.044           0.963
+             0.990             0.952           0.995           0.952
+             1.037             0.957           1.049           0.957
+             0.970             0.956           0.980           0.959
+             0.971             0.954           0.981           0.955
+             0.988             0.958           0.998           0.959
+             0.955             0.953           0.965           0.956
+             1.001             0.957           1.014           0.962
+             0.954             0.952           0.964           0.953
+             1.011             0.948           1.017           0.949
+             0.968             0.948           0.976           0.953
+             0.950             0.942           0.958           0.947
+             0.991             0.967           1.001           0.968
+             0.980             0.957           0.995           0.956
+             1.007             0.959           1.023           0.961
+             0.943             0.956           0.955           0.961
+             0.985             0.933           0.988           0.934
+             1.016             0.948           1.020           0.950
+             0.993             0.955           1.000           0.956
+             0.995             0.958           0.999           0.950
+             1.003             0.947           1.007           0.948
+             0.968             0.948           0.971           0.945
+ meets_release
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+         FALSE
+          TRUE
+          TRUE
+          TRUE
+         FALSE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+         FALSE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+          TRUE
+          TRUE

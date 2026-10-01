@@ -233,21 +233,31 @@
   }
   n_profiles <- nrow(parameters$measurement[[1L]]$means)
   out <- matrix(0, nrow(x), n_profiles)
+  moments <- vector("list", length(parameters$measurement))
   invisible(lapply(seq_along(parameters$measurement), function(t) {
     rows <- if (length(parameters$measurement) == 1L) seq_len(nrow(x)) else
       which(occasion_of_row == t)
     if (length(rows) == 0L) return(NULL)
     block <- parameters$measurement[[t]]
     if (ncol(x) > 0L) {
-      out[rows, ] <<- matrix(gaussian_density(rows, block$means, block$variances),
-                             length(rows), n_profiles)
+      sub <- x[rows, , drop = FALSE]
+      if (anyNA(sub) || !is.null(block$covariances)) {
+        # Missing indicators are integrated out and full covariances used,
+        # by the cross-sectional moments; the M-step reuses the moments.
+        gaussian <- .multilpa_gaussian_moments(sub, block)
+        out[rows, ] <<- gaussian$log_density
+        moments[[t]] <<- gaussian$moments
+      } else {
+        out[rows, ] <<- matrix(gaussian_density(rows, block$means, block$variances),
+                               length(rows), n_profiles)
+      }
     }
     if (!is.null(codes)) {
       out[rows, ] <<- out[rows, , drop = FALSE] + .multilpa_categorical_log_density(
         codes[rows, , drop = FALSE], block$response_probabilities)
     }
   }))
-  out
+  structure(out, moments = moments)
 }
 
 #' Second-order transitions as a first-order chain on profile pairs
@@ -289,6 +299,24 @@
   list(log_initial = initial, log_transition = transition)
 }
 
+#' Log transitions of a stayer class: never leaving the current profile
+#' @noRd
+.lta_identity_transition <- function(n_groups, n_profiles) {
+  out <- array(-Inf, c(n_groups, n_profiles, n_profiles))
+  invisible(lapply(seq_len(n_profiles), function(k) out[, k, k] <<- 0))
+  out
+}
+
+#' Second-order version: from pair (i, j) the next profile is j
+#' @noRd
+.lta_identity_transition2 <- function(n_groups, n_profiles) {
+  out <- array(-Inf, c(n_groups, n_profiles^2, n_profiles))
+  invisible(lapply(seq_len(n_profiles^2), function(pair) {
+    out[, pair, (pair - 1L) %% n_profiles + 1L] <<- 0
+  }))
+  out
+}
+
 #' Log second-order transition probabilities of one class at one occasion:
 #' groups x K^2 origin pairs x K destinations (reference: staying in j)
 #' @noRd
@@ -312,6 +340,8 @@
   n_types <- length(parameters$group_probabilities)
   n_groups <- nrow(layout$slot)
   log_density <- .lta_log_density(x, codes, parameters, occasion_of_row)
+  gaussian_moments <- attr(log_density, "moments")
+  attr(log_density, "moments") <- NULL
   emission <- .multilpa_sequence_emission(log_density, layout)
   second <- !is.null(parameters$transition2)
   n_states <- nrow(parameters$measurement[[1L]]$means)
@@ -319,10 +349,12 @@
   augmented_emission <- if (second) lapply(emission$log_density, function(block) {
     block[, rep(seq_len(n_states), times = n_states), drop = FALSE]
   }) else NULL
+  stayer <- parameters$stayer %||% rep(FALSE, n_types)
   per_class <- lapply(seq_len(n_types), function(h) {
     log_initial <- .lta_log_initial(designs$initial,
                                     matrix(parameters$initial[, , h], ncol(designs$initial)))
     log_transition <- lapply(designs$transition, function(design) {
+      if (stayer[h]) return(.lta_identity_transition(nrow(design), n_states))
       .lta_log_transition(design, array(parameters$transition[, , , h],
                                         dim(parameters$transition)[1:3]))
     })
@@ -332,6 +364,7 @@
                                                log_initial, log_transition)))
     }
     log_transition2 <- lapply(designs$transition[-1L], function(design) {
+      if (stayer[h]) return(.lta_identity_transition2(nrow(design), n_states))
       .lta_log_transition2(design, array(parameters$transition2[, , , h],
                                          dim(parameters$transition2)[1:3]))
     })
@@ -365,14 +398,16 @@
   }
   list(log_likelihood = log_likelihood, group_log_likelihood = group_log_likelihood,
        group_posteriors = group_posteriors, subject_posteriors = subject_posteriors,
-       joint = joint, moments = moments, per_class = per_class)
+       joint = joint, moments = moments, per_class = per_class,
+       gaussian_moments = gaussian_moments)
 }
 
 #' M-step of the general transition model
 #' @noRd
 .lta_maximization <- function(x, codes, layout, designs, expectation, parameters,
                               occasion_of_row, variance_model, min_variance,
-                              n_categories, min_probability) {
+                              n_categories, min_probability,
+                              covariance_model = "diagonal", structure = NULL) {
   n_types <- length(parameters$group_probabilities)
   n_profiles <- ncol(expectation$subject_posteriors)
   # Measurement: the cross-sectional M-step, on all rows or occasion by occasion.
@@ -381,12 +416,16 @@
       which(occasion_of_row == t)
     sub <- list(subject_posteriors = expectation$subject_posteriors[rows, , drop = FALSE],
                 group_posteriors = expectation$group_posteriors,
-                joint = lapply(expectation$joint, function(j) j[rows, , drop = FALSE]))
+                joint = lapply(expectation$joint, function(j) j[rows, , drop = FALSE]),
+                gaussian_moments = expectation$gaussian_moments[[t]])
     updated <- .multilpa_maximization(x[rows, , drop = FALSE], sub, variance_model,
-                                      min_variance, "diagonal",
+                                      min_variance, covariance_model,
                                       if (is.null(codes)) NULL else codes[rows, , drop = FALSE],
-                                      n_categories, min_probability)
-    updated[intersect(c("means", "variances", "response_probabilities"), names(updated))]
+                                      n_categories, min_probability,
+                                      structure = structure,
+                                      previous = parameters$measurement[[t]])
+    updated[intersect(c("means", "variances", "covariances", "response_probabilities"),
+                      names(updated))]
   })
   initial <- array(vapply(seq_len(n_types), function(h) {
     counts <- expectation$moments[[h]]$initial
@@ -403,7 +442,9 @@
   # into occasion 2.
   stacked_design <- if (second) designs$transition[[1L]] else
     do.call(rbind, designs$transition)
+  stayer <- parameters$stayer %||% rep(FALSE, n_types)
   transition <- array(vapply(seq_len(n_types), function(h) {
+    if (stayer[h]) return(as.vector(parameters$transition[, , , h]))
     vapply(seq_len(n_profiles), function(k) {
       others <- setdiff(seq_len(n_profiles), k)
       # Counts of moves out of k, destination columns with staying last.
@@ -421,6 +462,7 @@
   transition2 <- if (!second) NULL else {
     later_design <- do.call(rbind, designs$transition[-1L])
     array(vapply(seq_len(n_types), function(h) {
+      if (stayer[h]) return(as.vector(parameters$transition2[, , , h]))
       vapply(seq_len(n_profiles^2), function(pair) {
         j <- (pair - 1L) %% n_profiles + 1L
         others <- setdiff(seq_len(n_profiles), j)
@@ -438,14 +480,15 @@
   }
   c(list(measurement = measurement, initial = initial, transition = transition),
     if (second) list(transition2 = transition2),
-    list(group_probabilities = colMeans(expectation$group_posteriors)))
+    list(group_probabilities = colMeans(expectation$group_posteriors),
+         stayer = parameters$stayer))
 }
 
 #' EM for the general transition model from one start
 #' @noRd
 .lta_em <- function(x, codes, layout, designs, parameters, occasion_of_row,
                     variance_model, min_variance, n_categories, min_probability,
-                    max_iter, tol) {
+                    max_iter, tol, covariance_model = "diagonal", structure = NULL) {
   expectation <- .lta_expectation(x, codes, layout, designs, parameters,
                                   occasion_of_row)
   history <- expectation$log_likelihood
@@ -455,7 +498,8 @@
   while (iteration < max_iter && !converged) {
     updated <- .lta_maximization(x, codes, layout, designs, expectation, parameters,
                                  occasion_of_row, variance_model, min_variance,
-                                 n_categories, min_probability)
+                                 n_categories, min_probability, covariance_model,
+                                 structure)
     updated_expectation <- .lta_expectation(x, codes, layout, designs, updated,
                                             occasion_of_row)
     gain <- updated_expectation$log_likelihood - expectation$log_likelihood
@@ -478,13 +522,17 @@
 .lta_initialize <- function(x, group_index, layout, designs, n_profiles, n_types,
                             variance_model, min_variance, start_index, codes,
                             n_categories, min_probability, n_measurement,
-                            order = 1L) {
+                            order = 1L, mover_stayer = 0L,
+                            covariance_model = "diagonal", structure = NULL) {
   start <- .multilpa_transition_initialize(x, group_index, n_profiles, n_types,
                                            variance_model, min_variance, start_index,
-                                           "diagonal", codes, n_categories,
+                                           covariance_model, codes, n_categories,
                                            min_probability)
-  block <- start[intersect(c("means", "variances", "response_probabilities"),
-                           names(start))]
+  if (!is.null(structure)) {
+    start <- .multilpa_project_start(start, structure, nrow(x), min_variance)
+  }
+  block <- start[intersect(c("means", "variances", "covariances",
+                             "response_probabilities"), names(start))]
   p0 <- ncol(designs$initial)
   p <- ncol(designs$transition[[1L]])
   initial <- array(0, c(p0, n_profiles - 1L, n_types))
@@ -517,7 +565,8 @@
   c(list(measurement = rep(list(block), n_measurement), initial = initial,
          transition = transition),
     if (order >= 2L) list(transition2 = transition2),
-    list(group_probabilities = start$group_probabilities))
+    list(group_probabilities = start$group_probabilities,
+         stayer = c(rep(FALSE, n_types - mover_stayer), rep(TRUE, mover_stayer))))
 }
 
 #' Fit the general transition model
@@ -531,8 +580,13 @@
                              variance_model, n_starts, max_iter, tol, min_variance,
                              seed, categorical, min_probability, occasions,
                              transitions, transition_covariates, initial_covariates,
-                             measurement_model, select_start, call, order = 1L) {
-  measurement <- .multilpa_prepare_indicators(data, vars, categorical, "error",
+                             measurement_model, select_start, call, order = 1L,
+                             mover_stayer = FALSE, missing = "error",
+                             covariance_model = "diagonal", structure = NULL) {
+  n_movers <- as.integer(n_group_classes)
+  # A stayer class is one more group class, whose transitions are fixed.
+  n_group_classes <- n_movers + as.integer(mover_stayer)
+  measurement <- .multilpa_prepare_indicators(data, vars, categorical, missing,
                                               min_probability)
   x <- measurement$x
   codes <- measurement$codes
@@ -561,7 +615,7 @@
     }, add = TRUE)
     set.seed(seed)
   }
-  centers <- if (ncol(x) > 0L) colMeans(x) else numeric(0)
+  centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
   x <- sweep(x, 2L, centers, "-")
   categorical_names <- setdiff(vars, measurement$continuous)
   if (!is.null(n_categories)) names(n_categories) <- categorical_names
@@ -573,18 +627,31 @@
                measurement = vector("list", n_measurement), designs = designs,
                layout = layout, occasion_of_row = occasion_of_row, x = x,
                codes = codes, group_index = groups$index, n_groups = groups$n,
-               group_ids = groups$ids, order = as.integer(order))
+               group_ids = groups$ids, order = as.integer(order),
+               covariance_model = covariance_model, structure = structure,
+               stayer = c(rep(FALSE, n_movers), rep(TRUE, as.integer(mover_stayer))))
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
       start <- .lta_initialize(x, groups$index, layout, designs, n_profiles,
                                n_group_classes, variance_model, min_variance,
                                start_index, codes, n_categories, min_probability,
-                               n_measurement, order)
+                               n_measurement, order, as.integer(mover_stayer),
+                               covariance_model, structure)
       # EM to a loose tolerance, then a quasi-Newton finish on the exact
       # likelihood: EM alone crawls when profiles are weakly separated.
       em <- .lta_em(x, codes, layout, designs, start, occasion_of_row, variance_model,
                     min_variance, n_categories, min_probability, max_iter,
-                    max(tol, 1e-6))
+                    max(tol, 1e-6), covariance_model, structure)
+      # The quasi-Newton finish works on diagonal measurement; a covariance
+      # structure is maximized by EM alone, to the full tolerance.
+      if (!identical(covariance_model, "diagonal") || !is.null(structure)) {
+        if (tol < 1e-6 && max_iter > 0L) {
+          em <- .lta_em(x, codes, layout, designs, em$parameters, occasion_of_row,
+                        variance_model, min_variance, n_categories, min_probability,
+                        max_iter, tol, covariance_model, structure)
+        }
+        return(em)
+      }
       if (max_iter == 0L) return(em)
       finish <- .lta_quasi_newton(spec, em$parameters, min_variance, tol)
       expectation <- .lta_expectation(x, codes, layout, designs, finish$parameters,
@@ -610,20 +677,26 @@
               vars, id, time, groups, layout, designs, x, codes, measurement,
               occasion_of_row, n_profiles, n_group_classes, variance_model,
               transitions, transition_covariates, initial_covariates,
-              measurement_model, min_variance, min_probability, call, order)
+              measurement_model, min_variance, min_probability, call, order,
+              mover_stayer, missing, covariance_model, structure)
 }
 
 #' Free parameters of the general transition model
 #' @noRd
 .lta_count_parameters <- function(n_profiles, n_types, d, n_categories,
-                                  variance_model, n_measurement, p0, p, order = 1L) {
-  per_measurement <- n_profiles * d +
-    (if (identical(variance_model, "equal")) 1L else n_profiles) * d +
-    if (is.null(n_categories)) 0L else n_profiles * sum(n_categories - 1L)
+                                  variance_model, n_measurement, p0, p, order = 1L,
+                                  n_stayers = 0L, covariance_model = "diagonal",
+                                  structure = NULL) {
+  n_movers <- n_types - n_stayers
+  # One measurement block as the cross-sectional counter counts it, without
+  # its group-class and profile-share terms (one class: K - 1 shares).
+  per_measurement <- .multilpa_count_parameters(
+    n_profiles, 1L, d, n_categories, variance_model, covariance_model, structure) -
+    (n_profiles - 1L)
   as.integer(n_measurement * per_measurement + (n_types - 1L) +
                n_types * p0 * (n_profiles - 1L) +
-               n_types * p * (n_profiles - 1L) * n_profiles +
-               if (order >= 2L) n_types * p * (n_profiles - 1L) * n_profiles^2 else 0L)
+               n_movers * p * (n_profiles - 1L) * n_profiles +
+               if (order >= 2L) n_movers * p * (n_profiles - 1L) * n_profiles^2 else 0L)
 }
 
 #' Assemble a `multilpa_lta` fit
@@ -634,9 +707,11 @@
                         n_group_classes, variance_model, transitions,
                         transition_covariates, initial_covariates,
                         measurement_model, min_variance, min_probability, call,
-                        order = 1L) {
+                        order = 1L, mover_stayer = FALSE, missing = "error",
+                        covariance_model = "diagonal", structure = NULL) {
   profile_names <- paste0("profile_", seq_len(n_profiles))
-  class_names <- paste0("group_class_", seq_len(n_group_classes))
+  class_names <- c(paste0("group_class_", seq_len(n_group_classes - mover_stayer)),
+                   if (mover_stayer) "stayers")
   parameters <- best$parameters
   parameters$measurement <- lapply(parameters$measurement, function(block) {
     if (!is.null(block$means)) {
@@ -651,7 +726,9 @@
                                         measurement$n_categories, variance_model,
                                         length(parameters$measurement),
                                         ncol(designs$initial),
-                                        ncol(designs$transition[[1L]]), order)
+                                        ncol(designs$transition[[1L]]), order,
+                                        as.integer(mover_stayer), covariance_model,
+                                        structure)
   log_likelihood <- expectation$log_likelihood
   subject_posteriors <- expectation$subject_posteriors
   group_posteriors <- expectation$group_posteriors
@@ -673,7 +750,9 @@
       paste0("destination_", seq_len(n_profiles - 1L)),
       paste0(pairs$previous, "->", pairs$current), class_names)
   }
-  boundary <- any(vapply(parameters$measurement, function(block) {
+  probability_boundary <- .lta_probability_boundary(expectation, layout,
+                                                    parameters$stayer)
+  boundary <- probability_boundary || any(vapply(parameters$measurement, function(block) {
     any(block$variances <= min_variance * (1 + 1e-8))
   }, logical(1)))
   result <- list(
@@ -688,6 +767,10 @@
     measurement = parameters$measurement, initial_coefficients = parameters$initial,
     transition_coefficients = parameters$transition,
     second_order_coefficients = parameters$transition2, order = as.integer(order),
+    missing = missing, covariance_model = covariance_model,
+    covariance_structure = structure,
+    stayer = stats::setNames(parameters$stayer, class_names),
+    mover_stayer = isTRUE(mover_stayer),
     group_probabilities = parameters$group_probabilities,
     designs = designs, layout = layout, occasion_of_row = occasion_of_row,
     centers = centers, x = x, codes = codes,
@@ -701,6 +784,7 @@
     bic_individual = -2 * log_likelihood + log(nrow(x)) * n_parameters,
     converged = isTRUE(best$converged), iterations = best$iterations,
     log_likelihood_history = best$history, boundary = boundary,
+    probability_boundary = probability_boundary,
     starts = data.frame(start = seq_along(attempts),
                         log_likelihood = ifelse(valid, scores, NA_real_),
                         converged = converged,
@@ -709,15 +793,32 @@
                         selected = seq_along(attempts) == best_start),
     n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
                               1e-6 * (1 + abs(log_likelihood))),
-    min_variance = min_variance, min_probability = min_probability)
+    min_variance = min_variance, min_probability = min_probability,
+    # The specification, so the fit can be refitted (bootstrap) or nested.
+    arguments = list(vars = vars, id = id, time = time, n_profiles = as.integer(n_profiles),
+                     n_group_classes = as.integer(n_group_classes - mover_stayer),
+                     variance_model = variance_model,
+                     categorical = setdiff(vars, measurement$continuous),
+                     occasions = layout$occasions, transitions = transitions,
+                     transition_covariates = transition_covariates,
+                     initial_covariates = initial_covariates,
+                     measurement = measurement_model, order = as.integer(order),
+                     mover_stayer = isTRUE(mover_stayer), missing = missing,
+                     covariance_model = covariance_model,
+                     model = structure, min_variance = min_variance,
+                     min_probability = min_probability))
   class(result) <- "multilpa_lta"
   if (!result$converged) {
     warning(warningCondition("The best start did not converge; increase max_iter.",
                              class = "latents_unconverged", call = NULL))
   }
   if (boundary) {
-    warning(warningCondition("A variance reached min_variance; this is a bound-active fit.",
-                             class = "latents_boundary", call = NULL))
+    warning(warningCondition(if (probability_boundary) paste(
+      "A transition or initial probability is estimated at zero (a move or",
+      "start that never occurs); this is a boundary fit and its standard",
+      "errors are withheld.") else
+      "A variance reached min_variance; this is a bound-active fit.",
+      class = "latents_boundary", call = NULL))
   }
   result
 }

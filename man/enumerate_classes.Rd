@@ -14,6 +14,7 @@ enumerate_classes(
   seed = NULL,
   family = "profiles",
   between_variance = c("varying", "equal"),
+  time = NULL,
   ...
 )
 }
@@ -65,7 +66,14 @@ then refused, and the result is a \code{latents_family_enumeration} read with
 restrictions to cross, \code{"varying"}, \code{"equal"} or both (the default). The
 dispersion family is always fitted with \code{"equal"}.}
 
-\item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}; for group-class families only
+\item{time}{The occasion column: enumerate latent transition models
+(\code{\link[=lta]{lta()}}) over \code{n_profiles} (default \code{2:4}) and \code{n_group_classes}
+(default \code{1}), holding every other \code{lta()} argument given in \code{...}
+fixed. \code{model}, when given, crosses those covariance structures. The
+result is a \code{latents_transition_enumeration}, read with
+\code{\link[=get_results.latents_transition_enumeration]{get_results.latents_transition_enumeration()}} and \code{\link[=candidate_fit]{candidate_fit()}}.}
+
+\item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}} (or to \code{\link[=lta]{lta()}} with \code{time}); for group-class families only
 \code{n_starts}, \code{max_iter}, \code{tol} and \code{min_variance}.}
 }
 \value{

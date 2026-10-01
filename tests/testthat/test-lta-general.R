@@ -138,12 +138,15 @@ test_that("second-order transitions match the exact path sum and nest first orde
 test_that("analytic scores equal numerical derivatives in every extension", {
   skip_if_not_installed("numDeriv")
   fits <- list(
-    covariates = lta(lta_small, "y", "id", n_profiles = 2, time = "time",
-                     n_group_classes = 2, transition_covariates = "z",
-                     initial_covariates = "w", n_starts = 2, seed = 1, max_iter = 20),
-    occasion = lta(lta_small, "y", "id", n_profiles = 2, time = "time",
-                   transitions = "occasion", measurement = "occasion", n_starts = 2,
-                   seed = 1, max_iter = 20),
+    # Two group classes on 60 groups: a class can have a move that never
+    # occurs. The scores are checked at a perturbed point regardless.
+    covariates = quietly(lta(lta_small, "y", "id", n_profiles = 2, time = "time",
+                             n_group_classes = 2, transition_covariates = "z",
+                             initial_covariates = "w", n_starts = 2, seed = 1,
+                             max_iter = 20), "latents_boundary"),
+    occasion = quietly(lta(lta_small, "y", "id", n_profiles = 2, time = "time",
+                           transitions = "occasion", measurement = "occasion",
+                           n_starts = 2, seed = 1, max_iter = 20), "latents_boundary"),
     second = lta(lta_small, "y", "id", n_profiles = 2, time = "time", order = 2,
                  n_starts = 2, seed = 1, max_iter = 20))
   lapply(fits, \(fit) {
@@ -240,12 +243,6 @@ test_that("tables, methods and refusals of the general model", {
   expect_error(lta(lta_small, "y", "id", n_profiles = 2, time = "time",
                    transition_covariates = "missing_column"),
                class = "latents_bad_data")
-  expect_error(lta(lta_small, "y", "id", n_profiles = 2, time = "time",
-                   transitions = "occasion", model = "VVI"),
-               class = "latents_bad_argument")
-  expect_error(lta(lta_small, "y", "id", n_profiles = 2, time = "time",
-                   transitions = "occasion", missing = "fiml"),
-               class = "latents_bad_argument")
   with_na <- lta_small
   with_na$z[3] <- NA
   expect_error(lta(with_na, "y", "id", n_profiles = 2, time = "time",
@@ -269,4 +266,113 @@ test_that("EM alone reaches a stationary point (the quasi-Newton finish masks M-
     gradient <- colSums(.lta_group_scores(.lta_pack(em$parameters, fit$variance_model), fit))
     expect_lt(max(abs(gradient)), 1e-3)
   })
+})
+
+test_that("mover-stayer: the stayer class never moves and matches the exact path sum", {
+  old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
+  on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else
+    assign(".Random.seed", old, globalenv()), add = TRUE)
+  set.seed(11)
+  n <- 150L
+  occasions <- 4L
+  stays <- stats::runif(n) < 0.35
+  data <- do.call(rbind, lapply(seq_len(n), function(j) {
+    s <- integer(occasions)
+    s[1L] <- sample(1:2, 1L)
+    for (t in 2:occasions) {  # simulation only
+      s[t] <- if (!stays[j] && stats::runif(1L) < 0.3) 3L - s[t - 1L] else s[t - 1L]
+    }
+    data.frame(id = j, time = seq_len(occasions),
+               y = stats::rnorm(occasions, c(-1, 1)[s], 0.8))
+  }))
+  fit <- quietly(lta(data, "y", "id", n_profiles = 2, time = "time",
+                     mover_stayer = TRUE, n_starts = 3, seed = 1, tol = 1e-10),
+                 "latents_boundary")
+  expect_identical(names(fit$group_probabilities), c("group_class_1", "stayers"))
+  stayers <- subset(get_results(fit, "transitions"), group_class == "stayers")
+  expect_equal(stayers$probability, as.numeric(stayers$from == stayers$to))
+  # 4 measurement + 1 class weight + 2 initial (one per class) + 2 mover moves.
+  expect_identical(fit$n_parameters, 9L)
+  p <- .lta_parameters(fit)
+  m <- fit$measurement[[1L]]
+  paths <- as.matrix(expand.grid(rep(list(1:2), occasions)))
+  shares <- lapply(1:2, \(h) {
+    e <- exp(c(p$initial[1, 1, h], 0))
+    e / sum(e)
+  })
+  move <- function(a, b) {
+    mv <- stats::plogis(p$transition[1, 1, a, 1])
+    if (a == b) 1 - mv else mv
+  }
+  exact <- sum(vapply(split(data, data$id), \(rows) {
+    log(sum(apply(paths, 1L, \(s) {
+      density <- prod(stats::dnorm(rows$y, m$means[s, 1L], sqrt(m$variances[s, 1L])))
+      fit$group_probabilities[1L] * shares[[1L]][s[1L]] *
+        prod(vapply(2:occasions, \(t) move(s[t - 1L], s[t]), numeric(1))) * density +
+        fit$group_probabilities[2L] * shares[[2L]][s[1L]] * all(s == s[1L]) * density
+    })))
+  }, numeric(1)))
+  expect_equal(fit$log_likelihood, exact, tolerance = 1e-9)
+  # Stayers and movers that never leave a profile are hard to separate in a
+  # small sample, so the fit may sit on a boundary; standard errors follow
+  # that flag either way.
+  errors <- quietly(get_results(fit, "transition_coefficients"),
+                    "latents_no_standard_errors")$standard_error
+  if (isTRUE(fit$boundary)) {
+    expect_true(all(is.na(errors)))
+  } else {
+    expect_true(all(is.finite(errors)))
+  }
+})
+
+test_that("missing indicators (FIML) in the extended model match the exact path sum", {
+  data <- lta_small
+  old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
+  on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else
+    assign(".Random.seed", old, globalenv()), add = TRUE)
+  set.seed(2)
+  data$y[sample(nrow(data), 30L)] <- NA
+  fit <- lta(data, "y", "id", n_profiles = 2, time = "time",
+             transition_covariates = "z", initial_covariates = "w", missing = "fiml",
+             n_starts = 3, seed = 1, tol = 1e-10)
+  p <- .lta_parameters(fit)
+  m <- fit$measurement[[1L]]
+  paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
+  exact <- sum(vapply(split(data, data$id), \(rows) {
+    rows <- rows[order(rows$time), ]
+    j <- match(rows$id[1L], fit$group_ids)
+    initial <- exp(.lta_log_initial(fit$designs$initial[j, , drop = FALSE],
+                                    matrix(p$initial[, , 1L], ncol(fit$designs$initial))))
+    moves <- lapply(2:4, \(t) exp(.lta_log_transition(
+      fit$designs$transition[[t - 1L]][j, , drop = FALSE],
+      array(p$transition[, , , 1L], dim(p$transition)[1:3])))[1L, , ])
+    observed <- !is.na(rows$y)
+    log(sum(apply(paths, 1L, \(s) {
+      initial[s[1L]] * prod(vapply(2:4, \(t) moves[[t - 1L]][s[t - 1L], s[t]], numeric(1))) *
+        prod(stats::dnorm(rows$y[observed], m$means[s[observed], 1L],
+                          sqrt(m$variances[s[observed], 1L])))
+    })))
+  }, numeric(1)))
+  expect_equal(fit$log_likelihood, exact, tolerance = 1e-9)
+  skip_if_not_installed("numDeriv")
+  theta <- coef(fit) + 0.05
+  analytic <- colSums(.lta_group_scores(theta, fit))
+  numeric_gradient <- numDeriv::grad(\(v) .lta_expectation(
+    fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(v, fit),
+    fit$occasion_of_row)$log_likelihood, theta)
+  expect_lt(max(abs(analytic - numeric_gradient)), 1e-5 * (1 + max(abs(numeric_gradient))))
+})
+
+test_that("covariance structures combine with the extensions and nest", {
+  activity <- c("browse", "lectures")
+  fits <- lapply(c("VEI", "VVI", "VVV"), \(m) {
+    quietly(lta(course_engagement, activity, "student", n_profiles = 2,
+                time = "sequence", transition_covariates = "previous_grade",
+                model = m, n_starts = 2, seed = 1), "latents_boundary")
+  })
+  expect_lte(fits[[1L]]$log_likelihood, fits[[2L]]$log_likelihood + 1e-6)
+  expect_lte(fits[[2L]]$log_likelihood, fits[[3L]]$log_likelihood + 1e-6)
+  expect_equal(fits[[2L]]$n_parameters - fits[[1L]]$n_parameters, 1)
+  expect_error(vcov(fits[[1L]]), class = "latents_unsupported_inference")
+  expect_error(vcov(fits[[3L]]), class = "latents_unsupported_inference")
 })

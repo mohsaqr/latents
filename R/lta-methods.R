@@ -85,9 +85,11 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   rows <- lapply(seq_len(fit$n_group_classes), function(h) {
     per_occasion <- lapply(seq_along(fit$designs$transition), function(t) {
       active <- fit$layout$within[, t + 1L]
-      log_p <- .lta_log_transition(fit$designs$transition[[t]][active, , drop = FALSE],
-                                   array(parameters$transition[, , , h],
-                                         dim(parameters$transition)[1:3]))
+      log_p <- if (isTRUE(parameters$stayer[h])) {
+        .lta_identity_transition(sum(active), n_states)
+      } else .lta_log_transition(fit$designs$transition[[t]][active, , drop = FALSE],
+                                 array(parameters$transition[, , , h],
+                                       dim(parameters$transition)[1:3]))
       apply(exp(log_p), c(2L, 3L), mean)
     })
     weights <- vapply(seq_along(fit$designs$transition), function(t) {
@@ -256,7 +258,8 @@ as.data.frame.multilpa_lta <- function(x, row.names = NULL, optional = FALSE,
 #' @rdname get_results.multilpa_lta
 #' @export
 print.multilpa_lta <- function(x, ...) {
-  pieces <- c(if (isTRUE(x$order >= 2L)) "second-order transitions",
+  pieces <- c(if (isTRUE(x$mover_stayer)) "with a stayer class",
+              if (isTRUE(x$order >= 2L)) "second-order transitions",
               if (!identical(x$transitions, "homogeneous")) "occasion-varying transitions",
               if (length(x$transition_covariates) > 0L)
                 sprintf("transitions on %s", paste(x$transition_covariates, collapse = ", ")),

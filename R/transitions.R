@@ -546,10 +546,14 @@
 #'   occasion from the third on depends on the profiles at the two previous
 #'   occasions (a second-order Markov chain); the first move stays first
 #'   order.
+#' @param mover_stayer `TRUE` adds a class of stayers: groups that never
+#'   change profile (identity transitions) and have their own initial profile
+#'   distribution (Goodman's mover-stayer model). `n_group_classes` then counts
+#'   the mover classes; the stayer class is reported as `"stayers"`.
 #' @param model A covariance structure as `multilpa()` takes it (`"EEI"`,
-#'   `"VVI"`, `"VEI"`, ... ; mclust's codes). Available with homogeneous
-#'   first-order transitions and invariant measurement; standard errors for
-#'   structures other than EEI, VVI, EEE and VVV are refused
+#'   `"VVI"`, `"VEI"`, ... ; mclust's codes). Standard errors are given for
+#'   EEI, VVI, EEE and VVV in the homogeneous model and for the diagonal
+#'   EEI and VVI with the extensions; other structures are refused
 #'   (`latents_unsupported_inference`).
 #' @return A `multilpa_transitions` object containing `means`, `variances`,
 #'   optional `covariances` and `response_probabilities`,
@@ -569,8 +573,9 @@
 #'   [get_results.multilpa_lta()]: transition and initial logit coefficients
 #'   with Wald standard errors (observed, robust or OPG, from analytic
 #'   scores), model-implied transition probabilities per occasion, profiles
-#'   per occasion. These need complete indicators and diagonal covariances.
-#'   EM is finished by a quasi-Newton search on the exact likelihood.
+#'   per occasion. Missing indicators (`missing = "fiml"`) and covariance
+#'   structures are supported; diagonal fits are finished by a quasi-Newton
+#'   search on the exact likelihood, others by EM.
 #'   Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific
 #'   thresholds), depmixS4 and LMest is recorded in
 #'   `equivalence/lta-extensions/` of the source repository.
@@ -625,7 +630,7 @@ lta <- function(data, vars, id, n_profiles, time,
                             transition_covariates = character(),
                             initial_covariates = character(),
                             measurement = c("invariant", "occasion"),
-                            order = 1L, model = NULL) {
+                            order = 1L, model = NULL, mover_stayer = FALSE) {
   select_start <- match.arg(select_start)
   transitions <- match.arg(transitions)
   measurement_model <- match.arg(measurement)
@@ -633,7 +638,9 @@ lta <- function(data, vars, id, n_profiles, time,
     stop(errorCondition("`order` must be 1 or 2.", class = "latents_bad_argument",
                         call = NULL))
   }
-  general <- order == 2 || !identical(transitions, "homogeneous") ||
+  stopifnot("`mover_stayer` must be TRUE or FALSE" = isTRUE(mover_stayer) ||
+              isFALSE(mover_stayer))
+  general <- mover_stayer || order == 2 || !identical(transitions, "homogeneous") ||
     length(transition_covariates) > 0L || length(initial_covariates) > 0L ||
     !identical(measurement_model, "invariant")
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
@@ -677,22 +684,9 @@ lta <- function(data, vars, id, n_profiles, time,
                             n_starts, max_iter, tol, min_variance,
                             min_probability, seed, categorical)
   time_values <- .multilpa_time_values(data, time, id, vars)
-  if (general && !is.null(model)) {
-    stop(errorCondition(paste(
-      "Covariance structures (`model`) are available for homogeneous",
-      "first-order transitions with invariant measurement."),
-      class = "latents_bad_argument", call = NULL))
-  }
   if (general) {
     # The general engine: transitions per occasion or covariate, covariate
     # initial distribution, or measurement per occasion.
-    if (!identical(match.arg(missing), "error") ||
-        !identical(match.arg(covariance_model), "diagonal")) {
-      stop(errorCondition(paste(
-        "Occasion-varying or covariate-dependent transitions and occasion-specific",
-        "measurement need complete indicators and diagonal covariances."),
-        class = "latents_bad_argument", call = NULL))
-    }
     if (n_profiles < 2L) {
       stop(errorCondition(
         "`n_profiles` must be at least two; a single profile has nothing to move between.",
@@ -702,7 +696,8 @@ lta <- function(data, vars, id, n_profiles, time,
                             variance_model, n_starts, max_iter, tol, min_variance,
                             seed, categorical, min_probability, occasions,
                             transitions, transition_covariates, initial_covariates,
-                            measurement_model, select_start, call, as.integer(order)))
+                            measurement_model, select_start, call, as.integer(order),
+                            mover_stayer, missing, covariance_model, structure))
   }
   if (n_profiles < 2L) {
     stop(errorCondition(

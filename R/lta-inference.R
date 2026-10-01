@@ -35,7 +35,8 @@
       paste("initial", h, k, initial_terms, sep = ".")
     }))
   }))
-  transition <- unlist(lapply(classes, function(h) {
+  movers <- classes[!(fit$stayer %||% rep(FALSE, length(classes)))]
+  transition <- unlist(lapply(movers, function(h) {
     unlist(lapply(seq_len(fit$n_profiles), function(k) {
       unlist(lapply(setdiff(seq_len(fit$n_profiles), k), function(l) {
         paste("transition", h, paste0(profiles[k], "->", profiles[l]),
@@ -44,7 +45,7 @@
     }))
   }))
   transition2 <- if ((fit$order %||% 1L) < 2L) character() else {
-    unlist(lapply(classes, function(h) {
+    unlist(lapply(movers, function(h) {
       unlist(lapply(seq_len(fit$n_profiles^2), function(pair) {
         i <- (pair - 1L) %/% fit$n_profiles + 1L
         j <- (pair - 1L) %% fit$n_profiles + 1L
@@ -80,13 +81,14 @@
   initial <- unlist(lapply(seq_len(dim(parameters$initial)[3L]), function(h) {
     as.vector(matrix(parameters$initial[, , h], dim(parameters$initial)[1L]))
   }))
-  transition <- unlist(lapply(seq_len(dim(parameters$transition)[4L]), function(h) {
+  movers <- which(!(parameters$stayer %||% rep(FALSE, dim(parameters$transition)[4L])))
+  transition <- unlist(lapply(movers, function(h) {
     unlist(lapply(seq_len(dim(parameters$transition)[3L]), function(k) {
       as.vector(matrix(parameters$transition[, , k, h], dim(parameters$transition)[1L]))
     }))
   }))
   transition2 <- if (is.null(parameters$transition2)) NULL else
-    unlist(lapply(seq_len(dim(parameters$transition2)[4L]), function(h) {
+    unlist(lapply(movers, function(h) {
       unlist(lapply(seq_len(dim(parameters$transition2)[3L]), function(pair) {
         as.vector(matrix(parameters$transition2[, , pair, h],
                          dim(parameters$transition2)[1L]))
@@ -132,13 +134,22 @@
   })
   logits <- c(0, take(n_classes - 1L))
   initial <- array(take(p0 * (n_states - 1L) * n_classes), c(p0, n_states - 1L, n_classes))
-  transition <- array(take(p * (n_states - 1L) * n_states * n_classes), c(p, n_states - 1L, n_states, n_classes))
-  transition2 <- if ((fit$order %||% 1L) < 2L) NULL else
-    array(take(p * (n_states - 1L) * n_states^2 * n_classes), c(p, n_states - 1L, n_states^2, n_classes))
+  stayer <- fit$stayer %||% rep(FALSE, n_classes)
+  movers <- which(!stayer)
+  # Stayer classes carry no free transition coefficients (fixed identity).
+  transition <- array(0, c(p, n_states - 1L, n_states, n_classes))
+  transition[, , , movers] <- array(take(p * (n_states - 1L) * n_states * length(movers)),
+                                    c(p, n_states - 1L, n_states, length(movers)))
+  transition2 <- if ((fit$order %||% 1L) < 2L) NULL else {
+    out <- array(0, c(p, n_states - 1L, n_states^2, n_classes))
+    out[, , , movers] <- array(take(p * (n_states - 1L) * n_states^2 * length(movers)),
+                               c(p, n_states - 1L, n_states^2, length(movers)))
+    out
+  }
   c(list(measurement = measurement, initial = initial, transition = transition),
     if (!is.null(transition2)) list(transition2 = transition2),
     list(group_probabilities = exp(logits - max(logits)) /
-           sum(exp(logits - max(logits)))))
+           sum(exp(logits - max(logits))), stayer = unname(stayer)))
 }
 
 #' Per-group scores of the general transition model on the estimation scale
@@ -157,6 +168,7 @@
     rows <- if (length(parameters$measurement) == 1L) seq_len(nrow(x)) else
       which(fit$occasion_of_row == b)
     block <- parameters$measurement[[b]]
+    observed <- !is.na(x[rows, , drop = FALSE])
     response <- if (is.null(fit$codes)) NULL else {
       by_group <- .multilpa_response_scores(fit$codes[rows, , drop = FALSE],
                                             e$subject_posteriors[rows, , drop = FALSE],
@@ -169,11 +181,14 @@
     if (ncol(x) == 0L) return(response)
     pieces <- lapply(seq_len(n_states), function(k) {
       residuals <- sweep(x[rows, , drop = FALSE], 2L, block$means[k, ], "-")
+      # A missing indicator contributes no score (it is integrated out).
+      residuals[!observed] <- 0
       weight <- e$subject_posteriors[rows, k]
       list(mean = .lta_rowsum(sweep(residuals, 2L, block$variances[k, ], "/") * weight,
                               group_index[rows], n_units),
            log_variance = .lta_rowsum(0.5 * weight *
-                                        (sweep(residuals^2, 2L, block$variances[k, ], "/") - 1),
+                                        (sweep(residuals^2, 2L, block$variances[k, ], "/") -
+                                           observed),
                                       group_index[rows], n_units))
     })
     cbind(do.call(cbind, lapply(pieces, `[[`, "mean")),
@@ -191,7 +206,8 @@
       residual[, l] * fit$designs$initial
     }))
   }))
-  transition <- do.call(cbind, lapply(seq_len(n_classes), function(h) {
+  movers <- which(!(fit$stayer %||% rep(FALSE, n_classes)))
+  transition <- do.call(cbind, lapply(movers, function(h) {
     pairs <- e$moments[[h]]$pairs
     log_transition <- e$per_class[[h]]$log_transition
     do.call(cbind, lapply(seq_len(n_states), function(k) {
@@ -206,7 +222,7 @@
     }))
   }))
   transition2 <- if (is.null(parameters$transition2)) NULL else {
-    do.call(cbind, lapply(seq_len(n_classes), function(h) {
+    do.call(cbind, lapply(movers, function(h) {
       moves <- e$moments[[h]]$pairs2
       log_p <- e$per_class[[h]]$log_transition2
       do.call(cbind, lapply(seq_len(n_states^2), function(pair) {
@@ -251,9 +267,19 @@
     stop(errorCondition("Inference requires a converged fit.",
                         class = "latents_no_converge", call = NULL))
   }
+  if (!identical(fit$covariance_model %||% "diagonal", "diagonal") ||
+      !is.null(fit$covariance_structure) &&
+      !fit$covariance_structure %in% c("EEI", "VVI")) {
+    stop(errorCondition(paste(
+      "Standard errors for the extended transition model are available for",
+      "diagonal covariances (EEI, VVI)."),
+      class = "latents_unsupported_inference", call = NULL))
+  }
   if (isTRUE(fit$boundary)) {
-    stop(errorCondition("A variance sits at min_variance; Wald inference does not apply.",
-                        class = "latents_boundary_fit", call = NULL))
+    stop(errorCondition(paste(
+      "A variance sits at min_variance or a transition or initial probability",
+      "at zero; Wald inference does not apply."),
+      class = "latents_boundary_fit", call = NULL))
   }
   theta <- .lta_pack(.lta_parameters(fit), fit$variance_model)
   names(theta) <- .lta_names(fit)
@@ -305,7 +331,8 @@
        transition = unname(fit$transition_coefficients),
        transition2 = if (is.null(fit$second_order_coefficients)) NULL else
          unname(fit$second_order_coefficients),
-       group_probabilities = unname(fit$group_probabilities))
+       group_probabilities = unname(fit$group_probabilities),
+       stayer = unname(fit$stayer %||% rep(FALSE, length(fit$group_probabilities))))
 }
 
 #' Finish EM with a bounded quasi-Newton search on the exact likelihood
@@ -330,16 +357,50 @@
   }
   gradient <- function(v) -colSums(.lta_group_scores(v, spec))
   start_value <- value(theta)
+  # Convergence is the relative change of the log likelihood, as for EM: a
+  # transition never observed has its maximum at probability zero, where the
+  # logit runs off and the gradient decays without vanishing. That boundary is
+  # flagged separately (see .lta_probability_boundary()).
   found <- stats::optim(theta, value, gradient, method = "L-BFGS-B", lower = lower,
-                        control = list(maxit = 2000L, factr = 10, pgtol = 0))
+                        control = list(maxit = 5000L,
+                                       factr = max(tol / .Machine$double.eps, 1),
+                                       pgtol = 0))
   if (!is.finite(found$value) || found$value > start_value) {
     return(list(parameters = parameters, log_likelihood = -start_value,
                 gradient = max(abs(gradient(theta))), converged = FALSE))
   }
   final_gradient <- gradient(found$par)
   free <- !(found$par <= lower + 1e-12 & final_gradient > 0)
-  scale <- max(abs(final_gradient[free]), 0)
   list(parameters = .lta_unpack(found$par, spec), log_likelihood = -found$value,
-       gradient = scale,
-       converged = found$convergence == 0L && scale <= 1e-3 * (1 + tol * abs(found$value)))
+       gradient = max(abs(final_gradient[free]), 0),
+       converged = found$convergence == 0L)
+}
+
+#' Does any fitted initial or transition probability sit at zero?
+#'
+#' Read over every group and every occasion it is observed at; a probability
+#' below 1e-6 marks a move (or start) that never occurs, whose logit has no
+#' finite maximum.
+#' @noRd
+.lta_probability_boundary <- function(expectation, layout, stayer = NULL) {
+  # A stayer class's zero moves are structural, not estimated: skip them.
+  stayer <- stayer %||% rep(FALSE, length(expectation$per_class))
+  any(vapply(seq_along(expectation$per_class), function(h) {
+    class_terms <- expectation$per_class[[h]]
+    if (isTRUE(stayer[h])) {
+      return(min(exp(class_terms$log_initial)) < 1e-6)
+    }
+    initial <- min(exp(class_terms$log_initial))
+    moves <- vapply(seq_along(class_terms$log_transition), function(t) {
+      active <- layout$within[, t + 1L]
+      if (!any(active)) return(1)
+      min(exp(class_terms$log_transition[[t]][active, , , drop = FALSE]))
+    }, numeric(1))
+    second <- vapply(seq_along(class_terms$log_transition2), function(t) {
+      active <- layout$within[, t + 2L]
+      if (!any(active)) return(1)
+      min(exp(class_terms$log_transition2[[t]][active, , , drop = FALSE]))
+    }, numeric(1))
+    min(initial, moves, second) < 1e-6
+  }, logical(1)))
 }

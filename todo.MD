@@ -55,6 +55,10 @@ homogeneous and measurement-invariant.
 - [x] **Second-order transitions** (`order = 2`) — done; exact path sum.
 - [x] The fourteen covariance structures in `lta()` (`model =`) — done for the
   homogeneous model; SEs only for EEI/VVI/EEE/VVV.
+- [x] Mover-stayer class; FIML and covariance structures in the general engine (2026-10-01).
+- [ ] Gaps vs JStats: random-intercept LTA (needs the exact Mplus RI-LTA
+  specification), ordinal and count indicators, absorbing profiles
+  (seqHMM-style), sampling weights. **M-L**
 - [ ] Follow-ups: covariance structures and FIML in the general engine;
   structure-aware standard errors in lta(); likelihood-ratio and bootstrap
   tests between nested transition models; a simulation study of the new
@@ -102,7 +106,8 @@ precondition for everything here.
 
 ## Priority 2 — Choosing among models
 
-- [ ] `enumerate_classes()` and `bootstrap_lrt()` for transition models, with
+- [x] `enumerate_classes(time = )` and `bootstrap_lrt()` for transition models (done 2026-10-01).
+- [ ] (old item) `enumerate_classes()` and `bootstrap_lrt()` for transition models, with
   profile count and group-class count as a joint grid. **M**
 - [ ] `bootstrap_lrt()` for random-intercept models, and nested comparisons
   beyond the one-class increment (for example diagonal against full

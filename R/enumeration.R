@@ -42,7 +42,13 @@
 #' @param between_variance For group-class families: the between-variance
 #'   restrictions to cross, `"varying"`, `"equal"` or both (the default). The
 #'   dispersion family is always fitted with `"equal"`.
-#' @param ... Further arguments to [multilpa()]; for group-class families only
+#' @param time The occasion column: enumerate latent transition models
+#'   ([lta()]) over `n_profiles` (default `2:4`) and `n_group_classes`
+#'   (default `1`), holding every other `lta()` argument given in `...`
+#'   fixed. `model`, when given, crosses those covariance structures. The
+#'   result is a `latents_transition_enumeration`, read with
+#'   [get_results.latents_transition_enumeration()] and [candidate_fit()].
+#' @param ... Further arguments to [multilpa()] (or to [lta()] with `time`); for group-class families only
 #'   `n_starts`, `max_iter`, `tol` and `min_variance`.
 #' @return An object of class `multilpa_enumeration`. Read it with the verbs
 #'   that describe it rather than by reaching into it: [as.data.frame()] gives
@@ -77,10 +83,25 @@
 enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                               n_group_classes = 1:3, model = "basic",
                               seed = NULL, family = "profiles",
-                              between_variance = c("varying", "equal"), ...) {
+                              between_variance = c("varying", "equal"),
+                              time = NULL, ...) {
   if (missing(id)) {
     .multilpa_missing_id("enumerate_classes",
                          "`enumerate_lpa()` or `enumerate_lca()`")
+  }
+  if (!is.null(time)) {
+    # Transition models: profiles x group classes (x structures when `model`
+    # names codes); every other lta() argument is held fixed through `...`.
+    if (!identical(family, "profiles") || !missing(between_variance)) {
+      stop(errorCondition(
+        "Transition models (`time`) are enumerated for the profile family only.",
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(.lta_enumerate(data, vars, id, time,
+                          if (missing(n_profiles)) 2:4 else n_profiles,
+                          if (missing(n_group_classes)) 1L else n_group_classes,
+                          if (missing(model)) NULL else model, seed, list(...),
+                          match.call()))
   }
   if (!identical(family, "profiles")) {
     # Group-class families have no individual profiles and no covariance
@@ -289,6 +310,24 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' @export
 candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
                           model = NULL) {
+  if (inherits(x, "latents_transition_enumeration")) {
+    at <- which(x$table$n_profiles == n_profiles &
+                  x$table$n_group_classes == n_group_classes &
+                  (is.null(model) | x$table$model %in% (model %||% "")))
+    if (length(at) != 1L) {
+      stop(errorCondition(sprintf(
+        "%d candidates have %d profiles and %d group classes%s.", length(at),
+        as.integer(n_profiles), as.integer(n_group_classes),
+        if (length(at) > 1L) "; name one with `model`" else ""),
+        class = "latents_unknown_candidate", call = NULL))
+    }
+    if (is.null(x$fits[[at]])) {
+      stop(errorCondition(sprintf("That candidate could not be fitted: %s",
+                                  x$table$error[at]),
+                          class = "latents_failed_candidate", call = NULL))
+    }
+    return(x$fits[[at]])
+  }
   if (inherits(x, "latents_family_enumeration")) {
     at <- which(x$table$n_group_classes == n_group_classes &
                   (is.null(model) | x$table$model %in% (model %||% "")))
@@ -923,6 +962,17 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
+  transition_classes <- c("multilpa_transitions", "multilpa_lta")
+  if (inherits(null_model, transition_classes) ||
+      inherits(alternative_model, transition_classes)) {
+    if (!inherits(null_model, transition_classes) ||
+        !inherits(alternative_model, transition_classes)) {
+      stop(errorCondition("bootstrap_lrt() compares two transition fits, or two of another family.",
+                          class = "latents_bad_argument", call = NULL))
+    }
+    return(.lta_bootstrap_lrt(null_model, alternative_model, data, iter, n_starts,
+                              max_iter, tol, seed, match.call()))
+  }
   if (inherits(null_model, "multilpa_additive") ||
       inherits(alternative_model, "multilpa_additive")) {
     return(.additive_bootstrap_lrt(null_model, alternative_model, data, iter,

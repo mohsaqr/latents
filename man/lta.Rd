@@ -28,7 +28,8 @@ lta(
   initial_covariates = character(),
   measurement = c("invariant", "occasion"),
   order = 1L,
-  model = NULL
+  model = NULL,
+  mover_stayer = FALSE
 )
 }
 \arguments{
@@ -150,10 +151,15 @@ occasions (a second-order Markov chain); the first move stays first
 order.}
 
 \item{model}{A covariance structure as \code{multilpa()} takes it (\code{"EEI"},
-\code{"VVI"}, \code{"VEI"}, ... ; mclust's codes). Available with homogeneous
-first-order transitions and invariant measurement; standard errors for
-structures other than EEI, VVI, EEE and VVV are refused
+\code{"VVI"}, \code{"VEI"}, ... ; mclust's codes). Standard errors are given for
+EEI, VVI, EEE and VVV in the homogeneous model and for the diagonal
+EEI and VVI with the extensions; other structures are refused
 (\code{latents_unsupported_inference}).}
+
+\item{mover_stayer}{\code{TRUE} adds a class of stayers: groups that never
+change profile (identity transitions) and have their own initial profile
+distribution (Goodman's mover-stayer model). \code{n_group_classes} then counts
+the mover classes; the stayer class is reported as \code{"stayers"}.}
 }
 \value{
 A \code{multilpa_transitions} object containing \code{means}, \code{variances},
@@ -174,8 +180,9 @@ result is a \code{multilpa_lta} object instead, read with
 \code{\link[=get_results.multilpa_lta]{get_results.multilpa_lta()}}: transition and initial logit coefficients
 with Wald standard errors (observed, robust or OPG, from analytic
 scores), model-implied transition probabilities per occasion, profiles
-per occasion. These need complete indicators and diagonal covariances.
-EM is finished by a quasi-Newton search on the exact likelihood.
+per occasion. Missing indicators (\code{missing = "fiml"}) and covariance
+structures are supported; diagonal fits are finished by a quasi-Newton
+search on the exact likelihood, others by EM.
 Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific
 thresholds), depmixS4 and LMest is recorded in
 \verb{equivalence/lta-extensions/} of the source repository.

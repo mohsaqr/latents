@@ -167,6 +167,10 @@ argument:
 - `measurement = "occasion"` lets the profiles' means and variances differ by
   occasion.
 - `order = 2` makes the next profile depend on the two previous ones.
+- `mover_stayer = TRUE` adds a class of groups that never change profile.
+
+`enumerate_classes(..., time = "sequence")` compares numbers of profiles and
+group classes, and `bootstrap_lrt()` tests a model against a nested one.
 
 Does a student's grade in the previous course change how likely they are to
 move between engagement profiles? `previous_grade` changes from course to
