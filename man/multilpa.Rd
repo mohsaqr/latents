@@ -40,7 +40,9 @@ multilpa(
   between_variance = c("varying", "equal"),
   weights = NULL,
   ordinal = character(),
-  count = character()
+  count = character(),
+  count_model = c("poisson", "negative_binomial"),
+  count_dispersion = c("varying", "equal")
 )
 }
 \arguments{
@@ -412,12 +414,23 @@ GOLD's default ordinal model, against which it is checked. Read the
 category probabilities and locations with \code{get_results(fit, "ordinal")}.}
 
 \item{count}{Names of indicators in \code{vars} holding non-negative whole
-numbers, modelled as Poisson with one mean per profile; read the means
-with \code{get_results(fit, "count_means")}. Ordinal and count indicators take
-\code{missing = "fiml"}, \code{weights}, two-level fits, Wald and bootstrap
-inference, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} and \code{\link[=predict]{predict()}}; membership covariates,
-\code{start}, \code{fixed}, \code{prior}, \code{noise} and the group-class families do not
-take them yet (\code{latents_unsupported_indicator}).}
+numbers, modelled as Poisson with one mean per profile (or negative
+binomial, see \code{count_model}); read the means with
+\code{get_results(fit, "count_means")}. Ordinal and count indicators take
+\code{missing = "fiml"}, \code{weights}, two-level fits, membership covariates,
+Wald and bootstrap inference, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=predict]{predict()}} and
+\code{\link[=lta]{lta()}}; \code{start}, \code{fixed}, \code{prior}, \code{noise} and the group-class families
+do not take them yet (\code{latents_unsupported_indicator}).}
+
+\item{count_model}{\code{"poisson"} (the default) or \code{"negative_binomial"}: NB2,
+with mean \code{mu} and variance \verb{mu + alpha mu^2}, for counts more variable
+than a Poisson within a profile (Latent GOLD's \verb{poisson overdispersed}).
+A dispersion estimated at zero is the Poisson limit, a boundary fit
+(\code{latents_boundary} warning; Wald inference is refused there).}
+
+\item{count_dispersion}{For \code{count_model = "negative_binomial"}: one
+dispersion per profile (\code{"varying"}, the default) or one shared by every
+profile (\code{"equal"}).}
 }
 \value{
 An \code{multilpa} object containing \code{means}, \code{variances}, optional

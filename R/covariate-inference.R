@@ -24,7 +24,9 @@
   ## Response probabilities as multinomial logits against each indicator's last
   ## category: the coordinates the covariate-free model is estimated on.
   response <- unname(.multilpa_response_coordinates(object, "unconstrained"))
-  c(as.vector(t(centred_means)), spread, response,
+  extra <- unname(.latents_extra_coordinates(object, object$extra_data,
+                                             object$n_profiles, "unconstrained"))
+  c(as.vector(t(centred_means)), spread, response, extra,
     as.vector(object$profile_coefficients), as.vector(object$group_coefficients))
 }
 
@@ -121,6 +123,10 @@
   response_probabilities <- if (response_width > 0L) {
     .multilpa_response_decode(take(response_width), object)
   } else NULL
+  extra_width <- .latents_extra_width(object$extra_data, n_profiles)
+  extra_blocks <- if (extra_width > 0L) {
+    .latents_extra_decode(take(extra_width), object$extra_data, n_profiles)
+  } else NULL
   beta <- matrix(take(length(object$profile_coefficients)),
                  nrow(object$profile_coefficients), ncol(object$profile_coefficients))
   gamma <- matrix(take(length(object$group_coefficients)),
@@ -130,6 +136,7 @@
   if (!is.null(response_probabilities)) {
     parameters$response_probabilities <- response_probabilities
   }
+  if (!is.null(extra_blocks)) parameters[names(extra_blocks)] <- extra_blocks
   list(parameters = parameters, beta = beta, gamma = gamma)
 }
 
@@ -152,7 +159,7 @@
   expectation <- .multilpa_cov_expectation(
     x, object$group_index, pieces$parameters, object$profile_design,
     object$group_design, pieces$beta, pieces$gamma, codes,
-    unname(object$sampling_weights))
+    unname(object$sampling_weights), object$extra_data)
   n_groups <- nrow(object$group_design)
   n_profiles <- object$n_profiles
   n_group_classes <- object$n_group_classes
@@ -212,8 +219,10 @@
     codes, posteriors, pieces$parameters$response_probabilities,
     object$group_index)
 
-  scores <- cbind(mean_block, variance_block, response_block, beta_block,
-                  gamma_block)
+  extra_block <- .latents_extra_scores(object$extra_data, posteriors,
+                                       pieces$parameters, object$group_index)
+  scores <- cbind(mean_block, variance_block, response_block, extra_block,
+                  beta_block, gamma_block)
   stopifnot("scores must be one row per group" = nrow(scores) == n_groups,
             "scores must be one column per parameter" = ncol(scores) == length(theta))
   scores
@@ -430,8 +439,9 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   ## `missing = "fiml"` integrated its missing indicators out, so the same
   ## values may be missing here; covariates never may.
   fiml <- identical(object$missing, "fiml")
-  numeric_columns <- setdiff(columns, c(object$id, categorical))
-  may_be_missing <- if (fiml) c(continuous, categorical) else character()
+  ordinal <- object$ordinal %||% character()
+  numeric_columns <- setdiff(columns, c(object$id, categorical, ordinal))
+  may_be_missing <- if (fiml) c(continuous, categorical, object$count) else character()
   if (!all(columns %in% names(data)) || anyDuplicated(names(data)) ||
       nrow(data) != object$n_observations ||
       !all(vapply(numeric_columns, function(name) {
@@ -450,8 +460,14 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     object$profile_covariates, object$group_covariates, first_rows,
     object$n_group_classes, categorical = categorical,
     missing = object$missing %||% "error",
-    profile_slopes = object$profile_slopes %||% "shared")
+    profile_slopes = object$profile_slopes %||% "shared",
+    ordinal = object$ordinal %||% character(), count = object$count %||% character())
   codes <- designs$codes
+  if (!identical(unname(designs$extra$ordinal), unname(object$extra_data$ordinal)) ||
+      !identical(unname(designs$extra$count), unname(object$extra_data$count))) {
+    stop(errorCondition("`data` must reproduce the original ordinal and count indicators.",
+                        class = "latents_bad_inference_data", call = NULL))
+  }
   same <- function(left, right) identical(unname(left), unname(right))
   if ((!is.null(object$indicator_data) &&
        !same(as.matrix(data[continuous]), object$indicator_data)) ||
@@ -473,7 +489,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     -.multilpa_cov_expectation(x, object$group_index, pieces$parameters,
                                object$profile_design, object$group_design,
                                pieces$beta, pieces$gamma, codes,
-                               unname(object$sampling_weights))$log_likelihood
+                               unname(object$sampling_weights),
+                               object$extra_data)$log_likelihood
   }
   reproduced <- -objective(theta)
   if (abs(reproduced - object$log_likelihood) >
@@ -662,10 +679,10 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   errors <- sqrt(pmax(diag(jacobian %*% covariance %*% t(jacobian)), 0))
   is_variance <- labels$parameter == "variance"
   is_covariance <- labels$parameter == "covariance"
-  ## A response probability against zero is no hypothesis anyone asked; the
-  ## covariate-free model reports it with an interval and no test, and so does
-  ## this one.
-  is_response <- labels$parameter == "response"
+  ## A response probability or a Poisson mean against zero is no hypothesis
+  ## anyone asked; the covariate-free model reports each with an interval and
+  ## no test, and so does this one.
+  is_response <- labels$parameter %in% c("response", "count_mean", "count_dispersion")
 
   quantile <- stats::qnorm(1 - (1 - level) / 2)
   statistic <- estimate / errors
@@ -775,11 +792,13 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
 #' @noRd
 .multilpa_cov_blocks <- function(object, n_theta) {
   n_response <- .multilpa_response_width(object)
+  n_extra <- .latents_extra_width(object$extra_data, object$n_profiles)
   n_back <- length(object$profile_coefficients) + length(object$group_coefficients)
-  n_front <- n_theta - n_response - n_back
+  n_front <- n_theta - n_response - n_extra - n_back
   stopifnot("the parameter vector must hold every block" = n_front >= 0L)
   list(front = seq_len(n_front), response = n_front + seq_len(n_response),
-       back = n_front + n_response + seq_len(n_back))
+       extra = n_front + n_response + seq_len(n_extra),
+       back = n_front + n_response + n_extra + seq_len(n_back))
 }
 
 #' Natural-unit estimates of a covariate fit's parameters
@@ -801,8 +820,13 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
     unlist(lapply(.multilpa_response_decode(theta[at$response], object),
                   function(block) as.vector(t(block))), use.names = FALSE)
   } else numeric(0)
+  extra <- if (length(at$extra) > 0L) {
+    unname(.latents_extra_coordinates(
+      .latents_extra_decode(theta[at$extra], object$extra_data, object$n_profiles),
+      object$extra_data, object$n_profiles, "natural"))
+  } else numeric(0)
   estimate <- c(.multilpa_cov_front_estimate(object, theta[at$front], front_labels),
-                response, theta[at$back])
+                response, extra, theta[at$back])
   stopifnot("every natural parameter must be labelled" =
               length(estimate) == nrow(labels))
   estimate
@@ -828,8 +852,15 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   } else list()
   n_natural_response <- sum(vapply(blocks, length, integer(1)))
   n_front <- length(at$front)
-  jacobian <- matrix(0, n_front + n_natural_response + length(at$back),
+  n_extra <- length(at$extra)
+  jacobian <- matrix(0, n_front + n_natural_response + n_extra + length(at$back),
                      length(theta))
+  if (n_extra > 0L) {
+    jacobian[n_front + n_natural_response + seq_len(n_extra), at$extra] <-
+      .latents_extra_jacobian(
+        .latents_extra_decode(theta[at$extra], object$extra_data, object$n_profiles),
+        object$extra_data, object$n_profiles)
+  }
   jacobian[seq_len(n_front), at$front] <- .multilpa_cov_front_jacobian(
     object, theta[at$front], labels[seq_len(n_front), , drop = FALSE])
   ## One simplex per profile and indicator, walked in the order both the
@@ -848,7 +879,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
       column_at <<- column_at + length(free)
     }))
   }))
-  back_rows <- n_front + n_natural_response + seq_along(at$back)
+  back_rows <- n_front + n_natural_response + n_extra + seq_along(at$back)
   jacobian[cbind(back_rows, at$back)] <- 1
   stopifnot("every natural parameter must be labelled" =
               nrow(jacobian) == nrow(labels))
@@ -930,10 +961,12 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
       block(sprintf("%s:%s", indicator, categories), profiles, "measurement",
             if (identical(response, "free")) "response_logit" else "response")
     })))
+  extra <- .latents_extra_labels(object, profiles, free = identical(response, "free"))
   rbind(
     block(continuous, profiles, "measurement", "mean"),
     spread,
     responses,
+    extra,
     block(rownames(object$profile_coefficients),
           colnames(object$profile_coefficients), "profile", "coefficient"),
     block(rownames(object$group_coefficients),

@@ -1131,12 +1131,21 @@
 #'   GOLD's default ordinal model, against which it is checked. Read the
 #'   category probabilities and locations with `get_results(fit, "ordinal")`.
 #' @param count Names of indicators in `vars` holding non-negative whole
-#'   numbers, modelled as Poisson with one mean per profile; read the means
-#'   with `get_results(fit, "count_means")`. Ordinal and count indicators take
-#'   `missing = "fiml"`, `weights`, two-level fits, Wald and bootstrap
-#'   inference, [bootstrap_lrt()] and [predict()]; membership covariates,
-#'   `start`, `fixed`, `prior`, `noise` and the group-class families do not
-#'   take them yet (`latents_unsupported_indicator`).
+#'   numbers, modelled as Poisson with one mean per profile (or negative
+#'   binomial, see `count_model`); read the means with
+#'   `get_results(fit, "count_means")`. Ordinal and count indicators take
+#'   `missing = "fiml"`, `weights`, two-level fits, membership covariates,
+#'   Wald and bootstrap inference, [bootstrap_lrt()], [predict()] and
+#'   [lta()]; `start`, `fixed`, `prior`, `noise` and the group-class families
+#'   do not take them yet (`latents_unsupported_indicator`).
+#' @param count_model `"poisson"` (the default) or `"negative_binomial"`: NB2,
+#'   with mean `mu` and variance `mu + alpha mu^2`, for counts more variable
+#'   than a Poisson within a profile (Latent GOLD's `poisson overdispersed`).
+#'   A dispersion estimated at zero is the Poisson limit, a boundary fit
+#'   (`latents_boundary` warning; Wald inference is refused there).
+#' @param count_dispersion For `count_model = "negative_binomial"`: one
+#'   dispersion per profile (`"varying"`, the default) or one shared by every
+#'   profile (`"equal"`).
 #' @return An `multilpa` object containing `means`, `variances`, optional
 #'   `covariances` (indicators by indicators by profiles),
 #'   `profile_probabilities`, `group_probabilities`, posterior matrices,
@@ -1225,8 +1234,12 @@ multilpa <- function(data, vars, id, n_profiles,
                                   "full_cross_level"),
                        between_variance = c("varying", "equal"),
                        weights = NULL, ordinal = character(),
-                       count = character()) {
+                       count = character(),
+                       count_model = c("poisson", "negative_binomial"),
+                       count_dispersion = c("varying", "equal")) {
   family <- match.arg(family)
+  count_model <- match.arg(count_model)
+  count_dispersion <- match.arg(count_dispersion)
   if (family %in% c("restricted_cross_level", "full_cross_level")) {
     supplied <- setdiff(names(match.call())[-1L], .cross_level_arguments())
     if (length(supplied) > 0L || missing(id) || is.null(id) || missing(n_profiles)) {
@@ -1369,8 +1382,6 @@ multilpa <- function(data, vars, id, n_profiles,
     if (isTRUE(noise)) .latents_refuse_weights("`noise = TRUE`")
   }
   .latents_check_extra_arguments(vars, categorical, ordinal, count, list(
-    "`profile_covariates` or `group_covariates`" =
-      length(profile_covariates) + length(group_covariates) > 0L,
     "`prior`" = !is.null(prior), "`noise = TRUE`" = isTRUE(noise),
     "`fixed`" = length(fixed) > 0L, "`start`" = !is.null(start)))
   if (length(profile_covariates) > 0L || length(group_covariates) > 0L) {
@@ -1396,7 +1407,8 @@ multilpa <- function(data, vars, id, n_profiles,
       covariance_model = covariance_model,
       categorical = categorical, min_probability = min_probability,
       time = time, fixed = fixed, select_start = select_start, call = call,
-      weights = weights))
+      weights = weights, ordinal = ordinal, count = count,
+      count_model = count_model, count_dispersion = count_dispersion))
   }
   # The data contract comes first: `time` is checked against the `id` column,
   # so an `id` that does not name a column of `data` must be reported as
@@ -1408,7 +1420,8 @@ multilpa <- function(data, vars, id, n_profiles,
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                             missing, min_probability,
                                             other = c(ordinal, count))
-  extra <- .latents_prepare_extra(data, ordinal, count, missing)
+  extra <- .latents_set_count_model(
+    .latents_prepare_extra(data, ordinal, count, missing), count_model, count_dispersion)
   continuous <- measurement$continuous
   indicator_frame <- measurement$frame
   encoded <- measurement$encoded
@@ -1714,6 +1727,7 @@ multilpa <- function(data, vars, id, n_profiles,
       "A profile or group class has effective membership below one.",
       class = "latents_small_classes", call = NULL))
   }
+  .latents_warn_poisson_limit(result$count_dispersion)
   result
 }
 
@@ -1813,7 +1827,7 @@ multilpa <- function(data, vars, id, n_profiles,
                         class = "latents_bad_data", call = NULL))
   }
   list(continuous = continuous, frame = frame, x = x, encoded = encoded,
-       codes = codes, n_categories = n_categories)
+       codes = codes, n_categories = n_categories, other = other)
 }
 
 #' Index the observed groups in first-occurrence order
@@ -1915,7 +1929,9 @@ multilpa <- function(data, vars, id, n_profiles,
                                       profile_slopes = "shared", covariance_model,
                                       categorical, min_probability, time,
                                       fixed, select_start = "likelihood",
-                                      call, weights = NULL) {
+                                      call, weights = NULL, ordinal = character(),
+                                      count = character(), count_model = "poisson",
+                                      count_dispersion = "varying") {
   unsupported <- c(
     start = !is.null(start),
     fixed = length(fixed) > 0L)
@@ -1938,5 +1954,6 @@ multilpa <- function(data, vars, id, n_profiles,
     covariance_model = covariance_model, categorical = categorical,
     min_probability = min_probability, missing = missing,
     profile_slopes = profile_slopes, select_start = select_start, call = call,
-    weights = weights)
+    weights = weights, ordinal = ordinal, count = count,
+    count_model = count_model, count_dispersion = count_dispersion)
 }

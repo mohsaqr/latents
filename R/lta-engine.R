@@ -222,7 +222,7 @@
 
 #' Measurement log densities, rows x K, invariant or per occasion
 #' @noRd
-.lta_log_density <- function(x, codes, parameters, occasion_of_row) {
+.lta_log_density <- function(x, codes, parameters, occasion_of_row, extra = NULL) {
   gaussian_density <- function(rows, means, variances) {
     vapply(seq_len(nrow(means)), function(k) {
       residuals <- sweep(x[rows, , drop = FALSE], 2L, means[k, ], "-")
@@ -255,6 +255,10 @@
     if (!is.null(codes)) {
       out[rows, ] <<- out[rows, , drop = FALSE] + .multilpa_categorical_log_density(
         codes[rows, , drop = FALSE], block$response_probabilities)
+    }
+    if (!is.null(extra)) {
+      out[rows, ] <<- out[rows, , drop = FALSE] + .latents_extra_log_density(
+        .latents_extra_rows(extra, rows), block, length(rows), n_profiles)
     }
   }))
   structure(out, moments = moments)
@@ -337,10 +341,10 @@
 #' E-step of the general transition model
 #' @noRd
 .lta_expectation <- function(x, codes, layout, designs, parameters, occasion_of_row,
-                             sampling_weights = NULL) {
+                             sampling_weights = NULL, extra = NULL) {
   n_types <- length(parameters$group_probabilities)
   n_groups <- nrow(layout$slot)
-  log_density <- .lta_log_density(x, codes, parameters, occasion_of_row)
+  log_density <- .lta_log_density(x, codes, parameters, occasion_of_row, extra)
   gaussian_moments <- attr(log_density, "moments")
   attr(log_density, "moments") <- NULL
   emission <- .multilpa_sequence_emission(log_density, layout)
@@ -414,7 +418,8 @@
 .lta_maximization <- function(x, codes, layout, designs, expectation, parameters,
                               occasion_of_row, variance_model, min_variance,
                               n_categories, min_probability,
-                              covariance_model = "diagonal", structure = NULL) {
+                              covariance_model = "diagonal", structure = NULL,
+                              extra = NULL) {
   n_types <- length(parameters$group_probabilities)
   n_profiles <- ncol(expectation$subject_posteriors)
   # Measurement: the cross-sectional M-step, on all rows or occasion by occasion.
@@ -433,8 +438,11 @@
                                       if (is.null(codes)) NULL else codes[rows, , drop = FALSE],
                                       n_categories, min_probability,
                                       structure = structure,
-                                      previous = parameters$measurement[[t]])
-    updated[intersect(c("means", "variances", "covariances", "response_probabilities"),
+                                      previous = parameters$measurement[[t]],
+                                      extra = .latents_extra_rows(extra, rows))
+    updated[intersect(c("means", "variances", "covariances", "response_probabilities",
+                        "ordinal_intercepts", "ordinal_locations", "count_means",
+                        "count_dispersion"),
                       names(updated))]
   })
   initial <- array(vapply(seq_len(n_types), function(h) {
@@ -501,9 +509,9 @@
 .lta_em <- function(x, codes, layout, designs, parameters, occasion_of_row,
                     variance_model, min_variance, n_categories, min_probability,
                     max_iter, tol, covariance_model = "diagonal", structure = NULL,
-                    sampling_weights = NULL) {
+                    sampling_weights = NULL, extra = NULL) {
   expectation <- .lta_expectation(x, codes, layout, designs, parameters,
-                                  occasion_of_row, sampling_weights)
+                                  occasion_of_row, sampling_weights, extra)
   history <- expectation$log_likelihood
   converged <- FALSE
   iteration <- 0L
@@ -512,9 +520,9 @@
     updated <- .lta_maximization(x, codes, layout, designs, expectation, parameters,
                                  occasion_of_row, variance_model, min_variance,
                                  n_categories, min_probability, covariance_model,
-                                 structure)
+                                 structure, extra)
     updated_expectation <- .lta_expectation(x, codes, layout, designs, updated,
-                                            occasion_of_row, sampling_weights)
+                                            occasion_of_row, sampling_weights, extra)
     gain <- updated_expectation$log_likelihood - expectation$log_likelihood
     if (gain < -1e-8 * (1 + abs(expectation$log_likelihood))) {
       stop("EM likelihood decreased beyond numerical roundoff.")
@@ -536,16 +544,19 @@
                             variance_model, min_variance, start_index, codes,
                             n_categories, min_probability, n_measurement,
                             order = 1L, mover_stayer = 0L,
-                            covariance_model = "diagonal", structure = NULL) {
+                            covariance_model = "diagonal", structure = NULL,
+                            extra = NULL) {
   start <- .multilpa_transition_initialize(x, group_index, n_profiles, n_types,
                                            variance_model, min_variance, start_index,
                                            covariance_model, codes, n_categories,
-                                           min_probability)
+                                           min_probability, extra)
   if (!is.null(structure)) {
     start <- .multilpa_project_start(start, structure, nrow(x), min_variance)
   }
   block <- start[intersect(c("means", "variances", "covariances",
-                             "response_probabilities"), names(start))]
+                             "response_probabilities", "ordinal_intercepts",
+                             "ordinal_locations", "count_means", "count_dispersion"),
+                           names(start))]
   p0 <- ncol(designs$initial)
   p <- ncol(designs$transition[[1L]])
   initial <- array(0, c(p0, n_profiles - 1L, n_types))
@@ -596,12 +607,17 @@
                              measurement_model, select_start, call, order = 1L,
                              mover_stayer = FALSE, missing = "error",
                              covariance_model = "diagonal", structure = NULL,
-                             weights = NULL) {
+                             weights = NULL, ordinal = character(),
+                             count = character(), count_model = "poisson",
+                             count_dispersion = "varying") {
   n_movers <- as.integer(n_group_classes)
   # A stayer class is one more group class, whose transitions are fixed.
   n_group_classes <- n_movers + as.integer(mover_stayer)
   measurement <- .multilpa_prepare_indicators(data, vars, categorical, missing,
-                                              min_probability)
+                                              min_probability,
+                                              other = c(ordinal, count))
+  extra <- .latents_set_count_model(
+    .latents_prepare_extra(data, ordinal, count, missing), count_model, count_dispersion)
   x <- measurement$x
   codes <- measurement$codes
   n_categories <- measurement$n_categories
@@ -632,7 +648,7 @@
   }
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
   x <- sweep(x, 2L, centers, "-")
-  categorical_names <- setdiff(vars, measurement$continuous)
+  categorical_names <- categorical
   if (!is.null(n_categories)) names(n_categories) <- categorical_names
   # What the parameter maps and the scores read, before a fit exists.
   spec <- list(n_profiles = as.integer(n_profiles),
@@ -645,33 +661,35 @@
                group_ids = groups$ids, order = as.integer(order),
                covariance_model = covariance_model, structure = structure,
                stayer = c(rep(FALSE, n_movers), rep(TRUE, as.integer(mover_stayer))),
-               sampling_weights = sampling_weights)
+               sampling_weights = sampling_weights, extra_data = extra)
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
       start <- .lta_initialize(x, groups$index, layout, designs, n_profiles,
                                n_group_classes, variance_model, min_variance,
                                start_index, codes, n_categories, min_probability,
                                n_measurement, order, as.integer(mover_stayer),
-                               covariance_model, structure)
+                               covariance_model, structure, extra)
       # EM to a loose tolerance, then a quasi-Newton finish on the exact
       # likelihood: EM alone crawls when profiles are weakly separated.
       em <- .lta_em(x, codes, layout, designs, start, occasion_of_row, variance_model,
                     min_variance, n_categories, min_probability, max_iter,
-                    max(tol, 1e-6), covariance_model, structure, sampling_weights)
+                    max(tol, 1e-6), covariance_model, structure, sampling_weights,
+                    extra)
       # The quasi-Newton finish works on diagonal measurement; a covariance
       # structure is maximized by EM alone, to the full tolerance.
       if (!identical(covariance_model, "diagonal") || !is.null(structure)) {
         if (tol < 1e-6 && max_iter > 0L) {
           em <- .lta_em(x, codes, layout, designs, em$parameters, occasion_of_row,
                         variance_model, min_variance, n_categories, min_probability,
-                        max_iter, tol, covariance_model, structure, sampling_weights)
+                        max_iter, tol, covariance_model, structure, sampling_weights,
+                        extra)
         }
         return(em)
       }
       if (max_iter == 0L) return(em)
       finish <- .lta_quasi_newton(spec, em$parameters, min_variance, tol)
       expectation <- .lta_expectation(x, codes, layout, designs, finish$parameters,
-                                      occasion_of_row, sampling_weights)
+                                      occasion_of_row, sampling_weights, extra)
       list(parameters = finish$parameters, expectation = expectation,
            converged = isTRUE(finish$converged), iterations = em$iterations,
            history = c(em$history, expectation$log_likelihood),
@@ -694,7 +712,7 @@
   weighted_expectation <- best$expectation
   if (!is.null(sampling_weights)) {
     best$expectation <- .lta_expectation(x, codes, layout, designs, best$parameters,
-                                         occasion_of_row)
+                                         occasion_of_row, extra = extra)
     best$expectation$log_likelihood <- weighted_expectation$log_likelihood
   }
   result <- .lta_result(best, attempts, scores, valid, converged, best_start, centers,
@@ -708,6 +726,26 @@
     result$weights <- weights
     result$sampling_weights <- stats::setNames(sampling_weights, groups$ids)
     result$arguments$weights <- weights
+  }
+  result$ordinal <- ordinal
+  result$count <- count
+  result$arguments$ordinal <- ordinal
+  result$arguments$count <- count
+  result$arguments$count_model <- count_model
+  result$arguments$count_dispersion <- count_dispersion
+  if (!is.null(extra)) {
+    result$extra_data <- extra
+    profile_names <- paste0("profile_", seq_len(n_profiles))
+    result$measurement <- lapply(result$measurement, .latents_label_extra,
+                                 extra = extra, profile_names = profile_names)
+    result$n_parameters <- result$n_parameters + n_measurement *
+      .latents_extra_n_parameters(extra, n_profiles)
+    result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
+    result$bic <- -2 * result$log_likelihood + log(groups$n) * result$n_parameters
+    result$bic_individual <- -2 * result$log_likelihood +
+      log(nrow(x)) * result$n_parameters
+    .latents_warn_poisson_limit(do.call(cbind, lapply(result$measurement,
+                                                      `[[`, "count_dispersion")))
   }
   result
 }
@@ -788,7 +826,7 @@
   }, logical(1)))
   result <- list(
     call = call, vars = vars, continuous = measurement$continuous,
-    categorical = setdiff(vars, measurement$continuous),
+    categorical = setdiff(vars, c(measurement$continuous, measurement$other)),
     id = id, time = time, group_ids = groups$ids, group_index = groups$index,
     n_profiles = as.integer(n_profiles), n_group_classes = as.integer(n_group_classes),
     n_groups = groups$n, n_observations = nrow(x), n_occasions = layout$n_occasions,
@@ -806,7 +844,7 @@
     designs = designs, layout = layout, occasion_of_row = occasion_of_row,
     centers = centers, x = x, codes = codes,
     n_categories = if (is.null(measurement$n_categories)) NULL else
-      stats::setNames(measurement$n_categories, setdiff(vars, measurement$continuous)),
+      stats::setNames(measurement$n_categories, setdiff(vars, c(measurement$continuous, measurement$other))),
     subject_posteriors = subject_posteriors, group_posteriors = group_posteriors,
     expectation = expectation,
     log_likelihood = log_likelihood, n_parameters = n_parameters,
@@ -829,7 +867,7 @@
     arguments = list(vars = vars, id = id, time = time, n_profiles = as.integer(n_profiles),
                      n_group_classes = as.integer(n_group_classes - mover_stayer),
                      variance_model = variance_model,
-                     categorical = setdiff(vars, measurement$continuous),
+                     categorical = setdiff(vars, c(measurement$continuous, measurement$other)),
                      occasions = layout$occasions, transitions = transitions,
                      transition_covariates = transition_covariates,
                      initial_covariates = initial_covariates,

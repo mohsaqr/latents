@@ -171,7 +171,10 @@ head(get_results(ordinal, "ordinal"), 7)
 
 Indicators holding counts (number of messages sent, of absences) go in
 `count`: each is Poisson with one mean per profile, read with
-`get_results(fit, "count_means")`.
+`get_results(fit, "count_means")`. Counts more variable than a Poisson within
+a profile take `count_model = "negative_binomial"`, which adds a dispersion
+per profile (or one shared, `count_dispersion = "equal"`). Both types work
+with membership covariates and in `lta()` as well.
 
 ## Reference
 

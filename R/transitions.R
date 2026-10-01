@@ -434,13 +434,13 @@
                                             start_index,
                                             covariance_model = "diagonal",
                                             codes = NULL, n_categories = NULL,
-                                            min_probability = 1e-10) {
+                                            min_probability = 1e-10, extra = NULL) {
   # The first start is Ward's hierarchical clustering, as in multilpa().
   parameters <- .multilpa_initialize(x, group_index, n_profiles, n_types,
                                      variance_model, min_variance, start_index,
                                      covariance_model, codes, n_categories,
                                      min_probability,
-                                     hierarchical = start_index == 1L)
+                                     hierarchical = start_index == 1L, extra = extra)
   initial <- parameters$profile_probabilities
   persistence <- if (start_index == 1L) 0.7 else stats::runif(1L, 0.4, 0.9)
   transition <- array(vapply(seq_len(n_types), function(type) {
@@ -556,6 +556,11 @@
 #'   the number of `id` units, sandwich standard errors by default, and
 #'   integer weights equal to repeating each sequence. A weighted fit uses the
 #'   general transition engine and returns a `multilpa_lta`.
+#' @param ordinal,count,count_model,count_dispersion Ordinal and count
+#'   indicators, as in [multilpa()]; with `measurement = "occasion"` their
+#'   parameters are estimated per occasion. Read them with
+#'   `get_results(fit, "ordinal")` and `get_results(fit, "count_means")`. A
+#'   fit with them uses the general transition engine.
 #' @param model A covariance structure as `multilpa()` takes it (`"EEI"`,
 #'   `"VVI"`, `"VEI"`, ... ; mclust's codes). Standard errors are given for
 #'   EEI, VVI, EEE and VVV in the homogeneous model and for the diagonal
@@ -637,7 +642,12 @@ lta <- function(data, vars, id, n_profiles, time,
                             initial_covariates = character(),
                             measurement = c("invariant", "occasion"),
                             order = 1L, model = NULL, mover_stayer = FALSE,
-                            weights = NULL) {
+                            weights = NULL, ordinal = character(),
+                            count = character(),
+                            count_model = c("poisson", "negative_binomial"),
+                            count_dispersion = c("varying", "equal")) {
+  count_model <- match.arg(count_model)
+  count_dispersion <- match.arg(count_dispersion)
   select_start <- match.arg(select_start)
   transitions <- match.arg(transitions)
   measurement_model <- match.arg(measurement)
@@ -649,7 +659,9 @@ lta <- function(data, vars, id, n_profiles, time,
               isFALSE(mover_stayer))
   general <- mover_stayer || order == 2 || !identical(transitions, "homogeneous") ||
     length(transition_covariates) > 0L || length(initial_covariates) > 0L ||
-    !identical(measurement_model, "invariant") || !is.null(weights)
+    !identical(measurement_model, "invariant") || !is.null(weights) ||
+    length(ordinal) > 0L || length(count) > 0L
+  .latents_check_extra_arguments(vars, categorical, ordinal, count)
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
@@ -705,7 +717,7 @@ lta <- function(data, vars, id, n_profiles, time,
                             transitions, transition_covariates, initial_covariates,
                             measurement_model, select_start, call, as.integer(order),
                             mover_stayer, missing, covariance_model, structure,
-                            weights))
+                            weights, ordinal, count, count_model, count_dispersion))
   }
   if (n_profiles < 2L) {
     stop(errorCondition(

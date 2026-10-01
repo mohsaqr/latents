@@ -12,6 +12,15 @@ effect, which is exactly latents' `ordinal =` model; `poisson` is latents'
 | o03 | 2 classes: two counts | -2212.099624 | -2212.0996 | 5 | 4.4e-05 |
 | o04 | 2 classes: three ordinal (4, 3, 5) | -2649.637659 | -2649.6377 | 13 | 5.0e-05 |
 | o05 | two-level, 2 group classes x 2 profiles: continuous + ordinal + count | -3446.194290 | -3446.1943 | 13 | 5.0e-05 |
+| o06 | 2 classes: continuous + negative binomial, dispersion by class | -4837.397234 | -4837.3972 | 9 | 5.5e-05 |
+| o07 | 2 classes: ordinal + negative binomial, shared dispersion | -3624.950104 | -3624.9501 | 8 | 9.0e-05 |
+
+Latent GOLD's `poisson overdispersed` is NB2 (variance mu + sigma^2 mu^2),
+with the dispersion by class (`k | Cluster;`) or shared (`k;`), which is
+latents' `count_model = "negative_binomial"` with `count_dispersion =
+"varying"` or `"equal"`. o07 is weakly separated: EM converges at a linear
+rate, so latents is run at tol 1e-10 (1e-12 is not reached in 5000
+iterations); its likelihood agrees to 4e-6.
 
 Parameters compared: class sizes (single-level), every ordinal category
 probability per class, count and continuous means per class, after matching

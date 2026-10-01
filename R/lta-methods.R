@@ -6,8 +6,10 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   c("transitions", "transition_coefficients",
     if (!is.null(fit) && isTRUE(fit$order >= 2L))
       c("second_order_transitions", "second_order_coefficients"),
-    "initial", "initial_coefficients", "profiles", "group_classes", "assignments",
-    "fit", "starts")
+    "initial", "initial_coefficients", "profiles",
+    if (!is.null(fit$extra_data$ordinal)) "ordinal",
+    if (!is.null(fit$extra_data$count)) "count_means",
+    "group_classes", "assignments", "fit", "starts")
 }
 
 #' Coefficient table (log odds) with Wald columns when inference applies
@@ -24,7 +26,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     NULL
   })
   names_all <- .lta_names(fit)
-  theta <- .lta_pack(.lta_parameters(fit), fit$variance_model)
+  theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
   selected <- startsWith(names_all, paste0(block, "."))
   parts <- do.call(rbind, strsplit(names_all[selected], ".", fixed = TRUE))
   # name layout: block.group_class.profile(s).term ; a term may contain dots.
@@ -162,6 +164,8 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                  variance = block$variances[cbind(cells$profile, cells$indicator)],
                  stringsAsFactors = FALSE)
     })),
+    ordinal = .lta_extra_table(fit, "ordinal"),
+    count_means = .lta_extra_table(fit, "count_means"),
     group_classes = data.frame(group_class = classes,
                                weight = unname(fit$group_probabilities),
                                count = unname(colSums(fit$group_posteriors)),
@@ -274,6 +278,7 @@ print.multilpa_lta <- function(x, ...) {
               x$n_profiles, x$n_group_classes, paste(pieces, collapse = "; "),
               x$n_groups, x$n_observations, x$n_occasions, x$log_likelihood,
               x$n_parameters, x$bic, if (x$converged) "yes" else "no"))
+  .latents_print_extra(x)
   .latents_print_weights(x)
   cat(paste("Tables: get_results(x, what = ), e.g. \"transitions\",",
             "\"transition_coefficients\", \"profiles\"; summary(x).\n"))
@@ -290,7 +295,8 @@ summary.multilpa_lta <- function(object, ...) {
 #' @rdname get_results.multilpa_lta
 #' @export
 coef.multilpa_lta <- function(object, ...) {
-  stats::setNames(.lta_pack(.lta_parameters(object), object$variance_model),
+  stats::setNames(.lta_pack(.lta_parameters(object), object$variance_model,
+                            object$extra_data),
                   .lta_names(object))
 }
 

@@ -15,6 +15,7 @@ fixture <- lapply(names(cases), function(name) {
        n_profiles = length(case$sizes),
        n_group_classes = if (is.null(case$group_size)) 1L else length(case$group_classes),
        two_level = !is.null(case$group_size),
+       count_dispersion = case$dispersion %||% "varying",
        latent_gold_ll = grab("^Log-likelihood \\(LL\\)"),
        latent_gold_npar = grab("^Number of parameters"))
 })

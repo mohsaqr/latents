@@ -72,8 +72,11 @@ test_that("fits agree with Latent GOLD 6.1", {
                             case$n_profiles,
                             n_group_classes = if (case$two_level) case$n_group_classes else 1L,
                             ordinal = case$vars[case$types == "ordinal"],
-                            count = case$vars[case$types == "count"],
-                            n_starts = 10, seed = 1, tol = 1e-12),
+                            count = case$vars[case$types %in% c("count", "negbin")],
+                            count_model = if (any(case$types == "negbin"))
+                              "negative_binomial" else "poisson",
+                            count_dispersion = case$count_dispersion %||% "varying",
+                            n_starts = 10, seed = 1, tol = 1e-10, max_iter = 5000),
                    "latents_single_level")
     # Latent GOLD prints four decimals.
     expect_lt(abs(fit$log_likelihood - case$latent_gold_ll), 1e-4)
@@ -168,10 +171,121 @@ test_that("invalid ordinal and count indicators are refused", {
                        "latents_single_level"), class = "latents_bad_argument")
   expect_error(quietly(lpa(data, "y", 2, count = "k"), "latents_single_level"),
                class = "latents_bad_argument")
-  expect_error(quietly(lpa(data, c("y", "k"), 2, count = "k",
-                           profile_covariates = "y"), "latents_single_level"),
-               class = "latents_unsupported_indicator")
   expect_error(quietly(lpa(data, c("y", "k"), 2, count = "k", noise = TRUE),
                        "latents_single_level"),
                class = "latents_unsupported_indicator")
+})
+
+test_that("membership covariates take ordinal and count indicators", {
+  set.seed(31)
+  n <- 500
+  z <- rnorm(n)
+  profile <- rbinom(n, 1, plogis(1.2 * z)) + 1
+  probabilities <- exp(.latents_ordinal_log_probabilities(c(0.5, 0, -1), c(1.2, 0)))
+  data <- data.frame(z = z, y = rnorm(n, c(0, 1.5)[profile]),
+                     o = vapply(profile, function(h) sample(1:4, 1L, prob = probabilities[h, ]),
+                                integer(1)),
+                     k = rpois(n, c(1, 5)[profile]), w = sample(1:3, n, TRUE))
+  fit <- quietly(lpa(data, c("y", "o", "k"), 2, ordinal = "o", count = "k",
+                     profile_covariates = "z", n_starts = 2, seed = 1, tol = 1e-12),
+                 "latents_single_level")
+  expect_s3_class(fit, "multilpa_covariates")
+  expect_equal(fit$n_parameters, 12)
+  x <- sweep(as.matrix(data["y"]), 2L, fit$center, "-")
+  set.seed(32)
+  theta <- .multilpa_cov_encode(fit)
+  theta <- theta + rnorm(length(theta), 0, 0.03)
+  objective <- function(point) {
+    pieces <- .multilpa_cov_decode(point, fit)
+    -.multilpa_cov_expectation(x, fit$group_index, pieces$parameters, fit$profile_design,
+                               fit$group_design, pieces$beta, pieces$gamma, NULL, NULL,
+                               fit$extra_data)$log_likelihood
+  }
+  expect_equal(unname(-colSums(.multilpa_cov_group_scores(theta, x, fit))),
+               numeric_gradient(objective, theta), tolerance = 1e-5)
+  inference <- parameter_inference(fit)
+  expect_true(all(c("ordinal_location", "count_mean") %in% inference$parameter))
+  expect_true(all(is.finite(get_results(fit, "count_means")$standard_error)))
+  weighted <- quietly(lpa(data, c("y", "o", "k"), 2, ordinal = "o", count = "k",
+                          profile_covariates = "z", weights = "w", n_starts = 2, seed = 1,
+                          tol = 1e-12), "latents_single_level")
+  repeated <- quietly(lpa(data[rep(seq_len(n), data$w), ], c("y", "o", "k"), 2,
+                          ordinal = "o", count = "k", profile_covariates = "z",
+                          n_starts = 2, seed = 1, tol = 1e-12), "latents_single_level")
+  expect_equal(weighted$log_likelihood * sum(data$w) / n, repeated$log_likelihood,
+               tolerance = 1e-9)
+})
+
+test_that("lta() takes ordinal and count indicators, invariant or by occasion", {
+  data <- course_engagement
+  set.seed(33)
+  data$posts <- rpois(nrow(data), exp(0.6 * data$forum_post + 0.5))
+  data$level <- cut(data$attendance, c(-Inf, -0.5, 0.5, Inf),
+                    labels = c("low", "mid", "high"), ordered_result = TRUE)
+  indicators <- c("browse", "level", "posts")
+  fit <- lta(data, indicators, "student", 2, time = "sequence", ordinal = "level",
+             count = "posts", n_starts = 2, seed = 1, tol = 1e-10)
+  expect_equal(fit$n_parameters, 12)
+  expect_identical(nrow(get_results(fit, "ordinal")), 6L)
+  expect_identical(nrow(get_results(fit, "count_means")), 2L)
+  set.seed(34)
+  theta <- coef(fit) + rnorm(length(coef(fit)), 0, 0.03)
+  objective <- function(point) {
+    -.lta_expectation(fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(point, fit),
+                      fit$occasion_of_row, NULL, fit$extra_data)$log_likelihood
+  }
+  expect_equal(unname(-colSums(.lta_group_scores(theta, fit))),
+               numeric_gradient(objective, unname(theta)), tolerance = 1e-5)
+  simulated <- .lta_simulate(fit, data)
+  expect_true(is.ordered(simulated$level))
+  expect_identical(levels(simulated$level), levels(data$level))
+  by_occasion <- lta(data, indicators, "student", 2, time = "sequence",
+                     ordinal = "level", count = "posts", measurement = "occasion",
+                     n_starts = 1, seed = 1, max_iter = 50)
+  expect_equal(by_occasion$n_parameters, 15 * 9 + 3)
+})
+
+test_that("negative-binomial counts: recovery, scores and the Poisson limit", {
+  set.seed(35)
+  n <- 1500
+  profile <- rbinom(n, 1, 0.4) + 1
+  data <- data.frame(y = rnorm(n, c(0, 1.5)[profile]),
+                     k = rnbinom(n, size = 1 / c(0.5, 0.2)[profile],
+                                 mu = c(2, 8)[profile]))
+  fits <- lapply(c("varying", "equal"), function(dispersion) {
+    quietly(lpa(data, c("y", "k"), 2, count = "k", count_model = "negative_binomial",
+                count_dispersion = dispersion, n_starts = 3, seed = 1, tol = 1e-12),
+            "latents_single_level")
+  })
+  expect_identical(vapply(fits, `[[`, numeric(1), "n_parameters"), c(9, 8))
+  expect_equal(unname(sort(fits[[1L]]$count_means[, 1L])), c(2, 8), tolerance = 0.1)
+  expect_identical(fits[[2L]]$count_dispersion[1L, 1L], fits[[2L]]$count_dispersion[2L, 1L])
+  vapply(fits, function(fit) {
+    prepared <- .multilpa_inference_matrix(fit, data)
+    theta <- unname(.multilpa_coefficients(fit, "unconstrained"))
+    theta[1:2] <- theta[1:2] - prepared$centers
+    theta <- theta + rnorm(length(theta), 0, 0.03)
+    objective <- function(point) {
+      -.multilpa_expectation(prepared$x, fit$group_index, .multilpa_decode(point, fit),
+                             NULL, NULL, fit$extra_data)$log_likelihood
+    }
+    expect_equal(.multilpa_score(theta, prepared$x, fit, NULL),
+                 numeric_gradient(objective, theta), tolerance = 1e-4)
+    TRUE
+  }, logical(1))
+  counts <- get_results(fits[[1L]], "count_means")
+  expect_true(all(c("dispersion", "dispersion_standard_error") %in% names(counts)))
+  poisson <- quietly(lpa(data, c("y", "k"), 2, count = "k", n_starts = 3, seed = 1),
+                     "latents_single_level")
+  expect_gt(fits[[1L]]$log_likelihood, poisson$log_likelihood)
+  # Poisson data put the dispersion of at least one profile on its floor.
+  plain <- transform(data, k = rpois(n, c(2, 8)[profile]))
+  expect_warning(limit <- quietly(lpa(plain, c("y", "k"), 2, count = "k",
+                                      count_model = "negative_binomial", n_starts = 2,
+                                      seed = 1), "latents_single_level"),
+                 class = "latents_boundary")
+  expect_true(any(limit$count_dispersion <= 1e-8 * (1 + 1e-6)))
+  expect_error(parameter_inference(limit), class = "latents_boundary_fit")
+  drawn <- .latents_draw_extra(fits[[1L]], rep(1:2, 500))
+  expect_gt(stats::var(drawn$k[rep(1:2, 500) == 2]), mean(drawn$k[rep(1:2, 500) == 2]))
 })

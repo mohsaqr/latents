@@ -142,10 +142,13 @@
     while (step > 1e-10) {
       candidate <- current + step * direction
       candidate_value <- objective(candidate)
-      if (is.finite(candidate_value) && candidate_value <= value) break
+      # Accept a step that does not raise the objective beyond rounding.
+      if (is.finite(candidate_value) &&
+          candidate_value <= value + 1e-12 * (1 + abs(value))) break
       step <- step / 2
     }
-    if (!is.finite(candidate_value) || candidate_value > value) break
+    if (!is.finite(candidate_value) ||
+        candidate_value > value + 1e-12 * (1 + abs(value))) break
     current <- candidate
     value <- candidate_value
     score <- max(abs(gradient(current)))
@@ -172,7 +175,7 @@
 #' @noRd
 .multilpa_cov_expectation <- function(x, group_index, parameters, profile_design,
                                     group_design, beta, gamma, codes = NULL,
-                                    sampling_weights = NULL) {
+                                    sampling_weights = NULL, extra = NULL) {
   stopifnot(is.matrix(x), !any(is.infinite(x)), is.list(parameters),
             is.list(profile_design), is.matrix(group_design), is.matrix(beta),
             is.matrix(gamma))
@@ -200,6 +203,10 @@
   if (!is.null(codes)) {
     log_density <- log_density +
       .multilpa_categorical_log_density(codes, parameters$response_probabilities)
+  }
+  if (!is.null(extra)) {
+    log_density <- log_density +
+      .latents_extra_log_density(extra, parameters, nrow(x), n_profiles)
   }
   conditional <- lapply(profile_design, function(design) {
     log_prior <- .multilpa_log_softmax(design, beta)
@@ -278,7 +285,9 @@
                                   missing = c("error", "fiml"),
                                   profile_slopes = c("shared", "group_class"),
                                   select_start = "likelihood", call = NULL,
-                                  weights = NULL) {
+                                  weights = NULL, ordinal = character(),
+                                  count = character(), count_model = "poisson",
+                                  count_dispersion = "varying") {
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
@@ -314,7 +323,8 @@
                      covariance_model = covariance_model,
                      categorical = categorical,
                      min_probability = min_probability, missing = missing,
-                     weights = weights)
+                     weights = weights, ordinal = ordinal, count = count,
+                     count_model = count_model, count_dispersion = count_dispersion)
   group_index <- base$group_index
   sampling_weights <- unname(base$sampling_weights)
   first_rows <- match(seq_len(base$n_groups), group_index)
@@ -330,7 +340,8 @@
   designs <- .multilpa_cov_designs(data, vars, profile_covariates,
                                  group_covariates, first_rows, n_group_classes,
                                  categorical, min_probability, missing,
-                                 profile_slopes)
+                                 profile_slopes, ordinal, count, count_model,
+                                 count_dispersion)
   x <- designs$x
   center <- designs$center
   control <- list(variance_model = variance_model, min_variance = min_variance,
@@ -377,7 +388,7 @@
   if (!is.null(sampling_weights)) {
     best$expectation <- .multilpa_cov_expectation(
       x, group_index, best$parameters, designs$profile_design, designs$w,
-      best$beta, best$gamma, designs$codes)
+      best$beta, best$gamma, designs$codes, extra = designs$extra)
     best$expectation$log_likelihood <- weighted_expectation$log_likelihood
   }
   result <- .multilpa_cov_assemble(
@@ -440,6 +451,7 @@
       "Extreme logit coefficients: inspect scaling, sparse classes and separation.",
       class = "latents_extreme_coefficients", call = NULL))
   }
+  .latents_warn_poisson_limit(result$count_dispersion)
   result
 }
 
@@ -461,6 +473,7 @@ print.multilpa_covariates <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa_covariates"))
   cat(sprintf("Multilevel LPA with covariates: %d profiles, %d group classes\n",
               x$n_profiles, x$n_group_classes))
+  .latents_print_extra(x)
   .latents_print_weights(x)
   cat(sprintf("Log likelihood %.6f; AIC %.3f; BIC (groups) %.3f; converged %s\n",
               x$log_likelihood, x$aic, x$bic, x$converged))
@@ -615,6 +628,8 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
     result[[name]] <<- object$categorical_values[[name]][
       object$categorical_data[, name]]
   }))
+  extra <- .latents_draw_extra_columns(object$extra_data)
+  if (length(extra) > 0L) result[names(extra)] <- extra
   result[[object$id]] <- object$group_values[object$group_index]
   ## The profile design is the group-class indicator block followed by the
   ## profile covariates, in the order they were named.
@@ -716,9 +731,12 @@ nobs.multilpa_covariates <- function(object, ...) {
                                 group_covariates, first_rows, n_group_classes,
                                 categorical = character(),
                                 min_probability = 1e-10, missing = "error",
-                                profile_slopes = "shared") {
+                                profile_slopes = "shared", ordinal = character(),
+                                count = character(), count_model = "poisson",
+                                count_dispersion = "varying") {
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
-                                              missing, min_probability)
+                                              missing, min_probability,
+                                              other = c(ordinal, count))
   x <- measurement$x
   # The centre is only a location shift that is added back to the reported
   # means, so the observed values' mean serves; every indicator has some,
@@ -748,7 +766,10 @@ nobs.multilpa_covariates <- function(object, ...) {
        n_categories = measurement$n_categories,
        categorical_levels = measurement$encoded$levels,
        categorical_values = .multilpa_categorical_values(
-         data, categorical, measurement$encoded))
+         data, categorical, measurement$encoded),
+       extra = .latents_set_count_model(
+         .latents_prepare_extra(data, ordinal, count, missing), count_model,
+         count_dispersion))
 }
 
 #' Run one covariate EM start to convergence
@@ -775,6 +796,13 @@ nobs.multilpa_covariates <- function(object, ...) {
       resumed$response_probabilities <- unname(lapply(base$response_probabilities,
                                                       function(block) unname(as.matrix(block))))
     }
+    if (!is.null(base$extra_data)) {
+      resumed$ordinal_intercepts <- if (is.null(base$ordinal_intercepts)) NULL else
+        unname(lapply(base$ordinal_intercepts, unname))
+      resumed$ordinal_locations <- unname(base$ordinal_locations)
+      resumed$count_means <- unname(base$count_means)
+      resumed$count_dispersion <- unname(base$count_dispersion)
+    }
     resumed
   } else {
     # The first start is Ward's hierarchical clustering, as in multilpa().
@@ -782,7 +810,7 @@ nobs.multilpa_covariates <- function(object, ...) {
                        control$variance_model, control$min_variance, start_index,
                        control$covariance_model, designs$codes,
                        designs$n_categories, control$min_probability,
-                       hierarchical = start_index == 1L)
+                       hierarchical = start_index == 1L, extra = designs$extra)
   }
   beta <- rbind(
     log(parameters$profile_probabilities[, seq_len(n_profiles - 1L), drop = FALSE] /
@@ -795,7 +823,7 @@ nobs.multilpa_covariates <- function(object, ...) {
   expectation <- .multilpa_cov_expectation(x, group_index, parameters,
                                          designs$profile_design, designs$w,
                                          beta, gamma, designs$codes,
-                                         control$sampling_weights)
+                                         control$sampling_weights, designs$extra)
   history <- expectation$log_likelihood
   iteration <- 0L
   converged <- FALSE
@@ -811,7 +839,8 @@ nobs.multilpa_covariates <- function(object, ...) {
                                        control$min_variance,
                                        control$covariance_model, designs$codes,
                                        designs$n_categories,
-                                       control$min_probability)
+                                       control$min_probability,
+                                       previous = parameters, extra = designs$extra)
     profile_update <- .multilpa_weighted_logits(designs$stacked_design,
                                               do.call(rbind, expectation$joint), beta)
     group_update <- .multilpa_weighted_logits(designs$w,
@@ -821,7 +850,7 @@ nobs.multilpa_covariates <- function(object, ...) {
     updated <- .multilpa_cov_expectation(x, group_index, parameters,
                                        designs$profile_design, designs$w,
                                        beta, gamma, designs$codes,
-                                       control$sampling_weights)
+                                       control$sampling_weights, designs$extra)
     change <- updated$log_likelihood - expectation$log_likelihood
     if (change < -1e-9 * (1 + abs(expectation$log_likelihood))) {
       stop("Covariate EM decreased the observed log likelihood.")
@@ -882,7 +911,7 @@ nobs.multilpa_covariates <- function(object, ...) {
     variance_model, covariance_model) -
     ((n_group_classes - 1L) + n_group_classes * (n_profiles - 1L))
   result$n_parameters <- length(best$beta) + length(best$gamma) +
-    measurement_parameters
+    measurement_parameters + .latents_extra_n_parameters(designs$extra, n_profiles)
   result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
   result$bic <- -2 * result$log_likelihood + log(base$n_groups) * result$n_parameters
   result$bic_individual <- -2 * result$log_likelihood +
@@ -909,8 +938,15 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$categorical_values <- designs$categorical_values
   result$categorical_data <- designs$codes
   result$n_categories <- designs$n_categories
-  result$measurement_model <- if (is.null(designs$codes)) "gaussian" else
-    if (n_indicators == 0L) "categorical" else "mixed"
+  result$measurement_model <- .latents_measurement_model(
+    n_indicators > 0L, !is.null(designs$codes),
+    colnames(designs$extra$ordinal) %||% character(),
+    colnames(designs$extra$count) %||% character())
+  result$extra_data <- designs$extra
+  result$ordinal <- colnames(designs$extra$ordinal) %||% character()
+  result$count <- colnames(designs$extra$count) %||% character()
+  result <- .latents_label_extra(result, designs$extra,
+                                 paste0("profile_", seq_len(n_profiles)))
   result$standard_deviations <- sqrt(result$variances)
   if (!is.null(result$response_probabilities)) {
     names(result$response_probabilities) <- categorical

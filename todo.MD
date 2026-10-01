@@ -217,6 +217,8 @@ precondition for everything here.
 
 - [x] Ordinal (adjacent-category) and Poisson count indicators in the core
   engine (2026-10-01, 0.9.5; Latent GOLD-checked).
-- [ ] Ordinal/count follow-ups: covariate models, `lta()`, `start`/`fixed`,
-  negative binomial and zero-inflated counts, a cumulative-logit ordinal
-  option, ordinal/count in the bivariate-residual table and plots. **M**
+- [x] Ordinal/count in covariate models and `lta()`; negative-binomial counts
+  (2026-10-02, 0.9.7; Latent GOLD-checked).
+- [ ] Ordinal/count follow-ups: `start`/`fixed`, zero-inflated counts, a
+  cumulative-logit ordinal option, ordinal/count in the bivariate-residual
+  table and plots. **M**

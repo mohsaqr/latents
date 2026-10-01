@@ -845,17 +845,21 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
                           model$n_group_classes, model$categorical %||% character(),
                           model$min_probability %||% 1e-10,
                           model$missing %||% "error",
-                          model$profile_slopes %||% "shared"),
+                          model$profile_slopes %||% "shared",
+                          model$ordinal %||% character(), model$count %||% character(),
+                          model$extra_data$count_model %||% "poisson",
+                          model$extra_data$count_dispersion %||% "varying"),
     latents_bad_data = function(condition) broken())
-  parameters <- model[intersect(c("variances", "covariances",
-                                  "response_probabilities"), names(model))]
+  parameters <- model[intersect(c("variances", "covariances", "response_probabilities",
+                                  "ordinal_intercepts", "ordinal_locations",
+                                  "count_means", "count_dispersion"), names(model))]
   parameters$means <- if (ncol(designs$x) > 0L) {
     sweep(model$means, 2L, designs$center, "-")
   } else model$means
   likelihood <- .multilpa_cov_expectation(
     designs$x, model$group_index, parameters, designs$profile_design,
     designs$w, model$profile_coefficients, model$group_coefficients,
-    designs$codes)$log_likelihood
+    designs$codes, extra = designs$extra)$log_likelihood
   if (abs(likelihood - model$log_likelihood) > 1e-7 * (1 + abs(likelihood))) broken()
   invisible(NULL)
 }
@@ -1176,6 +1180,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                categorical = model$categorical %||% character(),
                ordinal = model$ordinal %||% character(),
                count = model$count %||% character(),
+               count_model = model$extra_data$count_model %||% "poisson",
+               count_dispersion = model$extra_data$count_dispersion %||% "varying",
                min_probability = model$min_probability %||% 1e-10,
                missing = missing_for(model),
                start = constraint$start, fixed = constraint$fixed),

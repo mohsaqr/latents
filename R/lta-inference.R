@@ -26,7 +26,8 @@
           paste("logit", b, k, categorical[i],
                 paste0("category_", seq_len(fit$n_categories[[i]] - 1L)), sep = ".")
         }))
-      })))
+      })),
+      .lta_extra_names(fit, b, profiles))
   }))
   initial_terms <- colnames(fit$designs$initial)
   transition_terms <- colnames(fit$designs$transition[[1L]])
@@ -62,7 +63,7 @@
 
 #' Pack a parameter list onto the estimation scale
 #' @noRd
-.lta_pack <- function(parameters, variance_model) {
+.lta_pack <- function(parameters, variance_model, extra = NULL) {
   measurement <- unlist(lapply(parameters$measurement, function(block) {
     c(if (!is.null(block$means) && ncol(block$means) > 0L) c(
         as.vector(t(block$means)),
@@ -74,7 +75,9 @@
         free <- seq_len(ncol(probabilities) - 1L)
         as.vector(t(log(probabilities[, free, drop = FALSE] /
                           probabilities[, ncol(probabilities)])))
-      })))
+      })),
+      if (!is.null(extra)) unname(.latents_extra_coordinates(
+        block, extra, nrow(block$means), "unconstrained")))
   }))
   weights <- parameters$group_probabilities
   # Initial: per class, per free profile, the design terms.
@@ -130,6 +133,11 @@
         probabilities / rowSums(probabilities)
       })
     }
+    if (!is.null(fit$extra_data)) {
+      decoded <- .latents_extra_decode(
+        take(.latents_extra_width(fit$extra_data, n_states)), fit$extra_data, n_states)
+      block[names(decoded)] <- decoded
+    }
     block
   })
   logits <- c(0, take(n_classes - 1L))
@@ -158,7 +166,8 @@
   parameters <- .lta_unpack(theta, fit)
   x <- fit$x
   e <- .lta_expectation(x, fit$codes, fit$layout, fit$designs, parameters,
-                        fit$occasion_of_row, unname(fit$sampling_weights))
+                        fit$occasion_of_row, unname(fit$sampling_weights),
+                        fit$extra_data)
   n_states <- fit$n_profiles
   n_classes <- fit$n_group_classes
   n_units <- fit$n_groups
@@ -178,7 +187,15 @@
       out[unique(group_index[rows]), ] <- by_group
       out
     }
-    if (ncol(x) == 0L) return(response)
+    extra <- if (is.null(fit$extra_data)) NULL else {
+      by_group <- .latents_extra_scores(.latents_extra_rows(fit$extra_data, rows),
+                                        e$subject_posteriors[rows, , drop = FALSE],
+                                        block, group_index[rows])
+      out <- matrix(0, n_units, ncol(by_group))
+      out[unique(group_index[rows]), ] <- by_group
+      out
+    }
+    if (ncol(x) == 0L) return(cbind(response, extra))
     pieces <- lapply(seq_len(n_states), function(k) {
       residuals <- sweep(x[rows, , drop = FALSE], 2L, block$means[k, ], "-")
       # A missing indicator contributes no score (it is integrated out).
@@ -194,7 +211,7 @@
     cbind(do.call(cbind, lapply(pieces, `[[`, "mean")),
           if (shared) Reduce(`+`, lapply(pieces, `[[`, "log_variance")) else
             do.call(cbind, lapply(pieces, `[[`, "log_variance")),
-          response)
+          response, extra)
   }))
   # A weighted posterior row sums to the person's weight, so the expected
   # share is that weight times the class probability; unweighted, it is one.
@@ -283,7 +300,7 @@
       "at zero; Wald inference does not apply."),
       class = "latents_boundary_fit", call = NULL))
   }
-  theta <- .lta_pack(.lta_parameters(fit), fit$variance_model)
+  theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
   names(theta) <- .lta_names(fit)
   scores <- .lta_group_scores(theta, fit)
   total <- function(v) colSums(.lta_group_scores(v, fit))
@@ -327,7 +344,13 @@
                 variances = if (length(fit$continuous) > 0L) unname(block$variances) else
                   matrix(1, fit$n_profiles, 0L)),
            if (!is.null(block$response_probabilities))
-             list(response_probabilities = lapply(block$response_probabilities, unname)))
+             list(response_probabilities = lapply(block$response_probabilities, unname)),
+           if (!is.null(block$count_means)) list(count_means = unname(block$count_means)),
+           if (!is.null(block$count_dispersion))
+             list(count_dispersion = unname(block$count_dispersion)),
+           if (!is.null(block$ordinal_intercepts))
+             list(ordinal_intercepts = lapply(block$ordinal_intercepts, unname),
+                  ordinal_locations = unname(block$ordinal_locations)))
        }),
        initial = unname(fit$initial_coefficients),
        transition = unname(fit$transition_coefficients),
@@ -349,14 +372,14 @@
 #'   and `converged`.
 #' @noRd
 .lta_quasi_newton <- function(spec, parameters, min_variance, tol) {
-  theta <- .lta_pack(parameters, spec$variance_model)
+  theta <- .lta_pack(parameters, spec$variance_model, spec$extra_data)
   names_all <- .lta_names(spec)
   lower <- ifelse(startsWith(names_all, "log_variance."), log(min_variance), -Inf)
   theta <- pmax(theta, lower)
   value <- function(v) {
     -.lta_expectation(spec$x, spec$codes, spec$layout, spec$designs,
                       .lta_unpack(v, spec), spec$occasion_of_row,
-                      spec$sampling_weights)$log_likelihood
+                      spec$sampling_weights, spec$extra_data)$log_likelihood
   }
   gradient <- function(v) -colSums(.lta_group_scores(v, spec))
   start_value <- value(theta)
@@ -406,4 +429,29 @@
     }, numeric(1))
     min(initial, moves, second) < 1e-6
   }, logical(1)))
+}
+
+#' Estimation-scale names of a transition fit's ordinal and count coordinates
+#' @param fit The fit or its specification.
+#' @param block The measurement block label (`all` or `occasion_t`).
+#' @param profiles Profile labels.
+#' @return A character vector in `.latents_extra_coordinates()` order.
+#' @noRd
+.lta_extra_names <- function(fit, block, profiles) {
+  extra <- fit$extra_data
+  if (is.null(extra)) return(character())
+  ordinal <- unlist(lapply(seq_len(ncol(extra$ordinal) %||% 0L), function(j) {
+    indicator <- colnames(extra$ordinal)[[j]]
+    c(paste("ordinal_intercept", block, indicator, extra$ordinal_levels[[j]][-1L],
+            sep = "."),
+      paste("ordinal_location", block, profiles[-length(profiles)], indicator,
+            sep = "."))
+  }))
+  dispersion <- if (identical(extra$count_dispersion, "equal")) "shared" else profiles
+  count <- unlist(lapply(colnames(extra$count) %||% character(), function(indicator) {
+    c(paste("log_count_mean", block, profiles, indicator, sep = "."),
+      if (.latents_negative_binomial(extra))
+        paste("log_count_dispersion", block, dispersion, indicator, sep = "."))
+  }))
+  c(ordinal, count)
 }

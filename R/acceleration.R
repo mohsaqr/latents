@@ -17,7 +17,7 @@
 .multilpa_accelerated_blocks <- function() {
   c("means", "variances", "covariances", "profile_probabilities",
     "group_probabilities", "response_probabilities", "ordinal_intercepts",
-    "ordinal_locations", "count_means")
+    "ordinal_locations", "count_means", "count_dispersion")
 }
 
 #' Flatten the updatable blocks of a parameter list
@@ -74,8 +74,9 @@
       any(probabilities > 1 + 1e-12)) {
     return(FALSE)
   }
-  if (length(parameters$count_means) > 0L &&
-      (any(!is.finite(parameters$count_means)) || any(parameters$count_means <= 0))) {
+  if (length(c(parameters$count_means, parameters$count_dispersion)) > 0L &&
+      (any(!is.finite(c(parameters$count_means, parameters$count_dispersion))) ||
+       any(c(parameters$count_means, parameters$count_dispersion) <= 0))) {
     return(FALSE)
   }
   if (length(parameters$variances) > 0L &&

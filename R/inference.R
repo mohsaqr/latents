@@ -967,7 +967,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   ## A Wald test of a variance against zero is not a question worth asking; the
   ## interval still is.
   bounded <- result$parameter %in% c("variance", "probability", "response",
-                                      "count_mean") |
+                                      "count_mean", "count_dispersion") |
     (result$parameter == "covariance" &
        result$term %in% paste(continuous, continuous, sep = ":"))
   result$statistic[bounded] <- NA_real_
@@ -1089,7 +1089,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     term %in% paste(continuous, continuous, sep = ":")
   ifelse(parameter %in% c("probability", "response", "initial_probability",
                           "transition_probability"), "probability",
-         ifelse(parameter %in% c("variance", "count_mean") | on_diagonal,
+         ifelse(parameter %in% c("variance", "count_mean", "count_dispersion") |
+                  on_diagonal,
                 "positive", "real"))
 }
 
@@ -1308,6 +1309,13 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       "Wald inference is unavailable when a count mean is estimated at zero.",
       class = "latents_boundary_fit", call = NULL))
   }
+  if (length(object$count_dispersion) > 0L &&
+      any(object$count_dispersion <= .latents_min_dispersion * (1 + 1e-6))) {
+    stop(errorCondition(paste(
+      "A negative-binomial dispersion is at its floor (the Poisson limit), where",
+      "Wald inference does not apply; refit with `count_model = \"poisson\"`."),
+      class = "latents_boundary_fit", call = NULL))
+  }
   if (any(object$profile_probabilities <= 0) || any(object$group_probabilities <= 0)) {
     stop(errorCondition(
       "Wald inference requires strictly positive mixing probabilities.",
@@ -1491,7 +1499,8 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
                                  "shape_cholesky", "log_shape_cholesky",
                                  "response", "response_logit",
                                  "ordinal_intercept", "ordinal_location",
-                                 "count_mean", "log_count_mean")
+                                 "count_mean", "log_count_mean",
+                                 "count_dispersion", "log_count_dispersion")
 
 #' Parameter kinds whose term names a pair, written `a:b`
 #' @noRd

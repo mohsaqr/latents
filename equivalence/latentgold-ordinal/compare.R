@@ -51,8 +51,13 @@ compare_case <- function(name) {
   fit <- withCallingHandlers(
     multilpa(data, vars, if (two_level) "g" else NULL, length(case$sizes),
              n_group_classes = if (two_level) length(case$group_classes) else 1L,
-             ordinal = vars[types == "ordinal"], count = vars[types == "count"],
-             n_starts = 30, seed = 1, tol = 1e-12),
+             ordinal = vars[types == "ordinal"],
+             count = vars[types %in% c("count", "negbin")],
+             count_model = if (any(types == "negbin")) "negative_binomial" else "poisson",
+             count_dispersion = case$dispersion %||% "varying",
+             # tol 1e-10: a weakly separated negative-binomial case (o07)
+             # converges at EM's linear rate and does not reach 1e-12.
+             n_starts = 30, seed = 1, tol = 1e-10, max_iter = 5000),
     latents_single_level = function(notice) invokeRestart("muffleMessage"))
   lines <- listing(name)
   lg_ll <- as.numeric(strsplit(grep("^Log-likelihood \\(LL\\)", lines, value = TRUE)[1L],
@@ -68,6 +73,7 @@ compare_case <- function(name) {
         switch(types[[v]],
           continuous = fit$means[order, v],
           count = fit$count_means[order, v],
+          negbin = fit$count_means[order, v],
           ordinal = {
             j <- match(v, colnames(fit$extra_data$ordinal))
             exp(.latents_ordinal_log_probabilities(fit$ordinal_intercepts[[j]],

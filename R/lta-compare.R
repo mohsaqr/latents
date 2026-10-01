@@ -144,6 +144,14 @@
         block$response_probabilities[[i]][profile[rows], , drop = FALSE])
       simulated[[v]][rows] <<- value_of_code[drawn]
     })
+    if (!is.null(fit$extra_data)) {
+      drawn <- .latents_draw_extra(
+        c(block, list(extra_data = .latents_extra_rows(fit$extra_data, rows))),
+        profile[rows])
+      lapply(names(drawn), function(v) {
+        simulated[[v]][rows] <<- .latents_as_column_type(drawn[[v]], data[[v]])
+      })
+    }
   }))
   # Missing values stay where the data had them (FIML fits).
   .multilpa_carry_missingness(simulated, data, view$vars)
@@ -172,7 +180,11 @@
     all(a$transition_covariates %in% b$transition_covariates) &&
     all(a$initial_covariates %in% b$initial_covariates) &&
     rank(a$variance_model, c("equal", "varying")) <=
-      rank(b$variance_model, c("equal", "varying"))
+      rank(b$variance_model, c("equal", "varying")) &&
+    identical(a$ordinal %||% character(), b$ordinal %||% character()) &&
+    identical(a$count %||% character(), b$count %||% character()) &&
+    identical(a$count_model %||% "poisson", b$count_model %||% "poisson") &&
+    identical(a$count_dispersion %||% "varying", b$count_dispersion %||% "varying")
 }
 
 #' Refit a transition model's specification to (simulated) data
@@ -186,6 +198,9 @@
       initial_covariates = a$initial_covariates, measurement = a$measurement,
       order = a$order, mover_stayer = isTRUE(a$mover_stayer), model = a$model,
       missing = a$missing %||% "error", covariance_model = a$covariance_model %||% "diagonal",
+      ordinal = a$ordinal %||% character(), count = a$count %||% character(),
+      count_model = a$count_model %||% "poisson",
+      count_dispersion = a$count_dispersion %||% "varying",
       n_starts = n_starts, max_iter = max_iter,
       tol = tol, min_variance = a$min_variance, min_probability = a$min_probability)
 }

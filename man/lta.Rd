@@ -30,7 +30,11 @@ lta(
   order = 1L,
   model = NULL,
   mover_stayer = FALSE,
-  weights = NULL
+  weights = NULL,
+  ordinal = character(),
+  count = character(),
+  count_model = c("poisson", "negative_binomial"),
+  count_dispersion = c("varying", "equal")
 )
 }
 \arguments{
@@ -168,6 +172,12 @@ sampling weight per \code{id} (constant over its occasions). As in
 the number of \code{id} units, sandwich standard errors by default, and
 integer weights equal to repeating each sequence. A weighted fit uses the
 general transition engine and returns a \code{multilpa_lta}.}
+
+\item{ordinal, count, count_model, count_dispersion}{Ordinal and count
+indicators, as in \code{\link[=multilpa]{multilpa()}}; with \code{measurement = "occasion"} their
+parameters are estimated per occasion. Read them with
+\code{get_results(fit, "ordinal")} and \code{get_results(fit, "count_means")}. A
+fit with them uses the general transition engine.}
 }
 \value{
 A \code{multilpa_transitions} object containing \code{means}, \code{variances},

@@ -12,7 +12,10 @@
 #             and the last profile's location fixed at 0. (K - 1) + (C - 1)
 #             parameters per indicator, against C (K - 1) for an unrestricted
 #             categorical indicator.
-#   count     Poisson, one mean per profile.
+#   count     Poisson, one mean per profile; or (count_model =
+#             "negative_binomial") NB2 with mean mu and variance mu + alpha mu^2,
+#             the dispersion alpha per profile or shared (Latent GOLD's
+#             `poisson overdispersed`).
 #
 # Missing values are integrated out (they contribute nothing), as for the
 # other indicators under `missing = "fiml"`.
@@ -134,9 +137,17 @@
     observed <- !is.na(value)
     contribution <- matrix(0, n_rows, n_profiles)
     means <- parameters$count_means[, j]
-    contribution[observed, ] <- outer(value[observed], log(means)) -
-      matrix(means, sum(observed), n_profiles, byrow = TRUE) -
-      lgamma(value[observed] + 1)
+    contribution[observed, ] <- if (.latents_negative_binomial(extra)) {
+      dispersion <- parameters$count_dispersion[, j]
+      vapply(seq_len(n_profiles), function(profile) {
+        stats::dnbinom(value[observed], size = 1 / dispersion[profile],
+                       mu = means[profile], log = TRUE)
+      }, numeric(sum(observed)))
+    } else {
+      outer(value[observed], log(means)) -
+        matrix(means, sum(observed), n_profiles, byrow = TRUE) -
+        lgamma(value[observed] + 1)
+    }
     contribution
   })
   Reduce(`+`, c(ordinal, count), total)
@@ -219,7 +230,10 @@
     while (step > 1e-10 && !accepted) {
       candidate <- theta + step * direction
       candidate_value <- objective(candidate)
-      accepted <- is.finite(candidate_value) && candidate_value >= value
+      # Rounding alone can lower the objective by a hair at the maximum; such
+      # a step is accepted rather than halved forty times.
+      accepted <- is.finite(candidate_value) &&
+        candidate_value >= value - 1e-12 * (1 + abs(value))
       if (!accepted) step <- step / 2
     }
     if (!accepted) break
@@ -259,13 +273,31 @@
     count_means <- pmax(count_means, 1e-10)
     dimnames(count_means) <- list(NULL, colnames(extra$count))
   }
+  count_dispersion <- NULL
+  if (.latents_negative_binomial(extra)) {
+    # Negative binomial: the mean and the dispersion are solved together, from
+    # the current point (or, at the start, the Poisson means and a moment
+    # dispersion).
+    solved <- lapply(seq_len(ncol(extra$count)), function(j) {
+      start_means <- previous$count_means[, j] %||% count_means[, j]
+      start_dispersion <- previous$count_dispersion[, j] %||%
+        .latents_moment_dispersion(extra$count[, j], posteriors, count_means[, j])
+      .latents_negative_binomial_maximize(extra$count[, j], posteriors, start_means,
+                                          start_dispersion,
+                                          identical(extra$count_dispersion, "equal"))
+    })
+    count_means <- matrix(vapply(solved, `[[`, numeric(n_profiles), "means"),
+                          n_profiles, dimnames = list(NULL, colnames(extra$count)))
+    count_dispersion <- matrix(vapply(solved, `[[`, numeric(n_profiles), "dispersion"),
+                               n_profiles, dimnames = list(NULL, colnames(extra$count)))
+  }
   list(ordinal_intercepts = if (length(ordinal) == 0L) NULL else
          stats::setNames(lapply(ordinal, `[[`, "intercepts"), colnames(extra$ordinal)),
        ordinal_locations = if (length(ordinal) == 0L) NULL else
          matrix(vapply(ordinal, `[[`, numeric(n_profiles), "locations"),
                 n_profiles, length(ordinal),
                 dimnames = list(NULL, colnames(extra$ordinal))),
-       count_means = count_means)
+       count_means = count_means, count_dispersion = count_dispersion)
 }
 
 #' Starting values from a hard assignment of the rows
@@ -307,7 +339,8 @@
   if (is.null(extra)) return(0L)
   as.integer(sum(extra$ordinal_categories - 1L) +
                length(extra$ordinal_categories) * (n_profiles - 1L) +
-               (ncol(extra$count) %||% 0L) * n_profiles)
+               (ncol(extra$count) %||% 0L) * n_profiles +
+               (ncol(extra$count) %||% 0L) * .latents_dispersion_rows(extra, n_profiles))
 }
 
 #' Distinct observed rows of the ordinal and count indicators, for the
@@ -366,6 +399,9 @@
   if (!is.null(parameters$count_means)) {
     dimnames(parameters$count_means) <- list(profile_names, colnames(extra$count))
   }
+  if (!is.null(parameters$count_dispersion)) {
+    dimnames(parameters$count_dispersion) <- list(profile_names, colnames(extra$count))
+  }
   parameters
 }
 
@@ -403,15 +439,22 @@
       stats::setNames(locations, sprintf("ordinal_location[%d,%s]",
                                          seq_len(n_profiles - 1L), indicator)))
   })
+  natural <- identical(scale, "natural")
   count <- lapply(seq_along(names_of$count), function(j) {
     indicator <- names_of$count[[j]]
     means <- unname(parameters$count_means[, j])
-    if (identical(scale, "natural")) {
-      stats::setNames(means, sprintf("count_mean[%d,%s]", seq_len(n_profiles), indicator))
-    } else {
-      stats::setNames(log(means), sprintf("log_count_mean[%d,%s]",
-                                          seq_len(n_profiles), indicator))
-    }
+    mean_values <- stats::setNames(
+      if (natural) means else log(means),
+      sprintf(if (natural) "count_mean[%d,%s]" else "log_count_mean[%d,%s]",
+              seq_len(n_profiles), indicator))
+    if (!.latents_negative_binomial(extra)) return(mean_values)
+    rows <- .latents_dispersion_rows(extra, n_profiles)
+    dispersion <- unname(parameters$count_dispersion[seq_len(rows), j])
+    outcome <- if (rows == 1L) "shared" else as.character(seq_len(rows))
+    c(mean_values, stats::setNames(
+      if (natural) dispersion else log(dispersion),
+      sprintf(if (natural) "count_dispersion[%s,%s]" else "log_count_dispersion[%s,%s]",
+              outcome, indicator)))
   })
   unlist(c(ordinal, count))
 }
@@ -435,14 +478,21 @@
   ordinal <- lapply(extra$ordinal_categories, function(k) {
     list(intercepts = take(k - 1L), locations = c(take(n_profiles - 1L), 0))
   })
-  count <- lapply(seq_len(ncol(extra$count) %||% 0L), function(j) exp(take(n_profiles)))
+  negative_binomial <- .latents_negative_binomial(extra)
+  rows <- .latents_dispersion_rows(extra, n_profiles)
+  count <- lapply(seq_len(ncol(extra$count) %||% 0L), function(j) {
+    list(means = exp(take(n_profiles)),
+         dispersion = if (negative_binomial) rep_len(exp(take(rows)), n_profiles))
+  })
   stopifnot("the extra coordinates must be used exactly" = at == length(theta))
   list(ordinal_intercepts = if (length(ordinal) == 0L) NULL else
          lapply(ordinal, `[[`, "intercepts"),
        ordinal_locations = if (length(ordinal) == 0L) NULL else
          matrix(vapply(ordinal, `[[`, numeric(n_profiles), "locations"), n_profiles),
        count_means = if (length(count) == 0L) NULL else
-         matrix(unlist(count), n_profiles))
+         matrix(vapply(count, `[[`, numeric(n_profiles), "means"), n_profiles),
+       count_dispersion = if (length(count) == 0L || !negative_binomial) NULL else
+         matrix(vapply(count, `[[`, numeric(n_profiles), "dispersion"), n_profiles))
 }
 
 #' Scores of the ordinal and count coordinates
@@ -487,9 +537,19 @@
     value <- extra$count[, j]
     observed <- !is.na(value)
     means <- parameters$count_means[, j]
-    residual <- outer(ifelse(observed, value, 0), rep(1, n_profiles)) -
-      outer(observed * 1, means)
-    posteriors * residual
+    if (!.latents_negative_binomial(extra)) {
+      residual <- outer(ifelse(observed, value, 0), rep(1, n_profiles)) -
+        outer(observed * 1, means)
+      return(posteriors * residual)
+    }
+    parts <- .latents_negative_binomial_scores(ifelse(observed, value, 0), means,
+                                               parameters$count_dispersion[, j])
+    mean_scores <- posteriors * observed * parts$log_mean
+    dispersion_scores <- posteriors * observed * parts$log_dispersion
+    if (identical(extra$count_dispersion, "equal")) {
+      dispersion_scores <- matrix(rowSums(dispersion_scores), n_rows)
+    }
+    cbind(mean_scores, dispersion_scores)
   })
   rows <- do.call(cbind, c(ordinal, count))
   if (is.null(group_index)) matrix(colSums(rows), 1L) else
@@ -502,7 +562,8 @@
 #' @noRd
 .latents_extra_jacobian <- function(parameters, extra, n_profiles) {
   natural <- .latents_extra_coordinates(parameters, extra, n_profiles, "natural")
-  is_count <- startsWith(names(natural), "count_mean")
+  is_count <- startsWith(names(natural), "count_mean") |
+    startsWith(names(natural), "count_dispersion")
   diag(ifelse(is_count, natural, 1), nrow = length(natural))
 }
 
@@ -515,7 +576,7 @@
 #'   indicator (zero for the last, reference profile) and
 #'   `location_standard_error`.
 #' @noRd
-.latents_ordinal_frame <- function(x, data = NULL) {
+.latents_ordinal_frame <- function(x, data = NULL, standard_errors = TRUE) {
   extra <- x$extra_data
   empty <- data.frame(profile = integer(), indicator = character(),
                       category = character(), probability = numeric(),
@@ -533,9 +594,11 @@
                location = rep(unname(x$ordinal_locations[, j]), times = length(levels_for)),
                stringsAsFactors = FALSE)
   }))
-  errors <- .multilpa_table_errors(x, data)
-  frame$location_standard_error <- if (is.null(errors)) NA_real_ else
-    .multilpa_match_error(errors, "ordinal_location", frame$profile, frame$indicator)
+  if (isTRUE(standard_errors)) {
+    errors <- .multilpa_table_errors(x, data)
+    frame$location_standard_error <- if (is.null(errors)) NA_real_ else
+      .multilpa_match_error(errors, "ordinal_location", frame$profile, frame$indicator)
+  }
   # Indicators in the order the fit was given, then profile, then category.
   category_rank <- unlist(lapply(seq_len(ncol(extra$ordinal)), function(j) {
     rep(seq_along(extra$ordinal_levels[[j]]), each = n_profiles)
@@ -552,7 +615,7 @@
 #' @return One row per profile and count indicator: `profile`, `indicator`,
 #'   `mean` (the Poisson mean) and `standard_error`.
 #' @noRd
-.latents_count_frame <- function(x, data = NULL) {
+.latents_count_frame <- function(x, data = NULL, standard_errors = TRUE) {
   means <- x$count_means
   if (is.null(means)) {
     return(data.frame(profile = integer(), indicator = character(),
@@ -561,9 +624,20 @@
   frame <- data.frame(profile = rep(seq_len(nrow(means)), times = ncol(means)),
                       indicator = rep(colnames(means), each = nrow(means)),
                       mean = as.vector(means), stringsAsFactors = FALSE)
+  negative_binomial <- !is.null(x$count_dispersion)
+  if (negative_binomial) frame$dispersion <- as.vector(x$count_dispersion)
+  if (!isTRUE(standard_errors)) return(frame)
   errors <- .multilpa_table_errors(x, data)
   frame$standard_error <- if (is.null(errors)) NA_real_ else
     .multilpa_match_error(errors, "count_mean", frame$profile, frame$indicator)
+  if (negative_binomial) {
+    # A shared dispersion is reported once, under outcome `shared`.
+    shared <- identical(x$extra_data$count_dispersion, "equal")
+    frame$dispersion_standard_error <- if (is.null(errors)) NA_real_ else
+      .multilpa_match_error(errors, "count_dispersion",
+                            if (shared) rep("shared", nrow(frame)) else frame$profile,
+                            frame$indicator)
+  }
   frame
 }
 
@@ -600,7 +674,11 @@
   })
   names(ordinal) <- colnames(extra$ordinal)
   count <- lapply(seq_len(ncol(extra$count) %||% 0L), function(j) {
-    as.numeric(stats::rpois(length(profile), object$count_means[profile, j]))
+    means <- object$count_means[profile, j]
+    as.numeric(if (.latents_negative_binomial(extra)) {
+      stats::rnbinom(length(profile), size = 1 / object$count_dispersion[profile, j],
+                     mu = means)
+    } else stats::rpois(length(profile), means))
   })
   names(count) <- colnames(extra$count)
   c(ordinal, count)
@@ -644,7 +722,8 @@
       as.numeric(value)
     }, numeric(n)), n, dimnames = list(NULL, colnames(extra$count)))
   list(ordinal = ordinal, ordinal_levels = extra$ordinal_levels,
-       ordinal_categories = extra$ordinal_categories, count = count)
+       ordinal_categories = extra$ordinal_categories, count = count,
+       count_model = extra$count_model, count_dispersion = extra$count_dispersion)
 }
 
 #' Print the ordinal and count indicators of a fit
@@ -656,8 +735,352 @@
       "ordinal %s (adjacent-category logit; get_results(x, \"ordinal\"))",
       paste(x$ordinal, collapse = ", ")),
     if (length(x$count) > 0L) sprintf(
-      "count %s (Poisson; get_results(x, \"count_means\"))",
-      paste(x$count, collapse = ", ")))
+      "count %s (%s; get_results(x, \"count_means\"))",
+      paste(x$count, collapse = ", "),
+      if (.latents_negative_binomial(x$extra_data)) sprintf(
+        "negative binomial, %s dispersion", x$extra_data$count_dispersion) else "Poisson"))
   if (length(pieces) > 0L) cat(sprintf("Also %s\n", paste(pieces, collapse = "; ")))
   invisible(NULL)
+}
+
+#' The stored ordinal and count indicators as data columns
+#' @param extra Prepared indicators, or `NULL`.
+#' @return A named list of columns: ordered factors with the fit's levels for
+#'   ordinal indicators, numbers for counts.
+#' @noRd
+.latents_draw_extra_columns <- function(extra) {
+  if (is.null(extra)) return(list())
+  ordinal <- lapply(seq_len(ncol(extra$ordinal) %||% 0L), function(j) {
+    levels_for <- extra$ordinal_levels[[j]]
+    factor(levels_for[extra$ordinal[, j]], levels = levels_for, ordered = TRUE)
+  })
+  names(ordinal) <- colnames(extra$ordinal)
+  count <- lapply(seq_len(ncol(extra$count) %||% 0L), function(j) extra$count[, j])
+  names(count) <- colnames(extra$count)
+  c(ordinal, count)
+}
+
+#' Tidy labels of the ordinal and count coordinates
+#'
+#' One row per coordinate, in `.latents_extra_coordinates()` order, with the
+#' level, outcome, term and parameter columns every inference table uses.
+#'
+#' @param object A fit carrying `extra_data`.
+#' @param profiles Profile labels.
+#' @param free `TRUE` names count means on the log scale they are estimated on.
+#' @return A data frame, with no rows when the fit has neither type.
+#' @noRd
+.latents_extra_labels <- function(object, profiles, free = FALSE) {
+  extra <- object$extra_data
+  row <- function(outcome, term, parameter) {
+    data.frame(level = rep("measurement", length(term)), outcome = outcome,
+               term = term, parameter = rep(parameter, length(term)),
+               stringsAsFactors = FALSE)
+  }
+  empty <- row(character(), character(), character())
+  if (is.null(extra)) return(empty)
+  ordinal <- lapply(seq_len(ncol(extra$ordinal) %||% 0L), function(j) {
+    indicator <- colnames(extra$ordinal)[[j]]
+    categories <- extra$ordinal_levels[[j]][-1L]
+    located <- profiles[-length(profiles)]
+    rbind(row(rep("shared", length(categories)),
+              sprintf("%s:%s", indicator, categories), "ordinal_intercept"),
+          row(located, rep(indicator, length(located)), "ordinal_location"))
+  })
+  dispersion_outcomes <- if (identical(extra$count_dispersion, "equal")) "shared" else
+    profiles
+  count <- lapply(colnames(extra$count) %||% character(), function(indicator) {
+    rbind(row(profiles, rep(indicator, length(profiles)),
+              if (free) "log_count_mean" else "count_mean"),
+          if (.latents_negative_binomial(extra))
+            row(dispersion_outcomes, rep(indicator, length(dispersion_outcomes)),
+                if (free) "log_count_dispersion" else "count_dispersion"))
+  })
+  do.call(rbind, c(list(empty), ordinal, count))
+}
+
+#' The rows of prepared ordinal and count indicators
+#' @param extra Prepared indicators, or `NULL`.
+#' @param rows Row indices to keep.
+#' @return The same structure on those rows only.
+#' @noRd
+.latents_extra_rows <- function(extra, rows) {
+  if (is.null(extra)) return(NULL)
+  if (!is.null(extra$ordinal)) extra$ordinal <- extra$ordinal[rows, , drop = FALSE]
+  if (!is.null(extra$count)) extra$count <- extra$count[rows, , drop = FALSE]
+  extra
+}
+
+#' Ordinal or count table of a transition fit, one block per measurement
+#'
+#' As the transition `profiles` table: estimates by profile, with an
+#' `occasion` column that is `NA` when measurement is invariant.
+#'
+#' @param fit A `multilpa_lta` fit.
+#' @param what `"ordinal"` or `"count_means"`.
+#' @return A data frame.
+#' @noRd
+.lta_extra_table <- function(fit, what) {
+  build <- if (identical(what, "ordinal")) .latents_ordinal_frame else
+    .latents_count_frame
+  do.call(rbind, lapply(seq_along(fit$measurement), function(b) {
+    block <- c(fit$measurement[[b]],
+               list(n_profiles = fit$n_profiles, extra_data = fit$extra_data))
+    frame <- build(block, standard_errors = FALSE)
+    cbind(occasion = rep(if (length(fit$measurement) == 1L) NA_integer_ else b,
+                         nrow(frame)), frame)
+  }))
+}
+
+#' Put drawn values into the type of the column they replace
+#'
+#' An ordinal draw is an ordered factor on the fit's levels; a column held as
+#' numbers gets the numbers back, a factor column the labels.
+#'
+#' @param drawn Drawn values.
+#' @param column The original column.
+#' @return `drawn` in `column`'s type.
+#' @noRd
+.latents_as_column_type <- function(drawn, column) {
+  if (is.factor(drawn) && is.numeric(column)) return(as.numeric(as.character(drawn)))
+  if (is.factor(drawn) && is.factor(column)) {
+    return(factor(as.character(drawn), levels = levels(column),
+                  ordered = is.ordered(column)))
+  }
+  drawn
+}
+
+#' Does a fit model its counts as negative binomial?
+#' @noRd
+.latents_negative_binomial <- function(extra) {
+  identical(extra$count_model, "negative_binomial")
+}
+
+#' How many dispersion rows each negative-binomial count indicator has
+#' @return `0` for Poisson, `1` when shared, the number of profiles otherwise.
+#' @noRd
+.latents_dispersion_rows <- function(extra, n_profiles) {
+  if (!.latents_negative_binomial(extra)) return(0L)
+  if (identical(extra$count_dispersion, "equal")) 1L else as.integer(n_profiles)
+}
+
+#' Attach the count model to prepared indicators
+#' @param extra Prepared indicators, or `NULL`.
+#' @param count_model `"poisson"` or `"negative_binomial"`.
+#' @param count_dispersion `"varying"` or `"equal"`.
+#' @return `extra` with the two fields set.
+#' @noRd
+.latents_set_count_model <- function(extra, count_model = "poisson",
+                                     count_dispersion = "varying") {
+  if (is.null(extra)) return(NULL)
+  extra$count_model <- count_model
+  extra$count_dispersion <- count_dispersion
+  extra
+}
+
+#' The negative-binomial dispersion floor; reaching it is the Poisson limit
+#' @noRd
+.latents_min_dispersion <- 1e-8
+
+#' Per-row scores of a negative-binomial count on its log mean and log
+#' dispersion, one column per profile
+#'
+#' With size r = 1 / alpha: d log f / d log mu = r (y - mu) / (r + mu), and
+#' d log f / d log alpha = -r [digamma(y + r) - digamma(r) + log(r / (r + mu))
+#' + (mu - y) / (r + mu)].
+#'
+#' @param value Counts (unobserved ones set to anything; they are masked by
+#'   the caller).
+#' @param means,dispersion One value per profile.
+#' @return A list of two n x C matrices.
+#' @noRd
+.latents_negative_binomial_scores <- function(value, means, dispersion) {
+  size <- 1 / dispersion
+  n_profiles <- length(means)
+  y <- matrix(value, length(value), n_profiles)
+  mu <- matrix(means, length(value), n_profiles, byrow = TRUE)
+  r <- matrix(size, length(value), n_profiles, byrow = TRUE)
+  list(log_mean = r * (y - mu) / (r + mu),
+       log_dispersion = -r * (digamma(y + r) - digamma(r) + log(r / (r + mu)) +
+                                (mu - y) / (r + mu)))
+}
+
+#' A moment start for the negative-binomial dispersion, per profile
+#' @noRd
+.latents_moment_dispersion <- function(value, posteriors, means) {
+  observed <- !is.na(value)
+  y <- ifelse(observed, value, 0)
+  weight <- posteriors * observed
+  variance <- colSums(weight * outer(y, means, "-")^2) /
+    pmax(colSums(weight), .Machine$double.xmin)
+  pmin(pmax((variance - means) / means^2, 0.05), 10)
+}
+
+#' Maximize one negative-binomial count indicator's expected log likelihood
+#'
+#' Newton-Raphson on the log means and log dispersions, with the Hessian taken
+#' by central differences of the analytic gradient and step halving so every
+#' accepted step raises the objective. A dispersion is held at or above
+#' `.latents_min_dispersion`, the Poisson limit.
+#'
+#' @param value The indicator's counts (`NA` where unobserved).
+#' @param posteriors n x C posterior weights.
+#' @param means,dispersion The current point, one value per profile.
+#' @param shared Whether one dispersion is shared by every profile.
+#' @param max_newton Most Newton steps.
+#' @return A list with `means` and `dispersion` (one value per profile).
+#' @noRd
+.latents_negative_binomial_maximize <- function(value, posteriors, means, dispersion,
+                                                shared = FALSE, max_newton = 100L) {
+  observed <- !is.na(value)
+  y <- value[observed]
+  weight <- posteriors[observed, , drop = FALSE]
+  n_profiles <- ncol(posteriors)
+  n_dispersion <- if (shared) 1L else n_profiles
+  floor <- log(.latents_min_dispersion)
+  unpack <- function(theta) {
+    list(means = exp(theta[seq_len(n_profiles)]),
+         dispersion = rep_len(exp(theta[n_profiles + seq_len(n_dispersion)]), n_profiles))
+  }
+  objective <- function(theta) {
+    point <- unpack(theta)
+    sum(weight * vapply(seq_len(n_profiles), function(profile) {
+      stats::dnbinom(y, size = 1 / point$dispersion[profile], mu = point$means[profile],
+                     log = TRUE)
+    }, numeric(length(y))))
+  }
+  gradient <- function(theta) {
+    point <- unpack(theta)
+    parts <- .latents_negative_binomial_scores(y, point$means, point$dispersion)
+    dispersion_gradient <- colSums(weight * parts$log_dispersion)
+    c(colSums(weight * parts$log_mean),
+      if (shared) sum(dispersion_gradient) else dispersion_gradient)
+  }
+  theta <- c(log(means), log(pmax(dispersion[seq_len(n_dispersion)],
+                                  .latents_min_dispersion)))
+  value_now <- objective(theta)
+  iteration <- 0L
+  # Newton steps refine one estimate in sequence; nothing to vectorize.
+  while (iteration < max_newton) {
+    slope <- gradient(theta)
+    at_floor <- n_profiles + which(theta[n_profiles + seq_len(n_dispersion)] <= floor + 1e-12)
+    # A dispersion on its floor whose slope points below it stays there.
+    held <- at_floor[slope[at_floor] < 0]
+    free <- setdiff(seq_along(theta), held)
+    if (max(abs(slope[free])) <= 1e-10 * (1 + sum(weight))) break
+    curvature <- -.latents_negative_binomial_hessian(unpack(theta), y, weight,
+                                                     shared)[free, free, drop = FALSE]
+    ridge <- 1e-10 * (1 + max(abs(diag(curvature))))
+    decomposition <- qr(curvature + diag(ridge, length(free)))
+    # A singular or indefinite curvature (far from the maximum) gives no
+    # ascent direction, and the gradient, which always ascends, is used.
+    direction <- if (decomposition$rank < length(free)) slope[free] else
+      qr.solve(decomposition, slope[free])
+    if (sum(direction * slope[free]) <= 0) direction <- slope[free]
+    step <- 1
+    accepted <- FALSE
+    while (step > 1e-12 && !accepted) {
+      candidate <- theta
+      candidate[free] <- theta[free] + step * direction
+      candidate[n_profiles + seq_len(n_dispersion)] <-
+        pmax(candidate[n_profiles + seq_len(n_dispersion)], floor)
+      candidate_value <- objective(candidate)
+      # Rounding alone can lower the objective by a hair at the maximum; such
+      # a step is accepted rather than halved forty times.
+      accepted <- is.finite(candidate_value) &&
+        candidate_value >= value_now - 1e-12 * (1 + abs(value_now))
+      if (!accepted) step <- step / 2
+    }
+    if (!accepted) break
+    theta <- candidate
+    value_now <- candidate_value
+    iteration <- iteration + 1L
+  }
+  .latents_poisson_limit(unpack(theta), y, weight, shared)
+}
+
+#' Put a negative-binomial dispersion on its boundary when the data ask for it
+#'
+#' The likelihood flattens as the dispersion goes to zero, so Newton steps
+#' stop short of the boundary rather than reaching it. At alpha = 0 the score
+#' of the dispersion is `sum w [(y - mu)^2 - y] / 2` (the overdispersion score
+#' test); when it is not positive the maximum is on the boundary (the Poisson
+#' limit, Karush-Kuhn-Tucker), so the dispersion is set to the floor and the
+#' mean to its Poisson maximum, the weighted mean count.
+#'
+#' @param point A list with `means` and `dispersion`, one value per profile.
+#' @param y Observed counts; `weight` their n x C posterior weights.
+#' @param shared Whether one dispersion is shared by every profile.
+#' @return `point`, with boundary dispersions on the floor.
+#' @noRd
+.latents_poisson_limit <- function(point, y, weight, shared) {
+  poisson_means <- colSums(weight * y) / pmax(colSums(weight), .Machine$double.xmin)
+  score_at_zero <- colSums(weight * (outer(y, poisson_means, "-")^2 - y)) / 2
+  boundary <- if (shared) rep(sum(score_at_zero) <= 0, length(poisson_means)) else
+    score_at_zero <= 0
+  point$dispersion[boundary] <- .latents_min_dispersion
+  point$means[boundary] <- pmax(poisson_means[boundary], 1e-10)
+  point
+}
+
+#' Warn when a negative-binomial dispersion is on its boundary
+#' @param dispersion The fitted dispersion matrix, or `NULL`.
+#' @return `NULL`, invisibly; a `latents_boundary` warning when any
+#'   dispersion is at the floor.
+#' @noRd
+.latents_warn_poisson_limit <- function(dispersion) {
+  if (length(dispersion) == 0L ||
+      !any(dispersion <= .latents_min_dispersion * (1 + 1e-6))) {
+    return(invisible(NULL))
+  }
+  warning(warningCondition(paste(
+    "A negative-binomial dispersion is estimated at zero: those counts show no",
+    "overdispersion within the profile, which is the Poisson limit. This is a",
+    "boundary fit; consider `count_model = \"poisson\"`."),
+    class = "latents_boundary", call = NULL))
+  invisible(NULL)
+}
+
+#' Hessian of a negative-binomial indicator's expected log likelihood
+#'
+#' On the log means and log dispersions, from the closed-form second
+#' derivatives of the NB2 log density (r = 1 / alpha):
+#' d2/dlog mu2 = -r mu (r + y) / (r + mu)^2,
+#' d2/dlog mu dlog alpha = -r mu (y - mu) / (r + mu)^2,
+#' d2/dlog alpha2 = r D + r^2 dD/dr, with
+#' D = digamma(y + r) - digamma(r) + log(r / (r + mu)) + (mu - y) / (r + mu) and
+#' dD/dr = trigamma(y + r) - trigamma(r) + 1 / r - 1 / (r + mu) -
+#' (mu - y) / (r + mu)^2.
+#'
+#' @param point A list with `means` and `dispersion`, one value per profile.
+#' @param y Observed counts; `weight` their n x C posterior weights.
+#' @param shared Whether one dispersion is shared by every profile.
+#' @return A square matrix over the log means, then the log dispersion(s).
+#' @noRd
+.latents_negative_binomial_hessian <- function(point, y, weight, shared) {
+  n_profiles <- ncol(weight)
+  terms <- lapply(seq_len(n_profiles), function(profile) {
+    mu <- point$means[profile]
+    r <- 1 / point$dispersion[profile]
+    w <- weight[, profile]
+    spread <- (r + mu)^2
+    d <- digamma(y + r) - digamma(r) + log(r / (r + mu)) + (mu - y) / (r + mu)
+    d_prime <- trigamma(y + r) - trigamma(r) + 1 / r - 1 / (r + mu) -
+      (mu - y) / spread
+    c(mean_mean = sum(w * -r * mu * (r + y) / spread),
+      mean_dispersion = sum(w * -r * mu * (y - mu) / spread),
+      dispersion_dispersion = sum(w * (r * d + r^2 * d_prime)))
+  })
+  n_dispersion <- if (shared) 1L else n_profiles
+  hessian <- matrix(0, n_profiles + n_dispersion, n_profiles + n_dispersion)
+  invisible(lapply(seq_len(n_profiles), function(profile) {
+    dispersion_at <- n_profiles + if (shared) 1L else profile
+    part <- terms[[profile]]
+    hessian[profile, profile] <<- part[["mean_mean"]]
+    hessian[profile, dispersion_at] <<- part[["mean_dispersion"]]
+    hessian[dispersion_at, profile] <<- part[["mean_dispersion"]]
+    hessian[dispersion_at, dispersion_at] <<- hessian[dispersion_at, dispersion_at] +
+      part[["dispersion_dispersion"]]
+  }))
+  hessian
 }

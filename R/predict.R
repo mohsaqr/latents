@@ -57,7 +57,8 @@ predict.multilpa <- function(object, newdata = NULL,
                                    "profile_probabilities",
                                    "group_probabilities",
                                    "response_probabilities", "ordinal_intercepts",
-                                   "ordinal_locations", "count_means"),
+                                   "ordinal_locations", "count_means",
+                                   "count_dispersion"),
                                  names(object))]
   if (isTRUE(object$noise)) {
     # The fit reports the noise share apart from the Gaussian profiles' shares

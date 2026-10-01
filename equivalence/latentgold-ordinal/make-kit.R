@@ -35,7 +35,16 @@ cases <- list(
              indicators = list(
     y = list(type = "continuous", mean = c(0, 1.5), sd = c(1, 1)),
     o = list(type = "ordinal", intercepts = c(0.4, 0, -0.8), locations = c(1.3, 0)),
-    k = list(type = "count", mean = c(1.5, 4)))))
+    k = list(type = "count", mean = c(1.5, 4)))),
+  # Negative binomial (Latent GOLD's `poisson overdispersed`): dispersion by
+  # class, then shared and mixed with an ordinal indicator.
+  o06 = list(seed = 206L, n = 1200L, sizes = c(0.6, 0.4), indicators = list(
+    y = list(type = "continuous", mean = c(0, 1.5), sd = c(1, 1)),
+    k = list(type = "negbin", mean = c(2, 8), dispersion = c(0.5, 0.2)))),
+  o07 = list(seed = 207L, n = 1000L, sizes = c(0.5, 0.5), dispersion = "equal",
+             indicators = list(
+    o = list(type = "ordinal", intercepts = c(0.3, -0.2, -0.9), locations = c(1.1, 0)),
+    k = list(type = "negbin", mean = c(1.5, 5), dispersion = c(0.4, 0.4)))))
 
 ordinal_probabilities <- function(intercepts, locations) {
   logits <- outer(locations, seq_along(c(0, intercepts)) - 1) +
@@ -59,6 +68,8 @@ simulate <- function(case) {
     switch(indicator$type,
       continuous = stats::rnorm(case$n, indicator$mean[class], indicator$sd[class]),
       count = stats::rpois(case$n, indicator$mean[class]),
+      negbin = stats::rnbinom(case$n, size = 1 / indicator$dispersion[class],
+                              mu = indicator$mean[class]),
       ordinal = {
         probabilities <- ordinal_probabilities(indicator$intercepts, indicator$locations)
         vapply(class, function(h) sample.int(ncol(probabilities), 1L,
@@ -73,8 +84,13 @@ simulate <- function(case) {
 syntax <- function(name, case) {
   vars <- names(case$indicators)
   types <- vapply(case$indicators, `[[`, character(1), "type")
-  lg_type <- c(continuous = "continuous", ordinal = "ordinal", count = "poisson")[types]
+  lg_type <- c(continuous = "continuous", ordinal = "ordinal", count = "poisson",
+               negbin = "poisson overdispersed")[types]
   continuous <- vars[types == "continuous"]
+  # Overdispersed counts take a variance (dispersion) equation like continuous
+  # indicators: by class, or shared when the case says so.
+  overdispersed <- vars[types == "negbin"]
+  shared <- identical(case$dispersion, "equal")
   c("//LG6.1//", "version = 6.1", sprintf("infile '%s.dat'", name), "",
     "model", sprintf("title '%s';", name), "options", "   maxthreads=all;",
     "   algorithm",
@@ -95,6 +111,8 @@ syntax <- function(name, case) {
       c("   GClass <- 1;", "   Cluster <- 1 + GClass;"),
     sprintf("   %s <- 1 + Cluster;", vars),
     if (length(continuous) > 0L) sprintf("   %s | Cluster;", continuous),
+    if (length(overdispersed) > 0L)
+      sprintf(if (shared) "   %s;" else "   %s | Cluster;", overdispersed),
     "end model")
 }
 

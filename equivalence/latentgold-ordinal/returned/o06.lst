@@ -1,0 +1,160 @@
+o06.dat
+File name:	o06.dat	
+File size:	28802 bytes  1200 records	
+File date:	2026-Oct-01 10:13:36 PM	
+Syntax:	o06.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+o06	2-Cluster	-4837.3972	9738.6052	9692.7945	9701.7945	9	0.0921	0.6533	
+o06 - LL = -4837.3972
+2-Cluster Syntax Model	
+					
+Number of cases	1200				
+Number of parameters (Npar)	9				
+Activated Constraints	0				
+Random Seed	20261001				
+Best Start Seed	1128265				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-4837.3972				
+Log-prior	0.0000				
+Log-posterior	-4837.3972				
+BIC (based on LL)	9738.6052				
+AIC (based on LL)	9692.7945				
+AIC3 (based on LL)	9701.7945				
+CAIC (based on LL)	9747.6052				
+SABIC (based on LL)	9710.0177				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.0921				
+Reduction of errors (Lambda)	0.7474				
+Entropy R-squared	0.6533				
+Standard R-squared	0.7055				
+Classification log-likelihood	-5110.3248				
+Entropy	272.9276				
+CLC	10220.6497				
+AWE	10375.2711				
+ICL-BIC	10284.4604				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	378.0479	59.5864	437.6343		
+2	50.9521	711.4136	762.3657		
+Total	429.0000	771.0000	1200.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	355.7474	81.8870	437.6343		
+2	81.8870	680.4787	762.3657		
+Total	437.6343	762.3657	1200.0000		
+					
+Files					
+Infile	C:\lgordinal\o06.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261001				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1200				
+predictionstatistics	no				
+outfile					
+file name	o06_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y	Continuous				
+k	Count				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261001 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile;
+   outfile 'o06_posteriors.txt' classification keep id;
+variables
+   dependent y continuous, k poisson overdispersed;
+   latent Cluster nominal 2;
+equations
+   Cluster <- 1;
+   y <- 1 + Cluster;
+   k <- 1 + Cluster;
+   y | Cluster;
+   k | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+Cluster(1)	<-	1			0.0000	.	.	.	25.1309	1	5.4e-7				
+Cluster(2)	<-	1			0.5550	0.1107	5.0131	5.4e-7							
+															
+y	<-	1			1.5447	0.0673	22.9430	1.7e-116	526.3813	1	1.7e-116				
+y	<-	Cluster(1)			0.0000	.	.	.	399.1224	1	8.6e-89				
+y	<-	Cluster(2)			-1.5290	0.0765	-19.9780	8.6e-89							
+															
+k	<-	1			2.0744	0.0395	52.5644	1.6e-602	2763.0180	1	1.6e-602				
+k	<-	Cluster(1)			0.0000	.	.	.	511.2303	1	3.4e-113				
+k	<-	Cluster(2)			-1.4520	0.0642	-22.6104	3.4e-113							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y			|	Cluster(1)	0.8893	0.0804	11.0563	2.0e-28	351.7062	2	4.2e-77	3.1347	1	0.077	
+y			|	Cluster(2)	1.0649	0.0661	16.1142	2.0e-58							
+k			|	Cluster(1)	0.1655	0.0316	5.2443	1.6e-7	59.1173	2	1.5e-13	17.7545	1	2.5e-5	
+k			|	Cluster(2)	0.5175	0.0820	6.3132	2.7e-10							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1			Cluster	1	2	25.1309	1	5.4e-7	
+	
+y	<-	 Cluster			Cluster	1	2	399.1224	1	8.6e-89	
+	
+k	<-	 Cluster			Cluster	1	2	511.2303	1	3.4e-113	
+Variances	
+y			|	Cluster	Cluster	1	2	3.1347	1	0.077	
+k			|	Cluster	Cluster	1	2	17.7545	1	2.5e-5	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.3647	0.0257	0.6353	0.0257	 	 	
+y	 	
+Mean	1.5447	0.0673	0.0157	0.0506	0.5733	0.0359	
+k	 	
+Mean	7.9596	0.3141	1.8634	0.1214	4.0867	0.1213	
