@@ -22,7 +22,13 @@ lta(
   categorical = character(),
   min_probability = 1e-10,
   occasions = c("observed", "grid"),
-  select_start = c("likelihood", "converged")
+  select_start = c("likelihood", "converged"),
+  transitions = c("homogeneous", "occasion"),
+  transition_covariates = character(),
+  initial_covariates = character(),
+  measurement = c("invariant", "occasion"),
+  order = 1L,
+  model = NULL
 )
 }
 \arguments{
@@ -117,6 +123,37 @@ negligible amount, which happens when a membership logit creeps along a flat
 ridge of the likelihood: the converged start is then a maximum that
 the standard errors can work with, and the other is not. \code{summary()}
 and \code{get_results(fit, "starts")} show every start either way.}
+
+\item{transitions}{\code{"homogeneous"} (the default) uses one transition matrix
+for every occasion; \code{"occasion"} estimates a separate one for each move
+(occasion 1 to 2, 2 to 3, ...).}
+
+\item{transition_covariates}{Names of columns whose values shift the
+transition probabilities through a multinomial logit per origin profile:
+the log odds of moving to each other profile rather than staying. A
+column may change over occasions; the value at the destination occasion
+is used. Factors are expanded to indicator columns.}
+
+\item{initial_covariates}{Names of columns that shift the initial profile
+distribution (a multinomial logit, reference: the last profile), read at
+each group's first occasion.}
+
+\item{measurement}{\code{"invariant"} (the default) keeps the profiles' means,
+variances and response probabilities equal across occasions;
+\code{"occasion"} estimates them separately at each occasion, so a profile is
+defined by its position in the sequence of transitions rather than by
+one fixed measurement model.}
+
+\item{order}{\code{1} (the default) or \code{2}. With \code{2}, the profile at each
+occasion from the third on depends on the profiles at the two previous
+occasions (a second-order Markov chain); the first move stays first
+order.}
+
+\item{model}{A covariance structure as \code{multilpa()} takes it (\code{"EEI"},
+\code{"VVI"}, \code{"VEI"}, ... ; mclust's codes). Available with homogeneous
+first-order transitions and invariant measurement; standard errors for
+structures other than EEI, VVI, EEE and VVV are refused
+(\code{latents_unsupported_inference}).}
 }
 \value{
 A \code{multilpa_transitions} object containing \code{means}, \code{variances},
@@ -130,6 +167,18 @@ transition table and for the other
 tables. No standard
 errors, likelihood-ratio tests or guarantees of global optimality are
 given for this model family.
+
+With \code{transitions = "occasion"}, \code{transition_covariates},
+\code{initial_covariates}, \code{measurement = "occasion"} or \code{order = 2} the
+result is a \code{multilpa_lta} object instead, read with
+\code{\link[=get_results.multilpa_lta]{get_results.multilpa_lta()}}: transition and initial logit coefficients
+with Wald standard errors (observed, robust or OPG, from analytic
+scores), model-implied transition probabilities per occasion, profiles
+per occasion. These need complete indicators and diagonal covariances.
+EM is finished by a quasi-Newton search on the exact likelihood.
+Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific
+thresholds), depmixS4 and LMest is recorded in
+\verb{equivalence/lta-extensions/} of the source repository.
 }
 \description{
 Fits latent profiles to repeated observations of the same group and
@@ -147,10 +196,10 @@ This is latent transition analysis (LTA); with more than one group class it
 is a mixture over transition patterns, so the classes are trajectories rather
 than states. \code{\link[=multilpa]{multilpa()}} is the cross-sectional counterpart.
 
-Transitions are first order and homogeneous over occasions: the
-probability of moving from one profile to another does not depend on the
-occasion or on earlier profiles. Measurement parameters are shared across
-occasions and across group classes. A profile that no group occupies before
+By default transitions are first order and homogeneous over
+occasions: the probability of moving from one profile to another does not
+depend on the occasion or on earlier profiles. Measurement parameters are
+shared across occasions and across group classes. A profile that no group occupies before
 its final occasion leaves its transition row without information; the row
 is then uniform by construction rather than estimated. Such a row is warned
 about when the model is fitted, is flagged by the \code{estimated} column of

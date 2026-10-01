@@ -1,0 +1,31 @@
+"case","quantity","latents","reference","difference","tolerance","agree"
+"depmix_covariate","log likelihood",-2152.25446194873,-2152.2544620611,1.12372617877554e-07,1e-04,TRUE
+"depmix_covariate","parameter count",13,13,0,0,TRUE
+"depmix_covariate","max |conditional transition diff|",7.07645902930931e-06,0,7.07645902930931e-06,0.001,TRUE
+"depmix_covariate","max |abs slope diff|",4.01226731148174e-05,0,4.01226731148174e-05,0.001,TRUE
+"depmix_covariate","max relative slope SE diff",0.00160459087891018,0,0.00160459087891018,0.05,TRUE
+"ex8.13","log likelihood (+ known-class term)",-14596.2396428844,-14596.24,0.00035711562668439,0.005,TRUE
+"ex8.13","parameter count (+ known-class proportion)",32,32,0,0,TRUE
+"ex8.13","max |threshold diff|",0.000546869248944648,0,0.000546869248944648,0.002,TRUE
+"ex8.13","max |C1 ON CG#1 diff|",0.000664825374627753,0,0.000664825374627753,0.002,TRUE
+"ex8.14","log likelihood",-12902.1402698593,-12902.14,0.000269859261607053,0.005,TRUE
+"ex8.14","parameter count",31,31,0,0,TRUE
+"ex8.14","max |threshold diff|",0.000421762006409754,0,0.000421762006409754,0.002,TRUE
+"ex8.14","max |initial logit on x diff|",0.000393059668925666,0,0.000393059668925666,0.002,TRUE
+"ex8.14","max |log odds ratio diff|",0.000275804344339714,0,0.000275804344339714,0.005,TRUE
+"lmest_A","log likelihood",-3282.79214541719,-3282.7921454172,1.22781784739345e-11,1e-04,TRUE
+"lmest_A","parameter count",17,17,0,0,TRUE
+"lmest_A","max |transition diff| per occasion",1.70600452653602e-08,0,1.70600452653602e-08,1e-04,TRUE
+"lmest_A","max |initial diff|",4.75196820781676e-09,0,4.75196820781676e-09,1e-04,TRUE
+"lmest_B","log likelihood",-2958.85376395604,-2958.8537639154,4.06375875172671e-08,1e-04,TRUE
+"lmest_B","parameter count",26,26,0,0,TRUE
+"lmest_B","max |transition diff| per occasion",8.8793647223806e-07,0,8.8793647223806e-07,1e-04,TRUE
+"lmest_B","max |initial diff|",2.53118873361213e-07,0,2.53118873361213e-07,1e-04,TRUE
+"lmest_C","log likelihood",-3229.11753679905,-3229.117536799,5.13864506501704e-11,1e-04,TRUE
+"lmest_C","parameter count",19,19,0,0,TRUE
+"lmest_C","max |transition diff| per occasion",6.04552282679194e-08,0,6.04552282679194e-08,1e-04,TRUE
+"lmest_C","max |initial diff|",1.4276880622166e-08,0,1.4276880622166e-08,1e-04,TRUE
+"mplus_measurement","log likelihood",-4015.05396672741,-4015.054,3.32725912812748e-05,0.005,TRUE
+"mplus_measurement","parameter count",15,15,0,0,TRUE
+"mplus_measurement","max |threshold diff|",0.00045257480582328,0,0.00045257480582328,0.002,TRUE
+"mplus_measurement","max |transition diff|",0.000359837917732198,0,0.000359837917732198,0.002,TRUE

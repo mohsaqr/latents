@@ -153,12 +153,63 @@ plot(get_tna(moves))
 plot(get_group_tna(moves))
 ```
 
+## Beyond homogeneous transitions
+
+Each default assumption of the model can be tested by relaxing it in one
+argument:
+
+- `transition_covariates` lets covariates shift the transition
+  probabilities: the log odds of moving to each other profile rather than
+  staying. A covariate may change over occasions.
+- `initial_covariates` lets covariates shift the starting profile.
+- `transitions = "occasion"` estimates a separate transition matrix for each
+  move.
+- `measurement = "occasion"` lets the profiles' means and variances differ by
+  occasion.
+- `order = 2` makes the next profile depend on the two previous ones.
+
+Does a student's grade in the previous course change how likely they are to
+move between engagement profiles? `previous_grade` changes from course to
+course:
+
+```{r grade}
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+homogeneous <- lta(course_engagement, activity, "student", n_profiles = 2,
+                   time = "sequence", seed = 1)
+grade <- lta(course_engagement, activity, "student", n_profiles = 2,
+             time = "sequence", transition_covariates = "previous_grade",
+             seed = 1)
+get_results(grade, "transition_coefficients")
+```
+
+The grade's odds ratios are close to one and their intervals include one: in
+these data, the previous grade does not change the chance of switching
+profile. A second-order chain, where the next profile depends on the two
+previous ones, does not earn its extra parameters either:
+
+```{r second-order}
+second <- lta(course_engagement, activity, "student", n_profiles = 2,
+              time = "sequence", order = 2, seed = 1)
+BIC(homogeneous, grade, second)
+```
+
+```{r check-extensions, include = FALSE}
+slopes <- subset(get_results(grade, "transition_coefficients"),
+                 term == "previous_grade")
+stopifnot(all(slopes$conf_low < 0 & slopes$conf_high > 0),
+          BIC(homogeneous) < BIC(grade), BIC(homogeneous) < BIC(second))
+```
+
+These extensions return a fit with transition and initial logit coefficients,
+Wald standard errors and probabilities per occasion; they were checked
+against Mplus, depmixS4 and LMest.
+
 ## Assumptions
 
-- The next profile depends only on the current profile and the group class,
-  and transition probabilities are the same at every occasion.
-- Profiles have the same definition at every occasion.
+- By default the next profile depends only on the current profile and the
+  group class, and transition probabilities are the same at every occasion;
+  the arguments above relax each of these.
+- Profiles have the same definition at every occasion unless
+  `measurement = "occasion"`.
 - Indicators are independent within a profile (the default diagonal
-  covariance; `covariance_model = "full"` relaxes it).
-- Standard errors, likelihood-ratio tests and class enumeration are not
-  available for this model.
+  covariance; `covariance_model = "full"` or `model =` relaxes it).

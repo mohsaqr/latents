@@ -519,6 +519,13 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
   if (!isTRUE(x$converged)) {
     refuse("Inference requires a converged fit.", "latents_no_converge")
   }
+  if (!is.null(x$covariance_structure) &&
+      !x$covariance_structure %in% c("EEI", "VVI", "EEE", "VVV")) {
+    refuse(paste(
+      "Standard errors for transition models are available for the EEI, VVI,",
+      "EEE and VVV structures; this fit uses", x$covariance_structure, "."),
+      "latents_unsupported_inference")
+  }
   if (vcov_type %in% c("robust", "opg") && x$n_groups <= x$n_parameters) {
     refuse(sprintf(paste(
       "Robust and OPG inference need more groups than parameters; this fit has",

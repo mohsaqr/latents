@@ -24,23 +24,17 @@ families need explicit identification constraints, a simulation recovery study
 each, and ideally Mplus runs as the oracle; the published supplement is
 ambiguous on syntax and parameter counts, so it cannot be the oracle alone.
 
-- [ ] **Additive** — group classes differ in between-level location, common
-  within-level variances across group classes. **M**
-  Specification and validation design drafted 2026-09-30 in
-  [`validation/ADDITIVE_MODEL_DESIGN.md`](validation/ADDITIVE_MODEL_DESIGN.md).
-  Shipped (experimental) as `multilpa(family = "additive")` with tables,
-  inference, plots, vignette and a 1000-dataset simulation
-  (`validation/ADDITIVE_SIMULATION.md`). Open: Mplus references; a diagnostic
-  for rare weakly separated classes; between-variance ML bias correction;
-  enumeration and bootstrap LRT for the family.
-- [ ] **Dispersion** — group classes differ in within-level variances;
-  between-level means and variances constrained across classes. **M**
-- [ ] **Additive-dispersion** — group classes differ in both. **M** (after the
-  two above)
-- [ ] **Restricted cross-level** — separate individual and group measurement
-  models; group classes not defined by individual-profile composition. **L**
-- [ ] **Full cross-level** — group-indicator measurement and individual-profile
-  composition jointly inform group classes. **L**
+- [x] **Additive**, **dispersion**, **additive-dispersion** — shipped in 0.9.0
+  as `multilpa(family = )` (experimental): exact likelihood, tables,
+  inference, weak-class diagnostic, enumeration, bootstrap LRT; simulations
+  in `validation/ADDITIVE_SIMULATION.md`, Latent GOLD comparison in
+  `equivalence/latentgold-families/`.
+- [x] **Restricted / full cross-level** — shipped in 0.9.0 (manifest
+  group-mean specification); no standard errors.
+- [ ] Group-class follow-ups: Mplus references; REML-type correction of the
+  between-variance ML bias; a J = 100 cell for the weak-class threshold. **S–M**
+- [ ] Cross-level follow-ups: enumeration over profiles x classes, recovery
+  simulation, latent-intercept (doubly latent) variant. **M–L**
 - [ ] Extend fixed-measurement (`fit_staged()`, `fixed =`) and the
   predictor/outcome workflows to the new families; keep their likelihoods
   distinct from BCH and three-step. **M**
@@ -52,17 +46,19 @@ ambiguous on syntax and parameter counts, so it cannot be the oracle alone.
 Standard errors are done (2026-09-27). The model itself is still first-order,
 homogeneous and measurement-invariant.
 
-- [ ] **Covariate-dependent transitions** — initial and transition logits on
-  person- or occasion-level covariates. The multinomial-logit M-step, scores
-  and sandwich already exist for membership covariates and carry over. **M**
-- [ ] **Occasion-varying transitions** — a transition matrix per occasion (or
-  per occasion block), nested against the homogeneous model. **M**
-- [ ] **Measurement invariance across occasions** — occasion-specific means
-  and variances as an alternative to the invariant model, with a likelihood
-  ratio comparison. **M**
-- [ ] **Second-order transitions.** **M**
-- [ ] The fourteen covariance structures in `lta()`
-  (`volume`/`shape`/`orientation`). **S–M**
+- [x] **Covariate-dependent transitions** (fixed and time-varying covariates)
+  and covariate initial distribution — done 2026-10-01; Mplus ex8.13/8.14
+  and depmixS4 agree.
+- [x] **Occasion-varying transitions** — done; LMest modBasic = 0 agrees.
+- [x] **Measurement invariance across occasions** (`measurement = "occasion"`)
+  — done; Mplus occasion-specific thresholds agree.
+- [x] **Second-order transitions** (`order = 2`) — done; exact path sum.
+- [x] The fourteen covariance structures in `lta()` (`model =`) — done for the
+  homogeneous model; SEs only for EEI/VVI/EEE/VVV.
+- [ ] Follow-ups: covariance structures and FIML in the general engine;
+  structure-aware standard errors in lta(); likelihood-ratio and bootstrap
+  tests between nested transition models; a simulation study of the new
+  standard errors. **M**
 
 ### 1.3 Membership-covariate models
 

@@ -322,10 +322,12 @@
                                               min_variance,
                                               covariance_model = "diagonal",
                                               codes = NULL, n_categories = NULL,
-                                              min_probability = 1e-10) {
+                                              min_probability = 1e-10,
+                                              structure = NULL, previous = NULL) {
   parameters <- .multilpa_maximization(x, expectation, variance_model,
                                        min_variance, covariance_model, codes,
-                                       n_categories, min_probability)
+                                       n_categories, min_probability,
+                                       structure = structure, previous = previous)
   n_profiles <- nrow(parameters$means)
   n_types <- length(expectation$sequence)
   bound <- function(counts) {
@@ -381,7 +383,8 @@
 .multilpa_transition_em <- function(x, layout, parameters, variance_model,
                                     min_variance, max_iter, tol,
                                     covariance_model = "diagonal", codes = NULL,
-                                    n_categories = NULL, min_probability = 1e-10) {
+                                    n_categories = NULL, min_probability = 1e-10,
+                                    structure = NULL) {
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             min_variance > 0, variance_model %in% c("varying", "equal"))
   expectation <- .multilpa_transition_expectation(x, layout, parameters, codes)
@@ -391,7 +394,7 @@
   while (iteration < max_iter && !converged) {
     parameters <- .multilpa_transition_maximization(
       x, expectation, variance_model, min_variance, covariance_model, codes,
-      n_categories, min_probability)
+      n_categories, min_probability, structure, parameters)
     updated <- .multilpa_transition_expectation(x, layout, parameters, codes)
     improvement <- updated$log_likelihood - expectation$log_likelihood
     if (improvement < -1e-10 * (1 + abs(expectation$log_likelihood))) {
@@ -467,13 +470,14 @@
 .multilpa_count_transition_parameters <- function(n_profiles, n_group_classes,
                                                   n_continuous, n_categories,
                                                   variance_model,
-                                                  covariance_model) {
+                                                  covariance_model,
+                                                  structure = NULL) {
   # The cross-sectional count carries the measurement model and the group-class
   # split. Its per-class profile prevalences are replaced here by a per-class
   # initial distribution and a per-class transition matrix.
   cross_sectional <- .multilpa_count_parameters(
     n_profiles, n_group_classes, n_continuous, n_categories, variance_model,
-    covariance_model)
+    covariance_model, structure)
   cross_sectional + n_group_classes * n_profiles * (n_profiles - 1L)
 }
 
@@ -522,6 +526,31 @@
 #'   position still consumes a transition across the gap and contributes no
 #'   measurement information at it. The two agree whenever every group is
 #'   observed at every position.
+#' @param transitions `"homogeneous"` (the default) uses one transition matrix
+#'   for every occasion; `"occasion"` estimates a separate one for each move
+#'   (occasion 1 to 2, 2 to 3, ...).
+#' @param transition_covariates Names of columns whose values shift the
+#'   transition probabilities through a multinomial logit per origin profile:
+#'   the log odds of moving to each other profile rather than staying. A
+#'   column may change over occasions; the value at the destination occasion
+#'   is used. Factors are expanded to indicator columns.
+#' @param initial_covariates Names of columns that shift the initial profile
+#'   distribution (a multinomial logit, reference: the last profile), read at
+#'   each group's first occasion.
+#' @param measurement `"invariant"` (the default) keeps the profiles' means,
+#'   variances and response probabilities equal across occasions;
+#'   `"occasion"` estimates them separately at each occasion, so a profile is
+#'   defined by its position in the sequence of transitions rather than by
+#'   one fixed measurement model.
+#' @param order `1` (the default) or `2`. With `2`, the profile at each
+#'   occasion from the third on depends on the profiles at the two previous
+#'   occasions (a second-order Markov chain); the first move stays first
+#'   order.
+#' @param model A covariance structure as `multilpa()` takes it (`"EEI"`,
+#'   `"VVI"`, `"VEI"`, ... ; mclust's codes). Available with homogeneous
+#'   first-order transitions and invariant measurement; standard errors for
+#'   structures other than EEI, VVI, EEE and VVV are refused
+#'   (`latents_unsupported_inference`).
 #' @return A `multilpa_transitions` object containing `means`, `variances`,
 #'   optional `covariances` and `response_probabilities`,
 #'   `initial_probabilities` (group classes by profiles),
@@ -533,10 +562,22 @@
 #'   tables. No standard
 #'   errors, likelihood-ratio tests or guarantees of global optimality are
 #'   given for this model family.
-#' @details Transitions are first order and homogeneous over occasions: the
-#'   probability of moving from one profile to another does not depend on the
-#'   occasion or on earlier profiles. Measurement parameters are shared across
-#'   occasions and across group classes. A profile that no group occupies before
+#'
+#'   With `transitions = "occasion"`, `transition_covariates`,
+#'   `initial_covariates`, `measurement = "occasion"` or `order = 2` the
+#'   result is a `multilpa_lta` object instead, read with
+#'   [get_results.multilpa_lta()]: transition and initial logit coefficients
+#'   with Wald standard errors (observed, robust or OPG, from analytic
+#'   scores), model-implied transition probabilities per occasion, profiles
+#'   per occasion. These need complete indicators and diagonal covariances.
+#'   EM is finished by a quasi-Newton search on the exact likelihood.
+#'   Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific
+#'   thresholds), depmixS4 and LMest is recorded in
+#'   `equivalence/lta-extensions/` of the source repository.
+#' @details By default transitions are first order and homogeneous over
+#'   occasions: the probability of moving from one profile to another does not
+#'   depend on the occasion or on earlier profiles. Measurement parameters are
+#'   shared across occasions and across group classes. A profile that no group occupies before
 #'   its final occasion leaves its transition row without information; the row
 #'   is then uniform by construction rather than estimated. Such a row is warned
 #'   about when the model is fitted, is flagged by the `estimated` column of
@@ -579,8 +620,22 @@ lta <- function(data, vars, id, n_profiles, time,
                             covariance_model = c("diagonal", "full"),
                             categorical = character(), min_probability = 1e-10,
                             occasions = c("observed", "grid"),
-                            select_start = c("likelihood", "converged")) {
+                            select_start = c("likelihood", "converged"),
+                            transitions = c("homogeneous", "occasion"),
+                            transition_covariates = character(),
+                            initial_covariates = character(),
+                            measurement = c("invariant", "occasion"),
+                            order = 1L, model = NULL) {
   select_start <- match.arg(select_start)
+  transitions <- match.arg(transitions)
+  measurement_model <- match.arg(measurement)
+  if (!is.numeric(order) || length(order) != 1L || !order %in% c(1, 2)) {
+    stop(errorCondition("`order` must be 1 or 2.", class = "latents_bad_argument",
+                        call = NULL))
+  }
+  general <- order == 2 || !identical(transitions, "homogeneous") ||
+    length(transition_covariates) > 0L || length(initial_covariates) > 0L ||
+    !identical(measurement_model, "invariant")
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
@@ -595,6 +650,26 @@ lta <- function(data, vars, id, n_profiles, time,
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
   occasions <- match.arg(occasions)
+  # `model` names the covariance structure in mclust's three letters, as in
+  # multilpa(); NULL keeps the `variance_model` x `covariance_model` choice.
+  structure <- NULL
+  if (!is.null(model)) {
+    if (!is.character(model) || length(model) != 1L ||
+        !model %in% .multilpa_structures()) {
+      stop(errorCondition(sprintf("`model` must be one of %s.",
+        paste(sprintf("\"%s\"", .multilpa_structures()), collapse = ", ")),
+        class = "latents_bad_argument", call = NULL))
+    }
+    pieces <- .multilpa_structure_arguments(model)
+    structure <- .multilpa_resolve_structure(variance_model, covariance_model,
+                                             pieces$volume, pieces$shape,
+                                             pieces$orientation)
+    if (.multilpa_is_ellipsoidal(structure)) covariance_model <- "full"
+    if (structure %in% c("EEI", "EEE")) variance_model <- "equal"
+    if (structure %in% c("VVI", "VVV")) variance_model <- "varying"
+    .multilpa_reset_structure_log()
+    on.exit(.multilpa_report_structure_log(), add = TRUE)
+  }
   # The data contract is checked BEFORE the ordering column. Reversed, a missing
   # group column surfaced as an internal `split()` failure ("group length is 0
   # but data length > 0") instead of this package's own classed error.
@@ -602,6 +677,33 @@ lta <- function(data, vars, id, n_profiles, time,
                             n_starts, max_iter, tol, min_variance,
                             min_probability, seed, categorical)
   time_values <- .multilpa_time_values(data, time, id, vars)
+  if (general && !is.null(model)) {
+    stop(errorCondition(paste(
+      "Covariance structures (`model`) are available for homogeneous",
+      "first-order transitions with invariant measurement."),
+      class = "latents_bad_argument", call = NULL))
+  }
+  if (general) {
+    # The general engine: transitions per occasion or covariate, covariate
+    # initial distribution, or measurement per occasion.
+    if (!identical(match.arg(missing), "error") ||
+        !identical(match.arg(covariance_model), "diagonal")) {
+      stop(errorCondition(paste(
+        "Occasion-varying or covariate-dependent transitions and occasion-specific",
+        "measurement need complete indicators and diagonal covariances."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    if (n_profiles < 2L) {
+      stop(errorCondition(
+        "`n_profiles` must be at least two; a single profile has nothing to move between.",
+        class = "latents_bad_transition", call = NULL))
+    }
+    return(.lta_fit_general(data, vars, id, time, n_profiles, n_group_classes,
+                            variance_model, n_starts, max_iter, tol, min_variance,
+                            seed, categorical, min_probability, occasions,
+                            transitions, transition_covariates, initial_covariates,
+                            measurement_model, select_start, call, as.integer(order)))
+  }
   if (n_profiles < 2L) {
     stop(errorCondition(
       "`n_profiles` must be at least two; a single profile has nothing to move between.",
@@ -659,9 +761,12 @@ lta <- function(data, vars, id, n_profiles, time,
         x, groups$index, n_profiles, n_group_classes, variance_model,
         min_variance, start_index, covariance_model, codes, n_categories,
         min_probability)
+      if (!is.null(structure)) {
+        initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
+      }
       .multilpa_transition_em(x, layout, initial, variance_model, min_variance,
                               max_iter, tol, covariance_model, codes,
-                              n_categories, min_probability)
+                              n_categories, min_probability, structure)
     }, error = function(error) list(error = conditionMessage(error)))
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
@@ -700,7 +805,7 @@ lta <- function(data, vars, id, n_profiles, time,
   dimnames(group_posteriors) <- list(groups$ids, type_names)
   n_parameters <- .multilpa_count_transition_parameters(
     n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
-    covariance_model)
+    covariance_model, structure)
   log_likelihood <- best$expectation$log_likelihood
   transition_counts <- array(
     vapply(best$expectation$sequence, `[[`, numeric(n_profiles * n_profiles),
@@ -747,6 +852,7 @@ lta <- function(data, vars, id, n_profiles, time,
     balanced = all(layout$span == layout$n_occasions) &&
       !anyNA(layout$slot),
     variance_model = variance_model, covariance_model = covariance_model,
+    covariance_structure = structure,
     missing = missing, min_variance = min_variance,
     standard_deviations = sqrt(parameters$variances),
     measurement_model = if (is.null(codes)) "gaussian" else
