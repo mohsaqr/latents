@@ -44,7 +44,9 @@ multilpa(
   family = c("profiles", "additive", "dispersion", "additive_dispersion",
     "restricted_cross_level", "full_cross_level"),
   between_variance = c("varying", "equal"),
-  weights = NULL
+  weights = NULL,
+  ordinal = character(),
+  count = character()
 )
 ```
 
@@ -511,6 +513,31 @@ multilpa(
   [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
   `prior` and `noise` refuse a weighted fit. Works with every `family`,
   membership covariates, categorical indicators and `missing = "fiml"`.
+
+- ordinal:
+
+  Names of indicators in `vars` to model as ordinal: an (ordered)
+  factor, or whole numbers, whose categories are ordered by factor level
+  or by value. Each follows an adjacent-category logit with category
+  intercepts shared by every profile and one location per profile,
+  `log P(k | c) / P(k - 1 | c) = a_k - a_(k-1) + eta_c`, with the last
+  profile's location fixed at zero: `(K - 1) + (C - 1)` parameters per
+  indicator against `C (K - 1)` for a `categorical` one. This is Latent
+  GOLD's default ordinal model, against which it is checked. Read the
+  category probabilities and locations with
+  `get_results(fit, "ordinal")`.
+
+- count:
+
+  Names of indicators in `vars` holding non-negative whole numbers,
+  modelled as Poisson with one mean per profile; read the means with
+  `get_results(fit, "count_means")`. Ordinal and count indicators take
+  `missing = "fiml"`, `weights`, two-level fits, Wald and bootstrap
+  inference,
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  and [`predict()`](https://rdrr.io/r/stats/predict.html); membership
+  covariates, `start`, `fixed`, `prior`, `noise` and the group-class
+  families do not take them yet (`latents_unsupported_indicator`).
 
 ## Value
 

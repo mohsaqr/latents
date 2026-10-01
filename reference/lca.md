@@ -83,26 +83,26 @@ fit
 #> Latent class analysis: 2 classes
 #> 2582 observations; 4 categorical indicators
 #> Classes are labelled profile_1, profile_2, ... in every table.
-#> Log likelihood: -4560.238321 | AIC: 9138.477 | BIC: 9191.184
+#> Log likelihood: -4560.238322 | AIC: 9138.477 | BIC: 9191.184
 #> Converged: TRUE | iterations: 96 | best start: 3/3
 #> 
 #>  profile         indicator category  probability  threshold
-#>        1 time_with_friends       no 7.817818e-01  1.2760802
-#>        2 time_with_friends       no 8.974465e-01  2.1691689
+#>        1 time_with_friends       no 7.817818e-01  1.2760803
+#>        2 time_with_friends       no 8.974465e-01  2.1691692
 #>        1 time_with_friends      yes 2.182182e-01         NA
 #>        2 time_with_friends      yes 1.025535e-01         NA
-#>        1   on_social_media       no 9.999994e-01 14.3865832
-#>        2   on_social_media       no 5.522219e-01  0.2096522
-#>        1   on_social_media      yes 5.649189e-07         NA
-#>        2   on_social_media      yes 4.477781e-01         NA
-#>        1    tv_video_games       no 9.998452e-01  8.7729715
-#>        2    tv_video_games       no 6.701118e-01  0.7086909
-#>        1    tv_video_games      yes 1.548387e-04         NA
-#>        2    tv_video_games      yes 3.298882e-01         NA
-#>        1            sports       no 9.021327e-01  2.2211497
-#>        2            sports       no 9.428194e-01  2.8026605
+#>        1   on_social_media       no 9.999994e-01 14.3945349
+#>        2   on_social_media       no 5.522218e-01  0.2096518
+#>        1   on_social_media      yes 5.604446e-07         NA
+#>        2   on_social_media      yes 4.477782e-01         NA
+#>        1    tv_video_games       no 9.998450e-01  8.7716985
+#>        2    tv_video_games       no 6.701119e-01  0.7086911
+#>        1    tv_video_games      yes 1.550360e-04         NA
+#>        2    tv_video_games      yes 3.298881e-01         NA
+#>        1            sports       no 9.021328e-01  2.2211497
+#>        2            sports       no 9.428194e-01  2.8026606
 #>        1            sports      yes 9.786725e-02         NA
-#>        2            sports      yes 5.718058e-02         NA
+#>        2            sports      yes 5.718057e-02         NA
 #> 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 plot(fit, what = "heatmap")

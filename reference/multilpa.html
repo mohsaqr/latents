@@ -17,7 +17,7 @@ missing indicators are available."><meta property="og:image" content="https://pa
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -108,7 +108,9 @@ missing indicators are available.</p>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profiles"</span>, <span class="st">"additive"</span>, <span class="st">"dispersion"</span>, <span class="st">"additive_dispersion"</span>,</span>
 <span>    <span class="st">"restricted_cross_level"</span>, <span class="st">"full_cross_level"</span><span class="op">)</span>,</span>
 <span>  between_variance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
-<span>  weights <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ordinal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -509,6 +511,28 @@ posterior; effective counts and proportions are weighted.
 <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>, <code><a href="three_step.html">three_step()</a></code>, <code><a href="r3step.html">r3step()</a></code>, <code>prior</code> and <code>noise</code> refuse
 a weighted fit. Works with every <code>family</code>, membership covariates,
 categorical indicators and <code>missing = "fiml"</code>.</p></dd>
+
+
+<dt id="arg-ordinal">ordinal<a class="anchor" aria-label="anchor" href="#arg-ordinal"></a></dt>
+<dd><p>Names of indicators in <code>vars</code> to model as ordinal: an
+(ordered) factor, or whole numbers, whose categories are ordered by factor
+level or by value. Each follows an adjacent-category logit with category
+intercepts shared by every profile and one location per profile,
+<code>log P(k | c) / P(k - 1 | c) = a_k - a_(k-1) + eta_c</code>, with the last
+profile's location fixed at zero: <code>(K - 1) + (C - 1)</code> parameters per
+indicator against <code>C (K - 1)</code> for a <code>categorical</code> one. This is Latent
+GOLD's default ordinal model, against which it is checked. Read the
+category probabilities and locations with <code>get_results(fit, "ordinal")</code>.</p></dd>
+
+
+<dt id="arg-count">count<a class="anchor" aria-label="anchor" href="#arg-count"></a></dt>
+<dd><p>Names of indicators in <code>vars</code> holding non-negative whole
+numbers, modelled as Poisson with one mean per profile; read the means
+with <code>get_results(fit, "count_means")</code>. Ordinal and count indicators take
+<code>missing = "fiml"</code>, <code>weights</code>, two-level fits, Wald and bootstrap
+inference, <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>; membership covariates,
+<code>start</code>, <code>fixed</code>, <code>prior</code>, <code>noise</code> and the group-class families do not
+take them yet (<code>latents_unsupported_indicator</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

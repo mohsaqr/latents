@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,23 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.5" id="latents-095">latents 0.9.5<a class="anchor" aria-label="anchor" href="#latents-095"></a></h2>
+<div class="section level3">
+<h3 id="ordinal-and-count-indicators-0-9-5">Ordinal and count indicators<a class="anchor" aria-label="anchor" href="#ordinal-and-count-indicators-0-9-5"></a></h3>
+<ul><li>
+<code><a href="../reference/multilpa.html">multilpa()</a></code>, <code><a href="../reference/lpa.html">lpa()</a></code>, <code><a href="../reference/lca.html">lca()</a></code> and <code><a href="../reference/multilca.html">multilca()</a></code> take <code>ordinal</code> and <code>count</code>, naming indicators in <code>vars</code>:
+<ul><li>
+<code>ordinal</code>: an adjacent-category logit with category intercepts shared by every profile and one location per profile (Latent GOLD’s default ordinal model): <code>(K - 1) + (C - 1)</code> parameters per indicator instead of <code>C (K - 1)</code> as <code>categorical</code>. Ordered factors or whole numbers.</li>
+<li>
+<code>count</code>: Poisson, one mean per profile.</li>
+</ul></li>
+<li>New tables: <code>get_results(fit, "ordinal")</code> (category probabilities and locations, with standard errors) and <code>get_results(fit, "count_means")</code>.</li>
+<li>Mixed freely with continuous and categorical indicators, in single- and two-level fits, with <code>missing = "fiml"</code> and <code>weights</code>. Wald (analytic scores) and bootstrap inference, <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>, <code><a href="../reference/sensitivity.html">sensitivity()</a></code> and <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> handle them.</li>
+<li>Checked against Latent GOLD 6.1 on five datasets (mixed, ordinal only, count only, three classes, two-level): log likelihoods agree to 4e-5 and every parameter to 5e-5, the precision Latent GOLD prints (<code>equivalence/latentgold-ordinal/</code>); the results are a test fixture.</li>
+<li>Not yet available with membership covariates, <code>start</code>, <code>fixed</code>, <code>prior</code>, <code>noise</code>, <code><a href="../reference/lta.html">lta()</a></code> or the group-class families (<code>latents_unsupported_indicator</code>).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.4" id="latents-094">latents 0.9.4<a class="anchor" aria-label="anchor" href="#latents-094"></a></h2>
 <ul><li>The membership M-step of covariate fits (<code>profile_covariates</code>, <code>group_covariates</code>) now solves its weighted multinomial logits by Newton-Raphson with the exact Hessian instead of BFGS. BFGS stalled above its score tolerance on about half of the steps of an ordinary fit, which left fits flagged unconverged (and refused standard errors) on some platforms but not others. Estimates are unchanged; fits converge in fewer EM iterations.</li>

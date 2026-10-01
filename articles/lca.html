@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,7 +107,10 @@ indicator.</p>
 <strong>Item types.</strong> Binary, ordinal and nominal items share
 one parameterization: a free probability for every category in every
 profile. Numeric, integer, logical, character and factor columns are
-accepted; factor levels keep their order, other types are sorted.</li>
+accepted; factor levels keep their order, other types are sorted.
+Ordered items can instead be modelled as <code>ordinal</code> (an
+adjacent-category logit with far fewer parameters), and counts as
+<code>count</code> (Poisson); see below.</li>
 <li>
 <strong>Mixed measurement.</strong> Continuous and categorical
 indicators in one model.</li>
@@ -335,11 +338,73 @@ of the categorical ones, <code><a href="../reference/get_results.html">get_resul
 <span><span class="co">#&gt; 32       2     part_time_job      yes      0.0360        NA                         NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="ordinal-and-count-indicators">Ordinal and count indicators<a class="anchor" aria-label="anchor" href="#ordinal-and-count-indicators"></a>
+</h2>
+<p>The affect ratings run from 1 to 7. As <code>categorical</code> items
+each would have six free probabilities in every profile; as
+<code>ordinal</code> items each has six category intercepts shared by
+every profile and one location per profile, which says how far up the
+scale that profile sits. We pass their names as
+<code>ordinal</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">affect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"worried"</span>, <span class="st">"exhausted"</span><span class="op">)</span></span>
+<span><span class="va">ordinal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">first_week</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">affect</span>, <span class="va">activities</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>                    ordinal <span class="op">=</span> <span class="va">affect</span>, categorical <span class="op">=</span> <span class="va">activities</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                    n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">ordinal</span></span>
+<span><span class="co">#&gt; Two-level latent class analysis: 2 classes, 2 group classes</span></span>
+<span><span class="co">#&gt; 1422 individuals in 100 groups; 8 categorical indicators</span></span>
+<span><span class="co">#&gt; Also ordinal happy, relaxed, worried, exhausted (adjacent-category logit; get_results(x, "ordinal"))</span></span>
+<span><span class="co">#&gt; Classes are labelled profile_1, profile_2, ... in every table.</span></span>
+<span><span class="co">#&gt; Log likelihood: -13513.224891 | AIC: 27120.450 | BIC (groups): 27242.893</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 18 | best start: 3/3</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  profile         indicator category probability threshold</span></span>
+<span><span class="co">#&gt;        1 time_with_friends       no      0.7975     1.371</span></span>
+<span><span class="co">#&gt;        2 time_with_friends       no      0.9301     2.588</span></span>
+<span><span class="co">#&gt;        1 time_with_friends      yes      0.2025        NA</span></span>
+<span><span class="co">#&gt;        2 time_with_friends      yes      0.0699        NA</span></span>
+<span><span class="co">#&gt;        1   on_social_media       no      0.7848     1.294</span></span>
+<span><span class="co">#&gt;        2   on_social_media       no      0.6299     0.532</span></span>
+<span><span class="co">#&gt;        1   on_social_media      yes      0.2152        NA</span></span>
+<span><span class="co">#&gt;        2   on_social_media      yes      0.3701        NA</span></span>
+<span><span class="co">#&gt;        1    tv_video_games       no      0.8300     1.586</span></span>
+<span><span class="co">#&gt;        2    tv_video_games       no      0.7342     1.016</span></span>
+<span><span class="co">#&gt;        1    tv_video_games      yes      0.1700        NA</span></span>
+<span><span class="co">#&gt;        2    tv_video_games      yes      0.2658        NA</span></span>
+<span><span class="co">#&gt;        1    listened_music       no      0.8104     1.452</span></span>
+<span><span class="co">#&gt;        2    listened_music       no      0.8397     1.656</span></span>
+<span><span class="co">#&gt;        1    listened_music      yes      0.1896        NA</span></span>
+<span><span class="co">#&gt;        2    listened_music      yes      0.1603        NA</span></span>
+<span><span class="co">#&gt;        1            sports       no      0.9114     2.330</span></span>
+<span><span class="co">#&gt;        2            sports       no      0.9362     2.686</span></span>
+<span><span class="co">#&gt;        1            sports      yes      0.0886        NA</span></span>
+<span><span class="co">#&gt;        2            sports      yes      0.0638        NA</span></span>
+<span><span class="co">#&gt;    ... 12 more rows.  get_results(x, "responses")</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
+<p><code><a href="../reference/get_results.html">get_results()</a></code> with <code>"ordinal"</code> gives each
+profile’s probability of every rating and its location.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">ordinal</span>, <span class="st">"ordinal"</span><span class="op">)</span>, <span class="fl">7</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   profile indicator category probability location location_standard_error</span></span>
+<span><span class="co">#&gt; 1       1     happy        1    2.74e-05     1.86                   0.139</span></span>
+<span><span class="co">#&gt; 2       1     happy        2    2.53e-04     1.86                   0.139</span></span>
+<span><span class="co">#&gt; 3       1     happy        3    3.03e-03     1.86                   0.139</span></span>
+<span><span class="co">#&gt; 4       1     happy        4    2.82e-02     1.86                   0.139</span></span>
+<span><span class="co">#&gt; 5       1     happy        5    2.21e-01     1.86                   0.139</span></span>
+<span><span class="co">#&gt; 6       1     happy        6    4.24e-01     1.86                   0.139</span></span>
+<span><span class="co">#&gt; 7       1     happy        7    3.24e-01     1.86                   0.139</span></span></code></pre></div>
+<p>Indicators holding counts (number of messages sent, of absences) go
+in <code>count</code>: each is Poisson with one mean per profile, read
+with <code>get_results(fit, "count_means")</code>.</p>
+</div>
+<div class="section level2">
 <h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
 </h2>
 <p>The calls below list other functions that work with categorical and
 mixed models. Each comment states what the call returns.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"classification"</span><span class="op">)</span>               <span class="co"># class sizes and average posteriors</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"residuals"</span><span class="op">)</span>                    <span class="co"># residual association within profiles</span></span>
 <span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span>                         <span class="co"># standard errors and intervals</span></span>

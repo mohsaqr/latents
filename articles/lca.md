@@ -20,6 +20,9 @@ kinds of indicator.
   parameterization: a free probability for every category in every
   profile. Numeric, integer, logical, character and factor columns are
   accepted; factor levels keep their order, other types are sorted.
+  Ordered items can instead be modelled as `ordinal` (an
+  adjacent-category logit with far fewer parameters), and counts as
+  `count` (Poisson); see below.
 - **Mixed measurement.** Continuous and categorical indicators in one
   model.
 - **Missing answers.** `missing = "fiml"` uses the observed answers of
@@ -284,6 +287,75 @@ get_results(mixed, "responses")
 #> 31       1     part_time_job      yes      0.0280        NA                         NA
 #> 32       2     part_time_job      yes      0.0360        NA                         NA
 ```
+
+## Ordinal and count indicators
+
+The affect ratings run from 1 to 7. As `categorical` items each would
+have six free probabilities in every profile; as `ordinal` items each
+has six category intercepts shared by every profile and one location per
+profile, which says how far up the scale that profile sits. We pass
+their names as `ordinal`.
+
+``` r
+
+affect <- c("happy", "relaxed", "worried", "exhausted")
+ordinal <- multilpa(first_week, vars = c(affect, activities), id = "student",
+                    ordinal = affect, categorical = activities, n_profiles = 2,
+                    n_group_classes = 2, n_starts = 3, seed = 1)
+ordinal
+#> Two-level latent class analysis: 2 classes, 2 group classes
+#> 1422 individuals in 100 groups; 8 categorical indicators
+#> Also ordinal happy, relaxed, worried, exhausted (adjacent-category logit; get_results(x, "ordinal"))
+#> Classes are labelled profile_1, profile_2, ... in every table.
+#> Log likelihood: -13513.224891 | AIC: 27120.450 | BIC (groups): 27242.893
+#> Converged: TRUE | iterations: 18 | best start: 3/3
+#> 
+#>  profile         indicator category probability threshold
+#>        1 time_with_friends       no      0.7975     1.371
+#>        2 time_with_friends       no      0.9301     2.588
+#>        1 time_with_friends      yes      0.2025        NA
+#>        2 time_with_friends      yes      0.0699        NA
+#>        1   on_social_media       no      0.7848     1.294
+#>        2   on_social_media       no      0.6299     0.532
+#>        1   on_social_media      yes      0.2152        NA
+#>        2   on_social_media      yes      0.3701        NA
+#>        1    tv_video_games       no      0.8300     1.586
+#>        2    tv_video_games       no      0.7342     1.016
+#>        1    tv_video_games      yes      0.1700        NA
+#>        2    tv_video_games      yes      0.2658        NA
+#>        1    listened_music       no      0.8104     1.452
+#>        2    listened_music       no      0.8397     1.656
+#>        1    listened_music      yes      0.1896        NA
+#>        2    listened_music      yes      0.1603        NA
+#>        1            sports       no      0.9114     2.330
+#>        2            sports       no      0.9362     2.686
+#>        1            sports      yes      0.0886        NA
+#>        2            sports      yes      0.0638        NA
+#>    ... 12 more rows.  get_results(x, "responses")
+#> 
+#> Every other table: get_results(x, what = ), or get_results(x, "all").
+```
+
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+with `"ordinal"` gives each profile’s probability of every rating and
+its location.
+
+``` r
+
+head(get_results(ordinal, "ordinal"), 7)
+#>   profile indicator category probability location location_standard_error
+#> 1       1     happy        1    2.74e-05     1.86                   0.139
+#> 2       1     happy        2    2.53e-04     1.86                   0.139
+#> 3       1     happy        3    3.03e-03     1.86                   0.139
+#> 4       1     happy        4    2.82e-02     1.86                   0.139
+#> 5       1     happy        5    2.21e-01     1.86                   0.139
+#> 6       1     happy        6    4.24e-01     1.86                   0.139
+#> 7       1     happy        7    3.24e-01     1.86                   0.139
+```
+
+Indicators holding counts (number of messages sent, of absences) go in
+`count`: each is Poisson with one mean per profile, read with
+`get_results(fit, "count_means")`.
 
 ## Reference
 
