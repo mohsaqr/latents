@@ -12,6 +12,8 @@ enumerate_classes(
   n_group_classes = 1:3,
   model = "basic",
   seed = NULL,
+  family = "profiles",
+  between_variance = c("varying", "equal"),
   ...
 )
 }
@@ -51,7 +53,20 @@ to cross. A structure set through \code{variance_model}, \code{covariance_model}
 
 \item{seed}{Optional reproducible seed for each fit.}
 
-\item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}.}
+\item{family}{\code{"profiles"} (the default) enumerates the profile model over
+\code{n_profiles}, \code{n_group_classes} and \code{model}. One or more of the
+group-class families \code{"additive"}, \code{"dispersion"} and
+\code{"additive_dispersion"} enumerates those instead, over \code{family},
+\code{n_group_classes} and \code{between_variance}; \code{n_profiles} and \code{model} are
+then refused, and the result is a \code{latents_family_enumeration} read with
+\code{\link[=get_results.latents_family_enumeration]{get_results.latents_family_enumeration()}} and \code{\link[=candidate_fit]{candidate_fit()}}.}
+
+\item{between_variance}{For group-class families: the between-variance
+restrictions to cross, \code{"varying"}, \code{"equal"} or both (the default). The
+dispersion family is always fitted with \code{"equal"}.}
+
+\item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}; for group-class families only
+\code{n_starts}, \code{max_iter}, \code{tol} and \code{min_variance}.}
 }
 \value{
 An object of class \code{multilpa_enumeration}. Read it with the verbs

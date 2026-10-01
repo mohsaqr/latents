@@ -1,0 +1,344 @@
+---
+title: "Group-class and cross-level models: classes of groups from raw ratings"
+author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Group-class and cross-level models: classes of groups from raw ratings}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
+                      fig.height = 4.4, fig.align = "center", dpi = 96)
+options(digits = 3, width = 90)
+has_ggplot <- requireNamespace("ggplot2", quietly = TRUE)
+```
+
+Members of the same team, pupils of the same class or sessions of the same
+student give ratings that share something: the unit they belong to. The
+*additive* model of Houle, Morin and Harvey (2026) asks whether those units
+fall into a small number of latent **group classes** that differ in where
+their members' ratings sit. It has no individual profiles: every member of
+a group belongs to the group's class, and varies around the group's own level.
+
+The same machinery fits the other families of that framework: the
+*dispersion* family, whose group classes differ in how much members vary
+around their group, the *additive-dispersion* family, which allows both, and
+two *cross-level* families that estimate individual profiles and group classes
+together.
+
+> These families are **experimental**. Estimation, standard errors, tables,
+> plots, enumeration and the bootstrap likelihood-ratio test are available;
+> missing data and covariates are not yet.
+
+## The model
+
+For group $j$ with $n_j$ members rating $d$ indicators, and group class $h$:
+
+$$
+C_j \sim \text{Categorical}(\omega_1, \dots, \omega_H), \qquad
+B_{jr} \mid C_j = h \sim N(\mu_{hr}, T_{hr}), \qquad
+Y_{ijr} \mid B_{jr} \sim N(B_{jr}, W_r).
+$$
+
+Each group has its own intercept $B_{jr}$ per indicator, drawn from its
+class's distribution. The group classes differ in their means $\mu_h$ and,
+optionally, in the between-group spread $T_h$; the **within-group** variance
+$W_r$ is the same in every class. That shared within-group variance is what
+makes the model additive. The likelihood is exact: it is computed from each
+group's size, mean and within-group scatter, with no numerical integration.
+
+## Data
+
+The ratings below are simulated so that the truth is known: 120 teams of 4 to
+12 members rate the team's climate and the support they receive. Teams are
+of two types, supportive and strained, which differ in their average ratings
+and, for climate, in how much teams of the type vary.
+
+```{r data}
+library(latents)
+set.seed(2026)
+n_teams <- 120
+team_type <- rep(c("supportive", "strained"), times = c(66, 54))
+team_size <- rep(c(4, 6, 8, 12), length.out = n_teams)
+team_climate <- rnorm(n_teams, ifelse(team_type == "supportive", 0.8, -0.8),
+                      ifelse(team_type == "supportive", 0.35, 0.6))
+team_support <- rnorm(n_teams, ifelse(team_type == "supportive", 0.6, -0.5), 0.45)
+ratings <- data.frame(
+  team = rep(seq_len(n_teams), team_size),
+  type = rep(team_type, team_size),
+  climate = rep(team_climate, team_size) + rnorm(sum(team_size), 0, 0.9),
+  support = rep(team_support, team_size) + rnorm(sum(team_size), 0, 1))
+str(ratings)
+```
+
+The model never sees `type`; it is kept to check the classification later.
+
+## Fitting
+
+The additive model is a `family` of `multilpa()`. It takes the ratings, the
+group column and the number of group classes; there is no `n_profiles`,
+because there are no individual profiles.
+
+```{r fit}
+fit <- multilpa(ratings, c("climate", "support"), "team",
+                n_group_classes = 2, family = "additive", seed = 1)
+fit
+```
+
+## How many group classes?
+
+Fit one, two and three classes and compare them by BIC, which for this family
+is penalized by the number of groups (`nobs(fit)` is the number of teams).
+
+```{r classes}
+fit_one <- multilpa(ratings, c("climate", "support"), "team",
+                    n_group_classes = 1, family = "additive", seed = 1)
+fit_three <- multilpa(ratings, c("climate", "support"), "team",
+                      n_group_classes = 3, family = "additive", seed = 1)
+BIC(fit_one, fit, fit_three)
+```
+
+Two classes have the lowest BIC. The three-class fit also warns that a
+between-group variance went to zero: with a third class there is no
+between-team spread left for some class to explain. A likelihood-ratio test of
+two against three classes would need a bootstrap reference distribution,
+not the chi-square, and that is not yet available for this family.
+
+## Do the classes differ in spread?
+
+`between_variance = "equal"` constrains the between-group variances to be
+equal across classes, which leaves the classes differing in location only.
+
+```{r restriction}
+fit_equal <- multilpa(ratings, c("climate", "support"), "team",
+                      n_group_classes = 2, family = "additive",
+                      between_variance = "equal", seed = 1)
+BIC(fit, fit_equal)
+AIC(fit, fit_equal)
+```
+
+Both criteria prefer the equal-spread model, although the data were simulated
+with more spread in climate among strained teams. With 120 teams that
+difference is too small to be told apart from sampling noise, which is what
+the criteria report. The rest of this vignette uses the varying model to show
+every parameter.
+
+## Comparing the group-class families
+
+`enumerate_classes()` fits every combination of family, between-variance
+restriction and number of group classes in one call. The `model` column names
+each candidate for `candidate_fit()`.
+
+```{r enumerate}
+grid <- enumerate_classes(ratings, c("climate", "support"), "team",
+                          family = c("additive", "dispersion",
+                                     "additive_dispersion"),
+                          n_group_classes = 1:3, seed = 1)
+get_results(grid, "best")
+```
+
+The lowest BIC belongs to two additive classes with equal between-group
+spread, the model chosen above. Adding class-specific within-group variances
+(additive-dispersion) does not improve the fit enough to pay for them, and the
+dispersion family, whose classes differ only in spread, fits much worse: these
+teams differ in level, not in how much their members disagree.
+
+```{r plot-enumerate, eval = has_ggplot}
+plot(grid)
+```
+
+Whether two classes are needed at all is a test of one class against two. The
+likelihood-ratio statistic has no chi-square reference distribution there, so
+`bootstrap_lrt()` simulates it from the one-class fit:
+
+```{r bootstrap}
+one_class <- candidate_fit(grid, n_group_classes = 1, model = "additive_equal")
+two_classes <- candidate_fit(grid, n_group_classes = 2, model = "additive_equal")
+bootstrap_lrt(one_class, two_classes, iter = 19, n_starts = 3, seed = 1)
+```
+
+With 19 replicates the smallest attainable p-value is 0.05; use several
+hundred replicates for a report.
+
+## Parameters
+
+Every parameter, with Wald standard errors from the observed information:
+
+```{r parameters}
+get_results(fit)
+```
+
+The warning comes from a check on each class's *effective groups*: the
+number of perfectly classified groups that would pin down the class weight
+as precisely as this fit does. It is shown in the `group_classes` table below.
+Here the strained class has about 38 effective groups of the 49 it is expected
+to hold, so most of the information survives the classification; the class is
+simply not large. With fewer than 50 effective groups, the simulation study
+found interval coverage for class parameters starting to fall below 95%, and
+far below it when a class is also poorly separated.
+
+`level` separates the three kinds of parameter: `"between"` rows are the
+class means and between-group variances, `"within"` rows the within-group
+variances shared by the classes (`group_class = "shared"`), and
+`"group_class"` rows the class weights. Intervals for variances are formed on
+the log scale and for weights on the logit scale, so they stay in range.
+Cluster-robust (sandwich) standard errors over teams take one argument:
+
+```{r robust}
+get_results(fit, "parameters", vcov_type = "robust")
+```
+
+## Groups and their intercepts
+
+Each team's class probabilities, and its modal class:
+
+```{r groups}
+head(get_results(fit, "groups"))
+get_results(fit, "group_classes")
+```
+
+The posterior mean of each team's intercept shrinks its observed average
+towards its class mean, more so for small teams; its variance includes the
+uncertainty about which class the team belongs to.
+
+```{r intercepts}
+head(get_results(fit, "intercepts"))
+```
+
+Because the teams were simulated, the classification can be checked against
+the true type:
+
+```{r recovery}
+get_results(fit, "recovery", data = ratings, truth = "type")
+```
+
+Every supportive team is in one class; most strained teams are in the other,
+and the few placed with the supportive teams are those whose ratings happened
+to fall close to that class.
+
+```{r check, include = FALSE}
+# Guards on the prose above: it must stay true of the rendered numbers.
+bic_classes <- BIC(fit_one, fit, fit_three)
+stopifnot(
+  which.min(bic_classes$BIC) == 2L,
+  BIC(fit_equal) < BIC(fit), AIC(fit_equal) < AIC(fit),
+  any(fit_three$between_zero)
+)
+classes <- get_results(fit, "group_classes")
+stopifnot(min(classes$effective_groups) < 50,
+          min(classes$effective_groups) > 30,
+          min(classes$effective_groups / classes$count) > 0.7)
+recovery <- get_results(fit, "recovery", data = ratings, truth = "type")
+agreement <- with(recovery, sum(tapply(n, assigned, max)) / sum(n))
+stopifnot(agreement >= 0.9,
+          with(subset(recovery, truth == "supportive"), max(share) > 0.9))
+```
+
+## Plots
+
+```{r plot-means, eval = has_ggplot}
+plot(fit)
+```
+
+```{r plot-variances, eval = has_ggplot}
+plot(fit, what = "variances")
+```
+
+```{r plot-intercepts, eval = has_ggplot}
+plot(fit, what = "intercepts")
+```
+
+## Cross-level families
+
+When the same ratings define both individual profiles and group classes, the
+cross-level families follow the manifest specification of Houle et al.
+(2026): each group's means of the indicators are the group-level indicators
+of its class. In the *full* family, the group classes also differ in how
+their members are distributed over the individual profiles; in the
+*restricted* family they do not, and the two levels are estimated separately.
+Here, sessions of `course_engagement` form engagement profiles and students
+form group classes.
+
+```{r cross-level}
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+full <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+                 n_group_classes = 2, family = "full_cross_level", seed = 1)
+restricted <- multilpa(course_engagement, activity, "student", n_profiles = 2,
+                       n_group_classes = 2, family = "restricted_cross_level",
+                       seed = 1)
+get_results(full, "composition")
+rbind(get_results(full, "fit"), get_results(restricted, "fit"))
+```
+
+In the full model one class of students has most of its sessions in one
+profile and the other class mostly in the other, and letting the composition
+differ by class raises the likelihood far more than its one extra parameter
+costs. Because the group means are computed from the same ratings, these
+likelihoods compare cross-level fits of the same data only, not the
+group-class families above, and standard errors are not reported.
+
+```{r plot-composition, eval = has_ggplot}
+plot(full, what = "composition")
+```
+
+```{r check-families, include = FALSE}
+best <- get_results(grid, "best")
+stopifnot(best$model == "additive_equal", best$n_group_classes == 2,
+          with(subset(get_results(grid), n_group_classes == 2),
+               bic[model == "dispersion"] > bic[model == "additive_equal"] + 50))
+comparison <- rbind(get_results(full, "fit"), get_results(restricted, "fit"))
+composition <- get_results(full, "composition")
+stopifnot(comparison$log_likelihood[1] > comparison$log_likelihood[2] + 100,
+          comparison$bic[1] < comparison$bic[2],
+          max(composition$share) > 0.75)
+```
+
+## When the between-group variance is zero
+
+In `course_engagement` the student types are discrete by construction, so
+students of the same class do not differ in their average activity: the
+between-group variance is zero. The fit says so, and the tables report no
+standard errors, because a variance on the edge of its space breaks the
+approximation Wald inference relies on.
+
+```{r boundary}
+activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+fit_boundary <- multilpa(course_engagement, activity, "student",
+                         n_group_classes = 3, family = "additive",
+                         between_variance = "equal", seed = 1)
+get_results(fit_boundary, "fit")
+```
+
+## Known limitations
+
+A predeclared simulation study (1000 datasets per condition; the report is in
+the package repository under `validation/ADDITIVE_SIMULATION.md`) found:
+
+* With a few hundred groups and well-separated classes, means, weights and
+  variances are recovered and 95% intervals cover close to 95%.
+* Between-group variances are estimated slightly low, the usual small-sample
+  bias of maximum likelihood for a variance component; it shrinks as the
+  number of groups grows.
+* With heavy-tailed ratings, the observed-information standard errors of the
+  within-group variances are too small; `vcov_type = "robust"` corrects them.
+  With few groups (about 50), prefer the observed-information standard errors.
+* When one class is small and poorly separated from another, intervals can
+  be badly miscalibrated. The `latents_weak_class` warning (fewer than 50
+  effective groups in a class) flagged every such simulated dataset and under
+  1% of the well-separated ones with about 100 groups per class; it also
+  flags designs with fewer than about 50 groups per class, where coverage
+  was mildly low.
+* When a between-group variance may truly be zero, its Wald interval is not
+  meaningful: either the fit is on the boundary and standard errors are
+  withheld, or the interval excludes zero by construction.
+
+## References
+
+Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
+profile analyses: A comprehensive guide. *Organizational Research Methods*.
+doi:10.1177/10944281261469432.

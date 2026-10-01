@@ -1,0 +1,190 @@
+g08.dat
+File name:	g08.dat	
+File size:	47449 bytes  1046 records	
+File date:	2026-Oct-01 10:52:04 AM	
+Syntax:	g08.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+g08	F1  F2  2-GClass	-3080.9644	6224.5033	6179.9287	6188.9287	9	.	.	
+g08 - LL = -3080.9644
+F1  F2  2-GClass Syntax Model	
+					
+Number of groups	150				
+Number of cases	1046				
+Number of parameters (Npar)	9				
+Activated Constraints	0				
+Random Seed	20261001				
+Best Start Seed	564344				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3080.9644				
+Log-prior	0.0000				
+Log-posterior	-3080.9644				
+BIC (based on LL)	6224.5033				
+AIC (based on LL)	6179.9287				
+AIC3 (based on LL)	6188.9287				
+CAIC (based on LL)	6233.5033				
+SABIC (based on LL)	6195.9180				
+BIC (based on LL,Ngroups)	6207.0244				
+CAIC (based on LL,Ngroups)	6216.0244				
+SABIC (based on LL,Ngroups)	6178.5412				
+					
+					
+Classification Statistics	F1	F2	GClass		
+Classification errors			0.0549		
+Reduction of errors (Lambda)			0.8810		
+Entropy R-squared			0.7900		
+Standard R-squared	0.7585	0.6129	0.8309		
+Classification log-likelihood	-3598.6771				
+Entropy	517.7127				
+CLC	7197.3542				
+AWE	7349.5033				
+ICL-BIC	7259.9287				
+					
+GClass  Classification Table	Modal				
+Latent	1	2	Total		
+1	64.9865	4.2230	69.2096		
+2	4.0135	76.7770	80.7904		
+Total	69.0000	81.0000	150.0000		
+					
+GClass  Classification Table	Proportional				
+Latent	1	2	Total		
+1	62.9075	6.3020	69.2096		
+2	6.3020	74.4884	80.7904		
+Total	69.2096	80.7904	150.0000		
+					
+Files					
+Infile	C:\lgfamilies\refine60\..\g08.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261001				
+sets	20				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	60				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1046				
+predictionstatistics	no				
+outfile					
+file name	g08_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Group ID	g	150			
+Latent					
+F1	Continuous	Group	60		
+F2	Continuous	Group	60		
+GClass	Nominal	Group	2		
+ 					
+Dependent					
+y1	Continuous				
+y2	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261001 sets=20 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   quadrature nodes=60;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+   outfile 'g08_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent y1 continuous, y2 continuous;
+   latent
+      GClass group nominal 2,
+      F1 group continuous,
+      F2 group continuous;
+equations
+   GClass <- 1;
+   F1;
+   F2;
+   y1 <- 1 + (1) F1;
+   y2 <- 1 + (1) F2;
+   y1 | GClass;
+   y2 | GClass;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+GClass(1)	<-	1			0.0000	.	.	.	0.6663	1	0.41				
+GClass(2)	<-	1			0.1547	0.1895	0.8163	0.41							
+															
+y1	<-	1			0.4891	0.0623	7.8501	4.2e-15	61.6240	1	4.2e-15				
+y1	<-	F1			1.0000	.	.	.							
+															
+y2	<-	1			-0.6331	0.0522	-12.1335	7.0e-34	147.2222	1	7.0e-34				
+y2	<-	F2			1.0000	.	.	.							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+F1		(chol) 			0.6644	0.0494	13.4412	3.5e-41	180.6667	1	3.5e-41				
+F2		(chol) 			0.5001	0.0439	11.3981	4.3e-30	129.9167	1	4.3e-30				
+y1			|	GClass(1)	1.5826	0.1172	13.5039	1.5e-41	322.0954	2	1.1e-70	93.6501	1	3.8e-22	
+y1			|	GClass(2)	0.4362	0.0332	13.1492	1.7e-39							
+y2			|	GClass(1)	2.0763	0.1541	13.4731	2.3e-41	316.6434	2	1.7e-69	108.8544	1	1.7e-25	
+y2			|	GClass(2)	0.4789	0.0356	13.4392	3.6e-41							
+	
+Variances / Covariances continuous latent	
+term	coef	s.e.	z-value	p-value							
+F1					0.4415	0.0657	6.7206	1.8e-11							
+F1	<->	F2			0.0000	.	.	.							
+F2					0.2501	0.0439	5.6991	1.2e-8							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+GClass	<-	1			GClass	1	2	0.6663	1	0.41	
+Variances	
+y1			|	GClass	GClass	1	2	93.6501	1	3.8e-22	
+y2			|	GClass	GClass	1	2	108.8544	1	1.7e-25	
+Profile
+ 	GClass	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.4614	0.0471	0.5386	0.0471	 	 	
+y1	 	
+Mean	0.4891	0.0623	0.4891	0.0623	0.4891	0.0623	
+y2	 	
+Mean	-0.6331	0.0522	-0.6331	0.0522	-0.6331	0.0522	
+EstimatedValues-Model
+ 	GClass	
+ 	1	s.e.	2	s.e.	
+ 	0.4614	.	0.5386	.	
+	
+ 	y1	
+GClass	Mean	s.e.	 	 	
+1	0.4891	0.0623	 	 	
+2	0.4891	0.0623	 	 	
+	
+ 	y2	
+GClass	Mean	s.e.	 	 	
+1	-0.6331	0.0522	 	 	
+2	-0.6331	0.0522	 	 	

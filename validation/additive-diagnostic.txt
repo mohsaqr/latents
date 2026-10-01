@@ -1,0 +1,117 @@
+Weak-class diagnostic evaluation (protocol: additive-diagnostic-protocol.md)
+R version 4.5.2 (2025-10-31); 18.4 minutes; 9840 datasets with intervals
+
+== effective_groups: threshold 50 (flag when below), chosen on replicates 1-500
+Training flag rates in reference cells:
+ threshold reference_flag_rate
+         5              0.0000
+        10              0.0000
+        15              0.0000
+        20              0.0000
+        25              0.0000
+        30              0.0000
+        40              0.0012
+        50              0.0040
+        75              0.3580
+       100              1.0000
+
+Held out (501-1000): reference flag rate 0.0080; rare_weak flag rate 1.0000
+                    cell datasets flag_rate
+          boundary_small      320     0.000
+           boundary_zero      102     0.000
+ misspecified_correlated      500     0.000
+         misspecified_t5      500     0.000
+               rare_weak      497     1.000
+          regular_shared      500     0.000
+         regular_varying      500     0.000
+     singleton_admixture      500     0.012
+            small_groups      498     1.000
+           three_classes      500     0.022
+           unequal_sizes      500     0.006
+
+Coverage of class means and weights by flag (held out):
+ flagged datasets parameters coverage     mcse
+   FALSE     3902      24879   0.9477 0.001411
+    TRUE     1015       6123   0.7998 0.005114
+
+Declared criteria:
+reference_false_alarm_at_most_2pct rare_weak_detection_at_least_80pct 
+                              TRUE                               TRUE 
+   unflagged_coverage_closer_to_95 
+                              TRUE 
+
+== entropy: threshold 0.8 (flag when below), chosen on replicates 1-500
+Training flag rates in reference cells:
+ threshold reference_flag_rate
+      0.50              0.0000
+      0.55              0.0000
+      0.60              0.0000
+      0.65              0.0000
+      0.70              0.0000
+      0.75              0.0000
+      0.80              0.0076
+      0.85              0.1704
+      0.90              0.5920
+
+Held out (501-1000): reference flag rate 0.0048; rare_weak flag rate 0.7223
+                    cell datasets flag_rate
+          boundary_small      320   0.00000
+           boundary_zero      102   0.00000
+ misspecified_correlated      500   0.00000
+         misspecified_t5      500   0.00000
+               rare_weak      497   0.72233
+          regular_shared      500   0.00000
+         regular_varying      500   0.00000
+     singleton_admixture      500   0.01800
+            small_groups      498   0.00602
+           three_classes      500   0.00600
+           unequal_sizes      500   0.00000
+
+Coverage of class means and weights by flag (held out):
+ flagged datasets parameters coverage     mcse
+   FALSE     4543      28749   0.9406 0.001394
+    TRUE      374       2253   0.6360 0.010137
+
+Declared criteria:
+reference_false_alarm_at_most_2pct rare_weak_detection_at_least_80pct 
+                              TRUE                              FALSE 
+   unflagged_coverage_closer_to_95 
+                              TRUE 
+
+== avepp: threshold 0.85 (flag when below), chosen on replicates 1-500
+Training flag rates in reference cells:
+ threshold reference_flag_rate
+      0.60              0.0000
+      0.65              0.0000
+      0.70              0.0000
+      0.75              0.0000
+      0.80              0.0004
+      0.85              0.0004
+      0.90              0.0556
+      0.95              0.2972
+
+Held out (501-1000): reference flag rate 0.0004; rare_weak flag rate 0.8813
+                    cell datasets flag_rate
+          boundary_small      320     0.000
+           boundary_zero      102     0.000
+ misspecified_correlated      500     0.000
+         misspecified_t5      500     0.000
+               rare_weak      497     0.881
+          regular_shared      500     0.000
+         regular_varying      500     0.000
+     singleton_admixture      500     0.000
+            small_groups      498     0.000
+           three_classes      500     0.002
+           unequal_sizes      500     0.000
+
+Coverage of class means and weights by flag (held out):
+ flagged datasets parameters coverage     mcse
+   FALSE     4478      28365   0.9398 0.001412
+    TRUE      439       2637   0.6890 0.009014
+
+Declared criteria:
+reference_false_alarm_at_most_2pct rare_weak_detection_at_least_80pct 
+                              TRUE                               TRUE 
+   unflagged_coverage_closer_to_95 
+                              TRUE 
+

@@ -69,6 +69,14 @@
     as.numeric(rowsum(conditional[[group_type]]$log_marginal,
                       group_index, reorder = FALSE))
   }, numeric(max(group_index))), nrow = max(group_index), ncol = n_types)
+  # The full cross-level family adds a group-level measurement density per
+  # group class (manifest group means as between indicators); absent, nothing
+  # changes.
+  if (!is.null(parameters$group_log_density)) {
+    stopifnot("group_log_density must be groups x group classes" =
+                identical(dim(parameters$group_log_density), dim(group_scores)))
+    group_scores <- group_scores + parameters$group_log_density
+  }
   group_offset <- .multilpa_row_max(group_scores)
   group_scores <- sweep(sweep(group_scores, 1L, group_offset, "-"), 2L,
                         log(parameters$group_probabilities), "+")
@@ -997,6 +1005,59 @@
 #'   be complete (`latents_bad_data`).
 #' @param covariance_model `"diagonal"` assumes conditional independence;
 #'   `"full"` estimates within-profile residual covariances.
+#' @param family The model family. `"profiles"`, the default, is the model
+#'   described above: individual profiles whose prevalences differ across
+#'   group classes. The other three are group-class-only families with no
+#'   individual profiles (Houle, Morin & Harvey, 2026): each group has a
+#'   Gaussian intercept per indicator, drawn from its group class's
+#'   distribution, and its members vary around it.
+#'   * `"additive"`: group classes differ in their means (and, optionally, in
+#'     between-group variances); one within-group variance per indicator is
+#'     shared by every class.
+#'   * `"dispersion"`: group classes differ in their within-group variances;
+#'     means and between-group variances are shared.
+#'   * `"additive_dispersion"`: group classes differ in means and in
+#'     within-group variances.
+#'
+#'   These families take only `data`, `vars`, `id`, `n_group_classes`,
+#'   `between_variance`, `n_starts`, `max_iter`, `tol`, `min_variance` and
+#'   `seed`; any other argument is refused with `latents_bad_argument`.
+#'   Indicators must be complete and continuous, and at least one group must
+#'   have more than one row (`latents_unidentified` otherwise). Between
+#'   variances estimated at zero are reached by a boundary maximization with a
+#'   Karush-Kuhn-Tucker check and flagged (`latents_boundary`); interior fits
+#'   are finished by Newton steps. The result has class `multilpa_additive`;
+#'   `bic` uses the number of groups and `bic_individual` the number of rows.
+#'   Read it with [get_results.multilpa_additive()]; `summary()`, `plot()`,
+#'   `coef()`, `vcov()`, `confint()` and [parameter_inference()] work on it.
+#'   These families are experimental: enumeration over families, bootstrap
+#'   inference, missing data and covariates are not yet available. See
+#'   `vignette("additive")`.
+#'
+#'   Two cross-level families estimate individual profiles and group classes
+#'   from the same indicators, following the manifest-aggregation
+#'   specification of Houle et al. (2026, supplement): each group's means of
+#'   the indicators are between-level indicators of its group class, with
+#'   class-specific means and variances.
+#'   * `"restricted_cross_level"`: profile prevalences are the same in every
+#'     group class, so profiles and group classes are estimated separately;
+#'     the profile composition of each class is reported descriptively.
+#'   * `"full_cross_level"`: profile prevalences differ across group classes
+#'     (as in `"profiles"`), and the group means also inform the classes.
+#'
+#'   These take `data`, `vars`, `id`, `n_profiles`, `n_group_classes`,
+#'   `variance_model` (individual profiles), `between_variance` (group
+#'   classes), `n_starts`, `max_iter`, `tol`, `min_variance` and `seed`. The
+#'   group means are computed from the same ratings, so the likelihood is the
+#'   specification's working likelihood: comparable between cross-level fits
+#'   of the same data, not with the other families. Standard errors are not
+#'   available (`latents_unsupported_inference`). The result has class
+#'   `multilpa_cross_level`, read with [get_results.multilpa_cross_level()].
+#' @param between_variance For the additive and additive-dispersion families:
+#'   `"varying"` (the default) estimates between-group variances per group
+#'   class, `"equal"` one set shared by all classes. The dispersion family
+#'   holds them equal; `"varying"` is refused there. For the cross-level
+#'   families, the variances of the group means within each group class.
 #' @return An `multilpa` object containing `means`, `variances`, optional
 #'   `covariances` (indicators by indicators by profiles),
 #'   `profile_probabilities`, `group_probabilities`, posterior matrices,
@@ -1034,6 +1095,10 @@
 #'   Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 #'   non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.
 #'
+#'   Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
+#'   profile analyses: A comprehensive guide. Organizational Research Methods.
+#'   doi:10.1177/10944281261469432.
+#'
 #'   Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
 #'   mixture estimation and model-based clustering. Journal of
 #'   Classification, 24, 155--181. doi:10.1007/s00357-007-0004-5.
@@ -1067,7 +1132,56 @@ multilpa <- function(data, vars, id, n_profiles,
                        model = NULL,
                        select_start = c("likelihood", "converged"),
                        prior = NULL, noise = FALSE,
-                       acceleration = c("squarem", "none")) {
+                       acceleration = c("squarem", "none"),
+                       family = c("profiles", "additive", "dispersion",
+                                  "additive_dispersion", "restricted_cross_level",
+                                  "full_cross_level"),
+                       between_variance = c("varying", "equal")) {
+  family <- match.arg(family)
+  if (family %in% c("restricted_cross_level", "full_cross_level")) {
+    supplied <- setdiff(names(match.call())[-1L], .cross_level_arguments())
+    if (length(supplied) > 0L || missing(id) || is.null(id) || missing(n_profiles)) {
+      stop(errorCondition(sprintf(paste(
+        "`family = \"%s\"` needs `id` and `n_profiles`; it takes %s.%s"), family,
+        paste(sprintf("`%s`", setdiff(.cross_level_arguments(), "family")),
+              collapse = ", "),
+        if (length(supplied) > 0L) sprintf(" Not applicable: %s.",
+          paste(sprintf("`%s`", supplied), collapse = ", ")) else ""),
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(.cross_level_fit(data, vars, id, n_profiles, n_group_classes, family,
+                            match.arg(variance_model),
+                            if (missing(between_variance)) "varying" else
+                              match.arg(between_variance),
+                            n_starts, max_iter, tol, min_variance, seed,
+                            match.call()))
+  }
+  if (!identical(family, "profiles")) {
+    # Group-class families have no individual profiles, so most arguments
+    # have no meaning for them; refuse those rather than ignore them.
+    supplied <- setdiff(names(match.call())[-1L], .additive_arguments())
+    if (length(supplied) > 0L || missing(id) || is.null(id)) {
+      stop(errorCondition(sprintf(paste(
+        "`family = \"%s\"` has group classes only and needs `id`; it takes",
+        "%s.%s"), family,
+        paste(sprintf("`%s`", setdiff(.additive_arguments(), "family")),
+              collapse = ", "),
+        if (length(supplied) > 0L) sprintf(" Not applicable: %s.",
+          paste(sprintf("`%s`", supplied), collapse = ", ")) else ""),
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(.additive_fit(data, vars, id, n_group_classes,
+                         if (missing(between_variance)) NULL else
+                           match.arg(between_variance),
+                         n_starts, max_iter, tol, min_variance, seed,
+                         match.call(), family = family))
+  }
+  if (!missing(between_variance)) {
+    stop(errorCondition(paste(
+      "`between_variance` belongs to the group-class families",
+      "(`family = \"additive\"`); the profile model does not have it."),
+      class = "latents_bad_argument", call = NULL))
+  }
   select_start <- match.arg(select_start)
   acceleration <- match.arg(acceleration)
   ## Before `stopifnot()`, which reads `id` and would otherwise force the

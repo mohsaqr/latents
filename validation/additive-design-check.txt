@@ -1,0 +1,35 @@
+List of 2
+ $ : num [1, 1:2] -0.707 -1.363
+ $ : num [1:2, 1:2] -1.475 -2.587 1.118 -0.129
+            [,1]       [,2]
+[1,] -1.26247772  0.1649535
+[2,] -0.01741427 -2.2983620
+[3,] -2.22881138  0.8603353
+[4,] -0.03705854  0.2066691
+[5,]  0.20835819  0.3856884
+[6,]  0.24943107 -0.5913790
+$groups
+[1] 12
+
+$rows
+[1] 50
+
+$parameters
+[1] "means"   "between" "within"  "weights"
+
+$class
+[1] "list"
+
+                  check absolute_error
+1  compact versus dense   7.105427e-15
+2 numerical integration   3.552714e-15
+3   conditional moments   1.332268e-15
+4     class permutation   0.000000e+00
+5       row permutation   0.000000e+00
+6 zero between variance   3.552714e-14
+7       singleton ridge   0.000000e+00
+8 balanced interior MLE   0.000000e+00
+9 balanced boundary MLE   3.552714e-14
+Interior EM log-likelihood increment: 5.2448744158
+All additive design checks passed; recovery and coverage remain untested.
+Runtime: R version 4.5.2 (2025-10-31); synthetic seed: 20260930

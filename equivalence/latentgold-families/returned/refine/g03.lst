@@ -1,0 +1,168 @@
+g03.dat
+File name:	g03.dat	
+File size:	28331 bytes  1046 records	
+File date:	2026-Oct-01 10:52:04 AM	
+Syntax:	g03.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+g03	F1  2-GClass	-1618.3231	3271.4098	3246.6462	3251.6462	5	.	.	
+g03 - LL = -1618.3231
+F1  2-GClass Syntax Model	
+					
+Number of groups	150				
+Number of cases	1046				
+Number of parameters (Npar)	5				
+Activated Constraints	0				
+Random Seed	20261001				
+Best Start Seed	1246973				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1618.3231				
+Log-prior	0.0000				
+Log-posterior	-1618.3231				
+BIC (based on LL)	3271.4098				
+AIC (based on LL)	3246.6462				
+AIC3 (based on LL)	3251.6462				
+CAIC (based on LL)	3276.4098				
+SABIC (based on LL)	3255.5291				
+BIC (based on LL,Ngroups)	3261.6994				
+CAIC (based on LL,Ngroups)	3266.6994				
+SABIC (based on LL,Ngroups)	3245.8753				
+					
+					
+Classification Statistics	F1	GClass			
+Classification errors		0.1005			
+Reduction of errors (Lambda)		0.7709			
+Entropy R-squared		0.6574			
+Standard R-squared	0.6714	0.7067			
+Classification log-likelihood	-1941.6944				
+Entropy	323.3713				
+CLC	3883.3889				
+AWE	3967.9162				
+ICL-BIC	3918.1525				
+					
+GClass  Classification Table	Modal				
+Latent	1	2	Total		
+1	73.0669	11.1405	84.2074		
+2	3.9331	61.8595	65.7926		
+Total	77.0000	73.0000	150.0000		
+					
+GClass  Classification Table	Proportional				
+Latent	1	2	Total		
+1	73.3738	10.8336	84.2074		
+2	10.8336	54.9591	65.7926		
+Total	84.2074	65.7926	150.0000		
+					
+Files					
+Infile	C:\lgfamilies\refine\..\g03.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261001				
+sets	20				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	100				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	    1046				
+predictionstatistics	no				
+outfile					
+file name	g03_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Group ID	g	150			
+Latent					
+F1	Continuous	Group	100		
+GClass	Nominal	Group	2		
+ 					
+Dependent					
+y1	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261001 sets=20 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   quadrature nodes=100;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+   outfile 'g03_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent y1 continuous;
+   latent
+      GClass group nominal 2,
+      F1 group continuous;
+equations
+   GClass <- 1;
+   F1;
+   y1 <- 1 + (1) F1;
+   y1 | GClass;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+GClass(1)	<-	1			0.0000	.	.	.	1.3722	1	0.24				
+GClass(2)	<-	1			-0.2468	0.2107	-1.1714	0.24							
+															
+y1	<-	1			0.5265	0.0589	8.9398	3.9e-19	79.9208	1	3.9e-19				
+y1	<-	F1			1.0000	.	.	.							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+F1		(chol) 			0.5906	0.0503	11.7349	8.4e-32	137.7070	1	8.4e-32				
+y1			|	GClass(1)	1.8841	0.1333	14.1352	2.3e-45	267.6720	2	7.5e-59	132.0913	1	1.4e-30	
+y1			|	GClass(2)	0.3796	0.0349	10.8821	1.4e-27							
+	
+Variances / Covariances continuous latent	
+term	coef	s.e.	z-value	p-value							
+F1					0.3488	0.0595	5.8674	4.4e-9							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+GClass	<-	1			GClass	1	2	1.3722	1	0.24	
+Variances	
+y1			|	GClass	GClass	1	2	132.0913	1	1.4e-30	
+Profile
+ 	GClass	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5614	0.0519	0.4386	0.0519	 	 	
+y1	 	
+Mean	0.5265	0.0589	0.5265	0.0589	0.5265	0.0589	
+EstimatedValues-Model
+ 	GClass	
+ 	1	s.e.	2	s.e.	
+ 	0.5614	.	0.4386	.	
+	
+ 	y1	
+GClass	Mean	s.e.	 	 	
+1	0.5265	0.0589	 	 	
+2	0.5265	0.0589	 	 	

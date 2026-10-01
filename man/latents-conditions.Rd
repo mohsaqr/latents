@@ -235,6 +235,11 @@ beyond roundoff. This indicates a defect and should be reported.}
 not valid at that parameter.}
 \item{\code{latents_small_classes}}{A profile or group class has effective
 membership below one, so it is supported by less than one observation.}
+\item{\code{latents_weak_class}}{\code{multilpa(family = "additive")} only: a
+group class is supported by fewer than 50 effective groups (see
+\code{effective_groups} in \code{\link[=get_results.multilpa_additive]{get_results.multilpa_additive()}}), because it is
+small, poorly separated, or both. Standard errors are still reported,
+but intervals for class means and weights can be miscalibrated.}
 \item{\code{latents_failed_replicates}}{Some bootstrap replicates failed
 validation, so the bootstrap p-value is \code{NA}.}
 \item{\code{latents_single_level}}{A message, not a warning: \code{id = NULL} was

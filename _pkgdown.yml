@@ -40,6 +40,9 @@ reference:
   - starts_with("parameter_inference")
   - pool_imputations
   - get_results.latents_pooled
+  - get_results.multilpa_additive
+  - get_results.multilpa_cross_level
+  - get_results.latents_family_enumeration
 
 - title: Mixture regression
   desc: Regressions whose coefficients differ across latent classes, at one or
@@ -98,6 +101,7 @@ articles:
   contents:
   - workflow-lpa
   - workflow-lca
+  - additive
   - lpa
   - evaluation
   - covariates

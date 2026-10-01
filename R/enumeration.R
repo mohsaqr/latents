@@ -32,7 +32,18 @@
 #'   to cross. A structure set through `variance_model`, `covariance_model`,
 #'   `volume`, `shape` or `orientation` replaces the default.
 #' @param seed Optional reproducible seed for each fit.
-#' @param ... Further arguments to [multilpa()].
+#' @param family `"profiles"` (the default) enumerates the profile model over
+#'   `n_profiles`, `n_group_classes` and `model`. One or more of the
+#'   group-class families `"additive"`, `"dispersion"` and
+#'   `"additive_dispersion"` enumerates those instead, over `family`,
+#'   `n_group_classes` and `between_variance`; `n_profiles` and `model` are
+#'   then refused, and the result is a `latents_family_enumeration` read with
+#'   [get_results.latents_family_enumeration()] and [candidate_fit()].
+#' @param between_variance For group-class families: the between-variance
+#'   restrictions to cross, `"varying"`, `"equal"` or both (the default). The
+#'   dispersion family is always fitted with `"equal"`.
+#' @param ... Further arguments to [multilpa()]; for group-class families only
+#'   `n_starts`, `max_iter`, `tol` and `min_variance`.
 #' @return An object of class `multilpa_enumeration`. Read it with the verbs
 #'   that describe it rather than by reaching into it: [as.data.frame()] gives
 #'   one row per candidate model with every criterion and diagnostic,
@@ -65,10 +76,28 @@
 #' @export
 enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                               n_group_classes = 1:3, model = "basic",
-                              seed = NULL, ...) {
+                              seed = NULL, family = "profiles",
+                              between_variance = c("varying", "equal"), ...) {
   if (missing(id)) {
     .multilpa_missing_id("enumerate_classes",
                          "`enumerate_lpa()` or `enumerate_lca()`")
+  }
+  if (!identical(family, "profiles")) {
+    # Group-class families have no individual profiles and no covariance
+    # structure codes; they are enumerated over family and class count.
+    if (!missing(n_profiles) || !missing(model) || is.null(id)) {
+      stop(errorCondition(paste(
+        "Group-class families take `id`, `family`, `n_group_classes` and",
+        "`between_variance`; `n_profiles` and `model` belong to the profile model."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(.additive_enumerate(data, vars, id, family, n_group_classes,
+                               between_variance, seed, list(...), match.call()))
+  }
+  if (!missing(between_variance)) {
+    stop(errorCondition(
+      "`between_variance` belongs to the group-class families (`family = `).",
+      class = "latents_bad_argument", call = NULL))
   }
   model_given <- !missing(model)
   single_level <- is.null(id)
@@ -260,6 +289,24 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' @export
 candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
                           model = NULL) {
+  if (inherits(x, "latents_family_enumeration")) {
+    at <- which(x$table$n_group_classes == n_group_classes &
+                  (is.null(model) | x$table$model %in% (model %||% "")))
+    if (length(at) != 1L) {
+      stop(errorCondition(sprintf(paste(
+        "%d candidates have %d group classes%s; name one with `model`, one of %s."),
+        length(at), as.integer(n_group_classes),
+        if (is.null(model)) "" else sprintf(" and model %s", model),
+        paste(sprintf("\"%s\"", unique(x$table$model)), collapse = ", ")),
+        class = "latents_unknown_candidate", call = NULL))
+    }
+    if (is.null(x$fits[[at]])) {
+      stop(errorCondition(sprintf("That candidate could not be fitted: %s",
+                                  x$table$error[at]),
+                          class = "latents_failed_candidate", call = NULL))
+    }
+    return(x$fits[[at]])
+  }
   stopifnot(
     "`x` must be an `multilpa_enumeration` result" =
       inherits(x, "multilpa_enumeration"),
@@ -876,6 +923,11 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
+  if (inherits(null_model, "multilpa_additive") ||
+      inherits(alternative_model, "multilpa_additive")) {
+    return(.additive_bootstrap_lrt(null_model, alternative_model, data, iter,
+                                   n_starts, max_iter, tol, seed, match.call()))
+  }
   covariate_family <- inherits(null_model, "multilpa_covariates")
   stopifnot(
     "both models must be multilpa() fits of one family, with or without membership covariates" =
@@ -1149,14 +1201,19 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
   cat(sprintf("Parametric bootstrap likelihood-ratio comparison\n"))
   count <- function(n, word) sprintf("%d %s%s", n, word, if (n == 1L) "" else
     if (endsWith(word, "s")) "es" else "s")
-  model <- function(profiles, group_classes) {
+  model <- function(profiles, group_classes, family) {
+    # A group-class family has no profiles; name the family instead.
+    if (!is.null(family) && !identical(family, "profiles")) {
+      return(paste0(family, ", ", count(group_classes, "group class")))
+    }
     paste0(count(profiles, "profile"),
            if (x$null_group_classes == 1L && x$alternative_group_classes == 1L) ""
            else paste0(", ", count(group_classes, "group class")))
   }
   cat(sprintf("Null: %s; alternative: %s\n",
-              model(x$null_profiles, x$null_group_classes),
-              model(x$alternative_profiles, x$alternative_group_classes)))
+              model(x$null_profiles, x$null_group_classes, x$null_family),
+              model(x$alternative_profiles, x$alternative_group_classes,
+                    x$alternative_family)))
   cat(sprintf("Observed statistic: %.6f\n", x$statistic))
   cat(sprintf("p-value: %s (Monte Carlo SE %s) from %d of %d valid replicates\n",
               format(x$p_value, digits = 4L), format(x$monte_carlo_se, digits = 3L),
@@ -1227,6 +1284,8 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
              # the conditional p-value is conditional on.
              fixed = if (length(x$fixed %||% character()) == 0L) NA_character_
                else paste(x$fixed, collapse = ", "),
+             null_family = x$null_family %||% "profiles",
+             alternative_family = x$alternative_family %||% "profiles",
              row.names = NULL, stringsAsFactors = FALSE)
 }
 

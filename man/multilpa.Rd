@@ -34,7 +34,10 @@ multilpa(
   select_start = c("likelihood", "converged"),
   prior = NULL,
   noise = FALSE,
-  acceleration = c("squarem", "none")
+  acceleration = c("squarem", "none"),
+  family = c("profiles", "additive", "dispersion", "additive_dispersion",
+    "restricted_cross_level", "full_cross_level"),
+  between_variance = c("varying", "equal")
 )
 }
 \arguments{
@@ -318,6 +321,65 @@ closed form, each EM iteration takes a fixed number of warm-started
 orientation steps rather than solving it (a generalized EM step), under
 either setting; this keeps every iteration monotone and makes the EM map
 a fixed function, which SQUAREM requires.}
+
+\item{family}{The model family. \code{"profiles"}, the default, is the model
+described above: individual profiles whose prevalences differ across
+group classes. The other three are group-class-only families with no
+individual profiles (Houle, Morin & Harvey, 2026): each group has a
+Gaussian intercept per indicator, drawn from its group class's
+distribution, and its members vary around it.
+\itemize{
+\item \code{"additive"}: group classes differ in their means (and, optionally, in
+between-group variances); one within-group variance per indicator is
+shared by every class.
+\item \code{"dispersion"}: group classes differ in their within-group variances;
+means and between-group variances are shared.
+\item \code{"additive_dispersion"}: group classes differ in means and in
+within-group variances.
+}
+
+These families take only \code{data}, \code{vars}, \code{id}, \code{n_group_classes},
+\code{between_variance}, \code{n_starts}, \code{max_iter}, \code{tol}, \code{min_variance} and
+\code{seed}; any other argument is refused with \code{latents_bad_argument}.
+Indicators must be complete and continuous, and at least one group must
+have more than one row (\code{latents_unidentified} otherwise). Between
+variances estimated at zero are reached by a boundary maximization with a
+Karush-Kuhn-Tucker check and flagged (\code{latents_boundary}); interior fits
+are finished by Newton steps. The result has class \code{multilpa_additive};
+\code{bic} uses the number of groups and \code{bic_individual} the number of rows.
+Read it with \code{\link[=get_results.multilpa_additive]{get_results.multilpa_additive()}}; \code{summary()}, \code{plot()},
+\code{coef()}, \code{vcov()}, \code{confint()} and \code{\link[=parameter_inference]{parameter_inference()}} work on it.
+These families are experimental: enumeration over families, bootstrap
+inference, missing data and covariates are not yet available. See
+\code{vignette("additive")}.
+
+Two cross-level families estimate individual profiles and group classes
+from the same indicators, following the manifest-aggregation
+specification of Houle et al. (2026, supplement): each group's means of
+the indicators are between-level indicators of its group class, with
+class-specific means and variances.
+\itemize{
+\item \code{"restricted_cross_level"}: profile prevalences are the same in every
+group class, so profiles and group classes are estimated separately;
+the profile composition of each class is reported descriptively.
+\item \code{"full_cross_level"}: profile prevalences differ across group classes
+(as in \code{"profiles"}), and the group means also inform the classes.
+}
+
+These take \code{data}, \code{vars}, \code{id}, \code{n_profiles}, \code{n_group_classes},
+\code{variance_model} (individual profiles), \code{between_variance} (group
+classes), \code{n_starts}, \code{max_iter}, \code{tol}, \code{min_variance} and \code{seed}. The
+group means are computed from the same ratings, so the likelihood is the
+specification's working likelihood: comparable between cross-level fits
+of the same data, not with the other families. Standard errors are not
+available (\code{latents_unsupported_inference}). The result has class
+\code{multilpa_cross_level}, read with \code{\link[=get_results.multilpa_cross_level]{get_results.multilpa_cross_level()}}.}
+
+\item{between_variance}{For the additive and additive-dispersion families:
+\code{"varying"} (the default) estimates between-group variances per group
+class, \code{"equal"} one set shared by all classes. The dispersion family
+holds them equal; \code{"varying"} is refused there. For the cross-level
+families, the variances of the group means within each group class.}
 }
 \value{
 An \code{multilpa} object containing \code{means}, \code{variances}, optional
@@ -379,6 +441,10 @@ doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. Biometrics, 49, 803--821. doi:10.2307/2532201.
+
+Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
+profile analyses: A comprehensive guide. Organizational Research Methods.
+doi:10.1177/10944281261469432.
 
 Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
 mixture estimation and model-based clustering. Journal of

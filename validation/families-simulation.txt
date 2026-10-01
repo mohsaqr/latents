@@ -1,0 +1,154 @@
+Families simulation: 1000 datasets per cell, 3.7 minutes; R version 4.5.2 (2025-10-31)
+
+                        cell attempted errors converged boundary
+        dispersion_reference      1000      0      1000        0
+    dispersion_unequal_sizes      1000      0      1000        0
+ additive_dispersion_varying      1000      0      1000        0
+   additive_dispersion_equal      1000      0      1000        0
+ weak_class_warning
+                  0
+                  1
+                  0
+                  0
+
+                        cell               parameter_id truth attempted
+        dispersion_reference     mean.between.shared.y1  0.00      1000
+        dispersion_reference     mean.between.shared.y2  0.00      1000
+        dispersion_reference       variance.within.1.y1  0.50      1000
+        dispersion_reference       variance.within.1.y2  0.50      1000
+        dispersion_reference       variance.within.2.y1  2.00      1000
+        dispersion_reference       variance.within.2.y2  2.00      1000
+        dispersion_reference variance.between.shared.y1  0.40      1000
+        dispersion_reference variance.between.shared.y2  0.40      1000
+        dispersion_reference    weight.group_class.1.NA  0.50      1000
+        dispersion_reference    weight.group_class.2.NA  0.50      1000
+    dispersion_unequal_sizes     mean.between.shared.y1  0.00      1000
+    dispersion_unequal_sizes     mean.between.shared.y2  0.00      1000
+    dispersion_unequal_sizes       variance.within.1.y1  0.50      1000
+    dispersion_unequal_sizes       variance.within.1.y2  0.50      1000
+    dispersion_unequal_sizes       variance.within.2.y1  2.00      1000
+    dispersion_unequal_sizes       variance.within.2.y2  2.00      1000
+    dispersion_unequal_sizes variance.between.shared.y1  0.40      1000
+    dispersion_unequal_sizes variance.between.shared.y2  0.40      1000
+    dispersion_unequal_sizes    weight.group_class.1.NA  0.50      1000
+    dispersion_unequal_sizes    weight.group_class.2.NA  0.50      1000
+ additive_dispersion_varying          mean.between.1.y1 -1.00      1000
+ additive_dispersion_varying          mean.between.1.y2 -1.00      1000
+ additive_dispersion_varying          mean.between.2.y1  1.00      1000
+ additive_dispersion_varying          mean.between.2.y2  1.00      1000
+ additive_dispersion_varying       variance.within.1.y1  0.60      1000
+ additive_dispersion_varying       variance.within.1.y2  0.80      1000
+ additive_dispersion_varying       variance.within.2.y1  1.50      1000
+ additive_dispersion_varying       variance.within.2.y2  1.20      1000
+ additive_dispersion_varying      variance.between.1.y1  0.25      1000
+ additive_dispersion_varying      variance.between.1.y2  0.50      1000
+ additive_dispersion_varying      variance.between.2.y1  0.50      1000
+ additive_dispersion_varying      variance.between.2.y2  0.25      1000
+ additive_dispersion_varying    weight.group_class.1.NA  0.50      1000
+ additive_dispersion_varying    weight.group_class.2.NA  0.50      1000
+   additive_dispersion_equal          mean.between.1.y1 -1.00      1000
+   additive_dispersion_equal          mean.between.1.y2 -1.00      1000
+   additive_dispersion_equal          mean.between.2.y1  1.00      1000
+   additive_dispersion_equal          mean.between.2.y2  1.00      1000
+   additive_dispersion_equal       variance.within.1.y1  0.60      1000
+   additive_dispersion_equal       variance.within.1.y2  0.80      1000
+   additive_dispersion_equal       variance.within.2.y1  1.50      1000
+   additive_dispersion_equal       variance.within.2.y2  1.20      1000
+   additive_dispersion_equal variance.between.shared.y1  0.40      1000
+   additive_dispersion_equal variance.between.shared.y2  0.40      1000
+   additive_dispersion_equal    weight.group_class.1.NA  0.50      1000
+   additive_dispersion_equal    weight.group_class.2.NA  0.50      1000
+ availability bias_over_sd se_ratio_observed coverage_observed se_ratio_robust
+            1     -0.05391             1.014             0.958           1.014
+            1     -0.01706             1.042             0.953           1.042
+            1     -0.02669             1.028             0.964           1.020
+            1     -0.02276             1.007             0.955           1.007
+            1     -0.00520             0.980             0.937           0.973
+            1      0.06016             0.997             0.962           0.988
+            1     -0.06446             1.009             0.950           0.998
+            1     -0.02094             0.974             0.945           0.961
+            1     -0.01986             1.026             0.952           1.027
+            1      0.01986             1.026             0.952           1.027
+            1      0.06286             0.964             0.949           0.965
+            1      0.05182             0.983             0.940           0.983
+            1      0.02547             0.945             0.938           0.934
+            1      0.05334             0.981             0.941           0.969
+            1      0.09967             0.980             0.944           0.964
+            1      0.03578             0.964             0.939           0.951
+            1     -0.09721             0.997             0.950           0.984
+            1     -0.06292             0.985             0.951           0.973
+            1     -0.00216             1.022             0.960           1.023
+            1      0.00216             1.022             0.960           1.023
+            1      0.00883             0.992             0.933           0.997
+            1     -0.00249             0.991             0.945           0.999
+            1     -0.00860             0.991             0.946           0.997
+            1      0.02558             0.991             0.945           0.995
+            1     -0.05809             0.997             0.956           0.993
+            1      0.00729             1.002             0.957           0.997
+            1      0.01735             1.026             0.958           1.021
+            1      0.01470             0.983             0.947           0.973
+            1     -0.04851             1.030             0.960           1.014
+            1     -0.04819             0.995             0.949           0.990
+            1     -0.07867             0.972             0.945           0.969
+            1     -0.07444             1.032             0.962           1.015
+            1     -0.05065             0.980             0.953           0.982
+            1      0.05065             0.980             0.953           0.982
+            1      0.02679             0.999             0.945           1.002
+            1      0.04604             1.010             0.951           1.014
+            1     -0.02304             0.989             0.943           0.990
+            1      0.04565             0.967             0.946           0.967
+            1     -0.04322             0.956             0.931           0.948
+            1     -0.00892             0.969             0.943           0.963
+            1      0.04021             1.008             0.948           1.002
+            1     -0.00685             0.993             0.945           0.984
+            1     -0.09960             0.967             0.937           0.957
+            1     -0.10276             0.977             0.941           0.974
+            1      0.07127             1.006             0.959           1.007
+            1     -0.07127             1.006             0.959           1.007
+ coverage_robust meets_release
+           0.958          TRUE
+           0.953          TRUE
+           0.958          TRUE
+           0.955          TRUE
+           0.936          TRUE
+           0.950          TRUE
+           0.951          TRUE
+           0.937          TRUE
+           0.953          TRUE
+           0.953          TRUE
+           0.951          TRUE
+           0.939          TRUE
+           0.928          TRUE
+           0.934          TRUE
+           0.942          TRUE
+           0.933          TRUE
+           0.938          TRUE
+           0.931          TRUE
+           0.960          TRUE
+           0.960          TRUE
+           0.934          TRUE
+           0.947          TRUE
+           0.947          TRUE
+           0.945          TRUE
+           0.950          TRUE
+           0.960          TRUE
+           0.953          TRUE
+           0.939          TRUE
+           0.947          TRUE
+           0.940          TRUE
+           0.939          TRUE
+           0.955          TRUE
+           0.953          TRUE
+           0.953          TRUE
+           0.947          TRUE
+           0.951          TRUE
+           0.941          TRUE
+           0.946          TRUE
+           0.926          TRUE
+           0.937          TRUE
+           0.949          TRUE
+           0.943          TRUE
+           0.935          TRUE
+           0.935         FALSE
+           0.959          TRUE
+           0.959          TRUE

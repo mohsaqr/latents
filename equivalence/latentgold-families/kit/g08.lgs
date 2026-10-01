@@ -1,0 +1,35 @@
+//LG6.1//
+version = 6.1
+infile 'g08.dat'
+
+model
+title 'g08';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261001 sets=20 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   quadrature nodes=15;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile estimatedvalues=model;
+   outfile 'g08_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent y1 continuous, y2 continuous;
+   latent
+      GClass group nominal 2,
+      F1 group continuous,
+      F2 group continuous;
+equations
+   GClass <- 1;
+   F1;
+   F2;
+   y1 <- 1 + (1) F1;
+   y2 <- 1 + (1) F2;
+   y1 | GClass;
+   y2 | GClass;
+end model

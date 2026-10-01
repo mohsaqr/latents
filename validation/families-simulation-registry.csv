@@ -1,0 +1,5 @@
+"cell","family","between_variance","n_groups","sizes","weights","means","between","within","base_seed"
+"dispersion_reference","dispersion","equal",200,"10","0.5/0.5","0,0 | 0,0","0.4,0.4 | 0.4,0.4","0.5,0.5 | 2,2",6000000
+"dispersion_unequal_sizes","dispersion","equal",200,"2/5/10/20","0.5/0.5","0,0 | 0,0","0.4,0.4 | 0.4,0.4","0.5,0.5 | 2,2",7000000
+"additive_dispersion_varying","additive_dispersion","varying",200,"10","0.5/0.5","-1,-1 | 1,1","0.25,0.5 | 0.5,0.25","0.6,0.8 | 1.5,1.2",8000000
+"additive_dispersion_equal","additive_dispersion","equal",200,"10","0.5/0.5","-1,-1 | 1,1","0.4,0.4 | 0.4,0.4","0.6,0.8 | 1.5,1.2",9000000
