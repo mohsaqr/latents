@@ -23,7 +23,7 @@ that differ only in where they start."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,7 +109,11 @@ that differ only in where they start.</p>
 <span>  order <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mover_stayer <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  weights <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ordinal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  count_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"poisson"</span>, <span class="st">"negative_binomial"</span><span class="op">)</span>,</span>
+<span>  count_dispersion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -302,6 +306,14 @@ sampling weight per <code>id</code> (constant over its occasions). As in
 the number of <code>id</code> units, sandwich standard errors by default, and
 integer weights equal to repeating each sequence. A weighted fit uses the
 general transition engine and returns a <code>multilpa_lta</code>.</p></dd>
+
+
+<dt id="arg-ordinal-count-count-model-count-dispersion">ordinal, count, count_model, count_dispersion<a class="anchor" aria-label="anchor" href="#arg-ordinal-count-count-model-count-dispersion"></a></dt>
+<dd><p>Ordinal and count
+indicators, as in <code><a href="multilpa.html">multilpa()</a></code>; with <code>measurement = "occasion"</code> their
+parameters are estimated per occasion. Read them with
+<code>get_results(fit, "ordinal")</code> and <code>get_results(fit, "count_means")</code>. A
+fit with them uses the general transition engine.</p></dd>
 
 </dl></div>
     <div class="section level2">

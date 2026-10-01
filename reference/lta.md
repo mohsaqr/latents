@@ -41,7 +41,11 @@ lta(
   order = 1L,
   model = NULL,
   mover_stayer = FALSE,
-  weights = NULL
+  weights = NULL,
+  ordinal = character(),
+  count = character(),
+  count_model = c("poisson", "negative_binomial"),
+  count_dispersion = c("varying", "equal")
 )
 ```
 
@@ -241,6 +245,15 @@ lta(
   of `id` units, sandwich standard errors by default, and integer
   weights equal to repeating each sequence. A weighted fit uses the
   general transition engine and returns a `multilpa_lta`.
+
+- ordinal, count, count_model, count_dispersion:
+
+  Ordinal and count indicators, as in
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md);
+  with `measurement = "occasion"` their parameters are estimated per
+  occasion. Read them with `get_results(fit, "ordinal")` and
+  `get_results(fit, "count_means")`. A fit with them uses the general
+  transition engine.
 
 ## Value
 

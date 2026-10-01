@@ -17,7 +17,7 @@ missing indicators are available."><meta property="og:image" content="https://pa
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -110,7 +110,9 @@ missing indicators are available.</p>
 <span>  between_variance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ordinal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  count_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"poisson"</span>, <span class="st">"negative_binomial"</span><span class="op">)</span>,</span>
+<span>  count_dispersion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -527,12 +529,27 @@ category probabilities and locations with <code>get_results(fit, "ordinal")</cod
 
 <dt id="arg-count">count<a class="anchor" aria-label="anchor" href="#arg-count"></a></dt>
 <dd><p>Names of indicators in <code>vars</code> holding non-negative whole
-numbers, modelled as Poisson with one mean per profile; read the means
-with <code>get_results(fit, "count_means")</code>. Ordinal and count indicators take
-<code>missing = "fiml"</code>, <code>weights</code>, two-level fits, Wald and bootstrap
-inference, <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>; membership covariates,
-<code>start</code>, <code>fixed</code>, <code>prior</code>, <code>noise</code> and the group-class families do not
-take them yet (<code>latents_unsupported_indicator</code>).</p></dd>
+numbers, modelled as Poisson with one mean per profile (or negative
+binomial, see <code>count_model</code>); read the means with
+<code>get_results(fit, "count_means")</code>. Ordinal and count indicators take
+<code>missing = "fiml"</code>, <code>weights</code>, two-level fits, membership covariates,
+Wald and bootstrap inference, <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> and
+<code><a href="lta.html">lta()</a></code>; <code>start</code>, <code>fixed</code>, <code>prior</code>, <code>noise</code> and the group-class families
+do not take them yet (<code>latents_unsupported_indicator</code>).</p></dd>
+
+
+<dt id="arg-count-model">count_model<a class="anchor" aria-label="anchor" href="#arg-count-model"></a></dt>
+<dd><p><code>"poisson"</code> (the default) or <code>"negative_binomial"</code>: NB2,
+with mean <code>mu</code> and variance <code>mu + alpha mu^2</code>, for counts more variable
+than a Poisson within a profile (Latent GOLD's <code>poisson overdispersed</code>).
+A dispersion estimated at zero is the Poisson limit, a boundary fit
+(<code>latents_boundary</code> warning; Wald inference is refused there).</p></dd>
+
+
+<dt id="arg-count-dispersion">count_dispersion<a class="anchor" aria-label="anchor" href="#arg-count-dispersion"></a></dt>
+<dd><p>For <code>count_model = "negative_binomial"</code>: one
+dispersion per profile (<code>"varying"</code>, the default) or one shared by every
+profile (<code>"equal"</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -46,7 +46,9 @@ multilpa(
   between_variance = c("varying", "equal"),
   weights = NULL,
   ordinal = character(),
-  count = character()
+  count = character(),
+  count_model = c("poisson", "negative_binomial"),
+  count_dispersion = c("varying", "equal")
 )
 ```
 
@@ -530,14 +532,29 @@ multilpa(
 - count:
 
   Names of indicators in `vars` holding non-negative whole numbers,
-  modelled as Poisson with one mean per profile; read the means with
+  modelled as Poisson with one mean per profile (or negative binomial,
+  see `count_model`); read the means with
   `get_results(fit, "count_means")`. Ordinal and count indicators take
-  `missing = "fiml"`, `weights`, two-level fits, Wald and bootstrap
-  inference,
-  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
-  and [`predict()`](https://rdrr.io/r/stats/predict.html); membership
-  covariates, `start`, `fixed`, `prior`, `noise` and the group-class
-  families do not take them yet (`latents_unsupported_indicator`).
+  `missing = "fiml"`, `weights`, two-level fits, membership covariates,
+  Wald and bootstrap inference,
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  [`predict()`](https://rdrr.io/r/stats/predict.html) and
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md); `start`,
+  `fixed`, `prior`, `noise` and the group-class families do not take
+  them yet (`latents_unsupported_indicator`).
+
+- count_model:
+
+  `"poisson"` (the default) or `"negative_binomial"`: NB2, with mean
+  `mu` and variance `mu + alpha mu^2`, for counts more variable than a
+  Poisson within a profile (Latent GOLD's `poisson overdispersed`). A
+  dispersion estimated at zero is the Poisson limit, a boundary fit
+  (`latents_boundary` warning; Wald inference is refused there).
+
+- count_dispersion:
+
+  For `count_model = "negative_binomial"`: one dispersion per profile
+  (`"varying"`, the default) or one shared by every profile (`"equal"`).
 
 ## Value
 

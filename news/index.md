@@ -1,5 +1,31 @@
 # Changelog
 
+## latents 0.9.7
+
+### Ordinal and count indicators everywhere; negative-binomial counts
+
+- Membership covariates (`profile_covariates`, `group_covariates`) and
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) (every
+  extension, invariant or occasion-specific measurement) now take
+  `ordinal` and `count` indicators, with Wald inference, weights and
+  simulation
+  ([`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  for transition fits).
+- `count_model = "negative_binomial"` models counts more variable than a
+  Poisson within a profile (NB2: variance `mu + alpha mu^2`), with
+  `count_dispersion = "varying"` (per profile) or `"equal"` (shared).
+  `get_results(fit, "count_means")` adds the dispersion and its standard
+  error. A dispersion at zero is the Poisson limit: the fit warns
+  (`latents_boundary`) and Wald inference is refused there.
+- Checked against Latent GOLD 6.1 (`poisson overdispersed`),
+  class-varying and shared dispersion: log likelihoods agree to 4e-5 and
+  parameters to its printed precision; seven reference cases in all,
+  stored as a test fixture.
+- The Newton line searches of the membership logits, ordinal and count
+  M-steps accept a step that changes the objective by rounding only,
+  instead of halving it up to forty times at the maximum (30x faster on
+  a negative- binomial fit).
+
 ## latents 0.9.6
 
 ### Bug fix

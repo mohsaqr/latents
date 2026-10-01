@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -397,7 +397,12 @@ profile’s probability of every rating and its location.</p>
 <span><span class="co">#&gt; 7       1     happy        7    3.24e-01     1.86                   0.139</span></span></code></pre></div>
 <p>Indicators holding counts (number of messages sent, of absences) go
 in <code>count</code>: each is Poisson with one mean per profile, read
-with <code>get_results(fit, "count_means")</code>.</p>
+with <code>get_results(fit, "count_means")</code>. Counts more variable
+than a Poisson within a profile take
+<code>count_model = "negative_binomial"</code>, which adds a dispersion
+per profile (or one shared, <code>count_dispersion = "equal"</code>).
+Both types work with membership covariates and in <code><a href="../reference/lta.html">lta()</a></code> as
+well.</p>
 </div>
 <div class="section level2">
 <h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>

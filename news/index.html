@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,17 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.7" id="latents-097">latents 0.9.7<a class="anchor" aria-label="anchor" href="#latents-097"></a></h2>
+<div class="section level3">
+<h3 id="ordinal-and-count-indicators-everywhere-negative-binomial-counts-0-9-7">Ordinal and count indicators everywhere; negative-binomial counts<a class="anchor" aria-label="anchor" href="#ordinal-and-count-indicators-everywhere-negative-binomial-counts-0-9-7"></a></h3>
+<ul><li>Membership covariates (<code>profile_covariates</code>, <code>group_covariates</code>) and <code><a href="../reference/lta.html">lta()</a></code> (every extension, invariant or occasion-specific measurement) now take <code>ordinal</code> and <code>count</code> indicators, with Wald inference, weights and simulation (<code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> for transition fits).</li>
+<li>
+<code>count_model = "negative_binomial"</code> models counts more variable than a Poisson within a profile (NB2: variance <code>mu + alpha mu^2</code>), with <code>count_dispersion = "varying"</code> (per profile) or <code>"equal"</code> (shared). <code>get_results(fit, "count_means")</code> adds the dispersion and its standard error. A dispersion at zero is the Poisson limit: the fit warns (<code>latents_boundary</code>) and Wald inference is refused there.</li>
+<li>Checked against Latent GOLD 6.1 (<code>poisson overdispersed</code>), class-varying and shared dispersion: log likelihoods agree to 4e-5 and parameters to its printed precision; seven reference cases in all, stored as a test fixture.</li>
+<li>The Newton line searches of the membership logits, ordinal and count M-steps accept a step that changes the objective by rounding only, instead of halving it up to forty times at the maximum (30x faster on a negative- binomial fit).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.6" id="latents-096">latents 0.9.6<a class="anchor" aria-label="anchor" href="#latents-096"></a></h2>
 <div class="section level3">
