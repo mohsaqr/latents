@@ -243,6 +243,35 @@ place of returning a number that would be wrong.
   [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
   or a posterior plot — was given a fit that has one.
 
+- `latents_unsupported_structure`:
+
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  was asked for a covariance structure other than EEI, VVI, EEE or VVV
+  together with `profile_covariates` or `group_covariates`, which fit
+  those four only.
+
+- `latents_bad_weights`:
+
+  `weights` does not name a column, or its values are missing, negative,
+  non-finite, vary within a unit, or are positive for fewer than two
+  units.
+
+- `latents_unsupported_weights`:
+
+  A weighted fit was given to a verb or option that does not account for
+  sampling weights:
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  `enumerate_regressions(bootstrap = )`,
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
+  `prior` or `noise`; or a non-sandwich `vcov_type` was asked of one.
+
+- `latents_unsupported_indicator`:
+
+  `ordinal` or `count` indicators were combined with an option that does
+  not take them yet: membership covariates, `start`, `fixed`, `prior` or
+  `noise`.
+
 - `latents_pooling_failed`:
 
   An imputation's fit or inference failed in

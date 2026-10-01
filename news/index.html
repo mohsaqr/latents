@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,16 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.6" id="latents-096">latents 0.9.6<a class="anchor" aria-label="anchor" href="#latents-096"></a></h2>
+<div class="section level3">
+<h3 id="bug-fix-0-9-6">Bug fix<a class="anchor" aria-label="anchor" href="#bug-fix-0-9-6"></a></h3>
+<ul><li>
+<code><a href="../reference/multilpa.html">multilpa()</a></code> with <code>profile_covariates</code> or <code>group_covariates</code> silently fitted any covariance structure other than EEI, VVI, EEE and VVV as one of those four (for example <code>model = "VEI"</code> gave VVI) and did not record the structure. It now refuses them with <code>latents_unsupported_structure</code>; fit the covariate-free model with the structure and use <code><a href="../reference/three_step.html">three_step()</a></code> or <code><a href="../reference/r3step.html">r3step()</a></code>.</li>
+<li>
+<code><a href="../reference/latents-conditions.html">?"latents-conditions"</a></code> documents the condition classes added in 0.9.3–0.9.6.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.5" id="latents-095">latents 0.9.5<a class="anchor" aria-label="anchor" href="#latents-095"></a></h2>
 <div class="section level3">

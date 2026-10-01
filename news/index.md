@@ -1,5 +1,20 @@
 # Changelog
 
+## latents 0.9.6
+
+### Bug fix
+
+- [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  with `profile_covariates` or `group_covariates` silently fitted any
+  covariance structure other than EEI, VVI, EEE and VVV as one of those
+  four (for example `model = "VEI"` gave VVI) and did not record the
+  structure. It now refuses them with `latents_unsupported_structure`;
+  fit the covariate-free model with the structure and use
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+  or [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md).
+- [`?"latents-conditions"`](https://pak.dynasite.org/latents/reference/latents-conditions.md)
+  documents the condition classes added in 0.9.3–0.9.6.
+
 ## latents 0.9.5
 
 ### Ordinal and count indicators
