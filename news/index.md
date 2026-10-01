@@ -1,5 +1,45 @@
 # Changelog
 
+## latents 0.9.1
+
+### Latent transition analysis: beyond homogeneous transitions
+
+- [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) gains
+  arguments that relax each default assumption of the model:
+  - `transition_covariates`: covariates (fixed or changing over
+    occasions) shift the transition probabilities through a multinomial
+    logit per origin profile, the log odds of moving to each other
+    profile rather than staying;
+  - `initial_covariates`: covariates shift the starting profile;
+  - `transitions = "occasion"`: a separate transition matrix for each
+    move;
+  - `measurement = "occasion"`: profile means and variances (or response
+    probabilities) per occasion;
+  - `order = 2`: second-order transitions, the next profile depending on
+    the two previous ones;
+  - `model =`: the fourteen covariance structures (`"VEI"`, `"EEV"`, …)
+    for the homogeneous model, as in
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+- The extensions return a `multilpa_lta` fit with tidy tables
+  (`get_results(fit, "transition_coefficients")`, `"transitions"` per
+  occasion, `"second_order_transitions"`, `"initial_coefficients"`,
+  `"profiles"`, …), Wald standard errors from analytic scores (observed,
+  robust or OPG), [`coef()`](https://rdrr.io/r/stats/coef.html),
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html),
+  [`logLik()`](https://rdrr.io/r/stats/logLik.html),
+  [`nobs()`](https://rdrr.io/r/stats/nobs.html),
+  [`BIC()`](https://rdrr.io/r/stats/AIC.html) and
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html). EM is
+  finished by a quasi-Newton search on the exact likelihood.
+- External agreement, 30 of 30 quantities
+  (`equivalence/lta-extensions/`): Mplus User’s Guide examples 8.13 and
+  8.14 and an Mplus model with occasion-specific thresholds
+  (log-likelihoods within Mplus’s printed precision, estimates within
+  2e-3), depmixS4 covariate transitions (log-likelihood within 1e-7) and
+  LMest time-heterogeneous transitions (within 4e-8). Second-order
+  transitions, which no external program fits, are checked against an
+  exact sum over every profile path.
+
 ## latents 0.9.0
 
 ### Experimental: the Houle et al. (2026) multilevel families

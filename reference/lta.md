@@ -33,7 +33,13 @@ lta(
   categorical = character(),
   min_probability = 1e-10,
   occasions = c("observed", "grid"),
-  select_start = c("likelihood", "converged")
+  select_start = c("likelihood", "converged"),
+  transitions = c("homogeneous", "occasion"),
+  transition_covariates = character(),
+  initial_covariates = character(),
+  measurement = c("invariant", "occasion"),
+  order = 1L,
+  model = NULL
 )
 ```
 
@@ -174,6 +180,49 @@ lta(
   is not. [`summary()`](https://rdrr.io/r/base/summary.html) and
   `get_results(fit, "starts")` show every start either way.
 
+- transitions:
+
+  `"homogeneous"` (the default) uses one transition matrix for every
+  occasion; `"occasion"` estimates a separate one for each move
+  (occasion 1 to 2, 2 to 3, ...).
+
+- transition_covariates:
+
+  Names of columns whose values shift the transition probabilities
+  through a multinomial logit per origin profile: the log odds of moving
+  to each other profile rather than staying. A column may change over
+  occasions; the value at the destination occasion is used. Factors are
+  expanded to indicator columns.
+
+- initial_covariates:
+
+  Names of columns that shift the initial profile distribution (a
+  multinomial logit, reference: the last profile), read at each group's
+  first occasion.
+
+- measurement:
+
+  `"invariant"` (the default) keeps the profiles' means, variances and
+  response probabilities equal across occasions; `"occasion"` estimates
+  them separately at each occasion, so a profile is defined by its
+  position in the sequence of transitions rather than by one fixed
+  measurement model.
+
+- order:
+
+  `1` (the default) or `2`. With `2`, the profile at each occasion from
+  the third on depends on the profiles at the two previous occasions (a
+  second-order Markov chain); the first move stays first order.
+
+- model:
+
+  A covariance structure as
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  takes it (`"EEI"`, `"VVI"`, `"VEI"`, ... ; mclust's codes). Available
+  with homogeneous first-order transitions and invariant measurement;
+  standard errors for structures other than EEI, VVI, EEE and VVV are
+  refused (`latents_unsupported_inference`).
+
 ## Value
 
 A `multilpa_transitions` object containing `means`, `variances`,
@@ -188,6 +237,19 @@ for the tidy transition table and for the other tables. No standard
 errors, likelihood-ratio tests or guarantees of global optimality are
 given for this model family.
 
+With `transitions = "occasion"`, `transition_covariates`,
+`initial_covariates`, `measurement = "occasion"` or `order = 2` the
+result is a `multilpa_lta` object instead, read with
+[`get_results.multilpa_lta()`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md):
+transition and initial logit coefficients with Wald standard errors
+(observed, robust or OPG, from analytic scores), model-implied
+transition probabilities per occasion, profiles per occasion. These need
+complete indicators and diagonal covariances. EM is finished by a
+quasi-Newton search on the exact likelihood. Agreement with Mplus
+(User's Guide examples 8.13, 8.14; occasion-specific thresholds),
+depmixS4 and LMest is recorded in `equivalence/lta-extensions/` of the
+source repository.
+
 ## Details
 
 This is latent transition analysis (LTA); with more than one group class
@@ -196,9 +258,9 @@ trajectories rather than states.
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 is the cross-sectional counterpart.
 
-Transitions are first order and homogeneous over occasions: the
-probability of moving from one profile to another does not depend on the
-occasion or on earlier profiles. Measurement parameters are shared
+By default transitions are first order and homogeneous over occasions:
+the probability of moving from one profile to another does not depend on
+the occasion or on earlier profiles. Measurement parameters are shared
 across occasions and across group classes. A profile that no group
 occupies before its final occasion leaves its transition row without
 information; the row is then uniform by construction rather than

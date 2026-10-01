@@ -1432,6 +1432,8 @@ Three-step analysis with a correction for classification error.
   : Plot a cross-level fit
 - [`plot(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_enumeration.md)
   : Plot a class-enumeration grid
+- [`plot(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_lta.md)
+  : Plot transition probabilities of a general transition fit
 - [`plot(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_transitions.md)
   : Plot a fitted latent transition model
 
@@ -1481,6 +1483,16 @@ Standard generics for fitted models, enumeration grids and summaries.
   [`logLik(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
   [`nobs(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
   : Tables of a cross-level fit
+- [`get_results(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
+  [`as.data.frame(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
+  [`print(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
+  [`summary(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
+  [`coef(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
+  [`vcov(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
+  [`logLik(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
+  [`nobs(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
+  : Tables of a latent transition fit with occasion- or
+  covariate-dependent transitions or occasion-specific measurement
 - [`print(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_mixture_regression.md)
   : Print a mixture-of-regressions fit
 - [`print(`*`<latents_plots>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_plots.md)

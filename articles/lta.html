@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -277,16 +277,77 @@ the estimated transitions, which <code><a href="https://rdrr.io/r/graphics/plot.
 <p><img src="lta_files/figure-html/networks-2.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"><img src="lta_files/figure-html/networks-3.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
+<h2 id="beyond-homogeneous-transitions">Beyond homogeneous transitions<a class="anchor" aria-label="anchor" href="#beyond-homogeneous-transitions"></a>
+</h2>
+<p>Each default assumption of the model can be tested by relaxing it in
+one argument:</p>
+<ul>
+<li>
+<code>transition_covariates</code> lets covariates shift the
+transition probabilities: the log odds of moving to each other profile
+rather than staying. A covariate may change over occasions.</li>
+<li>
+<code>initial_covariates</code> lets covariates shift the starting
+profile.</li>
+<li>
+<code>transitions = "occasion"</code> estimates a separate
+transition matrix for each move.</li>
+<li>
+<code>measurement = "occasion"</code> lets the profiles’ means and
+variances differ by occasion.</li>
+<li>
+<code>order = 2</code> makes the next profile depend on the two
+previous ones.</li>
+</ul>
+<p>Does a student’s grade in the previous course change how likely they
+are to move between engagement profiles? <code>previous_grade</code>
+changes from course to course:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">activity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span>
+<span><span class="va">homogeneous</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                   time <span class="op">=</span> <span class="st">"sequence"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">grade</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>             time <span class="op">=</span> <span class="st">"sequence"</span>, transition_covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
+<span>             seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">grade</span>, <span class="st">"transition_coefficients"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     group_class      from        to           term estimate standard_error statistic  p_value</span></span>
+<span><span class="co">#&gt; 1 group_class_1 profile_1 profile_2    (Intercept)  -1.8398          0.118   -15.566 1.25e-54</span></span>
+<span><span class="co">#&gt; 2 group_class_1 profile_1 profile_2 previous_grade   0.0338          0.121     0.280 7.79e-01</span></span>
+<span><span class="co">#&gt; 3 group_class_1 profile_2 profile_1    (Intercept)  -1.4632          0.130   -11.256 2.17e-29</span></span>
+<span><span class="co">#&gt; 4 group_class_1 profile_2 profile_1 previous_grade   0.0438          0.130     0.337 7.36e-01</span></span>
+<span><span class="co">#&gt;   conf_low conf_high odds_ratio</span></span>
+<span><span class="co">#&gt; 1   -2.071    -1.608      0.159</span></span>
+<span><span class="co">#&gt; 2   -0.203     0.270      1.034</span></span>
+<span><span class="co">#&gt; 3   -1.718    -1.208      0.231</span></span>
+<span><span class="co">#&gt; 4   -0.211     0.298      1.045</span></span></code></pre></div>
+<p>The grade’s odds ratios are close to one and their intervals include
+one: in these data, the previous grade does not change the chance of
+switching profile. A second-order chain, where the next profile depends
+on the two previous ones, does not earn its extra parameters either:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">second</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>              time <span class="op">=</span> <span class="st">"sequence"</span>, order <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">BIC</a></span><span class="op">(</span><span class="va">homogeneous</span>, <span class="va">grade</span>, <span class="va">second</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             df   BIC</span></span>
+<span><span class="co">#&gt; homogeneous 23 16778</span></span>
+<span><span class="co">#&gt; grade       25 16787</span></span>
+<span><span class="co">#&gt; second      27 16786</span></span></code></pre></div>
+<p>These extensions return a fit with transition and initial logit
+coefficients, Wald standard errors and probabilities per occasion; they
+were checked against Mplus, depmixS4 and LMest.</p>
+</div>
+<div class="section level2">
 <h2 id="assumptions">Assumptions<a class="anchor" aria-label="anchor" href="#assumptions"></a>
 </h2>
 <ul>
-<li>The next profile depends only on the current profile and the group
-class, and transition probabilities are the same at every occasion.</li>
-<li>Profiles have the same definition at every occasion.</li>
+<li>By default the next profile depends only on the current profile and
+the group class, and transition probabilities are the same at every
+occasion; the arguments above relax each of these.</li>
+<li>Profiles have the same definition at every occasion unless
+<code>measurement = "occasion"</code>.</li>
 <li>Indicators are independent within a profile (the default diagonal
-covariance; <code>covariance_model = "full"</code> relaxes it).</li>
-<li>Standard errors, likelihood-ratio tests and class enumeration are
-not available for this model.</li>
+covariance; <code>covariance_model = "full"</code> or
+<code>model =</code> relaxes it).</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

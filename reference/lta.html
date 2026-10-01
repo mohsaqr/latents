@@ -23,7 +23,7 @@ that differ only in where they start."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,7 +101,13 @@ that differ only in where they start.</p>
 <span>  categorical <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  min_probability <span class="op">=</span> <span class="fl">1e-10</span>,</span>
 <span>  occasions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"grid"</span><span class="op">)</span>,</span>
-<span>  select_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"likelihood"</span>, <span class="st">"converged"</span><span class="op">)</span></span>
+<span>  select_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"likelihood"</span>, <span class="st">"converged"</span><span class="op">)</span>,</span>
+<span>  transitions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"homogeneous"</span>, <span class="st">"occasion"</span><span class="op">)</span>,</span>
+<span>  transition_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  initial_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  measurement <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"invariant"</span>, <span class="st">"occasion"</span><span class="op">)</span>,</span>
+<span>  order <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  model <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -236,6 +242,49 @@ ridge of the likelihood: the converged start is then a maximum that
 the standard errors can work with, and the other is not. <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>
 and <code>get_results(fit, "starts")</code> show every start either way.</p></dd>
 
+
+<dt id="arg-transitions">transitions<a class="anchor" aria-label="anchor" href="#arg-transitions"></a></dt>
+<dd><p><code>"homogeneous"</code> (the default) uses one transition matrix
+for every occasion; <code>"occasion"</code> estimates a separate one for each move
+(occasion 1 to 2, 2 to 3, ...).</p></dd>
+
+
+<dt id="arg-transition-covariates">transition_covariates<a class="anchor" aria-label="anchor" href="#arg-transition-covariates"></a></dt>
+<dd><p>Names of columns whose values shift the
+transition probabilities through a multinomial logit per origin profile:
+the log odds of moving to each other profile rather than staying. A
+column may change over occasions; the value at the destination occasion
+is used. Factors are expanded to indicator columns.</p></dd>
+
+
+<dt id="arg-initial-covariates">initial_covariates<a class="anchor" aria-label="anchor" href="#arg-initial-covariates"></a></dt>
+<dd><p>Names of columns that shift the initial profile
+distribution (a multinomial logit, reference: the last profile), read at
+each group's first occasion.</p></dd>
+
+
+<dt id="arg-measurement">measurement<a class="anchor" aria-label="anchor" href="#arg-measurement"></a></dt>
+<dd><p><code>"invariant"</code> (the default) keeps the profiles' means,
+variances and response probabilities equal across occasions;
+<code>"occasion"</code> estimates them separately at each occasion, so a profile is
+defined by its position in the sequence of transitions rather than by
+one fixed measurement model.</p></dd>
+
+
+<dt id="arg-order">order<a class="anchor" aria-label="anchor" href="#arg-order"></a></dt>
+<dd><p><code>1</code> (the default) or <code>2</code>. With <code>2</code>, the profile at each
+occasion from the third on depends on the profiles at the two previous
+occasions (a second-order Markov chain); the first move stays first
+order.</p></dd>
+
+
+<dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
+<dd><p>A covariance structure as <code><a href="multilpa.html">multilpa()</a></code> takes it (<code>"EEI"</code>,
+<code>"VVI"</code>, <code>"VEI"</code>, ... ; mclust's codes). Available with homogeneous
+first-order transitions and invariant measurement; standard errors for
+structures other than EEI, VVI, EEE and VVV are refused
+(<code>latents_unsupported_inference</code>).</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -250,16 +299,27 @@ transition table and for the other
 tables. No standard
 errors, likelihood-ratio tests or guarantees of global optimality are
 given for this model family.</p>
+<p>With <code>transitions = "occasion"</code>, <code>transition_covariates</code>,
+<code>initial_covariates</code>, <code>measurement = "occasion"</code> or <code>order = 2</code> the
+result is a <code>multilpa_lta</code> object instead, read with
+<code><a href="get_results.multilpa_lta.html">get_results.multilpa_lta()</a></code>: transition and initial logit coefficients
+with Wald standard errors (observed, robust or OPG, from analytic
+scores), model-implied transition probabilities per occasion, profiles
+per occasion. These need complete indicators and diagonal covariances.
+EM is finished by a quasi-Newton search on the exact likelihood.
+Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific
+thresholds), depmixS4 and LMest is recorded in
+<code>equivalence/lta-extensions/</code> of the source repository.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This is latent transition analysis (LTA); with more than one group class it
 is a mixture over transition patterns, so the classes are trajectories rather
 than states. <code><a href="multilpa.html">multilpa()</a></code> is the cross-sectional counterpart.</p>
-<p>Transitions are first order and homogeneous over occasions: the
-probability of moving from one profile to another does not depend on the
-occasion or on earlier profiles. Measurement parameters are shared across
-occasions and across group classes. A profile that no group occupies before
+<p>By default transitions are first order and homogeneous over
+occasions: the probability of moving from one profile to another does not
+depend on the occasion or on earlier profiles. Measurement parameters are
+shared across occasions and across group classes. A profile that no group occupies before
 its final occasion leaves its transition row without information; the row
 is then uniform by construction rather than estimated. Such a row is warned
 about when the model is fitted, is flagged by the <code>estimated</code> column of

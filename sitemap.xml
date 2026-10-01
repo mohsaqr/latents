@@ -52,6 +52,7 @@
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_pooled.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_tna.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/index.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/latents-conditions.html</loc></url>
@@ -78,6 +79,7 @@
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_covariates.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_cross_level.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_enumeration.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_lta.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_transitions.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot_views.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/pool_imputations.html</loc></url>

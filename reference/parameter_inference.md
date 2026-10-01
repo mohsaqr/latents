@@ -80,6 +80,16 @@ parameter_inference(
   seed = NULL,
   boundary = c("error", "fix")
 )
+
+# S3 method for class 'multilpa_lta'
+parameter_inference(
+  x,
+  data = NULL,
+  level = 0.95,
+  step = 1e-04,
+  vcov_type = c("observed", "robust", "opg"),
+  ...
+)
 ```
 
 ## Arguments
