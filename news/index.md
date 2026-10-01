@@ -1,5 +1,34 @@
 # Changelog
 
+## latents 0.9.2
+
+### Choosing and testing transition models
+
+- `enumerate_classes(..., time = )` enumerates latent transition models
+  over `n_profiles` and `n_group_classes` (and covariance structures
+  named in `model`), with every other
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) argument
+  held fixed; read with
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
+  `candidate_fit(grid, n_profiles = , n_group_classes = )`.
+- [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  compares nested transition fits (`data` required): more profiles or
+  group classes, occasion-varying against homogeneous transitions, added
+  covariates, occasion-specific measurement, second order, a stayer
+  class. The null model is simulated with the data’s groups, occasions,
+  covariates and missing values kept.
+- `lta(mover_stayer = TRUE)` adds a class of stayers who never change
+  profile (Goodman’s mover-stayer model), with its own initial
+  distribution.
+- The extended transition model now takes `missing = "fiml"` and
+  covariance structures (`model =`, `covariance_model = "full"`);
+  standard errors with diagonal covariances (including FIML).
+- A transition or initial probability estimated at zero (a move never
+  observed, common with occasion-varying transitions on sparse late
+  occasions) is reported as a boundary fit (`latents_boundary`, standard
+  errors withheld) instead of as non-convergence.
+
 ## latents 0.9.1
 
 ### Latent transition analysis: beyond homogeneous transitions

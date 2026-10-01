@@ -134,6 +134,8 @@ Three-step analysis with a correction for classification error.
   : Plot a mixture-of-regressions fit
 - [`plot(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_pooled.md)
   : Plot a pooled multiply imputed fit
+- [`plot(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_transition_enumeration.md)
+  : Plot information criteria across transition models
 - [`plot(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa.md)
   : Plot a fitted multilevel latent profile model
 - [`plot(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_additive.md)
@@ -190,6 +192,11 @@ Standard generics for fitted models, enumeration grids and summaries.
   [`print(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
   [`summary(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
   : Tables of a group-class family enumeration
+- [`get_results(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
+  [`as.data.frame(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
+  [`print(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
+  [`summary(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
+  : Tables of a transition-model enumeration
 - [`get_results(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
   [`as.data.frame(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
   [`print(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)

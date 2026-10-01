@@ -23,7 +23,7 @@ that differ only in where they start."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,7 +107,8 @@ that differ only in where they start.</p>
 <span>  initial_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  measurement <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"invariant"</span>, <span class="st">"occasion"</span><span class="op">)</span>,</span>
 <span>  order <span class="op">=</span> <span class="fl">1L</span>,</span>
-<span>  model <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mover_stayer <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -280,10 +281,17 @@ order.</p></dd>
 
 <dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
 <dd><p>A covariance structure as <code><a href="multilpa.html">multilpa()</a></code> takes it (<code>"EEI"</code>,
-<code>"VVI"</code>, <code>"VEI"</code>, ... ; mclust's codes). Available with homogeneous
-first-order transitions and invariant measurement; standard errors for
-structures other than EEI, VVI, EEE and VVV are refused
+<code>"VVI"</code>, <code>"VEI"</code>, ... ; mclust's codes). Standard errors are given for
+EEI, VVI, EEE and VVV in the homogeneous model and for the diagonal
+EEI and VVI with the extensions; other structures are refused
 (<code>latents_unsupported_inference</code>).</p></dd>
+
+
+<dt id="arg-mover-stayer">mover_stayer<a class="anchor" aria-label="anchor" href="#arg-mover-stayer"></a></dt>
+<dd><p><code>TRUE</code> adds a class of stayers: groups that never
+change profile (identity transitions) and have their own initial profile
+distribution (Goodman's mover-stayer model). <code>n_group_classes</code> then counts
+the mover classes; the stayer class is reported as <code>"stayers"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -305,8 +313,9 @@ result is a <code>multilpa_lta</code> object instead, read with
 <code><a href="get_results.multilpa_lta.html">get_results.multilpa_lta()</a></code>: transition and initial logit coefficients
 with Wald standard errors (observed, robust or OPG, from analytic
 scores), model-implied transition probabilities per occasion, profiles
-per occasion. These need complete indicators and diagonal covariances.
-EM is finished by a quasi-Newton search on the exact likelihood.
+per occasion. Missing indicators (<code>missing = "fiml"</code>) and covariance
+structures are supported; diagonal fits are finished by a quasi-Newton
+search on the exact likelihood, others by EM.
 Agreement with Mplus (User's Guide examples 8.13, 8.14; occasion-specific
 thresholds), depmixS4 and LMest is recorded in
 <code>equivalence/lta-extensions/</code> of the source repository.</p>

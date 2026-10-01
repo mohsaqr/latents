@@ -19,6 +19,7 @@ enumerate_classes(
   seed = NULL,
   family = "profiles",
   between_variance = c("varying", "equal"),
+  time = NULL,
   ...
 )
 ```
@@ -98,12 +99,27 @@ enumerate_classes(
   `"varying"`, `"equal"` or both (the default). The dispersion family is
   always fitted with `"equal"`.
 
+- time:
+
+  The occasion column: enumerate latent transition models
+  ([`lta()`](https://pak.dynasite.org/latents/reference/lta.md)) over
+  `n_profiles` (default `2:4`) and `n_group_classes` (default `1`),
+  holding every other
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) argument
+  given in `...` fixed. `model`, when given, crosses those covariance
+  structures. The result is a `latents_transition_enumeration`, read
+  with
+  [`get_results.latents_transition_enumeration()`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
+  and
+  [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md).
+
 - ...:
 
   Further arguments to
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md);
-  for group-class families only `n_starts`, `max_iter`, `tol` and
-  `min_variance`.
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  (or to [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  with `time`); for group-class families only `n_starts`, `max_iter`,
+  `tol` and `min_variance`.
 
 ## Value
 

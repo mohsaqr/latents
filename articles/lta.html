@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -298,7 +298,13 @@ variances differ by occasion.</li>
 <li>
 <code>order = 2</code> makes the next profile depend on the two
 previous ones.</li>
+<li>
+<code>mover_stayer = TRUE</code> adds a class of groups that never
+change profile.</li>
 </ul>
+<p><code>enumerate_classes(..., time = "sequence")</code> compares
+numbers of profiles and group classes, and <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code>
+tests a model against a nested one.</p>
 <p>Does a student’s grade in the previous course change how likely they
 are to move between engagement profiles? <code>previous_grade</code>
 changes from course to course:</p>
@@ -311,15 +317,15 @@ changes from course to course:</p>
 <span>             seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">grade</span>, <span class="st">"transition_coefficients"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     group_class      from        to           term estimate standard_error statistic  p_value</span></span>
-<span><span class="co">#&gt; 1 group_class_1 profile_1 profile_2    (Intercept)  -1.8398          0.118   -15.566 1.25e-54</span></span>
-<span><span class="co">#&gt; 2 group_class_1 profile_1 profile_2 previous_grade   0.0338          0.121     0.280 7.79e-01</span></span>
-<span><span class="co">#&gt; 3 group_class_1 profile_2 profile_1    (Intercept)  -1.4632          0.130   -11.256 2.17e-29</span></span>
-<span><span class="co">#&gt; 4 group_class_1 profile_2 profile_1 previous_grade   0.0438          0.130     0.337 7.36e-01</span></span>
+<span><span class="co">#&gt; 1 group_class_1 profile_1 profile_2    (Intercept)  -1.4634          0.130   -11.257 2.14e-29</span></span>
+<span><span class="co">#&gt; 2 group_class_1 profile_1 profile_2 previous_grade   0.0440          0.130     0.339 7.35e-01</span></span>
+<span><span class="co">#&gt; 3 group_class_1 profile_2 profile_1    (Intercept)  -1.8402          0.118   -15.566 1.25e-54</span></span>
+<span><span class="co">#&gt; 4 group_class_1 profile_2 profile_1 previous_grade   0.0342          0.121     0.283 7.77e-01</span></span>
 <span><span class="co">#&gt;   conf_low conf_high odds_ratio</span></span>
-<span><span class="co">#&gt; 1   -2.071    -1.608      0.159</span></span>
-<span><span class="co">#&gt; 2   -0.203     0.270      1.034</span></span>
-<span><span class="co">#&gt; 3   -1.718    -1.208      0.231</span></span>
-<span><span class="co">#&gt; 4   -0.211     0.298      1.045</span></span></code></pre></div>
+<span><span class="co">#&gt; 1   -1.718    -1.209      0.231</span></span>
+<span><span class="co">#&gt; 2   -0.211     0.299      1.045</span></span>
+<span><span class="co">#&gt; 3   -2.072    -1.608      0.159</span></span>
+<span><span class="co">#&gt; 4   -0.202     0.271      1.035</span></span></code></pre></div>
 <p>The grade’s odds ratios are close to one and their intervals include
 one: in these data, the previous grade does not change the chance of
 switching profile. A second-order chain, where the next profile depends

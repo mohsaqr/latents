@@ -458,42 +458,24 @@ candidates <- enumerate_classes(course_engagement, vars, id = "student",
                                 model = c("VVI", "VVV"), n_starts = 6,
                                 max_iter = 2000, tol = 1e-10, seed = 1)
 get_results(candidates, "candidates")
-#>   n_profiles n_group_classes model log_likelihood n_parameters     aic     kic bic_groups
-#> 1          2               2   VVI       -8439.82           23 16925.6 16951.6    16986.9
-#> 2          3               2   VVI       -8364.52           35 16799.0 16837.0    16892.3
-#> 3          2               3   VVI       -8421.06           25 16892.1 16920.1    16958.7
-#> 4          3               3   VVI       -8348.43           38 16772.9 16813.9    16874.1
-#> 5          2               2   VVV       -8313.11           43 16712.2 16758.2    16826.8
-#> 6          3               2   VVV       -8291.40           65 16712.8 16780.8    16885.9
-#> 7          2               3   VVV       -8295.38           45 16680.8 16728.8    16800.6
-#> 8          3               3   VVV       -8275.08           68 16686.2 16757.2    16867.3
-#>   bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups
-#> 1        17046.6      16914.2          16973.5     17009.9         17069.6    17172.0
-#> 2        16983.1      16781.7          16872.0     16927.3         17018.1    17168.8
-#> 3        17023.6      16879.7          16944.2     16983.7         17048.6    17193.1
-#> 4        16972.7      16754.0          16852.0     16912.1         17010.7    17212.5
-#> 5        16938.4      16690.9          16801.8     16869.8         16981.4    17164.8
-#> 6        17054.7      16680.6          16848.2     16950.9         17119.7    17391.7
-#> 7        16917.5      16658.4          16774.5     16845.6         16962.5    17188.3
-#> 8        17043.8      16652.4          16827.8     16935.3         17111.8    17429.4
-#>   awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy
-#> 1        17404.5    16995.8        17168.5    16888.5        17001.5        0.938173      0.939643
-#> 2        17999.5    16900.6        17640.4    16737.4        17386.4        0.789624      0.943150
-#> 3        17398.0    17001.5        17141.5    16884.9        16960.0        0.940203      0.816455
-#> 4        18011.9    16921.3        17622.1    16744.1        17346.2        0.792180      0.797319
-#> 5        17564.3    16835.3        17123.1    16634.7        16810.9        0.906299      0.942161
-#> 6        18218.6    16893.5        17551.7    16590.4        17079.8        0.840922      0.948115
-#> 7        17558.0    16843.4        17096.3    16633.6        16769.6        0.909291      0.816138
-#> 8        18278.5    16908.3        17580.9    16591.2        17087.2        0.828118      0.823956
-#>   converged boundary n_best_replicated warnings error
-#> 1      TRUE    FALSE                 6           <NA>
-#> 2      TRUE    FALSE                 6           <NA>
-#> 3      TRUE    FALSE                 6           <NA>
-#> 4      TRUE    FALSE                 6           <NA>
-#> 5      TRUE    FALSE                 6           <NA>
-#> 6      TRUE    FALSE                 3           <NA>
-#> 7      TRUE    FALSE                 6           <NA>
-#> 8      TRUE    FALSE                 5           <NA>
+#>   n_profiles n_group_classes model log_likelihood n_parameters     aic     bic bic_individual
+#> 1          2               2   VVI       -8316.08           27 16686.2 16758.1        16828.2
+#> 2          3               2   VVI       -8242.97           47 16579.9 16705.1        16827.1
+#> 3          2               3   VVI       -8315.22           31 16692.4 16775.0        16855.5
+#> 4          3               3   VVI       -8235.04           56 16582.1 16731.2        16876.6
+#> 5          2               2   VVV       -8188.37           47 16470.7 16595.9        16717.9
+#> 6          3               2   VVV       -8152.59           77 16459.2 16664.3        16864.2
+#> 7          2               3   VVV       -8187.09           51 16476.2 16612.0        16744.4
+#> 8          3               3   VVV       -8150.59           86 16473.2 16702.2        16925.5
+#>    entropy converged boundary n_best_replicated warnings error
+#> 1 0.959375      TRUE    FALSE                 6           <NA>
+#> 2 0.801915      TRUE    FALSE                 6           <NA>
+#> 3 0.959205      TRUE    FALSE                 1           <NA>
+#> 4 0.805030      TRUE    FALSE                 5           <NA>
+#> 5 0.942670      TRUE    FALSE                 6           <NA>
+#> 6 0.901181      TRUE    FALSE                 1           <NA>
+#> 7 0.942885      TRUE    FALSE                 6           <NA>
+#> 8 0.903794      TRUE    FALSE                 1           <NA>
 ```
 
 Under the diagonal covariance specification, the lowest BIC is obtained
@@ -534,16 +516,16 @@ within-profile associations observed in the data.
 full <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 3,
                       model = "VVV")
 get_results(full, "residuals") |> head(4)
-#>     profile indicator_1 indicator_2     kind   observed   expected    residual effective_n
-#> 1 profile_1      browse  forum_read gaussian 0.04220417 0.04220345 7.19972e-07     832.514
-#> 2 profile_1  forum_read  attendance gaussian 0.22563980 0.22563909 7.19552e-07     832.514
-#> 3 profile_1    lectures  forum_read gaussian 0.00953716 0.00953647 6.92761e-07     832.514
-#> 4 profile_1  forum_post  attendance gaussian 0.21625412 0.21625347 6.51244e-07     832.514
-#>     statistic df  p_value p_adjusted
-#> 1 2.07731e-05 NA 0.999983   0.999983
-#> 2 2.18357e-05 NA 0.999983   0.999983
-#> 3 1.99542e-05 NA 0.999984   0.999984
-#> 4 1.96769e-05 NA 0.999984   0.999984
+#>     profile indicator_1 indicator_2     kind  observed  expected    residual effective_n
+#> 1 profile_2    lectures  attendance gaussian 0.1324999 0.1324999 1.35498e-09     585.679
+#> 2 profile_2  forum_post  attendance gaussian 0.1246726 0.1246726 1.32484e-09     585.679
+#> 3 profile_2      browse  attendance gaussian 0.2222775 0.2222775 1.30508e-09     585.679
+#> 4 profile_2  forum_read  forum_post gaussian 0.0777529 0.0777529 1.20333e-09     585.679
+#>     statistic df p_value p_adjusted
+#> 1 3.32919e-08 NA       1          1
+#> 2 3.24849e-08 NA       1          1
+#> 3 3.31405e-08 NA       1          1
+#> 4 2.92236e-08 NA       1          1
 ```
 
 In the two-profile, three-class full-covariance model, the estimated

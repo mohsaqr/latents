@@ -39,7 +39,8 @@ lta(
   initial_covariates = character(),
   measurement = c("invariant", "occasion"),
   order = 1L,
-  model = NULL
+  model = NULL,
+  mover_stayer = FALSE
 )
 ```
 
@@ -218,10 +219,17 @@ lta(
 
   A covariance structure as
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  takes it (`"EEI"`, `"VVI"`, `"VEI"`, ... ; mclust's codes). Available
-  with homogeneous first-order transitions and invariant measurement;
-  standard errors for structures other than EEI, VVI, EEE and VVV are
-  refused (`latents_unsupported_inference`).
+  takes it (`"EEI"`, `"VVI"`, `"VEI"`, ... ; mclust's codes). Standard
+  errors are given for EEI, VVI, EEE and VVV in the homogeneous model
+  and for the diagonal EEI and VVI with the extensions; other structures
+  are refused (`latents_unsupported_inference`).
+
+- mover_stayer:
+
+  `TRUE` adds a class of stayers: groups that never change profile
+  (identity transitions) and have their own initial profile distribution
+  (Goodman's mover-stayer model). `n_group_classes` then counts the
+  mover classes; the stayer class is reported as `"stayers"`.
 
 ## Value
 
@@ -243,12 +251,12 @@ result is a `multilpa_lta` object instead, read with
 [`get_results.multilpa_lta()`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md):
 transition and initial logit coefficients with Wald standard errors
 (observed, robust or OPG, from analytic scores), model-implied
-transition probabilities per occasion, profiles per occasion. These need
-complete indicators and diagonal covariances. EM is finished by a
-quasi-Newton search on the exact likelihood. Agreement with Mplus
-(User's Guide examples 8.13, 8.14; occasion-specific thresholds),
-depmixS4 and LMest is recorded in `equivalence/lta-extensions/` of the
-source repository.
+transition probabilities per occasion, profiles per occasion. Missing
+indicators (`missing = "fiml"`) and covariance structures are supported;
+diagonal fits are finished by a quasi-Newton search on the exact
+likelihood, others by EM. Agreement with Mplus (User's Guide examples
+8.13, 8.14; occasion-specific thresholds), depmixS4 and LMest is
+recorded in `equivalence/lta-extensions/` of the source repository.
 
 ## Details
 
