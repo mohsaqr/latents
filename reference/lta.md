@@ -40,7 +40,8 @@ lta(
   measurement = c("invariant", "occasion"),
   order = 1L,
   model = NULL,
-  mover_stayer = FALSE
+  mover_stayer = FALSE,
+  weights = NULL
 )
 ```
 
@@ -230,6 +231,16 @@ lta(
   (identity transitions) and have their own initial profile distribution
   (Goodman's mover-stayer model). `n_group_classes` then counts the
   mover classes; the stayer class is reported as `"stayers"`.
+
+- weights:
+
+  `NULL`, or the name of a column of `data` holding one sampling weight
+  per `id` (constant over its occasions). As in
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md):
+  pseudo maximum likelihood with the weights scaled to sum to the number
+  of `id` units, sandwich standard errors by default, and integer
+  weights equal to repeating each sequence. A weighted fit uses the
+  general transition engine and returns a `multilpa_lta`.
 
 ## Value
 
@@ -532,8 +543,8 @@ summary(fit)
 #>                  <NA>           23                            23          -8335
 #>    aic bic_groups bic_individual converged iterations boundary small_classes
 #>  16717      16778          16838      TRUE          6    FALSE         FALSE
-#>  best_start n_best_replicated
-#>           2                 2
+#>  best_start n_best_replicated weights
+#>           2                 2    <NA>
 #> 
 #> -- sequences -------------------------------------------------------
 #>  group group_class time profile

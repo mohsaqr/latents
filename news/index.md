@@ -1,5 +1,66 @@
 # Changelog
 
+## latents 0.9.4
+
+- The membership M-step of covariate fits (`profile_covariates`,
+  `group_covariates`) now solves its weighted multinomial logits by
+  Newton-Raphson with the exact Hessian instead of BFGS. BFGS stalled
+  above its score tolerance on about half of the steps of an ordinary
+  fit, which left fits flagged unconverged (and refused standard errors)
+  on some platforms but not others. Estimates are unchanged; fits
+  converge in fewer EM iterations.
+- Continuous integration passes again: the R 4.1 floor job no longer
+  tries to install `mice` (its current dependency chain needs R \>=
+  4.4), one lint is fixed, and the checkout action is updated.
+
+## latents 0.9.3
+
+### Sampling weights
+
+- [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) and
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  take `weights`, the name of a column holding one sampling weight per
+  independent unit (each `id` group, or each row of a single-level fit).
+  The fit maximizes the pseudo log likelihood `sum_j w_j log L_j`, with
+  the weights scaled to sum to the number of units (Mplus’s convention),
+  so AIC and BIC stay on the sample’s scale.
+- Covered: every covariance structure, categorical indicators,
+  `missing = "fiml"`, membership covariates, every `family` (additive,
+  dispersion, additive-dispersion, restricted and full cross-level),
+  every extension of
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md), and all
+  three nestings of
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md).
+- Integer weights reproduce the fit to the data with each unit repeated
+  that many times, to 1e-9 or better in the log likelihood, for every
+  engine (tested). A one-profile weighted fit reproduces Mplus 9’s
+  weighted regression (`TYPE = COMPLEX`, `WEIGHT`) and closed-form
+  weighted least squares (`equivalence/weights/`).
+- Standard errors are the sandwich:
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html),
+  [`confint()`](https://rdrr.io/r/stats/confint.html) and
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+  default to `vcov_type = "robust"` for a weighted fit and refuse
+  `"observed"` and `"opg"` (`latents_unsupported_weights`).
+  `method = "bootstrap"` resamples units with their weights.
+- A weighted fit prints its weight column and Kish’s effective sample
+  size; `get_results(fit, "model")` gains a `weights` column. Effective
+  counts and proportions are weighted; classification and posterior
+  tables report each unit’s own posterior.
+- Refused with `latents_unsupported_weights`:
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  and `enumerate_regressions(bootstrap = )` (the parametric bootstrap
+  ignores the design),
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
+  `prior` and `noise`. Weights that vary within a unit, are negative or
+  missing raise `latents_bad_weights`.
+
 ## latents 0.9.2
 
 ### Choosing and testing transition models

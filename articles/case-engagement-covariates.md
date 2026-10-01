@@ -503,17 +503,15 @@ covariate_fit <- multilpa(
   tol = 1e-10,
   seed = 1
 )
-#> Warning: The best covariate start had not converged when `max_iter` was reached, or its membership
-#> logits still carry a non-negligible score, so the returned estimate is not a maximum.
 
 covariate_fit
 #> Multilevel LPA with covariates: 3 profiles, 3 group classes
-#> Log likelihood -8331.180650; AIC 16742.361; BIC (groups) 16848.899; converged FALSE
+#> Log likelihood -8331.180658; AIC 16742.361; BIC (groups) 16848.899; converged TRUE
 #> 
 #>  profile  browse lectures forum_read forum_post attendance count proportion
-#>        1  0.3881   0.2029     0.4610     0.3536     0.2772 498.4     0.3505
+#>        1  0.3881   0.2028     0.4610     0.3535     0.2771 498.3     0.3504
 #>        2 -0.7743  -0.6141    -0.8891    -0.7620    -0.9379 576.3     0.4053
-#>        3  0.7278   0.7277     0.8141     0.7569     1.1587 347.3     0.2442
+#>        3  0.7277   0.7276     0.8140     0.7568     1.1586 347.4     0.2443
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
@@ -537,15 +535,15 @@ student-class model.
 
 get_results(covariate_fit, "coefficients")
 #>      level       outcome           term parameter estimate
-#> 1  profile     profile_1  group_class_1     logit   0.5703
-#> 2  profile     profile_1  group_class_2     logit  -0.2710
-#> 3  profile     profile_1  group_class_3     logit   0.3906
+#> 1  profile     profile_1  group_class_1     logit   0.5696
+#> 2  profile     profile_1  group_class_2     logit  -0.2714
+#> 3  profile     profile_1  group_class_3     logit   0.3902
 #> 4  profile     profile_1 previous_grade     logit  -0.2390
-#> 5  profile     profile_2  group_class_1     logit  -1.6888
-#> 6  profile     profile_2  group_class_2     logit   2.2565
-#> 7  profile     profile_2  group_class_3     logit   0.1615
+#> 5  profile     profile_2  group_class_1     logit  -1.6893
+#> 6  profile     profile_2  group_class_2     logit   2.2563
+#> 7  profile     profile_2  group_class_3     logit   0.1612
 #> 8  profile     profile_2 previous_grade     logit  -0.5332
-#> 9    group group_class_1    (Intercept)     logit  -0.5386
+#> 9    group group_class_1    (Intercept)     logit  -0.5387
 #> 10   group group_class_2    (Intercept)     logit  -0.4600
 ```
 

@@ -17,7 +17,7 @@ missing indicators are available."><meta property="og:image" content="https://pa
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,7 +107,8 @@ missing indicators are available.</p>
 <span>  acceleration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"squarem"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"profiles"</span>, <span class="st">"additive"</span>, <span class="st">"dispersion"</span>, <span class="st">"additive_dispersion"</span>,</span>
 <span>    <span class="st">"restricted_cross_level"</span>, <span class="st">"full_cross_level"</span><span class="op">)</span>,</span>
-<span>  between_variance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span></span>
+<span>  between_variance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
+<span>  weights <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -490,6 +491,25 @@ class, <code>"equal"</code> one set shared by all classes. The dispersion family
 holds them equal; <code>"varying"</code> is refused there. For the cross-level
 families, the variances of the group means within each group class.</p></dd>
 
+
+<dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
+<dd><p><code>NULL</code>, or the name of a numeric column of <code>data</code> holding a
+sampling weight for each independent unit: each <code>id</code> group of a two-level
+fit, each row of a single-level one. A two-level weight must be constant
+within its group (<code>latents_bad_weights</code> otherwise); within-unit weights
+are not supported. The fit maximizes the pseudo log likelihood
+<code>sum_j w_j log L_j</code> (Skinner, 1989) with the weights scaled to sum to the
+number of units, as Mplus does, so integer weights give the fit to the
+data with each unit repeated that many times and the criteria stay on the
+sample's scale. Standard errors are the sandwich: <code><a href="parameter_inference.html">parameter_inference()</a></code>
+defaults to <code>vcov_type = "robust"</code> and refuses <code>"observed"</code> and <code>"opg"</code>
+(<code>latents_unsupported_weights</code>), and <code>method = "bootstrap"</code> resamples the
+units with their weights. Classification tables report each unit's own
+posterior; effective counts and proportions are weighted.
+<code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>, <code><a href="three_step.html">three_step()</a></code>, <code><a href="r3step.html">r3step()</a></code>, <code>prior</code> and <code>noise</code> refuse
+a weighted fit. Works with every <code>family</code>, membership covariates,
+categorical indicators and <code>missing = "fiml"</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -537,6 +557,12 @@ non-Gaussian clustering. Biometrics, 49, 803–821. doi:10.2307/2532201.</p>
 <p>Houle, S. A., Morin, A. J. S., &amp; Harvey, J.-F. (2026). Multilevel latent
 profile analyses: A comprehensive guide. Organizational Research Methods.
 doi:10.1177/10944281261469432.</p>
+<p>Skinner, C. J. (1989). Domain means, regression and multivariate
+analysis. In C. J. Skinner, D. Holt, &amp; T. M. F. Smith (Eds.), Analysis
+of complex surveys (pp. 59–87). Wiley.</p>
+<p>Asparouhov, T. (2005). Sampling weights in latent variable modeling.
+Structural Equation Modeling, 12, 411–434.
+doi:10.1207/s15328007sem1203_4.</p>
 <p>Fraley, C., &amp; Raftery, A. E. (2007). Bayesian regularization for normal
 mixture estimation and model-based clustering. Journal of
 Classification, 24, 155–181. doi:10.1007/s00357-007-0004-5.</p>
@@ -762,8 +788,8 @@ Classification, 24, 155–181. doi:10.1007/s00357-007-0004-5.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                   VVI           23                            23          -8440</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    aic bic_groups bic_individual converged iterations boundary small_classes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  16926      16987          17047      TRUE          9    FALSE         FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  best_start n_best_replicated</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           1                 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  best_start n_best_replicated weights</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           1                 4    &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- stages ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  stage group_classes fixed log_likelihood parameters</span>

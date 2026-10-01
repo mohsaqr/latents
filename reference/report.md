@@ -295,8 +295,8 @@ report(fit, plots = FALSE)
 #>                   VVI           23                            23          -8440
 #>    aic bic_groups bic_individual converged iterations boundary small_classes
 #>  16926      16987          17047      TRUE          9    FALSE         FALSE
-#>  best_start n_best_replicated
-#>           1                 4
+#>  best_start n_best_replicated weights
+#>           1                 4    <NA>
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters

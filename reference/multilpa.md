@@ -43,7 +43,8 @@ multilpa(
   acceleration = c("squarem", "none"),
   family = c("profiles", "additive", "dispersion", "additive_dispersion",
     "restricted_cross_level", "full_cross_level"),
-  between_variance = c("varying", "equal")
+  between_variance = c("varying", "equal"),
+  weights = NULL
 )
 ```
 
@@ -488,6 +489,29 @@ multilpa(
   `"varying"` is refused there. For the cross-level families, the
   variances of the group means within each group class.
 
+- weights:
+
+  `NULL`, or the name of a numeric column of `data` holding a sampling
+  weight for each independent unit: each `id` group of a two-level fit,
+  each row of a single-level one. A two-level weight must be constant
+  within its group (`latents_bad_weights` otherwise); within-unit
+  weights are not supported. The fit maximizes the pseudo log likelihood
+  `sum_j w_j log L_j` (Skinner, 1989) with the weights scaled to sum to
+  the number of units, as Mplus does, so integer weights give the fit to
+  the data with each unit repeated that many times and the criteria stay
+  on the sample's scale. Standard errors are the sandwich:
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  defaults to `vcov_type = "robust"` and refuses `"observed"` and
+  `"opg"` (`latents_unsupported_weights`), and `method = "bootstrap"`
+  resamples the units with their weights. Classification tables report
+  each unit's own posterior; effective counts and proportions are
+  weighted.
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
+  `prior` and `noise` refuse a weighted fit. Works with every `family`,
+  membership covariates, categorical indicators and `missing = "fiml"`.
+
 ## Value
 
 An `multilpa` object containing `means`, `variances`, optional
@@ -540,6 +564,14 @@ non-Gaussian clustering. Biometrics, 49, 803–821. doi:10.2307/2532201.
 Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
 profile analyses: A comprehensive guide. Organizational Research
 Methods. doi:10.1177/10944281261469432.
+
+Skinner, C. J. (1989). Domain means, regression and multivariate
+analysis. In C. J. Skinner, D. Holt, & T. M. F. Smith (Eds.), Analysis
+of complex surveys (pp. 59–87). Wiley.
+
+Asparouhov, T. (2005). Sampling weights in latent variable modeling.
+Structural Equation Modeling, 12, 411–434.
+doi:10.1207/s15328007sem1203_4.
 
 Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
 mixture estimation and model-based clustering. Journal of
@@ -767,8 +799,8 @@ summary(fit)
 #>                   VVI           23                            23          -8440
 #>    aic bic_groups bic_individual converged iterations boundary small_classes
 #>  16926      16987          17047      TRUE          9    FALSE         FALSE
-#>  best_start n_best_replicated
-#>           1                 4
+#>  best_start n_best_replicated weights
+#>           1                 4    <NA>
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters

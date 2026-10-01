@@ -51,8 +51,8 @@ get_results(fit, "model")
 #> 1           1422          1422      106          2               2      none                  VVI
 #>   n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual
 #> 1           23                            23          -8440 16926      16987          17047
-#>   converged iterations boundary small_classes best_start n_best_replicated
-#> 1      TRUE          9    FALSE         FALSE          1                 3
+#>   converged iterations boundary small_classes best_start n_best_replicated weights
+#> 1      TRUE          9    FALSE         FALSE          1                 3    <NA>
 ```
 
 To check the individual starts, we call

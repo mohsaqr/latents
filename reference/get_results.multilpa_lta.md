@@ -130,10 +130,10 @@ get_results(fit, "transition_coefficients")
 #> 3 group_class_1 profile_2 profile_1    (Intercept) -1.4212912      0.1752162
 #> 4 group_class_1 profile_2 profile_1 previous_grade  0.8240685      0.1995587
 #>     statistic      p_value   conf_low  conf_high odds_ratio
-#> 1 -10.5450838 5.352514e-26 -2.2625237 -1.5532957  0.1483902
-#> 2   0.2943417 7.684968e-01 -0.3279068  0.4437994  1.0596581
-#> 3  -8.1116425 4.994006e-16 -1.7647086 -1.0778737  0.2414021
-#> 4   4.1294533 3.636268e-05  0.4329406  1.2151965  2.2797562
+#> 1 -10.5450838 5.352515e-26 -2.2625237 -1.5532957  0.1483902
+#> 2   0.2943418 7.684968e-01 -0.3279068  0.4437994  1.0596581
+#> 3  -8.1116425 4.994005e-16 -1.7647086 -1.0778737  0.2414021
+#> 4   4.1294533 3.636269e-05  0.4329406  1.2151965  2.2797562
 get_results(fit, "transitions")
 #>      group_class occasion      from        to probability
 #> 1  group_class_1        2 profile_1 profile_1   0.8705162

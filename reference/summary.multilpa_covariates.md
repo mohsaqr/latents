@@ -222,6 +222,8 @@ summary(fit)
 #>                   0        varying         diagonal           14          -2100
 #>   aic bic_groups bic_individual converged boundary extreme_logits n_starts
 #>  4228       4252           4288      TRUE    FALSE          FALSE        2
+#>  weights
+#>     <NA>
 #> 
 #> -- starts ----------------------------------------------------------
 #>  start log_likelihood converged iterations error

@@ -29,7 +29,8 @@ mixture_regression(
   seed = NULL,
   missing = c("error", "omit"),
   select_start = c("likelihood", "converged"),
-  vcov_type = c("observed", "robust", "opg", "none")
+  vcov_type = c("observed", "robust", "opg", "none"),
+  weights = NULL
 )
 ```
 
@@ -131,6 +132,14 @@ mixture_regression(
   observed information), `"robust"` (sandwich, clustered on the
   top-level unit, or on `id` for a single-level fit given `id`) or
   `"opg"` (outer product of the scores). `"none"` skips inference.
+
+- weights:
+
+  `NULL`, or the name of a numeric column of `data` with a sampling
+  weight per independent unit: per row without `id`, per `id` group
+  otherwise (constant within it). Pseudo maximum likelihood with the
+  weights scaled to sum to the number of units; `vcov_type` defaults to
+  `"robust"` and refuses `"observed"` and `"opg"`.
 
 ## Value
 

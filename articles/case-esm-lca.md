@@ -199,8 +199,8 @@ get_results(lca, "model")
 #> 1           2582          2582      100          2               2      none                  VVI
 #>   n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual
 #> 1           19                            19          -7740 15518      15567          15629
-#>   converged iterations boundary small_classes best_start n_best_replicated
-#> 1      TRUE         78    FALSE         FALSE          1                 6
+#>   converged iterations boundary small_classes best_start n_best_replicated weights
+#> 1      TRUE         78    FALSE         FALSE          1                 6    <NA>
 ```
 
 The fit converges, and six of the ten starts reach the best log
@@ -364,16 +364,16 @@ largest are shown.
 
 get_results(lca, "residuals") |> head(10)
 #>      profile       indicator_1   indicator_2        kind observed expected residual effective_n
-#> 1  profile_1            sports       walking categorical   0.1706 5.43e-17   0.1706         678
-#> 2  profile_1 time_with_friends       walking categorical   0.1404 3.81e-17   0.1404         678
-#> 3  profile_1    listened_music       walking categorical   0.1334 1.14e-16   0.1334         678
-#> 4  profile_1    listened_music       reading categorical   0.1063 1.59e-16   0.1063         678
-#> 5  profile_1    listened_music        sports categorical   0.1045 1.09e-16   0.1045         678
-#> 6  profile_2    tv_video_games       walking categorical   0.0940 4.35e-17   0.0940        1904
-#> 7  profile_2    tv_video_games part_time_job categorical   0.0925 1.59e-16   0.0925        1904
-#> 8  profile_2 time_with_friends part_time_job categorical   0.0865 1.34e-16   0.0865        1904
-#> 9  profile_2 time_with_friends       reading categorical   0.0727 1.50e-17   0.0727        1904
-#> 10 profile_2           reading part_time_job categorical   0.0683 3.74e-17   0.0683        1904
+#> 1  profile_1            sports       walking categorical   0.1706 7.21e-17   0.1706         678
+#> 2  profile_1 time_with_friends       walking categorical   0.1404 6.88e-17   0.1404         678
+#> 3  profile_1    listened_music       walking categorical   0.1334 4.25e-17   0.1334         678
+#> 4  profile_1    listened_music       reading categorical   0.1063 8.75e-17   0.1063         678
+#> 5  profile_1    listened_music        sports categorical   0.1045 3.26e-17   0.1045         678
+#> 6  profile_2    tv_video_games       walking categorical   0.0940 4.94e-17   0.0940        1904
+#> 7  profile_2    tv_video_games part_time_job categorical   0.0925 4.19e-17   0.0925        1904
+#> 8  profile_2 time_with_friends part_time_job categorical   0.0865 2.80e-16   0.0865        1904
+#> 9  profile_2 time_with_friends       reading categorical   0.0727 1.46e-16   0.0727        1904
+#> 10 profile_2           reading part_time_job categorical   0.0683 4.88e-17   0.0683        1904
 #>    statistic df  p_value p_adjusted
 #> 1      19.75  1 8.83e-06   8.83e-06
 #> 2      13.37  1 2.55e-04   2.55e-04

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -571,17 +571,15 @@ substantive meanings across separate model fits.</p>
 <span>  tol <span class="op">=</span> <span class="fl">1e-10</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: The best covariate start had not converged when `max_iter` was reached, or its membership</span></span>
-<span><span class="co">#&gt; logits still carry a non-negligible score, so the returned estimate is not a maximum.</span></span>
 <span></span>
 <span><span class="va">covariate_fit</span></span>
 <span><span class="co">#&gt; Multilevel LPA with covariates: 3 profiles, 3 group classes</span></span>
-<span><span class="co">#&gt; Log likelihood -8331.180650; AIC 16742.361; BIC (groups) 16848.899; converged FALSE</span></span>
+<span><span class="co">#&gt; Log likelihood -8331.180658; AIC 16742.361; BIC (groups) 16848.899; converged TRUE</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  profile  browse lectures forum_read forum_post attendance count proportion</span></span>
-<span><span class="co">#&gt;        1  0.3881   0.2029     0.4610     0.3536     0.2772 498.4     0.3505</span></span>
+<span><span class="co">#&gt;        1  0.3881   0.2028     0.4610     0.3535     0.2771 498.3     0.3504</span></span>
 <span><span class="co">#&gt;        2 -0.7743  -0.6141    -0.8891    -0.7620    -0.9379 576.3     0.4053</span></span>
-<span><span class="co">#&gt;        3  0.7278   0.7277     0.8141     0.7569     1.1587 347.3     0.2442</span></span>
+<span><span class="co">#&gt;        3  0.7277   0.7276     0.8140     0.7568     1.1586 347.4     0.2443</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles"). </span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
@@ -599,15 +597,15 @@ reference profile, and the intercepts of the student-class model.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">covariate_fit</span>, <span class="st">"coefficients"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      level       outcome           term parameter estimate</span></span>
-<span><span class="co">#&gt; 1  profile     profile_1  group_class_1     logit   0.5703</span></span>
-<span><span class="co">#&gt; 2  profile     profile_1  group_class_2     logit  -0.2710</span></span>
-<span><span class="co">#&gt; 3  profile     profile_1  group_class_3     logit   0.3906</span></span>
+<span><span class="co">#&gt; 1  profile     profile_1  group_class_1     logit   0.5696</span></span>
+<span><span class="co">#&gt; 2  profile     profile_1  group_class_2     logit  -0.2714</span></span>
+<span><span class="co">#&gt; 3  profile     profile_1  group_class_3     logit   0.3902</span></span>
 <span><span class="co">#&gt; 4  profile     profile_1 previous_grade     logit  -0.2390</span></span>
-<span><span class="co">#&gt; 5  profile     profile_2  group_class_1     logit  -1.6888</span></span>
-<span><span class="co">#&gt; 6  profile     profile_2  group_class_2     logit   2.2565</span></span>
-<span><span class="co">#&gt; 7  profile     profile_2  group_class_3     logit   0.1615</span></span>
+<span><span class="co">#&gt; 5  profile     profile_2  group_class_1     logit  -1.6893</span></span>
+<span><span class="co">#&gt; 6  profile     profile_2  group_class_2     logit   2.2563</span></span>
+<span><span class="co">#&gt; 7  profile     profile_2  group_class_3     logit   0.1612</span></span>
 <span><span class="co">#&gt; 8  profile     profile_2 previous_grade     logit  -0.5332</span></span>
-<span><span class="co">#&gt; 9    group group_class_1    (Intercept)     logit  -0.5386</span></span>
+<span><span class="co">#&gt; 9    group group_class_1    (Intercept)     logit  -0.5387</span></span>
 <span><span class="co">#&gt; 10   group group_class_2    (Intercept)     logit  -0.4600</span></span></code></pre></div>
 <p>In a converged fit, a positive slope
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\beta_k</annotation></semantics></math>

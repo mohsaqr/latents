@@ -67,7 +67,7 @@ get_results(pooled, "imputations")
 #> 11          1 measurement profile_2       lectures    variance  0.5646644
 #> 12          1 measurement profile_2     forum_read    variance  0.3389937
 #> 13          1     profile profile_1    (Intercept) coefficient  0.6153411
-#> 14          1     profile profile_1 previous_grade coefficient  0.6539367
+#> 14          1     profile profile_1 previous_grade coefficient  0.6539366
 #> 15          2 measurement profile_1         browse        mean  0.5680516
 #> 16          2 measurement profile_1       lectures        mean  0.4583964
 #> 17          2 measurement profile_1     forum_read        mean  0.6324261
@@ -80,7 +80,7 @@ get_results(pooled, "imputations")
 #> 24          2 measurement profile_2         browse    variance  0.4893585
 #> 25          2 measurement profile_2       lectures    variance  0.5664937
 #> 26          2 measurement profile_2     forum_read    variance  0.3393972
-#> 27          2     profile profile_1    (Intercept) coefficient  0.6130558
+#> 27          2     profile profile_1    (Intercept) coefficient  0.6130559
 #> 28          2     profile profile_1 previous_grade coefficient  0.6493271
 #>    standard_error
 #> 1      0.04200472

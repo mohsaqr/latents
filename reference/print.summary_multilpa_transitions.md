@@ -233,8 +233,8 @@ print(summary(fit), digits = 3)
 #>                  <NA>           15                            15          -2025
 #>   aic bic_groups bic_individual converged iterations boundary small_classes
 #>  4081       4106           4145      TRUE          8    FALSE         FALSE
-#>  best_start n_best_replicated
-#>           1                 2
+#>  best_start n_best_replicated weights
+#>           1                 2    <NA>
 #> 
 #> -- sequences -------------------------------------------------------
 #>  group group_class time profile

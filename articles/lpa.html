@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -374,11 +374,64 @@ vignette covers <code><a href="../reference/lta.html">lta()</a></code>, <code><a
 <code><a href="../reference/get_group_tna.html">get_group_tna()</a></code>.</p>
 </div>
 <div class="section level2">
+<h2 id="sampling-weights">Sampling weights<a class="anchor" aria-label="anchor" href="#sampling-weights"></a>
+</h2>
+<p>When students were sampled unequally, for example wavering students
+at half the rate of committed ones, each student carries a sampling
+weight, and the fit should estimate the population rather than the
+sample. We pass the weight column as <code>weights</code>. The weight
+belongs to the independent unit, here the student, so it must be
+constant within <code>id</code>. The fit maximizes the weighted (pseudo)
+log likelihood, with the weights scaled to sum to the number of
+students, and reports Kish’s effective sample size.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">weighted_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
+<span>                           survey_weight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">student_type</span> <span class="op">==</span> <span class="st">"wavering"</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">weighted_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">weighted_data</span>,</span>
+<span>                         vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
+<span>                                  <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
+<span>                         id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                         weights <span class="op">=</span> <span class="st">"survey_weight"</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">weighted_fit</span></span>
+<span><span class="co">#&gt; Two-level latent profile analysis: 2 profiles, 2 group classes</span></span>
+<span><span class="co">#&gt; 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)</span></span>
+<span><span class="co">#&gt; Sampling weights `survey_weight` (pseudo maximum likelihood): Kish effective n 94.5 of 106 units</span></span>
+<span><span class="co">#&gt; Log likelihood: -8341.125778 | AIC: 16728.252 | BIC (groups): 16789.511</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 9 | best start: 1/10</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  profile browse lectures forum_read forum_post attendance count proportion</span></span>
+<span><span class="co">#&gt;        1  0.525    0.446      0.605      0.515      0.655   701      0.495</span></span>
+<span><span class="co">#&gt;        2 -0.770   -0.608     -0.877     -0.742     -0.921   715      0.505</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles"). </span></span>
+<span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
+<p>Under weights the inverse information is not the variance of the
+estimates, so <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> reports sandwich
+standard errors by default and refuses
+<code>vcov_type = "observed"</code>.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">weighted_fit</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         level   outcome       term parameter estimate standard_error statistic   p_value p_adjusted</span></span>
+<span><span class="co">#&gt; 1 measurement profile_1     browse      mean    0.525         0.0323      16.3  1.76e-59   1.76e-59</span></span>
+<span><span class="co">#&gt; 2 measurement profile_1   lectures      mean    0.446         0.0365      12.2  2.23e-34   2.23e-34</span></span>
+<span><span class="co">#&gt; 3 measurement profile_1 forum_read      mean    0.605         0.0263      23.0 6.60e-117  6.60e-117</span></span>
+<span><span class="co">#&gt; 4 measurement profile_1 forum_post      mean    0.515         0.0317      16.2  2.72e-59   2.72e-59</span></span>
+<span><span class="co">#&gt;   conf_low conf_high</span></span>
+<span><span class="co">#&gt; 1    0.462     0.589</span></span>
+<span><span class="co">#&gt; 2    0.375     0.518</span></span>
+<span><span class="co">#&gt; 3    0.553     0.656</span></span>
+<span><span class="co">#&gt; 4    0.453     0.578</span></span></code></pre></div>
+<p><code><a href="../reference/lta.html">lta()</a></code>, <code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> and every
+<code>family</code> of <code><a href="../reference/multilpa.html">multilpa()</a></code> take <code>weights</code>
+the same way. The bootstrap likelihood ratio test does not: it simulates
+from the model, not from the sampling design.</p>
+</div>
+<div class="section level2">
 <h2 id="all-tables">All tables<a class="anchor" aria-label="anchor" href="#all-tables"></a>
 </h2>
 <p>To see every table at once, we call <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> on the
 fit, with <code>rows</code> for the number of rows shown per table.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>, rows <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Multilevel LPA: 2 profiles and 2 group classes</span></span>
 <span><span class="co">#&gt; Individuals: 1422; groups: 106; parameters: 23; converged: TRUE</span></span>
@@ -503,8 +556,8 @@ fit, with <code>rows</code> for the number of rows shown per table.</p>
 <span><span class="co">#&gt;            1422          1422      106          2               2      none                  VVI</span></span>
 <span><span class="co">#&gt;  n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual</span></span>
 <span><span class="co">#&gt;            23                            23          -8440 16926      16987          17047</span></span>
-<span><span class="co">#&gt;  converged iterations boundary small_classes best_start n_best_replicated</span></span>
-<span><span class="co">#&gt;       TRUE          9    FALSE         FALSE          1                10</span></span>
+<span><span class="co">#&gt;  converged iterations boundary small_classes best_start n_best_replicated weights</span></span>
+<span><span class="co">#&gt;       TRUE          9    FALSE         FALSE          1                10    &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- stages ----------------------------------------------------------</span></span>
 <span><span class="co">#&gt;  stage group_classes fixed log_likelihood parameters parameters_with_measurement converged</span></span>

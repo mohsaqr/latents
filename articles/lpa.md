@@ -330,6 +330,69 @@ the transitions vignette covers
 [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md) and
 [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md).
 
+## Sampling weights
+
+When students were sampled unequally, for example wavering students at
+half the rate of committed ones, each student carries a sampling weight,
+and the fit should estimate the population rather than the sample. We
+pass the weight column as `weights`. The weight belongs to the
+independent unit, here the student, so it must be constant within `id`.
+The fit maximizes the weighted (pseudo) log likelihood, with the weights
+scaled to sum to the number of students, and reports Kish’s effective
+sample size.
+
+``` r
+
+weighted_data <- transform(course_engagement,
+                           survey_weight = ifelse(student_type == "wavering", 2, 1))
+weighted_fit <- multilpa(weighted_data,
+                         vars = c("browse", "lectures", "forum_read",
+                                  "forum_post", "attendance"),
+                         id = "student", n_profiles = 2, n_group_classes = 2,
+                         weights = "survey_weight", n_starts = 10, seed = 1)
+weighted_fit
+#> Two-level latent profile analysis: 2 profiles, 2 group classes
+#> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
+#> Sampling weights `survey_weight` (pseudo maximum likelihood): Kish effective n 94.5 of 106 units
+#> Log likelihood: -8341.125778 | AIC: 16728.252 | BIC (groups): 16789.511
+#> Converged: TRUE | iterations: 9 | best start: 1/10
+#> 
+#>  profile browse lectures forum_read forum_post attendance count proportion
+#>        1  0.525    0.446      0.605      0.515      0.655   701      0.495
+#>        2 -0.770   -0.608     -0.877     -0.742     -0.921   715      0.505
+#> 
+#> Variances and standard errors: get_results(x, "profiles"). 
+#> Every other table: get_results(x, what = ), or get_results(x, "all").
+```
+
+Under weights the inverse information is not the variance of the
+estimates, so
+[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+reports sandwich standard errors by default and refuses
+`vcov_type = "observed"`.
+
+``` r
+
+head(parameter_inference(weighted_fit), 4)
+#>         level   outcome       term parameter estimate standard_error statistic   p_value p_adjusted
+#> 1 measurement profile_1     browse      mean    0.525         0.0323      16.3  1.76e-59   1.76e-59
+#> 2 measurement profile_1   lectures      mean    0.446         0.0365      12.2  2.23e-34   2.23e-34
+#> 3 measurement profile_1 forum_read      mean    0.605         0.0263      23.0 6.60e-117  6.60e-117
+#> 4 measurement profile_1 forum_post      mean    0.515         0.0317      16.2  2.72e-59   2.72e-59
+#>   conf_low conf_high
+#> 1    0.462     0.589
+#> 2    0.375     0.518
+#> 3    0.553     0.656
+#> 4    0.453     0.578
+```
+
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md),
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+and every `family` of
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+take `weights` the same way. The bootstrap likelihood ratio test does
+not: it simulates from the model, not from the sampling design.
+
 ## All tables
 
 To see every table at once, we call
@@ -462,8 +525,8 @@ print(summary(fit), rows = 3)
 #>            1422          1422      106          2               2      none                  VVI
 #>  n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual
 #>            23                            23          -8440 16926      16987          17047
-#>  converged iterations boundary small_classes best_start n_best_replicated
-#>       TRUE          9    FALSE         FALSE          1                10
+#>  converged iterations boundary small_classes best_start n_best_replicated weights
+#>       TRUE          9    FALSE         FALSE          1                10    <NA>
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters parameters_with_measurement converged

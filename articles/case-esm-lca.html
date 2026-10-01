@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -286,8 +286,8 @@ standard errors below need.</p>
 <span><span class="co">#&gt; 1           2582          2582      100          2               2      none                  VVI</span></span>
 <span><span class="co">#&gt;   n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual</span></span>
 <span><span class="co">#&gt; 1           19                            19          -7740 15518      15567          15629</span></span>
-<span><span class="co">#&gt;   converged iterations boundary small_classes best_start n_best_replicated</span></span>
-<span><span class="co">#&gt; 1      TRUE         78    FALSE         FALSE          1                 6</span></span></code></pre></div>
+<span><span class="co">#&gt;   converged iterations boundary small_classes best_start n_best_replicated weights</span></span>
+<span><span class="co">#&gt; 1      TRUE         78    FALSE         FALSE          1                 6    &lt;NA&gt;</span></span></code></pre></div>
 <p>The fit converges, and six of the ten starts reach the best log
 likelihood of -7740.</p>
 </div>
@@ -429,16 +429,16 @@ the ten largest are shown.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"residuals"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      profile       indicator_1   indicator_2        kind observed expected residual effective_n</span></span>
-<span><span class="co">#&gt; 1  profile_1            sports       walking categorical   0.1706 5.43e-17   0.1706         678</span></span>
-<span><span class="co">#&gt; 2  profile_1 time_with_friends       walking categorical   0.1404 3.81e-17   0.1404         678</span></span>
-<span><span class="co">#&gt; 3  profile_1    listened_music       walking categorical   0.1334 1.14e-16   0.1334         678</span></span>
-<span><span class="co">#&gt; 4  profile_1    listened_music       reading categorical   0.1063 1.59e-16   0.1063         678</span></span>
-<span><span class="co">#&gt; 5  profile_1    listened_music        sports categorical   0.1045 1.09e-16   0.1045         678</span></span>
-<span><span class="co">#&gt; 6  profile_2    tv_video_games       walking categorical   0.0940 4.35e-17   0.0940        1904</span></span>
-<span><span class="co">#&gt; 7  profile_2    tv_video_games part_time_job categorical   0.0925 1.59e-16   0.0925        1904</span></span>
-<span><span class="co">#&gt; 8  profile_2 time_with_friends part_time_job categorical   0.0865 1.34e-16   0.0865        1904</span></span>
-<span><span class="co">#&gt; 9  profile_2 time_with_friends       reading categorical   0.0727 1.50e-17   0.0727        1904</span></span>
-<span><span class="co">#&gt; 10 profile_2           reading part_time_job categorical   0.0683 3.74e-17   0.0683        1904</span></span>
+<span><span class="co">#&gt; 1  profile_1            sports       walking categorical   0.1706 7.21e-17   0.1706         678</span></span>
+<span><span class="co">#&gt; 2  profile_1 time_with_friends       walking categorical   0.1404 6.88e-17   0.1404         678</span></span>
+<span><span class="co">#&gt; 3  profile_1    listened_music       walking categorical   0.1334 4.25e-17   0.1334         678</span></span>
+<span><span class="co">#&gt; 4  profile_1    listened_music       reading categorical   0.1063 8.75e-17   0.1063         678</span></span>
+<span><span class="co">#&gt; 5  profile_1    listened_music        sports categorical   0.1045 3.26e-17   0.1045         678</span></span>
+<span><span class="co">#&gt; 6  profile_2    tv_video_games       walking categorical   0.0940 4.94e-17   0.0940        1904</span></span>
+<span><span class="co">#&gt; 7  profile_2    tv_video_games part_time_job categorical   0.0925 4.19e-17   0.0925        1904</span></span>
+<span><span class="co">#&gt; 8  profile_2 time_with_friends part_time_job categorical   0.0865 2.80e-16   0.0865        1904</span></span>
+<span><span class="co">#&gt; 9  profile_2 time_with_friends       reading categorical   0.0727 1.46e-16   0.0727        1904</span></span>
+<span><span class="co">#&gt; 10 profile_2           reading part_time_job categorical   0.0683 4.88e-17   0.0683        1904</span></span>
 <span><span class="co">#&gt;    statistic df  p_value p_adjusted</span></span>
 <span><span class="co">#&gt; 1      19.75  1 8.83e-06   8.83e-06</span></span>
 <span><span class="co">#&gt; 2      13.37  1 2.55e-04   2.55e-04</span></span>

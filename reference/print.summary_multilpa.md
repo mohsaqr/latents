@@ -219,8 +219,8 @@ print(summary(fit), digits = 3)
 #>                   VVI            9                             9           -323
 #>  aic bic_groups bic_individual converged iterations boundary small_classes
 #>  664        668            689      TRUE         30    FALSE         FALSE
-#>  best_start n_best_replicated
-#>           2                 1
+#>  best_start n_best_replicated weights
+#>           2                 1    <NA>
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters
