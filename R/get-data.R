@@ -592,6 +592,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   if (.multilpa_any_summary(x)) return(.multilpa_stored_catalogue(x))
   stopifnot("`x` must be an object of this package" = .multilpa_any_fit(x))
   c(.multilpa_measurement_catalogue(),
+    .latents_extra_catalogue(x),
     .multilpa_mixing_catalogue(x),
     .multilpa_unit_catalogue(x),
     .multilpa_diagnostic_catalogue(),

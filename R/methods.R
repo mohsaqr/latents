@@ -51,6 +51,7 @@ print.multilpa <- function(x, rows = 20L, ...) {
              plural(n_categorical, "categorical indicator")) else "")
   }
   cat(sprintf("%d %s; %s\n", x$n_observations, units, measurement))
+  .latents_print_extra(x)
   .latents_print_weights(x)
   if (class_model) {
     cat("Classes are labelled profile_1, profile_2, ... in every table.\n")

@@ -1,0 +1,216 @@
+o05.dat
+File name:	o05.dat	
+File size:	20654 bytes  720 records	
+File date:	2026-Oct-01 7:08:23 PM	
+Syntax:	o05.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Class.Err.	Entropy R²	
+o05	2-GClass  2-Cluster	-3446.1943	6977.9188	6918.3886	6931.3886	13	0.1025	0.6434	
+o05 - LL = -3446.1943
+2-GClass  2-Cluster Syntax Model	
+					
+Number of groups	120				
+Number of cases	720				
+Number of parameters (Npar)	13				
+Activated Constraints	0				
+Random Seed	20261001				
+Best Start Seed	1016921				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-3446.1943				
+Log-prior	0.0000				
+Log-posterior	-3446.1943				
+BIC (based on LL)	6977.9188				
+AIC (based on LL)	6918.3886				
+AIC3 (based on LL)	6931.3886				
+CAIC (based on LL)	6990.9188				
+SABIC (based on LL)	6936.6402				
+BIC (based on LL,Ngroups)	6954.6260				
+CAIC (based on LL,Ngroups)	6967.6260				
+SABIC (based on LL,Ngroups)	6913.5262				
+					
+					
+Classification Statistics	GClass	Cluster			
+Classification errors	0.1411	0.1025			
+Reduction of errors (Lambda)	0.7172	0.7836			
+Entropy R-squared	0.5328	0.6434			
+Standard R-squared	0.6000	0.7003			
+Classification log-likelihood	-3647.8033				
+Entropy	201.6090				
+CLC	7295.6066				
+AWE	7505.6671				
+ICL-BIC	7381.1369				
+					
+GClass  Classification Table	Modal				
+Latent	1	2	Total		
+1	51.1027	9.0342	60.1369		
+2	7.8973	51.9658	59.8631		
+Total	59.0000	61.0000	120.0000		
+					
+GClass  Classification Table	Proportional				
+Latent	1	2	Total		
+1	48.1378	11.9990	60.1369		
+2	11.9990	47.8641	59.8631		
+Total	60.1369	59.8631	120.0000		
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	302.0830	38.8584	340.9414		
+2	34.9170	344.1416	379.0586		
+Total	337.0000	383.0000	720.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	287.1521	53.7892	340.9414		
+2	53.7892	325.2694	379.0586		
+Total	340.9414	379.0586	720.0000		
+					
+Files					
+Infile	C:\lgordinal\o05.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261001				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     720				
+predictionstatistics	no				
+outfile					
+file name	o05_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Group ID	g	120			
+Latent					
+GClass	Nominal	Group	2		
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+y	Continuous				
+o	Ord-Fixed	4			
+1	1	1			
+2	2	2			
+3	3	3			
+4	4	4			
+k	Count				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261001 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile;
+   outfile 'o05_posteriors.txt' classification keep id;
+variables
+   groupid g;
+   dependent y continuous, o ordinal, k poisson;
+   latent
+      GClass group nominal 2,
+      Cluster nominal 2;
+equations
+   GClass <- 1;
+   Cluster <- 1 + GClass;
+   y <- 1 + Cluster;
+   o <- 1 + Cluster;
+   k <- 1 + Cluster;
+   y | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+GClass(1)	<-	1			0.0000	.	.	.	0.0001	1	0.99				
+GClass(2)	<-	1			-0.0046	0.3829	-0.0119	0.99							
+															
+Cluster(1)	<-	1			0.0000	.	.	.	12.0958	1	0.00051				
+Cluster(2)	<-	1			-0.9597	0.2760	-3.4779	0.00051							
+Cluster(1)	<-	GClass(1)			0.0000	.	.	.	70.0864	1	5.7e-17				
+Cluster(2)	<-	GClass(1)			0.0000	.	.	.							
+Cluster(1)	<-	GClass(2)			0.0000	.	.	.							
+Cluster(2)	<-	GClass(2)			2.2089	0.2638	8.3718	5.7e-17							
+															
+y	<-	1			1.4889	0.0648	22.9833	6.8e-117	528.2342	1	6.8e-117				
+y	<-	Cluster(1)			0.0000	.	.	.	252.6302	1	6.9e-57				
+y	<-	Cluster(2)			-1.4612	0.0919	-15.8943	6.9e-57							
+															
+o(1)	<-	1			0.0000	.	.	.	31.3965	3	7.0e-7				
+o(2)	<-	1			0.3797	0.1312	2.8952	0.0038							
+o(3)	<-	1			0.0701	0.1484	0.4724	0.64							
+o(4)	<-	1			-0.6204	0.2236	-2.7751	0.0055							
+o	<-	Cluster(1)			0.0000	.	.	.	84.6283	1	3.6e-20				
+o	<-	Cluster(2)			1.1946	0.1299	9.1994	3.6e-20							
+															
+k	<-	1			1.3555	0.0336	40.3133	2.5e-355	1625.1648	1	2.5e-355				
+k	<-	Cluster(1)			0.0000	.	.	.	232.7259	1	1.5e-52				
+k	<-	Cluster(2)			-0.9224	0.0605	-15.2554	1.5e-52							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y			|	Cluster(1)	0.8542	0.0815	10.4783	1.1e-25	224.4875	2	1.8e-49	3.3298	1	0.068	
+y			|	Cluster(2)	1.0839	0.0984	11.0185	3.1e-28							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+GClass	<-	1			GClass	1	2	0.0001	1	0.99	
+	
+Cluster	<-	1			Cluster	1	2	12.0958	1	0.00051	
+Cluster	<-	 GClass			GClass	1	2	70.0864	1	5.7e-17	
+					Cluster	1	2	70.0864	1	5.7e-17	
+	
+y	<-	 Cluster			Cluster	1	2	252.6302	1	6.9e-57	
+	
+o	<-	 Cluster			Cluster	1	2	84.6283	1	3.6e-20	
+	
+k	<-	 Cluster			Cluster	1	2	232.7259	1	1.5e-52	
+Variances	
+y			|	Cluster	Cluster	1	2	3.3298	1	0.068	
+Profile
+ 	GClass	 	 	 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.5011	0.0957	0.4989	0.0957	0.4735	0.0361	0.5265	0.0361	 	 	
+y	 	
+Mean	1.0843	0.0867	0.3534	0.0846	1.4889	0.0648	0.0277	0.0702	0.7197	0.0550	
+o	 	
+1	0.1851	0.0206	0.0758	0.0133	0.2456	0.0244	0.0271	0.0068	0.1306	0.0134	
+2	0.2958	0.0224	0.1817	0.0179	0.3590	0.0249	0.1309	0.0159	0.2389	0.0166	
+3	0.2783	0.0172	0.3051	0.0180	0.2634	0.0185	0.3171	0.0192	0.2917	0.0170	
+4	0.2409	0.0257	0.4374	0.0282	0.1320	0.0207	0.5249	0.0276	0.3389	0.0194	
+Mean	2.5749	0.0702	3.1041	0.0635	2.2819	0.0676	3.3398	0.0507	2.8389	0.0445	
+k	 	
+Mean	3.2317	0.1463	2.0629	0.1303	3.8788	0.1304	1.5421	0.0847	2.6486	0.0891	
+	
+ 	GClass	 	 	 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	1	s.e.	2	s.e.	 	 	
+Cluster	 	
+1	0.7231	0.0553	0.2229	0.0524	.	.	.	.	 	 	
+2	0.2769	0.0553	0.7771	0.0524	.	.	.	.	 	 	

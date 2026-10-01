@@ -27,7 +27,7 @@
 #'   `group_log_likelihood` stays per group and unweighted.
 #' @noRd
 .multilpa_expectation <- function(x, group_index, parameters, codes = NULL,
-                                  weights = NULL) {
+                                  weights = NULL, extra = NULL) {
   stopifnot(is.matrix(x), is.numeric(x), !any(is.infinite(x)),
             length(group_index) == nrow(x), is.list(parameters),
             is.null(weights) || length(weights) == max(group_index))
@@ -62,6 +62,11 @@
   if (!is.null(codes)) {
     log_density <- log_density +
       .multilpa_categorical_log_density(codes, parameters$response_probabilities)
+  }
+  # Ordinal and count indicators enter the same way, after the offset.
+  if (!is.null(extra)) {
+    log_density <- log_density +
+      .latents_extra_log_density(extra, parameters, nrow(x), n_profiles)
   }
   # Each group type supplies a different prior over the same Gaussian profiles.
   conditional <- lapply(seq_len(n_types), function(group_type) {
@@ -142,7 +147,7 @@
                                   covariance_model = "diagonal", codes = NULL,
                                   n_categories = NULL, min_probability = 1e-10,
                                   held = NULL, structure = NULL,
-                                  previous = NULL, prior = NULL) {
+                                  previous = NULL, prior = NULL, extra = NULL) {
   stopifnot(is.matrix(x), is.list(expectation),
             variance_model %in% c("varying", "equal"), min_variance > 0,
             is.null(held) || is.list(held))
@@ -218,6 +223,10 @@
       .multilpa_categorical_maximize(codes, expectation$subject_posteriors,
                                      n_categories, min_probability)
   }
+  if (!is.null(extra)) {
+    blocks <- .latents_extra_maximize(extra, expectation$subject_posteriors, previous)
+    parameters[names(blocks)] <- blocks
+  }
   if (any(!is.finite(unlist(parameters, use.names = FALSE)))) {
     stop("Non-finite parameters in the M-step; check indicator scales.")
   }
@@ -239,7 +248,7 @@
                                variance_model, min_variance, start_index,
                                covariance_model = "diagonal", codes = NULL,
                                n_categories = NULL, min_probability = 1e-10,
-                               hierarchical = FALSE) {
+                               hierarchical = FALSE, extra = NULL) {
   stopifnot(is.matrix(x), length(group_index) == nrow(x),
             n_profiles >= 1L, n_types >= 1L, start_index >= 1L,
             variance_model %in% c("varying", "equal"), min_variance > 0)
@@ -265,6 +274,7 @@
     # a mixed-mode model is initialized from all of its indicators at once.
     clustering_input <- if (is.null(codes)) standardized else
       cbind(standardized, .multilpa_categorical_design(codes, n_categories))
+    clustering_input <- cbind(clustering_input, .latents_extra_clustering(extra))
     if (hierarchical) {
       assignments <- .multilpa_ward_assignments(clustering_input, n_profiles)
       centers <- t(vapply(seq_len(n_profiles), function(profile) {
@@ -336,6 +346,9 @@
   if (!is.null(codes)) {
     result$response_probabilities <- .multilpa_categorical_initialize(
       codes, assignments, n_profiles, n_categories, min_probability)
+  }
+  if (!is.null(extra)) {
+    result <- c(result, .latents_extra_initialize(extra, assignments, n_profiles))
   }
   if (ncol(x) > 0L && covariance_model == "full") {
     residuals <- sweep(x, 2L, overall_means, "-")
@@ -630,14 +643,15 @@
                         min_variance, max_iter, tol, covariance_model = "diagonal",
                         codes = NULL, n_categories = NULL, min_probability = 1e-10,
                         held = NULL, structure = NULL, prior = NULL,
-                        accelerate_em = TRUE, sampling_weights = NULL) {
+                        accelerate_em = TRUE, sampling_weights = NULL,
+                        extra = NULL) {
   # `parameters` is the current point, which the M-step uses to warm start the
   # covariance structures that iterate.
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
   evaluate <- function(point) .multilpa_expectation(x, group_index, point, codes,
-                                                    sampling_weights)
+                                                    sampling_weights, extra)
   # One plain EM step, with the monotonicity guard. Under a prior the
   # iteration climbs the posterior, not the likelihood, so the likelihood may
   # legitimately fall; convergence is still read off the likelihood's
@@ -645,7 +659,7 @@
   step <- function(point, point_expectation) {
     updated_parameters <- .multilpa_maximization(
       x, point_expectation, variance_model, min_variance, covariance_model,
-      codes, n_categories, min_probability, held, structure, point, prior)
+      codes, n_categories, min_probability, held, structure, point, prior, extra)
     updated <- evaluate(updated_parameters)
     if (is.null(prior) &&
         updated$log_likelihood - point_expectation$log_likelihood <
@@ -1107,6 +1121,22 @@
 #'   [bootstrap_lrt()], [three_step()], [r3step()], `prior` and `noise` refuse
 #'   a weighted fit. Works with every `family`, membership covariates,
 #'   categorical indicators and `missing = "fiml"`.
+#' @param ordinal Names of indicators in `vars` to model as ordinal: an
+#'   (ordered) factor, or whole numbers, whose categories are ordered by factor
+#'   level or by value. Each follows an adjacent-category logit with category
+#'   intercepts shared by every profile and one location per profile,
+#'   `log P(k | c) / P(k - 1 | c) = a_k - a_(k-1) + eta_c`, with the last
+#'   profile's location fixed at zero: `(K - 1) + (C - 1)` parameters per
+#'   indicator against `C (K - 1)` for a `categorical` one. This is Latent
+#'   GOLD's default ordinal model, against which it is checked. Read the
+#'   category probabilities and locations with `get_results(fit, "ordinal")`.
+#' @param count Names of indicators in `vars` holding non-negative whole
+#'   numbers, modelled as Poisson with one mean per profile; read the means
+#'   with `get_results(fit, "count_means")`. Ordinal and count indicators take
+#'   `missing = "fiml"`, `weights`, two-level fits, Wald and bootstrap
+#'   inference, [bootstrap_lrt()] and [predict()]; membership covariates,
+#'   `start`, `fixed`, `prior`, `noise` and the group-class families do not
+#'   take them yet (`latents_unsupported_indicator`).
 #' @return An `multilpa` object containing `means`, `variances`, optional
 #'   `covariances` (indicators by indicators by profiles),
 #'   `profile_probabilities`, `group_probabilities`, posterior matrices,
@@ -1194,7 +1224,8 @@ multilpa <- function(data, vars, id, n_profiles,
                                   "additive_dispersion", "restricted_cross_level",
                                   "full_cross_level"),
                        between_variance = c("varying", "equal"),
-                       weights = NULL) {
+                       weights = NULL, ordinal = character(),
+                       count = character()) {
   family <- match.arg(family)
   if (family %in% c("restricted_cross_level", "full_cross_level")) {
     supplied <- setdiff(names(match.call())[-1L], .cross_level_arguments())
@@ -1337,6 +1368,11 @@ multilpa <- function(data, vars, id, n_profiles,
     if (!is.null(prior)) .latents_refuse_weights("`prior`")
     if (isTRUE(noise)) .latents_refuse_weights("`noise = TRUE`")
   }
+  .latents_check_extra_arguments(vars, categorical, ordinal, count, list(
+    "`profile_covariates` or `group_covariates`" =
+      length(profile_covariates) + length(group_covariates) > 0L,
+    "`prior`" = !is.null(prior), "`noise = TRUE`" = isTRUE(noise),
+    "`fixed`" = length(fixed) > 0L, "`start`" = !is.null(start)))
   if (length(profile_covariates) > 0L || length(group_covariates) > 0L) {
     return(.multilpa_covariate_model(
       data = data, vars = vars, id = id, n_profiles = n_profiles,
@@ -1359,7 +1395,9 @@ multilpa <- function(data, vars, id, n_profiles,
                           seed, categorical)
   time_values <- .multilpa_time_values(data, time, id, vars)
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
-                                            missing, min_probability)
+                                            missing, min_probability,
+                                            other = c(ordinal, count))
+  extra <- .latents_prepare_extra(data, ordinal, count, missing)
   continuous <- measurement$continuous
   indicator_frame <- measurement$frame
   encoded <- measurement$encoded
@@ -1382,8 +1420,7 @@ multilpa <- function(data, vars, id, n_profiles,
     indicator_frame <- as.data.frame(x)
   }
   group_sizes <- groups$sizes
-  distinct_rows <- if (is.null(codes)) nrow(unique(x)) else
-    nrow(unique(cbind(x, codes)))
+  distinct_rows <- nrow(unique(cbind(x, codes, .latents_extra_matrix(extra))))
   if (n_profiles > distinct_rows) {
     stop(errorCondition(
       "n_profiles cannot exceed the number of distinct observed indicator rows.",
@@ -1479,7 +1516,7 @@ multilpa <- function(data, vars, id, n_profiles,
         .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                            variance_model, min_variance, start_index,
                            covariance_model, codes, n_categories, min_probability,
-                           hierarchical = start_index == 1L)
+                           hierarchical = start_index == 1L, extra = extra)
       }
       # Every restart begins from the held values, so a random start cannot
       # report a measurement solution that was neither estimated nor supplied.
@@ -1497,7 +1534,7 @@ multilpa <- function(data, vars, id, n_profiles,
                  tol, covariance_model, codes, n_categories, min_probability,
                  held, structure, prior_parameters,
                  accelerate_em = identical(acceleration, "squarem"),
-                 sampling_weights = sampling_weights)
+                 sampling_weights = sampling_weights, extra = extra)
     }, error = function(error) list(error = conditionMessage(error)))
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
@@ -1519,7 +1556,8 @@ multilpa <- function(data, vars, id, n_profiles,
   # the M-step; each unit's own classification is the unweighted posterior.
   weighted_expectation <- best$expectation
   if (!is.null(sampling_weights)) {
-    best$expectation <- .multilpa_expectation(x, group_index, parameters, codes)
+    best$expectation <- .multilpa_expectation(x, group_index, parameters, codes,
+                                              extra = extra)
   }
   subject_posteriors <- best$expectation$subject_posteriors
   subject_profiles <- max.col(subject_posteriors, ties.method = "first")
@@ -1540,6 +1578,7 @@ multilpa <- function(data, vars, id, n_profiles,
   type_names <- paste0("group_class_", seq_len(n_group_classes))
   parameters <- .multilpa_label_parameters(parameters, profile_names, continuous,
                                          categorical, encoded$levels)
+  parameters <- .latents_label_extra(parameters, extra, profile_names)
   dimnames(parameters$profile_probabilities) <- list(type_names, profile_names)
   names(parameters$group_probabilities) <- type_names
   group_posteriors <- best$expectation$group_posteriors
@@ -1552,6 +1591,8 @@ multilpa <- function(data, vars, id, n_profiles,
     n_profiles, n_group_classes, ncol(x), n_categories, variance_model,
     covariance_model)
   if (isTRUE(noise)) n_parameters_unconstrained <- n_parameters_unconstrained + 2L
+  n_parameters_unconstrained <- n_parameters_unconstrained +
+    .latents_extra_n_parameters(extra, n_profiles)
   n_parameters <- n_parameters_unconstrained -
     .multilpa_fixed_parameters(fixed, n_profiles, ncol(x), n_categories,
                                variance_model, covariance_model)
@@ -1575,7 +1616,8 @@ multilpa <- function(data, vars, id, n_profiles,
   # nothing to any estimate, so it must not enlarge the sample size the
   # individual-level BIC penalizes against.
   observed_per_row <- rowSums(!is.na(x)) +
-    if (is.null(codes)) 0L else rowSums(!is.na(codes))
+    (if (is.null(codes)) 0L else rowSums(!is.na(codes))) +
+    if (is.null(extra)) 0L else rowSums(!is.na(.latents_extra_matrix(extra)))
   # Reported by print() and summary() rather than warned about: resampling verbs
   # refit the same data many times, and a warning would fire once per replicate.
   n_informative <- sum(observed_per_row > 0L)
@@ -1584,6 +1626,7 @@ multilpa <- function(data, vars, id, n_profiles,
   result <- c(parameters, list(
     call = call, vars = vars, continuous = continuous,
     continuous_types = vapply(data[continuous], typeof, character(1)),
+    ordinal = ordinal, count = count, extra_data = extra,
     categorical = categorical,
     categorical_levels = encoded$levels, min_probability = min_probability,
     categorical_values = .multilpa_categorical_values(data, categorical, encoded),
@@ -1611,8 +1654,8 @@ multilpa <- function(data, vars, id, n_profiles,
       c(continuous, categorical)),
     min_variance = min_variance, standard_deviations = sqrt(parameters$variances),
     fixed = fixed,
-    measurement_model = if (is.null(codes)) "gaussian" else
-      if (ncol(x) == 0L) "categorical" else "mixed",
+    measurement_model = .latents_measurement_model(ncol(x) > 0L, !is.null(codes),
+                                                   ordinal, count),
     subject_posteriors = subject_posteriors, group_posteriors = group_posteriors,
     subject_profiles = subject_profiles,
     group_classes = max.col(group_posteriors, ties.method = "first"),
@@ -1719,8 +1762,8 @@ multilpa <- function(data, vars, id, n_profiles,
 #'   `n_categories`.
 #' @noRd
 .multilpa_prepare_indicators <- function(data, vars, categorical, missing,
-                                       min_probability) {
-  continuous <- setdiff(vars, categorical)
+                                       min_probability, other = character()) {
+  continuous <- setdiff(vars, c(categorical, other))
   encoded <- if (length(categorical) > 0L) {
     .multilpa_encode_categorical(data[, categorical, drop = FALSE])
   } else NULL

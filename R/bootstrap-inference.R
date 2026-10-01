@@ -240,7 +240,8 @@
                  prior = x$prior,
                  noise = isTRUE(x$noise),
                  acceleration = x$acceleration %||% "none",
-                 weights = x$weights)
+                 weights = x$weights, ordinal = x$ordinal %||% character(),
+                 count = x$count %||% character())
   structure <- x$covariance_structure
   if (is.null(structure) || is.na(structure) || !structure %in% .multilpa_structures()) {
     return(c(shared, list(variance_model = x$variance_model,

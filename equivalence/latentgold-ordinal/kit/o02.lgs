@@ -1,0 +1,27 @@
+//LG6.1//
+version = 6.1
+infile 'o02.dat'
+
+model
+title 'o02';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261001 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile;
+   outfile 'o02_posteriors.txt' classification keep id;
+variables
+   dependent o1 ordinal, o2 ordinal, k poisson;
+   latent Cluster nominal 3;
+equations
+   Cluster <- 1;
+   o1 <- 1 + Cluster;
+   o2 <- 1 + Cluster;
+   k <- 1 + Cluster;
+end model

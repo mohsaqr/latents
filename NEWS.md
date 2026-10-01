@@ -1,3 +1,27 @@
+# latents 0.9.5
+
+## Ordinal and count indicators
+
+* `multilpa()`, `lpa()`, `lca()` and `multilca()` take `ordinal` and `count`,
+  naming indicators in `vars`:
+  * `ordinal`: an adjacent-category logit with category intercepts shared by
+    every profile and one location per profile (Latent GOLD's default
+    ordinal model): `(K - 1) + (C - 1)` parameters per indicator instead of
+    `C (K - 1)` as `categorical`. Ordered factors or whole numbers.
+  * `count`: Poisson, one mean per profile.
+* New tables: `get_results(fit, "ordinal")` (category probabilities and
+  locations, with standard errors) and `get_results(fit, "count_means")`.
+* Mixed freely with continuous and categorical indicators, in single- and
+  two-level fits, with `missing = "fiml"` and `weights`. Wald (analytic
+  scores) and bootstrap inference, `bootstrap_lrt()`, `predict()`,
+  `sensitivity()` and `enumerate_classes()` handle them.
+* Checked against Latent GOLD 6.1 on five datasets (mixed, ordinal only,
+  count only, three classes, two-level): log likelihoods agree to 4e-5 and
+  every parameter to 5e-5, the precision Latent GOLD prints
+  (`equivalence/latentgold-ordinal/`); the results are a test fixture.
+* Not yet available with membership covariates, `start`, `fixed`, `prior`,
+  `noise`, `lta()` or the group-class families (`latents_unsupported_indicator`).
+
 # latents 0.9.4
 
 * The membership M-step of covariate fits (`profile_covariates`,

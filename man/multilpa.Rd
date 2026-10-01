@@ -38,7 +38,9 @@ multilpa(
   family = c("profiles", "additive", "dispersion", "additive_dispersion",
     "restricted_cross_level", "full_cross_level"),
   between_variance = c("varying", "equal"),
-  weights = NULL
+  weights = NULL,
+  ordinal = character(),
+  count = character()
 )
 }
 \arguments{
@@ -398,6 +400,24 @@ posterior; effective counts and proportions are weighted.
 \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}}, \code{prior} and \code{noise} refuse
 a weighted fit. Works with every \code{family}, membership covariates,
 categorical indicators and \code{missing = "fiml"}.}
+
+\item{ordinal}{Names of indicators in \code{vars} to model as ordinal: an
+(ordered) factor, or whole numbers, whose categories are ordered by factor
+level or by value. Each follows an adjacent-category logit with category
+intercepts shared by every profile and one location per profile,
+\verb{log P(k | c) / P(k - 1 | c) = a_k - a_(k-1) + eta_c}, with the last
+profile's location fixed at zero: \code{(K - 1) + (C - 1)} parameters per
+indicator against \code{C (K - 1)} for a \code{categorical} one. This is Latent
+GOLD's default ordinal model, against which it is checked. Read the
+category probabilities and locations with \code{get_results(fit, "ordinal")}.}
+
+\item{count}{Names of indicators in \code{vars} holding non-negative whole
+numbers, modelled as Poisson with one mean per profile; read the means
+with \code{get_results(fit, "count_means")}. Ordinal and count indicators take
+\code{missing = "fiml"}, \code{weights}, two-level fits, Wald and bootstrap
+inference, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} and \code{\link[=predict]{predict()}}; membership covariates,
+\code{start}, \code{fixed}, \code{prior}, \code{noise} and the group-class families do not
+take them yet (\code{latents_unsupported_indicator}).}
 }
 \value{
 An \code{multilpa} object containing \code{means}, \code{variances}, optional

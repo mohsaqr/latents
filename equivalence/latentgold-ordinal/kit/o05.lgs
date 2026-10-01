@@ -1,0 +1,32 @@
+//LG6.1//
+version = 6.1
+infile 'o05.dat'
+
+model
+title 'o05';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261001 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile;
+   outfile 'o05_posteriors.txt' classification keep id;
+variables
+   groupid g;
+   dependent y continuous, o ordinal, k poisson;
+   latent
+      GClass group nominal 2,
+      Cluster nominal 2;
+equations
+   GClass <- 1;
+   Cluster <- 1 + GClass;
+   y <- 1 + Cluster;
+   o <- 1 + Cluster;
+   k <- 1 + Cluster;
+   y | Cluster;
+end model

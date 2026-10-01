@@ -101,9 +101,10 @@
     variance_names <- names(chart)
   }
   response <- .multilpa_response_coordinates(object, scale)
+  extra <- .latents_extra_coordinates(object, object$extra_data, n_profiles, scale)
   stats::setNames(c(as.vector(t(object$means)), variance_values,
-                   unname(response), profile_values, group_values),
-                 c(mean_names, variance_names, names(response),
+                   unname(response), unname(extra), profile_values, group_values),
+                 c(mean_names, variance_names, names(response), names(extra),
                    profile_names, group_names))
 }
 
@@ -231,6 +232,7 @@
     response_probabilities = if (scale == "natural") {
       sum(vapply(blocks, length, numeric(1)))
     } else .multilpa_response_width(object),
+    extra = .latents_extra_width(object$extra_data, n_profiles),
     profile = n_types * if (scale == "natural") n_profiles else n_profiles - 1L,
     group = if (scale == "natural") n_types else n_types - 1L)
 }
@@ -348,7 +350,11 @@
   response_probabilities <- if (n_response == 0L) NULL else
     .multilpa_response_decode(theta[n_means + n_variances + seq_len(n_response)],
                               object)
-  offset <- n_means + n_variances + n_response
+  n_extra <- .latents_extra_width(object$extra_data, n_profiles)
+  extra_blocks <- if (n_extra == 0L) NULL else
+    .latents_extra_decode(theta[n_means + n_variances + n_response + seq_len(n_extra)],
+                          object$extra_data, n_profiles)
+  offset <- n_means + n_variances + n_response + n_extra
   profile_logits <- cbind(matrix(theta[offset + seq_len(n_logits)],
     n_types, n_profiles - 1L, byrow = TRUE), 0)
   profile_probabilities <- exp(sweep(profile_logits, 1L,
@@ -362,6 +368,7 @@
   if (!is.null(response_probabilities)) {
     parameters$response_probabilities <- response_probabilities
   }
+  if (!is.null(extra_blocks)) parameters[names(extra_blocks)] <- extra_blocks
   parameters
 }
 
@@ -414,7 +421,8 @@
   stopifnot(is.numeric(theta), is.matrix(x), inherits(object, "multilpa"))
   parameters <- .multilpa_decode(theta, object)
   expectation <- .multilpa_expectation(x, object$group_index, parameters, codes,
-                                       unname(object$sampling_weights))
+                                       unname(object$sampling_weights),
+                                       object$extra_data)
   if (.multilpa_uses_chart(object)) {
     measurement <- .multilpa_chart_scores(
       parameters, expectation, x, object,
@@ -453,7 +461,10 @@
       parameters$group_probabilities)[seq_len(object$n_group_classes - 1L)]
   response_score <- as.vector(.multilpa_response_scores(
     codes, expectation$subject_posteriors, parameters$response_probabilities))
-  -c(mean_score, variance_score, response_score, profile_score, group_score)
+  extra_score <- as.vector(.latents_extra_scores(
+    object$extra_data, expectation$subject_posteriors, parameters))
+  -c(mean_score, variance_score, response_score, extra_score, profile_score,
+     group_score)
 }
 
 #' Gaussian scores in log-Cholesky coordinates
@@ -516,9 +527,15 @@
   blocks <- object$response_probabilities %||% list()
   natural_response <- sum(vapply(blocks, length, numeric(1)))
   free_response <- .multilpa_response_width(object)
-  natural_offset <- n_measurement + natural_response
-  free_offset <- n_means + n_chart + free_response
+  n_extra <- .latents_extra_width(object$extra_data, object$n_profiles)
+  natural_offset <- n_measurement + natural_response + n_extra
+  free_offset <- n_means + n_chart + free_response + n_extra
   jacobian <- matrix(0, length(natural), length(theta), dimnames = list(names(natural), names(theta)))
+  if (n_extra > 0L) {
+    jacobian[n_measurement + natural_response + seq_len(n_extra),
+             n_means + n_chart + free_response + seq_len(n_extra)] <-
+      .latents_extra_jacobian(object, object$extra_data, object$n_profiles)
+  }
   diag(jacobian)[seq_len(n_means)] <- 1
   if (.multilpa_uses_chart(object)) {
     jacobian[n_means + seq_len(n_variances), n_means + seq_len(n_chart)] <-
@@ -848,7 +865,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     stopifnot(is.numeric(parameters))
     -.multilpa_expectation(observed, x$group_index,
       .multilpa_decode(restore(parameters), x), codes,
-      unname(x$sampling_weights))$log_likelihood
+      unname(x$sampling_weights), x$extra_data)$log_likelihood
   }
   score <- function(parameters) {
     stopifnot(is.numeric(parameters))
@@ -949,7 +966,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   result$conf_high <- bounds$high
   ## A Wald test of a variance against zero is not a question worth asking; the
   ## interval still is.
-  bounded <- result$parameter %in% c("variance", "probability", "response") |
+  bounded <- result$parameter %in% c("variance", "probability", "response",
+                                      "count_mean") |
     (result$parameter == "covariance" &
        result$term %in% paste(continuous, continuous, sep = ":"))
   result$statistic[bounded] <- NA_real_
@@ -1071,7 +1089,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     term %in% paste(continuous, continuous, sep = ":")
   ifelse(parameter %in% c("probability", "response", "initial_probability",
                           "transition_probability"), "probability",
-         ifelse(parameter == "variance" | on_diagonal, "positive", "real"))
+         ifelse(parameter %in% c("variance", "count_mean") | on_diagonal,
+                "positive", "real"))
 }
 
 #' The probability below which an estimate is on its boundary
@@ -1284,6 +1303,11 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
             "reports the other parameters conditionally on them."),
       class = "latents_boundary_fit", call = NULL))
   }
+  if (length(object$count_means) > 0L && any(object$count_means <= 1e-8)) {
+    stop(errorCondition(
+      "Wald inference is unavailable when a count mean is estimated at zero.",
+      class = "latents_boundary_fit", call = NULL))
+  }
   if (any(object$profile_probabilities <= 0) || any(object$group_probabilities <= 0)) {
     stop(errorCondition(
       "Wald inference requires strictly positive mixing probabilities.",
@@ -1351,6 +1375,17 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
         !identical(encoded$levels, object$categorical_levels)) {
       stop(errorCondition(
         "data must reproduce the original categorical indicators, including their categories and row order.",
+        class = "latents_bad_inference_data", call = NULL))
+    }
+  }
+  if (!is.null(object$extra_data)) {
+    extra <- .latents_prepare_extra(data, object$ordinal, object$count,
+                                    object$missing %||% "error")
+    if (!identical(unname(extra$ordinal), unname(object$extra_data$ordinal)) ||
+        !identical(extra$ordinal_levels, object$extra_data$ordinal_levels) ||
+        !identical(unname(extra$count), unname(object$extra_data$count))) {
+      stop(errorCondition(
+        "data must reproduce the original ordinal and count indicators.",
         class = "latents_bad_inference_data", call = NULL))
     }
   }
@@ -1454,13 +1489,15 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
                                  "covariance", "cholesky", "log_cholesky",
                                  "log_volume", "log_shape", "rotation",
                                  "shape_cholesky", "log_shape_cholesky",
-                                 "response", "response_logit")
+                                 "response", "response_logit",
+                                 "ordinal_intercept", "ordinal_location",
+                                 "count_mean", "log_count_mean")
 
 #' Parameter kinds whose term names a pair, written `a:b`
 #' @noRd
 .multilpa_paired_kinds <- c("covariance", "cholesky", "log_cholesky",
                             "rotation", "shape_cholesky", "log_shape_cholesky",
-                            "response", "response_logit")
+                            "response", "response_logit", "ordinal_intercept")
 
 #' Multiplicity corrections an inference verb accepts
 #'

@@ -57,7 +57,7 @@ homogeneous and measurement-invariant.
   homogeneous model; SEs only for EEI/VVI/EEE/VVV.
 - [x] Mover-stayer class; FIML and covariance structures in the general engine (2026-10-01).
 - [ ] Gaps vs JStats: random-intercept LTA (needs the exact Mplus RI-LTA
-  specification), ordinal and count indicators, absorbing profiles
+  specification), absorbing profiles
   (seqHMM-style). Sampling weights done (0.9.3). **M-L**
 - [ ] Follow-ups: covariance structures and FIML in the general engine;
   structure-aware standard errors in lta(); likelihood-ratio and bootstrap
@@ -212,3 +212,9 @@ precondition for everything here.
 | 2026-09-21 | Centering (`person`, `grand`); `lmr_lrt()` and random intercept moved to `future/` | |
 | 2026-09-20 | External review remediated; tutorial rebuilt; feature matrix audited | `NEWS.md` 0.11.0 |
 | 2026-09-19 | `fixed =`, `fit_staged()`, covariate models with categorical, mixed and full covariance, `lta()`, CLC and KIC, estimates with SEs from one verb | `validation/MATH_AUDIT.md` |
+
+- [x] Ordinal (adjacent-category) and Poisson count indicators in the core
+  engine (2026-10-01, 0.9.5; Latent GOLD-checked).
+- [ ] Ordinal/count follow-ups: covariate models, `lta()`, `start`/`fixed`,
+  negative binomial and zero-inflated counts, a cumulative-logit ordinal
+  option, ordinal/count in the bivariate-residual table and plots. **M**

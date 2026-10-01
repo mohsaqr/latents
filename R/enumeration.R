@@ -261,11 +261,11 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       paste(.multilpa_structures(), collapse = ", ")),
       class = "latents_bad_argument", call = NULL))
   }
-  continuous <- setdiff(vars, extra$categorical)
+  continuous <- setdiff(vars, c(extra$categorical, extra$ordinal, extra$count))
   if (length(continuous) == 0L) {
     if (model_given) {
       stop(errorCondition(paste(
-        "Every indicator is categorical, so there is no covariance structure",
+        "No indicator is continuous, so there is no covariance structure",
         "for `model` to choose; leave `model` out."),
         class = "latents_bad_argument", call = NULL))
     }
@@ -680,6 +680,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
     names(drawn) <- names(blocks)
     result <- cbind(result, as.data.frame(drawn, stringsAsFactors = FALSE))
   }
+  extra <- .latents_draw_extra(object, profile)
+  if (length(extra) > 0L) result[names(extra)] <- extra
   result[, object$vars, drop = FALSE]
 }
 
@@ -1115,8 +1117,11 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       stop(errorCondition("data must reproduce the original categorical indicators and row order.",
         class = "latents_bad_inference_data", call = NULL))
     }
+    extra <- if (is.null(model$extra_data)) NULL else
+      .latents_prepare_extra(data, model$ordinal, model$count,
+                             if (fiml) "fiml" else "error")
     likelihood <- .multilpa_expectation(x, model$group_index, model,
-                                        codes)$log_likelihood
+                                        codes, extra = extra)$log_likelihood
     if (abs(likelihood - model$log_likelihood) > 1e-7 * (1 + abs(likelihood))) {
       stop(errorCondition("data do not reproduce the fitted model likelihood.",
         class = "latents_bad_inference_data", call = NULL))
@@ -1169,6 +1174,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                min_variance = model$min_variance,
                centering = model$centering %||% "none",
                categorical = model$categorical %||% character(),
+               ordinal = model$ordinal %||% character(),
+               count = model$count %||% character(),
                min_probability = model$min_probability %||% 1e-10,
                missing = missing_for(model),
                start = constraint$start, fixed = constraint$fixed),

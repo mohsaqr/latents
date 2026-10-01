@@ -56,7 +56,9 @@ predict.multilpa <- function(object, newdata = NULL,
   parameters <- object[intersect(c("means", "variances", "covariances",
                                    "profile_probabilities",
                                    "group_probabilities",
-                                   "response_probabilities"), names(object))]
+                                   "response_probabilities", "ordinal_intercepts",
+                                   "ordinal_locations", "count_means"),
+                                 names(object))]
   if (isTRUE(object$noise)) {
     # The fit reports the noise share apart from the Gaussian profiles' shares
     # (together they sum to one); the E-step takes it as a last column.
@@ -71,7 +73,8 @@ predict.multilpa <- function(object, newdata = NULL,
                         prepared, parameters)))
   }
   expectation <- .multilpa_expectation(prepared$x, prepared$group_index,
-                                       parameters, prepared$codes)
+                                       parameters, prepared$codes,
+                                       extra = prepared$extra)
   .multilpa_prediction_table(object, prepared, expectation,
                              posteriors = identical(type, "posterior"))
 }
@@ -106,7 +109,7 @@ predict.multilpa <- function(object, newdata = NULL,
   }
   if (!is.data.frame(newdata)) bad_data("`newdata` must be a data frame.")
   categorical <- object$categorical %||% character()
-  continuous <- setdiff(object$vars, categorical)
+  continuous <- .multilpa_continuous_names(object)
   two_level <- !isTRUE(object$single_level) && !is.null(object$id)
   needed <- c(object$vars, if (two_level) object$id)
   absent <- setdiff(needed, names(newdata))
@@ -139,8 +142,10 @@ predict.multilpa <- function(object, newdata = NULL,
       code
     }, integer(n)), nrow = n, dimnames = list(NULL, categorical))
   }
+  extra <- .latents_prepare_extra_like(object, newdata)
   if (identical(object$missing %||% "error", "error") &&
-      (anyNA(x) || (!is.null(codes) && anyNA(codes)))) {
+      (anyNA(x) || (!is.null(codes) && anyNA(codes)) ||
+       anyNA(.latents_extra_matrix(extra)))) {
     bad_data(paste(
       "`newdata` has missing indicator values, and the fit was made with",
       "`missing = \"error\"`. Refit with `missing = \"fiml\"` to classify",
@@ -158,7 +163,7 @@ predict.multilpa <- function(object, newdata = NULL,
     x <- .multilpa_center_indicators(x, group_index, length(group_levels),
                                      "person")$x
   }
-  list(x = x, codes = codes, group_index = group_index,
+  list(x = x, codes = codes, extra = extra, group_index = group_index,
        groups = groups, rows = seq_len(n), two_level = two_level)
 }
 
@@ -176,7 +181,7 @@ predict.multilpa <- function(object, newdata = NULL,
   single$group_probabilities <- 1
   expectation <- .multilpa_expectation(prepared$x,
                                        seq_len(nrow(prepared$x)), single,
-                                       prepared$codes)
+                                       prepared$codes, extra = prepared$extra)
   expectation$group_log_likelihood
 }
 

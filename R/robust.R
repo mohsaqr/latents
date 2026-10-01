@@ -17,7 +17,8 @@
   parameters <- .multilpa_decode(theta, object)
   group_index <- object$group_index
   expectation <- .multilpa_expectation(x, group_index, parameters, codes,
-                                       unname(object$sampling_weights))
+                                       unname(object$sampling_weights),
+                                       object$extra_data)
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
   measurement <- if (.multilpa_uses_chart(object)) {
@@ -62,8 +63,11 @@
   response_scores <- .multilpa_response_scores(
     codes, expectation$subject_posteriors, parameters$response_probabilities,
     group_index)
+  extra_scores <- .latents_extra_scores(object$extra_data,
+                                        expectation$subject_posteriors,
+                                        parameters, group_index)
   scores <- cbind(measurement$means, measurement$covariances, response_scores,
-                  profile_scores, group_scores)
+                  extra_scores, profile_scores, group_scores)
   dimnames(scores) <- list(object$group_ids, names(theta))
   scores
 }

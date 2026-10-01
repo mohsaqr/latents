@@ -198,7 +198,8 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
 #'   original names and in their original order.
 #' @noRd
 .multilpa_model_frame <- function(x) {
-  if (is.null(x$indicator_data) && is.null(x$categorical_data)) {
+  if (is.null(x$indicator_data) && is.null(x$categorical_data) &&
+      is.null(x$extra_data)) {
     stop(errorCondition(
       "This fit carries no indicator data, so the data it was fitted to cannot be rebuilt.",
       class = "latents_incomplete_fit", call = NULL))
@@ -234,7 +235,16 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       if (is.null(levels_for)) x$categorical_data[, name] else
         levels_for[x$categorical_data[, name]]
     }), colnames(x$categorical_data))
-  indicators <- c(continuous, categorical)
+  extra <- x$extra_data
+  ordinal <- if (is.null(extra$ordinal)) list() else
+    stats::setNames(lapply(seq_len(ncol(extra$ordinal)), function(j) {
+      levels_for <- extra$ordinal_levels[[j]]
+      factor(levels_for[extra$ordinal[, j]], levels = levels_for, ordered = TRUE)
+    }), colnames(extra$ordinal))
+  counts <- if (is.null(extra$count)) list() else
+    stats::setNames(lapply(seq_len(ncol(extra$count)), function(j) extra$count[, j]),
+                    colnames(extra$count))
+  indicators <- c(continuous, categorical, ordinal, counts)
   # Back in the order the caller named them, not the order the model stored them.
   ordered <- x$vars[x$vars %in% names(indicators)]
   frame <- c(columns, indicators[ordered])

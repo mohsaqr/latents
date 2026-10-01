@@ -29,7 +29,9 @@ indicator as categorical; `multilpa()` with some indicators named in
 - **Item types.** Binary, ordinal and nominal items share one
   parameterization: a free probability for every category in every profile.
   Numeric, integer, logical, character and factor columns are accepted; factor
-  levels keep their order, other types are sorted.
+  levels keep their order, other types are sorted. Ordered items can instead
+  be modelled as `ordinal` (an adjacent-category logit with far fewer
+  parameters), and counts as `count` (Poisson); see below.
 - **Mixed measurement.** Continuous and categorical indicators in one model.
 - **Missing answers.** `missing = "fiml"` uses the observed answers of each
   row.
@@ -144,6 +146,32 @@ ones, `get_results()` with `"responses"`.
 get_results(mixed)
 get_results(mixed, "responses")
 ```
+
+## Ordinal and count indicators
+
+The affect ratings run from 1 to 7. As `categorical` items each would have six
+free probabilities in every profile; as `ordinal` items each has six category
+intercepts shared by every profile and one location per profile, which says
+how far up the scale that profile sits. We pass their names as `ordinal`.
+
+```{r ordinal}
+affect <- c("happy", "relaxed", "worried", "exhausted")
+ordinal <- multilpa(first_week, vars = c(affect, activities), id = "student",
+                    ordinal = affect, categorical = activities, n_profiles = 2,
+                    n_group_classes = 2, n_starts = 3, seed = 1)
+ordinal
+```
+
+`get_results()` with `"ordinal"` gives each profile's probability of every
+rating and its location.
+
+```{r ordinal-results}
+head(get_results(ordinal, "ordinal"), 7)
+```
+
+Indicators holding counts (number of messages sent, of absences) go in
+`count`: each is Poisson with one mean per profile, read with
+`get_results(fit, "count_means")`.
 
 ## Reference
 

@@ -1,0 +1,202 @@
+o04.dat
+File name:	o04.dat	
+File size:	6904 bytes  700 records	
+File date:	2026-Oct-01 7:08:23 PM	
+Syntax:	o04.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	L²	df	p-value	Class.Err.	Entropy R²	
+o04	2-Cluster	-2649.6377	5384.4394	5325.2753	5338.2753	13	53.4337	46	0.21	0.1665	0.4568	
+o04 - L² = 53.4337
+2-Cluster Syntax Model	
+					
+Number of cases	700				
+Number of parameters (Npar)	13				
+Random Seed	20261001				
+Best Start Seed	1394891				
+					
+Chi-squared Statistics					
+Degrees of freedom (df)	46	p-value			
+L-squared (L²)	53.4337	0.21			
+X-squared	53.2989	0.21			
+Cressie-Read	52.7602	0.23			
+BIC (based on L²)	-247.9160				
+AIC (based on L²)	-38.5663				
+AIC3 (based on L²)	-84.5663				
+CAIC (based on L²)	-293.9160				
+SABIC (based on L²)	-101.8568				
+Dissimilarity Index	0.0982	 			
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-2649.6377				
+Log-prior	0.0000				
+Log-posterior	-2649.6377				
+BIC (based on LL)	5384.4394				
+AIC (based on LL)	5325.2753				
+AIC3 (based on LL)	5338.2753				
+CAIC (based on LL)	5397.4394				
+SABIC (based on LL)	5343.1618				
+					
+					
+Classification Statistics	Cluster				
+Classification errors	0.1665				
+Reduction of errors (Lambda)	0.6666				
+Entropy R-squared	0.4568				
+Standard R-squared	0.5261				
+Classification log-likelihood	-2913.1854				
+Entropy	263.5477				
+CLC	5826.3708				
+AWE	6035.6988				
+ICL-BIC	5911.5348				
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	277.4778	71.9993	349.4770		
+2	44.5222	306.0007	350.5230		
+Total	322.0000	378.0000	700.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	266.5422	82.9349	349.4770		
+2	82.9349	267.5881	350.5230		
+Total	349.4770	350.5230	700.0000		
+					
+Files					
+Infile	C:\lgordinal\o04.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-12				
+emtolerance	1e-10				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20261001				
+sets	50				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+identification	no				
+validation LL	no				
+sample size BIC	     700				
+predictionstatistics	no				
+outfile					
+file name	o04_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+o1	Ord-Fixed	4			
+1	1	1			
+2	2	2			
+3	3	3			
+4	4	4			
+o2	Ord-Fixed	3			
+1	1	1			
+2	2	2			
+3	3	3			
+o3	Ord-Fixed	5			
+1	1	1			
+2	2	2			
+3	3	3			
+4	4	4			
+5	5	5			
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261001 sets=50 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile;
+   outfile 'o04_posteriors.txt' classification keep id;
+variables
+   dependent o1 ordinal, o2 ordinal, o3 ordinal;
+   latent Cluster nominal 2;
+equations
+   Cluster <- 1;
+   o1 <- 1 + Cluster;
+   o2 <- 1 + Cluster;
+   o3 <- 1 + Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	
+Cluster(1)	<-	1	0.0000	.	.	.	0.0002	1	0.99	
+Cluster(2)	<-	1	0.0030	0.2304	0.0130	0.99				
+										
+o1(1)	<-	1	0.0000	.	.	.	7.7225	3	0.052	
+o1(2)	<-	1	0.1249	0.1505	0.8302	0.41				
+o1(3)	<-	1	0.1506	0.2075	0.7257	0.47				
+o1(4)	<-	1	-0.7016	0.4127	-1.7001	0.089				
+o1	<-	Cluster(1)	0.0000	.	.	.	18.1720	1	2.0e-5	
+o1	<-	Cluster(2)	1.7024	0.3994	4.2629	2.0e-5				
+										
+o2(1)	<-	1	0.0000	.	.	.	59.5590	2	1.2e-13	
+o2(2)	<-	1	0.4351	0.1416	3.0713	0.0021				
+o2(3)	<-	1	-0.4986	0.2010	-2.4813	0.013				
+o2	<-	Cluster(1)	0.0000	.	.	.	27.0301	1	2.0e-7	
+o2	<-	Cluster(2)	-1.0296	0.1980	-5.1990	2.0e-7				
+										
+o3(1)	<-	1	0.0000	.	.	.	34.1570	4	6.9e-7	
+o3(2)	<-	1	0.5593	0.1520	3.6800	0.00023				
+o3(3)	<-	1	0.5051	0.1696	2.9787	0.0029				
+o3(4)	<-	1	0.0208	0.2361	0.0883	0.93				
+o3(5)	<-	1	-0.5605	0.3529	-1.5883	0.11				
+o3	<-	Cluster(1)	0.0000	.	.	.	26.4118	1	2.8e-7	
+o3	<-	Cluster(2)	0.7776	0.1513	5.1392	2.8e-7				
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+Cluster	<-	1	Cluster	1	2	0.0002	1	0.99	
+	
+o1	<-	 Cluster	Cluster	1	2	18.1720	1	2.0e-5	
+	
+o2	<-	 Cluster	Cluster	1	2	27.0301	1	2.0e-7	
+	
+o3	<-	 Cluster	Cluster	1	2	26.4118	1	2.8e-7	
+Profile
+ 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.4993	0.0576	0.5007	0.0576	 	 	
+o1	 	
+1	0.2638	0.0347	0.0081	0.0073	0.1357	0.0129	
+2	0.2989	0.0331	0.0501	0.0240	0.1743	0.0143	
+3	0.3066	0.0298	0.2820	0.0311	0.2943	0.0172	
+4	0.1308	0.0425	0.6599	0.0565	0.3957	0.0185	
+Mean	2.3044	0.1193	3.5937	0.0925	2.9500	0.0398	
+o2	 	
+1	0.3172	0.0322	0.6138	0.0381	0.4657	0.0189	
+2	0.4901	0.0249	0.3387	0.0278	0.4143	0.0186	
+3	0.1927	0.0232	0.0475	0.0132	0.1200	0.0123	
+Mean	1.8754	0.0503	1.4338	0.0497	1.6543	0.0258	
+o3	 	
+1	0.1667	0.0237	0.0278	0.0095	0.0971	0.0112	
+2	0.2916	0.0284	0.1058	0.0198	0.1986	0.0151	
+3	0.2763	0.0192	0.2181	0.0187	0.2471	0.0163	
+4	0.1702	0.0206	0.2925	0.0221	0.2314	0.0159	
+5	0.0952	0.0237	0.3559	0.0335	0.2257	0.0158	
+Mean	2.7355	0.1196	3.8428	0.1043	3.2900	0.0484	
