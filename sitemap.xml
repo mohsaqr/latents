@@ -1,6 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://pak.dynasite.org/latents/404.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/ROADMAP.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/articles/additive.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/case-engagement-covariates.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/case-engagement-evaluation.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/case-engagement-profiles.html</loc></url>
@@ -46,8 +47,11 @@
 <url><loc>https://pak.dynasite.org/latents/reference/fit_staged.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_group_tna.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_pooled.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_tna.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/index.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/latents-conditions.html</loc></url>
@@ -65,11 +69,14 @@
 <url><loc>https://pak.dynasite.org/latents/reference/nobs.multilpa_transitions.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/parameter_inference.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/plot.latents_family_enumeration.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.latents_pooled.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_additive.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_bootstrap_lrt.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_covariates.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_cross_level.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_enumeration.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_transitions.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot_views.html</loc></url>
@@ -80,6 +87,7 @@
 <url><loc>https://pak.dynasite.org/latents/reference/print.latents_plots.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.latents_pooled.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.multilpa.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/print.multilpa_additive.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.multilpa_bootstrap_lrt.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.multilpa_covariates.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.multilpa_enumeration.html</loc></url>
@@ -102,6 +110,7 @@
 <url><loc>https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/summary.latents_pooled.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/summary.multilpa.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/summary.multilpa_additive.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/summary.multilpa_bootstrap_lrt.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/summary.multilpa_covariates.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/summary.multilpa_enumeration.html</loc></url>

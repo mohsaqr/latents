@@ -13,7 +13,7 @@ boundary, and unreplicated fits are reported, not silently selected."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,6 +28,7 @@ boundary, and unreplicated fits are reported, not silently selected."><meta prop
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
@@ -75,6 +76,8 @@ boundary, and unreplicated fits are reported, not silently selected.</p>
 <span>  n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
 <span>  model <span class="op">=</span> <span class="st">"basic"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  family <span class="op">=</span> <span class="st">"profiles"</span>,</span>
+<span>  between_variance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -132,8 +135,25 @@ to cross. A structure set through <code>variance_model</code>, <code>covariance_
 <dd><p>Optional reproducible seed for each fit.</p></dd>
 
 
+<dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
+<dd><p><code>"profiles"</code> (the default) enumerates the profile model over
+<code>n_profiles</code>, <code>n_group_classes</code> and <code>model</code>. One or more of the
+group-class families <code>"additive"</code>, <code>"dispersion"</code> and
+<code>"additive_dispersion"</code> enumerates those instead, over <code>family</code>,
+<code>n_group_classes</code> and <code>between_variance</code>; <code>n_profiles</code> and <code>model</code> are
+then refused, and the result is a <code>latents_family_enumeration</code> read with
+<code><a href="get_results.latents_family_enumeration.html">get_results.latents_family_enumeration()</a></code> and <code><a href="candidate_fit.html">candidate_fit()</a></code>.</p></dd>
+
+
+<dt id="arg-between-variance">between_variance<a class="anchor" aria-label="anchor" href="#arg-between-variance"></a></dt>
+<dd><p>For group-class families: the between-variance
+restrictions to cross, <code>"varying"</code>, <code>"equal"</code> or both (the default). The
+dispersion family is always fitted with <code>"equal"</code>.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Further arguments to <code><a href="multilpa.html">multilpa()</a></code>.</p></dd>
+<dd><p>Further arguments to <code><a href="multilpa.html">multilpa()</a></code>; for group-class families only
+<code>n_starts</code>, <code>max_iter</code>, <code>tol</code> and <code>min_variance</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

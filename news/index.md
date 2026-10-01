@@ -1,5 +1,69 @@
 # Changelog
 
+## latents 0.9.0
+
+### Experimental: the Houle et al. (2026) multilevel families
+
+- `multilpa(family = )` fits the multilevel latent profile families of
+  Houle, Morin & Harvey (2026) beside the existing profile model
+  (`family = "profiles"`, their dispersion-heterogeneity model):
+  - group-class families with no individual profiles, each group
+    carrying a Gaussian intercept per indicator: `"additive"` (classes
+    differ in means; within-group variance shared), `"dispersion"`
+    (classes differ in within-group variances) and
+    `"additive_dispersion"` (both); `between_variance = "varying"` or
+    `"equal"`. The likelihood is exact (no quadrature); zero
+    between-group variances are reached by a boundary maximization with
+    a Karush-Kuhn-Tucker check; interior fits are finished by Newton
+    steps.
+  - cross-level families with individual profiles and group classes from
+    the same indicators, following the published manifest-aggregation
+    specification: `"restricted_cross_level"` and `"full_cross_level"`.
+    Their likelihood is a working likelihood (group means reuse the
+    ratings), so it compares only cross-level fits of the same data; no
+    standard errors.
+- Tidy tables for every family through
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+  (`"parameters"`, `"group_classes"`, `"groups"`, `"intercepts"`,
+  `"recovery"`, … for the group-class families; `"profiles"`,
+  `"composition"`, … for the cross-level ones),
+  [`summary()`](https://rdrr.io/r/base/summary.html),
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
+  [`coef()`](https://rdrr.io/r/stats/coef.html),
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html),
+  [`confint()`](https://rdrr.io/r/stats/confint.html),
+  [`logLik()`](https://rdrr.io/r/stats/logLik.html),
+  [`nobs()`](https://rdrr.io/r/stats/nobs.html) and
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  (observed, cluster-robust or OPG covariance from analytic group
+  scores).
+- `enumerate_classes(family = c("additive", "dispersion", "additive_dispersion"), n_group_classes = )`
+  crosses families, between-variance restrictions and class counts;
+  `candidate_fit(grid, n_group_classes = , model = )` picks one.
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  tests nested group-class fits by parametric bootstrap.
+- `latents_weak_class` warning with `effective_groups` in the
+  `"group_classes"` table: a class supported by fewer than 50 effective
+  groups (small, poorly separated, or both) has intervals that can be
+  miscalibrated. Threshold set by a predeclared rule and evaluated on
+  held-out simulations (flags 100% of a rare, weakly separated condition
+  and 0.8% of well-separated ones). Also flags designs with fewer than
+  about 50 groups per class.
+- Evidence (`validation/ADDITIVE_SIMULATION.md`,
+  `equivalence/latentgold-families/`): predeclared simulations with 1000
+  datasets per condition (additive: 31 of 34 reference-condition
+  parameters meet every gate; dispersion and additive-dispersion: 45 of
+  46; every miss is the ML small-sample downward bias of a between-group
+  variance, coverage 0.925-0.947). Latent GOLD 6.1 agrees on parameter
+  counts in all eight external cases, and its likelihoods and posteriors
+  converge to latents’ as its quadrature is refined (largest remaining
+  gaps 1.6e-4 and 2.0e-4). Robust standard errors are needed for
+  heavy-tailed ratings.
+- New vignette:
+  [`vignette("additive")`](https://pak.dynasite.org/latents/articles/additive.md).
+- Not yet available for these families: missing data, covariates, and an
+  external Mplus comparison (Mplus is not available here).
+
 ## latents 0.8.8
 
 ### plot() returns ggplot objects (breaking)

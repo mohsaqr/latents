@@ -64,4 +64,6 @@ as.data.frame(comparison)
 #> 1             1                  1                    2
 #>   alternative_group_classes statistic p_value monte_carlo_se iter n_valid fixed
 #> 1                         1  44.19811     0.1     0.09486833    9       9  <NA>
+#>   null_family alternative_family
+#> 1    profiles           profiles
 ```

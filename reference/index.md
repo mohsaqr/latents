@@ -63,6 +63,26 @@ Every table of a fitted model, retrieved by name.
 - [`get_results(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
   [`as.data.frame(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
   : Tables of a pooled multiply imputed fit
+- [`get_results(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`as.data.frame(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`coef(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`vcov(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`confint(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`logLik(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`nobs(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  : Tables of an additive group-class fit
+- [`get_results(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`as.data.frame(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`print(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`summary(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`logLik(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`nobs(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  : Tables of a cross-level fit
+- [`get_results(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  [`as.data.frame(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  [`print(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  [`summary(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  : Tables of a group-class family enumeration
 
 ## Mixture regression
 
@@ -108,16 +128,22 @@ Three-step analysis with a correction for classification error.
   [`print(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`plot(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   : Every classification diagnostic, in one call
+- [`plot(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_family_enumeration.md)
+  : Plot information criteria across group-class families
 - [`plot(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_mixture_regression.md)
   : Plot a mixture-of-regressions fit
 - [`plot(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_pooled.md)
   : Plot a pooled multiply imputed fit
 - [`plot(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa.md)
   : Plot a fitted multilevel latent profile model
+- [`plot(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_additive.md)
+  : Plot an additive group-class fit
 - [`plot(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_bootstrap_lrt.md)
   : Plot a simulated bootstrap null distribution
 - [`plot(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_covariates.md)
   : Plot a covariate model
+- [`plot(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_cross_level.md)
+  : Plot a cross-level fit
 - [`plot(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_enumeration.md)
   : Plot a class-enumeration grid
 - [`plot(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_transitions.md)
@@ -157,6 +183,18 @@ Standard generics for fitted models, enumeration grids and summaries.
   [`get_results(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
   [`print(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
   : Compare mixture regressions with different numbers of classes
+- [`get_results(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  [`as.data.frame(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  [`print(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  [`summary(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  : Tables of a group-class family enumeration
+- [`get_results(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`as.data.frame(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`print(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`summary(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`logLik(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  [`nobs(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
+  : Tables of a cross-level fit
 - [`print(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_mixture_regression.md)
   : Print a mixture-of-regressions fit
 - [`print(`*`<latents_plots>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_plots.md)
@@ -165,6 +203,8 @@ Standard generics for fitted models, enumeration grids and summaries.
   : Print a pooled multiply imputed fit
 - [`print(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa.md)
   : Print a fitted multilevel latent profile model
+- [`print(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_additive.md)
+  : Print a group-class fit
 - [`print(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_bootstrap_lrt.md)
   : Print a parametric bootstrap likelihood-ratio comparison
 - [`print(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_covariates.md)
@@ -191,6 +231,10 @@ Standard generics for fitted models, enumeration grids and summaries.
 - [`summary(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.md)
   [`print(`*`<summary_latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.md)
   : Summarize a mixture-of-regressions fit
+- [`summary(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_additive.md)
+  [`print(`*`<summary_multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_additive.md)
+  [`as.data.frame(`*`<summary_multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_additive.md)
+  : Summarize an additive group-class fit
 - [`summary(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_pooled.md)
   : Summarize a pooled multiply imputed fit
 - [`summary(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa.md)
@@ -236,6 +280,14 @@ Standard generics for fitted models, enumeration grids and summaries.
 - [`get_results(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
   [`as.data.frame(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
   : Tables of a pooled multiply imputed fit
+- [`get_results(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`as.data.frame(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`coef(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`vcov(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`confint(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`logLik(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  [`nobs(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
+  : Tables of an additive group-class fit
 - [`coef(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/coef.multilpa.md)
   : Extract multilevel LPA coefficients
 - [`coef(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/coef.multilpa_covariates.md)

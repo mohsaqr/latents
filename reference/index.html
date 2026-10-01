@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
@@ -231,6 +232,27 @@
 
         </dt>
         <dd>Tables of a pooled multiply imputed fit</dd>
+
+        <dt>
+
+          <code><a href="get_results.multilpa_additive.html">get_results(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">as.data.frame(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">coef(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">vcov(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">confint(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">logLik(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">nobs(<i>&lt;multilpa_additive&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tables of an additive group-class fit</dd>
+
+        <dt>
+
+          <code><a href="get_results.multilpa_cross_level.html">get_results(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">as.data.frame(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">print(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">summary(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">logLik(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">nobs(<i>&lt;multilpa_cross_level&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tables of a cross-level fit</dd>
+
+        <dt>
+
+          <code><a href="get_results.latents_family_enumeration.html">get_results(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="get_results.latents_family_enumeration.html">as.data.frame(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="get_results.latents_family_enumeration.html">print(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="get_results.latents_family_enumeration.html">summary(<i>&lt;latents_family_enumeration&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tables of a group-class family enumeration</dd>
       </dl></div><div class="section level2">
       <h2 id="mixture-regression">Mixture regression<a class="anchor" aria-label="anchor" href="#mixture-regression"></a></h2>
 
@@ -324,6 +346,13 @@
 
         <dt>
 
+          <code><a href="plot.latents_family_enumeration.html">plot(<i>&lt;latents_family_enumeration&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot information criteria across group-class families</dd>
+
+        <dt>
+
           <code><a href="plot.latents_mixture_regression.html">plot(<i>&lt;latents_mixture_regression&gt;</i>)</a></code>
 
         </dt>
@@ -345,6 +374,13 @@
 
         <dt>
 
+          <code><a href="plot.multilpa_additive.html">plot(<i>&lt;multilpa_additive&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot an additive group-class fit</dd>
+
+        <dt>
+
           <code><a href="plot.multilpa_bootstrap_lrt.html">plot(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code>
 
         </dt>
@@ -356,6 +392,13 @@
 
         </dt>
         <dd>Plot a covariate model</dd>
+
+        <dt>
+
+          <code><a href="plot.multilpa_cross_level.html">plot(<i>&lt;multilpa_cross_level&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a cross-level fit</dd>
 
         <dt>
 
@@ -456,6 +499,20 @@
 
         <dt>
 
+          <code><a href="get_results.latents_family_enumeration.html">get_results(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="get_results.latents_family_enumeration.html">as.data.frame(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="get_results.latents_family_enumeration.html">print(<i>&lt;latents_family_enumeration&gt;</i>)</a></code> <code><a href="get_results.latents_family_enumeration.html">summary(<i>&lt;latents_family_enumeration&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tables of a group-class family enumeration</dd>
+
+        <dt>
+
+          <code><a href="get_results.multilpa_cross_level.html">get_results(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">as.data.frame(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">print(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">summary(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">logLik(<i>&lt;multilpa_cross_level&gt;</i>)</a></code> <code><a href="get_results.multilpa_cross_level.html">nobs(<i>&lt;multilpa_cross_level&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tables of a cross-level fit</dd>
+
+        <dt>
+
           <code><a href="print.latents_mixture_regression.html">print(<i>&lt;latents_mixture_regression&gt;</i>)</a></code>
 
         </dt>
@@ -481,6 +538,13 @@
 
         </dt>
         <dd>Print a fitted multilevel latent profile model</dd>
+
+        <dt>
+
+          <code><a href="print.multilpa_additive.html">print(<i>&lt;multilpa_additive&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a group-class fit</dd>
 
         <dt>
 
@@ -565,6 +629,13 @@
 
         </dt>
         <dd>Summarize a mixture-of-regressions fit</dd>
+
+        <dt>
+
+          <code><a href="summary.multilpa_additive.html">summary(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="summary.multilpa_additive.html">print(<i>&lt;summary_multilpa_additive&gt;</i>)</a></code> <code><a href="summary.multilpa_additive.html">as.data.frame(<i>&lt;summary_multilpa_additive&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarize an additive group-class fit</dd>
 
         <dt>
 
@@ -698,6 +769,13 @@
 
         </dt>
         <dd>Tables of a pooled multiply imputed fit</dd>
+
+        <dt>
+
+          <code><a href="get_results.multilpa_additive.html">get_results(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">as.data.frame(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">coef(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">vcov(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">confint(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">logLik(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="get_results.multilpa_additive.html">nobs(<i>&lt;multilpa_additive&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tables of an additive group-class fit</dd>
 
         <dt>
 

@@ -6,6 +6,8 @@
   workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.md):
 - [Latent class analysis: a complete
   workflow](https://pak.dynasite.org/latents/articles/workflow-lca.md):
+- [Group-class and cross-level models: classes of groups from raw
+  ratings](https://pak.dynasite.org/latents/articles/additive.md):
 - [Multilevel latent profile
   analysis](https://pak.dynasite.org/latents/articles/lpa.md):
 - [Evaluating a multilevel latent profile

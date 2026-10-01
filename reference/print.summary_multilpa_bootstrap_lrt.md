@@ -61,6 +61,8 @@ print(summary(comparison))
 #>              1                  1                    2
 #>  alternative_group_classes statistic p_value monte_carlo_se iter n_valid fixed
 #>                          1      44.2     0.1        0.09487    9       9  <NA>
+#>  null_family alternative_family
+#>     profiles           profiles
 #> 
 #> -- replicates ------------------------------------------------------
 #>  replicate statistic valid boundary logits_settled null_replications

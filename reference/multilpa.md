@@ -40,7 +40,10 @@ multilpa(
   select_start = c("likelihood", "converged"),
   prior = NULL,
   noise = FALSE,
-  acceleration = c("squarem", "none")
+  acceleration = c("squarem", "none"),
+  family = c("profiles", "additive", "dispersion", "additive_dispersion",
+    "restricted_cross_level", "full_cross_level"),
+  between_variance = c("varying", "equal")
 )
 ```
 
@@ -411,6 +414,80 @@ multilpa(
   monotone and makes the EM map a fixed function, which SQUAREM
   requires.
 
+- family:
+
+  The model family. `"profiles"`, the default, is the model described
+  above: individual profiles whose prevalences differ across group
+  classes. The other three are group-class-only families with no
+  individual profiles (Houle, Morin & Harvey, 2026): each group has a
+  Gaussian intercept per indicator, drawn from its group class's
+  distribution, and its members vary around it.
+
+  - `"additive"`: group classes differ in their means (and, optionally,
+    in between-group variances); one within-group variance per indicator
+    is shared by every class.
+
+  - `"dispersion"`: group classes differ in their within-group
+    variances; means and between-group variances are shared.
+
+  - `"additive_dispersion"`: group classes differ in means and in
+    within-group variances.
+
+  These families take only `data`, `vars`, `id`, `n_group_classes`,
+  `between_variance`, `n_starts`, `max_iter`, `tol`, `min_variance` and
+  `seed`; any other argument is refused with `latents_bad_argument`.
+  Indicators must be complete and continuous, and at least one group
+  must have more than one row (`latents_unidentified` otherwise).
+  Between variances estimated at zero are reached by a boundary
+  maximization with a Karush-Kuhn-Tucker check and flagged
+  (`latents_boundary`); interior fits are finished by Newton steps. The
+  result has class `multilpa_additive`; `bic` uses the number of groups
+  and `bic_individual` the number of rows. Read it with
+  [`get_results.multilpa_additive()`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md);
+  [`summary()`](https://rdrr.io/r/base/summary.html),
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
+  [`coef()`](https://rdrr.io/r/stats/coef.html),
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html),
+  [`confint()`](https://rdrr.io/r/stats/confint.html) and
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  work on it. These families are experimental: enumeration over
+  families, bootstrap inference, missing data and covariates are not yet
+  available. See
+  [`vignette("additive")`](https://pak.dynasite.org/latents/articles/additive.md).
+
+  Two cross-level families estimate individual profiles and group
+  classes from the same indicators, following the manifest-aggregation
+  specification of Houle et al. (2026, supplement): each group's means
+  of the indicators are between-level indicators of its group class,
+  with class-specific means and variances.
+
+  - `"restricted_cross_level"`: profile prevalences are the same in
+    every group class, so profiles and group classes are estimated
+    separately; the profile composition of each class is reported
+    descriptively.
+
+  - `"full_cross_level"`: profile prevalences differ across group
+    classes (as in `"profiles"`), and the group means also inform the
+    classes.
+
+  These take `data`, `vars`, `id`, `n_profiles`, `n_group_classes`,
+  `variance_model` (individual profiles), `between_variance` (group
+  classes), `n_starts`, `max_iter`, `tol`, `min_variance` and `seed`.
+  The group means are computed from the same ratings, so the likelihood
+  is the specification's working likelihood: comparable between
+  cross-level fits of the same data, not with the other families.
+  Standard errors are not available (`latents_unsupported_inference`).
+  The result has class `multilpa_cross_level`, read with
+  [`get_results.multilpa_cross_level()`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md).
+
+- between_variance:
+
+  For the additive and additive-dispersion families: `"varying"` (the
+  default) estimates between-group variances per group class, `"equal"`
+  one set shared by all classes. The dispersion family holds them equal;
+  `"varying"` is refused there. For the cross-level families, the
+  variances of the group means within each group class.
+
 ## Value
 
 An `multilpa` object containing `means`, `variances`, optional
@@ -459,6 +536,10 @@ Methodology, 33, 213–239. doi:10.1111/j.0081-1750.2003.t01-1-00131.x.
 
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. Biometrics, 49, 803–821. doi:10.2307/2532201.
+
+Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
+profile analyses: A comprehensive guide. Organizational Research
+Methods. doi:10.1177/10944281261469432.
 
 Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
 mixture estimation and model-based clustering. Journal of

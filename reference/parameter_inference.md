@@ -16,6 +16,18 @@ not admit this calculation.
 ## Usage
 
 ``` r
+# S3 method for class 'multilpa_additive'
+parameter_inference(
+  x,
+  data = NULL,
+  level = 0.95,
+  step = 1e-04,
+  vcov_type = c("observed", "robust", "opg"),
+  adjust = .multilpa_p_adjust_methods,
+  method = c("wald", "bootstrap"),
+  ...
+)
+
 # S3 method for class 'multilpa_covariates'
 parameter_inference(
   x,
@@ -32,6 +44,9 @@ parameter_inference(
   seed = NULL,
   boundary = c("error", "fix")
 )
+
+# S3 method for class 'multilpa_cross_level'
+parameter_inference(x, ...)
 
 parameter_inference(
   x,
@@ -140,6 +155,11 @@ parameter_inference(
   structures. Groups are the resampling unit rather than rows, so the
   interval carries the same independence assumption as
   `vcov_type = "robust"` and not the stronger one `"observed"` makes.
+
+- ...:
+
+  Unused by most methods; accepted so every method shares the generic's
+  signature.
 
 - iter:
 

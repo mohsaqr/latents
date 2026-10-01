@@ -17,6 +17,8 @@ enumerate_classes(
   n_group_classes = 1:3,
   model = "basic",
   seed = NULL,
+  family = "profiles",
+  between_variance = c("varying", "equal"),
   ...
 )
 ```
@@ -77,10 +79,31 @@ enumerate_classes(
 
   Optional reproducible seed for each fit.
 
+- family:
+
+  `"profiles"` (the default) enumerates the profile model over
+  `n_profiles`, `n_group_classes` and `model`. One or more of the
+  group-class families `"additive"`, `"dispersion"` and
+  `"additive_dispersion"` enumerates those instead, over `family`,
+  `n_group_classes` and `between_variance`; `n_profiles` and `model` are
+  then refused, and the result is a `latents_family_enumeration` read
+  with
+  [`get_results.latents_family_enumeration()`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  and
+  [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md).
+
+- between_variance:
+
+  For group-class families: the between-variance restrictions to cross,
+  `"varying"`, `"equal"` or both (the default). The dispersion family is
+  always fitted with `"equal"`.
+
 - ...:
 
   Further arguments to
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md);
+  for group-class families only `n_starts`, `max_iter`, `tol` and
+  `min_variance`.
 
 ## Value
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,6 +22,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
@@ -51,6 +52,25 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.0" id="latents-090">latents 0.9.0<a class="anchor" aria-label="anchor" href="#latents-090"></a></h2>
+<div class="section level3">
+<h3 id="experimental-the-houle-et-al-multilevel-families-0-9-0">Experimental: the Houle et al. (2026) multilevel families<a class="anchor" aria-label="anchor" href="#experimental-the-houle-et-al-multilevel-families-0-9-0"></a></h3>
+<ul><li>
+<code>multilpa(family = )</code> fits the multilevel latent profile families of Houle, Morin &amp; Harvey (2026) beside the existing profile model (<code>family = "profiles"</code>, their dispersion-heterogeneity model):
+<ul><li>group-class families with no individual profiles, each group carrying a Gaussian intercept per indicator: <code>"additive"</code> (classes differ in means; within-group variance shared), <code>"dispersion"</code> (classes differ in within-group variances) and <code>"additive_dispersion"</code> (both); <code>between_variance = "varying"</code> or <code>"equal"</code>. The likelihood is exact (no quadrature); zero between-group variances are reached by a boundary maximization with a Karush-Kuhn-Tucker check; interior fits are finished by Newton steps.</li>
+<li>cross-level families with individual profiles and group classes from the same indicators, following the published manifest-aggregation specification: <code>"restricted_cross_level"</code> and <code>"full_cross_level"</code>. Their likelihood is a working likelihood (group means reuse the ratings), so it compares only cross-level fits of the same data; no standard errors.</li>
+</ul></li>
+<li>Tidy tables for every family through <code><a href="../reference/get_results.html">get_results()</a></code> (<code>"parameters"</code>, <code>"group_classes"</code>, <code>"groups"</code>, <code>"intercepts"</code>, <code>"recovery"</code>, … for the group-class families; <code>"profiles"</code>, <code>"composition"</code>, … for the cross-level ones), <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>, <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>, <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>, <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code>, <code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code> and <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> (observed, cluster-robust or OPG covariance from analytic group scores).</li>
+<li>
+<code>enumerate_classes(family = c("additive", "dispersion", "additive_dispersion"), n_group_classes = )</code> crosses families, between-variance restrictions and class counts; <code>candidate_fit(grid, n_group_classes = , model = )</code> picks one. <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> tests nested group-class fits by parametric bootstrap.</li>
+<li>
+<code>latents_weak_class</code> warning with <code>effective_groups</code> in the <code>"group_classes"</code> table: a class supported by fewer than 50 effective groups (small, poorly separated, or both) has intervals that can be miscalibrated. Threshold set by a predeclared rule and evaluated on held-out simulations (flags 100% of a rare, weakly separated condition and 0.8% of well-separated ones). Also flags designs with fewer than about 50 groups per class.</li>
+<li>Evidence (<code>validation/ADDITIVE_SIMULATION.md</code>, <code>equivalence/latentgold-families/</code>): predeclared simulations with 1000 datasets per condition (additive: 31 of 34 reference-condition parameters meet every gate; dispersion and additive-dispersion: 45 of 46; every miss is the ML small-sample downward bias of a between-group variance, coverage 0.925-0.947). Latent GOLD 6.1 agrees on parameter counts in all eight external cases, and its likelihoods and posteriors converge to latents’ as its quadrature is refined (largest remaining gaps 1.6e-4 and 2.0e-4). Robust standard errors are needed for heavy-tailed ratings.</li>
+<li>New vignette: <code><a href="../articles/additive.html">vignette("additive")</a></code>.</li>
+<li>Not yet available for these families: missing data, covariates, and an external Mplus comparison (Mplus is not available here).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.8.8" id="latents-088">latents 0.8.8<a class="anchor" aria-label="anchor" href="#latents-088"></a></h2>
 <div class="section level3">
