@@ -29,7 +29,8 @@ lta(
   measurement = c("invariant", "occasion"),
   order = 1L,
   model = NULL,
-  mover_stayer = FALSE
+  mover_stayer = FALSE,
+  weights = NULL
 )
 }
 \arguments{
@@ -160,6 +161,13 @@ EEI and VVI with the extensions; other structures are refused
 change profile (identity transitions) and have their own initial profile
 distribution (Goodman's mover-stayer model). \code{n_group_classes} then counts
 the mover classes; the stayer class is reported as \code{"stayers"}.}
+
+\item{weights}{\code{NULL}, or the name of a column of \code{data} holding one
+sampling weight per \code{id} (constant over its occasions). As in
+\code{\link[=multilpa]{multilpa()}}: pseudo maximum likelihood with the weights scaled to sum to
+the number of \code{id} units, sandwich standard errors by default, and
+integer weights equal to repeating each sequence. A weighted fit uses the
+general transition engine and returns a \code{multilpa_lta}.}
 }
 \value{
 A \code{multilpa_transitions} object containing \code{means}, \code{variances},

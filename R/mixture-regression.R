@@ -77,6 +77,11 @@
 #'   `"observed"` (inverse observed information), `"robust"` (sandwich,
 #'   clustered on the top-level unit, or on `id` for a single-level fit given
 #'   `id`) or `"opg"` (outer product of the scores). `"none"` skips inference.
+#' @param weights `NULL`, or the name of a numeric column of `data` with a
+#'   sampling weight per independent unit: per row without `id`, per `id`
+#'   group otherwise (constant within it). Pseudo maximum likelihood with the
+#'   weights scaled to sum to the number of units; `vcov_type` defaults to
+#'   `"robust"` and refuses `"observed"` and `"opg"`.
 #'
 #' @return An object of class `latents_mixture_regression`. Read it with
 #'   [as.data.frame()] (the coefficient table) or [get_results()] (every
@@ -136,7 +141,9 @@ mixture_regression <- function(formula, data, n_classes,
                    min_variance = 1e-6, seed = NULL,
                    missing = c("error", "omit"),
                    select_start = c("likelihood", "converged"),
-                   vcov_type = c("observed", "robust", "opg", "none")) {
+                   vcov_type = c("observed", "robust", "opg", "none"),
+                   weights = NULL) {
+  vcov_defaulted <- missing(vcov_type)
   family <- match.arg(family)
   class_level <- match.arg(class_level)
   variance <- match.arg(variance)
@@ -176,6 +183,12 @@ mixture_regression <- function(formula, data, n_classes,
   spec <- .mixture_spec(formula, data, n_classes, family, id, class_level,
                        n_group_classes, common, membership, group_membership,
                        variance, min_variance, missing)
+  if (!is.null(weights)) {
+    spec <- .mixture_weight_spec(spec, data, weights)
+    if (!identical(vcov_type, "none")) {
+      vcov_type <- .latents_weighted_vcov(TRUE, vcov_type, vcov_defaulted)
+    }
+  }
   results <- .mixture_with_seed(seed, .mixture_run_starts(
     spec, as.integer(n_starts), as.integer(max_iter), tol))
   fit <- .mixture_select(spec, results, select_start)
@@ -184,10 +197,39 @@ mixture_regression <- function(formula, data, n_classes,
                        max_iter = as.integer(max_iter), tol = tol,
                        min_variance = min_variance, seed = seed,
                        select_start = select_start)
+  fit$weights <- weights
+  fit$sampling_weights <- spec$sampling_weights
   if (!identical(vcov_type, "none")) {
     fit$inference <- .mixture_inference(fit, vcov_type)
   }
   fit
+}
+
+#' Attach sampling weights to a mixture-regression specification
+#'
+#' The independent units are the rows, or the `id` groups when `id` is given
+#' (they cluster the rows even when classes sit on the rows). Weights are read
+#' on the rows the complete-case pass kept.
+#'
+#' @param spec The specification.
+#' @param data The data frame passed to the fit.
+#' @param weights Name of the weight column.
+#' @return `spec` with `sampling_weights` (per unit), `row_weights` and
+#'   `weights`.
+#' @noRd
+.mixture_weight_spec <- function(spec, data, weights) {
+  if (is.character(weights) && length(weights) == 1L && weights %in% names(data) &&
+      length(spec$kept_rows) < nrow(data) && anyNA(data[[weights]])) {
+    .latents_refuse_weights("missing weights; drop those rows first")
+  }
+  frame <- data[spec$kept_rows, , drop = FALSE]
+  unit_index <- if (is.null(spec$group_index)) seq_len(spec$n) else spec$group_index
+  n_units <- if (is.null(spec$group_index)) spec$n else spec$n_groups
+  unit_weights <- .latents_sampling_weights(frame, weights, unit_index, n_units)
+  spec$sampling_weights <- unit_weights
+  spec$row_weights <- unit_weights[unit_index]
+  spec$weights <- weights
+  spec
 }
 
 #' Is a value a single positive whole number?

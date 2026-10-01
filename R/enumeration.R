@@ -962,6 +962,13 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = 10L, max_iter = 1000L,
                                  tol = 1e-8, seed = NULL) {
+  if (.latents_is_weighted(null_model) || .latents_is_weighted(alternative_model)) {
+    .latents_refuse_weights(paste(
+      "`bootstrap_lrt()`: the parametric bootstrap draws samples from the",
+      "fitted model, not from the sampling design, so its reference",
+      "distribution ignores the weights. Compare weighted fits on their",
+      "information criteria"))
+  }
   transition_classes <- c("multilpa_transitions", "multilpa_lta")
   if (inherits(null_model, transition_classes) ||
       inherits(alternative_model, transition_classes)) {

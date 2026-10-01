@@ -126,18 +126,19 @@
   }
   mixing <- switch(spec$nesting,
     observation = {
-      residual <- tau - exp(expectation$log_prior)
+      residual <- tau - rowSums(tau) * exp(expectation$log_prior)
       do.call(cbind, lapply(seq.int(2L, length.out = spec$n_classes - 1L),
                             function(k) spec$w * residual[, k]))
     },
     group = {
-      residual <- expectation$group_tau - exp(expectation$log_prior)
+      residual <- expectation$group_tau -
+        rowSums(expectation$group_tau) * exp(expectation$log_prior)
       do.call(cbind, lapply(seq.int(2L, length.out = spec$n_classes - 1L),
                             function(k) spec$w * residual[, k]))
     },
     "two-level" = {
       rho <- expectation$rho
-      group_residual <- rho - exp(expectation$log_eta)
+      group_residual <- rho - rowSums(rho) * exp(expectation$log_eta)
       delta_scores <- do.call(cbind, lapply(
         seq.int(2L, length.out = spec$n_group_classes - 1L),
         function(h) spec$v * group_residual[, h]))
@@ -210,7 +211,7 @@
   spec <- fit$spec
   params <- fit$params
   theta <- .mixture_pack(spec, params)
-  scores <- .mixture_unit_scores(spec, params, fit$expectation)
+  scores <- .mixture_unit_scores(spec, params, .mixture_expectation(spec, params))
   clustered_on <- if (identical(spec$nesting, "observation") &&
                       !is.null(spec$id)) spec$id else if (
     !identical(spec$nesting, "observation")) spec$id else "row"

@@ -239,7 +239,8 @@
                  centering = x$centering %||% "none",
                  prior = x$prior,
                  noise = isTRUE(x$noise),
-                 acceleration = x$acceleration %||% "none")
+                 acceleration = x$acceleration %||% "none",
+                 weights = x$weights)
   structure <- x$covariance_structure
   if (is.null(structure) || is.na(structure) || !structure %in% .multilpa_structures()) {
     return(c(shared, list(variance_model = x$variance_model,

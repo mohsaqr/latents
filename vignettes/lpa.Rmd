@@ -213,6 +213,39 @@ The evaluation vignette covers `enumerate_classes()`, `candidate_fit()` and
 and `fit_staged()`; the transitions vignette covers `lta()`, `get_tna()` and
 `get_group_tna()`.
 
+## Sampling weights
+
+When students were sampled unequally, for example wavering students at half
+the rate of committed ones, each student carries a sampling weight, and the
+fit should estimate the population rather than the sample. We pass the
+weight column as `weights`. The weight belongs to the independent unit, here
+the student, so it must be constant within `id`. The fit maximizes the
+weighted (pseudo) log likelihood, with the weights scaled to sum to the
+number of students, and reports Kish's effective sample size.
+
+```{r weights}
+weighted_data <- transform(course_engagement,
+                           survey_weight = ifelse(student_type == "wavering", 2, 1))
+weighted_fit <- multilpa(weighted_data,
+                         vars = c("browse", "lectures", "forum_read",
+                                  "forum_post", "attendance"),
+                         id = "student", n_profiles = 2, n_group_classes = 2,
+                         weights = "survey_weight", n_starts = 10, seed = 1)
+weighted_fit
+```
+
+Under weights the inverse information is not the variance of the estimates,
+so `parameter_inference()` reports sandwich standard errors by default and
+refuses `vcov_type = "observed"`.
+
+```{r weights-inference}
+head(parameter_inference(weighted_fit), 4)
+```
+
+`lta()`, `mixture_regression()` and every `family` of `multilpa()` take
+`weights` the same way. The bootstrap likelihood ratio test does not: it
+simulates from the model, not from the sampling design.
+
 ## All tables
 
 To see every table at once, we call `summary()` on the fit, with `rows` for

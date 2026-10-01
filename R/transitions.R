@@ -550,6 +550,12 @@
 #'   change profile (identity transitions) and have their own initial profile
 #'   distribution (Goodman's mover-stayer model). `n_group_classes` then counts
 #'   the mover classes; the stayer class is reported as `"stayers"`.
+#' @param weights `NULL`, or the name of a column of `data` holding one
+#'   sampling weight per `id` (constant over its occasions). As in
+#'   [multilpa()]: pseudo maximum likelihood with the weights scaled to sum to
+#'   the number of `id` units, sandwich standard errors by default, and
+#'   integer weights equal to repeating each sequence. A weighted fit uses the
+#'   general transition engine and returns a `multilpa_lta`.
 #' @param model A covariance structure as `multilpa()` takes it (`"EEI"`,
 #'   `"VVI"`, `"VEI"`, ... ; mclust's codes). Standard errors are given for
 #'   EEI, VVI, EEE and VVV in the homogeneous model and for the diagonal
@@ -630,7 +636,8 @@ lta <- function(data, vars, id, n_profiles, time,
                             transition_covariates = character(),
                             initial_covariates = character(),
                             measurement = c("invariant", "occasion"),
-                            order = 1L, model = NULL, mover_stayer = FALSE) {
+                            order = 1L, model = NULL, mover_stayer = FALSE,
+                            weights = NULL) {
   select_start <- match.arg(select_start)
   transitions <- match.arg(transitions)
   measurement_model <- match.arg(measurement)
@@ -642,7 +649,7 @@ lta <- function(data, vars, id, n_profiles, time,
               isFALSE(mover_stayer))
   general <- mover_stayer || order == 2 || !identical(transitions, "homogeneous") ||
     length(transition_covariates) > 0L || length(initial_covariates) > 0L ||
-    !identical(measurement_model, "invariant")
+    !identical(measurement_model, "invariant") || !is.null(weights)
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             "`categorical` must be a character vector of indicator names" =
               is.character(categorical) && !anyNA(categorical),
@@ -697,7 +704,8 @@ lta <- function(data, vars, id, n_profiles, time,
                             seed, categorical, min_probability, occasions,
                             transitions, transition_covariates, initial_covariates,
                             measurement_model, select_start, call, as.integer(order),
-                            mover_stayer, missing, covariance_model, structure))
+                            mover_stayer, missing, covariance_model, structure,
+                            weights))
   }
   if (n_profiles < 2L) {
     stop(errorCondition(

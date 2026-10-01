@@ -26,7 +26,7 @@
 #' `latents_unidentified` when every group is a singleton, because the within
 #' and between variances are then observed only through their sum.
 #' @noRd
-.additive_prepare <- function(data, vars, id) {
+.additive_prepare <- function(data, vars, id, weights = NULL) {
   if (!is.data.frame(data) || !is.character(vars) || !is.character(id) ||
       nrow(data) < 2L || length(vars) < 1L || anyNA(vars) ||
       anyDuplicated(vars) || anyDuplicated(names(data)) ||
@@ -75,11 +75,17 @@
       all(is.finite(scatter)) && all(scatter >= 0),
     "group sizes must sum to the number of rows" = sum(sizes) == nrow(data)
   )
+  # Sampling weights, one per group, travel with the statistics: every
+  # posterior-weighted sum the M-step and the scores form is weighted by them.
+  sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
   structure(list(
     ids = groups$ids, index = groups$index, sizes = sizes,
     n_groups = groups$n, n_obs = nrow(data), vars = vars,
     averages = averages, scatter = scatter,
-    pooled_scatter = colSums(scatter)
+    pooled_scatter = colSums(scatter),
+    sampling_weights = sampling_weights,
+    weighted_n_obs = if (is.null(sampling_weights)) NULL else
+      sum(sampling_weights * sizes)
   ), class = "latents_additive_data")
 }
 
@@ -234,7 +240,7 @@
     "intercept variances must be nonnegative" =
       all(intercept_variance >= -sqrt(.Machine$double.eps))
   )
-  list(log_likelihood = sum(group_log_likelihood),
+  list(log_likelihood = sum((stats$sampling_weights %||% 1) * group_log_likelihood),
        group_log_likelihood = stats::setNames(group_log_likelihood, stats$ids),
        log_density = log_density, posterior = posterior,
        conditional_mean = conditional_mean,
@@ -266,6 +272,7 @@
                                     between_variance = c("varying", "equal")) {
   between_variance <- match.arg(between_variance)
   parameters <- .additive_check_parameters(parameters, length(stats$vars))
+  posterior <- posterior * (stats$sampling_weights %||% 1)
   n_classes <- nrow(parameters$means)
   j_count <- stats$n_groups
   score <- matrix(vapply(seq_len(n_classes), function(h) {
@@ -392,7 +399,8 @@
 .additive_maximization <- function(stats, expectation, parameters, structure,
                                    min_variance, zero) {
   parameters <- .additive_check_parameters(parameters, length(stats$vars))
-  posterior <- expectation$posterior
+  # Weighted posteriors are weighted counts; the weights sum to the groups.
+  posterior <- expectation$posterior * (stats$sampling_weights %||% 1)
   n_classes <- ncol(posterior)
   n_indicators <- length(stats$vars)
   counts <- colSums(posterior)
@@ -438,7 +446,8 @@
   within <- if (identical(structure$within, "varying")) {
     residual / observations
   } else {
-    matrix(colSums(residual) / stats$n_obs, n_classes, n_indicators, byrow = TRUE)
+    matrix(colSums(residual) / (stats$weighted_n_obs %||% stats$n_obs),
+           n_classes, n_indicators, byrow = TRUE)
   }
   list(means = means, between = between, within = pmax(within, min_variance),
        weights = counts / stats$n_groups)
@@ -559,7 +568,7 @@
 #' @noRd
 .additive_arguments <- function() {
   c("data", "vars", "id", "n_group_classes", "family", "between_variance",
-    "n_starts", "max_iter", "tol", "min_variance", "seed")
+    "n_starts", "max_iter", "tol", "min_variance", "seed", "weights")
 }
 
 #' Number of free rows (1 shared, or H) in a parameter block
@@ -603,7 +612,7 @@
 #' @noRd
 .additive_fit <- function(data, vars, id, n_group_classes, between_variance,
                           n_starts, max_iter, tol, min_variance, seed, call,
-                          family = "additive") {
+                          family = "additive", weights = NULL) {
   if (identical(family, "dispersion") && identical(between_variance, "varying")) {
     stop(errorCondition(paste(
       "The dispersion family holds between-group means and variances equal",
@@ -639,7 +648,7 @@
   n_group_classes <- as.integer(n_group_classes)
   n_starts <- as.integer(n_starts)
   max_iter <- as.integer(max_iter)
-  stats <- .additive_prepare(data, vars, id)
+  stats <- .additive_prepare(data, vars, id, weights)
   if (n_group_classes > stats$n_groups) {
     stop(errorCondition(sprintf(
       "%d group classes cannot be estimated from %d groups.",
@@ -765,6 +774,9 @@
     replication_tolerance = tolerance,
     log_likelihood_history = best$history,
     min_variance = min_variance, tol = tol, max_iter = max_iter, seed = seed,
+    weights = weights,
+    sampling_weights = if (is.null(stats$sampling_weights)) NULL else
+      stats::setNames(stats$sampling_weights, stats$ids),
     sufficient_statistics = stats)
   class(result) <- "multilpa_additive"
   if (any(!valid)) {
@@ -811,6 +823,7 @@ print.multilpa_additive <- function(x, ...) {
     length(x$group_probabilities), x$n_groups, x$n_obs,
     length(x$vars), x$log_likelihood, x$n_parameters, x$bic,
     if (x$converged) "yes" else "no", x$n_best_replicated, nrow(x$starts)))
+  .latents_print_weights(x)
   if (any(x$between_zero) || any(x$within_floor)) {
     cat("Boundary fit: a variance is at zero or at min_variance.\n")
   }

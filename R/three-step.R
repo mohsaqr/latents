@@ -264,6 +264,7 @@ three_step <- function(x, data, outcome,
   adjust <- match.arg(adjust)
   vcov_type <- match.arg(vcov_type)
   .multilpa_refuse_noise(x, "three_step()")
+  if (.latents_is_weighted(x)) .latents_refuse_weights("`three_step()` yet")
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`outcome` must name a single column of `data`" =
@@ -538,6 +539,7 @@ r3step <- function(x, data, covariates,
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
   .multilpa_refuse_noise(x, "r3step()")
+  if (.latents_is_weighted(x)) .latents_refuse_weights("`r3step()` yet")
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`covariates` must name columns of `data`" =

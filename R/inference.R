@@ -413,7 +413,8 @@
 .multilpa_score <- function(theta, x, object, codes = NULL) {
   stopifnot(is.numeric(theta), is.matrix(x), inherits(object, "multilpa"))
   parameters <- .multilpa_decode(theta, object)
-  expectation <- .multilpa_expectation(x, object$group_index, parameters, codes)
+  expectation <- .multilpa_expectation(x, object$group_index, parameters, codes,
+                                       unname(object$sampling_weights))
   if (.multilpa_uses_chart(object)) {
     measurement <- .multilpa_chart_scores(
       parameters, expectation, x, object,
@@ -448,7 +449,8 @@
       seq_len(object$n_profiles - 1L)]
   }), use.names = FALSE)
   group_score <- (colSums(expectation$group_posteriors) -
-    object$n_groups * parameters$group_probabilities)[seq_len(object$n_group_classes - 1L)]
+    sum(object$sampling_weights %||% object$n_groups) *
+      parameters$group_probabilities)[seq_len(object$n_group_classes - 1L)]
   response_score <- as.vector(.multilpa_response_scores(
     codes, expectation$subject_posteriors, parameters$response_probabilities))
   -c(mean_score, variance_score, response_score, profile_score, group_score)
@@ -770,7 +772,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   stopifnot(is.data.frame(data),
             is.numeric(level), length(level) == 1L, is.finite(level), level > 0, level < 1,
             is.numeric(step), length(step) == 1L, is.finite(step), step > 0)
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_weighted_vcov(!is.null(x$sampling_weights),
+                                      match.arg(vcov_type), missing(vcov_type))
   adjust <- match.arg(adjust)
   method <- match.arg(method)
   if (identical(method, "bootstrap")) {
@@ -844,7 +847,8 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   objective <- function(parameters) {
     stopifnot(is.numeric(parameters))
     -.multilpa_expectation(observed, x$group_index,
-      .multilpa_decode(restore(parameters), x), codes)$log_likelihood
+      .multilpa_decode(restore(parameters), x), codes,
+      unname(x$sampling_weights))$log_likelihood
   }
   score <- function(parameters) {
     stopifnot(is.numeric(parameters))

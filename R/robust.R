@@ -16,7 +16,8 @@
             "`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
   parameters <- .multilpa_decode(theta, object)
   group_index <- object$group_index
-  expectation <- .multilpa_expectation(x, group_index, parameters, codes)
+  expectation <- .multilpa_expectation(x, group_index, parameters, codes,
+                                       unname(object$sampling_weights))
   n_profiles <- object$n_profiles
   n_types <- object$n_group_classes
   measurement <- if (.multilpa_uses_chart(object)) {
@@ -53,8 +54,11 @@
     expected <- outer(rowSums(counts), parameters$profile_probabilities[group_type, ])
     (counts - expected)[, seq_len(n_profiles - 1L), drop = FALSE]
   }))
-  group_scores <- sweep(expectation$group_posteriors, 2L,
-    parameters$group_probabilities, "-")[, seq_len(n_types - 1L), drop = FALSE]
+  # A weighted posterior row sums to its unit's weight, so the expected count
+  # is that weight times the class probabilities; unweighted, it is one.
+  group_scores <- (expectation$group_posteriors -
+    outer(rowSums(expectation$group_posteriors),
+          parameters$group_probabilities))[, seq_len(n_types - 1L), drop = FALSE]
   response_scores <- .multilpa_response_scores(
     codes, expectation$subject_posteriors, parameters$response_probabilities,
     group_index)

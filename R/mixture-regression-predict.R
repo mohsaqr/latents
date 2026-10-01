@@ -124,7 +124,7 @@ predict.latents_mixture_regression <- function(object, newdata = NULL,
   if (identical(type, "posterior")) {
     refit <- object
     refit$spec <- spec
-    refit$expectation <- .mixture_expectation(spec, params)
+    refit$expectation <- .mixture_expectation(spec, params, weighted = FALSE)
     return(.mixture_assignment_table(refit))
   }
   means <- .mixture_class_means(spec, params)

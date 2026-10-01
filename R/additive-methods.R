@@ -270,7 +270,8 @@ get_results.multilpa_additive <- function(x, what = "parameters", level = 0.95,
                                           adjust = .multilpa_p_adjust_methods,
                                           data = NULL, truth = NULL, ...) {
   what <- match.arg(what, c(.additive_tables(), "recovery", "all"))
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+                                      missing(vcov_type))
   adjust <- match.arg(adjust)
   stopifnot("`level` must be a single number in (0, 1)" =
               is.numeric(level) && length(level) == 1L && level > 0 &&
@@ -317,7 +318,8 @@ coef.multilpa_additive <- function(object, scale = c("natural", "unconstrained")
 vcov.multilpa_additive <- function(object, type = c("observed", "robust", "opg"),
                                    scale = c("natural", "unconstrained"), ...) {
   scale <- match.arg(scale)
-  inference <- .additive_inference(object, match.arg(type))
+  inference <- .additive_inference(object, .latents_weighted_vcov(
+    .latents_is_weighted(object), match.arg(type), missing(type)))
   if (identical(scale, "unconstrained")) return(inference$vcov)
   class_names <- names(object$group_probabilities)
   jacobian <- .additive_natural(inference$theta, length(class_names), object$vars,
@@ -330,7 +332,8 @@ vcov.multilpa_additive <- function(object, type = c("observed", "robust", "opg")
 #' @export
 confint.multilpa_additive <- function(object, parm, level = 0.95,
                                       type = c("observed", "robust", "opg"), ...) {
-  table <- .additive_parameter_table(object, .additive_inference(object, match.arg(type)),
+  table <- .additive_parameter_table(object, .additive_inference(object,
+    .latents_weighted_vcov(.latents_is_weighted(object), match.arg(type), missing(type))),
                                      level)
   bounds <- cbind(table$conf_low, table$conf_high)
   percent <- paste(format(100 * c((1 - level) / 2, 1 - (1 - level) / 2),
@@ -360,7 +363,8 @@ parameter_inference.multilpa_additive <- function(
     vcov_type = c("observed", "robust", "opg"),
     adjust = .multilpa_p_adjust_methods, method = c("wald", "bootstrap"),
     ...) {
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+                                      missing(vcov_type))
   adjust <- match.arg(adjust)
   method <- match.arg(method)
   if (identical(method, "bootstrap")) {
@@ -406,7 +410,8 @@ parameter_inference.multilpa_additive <- function(
 summary.multilpa_additive <- function(object, level = 0.95,
                                       vcov_type = c("observed", "robust", "opg"),
                                       ...) {
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(object),
+                                      match.arg(vcov_type), missing(vcov_type))
   tables <- c("fit", "parameters", "group_classes")
   structure(stats::setNames(lapply(tables, function(name) {
     .additive_table(object, name, level, vcov_type)

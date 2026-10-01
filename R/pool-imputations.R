@@ -110,6 +110,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1)
+  vcov_defaulted <- missing(vcov_type)
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
   completed <- .multilpa_completed_data(imputed)
@@ -120,6 +121,8 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
     })
   })
   reference <- fits[[1L]]
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(reference), vcov_type,
+                                      vcov_defaulted)
   alignments <- lapply(fits, .multilpa_pool_align, reference = reference)
   aligned <- lapply(alignments, `[[`, "fit")
   tables <- lapply(seq_along(aligned), function(index) {

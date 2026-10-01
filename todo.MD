@@ -58,7 +58,7 @@ homogeneous and measurement-invariant.
 - [x] Mover-stayer class; FIML and covariance structures in the general engine (2026-10-01).
 - [ ] Gaps vs JStats: random-intercept LTA (needs the exact Mplus RI-LTA
   specification), ordinal and count indicators, absorbing profiles
-  (seqHMM-style), sampling weights. **M-L**
+  (seqHMM-style). Sampling weights done (0.9.3). **M-L**
 - [ ] Follow-ups: covariance structures and FIML in the general engine;
   structure-aware standard errors in lta(); likelihood-ratio and bootstrap
   tests between nested transition models; a simulation study of the new
@@ -95,9 +95,13 @@ precondition for everything here.
 
 ### 1.6 Across all models
 
-- [ ] **Sampling weights.** Absent everywhere; changes the likelihood, the
-  E-step and every count and criterion that sums posteriors. The largest gap
-  for survey data. **L**
+- [x] **Sampling weights** (2026-10-01, 0.9.3): unit-level pseudo ML in every
+  engine, sandwich SEs, integer weights = duplication, Mplus check.
+- [ ] Weights follow-ups: within-unit (level-1) weights with WTSCALE-style
+  scaling; stratification/PSU design-based variance; weighted `three_step()`
+  and `r3step()`; weighted descriptive tables (`descriptives()`, `get_tna()`,
+  classification counts are per-unit and unweighted); a weighted-mixture
+  external reference (Mplus `TYPE = MIXTURE COMPLEX` with `WEIGHT`). **M**
 - [ ] `fit_staged()` with a constrained covariance structure (refused today,
   because a structure maximized across profiles cannot be held one profile at
   a time). **M**
@@ -107,7 +111,7 @@ precondition for everything here.
 ## Priority 2 — Choosing among models
 
 - [x] `enumerate_classes(time = )` and `bootstrap_lrt()` for transition models (done 2026-10-01).
-- [ ] (old item) `enumerate_classes()` and `bootstrap_lrt()` for transition models, with
+- [x] (done 0.9.2) `enumerate_classes()` and `bootstrap_lrt()` for transition models, with
   profile count and group-class count as a joint grid. **M**
 - [ ] `bootstrap_lrt()` for random-intercept models, and nested comparisons
   beyond the one-class increment (for example diagonal against full
@@ -172,7 +176,7 @@ precondition for everything here.
 
 ## Priority 5 — Release and infrastructure
 
-- [ ] Bump `DESCRIPTION` (0.8.4) before any push. **S**
+- [x] Bump `DESCRIPTION` (0.8.4) before any push. **S**
 - [ ] CI has never run: GitHub Actions on release, devel and oldrel across
   Linux, macOS and Windows; only macOS with R 4.5.2 so far. **S**
 - [ ] Re-audit the README feature matrix. Its residual-covariance row still

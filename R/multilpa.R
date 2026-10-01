@@ -19,11 +19,18 @@
 #' @param group_index Integer group indices in first-occurrence order.
 #' @param parameters List of model parameters.
 #' @param codes Optional integer matrix of categorical indicator codes.
+#' @param weights Optional sampling weight per group, already scaled.
 #' @return Log likelihood, posteriors, and conditional class probabilities.
+#'   With `weights`, the log likelihood is the weighted pseudo log likelihood
+#'   and every posterior is multiplied by its group's weight, so the M-step
+#'   and the scores read weighted counts without knowing about weights;
+#'   `group_log_likelihood` stays per group and unweighted.
 #' @noRd
-.multilpa_expectation <- function(x, group_index, parameters, codes = NULL) {
+.multilpa_expectation <- function(x, group_index, parameters, codes = NULL,
+                                  weights = NULL) {
   stopifnot(is.matrix(x), is.numeric(x), !any(is.infinite(x)),
-            length(group_index) == nrow(x), is.list(parameters))
+            length(group_index) == nrow(x), is.list(parameters),
+            is.null(weights) || length(weights) == max(group_index))
   n_profiles <- nrow(parameters$means)
   n_types <- length(parameters$group_probabilities)
   gaussian <- if (ncol(x) > 0L && (anyNA(x) || !is.null(parameters$covariances))) {
@@ -92,11 +99,35 @@
   if (!is.finite(log_likelihood) || any(!is.finite(subject_posteriors))) {
     stop("Non-finite likelihood or posterior probabilities.")
   }
-  list(log_likelihood = log_likelihood,
-       group_log_likelihood = group_log_likelihood,
-       group_posteriors = group_posteriors,
-       subject_posteriors = subject_posteriors, joint = joint,
-       gaussian_moments = gaussian$moments)
+  result <- list(log_likelihood = log_likelihood,
+                 group_log_likelihood = group_log_likelihood,
+                 group_posteriors = group_posteriors,
+                 subject_posteriors = subject_posteriors, joint = joint,
+                 gaussian_moments = gaussian$moments)
+  if (is.null(weights)) result else .multilpa_weigh(result, weights, group_index)
+}
+
+#' Weight an expectation step by sampling weights
+#'
+#' Pseudo maximum likelihood maximizes the weighted sum of the independent
+#' units' log likelihoods. Its EM step is the ordinary one with every
+#' posterior multiplied by its unit's weight, so integer weights reproduce the
+#' fit to the data with each unit repeated that many times.
+#'
+#' @param expectation An unweighted expectation step.
+#' @param weights Sampling weight per group.
+#' @param group_index Group of each row.
+#' @return The expectation with weighted posteriors, the weighted log
+#'   likelihood, and `n_total`, the weighted row count.
+#' @noRd
+.multilpa_weigh <- function(expectation, weights, group_index) {
+  row_weights <- weights[group_index]
+  expectation$log_likelihood <- sum(weights * expectation$group_log_likelihood)
+  expectation$group_posteriors <- expectation$group_posteriors * weights
+  expectation$subject_posteriors <- expectation$subject_posteriors * row_weights
+  expectation$joint <- lapply(expectation$joint, `*`, row_weights)
+  expectation$n_total <- sum(row_weights)
+  expectation
 }
 
 #' Maximize the expected complete-data log likelihood
@@ -161,7 +192,8 @@
       } else if (variance_model == "varying") {
         sweep(variance_sums, 1L, weights, "/")
       } else {
-        matrix(colSums(variance_sums) / if (noisy) sum(weights) else nrow(x),
+        matrix(colSums(variance_sums) /
+                 if (noisy) sum(weights) else expectation$n_total %||% nrow(x),
                length(weights), ncol(x), byrow = TRUE)
       }
     # This is the exact M-step for the stated variance >= min_variance constraint.
@@ -598,13 +630,14 @@
                         min_variance, max_iter, tol, covariance_model = "diagonal",
                         codes = NULL, n_categories = NULL, min_probability = 1e-10,
                         held = NULL, structure = NULL, prior = NULL,
-                        accelerate_em = TRUE) {
+                        accelerate_em = TRUE, sampling_weights = NULL) {
   # `parameters` is the current point, which the M-step uses to warm start the
   # covariance structures that iterate.
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
-  evaluate <- function(point) .multilpa_expectation(x, group_index, point, codes)
+  evaluate <- function(point) .multilpa_expectation(x, group_index, point, codes,
+                                                    sampling_weights)
   # One plain EM step, with the monotonicity guard. Under a prior the
   # iteration climbs the posterior, not the likelihood, so the likelihood may
   # legitimately fall; convergence is still read off the likelihood's
@@ -1058,6 +1091,22 @@
 #'   class, `"equal"` one set shared by all classes. The dispersion family
 #'   holds them equal; `"varying"` is refused there. For the cross-level
 #'   families, the variances of the group means within each group class.
+#' @param weights `NULL`, or the name of a numeric column of `data` holding a
+#'   sampling weight for each independent unit: each `id` group of a two-level
+#'   fit, each row of a single-level one. A two-level weight must be constant
+#'   within its group (`latents_bad_weights` otherwise); within-unit weights
+#'   are not supported. The fit maximizes the pseudo log likelihood
+#'   `sum_j w_j log L_j` (Skinner, 1989) with the weights scaled to sum to the
+#'   number of units, as Mplus does, so integer weights give the fit to the
+#'   data with each unit repeated that many times and the criteria stay on the
+#'   sample's scale. Standard errors are the sandwich: `parameter_inference()`
+#'   defaults to `vcov_type = "robust"` and refuses `"observed"` and `"opg"`
+#'   (`latents_unsupported_weights`), and `method = "bootstrap"` resamples the
+#'   units with their weights. Classification tables report each unit's own
+#'   posterior; effective counts and proportions are weighted.
+#'   [bootstrap_lrt()], [three_step()], [r3step()], `prior` and `noise` refuse
+#'   a weighted fit. Works with every `family`, membership covariates,
+#'   categorical indicators and `missing = "fiml"`.
 #' @return An `multilpa` object containing `means`, `variances`, optional
 #'   `covariances` (indicators by indicators by profiles),
 #'   `profile_probabilities`, `group_probabilities`, posterior matrices,
@@ -1099,6 +1148,14 @@
 #'   profile analyses: A comprehensive guide. Organizational Research Methods.
 #'   doi:10.1177/10944281261469432.
 #'
+#'   Skinner, C. J. (1989). Domain means, regression and multivariate
+#'   analysis. In C. J. Skinner, D. Holt, & T. M. F. Smith (Eds.), Analysis
+#'   of complex surveys (pp. 59--87). Wiley.
+#'
+#'   Asparouhov, T. (2005). Sampling weights in latent variable modeling.
+#'   Structural Equation Modeling, 12, 411--434.
+#'   doi:10.1207/s15328007sem1203_4.
+#'
 #'   Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for normal
 #'   mixture estimation and model-based clustering. Journal of
 #'   Classification, 24, 155--181. doi:10.1007/s00357-007-0004-5.
@@ -1136,7 +1193,8 @@ multilpa <- function(data, vars, id, n_profiles,
                        family = c("profiles", "additive", "dispersion",
                                   "additive_dispersion", "restricted_cross_level",
                                   "full_cross_level"),
-                       between_variance = c("varying", "equal")) {
+                       between_variance = c("varying", "equal"),
+                       weights = NULL) {
   family <- match.arg(family)
   if (family %in% c("restricted_cross_level", "full_cross_level")) {
     supplied <- setdiff(names(match.call())[-1L], .cross_level_arguments())
@@ -1154,7 +1212,7 @@ multilpa <- function(data, vars, id, n_profiles,
                             if (missing(between_variance)) "varying" else
                               match.arg(between_variance),
                             n_starts, max_iter, tol, min_variance, seed,
-                            match.call()))
+                            match.call(), weights = weights))
   }
   if (!identical(family, "profiles")) {
     # Group-class families have no individual profiles, so most arguments
@@ -1174,7 +1232,7 @@ multilpa <- function(data, vars, id, n_profiles,
                          if (missing(between_variance)) NULL else
                            match.arg(between_variance),
                          n_starts, max_iter, tol, min_variance, seed,
-                         match.call(), family = family))
+                         match.call(), family = family, weights = weights))
   }
   if (!missing(between_variance)) {
     stop(errorCondition(paste(
@@ -1275,6 +1333,10 @@ multilpa <- function(data, vars, id, n_profiles,
                         length(profile_covariates) + length(group_covariates))
   .multilpa_check_noise(noise, n_group_classes, categorical, fixed,
                         length(profile_covariates) + length(group_covariates))
+  if (!is.null(weights)) {
+    if (!is.null(prior)) .latents_refuse_weights("`prior`")
+    if (isTRUE(noise)) .latents_refuse_weights("`noise = TRUE`")
+  }
   if (length(profile_covariates) > 0L || length(group_covariates) > 0L) {
     return(.multilpa_covariate_model(
       data = data, vars = vars, id = id, n_profiles = n_profiles,
@@ -1286,7 +1348,8 @@ multilpa <- function(data, vars, id, n_profiles,
       missing = missing, profile_slopes = profile_slopes,
       covariance_model = covariance_model,
       categorical = categorical, min_probability = min_probability,
-      time = time, fixed = fixed, select_start = select_start, call = call))
+      time = time, fixed = fixed, select_start = select_start, call = call,
+      weights = weights))
   }
   # The data contract comes first: `time` is checked against the `id` column,
   # so an `id` that does not name a column of `data` must be reported as
@@ -1308,6 +1371,7 @@ multilpa <- function(data, vars, id, n_profiles,
   group_index <- groups$index
   group_ids <- groups$ids
   n_groups <- groups$n
+  sampling_weights <- .latents_sampling_weights(data, weights, group_index, n_groups)
   # Centring happens here, between validating the indicators and fitting them,
   # so the measurement model sees deviations and every verb downstream can put
   # a supplied frame on the same scale from the offsets kept on the fit.
@@ -1432,7 +1496,8 @@ multilpa <- function(data, vars, id, n_profiles,
       .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
                  tol, covariance_model, codes, n_categories, min_probability,
                  held, structure, prior_parameters,
-                 accelerate_em = identical(acceleration, "squarem"))
+                 accelerate_em = identical(acceleration, "squarem"),
+                 sampling_weights = sampling_weights)
     }, error = function(error) list(error = conditionMessage(error)))
   })
   valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
@@ -1450,6 +1515,12 @@ multilpa <- function(data, vars, id, n_profiles,
     select_start)
   best <- attempts[[best_start]]
   parameters <- best$parameters
+  # The weighted expectation carries weighted posteriors, which are counts for
+  # the M-step; each unit's own classification is the unweighted posterior.
+  weighted_expectation <- best$expectation
+  if (!is.null(sampling_weights)) {
+    best$expectation <- .multilpa_expectation(x, group_index, parameters, codes)
+  }
   subject_posteriors <- best$expectation$subject_posteriors
   subject_profiles <- max.col(subject_posteriors, ties.method = "first")
   noise_fields <- list(noise = isTRUE(noise))
@@ -1490,7 +1561,7 @@ multilpa <- function(data, vars, id, n_profiles,
   ## `%||%` on a `multilpa(fixed = )` fit and reported the same number twice.
   n_parameters_with_measurement <- if (length(fixed) == 0L) NULL else
     n_parameters_unconstrained
-  log_likelihood <- best$expectation$log_likelihood
+  log_likelihood <- weighted_expectation$log_likelihood
   starts <- do.call(rbind, lapply(seq_along(attempts), function(start_index) {
     attempt <- attempts[[start_index]]
     data.frame(start = start_index, log_likelihood = scores[start_index],
@@ -1520,6 +1591,9 @@ multilpa <- function(data, vars, id, n_profiles,
     centering = centering, centering_offsets = centred$offsets,
     categorical_data = codes,
     id = id, group_ids = group_ids, single_level = single_level,
+    weights = weights,
+    sampling_weights = if (is.null(sampling_weights)) NULL else
+      setNames(sampling_weights, group_ids),
     time = time, time_values = time_values,
     group_values = group_values, group_index = group_index,
     group_sizes = setNames(group_sizes, group_ids),
@@ -1553,8 +1627,12 @@ multilpa <- function(data, vars, id, n_profiles,
     converged = best$converged, iterations = best$iterations,
     log_likelihood_history = best$history, starts = starts, best_start = best_start,
     n_failed_starts = sum(!valid), boundary = boundary, small_classes = small_classes,
-    effective_profile_counts = colSums(subject_posteriors),
-    effective_group_counts = colSums(group_posteriors),
+    effective_profile_counts = if (is.null(sampling_weights))
+      colSums(subject_posteriors) else
+        setNames(colSums(weighted_expectation$subject_posteriors), profile_names),
+    effective_group_counts = if (is.null(sampling_weights))
+      colSums(group_posteriors) else
+        setNames(colSums(weighted_expectation$group_posteriors), type_names),
     n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
                              1e-6 * (1 + abs(log_likelihood))),
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))), noise_fields)
@@ -1783,7 +1861,7 @@ multilpa <- function(data, vars, id, n_profiles,
                                       profile_slopes = "shared", covariance_model,
                                       categorical, min_probability, time,
                                       fixed, select_start = "likelihood",
-                                      call) {
+                                      call, weights = NULL) {
   unsupported <- c(
     start = !is.null(start),
     fixed = length(fixed) > 0L)
@@ -1805,5 +1883,6 @@ multilpa <- function(data, vars, id, n_profiles,
     min_variance = min_variance, seed = seed, time = time,
     covariance_model = covariance_model, categorical = categorical,
     min_probability = min_probability, missing = missing,
-    profile_slopes = profile_slopes, select_start = select_start, call = call)
+    profile_slopes = profile_slopes, select_start = select_start, call = call,
+    weights = weights)
 }

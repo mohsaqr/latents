@@ -143,7 +143,8 @@
 #' @return Log likelihood and posterior responsibilities.
 #' @noRd
 .multilpa_cov_expectation <- function(x, group_index, parameters, profile_design,
-                                    group_design, beta, gamma, codes = NULL) {
+                                    group_design, beta, gamma, codes = NULL,
+                                    sampling_weights = NULL) {
   stopifnot(is.matrix(x), !any(is.infinite(x)), is.list(parameters),
             is.list(profile_design), is.matrix(group_design), is.matrix(beta),
             is.matrix(gamma))
@@ -199,12 +200,17 @@
   joint <- lapply(seq_along(conditional), function(h) {
     conditional[[h]]$posterior * group_posteriors[group_index, h]
   })
-  list(log_likelihood = sum(group_log_likelihood),
-       group_log_likelihood = group_log_likelihood,
-       group_posteriors = group_posteriors, subject_posteriors = Reduce(`+`, joint),
-       joint = joint, group_priors = group_prior,
-       profile_priors = lapply(conditional, `[[`, "prior"),
-       gaussian_moments = gaussian$moments)
+  result <- list(log_likelihood = sum(group_log_likelihood),
+                 group_log_likelihood = group_log_likelihood,
+                 group_posteriors = group_posteriors,
+                 subject_posteriors = Reduce(`+`, joint),
+                 joint = joint, group_priors = group_prior,
+                 profile_priors = lapply(conditional, `[[`, "prior"),
+                 gaussian_moments = gaussian$moments)
+  # Sampling weights scale the posteriors into weighted counts, exactly as in
+  # the covariate-free model, so the logit steps and scores need no change.
+  if (is.null(sampling_weights)) result else
+    .multilpa_weigh(result, sampling_weights, group_index)
 }
 
 #' Fit multilevel LPA with class-membership covariates
@@ -243,7 +249,8 @@
                                   min_probability = 1e-10,
                                   missing = c("error", "fiml"),
                                   profile_slopes = c("shared", "group_class"),
-                                  select_start = "likelihood", call = NULL) {
+                                  select_start = "likelihood", call = NULL,
+                                  weights = NULL) {
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
@@ -278,8 +285,10 @@
                      tol = tol, min_variance = min_variance,
                      covariance_model = covariance_model,
                      categorical = categorical,
-                     min_probability = min_probability, missing = missing)
+                     min_probability = min_probability, missing = missing,
+                     weights = weights)
   group_index <- base$group_index
+  sampling_weights <- unname(base$sampling_weights)
   first_rows <- match(seq_len(base$n_groups), group_index)
   if (length(group_covariates) && any(vapply(group_covariates, function(name) {
     any(data[[name]] != data[[name]][first_rows][group_index])
@@ -302,7 +311,8 @@
                   min_probability = min_probability,
                   n_profile_covariates = ncol(designs$stacked_design) -
                     n_group_classes,
-                  n_group_covariates = length(group_covariates))
+                  n_group_covariates = length(group_covariates),
+                  sampling_weights = sampling_weights)
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch(.multilpa_cov_start(start_index, x, group_index, n_profiles,
                                n_group_classes, designs, base, control),
@@ -332,8 +342,18 @@
   ## whenever any start converged.
   best_index <- .multilpa_select_start(starts$log_likelihood, starts$converged,
                                        select_start)
+  best <- attempts[[best_index]]
+  # Weighted posteriors are counts for the M-step; each unit is classified by
+  # its own, unweighted posterior, and the likelihood stays the weighted one.
+  weighted_expectation <- best$expectation
+  if (!is.null(sampling_weights)) {
+    best$expectation <- .multilpa_cov_expectation(
+      x, group_index, best$parameters, designs$profile_design, designs$w,
+      best$beta, best$gamma, designs$codes)
+    best$expectation$log_likelihood <- weighted_expectation$log_likelihood
+  }
   result <- .multilpa_cov_assemble(
-    best = attempts[[best_index]], best_index = best_index, starts = starts,
+    best = best, best_index = best_index, starts = starts,
     designs = designs, base = base, data = data, vars = vars,
     id = id, profile_covariates = profile_covariates,
     group_covariates = group_covariates,
@@ -358,7 +378,19 @@
   ## The same effective counts the Gaussian fit carries, so the shared
   ## diagnostics and plot panels need no special case for this class.
   result$effective_profile_counts <- colSums(result$subject_posteriors)
+  result$weights <- weights
+  if (!is.null(sampling_weights)) {
+    result$sampling_weights <- stats::setNames(sampling_weights, base$group_ids)
+    result$effective_profile_counts <- stats::setNames(
+      colSums(weighted_expectation$subject_posteriors),
+      names(result$effective_profile_counts))
+  }
   result$effective_group_counts <- colSums(result$group_posteriors)
+  if (!is.null(sampling_weights)) {
+    result$effective_group_counts <- stats::setNames(
+      colSums(weighted_expectation$group_posteriors),
+      names(result$effective_group_counts))
+  }
   if (any(!is.finite(starts$log_likelihood))) {
     warning(warningCondition(paste(
       "Some covariate starts failed; summary() reports every start."),
@@ -401,6 +433,7 @@ print.multilpa_covariates <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa_covariates"))
   cat(sprintf("Multilevel LPA with covariates: %d profiles, %d group classes\n",
               x$n_profiles, x$n_group_classes))
+  .latents_print_weights(x)
   cat(sprintf("Log likelihood %.6f; AIC %.3f; BIC (groups) %.3f; converged %s\n",
               x$log_likelihood, x$aic, x$bic, x$converged))
   .multilpa_print_primary(x, rows = rows)
@@ -733,7 +766,8 @@ nobs.multilpa_covariates <- function(object, ...) {
     matrix(0, control$n_group_covariates, n_group_classes - 1L))
   expectation <- .multilpa_cov_expectation(x, group_index, parameters,
                                          designs$profile_design, designs$w,
-                                         beta, gamma, designs$codes)
+                                         beta, gamma, designs$codes,
+                                         control$sampling_weights)
   history <- expectation$log_likelihood
   iteration <- 0L
   converged <- FALSE
@@ -758,7 +792,8 @@ nobs.multilpa_covariates <- function(object, ...) {
     gamma <- group_update$coefficients
     updated <- .multilpa_cov_expectation(x, group_index, parameters,
                                        designs$profile_design, designs$w,
-                                       beta, gamma, designs$codes)
+                                       beta, gamma, designs$codes,
+                                       control$sampling_weights)
     change <- updated$log_likelihood - expectation$log_likelihood
     if (change < -1e-9 * (1 + abs(expectation$log_likelihood))) {
       stop("Covariate EM decreased the observed log likelihood.")

@@ -158,7 +158,7 @@
   parameters <- .lta_unpack(theta, fit)
   x <- fit$x
   e <- .lta_expectation(x, fit$codes, fit$layout, fit$designs, parameters,
-                        fit$occasion_of_row)
+                        fit$occasion_of_row, unname(fit$sampling_weights))
   n_states <- fit$n_profiles
   n_classes <- fit$n_group_classes
   n_units <- fit$n_groups
@@ -196,8 +196,10 @@
             do.call(cbind, lapply(pieces, `[[`, "log_variance")),
           response)
   }))
-  logits <- sweep(e$group_posteriors[, -1L, drop = FALSE], 2L,
-                  parameters$group_probabilities[-1L])
+  # A weighted posterior row sums to the person's weight, so the expected
+  # share is that weight times the class probability; unweighted, it is one.
+  logits <- e$group_posteriors[, -1L, drop = FALSE] -
+    outer(rowSums(e$group_posteriors), parameters$group_probabilities[-1L])
   initial <- do.call(cbind, lapply(seq_len(n_classes), function(h) {
     counts <- e$moments[[h]]$initial
     fitted <- exp(e$per_class[[h]]$log_initial) * rowSums(counts)
@@ -353,7 +355,8 @@
   theta <- pmax(theta, lower)
   value <- function(v) {
     -.lta_expectation(spec$x, spec$codes, spec$layout, spec$designs,
-                      .lta_unpack(v, spec), spec$occasion_of_row)$log_likelihood
+                      .lta_unpack(v, spec), spec$occasion_of_row,
+                      spec$sampling_weights)$log_likelihood
   }
   gradient <- function(v) -colSums(.lta_group_scores(v, spec))
   start_value <- value(theta)

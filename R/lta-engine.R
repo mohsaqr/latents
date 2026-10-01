@@ -336,7 +336,8 @@
 
 #' E-step of the general transition model
 #' @noRd
-.lta_expectation <- function(x, codes, layout, designs, parameters, occasion_of_row) {
+.lta_expectation <- function(x, codes, layout, designs, parameters, occasion_of_row,
+                             sampling_weights = NULL) {
   n_types <- length(parameters$group_probabilities)
   n_groups <- nrow(layout$slot)
   log_density <- .lta_log_density(x, codes, parameters, occasion_of_row)
@@ -380,6 +381,12 @@
   group_log_likelihood <- .multilpa_log_sum_exp(weighted) + emission$offset
   group_posteriors <- exp(weighted - .multilpa_row_max(weighted))
   group_posteriors <- group_posteriors / rowSums(group_posteriors)
+  # Sampling weights scale each person's posteriors, and so every moment the
+  # M-step and the scores read, into weighted counts; pseudo maximum
+  # likelihood then needs nothing else. Integer weights equal duplication.
+  if (!is.null(sampling_weights)) {
+    group_posteriors <- group_posteriors * sampling_weights
+  }
   moments <- lapply(seq_len(n_types), function(h) {
     if (!second) {
       return(.lta_moments(per_class[[h]]$pass, emission$log_density, layout,
@@ -392,14 +399,14 @@
   })
   joint <- lapply(moments, `[[`, "posterior")
   subject_posteriors <- Reduce(`+`, joint)
-  log_likelihood <- sum(group_log_likelihood)
+  log_likelihood <- sum((sampling_weights %||% 1) * group_log_likelihood)
   if (!is.finite(log_likelihood) || any(!is.finite(subject_posteriors))) {
     stop("Non-finite likelihood or posterior probabilities.")
   }
   list(log_likelihood = log_likelihood, group_log_likelihood = group_log_likelihood,
        group_posteriors = group_posteriors, subject_posteriors = subject_posteriors,
        joint = joint, moments = moments, per_class = per_class,
-       gaussian_moments = gaussian_moments)
+       gaussian_moments = gaussian_moments, weighted = !is.null(sampling_weights))
 }
 
 #' M-step of the general transition model
@@ -418,6 +425,9 @@
                 group_posteriors = expectation$group_posteriors,
                 joint = lapply(expectation$joint, function(j) j[rows, , drop = FALSE]),
                 gaussian_moments = expectation$gaussian_moments[[t]])
+    # Weighted posteriors sum to the weighted row count, which the shared
+    # variance blocks divide by; unweighted, that count is the row count.
+    if (isTRUE(expectation$weighted)) sub$n_total <- sum(sub$subject_posteriors)
     updated <- .multilpa_maximization(x[rows, , drop = FALSE], sub, variance_model,
                                       min_variance, covariance_model,
                                       if (is.null(codes)) NULL else codes[rows, , drop = FALSE],
@@ -480,7 +490,9 @@
   }
   c(list(measurement = measurement, initial = initial, transition = transition),
     if (second) list(transition2 = transition2),
-    list(group_probabilities = colMeans(expectation$group_posteriors),
+    list(group_probabilities = if (isTRUE(expectation$weighted))
+      colSums(expectation$group_posteriors) / sum(expectation$group_posteriors) else
+        colMeans(expectation$group_posteriors),
          stayer = parameters$stayer))
 }
 
@@ -488,9 +500,10 @@
 #' @noRd
 .lta_em <- function(x, codes, layout, designs, parameters, occasion_of_row,
                     variance_model, min_variance, n_categories, min_probability,
-                    max_iter, tol, covariance_model = "diagonal", structure = NULL) {
+                    max_iter, tol, covariance_model = "diagonal", structure = NULL,
+                    sampling_weights = NULL) {
   expectation <- .lta_expectation(x, codes, layout, designs, parameters,
-                                  occasion_of_row)
+                                  occasion_of_row, sampling_weights)
   history <- expectation$log_likelihood
   converged <- FALSE
   iteration <- 0L
@@ -501,7 +514,7 @@
                                  n_categories, min_probability, covariance_model,
                                  structure)
     updated_expectation <- .lta_expectation(x, codes, layout, designs, updated,
-                                            occasion_of_row)
+                                            occasion_of_row, sampling_weights)
     gain <- updated_expectation$log_likelihood - expectation$log_likelihood
     if (gain < -1e-8 * (1 + abs(expectation$log_likelihood))) {
       stop("EM likelihood decreased beyond numerical roundoff.")
@@ -582,7 +595,8 @@
                              transitions, transition_covariates, initial_covariates,
                              measurement_model, select_start, call, order = 1L,
                              mover_stayer = FALSE, missing = "error",
-                             covariance_model = "diagonal", structure = NULL) {
+                             covariance_model = "diagonal", structure = NULL,
+                             weights = NULL) {
   n_movers <- as.integer(n_group_classes)
   # A stayer class is one more group class, whose transitions are fixed.
   n_group_classes <- n_movers + as.integer(mover_stayer)
@@ -599,6 +613,7 @@
       "No group is observed at two occasions, so no transition can be estimated.",
       class = "latents_bad_transition", call = NULL))
   }
+  sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
   occasion_of_row <- integer(nrow(x))
   occasion_of_row[layout$slot[!is.na(layout$slot)]] <- col(layout$slot)[!is.na(layout$slot)]
   designs <- .lta_designs(layout, .lta_covariate_matrix(data, transition_covariates),
@@ -629,7 +644,8 @@
                codes = codes, group_index = groups$index, n_groups = groups$n,
                group_ids = groups$ids, order = as.integer(order),
                covariance_model = covariance_model, structure = structure,
-               stayer = c(rep(FALSE, n_movers), rep(TRUE, as.integer(mover_stayer))))
+               stayer = c(rep(FALSE, n_movers), rep(TRUE, as.integer(mover_stayer))),
+               sampling_weights = sampling_weights)
   attempts <- lapply(seq_len(n_starts), function(start_index) {
     tryCatch({
       start <- .lta_initialize(x, groups$index, layout, designs, n_profiles,
@@ -641,21 +657,21 @@
       # likelihood: EM alone crawls when profiles are weakly separated.
       em <- .lta_em(x, codes, layout, designs, start, occasion_of_row, variance_model,
                     min_variance, n_categories, min_probability, max_iter,
-                    max(tol, 1e-6), covariance_model, structure)
+                    max(tol, 1e-6), covariance_model, structure, sampling_weights)
       # The quasi-Newton finish works on diagonal measurement; a covariance
       # structure is maximized by EM alone, to the full tolerance.
       if (!identical(covariance_model, "diagonal") || !is.null(structure)) {
         if (tol < 1e-6 && max_iter > 0L) {
           em <- .lta_em(x, codes, layout, designs, em$parameters, occasion_of_row,
                         variance_model, min_variance, n_categories, min_probability,
-                        max_iter, tol, covariance_model, structure)
+                        max_iter, tol, covariance_model, structure, sampling_weights)
         }
         return(em)
       }
       if (max_iter == 0L) return(em)
       finish <- .lta_quasi_newton(spec, em$parameters, min_variance, tol)
       expectation <- .lta_expectation(x, codes, layout, designs, finish$parameters,
-                                      occasion_of_row)
+                                      occasion_of_row, sampling_weights)
       list(parameters = finish$parameters, expectation = expectation,
            converged = isTRUE(finish$converged), iterations = em$iterations,
            history = c(em$history, expectation$log_likelihood),
@@ -673,12 +689,27 @@
   converged <- vapply(attempts, function(a) isTRUE(a$converged), logical(1))
   best_start <- .multilpa_select_start(scores, converged, select_start)
   best <- attempts[[best_start]]
-  .lta_result(best, attempts, scores, valid, converged, best_start, centers, data,
-              vars, id, time, groups, layout, designs, x, codes, measurement,
-              occasion_of_row, n_profiles, n_group_classes, variance_model,
-              transitions, transition_covariates, initial_covariates,
-              measurement_model, min_variance, min_probability, call, order,
-              mover_stayer, missing, covariance_model, structure)
+  # The weighted posteriors are counts; each person is classified by their
+  # own posterior, while the likelihood stays the weighted one.
+  weighted_expectation <- best$expectation
+  if (!is.null(sampling_weights)) {
+    best$expectation <- .lta_expectation(x, codes, layout, designs, best$parameters,
+                                         occasion_of_row)
+    best$expectation$log_likelihood <- weighted_expectation$log_likelihood
+  }
+  result <- .lta_result(best, attempts, scores, valid, converged, best_start, centers,
+                        data, vars, id, time, groups, layout, designs, x, codes,
+                        measurement, occasion_of_row, n_profiles, n_group_classes,
+                        variance_model, transitions, transition_covariates,
+                        initial_covariates, measurement_model, min_variance,
+                        min_probability, call, order, mover_stayer, missing,
+                        covariance_model, structure)
+  if (!is.null(sampling_weights)) {
+    result$weights <- weights
+    result$sampling_weights <- stats::setNames(sampling_weights, groups$ids)
+    result$arguments$weights <- weights
+  }
+  result
 }
 
 #' Free parameters of the general transition model

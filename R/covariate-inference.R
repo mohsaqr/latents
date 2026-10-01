@@ -151,7 +151,8 @@
   pieces <- .multilpa_cov_decode(theta, object)
   expectation <- .multilpa_cov_expectation(
     x, object$group_index, pieces$parameters, object$profile_design,
-    object$group_design, pieces$beta, pieces$gamma, codes)
+    object$group_design, pieces$beta, pieces$gamma, codes,
+    unname(object$sampling_weights))
   n_groups <- nrow(object$group_design)
   n_profiles <- object$n_profiles
   n_group_classes <- object$n_group_classes
@@ -201,7 +202,8 @@
   ## Group logits: one row per group already.
   gamma_block <- do.call(cbind, lapply(seq_len(ncol(pieces$gamma)), function(h) {
     object$group_design * (expectation$group_posteriors[, h] -
-                             expectation$group_priors[, h])
+                             rowSums(expectation$group_posteriors) *
+                               expectation$group_priors[, h])
   }))
 
   ## Categorical response logits: the posterior-weighted residual of the
@@ -377,7 +379,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       "express, so `method = \"wald\"` covers every model this verb can fit."),
       class = "latents_unsupported_inference", call = NULL))
   }
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+                                      missing(vcov_type))
   adjust <- match.arg(adjust)
   boundary <- match.arg(boundary)
   covariance <- .multilpa_cov_covariance(x, data, step, vcov_type, boundary)
@@ -469,7 +472,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     pieces <- .multilpa_cov_decode(parameters, object)
     -.multilpa_cov_expectation(x, object$group_index, pieces$parameters,
                                object$profile_design, object$group_design,
-                               pieces$beta, pieces$gamma, codes)$log_likelihood
+                               pieces$beta, pieces$gamma, codes,
+                               unname(object$sampling_weights))$log_likelihood
   }
   reproduced <- -objective(theta)
   if (abs(reproduced - object$log_likelihood) >
@@ -596,8 +600,11 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
                                      scale = c("natural", "unconstrained"),
                                      boundary = c("error", "fix"), ...) {
   scale <- match.arg(scale)
-  covariance <- .multilpa_cov_covariance(object, data, step, match.arg(vcov_type),
-                                         match.arg(boundary))
+  covariance <- .multilpa_cov_covariance(
+    object, data, step,
+    .latents_weighted_vcov(.latents_is_weighted(object), match.arg(vcov_type),
+                           missing(vcov_type)),
+    match.arg(boundary))
   if (identical(scale, "unconstrained")) {
     ## The kind in the name has to name the scale, or a log variance is served
     ## under a name that says `variance`.

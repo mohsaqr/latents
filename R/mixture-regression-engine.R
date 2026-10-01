@@ -100,7 +100,46 @@
 #'   (`G x K`), or `rho` (`G x H`) and `tau_by_group_class` (a list of `H`
 #'   `n x K` joint posteriors). `log_density` is kept for the scores.
 #' @noRd
-.mixture_expectation <- function(spec, params) {
+.mixture_expectation <- function(spec, params, weighted = TRUE) {
+  expectation <- .mixture_unweighted_expectation(spec, params)
+  if (!isTRUE(weighted) || is.null(spec$sampling_weights)) return(expectation)
+  .mixture_weigh(spec, expectation)
+}
+
+#' Weight a mixture-regression expectation by sampling weights
+#'
+#' Every posterior becomes its unit's weight times the posterior, so the
+#' M-steps and the scores read weighted counts, and the log likelihood is the
+#' weighted pseudo log likelihood. Integer weights equal duplication.
+#'
+#' @param spec The specification, carrying `sampling_weights` (one per
+#'   independent unit) and `row_weights` (each row's unit weight).
+#' @param expectation An unweighted expectation.
+#' @return The weighted expectation.
+#' @noRd
+.mixture_weigh <- function(spec, expectation) {
+  unit_weights <- spec$sampling_weights
+  row_weights <- spec$row_weights
+  # Classes at the row level are weighted per row; the units the likelihood
+  # sums over are rows, or clusters when `id` names them.
+  expectation$log_likelihood <- if (identical(spec$nesting, "observation")) {
+    sum(row_weights * expectation$unit_log_likelihood)
+  } else sum(unit_weights * expectation$unit_log_likelihood)
+  expectation$tau <- expectation$tau * row_weights
+  if (!is.null(expectation$group_tau)) {
+    expectation$group_tau <- expectation$group_tau * unit_weights
+  }
+  if (!is.null(expectation$rho)) {
+    expectation$rho <- expectation$rho * unit_weights
+    expectation$tau_by_group_class <- lapply(expectation$tau_by_group_class,
+                                             `*`, row_weights)
+  }
+  expectation
+}
+
+#' The E-step without sampling weights
+#' @noRd
+.mixture_unweighted_expectation <- function(spec, params) {
   log_density <- .mixture_log_density(spec, params)
   switch(spec$nesting,
     observation = {

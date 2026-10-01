@@ -23,7 +23,8 @@ mixture_regression(
   seed = NULL,
   missing = c("error", "omit"),
   select_start = c("likelihood", "converged"),
-  vcov_type = c("observed", "robust", "opg", "none")
+  vcov_type = c("observed", "robust", "opg", "none"),
+  weights = NULL
 )
 }
 \arguments{
@@ -86,6 +87,12 @@ likelihood; \code{"converged"} prefers the best start that converged.}
 \code{"observed"} (inverse observed information), \code{"robust"} (sandwich,
 clustered on the top-level unit, or on \code{id} for a single-level fit given
 \code{id}) or \code{"opg"} (outer product of the scores). \code{"none"} skips inference.}
+
+\item{weights}{\code{NULL}, or the name of a numeric column of \code{data} with a
+sampling weight per independent unit: per row without \code{id}, per \code{id}
+group otherwise (constant within it). Pseudo maximum likelihood with the
+weights scaled to sum to the number of units; \code{vcov_type} defaults to
+\code{"robust"} and refuses \code{"observed"} and \code{"opg"}.}
 }
 \value{
 An object of class \code{latents_mixture_regression}. Read it with

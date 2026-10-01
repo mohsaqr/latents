@@ -238,7 +238,8 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
 get_results.multilpa_lta <- function(x, what = "transitions", level = 0.95,
                                      vcov_type = c("observed", "robust", "opg"), ...) {
   what <- match.arg(what, c(.lta_tables(x), "all"))
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+                                      missing(vcov_type))
   if (identical(what, "all")) {
     return(stats::setNames(lapply(.lta_tables(x), function(name) {
       .lta_table(x, name, level, vcov_type)
@@ -266,12 +267,14 @@ print.multilpa_lta <- function(x, ...) {
               if (length(x$initial_covariates) > 0L)
                 sprintf("initial profiles on %s", paste(x$initial_covariates, collapse = ", ")),
               if (!identical(x$measurement_model, "invariant")) "occasion-specific measurement")
+  if (length(pieces) == 0L) pieces <- "homogeneous transitions"
   cat(sprintf(paste0("Latent transition model: %d profiles, %d group classes (%s)\n",
                      "%d groups, %d observations, %d occasions; log-likelihood %.3f, ",
                      "%d parameters, BIC %.3f\nconverged: %s\n"),
               x$n_profiles, x$n_group_classes, paste(pieces, collapse = "; "),
               x$n_groups, x$n_observations, x$n_occasions, x$log_likelihood,
               x$n_parameters, x$bic, if (x$converged) "yes" else "no"))
+  .latents_print_weights(x)
   cat(paste("Tables: get_results(x, what = ), e.g. \"transitions\",",
             "\"transition_coefficients\", \"profiles\"; summary(x).\n"))
   invisible(x)
@@ -295,7 +298,8 @@ coef.multilpa_lta <- function(object, ...) {
 #' @param type Covariance type, as `vcov_type`.
 #' @export
 vcov.multilpa_lta <- function(object, type = c("observed", "robust", "opg"), ...) {
-  .lta_inference(object, match.arg(type))$vcov
+  .lta_inference(object, .latents_weighted_vcov(.latents_is_weighted(object),
+                                                match.arg(type), missing(type)))$vcov
 }
 
 #' @rdname get_results.multilpa_lta
@@ -315,7 +319,8 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
                                              step = 1e-4,
                                              vcov_type = c("observed", "robust", "opg"),
                                              ...) {
-  vcov_type <- match.arg(vcov_type)
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
+                                      missing(vcov_type))
   inference <- .lta_inference(x, vcov_type, step)
   table <- rbind(
     cbind(block = "transition", .lta_coefficient_table(x, "transition", level, vcov_type)[,

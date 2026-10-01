@@ -13,9 +13,10 @@
 .mixture_resolve_inference <- function(x, vcov_type) {
   if (is.null(vcov_type)) {
     if (!is.null(x$inference)) return(x$inference)
-    vcov_type <- "observed"
+    vcov_type <- if (.latents_is_weighted(x)) "robust" else "observed"
   }
-  vcov_type <- match.arg(vcov_type, c("observed", "robust", "opg"))
+  vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x),
+    match.arg(vcov_type, c("observed", "robust", "opg")), FALSE)
   if (!is.null(x$inference) && identical(x$inference$vcov_type, vcov_type)) {
     return(x$inference)
   }
@@ -491,6 +492,7 @@ print.latents_mixture_regression <- function(x, digits = 4L, ...) {
               spec$n, if (is.null(spec$id)) "" else
                 sprintf(" in %d groups", spec$n_groups),
               fit$log_likelihood, fit$bic, fit$entropy))
+  .latents_print_weights(x)
   cat(sprintf(paste("Converged: %s | iterations: %d | best likelihood reached",
                     "by %d of %d completed starts (%d run)\n\n"),
               fit$converged, fit$iterations, fit$n_best_replicated,

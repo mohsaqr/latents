@@ -205,7 +205,8 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
     stop(errorCondition("`between_variance` must be \"varying\", \"equal\" or both.",
                         class = "latents_bad_argument", call = NULL))
   }
-  unknown <- setdiff(names(extra), c("n_starts", "max_iter", "tol", "min_variance"))
+  unknown <- setdiff(names(extra), c("n_starts", "max_iter", "tol", "min_variance",
+                                     "weights"))
   if (length(unknown) > 0L) {
     stop(errorCondition(sprintf(
       "%s cannot be used when enumerating group-class families.",

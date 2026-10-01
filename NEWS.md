@@ -1,3 +1,36 @@
+# latents 0.9.3
+
+## Sampling weights
+
+* `multilpa()`, `lpa()`, `lca()`, `multilca()`, `lta()` and
+  `mixture_regression()` take `weights`, the name of a column holding one
+  sampling weight per independent unit (each `id` group, or each row of a
+  single-level fit). The fit maximizes the pseudo log likelihood
+  `sum_j w_j log L_j`, with the weights scaled to sum to the number of units
+  (Mplus's convention), so AIC and BIC stay on the sample's scale.
+* Covered: every covariance structure, categorical indicators,
+  `missing = "fiml"`, membership covariates, every `family` (additive,
+  dispersion, additive-dispersion, restricted and full cross-level), every
+  extension of `lta()`, and all three nestings of `mixture_regression()`.
+* Integer weights reproduce the fit to the data with each unit repeated that
+  many times, to 1e-9 or better in the log likelihood, for every engine
+  (tested). A one-profile weighted fit reproduces Mplus 9's weighted
+  regression (`TYPE = COMPLEX`, `WEIGHT`) and closed-form weighted least
+  squares (`equivalence/weights/`).
+* Standard errors are the sandwich: `parameter_inference()`, `vcov()`,
+  `confint()` and `get_results()` default to `vcov_type = "robust"` for a
+  weighted fit and refuse `"observed"` and `"opg"`
+  (`latents_unsupported_weights`). `method = "bootstrap"` resamples units
+  with their weights.
+* A weighted fit prints its weight column and Kish's effective sample size;
+  `get_results(fit, "model")` gains a `weights` column. Effective counts and
+  proportions are weighted; classification and posterior tables report each
+  unit's own posterior.
+* Refused with `latents_unsupported_weights`: `bootstrap_lrt()` and
+  `enumerate_regressions(bootstrap = )` (the parametric bootstrap ignores the
+  design), `three_step()`, `r3step()`, `prior` and `noise`. Weights that vary
+  within a unit, are negative or missing raise `latents_bad_weights`.
+
 # latents 0.9.2
 
 ## Choosing and testing transition models

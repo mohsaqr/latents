@@ -20,7 +20,7 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 .cross_level_arguments <- function() {
   c("data", "vars", "id", "n_profiles", "n_group_classes", "family",
     "variance_model", "between_variance", "n_starts", "max_iter", "tol",
-    "min_variance", "seed")
+    "min_variance", "seed", "weights")
 }
 
 #' Class-conditional log densities of the group means, groups x classes
@@ -100,11 +100,12 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 #' @noRd
 .cross_level_em <- function(x, group_index, group_means, parameters,
                             variance_model, between_variance, min_variance,
-                            max_iter, tol) {
+                            max_iter, tol, sampling_weights = NULL) {
   evaluate <- function(point) {
     .multilpa_expectation(x, group_index, c(point, list(
       group_log_density = .cross_level_group_density(
-        group_means, point$between_means, point$between_variances))))
+        group_means, point$between_means, point$between_variances))),
+      weights = sampling_weights)
   }
   expectation <- evaluate(parameters)
   history <- expectation$log_likelihood
@@ -153,7 +154,8 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 #' @noRd
 .cross_level_fit <- function(data, vars, id, n_profiles, n_group_classes, family,
                              variance_model, between_variance, n_starts,
-                             max_iter, tol, min_variance, seed, call) {
+                             max_iter, tol, min_variance, seed, call,
+                             weights = NULL) {
   counts <- list(n_profiles = n_profiles, n_group_classes = n_group_classes,
                  n_starts = n_starts)
   invisible(lapply(names(counts), function(field) {
@@ -175,7 +177,8 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   .multilpa_check_seed(seed)
   n_profiles <- as.integer(n_profiles)
   n_group_classes <- as.integer(n_group_classes)
-  stats <- .additive_prepare(data, vars, id)
+  stats <- .additive_prepare(data, vars, id, weights)
+  sampling_weights <- stats$sampling_weights
   if (n_group_classes > stats$n_groups) {
     stop(errorCondition(sprintf("%d group classes cannot be estimated from %d groups.",
                                 n_group_classes, stats$n_groups),
@@ -204,18 +207,35 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
                                          between_variance, min_variance,
                                          start_index)
         .cross_level_em(x, group_index, group_means, start, variance_model,
-                        between_variance, min_variance, max_iter, tol)
+                        between_variance, min_variance, max_iter, tol,
+                        sampling_weights)
       }, error = function(error) list(error = conditionMessage(error)))
     })
-    .cross_level_select(attempts, n_starts)
+    best <- .cross_level_select(attempts, n_starts)
+    # Weighted posteriors are counts; each unit is reported by its own.
+    if (!is.null(sampling_weights)) {
+      reported <- .multilpa_expectation(x, group_index, c(best$parameters, list(
+        group_log_density = .cross_level_group_density(
+          group_means, best$parameters$between_means,
+          best$parameters$between_variances))))
+      reported$log_likelihood <- best$expectation$log_likelihood
+      best$expectation <- reported
+    }
+    best
   } else {
     .cross_level_restricted(x, group_index, group_means, n_profiles,
                             n_group_classes, variance_model, between_variance,
-                            n_starts, max_iter, tol, min_variance)
+                            n_starts, max_iter, tol, min_variance,
+                            sampling_weights)
   }
-  .cross_level_result(fitted, family, stats, x, group_means, vars, id,
-                      n_profiles, n_group_classes, variance_model,
-                      between_variance, min_variance, call)
+  result <- .cross_level_result(fitted, family, stats, x, group_means, vars, id,
+                                n_profiles, n_group_classes, variance_model,
+                                between_variance, min_variance, call)
+  if (!is.null(sampling_weights)) {
+    result$weights <- weights
+    result$sampling_weights <- stats::setNames(sampling_weights, stats$ids)
+  }
+  result
 }
 
 #' Keep the best start of the full cross-level EM, with every start's record
@@ -250,29 +270,43 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 .cross_level_restricted <- function(x, group_index, group_means, n_profiles,
                                     n_group_classes, variance_model,
                                     between_variance, n_starts, max_iter, tol,
-                                    min_variance) {
-  single <- function(values, k, variance) {
+                                    min_variance, sampling_weights = NULL) {
+  # Under sampling weights the factorization still holds: a group's weight
+  # multiplies its members' ratings and its own mean, so the rating part is
+  # a row-weighted fit and the group part a group-weighted one.
+  single <- function(values, k, variance, unit_weights) {
     frame <- as.data.frame(values)
+    indicators <- names(frame)
+    if (!is.null(unit_weights)) frame$.sampling_weight <- unit_weights
     withCallingHandlers(
-      multilpa(frame, names(frame), NULL, n_profiles = k, variance_model = variance,
+      multilpa(frame, indicators, NULL, n_profiles = k, variance_model = variance,
                n_starts = n_starts, max_iter = max_iter, tol = tol,
-               min_variance = min_variance, acceleration = "none"),
+               min_variance = min_variance, acceleration = "none",
+               weights = if (is.null(unit_weights)) NULL else ".sampling_weight"),
       latents_single_level = function(notice) invokeRestart("muffleMessage"))
   }
-  individual <- single(x, n_profiles, variance_model)
-  groups <- single(group_means, n_group_classes, between_variance)
+  row_weights <- if (is.null(sampling_weights)) NULL else sampling_weights[group_index]
+  individual <- single(x, n_profiles, variance_model, row_weights)
+  groups <- single(group_means, n_group_classes, between_variance, sampling_weights)
+  # Each part's pseudo likelihood is scaled to its own unit count; put the
+  # rating part back on the groups' weight scale before adding the two.
+  individual_scale <- if (is.null(row_weights)) 1 else sum(row_weights) / length(row_weights)
   group_posterior <- unname(groups$subject_posteriors)
   subject <- unname(individual$subject_posteriors)
   parameters <- list(
     means = unname(individual$means), variances = unname(individual$variances),
-    profile_probabilities = matrix(colMeans(subject), n_group_classes, n_profiles,
+    profile_probabilities = matrix(
+      if (is.null(row_weights)) colMeans(subject) else
+        colSums(subject * row_weights) / sum(row_weights),
+      n_group_classes, n_profiles,
                                    byrow = TRUE),
-    group_probabilities = unname(colMeans(group_posterior)),
+    group_probabilities = unname(if (is.null(sampling_weights)) colMeans(group_posterior) else
+      colSums(group_posterior * sampling_weights) / sum(sampling_weights)),
     between_means = unname(groups$means),
     between_variances = unname(groups$variances))
   list(parameters = parameters,
-       expectation = list(log_likelihood = individual$log_likelihood +
-                            groups$log_likelihood,
+       expectation = list(log_likelihood = individual_scale *
+                            individual$log_likelihood + groups$log_likelihood,
                           group_posteriors = group_posterior,
                           subject_posteriors = subject),
        converged = isTRUE(individual$converged) && isTRUE(groups$converged),
@@ -475,6 +509,7 @@ print.multilpa_cross_level <- function(x, ...) {
     "converged: %s\n"),
     label, nrow(x$profile_means), length(x$group_probabilities), x$n_groups,
     x$n_obs, x$log_likelihood, x$n_parameters, if (x$converged) "yes" else "no"))
+  .latents_print_weights(x)
   cat(paste("Tables: get_results(x, what = ), e.g. \"profiles\", \"composition\",",
             "\"group_classes\", \"groups\"; summary(x).\n"))
   invisible(x)

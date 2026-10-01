@@ -51,6 +51,7 @@ print.multilpa <- function(x, rows = 20L, ...) {
              plural(n_categorical, "categorical indicator")) else "")
   }
   cat(sprintf("%d %s; %s\n", x$n_observations, units, measurement))
+  .latents_print_weights(x)
   if (class_model) {
     cat("Classes are labelled profile_1, profile_2, ... in every table.\n")
   }
@@ -152,8 +153,11 @@ summary.multilpa <- function(object, ...) {
     response_probabilities = object$response_probabilities,
     profile_probabilities = object$profile_probabilities,
     group_probabilities = object$group_probabilities,
-    effective_profile_counts = colSums(object$subject_posteriors),
-    effective_group_counts = colSums(object$group_posteriors),
+    effective_profile_counts = object$effective_profile_counts %||%
+      colSums(object$subject_posteriors),
+    effective_group_counts = object$effective_group_counts %||%
+      colSums(object$group_posteriors),
+    weights = object$weights,
     log_likelihood = object$log_likelihood,
     n_parameters = object$n_parameters,
     n_parameters_with_measurement =
@@ -308,6 +312,7 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
              small_classes = .multilpa_one(x$small_classes, NA),
              best_start = .multilpa_one(x$best_start, NA_integer_),
              n_best_replicated = .multilpa_one(x$n_best_replicated, NA_integer_),
+             weights = .multilpa_one(x$weights, NA_character_),
              row.names = NULL)
 }
 
@@ -348,6 +353,7 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
     boundary = x$boundary,
     extreme_logits = x$extreme_logits,
     n_starts = nrow(x$starts),
+    weights = .multilpa_one(x$weights, NA_character_),
     row.names = NULL, stringsAsFactors = FALSE)
 }
 

@@ -109,7 +109,8 @@
                                    vars) {
   parameters <- .additive_check_parameters(parameters, length(vars))
   expectation <- .additive_expectation(stats, parameters)
-  posterior <- expectation$posterior
+  # A weighted group's score is its weight times its own score.
+  posterior <- expectation$posterior * (stats$sampling_weights %||% 1)
   n_classes <- nrow(parameters$means)
   j_count <- stats$n_groups
   pieces <- lapply(seq_len(n_classes), function(h) {
@@ -129,7 +130,8 @@
   part <- function(name, mode) {
     .additive_block_combine(lapply(pieces, `[[`, name), mode)
   }
-  logits <- sweep(posterior[, -1L, drop = FALSE], 2L, parameters$weights[-1L])
+  logits <- posterior[, -1L, drop = FALSE] -
+    outer(rowSums(posterior), parameters$weights[-1L])
   scores <- cbind(part("mean", structure$means),
                   part("log_within", structure$within),
                   part("log_between", structure$between), logits)

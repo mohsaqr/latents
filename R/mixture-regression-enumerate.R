@@ -70,6 +70,11 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
       bootstrap_starts >= 0
   )
   arguments <- list(...)
+  if (bootstrap > 0 && !is.null(arguments$weights)) {
+    .latents_refuse_weights(paste(
+      "the bootstrap likelihood ratio test: it draws samples from the fitted",
+      "model, not from the sampling design. Compare weighted fits on BIC"))
+  }
   if (any(c("n_classes", "n_group_classes", "vcov_type") %in% names(arguments))) {
     stop(errorCondition(paste(
       "Pass the class counts as `n_classes` and `n_group_classes` of",

@@ -206,6 +206,10 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   columns <- list()
   columns[[x$id]] <- x$group_values[x$group_index]
   if (!is.null(x$time) && !is.null(x$time_values)) columns[[x$time]] <- x$time_values
+  # The scaled weights, which a refit scales again to the same values.
+  if (!is.null(x$weights)) {
+    columns[[x$weights]] <- unname(x$sampling_weights)[x$group_index]
+  }
   raw <- .multilpa_uncentered_indicators(x)
   continuous <- if (is.null(raw)) list() else
     stats::setNames(lapply(colnames(raw), function(name) {

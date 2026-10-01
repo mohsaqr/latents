@@ -193,7 +193,8 @@
       class = "latents_unconverged", call = NULL))
   }
   params <- .mixture_order_classes(spec, chosen$params, chosen$expectation)
-  expectation <- .mixture_expectation(spec, params)
+  # Reported posteriors are each unit's own; the likelihood is the weighted one.
+  expectation <- .mixture_expectation(spec, params, weighted = FALSE)
   if (isTRUE(params$separation) || isTRUE(params$membership_separation) ||
       isTRUE(params$group_separation)) {
     warning(warningCondition(paste(
@@ -216,7 +217,7 @@
     degenerate = degenerate, selected = seq_along(results) == best)
   structure(list(
     spec = spec, params = params, expectation = expectation,
-    log_likelihood = expectation$log_likelihood,
+    log_likelihood = .mixture_expectation(spec, params)$log_likelihood,
     n_parameters = .mixture_count_parameters(spec),
     converged = chosen$converged, iterations = chosen$iterations,
     history = chosen$history, starts = starts,
