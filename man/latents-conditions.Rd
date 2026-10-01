@@ -151,6 +151,19 @@ not yet account for a noise component --- \code{\link[=parameter_inference]{para
 \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}}, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=starting_values]{starting_values()}},
 bivariate residuals, \code{\link[=fit_staged]{fit_staged()}} or a posterior plot --- was given a
 fit that has one.}
+\item{\code{latents_unsupported_structure}}{\code{multilpa()} was asked for a
+covariance structure other than EEI, VVI, EEE or VVV together with
+\code{profile_covariates} or \code{group_covariates}, which fit those four only.}
+\item{\code{latents_bad_weights}}{\code{weights} does not name a column, or its
+values are missing, negative, non-finite, vary within a unit, or are
+positive for fewer than two units.}
+\item{\code{latents_unsupported_weights}}{A weighted fit was given to a verb or
+option that does not account for sampling weights: \code{\link[=bootstrap_lrt]{bootstrap_lrt()}},
+\code{enumerate_regressions(bootstrap = )}, \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}},
+\code{prior} or \code{noise}; or a non-sandwich \code{vcov_type} was asked of one.}
+\item{\code{latents_unsupported_indicator}}{\code{ordinal} or \code{count} indicators were
+combined with an option that does not take them yet: membership
+covariates, \code{start}, \code{fixed}, \code{prior} or \code{noise}.}
 \item{\code{latents_pooling_failed}}{An imputation's fit or inference failed
 in \code{\link[=pool_imputations]{pool_imputations()}}, or the imputations' fits report different
 parameters. Rubin's rules need every imputation, so none is dropped; the

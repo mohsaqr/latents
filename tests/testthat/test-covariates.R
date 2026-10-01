@@ -96,3 +96,24 @@ test_that("no predictors agrees with the base model and single-level works", {
   d$constant <- 1
   expect_error(multilpa(d, "y", "g", 2, 1, "constant", n_starts = 1), "rank deficient")
 })
+
+test_that("a structure the covariate model cannot fit is refused, not swapped", {
+  activity <- c("browse", "lectures")
+  # VEI used to be fitted silently as VVI.
+  refused <- lapply(c("VEI", "EEV", "VII"), function(structure) {
+    expect_error(multilpa(course_engagement, activity, "student", 2, 1,
+                          profile_covariates = "previous_grade", model = structure,
+                          n_starts = 1),
+                 class = "latents_unsupported_structure")
+  })
+  expect_error(do.call(multilpa, c(
+    list(course_engagement, activity, "student", 2, 1,
+         profile_covariates = "previous_grade", n_starts = 1),
+    .multilpa_structure_arguments("VEI"))),
+    class = "latents_unsupported_structure")
+  equal_full <- quietly(multilpa(course_engagement, activity, "student", 2, 1,
+                                 profile_covariates = "previous_grade", model = "EEE",
+                                 n_starts = 1, seed = 1))
+  expect_identical(c(equal_full$variance_model, equal_full$covariance_model),
+                   c("equal", "full"))
+})

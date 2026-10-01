@@ -1374,6 +1374,17 @@ multilpa <- function(data, vars, id, n_profiles,
     "`prior`" = !is.null(prior), "`noise = TRUE`" = isTRUE(noise),
     "`fixed`" = length(fixed) > 0L, "`start`" = !is.null(start)))
   if (length(profile_covariates) > 0L || length(group_covariates) > 0L) {
+    # The covariate model is fitted through `variance_model` and
+    # `covariance_model` alone, which reach these four structures only; any
+    # other used to be fitted silently as the nearest of them.
+    if (!structure %in% c("EEI", "VVI", "EEE", "VVV")) {
+      stop(errorCondition(sprintf(paste(
+        "The covariance structure \"%s\" is not available with",
+        "`profile_covariates` or `group_covariates`, which fit EEI, VVI, EEE",
+        "and VVV only. Fit the covariate-free model with this structure and use",
+        "three_step() or r3step(), or choose one of the four."), structure),
+        class = "latents_unsupported_structure", call = NULL))
+    }
     return(.multilpa_covariate_model(
       data = data, vars = vars, id = id, n_profiles = n_profiles,
       n_group_classes = n_group_classes,

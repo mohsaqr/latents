@@ -137,6 +137,19 @@
 #'     [three_step()], [r3step()], [bootstrap_lrt()], [starting_values()],
 #'     bivariate residuals, [fit_staged()] or a posterior plot --- was given a
 #'     fit that has one.}
+#'   \item{`latents_unsupported_structure`}{`multilpa()` was asked for a
+#'     covariance structure other than EEI, VVI, EEE or VVV together with
+#'     `profile_covariates` or `group_covariates`, which fit those four only.}
+#'   \item{`latents_bad_weights`}{`weights` does not name a column, or its
+#'     values are missing, negative, non-finite, vary within a unit, or are
+#'     positive for fewer than two units.}
+#'   \item{`latents_unsupported_weights`}{A weighted fit was given to a verb or
+#'     option that does not account for sampling weights: [bootstrap_lrt()],
+#'     `enumerate_regressions(bootstrap = )`, [three_step()], [r3step()],
+#'     `prior` or `noise`; or a non-sandwich `vcov_type` was asked of one.}
+#'   \item{`latents_unsupported_indicator`}{`ordinal` or `count` indicators were
+#'     combined with an option that does not take them yet: membership
+#'     covariates, `start`, `fixed`, `prior` or `noise`.}
 #'   \item{`latents_pooling_failed`}{An imputation's fit or inference failed
 #'     in [pool_imputations()], or the imputations' fits report different
 #'     parameters. Rubin's rules need every imputation, so none is dropped; the

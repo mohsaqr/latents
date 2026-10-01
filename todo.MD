@@ -59,15 +59,17 @@ homogeneous and measurement-invariant.
 - [ ] Gaps vs JStats: random-intercept LTA (needs the exact Mplus RI-LTA
   specification), absorbing profiles
   (seqHMM-style). Sampling weights done (0.9.3). **M-L**
-- [ ] Follow-ups: covariance structures and FIML in the general engine;
-  structure-aware standard errors in lta(); likelihood-ratio and bootstrap
-  tests between nested transition models; a simulation study of the new
-  standard errors. **M**
+- [x] Covariance structures and FIML in the general engine; bootstrap LRT
+  between nested transition models; simulation study of the new standard
+  errors (all 0.9.2; audited 2026-10-01).
+- [ ] Structure-aware standard errors in the extended `lta()` beyond the
+  diagonal EEI and VVI (refused today). **M**
 
 ### 1.3 Membership-covariate models
 
-- [ ] The fourteen covariance structures in covariate models (today only the
-  four `variance_model` × `covariance_model` combinations). **S–M**
+- [ ] The fourteen covariance structures in covariate models (today only EEI,
+  VVI, EEE, VVV). Until 0.9.6 any other `model =` was silently fitted as one
+  of those four; it is now refused (`latents_unsupported_structure`). **S–M**
 - [ ] `start` and `fixed` for covariate models (both refused today). **M**
 - [ ] Missing covariates beyond multiple imputation: integrate out a normal
   covariate by quadrature, for one or two continuous covariates only. Decide
@@ -78,17 +80,16 @@ homogeneous and measurement-invariant.
 `fit_random_intercept()` is parked in `future/`; restoring it is a
 precondition for everything here.
 
-- [ ] Standard errors and intervals for random-intercept fits, handling the
-  variance boundary and integration accuracy. **M**
-- [ ] Validate random-intercept fits beyond the externally checked one-profile
-  limit, including multiple-profile parameter recovery. **M**
-- [ ] Random slopes and more general random-effects structures beyond a single
-  Gaussian group intercept with unit loadings. **L**
+- [~] Parked: `fit_random_intercept()` was removed in 0.8.0 and lives in
+  `future/`. Bringing it back needs standard errors (variance boundary,
+  integration accuracy), multiple-profile validation, and then random slopes.
+  Only if the continuous group-effect family is wanted. **M–L**
 
 ### 1.5 Mixture regression (`mixture_regression()`)
 
 - [ ] Multiple imputation for missing predictors: extend `pool_imputations()`
-  (it pools `multilpa()` fits only). **S**
+  to `mixture_regression()` (it calls `multilpa()` only; confirmed
+  2026-10-01). **S**
 - [ ] Non-canonical links (probit, cloglog, identity-Poisson). **M**
 - [ ] Random effects within classes (a random intercept per group inside each
   regression class). **L**
@@ -113,12 +114,13 @@ precondition for everything here.
 - [x] `enumerate_classes(time = )` and `bootstrap_lrt()` for transition models (done 2026-10-01).
 - [x] (done 0.9.2) `enumerate_classes()` and `bootstrap_lrt()` for transition models, with
   profile count and group-class count as a joint grid. **M**
-- [ ] `bootstrap_lrt()` for random-intercept models, and nested comparisons
-  beyond the one-class increment (for example diagonal against full
-  covariance at equal class counts). **M**
-- [ ] VLMR/LMR test with an independently validated reference distribution
-  (`lmr_lrt()` is parked in `future/`; a chi-square approximation is not
-  acceptable). **L**
+- [ ] `bootstrap_lrt()` for nested comparisons beyond the one-class increment
+  in `multilpa()` (diagonal against full covariance at equal class counts is
+  refused today with `latents_incomparable_models`; transition and family
+  fits already have a nesting rule). **M**
+- [~] Parked: VLMR/LMR test (`lmr_lrt()` in `future/`) until its reference
+  distribution is independently validated; a chi-square approximation is not
+  acceptable. **L**
 - [ ] Calibrate the local-dependence diagnostics (bivariate residuals) for
   fitted measurement, classification uncertainty and clustering, for example
   by a parametric bootstrap; current p-values are approximate. **M**
@@ -179,10 +181,10 @@ precondition for everything here.
 - [x] Bump `DESCRIPTION` (0.8.4) before any push. **S**
 - [x] (2026-10-01, 0.9.4: CI repaired) CI has never run: GitHub Actions on release, devel and oldrel across
   Linux, macOS and Windows; only macOS with R 4.5.2 so far. **S**
-- [ ] Re-audit the README feature matrix. Its residual-covariance row still
-  says four of fourteen structures; all fourteen are fitted with Wald standard
-  errors, and transition models, pooled imputations and the extended bootstrap
-  are new since the last audit. **S**
+- [ ] README update: it is now a tutorial (the feature matrix with the
+  four-of-fourteen claim is gone) and does not mention sampling weights,
+  ordinal/count indicators, the Houle families, the `lta()` extensions or
+  `mixture_regression()`. **S**
 - [ ] Vignette coverage: exercised 14 of 28 exports when audited on
   2026-09-20; add the verbs added since (`mixture_regression()`,
   `pool_imputations()`, transition inference, `predict()`). Re-count against

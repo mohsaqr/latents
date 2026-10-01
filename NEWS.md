@@ -1,3 +1,15 @@
+# latents 0.9.6
+
+## Bug fix
+
+* `multilpa()` with `profile_covariates` or `group_covariates` silently fitted
+  any covariance structure other than EEI, VVI, EEE and VVV as one of those
+  four (for example `model = "VEI"` gave VVI) and did not record the
+  structure. It now refuses them with `latents_unsupported_structure`; fit the
+  covariate-free model with the structure and use `three_step()` or
+  `r3step()`.
+* `?"latents-conditions"` documents the condition classes added in 0.9.3–0.9.6.
+
 # latents 0.9.5
 
 ## Ordinal and count indicators
