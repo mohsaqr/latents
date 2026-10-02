@@ -76,15 +76,17 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 
 - method:
 
-  Only `"wald"` is implemented for a transition fit; `"bootstrap"`
-  raises `latents_unsupported_inference` rather than being ignored. Use
-  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
-  to compare transition models.
+  `"wald"` (the default) or `"bootstrap"`. The bootstrap resamples
+  persons with replacement, refits the same specification, and matches
+  each replicate's profiles and group classes to the original's;
+  `standard_error` is the replicates' standard deviation, `conf_low` and
+  `conf_high` their percentile interval, and `statistic`, `p_value` and
+  `p_adjusted` are `NA`. It needs `data`.
 
 - iter, n_starts, max_iter, tol, seed:
 
-  Bootstrap controls of the generic; unused, since the bootstrap is
-  refused.
+  Bootstrap resamples, the controls of each refit, and an optional seed
+  (the caller's random state is restored).
 
 - boundary:
 

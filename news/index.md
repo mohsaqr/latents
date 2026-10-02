@@ -1,5 +1,32 @@
 # Changelog
 
+## latents 0.9.9
+
+### Transition models: full-covariance simulation and bootstrap inference
+
+- Transition fits with full covariance structures (EEE, VVV and the
+  other non-diagonal structures, homogeneous or extended) can now be
+  simulated, so
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  compares them. Each profile’s rows are drawn through the Cholesky
+  factor of its covariance; diagonal fits keep their random stream.
+- `parameter_inference(method = "bootstrap", data = )` works on
+  transition fits. Persons are resampled with replacement and refitted;
+  each replicate’s profiles are matched to the original’s on the
+  measurement and its group classes on what the matched profiles make of
+  them, with initial logits rebased when the reference profile moves.
+  Standard errors are the replicates’ standard deviation and intervals
+  their percentiles. This gives inference for extended models whose Wald
+  inference is unavailable (full covariance structures) and supports
+  sampling weights.
+- Fixed a 0.9.8 regression: transition fits refused `boundary = "fix"`,
+  which `get_results(fit, "responses")` and
+  [`summary()`](https://rdrr.io/r/base/summary.html) request, so
+  categorical transition response tables lost their standard errors.
+  Transition inference holds nothing at a bound, so `"fix"` now agrees
+  with `"error"`; a fit with an active bound is still refused with
+  `latents_boundary_fit`.
+
 ## latents 0.9.8
 
 ### Model review fixes

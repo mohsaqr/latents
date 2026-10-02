@@ -17,7 +17,7 @@ information is the numerical Jacobian of that analytic score."><meta property="o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -139,14 +139,17 @@ outer product of the group scores).</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Only <code>"wald"</code> is implemented for a transition fit;
-<code>"bootstrap"</code> raises <code>latents_unsupported_inference</code> rather than being
-ignored. Use <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code> to compare transition models.</p></dd>
+<dd><p><code>"wald"</code> (the default) or <code>"bootstrap"</code>. The bootstrap
+resamples persons with replacement, refits the same specification, and
+matches each replicate's profiles and group classes to the original's;
+<code>standard_error</code> is the replicates' standard deviation, <code>conf_low</code> and
+<code>conf_high</code> their percentile interval, and <code>statistic</code>, <code>p_value</code> and
+<code>p_adjusted</code> are <code>NA</code>. It needs <code>data</code>.</p></dd>
 
 
 <dt id="arg-iter-n-starts-max-iter-tol-seed">iter, n_starts, max_iter, tol, seed<a class="anchor" aria-label="anchor" href="#arg-iter-n-starts-max-iter-tol-seed"></a></dt>
-<dd><p>Bootstrap controls of the generic;
-unused, since the bootstrap is refused.</p></dd>
+<dd><p>Bootstrap resamples, the controls of
+each refit, and an optional seed (the caller's random state is restored).</p></dd>
 
 
 <dt id="arg-boundary">boundary<a class="anchor" aria-label="anchor" href="#arg-boundary"></a></dt>

@@ -305,9 +305,13 @@ covariate, occasion-varying or second-order transitions), the table has
 one row per transition, initial and second-order logit: `block`,
 `group_class`, `from`, `to`, `term`, `estimate`, `standard_error`,
 `statistic`, `p_value`, `p_adjusted`, `conf_low`, `conf_high` (and
-`previous` for a second-order fit). Only `method = "wald"` and
-`boundary = "error"` are implemented there; the alternatives raise
-`latents_unsupported_inference` instead of being ignored.
+`previous` for a second-order fit). `method = "bootstrap"` resamples
+persons, refits, and matches every replicate's profiles (on the
+measurement) and group classes to the original's, rebasing the initial
+logits when the reference profile moves; it needs `data`, and works
+where Wald inference is refused (for example full covariance
+structures). `boundary = "fix"` raises `latents_unsupported_inference`
+instead of being ignored.
 
 ## Conditions
 

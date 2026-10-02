@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,16 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.9" id="latents-099">latents 0.9.9<a class="anchor" aria-label="anchor" href="#latents-099"></a></h2>
+<div class="section level3">
+<h3 id="transition-models-full-covariance-simulation-and-bootstrap-inference-0-9-9">Transition models: full-covariance simulation and bootstrap inference<a class="anchor" aria-label="anchor" href="#transition-models-full-covariance-simulation-and-bootstrap-inference-0-9-9"></a></h3>
+<ul><li>Transition fits with full covariance structures (EEE, VVV and the other non-diagonal structures, homogeneous or extended) can now be simulated, so <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> compares them. Each profile’s rows are drawn through the Cholesky factor of its covariance; diagonal fits keep their random stream.</li>
+<li>
+<code>parameter_inference(method = "bootstrap", data = )</code> works on transition fits. Persons are resampled with replacement and refitted; each replicate’s profiles are matched to the original’s on the measurement and its group classes on what the matched profiles make of them, with initial logits rebased when the reference profile moves. Standard errors are the replicates’ standard deviation and intervals their percentiles. This gives inference for extended models whose Wald inference is unavailable (full covariance structures) and supports sampling weights.</li>
+<li>Fixed a 0.9.8 regression: transition fits refused <code>boundary = "fix"</code>, which <code>get_results(fit, "responses")</code> and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> request, so categorical transition response tables lost their standard errors. Transition inference holds nothing at a bound, so <code>"fix"</code> now agrees with <code>"error"</code>; a fit with an active bound is still refused with <code>latents_boundary_fit</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.8" id="latents-098">latents 0.9.8<a class="anchor" aria-label="anchor" href="#latents-098"></a></h2>
 <div class="section level3">
