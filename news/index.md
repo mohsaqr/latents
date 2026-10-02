@@ -1,5 +1,13 @@
 # Changelog
 
+## latents 0.9.10
+
+- Test-only fix: a negative-binomial transition test required
+  convergence within `max_iter = 5`, which held on some platforms only
+  (macOS CI and R 4.1 needed more iterations, and the package correctly
+  warned). The test now allows 500 iterations; its checks of dispersion
+  floors, monotone likelihood and stationary scores are unchanged.
+
 ## latents 0.9.9
 
 ### Transition models: full-covariance simulation and bootstrap inference

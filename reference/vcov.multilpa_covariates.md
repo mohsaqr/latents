@@ -111,7 +111,7 @@ vcov(fit, example_data, scale = "unconstrained")
 #> measurement.log_variance.profile_1.y2                       -8.065083e-07
 #> measurement.log_variance.profile_2.y1                        1.206184e-06
 #> measurement.log_variance.profile_2.y2                        1.865066e-07
-#> profile.coefficient.profile_1.group_class_1                 -2.310731e-07
+#> profile.coefficient.profile_1.group_class_1                 -2.310732e-07
 #> profile.coefficient.profile_1.group_class_2                 -8.668341e-07
 #> profile.coefficient.profile_1.x                             -1.542014e-07
 #> group.coefficient.group_class_1.(Intercept)                 -2.331832e-07
@@ -150,7 +150,7 @@ vcov(fit, example_data, scale = "unconstrained")
 #> measurement.log_variance.profile_1.y2                                3.920012e-06
 #> measurement.log_variance.profile_2.y1                               -2.186616e-06
 #> measurement.log_variance.profile_2.y2                                1.232159e-08
-#> profile.coefficient.profile_1.group_class_1                          8.528085e-08
+#> profile.coefficient.profile_1.group_class_1                          8.528086e-08
 #> profile.coefficient.profile_1.group_class_2                          4.308017e-06
 #> profile.coefficient.profile_1.x                                      2.874847e-07
 #> group.coefficient.group_class_1.(Intercept)                          7.970726e-07
@@ -195,10 +195,10 @@ vcov(fit, example_data, scale = "unconstrained")
 #> group.coefficient.group_class_1.(Intercept)                         -5.228710e-07
 #>                                             profile.coefficient.profile_1.group_class_1
 #> measurement.mean.profile_1.y1                                             -1.738891e-07
-#> measurement.mean.profile_1.y2                                             -2.310731e-07
+#> measurement.mean.profile_1.y2                                             -2.310732e-07
 #> measurement.mean.profile_2.y1                                             -6.878763e-07
 #> measurement.mean.profile_2.y2                                             -4.266238e-07
-#> measurement.log_variance.profile_1.y1                                      8.528085e-08
+#> measurement.log_variance.profile_1.y1                                      8.528086e-08
 #> measurement.log_variance.profile_1.y2                                      2.127237e-07
 #> measurement.log_variance.profile_2.y1                                     -4.005021e-06
 #> measurement.log_variance.profile_2.y2                                     -1.168408e-06
