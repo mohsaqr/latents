@@ -91,10 +91,86 @@ precondition for everything here.
   to `mixture_regression()` (it calls `multilpa()` only; confirmed
   2026-10-01). **S**
 - [ ] Non-canonical links (probit, cloglog, identity-Poisson). **M**
-- [ ] Random effects within classes (a random intercept per group inside each
-  regression class). **L**
+- [ ] Random effects within classes: planned as growth mixture models, see 1.6.
 
-### 1.6 Across all models
+### 1.6 Growth models (latent class growth and growth mixture models)
+
+Status (2026-10-02). Latent class growth analysis (group-based trajectories,
+Nagin) already works through
+`mixture_regression(y ~ time, data, n_classes, id = "id", class_level = "group")`
+for Gaussian, binomial and Poisson outcomes. It matches `lcmm::hlme` without
+random effects: log likelihood -2857.281151 vs -2857.281176, same estimates up
+to class order (300 persons x 6 occasions, 3 classes). Growth mixture models
+(random intercepts/slopes *within* classes, `hlme(random = ~ time)`) are not
+supported.
+
+**Interface (decided before coding).** One verb, named arguments: extend
+`mixture_regression()` rather than add a function.
+`random = ~ 1 + time` (within-class random effects; default `NULL` keeps
+today's model), `random_covariance = c("varying", "equal", "proportional")`
+(class-specific, common, or common times a class scale, the `lcmm` `nwg`),
+`random_diagonal = FALSE` (`lcmm` `idiag`), and later
+`residual_correlation = c("none", "ar1", "brownian")`. A growth mixture model
+needs `id` and `class_level = "group"`; anything else is refused by class.
+
+**References.** `lcmm::hlme` 2.2.1 (installed; exact for Gaussian, no
+integration) and Latent GOLD 6.1 Syntax (installed under Wine; latent growth
+and mixture growth models with CFactors, Syntax Guide sections 5.3.4-5.3.5 and
+5.4.3; quadrature, so evaluate our exact likelihood at its estimates before
+calling a gap a disagreement).
+
+**Phases** (each ships only with its evidence; sizes as at the top):
+
+- [ ] **G0. Document what exists.** Example and vignette section "trajectory
+  classes" with `mixture_regression()`; a tidy `trajectories` table (predicted
+  mean per class and time) from `get_results()`; add the `lcmm::hlme` match as
+  an `equivalence/` fixture. **S** (half a day)
+- [ ] **G1. Gaussian growth mixture model, core.** Within class k,
+  y_i ~ N(X_i b_k, Z_i G_k Z_i' + s_k^2 I), unbalanced times and missing
+  occasions allowed. Closed-form marginal likelihood (Cholesky per person);
+  EM over classes with a per-class weighted linear-mixed-model M-step
+  (inner EM on the random effects, or Newton on the log-Cholesky of G_k);
+  starts from the latent class growth fit plus random starts; SQUAREM.
+  `random_covariance` (`varying`/`equal`/`proportional`) and
+  `random_diagonal`. Classed refusals for boundary variances.
+  Evidence: independent dense-matrix likelihood and analytic score checks;
+  `hlme` matches (log likelihood within 1e-6, estimates within 1e-4) for at
+  least 6 configurations (1-4 classes; random intercept / intercept+slope;
+  each covariance option; unbalanced data). **M** (about 1.5 days)
+- [ ] **G2. Inference.** Observed-information and sandwich (weighted) standard
+  errors on the estimation scale, delta method to variances/correlations;
+  boundary handling for random-effect variances; person bootstrap via the
+  existing machinery. Evidence: numerical-Hessian agreement 1e-6; coverage
+  simulation (>= 200 datasets, gates as in `validation/LTA_SIMULATION.md`).
+  **M** (about 1 day)
+- [ ] **G3. Integration.** `print`/`summary`/`plot` (class trajectories with
+  individual-curve spread), `as.data.frame()`, `predict()` (marginal and
+  conditional on the random effects, i.e. empirical Bayes), posterior class
+  table, `enumerate` over classes, `bootstrap_lrt()` (needs simulation from
+  the fitted model), label alignment, sampling weights, `sensitivity()`.
+  Evidence: tests per verb; bootstrap LRT size check. **M** (about 1 day)
+- [ ] **G4. Validation report.** Recovery and coverage study (balanced and
+  unbalanced designs, weak and strong separation, random-effect variance near
+  zero); Latent GOLD cross-check on two Gaussian configurations; write-up in
+  `validation/`. **S-M** (half a day, mostly compute)
+- [ ] **G5. Correlated residuals** (`residual_correlation = "ar1"`,
+  `"brownian"`). Changes only the residual covariance in G1; `hlme(cor = ...)`
+  as reference. **M** (about 1 day)
+- [ ] **G6. Binary and count outcomes with random effects.** Adaptive
+  Gauss-Hermite quadrature (Laplace as a fast option) inside the class EM;
+  references Latent GOLD (binary, Poisson growth mixtures) and `lme4` /
+  `GLMMadaptive` for one class. Accuracy check against increasing nodes.
+  **L** (1.5-2 weeks)
+- [ ] **G7. Out of scope unless asked:** latent-process link functions
+  (`lcmm::lcmm`), multivariate outcomes (`multlcmm`), joint latent class and
+  survival models (`Jointlcmm`). Each is a separate model family (weeks).
+
+Order: G0 -> G1 -> G2 -> G3 -> G4 gives a releasable Gaussian growth mixture
+model in about 4 working days; G5 next; G6 only with a concrete need. Risk:
+convergence with random-effect variances on the boundary or weakly separated
+classes may add a day to G1-G2.
+
+### 1.7 Across all models
 
 - [x] **Sampling weights** (2026-10-01, 0.9.3): unit-level pseudo ML in every
   engine, sandwich SEs, integer weights = duplication, Mplus check.
@@ -200,6 +276,9 @@ precondition for everything here.
 
 | Date | Item | Evidence |
 |---|---|---|
+| 2026-10-02 | 0.9.11 (pending push): false non-convergence of transition fits (L-BFGS-B code 52) | 5/120 test datasets flagged at the maximum, 0 after; restart gain < 1e-12 |
+| 2026-10-02 | 0.9.9: full-covariance transition simulation; transition bootstrap inference | coverage 0.924-0.928, bootstrap LRT size 0.065 (200 datasets) |
+| 2026-10-02 | 0.9.8: review of 0.9.0-0.9.7 plus six follow-up fixes | 5,332 assertions; `validation/review-2026-10-0*` |
 | 2026-09-28 | `bootstrap_lrt()` for FIML and membership-covariate fits | size 0.040 / 0.053 at 5% (`validation/bootstrap-lrt-size.R`) |
 | 2026-09-27 | Standard errors for `lta()` fits | Richardson Hessian 1e-6, depmixS4; coverage 0.947–0.960 |
 | 2026-09-27 | `pool_imputations()` for missing covariates | `mice::pool.scalar` to 1e-12; coverage by imputation model |

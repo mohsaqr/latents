@@ -572,7 +572,7 @@ No standard errors in this table: Inference requires a converged fit.
 No standard errors in this table: Inference requires a converged fit.
 No standard errors in this table: Inference requires a converged fit.
 No standard errors in this table: Inference requires a converged fit.
-[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5409 ]
+[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5419 ]
 
 ══ Skipped tests (4) ═══════════════════════════════════════════════════════════
 • R/ sources are not available (1): 'test-tidy-core.R:273:3'
@@ -580,8 +580,8 @@ No standard errors in this table: Inference requires a converged fit.
 • the vignette sources are not available (2): 'test-vignette-claims.R:23:3',
   'test-vignette-claims.R:61:3'
 
-[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5409 ]
+[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5419 ]
 > 
 > proc.time()
    user  system elapsed 
-375.858  12.925 561.107 
+312.134   9.702 330.353 

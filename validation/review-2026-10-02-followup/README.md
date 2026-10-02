@@ -140,3 +140,21 @@ Evidence:
 Released as 0.9.9: the version bump (`DESCRIPTION`, `NEWS.md` heading) was
 made after the gates above and is the only difference from `SOURCE.csv`
 (274 of 276 files unchanged); release-item tests pass on the bumped files (29/29).
+
+## Post-0.9.10: false non-convergence in transition fits
+
+CI for 0.9.8-0.9.10 failed on macOS and R 4.1 at one negative-binomial LTA
+test. Cause: `.lta_quasi_newton()` counted only L-BFGS-B code 0 as converged;
+code 52 (ABNORMAL_TERMINATION_IN_LNSRCH) occurs at the maximum on some
+platforms. Locally 5 of 120 test-design datasets were flagged unconverged with
+scores of about 1e-6 and a restart gain below 1e-12; 0 after the fix (restart
+once, accept when the gain is within `tol`). The 0.9.10 `max_iter` test change
+was a misdiagnosis and is reverted; a regression test with the five datasets
+fails 5 times on 0.9.10 and passes now. Gates: source suite 5,446 assertions
+in 833 cases, 0 failures/errors/warnings/skips, identity over 276 files; lint
+clean; native `R CMD check --no-manual` Status: OK (0/0/0), installed tests
+`[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5419 ]`.
+
+Released as 0.9.11: the version bump (`DESCRIPTION`, `NEWS.md` heading) was
+made after the gates above and is the only difference from `SOURCE.csv`
+(274 of 276 files unchanged); release-item tests pass (29/29).

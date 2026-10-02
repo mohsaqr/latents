@@ -514,19 +514,32 @@
   # transition never observed has its maximum at probability zero, where the
   # logit runs off and the gradient decays without vanishing. That boundary is
   # flagged separately (see .lta_probability_boundary()).
+  control <- list(maxit = 5000L, factr = max(tol / .Machine$double.eps, 1), pgtol = 0)
   found <- stats::optim(theta, value, gradient, method = "L-BFGS-B", lower = lower,
-                        control = list(maxit = 5000L,
-                                       factr = max(tol / .Machine$double.eps, 1),
-                                       pgtol = 0))
+                        control = control)
   if (!is.finite(found$value) || found$value > start_value) {
     return(list(parameters = parameters, log_likelihood = -start_value,
                 gradient = max(abs(gradient(theta))), converged = FALSE))
+  }
+  converged <- found$convergence == 0L
+  # L-BFGS-B's line search can stop at the maximum (code 52) when rounding
+  # hides any further ascent; whether it does is platform-dependent. Restart
+  # once from where it stopped: if the likelihood cannot be raised by more
+  # than the tolerance, the relative-change rule above is met.
+  if (identical(found$convergence, 52L)) {
+    again <- stats::optim(found$par, value, gradient, method = "L-BFGS-B",
+                          lower = lower, control = control)
+    if (is.finite(again$value) && again$value <= found$value) {
+      converged <- again$convergence == 0L ||
+        found$value - again$value <= tol * (1 + abs(again$value))
+      found <- again
+    }
   }
   final_gradient <- gradient(found$par)
   free <- !(found$par <= lower + 1e-12 & final_gradient > 0)
   list(parameters = .lta_unpack(found$par, spec), log_likelihood = -found$value,
        gradient = max(abs(final_gradient[free]), 0),
-       converged = found$convergence == 0L)
+       converged = converged)
 }
 
 #' Does any fitted initial or transition probability sit at zero?

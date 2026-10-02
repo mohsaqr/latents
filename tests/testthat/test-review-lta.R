@@ -241,15 +241,34 @@ test_that("negative-binomial LTA optimization respects floors and reaches statio
   lapply(c("varying", "equal"), function(dispersion) {
     fit <- quietly(lta(data, c("y", "k"), "id", 2, time = "time", count = "k",
       count_model = "negative_binomial", count_dispersion = dispersion,
-      # Convergence within five iterations held on some platforms only (macOS
-      # CI and R 4.1 needed more); the test is about floors and stationarity.
-      transitions = "occasion", n_starts = 1L, max_iter = 500L, seed = 2L),
+      transitions = "occasion", n_starts = 1L, max_iter = 5L, seed = 2L),
       "latents_boundary")
     expect_true(fit$converged)
     expect_true(all(fit$measurement[[1L]]$count_dispersion >= .latents_min_dispersion))
     expect_true(all(diff(fit$log_likelihood_history) >= -1e-8))
     expect_lt(max(abs(colSums(.lta_group_scores(coef(fit), fit)))), 1e-3)
   })
+})
+
+test_that("a quasi-Newton stop at the maximum (L-BFGS-B code 52) counts as converged", {
+  # These datasets end L-BFGS-B with ABNORMAL_TERMINATION_IN_LNSRCH locally
+  # (macOS arm64, R 4.5) at points whose scores are ~1e-6 and that a restart
+  # improves by < 1e-12; other platforms hit other datasets.
+  cases <- list(c(3L, 1L), c(8L, 1L), c(16L, 2L), c(25L, 1L), c(49L, 1L))
+  invisible(lapply(cases, function(case) {
+    set.seed(case[1L])
+    n <- 120L
+    state <- rep(sample(1:2, n, replace = TRUE), each = 4L)
+    data <- data.frame(id = rep(seq_len(n), each = 4L), time = rep(1:4, n),
+      y = rnorm(n * 4L, c(-2, 2)[state], 0.7),
+      k = rnbinom(n * 4L, mu = c(2, 8)[state], size = 2))
+    fit <- quietly(lta(data, c("y", "k"), "id", 2, time = "time", count = "k",
+      count_model = "negative_binomial",
+      count_dispersion = c("varying", "equal")[case[2L]],
+      transitions = "occasion", n_starts = 1L, seed = 2L), "latents_boundary")
+    expect_true(fit$converged)
+    expect_lt(max(abs(colSums(.lta_group_scores(coef(fit), fit)))), 1e-3)
+  }))
 })
 
 test_that("second-order boundary detection reads only the first-order move into occasion two", {
