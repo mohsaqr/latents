@@ -1,5 +1,19 @@
 # Changelog
 
+## latents 0.9.11
+
+- Transition fits no longer report false non-convergence. The
+  quasi-Newton finish counted only L-BFGS-B’s code 0 as converged, but
+  its line search can stop at the maximum (code 52,
+  “ABNORMAL_TERMINATION_IN_LNSRCH”) when rounding hides any further
+  ascent, which is platform-dependent. It now restarts once from where
+  it stopped and accepts the fit when the log likelihood cannot be
+  raised by more than `tol`. In 120 negative-binomial test datasets 5
+  were flagged unconverged at points with scores of about 1e-6 that a
+  restart improved by less than 1e-12; none are now. This, not the
+  iteration cap, is what failed the 0.9.8-0.9.10 CI checks on macOS and
+  R 4.1 (the 0.9.10 test change is reverted).
+
 ## latents 0.9.10
 
 - Test-only fix: a negative-binomial transition test required

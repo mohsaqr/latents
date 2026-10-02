@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,10 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.11" id="latents-0911">latents 0.9.11<a class="anchor" aria-label="anchor" href="#latents-0911"></a></h2>
+<ul><li>Transition fits no longer report false non-convergence. The quasi-Newton finish counted only L-BFGS-B’s code 0 as converged, but its line search can stop at the maximum (code 52, “ABNORMAL_TERMINATION_IN_LNSRCH”) when rounding hides any further ascent, which is platform-dependent. It now restarts once from where it stopped and accepts the fit when the log likelihood cannot be raised by more than <code>tol</code>. In 120 negative-binomial test datasets 5 were flagged unconverged at points with scores of about 1e-6 that a restart improved by less than 1e-12; none are now. This, not the iteration cap, is what failed the 0.9.8-0.9.10 CI checks on macOS and R 4.1 (the 0.9.10 test change is reverted).</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.10" id="latents-0910">latents 0.9.10<a class="anchor" aria-label="anchor" href="#latents-0910"></a></h2>
 <ul><li>Test-only fix: a negative-binomial transition test required convergence within <code>max_iter = 5</code>, which held on some platforms only (macOS CI and R 4.1 needed more iterations, and the package correctly warned). The test now allows 500 iterations; its checks of dispersion floors, monotone likelihood and stationary scores are unchanged.</li>
