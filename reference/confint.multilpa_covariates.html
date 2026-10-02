@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,9 +93,9 @@ Supplying it is the stronger check that the caller still holds that frame.</p></
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A two-column matrix of Wald intervals, one row per requested
-parameter, named as <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> names them. Bounds are on the natural scale
-and are not constrained to respect a variance's positivity or a
-probability's range.</p>
+parameter, named as <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> names them. Bounds are on the natural scale;
+positive parameters use log-scale intervals and probabilities use
+logit-scale intervals to respect their parameter ranges.</p>
     </div>
 
     <div class="section level2">

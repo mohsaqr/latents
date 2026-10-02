@@ -88,7 +88,14 @@ parameter_inference(
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust", "opg"),
-  ...
+  adjust = .multilpa_p_adjust_methods,
+  method = c("wald", "bootstrap"),
+  iter = 199L,
+  n_starts = 10L,
+  max_iter = 1000L,
+  tol = 1e-08,
+  seed = NULL,
+  boundary = c("error", "fix")
 )
 ```
 
@@ -291,6 +298,16 @@ coefficient is a log odds against that reference. The tests are Wald
 tests and inherit the usual caveat: they are unreliable for a
 coefficient driven to the boundary by separation, which the size of the
 estimate and its standard error together will reveal.
+
+For a general transition fit (an
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit with
+covariate, occasion-varying or second-order transitions), the table has
+one row per transition, initial and second-order logit: `block`,
+`group_class`, `from`, `to`, `term`, `estimate`, `standard_error`,
+`statistic`, `p_value`, `p_adjusted`, `conf_low`, `conf_high` (and
+`previous` for a second-order fit). Only `method = "wald"` and
+`boundary = "error"` are implemented there; the alternatives raise
+`latents_unsupported_inference` instead of being ignored.
 
 ## Conditions
 

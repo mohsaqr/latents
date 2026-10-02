@@ -40,8 +40,9 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 
 A two-column matrix of Wald intervals, one row per requested parameter,
 named as [`coef()`](https://rdrr.io/r/stats/coef.html) names them.
-Bounds are on the natural scale and are not constrained to respect a
-variance's positivity or a probability's range.
+Bounds are on the natural scale; positive parameters use log-scale
+intervals and probabilities use logit-scale intervals to respect their
+parameter ranges.
 
 ## Examples
 

@@ -17,7 +17,7 @@ information is the numerical Jacobian of that analytic score."><meta property="o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,7 +82,13 @@ information is the numerical Jacobian of that analytic score.</p>
 <span>  step <span class="op">=</span> <span class="fl">1e-04</span>,</span>
 <span>  vcov_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"robust"</span>, <span class="st">"opg"</span><span class="op">)</span>,</span>
 <span>  adjust <span class="op">=</span> <span class="va">.multilpa_p_adjust_methods</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
+<span>  iter <span class="op">=</span> <span class="fl">199L</span>,</span>
+<span>  n_starts <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>  max_iter <span class="op">=</span> <span class="fl">1000L</span>,</span>
+<span>  tol <span class="op">=</span> <span class="fl">1e-08</span>,</span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"fix"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa_transitions'</span></span>
@@ -132,8 +138,20 @@ outer product of the group scores).</p></dd>
 <code><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">stats::p.adjust()</a></code> accepts.</p></dd>
 
 
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Unused.</p></dd>
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>Only <code>"wald"</code> is implemented for a transition fit;
+<code>"bootstrap"</code> raises <code>latents_unsupported_inference</code> rather than being
+ignored. Use <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code> to compare transition models.</p></dd>
+
+
+<dt id="arg-iter-n-starts-max-iter-tol-seed">iter, n_starts, max_iter, tol, seed<a class="anchor" aria-label="anchor" href="#arg-iter-n-starts-max-iter-tol-seed"></a></dt>
+<dd><p>Bootstrap controls of the generic;
+unused, since the bootstrap is refused.</p></dd>
+
+
+<dt id="arg-boundary">boundary<a class="anchor" aria-label="anchor" href="#arg-boundary"></a></dt>
+<dd><p>Only <code>"error"</code>: a fit on a bound has no Wald inference, and
+<code>"fix"</code> raises <code>latents_unsupported_inference</code>.</p></dd>
 
 
 <dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
@@ -142,6 +160,10 @@ outer product of the group scores).</p></dd>
 
 <dt id="arg-scale">scale<a class="anchor" aria-label="anchor" href="#arg-scale"></a></dt>
 <dd><p><code>"natural"</code> (probabilities) or <code>"unconstrained"</code> (logits).</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Unused.</p></dd>
 
 
 <dt id="arg-parm">parm<a class="anchor" aria-label="anchor" href="#arg-parm"></a></dt>
@@ -173,7 +195,7 @@ informed (a profile no group occupies before its last occasion);
 <code>latents_singular_information</code> when the information cannot be inverted;
 <code>latents_bad_inference_data</code> when a supplied <code>data</code> does not reproduce
 the fit; <code>latents_too_few_groups</code> for robust or OPG errors with no more
-groups than parameters.</p>
+groups than parameters; <code>latents_unsupported_inference</code> for <code>method = "bootstrap"</code> or <code>boundary = "fix"</code>.</p>
     </div>
 
     <div class="section level2">

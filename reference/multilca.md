@@ -2,10 +2,12 @@
 
 Two-level latent class analysis for categorical indicators:
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-with every indicator in `vars` treated as categorical. Each profile is
-described by an unrestricted probability for every category of every
-item, and the group classes differ in how probable each profile is for
-their observations. For models that combine categorical and continuous
+with discrete indicators in `vars` treated as categorical unless named
+in `ordinal` or `count` through `...`. Each profile is described by
+unrestricted response probabilities for categorical items and the
+corresponding structured parameters for ordinal and count items, and the
+group classes differ in how probable each profile is for their
+observations. For models that combine categorical and continuous
 indicators, call
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 and name the categorical ones in its `categorical` argument.
@@ -47,20 +49,23 @@ multilca(data, vars, id, n_profiles, n_group_classes = 2L, ...)
   Further arguments to
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
   such as `n_starts`, `seed`, `missing`, `tol` or `profile_covariates`.
-  `categorical` is set to `vars` and cannot be supplied.
+  `ordinal` and `count` can name structured discrete indicators; the
+  remaining indicators are categorical. `categorical` cannot be
+  supplied.
 
 ## Value
 
 A fitted model of class `multilpa` (or `multilpa_covariates` when
 membership covariates are given), exactly as
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-returns it with `categorical = vars`. The response probabilities are in
-`get_results(fit, "responses")`, one row per profile, item and category.
+returns it with the corresponding discrete indicator types. Categorical
+response probabilities are in `get_results(fit, "responses")`, one row
+per profile, item and category.
 
 ## Conditions
 
-`latents_bad_argument` when `categorical` is supplied, since every
-indicator is categorical by definition here. Every condition of
+`latents_bad_argument` when `categorical` is supplied, since its columns
+are derived from `vars`, `ordinal` and `count` here. Every condition of
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 can also be raised.
 

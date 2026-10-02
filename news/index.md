@@ -1,5 +1,78 @@
 # Changelog
 
+## latents 0.9.8
+
+### Model review fixes
+
+- Ordinal/count indicators now work through
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  and
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md),
+  as documented. Bootstrap and imputation label alignment move their
+  measurement parameters together, restore the ordinal reference
+  profile, and match profiles using the extra indicators.
+- Negative-binomial bootstrap comparisons preserve the fitted count
+  model and refuse incompatible indicator specifications. Supplied
+  fitting data are checked against all measured indicators and
+  model-specific sufficient statistics before inference or comparison.
+- Poisson log densities and negative-binomial dispersion derivatives use
+  numerically stable calculations. Invalid extra-indicator column shapes
+  and nonfinite ordinal values are refused. Single-level covariate
+  inference accepts the original data without demanding an internal
+  identifier.
+- Second-order occasion transitions omit coefficient coordinates that
+  never apply. Stayer tables report identity transitions; second-order
+  inference includes the second-order coefficient block. Count
+  boundaries retain their constraints during transition optimization and
+  refuse Wald inference.
+- Extended transition [`coef()`](https://rdrr.io/r/stats/coef.html) now
+  carries complete measurement covariance coordinates for all fourteen
+  structures, with likelihood-preserving decoding. The existing
+  restrictions on extended-model Wald inference remain explicit.
+- Transition fits with only categorical, ordinal or count indicators
+  return all result tables successfully, including an empty
+  continuous-profile table. Transition data validation checks original
+  category labels and occasion values.
+- One-profile NB fits with varying dispersion retain the correct profile
+  label and report their dispersion standard error.
+- Group-class bootstrap comparisons verify group sizes and scatter and
+  refuse equivalent one-class family specifications. Weighted restricted
+  cross-level fitting avoids collisions with indicator names used for
+  internal weights.
+- Sampling weights normalize safely at extreme common scales. Regression
+  mixture class counts, shares and composition respect sampling weights;
+  invalid integer controls and seeds are refused before conversion.
+- Confidence levels and numerical differentiation controls receive
+  explicit validation on the reviewed model surfaces.
+
+### Follow-up review fixes
+
+- Negative-binomial fits near the Poisson limit no longer stop short of
+  the maximum. The dispersion objective is convex there in log
+  dispersion, and the old Newton step could stall while still reporting
+  convergence (fitted dispersion 4.2e-7 against a profile maximum of
+  1.4e-5, with singular Wald inference). The M-step now uses modified
+  Newton with reflected eigenvalues.
+- [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  refuses a full-covariance transition null up front with
+  `latents_unsupported_inference`, rather than failing every replicate
+  and returning `p_value = NA` with a generic warning.
+- [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  on transition fits refuses `method = "bootstrap"` and
+  `boundary = "fix"` with `latents_unsupported_inference` instead of
+  silently returning the Wald table. On general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fits,
+  `adjust` now produces a `p_adjusted` column.
+- [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  accepts the caller’s own data frame for single-level fits.
+- Under sampling weights, the `"classification"` table’s `estimated_n`
+  and `estimated_proportion` (and so the odds of correct classification
+  and
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)’
+  smallest class) use weighted posterior totals. The same applies to
+  restricted cross-level `composition` and `group_classes` counts.
+
 ## latents 0.9.7
 
 ### Ordinal and count indicators everywhere; negative-binomial counts

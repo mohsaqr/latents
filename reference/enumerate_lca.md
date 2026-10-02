@@ -3,7 +3,7 @@
 Fits single-level latent class models with each number of classes in
 `n_classes` and returns them in one table for comparison by information
 criteria, entropy and the diagnostics of each fit. Every indicator is
-categorical, as in
+categorical unless named in `ordinal` or `count`, as in
 [`lca()`](https://pak.dynasite.org/latents/reference/lca.md). It is
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
 with `id = NULL`, and it returns the same object; the number of classes

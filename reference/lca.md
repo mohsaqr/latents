@@ -1,9 +1,12 @@
 # Latent class analysis
 
 Fits a single-level latent class model: each observation belongs to one
-of `n_classes` unobserved classes, and within a class the categorical
-indicators are independent, each with its own response probabilities. It
-is the model
+of `n_classes` unobserved classes, and within a class the discrete
+indicators are independent. Categorical indicators have unrestricted
+response probabilities; `ordinal` and `count` in `...` choose the
+structured measurement models described by
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+It is the model
 [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
 fits with `id = NULL`, and it returns the same object, so every
 accessor, plot and inference verb of the package applies to it. In the
@@ -24,8 +27,9 @@ lca(data, vars, n_classes, ...)
 
 - vars:
 
-  Names of the categorical indicator columns. Their categories are taken
-  from the data; no recoding is needed.
+  Names of the discrete indicator columns. Categories are taken from the
+  data; `ordinal` and `count` in `...` identify structured discrete
+  indicators and the remaining columns are categorical.
 
 - n_classes:
 

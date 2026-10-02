@@ -17,7 +17,7 @@ measurement model, a classification diagnostic and a transition matrix."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -208,7 +208,10 @@ described below.</p></dd>
 <dd><p>Classification quality, one row per class and
 level: <code>level</code>, <code>class</code>, <code>n_modal</code>, <code>proportion_modal</code>, <code>estimated_n</code>,
 <code>estimated_proportion</code>, <code>average_posterior</code>,
-<code>odds_correct_classification</code>. Takes <code>level</code>.</p></dd>
+<code>odds_correct_classification</code>. Takes <code>level</code>. Under sampling weights
+<code>estimated_n</code> and <code>estimated_proportion</code> (and so the odds of correct
+classification) are weighted posterior totals; the modal and average
+posterior columns describe the units supplied.</p></dd>
 
 <dt><code>"average_posteriors"</code></dt>
 <dd><p>For the units assigned to each class, their

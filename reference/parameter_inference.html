@@ -27,7 +27,7 @@ boundary solutions and unidentified Hessians do not admit this calculation."><me
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -161,7 +161,14 @@ boundary solutions and unidentified Hessians do not admit this calculation.</p>
 <span>  level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  step <span class="op">=</span> <span class="fl">1e-04</span>,</span>
 <span>  vcov_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"robust"</span>, <span class="st">"opg"</span><span class="op">)</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  adjust <span class="op">=</span> <span class="va">.multilpa_p_adjust_methods</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
+<span>  iter <span class="op">=</span> <span class="fl">199L</span>,</span>
+<span>  n_starts <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>  max_iter <span class="op">=</span> <span class="fl">1000L</span>,</span>
+<span>  tol <span class="op">=</span> <span class="fl">1e-08</span>,</span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"fix"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -348,6 +355,14 @@ coefficient is a log odds against that reference. The tests are Wald tests
 and inherit the usual caveat: they are unreliable for a coefficient driven
 to the boundary by separation, which the size of the estimate and its
 standard error together will reveal.</p>
+<p>For a general transition fit (an <code><a href="lta.html">lta()</a></code> fit with covariate,
+occasion-varying or second-order transitions), the table has one row per
+transition, initial and second-order logit: <code>block</code>, <code>group_class</code>,
+<code>from</code>, <code>to</code>, <code>term</code>, <code>estimate</code>, <code>standard_error</code>, <code>statistic</code>,
+<code>p_value</code>, <code>p_adjusted</code>, <code>conf_low</code>, <code>conf_high</code> (and <code>previous</code> for a
+second-order fit). Only <code>method = "wald"</code> and <code>boundary = "error"</code> are
+implemented there; the alternatives raise <code>latents_unsupported_inference</code>
+instead of being ignored.</p>
     </div>
     <div class="section level2">
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>

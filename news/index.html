@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,33 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.8" id="latents-098">latents 0.9.8<a class="anchor" aria-label="anchor" href="#latents-098"></a></h2>
+<div class="section level3">
+<h3 id="model-review-fixes-0-9-8">Model review fixes<a class="anchor" aria-label="anchor" href="#model-review-fixes-0-9-8"></a></h3>
+<ul><li>Ordinal/count indicators now work through <code><a href="../reference/lca.html">lca()</a></code>, <code><a href="../reference/multilca.html">multilca()</a></code> and <code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code>, as documented. Bootstrap and imputation label alignment move their measurement parameters together, restore the ordinal reference profile, and match profiles using the extra indicators.</li>
+<li>Negative-binomial bootstrap comparisons preserve the fitted count model and refuse incompatible indicator specifications. Supplied fitting data are checked against all measured indicators and model-specific sufficient statistics before inference or comparison.</li>
+<li>Poisson log densities and negative-binomial dispersion derivatives use numerically stable calculations. Invalid extra-indicator column shapes and nonfinite ordinal values are refused. Single-level covariate inference accepts the original data without demanding an internal identifier.</li>
+<li>Second-order occasion transitions omit coefficient coordinates that never apply. Stayer tables report identity transitions; second-order inference includes the second-order coefficient block. Count boundaries retain their constraints during transition optimization and refuse Wald inference.</li>
+<li>Extended transition <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> now carries complete measurement covariance coordinates for all fourteen structures, with likelihood-preserving decoding. The existing restrictions on extended-model Wald inference remain explicit.</li>
+<li>Transition fits with only categorical, ordinal or count indicators return all result tables successfully, including an empty continuous-profile table. Transition data validation checks original category labels and occasion values.</li>
+<li>One-profile NB fits with varying dispersion retain the correct profile label and report their dispersion standard error.</li>
+<li>Group-class bootstrap comparisons verify group sizes and scatter and refuse equivalent one-class family specifications. Weighted restricted cross-level fitting avoids collisions with indicator names used for internal weights.</li>
+<li>Sampling weights normalize safely at extreme common scales. Regression mixture class counts, shares and composition respect sampling weights; invalid integer controls and seeds are refused before conversion.</li>
+<li>Confidence levels and numerical differentiation controls receive explicit validation on the reviewed model surfaces.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="follow-up-review-fixes-0-9-8">Follow-up review fixes<a class="anchor" aria-label="anchor" href="#follow-up-review-fixes-0-9-8"></a></h3>
+<ul><li>Negative-binomial fits near the Poisson limit no longer stop short of the maximum. The dispersion objective is convex there in log dispersion, and the old Newton step could stall while still reporting convergence (fitted dispersion 4.2e-7 against a profile maximum of 1.4e-5, with singular Wald inference). The M-step now uses modified Newton with reflected eigenvalues.</li>
+<li>
+<code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> refuses a full-covariance transition null up front with <code>latents_unsupported_inference</code>, rather than failing every replicate and returning <code>p_value = NA</code> with a generic warning.</li>
+<li>
+<code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> on transition fits refuses <code>method = "bootstrap"</code> and <code>boundary = "fix"</code> with <code>latents_unsupported_inference</code> instead of silently returning the Wald table. On general <code><a href="../reference/lta.html">lta()</a></code> fits, <code>adjust</code> now produces a <code>p_adjusted</code> column.</li>
+<li>
+<code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> accepts the caller’s own data frame for single-level fits.</li>
+<li>Under sampling weights, the <code>"classification"</code> table’s <code>estimated_n</code> and <code>estimated_proportion</code> (and so the odds of correct classification and <code><a href="../reference/diagnostics.html">diagnostics()</a></code>’ smallest class) use weighted posterior totals. The same applies to restricted cross-level <code>composition</code> and <code>group_classes</code> counts.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.7" id="latents-097">latents 0.9.7<a class="anchor" aria-label="anchor" href="#latents-097"></a></h2>
 <div class="section level3">

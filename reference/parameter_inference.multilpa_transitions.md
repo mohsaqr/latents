@@ -19,7 +19,13 @@ parameter_inference(
   step = 1e-04,
   vcov_type = c("observed", "robust", "opg"),
   adjust = .multilpa_p_adjust_methods,
-  ...
+  method = c("wald", "bootstrap"),
+  iter = 199L,
+  n_starts = 10L,
+  max_iter = 1000L,
+  tol = 1e-08,
+  seed = NULL,
+  boundary = c("error", "fix")
 )
 
 # S3 method for class 'multilpa_transitions'
@@ -68,9 +74,22 @@ confint(object, parm, level = 0.95, data = NULL, ...)
   Multiplicity correction for `p_adjusted`, one of the methods
   [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) accepts.
 
-- ...:
+- method:
 
-  Unused.
+  Only `"wald"` is implemented for a transition fit; `"bootstrap"`
+  raises `latents_unsupported_inference` rather than being ignored. Use
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  to compare transition models.
+
+- iter, n_starts, max_iter, tol, seed:
+
+  Bootstrap controls of the generic; unused, since the bootstrap is
+  refused.
+
+- boundary:
+
+  Only `"error"`: a fit on a bound has no Wald inference, and `"fix"`
+  raises `latents_unsupported_inference`.
 
 - object:
 
@@ -79,6 +98,10 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 - scale:
 
   `"natural"` (probabilities) or `"unconstrained"` (logits).
+
+- ...:
+
+  Unused.
 
 - parm:
 
@@ -110,7 +133,8 @@ informed (a profile no group occupies before its last occasion);
 `latents_singular_information` when the information cannot be inverted;
 `latents_bad_inference_data` when a supplied `data` does not reproduce
 the fit; `latents_too_few_groups` for robust or OPG errors with no more
-groups than parameters.
+groups than parameters; `latents_unsupported_inference` for
+`method = "bootstrap"` or `boundary = "fix"`.
 
 ## Examples
 
