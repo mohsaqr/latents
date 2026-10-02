@@ -241,7 +241,9 @@ test_that("negative-binomial LTA optimization respects floors and reaches statio
   lapply(c("varying", "equal"), function(dispersion) {
     fit <- quietly(lta(data, c("y", "k"), "id", 2, time = "time", count = "k",
       count_model = "negative_binomial", count_dispersion = dispersion,
-      transitions = "occasion", n_starts = 1L, max_iter = 5L, seed = 2L),
+      # Convergence within five iterations held on some platforms only (macOS
+      # CI and R 4.1 needed more); the test is about floors and stationarity.
+      transitions = "occasion", n_starts = 1L, max_iter = 500L, seed = 2L),
       "latents_boundary")
     expect_true(fit$converged)
     expect_true(all(fit$measurement[[1L]]$count_dispersion >= .latents_min_dispersion))
