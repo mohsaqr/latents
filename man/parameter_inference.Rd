@@ -265,9 +265,12 @@ occasion-varying or second-order transitions), the table has one row per
 transition, initial and second-order logit: \code{block}, \code{group_class},
 \code{from}, \code{to}, \code{term}, \code{estimate}, \code{standard_error}, \code{statistic},
 \code{p_value}, \code{p_adjusted}, \code{conf_low}, \code{conf_high} (and \code{previous} for a
-second-order fit). Only \code{method = "wald"} and \code{boundary = "error"} are
-implemented there; the alternatives raise \code{latents_unsupported_inference}
-instead of being ignored.
+second-order fit). \code{method = "bootstrap"} resamples persons, refits, and
+matches every replicate's profiles (on the measurement) and group classes
+to the original's, rebasing the initial logits when the reference profile
+moves; it needs \code{data}, and works where Wald inference is refused (for
+example full covariance structures). \code{boundary = "fix"} raises
+\code{latents_unsupported_inference} instead of being ignored.
 }
 \section{Conditions}{
 

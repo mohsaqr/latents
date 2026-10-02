@@ -1,0 +1,16 @@
+Transition bootstrap validation (2026-10-02; 13.2 min; 8 cores)
+Truth: VVV occasion-transition lta on 240 persons x 4 occasions; 200 datasets.
+
+(a) 95% percentile-interval coverage, iter = 199 per dataset:
+  usable datasets 200 of 200 (of which label-switched and matched: 94)
+                                                parameter covered  mcse
+              initial.group_class_1.profile_1.(Intercept)   0.925 0.019
+ transition.group_class_1.profile_1->profile_2.occasion_2   0.925 0.019
+ transition.group_class_1.profile_1->profile_2.occasion_3   0.935 0.017
+ transition.group_class_1.profile_1->profile_2.occasion_4   0.935 0.017
+ transition.group_class_1.profile_2->profile_1.occasion_2   0.890 0.022
+ transition.group_class_1.profile_2->profile_1.occasion_3   0.940 0.017
+ transition.group_class_1.profile_2->profile_1.occasion_4   0.945 0.016
+  pooled coverage 0.928
+  by label switching: matched-as-is 0.926, relabelled 0.930
+

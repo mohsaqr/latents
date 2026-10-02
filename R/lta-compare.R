@@ -28,10 +28,6 @@
 #' @noRd
 .lta_general_view <- function(fit, data) {
   if (inherits(fit, "multilpa_lta")) {
-    if (!identical(fit$covariance_model %||% "diagonal", "diagonal")) {
-      stop(errorCondition("Simulation from a transition fit needs diagonal covariances.",
-                          class = "latents_unsupported_inference", call = NULL))
-    }
     return(list(parameters = list(measurement = fit$measurement,
                                   initial = fit$initial_coefficients,
                                   transition = fit$transition_coefficients,
@@ -42,10 +38,6 @@
                 occasion_of_row = fit$occasion_of_row, n_profiles = fit$n_profiles,
                 vars = fit$vars, continuous = fit$continuous,
                 categorical = fit$categorical, codes = fit$codes))
-  }
-  if (identical(fit$covariance_model, "full")) {
-    stop(errorCondition("Simulation from a transition fit needs diagonal covariances.",
-                        class = "latents_unsupported_inference", call = NULL))
   }
   K <- fit$n_profiles # nolint: object_name_linter. The number of profiles.
   layout <- .multilpa_sequence_layout(fit$group_index, fit$time_values, fit$n_groups,
@@ -64,6 +56,7 @@
     }, numeric(K - 1L))
   }, numeric((K - 1L) * K)), c(1L, K - 1L, K, fit$n_group_classes))
   block <- list(means = fit$means, variances = fit$variances)
+  if (identical(fit$covariance_model, "full")) block$covariances <- fit$covariances
   if (!is.null(fit$response_probabilities)) {
     block$response_probabilities <- fit$response_probabilities
   }
@@ -131,10 +124,8 @@
   invisible(lapply(seq_along(p$measurement), function(b) {
     rows <- if (length(p$measurement) == 1L) seq_len(nrow(data)) else which(occasion == b)
     block <- p$measurement[[b]]
-    lapply(view$continuous, function(v) {
-      simulated[[v]][rows] <<- stats::rnorm(length(rows), block$means[profile[rows], v],
-                                            sqrt(block$variances[profile[rows], v]))
-    })
+    drawn <- .lta_draw_continuous(block, profile[rows], view$continuous)
+    lapply(view$continuous, function(v) simulated[[v]][rows] <<- drawn[, v])
     lapply(seq_along(view$categorical), function(i) {
       v <- view$categorical[i]
       codes <- view$codes[, i]
@@ -155,6 +146,42 @@
   }))
   # Missing values stay where the data had them (FIML fits).
   .multilpa_carry_missingness(simulated, data, view$vars)
+}
+
+#' Draw continuous indicators given each row's profile
+#'
+#' Diagonal fits draw each indicator independently, in the order the package
+#' always has, so seeded results are unchanged. A fit that carries full
+#' covariance matrices draws each profile's rows as the profile mean plus
+#' standard normals times the upper Cholesky factor of its covariance.
+#'
+#' @param block A measurement block: `means` and `variances` (profiles by
+#'   indicators) and, for a full-covariance fit, `covariances` (indicators by
+#'   indicators by profiles).
+#' @param profile The profile of every row to draw.
+#' @param continuous The continuous indicator names.
+#' @return A rows-by-indicators matrix with those column names.
+#' @noRd
+.lta_draw_continuous <- function(block, profile, continuous) {
+  n <- length(profile)
+  if (is.null(block$covariances)) {
+    return(vapply(continuous, function(v) {
+      stats::rnorm(n, block$means[profile, v], sqrt(block$variances[profile, v]))
+    }, numeric(n)) |> matrix(n, length(continuous), dimnames = list(NULL, continuous)))
+  }
+  noise <- matrix(stats::rnorm(n * length(continuous)), n, length(continuous))
+  correlated <- Reduce(function(drawn, k) {
+    rows <- which(profile == k)
+    if (length(rows) == 0L) return(drawn)
+    # General fits store the array unnamed, in `continuous` order.
+    covariance <- block$covariances[, , k]
+    if (!is.null(rownames(covariance))) covariance <- covariance[continuous, continuous]
+    factor <- chol(covariance)
+    drawn[rows, ] <- noise[rows, , drop = FALSE] %*% factor
+    drawn
+  }, sort(unique(profile)), noise)
+  structure(correlated + block$means[profile, continuous, drop = FALSE],
+            dimnames = list(NULL, continuous))
 }
 
 #' Is one transition model nested in another?
@@ -211,7 +238,7 @@
       missing = a$missing %||% "error", covariance_model = a$covariance_model %||% "diagonal",
       ordinal = a$ordinal %||% character(), count = a$count %||% character(),
       count_model = a$count_model %||% "poisson",
-      count_dispersion = a$count_dispersion %||% "varying",
+      count_dispersion = a$count_dispersion %||% "varying", weights = fit$weights,
       n_starts = n_starts, max_iter = max_iter,
       tol = tol, min_variance = a$min_variance, min_probability = a$min_probability)
 }

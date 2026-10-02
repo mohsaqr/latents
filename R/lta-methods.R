@@ -331,9 +331,14 @@ nobs.multilpa_lta <- function(object, ...) object$n_groups
 #'   transition, initial and second-order logit: `block`, `group_class`,
 #'   `from`, `to`, `term`, `estimate`, `standard_error`, `statistic`,
 #'   `p_value`, `p_adjusted`, `conf_low`, `conf_high` (and `previous` for a
-#'   second-order fit). Only `method = "wald"` and `boundary = "error"` are
-#'   implemented there; the alternatives raise `latents_unsupported_inference`
-#'   instead of being ignored.
+#'   second-order fit). `method = "bootstrap"` resamples persons, refits, and
+#'   matches every replicate's profiles (on the measurement) and group classes
+#'   to the original's, rebasing the initial logits when the reference profile
+#'   moves; it needs `data`, and works where Wald inference is refused (for
+#'   example full covariance structures). Transition inference holds nothing
+#'   at a bound: with no bound active `boundary = "fix"` gives the same table
+#'   as `"error"`, and a fit with an active bound raises `latents_boundary_fit`
+#'   under either.
 #' @rdname parameter_inference
 #' @export
 parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
@@ -347,8 +352,15 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
                                              boundary = c("error", "fix")) {
   stopifnot("`level` must be a single finite number in (0, 1)" =
     is.numeric(level) && length(level) == 1L && is.finite(level) && level > 0 && level < 1)
-  .lta_refuse_unsupported_inference(match.arg(method), match.arg(boundary))
+  # Transition inference holds nothing at a bound, and a fit with an active
+  # bound is refused (`latents_boundary_fit`) either way; so "fix" and "error"
+  # agree wherever a table is returned.
+  match.arg(boundary)
   adjust <- match.arg(adjust)
+  if (identical(match.arg(method), "bootstrap")) {
+    return(.lta_bootstrap_dispatch(x, data, level, iter, n_starts, max_iter, tol,
+                                   seed, adjust))
+  }
   if (!is.null(data)) .lta_check_data(x, data)
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
                                       missing(vcov_type))
@@ -378,29 +390,6 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
             adjust = adjust)
 }
 
-#' Refuse the inference options a transition fit does not implement
-#'
-#' The generic's bootstrap and boundary-fixing options are accepted, so every
-#' method has the generic's formals, and refused rather than silently ignored.
-#'
-#' @param method,boundary The matched options.
-#' @return `NULL`, invisibly; raises `latents_unsupported_inference` otherwise.
-#' @noRd
-.lta_refuse_unsupported_inference <- function(method, boundary) {
-  if (!identical(method, "wald")) {
-    stop(errorCondition(paste(
-      "`method = \"bootstrap\"` is not implemented for a transition fit; use",
-      "`method = \"wald\"`, or bootstrap_lrt() to compare transition models."),
-      class = "latents_unsupported_inference", call = NULL))
-  }
-  if (!identical(boundary, "error")) {
-    stop(errorCondition(paste(
-      "`boundary = \"fix\"` is not implemented for a transition fit: a fit on",
-      "a probability boundary has no Wald inference."),
-      class = "latents_unsupported_inference", call = NULL))
-  }
-  invisible(NULL)
-}
 
 #' Plot transition probabilities of a general transition fit
 #'

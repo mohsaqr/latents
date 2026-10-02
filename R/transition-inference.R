@@ -355,13 +355,18 @@
 #'   outer product of the group scores).
 #' @param adjust Multiplicity correction for `p_adjusted`, one of the methods
 #'   [stats::p.adjust()] accepts.
-#' @param method Only `"wald"` is implemented for a transition fit;
-#'   `"bootstrap"` raises `latents_unsupported_inference` rather than being
-#'   ignored. Use [bootstrap_lrt()] to compare transition models.
-#' @param iter,n_starts,max_iter,tol,seed Bootstrap controls of the generic;
-#'   unused, since the bootstrap is refused.
-#' @param boundary Only `"error"`: a fit on a bound has no Wald inference, and
-#'   `"fix"` raises `latents_unsupported_inference`.
+#' @param method `"wald"` (the default) or `"bootstrap"`. The bootstrap
+#'   resamples persons with replacement, refits the same specification, and
+#'   matches each replicate's profiles and group classes to the original's;
+#'   `standard_error` is the replicates' standard deviation, `conf_low` and
+#'   `conf_high` their percentile interval, and `statistic`, `p_value` and
+#'   `p_adjusted` are `NA`. It needs `data`.
+#' @param iter,n_starts,max_iter,tol,seed Bootstrap resamples, the controls of
+#'   each refit, and an optional seed (the caller's random state is restored).
+#' @param boundary Accepted for the generic. Transition inference holds
+#'   nothing at a bound: with no bound active `"fix"` gives the same table as
+#'   `"error"`, and a fit with an active bound raises `latents_boundary_fit`
+#'   under either.
 #' @param ... Unused.
 #' @return A base `data.frame` with one row per natural parameter and the
 #'   columns of [parameter_inference()]: `level`, `outcome`, `term`,
@@ -382,8 +387,8 @@
 #'   `latents_singular_information` when the information cannot be inverted;
 #'   `latents_bad_inference_data` when a supplied `data` does not reproduce
 #'   the fit; `latents_too_few_groups` for robust or OPG errors with no more
-#'   groups than parameters; `latents_unsupported_inference` for `method =
-#'   "bootstrap"` or `boundary = "fix"`.
+#'   groups than parameters; `latents_bad_argument` for `method = "bootstrap"`
+#'   without `data`.
 #' @examples
 #' fit <- lta(subset(course_engagement, student <= 40),
 #'            c("browse", "lectures", "forum_read"), "student",
@@ -406,9 +411,15 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
               level > 0 && level < 1,
             "`step` must be a single positive number" =
               is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
-  .lta_refuse_unsupported_inference(match.arg(method), match.arg(boundary))
-  vcov_type <- match.arg(vcov_type)
+  # Nothing is held at a bound here and a bound-active fit is refused, so
+  # "fix" and "error" agree wherever a table is returned.
+  match.arg(boundary)
   adjust <- match.arg(adjust)
+  if (identical(match.arg(method), "bootstrap")) {
+    return(.lta_bootstrap_dispatch(x, data, level, iter, n_starts, max_iter, tol,
+                                   seed, adjust))
+  }
+  vcov_type <- match.arg(vcov_type)
   inference <- .multilpa_transition_covariance(x, data, step, vcov_type)
   estimates <- .multilpa_transition_encode(x, "natural")
   covariance <- inference$covariance

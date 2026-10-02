@@ -567,12 +567,12 @@ No standard errors in this table: Inference requires a converged fit.
 No standard errors in this table: Inference requires a converged fit.
 No standard errors in this table: Inference requires a converged fit.
 No standard errors in this table: Inference requires a converged fit.
-No standard errors in this table: `boundary = "fix"` is not implemented for a transition fit: a fit on a probability boundary has no Wald inference.
 No standard errors in this table: Inference requires a converged fit.
 No standard errors in this table: Inference requires a converged fit.
 No standard errors in this table: Inference requires a converged fit.
-No standard errors in this table: `boundary = "fix"` is not implemented for a transition fit: a fit on a probability boundary has no Wald inference.
-[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5305 ]
+No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5409 ]
 
 ══ Skipped tests (4) ═══════════════════════════════════════════════════════════
 • R/ sources are not available (1): 'test-tidy-core.R:273:3'
@@ -580,8 +580,8 @@ No standard errors in this table: `boundary = "fix"` is not implemented for a tr
 • the vignette sources are not available (2): 'test-vignette-claims.R:23:3',
   'test-vignette-claims.R:61:3'
 
-[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5305 ]
+[ FAIL 0 | WARN 0 | SKIP 4 | PASS 5409 ]
 > 
 > proc.time()
    user  system elapsed 
-364.938  10.909 479.945 
+375.858  12.925 561.107 

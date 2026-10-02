@@ -411,8 +411,9 @@
       !is.null(fit$covariance_structure) &&
       !fit$covariance_structure %in% c("EEI", "VVI")) {
     stop(errorCondition(paste(
-      "Standard errors for the extended transition model are available for",
-      "diagonal covariances (EEI, VVI)."),
+      "Wald standard errors for the extended transition model are available for",
+      "diagonal covariances (EEI, VVI); use parameter_inference(method =",
+      "\"bootstrap\", data = ...) for this structure."),
       class = "latents_unsupported_inference", call = NULL))
   }
   if (isTRUE(fit$boundary)) {

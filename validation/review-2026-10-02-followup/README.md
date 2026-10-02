@@ -87,3 +87,56 @@ heading) was made after the gates above; those are the only two files that
 differ from `SOURCE.csv` (272 of 274 unchanged), and the release-item tests
 pass on the bumped files (29/29). The `tests-final.rds` result object is kept
 locally and not committed; `tests-final.csv/log` carry the same results.
+
+## Post-0.9.8: transition full-covariance simulation and bootstrap
+
+Implemented after release 0.9.8 (version "development" until the next bump):
+
+- `.lta_simulate()` draws full-covariance profiles through the Cholesky factor
+  of each profile's covariance (`.lta_draw_continuous()`); diagonal fits keep
+  their exact random stream. `bootstrap_lrt()` therefore compares
+  full-covariance transition models.
+- `parameter_inference(method = "bootstrap", data = )` for
+  `multilpa_transitions` and `multilpa_lta` (`R/lta-bootstrap.R`): persons are
+  resampled, refitted with the same specification (weights included), and
+  matched to the original on measurement (profiles) and on matched
+  initial/transition parameters (group classes; stayer only to stayer).
+  Initial logits are rebased when the reference profile moves; stay-referenced
+  transition logits are renamed only.
+- Regression fixed: 0.9.8 refused `boundary = "fix"` on transition fits, which
+  `get_results(, "responses")`/`summary()` request, so categorical transition
+  response tables lost their standard errors (0.020/0.023 in 0.9.7, `NA` in
+  0.9.8).
+
+Evidence:
+
+- `tests/testthat/test-lta-bootstrap.R` (100 assertions): diagonal stream
+  identical; full-covariance draws recover each covariance (2e5 draws, error
+  < 0.05); relabelling preserves every implied initial, transition and
+  second-order probability (K = 3, two classes, covariate); permuted
+  homogeneous fit aligns back to 1e-12; person-shuffled refits that switched
+  labels align to 1e-3; bootstrap/Wald SE ratio within 0.6-1.7 and identical
+  layout; reproducibility and seed restoration; weighted fits; classed errors.
+  Sabotage (no rebasing; diagonal factor) fails the targeted tests.
+- `transition-bootstrap-validation.R/.log/.txt` and CSVs: 200 datasets from a
+  VVV occasion-transition truth (240 persons x 4 occasions).
+  - Percentile coverage (iter = 99): pooled 0.924; per parameter 0.890-0.940
+    (MCSE about 0.02). Label-switched datasets (94) covered 0.933 and the rest
+    0.915, so matching is not the cause. ML logit bias up to 0.23 SD.
+  - `bootstrap_lrt()` size, first vs second order with a VVV null: 0.065 at
+    0.05 (MCSE 0.017), 0.115 at 0.10; KS uniformity p = 0.281.
+  - Sensitivity (`TB_ITER=199`, same 200 datasets):
+    `transition-bootstrap-validation-iter199.log`. Pooled coverage 0.928
+    (per parameter 0.890-0.945); label-switched 0.930 vs 0.926. The number of
+    replicates is not the cause; the mild undercoverage is a finite-sample
+    property of percentile intervals for ML logits at 240 persons, not of the
+    label matching. Read intervals for weakly informed moves with that in mind.
+- Final gates on the post-0.9.8 source: source suite **5,436 assertions in
+  832 cases, 0 failures/errors/warnings/skips**, identity over 276 files
+  (`tests-final.log`); lint clean; native `R CMD check --no-manual`
+  **Status: OK (0/0/0)**, installed tests `[ FAIL 0 | WARN 0 | SKIP 4 | PASS
+  5409 ]` (`00check.log`, `package-tests.log`, `package-examples.log`).
+
+Released as 0.9.9: the version bump (`DESCRIPTION`, `NEWS.md` heading) was
+made after the gates above and is the only difference from `SOURCE.csv`
+(274 of 276 files unchanged); release-item tests pass on the bumped files (29/29).

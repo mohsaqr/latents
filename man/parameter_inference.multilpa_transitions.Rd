@@ -51,12 +51,15 @@ outer product of the group scores).}
 \item{adjust}{Multiplicity correction for \code{p_adjusted}, one of the methods
 \code{\link[stats:p.adjust]{stats::p.adjust()}} accepts.}
 
-\item{method}{Only \code{"wald"} is implemented for a transition fit;
-\code{"bootstrap"} raises \code{latents_unsupported_inference} rather than being
-ignored. Use \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} to compare transition models.}
+\item{method}{\code{"wald"} (the default) or \code{"bootstrap"}. The bootstrap
+resamples persons with replacement, refits the same specification, and
+matches each replicate's profiles and group classes to the original's;
+\code{standard_error} is the replicates' standard deviation, \code{conf_low} and
+\code{conf_high} their percentile interval, and \code{statistic}, \code{p_value} and
+\code{p_adjusted} are \code{NA}. It needs \code{data}.}
 
-\item{iter, n_starts, max_iter, tol, seed}{Bootstrap controls of the generic;
-unused, since the bootstrap is refused.}
+\item{iter, n_starts, max_iter, tol, seed}{Bootstrap resamples, the controls of
+each refit, and an optional seed (the caller's random state is restored).}
 
 \item{boundary}{Only \code{"error"}: a fit on a bound has no Wald inference, and
 \code{"fix"} raises \code{latents_unsupported_inference}.}

@@ -6309,7 +6309,7 @@ group.coefficient.group_class_1.(Intercept)                                3.575
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  20.651 0.752 21.584 0 0 
+Time elapsed:  24.125 1 39.476 0 0 
 > grDevices::dev.off()
 null device 
           1 

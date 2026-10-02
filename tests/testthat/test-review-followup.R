@@ -17,26 +17,28 @@ followup_lta_data <- function(n = 120L, occasions = 4L, seed = 41L) {
              y1 = y1, y2 = c(0.5, 3.5)[s] + 0.6 * y1 + stats::rnorm(length(s)))
 }
 
-test_that("bootstrap_lrt refuses a full-covariance transition null before any replicate", {
+test_that("bootstrap_lrt simulates full-covariance transition nulls", {
   data <- followup_lta_data()
   null <- lta(data, c("y1", "y2"), "id", 2, time = "time", transitions = "occasion",
               model = "VVV", n_starts = 1, seed = 1)
   alternative <- lta(data, c("y1", "y2"), "id", 2, time = "time",
                      transitions = "occasion", order = 2, model = "VVV",
                      n_starts = 1, seed = 1)
-  # Before the fix the refusal was swallowed per replicate: a
-  # latents_failed_replicates warning and p_value NA.
-  expect_error(bootstrap_lrt(null, alternative, data = data, iter = 2,
-                             n_starts = 1, seed = 1),
-               class = "latents_unsupported_inference")
+  # 0.9.7 failed every replicate (a swallowed refusal) and returned p = NA;
+  # 0.9.8 refused up front; full covariances are now simulated.
+  result <- bootstrap_lrt(null, alternative, data = data, iter = 4,
+                          n_starts = 1, seed = 1)
+  test <- get_results(result, "test")
+  expect_identical(test$n_valid, 4L)
+  expect_true(is.finite(test$p_value))
   homogeneous <- lta(data, c("y1", "y2"), "id", 2, time = "time", model = "VVV",
                      n_starts = 1, seed = 1)
-  expect_error(bootstrap_lrt(homogeneous, null, data = data, iter = 2,
-                             n_starts = 1, seed = 1),
-               class = "latents_unsupported_inference")
+  expect_true(is.finite(get_results(bootstrap_lrt(homogeneous, null, data = data,
+                                                  iter = 2, n_starts = 1, seed = 1),
+                                    "test")$p_value))
 })
 
-test_that("transition parameter_inference refuses what it cannot do instead of ignoring it", {
+test_that("transition parameter_inference handles every generic argument explicitly", {
   data <- followup_lta_data()
   homogeneous <- lta(data, c("y1", "y2"), "id", 2, time = "time", n_starts = 1, seed = 1)
   general <- lta(data, c("y1", "y2"), "id", 2, time = "time", transitions = "occasion",
@@ -44,11 +46,28 @@ test_that("transition parameter_inference refuses what it cannot do instead of i
   expect_s3_class(homogeneous, "multilpa_transitions")
   expect_s3_class(general, "multilpa_lta")
   invisible(lapply(list(homogeneous, general), function(fit) {
+    # The bootstrap needs the persons to resample: refused, not ignored.
     expect_error(parameter_inference(fit, method = "bootstrap", iter = 3, seed = 1),
-                 class = "latents_unsupported_inference")
-    expect_error(parameter_inference(fit, boundary = "fix"),
-                 class = "latents_unsupported_inference")
+                 class = "latents_bad_argument")
+    # Nothing is held at a bound in transition inference: on an interior fit
+    # "fix" and "error" give the same table.
+    expect_identical(parameter_inference(fit, boundary = "fix"), parameter_inference(fit))
   }))
+})
+
+test_that("categorical transition response tables keep their standard errors", {
+  data <- followup_lta_data()
+  set.seed(4)
+  data$c1 <- factor(ifelse(data$y1 + stats::rnorm(nrow(data)) > 1.5, "hi", "lo"))
+  fit <- lta(data, c("y1", "c1"), "id", 2, time = "time", categorical = "c1",
+             n_starts = 2, seed = 1)
+  expect_true(isTRUE(fit$converged))
+  # 0.9.8 refused boundary = "fix", so this table silently lost every error.
+  responses <- get_results(fit, "responses")
+  expect_true(all(is.finite(responses$probability_standard_error)))
+  wald <- parameter_inference(fit)
+  expect_equal(sort(unique(round(responses$probability_standard_error, 10))),
+               sort(unique(round(subset(wald, parameter == "response")$standard_error, 10))))
 })
 
 test_that("general transition inference applies the requested multiplicity correction", {
