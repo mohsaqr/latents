@@ -1011,7 +1011,8 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   # cannot, so its stored columns are the ones both refits need.
   data <- if (covariate_family && is.null(data)) {
     .multilpa_cov_stored_data(alternative_model)
-  } else .multilpa_resolve_data(null_model, data)
+  } else .multilpa_number_single_level(null_model,
+                                       .multilpa_resolve_data(null_model, data))
   stopifnot(is.data.frame(data), is.numeric(iter), length(iter) == 1L,
             is.finite(iter), iter >= 2L, iter == as.integer(iter),
             is.numeric(n_starts), length(n_starts) == 1L, is.finite(n_starts),
@@ -1030,7 +1031,13 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   }
   fields <- c("vars", "id", "group_values", "group_index", "variance_model",
               "min_variance", "covariance_model")
-  fields <- c(fields, "categorical", "categorical_levels", "min_probability")
+  fields <- c(fields, "categorical", "categorical_levels", "min_probability",
+              "ordinal", "count")
+  extra_spec <- function(model) {
+    list(levels = model$extra_data$ordinal_levels,
+         count_model = model$extra_data$count_model %||% "poisson",
+         count_dispersion = model$extra_data$count_dispersion %||% "varying")
+  }
   missing_for <- function(model) model$missing %||% "error"
   structure_for <- function(model) model$covariance_structure %||%
     .multilpa_resolve_structure(model$variance_model,
@@ -1038,7 +1045,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   centering_for <- function(model) model$centering %||% "none"
   same_fields <- all(vapply(fields, function(field)
     identical(null_model[[field]], alternative_model[[field]]), logical(1)))
-  if (!same_fields ||
+  if (!same_fields || !identical(extra_spec(null_model), extra_spec(alternative_model)) ||
       !identical(structure_for(null_model), structure_for(alternative_model)) ||
       !identical(centering_for(null_model), centering_for(alternative_model)) ||
       !identical(missing_for(null_model), missing_for(alternative_model))) {
@@ -1121,9 +1128,9 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       stop(errorCondition("data must reproduce the original categorical indicators and row order.",
         class = "latents_bad_inference_data", call = NULL))
     }
+    if (!is.null(model$extra_data)) .multilpa_check_alignment(model, data)
     extra <- if (is.null(model$extra_data)) NULL else
-      .latents_prepare_extra(data, model$ordinal, model$count,
-                             if (fiml) "fiml" else "error")
+      .latents_prepare_extra_like(model, data)
     likelihood <- .multilpa_expectation(x, model$group_index, model,
                                         codes, extra = extra)$log_likelihood
     if (abs(likelihood - model$log_likelihood) > 1e-7 * (1 + abs(likelihood))) {

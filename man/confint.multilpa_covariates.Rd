@@ -22,9 +22,9 @@ Supplying it is the stronger check that the caller still holds that frame.}
 }
 \value{
 A two-column matrix of Wald intervals, one row per requested
-parameter, named as \code{\link[=coef]{coef()}} names them. Bounds are on the natural scale
-and are not constrained to respect a variance's positivity or a
-probability's range.
+parameter, named as \code{\link[=coef]{coef()}} names them. Bounds are on the natural scale;
+positive parameters use log-scale intervals and probabilities use
+logit-scale intervals to respect their parameter ranges.
 }
 \description{
 Wald confidence intervals for a covariate fit

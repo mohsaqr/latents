@@ -1,0 +1,26 @@
+         measurement.count_mean.profile_1.k 
+                                  4.1742857 
+      measurement.count_dispersion.shared.k 
+                                  0.4163365 
+profile.probability.profile_1.group_class_1 
+                                  1.0000000 
+            group.probability.group_class_1 
+                                  1.0000000 
+        level       outcome          term        parameter  estimate
+1 measurement     profile_1             k       count_mean 4.1742857
+2 measurement        shared             k count_dispersion 0.4163365
+3     profile     profile_1 group_class_1      probability 1.0000000
+4       group group_class_1          <NA>      probability 1.0000000
+  standard_error statistic p_value p_adjusted  conf_low conf_high
+1     0.18070345        NA      NA         NA 3.8347225 4.5439172
+2     0.05183597        NA      NA         NA 0.3261863 0.5314022
+3     0.00000000        NA      NA         NA 1.0000000 1.0000000
+4     0.00000000        NA      NA         NA 1.0000000 1.0000000
+  profile indicator     mean dispersion standard_error
+1       1         k 4.174286  0.4163365      0.1807035
+  dispersion_standard_error
+1                        NA
+Error in .multilpa_fit_covariates(data = data, vars = vars, id = id, n_profiles = n_profiles,  : 
+  Profile covariates require at least two profiles.
+Calls: lpa ... .multilpa_covariate_model -> .multilpa_fit_covariates
+Execution halted

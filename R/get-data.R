@@ -66,7 +66,10 @@
 #'   \item{`"classification"`}{Classification quality, one row per class and
 #'     level: `level`, `class`, `n_modal`, `proportion_modal`, `estimated_n`,
 #'     `estimated_proportion`, `average_posterior`,
-#'     `odds_correct_classification`. Takes `level`.}
+#'     `odds_correct_classification`. Takes `level`. Under sampling weights
+#'     `estimated_n` and `estimated_proportion` (and so the odds of correct
+#'     classification) are weighted posterior totals; the modal and average
+#'     posterior columns describe the units supplied.}
 #'   \item{`"average_posteriors"`}{For the units assigned to each class, their
 #'     mean posterior of belonging to every class: `level`, `assigned_class`,
 #'     `class`, `n_assigned`, `average_posterior`. Each assigned class's rows

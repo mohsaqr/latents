@@ -1,0 +1,10 @@
+* checking for file ‘../../DESCRIPTION’ ... OK
+* preparing ‘latents’:
+* checking DESCRIPTION meta-information ... OK
+* installing the package to build vignettes
+* creating vignettes ... OK
+* checking for LF line-endings in source and make files and shell scripts
+* checking for empty or unneeded directories
+Removed empty directory ‘latents/Project_docs’
+* building ‘latents_0.9.7.tar.gz’
+

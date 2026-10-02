@@ -77,7 +77,14 @@ parameter_inference(
   level = 0.95,
   step = 1e-04,
   vcov_type = c("observed", "robust", "opg"),
-  ...
+  adjust = .multilpa_p_adjust_methods,
+  method = c("wald", "bootstrap"),
+  iter = 199L,
+  n_starts = 10L,
+  max_iter = 1000L,
+  tol = 1e-08,
+  seed = NULL,
+  boundary = c("error", "fix")
 )
 }
 \arguments{
@@ -252,6 +259,15 @@ coefficient is a log odds against that reference. The tests are Wald tests
 and inherit the usual caveat: they are unreliable for a coefficient driven
 to the boundary by separation, which the size of the estimate and its
 standard error together will reveal.
+
+For a general transition fit (an \code{\link[=lta]{lta()}} fit with covariate,
+occasion-varying or second-order transitions), the table has one row per
+transition, initial and second-order logit: \code{block}, \code{group_class},
+\code{from}, \code{to}, \code{term}, \code{estimate}, \code{standard_error}, \code{statistic},
+\code{p_value}, \code{p_adjusted}, \code{conf_low}, \code{conf_high} (and \code{previous} for a
+second-order fit). Only \code{method = "wald"} and \code{boundary = "error"} are
+implemented there; the alternatives raise \code{latents_unsupported_inference}
+instead of being ignored.
 }
 \section{Conditions}{
 

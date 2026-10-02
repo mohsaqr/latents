@@ -355,6 +355,13 @@
 #'   outer product of the group scores).
 #' @param adjust Multiplicity correction for `p_adjusted`, one of the methods
 #'   [stats::p.adjust()] accepts.
+#' @param method Only `"wald"` is implemented for a transition fit;
+#'   `"bootstrap"` raises `latents_unsupported_inference` rather than being
+#'   ignored. Use [bootstrap_lrt()] to compare transition models.
+#' @param iter,n_starts,max_iter,tol,seed Bootstrap controls of the generic;
+#'   unused, since the bootstrap is refused.
+#' @param boundary Only `"error"`: a fit on a bound has no Wald inference, and
+#'   `"fix"` raises `latents_unsupported_inference`.
 #' @param ... Unused.
 #' @return A base `data.frame` with one row per natural parameter and the
 #'   columns of [parameter_inference()]: `level`, `outcome`, `term`,
@@ -375,7 +382,8 @@
 #'   `latents_singular_information` when the information cannot be inverted;
 #'   `latents_bad_inference_data` when a supplied `data` does not reproduce
 #'   the fit; `latents_too_few_groups` for robust or OPG errors with no more
-#'   groups than parameters.
+#'   groups than parameters; `latents_unsupported_inference` for `method =
+#'   "bootstrap"` or `boundary = "fix"`.
 #' @examples
 #' fit <- lta(subset(course_engagement, student <= 40),
 #'            c("browse", "lectures", "forum_read"), "student",
@@ -387,13 +395,18 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
                                                      step = 1e-4,
                                                      vcov_type = c("observed", "robust", "opg"),
                                                      adjust = .multilpa_p_adjust_methods,
-                                                     ...) {
+                                                     method = c("wald", "bootstrap"),
+                                                     iter = 199L, n_starts = 10L,
+                                                     max_iter = 1000L, tol = 1e-8,
+                                                     seed = NULL,
+                                                     boundary = c("error", "fix")) {
   stopifnot(inherits(x, "multilpa_transitions"),
             "`level` must be a single number in (0, 1)" =
               is.numeric(level) && length(level) == 1L && is.finite(level) &&
               level > 0 && level < 1,
             "`step` must be a single positive number" =
               is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
+  .lta_refuse_unsupported_inference(match.arg(method), match.arg(boundary))
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
   inference <- .multilpa_transition_covariance(x, data, step, vcov_type)
@@ -569,12 +582,14 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
     (length(continuous) == 0L ||
        same(as.matrix(data[continuous]), x$indicator_data))
   if (ok && length(x$categorical %||% character()) > 0L) {
-    ok <- same(.multilpa_encode_categorical(data[x$categorical])$codes,
-               x$categorical_data)
+    encoded <- .multilpa_encode_categorical(data[x$categorical])
+    ok <- same(encoded$codes, x$categorical_data) &&
+      identical(encoded$levels, x$categorical_levels)
   }
+  if (ok) ok <- identical(.multilpa_time_values(data, x$time, x$id, x$vars), x$time_values)
   if (!ok) {
     stop(errorCondition(
-      "`data` must reproduce the indicators, groups and row order the fit was made from.",
+      "`data` must reproduce the indicators, categories, groups, occasions and row order of the fit.",
       class = "latents_bad_inference_data", call = NULL))
   }
   invisible(NULL)

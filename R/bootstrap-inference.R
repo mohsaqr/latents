@@ -69,10 +69,68 @@
   if (length(responses) > 0L) {
     blocks$response <- do.call(cbind, lapply(responses, unname))
   }
+  blocks <- c(blocks, .multilpa_extra_signature(x, reference))
   ## A weak identifier on its own, and a tie-breaker next to the measurement:
   ## kept on its natural scale so it can never outvote the means.
   blocks$mixing <- matrix(colMeans(x$profile_probabilities), ncol = 1L)
   do.call(cbind, blocks)
+}
+
+#' Ordinal probabilities and standardized count means for label matching
+#' @param x,reference Fitted models with the same extra indicators.
+#' @return A list of profiles-by-features matrices.
+#' @noRd
+.multilpa_extra_signature <- function(x, reference) {
+  blocks <- list()
+  if (length(x$ordinal_intercepts) > 0L) {
+    blocks$ordinal <- do.call(cbind, lapply(seq_along(x$ordinal_intercepts), function(j) {
+      exp(.latents_ordinal_log_probabilities(x$ordinal_intercepts[[j]],
+                                            x$ordinal_locations[, j]))
+    }))
+  }
+  if (length(x$count_means) > 0L) {
+    variance <- reference$count_means
+    if (length(reference$count_dispersion) > 0L) {
+      dispersion <- reference$count_dispersion
+      if (nrow(dispersion) == 1L) {
+        dispersion <- dispersion[rep(1L, reference$n_profiles), , drop = FALSE]
+      }
+      variance <- variance + dispersion * reference$count_means^2
+    }
+    spread <- sqrt(colMeans(variance))
+    spread[!is.finite(spread) | spread <= 0] <- 1
+    blocks$count <- sweep(unname(x$count_means), 2L, spread, "/")
+  }
+  blocks
+}
+
+#' Relabel extra-indicator parameters and restore the ordinal reference
+#' @param x A fitted profile or covariate model.
+#' @param order An integer permutation of its profiles.
+#' @return The fit with extra parameters in the new chart.
+#' @noRd
+.multilpa_permute_extra <- function(x, order) {
+  labels <- paste0("profile_", seq_len(x$n_profiles))
+  if (length(x$ordinal_intercepts) > 0L) {
+    locations <- x$ordinal_locations[order, , drop = FALSE]
+    reference <- locations[nrow(locations), ]
+    x$ordinal_intercepts <- lapply(seq_along(x$ordinal_intercepts), function(j) {
+      intercepts <- x$ordinal_intercepts[[j]]
+      intercepts + seq_along(intercepts) * reference[j]
+    })
+    names(x$ordinal_intercepts) <- x$ordinal
+    x$ordinal_locations <- sweep(locations, 2L, reference, "-")
+    rownames(x$ordinal_locations) <- labels
+  }
+  if (length(x$count_means) > 0L) {
+    x$count_means <- x$count_means[order, , drop = FALSE]
+    rownames(x$count_means) <- labels
+  }
+  if (length(x$count_dispersion) > 0L && nrow(x$count_dispersion) == x$n_profiles) {
+    x$count_dispersion <- x$count_dispersion[order, , drop = FALSE]
+    rownames(x$count_dispersion) <- labels
+  }
+  x
 }
 
 #' The order that best matches one set of profiles to another
@@ -122,6 +180,7 @@
   stopifnot(inherits(x, "multilpa"),
             "`order` must be a permutation of the profiles" =
               identical(sort(as.integer(order)), seq_len(x$n_profiles)))
+  x <- .multilpa_permute_extra(x, order)
   labels <- paste0("profile_", seq_len(x$n_profiles))
   x$means <- x$means[order, , drop = FALSE]
   rownames(x$means) <- labels

@@ -181,6 +181,8 @@
 .additive_inference <- function(x, vcov_type = c("observed", "robust", "opg"),
                                 step = 1e-4, warn_weak = TRUE) {
   vcov_type <- match.arg(vcov_type)
+  stopifnot("`step` must be finite and positive" =
+              is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
   if (!isTRUE(x$converged)) {
     stop(errorCondition("Inference requires a converged fit.",
                         class = "latents_no_converge", call = NULL))
@@ -330,6 +332,9 @@
 #' @noRd
 .additive_parameter_table <- function(x, inference, level = 0.95,
                                       adjust = "none") {
+  stopifnot("`level` must be a single finite number in (0, 1)" =
+              is.numeric(level) && length(level) == 1L && is.finite(level) &&
+              level > 0 && level < 1)
   class_names <- names(x$group_probabilities)
   n_classes <- length(class_names)
   vars <- x$vars

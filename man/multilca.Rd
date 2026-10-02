@@ -22,19 +22,23 @@ model.}
 or to 1 when \code{id = NULL} (a single-level model has no second level).}
 
 \item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}, such as \code{n_starts}, \code{seed},
-\code{missing}, \code{tol} or \code{profile_covariates}. \code{categorical} is set to \code{vars}
-and cannot be supplied.}
+\code{missing}, \code{tol} or \code{profile_covariates}. \code{ordinal} and \code{count} can name
+structured discrete indicators; the
+remaining indicators are categorical. \code{categorical} cannot be supplied.}
 }
 \value{
 A fitted model of class \code{multilpa} (or \code{multilpa_covariates} when
 membership covariates are given), exactly as \code{\link[=multilpa]{multilpa()}} returns it with
-\code{categorical = vars}. The response probabilities are in
+the corresponding discrete indicator types. Categorical response
+probabilities are in
 \code{get_results(fit, "responses")}, one row per profile, item and category.
 }
 \description{
 Two-level latent class analysis for categorical indicators: \code{\link[=multilpa]{multilpa()}}
-with every indicator in \code{vars} treated as categorical. Each profile is
-described by an unrestricted probability for every category of every item,
+with discrete indicators in \code{vars} treated as categorical unless named
+in \code{ordinal} or \code{count} through \code{...}. Each profile is described by
+unrestricted response probabilities for categorical items and the
+corresponding structured parameters for ordinal and count items,
 and the group classes differ in how probable each profile is for their
 observations. For models that combine categorical and continuous
 indicators, call \code{\link[=multilpa]{multilpa()}} and name the categorical ones in its
@@ -42,8 +46,8 @@ indicators, call \code{\link[=multilpa]{multilpa()}} and name the categorical on
 }
 \section{Conditions}{
 
-\code{latents_bad_argument} when \code{categorical} is supplied, since every
-indicator is categorical by definition here. Every condition of
+\code{latents_bad_argument} when \code{categorical} is supplied, since its
+columns are derived from \code{vars}, \code{ordinal} and \code{count} here. Every condition of
 \code{\link[=multilpa]{multilpa()}} can also be raised.
 }
 

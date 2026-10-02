@@ -1,0 +1,145 @@
+                         file
+536       test-review-extra.R
+537       test-review-extra.R
+538       test-review-extra.R
+539       test-review-extra.R
+540       test-review-extra.R
+541    test-review-families.R
+542    test-review-families.R
+543    test-review-families.R
+544    test-review-families.R
+545    test-review-families.R
+546    test-review-families.R
+547    test-review-families.R
+548    test-review-families.R
+549    test-review-families.R
+550    test-review-families.R
+551    test-review-families.R
+552 test-review-integration.R
+553 test-review-integration.R
+554 test-review-integration.R
+555 test-review-integration.R
+556 test-review-integration.R
+557 test-review-integration.R
+558 test-review-integration.R
+559 test-review-integration.R
+560         test-review-lta.R
+561         test-review-lta.R
+562         test-review-lta.R
+563         test-review-lta.R
+564         test-review-lta.R
+565         test-review-lta.R
+566         test-review-lta.R
+567         test-review-lta.R
+568         test-review-lta.R
+569         test-review-lta.R
+570         test-review-lta.R
+571         test-review-lta.R
+572         test-review-lta.R
+573         test-review-lta.R
+574         test-review-lta.R
+575         test-review-lta.R
+576         test-review-lta.R
+577         test-review-lta.R
+578  test-review-regression.R
+579  test-review-regression.R
+580  test-review-regression.R
+581  test-review-regression.R
+582  test-review-structures.R
+                                                                                     test
+536                             extra indicator columns are finite category/count vectors
+537                          NB scores and curvature stay accurate near the Poisson limit
+538                       covariate ordinal inference refuses changed category identities
+539     weighted mixed NB covariate scores and natural maps match independent derivatives
+540                          Poisson log densities retain precision for large count means
+541               reviewed family scores and information match dense Gaussian derivatives
+542                         group-class bootstrap refuses changed scatter and group sizes
+543                              weighted family EM is stationary before Newton polishing
+544                   one-class equivalent group-class models cannot form a bootstrap LRT
+545                family inference validates finite levels and positive difference steps
+546                         family bootstrap validates controls before fitting replicates
+547                 all cross-level variance restrictions reproduce weighted raw formulas
+548                   weighted family covariance is the sandwich of weighted group scores
+549                   restricted cross-level weights preserve a similarly named indicator
+550                          cross-level counts refuse overflow before integer conversion
+551                   family enumeration rejects missing variance restrictions explicitly
+552                               class wrappers partition structured discrete indicators
+553                    profile permutation preserves ordinal and NB likelihood and labels
+554                      covariate relabelling preserves extra measurement and likelihood
+555          BLRT reproduces NB likelihood and refuses different indicator specifications
+556                          row alignment checks ordinal and count records within groups
+557                        finite sampling weights remain finite at extreme common scales
+558                          three-profile ordinal relabelling rebases every item exactly
+559                 single-profile NB varying dispersion labels retain its standard error
+560              all general LTA extensions match independent path likelihoods and scores
+561            second-order occasion models omit unused logits and report stayer identity
+562               extended LTA refuses unidentified panels and invalid inference controls
+563           transition nesting checks indicator roles, grid and covariance restrictions
+564         every covariance structure uses the correct observed Gaussian marginal in LTA
+565              LTA simulation preserves ordinal types, counts and indicator missingness
+566                       LTA table confidence level and both comparison fits are checked
+567                       LTA comparison validates category labels and actual time values
+568  negative-binomial LTA optimization respects floors and reaches stationary likelihood
+569     second-order boundary detection reads only the first-order move into occasion two
+570             second-order occasion inference reports every free transition coefficient
+571            transition BLRT validates data against the alternative as well as the null
+572               occasion-prefixed covariates remain free under second-order transitions
+573                occasion covariance charts include mixed ordinal and count coordinates
+574                  numeric occasion covariates after generated intercepts are preserved
+575                     homogeneous LTA inference data preserve times and category labels
+576              ordinal/count-only LTA supports all tables and likelihood reconstruction
+577 every non-Gaussian LTA measurement exposes tables, coefficients, refit and simulation
+578                               weighted regression class sizes use weighted posteriors
+579                two-level regression group shares and composition use sampling weights
+580      regression counts and iteration controls reject fractional or overflowing values
+581         weighted regression likelihoods and scores hold for all families and nestings
+582               all fourteen structures preserve weighted multilevel mixture likelihood
+    passed failed error warning skipped
+536      6      0 FALSE       0   FALSE
+537     14      0 FALSE       0   FALSE
+538      2      0 FALSE       0   FALSE
+539      6      0 FALSE       0   FALSE
+540      1      0 FALSE       0   FALSE
+541     15      0 FALSE       0   FALSE
+542      2      0 FALSE       0   FALSE
+543     20      0 FALSE       0   FALSE
+544      1      0 FALSE       0   FALSE
+545     20      0 FALSE       0   FALSE
+546     16      0 FALSE       0   FALSE
+547     56      0 FALSE       0   FALSE
+548      5      0 FALSE       0   FALSE
+549      3      0 FALSE       0   FALSE
+550      4      0 FALSE       0   FALSE
+551      1      0 FALSE       0   FALSE
+552      5      0 FALSE       0   FALSE
+553      9      0 FALSE       0   FALSE
+554      4      0 FALSE       0   FALSE
+555      5      0 FALSE       0   FALSE
+556      3      0 FALSE       0   FALSE
+557      3      0 FALSE       0   FALSE
+558      4      0 FALSE       0   FALSE
+559      6      0 FALSE       0   FALSE
+560     30      0 FALSE       0   FALSE
+561      5      0 FALSE       0   FALSE
+562      4      0 FALSE       0   FALSE
+563      6      0 FALSE       0   FALSE
+564     98      0 FALSE       0   FALSE
+565     16      0 FALSE       0   FALSE
+566      4      0 FALSE       0   FALSE
+567      2      0 FALSE       0   FALSE
+568      8      0 FALSE       0   FALSE
+569      1      0 FALSE       0   FALSE
+570      6      0 FALSE       0   FALSE
+571      1      0 FALSE       0   FALSE
+572      2      0 FALSE       0   FALSE
+573     42      0 FALSE       0   FALSE
+574      2      0 FALSE       0   FALSE
+575      3      0 FALSE       0   FALSE
+576      7      0 FALSE       0   FALSE
+577     88      0 FALSE       0   FALSE
+578      8      0 FALSE       0   FALSE
+579      3      0 FALSE       0   FALSE
+580     21      0 FALSE       0   FALSE
+581     18      0 FALSE       0   FALSE
+582     84      0 FALSE       0   FALSE
+New review assertions: 670 

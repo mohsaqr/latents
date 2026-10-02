@@ -28,7 +28,8 @@ its \code{n_profiles}.
 Fits single-level latent class models with each number of classes in
 \code{n_classes} and returns them in one table for comparison by information
 criteria, entropy and the diagnostics of each fit. Every indicator is
-categorical, as in \code{\link[=lca]{lca()}}. It is \code{\link[=enumerate_classes]{enumerate_classes()}} with \code{id = NULL},
+categorical unless named in \code{ordinal} or \code{count}, as in \code{\link[=lca]{lca()}}. It is
+\code{\link[=enumerate_classes]{enumerate_classes()}} with \code{id = NULL},
 and it returns the same object; the number of classes is its \code{n_profiles}
 column.
 }

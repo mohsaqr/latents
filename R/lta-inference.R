@@ -5,20 +5,90 @@
 # (reference: staying). By Fisher's identity each group's score is the
 # expected complete-data score under its posteriors.
 
+#' Free design columns of a transition coefficient block
+#' @param terms Design column names.
+#' @param second Whether second-order transitions are fitted.
+#' @param block First- or second-order transition block.
+#' @param n_occasion_intercepts Number of generated occasion intercepts.
+#' @return Integer indices excluding occasion intercepts that never apply.
+#' @noRd
+.lta_transition_columns <- function(terms, second, block = 1L, n_occasion_intercepts = NULL) {
+  if (!second || !identical(terms[1L], "occasion_2")) return(seq_along(terms))
+  if (is.null(n_occasion_intercepts)) {
+    generated <- terms == paste0("occasion_", seq_along(terms) + 1L)
+    n_occasion_intercepts <- match(FALSE, generated, nomatch = length(terms) + 1L) - 1L
+  }
+  occasion <- seq_along(terms) <= n_occasion_intercepts
+  which(!occasion | if (block == 1L) terms == "occasion_2" else terms != "occasion_2")
+}
+
+#' Does LTA measurement need a covariance chart rather than log variances?
+#' @param fit A fit or parameter specification.
+#' @return A single logical.
+#' @noRd
+.lta_uses_covariance_chart <- function(fit) {
+  length(fit$continuous) > 0L &&
+    (!identical(fit$covariance_model %||% "diagonal", "diagonal") ||
+       !is.null(fit$covariance_structure) && !fit$covariance_structure %in% c("EEI", "VVI"))
+}
+
+#' Core measurement view for covariance coordinates of one LTA occasion
+#' @param block Measurement parameters of one occasion.
+#' @param fit Fit or parameter specification carrying its covariance structure.
+#' @return A core model view with no categorical or mixing free blocks.
+#' @noRd
+.lta_covariance_view <- function(block, fit) {
+  k <- nrow(block$means)
+  structure(list(means = block$means, variances = block$variances,
+    covariances = block$covariances, continuous = fit$continuous, vars = fit$continuous,
+    covariance_model = fit$covariance_model, covariance_structure = fit$covariance_structure,
+    variance_model = fit$variance_model, n_profiles = k, n_group_classes = 1L,
+    profile_probabilities = matrix(1 / k, 1L, k), group_probabilities = 1),
+    class = "multilpa")
+}
+
+#' Covariance coordinates of a single LTA measurement block
+#' @param block Measurement parameters.
+#' @param fit Fit or parameter specification.
+#' @return Named unconstrained covariance coordinates from the core charts.
+#' @noRd
+.lta_covariance_coordinates <- function(block, fit) {
+  view <- .lta_covariance_view(block, fit)
+  if (.multilpa_uses_chart(view)) return(.multilpa_chart_encode(view)$values)
+  .multilpa_covariance_coordinates(view, "unconstrained")
+}
+
+#' Names of a single LTA covariance coordinate block
+#' @param fit Fit carrying the measurement blocks.
+#' @param block Index of its measurement block.
+#' @param label Occasion label.
+#' @return Names in the LTA coefficient grammar.
+#' @noRd
+.lta_covariance_names <- function(fit, block, label) {
+  view <- .lta_covariance_view(fit$measurement[[block]], fit)
+  coordinates <- .lta_covariance_coordinates(fit$measurement[[block]], fit)
+  labels <- .multilpa_tidy_labels(names(coordinates), view)
+  stem <- paste(labels$parameter, label, labels$outcome, sep = ".")
+  ifelse(is.na(labels$term), stem, paste(stem, labels$term, sep = "."))
+}
+
 #' Names of the estimation-scale coefficients
 #' @noRd
 .lta_names <- function(fit) {
   profiles <- paste0("profile_", seq_len(fit$n_profiles))
   classes <- paste0("group_class_", seq_len(fit$n_group_classes))
+  classes[fit$stayer %||% rep(FALSE, length(classes))] <- "stayers"
   blocks <- if (length(fit$measurement) == 1L) "all" else
     paste0("occasion_", seq_along(fit$measurement))
   shared <- identical(fit$variance_model, "equal")
   categorical <- fit$categorical
-  measurement <- unlist(lapply(blocks, function(b) {
+  measurement <- unlist(lapply(seq_along(blocks), function(index) {
+    b <- blocks[index]
     c(if (length(fit$continuous) > 0L) c(
         paste("mean", b, rep(profiles, each = length(fit$continuous)),
               fit$continuous, sep = "."),
-        if (shared) paste("log_variance", b, fit$continuous, sep = ".") else
+        if (.lta_uses_covariance_chart(fit)) .lta_covariance_names(fit, index, b) else
+          if (shared) paste("log_variance", b, fit$continuous, sep = ".") else
           paste("log_variance", b, rep(profiles, each = length(fit$continuous)),
                 fit$continuous, sep = ".")),
       unlist(lapply(seq_along(categorical), function(i) {
@@ -31,6 +101,11 @@
   }))
   initial_terms <- colnames(fit$designs$initial)
   transition_terms <- colnames(fit$designs$transition[[1L]])
+  n_intercepts <- fit$layout$n_occasions - 1L
+  first_terms <- transition_terms[.lta_transition_columns(
+    transition_terms, (fit$order %||% 1L) >= 2L, n_occasion_intercepts = n_intercepts)]
+  second_terms <- transition_terms[.lta_transition_columns(
+    transition_terms, (fit$order %||% 1L) >= 2L, 2L, n_intercepts)]
   initial <- unlist(lapply(classes, function(h) {
     unlist(lapply(profiles[-fit$n_profiles], function(k) {
       paste("initial", h, k, initial_terms, sep = ".")
@@ -41,7 +116,7 @@
     unlist(lapply(seq_len(fit$n_profiles), function(k) {
       unlist(lapply(setdiff(seq_len(fit$n_profiles), k), function(l) {
         paste("transition", h, paste0(profiles[k], "->", profiles[l]),
-              transition_terms, sep = ".")
+              first_terms, sep = ".")
       }))
     }))
   }))
@@ -53,7 +128,7 @@
         unlist(lapply(setdiff(seq_len(fit$n_profiles), j), function(l) {
           paste("transition2", h,
                 paste0(profiles[i], "->", profiles[j], "->", profiles[l]),
-                transition_terms, sep = ".")
+                second_terms, sep = ".")
         }))
       }))
     }))
@@ -63,11 +138,12 @@
 
 #' Pack a parameter list onto the estimation scale
 #' @noRd
-.lta_pack <- function(parameters, variance_model, extra = NULL) {
+.lta_pack <- function(parameters, variance_model, extra = NULL, fit = parameters) {
   measurement <- unlist(lapply(parameters$measurement, function(block) {
     c(if (!is.null(block$means) && ncol(block$means) > 0L) c(
         as.vector(t(block$means)),
-        if (identical(variance_model, "equal")) log(block$variances[1L, ]) else
+        if (.lta_uses_covariance_chart(fit)) unname(.lta_covariance_coordinates(block, fit)) else
+          if (identical(variance_model, "equal")) log(block$variances[1L, ]) else
           log(as.vector(t(block$variances)))),
       # Response probabilities as logits against the last category, per
       # indicator, profile-major.
@@ -85,16 +161,23 @@
     as.vector(matrix(parameters$initial[, , h], dim(parameters$initial)[1L]))
   }))
   movers <- which(!(parameters$stayer %||% rep(FALSE, dim(parameters$transition)[4L])))
+  terms <- dimnames(parameters$transition)[[1L]]
+  n_intercepts <- attr(parameters$transition, "n_occasion_intercepts")
+  first_columns <- if (is.null(terms)) seq_len(dim(parameters$transition)[1L]) else
+    .lta_transition_columns(terms, !is.null(parameters$transition2),
+                            n_occasion_intercepts = n_intercepts)
+  second_columns <- if (is.null(terms)) seq_len(dim(parameters$transition)[1L]) else
+    .lta_transition_columns(terms, !is.null(parameters$transition2), 2L, n_intercepts)
   transition <- unlist(lapply(movers, function(h) {
     unlist(lapply(seq_len(dim(parameters$transition)[3L]), function(k) {
-      as.vector(matrix(parameters$transition[, , k, h], dim(parameters$transition)[1L]))
+      as.vector(matrix(parameters$transition[first_columns, , k, h], length(first_columns)))
     }))
   }))
   transition2 <- if (is.null(parameters$transition2)) NULL else
     unlist(lapply(movers, function(h) {
       unlist(lapply(seq_len(dim(parameters$transition2)[3L]), function(pair) {
-        as.vector(matrix(parameters$transition2[, , pair, h],
-                         dim(parameters$transition2)[1L]))
+        as.vector(matrix(parameters$transition2[second_columns, , pair, h],
+                         length(second_columns)))
       }))
     }))
   unname(c(measurement, log(weights[-1L] / weights[1L]), initial, transition,
@@ -120,8 +203,17 @@
     block <- list()
     if (d > 0L) {
       block$means <- matrix(take(n_states * d), n_states, d, byrow = TRUE)
-      block$variances <- if (shared) matrix(exp(take(d)), n_states, d, byrow = TRUE) else
-        matrix(exp(take(n_states * d)), n_states, d, byrow = TRUE)
+      if (.lta_uses_covariance_chart(fit)) {
+        view <- .lta_covariance_view(fit$measurement[[b]], fit)
+        width <- .multilpa_coordinate_widths(view, "unconstrained")[["variances"]]
+        decoded <- .multilpa_decode(c(as.vector(t(block$means)), take(width),
+                                      numeric(n_states - 1L)), view)
+        block$variances <- decoded$variances
+        if (!is.null(decoded$covariances)) block$covariances <- decoded$covariances
+      } else {
+        block$variances <- if (shared) matrix(exp(take(d)), n_states, d, byrow = TRUE) else
+          matrix(exp(take(n_states * d)), n_states, d, byrow = TRUE)
+      }
     } else {
       block$means <- matrix(0, n_states, 0L)
       block$variances <- matrix(1, n_states, 0L)
@@ -146,18 +238,30 @@
   movers <- which(!stayer)
   # Stayer classes carry no free transition coefficients (fixed identity).
   transition <- array(0, c(p, n_states - 1L, n_states, n_classes))
-  transition[, , , movers] <- array(take(p * (n_states - 1L) * n_states * length(movers)),
-                                    c(p, n_states - 1L, n_states, length(movers)))
+  terms <- colnames(fit$designs$transition[[1L]])
+  n_intercepts <- fit$layout$n_occasions - 1L
+  first_columns <- .lta_transition_columns(terms, (fit$order %||% 1L) >= 2L,
+                                           n_occasion_intercepts = n_intercepts)
+  second_columns <- .lta_transition_columns(terms, (fit$order %||% 1L) >= 2L, 2L, n_intercepts)
+  transition[first_columns, , , movers] <- array(
+    take(length(first_columns) * (n_states - 1L) * n_states * length(movers)),
+    c(length(first_columns), n_states - 1L, n_states, length(movers)))
+  dimnames(transition) <- list(terms, NULL, NULL, NULL)
+  attr(transition, "n_occasion_intercepts") <- n_intercepts
   transition2 <- if ((fit$order %||% 1L) < 2L) NULL else {
     out <- array(0, c(p, n_states - 1L, n_states^2, n_classes))
-    out[, , , movers] <- array(take(p * (n_states - 1L) * n_states^2 * length(movers)),
-                               c(p, n_states - 1L, n_states^2, length(movers)))
+    out[second_columns, , , movers] <- array(
+      take(length(second_columns) * (n_states - 1L) * n_states^2 * length(movers)),
+      c(length(second_columns), n_states - 1L, n_states^2, length(movers)))
     out
   }
   c(list(measurement = measurement, initial = initial, transition = transition),
     if (!is.null(transition2)) list(transition2 = transition2),
     list(group_probabilities = exp(logits - max(logits)) /
-           sum(exp(logits - max(logits))), stayer = unname(stayer)))
+           sum(exp(logits - max(logits))), stayer = unname(stayer),
+         continuous = fit$continuous, variance_model = fit$variance_model,
+         covariance_model = fit$covariance_model,
+         covariance_structure = fit$covariance_structure))
 }
 
 #' Per-group scores of the general transition model on the estimation scale
@@ -225,6 +329,12 @@
       residual[, l] * fit$designs$initial
     }))
   }))
+  first_columns <- .lta_transition_columns(
+    colnames(fit$designs$transition[[1L]]), (fit$order %||% 1L) >= 2L,
+    n_occasion_intercepts = fit$layout$n_occasions - 1L)
+  second_columns <- .lta_transition_columns(
+    colnames(fit$designs$transition[[1L]]), (fit$order %||% 1L) >= 2L, 2L,
+    fit$layout$n_occasions - 1L)
   movers <- which(!(fit$stayer %||% rep(FALSE, n_classes)))
   transition <- do.call(cbind, lapply(movers, function(h) {
     pairs <- e$moments[[h]]$pairs
@@ -235,7 +345,7 @@
         Reduce(`+`, lapply(seq_along(pairs), function(t) {
           moves <- matrix(pairs[[t]][, k, ], n_units)
           residual <- moves[, l] - rowSums(moves) * exp(log_transition[[t]][, k, l])
-          residual * fit$designs$transition[[t]]
+          residual * fit$designs$transition[[t]][, first_columns, drop = FALSE]
         }))
       }))
     }))
@@ -250,7 +360,7 @@
           Reduce(`+`, lapply(seq_along(moves), function(t) {
             counts <- matrix(moves[[t]][, pair, ], n_units)
             residual <- counts[, l] - rowSums(counts) * exp(log_p[[t]][, pair, l])
-            residual * fit$designs$transition[[t + 1L]]
+            residual * fit$designs$transition[[t + 1L]][, second_columns, drop = FALSE]
           }))
         }))
       }))
@@ -275,6 +385,17 @@
 .lta_inference <- function(fit, vcov_type = c("observed", "robust", "opg"),
                            step = 1e-4) {
   vcov_type <- match.arg(vcov_type)
+  if (!is.numeric(step) || length(step) != 1L || !is.finite(step) || step <= 0) {
+    stop(errorCondition("`step` must be a positive finite number.",
+                        class = "latents_bad_argument", call = NULL))
+  }
+  if (any(vapply(fit$measurement, function(block) {
+    any(block$count_dispersion <= .latents_min_dispersion * (1 + 1e-6)) ||
+      any(block$count_means <= 1e-8)
+  }, logical(1)))) {
+    stop(errorCondition("A count parameter is at its boundary; Wald inference does not apply.",
+                        class = "latents_boundary_fit", call = NULL))
+  }
   if (any(vapply(fit$measurement, function(block) {
     any(unlist(block$response_probabilities) <= 1e-6)
   }, logical(1)))) {
@@ -343,6 +464,7 @@
                     matrix(0, fit$n_profiles, 0L),
                 variances = if (length(fit$continuous) > 0L) unname(block$variances) else
                   matrix(1, fit$n_profiles, 0L)),
+           if (!is.null(block$covariances)) list(covariances = unname(block$covariances)),
            if (!is.null(block$response_probabilities))
              list(response_probabilities = lapply(block$response_probabilities, unname)),
            if (!is.null(block$count_means)) list(count_means = unname(block$count_means)),
@@ -353,11 +475,13 @@
                   ordinal_locations = unname(block$ordinal_locations)))
        }),
        initial = unname(fit$initial_coefficients),
-       transition = unname(fit$transition_coefficients),
+       transition = fit$transition_coefficients,
        transition2 = if (is.null(fit$second_order_coefficients)) NULL else
          unname(fit$second_order_coefficients),
        group_probabilities = unname(fit$group_probabilities),
-       stayer = unname(fit$stayer %||% rep(FALSE, length(fit$group_probabilities))))
+       stayer = unname(fit$stayer %||% rep(FALSE, length(fit$group_probabilities))),
+       continuous = fit$continuous, variance_model = fit$variance_model,
+       covariance_model = fit$covariance_model, covariance_structure = fit$covariance_structure)
 }
 
 #' Finish EM with a bounded quasi-Newton search on the exact likelihood
@@ -375,6 +499,8 @@
   theta <- .lta_pack(parameters, spec$variance_model, spec$extra_data)
   names_all <- .lta_names(spec)
   lower <- ifelse(startsWith(names_all, "log_variance."), log(min_variance), -Inf)
+  lower[startsWith(names_all, "log_count_mean.")] <- log(1e-10)
+  lower[startsWith(names_all, "log_count_dispersion.")] <- log(.latents_min_dispersion)
   theta <- pmax(theta, lower)
   value <- function(v) {
     -.lta_expectation(spec$x, spec$codes, spec$layout, spec$designs,
@@ -417,7 +543,9 @@
       return(min(exp(class_terms$log_initial)) < 1e-6)
     }
     initial <- min(exp(class_terms$log_initial))
-    moves <- vapply(seq_along(class_terms$log_transition), function(t) {
+    first_occasions <- if (length(class_terms$log_transition2) > 0L) 1L else
+      seq_along(class_terms$log_transition)
+    moves <- vapply(first_occasions, function(t) {
       active <- layout$within[, t + 1L]
       if (!any(active)) return(1)
       min(exp(class_terms$log_transition[[t]][active, , , drop = FALSE]))

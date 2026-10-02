@@ -46,7 +46,10 @@
       class = "latents_bad_weights", call = NULL))
   }
   stopifnot("one weight per unit" = length(unit) == n_groups)
-  unit * n_groups / sum(unit)
+  # Normalize before summing or multiplying: finite raw weights can overflow
+  # both operations even though their relative weights are well defined.
+  relative <- unit / max(unit)
+  relative * (n_groups / sum(relative))
 }
 
 #' Refuse an option that sampling weights do not support

@@ -64,11 +64,14 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
       is.numeric(n_group_classes) && length(n_group_classes) >= 1L &&
       all(vapply(n_group_classes, .mixture_is_count, logical(1))),
     "`bootstrap` must be a single non-negative whole number" =
-      length(bootstrap) == 1L && is.finite(bootstrap) && bootstrap >= 0,
+      is.numeric(bootstrap) && length(bootstrap) == 1L && is.finite(bootstrap) &&
+      bootstrap >= 0 && bootstrap == floor(bootstrap) && bootstrap <= .Machine$integer.max,
     "`bootstrap_starts` must be a single non-negative whole number" =
-      length(bootstrap_starts) == 1L && is.finite(bootstrap_starts) &&
-      bootstrap_starts >= 0
+      is.numeric(bootstrap_starts) && length(bootstrap_starts) == 1L &&
+      is.finite(bootstrap_starts) && bootstrap_starts >= 0 &&
+      bootstrap_starts == floor(bootstrap_starts) && bootstrap_starts <= .Machine$integer.max
   )
+  .multilpa_check_seed(seed)
   arguments <- list(...)
   if (bootstrap > 0 && !is.null(arguments$weights)) {
     .latents_refuse_weights(paste(

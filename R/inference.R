@@ -1324,6 +1324,25 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   invisible(NULL)
 }
 
+#' Give the caller's frame a single-level fit's internal row numbering
+#'
+#' A single-level fit numbered its rows itself; the caller's frame has no such
+#' column, and its row order is what the numbering was. Frames that already
+#' carry the column, or have a different number of rows, are returned as given
+#' for the caller's own checks to judge.
+#'
+#' @param object A fitted model of this package.
+#' @param data The caller's frame.
+#' @return `data`, with the fit's identifier column added when it was absent.
+#' @noRd
+.multilpa_number_single_level <- function(object, data) {
+  if (isTRUE(object$single_level) && !object$id %in% names(data) &&
+      nrow(data) == object$n_observations) {
+    data[[object$id]] <- object$group_values[seq_len(nrow(data))]
+  }
+  data
+}
+
 #' Recover and centre the indicator matrix the fit was built on
 #'
 #' The Hessian is evaluated at the fitted estimates, so it is only meaningful
@@ -1334,12 +1353,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 #' @return A list with the centred matrix `x` and the `centers` removed from it.
 #' @noRd
 .multilpa_inference_matrix <- function(object, data) {
-  # A single-level fit numbered its rows itself; the caller's frame has no
-  # such column, and its row order is what the numbering was.
-  if (isTRUE(object$single_level) && !object$id %in% names(data) &&
-      nrow(data) == object$n_observations) {
-    data[[object$id]] <- object$group_values[seq_len(nrow(data))]
-  }
+  data <- .multilpa_number_single_level(object, data)
   if (nrow(data) != object$n_observations ||
       !all(c(object$vars, object$id) %in% names(data)) ||
       anyDuplicated(names(data)) ||

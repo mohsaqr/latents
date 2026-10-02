@@ -120,7 +120,10 @@ described below.}
 \item{\code{"classification"}}{Classification quality, one row per class and
 level: \code{level}, \code{class}, \code{n_modal}, \code{proportion_modal}, \code{estimated_n},
 \code{estimated_proportion}, \code{average_posterior},
-\code{odds_correct_classification}. Takes \code{level}.}
+\code{odds_correct_classification}. Takes \code{level}. Under sampling weights
+\code{estimated_n} and \code{estimated_proportion} (and so the odds of correct
+classification) are weighted posterior totals; the modal and average
+posterior columns describe the units supplied.}
 \item{\code{"average_posteriors"}}{For the units assigned to each class, their
 mean posterior of belonging to every class: \code{level}, \code{assigned_class},
 \code{class}, \code{n_assigned}, \code{average_posterior}. Each assigned class's rows

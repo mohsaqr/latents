@@ -342,6 +342,13 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
       match(as.character(data[[name]]), levels_for)
     record(name, .multilpa_same_values(codes, x$categorical_data[, name]))
   })
+  extra_names <- intersect(c(x$ordinal, x$count), names(data))
+  if (length(extra_names) > 0L) {
+    original <- .latents_draw_extra_columns(x$extra_data)
+    lapply(extra_names, function(name) {
+      record(name, .multilpa_same_values(data[[name]], original[[name]]))
+    })
+  }
   if (length(disagreeing) > 0L) {
     stop(errorCondition(sprintf(
       "`data` is not in the order the model was fitted in: %s disagree%s with the fit row by row.",
@@ -360,8 +367,10 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   checkable <- c(if (!is.null(x$group_values) && !is.null(x$group_index) &&
                      !isTRUE(x$single_level)) x$id,
                  if (!is.null(x$time_values)) x$time,
-                 colnames(x$indicator_data), colnames(x$categorical_data))
-  measurements <- c(colnames(x$indicator_data), colnames(x$categorical_data))
+                 colnames(x$indicator_data), colnames(x$categorical_data),
+                 x$ordinal, x$count)
+  measurements <- c(colnames(x$indicator_data), colnames(x$categorical_data),
+                    x$ordinal, x$count)
   unique_rows <- length(checked) > 0L && !anyDuplicated(data[checked])
   complete_inputs <- length(measurements) > 0L &&
     all(checkable %in% checked)

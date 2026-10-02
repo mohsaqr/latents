@@ -38,8 +38,10 @@
   }
   ordinal_levels <- stats::setNames(lapply(ordinal, function(name) {
     value <- data[[name]]
-    if (!(is.factor(value) || is.numeric(value)) ||
-        (is.numeric(value) && any(value[!is.na(value)] != round(value[!is.na(value)])))) {
+    observed <- value[!is.na(value)]
+    if (!is.null(dim(value)) || !(is.factor(value) || is.numeric(value)) ||
+        (is.numeric(value) && (any(!is.finite(observed)) ||
+                               any(observed != round(observed))))) {
       stop(errorCondition(sprintf(paste(
         "Ordinal indicator `%s` must be an (ordered) factor or whole numbers;",
         "its categories are ordered by factor level or by value."), name),
@@ -63,7 +65,8 @@
     matrix(vapply(count, function(name) {
       value <- data[[name]]
       observed <- value[!is.na(value)]
-      if (!is.numeric(value) || any(!is.finite(observed)) || any(observed < 0) ||
+      if (!is.numeric(value) || !is.null(dim(value)) ||
+          any(!is.finite(observed)) || any(observed < 0) ||
           any(observed != round(observed))) {
         stop(errorCondition(sprintf(
           "Count indicator `%s` must hold non-negative whole numbers.", name),
@@ -144,9 +147,9 @@
                        mu = means[profile], log = TRUE)
       }, numeric(sum(observed)))
     } else {
-      outer(value[observed], log(means)) -
-        matrix(means, sum(observed), n_profiles, byrow = TRUE) -
-        lgamma(value[observed] + 1)
+      vapply(means, function(mean) {
+        stats::dpois(value[observed], lambda = mean, log = TRUE)
+      }, numeric(sum(observed)))
     }
     contribution
   })
@@ -450,7 +453,8 @@
     if (!.latents_negative_binomial(extra)) return(mean_values)
     rows <- .latents_dispersion_rows(extra, n_profiles)
     dispersion <- unname(parameters$count_dispersion[seq_len(rows), j])
-    outcome <- if (rows == 1L) "shared" else as.character(seq_len(rows))
+    outcome <- if (identical(extra$count_dispersion, "equal")) "shared" else
+      as.character(seq_len(rows))
     c(mean_values, stats::setNames(
       if (natural) dispersion else log(dispersion),
       sprintf(if (natural) "count_dispersion[%s,%s]" else "log_count_dispersion[%s,%s]",
@@ -698,6 +702,11 @@
   ordinal <- if (is.null(extra$ordinal)) NULL else
     matrix(vapply(colnames(extra$ordinal), function(name) {
       value <- newdata[[name]]
+      if (!is.null(dim(value))) {
+        stop(errorCondition(sprintf(
+          "Ordinal indicator `%s` must be a vector of categories.", name),
+          class = "latents_bad_data", call = NULL))
+      }
       code <- match(as.character(value), extra$ordinal_levels[[name]])
       unseen <- !is.na(value) & is.na(code)
       if (any(unseen)) {
@@ -713,7 +722,8 @@
     matrix(vapply(colnames(extra$count), function(name) {
       value <- newdata[[name]]
       observed <- value[!is.na(value)]
-      if (!is.numeric(value) || any(!is.finite(observed)) || any(observed < 0) ||
+      if (!is.numeric(value) || !is.null(dim(value)) ||
+          any(!is.finite(observed)) || any(observed < 0) ||
           any(observed != round(observed))) {
         stop(errorCondition(sprintf(
           "Count indicator `%s` must hold non-negative whole numbers.", name),
@@ -901,8 +911,48 @@
   mu <- matrix(means, length(value), n_profiles, byrow = TRUE)
   r <- matrix(size, length(value), n_profiles, byrow = TRUE)
   list(log_mean = r * (y - mu) / (r + mu),
-       log_dispersion = -r * (digamma(y + r) - digamma(r) + log(r / (r + mu)) +
-                                (mu - y) / (r + mu)))
+       log_dispersion = .latents_negative_binomial_dispersion_derivatives(
+         value, means, dispersion)$score)
+}
+
+#' Stable negative-binomial log-dispersion derivatives
+#'
+#' Near the Poisson limit, differences of digamma/trigamma terms lose the
+#' small dispersion score to cancellation. Expand the NB log density relative
+#' to Poisson in alpha through order four when alpha times the count or mean
+#' is below 0.001. The coefficients follow from expanding
+#' sum_j log(1 + j alpha) - (y + 1/alpha) log(1 + mu alpha).
+#' Both expansion variables (alpha y and alpha mu) are then below 0.001.
+#' @noRd
+.latents_negative_binomial_dispersion_derivatives <- function(value, means, dispersion) {
+  n_profiles <- length(means)
+  y <- matrix(value, length(value), n_profiles)
+  mu <- matrix(means, length(value), n_profiles, byrow = TRUE)
+  alpha <- matrix(dispersion, length(value), n_profiles, byrow = TRUE)
+  r <- 1 / alpha
+  d <- digamma(y + r) - digamma(r) - log1p(mu / r) + (mu - y) / (r + mu)
+  d_prime <- trigamma(y + r) - trigamma(r) + mu / (r * (r + mu)) -
+    (mu - y) / (r + mu)^2
+  score <- -r * d
+  curvature <- r * d + r^2 * d_prime
+  small <- alpha * pmax(y, mu) < 1e-3
+  if (any(small)) {
+    count <- y[small]
+    mean <- mu[small]
+    a <- alpha[small]
+    sums <- list(count * (count - 1) / 2,
+                 count * (count - 1) * (2 * count - 1) / 6,
+                 (count * (count - 1) / 2)^2,
+                 count * (count - 1) * (2 * count - 1) *
+                   (3 * count^2 - 3 * count - 1) / 30)
+    terms <- lapply(seq_len(4L), function(order) {
+      (-1)^(order + 1) * a^order *
+        ((sums[[order]] - count * mean^order) / order + mean^(order + 1) / (order + 1))
+    })
+    score[small] <- Reduce(`+`, Map(`*`, terms, seq_len(4L)))
+    curvature[small] <- Reduce(`+`, Map(`*`, terms, seq_len(4L)^2))
+  }
+  list(score = score, curvature = curvature)
 }
 
 #' A moment start for the negative-binomial dispersion, per profile
@@ -918,10 +968,10 @@
 
 #' Maximize one negative-binomial count indicator's expected log likelihood
 #'
-#' Newton-Raphson on the log means and log dispersions, with the Hessian taken
-#' by central differences of the analytic gradient and step halving so every
-#' accepted step raises the objective. A dispersion is held at or above
-#' `.latents_min_dispersion`, the Poisson limit.
+#' Modified Newton-Raphson on the log means and log dispersions: the analytic
+#' Hessian with its eigenvalues reflected, so every direction ascends, and step
+#' halving so every accepted step raises the objective (to rounding). A
+#' dispersion is held at or above `.latents_min_dispersion`, the Poisson limit.
 #'
 #' @param value The indicator's counts (`NA` where unobserved).
 #' @param posteriors n x C posterior weights.
@@ -970,13 +1020,17 @@
     if (max(abs(slope[free])) <= 1e-10 * (1 + sum(weight))) break
     curvature <- -.latents_negative_binomial_hessian(unpack(theta), y, weight,
                                                      shared)[free, free, drop = FALSE]
-    ridge <- 1e-10 * (1 + max(abs(diag(curvature))))
-    decomposition <- qr(curvature + diag(ridge, length(free)))
-    # A singular or indefinite curvature (far from the maximum) gives no
-    # ascent direction, and the gradient, which always ascends, is used.
-    direction <- if (decomposition$rank < length(free)) slope[free] else
-      qr.solve(decomposition, slope[free])
-    if (sum(direction * slope[free]) <= 0) direction <- slope[free]
+    # Near the Poisson limit the objective is convex in a log dispersion, so
+    # the curvature is indefinite there. A plain Newton step then descends in
+    # that coordinate while still ascending overall through the means, and
+    # stalls short of the maximum. Reflecting the curvature's eigenvalues
+    # (modified Newton) ascends along every eigen-direction; the step is
+    # capped because a nearly flat direction would otherwise be enormous.
+    spectrum <- eigen((curvature + t(curvature)) / 2, symmetric = TRUE)
+    eigenvalues <- pmax(abs(spectrum$values), 1e-10 * (1 + max(abs(spectrum$values))))
+    direction <- drop(spectrum$vectors %*%
+                        (crossprod(spectrum$vectors, slope[free]) / eigenvalues))
+    direction <- direction * min(1, 5 / max(abs(direction)))
     step <- 1
     accepted <- FALSE
     while (step > 1e-12 && !accepted) {
@@ -1059,17 +1113,16 @@
 #' @noRd
 .latents_negative_binomial_hessian <- function(point, y, weight, shared) {
   n_profiles <- ncol(weight)
+  dispersion_derivatives <- .latents_negative_binomial_dispersion_derivatives(
+    y, point$means, point$dispersion)
   terms <- lapply(seq_len(n_profiles), function(profile) {
     mu <- point$means[profile]
     r <- 1 / point$dispersion[profile]
     w <- weight[, profile]
     spread <- (r + mu)^2
-    d <- digamma(y + r) - digamma(r) + log(r / (r + mu)) + (mu - y) / (r + mu)
-    d_prime <- trigamma(y + r) - trigamma(r) + 1 / r - 1 / (r + mu) -
-      (mu - y) / spread
     c(mean_mean = sum(w * -r * mu * (r + y) / spread),
       mean_dispersion = sum(w * -r * mu * (y - mu) / spread),
-      dispersion_dispersion = sum(w * (r * d + r^2 * d_prime)))
+      dispersion_dispersion = sum(w * dispersion_derivatives$curvature[, profile]))
   })
   n_dispersion <- if (shared) 1L else n_profiles
   hessian <- matrix(0, n_profiles + n_dispersion, n_profiles + n_dispersion)

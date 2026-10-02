@@ -496,6 +496,8 @@
     }, numeric(p * (n_profiles - 1L) * n_profiles^2)),
     c(p, n_profiles - 1L, n_profiles^2, n_types))
   }
+  dimnames(transition) <- list(colnames(designs$transition[[1L]]), NULL, NULL, NULL)
+  attr(transition, "n_occasion_intercepts") <- layout$n_occasions - 1L
   c(list(measurement = measurement, initial = initial, transition = transition),
     if (second) list(transition2 = transition2),
     list(group_probabilities = if (isTRUE(expectation$weighted))
@@ -560,11 +562,14 @@
   p0 <- ncol(designs$initial)
   p <- ncol(designs$transition[[1L]])
   initial <- array(0, c(p0, n_profiles - 1L, n_types))
-  transition <- array(0, c(p, n_profiles - 1L, n_profiles, n_types))
+  transition <- array(0, c(p, n_profiles - 1L, n_profiles, n_types),
+                      dimnames = list(colnames(designs$transition[[1L]]), NULL, NULL, NULL))
+  attr(transition, "n_occasion_intercepts") <- layout$n_occasions - 1L
   # Intercept columns carry the starting logits; covariate columns start at 0.
   intercepts_initial <- which(colnames(designs$initial) == "(Intercept)")
-  intercepts_transition <- which(colnames(designs$transition[[1L]]) == "(Intercept)" |
-                                   startsWith(colnames(designs$transition[[1L]]), "occasion_"))
+  intercepts_transition <- if (identical(colnames(designs$transition[[1L]])[1L],
+                                        "(Intercept)")) 1L else
+    seq_len(layout$n_occasions - 1L)
   invisible(lapply(seq_len(n_types), function(h) {
     shares <- start$initial_probabilities[h, ]
     initial[intercepts_initial, , h] <<- log(shares[-n_profiles] / shares[n_profiles])
@@ -628,6 +633,17 @@
     stop(errorCondition(
       "No group is observed at two occasions, so no transition can be estimated.",
       class = "latents_bad_transition", call = NULL))
+  }
+  if (order >= 2L && layout$n_occasions < 3L) {
+    stop(errorCondition("Second-order transitions require at least three occasions.",
+                        class = "latents_bad_transition", call = NULL))
+  }
+  distinct_rows <- nrow(unique(cbind(x, codes, extra$ordinal, extra$count)))
+  if (n_profiles > distinct_rows || n_group_classes > groups$n) {
+    stop(errorCondition(paste(
+      "Profiles cannot exceed the distinct observed indicator rows, and group",
+      "classes (including stayers) cannot exceed the number of groups."),
+      class = "latents_unidentified", call = NULL))
   }
   sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
   occasion_of_row <- integer(nrow(x))
@@ -755,7 +771,7 @@
 .lta_count_parameters <- function(n_profiles, n_types, d, n_categories,
                                   variance_model, n_measurement, p0, p, order = 1L,
                                   n_stayers = 0L, covariance_model = "diagonal",
-                                  structure = NULL) {
+                                  structure = NULL, p_second = p) {
   n_movers <- n_types - n_stayers
   # One measurement block as the cross-sectional counter counts it, without
   # its group-class and profile-share terms (one class: K - 1 shares).
@@ -765,7 +781,7 @@
   as.integer(n_measurement * per_measurement + (n_types - 1L) +
                n_types * p0 * (n_profiles - 1L) +
                n_movers * p * (n_profiles - 1L) * n_profiles +
-               if (order >= 2L) n_movers * p * (n_profiles - 1L) * n_profiles^2 else 0L)
+               if (order >= 2L) n_movers * p_second * (n_profiles - 1L) * n_profiles^2 else 0L)
 }
 
 #' Assemble a `multilpa_lta` fit
@@ -795,9 +811,13 @@
                                         measurement$n_categories, variance_model,
                                         length(parameters$measurement),
                                         ncol(designs$initial),
-                                        ncol(designs$transition[[1L]]), order,
+                                        length(.lta_transition_columns(
+                                          colnames(designs$transition[[1L]]), order >= 2L,
+                                          n_occasion_intercepts = layout$n_occasions - 1L)), order,
                                         as.integer(mover_stayer), covariance_model,
-                                        structure)
+                                        structure, length(.lta_transition_columns(
+                                          colnames(designs$transition[[1L]]), order >= 2L, 2L,
+                                          layout$n_occasions - 1L)))
   log_likelihood <- expectation$log_likelihood
   subject_posteriors <- expectation$subject_posteriors
   group_posteriors <- expectation$group_posteriors
@@ -827,7 +847,9 @@
   result <- list(
     call = call, vars = vars, continuous = measurement$continuous,
     categorical = setdiff(vars, c(measurement$continuous, measurement$other)),
+    categorical_levels = measurement$encoded$levels,
     id = id, time = time, group_ids = groups$ids, group_index = groups$index,
+    time_values = .multilpa_time_values(data, time, id, vars),
     n_profiles = as.integer(n_profiles), n_group_classes = as.integer(n_group_classes),
     n_groups = groups$n, n_observations = nrow(x), n_occasions = layout$n_occasions,
     transitions = transitions, transition_covariates = transition_covariates,

@@ -1,0 +1,21 @@
+List of 3
+ $ ordinal_locations: num [1:2, 1] -2.2 0
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:2] "profile_1" "profile_2"
+  .. ..$ : chr "o"
+ $ count_means      : num [1:2, 1] 1.85 13.82
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:2] "profile_1" "profile_2"
+  .. ..$ : chr "k"
+ $ count_dispersion : num [1:2, 1] 0.298 0.445
+  ..- attr(*, "dimnames")=List of 2
+  .. ..$ : chr [1:2] "profile_1" "profile_2"
+  .. ..$ : chr "k"
+[1] -1979.535 -1979.535
+[1] 2 1
+[1]  TRUE  TRUE FALSE FALSE
+Parametric bootstrap likelihood-ratio comparison
+Null: 1 profile; alternative: 2 profiles
+Observed statistic: 283.788479
+p-value: 0.3333 (Monte Carlo SE 0.272) from 2 of 2 valid replicates
+[1] "a"

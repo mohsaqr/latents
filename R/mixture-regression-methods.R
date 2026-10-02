@@ -65,12 +65,15 @@
   spec <- x$spec
   tau <- x$expectation$tau
   unit_tau <- if (identical(spec$nesting, "group")) x$expectation$group_tau else tau
+  unit_weights <- if (identical(spec$nesting, "group")) spec$sampling_weights else
+    spec$row_weights
+  weighted_tau <- if (is.null(unit_weights)) unit_tau else unit_tau * unit_weights
   modal <- max.col(unit_tau, ties.method = "first")
   class_names <- paste0("class_", seq_len(spec$n_classes))
   table <- data.frame(
     class = class_names,
-    share = colMeans(unit_tau),
-    count = colSums(unit_tau),
+    share = colSums(weighted_tau) / sum(weighted_tau),
+    count = colSums(weighted_tau),
     n_assigned = tabulate(modal, spec$n_classes),
     mean_posterior = vapply(seq_len(spec$n_classes), function(k) {
       assigned <- modal == k
@@ -137,13 +140,14 @@
                       probability = numeric(), group_share = numeric()))
   }
   rho <- x$expectation$rho
+  weighted_rho <- if (is.null(spec$sampling_weights)) rho else rho * spec$sampling_weights
   group_names <- paste0("group_class_", seq_len(spec$n_group_classes))
   class_names <- paste0("class_", seq_len(spec$n_classes))
   # Model-implied class probabilities within each group class, averaged over
   # the rows the group class is responsible for.
   probability <- vapply(seq_len(spec$n_group_classes), function(h) {
     prior <- exp(x$expectation$log_prior_by_group_class[[h]])
-    weight <- rho[spec$group_index, h]
+    weight <- weighted_rho[spec$group_index, h]
     colSums(prior * weight) / sum(weight)
   }, numeric(spec$n_classes))
   probability <- matrix(probability, spec$n_classes)
@@ -151,7 +155,7 @@
     group_class = rep(group_names, each = spec$n_classes),
     class = rep(class_names, spec$n_group_classes),
     probability = as.vector(probability),
-    group_share = rep(colMeans(rho), each = spec$n_classes),
+    group_share = rep(colSums(weighted_rho) / sum(weighted_rho), each = spec$n_classes),
     n_groups_assigned = rep(tabulate(max.col(rho, ties.method = "first"),
                                      spec$n_group_classes),
                             each = spec$n_classes))
@@ -189,6 +193,9 @@
   entropy_sum <- -sum(unit_posterior[unit_posterior > 0] *
                         log(unit_posterior[unit_posterior > 0]))
   bic <- -2 * log_lik + k * log(n_units)
+  unit_weights <- if (identical(spec$nesting, "group")) spec$sampling_weights else
+    spec$row_weights
+  weighted_posterior <- unit_posterior * (unit_weights %||% 1)
   data.frame(
     family = spec$family, nesting = spec$nesting,
     n_classes = spec$n_classes, n_group_classes = spec$n_group_classes,
@@ -203,7 +210,7 @@
     entropy = .mixture_relative_entropy(unit_posterior),
     group_entropy = if (identical(spec$nesting, "two-level"))
       .mixture_relative_entropy(x$expectation$rho) else NA_real_,
-    smallest_share = min(colMeans(unit_posterior)),
+    smallest_share = min(colSums(weighted_posterior) / sum(weighted_posterior)),
     converged = x$converged, iterations = x$iterations,
     n_starts = nrow(x$starts), n_best_replicated = x$n_best_replicated,
     vcov_type = x$inference$vcov_type %||% NA_character_)

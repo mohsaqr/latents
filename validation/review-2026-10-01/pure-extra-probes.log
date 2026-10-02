@@ -1,0 +1,27 @@
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+ordinal FALSE OK 5 
+ordinal TRUE OK 6 
+poisson FALSE OK 3 
+poisson TRUE OK 4 
+No standard errors in this table: A negative-binomial dispersion is at its floor (the Poisson limit), where Wald inference does not apply; refit with `count_model = "poisson"`.
+No standard errors in this table: A negative-binomial dispersion is at its floor (the Poisson limit), where Wald inference does not apply; refit with `count_model = "poisson"`.
+nb FALSE OK 5 
+No standard errors in this table: A negative-binomial dispersion is at its floor (the Poisson limit), where Wald inference does not apply; refit with `count_model = "poisson"`.
+No standard errors in this table: A negative-binomial dispersion is at its floor (the Poisson limit), where Wald inference does not apply; refit with `count_model = "poisson"`.
+nb TRUE OK 6 
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+categorical FALSE OK 3 
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+categorical TRUE OK 4 
+mixed FALSE OK 9 
+mixed TRUE OK 10 
+Warning messages:
+1: A negative-binomial dispersion is estimated at zero: those counts show no overdispersion within the profile, which is the Poisson limit. This is a boundary fit; consider `count_model = "poisson"`. 
+2: A negative-binomial dispersion is estimated at zero: those counts show no overdispersion within the profile, which is the Poisson limit. This is a boundary fit; consider `count_model = "poisson"`. 
+3: A negative-binomial dispersion is estimated at zero: those counts show no overdispersion within the profile, which is the Poisson limit. This is a boundary fit; consider `count_model = "poisson"`. 
+4: A negative-binomial dispersion is estimated at zero: those counts show no overdispersion within the profile, which is the Poisson limit. This is a boundary fit; consider `count_model = "poisson"`. 
+5: A negative-binomial dispersion is estimated at zero: those counts show no overdispersion within the profile, which is the Poisson limit. This is a boundary fit; consider `count_model = "poisson"`. 
+6: A negative-binomial dispersion is estimated at zero: those counts show no overdispersion within the profile, which is the Poisson limit. This is a boundary fit; consider `count_model = "poisson"`. 

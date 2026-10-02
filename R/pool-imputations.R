@@ -258,6 +258,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
   if (length(responses) > 0L) {
     blocks$response <- do.call(cbind, lapply(responses, unname))
   }
+  blocks <- c(blocks, .multilpa_extra_signature(x, reference))
   blocks$mixing <- matrix(colMeans(x$subject_posteriors), ncol = 1L)
   do.call(cbind, blocks)
 }
@@ -296,6 +297,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
   stopifnot(inherits(x, "multilpa_covariates"),
             identical(sort(as.integer(profile_order)), seq_len(x$n_profiles)),
             identical(sort(as.integer(group_order)), seq_len(x$n_group_classes)))
+  x <- .multilpa_permute_extra(x, profile_order)
   n_profiles <- x$n_profiles
   n_groups <- x$n_group_classes
   profiles <- paste0("profile_", seq_len(n_profiles))

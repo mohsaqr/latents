@@ -1,0 +1,656 @@
+acceleration: .............................
+additive-compare: .............................
+additive-engine: .....................................
+additive-families: ............................................
+additive-fit: ........................................................
+additive-methods: ......................................................................................
+assignment-alignment: ..........................
+bivariate-residuals: .........................................
+bootstrap-constraints: .....................
+bootstrap-inference: ..................................................................
+bootstrap-lrt-extended: ........................
+categorical-inference: ...........................
+categorical: .........................................................................
+centering: ..................................
+convenience: ...........................................Classification quality: 2 profiles, 2 group classes
+
+  Relative entropy     individuals 0.948    groups 0.998
+  Smallest class       individuals 91.5 (33.4%)    groups 5.0 (25.0%)
+  Lowest avg posterior individuals 0.982    groups 1.000
+  Largest residual     0.336  (forum_read, attendance; profile_2)
+
+Tables: get_results(x, what = "entropy" | "classification" | 
+        "average_posteriors" | "residuals" | "all"). plot(x) draws them.
+..............Multilevel LPA: 2 profiles and 2 group classes
+Individuals: 274; groups: 20; parameters: 23; converged: TRUE
+Log likelihood: -1604.305408; AIC: 3254.611
+BIC (groups): 3277.513; BIC (individuals): 3337.713
+Best likelihood replicated in 4/4 starts (absolute tolerance 0.00161).
+
+-- profiles --------------------------------------------------------
+ profile  indicator    mean variance standard_deviation mean_standard_error
+       1     browse  0.5536   0.5480             0.7403             0.05534
+       1   lectures  0.4504   0.7856             0.8863             0.06703
+       1 forum_read  0.6130   0.4676             0.6838             0.05161
+       1 forum_post  0.5855   0.6044             0.7775             0.05920
+       1 attendance  0.6368   0.4434             0.6659             0.05128
+       2     browse -0.8147   0.5550             0.7450             0.08412
+       2   lectures -0.6100   0.5829             0.7635             0.08086
+       2 forum_read -0.8932   0.3781             0.6149             0.06826
+       2 forum_post -0.8917   0.3466             0.5887             0.06414
+       2 attendance -0.9629   0.3876             0.6226             0.06730
+ variance_standard_error
+                 0.05795
+                 0.08340
+                 0.04960
+                 0.06517
+                 0.04877
+                 0.09182
+                 0.08663
+                 0.05952
+                 0.05491
+                 0.05856
+
+-- responses -------------------------------------------------------
+   (no rows)
+
+-- covariances -----------------------------------------------------
+ profile  indicator indicator_2 covariance
+       1     browse      browse     0.5480
+       1   lectures      browse     0.0000
+       1 forum_read      browse     0.0000
+       1 forum_post      browse     0.0000
+       1 attendance      browse     0.0000
+       1     browse    lectures     0.0000
+       1   lectures    lectures     0.7856
+       1 forum_read    lectures     0.0000
+       1 forum_post    lectures     0.0000
+       1 attendance    lectures     0.0000
+   ... 40 more rows.  get_results(x, what = "covariances")
+
+-- profile_probabilities -------------------------------------------
+ group_class profile probability group_class_probability
+           1       1      0.8482                  0.7498
+           1       2      0.1518                  0.7498
+           2       1      0.1252                  0.2502
+           2       2      0.8748                  0.2502
+
+-- counts ----------------------------------------------------------
+       level class effective_count effective_proportion
+ individuals     1         182.479               0.6660
+ individuals     2          91.521               0.3340
+      groups     1          14.996               0.7498
+      groups     2           5.004               0.2502
+
+-- posteriors ------------------------------------------------------
+ row group profile posterior modal
+   1     1       1 9.998e-01  TRUE
+   2     1       1 9.784e-01  TRUE
+   3     1       1 1.325e-06 FALSE
+   4     1       1 2.383e-06 FALSE
+   5     1       1 8.368e-06 FALSE
+   6     1       1 2.995e-05 FALSE
+   7     1       1 1.241e-05 FALSE
+   8     1       1 3.708e-06 FALSE
+   9     1       1 2.079e-06 FALSE
+  10     1       1 5.472e-06 FALSE
+   ... 538 more rows.  get_results(x, what = "posteriors")
+
+-- group_posteriors ------------------------------------------------
+ group group_size log_likelihood group_class posterior modal
+     1         13         -61.17           1 5.806e-07 FALSE
+     2         13         -71.74           1 6.802e-10 FALSE
+     3         14         -75.70           1 1.000e+00  TRUE
+     4         13         -65.78           1 1.000e+00  TRUE
+     5         14         -79.12           1 3.388e-08 FALSE
+     6         12         -81.14           1 9.962e-01  TRUE
+     7         15         -88.06           1 1.000e+00  TRUE
+     8         14         -85.44           1 1.540e-04 FALSE
+     9         14         -82.83           1 1.000e+00  TRUE
+    10         15         -81.50           1 4.971e-08 FALSE
+   ... 30 more rows.  get_results(x, what = "group_posteriors")
+
+-- assignments -----------------------------------------------------
+ student browse lectures forum_read forum_post attendance profile group_class
+       1   0.73    -0.08       0.30       0.67       0.72       1           2
+       1   0.68     0.53      -0.02      -0.55       0.70       1           2
+       1  -1.51    -0.51      -0.91      -0.80      -0.97       2           2
+       1   0.64    -1.02      -1.62      -1.20      -1.26       2           2
+       1  -0.94    -0.37      -0.71      -0.28      -1.52       2           2
+       1  -0.36    -0.46      -0.77      -0.43      -1.34       2           2
+       1   0.38    -1.85      -0.84      -1.09      -1.12       2           2
+       1  -1.44     0.66      -0.67      -1.67      -1.00       2           2
+       1  -0.76    -0.43      -1.04      -0.69      -1.37       2           2
+       1   0.26    -0.95      -0.51      -1.89      -1.45       2           2
+ uncertainty posterior_profile_1 posterior_profile_2
+   1.877e-04           9.998e-01           0.0001877
+   2.158e-02           9.784e-01           0.0215787
+   1.325e-06           1.325e-06           0.9999987
+   2.383e-06           2.383e-06           0.9999976
+   8.368e-06           8.368e-06           0.9999916
+   2.995e-05           2.995e-05           0.9999700
+   1.241e-05           1.241e-05           0.9999876
+   3.708e-06           3.708e-06           0.9999963
+   2.079e-06           2.079e-06           0.9999979
+   5.472e-06           5.472e-06           0.9999945
+   ... 264 more rows.  get_results(x, what = "assignments")
+
+-- classification --------------------------------------------------
+       level class n_modal proportion_modal estimated_n estimated_proportion
+ individuals     1     183           0.6679     182.479               0.6660
+ individuals     2      91           0.3321      91.521               0.3340
+      groups     1      15           0.7500      14.996               0.7498
+      groups     2       5           0.2500       5.004               0.2502
+ average_posterior odds_correct_classification
+            0.9882                       41.97
+            0.9820                      108.62
+            0.9997                     1124.57
+            1.0000                    96843.93
+
+-- average_posteriors ----------------------------------------------
+       level assigned_class class n_assigned average_posterior
+ individuals              1     1        183         9.882e-01
+ individuals              1     2        183         1.181e-02
+ individuals              2     1         91         1.803e-02
+ individuals              2     2         91         9.820e-01
+      groups              1     1         15         9.997e-01
+      groups              1     2         15         2.967e-04
+      groups              2     1          5         3.094e-05
+      groups              2     2          5         1.000e+00
+
+-- classification_errors -------------------------------------------
+       level true_class assigned_class probability
+ individuals          1              1   9.910e-01
+ individuals          1              2   8.989e-03
+ individuals          2              1   2.361e-02
+ individuals          2              2   9.764e-01
+      groups          1              1   1.000e+00
+      groups          1              2   1.032e-05
+      groups          2              1   8.892e-04
+      groups          2              2   9.991e-01
+
+-- bch_weights -----------------------------------------------------
+       level unit assigned_class class    weight
+ individuals    1              1     1  1.009292
+ individuals    1              1     2 -0.009292
+ individuals    2              1     1  1.009292
+ individuals    2              1     2 -0.009292
+ individuals    3              2     1 -0.024410
+ individuals    3              2     2  1.024410
+ individuals    4              2     1 -0.024410
+ individuals    4              2     2  1.024410
+ individuals    5              2     1 -0.024410
+ individuals    5              2     2  1.024410
+   ... 578 more rows.  get_results(x, what = "bch_weights")
+
+-- entropy ---------------------------------------------------------
+       level n_classes n_units entropy_sum relative_entropy
+ individuals         2     274     9.78741           0.9485
+      groups         2      20     0.03232           0.9977
+
+-- residuals -------------------------------------------------------
+   profile indicator_1 indicator_2     kind observed expected residual
+ profile_2  forum_read  attendance gaussian   0.3363        0   0.3363
+ profile_1    lectures  attendance gaussian   0.2965        0   0.2965
+ profile_2  forum_read  forum_post gaussian   0.2725        0   0.2725
+ profile_2      browse  attendance gaussian   0.2511        0   0.2511
+ profile_1  forum_read  attendance gaussian   0.2431        0   0.2431
+ profile_2      browse  forum_read gaussian   0.2324        0   0.2324
+ profile_1      browse  attendance gaussian   0.2117        0   0.2117
+ profile_2      browse    lectures gaussian  -0.1953        0  -0.1953
+ profile_2  forum_post  attendance gaussian   0.1918        0   0.1918
+ profile_2      browse  forum_post gaussian   0.1627        0   0.1627
+ effective_n statistic df   p_value p_adjusted
+       91.52     3.292 NA 9.931e-04  9.931e-04
+      182.48     4.095 NA 4.214e-05  4.214e-05
+       91.52     2.630 NA 8.538e-03  8.538e-03
+       91.52     2.414 NA 1.576e-02  1.576e-02
+      182.48     3.323 NA 8.910e-04  8.910e-04
+       91.52     2.228 NA 2.591e-02  2.591e-02
+      182.48     2.879 NA 3.989e-03  3.989e-03
+       91.52    -1.861 NA 6.271e-02  6.271e-02
+       91.52     1.827 NA 6.774e-02  6.774e-02
+       91.52     1.544 NA 1.225e-01  1.225e-01
+   ... 10 more rows.  get_results(x, what = "residuals")
+
+-- information_criteria --------------------------------------------
+ log_likelihood n_parameters  aic  kic bic_groups bic_individual sabic_groups
+          -1604           23 3255 3281       3278           3338         3207
+ sabic_individual caic_groups caic_individual awe_groups awe_individual
+             3265        3301            3361       3415           3555
+ icl_groups icl_individual clc_groups clc_individual
+       3278           3357       3209           3228
+
+-- model -----------------------------------------------------------
+ n_observations n_informative n_groups n_profiles n_group_classes centering
+            274           274       20          2               2      none
+ covariance_structure n_parameters n_parameters_with_measurement log_likelihood
+                  VVI           23                            23          -1604
+  aic bic_groups bic_individual converged iterations boundary small_classes
+ 3255       3278           3338      TRUE          9    FALSE         FALSE
+ best_start n_best_replicated weights
+          1                 4    <NA>
+
+-- stages ----------------------------------------------------------
+ stage group_classes fixed log_likelihood parameters
+ joint             2  <NA>          -1604         23
+ parameters_with_measurement converged
+                          23      TRUE
+
+-- starts ----------------------------------------------------------
+ start log_likelihood converged iterations error boundary
+     1          -1604      TRUE          9  <NA>    FALSE
+     2          -1604      TRUE         15  <NA>    FALSE
+     3          -1604      TRUE          9  <NA>    FALSE
+     4          -1604      TRUE         12  <NA>    FALSE
+
+-- data ------------------------------------------------------------
+ student browse lectures forum_read forum_post attendance
+       1   0.73    -0.08       0.30       0.67       0.72
+       1   0.68     0.53      -0.02      -0.55       0.70
+       1  -1.51    -0.51      -0.91      -0.80      -0.97
+       1   0.64    -1.02      -1.62      -1.20      -1.26
+       1  -0.94    -0.37      -0.71      -0.28      -1.52
+       1  -0.36    -0.46      -0.77      -0.43      -1.34
+       1   0.38    -1.85      -0.84      -1.09      -1.12
+       1  -1.44     0.66      -0.67      -1.67      -1.00
+       1  -0.76    -0.43      -1.04      -0.69      -1.37
+       1   0.26    -0.95      -0.51      -1.89      -1.45
+   ... 264 more rows.  get_results(x, what = "data")
+
+19 tables above, truncated to fit. get_results(x, what = ) returns any
+of them whole, and get_results(x, what = "all") returns every one.
+
+    variable   n n_missing       mean        sd   min  max n_distinct n_groups
+1     browse 274         0 0.09656934 0.9850906 -2.70 2.02        193       20
+2   lectures 274         0 0.09616788 0.9856685 -2.26 3.10        193       20
+3 forum_read 274         0 0.10992701 0.9725263 -2.57 2.23        191       20
+4 forum_post 274         0 0.09208029 1.0036905 -2.28 3.02        194       20
+5 attendance 274         0 0.10248175 0.9988710 -2.35 2.41        189       20
+        icc
+1 0.2152257
+2 0.1309955
+3 0.2653993
+4 0.2539587
+5 0.3141635
+
+Classification quality: 2 profiles, 2 group classes
+
+  Relative entropy     individuals 0.948    groups 0.998
+  Smallest class       individuals 91.5 (33.4%)    groups 5.0 (25.0%)
+  Lowest avg posterior individuals 0.982    groups 1.000
+  Largest residual     0.336  (forum_read, attendance; profile_2)
+
+Tables: get_results(x, what = "entropy" | "classification" | 
+        "average_posteriors" | "residuals" | "all"). plot(x) draws them.
+...Multilevel LPA: 2 profiles and 2 group classes
+Individuals: 274; groups: 20; parameters: 23; converged: TRUE
+Log likelihood: -1604.307333; AIC: 3254.615
+BIC (groups): 3277.517; BIC (individuals): 3337.717
+Best likelihood replicated in 1/4 starts (absolute tolerance 0.00161).
+
+-- profiles --------------------------------------------------------
+ profile  indicator    mean variance standard_deviation mean_standard_error
+       1     browse  0.5535   0.5480             0.7403             0.05532
+       1   lectures  0.4495   0.7859             0.8865             0.06700
+       1 forum_read  0.6123   0.4679             0.6841             0.05161
+       1 forum_post  0.5845   0.6052             0.7779             0.05921
+       1 attendance  0.6359   0.4441             0.6664             0.05129
+       2     browse -0.8173   0.5519             0.7429             0.08386
+       2   lectures -0.6104   0.5832             0.7637             0.08092
+       2 forum_read -0.8947   0.3772             0.6142             0.06814
+       2 forum_post -0.8928   0.3459             0.5881             0.06406
+       2 attendance -0.9643   0.3869             0.6220             0.06725
+ variance_standard_error
+                 0.05793
+                 0.08341
+                 0.04964
+                 0.06525
+                 0.04882
+                 0.09120
+                 0.08673
+                 0.05930
+                 0.05470
+                 0.05844
+
+-- responses -------------------------------------------------------
+   (no rows)
+
+-- covariances -----------------------------------------------------
+ profile  indicator indicator_2 covariance
+       1     browse      browse     0.5480
+       1   lectures      browse     0.0000
+       1 forum_read      browse     0.0000
+       1 forum_post      browse     0.0000
+       1 attendance      browse     0.0000
+       1     browse    lectures     0.0000
+       1   lectures    lectures     0.7859
+       1 forum_read    lectures     0.0000
+       1 forum_post    lectures     0.0000
+       1 attendance    lectures     0.0000
+   ... 40 more rows.  get_results(x, what = "covariances")
+
+-- profile_probabilities -------------------------------------------
+ group_class profile probability group_class_probability
+           1       1      0.8488                  0.7497
+           1       2      0.1512                  0.7497
+           2       1      0.1265                  0.2503
+           2       2      0.8735                  0.2503
+
+-- counts ----------------------------------------------------------
+       level class effective_count effective_proportion
+ individuals     1         182.575               0.6663
+ individuals     2          91.425               0.3337
+      groups     1          14.995               0.7498
+      groups     2           5.005               0.2502
+
+-- posteriors ------------------------------------------------------
+ row group profile posterior modal
+   1     1       1 9.998e-01  TRUE
+   2     1       1 9.794e-01  TRUE
+   3     1       1 1.355e-06 FALSE
+   4     1       1 2.492e-06 FALSE
+   5     1       1 8.591e-06 FALSE
+   6     1       1 3.081e-05 FALSE
+   7     1       1 1.289e-05 FALSE
+   8     1       1 3.800e-06 FALSE
+   9     1       1 2.132e-06 FALSE
+  10     1       1 5.712e-06 FALSE
+   ... 538 more rows.  get_results(x, what = "posteriors")
+
+-- group_posteriors ------------------------------------------------
+ group group_size log_likelihood group_class posterior modal
+     1         13         -61.15           1 5.565e-07 FALSE
+     2         13         -71.75           1 6.672e-10 FALSE
+     3         14         -75.68           1 1.000e+00  TRUE
+     4         13         -65.78           1 1.000e+00  TRUE
+     5         14         -79.15           1 3.414e-08 FALSE
+     6         12         -81.14           1 9.960e-01  TRUE
+     7         15         -88.06           1 1.000e+00  TRUE
+     8         14         -85.43           1 1.503e-04 FALSE
+     9         14         -82.84           1 1.000e+00  TRUE
+    10         15         -81.49           1 4.799e-08 FALSE
+   ... 30 more rows.  get_results(x, what = "group_posteriors")
+
+-- assignments -----------------------------------------------------
+ student browse lectures forum_read forum_post attendance profile group_class
+       1   0.73    -0.08       0.30       0.67       0.72       1           2
+       1   0.68     0.53      -0.02      -0.55       0.70       1           2
+       1  -1.51    -0.51      -0.91      -0.80      -0.97       2           2
+       1   0.64    -1.02      -1.62      -1.20      -1.26       2           2
+       1  -0.94    -0.37      -0.71      -0.28      -1.52       2           2
+       1  -0.36    -0.46      -0.77      -0.43      -1.34       2           2
+       1   0.38    -1.85      -0.84      -1.09      -1.12       2           2
+       1  -1.44     0.66      -0.67      -1.67      -1.00       2           2
+       1  -0.76    -0.43      -1.04      -0.69      -1.37       2           2
+       1   0.26    -0.95      -0.51      -1.89      -1.45       2           2
+ uncertainty posterior_profile_1 posterior_profile_2
+   1.770e-04           9.998e-01            0.000177
+   2.061e-02           9.794e-01            0.020607
+   1.355e-06           1.355e-06            0.999999
+   2.492e-06           2.492e-06            0.999998
+   8.591e-06           8.591e-06            0.999991
+   3.081e-05           3.081e-05            0.999969
+   1.289e-05           1.289e-05            0.999987
+   3.800e-06           3.800e-06            0.999996
+   2.132e-06           2.132e-06            0.999998
+   5.712e-06           5.712e-06            0.999994
+   ... 264 more rows.  get_results(x, what = "assignments")
+
+-- classification --------------------------------------------------
+       level class n_modal proportion_modal estimated_n estimated_proportion
+ individuals     1     183           0.6679     182.575               0.6663
+ individuals     2      91           0.3321      91.425               0.3337
+      groups     1      15           0.7500      14.995               0.7498
+      groups     2       5           0.2500       5.005               0.2502
+ average_posterior odds_correct_classification
+            0.9885                       43.16
+            0.9816                      106.59
+            0.9997                     1070.00
+            1.0000                    99258.18
+
+-- average_posteriors ----------------------------------------------
+       level assigned_class class n_assigned average_posterior
+ individuals              1     1        183         9.885e-01
+ individuals              1     2        183         1.147e-02
+ individuals              2     1         91         1.839e-02
+ individuals              2     2         91         9.816e-01
+      groups              1     1         15         9.997e-01
+      groups              1     2         15         3.118e-04
+      groups              2     1          5         3.019e-05
+      groups              2     2          5         1.000e+00
+
+-- classification_errors -------------------------------------------
+       level true_class assigned_class probability
+ individuals          1              1   9.908e-01
+ individuals          1              2   9.167e-03
+ individuals          2              1   2.296e-02
+ individuals          2              2   9.770e-01
+      groups          1              1   1.000e+00
+      groups          1              2   1.007e-05
+      groups          2              1   9.346e-04
+      groups          2              2   9.991e-01
+
+-- bch_weights -----------------------------------------------------
+       level unit assigned_class class    weight
+ individuals    1              1     1  1.009471
+ individuals    1              1     2 -0.009471
+ individuals    2              1     1  1.009471
+ individuals    2              1     2 -0.009471
+ individuals    3              2     1 -0.023721
+ individuals    3              2     2  1.023721
+ individuals    4              2     1 -0.023721
+ individuals    4              2     2  1.023721
+ individuals    5              2     1 -0.023721
+ individuals    5              2     2  1.023721
+   ... 578 more rows.  get_results(x, what = "bch_weights")
+
+-- entropy ---------------------------------------------------------
+       level n_classes n_units entropy_sum relative_entropy
+ individuals         2     274     9.74005           0.9487
+      groups         2      20     0.03368           0.9976
+
+-- residuals -------------------------------------------------------
+   profile indicator_1 indicator_2     kind observed expected residual
+ profile_2  forum_read  attendance gaussian   0.3359        0   0.3359
+ profile_1    lectures  attendance gaussian   0.2971        0   0.2971
+ profile_2  forum_read  forum_post gaussian   0.2720        0   0.2720
+ profile_2      browse  attendance gaussian   0.2503        0   0.2503
+ profile_1  forum_read  attendance gaussian   0.2435        0   0.2435
+ profile_2      browse  forum_read gaussian   0.2309        0   0.2309
+ profile_1      browse  attendance gaussian   0.2115        0   0.2115
+ profile_2      browse    lectures gaussian  -0.1961        0  -0.1961
+ profile_2  forum_post  attendance gaussian   0.1915        0   0.1915
+ profile_2      browse  forum_post gaussian   0.1617        0   0.1617
+ effective_n statistic df   p_value p_adjusted
+       91.43     3.286 NA 1.017e-03  1.017e-03
+      182.57     4.105 NA 4.045e-05  4.045e-05
+       91.43     2.624 NA 8.701e-03  8.701e-03
+       91.43     2.405 NA 1.616e-02  1.616e-02
+      182.57     3.330 NA 8.670e-04  8.670e-04
+       91.43     2.211 NA 2.702e-02  2.702e-02
+      182.57     2.878 NA 4.003e-03  4.003e-03
+       91.43    -1.868 NA 6.173e-02  6.173e-02
+       91.43     1.823 NA 6.827e-02  6.827e-02
+       91.43     1.534 NA 1.250e-01  1.250e-01
+   ... 10 more rows.  get_results(x, what = "residuals")
+
+-- information_criteria --------------------------------------------
+ log_likelihood n_parameters  aic  kic bic_groups bic_individual sabic_groups
+          -1604           23 3255 3281       3278           3338         3207
+ sabic_individual caic_groups caic_individual awe_groups awe_individual
+             3265        3301            3361       3415           3555
+ icl_groups icl_individual clc_groups clc_individual
+       3278           3357       3209           3228
+
+-- model -----------------------------------------------------------
+ n_observations n_informative n_groups n_profiles n_group_classes centering
+            274           274       20          2               2      none
+ covariance_structure n_parameters n_parameters_with_measurement log_likelihood
+                  VVI           23                            23          -1604
+  aic bic_groups bic_individual converged iterations boundary small_classes
+ 3255       3278           3338      TRUE          5    FALSE         FALSE
+ best_start n_best_replicated weights
+          4                 1    <NA>
+
+-- stages ----------------------------------------------------------
+ stage group_classes fixed log_likelihood parameters
+ joint             2  <NA>          -1604         23
+ parameters_with_measurement converged
+                          23      TRUE
+
+-- starts ----------------------------------------------------------
+ start log_likelihood converged iterations error boundary
+     1          -1604      TRUE          4  <NA>    FALSE
+     2          -1604      TRUE          7  <NA>    FALSE
+     3          -1604      TRUE          4  <NA>    FALSE
+     4          -1604      TRUE          5  <NA>    FALSE
+
+-- data ------------------------------------------------------------
+ student browse lectures forum_read forum_post attendance
+       1   0.73    -0.08       0.30       0.67       0.72
+       1   0.68     0.53      -0.02      -0.55       0.70
+       1  -1.51    -0.51      -0.91      -0.80      -0.97
+       1   0.64    -1.02      -1.62      -1.20      -1.26
+       1  -0.94    -0.37      -0.71      -0.28      -1.52
+       1  -0.36    -0.46      -0.77      -0.43      -1.34
+       1   0.38    -1.85      -0.84      -1.09      -1.12
+       1  -1.44     0.66      -0.67      -1.67      -1.00
+       1  -0.76    -0.43      -1.04      -0.69      -1.37
+       1   0.26    -0.95      -0.51      -1.89      -1.45
+   ... 264 more rows.  get_results(x, what = "data")
+
+19 tables above, truncated to fit. get_results(x, what = ) returns any
+of them whole, and get_results(x, what = "all") returns every one.
+
+    variable   n n_missing       mean        sd   min  max n_distinct n_groups
+1     browse 274         0 0.09656934 0.9850906 -2.70 2.02        193       20
+2   lectures 274         0 0.09616788 0.9856685 -2.26 3.10        193       20
+3 forum_read 274         0 0.10992701 0.9725263 -2.57 2.23        191       20
+4 forum_post 274         0 0.09208029 1.0036905 -2.28 3.02        194       20
+5 attendance 274         0 0.10248175 0.9988710 -2.35 2.41        189       20
+        icc
+1 0.2152257
+2 0.1309955
+3 0.2653993
+4 0.2539587
+5 0.3141635
+
+Classification quality: 2 profiles, 2 group classes
+
+  Relative entropy     individuals 0.949    groups 0.998
+  Smallest class       individuals 91.4 (33.4%)    groups 5.0 (25.0%)
+  Lowest avg posterior individuals 0.982    groups 1.000
+  Largest residual     0.336  (forum_read, attendance; profile_2)
+
+Tables: get_results(x, what = "entropy" | "classification" | 
+        "average_posteriors" | "residuals" | "all"). plot(x) draws them.
+..................
+covariance-structure: ....................................................................................................................................................................
+covariate-fold: ..............................
+covariate-inference: ........................................
+covariate-measurement: ..............................................
+covariate-missing: ........................
+covariate-slopes: ....................
+covariate-surface: ........................................
+covariates: .........................................
+cross-level: ......................
+data-student-esm: .....................
+data: ..........................................................................
+descriptives-safety: .....................................
+diagnostics: .....................................................................................No standard errors in this table: Inference requires a converged fit.
+................................................
+enumerate-verbs: .............................
+enumeration: ..............................................................................................................
+evaluate-only-start: ...................
+evaluate-only: .....................
+extra-indicators: .....................................................................
+fixed-measurement: .......................................................................
+get-data: .........................................................................................................................................................................................................................
+inference-fixed-measurement: ................................................
+inference: ......................................................
+latents-controls: ........................................................
+lta-compare: ...............................
+lta-general: ..........................................................
+math-core-audit: ........................................
+math-extensions-audit: .......................
+math-inference-audit: .........................................
+math-plot-audit: ..............
+math-results-audit: .......................
+missing-covariance: .......................................................
+mixture-regression-labels: .......
+mixture-regression-prediction-design: ............
+mixture-regression: .......................................................................
+multilca: ..No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+....No standard errors in this table: Inference requires a converged fit.
+.......
+multilpa: ..................................................................................................................................................................
+noise: ................................
+numerical-safeguards: ........................
+plot-gg: .................................................
+plot-polish: ..........................................................................................
+plot: ........................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+....No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+..........................................................................................
+pool-imputations: ......................................................................
+predict: .....................
+prior: .....................................
+release-items: .............................
+report-surface: .......................................`geom_line()`: Each group consists of only one observation.
+i Do you need to adjust the group aesthetic?
+.
+review-extra: .............................
+review-families: ...............................................................................................................................................
+review-followup: .....................................
+review-integration: .......................................
+review-lta: .....................................................................................................................................................................................................................................................................................................................................
+review-regression: ..................................................
+review-structures: ....................................................................................
+robust: ...................................
+scaling-invariance: ....................................
+seeds: ..........................
+sensitivity: ......................................................
+sequences: ....................................................
+single-level: ..............................
+staged-bootstrap: .........
+staged-identity: ......................................................
+structure-inference: ..................................................................................................
+three-step-clusters: .........................................
+three-step: ..........................................................................
+tidy-accessors: ..........................................................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.....No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+.................................................................No standard errors in this table: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+........................................................................................
+tidy-classes: .....................................................
+tidy-core: ................................................................
+tidy-diagnostics: ........................................................
+tidy-examples: ..
+tidy-inference: ..........................................................
+tidy-sequences: ..........................
+tidy-three-step: .............................................................................
+tna-fits: ...........
+tna: ..............................................................
+transition-inference: .........................
+transitions-numerics: ............................No standard errors in this table: Inference requires a converged fit.
+...................
+transitions: .................................................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: Inference requires a converged fit.
+..........No standard errors in this table: Inference requires a converged fit.
+.No standard errors in this table: `boundary = "fix"` is not implemented for a transition fit: a fit on a probability boundary has no Wald inference.
+......................No standard errors in this table: Inference requires a converged fit.
+...No standard errors in this table: Inference requires a converged fit.
+..................................No standard errors in this table: Inference requires a converged fit.
+No standard errors in this table: `boundary = "fix"` is not implemented for a transition fit: a fit on a probability boundary has no Wald inference.
+..........
+vignette-claims: .........................
+weighted-logits: ........
+weights: ............................................................................
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+ failed warning skipped  passed 
+      0       0       0    5332 
+Test cases: 821 
+Errors: 0 
+Source identity verified: 274 files.
+EXIT=0

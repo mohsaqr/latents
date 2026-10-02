@@ -54,8 +54,10 @@ lpa <- function(data, vars, n_profiles, ...) {
 #' Latent class analysis
 #'
 #' Fits a single-level latent class model: each observation belongs to one of
-#' `n_classes` unobserved classes, and within a class the categorical
-#' indicators are independent, each with its own response probabilities. It
+#' `n_classes` unobserved classes, and within a class the discrete
+#' indicators are independent. Categorical indicators have unrestricted
+#' response probabilities; `ordinal` and `count` in `...` choose the
+#' structured measurement models described by [multilpa()]. It
 #' is the model [multilca()] fits with `id = NULL`, and it returns the same
 #' object, so every accessor, plot and inference verb of the package applies
 #' to it. In the results the classes are labelled `profile_1`, `profile_2`,
@@ -66,8 +68,9 @@ lpa <- function(data, vars, n_profiles, ...) {
 #' observations.
 #'
 #' @param data A data frame with one row per observation.
-#' @param vars Names of the categorical indicator columns. Their categories are
-#'   taken from the data; no recoding is needed.
+#' @param vars Names of the discrete indicator columns. Categories are taken
+#'   from the data; `ordinal` and `count` in `...` identify structured
+#'   discrete indicators and the remaining columns are categorical.
 #' @param n_classes Number of classes, a positive whole number.
 #' @param ... Further arguments for [multilca()], such as `missing`,
 #'   `n_starts`, `seed`, `min_probability` and `profile_covariates`, except
@@ -153,7 +156,8 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
 #' Fits single-level latent class models with each number of classes in
 #' `n_classes` and returns them in one table for comparison by information
 #' criteria, entropy and the diagnostics of each fit. Every indicator is
-#' categorical, as in [lca()]. It is [enumerate_classes()] with `id = NULL`,
+#' categorical unless named in `ordinal` or `count`, as in [lca()]. It is
+#' [enumerate_classes()] with `id = NULL`,
 #' and it returns the same object; the number of classes is its `n_profiles`
 #' column.
 #'
@@ -193,7 +197,7 @@ enumerate_lca <- function(data, vars, n_classes = 1:4, ...) {
   }
   .multilpa_quiet_single_level(
     enumerate_classes(data, vars, id = NULL, n_profiles = n_classes,
-                      categorical = vars, ...))
+                      categorical = setdiff(vars, c(extra$ordinal, extra$count)), ...))
 }
 
 #' Refuse the two-level arguments in a single-level verb

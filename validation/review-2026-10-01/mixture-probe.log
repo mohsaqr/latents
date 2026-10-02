@@ -1,0 +1,22 @@
+  share count
+1   0.5    80
+2   0.5    80
+[1] 120  40
+$n_starts
+[1] 0
+
+$max_iter
+[1] 1000
+
+$tol
+[1] 1e-08
+
+$min_variance
+[1] 1e-06
+
+$seed
+NULL
+
+$select_start
+[1] "likelihood"
+

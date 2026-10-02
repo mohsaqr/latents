@@ -161,13 +161,13 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   invisible(lapply(names(counts), function(field) {
     value <- counts[[field]]
     if (!is.numeric(value) || length(value) != 1L || !is.finite(value) ||
-        value < 1 || value != floor(value)) {
+        value < 1 || value != floor(value) || value > .Machine$integer.max) {
       stop(errorCondition(sprintf("%s must be a positive integer.", field),
                           class = "latents_bad_argument", call = NULL))
     }
   }))
   if (!is.numeric(max_iter) || length(max_iter) != 1L || !is.finite(max_iter) ||
-      max_iter < 0 || max_iter != floor(max_iter) ||
+      max_iter < 0 || max_iter != floor(max_iter) || max_iter > .Machine$integer.max ||
       !is.numeric(tol) || length(tol) != 1L || !is.finite(tol) || tol <= 0 ||
       !is.numeric(min_variance) || length(min_variance) != 1L ||
       !is.finite(min_variance) || min_variance <= 0) {
@@ -277,12 +277,13 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   single <- function(values, k, variance, unit_weights) {
     frame <- as.data.frame(values)
     indicators <- names(frame)
-    if (!is.null(unit_weights)) frame$.sampling_weight <- unit_weights
+    weight_column <- utils::tail(make.unique(c(indicators, ".sampling_weight")), 1L)
+    if (!is.null(unit_weights)) frame[[weight_column]] <- unit_weights
     withCallingHandlers(
       multilpa(frame, indicators, NULL, n_profiles = k, variance_model = variance,
                n_starts = n_starts, max_iter = max_iter, tol = tol,
                min_variance = min_variance, acceleration = "none",
-               weights = if (is.null(unit_weights)) NULL else ".sampling_weight"),
+               weights = if (is.null(unit_weights)) NULL else weight_column),
       latents_single_level = function(notice) invokeRestart("muffleMessage"))
   }
   row_weights <- if (is.null(sampling_weights)) NULL else sampling_weights[group_index]
@@ -336,8 +337,10 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   # Profile composition of each group class: model-implied for the full
   # family; for the restricted family, where prevalences do not depend on the
   # class, the posterior-weighted composition of its members (descriptive).
+  # Under sampling weights each member counts with its group's weight.
   composition <- if (identical(family, "full_cross_level")) p$profile_probabilities else {
     weight <- group_posteriors[stats$index, , drop = FALSE]
+    if (!is.null(stats$sampling_weights)) weight <- weight * stats$sampling_weights[stats$index]
     crossprod(weight, subject_posteriors) / colSums(weight)
   }
   dimnames(composition) <- list(class_names, profile_names)
@@ -453,7 +456,8 @@ get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
                      long(x$group_means, x$group_mean_variances, "group")),
     group_classes = data.frame(group_class = class_names,
                                weight = unname(x$group_probabilities),
-                               count = unname(colSums(x$group_posteriors)),
+                               count = unname(colSums(x$group_posteriors *
+                                                        (x$sampling_weights %||% 1))),
                                n_assigned = tabulate(assigned, length(class_names)),
                                stringsAsFactors = FALSE),
     composition = {
@@ -538,7 +542,7 @@ nobs.multilpa_cross_level <- function(object, ...) object$n_groups
 parameter_inference.multilpa_cross_level <- function(x, ...) {
   stop(errorCondition(paste(
     "Standard errors are not available for the cross-level families: their",
-    "working likelihood uses the group means twice."),
+    "working likelihood includes the ratings and group means computed from those same ratings."),
     class = "latents_unsupported_inference", call = NULL))
 }
 

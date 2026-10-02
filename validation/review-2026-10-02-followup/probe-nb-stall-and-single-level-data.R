@@ -1,0 +1,17 @@
+devtools::load_all(".", quiet = TRUE)
+set.seed(2); n <- 2000; x1 <- rnorm(n); y <- rnbinom(n, size = 1e9, mu = 500)
+d <- data.frame(x1, c1 = y)
+fit <- lpa(d, c("x1", "c1"), 1, count = "c1", count_model = "negative_binomial", n_starts = 2)
+cat("package alpha:", fit$count_dispersion, " converged:", fit$converged, "\n")
+# Independent profile likelihood in alpha (mean fixed at its MLE ybar, which is exact for NB2 one class)
+mu <- mean(y)
+pl <- function(la) sum(dnbinom(y, size = 1 / exp(la), mu = mu, log = TRUE))
+opt <- optimize(pl, c(log(1e-9), log(1)), maximum = TRUE, tol = 1e-12)
+cat("reference alpha:", exp(opt$maximum), "\n")
+cat("profile LL gain over poisson: package", pl(log(fit$count_dispersion)) - sum(dpois(y, mu, log = TRUE)),
+    " reference", opt$objective - sum(dpois(y, mu, log = TRUE)), "\n")
+r <- tryCatch(vcov(fit), error = \(e) e); cat("vcov:", if (inherits(r, "error")) paste(class(r)[1], conditionMessage(r)) else "ok", "\n")
+# bootstrap_lrt with data on single-level lpa
+g1 <- lpa(d, "x1", 1, n_starts = 1); g2 <- lpa(d, "x1", 2, n_starts = 2, seed = 1)
+r <- tryCatch(bootstrap_lrt(g1, g2, data = d, iter = 2, n_starts = 1, seed = 1), error = \(e) e)
+cat("bootstrap_lrt with data:", if (inherits(r, "error")) paste(class(r)[1], conditionMessage(r)) else "ok", "\n")

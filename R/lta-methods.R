@@ -84,8 +84,10 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   }
   by_occasion <- !identical(fit$transitions, "homogeneous") ||
     length(fit$transition_covariates) > 0L
+  transition_occasions <- if ((fit$order %||% 1L) >= 2L) 1L else
+    seq_along(fit$designs$transition)
   rows <- lapply(seq_len(fit$n_group_classes), function(h) {
-    per_occasion <- lapply(seq_along(fit$designs$transition), function(t) {
+    per_occasion <- lapply(transition_occasions, function(t) {
       active <- fit$layout$within[, t + 1L]
       log_p <- if (isTRUE(parameters$stayer[h])) {
         .lta_identity_transition(sum(active), n_states)
@@ -94,7 +96,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                                        dim(parameters$transition)[1:3]))
       apply(exp(log_p), c(2L, 3L), mean)
     })
-    weights <- vapply(seq_along(fit$designs$transition), function(t) {
+    weights <- vapply(transition_occasions, function(t) {
       sum(fit$layout$within[, t + 1L])
     }, numeric(1))
     if (!by_occasion) per_occasion <- list(Reduce(`+`, Map(`*`, per_occasion, weights)) /
@@ -126,7 +128,9 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     weights <- vapply(occasions, function(t) sum(fit$layout$within[, t + 1L]), numeric(1))
     averaged <- Reduce(`+`, Map(function(t, w) {
       active <- fit$layout$within[, t + 1L]
-      log_p <- .lta_log_transition2(fit$designs$transition[[t]][active, , drop = FALSE],
+      log_p <- if (isTRUE(parameters$stayer[h])) {
+        .lta_identity_transition2(sum(active), n_states)
+      } else .lta_log_transition2(fit$designs$transition[[t]][active, , drop = FALSE],
                                     array(parameters$transition2[, , , h],
                                           dim(parameters$transition2)[1:3]))
       apply(exp(log_p), c(2L, 3L), mean) * w
@@ -157,7 +161,8 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
       block <- fit$measurement[[b]]
       cells <- expand.grid(profile = seq_len(fit$n_profiles),
                            indicator = seq_along(fit$continuous))
-      data.frame(occasion = if (length(fit$measurement) == 1L) NA_integer_ else b,
+      data.frame(occasion = rep(if (length(fit$measurement) == 1L) NA_integer_ else b,
+                                nrow(cells)),
                  profile = profiles[cells$profile],
                  indicator = fit$continuous[cells$indicator],
                  mean = block$means[cbind(cells$profile, cells$indicator)],
@@ -241,6 +246,8 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
 #' @export
 get_results.multilpa_lta <- function(x, what = "transitions", level = 0.95,
                                      vcov_type = c("observed", "robust", "opg"), ...) {
+  stopifnot("`level` must be a single finite number in (0, 1)" =
+    is.numeric(level) && length(level) == 1L && is.finite(level) && level > 0 && level < 1)
   what <- match.arg(what, c(.lta_tables(x), "all"))
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
                                       missing(vcov_type))
@@ -319,12 +326,30 @@ logLik.multilpa_lta <- function(object, ...) {
 #' @export
 nobs.multilpa_lta <- function(object, ...) object$n_groups
 
+#' @details For a general transition fit (an [lta()] fit with covariate,
+#'   occasion-varying or second-order transitions), the table has one row per
+#'   transition, initial and second-order logit: `block`, `group_class`,
+#'   `from`, `to`, `term`, `estimate`, `standard_error`, `statistic`,
+#'   `p_value`, `p_adjusted`, `conf_low`, `conf_high` (and `previous` for a
+#'   second-order fit). Only `method = "wald"` and `boundary = "error"` are
+#'   implemented there; the alternatives raise `latents_unsupported_inference`
+#'   instead of being ignored.
 #' @rdname parameter_inference
 #' @export
 parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
                                              step = 1e-4,
                                              vcov_type = c("observed", "robust", "opg"),
-                                             ...) {
+                                             adjust = .multilpa_p_adjust_methods,
+                                             method = c("wald", "bootstrap"),
+                                             iter = 199L, n_starts = 10L,
+                                             max_iter = 1000L, tol = 1e-8,
+                                             seed = NULL,
+                                             boundary = c("error", "fix")) {
+  stopifnot("`level` must be a single finite number in (0, 1)" =
+    is.numeric(level) && length(level) == 1L && is.finite(level) && level > 0 && level < 1)
+  .lta_refuse_unsupported_inference(match.arg(method), match.arg(boundary))
+  adjust <- match.arg(adjust)
+  if (!is.null(data)) .lta_check_data(x, data)
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
                                       missing(vcov_type))
   inference <- .lta_inference(x, vcov_type, step)
@@ -337,8 +362,44 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
       to = profile)[, c("group_class", "from", "to", "term", "estimate",
                         "standard_error", "statistic", "p_value", "conf_low",
                         "conf_high")]))
-  structure(table, covariance_unconstrained = inference$vcov,
-            group_scores = inference$group_scores, vcov_type = vcov_type, level = level)
+  if ((x$order %||% 1L) >= 2L) {
+    table$previous <- NA_character_
+    second <- .lta_coefficient_table(x, "transition2", level, vcov_type)
+    second$block <- "transition2"
+    table <- rbind(table, second[, names(table)])
+  }
+  # The family is the tests the table carries; p.adjust() leaves NA p-values
+  # out of it.
+  table$p_adjusted <- stats::p.adjust(table$p_value, method = adjust)
+  ordered <- append(setdiff(names(table), "p_adjusted"), "p_adjusted",
+                    after = match("p_value", names(table)))
+  structure(table[, ordered], covariance_unconstrained = inference$vcov,
+            group_scores = inference$group_scores, vcov_type = vcov_type, level = level,
+            adjust = adjust)
+}
+
+#' Refuse the inference options a transition fit does not implement
+#'
+#' The generic's bootstrap and boundary-fixing options are accepted, so every
+#' method has the generic's formals, and refused rather than silently ignored.
+#'
+#' @param method,boundary The matched options.
+#' @return `NULL`, invisibly; raises `latents_unsupported_inference` otherwise.
+#' @noRd
+.lta_refuse_unsupported_inference <- function(method, boundary) {
+  if (!identical(method, "wald")) {
+    stop(errorCondition(paste(
+      "`method = \"bootstrap\"` is not implemented for a transition fit; use",
+      "`method = \"wald\"`, or bootstrap_lrt() to compare transition models."),
+      class = "latents_unsupported_inference", call = NULL))
+  }
+  if (!identical(boundary, "error")) {
+    stop(errorCondition(paste(
+      "`boundary = \"fix\"` is not implemented for a transition fit: a fit on",
+      "a probability boundary has no Wald inference."),
+      class = "latents_unsupported_inference", call = NULL))
+  }
+  invisible(NULL)
 }
 
 #' Plot transition probabilities of a general transition fit

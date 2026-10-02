@@ -196,10 +196,32 @@
   level <- match.arg(level)
   posteriors <- .multilpa_posterior_levels(x, level)
   result <- do.call(rbind, lapply(names(posteriors), function(which_level) {
-    .multilpa_classification_summary(posteriors[[which_level]], which_level)
+    .multilpa_classification_summary(
+      posteriors[[which_level]], which_level,
+      .multilpa_level_weights(x, which_level, nrow(posteriors[[which_level]])))
   }))
   row.names(result) <- NULL
   result
+}
+
+#' The sampling weight of every row of one level's posterior matrix
+#'
+#' Weights belong to the independent units: the groups' own posterior rows
+#' carry them directly, and an individual row carries its unit's weight.
+#'
+#' @param x A fitted model of this package.
+#' @param level `"individuals"` or `"groups"`.
+#' @param n_rows Rows of that level's posterior matrix.
+#' @return `NULL` for an unweighted fit, otherwise one weight per row.
+#' @noRd
+.multilpa_level_weights <- function(x, level, n_rows) {
+  if (!.latents_is_weighted(x)) return(NULL)
+  units <- unname(x$sampling_weights)
+  weights <- if (identical(level, "groups") || length(units) == n_rows &&
+                 is.null(x$group_index)) units else units[x$group_index]
+  stopifnot("every posterior row must carry its unit's weight" =
+              length(weights) == n_rows && !anyNA(weights))
+  weights
 }
 
 #' Mean posterior of every class within each modal assignment
@@ -238,18 +260,27 @@
 }
 
 #' One row per class of classification diagnostics for one level
+#'
+#' Modal counts and average posteriors describe the rows supplied; the
+#' estimated class sizes and shares (and so the odds of correct
+#' classification) are the model's, which under sampling weights are the
+#' weighted posterior totals.
+#'
 #' @param probabilities Posterior probability matrix.
 #' @param level Label recorded in the `level` column.
+#' @param weights `NULL`, or one sampling weight per row.
 #' @return A tidy `data.frame`, one row per class.
 #' @noRd
-.multilpa_classification_summary <- function(probabilities, level) {
+.multilpa_classification_summary <- function(probabilities, level, weights = NULL) {
   average <- .multilpa_average_posterior_matrix(probabilities)
   n_classes <- ncol(probabilities)
   classes <- seq_len(n_classes)
   assigned <- max.col(probabilities, ties.method = "first")
   n_modal <- tabulate(assigned, nbins = n_classes)
-  estimated_n <- colSums(probabilities)
-  estimated_proportion <- estimated_n / nrow(probabilities)
+  estimated_n <- if (is.null(weights)) colSums(probabilities) else
+    colSums(probabilities * weights)
+  estimated_proportion <- estimated_n /
+    if (is.null(weights)) nrow(probabilities) else sum(weights)
   diagonal <- average[cbind(classes, classes)]
   data.frame(level = level, class = .multilpa_class_labels(probabilities),
              n_modal = n_modal,

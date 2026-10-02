@@ -67,27 +67,29 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
       "or two profile fits, not one of each."),
       class = "latents_bad_argument", call = NULL))
   }
+  same_statistics <- function(left, right) {
+    identical(left$ids, right$ids) && identical(left$sizes, right$sizes) &&
+      isTRUE(all.equal(left$averages, right$averages)) &&
+      isTRUE(all.equal(left$scatter, right$scatter))
+  }
   same_data <- identical(null_model$vars, alternative_model$vars) &&
     identical(null_model$id, alternative_model$id) &&
-    identical(null_model$sufficient_statistics$ids,
-              alternative_model$sufficient_statistics$ids) &&
-    isTRUE(all.equal(null_model$sufficient_statistics$averages,
-                     alternative_model$sufficient_statistics$averages)) &&
-    isTRUE(all.equal(null_model$sufficient_statistics$scatter,
-                     alternative_model$sufficient_statistics$scatter))
+    same_statistics(null_model$sufficient_statistics,
+                     alternative_model$sufficient_statistics)
   if (!same_data) {
     stop(errorCondition("The two fits were not made from the same data and indicators.",
                         class = "latents_bad_inference_data", call = NULL))
   }
   if (!is.null(data)) {
     supplied <- .additive_prepare(data, null_model$vars, null_model$id)
-    if (!identical(supplied$ids, null_model$sufficient_statistics$ids) ||
-        !isTRUE(all.equal(supplied$averages, null_model$sufficient_statistics$averages))) {
+    if (!same_statistics(supplied, null_model$sufficient_statistics)) {
       stop(errorCondition("`data` does not reproduce the data these fits were made from.",
                           class = "latents_bad_inference_data", call = NULL))
     }
   }
-  if (!.additive_nested(null_model, alternative_model) ||
+  equivalent_one_class <- length(null_model$group_probabilities) == 1L &&
+    length(alternative_model$group_probabilities) == 1L
+  if (!.additive_nested(null_model, alternative_model) || equivalent_one_class ||
       identical(c(length(null_model$group_probabilities), null_model$structure),
                 c(length(alternative_model$group_probabilities),
                   alternative_model$structure))) {
@@ -102,8 +104,18 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
                         class = "latents_no_converge", call = NULL))
   }
   stopifnot("`iter` must be a single positive integer" =
-              is.numeric(iter) && length(iter) == 1L && iter >= 1 &&
-              iter == floor(iter))
+              is.numeric(iter) && length(iter) == 1L && is.finite(iter) && iter >= 1 &&
+              iter == floor(iter) && iter <= .Machine$integer.max,
+            "`n_starts` must be a single positive integer" =
+              is.numeric(n_starts) && length(n_starts) == 1L && is.finite(n_starts) &&
+              n_starts >= 1 && n_starts == floor(n_starts) &&
+              n_starts <= .Machine$integer.max,
+            "`max_iter` must be a single positive integer" =
+              is.numeric(max_iter) && length(max_iter) == 1L && is.finite(max_iter) &&
+              max_iter >= 1 && max_iter == floor(max_iter) &&
+              max_iter <= .Machine$integer.max,
+            "`tol` must be finite and positive" =
+              is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
   .multilpa_check_seed(seed)
   if (!is.null(seed)) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
@@ -201,6 +213,7 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
       class = "latents_bad_argument", call = NULL))
   }
   if (!is.character(between_variance) || length(between_variance) < 1L ||
+      anyNA(between_variance) ||
       !all(between_variance %in% c("varying", "equal"))) {
     stop(errorCondition("`between_variance` must be \"varying\", \"equal\" or both.",
                         class = "latents_bad_argument", call = NULL))

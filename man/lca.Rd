@@ -9,8 +9,9 @@ lca(data, vars, n_classes, ...)
 \arguments{
 \item{data}{A data frame with one row per observation.}
 
-\item{vars}{Names of the categorical indicator columns. Their categories are
-taken from the data; no recoding is needed.}
+\item{vars}{Names of the discrete indicator columns. Categories are taken
+from the data; \code{ordinal} and \code{count} in \code{...} identify structured
+discrete indicators and the remaining columns are categorical.}
 
 \item{n_classes}{Number of classes, a positive whole number.}
 
@@ -23,8 +24,10 @@ A fitted \code{multilpa} object, as \code{\link[=multilca]{multilca()}} returns.
 }
 \description{
 Fits a single-level latent class model: each observation belongs to one of
-\code{n_classes} unobserved classes, and within a class the categorical
-indicators are independent, each with its own response probabilities. It
+\code{n_classes} unobserved classes, and within a class the discrete
+indicators are independent. Categorical indicators have unrestricted
+response probabilities; \code{ordinal} and \code{count} in \code{...} choose the
+structured measurement models described by \code{\link[=multilpa]{multilpa()}}. It
 is the model \code{\link[=multilca]{multilca()}} fits with \code{id = NULL}, and it returns the same
 object, so every accessor, plot and inference verb of the package applies
 to it. In the results the classes are labelled \code{profile_1}, \code{profile_2},

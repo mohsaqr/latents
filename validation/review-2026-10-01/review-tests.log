@@ -1,0 +1,24 @@
+review-extra: .............................
+review-families: ...............................................................................................................................................
+review-integration: .............................
+review-lta: .............................................1....................
+review-regression: ................................
+review-structures: ....................................................................................
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-review-lta.R:163:7'): every covariance structure uses the cor
+Error in `vapply(seq_len(nrow(data)), function(i) {     observed <- which(!is.na(fit$x[i, ]))     variance <- if (is.null(block$covariances))          diag(block$variances[k, ], 2L)     else block$covariances[, , k]     variance <- variance[observed, observed, drop = FALSE]     residual <- fit$x[i, observed] - block$means[k, observed]     -0.5 * (length(observed) * log(2 * pi) + as.numeric(determinant(variance, logarithm = TRUE)$modulus) + drop(t(residual) %*% solve(variance, residual))) }, numeric(nrow(data)))`: values must be length 36,
+ but FUN(X[[1]]) result is length 1
+Backtrace:
+    ▆
+ 1. └─base::lapply(...) at test-review-lta.R:154:3
+ 2.   └─FUN(X[[i]], ...)
+ 3.     └─base::vapply(...) at test-review-lta.R:162:5
+ 4.       └─FUN(X[[i]], ...)
+ 5.         └─base::vapply(...) at test-review-lta.R:163:7
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+Frustration is a natural part of programming :)
+Error:
+! Test failures.
+Execution halted

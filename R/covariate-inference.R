@@ -430,6 +430,10 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       class = "latents_unsupported_inference", call = NULL))
   }
   .multilpa_check_regularity(object, vcov_type, boundary)
+  if (isTRUE(object$single_level) && !object$id %in% names(data) &&
+      nrow(data) == object$n_observations) {
+    data[[object$id]] <- object$group_values[object$group_index]
+  }
   categorical <- object$categorical %||% character()
   continuous <- .multilpa_continuous_names(object)
   columns <- unique(c(object$vars, object$id,
@@ -463,7 +467,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     profile_slopes = object$profile_slopes %||% "shared",
     ordinal = object$ordinal %||% character(), count = object$count %||% character())
   codes <- designs$codes
-  if (!identical(unname(designs$extra$ordinal), unname(object$extra_data$ordinal)) ||
+  if (!identical(designs$extra$ordinal_levels, object$extra_data$ordinal_levels) ||
+      !identical(unname(designs$extra$ordinal), unname(object$extra_data$ordinal)) ||
       !identical(unname(designs$extra$count), unname(object$extra_data$count))) {
     stop(errorCondition("`data` must reproduce the original ordinal and count indicators.",
                         class = "latents_bad_inference_data", call = NULL))
@@ -1040,9 +1045,9 @@ coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained
 #' @param ... Passed to [parameter_inference()], so `vcov_type = "robust"` and
 #'   `step` reach it.
 #' @return A two-column matrix of Wald intervals, one row per requested
-#'   parameter, named as [coef()] names them. Bounds are on the natural scale
-#'   and are not constrained to respect a variance's positivity or a
-#'   probability's range.
+#'   parameter, named as [coef()] names them. Bounds are on the natural scale;
+#'   positive parameters use log-scale intervals and probabilities use
+#'   logit-scale intervals to respect their parameter ranges.
 #' @examples
 #' set.seed(5)
 #' school <- rep(seq_len(16), each = 8)

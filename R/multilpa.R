@@ -1396,7 +1396,7 @@ multilpa <- function(data, vars, id, n_profiles,
         "three_step() or r3step(), or choose one of the four."), structure),
         class = "latents_unsupported_structure", call = NULL))
     }
-    return(.multilpa_covariate_model(
+    result <- .multilpa_covariate_model(
       data = data, vars = vars, id = id, n_profiles = n_profiles,
       n_group_classes = n_group_classes,
       profile_covariates = profile_covariates,
@@ -1408,7 +1408,9 @@ multilpa <- function(data, vars, id, n_profiles,
       categorical = categorical, min_probability = min_probability,
       time = time, fixed = fixed, select_start = select_start, call = call,
       weights = weights, ordinal = ordinal, count = count,
-      count_model = count_model, count_dispersion = count_dispersion))
+      count_model = count_model, count_dispersion = count_dispersion)
+    result$single_level <- single_level
+    return(result)
   }
   # The data contract comes first: `time` is checked against the `id` column,
   # so an `id` that does not name a column of `data` must be reported as

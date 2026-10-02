@@ -167,9 +167,11 @@ mixture_regression <- function(formula, data, n_classes,
     "`group_membership` must be a one-sided formula" =
       inherits(group_membership, "formula") && length(group_membership) == 2L,
     "`n_starts` must be a single non-negative integer" =
-      length(n_starts) == 1L && is.finite(n_starts) && n_starts >= 0,
+      is.numeric(n_starts) && length(n_starts) == 1L && is.finite(n_starts) &&
+      n_starts >= 0 && n_starts == floor(n_starts) && n_starts <= .Machine$integer.max,
     "`max_iter` must be a single non-negative integer" =
-      length(max_iter) == 1L && is.finite(max_iter) && max_iter >= 0,
+      is.numeric(max_iter) && length(max_iter) == 1L && is.finite(max_iter) &&
+      max_iter >= 0 && max_iter == floor(max_iter) && max_iter <= .Machine$integer.max,
     "`tol` must be a single positive number" =
       is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0,
     "`min_variance` must be a single positive number" =
@@ -178,6 +180,7 @@ mixture_regression <- function(formula, data, n_classes,
     "`seed` must be NULL or a single number" =
       is.null(seed) || (is.numeric(seed) && length(seed) == 1L)
   )
+  .multilpa_check_seed(seed)
   n_classes <- as.integer(n_classes)
   n_group_classes <- as.integer(n_group_classes)
   spec <- .mixture_spec(formula, data, n_classes, family, id, class_level,
@@ -236,7 +239,7 @@ mixture_regression <- function(formula, data, n_classes,
 #' @noRd
 .mixture_is_count <- function(x) {
   is.numeric(x) && length(x) == 1L && is.finite(x) && x >= 1 &&
-    abs(x - round(x)) < sqrt(.Machine$double.eps)
+    x == floor(x) && x <= .Machine$integer.max
 }
 
 #' Evaluate code under a seed, restoring the caller's random state

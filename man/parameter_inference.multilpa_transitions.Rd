@@ -13,7 +13,13 @@
   step = 1e-04,
   vcov_type = c("observed", "robust", "opg"),
   adjust = .multilpa_p_adjust_methods,
-  ...
+  method = c("wald", "bootstrap"),
+  iter = 199L,
+  n_starts = 10L,
+  max_iter = 1000L,
+  tol = 1e-08,
+  seed = NULL,
+  boundary = c("error", "fix")
 )
 
 \method{vcov}{multilpa_transitions}(
@@ -45,11 +51,21 @@ outer product of the group scores).}
 \item{adjust}{Multiplicity correction for \code{p_adjusted}, one of the methods
 \code{\link[stats:p.adjust]{stats::p.adjust()}} accepts.}
 
-\item{...}{Unused.}
+\item{method}{Only \code{"wald"} is implemented for a transition fit;
+\code{"bootstrap"} raises \code{latents_unsupported_inference} rather than being
+ignored. Use \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} to compare transition models.}
+
+\item{iter, n_starts, max_iter, tol, seed}{Bootstrap controls of the generic;
+unused, since the bootstrap is refused.}
+
+\item{boundary}{Only \code{"error"}: a fit on a bound has no Wald inference, and
+\code{"fix"} raises \code{latents_unsupported_inference}.}
 
 \item{object}{A fitted \code{multilpa_transitions} model.}
 
 \item{scale}{\code{"natural"} (probabilities) or \code{"unconstrained"} (logits).}
+
+\item{...}{Unused.}
 
 \item{parm}{Parameters to report, as names or positions of the natural
 coefficients; all by default.}
@@ -83,7 +99,7 @@ informed (a profile no group occupies before its last occasion);
 \code{latents_singular_information} when the information cannot be inverted;
 \code{latents_bad_inference_data} when a supplied \code{data} does not reproduce
 the fit; \code{latents_too_few_groups} for robust or OPG errors with no more
-groups than parameters.
+groups than parameters; \code{latents_unsupported_inference} for \code{method = "bootstrap"} or \code{boundary = "fix"}.
 }
 
 \examples{

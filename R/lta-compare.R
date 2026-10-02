@@ -169,7 +169,16 @@
   a <- .lta_arguments(null)
   b <- .lta_arguments(alternative)
   rank <- function(value, order) match(value, order)
+  structure_for <- function(a) a$model %||%
+    .multilpa_resolve_structure(a$variance_model, a$covariance_model %||% "diagonal")
+  covariance_nested <- all(vapply(seq_len(3L), function(position) {
+    rank(substr(structure_for(a), position, position), c("I", "E", "V")) <=
+      rank(substr(structure_for(b), position, position), c("I", "E", "V"))
+  }, logical(1)))
   identical(a$vars, b$vars) && identical(a$id, b$id) && identical(a$time, b$time) &&
+    identical(a$categorical %||% character(), b$categorical %||% character()) &&
+    identical(a$occasions %||% "observed", b$occasions %||% "observed") &&
+    identical(a$missing %||% "error", b$missing %||% "error") && covariance_nested &&
     a$n_profiles <= b$n_profiles && a$n_group_classes <= b$n_group_classes &&
     rank(a$transitions, c("homogeneous", "occasion")) <=
       rank(b$transitions, c("homogeneous", "occasion")) &&
@@ -182,9 +191,11 @@
     rank(a$variance_model, c("equal", "varying")) <=
       rank(b$variance_model, c("equal", "varying")) &&
     identical(a$ordinal %||% character(), b$ordinal %||% character()) &&
-    identical(a$count %||% character(), b$count %||% character()) &&
+    identical(a[["count"]] %||% character(), b[["count"]] %||% character()) &&
     identical(a$count_model %||% "poisson", b$count_model %||% "poisson") &&
-    identical(a$count_dispersion %||% "varying", b$count_dispersion %||% "varying")
+    rank(a$count_dispersion %||% "varying", c("equal", "varying")) <=
+      rank(b$count_dispersion %||% "varying", c("equal", "varying")) &&
+    identical(null$extra_data$ordinal_levels, alternative$extra_data$ordinal_levels)
 }
 
 #' Refit a transition model's specification to (simulated) data
@@ -205,10 +216,61 @@
       tol = tol, min_variance = a$min_variance, min_probability = a$min_probability)
 }
 
+#' Verify original indicators, occasions and covariate designs of an LTA fit
+#' @param fit A fitted transition model.
+#' @param data Its original data frame.
+#' @return `NULL`, invisibly; refuses mismatched fitting data.
+#' @noRd
+.lta_check_data <- function(fit, data) {
+  a <- .lta_arguments(fit)
+  required <- c(a$vars, a$id, a$time, a$transition_covariates, a$initial_covariates)
+  refuse <- function() stop(errorCondition(
+    "`data` must reproduce the indicators, groups, occasions and covariates of both fits.",
+    class = "latents_bad_inference_data", call = NULL))
+  if (!is.data.frame(data) || nrow(data) != fit$n_observations ||
+      !all(required %in% names(data))) refuse()
+  if (!inherits(fit, "multilpa_lta")) {
+    .multilpa_check_transition_data(fit, data)
+    if (length(fit$categorical) &&
+        !identical(.multilpa_encode_categorical(data[fit$categorical])$levels,
+                   fit$categorical_levels)) refuse()
+    if (!identical(.multilpa_time_values(data, a$time, a$id, a$vars),
+                   fit$time_values)) refuse()
+    return(invisible(NULL))
+  }
+  groups <- .multilpa_prepare_groups(data[[a$id]])
+  time_values <- .multilpa_time_values(data, a$time, a$id, a$vars)
+  layout <- .multilpa_sequence_layout(groups$index, time_values, groups$n, a$occasions)
+  designs <- .lta_designs(layout, .lta_covariate_matrix(data, a$transition_covariates),
+                         .lta_covariate_matrix(data, a$initial_covariates), a$transitions)
+  x <- sweep(as.matrix(data[fit$continuous]), 2L, fit$centers, "-")
+  encoded <- if (!length(fit$categorical)) NULL else
+    .multilpa_encode_categorical(data[fit$categorical])
+  codes <- encoded$codes
+  extra <- .latents_prepare_extra(data, fit$ordinal, fit$count, a$missing)
+  same <- function(left, right) isTRUE(all.equal(left, right, check.attributes = FALSE,
+                                                tolerance = 1e-12))
+  if (!identical(groups$ids, fit$group_ids) || !identical(groups$index, fit$group_index) ||
+      !identical(time_values, fit$time_values) || !identical(layout, fit$layout) ||
+      !identical(encoded$levels, fit$categorical_levels) || !same(designs, fit$designs) ||
+      !same(x, fit$x) || !same(codes, fit$codes) ||
+      !identical(extra$ordinal_levels, fit$extra_data$ordinal_levels) ||
+      !same(extra$ordinal, fit$extra_data$ordinal) ||
+      !same(extra$count, fit$extra_data$count)) refuse()
+  invisible(NULL)
+}
+
 #' Parametric bootstrap likelihood-ratio test between nested transition fits
 #' @noRd
 .lta_bootstrap_lrt <- function(null_model, alternative_model, data, iter, n_starts,
                                max_iter, tol, seed, call) {
+  positive_integer <- function(value) is.numeric(value) && length(value) == 1L &&
+    is.finite(value) && value >= 1 && value <= .Machine$integer.max && value == floor(value)
+  stopifnot("`iter` must be a positive integer" = positive_integer(iter),
+            "`n_starts` must be a positive integer" = positive_integer(n_starts),
+            "`max_iter` must be a nonnegative integer" = positive_integer(max_iter + 1),
+            "`tol` must be a positive finite number" = is.numeric(tol) &&
+              length(tol) == 1L && is.finite(tol) && tol > 0)
   if (is.null(data)) {
     stop(errorCondition(paste(
       "bootstrap_lrt() for transition models needs `data`: the simulation keeps",
@@ -225,11 +287,11 @@
     stop(errorCondition("Both fits must have converged.",
                         class = "latents_no_converge", call = NULL))
   }
-  check <- .lta_refit(null_model, data, 1L, 0L, tol)
-  if (!isTRUE(all.equal(check$n_observations, null_model$n_observations))) {
-    stop(errorCondition("`data` does not reproduce the data these fits were made from.",
-                        class = "latents_bad_inference_data", call = NULL))
-  }
+  lapply(list(null_model, alternative_model), .lta_check_data, data = data)
+  # Whether the null can be simulated from is a property of the fit, not of a
+  # replicate: refuse here, or every replicate fails and the classed refusal
+  # surfaces only as a generic failed-replicates warning.
+  .lta_general_view(null_model, data)
   .multilpa_check_seed(seed)
   if (!is.null(seed)) {
     had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
