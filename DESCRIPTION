@@ -1,6 +1,6 @@
 Package: latents
 Title: Multilevel Latent Profile, Class and Transition Models
-Version: 0.9.13
+Version: 0.9.14
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),
@@ -24,7 +24,8 @@ License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: stats, graphics, grDevices, utils
-Suggests: testthat (>= 3.0.0), knitr, rmarkdown, tna, mclust, mice, numDeriv, ggplot2
+Suggests: testthat (>= 3.0.0), knitr, rmarkdown, tna, mclust, mice, numDeriv, ggplot2,
+    MASS, withr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
