@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -52,6 +53,21 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.12" id="latents-0912">latents 0.9.12<a class="anchor" aria-label="anchor" href="#latents-0912"></a></h2>
+<div class="section level3">
+<h3 id="growth-mixture-models-0-9-12">Growth mixture models<a class="anchor" aria-label="anchor" href="#growth-mixture-models-0-9-12"></a></h3>
+<ul><li>
+<code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> gains <code>random</code>, <code>random_covariance</code> and <code>random_diagonal</code>: random effects within classes, so persons scatter around their class trajectory (the Gaussian growth mixture model). The likelihood is exact; estimation is EM with the random effects as missing data, finished by quasi-Newton with analytic scores. Validated against an independent dense likelihood, numerical derivatives and <code>lcmm::hlme()</code> (six configurations; the same likelihood at <code>hlme</code>’s estimates and at least its maximum).</li>
+<li>Variable names may replace one-sided formulas: <code>random = "wave"</code>, <code>random = "intercept"</code>, <code>common = "x"</code>, <code>membership = "age"</code>.</li>
+<li>A degenerate random-effect covariance (a variance at zero, or perfectly correlated random effects) warns (<code>latents_random_boundary</code>) and reports no interval for it.</li>
+<li>New <code><a href="../reference/compare_models.html">compare_models()</a></code>: fits to the same data side by side, with BIC differences and Schwarz weights; <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> draws the comparison.</li>
+<li>Trajectory models (<code>id</code> with <code>class_level = "group"</code>, with or without <code>random</code>) share new ggplot2 views: class trajectories with confidence bands, the spread of persons around them and observed class means; individual trajectories; a coefficient forest; predicted random effects; and a classification structure plot.</li>
+<li>Result tables of these fits print in a report layout (readable labels, intervals as <code>[low, high]</code>, APA p-values, fit statistics as a card) while remaining plain numeric data frames.</li>
+<li>Growth fits work with <code><a href="../reference/enumerate_regressions.html">enumerate_regressions()</a></code>, including its bootstrap likelihood-ratio test, have a <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code> method, and support distal outcomes in <code><a href="../reference/three_step.html">three_step()</a></code> (person-level, bias-corrected); <code><a href="../reference/three_step.html">three_step()</a></code> results print in the report layout. <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> and <code><a href="../reference/r3step.html">r3step()</a></code> refuse growth fits with classed conditions.</li>
+<li>New dataset <code>growth_scores</code> and vignette “Growth mixture models”.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.11" id="latents-0911">latents 0.9.11<a class="anchor" aria-label="anchor" href="#latents-0911"></a></h2>
 <ul><li>Transition fits no longer report false non-convergence. The quasi-Newton finish counted only L-BFGS-B’s code 0 as converged, but its line search can stop at the maximum (code 52, “ABNORMAL_TERMINATION_IN_LNSRCH”) when rounding hides any further ascent, which is platform-dependent. It now restarts once from where it stopped and accepts the fit when the log likelihood cannot be raised by more than <code>tol</code>. In 120 negative-binomial test datasets 5 were flagged unconverged at points with scores of about 1e-6 that a restart improved by less than 1e-12; none are now. This, not the iteration cap, is what failed the 0.9.8-0.9.10 CI checks on macOS and R 4.1 (the 0.9.10 test change is reverted).</li>

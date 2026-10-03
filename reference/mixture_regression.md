@@ -30,7 +30,10 @@ mixture_regression(
   missing = c("error", "omit"),
   select_start = c("likelihood", "converged"),
   vcov_type = c("observed", "robust", "opg", "none"),
-  weights = NULL
+  weights = NULL,
+  random = NULL,
+  random_covariance = c("varying", "equal", "proportional"),
+  random_diagonal = FALSE
 )
 ```
 
@@ -70,20 +73,22 @@ mixture_regression(
 
 - common:
 
-  `NULL`, or a one-sided formula naming predictor terms whose
-  coefficients are shared by every class, such as `~ age`. Each term
-  must appear in `formula`.
+  `NULL`, or the predictor terms whose coefficients are shared by every
+  class: variable names such as `"age"`, or a one-sided formula such as
+  `~ age`. Each term must appear in `formula`.
 
 - membership:
 
-  One-sided formula of covariates predicting class membership (a
-  multinomial logit, the first class as the reference). Row-level for
+  Covariates predicting class membership (a multinomial logit, the first
+  class as the reference): variable names such as `"age"`, or a
+  one-sided formula (`~ 1`, the default, for none). Row-level for
   `"observation"`; constant within groups for `"group"`.
 
 - group_membership:
 
-  One-sided formula of group-level covariates predicting the group
-  class, for the two-level model. Must be constant within groups.
+  Group-level covariates predicting the group class, for the two-level
+  model, as names or a one-sided formula. Must be constant within
+  groups.
 
 - variance:
 
@@ -141,9 +146,31 @@ mixture_regression(
   weights scaled to sum to the number of units; `vcov_type` defaults to
   `"robust"` and refuses `"observed"` and `"opg"`.
 
+- random:
+
+  `NULL` (no random effects), or the random effects within classes:
+  variable names such as `"time"` (a random intercept and a random slope
+  on `time`) or `"intercept"` (random intercepts only), or a one-sided
+  formula such as `~ 1 + time` (needed for anything names cannot say,
+  such as `~ 0 + time`, a slope without a random intercept). See the
+  growth mixture section.
+
+- random_covariance:
+
+  How the random-effect covariance differs across classes: `"varying"`
+  (one per class), `"equal"` (one shared matrix, as `lcmm::hlme()` with
+  `nwg = FALSE`) or `"proportional"` (a shared matrix times a
+  class-specific scale, the last class's being one; `nwg = TRUE`).
+
+- random_diagonal:
+
+  `TRUE` for uncorrelated random effects (a diagonal covariance, as
+  `idiag = TRUE` in lcmm).
+
 ## Value
 
-An object of class `latents_mixture_regression`. Read it with
+An object of class `latents_mixture_regression`, or
+`latents_growth_mixture` when `random` is given. Read it with
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) (the
 coefficient table) or
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
@@ -181,6 +208,26 @@ described on
   With `n_group_classes = 1` the groups only enter the `"robust"`
   standard errors, which are then clustered on `id`.
 
+## Growth mixture models
+
+With repeated measures of persons (`id`, `class_level = "group"`), a
+time predictor in `formula` gives every class its own trajectory: latent
+class growth analysis (Nagin 2005). `random` adds random effects
+*within* classes, so persons scatter around their class trajectory: the
+growth mixture model (Verbeke and Lesaffre 1996; Muthen and Shedden
+1999). Within class k, person i's outcomes are \$\$y_i = X_i \beta_k +
+Z_i b_i + e_i, \quad b_i \sim N(0, G_k), \quad e_i \sim N(0, \sigma_k^2
+I),\$\$ with `Z` built from `random`. The likelihood is exact (Gaussian,
+no numerical integration); estimation is EM with the random effects as
+missing data, finished by quasi-Newton with analytic scores. Such a fit
+has class `latents_growth_mixture`; its tables, plots and inference are
+described on
+[`get_results.latents_growth_mixture()`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+and
+[`plot.latents_growth_mixture()`](https://pak.dynasite.org/latents/reference/plot.latents_growth_mixture.md).
+Random effects need the gaussian family, `id`, `class_level = "group"`
+and one group class.
+
 ## Families
 
 `"gaussian"` (identity link, a residual standard deviation per class, or
@@ -210,6 +257,20 @@ not converge; `latents_degenerate_start` (warning) when some starts
 degenerated; `latents_separation` (warning) when a coefficient diverged.
 
 ## References
+
+Muthen, B., & Shedden, K. (1999). Finite mixture modeling with mixture
+outcomes using the EM algorithm. *Biometrics*, 55, 463–469.
+
+Nagin, D. S. (2005). *Group-based modeling of development*. Harvard
+University Press.
+
+Proust-Lima, C., Philipps, V., & Liquet, B. (2017). Estimation of
+extended mixed models using latent classes and latent processes: the R
+package lcmm. *Journal of Statistical Software*, 78(2), 1–56.
+
+Verbeke, G., & Lesaffre, E. (1996). A linear mixed-effects model with
+heterogeneity in the random-effects population. *Journal of the American
+Statistical Association*, 91, 217–221.
 
 DeSarbo, W. S., & Cron, W. L. (1988). A maximum likelihood methodology
 for clusterwise linear regression. *Journal of Classification*, 5,
@@ -245,43 +306,60 @@ fit
 #> 900 rows | log likelihood -3144.0074 | BIC 6335.63 | entropy 0.443
 #> Converged: TRUE | iterations: 42 | best likelihood reached by 3 of 3 completed starts (4 run)
 #> 
-#>    class        term estimate std_error   p_value
-#>  class_1 (Intercept)  34.3545    0.7193 0.000e+00
-#>  class_1       hours   4.5659    0.1047 0.000e+00
-#>  class_2 (Intercept)  54.8951    1.0927 0.000e+00
-#>  class_2       hours   0.8084    0.1696 1.876e-06
+#> Classes
+#> 
+#> Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD
+#> -------  -----  --------  -------------  --------------  -----------
+#> Class 1  0.564    507.55            573           0.788         5.24
+#> Class 2  0.436    392.45            327           0.829         6.89
+#> 
+#> Regression coefficients (95% CI)
+#> 
+#> Class    Term       Estimate          95% CI      p
+#> -------  ---------  --------  --------------  -----
+#> Class 1  Intercept     34.35  [32.94, 35.76]  <.001
+#> Class 1  hours          4.57  [ 4.36,  4.77]  <.001
+#> Class 2  Intercept     54.90  [52.75, 57.04]  <.001
+#> Class 2  hours          0.81  [ 0.48,  1.14]  <.001
 #> 
 #> Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
 as.data.frame(fit)
-#>     class        term   estimate std_error statistic      p_value   conf_low
-#> 1 class_1 (Intercept) 34.3545204 0.7192917 47.761595 0.000000e+00 32.9447345
-#> 2 class_1       hours  4.5658711 0.1047310 43.596167 0.000000e+00  4.3606021
-#> 3 class_2 (Intercept) 54.8951437 1.0927048 50.237855 0.000000e+00 52.7534818
-#> 4 class_2       hours  0.8083711 0.1696013  4.766303 1.876367e-06  0.4759587
-#>   conf_high   p_adjusted
-#> 1 35.764306           NA
-#> 2  4.771140 0.000000e+00
-#> 3 57.036806           NA
-#> 4  1.140784 1.876367e-06
+#> Regression coefficients (95% CI)
+#> 
+#> Class    Term       Estimate          95% CI      p
+#> -------  ---------  --------  --------------  -----
+#> Class 1  Intercept     34.35  [32.94, 35.76]  <.001
+#> Class 1  hours          4.57  [ 4.36,  4.77]  <.001
+#> Class 2  Intercept     54.90  [52.75, 57.04]  <.001
+#> Class 2  hours          0.81  [ 0.48,  1.14]  <.001
 get_results(fit, "classes")
-#>     class     share    count n_assigned mean_posterior    sigma sigma_std_error
-#> 1 class_1 0.5639412 507.5471        573      0.7884232 5.238049       0.2775751
-#> 2 class_2 0.4360588 392.4529        327      0.8294171 6.890695       0.3456934
-#>       prior prior_std_error
-#> 1 0.5638921      0.03503844
-#> 2 0.4361079      0.03503844
+#> Classes
+#> 
+#> Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD
+#> -------  -----  --------  -------------  --------------  -----------
+#> Class 1  0.564    507.55            573           0.788         5.24
+#> Class 2  0.436    392.45            327           0.829         6.89
 
 # One class per student, several rows per student:
 by_student <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
                                  id = "student", class_level = "group",
                                  n_starts = 3, seed = 1)
 get_results(by_student, "fit")
-#>     family nesting n_classes n_group_classes n_observations n_groups
-#> 1 gaussian   group         2               1            900      150
-#>   log_likelihood n_parameters      aic      bic bic_rows    sabic      icl
-#> 1      -3177.761            7 6369.521 6390.596 6403.138 6368.442 6451.323
-#>     entropy group_entropy smallest_share converged iterations n_starts
-#> 1 0.7079629            NA      0.4696097      TRUE         42        4
-#>   n_best_replicated vcov_type
-#> 1                 4  observed
+#> Model fit
+#> 
+#> Family          gaussian
+#> Nesting         group
+#> Classes         2
+#> Group classes   1
+#> Observations    900
+#> Groups          150
+#> Parameters      7
+#> Log likelihood  -3177.76
+#> AIC             6369.52
+#> BIC             6390.60
+#> SABIC           6368.44
+#> ICL             6451.32
+#> Entropy         0.708
+#> Smallest class  47.0%
+#> Converged       yes
 ```

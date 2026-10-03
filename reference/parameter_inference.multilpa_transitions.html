@@ -17,7 +17,7 @@ information is the numerical Jacobian of that analytic score."><meta property="o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,7 @@ information is the numerical Jacobian of that analytic score."><meta property="o
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -153,8 +154,10 @@ each refit, and an optional seed (the caller's random state is restored).</p></d
 
 
 <dt id="arg-boundary">boundary<a class="anchor" aria-label="anchor" href="#arg-boundary"></a></dt>
-<dd><p>Only <code>"error"</code>: a fit on a bound has no Wald inference, and
-<code>"fix"</code> raises <code>latents_unsupported_inference</code>.</p></dd>
+<dd><p>Accepted for the generic. Transition inference holds
+nothing at a bound: with no bound active <code>"fix"</code> gives the same table as
+<code>"error"</code>, and a fit with an active bound raises <code>latents_boundary_fit</code>
+under either.</p></dd>
 
 
 <dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
@@ -198,7 +201,8 @@ informed (a profile no group occupies before its last occasion);
 <code>latents_singular_information</code> when the information cannot be inverted;
 <code>latents_bad_inference_data</code> when a supplied <code>data</code> does not reproduce
 the fit; <code>latents_too_few_groups</code> for robust or OPG errors with no more
-groups than parameters; <code>latents_unsupported_inference</code> for <code>method = "bootstrap"</code> or <code>boundary = "fix"</code>.</p>
+groups than parameters; <code>latents_bad_argument</code> for <code>method = "bootstrap"</code>
+without <code>data</code>.</p>
     </div>
 
     <div class="section level2">

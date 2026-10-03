@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -254,9 +255,9 @@
         </dt>
         <dd>Tables of a group-class family enumeration</dd>
       </dl></div><div class="section level2">
-      <h2 id="mixture-regression">Mixture regression<a class="anchor" aria-label="anchor" href="#mixture-regression"></a></h2>
+      <h2 id="mixture-regression-and-growth-models">Mixture regression and growth models<a class="anchor" aria-label="anchor" href="#mixture-regression-and-growth-models"></a></h2>
 
-      <div class="section-desc"><p>Regressions whose coefficients differ across latent classes, at one or two levels, for continuous, binary and count outcomes.</p></div>
+      <div class="section-desc"><p>Regressions whose coefficients differ across latent classes, at one or two levels, for continuous, binary and count outcomes; classes of trajectories, with random effects within classes (growth mixture models).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -279,10 +280,24 @@
 
         <dt>
 
+          <code><a href="compare_models.html">compare_models()</a></code>
+
+        </dt>
+        <dd>Compare fitted models on the same data</dd>
+
+        <dt>
+
           <code><a href="get_results.latents_mixture_regression.html">get_results(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">as.data.frame(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">coef(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">vcov(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">confint(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">logLik(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">nobs(<i>&lt;latents_mixture_regression&gt;</i>)</a></code>
 
         </dt>
         <dd>Tables of a mixture-of-regressions fit</dd>
+
+        <dt>
+
+          <code><a href="get_results.latents_growth_mixture.html">get_results(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">as.data.frame(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">coef(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">vcov(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">confint(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">logLik(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">nobs(<i>&lt;latents_growth_mixture&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidy results of a growth mixture model</dd>
 
         <dt>
 
@@ -297,6 +312,13 @@
 
         </dt>
         <dd>Simulate outcomes from a mixture-of-regressions fit</dd>
+
+        <dt>
+
+          <code><a href="simulate.latents_growth_mixture.html">simulate(<i>&lt;latents_growth_mixture&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Simulate outcomes from a growth mixture model</dd>
       </dl></div><div class="section level2">
       <h2 id="external-variables">External variables<a class="anchor" aria-label="anchor" href="#external-variables"></a></h2>
 
@@ -346,10 +368,24 @@
 
         <dt>
 
+          <code><a href="plot.latents_comparison.html">plot(<i>&lt;latents_comparison&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a model comparison</dd>
+
+        <dt>
+
           <code><a href="plot.latents_family_enumeration.html">plot(<i>&lt;latents_family_enumeration&gt;</i>)</a></code>
 
         </dt>
         <dd>Plot information criteria across group-class families</dd>
+
+        <dt>
+
+          <code><a href="plot.latents_growth_mixture.html">plot(<i>&lt;latents_growth_mixture&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a growth mixture model</dd>
 
         <dt>
 
@@ -483,6 +519,13 @@
 
         <dt>
 
+          <code><a href="growth_scores.html">growth_scores</a></code>
+
+        </dt>
+        <dd>Achievement growth of students with three kinds of trajectory</dd>
+
+        <dt>
+
           <code><a href="srl.html">srl</a></code>
 
         </dt>
@@ -541,6 +584,13 @@
 
         <dt>
 
+          <code><a href="print.latents_growth_mixture.html">print(<i>&lt;latents_growth_mixture&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a growth mixture model</dd>
+
+        <dt>
+
           <code><a href="print.latents_mixture_regression.html">print(<i>&lt;latents_mixture_regression&gt;</i>)</a></code>
 
         </dt>
@@ -559,6 +609,13 @@
 
         </dt>
         <dd>Print a pooled multiply imputed fit</dd>
+
+        <dt>
+
+          <code><a href="print.latents_table.html">print(<i>&lt;latents_table&gt;</i>)</a></code> <code><a href="print.latents_table.html">as.data.frame(<i>&lt;latents_table&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a latents result table</dd>
 
         <dt>
 
@@ -650,6 +707,13 @@
 
         </dt>
         <dd>Conjugate prior for Gaussian mixture estimation</dd>
+
+        <dt>
+
+          <code><a href="summary.latents_growth_mixture.html">summary(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="summary.latents_growth_mixture.html">print(<i>&lt;summary_latents_growth_mixture&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarize a growth mixture model</dd>
 
         <dt>
 
@@ -786,6 +850,13 @@
 
         <dt>
 
+          <code><a href="get_results.latents_growth_mixture.html">get_results(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">as.data.frame(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">coef(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">vcov(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">confint(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">logLik(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="get_results.latents_growth_mixture.html">nobs(<i>&lt;latents_growth_mixture&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Tidy results of a growth mixture model</dd>
+
+        <dt>
+
           <code><a href="get_results.latents_mixture_regression.html">get_results(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">as.data.frame(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">coef(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">vcov(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">confint(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">logLik(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="get_results.latents_mixture_regression.html">nobs(<i>&lt;latents_mixture_regression&gt;</i>)</a></code>
 
         </dt>
@@ -909,6 +980,13 @@
 
         </dt>
         <dd>Number of independent units in a fitted latent transition model</dd>
+
+        <dt>
+
+          <code><a href="predict.latents_growth_mixture.html">predict(<i>&lt;latents_growth_mixture&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Prediction for a growth mixture model (not implemented)</dd>
 
         <dt>
 

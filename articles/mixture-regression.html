@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,7 @@
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -174,11 +175,21 @@ recovery can be checked; the models never see them.</p>
 <span><span class="co">#&gt; 900 rows | log likelihood -3144.0074 | BIC 6335.63 | entropy 0.443</span></span>
 <span><span class="co">#&gt; Converged: TRUE | iterations: 42 | best likelihood reached by 5 of 5 completed starts (6 run)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;    class        term estimate std_error   p_value</span></span>
-<span><span class="co">#&gt;  class_1 (Intercept)  34.3545    0.7193 0.000e+00</span></span>
-<span><span class="co">#&gt;  class_1       hours   4.5659    0.1047 0.000e+00</span></span>
-<span><span class="co">#&gt;  class_2 (Intercept)  54.8951    1.0927 0.000e+00</span></span>
-<span><span class="co">#&gt;  class_2       hours   0.8084    0.1696 1.876e-06</span></span>
+<span><span class="co">#&gt; Classes</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD</span></span>
+<span><span class="co">#&gt; -------  -----  --------  -------------  --------------  -----------</span></span>
+<span><span class="co">#&gt; Class 1  0.564    507.55            573           0.788         5.24</span></span>
+<span><span class="co">#&gt; Class 2  0.436    392.45            327           0.829         6.89</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Regression coefficients (95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Term       Estimate          95% CI      p</span></span>
+<span><span class="co">#&gt; -------  ---------  --------  --------------  -----</span></span>
+<span><span class="co">#&gt; Class 1  Intercept     34.35  [32.94, 35.76]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 1  hours          4.57  [ 4.36,  4.77]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  Intercept     54.90  [52.75, 57.04]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  hours          0.81  [ 0.48,  1.14]  &lt;.001</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".</span></span></code></pre></div>
 <p>The two classes are the two strategies: a steep regression from a low
@@ -188,19 +199,25 @@ its residual standard deviation and how certainly its members are
 assigned.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"classes"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     class share count n_assigned mean_posterior sigma sigma_std_error prior prior_std_error</span></span>
-<span><span class="co">#&gt; 1 class_1 0.564   508        573          0.788  5.24           0.278 0.564           0.035</span></span>
-<span><span class="co">#&gt; 2 class_2 0.436   392        327          0.829  6.89           0.346 0.436           0.035</span></span></code></pre></div>
+<span><span class="co">#&gt; Classes</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD</span></span>
+<span><span class="co">#&gt; -------  -----  --------  -------------  --------------  -----------</span></span>
+<span><span class="co">#&gt; Class 1  0.564    507.55            573           0.788         5.24</span></span>
+<span><span class="co">#&gt; Class 2  0.436    392.45            327           0.829         6.89</span></span></code></pre></div>
 <p><code>get_results(fit, "assignments")</code> gives one row per
 observation. Because these data carry the generating strategy, the
 recovery table cross-tabulates the assigned classes against it:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"recovery"</span>, data <span class="op">=</span> <span class="va">study_hours</span>, truth <span class="op">=</span> <span class="st">"strategy"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   assigned strategy   n share</span></span>
-<span><span class="co">#&gt; 1  class_1     deep 448 0.782</span></span>
-<span><span class="co">#&gt; 2  class_2     deep  49 0.150</span></span>
-<span><span class="co">#&gt; 3  class_1  surface 125 0.218</span></span>
-<span><span class="co">#&gt; 4  class_2  surface 278 0.850</span></span></code></pre></div>
+<span><span class="co">#&gt; Recovery of a known classification</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; assigned  strategy    n  share</span></span>
+<span><span class="co">#&gt; --------  --------  ---  -----</span></span>
+<span><span class="co">#&gt; class_1   deep      448   0.78</span></span>
+<span><span class="co">#&gt; class_2   deep       49   0.15</span></span>
+<span><span class="co">#&gt; class_1   surface   125   0.22</span></span>
+<span><span class="co">#&gt; class_2   surface   278   0.85</span></span></code></pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="mixture-regression_files/figure-html/plot-fitted-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
@@ -246,12 +263,12 @@ it should lower the odds of the surface class:</p>
 <code class="sourceCode R"><span><span class="va">with_sleep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">hours</span>, data <span class="op">=</span> <span class="va">study_hours</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>                                 membership <span class="op">=</span> <span class="op">~</span> <span class="va">sleep</span>, n_starts <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">with_sleep</span>, <span class="st">"membership"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   model   class        term reference estimate std_error statistic p_value conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1 class class_2 (Intercept)   class_1    1.555    0.6817      2.28 0.02255    0.219    2.8911</span></span>
-<span><span class="co">#&gt; 2 class class_2       sleep   class_1   -0.261    0.0962     -2.72 0.00661   -0.450   -0.0727</span></span>
-<span><span class="co">#&gt;   odds_ratio</span></span>
-<span><span class="co">#&gt; 1       4.74</span></span>
-<span><span class="co">#&gt; 2       0.77</span></span></code></pre></div>
+<span><span class="co">#&gt; Class membership (log odds, 95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Term       Estimate          95% CI     p  Odds ratio</span></span>
+<span><span class="co">#&gt; -------  ---------  --------  --------------  ----  ----------</span></span>
+<span><span class="co">#&gt; Class 2  Intercept      1.56  [ 0.22,  2.89]  .023        4.74</span></span>
+<span><span class="co">#&gt; Class 2  sleep         -0.26  [-0.45, -0.07]  .007        0.77</span></span></code></pre></div>
 <p>The coefficients are estimated jointly with the regressions — a
 one-step model, not a regression on assigned classes — so classification
 error does not attenuate them.</p>
@@ -276,20 +293,30 @@ depends on the student’s type, not on the week:</p>
 <span><span class="co">#&gt; 900 rows in 150 groups | log likelihood -540.8146 | BIC 1111.69 | entropy 0.668</span></span>
 <span><span class="co">#&gt; Converged: TRUE | iterations: 16 | best likelihood reached by 6 of 6 completed starts (6 run)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;    class        term estimate std_error   p_value</span></span>
-<span><span class="co">#&gt;  class_1 (Intercept) -2.46252   0.32414 3.031e-14</span></span>
-<span><span class="co">#&gt;  class_1       hours  0.51369   0.06253 2.118e-16</span></span>
-<span><span class="co">#&gt;  class_2 (Intercept)  0.07049   0.26795 7.925e-01</span></span>
-<span><span class="co">#&gt;  class_2       hours -0.04109   0.04113 3.178e-01</span></span>
+<span><span class="co">#&gt; Classes</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Share  Expected  Groups assigned  Avg. posterior</span></span>
+<span><span class="co">#&gt; -------  -----  --------  ---------------  --------------</span></span>
+<span><span class="co">#&gt; Class 1  0.517     77.61               78           0.903</span></span>
+<span><span class="co">#&gt; Class 2  0.483     72.39               72           0.900</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Regression coefficients (95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Term       Estimate            95% CI      p  Odds ratio</span></span>
+<span><span class="co">#&gt; -------  ---------  --------  ----------------  -----  ----------</span></span>
+<span><span class="co">#&gt; Class 1  Intercept    -2.463  [-3.098, -1.827]  &lt;.001       0.085</span></span>
+<span><span class="co">#&gt; Class 1  hours         0.514  [ 0.391,  0.636]  &lt;.001       1.671</span></span>
+<span><span class="co">#&gt; Class 2  Intercept     0.070  [-0.455,  0.596]   .793       1.073</span></span>
+<span><span class="co">#&gt; Class 2  hours        -0.041  [-0.122,  0.040]   .318       0.960</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">students</span>, <span class="st">"membership"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   model   class        term reference estimate std_error statistic  p_value conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1 class class_2 (Intercept)   class_1    -0.15     0.374    -0.402 0.687587   -0.883     0.583</span></span>
-<span><span class="co">#&gt; 2 class class_2  motivation   class_1    -1.82     0.491    -3.703 0.000213   -2.781    -0.856</span></span>
-<span><span class="co">#&gt;   odds_ratio</span></span>
-<span><span class="co">#&gt; 1      0.860</span></span>
-<span><span class="co">#&gt; 2      0.162</span></span></code></pre></div>
+<span><span class="co">#&gt; Class membership (log odds, 95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Term        Estimate          95% CI      p  Odds ratio</span></span>
+<span><span class="co">#&gt; -------  ----------  --------  --------------  -----  ----------</span></span>
+<span><span class="co">#&gt; Class 2  Intercept      -0.15  [-0.88,  0.58]   .688        0.86</span></span>
+<span><span class="co">#&gt; Class 2  motivation     -1.82  [-2.78, -0.86]  &lt;.001        0.16</span></span></code></pre></div>
 <p>A mixture of logistic regressions with a single binary outcome per
 class assignment is not identified — any mixture of Bernoulli
 distributions is a Bernoulli distribution (Follmann and Lambert 1991) —
@@ -317,45 +344,57 @@ rows in its groups.</p>
 <span>                                n_starts <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">two_level</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model fit</span></span>
-<span><span class="co">#&gt;    family   nesting n_classes n_group_classes n_observations n_groups log_likelihood n_parameters</span></span>
-<span><span class="co">#&gt;  gaussian two-level         2               2            900      150          -3092           11</span></span>
-<span><span class="co">#&gt;   aic  bic bic_rows sabic  icl entropy group_entropy smallest_share converged iterations n_starts</span></span>
-<span><span class="co">#&gt;  6206 6239     6258  6204 6785  0.5621        0.6646         0.4207      TRUE         53        6</span></span>
-<span><span class="co">#&gt;  n_best_replicated vcov_type</span></span>
-<span><span class="co">#&gt;                  3  observed</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Regression coefficients</span></span>
-<span><span class="co">#&gt;    class        term estimate std_error statistic   p_value conf_low conf_high p_adjusted</span></span>
-<span><span class="co">#&gt;  class_1 (Intercept)  34.6314   0.61084    56.694 0.000e+00  33.4342    35.829         NA</span></span>
-<span><span class="co">#&gt;  class_1       hours   4.5230   0.08418    53.728 0.000e+00   4.3580     4.688  0.000e+00</span></span>
-<span><span class="co">#&gt;  class_2 (Intercept)  55.3412   0.90779    60.963 0.000e+00  53.5619    57.120         NA</span></span>
-<span><span class="co">#&gt;  class_2       hours   0.7182   0.13666     5.255 1.478e-07   0.4503     0.986  1.478e-07</span></span>
+<span><span class="co">#&gt; Family          gaussian</span></span>
+<span><span class="co">#&gt; Nesting         two-level</span></span>
+<span><span class="co">#&gt; Classes         2</span></span>
+<span><span class="co">#&gt; Group classes   2</span></span>
+<span><span class="co">#&gt; Observations    900</span></span>
+<span><span class="co">#&gt; Groups          150</span></span>
+<span><span class="co">#&gt; Parameters      11</span></span>
+<span><span class="co">#&gt; Log likelihood  -3091.78</span></span>
+<span><span class="co">#&gt; AIC             6205.56</span></span>
+<span><span class="co">#&gt; BIC             6238.68</span></span>
+<span><span class="co">#&gt; SABIC           6203.86</span></span>
+<span><span class="co">#&gt; ICL             6785.00</span></span>
+<span><span class="co">#&gt; Entropy         0.562</span></span>
+<span><span class="co">#&gt; Smallest class  42.1%</span></span>
+<span><span class="co">#&gt; Converged       yes</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Regression coefficients (95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Term       Estimate          95% CI      p</span></span>
+<span><span class="co">#&gt; -------  ---------  --------  --------------  -----</span></span>
+<span><span class="co">#&gt; Class 1  Intercept     34.63  [33.43, 35.83]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 1  hours          4.52  [ 4.36,  4.69]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  Intercept     55.34  [53.56, 57.12]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  hours          0.72  [ 0.45,  0.99]  &lt;.001</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Classes</span></span>
-<span><span class="co">#&gt;    class  share count n_assigned mean_posterior sigma sigma_std_error</span></span>
-<span><span class="co">#&gt;  class_1 0.5793 521.4        532         0.8732 5.281          0.2232</span></span>
-<span><span class="co">#&gt;  class_2 0.4207 378.6        368         0.8455 6.789          0.3134</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Class membership (multinomial logit)</span></span>
-<span><span class="co">#&gt;        model         class                      term     reference estimate std_error statistic</span></span>
-<span><span class="co">#&gt;  group_class group_class_2               (Intercept) group_class_1  -0.1257    0.4572    -0.275</span></span>
-<span><span class="co">#&gt;  group_class group_class_2                motivation group_class_1  -1.8663    0.4760    -3.921</span></span>
-<span><span class="co">#&gt;        class       class_2 (Intercept):group_class_1       class_1   1.3446    0.9490     1.417</span></span>
-<span><span class="co">#&gt;        class       class_2 (Intercept):group_class_2       class_1   4.2492    1.0602     4.008</span></span>
-<span><span class="co">#&gt;        class       class_2                     sleep       class_1  -0.4688    0.1392    -3.368</span></span>
-<span><span class="co">#&gt;    p_value conf_low conf_high odds_ratio</span></span>
-<span><span class="co">#&gt;  7.833e-01  -1.0219    0.7704     0.8818</span></span>
-<span><span class="co">#&gt;  8.834e-05  -2.7992   -0.9333     0.1547</span></span>
-<span><span class="co">#&gt;  1.565e-01  -0.5155    3.2046     3.8365</span></span>
-<span><span class="co">#&gt;  6.122e-05   2.1713    6.3271    70.0498</span></span>
-<span><span class="co">#&gt;  7.566e-04  -0.7416   -0.1960     0.6257</span></span>
+<span><span class="co">#&gt; Class    Share  Expected  Groups assigned  Avg. posterior  Residual SD</span></span>
+<span><span class="co">#&gt; -------  -----  --------  ---------------  --------------  -----------</span></span>
+<span><span class="co">#&gt; Class 1  0.579    521.40              532           0.873         5.28</span></span>
+<span><span class="co">#&gt; Class 2  0.421    378.60              368           0.845         6.79</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class membership (log odds, 95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model        Class          Term                       Estimate          95% CI      p  Odds ratio</span></span>
+<span><span class="co">#&gt; -----------  -------------  -------------------------  --------  --------------  -----  ----------</span></span>
+<span><span class="co">#&gt; group_class  Group class 2  Intercept                     -0.13  [-1.02,  0.77]   .783        0.88</span></span>
+<span><span class="co">#&gt; group_class  Group class 2  motivation                    -1.87  [-2.80, -0.93]  &lt;.001        0.15</span></span>
+<span><span class="co">#&gt; class        Class 2        Intercept x group_class_1      1.34  [-0.52,  3.20]   .157        3.84</span></span>
+<span><span class="co">#&gt; class        Class 2        Intercept x group_class_2      4.25  [ 2.17,  6.33]  &lt;.001       70.05</span></span>
+<span><span class="co">#&gt; class        Class 2        sleep                         -0.47  [-0.74, -0.20]  &lt;.001        0.63</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group classes</span></span>
-<span><span class="co">#&gt;    group_class   class probability group_share n_groups_assigned</span></span>
-<span><span class="co">#&gt;  group_class_1 class_1      0.8609      0.5134                76</span></span>
-<span><span class="co">#&gt;  group_class_1 class_2      0.1391      0.5134                76</span></span>
-<span><span class="co">#&gt;  group_class_2 class_1      0.2821      0.4866                74</span></span>
-<span><span class="co">#&gt;  group_class_2 class_2      0.7179      0.4866                74</span></span></code></pre></div>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Group class    Class    Probability  Group share  Groups assigned</span></span>
+<span><span class="co">#&gt; -------------  -------  -----------  -----------  ---------------</span></span>
+<span><span class="co">#&gt; Group class 1  Class 1        0.861        0.513               76</span></span>
+<span><span class="co">#&gt; Group class 1  Class 2        0.139        0.513               76</span></span>
+<span><span class="co">#&gt; Group class 2  Class 1        0.282        0.487               74</span></span>
+<span><span class="co">#&gt; Group class 2  Class 2        0.718        0.487               74</span></span></code></pre></div>
 <p>The <code>group_classes</code> table is the heart of it: within each
 group class, the probability of each regression class. The group-class
 membership model shows motivation separating the two kinds of student,
@@ -363,11 +402,14 @@ and the class model shows the week-level effect of sleep.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">two_level</span>, <span class="st">"recovery"</span>, data <span class="op">=</span> <span class="va">study_hours</span>,</span>
 <span>            truth <span class="op">=</span> <span class="st">"student_type"</span>, by <span class="op">=</span> <span class="st">"group_class"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        assigned student_type  n  share</span></span>
-<span><span class="co">#&gt; 1 group_class_1       steady 69 0.9079</span></span>
-<span><span class="co">#&gt; 2 group_class_2       steady  8 0.1081</span></span>
-<span><span class="co">#&gt; 3 group_class_1      erratic  7 0.0921</span></span>
-<span><span class="co">#&gt; 4 group_class_2      erratic 66 0.8919</span></span></code></pre></div>
+<span><span class="co">#&gt; Recovery of a known classification</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; assigned       student_type   n  share</span></span>
+<span><span class="co">#&gt; -------------  ------------  --  -----</span></span>
+<span><span class="co">#&gt; group_class_1  steady        69  0.908</span></span>
+<span><span class="co">#&gt; group_class_2  steady         8  0.108</span></span>
+<span><span class="co">#&gt; group_class_1  erratic        7  0.092</span></span>
+<span><span class="co">#&gt; group_class_2  erratic       66  0.892</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="counts-shared-effects-and-equal-variances">Counts, shared effects and equal variances<a class="anchor" aria-label="anchor" href="#counts-shared-effects-and-equal-variances"></a>
@@ -381,18 +423,15 @@ deviation.</p>
 <code class="sourceCode R"><span><span class="va">asked</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">questions</span> <span class="op">~</span> <span class="va">hours</span> <span class="op">+</span> <span class="va">sleep</span>, data <span class="op">=</span> <span class="va">study_hours</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>                            family <span class="op">=</span> <span class="st">"poisson"</span>, common <span class="op">=</span> <span class="op">~</span> <span class="va">sleep</span>, n_starts <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">asked</span>, <span class="st">"coefficients"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     class        term estimate std_error statistic  p_value conf_low conf_high p_adjusted</span></span>
-<span><span class="co">#&gt; 1 class_1 (Intercept)   0.5578    0.1606     3.474 5.13e-04   0.2431    0.8726         NA</span></span>
-<span><span class="co">#&gt; 2 class_1       hours   0.1038    0.0107     9.666 4.19e-22   0.0828    0.1248   1.26e-21</span></span>
-<span><span class="co">#&gt; 3 class_2 (Intercept)   1.5081    0.2490     6.057 1.39e-09   1.0201    1.9962         NA</span></span>
-<span><span class="co">#&gt; 4 class_2       hours  -0.1099    0.0446    -2.462 1.38e-02  -0.1973   -0.0224   2.07e-02</span></span>
-<span><span class="co">#&gt; 5  common       sleep  -0.0194    0.0213    -0.914 3.61e-01  -0.0611    0.0222   3.61e-01</span></span>
-<span><span class="co">#&gt;   exp_estimate</span></span>
-<span><span class="co">#&gt; 1        1.747</span></span>
-<span><span class="co">#&gt; 2        1.109</span></span>
-<span><span class="co">#&gt; 3        4.518</span></span>
-<span><span class="co">#&gt; 4        0.896</span></span>
-<span><span class="co">#&gt; 5        0.981</span></span></code></pre></div>
+<span><span class="co">#&gt; Regression coefficients (95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class        Term       Estimate            95% CI      p  Rate ratio</span></span>
+<span><span class="co">#&gt; -----------  ---------  --------  ----------------  -----  ----------</span></span>
+<span><span class="co">#&gt; Class 1      Intercept     0.558  [ 0.243,  0.873]  &lt;.001        1.75</span></span>
+<span><span class="co">#&gt; Class 1      hours         0.104  [ 0.083,  0.125]  &lt;.001        1.11</span></span>
+<span><span class="co">#&gt; Class 2      Intercept     1.508  [ 1.020,  1.996]  &lt;.001        4.52</span></span>
+<span><span class="co">#&gt; Class 2      hours        -0.110  [-0.197, -0.022]   .014        0.90</span></span>
+<span><span class="co">#&gt; All classes  sleep        -0.019  [-0.061,  0.022]   .361        0.98</span></span></code></pre></div>
 <p><code>exp_estimate</code> is the rate ratio of each coefficient.</p>
 </div>
 <div class="section level2">
@@ -407,11 +446,14 @@ clustered on the independent unit — the row, or the group when
 <code>id</code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"coefficients"</span>, vcov_type <span class="op">=</span> <span class="st">"robust"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     class        term estimate std_error statistic  p_value conf_low conf_high p_adjusted</span></span>
-<span><span class="co">#&gt; 1 class_1 (Intercept)   34.355     0.810     42.40 0.00e+00   32.767     35.94         NA</span></span>
-<span><span class="co">#&gt; 2 class_1       hours    4.566     0.114     39.96 0.00e+00    4.342      4.79   0.00e+00</span></span>
-<span><span class="co">#&gt; 3 class_2 (Intercept)   54.895     1.117     49.13 0.00e+00   52.705     57.08         NA</span></span>
-<span><span class="co">#&gt; 4 class_2       hours    0.808     0.176      4.58 4.56e-06    0.463      1.15   4.56e-06</span></span>
+<span><span class="co">#&gt; Regression coefficients (95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Term       Estimate          95% CI      p</span></span>
+<span><span class="co">#&gt; -------  ---------  --------  --------------  -----</span></span>
+<span><span class="co">#&gt; Class 1  Intercept     34.35  [32.77, 35.94]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 1  hours          4.57  [ 4.34,  4.79]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  Intercept     54.90  [52.71, 57.08]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  hours          0.81  [ 0.46,  1.15]  &lt;.001</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"coefficients"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="mixture-regression_files/figure-html/robust-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p><code>p_adjusted</code> applies the Benjamini-Hochberg correction
@@ -448,13 +490,16 @@ likelihood. A solution reached by one start only deserves more
 starts.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"starts"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   start      kind log_likelihood converged iterations     stage degenerate selected</span></span>
-<span><span class="co">#&gt; 1     1 residuals          -3144      TRUE         49 completed      FALSE    FALSE</span></span>
-<span><span class="co">#&gt; 2     2    random          -3144      TRUE         47 completed      FALSE    FALSE</span></span>
-<span><span class="co">#&gt; 3     3    random          -3144     FALSE         50  screened      FALSE    FALSE</span></span>
-<span><span class="co">#&gt; 4     4    random          -3144      TRUE         42 completed      FALSE     TRUE</span></span>
-<span><span class="co">#&gt; 5     5    random          -3144      TRUE         46 completed      FALSE    FALSE</span></span>
-<span><span class="co">#&gt; 6     6    random          -3144      TRUE         43 completed      FALSE    FALSE</span></span>
+<span><span class="co">#&gt; Starts</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; start  kind       log_likelihood  converged  iterations  stage      degenerate  selected</span></span>
+<span><span class="co">#&gt; -----  ---------  --------------  ---------  ----------  ---------  ----------  --------</span></span>
+<span><span class="co">#&gt;     1  residuals        -3144.01        yes          49  completed          no        no</span></span>
+<span><span class="co">#&gt;     2  random           -3144.01        yes          47  completed          no        no</span></span>
+<span><span class="co">#&gt;     3  random           -3144.01         no          50  screened           no        no</span></span>
+<span><span class="co">#&gt;     4  random           -3144.01        yes          42  completed          no       yes</span></span>
+<span><span class="co">#&gt;     5  random           -3144.01        yes          46  completed          no        no</span></span>
+<span><span class="co">#&gt;     6  random           -3144.01        yes          43  completed          no        no</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="mixture-regression_files/figure-html/starts-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>

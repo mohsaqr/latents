@@ -78,7 +78,7 @@ summary(models)
 #>           2          -7892           17 15819 15918          17771          0.4823
 #>           3          -7848           26 15749 15901          17820          0.6618
 #>           4          -7807           35 15683 15888          17931          0.7146
-#>           5          -7795           44 15678 15935          18074          0.7426
+#>           5          -7795           44 15678 15935          18074          0.7427
 #>           6          -7771           53 15648 15959          18299          0.7471
 #>  converged boundary
 #>       TRUE    FALSE
@@ -245,10 +245,13 @@ Hagenaars, 2004). The outcome here is the happiness rating.
 
 happiness <- three_step(fit, student_esm, outcome = "happy")
 happiness
-#>         level method class estimate standard_error conf_low conf_high effective_n
-#> 1 individuals    bch     1     4.53         0.1555     4.22      4.83        88.8
-#> 2 individuals    bch     2     4.63         0.0510     4.53      4.73       957.7
-#> 3 individuals    bch     3     5.30         0.0683     5.16      5.43       548.8
+#> Distal outcome by class (bch, 95% CI)
+#> 
+#> Class  Mean        95% CI     SE  Effective n
+#> -----  ----  ------------  -----  -----------
+#>     1  4.53  [4.22, 4.83]  0.155        88.80
+#>     2  4.63  [4.53, 4.73]  0.051       957.73
+#>     3  5.30  [5.16, 5.43]  0.068       548.80
 ```
 
 Happiness is highest in the class of reports away from screens (5.30 on

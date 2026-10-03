@@ -84,10 +84,12 @@ Every table of a fitted model, retrieved by name.
   [`summary(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
   : Tables of a group-class family enumeration
 
-## Mixture regression
+## Mixture regression and growth models
 
 Regressions whose coefficients differ across latent classes, at one or
-two levels, for continuous, binary and count outcomes.
+two levels, for continuous, binary and count outcomes; classes of
+trajectories, with random effects within classes (growth mixture
+models).
 
 - [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
   : Fit a finite mixture of regressions
@@ -96,6 +98,8 @@ two levels, for continuous, binary and count outcomes.
   [`get_results(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
   [`print(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
   : Compare mixture regressions with different numbers of classes
+- [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  : Compare fitted models on the same data
 - [`get_results(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
   [`as.data.frame(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
   [`coef(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
@@ -104,10 +108,20 @@ two levels, for continuous, binary and count outcomes.
   [`logLik(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
   [`nobs(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
   : Tables of a mixture-of-regressions fit
+- [`get_results(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`as.data.frame(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`coef(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`vcov(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`confint(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`logLik(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`nobs(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  : Tidy results of a growth mixture model
 - [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_mixture_regression.md)
   : Predict from a mixture-of-regressions fit
 - [`simulate(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/simulate.latents_mixture_regression.md)
   : Simulate outcomes from a mixture-of-regressions fit
+- [`simulate(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/simulate.latents_growth_mixture.md)
+  : Simulate outcomes from a growth mixture model
 
 ## External variables
 
@@ -128,8 +142,12 @@ Three-step analysis with a correction for classification error.
   [`print(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`plot(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   : Every classification diagnostic, in one call
+- [`plot(`*`<latents_comparison>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_comparison.md)
+  : Plot a model comparison
 - [`plot(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_family_enumeration.md)
   : Plot information criteria across group-class families
+- [`plot(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_growth_mixture.md)
+  : Plot a growth mixture model
 - [`plot(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_mixture_regression.md)
   : Plot a mixture-of-regressions fit
 - [`plot(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_pooled.md)
@@ -170,6 +188,8 @@ Latent transitions handed to the tna package.
   : Leisure activities of university students in daily life
 - [`study_hours`](https://pak.dynasite.org/latents/reference/study_hours.md)
   : Study hours and quiz scores under two study strategies
+- [`growth_scores`](https://pak.dynasite.org/latents/reference/growth_scores.md)
+  : Achievement growth of students with three kinds of trajectory
 - [`srl`](https://pak.dynasite.org/latents/reference/srl.md) :
   Self-regulated learning scores simulated by a large language model
 
@@ -214,12 +234,17 @@ Standard generics for fitted models, enumeration grids and summaries.
   [`nobs(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
   : Tables of a latent transition fit with occasion- or
   covariate-dependent transitions or occasion-specific measurement
+- [`print(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_growth_mixture.md)
+  : Print a growth mixture model
 - [`print(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_mixture_regression.md)
   : Print a mixture-of-regressions fit
 - [`print(`*`<latents_plots>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_plots.md)
   : Print several plots
 - [`print(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_pooled.md)
   : Print a pooled multiply imputed fit
+- [`print(`*`<latents_table>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_table.md)
+  [`as.data.frame(`*`<latents_table>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_table.md)
+  : Print a latents result table
 - [`print(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa.md)
   : Print a fitted multilevel latent profile model
 - [`print(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_additive.md)
@@ -247,6 +272,9 @@ Standard generics for fitted models, enumeration grids and summaries.
 - [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
   [`print(`*`<latents_prior>`*`)`](https://pak.dynasite.org/latents/reference/prior_control.md)
   : Conjugate prior for Gaussian mixture estimation
+- [`summary(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_growth_mixture.md)
+  [`print(`*`<summary_latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_growth_mixture.md)
+  : Summarize a growth mixture model
 - [`summary(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.md)
   [`print(`*`<summary_latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.md)
   : Summarize a mixture-of-regressions fit
@@ -288,6 +316,14 @@ Standard generics for fitted models, enumeration grids and summaries.
   : Coerce a class-enumeration summary to its primary table
 - [`as.data.frame(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.summary_multilpa_transitions.md)
   : Coerce a latent transition model summary to its primary table
+- [`get_results(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`as.data.frame(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`coef(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`vcov(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`confint(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`logLik(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  [`nobs(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+  : Tidy results of a growth mixture model
 - [`get_results(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
   [`as.data.frame(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
   [`coef(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
@@ -339,6 +375,8 @@ Standard generics for fitted models, enumeration grids and summaries.
   : Count independent groups in a covariate LPA fit
 - [`nobs(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/nobs.multilpa_transitions.md)
   : Number of independent units in a fitted latent transition model
+- [`predict(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_growth_mixture.md)
+  : Prediction for a growth mixture model (not implemented)
 - [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_mixture_regression.md)
   : Predict from a mixture-of-regressions fit
 - [`predict(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/predict.multilpa.md)

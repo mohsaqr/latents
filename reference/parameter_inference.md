@@ -310,8 +310,9 @@ persons, refits, and matches every replicate's profiles (on the
 measurement) and group classes to the original's, rebasing the initial
 logits when the reference profile moves; it needs `data`, and works
 where Wald inference is refused (for example full covariance
-structures). `boundary = "fix"` raises `latents_unsupported_inference`
-instead of being ignored.
+structures). Transition inference holds nothing at a bound: with no
+bound active `boundary = "fix"` gives the same table as `"error"`, and a
+fit with an active bound raises `latents_boundary_fit` under either.
 
 ## Conditions
 

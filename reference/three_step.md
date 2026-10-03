@@ -168,15 +168,16 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
 three_step(fit, example_data, "y")
-#>         level method class   estimate standard_error   conf_low  conf_high
-#> 1 individuals    bch     1 -0.0688436      0.1986710 -0.4582315  0.3205443
-#> 2 individuals    bch     2  9.9718132      0.2220129  9.5366758 10.4069506
-#>   effective_n
-#> 1    182.7468
-#> 2    170.3665
+#> Distal outcome by class (bch, 95% CI)
+#> 
+#> Class    Mean            95% CI    SE  Effective n
+#> -----  ------  ----------------  ----  -----------
+#>     1  -0.069  [-0.458,  0.321]  0.20       182.75
+#>     2   9.972  [ 9.537, 10.407]  0.22       170.37
 three_step(fit, example_data, "y", contrast = "pairs")
-#>         level method class reference_class estimate standard_error statistic
-#> 1 individuals    bch     2               1 10.04066      0.3404019  29.49648
-#>         p_value    p_adjusted conf_low conf_high
-#> 1 3.194244e-191 3.194244e-191 9.373481  10.70783
+#> Distal outcome: class differences (bch, 95% CI)
+#> 
+#> Class  vs  Difference         95% CI      p  p (BH)
+#> -----  --  ----------  -------------  -----  ------
+#>     2   1       10.04  [9.37, 10.71]  <.001   <.001
 ```

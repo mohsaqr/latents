@@ -17,7 +17,7 @@ Cron 1988; Wedel and DeSarbo 1995)."><meta property="og:image" content="https://
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,7 @@ Cron 1988; Wedel and DeSarbo 1995)."><meta property="og:image" content="https://
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -94,7 +95,10 @@ Cron 1988; Wedel and DeSarbo 1995).</p>
 <span>  missing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"omit"</span><span class="op">)</span>,</span>
 <span>  select_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"likelihood"</span>, <span class="st">"converged"</span><span class="op">)</span>,</span>
 <span>  vcov_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"robust"</span>, <span class="st">"opg"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
-<span>  weights <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  random <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  random_covariance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span>, <span class="st">"proportional"</span><span class="op">)</span>,</span>
+<span>  random_diagonal <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -135,21 +139,22 @@ schools, ...).</p></dd>
 
 
 <dt id="arg-common">common<a class="anchor" aria-label="anchor" href="#arg-common"></a></dt>
-<dd><p><code>NULL</code>, or a one-sided formula naming predictor terms whose
-coefficients are shared by every class, such as <code>~ age</code>. Each term must
-appear in <code>formula</code>.</p></dd>
+<dd><p><code>NULL</code>, or the predictor terms whose coefficients are
+shared by every class: variable names such as <code>"age"</code>, or a one-sided
+formula such as <code>~ age</code>. Each term must appear in <code>formula</code>.</p></dd>
 
 
 <dt id="arg-membership">membership<a class="anchor" aria-label="anchor" href="#arg-membership"></a></dt>
-<dd><p>One-sided formula of covariates predicting class
-membership (a multinomial logit, the first class as the reference).
+<dd><p>Covariates predicting class membership (a multinomial
+logit, the first class as the reference): variable names such as
+<code>"age"</code>, or a one-sided formula (<code>~ 1</code>, the default, for none).
 Row-level for <code>"observation"</code>; constant within groups for <code>"group"</code>.</p></dd>
 
 
 <dt id="arg-group-membership">group_membership<a class="anchor" aria-label="anchor" href="#arg-group-membership"></a></dt>
-<dd><p>One-sided formula of group-level covariates
-predicting the group class, for the two-level model. Must be constant
-within groups.</p></dd>
+<dd><p>Group-level covariates predicting the group class,
+for the two-level model, as names or a one-sided formula. Must be
+constant within groups.</p></dd>
 
 
 <dt id="arg-variance">variance<a class="anchor" aria-label="anchor" href="#arg-variance"></a></dt>
@@ -207,10 +212,32 @@ group otherwise (constant within it). Pseudo maximum likelihood with the
 weights scaled to sum to the number of units; <code>vcov_type</code> defaults to
 <code>"robust"</code> and refuses <code>"observed"</code> and <code>"opg"</code>.</p></dd>
 
+
+<dt id="arg-random">random<a class="anchor" aria-label="anchor" href="#arg-random"></a></dt>
+<dd><p><code>NULL</code> (no random effects), or the random effects within
+classes: variable names such as <code>"time"</code> (a random intercept and a random
+slope on <code>time</code>) or <code>"intercept"</code> (random intercepts only), or a
+one-sided formula such as <code>~ 1 + time</code> (needed for anything names cannot
+say, such as <code>~ 0 + time</code>, a slope without a random intercept). See the
+growth mixture section.</p></dd>
+
+
+<dt id="arg-random-covariance">random_covariance<a class="anchor" aria-label="anchor" href="#arg-random-covariance"></a></dt>
+<dd><p>How the random-effect covariance differs across
+classes: <code>"varying"</code> (one per class), <code>"equal"</code> (one shared matrix, as
+<code>lcmm::hlme()</code> with <code>nwg = FALSE</code>) or <code>"proportional"</code> (a shared matrix
+times a class-specific scale, the last class's being one; <code>nwg = TRUE</code>).</p></dd>
+
+
+<dt id="arg-random-diagonal">random_diagonal<a class="anchor" aria-label="anchor" href="#arg-random-diagonal"></a></dt>
+<dd><p><code>TRUE</code> for uncorrelated random effects (a diagonal
+covariance, as <code>idiag = TRUE</code> in lcmm).</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class <code>latents_mixture_regression</code>. Read it with
+    <p>An object of class <code>latents_mixture_regression</code>, or
+<code>latents_growth_mixture</code> when <code>random</code> is given. Read it with
 <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> (the coefficient table) or <code><a href="get_results.html">get_results()</a></code> (every
 table, by name), and use <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>,
 <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>, <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>, <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code> and <code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code> on it. The tables are
@@ -238,6 +265,26 @@ errors, which are then clustered on <code>id</code>.</p></dd>
 
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="growth-mixture-models">Growth mixture models<a class="anchor" aria-label="anchor" href="#growth-mixture-models"></a></h2>
+
+
+<p>With repeated measures of persons (<code>id</code>, <code>class_level = "group"</code>), a time
+predictor in <code>formula</code> gives every class its own trajectory: latent class
+growth analysis (Nagin 2005). <code>random</code> adds random effects <em>within</em>
+classes, so persons scatter around their class trajectory: the growth
+mixture model (Verbeke and Lesaffre 1996; Muthen and Shedden 1999). Within
+class k, person i's outcomes are
+$$y_i = X_i \beta_k + Z_i b_i + e_i, \quad b_i \sim N(0, G_k),
+\quad e_i \sim N(0, \sigma_k^2 I),$$
+with <code>Z</code> built from <code>random</code>. The likelihood is exact (Gaussian, no
+numerical integration); estimation is EM with the random effects as missing
+data, finished by quasi-Newton with analytic scores. Such a fit has class
+<code>latents_growth_mixture</code>; its tables, plots and inference are described on
+<code><a href="get_results.latents_growth_mixture.html">get_results.latents_growth_mixture()</a></code> and
+<code><a href="plot.latents_growth_mixture.html">plot.latents_growth_mixture()</a></code>. Random effects need the gaussian family,
+<code>id</code>, <code>class_level = "group"</code> and one group class.</p>
+    </div>
     <div class="section level2">
     <h2 id="families">Families<a class="anchor" aria-label="anchor" href="#families"></a></h2>
 
@@ -270,7 +317,17 @@ degenerated; <code>latents_separation</code> (warning) when a coefficient diverg
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>DeSarbo, W. S., &amp; Cron, W. L. (1988). A maximum likelihood methodology for
+    <p>Muthen, B., &amp; Shedden, K. (1999). Finite mixture modeling with mixture
+outcomes using the EM algorithm. <em>Biometrics</em>, 55, 463–469.</p>
+<p>Nagin, D. S. (2005). <em>Group-based modeling of development</em>. Harvard
+University Press.</p>
+<p>Proust-Lima, C., Philipps, V., &amp; Liquet, B. (2017). Estimation of extended
+mixed models using latent classes and latent processes: the R package
+lcmm. <em>Journal of Statistical Software</em>, 78(2), 1–56.</p>
+<p>Verbeke, G., &amp; Lesaffre, E. (1996). A linear mixed-effects model with
+heterogeneity in the random-effects population. <em>Journal of the American
+Statistical Association</em>, 91, 217–221.</p>
+<p>DeSarbo, W. S., &amp; Cron, W. L. (1988). A maximum likelihood methodology for
 clusterwise linear regression. <em>Journal of Classification</em>, 5, 249–282.</p>
 <p>Wedel, M., &amp; DeSarbo, W. S. (1995). A mixture likelihood approach for
 generalized linear models. <em>Journal of Classification</em>, 12, 21–55.</p>
@@ -297,45 +354,62 @@ and latent class regression in R. <em>Journal of Statistical Software</em>, 11(8
 <span class="r-out co"><span class="r-pr">#&gt;</span> 900 rows | log likelihood -3144.0074 | BIC 6335.63 | entropy 0.443</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Converged: TRUE | iterations: 42 | best likelihood reached by 3 of 3 completed starts (4 run)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    class        term estimate std_error   p_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  class_1 (Intercept)  34.3545    0.7193 0.000e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  class_1       hours   4.5659    0.1047 0.000e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  class_2 (Intercept)  54.8951    1.0927 0.000e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  class_2       hours   0.8084    0.1696 1.876e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Classes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -------  -----  --------  -------------  --------------  -----------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 1  0.564    507.55            573           0.788         5.24</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 2  0.436    392.45            327           0.829         6.89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Regression coefficients (95% CI)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class    Term       Estimate          95% CI      p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -------  ---------  --------  --------------  -----</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 1  Intercept     34.35  [32.94, 35.76]  &lt;.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 1  hours          4.57  [ 4.36,  4.77]  &lt;.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 2  Intercept     54.90  [52.75, 57.04]  &lt;.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 2  hours          0.81  [ 0.48,  1.14]  &lt;.001</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     class        term   estimate std_error statistic      p_value   conf_low</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 class_1 (Intercept) 34.3545204 0.7192917 47.761595 0.000000e+00 32.9447345</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 class_1       hours  4.5658711 0.1047310 43.596167 0.000000e+00  4.3606021</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 class_2 (Intercept) 54.8951437 1.0927048 50.237855 0.000000e+00 52.7534818</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 class_2       hours  0.8083711 0.1696013  4.766303 1.876367e-06  0.4759587</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   conf_high   p_adjusted</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 35.764306           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  4.771140 0.000000e+00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 57.036806           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  1.140784 1.876367e-06</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Regression coefficients (95% CI)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class    Term       Estimate          95% CI      p</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -------  ---------  --------  --------------  -----</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 1  Intercept     34.35  [32.94, 35.76]  &lt;.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 1  hours          4.57  [ 4.36,  4.77]  &lt;.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 2  Intercept     54.90  [52.75, 57.04]  &lt;.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 2  hours          0.81  [ 0.48,  1.14]  &lt;.001</span>
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"classes"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     class     share    count n_assigned mean_posterior    sigma sigma_std_error</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 class_1 0.5639412 507.5471        573      0.7884232 5.238049       0.2775751</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 class_2 0.4360588 392.4529        327      0.8294171 6.890695       0.3456934</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       prior prior_std_error</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.5638921      0.03503844</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.4361079      0.03503844</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Classes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -------  -----  --------  -------------  --------------  -----------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 1  0.564    507.55            573           0.788         5.24</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 2  0.436    392.45            327           0.829         6.89</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># One class per student, several rows per student:</span></span></span>
 <span class="r-in"><span><span class="va">by_student</span> <span class="op">&lt;-</span> <span class="fu">mixture_regression</span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">hours</span>, data <span class="op">=</span> <span class="va">study_hours</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>                                 id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span></span>
 <span class="r-in"><span>                                 n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">by_student</span>, <span class="st">"fit"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     family nesting n_classes n_group_classes n_observations n_groups</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 gaussian   group         2               1            900      150</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   log_likelihood n_parameters      aic      bic bic_rows    sabic      icl</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      -3177.761            7 6369.521 6390.596 6403.138 6368.442 6451.323</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     entropy group_entropy smallest_share converged iterations n_starts</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.7079629            NA      0.4696097      TRUE         42        4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n_best_replicated vcov_type</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                 4  observed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model fit</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Family          gaussian</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Nesting         group</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Classes         2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Group classes   1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Observations    900</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Groups          150</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Parameters      7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log likelihood  -3177.76</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AIC             6369.52</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> BIC             6390.60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SABIC           6368.44</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ICL             6451.32</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Entropy         0.708</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Smallest class  47.0%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Converged       yes</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

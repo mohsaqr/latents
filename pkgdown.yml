@@ -10,13 +10,14 @@ articles:
   articles/case-esm-lca: case-esm-lca.html
   covariates: covariates.html
   evaluation: evaluation.html
+  growth-mixture: growth-mixture.html
   lca: lca.html
   lpa: lpa.html
   lta: lta.html
   mixture-regression: mixture-regression.html
   workflow-lca: workflow-lca.html
   workflow-lpa: workflow-lpa.html
-last_built: 2026-10-02T15:02Z
+last_built: 2026-10-03T06:47Z
 urls:
   reference: https://pak.dynasite.org/latents/reference
   article: https://pak.dynasite.org/latents/articles

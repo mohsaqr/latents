@@ -361,14 +361,13 @@ three_step(
   outcome = "previous_grade",
   contrast = "pairs"
 )
-#>         level method class reference_class estimate standard_error statistic   p_value p_adjusted
-#> 1 individuals    bch     2               1  -0.4432        0.06054    -7.320 2.473e-13  3.710e-13
-#> 2 individuals    bch     3               1   0.1890        0.09458     1.998 4.572e-02  4.572e-02
-#> 3 individuals    bch     3               2   0.6321        0.07748     8.159 3.382e-16  1.015e-15
-#>    conf_low conf_high
-#> 1 -0.561843   -0.3245
-#> 2  0.003597    0.3743
-#> 3  0.480291    0.7840
+#> Distal outcome: class differences (bch, 95% CI)
+#> 
+#> Class  vs  Difference          95% CI      p  p (BH)
+#> -----  --  ----------  --------------  -----  ------
+#>     2   1       -0.44  [-0.56, -0.32]  <.001   <.001
+#>     3   1        0.19  [ 0.00,  0.37]   .046    .046
+#>     3   2        0.63  [ 0.48,  0.78]  <.001   <.001
 ```
 
 The BCH-adjusted estimates show that previous grades in the
@@ -403,14 +402,13 @@ three_step(
   contrast = "pairs",
   method = "modal"
 )
-#>         level method class reference_class estimate standard_error statistic   p_value p_adjusted
-#> 1 individuals  modal     2               1  -0.4457        0.05204    -8.564 1.087e-17  1.631e-17
-#> 2 individuals  modal     3               1   0.1474        0.06745     2.185 2.887e-02  2.887e-02
-#> 3 individuals  modal     3               2   0.5931        0.06671     8.890 6.119e-19  1.836e-18
-#>   conf_low conf_high
-#> 1 -0.54768   -0.3437
-#> 2  0.01519    0.2796
-#> 3  0.46231    0.7238
+#> Distal outcome: class differences (modal, 95% CI)
+#> 
+#> Class  vs  Difference          95% CI      p  p (BH)
+#> -----  --  ----------  --------------  -----  ------
+#>     2   1       -0.45  [-0.55, -0.34]  <.001   <.001
+#>     3   1        0.15  [ 0.02,  0.28]   .029    .029
+#>     3   2        0.59  [ 0.46,  0.72]  <.001   <.001
 ```
 
 Modal analysis is simple to interpret, but it treats estimated profile

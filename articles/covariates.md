@@ -79,9 +79,12 @@ are clustered on groups.
 ``` r
 
 three_step(fit, data = course_engagement, outcome = "previous_grade")
-#>         level method class estimate standard_error conf_low conf_high effective_n
-#> 1 individuals    bch     1    0.222         0.0347    0.154     0.290         810
-#> 2 individuals    bch     2   -0.315         0.0359   -0.385    -0.244         564
+#> Distal outcome by class (bch, 95% CI)
+#> 
+#> Class   Mean          95% CI     SE  Effective n
+#> -----  -----  --------------  -----  -----------
+#>     1   0.22  [ 0.15,  0.29]  0.035       810.27
+#>     2  -0.31  [-0.39, -0.24]  0.036       564.36
 ```
 
 To compare the profiles, we call
@@ -93,10 +96,11 @@ means with a Benjamini-Hochberg adjusted p-value.
 
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            contrast = "pairs")
-#>         level method class reference_class estimate standard_error statistic  p_value p_adjusted
-#> 1 individuals    bch     2               1   -0.536          0.052     -10.3 5.72e-25   5.72e-25
-#>   conf_low conf_high
-#> 1   -0.638    -0.435
+#> Distal outcome: class differences (bch, 95% CI)
+#> 
+#> Class  vs  Difference          95% CI      p  p (BH)
+#> -----  --  ----------  --------------  -----  ------
+#>     2   1       -0.54  [-0.64, -0.43]  <.001   <.001
 ```
 
 To see the effect of ignoring classification error, we call
@@ -108,9 +112,12 @@ as known.
 
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            method = "modal")
-#>         level method class estimate standard_error conf_low conf_high effective_n
-#> 1 individuals  modal     1    0.214         0.0343    0.146     0.281         836
-#> 2 individuals  modal     2   -0.305         0.0357   -0.375    -0.235         586
+#> Distal outcome by class (modal, 95% CI)
+#> 
+#> Class   Mean          95% CI     SE  Effective n
+#> -----  -----  --------------  -----  -----------
+#>     1   0.21  [ 0.15,  0.28]  0.034          836
+#>     2  -0.30  [-0.37, -0.23]  0.036          586
 ```
 
 ## Predicting class membership

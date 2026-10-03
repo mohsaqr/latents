@@ -90,8 +90,10 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 
 - boundary:
 
-  Only `"error"`: a fit on a bound has no Wald inference, and `"fix"`
-  raises `latents_unsupported_inference`.
+  Accepted for the generic. Transition inference holds nothing at a
+  bound: with no bound active `"fix"` gives the same table as `"error"`,
+  and a fit with an active bound raises `latents_boundary_fit` under
+  either.
 
 - object:
 
@@ -135,8 +137,8 @@ informed (a profile no group occupies before its last occasion);
 `latents_singular_information` when the information cannot be inverted;
 `latents_bad_inference_data` when a supplied `data` does not reproduce
 the fit; `latents_too_few_groups` for robust or OPG errors with no more
-groups than parameters; `latents_unsupported_inference` for
-`method = "bootstrap"` or `boundary = "fix"`.
+groups than parameters; `latents_bad_argument` for
+`method = "bootstrap"` without `data`.
 
 ## Examples
 

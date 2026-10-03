@@ -20,6 +20,8 @@
   analysis](https://pak.dynasite.org/latents/articles/lta.md):
 - [Mixture
   regression](https://pak.dynasite.org/latents/articles/mixture-regression.md):
+- [Growth mixture models: classes of
+  trajectories](https://pak.dynasite.org/latents/articles/growth-mixture.md):
 
 ### Case studies
 

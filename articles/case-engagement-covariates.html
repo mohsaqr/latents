@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,7 @@
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -428,14 +429,13 @@ contrasts.</p>
 <span>  outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>  contrast <span class="op">=</span> <span class="st">"pairs"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;         level method class reference_class estimate standard_error statistic   p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1 individuals    bch     2               1  -0.4432        0.06054    -7.320 2.473e-13  3.710e-13</span></span>
-<span><span class="co">#&gt; 2 individuals    bch     3               1   0.1890        0.09458     1.998 4.572e-02  4.572e-02</span></span>
-<span><span class="co">#&gt; 3 individuals    bch     3               2   0.6321        0.07748     8.159 3.382e-16  1.015e-15</span></span>
-<span><span class="co">#&gt;    conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1 -0.561843   -0.3245</span></span>
-<span><span class="co">#&gt; 2  0.003597    0.3743</span></span>
-<span><span class="co">#&gt; 3  0.480291    0.7840</span></span></code></pre></div>
+<span><span class="co">#&gt; Distal outcome: class differences (bch, 95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class  vs  Difference          95% CI      p  p (BH)</span></span>
+<span><span class="co">#&gt; -----  --  ----------  --------------  -----  ------</span></span>
+<span><span class="co">#&gt;     2   1       -0.44  [-0.56, -0.32]  &lt;.001   &lt;.001</span></span>
+<span><span class="co">#&gt;     3   1        0.19  [ 0.00,  0.37]   .046    .046</span></span>
+<span><span class="co">#&gt;     3   2        0.63  [ 0.48,  0.78]  &lt;.001   &lt;.001</span></span></code></pre></div>
 <p>The BCH-adjusted estimates show that previous grades in the
 lower-activity profile are 0.629 standard deviations below those in the
 higher-activity profile and 0.446 standard deviations below those in the
@@ -469,14 +469,13 @@ classification-error-adjusted weights.</p>
 <span>  contrast <span class="op">=</span> <span class="st">"pairs"</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"modal"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;         level method class reference_class estimate standard_error statistic   p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1 individuals  modal     2               1  -0.4457        0.05204    -8.564 1.087e-17  1.631e-17</span></span>
-<span><span class="co">#&gt; 2 individuals  modal     3               1   0.1474        0.06745     2.185 2.887e-02  2.887e-02</span></span>
-<span><span class="co">#&gt; 3 individuals  modal     3               2   0.5931        0.06671     8.890 6.119e-19  1.836e-18</span></span>
-<span><span class="co">#&gt;   conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1 -0.54768   -0.3437</span></span>
-<span><span class="co">#&gt; 2  0.01519    0.2796</span></span>
-<span><span class="co">#&gt; 3  0.46231    0.7238</span></span></code></pre></div>
+<span><span class="co">#&gt; Distal outcome: class differences (modal, 95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class  vs  Difference          95% CI      p  p (BH)</span></span>
+<span><span class="co">#&gt; -----  --  ----------  --------------  -----  ------</span></span>
+<span><span class="co">#&gt;     2   1       -0.45  [-0.55, -0.34]  &lt;.001   &lt;.001</span></span>
+<span><span class="co">#&gt;     3   1        0.15  [ 0.02,  0.28]   .029    .029</span></span>
+<span><span class="co">#&gt;     3   2        0.59  [ 0.46,  0.72]  &lt;.001   &lt;.001</span></span></code></pre></div>
 <p>Modal analysis is simple to interpret, but it treats estimated
 profile assignments as if they were observed without error. Its standard
 errors therefore do not incorporate uncertainty associated with

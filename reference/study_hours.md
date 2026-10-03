@@ -92,14 +92,12 @@ strategy.
 fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
                           n_starts = 3, seed = 1)
 get_results(fit, "coefficients")
-#>     class        term   estimate std_error statistic      p_value   conf_low
-#> 1 class_1 (Intercept) 34.3545204 0.7192917 47.761595 0.000000e+00 32.9447345
-#> 2 class_1       hours  4.5658711 0.1047310 43.596167 0.000000e+00  4.3606021
-#> 3 class_2 (Intercept) 54.8951437 1.0927048 50.237855 0.000000e+00 52.7534818
-#> 4 class_2       hours  0.8083711 0.1696013  4.766303 1.876367e-06  0.4759587
-#>   conf_high   p_adjusted
-#> 1 35.764306           NA
-#> 2  4.771140 0.000000e+00
-#> 3 57.036806           NA
-#> 4  1.140784 1.876367e-06
+#> Regression coefficients (95% CI)
+#> 
+#> Class    Term       Estimate          95% CI      p
+#> -------  ---------  --------  --------------  -----
+#> Class 1  Intercept     34.35  [32.94, 35.76]  <.001
+#> Class 1  hours          4.57  [ 4.36,  4.77]  <.001
+#> Class 2  Intercept     54.90  [52.75, 57.04]  <.001
+#> Class 2  hours          0.81  [ 0.48,  1.14]  <.001
 ```

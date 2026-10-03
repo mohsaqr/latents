@@ -188,40 +188,47 @@ for `what = "all"`.
 fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
                           n_starts = 3, seed = 1)
 get_results(fit, "coefficients")
-#>     class        term   estimate std_error statistic      p_value   conf_low
-#> 1 class_1 (Intercept) 34.3545204 0.7192917 47.761595 0.000000e+00 32.9447345
-#> 2 class_1       hours  4.5658711 0.1047310 43.596167 0.000000e+00  4.3606021
-#> 3 class_2 (Intercept) 54.8951437 1.0927048 50.237855 0.000000e+00 52.7534818
-#> 4 class_2       hours  0.8083711 0.1696013  4.766303 1.876367e-06  0.4759587
-#>   conf_high   p_adjusted
-#> 1 35.764306           NA
-#> 2  4.771140 0.000000e+00
-#> 3 57.036806           NA
-#> 4  1.140784 1.876367e-06
+#> Regression coefficients (95% CI)
+#> 
+#> Class    Term       Estimate          95% CI      p
+#> -------  ---------  --------  --------------  -----
+#> Class 1  Intercept     34.35  [32.94, 35.76]  <.001
+#> Class 1  hours          4.57  [ 4.36,  4.77]  <.001
+#> Class 2  Intercept     54.90  [52.75, 57.04]  <.001
+#> Class 2  hours          0.81  [ 0.48,  1.14]  <.001
 get_results(fit, "fit")
-#>     family     nesting n_classes n_group_classes n_observations n_groups
-#> 1 gaussian observation         2               1            900       NA
-#>   log_likelihood n_parameters      aic      bic bic_rows    sabic      icl
-#> 1      -3144.007            7 6302.015 6335.632 6335.632 6313.401 7030.593
-#>     entropy group_entropy smallest_share converged iterations n_starts
-#> 1 0.4429906            NA      0.4360588      TRUE         42        4
-#>   n_best_replicated vcov_type
-#> 1                 3  observed
+#> Model fit
+#> 
+#> Family          gaussian
+#> Nesting         observation
+#> Classes         2
+#> Group classes   1
+#> Observations    900
+#> Parameters      7
+#> Log likelihood  -3144.01
+#> AIC             6302.01
+#> BIC             6335.63
+#> SABIC           6313.40
+#> ICL             7030.59
+#> Entropy         0.443
+#> Smallest class  43.6%
+#> Converged       yes
 get_results(fit, "coefficients", vcov_type = "robust")
-#>     class        term   estimate std_error statistic      p_value   conf_low
-#> 1 class_1 (Intercept) 34.3545204 0.8102139 42.401790 0.000000e+00 32.7665303
-#> 2 class_1       hours  4.5658711 0.1142614 39.959878 0.000000e+00  4.3419229
-#> 3 class_2 (Intercept) 54.8951437 1.1172910 49.132361 0.000000e+00 52.7052937
-#> 4 class_2       hours  0.8083711 0.1763408  4.584141 4.558558e-06  0.4627495
-#>   conf_high   p_adjusted
-#> 1 35.942510           NA
-#> 2  4.789819 0.000000e+00
-#> 3 57.084994           NA
-#> 4  1.153993 4.558558e-06
+#> Regression coefficients (95% CI)
+#> 
+#> Class    Term       Estimate          95% CI      p
+#> -------  ---------  --------  --------------  -----
+#> Class 1  Intercept     34.35  [32.77, 35.94]  <.001
+#> Class 1  hours          4.57  [ 4.34,  4.79]  <.001
+#> Class 2  Intercept     54.90  [52.71, 57.08]  <.001
+#> Class 2  hours          0.81  [ 0.46,  1.15]  <.001
 get_results(fit, "recovery", data = study_hours, truth = "strategy")
-#>   assigned strategy   n     share
-#> 1  class_1     deep 448 0.7818499
-#> 2  class_2     deep  49 0.1498471
-#> 3  class_1  surface 125 0.2181501
-#> 4  class_2  surface 278 0.8501529
+#> Recovery of a known classification
+#> 
+#> assigned  strategy    n  share
+#> --------  --------  ---  -----
+#> class_1   deep      448   0.78
+#> class_2   deep       49   0.15
+#> class_1   surface   125   0.22
+#> class_2   surface   278   0.85
 ```

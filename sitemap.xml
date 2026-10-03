@@ -9,6 +9,7 @@
 <url><loc>https://pak.dynasite.org/latents/articles/case-esm-lca.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/covariates.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/evaluation.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/articles/growth-mixture.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/index.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/lca.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/articles/lpa.html</loc></url>
@@ -35,6 +36,7 @@
 <url><loc>https://pak.dynasite.org/latents/reference/coef.multilpa.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/coef.multilpa_covariates.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/coef.multilpa_transitions.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/compare_models.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/confint.multilpa.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/confint.multilpa_covariates.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/course_engagement.html</loc></url>
@@ -48,6 +50,7 @@
 <url><loc>https://pak.dynasite.org/latents/reference/get_group_tna.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_pooled.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.html</loc></url>
@@ -55,6 +58,7 @@
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/get_tna.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/growth_scores.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/index.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/latents-conditions.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/lca.html</loc></url>
@@ -71,7 +75,9 @@
 <url><loc>https://pak.dynasite.org/latents/reference/nobs.multilpa_transitions.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/parameter_inference.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/plot.latents_comparison.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.latents_family_enumeration.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/plot.latents_growth_mixture.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.latents_pooled.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot.latents_transition_enumeration.html</loc></url>
@@ -85,11 +91,14 @@
 <url><loc>https://pak.dynasite.org/latents/reference/plot.multilpa_transitions.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/plot_views.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/pool_imputations.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/predict.latents_growth_mixture.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/predict.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/predict.multilpa.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/print.latents_growth_mixture.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.latents_plots.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.latents_pooled.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/print.latents_table.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.multilpa.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.multilpa_additive.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/print.multilpa_bootstrap_lrt.html</loc></url>
@@ -106,11 +115,13 @@
 <url><loc>https://pak.dynasite.org/latents/reference/r3step.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/report.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/sensitivity.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/simulate.latents_growth_mixture.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/simulate.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/srl.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/starting_values.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/student_esm.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/study_hours.html</loc></url>
+<url><loc>https://pak.dynasite.org/latents/reference/summary.latents_growth_mixture.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/summary.latents_pooled.html</loc></url>
 <url><loc>https://pak.dynasite.org/latents/reference/summary.multilpa.html</loc></url>
