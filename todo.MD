@@ -15,6 +15,24 @@ Evidence for existing claims: `validation/MATH_AUDIT.md`,
 
 ---
 
+## Priority 0 — One engine (plan)
+
+Consolidate the eight estimation engines into measurement blocks × latent
+structures on one kernel with shared services. Plan, phases, acceptance and
+risks: [validation/ENGINE_DESIGN.md](validation/ENGINE_DESIGN.md). Public API
+unchanged; every phase is a release that reproduces golden fixtures.
+
+- [x] **E0. Golden baseline** of every engine and option. **M** (251 cases, bit-identical reruns)
+- [x] **E1. Shared inference service.** **M**
+- [x] **E2. Shared alignment and simulation services.** **M**
+- [x] **E3. Kernel; port mixture regression and growth mixture.** **L**
+- [x] **E4. Port profile models.** **L**
+- [x] **E5. Port transition models.** **L**
+- [x] **E6. Port Houle families.** **M-L** (closed-form additive likelihood kept)
+- [~] **E7. New combinations**: multilevel growth and negative-binomial regression mixtures done; growth with categorical/ordinal items, transitions of regression/growth blocks, ordinal regression mixtures open. **M each**
+
+---
+
 ## Priority 1 — Models
 
 ### 1.1 Multilevel model families (Houle et al.)

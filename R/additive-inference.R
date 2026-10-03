@@ -154,18 +154,11 @@
       stats, .additive_unpack(point, n_classes, length(vars), structure),
       structure, class_names, vars))
   }
-  columns <- vapply(seq_along(theta), function(k) {
-    h <- step * max(1, abs(theta[k]))
-    shift <- function(m) {
-      point <- theta
-      point[k] <- point[k] + m * h
-      total(point)
-    }
-    (-shift(2) + 8 * shift(1) - 8 * shift(-1) + shift(-2)) / (12 * h)
-  }, numeric(length(theta)))
-  hessian <- (columns + t(columns)) / 2
-  dimnames(hessian) <- list(names(theta), names(theta))
-  -hessian
+  # The shared five-point score differences with h = step * max(1, |theta|):
+  # -(c + t(c)) / 2 equals the former -((c + t(c)) / 2) exactly, since
+  # negation and halving are exact.
+  .inference_score_information(total, theta, step, scheme = "five_point",
+                               h_rule = "max1")
 }
 
 #' Estimation-scale covariance of an additive fit, or a classed refusal
@@ -209,14 +202,11 @@
                                    class_names, x$vars)
   information <- .additive_information(stats, theta, x$structure,
                                        class_names, x$vars, step)
+  # The ratio rule (and a non-positive smallest eigenvalue) refuses with the
+  # ratio in the message; the ratio is also reported with the inference.
+  inverse <- .inference_invert(information, "ratio_le_eps")
   eigenvalues <- eigen(information, symmetric = TRUE, only.values = TRUE)$values
   condition_ratio <- min(eigenvalues) / max(eigenvalues)
-  if (!is.finite(condition_ratio) || condition_ratio <= 1e-10) {
-    stop(errorCondition(sprintf(
-      "The observed information is not positive definite (eigenvalue ratio %.3g).",
-      condition_ratio), class = "latents_singular_information", call = NULL))
-  }
-  inverse <- chol2inv(chol(information))
   dimnames(inverse) <- dimnames(information)
   gradient <- colSums(scores)
   scaled_score <- sqrt(max(0, drop(crossprod(gradient, inverse %*% gradient))))
@@ -227,18 +217,14 @@
       class = "latents_unconverged", call = NULL))
   }
   if (vcov_type != "observed") {
-    rank <- qr(scores)$rank
-    if (rank < length(theta)) {
-      stop(errorCondition(sprintf(paste(
-        "The %d group scores span %d of %d dimensions, too few to form a",
-        "%s covariance."), nrow(scores), rank, length(theta), vcov_type),
-        class = "latents_too_few_groups", call = NULL))
-    }
+    .inference_require_rank(scores, paste(
+      "The %d group scores span %d of %d dimensions, too few to form a",
+      "%s covariance."), formatted = TRUE, extra = list(vcov_type))
   }
   meat <- crossprod(scores)
   covariance <- switch(vcov_type,
     observed = inverse,
-    robust = inverse %*% meat %*% inverse,
+    robust = .inference_sandwich(inverse, meat),
     opg = chol2inv(chol(meat)))
   dimnames(covariance) <- dimnames(information)
   inference <- list(theta = theta, vcov = covariance, information = information,
@@ -298,7 +284,8 @@
   estimate <- c(means, variances, weights)
   n_head <- length(means)
   n_var <- length(variances)
-  softmax <- (diag(weights, n_classes) - tcrossprod(weights))[, -1L, drop = FALSE]
+  # The first class is the logit reference, so its column is dropped.
+  softmax <- .inference_simplex_jacobian(weights, "first")
   jacobian <- matrix(0, length(estimate), length(theta))
   jacobian[seq_len(n_head), seq_len(n_head)] <- diag(n_head)
   positions <- n_head + seq_len(n_var)
@@ -367,8 +354,7 @@
   standard_error <- if (is.null(inference)) {
     rep(NA_real_, nrow(table))
   } else {
-    covariance <- natural$jacobian %*% inference$vcov %*% t(natural$jacobian)
-    sqrt(pmax(diag(covariance), 0))
+    .inference_delta_se(natural$jacobian, inference$vcov, "quadratic")
   }
   table$standard_error <- unname(standard_error)
   tested <- table$parameter == "mean"
@@ -379,7 +365,7 @@
   kind <- ifelse(table$parameter == "weight", "probability",
                  ifelse(table$parameter == "variance", "positive", "real"))
   bounds <- .multilpa_wald_bounds(table$estimate, table$standard_error, kind,
-                                  stats::qnorm(1 - (1 - level) / 2))
+                                  .inference_critical(level, "one_minus"))
   table$conf_low <- bounds$low
   table$conf_high <- bounds$high
   rownames(table) <- NULL
@@ -465,7 +451,7 @@
   natural <- .additive_natural(inference$theta, length(class_names), x$vars,
                                x$structure, class_names)
   rows <- paste0("weight.", class_names)
-  covariance <- natural$jacobian %*% inference$vcov %*% t(natural$jacobian)
+  covariance <- .inference_delta_covariance(natural$jacobian, inference$vcov)
   weight <- unname(natural$estimate[rows])
   variance <- unname(diag(covariance)[rows])
   defined <- length(class_names) > 1L & variance > 0

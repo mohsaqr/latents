@@ -19,11 +19,6 @@
 #' @return A named numeric vector.
 #' @noRd
 .mixture_pack <- function(spec, params) {
-  # paste0() recycles a zero-length argument to one string, so an empty block
-  # (one class, no group-class covariates) must be named explicitly as empty.
-  labelled <- function(values, labels) {
-    if (length(values) == 0L) numeric() else stats::setNames(values, labels)
-  }
   class_names <- paste0("class_", seq_len(spec$n_classes))
   regression <- stats::setNames(
     as.vector(params$beta),
@@ -31,28 +26,16 @@
            rep(colnames(spec$x), spec$n_classes)))
   common <- if (ncol(spec$z) == 0L) numeric() else stats::setNames(
     params$common, paste0("coefficient.common.", colnames(spec$z)))
-  dispersion <- if (!identical(spec$family, "gaussian")) numeric() else if (
-    identical(spec$variance, "equal")) c(log_sigma.all = 0.5 * log(params$sigma2[1L])) else
-      stats::setNames(0.5 * log(params$sigma2), paste0("log_sigma.", class_names))
-  free_classes <- class_names[-1L]
-  mixing <- if (identical(spec$nesting, "two-level")) {
-    group_names <- paste0("group_class_", seq_len(spec$n_group_classes))
-    delta <- params$delta[, -1L, drop = FALSE]
-    logits <- params$class_logits[, -1L, drop = FALSE]
-    logit_rows <- c(paste0("(Intercept):", group_names), colnames(spec$w))
-    c(labelled(as.vector(delta), paste0(
-      "group_membership.", rep(group_names[-1L], each = ncol(spec$v)), ".",
-      rep(colnames(spec$v), spec$n_group_classes - 1L))),
-      labelled(as.vector(logits), paste0(
-        "membership.", rep(free_classes, each = length(logit_rows)), ".",
-        rep(logit_rows, length(free_classes)))))
-  } else {
-    gamma <- params$gamma[, -1L, drop = FALSE]
-    labelled(as.vector(gamma), paste0(
-      "membership.", rep(free_classes, each = ncol(spec$w)), ".",
-      rep(colnames(spec$w), length(free_classes))))
-  }
-  c(regression, common, dispersion, mixing)
+  dispersion <- switch(spec$family,
+    gaussian = if (identical(spec$variance, "equal")) {
+      c(log_sigma.all = 0.5 * log(params$sigma2[1L]))
+    } else stats::setNames(0.5 * log(params$sigma2), paste0("log_sigma.", class_names)),
+    negative_binomial = if (identical(spec$variance, "equal")) {
+      c(log_dispersion.all = log(params$sigma2[1L]))
+    } else stats::setNames(log(params$sigma2), paste0("log_dispersion.", class_names)),
+    ordinal = .ordinal_pack(spec, params),
+    numeric())
+  c(regression, common, dispersion, .mixture_structure_pack(spec, params))
 }
 
 #' Unpack a free-parameter vector into a parameter list
@@ -74,22 +57,21 @@
   params <- template
   params$beta[] <- take(p * k)
   params$common[] <- take(q)
+  if (identical(spec$family, "negative_binomial")) {
+    params$sigma2 <- if (identical(spec$variance, "equal")) rep(exp(take(1L)), k) else
+      exp(take(k))
+  }
   if (identical(spec$family, "gaussian")) {
     params$sigma2 <- if (identical(spec$variance, "equal")) {
       rep(exp(2 * take(1L)), k)
     } else exp(2 * take(k))
   }
-  if (identical(spec$nesting, "two-level")) {
-    delta_free <- take(ncol(spec$v) * (spec$n_group_classes - 1L))
-    params$delta <- cbind(0, matrix(delta_free, ncol(spec$v)))
-    logits_free <- take(nrow(template$class_logits) * (k - 1L))
-    params$class_logits <- cbind(0, matrix(logits_free,
-                                           nrow(template$class_logits)))
-  } else {
-    gamma_free <- take(ncol(spec$w) * (k - 1L))
-    params$gamma <- cbind(0, matrix(gamma_free, ncol(spec$w)))
+  if (identical(spec$family, "ordinal")) {
+    m <- spec$n_categories - 1L
+    params$thresholds[] <- .ordinal_natural(take(m * k), m)
   }
-  params
+  .mixture_structure_unpack(spec, theta[position + seq_len(length(theta) - position)],
+                            params)
 }
 
 #' Per-unit analytic scores
@@ -103,14 +85,28 @@
 .mixture_unit_scores <- function(spec, params, expectation) {
   tau <- expectation$tau
   eta <- .mixture_linear_predictors(spec, params)
-  derivative <- .mixture_family_derivatives(spec$family, spec$y, spec$trials,
-                                           eta, params$sigma2)$gradient
+  ordinal <- if (identical(spec$family, "ordinal")) {
+    .ordinal_derivatives(spec, params, eta)
+  }
+  # The ordinal derivative in eta is -(d/da + d/db) over the category bounds.
+  derivative <- if (is.null(ordinal)) {
+    .mixture_family_derivatives(spec$family, spec$y, spec$trials, eta,
+                                params$sigma2)$gradient
+  } else -(ordinal$upper + ordinal$lower)
   weighted <- tau * derivative
   regression <- do.call(cbind, lapply(seq_len(spec$n_classes), function(k) {
     spec$x * weighted[, k]
   }))
   common <- spec$z * rowSums(weighted)
-  dispersion <- if (!identical(spec$family, "gaussian")) {
+  dispersion <- if (identical(spec$family, "negative_binomial")) {
+    standardized <- tau * .latents_negative_binomial_dispersion_derivatives(
+      spec$y, exp(eta), params$sigma2)$score
+    if (identical(spec$variance, "equal")) {
+      matrix(rowSums(standardized), ncol = 1L)
+    } else standardized
+  } else if (!is.null(ordinal)) {
+    .ordinal_threshold_scores(spec, params, tau, ordinal)
+  } else if (!identical(spec$family, "gaussian")) {
     matrix(0, spec$n, 0L)
   } else {
     residual2 <- (spec$y - eta)^2
@@ -124,45 +120,7 @@
     if (identical(spec$nesting, "observation")) scores else
       rowsum(scores, spec$group_index, reorder = TRUE)
   }
-  mixing <- switch(spec$nesting,
-    observation = {
-      residual <- tau - rowSums(tau) * exp(expectation$log_prior)
-      do.call(cbind, lapply(seq.int(2L, length.out = spec$n_classes - 1L),
-                            function(k) spec$w * residual[, k]))
-    },
-    group = {
-      residual <- expectation$group_tau -
-        rowSums(expectation$group_tau) * exp(expectation$log_prior)
-      do.call(cbind, lapply(seq.int(2L, length.out = spec$n_classes - 1L),
-                            function(k) spec$w * residual[, k]))
-    },
-    "two-level" = {
-      rho <- expectation$rho
-      group_residual <- rho - rowSums(rho) * exp(expectation$log_eta)
-      delta_scores <- do.call(cbind, lapply(
-        seq.int(2L, length.out = spec$n_group_classes - 1L),
-        function(h) spec$v * group_residual[, h]))
-      # Row-level class-logit scores, summed to groups below.
-      residual_by_group_class <- lapply(
-        seq_len(spec$n_group_classes), function(h) {
-          expectation$tau_by_group_class[[h]] -
-            rho[spec$group_index, h] *
-            exp(expectation$log_prior_by_group_class[[h]])
-        })
-      logit_scores <- do.call(cbind, lapply(
-        seq.int(2L, length.out = spec$n_classes - 1L), function(k) {
-          intercepts <- vapply(residual_by_group_class, function(r) r[, k],
-                               numeric(spec$n))
-          intercepts <- matrix(intercepts, spec$n)
-          slopes <- spec$w * Reduce(`+`, lapply(residual_by_group_class,
-                                                function(r) r[, k]))
-          cbind(intercepts, slopes)
-        }))
-      cbind(delta_scores %||% matrix(0, spec$n_groups, 0L),
-            to_units(logit_scores %||% matrix(0, spec$n, 0L)))
-    })
-  mixing <- mixing %||% matrix(0, if (identical(spec$nesting, "observation"))
-    spec$n else spec$n_groups, 0L)
+  mixing <- .mixture_structure_scores(spec, expectation)
   scores <- cbind(to_units(row_scores), mixing)
   colnames(scores) <- names(.mixture_pack(spec, params))
   scores
@@ -183,20 +141,11 @@
 #' @return A symmetric matrix.
 #' @noRd
 .mixture_observed_information <- function(spec, params, step = 1e-5) {
-  theta <- .mixture_pack(spec, params)
-  columns <- lapply(seq_along(theta), function(j) {
-    h <- step * (1 + abs(theta[j]))
-    up <- theta
-    down <- theta
-    up[j] <- up[j] + h
-    down[j] <- down[j] - h
-    (.mixture_total_score(spec, up, params) -
-       .mixture_total_score(spec, down, params)) / (2 * h)
-  })
-  hessian <- do.call(cbind, columns)
-  information <- -(hessian + t(hessian)) / 2
-  dimnames(information) <- list(names(theta), names(theta))
-  information
+  # Central differences with h = step * (1 + |theta|), the shared service's
+  # "central"/"plus1" variant.
+  .inference_score_information(function(point) .mixture_total_score(spec, point, params),
+                               .mixture_pack(spec, params), step,
+                               scheme = "central", h_rule = "plus1")
 }
 
 #' Covariance of the packed estimates
@@ -221,10 +170,16 @@
   meat <- crossprod(scores_for_meat)
   information <- if (identical(vcov_type, "opg")) crossprod(scores) else
     .mixture_observed_information(spec, params)
-  inverse <- .mixture_invert(information)
-  vcov <- if (identical(vcov_type, "robust")) {
-    inverse %*% meat %*% inverse
+  # A negative-binomial dispersion at the Poisson limit is a boundary
+  # estimate: the likelihood is flat there, so it is held, its errors are
+  # NA, and the others are conditional on it.
+  free <- !.mixture_boundary_coordinates(spec, theta)
+  inverse <- .mixture_invert(information[free, free, drop = FALSE])
+  free_vcov <- if (identical(vcov_type, "robust")) {
+    .inference_sandwich(inverse, meat[free, free, drop = FALSE])
   } else inverse
+  vcov <- matrix(NA_real_, length(theta), length(theta))
+  vcov[free, free] <- free_vcov
   dimnames(vcov) <- list(names(theta), names(theta))
   list(theta = theta, vcov = vcov, vcov_type = vcov_type,
        clustered_on = if (identical(vcov_type, "robust")) clustered_on else NA,
@@ -232,12 +187,24 @@
        score_norm = max(abs(colSums(scores))))
 }
 
+#' Coordinates of a regression mixture on a boundary
+#'
+#' A negative-binomial log dispersion at its floor (the Poisson limit).
+#' @param spec The model specification.
+#' @param theta The packed estimates.
+#' @return A logical vector over `theta`.
+#' @noRd
+.mixture_boundary_coordinates <- function(spec, theta) {
+  startsWith(names(theta), "log_dispersion.") &
+    theta <= log(.latents_min_dispersion) + 1e-6
+}
+
 #' Invert an information matrix, refusing a singular one
 #' @noRd
 .mixture_invert <- function(information) {
-  eigen_values <- eigen(information, symmetric = TRUE, only.values = TRUE)$values
-  if (any(!is.finite(eigen_values)) || min(eigen_values) <=
-      1e-10 * max(abs(eigen_values))) {
+  # The "min <= 1e-10 max |ev|" rule flags rather than refuses: a mixture fit
+  # reports NA standard errors for an unidentified estimate.
+  if (!.inference_positive_definite(information, "min_le_eps_maxabs")) {
     warning(warningCondition(paste(
       "The information matrix is singular or not positive definite: some",
       "parameters are not identified at this estimate (an empty class, a",
@@ -257,29 +224,8 @@
 #' @return A list of `estimate` and `std_error`.
 #' @noRd
 .mixture_delta <- function(theta, vcov, transform, step = 1e-6) {
-  estimate <- transform(theta)
-  jacobian <- do.call(cbind, lapply(seq_along(theta), function(j) {
-    h <- step * (1 + abs(theta[j]))
-    up <- theta
-    down <- theta
-    up[j] <- up[j] + h
-    down[j] <- down[j] - h
-    (transform(up) - transform(down)) / (2 * h)
-  }))
-  jacobian <- matrix(jacobian, length(estimate))
-  variance <- rowSums((jacobian %*% vcov) * jacobian)
-  list(estimate = estimate, std_error = sqrt(pmax(variance, 0)))
-}
-
-#' Wald table from estimates and standard errors
-#' @noRd
-.mixture_wald <- function(estimate, std_error, level) {
-  z <- stats::qnorm(1 - (1 - level) / 2)
-  statistic <- estimate / std_error
-  data.frame(estimate = estimate, std_error = std_error,
-             statistic = statistic,
-             p_value = 2 * stats::pnorm(-abs(statistic)),
-             conf_low = estimate - z * std_error,
-             conf_high = estimate + z * std_error,
-             row.names = NULL)
+  # The mixture engines have always used the rowSums((J V) * J) form.
+  jacobian <- .inference_numeric_jacobian(transform, theta, step)
+  list(estimate = transform(theta),
+       std_error = .inference_delta_se(jacobian, vcov, "rowsums"))
 }

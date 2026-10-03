@@ -58,7 +58,16 @@ observed value, class trajectory and the person's own predicted curve),
 \code{"starts"} (one row per start), \code{"recovery"} (needs \code{data} and \code{truth}:
 the modal classes cross-tabulated against a known classification that is
 constant within persons, with counts and shares of each assigned class),
-or \code{"all"} (a named list of every table but \code{"recovery"}).}
+or \code{"all"} (a named list of every table but \code{"recovery"}). A multilevel
+growth mixture (\code{cluster}) adds \code{"group_classes"} (one row per group
+class and class: the class probabilities within the group class, their
+standard errors without membership covariates, the group class's share
+of the clusters and its assigned clusters) and \code{"clusters"} (one row per
+cluster: persons, modal group class and posteriors); its \code{"membership"}
+table holds the group-class logits (against group class 1) and the class
+logits with one intercept per group class, \code{"assignments"} gains each
+person's cluster, and \code{"fit"} counts clusters in \code{bic} (persons in
+\code{bic_persons}).}
 
 \item{level}{Confidence level of the intervals.}
 

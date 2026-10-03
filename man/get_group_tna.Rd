@@ -3,6 +3,7 @@
 \name{get_group_tna}
 \alias{get_group_tna}
 \alias{get_group_tna.multilpa_transitions}
+\alias{get_group_tna.multilpa_lta}
 \alias{get_group_tna.multilpa}
 \alias{get_group_tna.multilpa_covariates}
 \title{A transition network for each latent group class}
@@ -10,6 +11,8 @@
 get_group_tna(x, ...)
 
 \method{get_group_tna}{multilpa_transitions}(x, label = "Group class", ...)
+
+\method{get_group_tna}{multilpa_lta}(x, ...)
 
 \method{get_group_tna}{multilpa}(x, label = "Group class", ...)
 

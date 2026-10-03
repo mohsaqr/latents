@@ -9,7 +9,10 @@
 #'   fit that classifies persons.
 #' @return A list: `growth` (whether there are random effects), `spec`,
 #'   `posterior` (persons by classes, rows summing to one), `modal`,
-#'   `classes`, `family`, `inverse_link`, `weights` (per person, or `NULL`).
+#'   `classes`, `family`, `inverse_link`, `response_mean` (a function of
+#'   linear predictors and their classes giving the outcome's mean: the
+#'   inverse link, or for the ordinal family the expected category score
+#'   under that class's thresholds), `weights` (per person, or `NULL`).
 #' @noRd
 .trajectory_view <- function(x) {
   growth <- inherits(x, "latents_growth_mixture")
@@ -22,11 +25,19 @@
   spec <- x$spec
   posterior <- if (growth) x$expectation$posterior else x$expectation$group_tau
   family <- spec$family %||% "gaussian"
+  inverse_link <- switch(family, gaussian = identity, binomial = stats::plogis,
+                         poisson = exp, negative_binomial = exp)
+  response_mean <- if (identical(family, "ordinal")) {
+    function(linear, classes) {
+      scores <- .ordinal_expected_scores(
+        matrix(linear, length(linear), spec$n_classes), x$params$thresholds)
+      scores[cbind(seq_along(linear), classes)]
+    }
+  } else function(linear, classes) inverse_link(linear)
   list(growth = growth, spec = spec, posterior = posterior,
        modal = max.col(posterior, ties.method = "first"),
        classes = paste0("class_", seq_len(spec$n_classes)), family = family,
-       inverse_link = switch(family, gaussian = identity, binomial = stats::plogis,
-                             poisson = exp),
+       inverse_link = inverse_link, response_mean = response_mean,
        weights = spec$sampling_weights)
 }
 
@@ -47,7 +58,9 @@
 #'
 #' The class's linear predictor is linear in its coefficients, so its
 #' standard error is exact given their covariance; the band is formed on the
-#' link scale and carried to the response scale.
+#' link scale and carried to the response scale. An ordinal class's mean (the
+#' expected category score) also depends on its thresholds, so its band is
+#' the delta method's on the score scale and `std_error` is on that scale.
 #'
 #' @param x A trajectory fit.
 #' @param rows A data frame of predictor values.
@@ -60,13 +73,16 @@
   view <- .trajectory_view(x)
   spec <- view$spec
   design <- .growth_design(x, rows)
-  z <- stats::qnorm(1 - (1 - level) / 2)
+  z <- .inference_critical(level, "one_minus")
+  if (identical(view$family, "ordinal")) {
+    return(.ordinal_trajectory_band(x, design, inference, z, view$classes))
+  }
   do.call(rbind, lapply(view$classes, function(class) {
     names <- c(sprintf("coefficient.%s.%s", class, colnames(spec$x)),
                if (ncol(spec$z) > 0L) sprintf("coefficient.common.%s", colnames(spec$z)))
     estimate <- as.vector(design %*% inference$theta[names])
     covariance <- inference$vcov[names, names, drop = FALSE]
-    std_error <- sqrt(pmax(rowSums((design %*% covariance) * design), 0))
+    std_error <- .inference_delta_se(design, covariance, "rowsums")
     data.frame(class = class, estimate = view$inverse_link(estimate),
                std_error = std_error,
                conf_low = view$inverse_link(estimate - z * std_error),
@@ -101,6 +117,12 @@
 .trajectory_three_step_inputs <- function(x, data, outcome) {
   view <- .trajectory_view(x)
   spec <- view$spec
+  if (!is.null(spec$cluster)) {
+    stop(errorCondition(paste(
+      "Three-step correction is unavailable for a multilevel growth mixture:",
+      "its persons are dependent within clusters, and the correction treats",
+      "them as independent."), class = "latents_unsupported_three_step", call = NULL))
+  }
   if (!spec$intercept_only) {
     stop(errorCondition(paste(
       "Three-step correction is unavailable for a fit that already uses",

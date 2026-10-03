@@ -134,12 +134,15 @@ different numbers, not two spellings of one table. Takes \code{level}.}
 class is assigned to another: \code{level}, \code{true_class}, \code{assigned_class},
 \code{probability}, summing to one within each \code{true_class}. Takes \code{level}.
 On a membership-covariate fit this is a marginal summary over the fitted
-units, not a classification-error adjustment conditional on covariates.}
+units, not a classification-error adjustment conditional on covariates.
+A fit with a noise component raises \code{latents_unsupported_noise}, as
+\code{\link[=three_step]{three_step()}} does, and \code{"all"} and \code{summary()} leave the table out.}
 \item{\code{"bch_weights"}}{The BCH inverse-error weights, one row per unit and
 class: \code{level}, \code{unit}, \code{assigned_class}, \code{class}, \code{weight}. Takes
 \code{level}; weight a regression with one level, not with \code{"both"}. On a
 membership-covariate fit these invert the marginal error matrix and are
-not a conditional three-step correction.}
+not a conditional three-step correction. Refused for a fit with a noise
+component, like \code{"classification_errors"}.}
 \item{\code{"entropy"}}{One row per level: \code{level}, \code{n_classes}, \code{n_units},
 \code{entropy_sum}, \code{relative_entropy}.}
 \item{\code{"residuals"}}{Bivariate residuals for every indicator pair, testing

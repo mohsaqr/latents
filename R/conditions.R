@@ -176,6 +176,12 @@
 #'     person-centred fit. Group baselines were removed before estimation and
 #'     no distribution for them is available to simulate raw data under the
 #'     null model.}
+#'   \item{`latents_unsupported_tna`}{[get_tna()] or [get_group_tna()] was
+#'     called on a general transition fit (a [lta()] fit with occasion-varying
+#'     or covariate-dependent transitions, a second order, movers and stayers,
+#'     or ordinal, count or weighted data), which has no single transition
+#'     matrix to hand over; its transitions are in
+#'     `get_results(x, "transitions")`.}
 #'   \item{`latents_no_plot`}{`plot(x, what = "all")` was called on an object
 #'     whose plot method names no views to draw.}
 #'   \item{`latents_no_time`}{A sequence verb was called on a fit made without

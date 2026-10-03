@@ -9,19 +9,6 @@
 # Measurement is the multilpa() model, invariant across occasions or with its
 # own means and variances at each occasion.
 
-#' Log-sum-exp over the last dimension that tolerates rows of -Inf
-#' @noRd
-.lta_log_sum_exp <- function(values) {
-  top <- .multilpa_row_max(values)
-  finite <- is.finite(top)
-  out <- rep(-Inf, nrow(values))
-  if (any(finite)) {
-    shifted <- exp(values[finite, , drop = FALSE] - top[finite])
-    out[finite] <- top[finite] + log(rowSums(shifted))
-  }
-  out
-}
-
 #' Covariate columns as a numeric matrix, factors expanded to indicators
 #' @return A matrix with one row per data row and named columns, or `NULL`.
 #' @noRd
@@ -110,48 +97,6 @@
   .multilpa_log_softmax(design, coefficients)
 }
 
-#' Forward-backward with group- and occasion-specific transitions
-#'
-#' @param emission Offset-removed emission list (one groups x K matrix per
-#'   occasion).
-#' @param layout Sequence layout.
-#' @param log_initial Groups x K log initial probabilities.
-#' @param log_transition List over occasions 2..T of groups x K x K arrays.
-#' @return A list with `alpha`, `beta` and `log_scaled`.
-#' @noRd
-.lta_forward_backward <- function(emission, layout, log_initial, log_transition) {
-  n_groups <- nrow(layout$slot)
-  n_profiles <- ncol(log_initial)
-  later <- seq_len(layout$n_occasions)[-1L]
-  hold <- function(updated, previous, occasion) {
-    outside <- !layout$within[, occasion]
-    if (any(outside)) updated[outside, ] <- previous[outside, , drop = FALSE]
-    updated
-  }
-  forward_step <- function(state, transition) {
-    matrix(vapply(seq_len(n_profiles), function(to) {
-      .lta_log_sum_exp(state + transition[, , to])
-    }, numeric(n_groups)), n_groups, n_profiles)
-  }
-  backward_step <- function(state, transition) {
-    matrix(vapply(seq_len(n_profiles), function(from) {
-      .lta_log_sum_exp(state + matrix(transition[, from, ], n_groups, n_profiles))
-    }, numeric(n_groups)), n_groups, n_profiles)
-  }
-  alpha <- Reduce(function(previous, t) {
-    hold(forward_step(previous, log_transition[[t - 1L]]) + emission[[t]],
-         previous, t)
-  }, later, init = log_initial + emission[[1L]], accumulate = TRUE)
-  beta <- Reduce(function(t, following) {
-    hold(backward_step(following + emission[[t]], log_transition[[t - 1L]]),
-         following, t)
-  }, later, init = matrix(0, n_groups, n_profiles), right = TRUE, accumulate = TRUE)
-  if (!is.list(alpha)) alpha <- list(alpha)
-  if (!is.list(beta)) beta <- list(beta)
-  list(alpha = alpha, beta = beta,
-       log_scaled = .lta_log_sum_exp(alpha[[layout$n_occasions]]))
-}
-
 #' Posterior occupancy and pair probabilities of one class, per group and
 #' occasion, weighted by the group's class posterior
 #' @return A list with `posterior` (rows x K), `initial` (groups x K) and
@@ -223,14 +168,6 @@
 #' Measurement log densities, rows x K, invariant or per occasion
 #' @noRd
 .lta_log_density <- function(x, codes, parameters, occasion_of_row, extra = NULL) {
-  gaussian_density <- function(rows, means, variances) {
-    vapply(seq_len(nrow(means)), function(k) {
-      residuals <- sweep(x[rows, , drop = FALSE], 2L, means[k, ], "-")
-      -0.5 * rowSums(sweep(residuals^2, 2L, variances[k, ], "/") +
-                       matrix(log(2 * pi) + log(variances[k, ]), length(rows),
-                              ncol(x), byrow = TRUE))
-    }, numeric(length(rows)))
-  }
   n_profiles <- nrow(parameters$measurement[[1L]]$means)
   out <- matrix(0, nrow(x), n_profiles)
   moments <- vector("list", length(parameters$measurement))
@@ -238,28 +175,15 @@
     rows <- if (length(parameters$measurement) == 1L) seq_len(nrow(x)) else
       which(occasion_of_row == t)
     if (length(rows) == 0L) return(NULL)
-    block <- parameters$measurement[[t]]
-    if (ncol(x) > 0L) {
-      sub <- x[rows, , drop = FALSE]
-      if (anyNA(sub) || !is.null(block$covariances)) {
-        # Missing indicators are integrated out and full covariances used,
-        # by the cross-sectional moments; the M-step reuses the moments.
-        gaussian <- .multilpa_gaussian_moments(sub, block)
-        out[rows, ] <<- gaussian$log_density
-        moments[[t]] <<- gaussian$moments
-      } else {
-        out[rows, ] <<- matrix(gaussian_density(rows, block$means, block$variances),
-                               length(rows), n_profiles)
-      }
-    }
-    if (!is.null(codes)) {
-      out[rows, ] <<- out[rows, , drop = FALSE] + .multilpa_categorical_log_density(
-        codes[rows, , drop = FALSE], block$response_probabilities)
-    }
-    if (!is.null(extra)) {
-      out[rows, ] <<- out[rows, , drop = FALSE] + .latents_extra_log_density(
-        .latents_extra_rows(extra, rows), block, length(rows), n_profiles)
-    }
+    # Missing indicators are integrated out and full covariances used by the
+    # cross-sectional moments, which the M-step reuses.
+    measurement <- .latents_measurement_log_density(
+      x[rows, , drop = FALSE], parameters$measurement[[t]],
+      if (is.null(codes)) NULL else codes[rows, , drop = FALSE],
+      if (is.null(extra)) NULL else .latents_extra_rows(extra, rows),
+      offset = FALSE, n_profiles = n_profiles)
+    out[rows, ] <<- measurement$log_density
+    moments[t] <<- list(measurement$moments)
   }))
   structure(out, moments = moments)
 }
@@ -365,7 +289,7 @@
     })
     if (!second) {
       return(list(log_initial = log_initial, log_transition = log_transition,
-                  pass = .lta_forward_backward(emission$log_density, layout,
+                  pass = .latents_forward_backward(emission$log_density, layout,
                                                log_initial, log_transition)))
     }
     log_transition2 <- lapply(designs$transition[-1L], function(design) {
@@ -376,7 +300,7 @@
     augmented <- .lta_augment(log_initial, log_transition, log_transition2)
     list(log_initial = log_initial, log_transition = log_transition,
          log_transition2 = log_transition2, augmented = augmented,
-         pass = .lta_forward_backward(augmented_emission, layout,
+         pass = .latents_forward_backward(augmented_emission, layout,
                                       augmented$log_initial, augmented$log_transition))
   })
   scores <- matrix(vapply(per_class, function(c) c$pass$log_scaled, numeric(n_groups)),
@@ -512,31 +436,24 @@
                     variance_model, min_variance, n_categories, min_probability,
                     max_iter, tol, covariance_model = "diagonal", structure = NULL,
                     sampling_weights = NULL, extra = NULL) {
-  expectation <- .lta_expectation(x, codes, layout, designs, parameters,
-                                  occasion_of_row, sampling_weights, extra)
-  history <- expectation$log_likelihood
-  converged <- FALSE
-  iteration <- 0L
-  # Sequential by nature: each step starts from the last point.
-  while (iteration < max_iter && !converged) {
-    updated <- .lta_maximization(x, codes, layout, designs, expectation, parameters,
-                                 occasion_of_row, variance_model, min_variance,
-                                 n_categories, min_probability, covariance_model,
-                                 structure, extra)
-    updated_expectation <- .lta_expectation(x, codes, layout, designs, updated,
-                                            occasion_of_row, sampling_weights, extra)
-    gain <- updated_expectation$log_likelihood - expectation$log_likelihood
-    if (gain < -1e-8 * (1 + abs(expectation$log_likelihood))) {
-      stop("EM likelihood decreased beyond numerical roundoff.")
-    }
-    converged <- abs(gain) <= tol * (1 + abs(expectation$log_likelihood))
-    iteration <- iteration + 1L
-    history <- c(history, updated_expectation$log_likelihood)
-    parameters <- updated
-    expectation <- updated_expectation
-  }
-  list(parameters = parameters, expectation = expectation, converged = converged,
-       iterations = iteration, history = history)
+  # The inner logit Newton steps of the transition M-step leave more rounding
+  # in the likelihood than a closed-form step, hence the looser guard.
+  fit <- .latents_em(
+    parameters,
+    evaluate = function(point) {
+      .lta_expectation(x, codes, layout, designs, point, occasion_of_row,
+                       sampling_weights, extra)
+    },
+    maximize = function(point, expectation) {
+      .lta_maximization(x, codes, layout, designs, expectation, point,
+                        occasion_of_row, variance_model, min_variance,
+                        n_categories, min_probability, covariance_model,
+                        structure, extra)
+    },
+    max_iter = max_iter, tol = tol,
+    settings = .latents_em_settings(decrease_tolerance = 1e-8))
+  list(parameters = fit$state, expectation = fit$expectation, converged = fit$converged,
+       iterations = fit$iterations, history = fit$history)
 }
 
 #' Starting values: the homogeneous initializer, converted to logit
@@ -651,17 +568,7 @@
   designs <- .lta_designs(layout, .lta_covariate_matrix(data, transition_covariates),
                           .lta_covariate_matrix(data, initial_covariates), transitions)
   n_measurement <- if (identical(measurement_model, "occasion")) layout$n_occasions else 1L
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
-    on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-      else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-        rm(".Random.seed", envir = .GlobalEnv)
-      }
-    }, add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
   x <- sweep(x, 2L, centers, "-")
   categorical_names <- categorical
@@ -678,50 +585,45 @@
                covariance_model = covariance_model, structure = structure,
                stayer = c(rep(FALSE, n_movers), rep(TRUE, as.integer(mover_stayer))),
                sampling_weights = sampling_weights, extra_data = extra)
-  attempts <- lapply(seq_len(n_starts), function(start_index) {
-    tryCatch({
-      start <- .lta_initialize(x, groups$index, layout, designs, n_profiles,
-                               n_group_classes, variance_model, min_variance,
-                               start_index, codes, n_categories, min_probability,
-                               n_measurement, order, as.integer(mover_stayer),
-                               covariance_model, structure, extra)
-      # EM to a loose tolerance, then a quasi-Newton finish on the exact
-      # likelihood: EM alone crawls when profiles are weakly separated.
-      em <- .lta_em(x, codes, layout, designs, start, occasion_of_row, variance_model,
-                    min_variance, n_categories, min_probability, max_iter,
-                    max(tol, 1e-6), covariance_model, structure, sampling_weights,
-                    extra)
-      # The quasi-Newton finish works on diagonal measurement; a covariance
-      # structure is maximized by EM alone, to the full tolerance.
-      if (!identical(covariance_model, "diagonal") || !is.null(structure)) {
-        if (tol < 1e-6 && max_iter > 0L) {
-          em <- .lta_em(x, codes, layout, designs, em$parameters, occasion_of_row,
-                        variance_model, min_variance, n_categories, min_probability,
-                        max_iter, tol, covariance_model, structure, sampling_weights,
-                        extra)
-        }
-        return(em)
+  # Each start runs to completion or is recorded as failed; the best is
+  # chosen by the shared rule (see .latents_run_starts()).
+  starts <- .latents_run_starts(n_starts, function(start_index) {
+    start <- .lta_initialize(x, groups$index, layout, designs, n_profiles,
+                             n_group_classes, variance_model, min_variance,
+                             start_index, codes, n_categories, min_probability,
+                             n_measurement, order, as.integer(mover_stayer),
+                             covariance_model, structure, extra)
+    # EM to a loose tolerance, then a quasi-Newton finish on the exact
+    # likelihood: EM alone crawls when profiles are weakly separated.
+    em <- .lta_em(x, codes, layout, designs, start, occasion_of_row, variance_model,
+                  min_variance, n_categories, min_probability, max_iter,
+                  max(tol, 1e-6), covariance_model, structure, sampling_weights,
+                  extra)
+    # The quasi-Newton finish works on diagonal measurement; a covariance
+    # structure is maximized by EM alone, to the full tolerance.
+    if (!identical(covariance_model, "diagonal") || !is.null(structure)) {
+      if (tol < 1e-6 && max_iter > 0L) {
+        em <- .lta_em(x, codes, layout, designs, em$parameters, occasion_of_row,
+                      variance_model, min_variance, n_categories, min_probability,
+                      max_iter, tol, covariance_model, structure, sampling_weights,
+                      extra)
       }
-      if (max_iter == 0L) return(em)
-      finish <- .lta_quasi_newton(spec, em$parameters, min_variance, tol)
-      expectation <- .lta_expectation(x, codes, layout, designs, finish$parameters,
-                                      occasion_of_row, sampling_weights, extra)
-      list(parameters = finish$parameters, expectation = expectation,
-           converged = isTRUE(finish$converged), iterations = em$iterations,
-           history = c(em$history, expectation$log_likelihood),
-           max_gradient = finish$gradient)
-    }, error = function(error) list(error = conditionMessage(error)))
-  })
-  valid <- vapply(attempts, function(a) is.null(a$error), logical(1))
-  if (!any(valid)) {
-    stop(errorCondition(sprintf("All %d starts failed: %s", n_starts,
-      paste(unique(vapply(attempts, `[[`, character(1), "error")), collapse = "; ")),
-      class = "latents_all_starts_failed", call = NULL))
-  }
-  scores <- vapply(attempts, function(a) if (is.null(a$error))
-    a$expectation$log_likelihood else -Inf, numeric(1))
-  converged <- vapply(attempts, function(a) isTRUE(a$converged), logical(1))
-  best_start <- .multilpa_select_start(scores, converged, select_start)
+      return(em)
+    }
+    if (max_iter == 0L) return(em)
+    finish <- .lta_quasi_newton(spec, em$parameters, min_variance, tol)
+    expectation <- .lta_expectation(x, codes, layout, designs, finish$parameters,
+                                    occasion_of_row, sampling_weights, extra)
+    list(parameters = finish$parameters, expectation = expectation,
+         converged = isTRUE(finish$converged), iterations = em$iterations,
+         history = c(em$history, expectation$log_likelihood),
+         max_gradient = finish$gradient)
+  }, select_start)
+  attempts <- starts$attempts
+  valid <- starts$valid
+  scores <- starts$scores
+  converged <- starts$converged
+  best_start <- starts$best_start
   best <- attempts[[best_start]]
   # The weighted posteriors are counts; each person is classified by their
   # own posterior, while the likelihood stays the weighted one.

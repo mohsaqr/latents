@@ -324,7 +324,7 @@ vcov.multilpa_additive <- function(object, type = c("observed", "robust", "opg")
   class_names <- names(object$group_probabilities)
   jacobian <- .additive_natural(inference$theta, length(class_names), object$vars,
                                 object$structure, class_names)$jacobian
-  jacobian %*% inference$vcov %*% t(jacobian)
+  .inference_delta_covariance(jacobian, inference$vcov)
 }
 
 #' @rdname get_results.multilpa_additive
@@ -389,7 +389,7 @@ parameter_inference.multilpa_additive <- function(
   jacobian <- .additive_natural(inference$theta, length(class_names), x$vars,
                                 x$structure, class_names)$jacobian
   structure(table,
-            covariance = jacobian %*% inference$vcov %*% t(jacobian),
+            covariance = .inference_delta_covariance(jacobian, inference$vcov),
             covariance_unconstrained = inference$vcov,
             hessian = -inference$information, gradient = inference$gradient,
             scaled_score = inference$scaled_score,

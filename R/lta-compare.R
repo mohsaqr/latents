@@ -91,7 +91,7 @@
     if (length(members) == 0L) return(NULL)
     initial <- exp(.lta_log_initial(view$designs$initial[members, , drop = FALSE],
                                     matrix(p$initial[, , h], ncol(view$designs$initial))))
-    states[members, 1L] <<- .multilpa_draw_rows(initial)
+    states[members, 1L] <<- .latents_draw_rows(initial)
     lapply(seq_len(layout$n_occasions)[-1L], function(t) {
       if (isTRUE(p$stayer[h])) {
         states[members, t] <<- states[members, t - 1L]
@@ -113,7 +113,7 @@
         rows <- t(vapply(seq_along(members), function(i) log_p[i, origin[i], ],
                          numeric(K)))
       }
-      states[members, t] <<- .multilpa_draw_rows(matrix(exp(rows), length(members)))
+      states[members, t] <<- .latents_draw_rows(matrix(exp(rows), length(members)))
     })
   }))
   profile <- integer(nrow(data))
@@ -131,7 +131,7 @@
       codes <- view$codes[, i]
       # Each code's value as it appears in the data, in the data's type.
       value_of_code <- data[[v]][match(seq_len(max(codes, na.rm = TRUE)), codes)]
-      drawn <- .multilpa_draw_rows(
+      drawn <- .latents_draw_rows(
         block$response_probabilities[[i]][profile[rows], , drop = FALSE])
       simulated[[v]][rows] <<- value_of_code[drawn]
     })
@@ -320,17 +320,7 @@
   # surfaces only as a generic failed-replicates warning.
   .lta_general_view(null_model, data)
   .multilpa_check_seed(seed)
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
-    on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-      else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-        rm(".Random.seed", envir = .GlobalEnv)
-      }
-    }, add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   reversal_window <- 100 * tol * (1 + abs(null_model$log_likelihood))
   observed <- 2 * (alternative_model$log_likelihood - null_model$log_likelihood)
   if (observed < -reversal_window) {
@@ -339,42 +329,19 @@
       -observed), class = "latents_reversed_likelihood", call = NULL))
   }
   observed <- max(0, observed)
-  replicates <- do.call(rbind, lapply(seq_len(iter), function(i) {
-    warning_text <- character()
-    tryCatch(withCallingHandlers({
-      simulated <- .lta_simulate(null_model, data)
-      models <- lapply(list(null_model, alternative_model), .lta_refit, simulated,
-                       n_starts, max_iter, tol)
-      statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
-      valid <- all(vapply(models, function(m) isTRUE(m$converged), logical(1))) &&
-        statistic >= -reversal_window
-      data.frame(replicate = i, statistic = if (valid) max(0, statistic) else NA_real_,
-                 valid = valid,
-                 boundary = any(vapply(models, function(m) isTRUE(m$boundary), logical(1))),
-                 logits_settled = NA, null_replications = NA_integer_,
-                 alternative_replications = NA_integer_,
-                 warnings = if (length(warning_text) == 0L) NA_character_ else
-                   paste(unique(warning_text), collapse = "; "),
-                 error = if (valid) NA_character_ else "Nonconvergence or reversed likelihood")
-    }, warning = function(warning) {
-      warning_text <<- c(warning_text, conditionMessage(warning))
-      invokeRestart("muffleWarning")
-    }), error = function(error) {
-      data.frame(replicate = i, statistic = NA_real_, valid = FALSE, boundary = NA,
-                 logits_settled = NA, null_replications = NA_integer_,
-                 alternative_replications = NA_integer_,
-                 warnings = paste(unique(warning_text), collapse = "; "),
-                 error = conditionMessage(error))
-    })
-  }))
-  valid <- all(replicates$valid)
-  p_value <- if (valid) (1 + sum(replicates$statistic >= observed)) / (iter + 1) else NA_real_
-  if (!valid) {
-    warning(warningCondition(paste(
-      "Some bootstrap fits failed validation, so p_value is NA.",
-      "summary() reports every replicate; improve fitting and rerun."),
-      class = "latents_failed_replicates"))
-  }
+  replicates <- .latents_blrt_replicates(iter, function(i) {
+    simulated <- .lta_simulate(null_model, data)
+    models <- lapply(list(null_model, alternative_model), .lta_refit, simulated,
+                     n_starts, max_iter, tol)
+    statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
+    list(statistic = statistic,
+         valid = all(vapply(models, function(m) isTRUE(m$converged), logical(1))) &&
+           statistic >= -reversal_window,
+         boundary = any(vapply(models, function(m) isTRUE(m$boundary), logical(1))),
+         logits_settled = NA, null_replications = NA_integer_,
+         alternative_replications = NA_integer_)
+  }, muffle_warnings = TRUE)
+  tally <- .latents_blrt_p_value(replicates, observed, iter)
   describe <- function(fit) {
     a <- .lta_arguments(fit)
     paste(c(sprintf("lta with %d profiles", a$n_profiles),
@@ -388,9 +355,9 @@
             if (!identical(a$measurement, "invariant")) "occasion measurement"),
           collapse = ", ")
   }
-  result <- list(statistic = observed, p_value = p_value,
-                 monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (iter + 1)) else NA_real_,
-                 iter = iter, n_valid = sum(replicates$valid), replicates = replicates,
+  result <- list(statistic = observed, p_value = tally$p_value,
+                 monte_carlo_se = tally$monte_carlo_se,
+                 iter = iter, n_valid = tally$n_valid, replicates = replicates,
                  fixed = character(),
                  null_profiles = .lta_arguments(null_model)$n_profiles,
                  null_group_classes = .lta_arguments(null_model)$n_group_classes,

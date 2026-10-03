@@ -107,30 +107,17 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
         group_means, point$between_means, point$between_variances))),
       weights = sampling_weights)
   }
-  expectation <- evaluate(parameters)
-  history <- expectation$log_likelihood
-  converged <- FALSE
-  iteration <- 0L
-  # Sequential by nature: each step starts from the last point.
-  while (iteration < max_iter && !converged) {
+  maximize <- function(point, expectation) {
     updated <- .multilpa_maximization(x, expectation, variance_model, min_variance)
     between <- .cross_level_between_update(group_means, expectation$group_posteriors,
                                            between_variance, min_variance)
     updated$between_means <- between$means
     updated$between_variances <- between$variances
-    updated_expectation <- evaluate(updated)
-    gain <- updated_expectation$log_likelihood - expectation$log_likelihood
-    if (gain < -1e-10 * (1 + abs(expectation$log_likelihood))) {
-      stop("EM likelihood decreased beyond numerical roundoff.")
-    }
-    converged <- abs(gain) <= tol * (1 + abs(expectation$log_likelihood))
-    iteration <- iteration + 1L
-    history <- c(history, updated_expectation$log_likelihood)
-    parameters <- updated
-    expectation <- updated_expectation
+    updated
   }
-  list(parameters = parameters, expectation = expectation, converged = converged,
-       iterations = iteration, history = history)
+  fit <- .latents_em(parameters, evaluate, maximize, max_iter, tol)
+  list(parameters = fit$state, expectation = fit$expectation, converged = fit$converged,
+       iterations = fit$iterations, history = fit$history)
 }
 
 #' Free parameters of a cross-level model
@@ -188,30 +175,17 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
               length(vars), dimnames = list(NULL, vars))
   group_index <- stats$index
   group_means <- unname(stats$averages)
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
-    on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-      else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-        rm(".Random.seed", envir = .GlobalEnv)
-      }
-    }, add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   fitted <- if (identical(family, "full_cross_level")) {
-    attempts <- lapply(seq_len(n_starts), function(start_index) {
-      tryCatch({
-        start <- .cross_level_initialize(x, group_index, group_means, n_profiles,
-                                         n_group_classes, variance_model,
-                                         between_variance, min_variance,
-                                         start_index)
-        .cross_level_em(x, group_index, group_means, start, variance_model,
-                        between_variance, min_variance, max_iter, tol,
-                        sampling_weights)
-      }, error = function(error) list(error = conditionMessage(error)))
-    })
-    best <- .cross_level_select(attempts, n_starts)
+    best <- .cross_level_select(.latents_run_starts(n_starts, function(start_index) {
+      start <- .cross_level_initialize(x, group_index, group_means, n_profiles,
+                                       n_group_classes, variance_model,
+                                       between_variance, min_variance,
+                                       start_index)
+      .cross_level_em(x, group_index, group_means, start, variance_model,
+                      between_variance, min_variance, max_iter, tol,
+                      sampling_weights)
+    }, "likelihood"), n_starts)
     # Weighted posteriors are counts; each unit is reported by its own.
     if (!is.null(sampling_weights)) {
       reported <- .multilpa_expectation(x, group_index, c(best$parameters, list(
@@ -240,18 +214,12 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 
 #' Keep the best start of the full cross-level EM, with every start's record
 #' @noRd
-.cross_level_select <- function(attempts, n_starts) {
-  valid <- vapply(attempts, function(a) is.null(a$error), logical(1))
-  if (!any(valid)) {
-    stop(errorCondition(sprintf("All %d starts failed: %s", n_starts,
-      paste(unique(vapply(attempts, `[[`, character(1), "error")), collapse = "; ")),
-      class = "latents_all_starts_failed", call = NULL))
-  }
-  scores <- vapply(attempts, function(a) {
-    if (is.null(a$error)) a$expectation$log_likelihood else -Inf
-  }, numeric(1))
-  converged <- vapply(attempts, function(a) isTRUE(a$converged), logical(1))
-  best_start <- .multilpa_select_start(scores, converged)
+.cross_level_select <- function(starts, n_starts) {
+  attempts <- starts$attempts
+  valid <- starts$valid
+  scores <- starts$scores
+  converged <- starts$converged
+  best_start <- starts$best_start
   best <- attempts[[best_start]]
   best$starts <- data.frame(
     start = seq_len(n_starts), log_likelihood = ifelse(valid, scores, NA_real_),

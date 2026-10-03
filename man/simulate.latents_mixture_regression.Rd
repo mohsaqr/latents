@@ -18,7 +18,9 @@
 \value{
 A base \code{data.frame} with one row per fitted row and one column per
 simulation, \code{sim_1}, \code{sim_2}, ...; for a binomial fit with more than one
-trial the columns hold success counts.
+trial the columns hold success counts, and for an ordinal fit the
+fitted categories in the outcome's own type (a factor with the fitted
+levels, or the category numbers).
 }
 \description{
 Draws class memberships from the fitted mixing model (group classes first

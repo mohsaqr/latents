@@ -14,8 +14,10 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
 
 #' Coefficient table (log odds) with Wald columns when inference applies
 #' @noRd
-.lta_coefficient_table <- function(fit, block, level, vcov_type) {
-  inference <- tryCatch(.lta_inference(fit, vcov_type), error = function(condition) {
+.lta_coefficient_table <- function(fit, block, level, vcov_type, inference = NULL) {
+  # `parameter_inference()` passes the inference it computed with the caller's
+  # `step`; the tables compute it at the default step.
+  inference <- inference %||% tryCatch(.lta_inference(fit, vcov_type), error = function(condition) {
     refusals <- c("latents_unsupported_inference", "latents_no_converge",
                   "latents_boundary_fit", "latents_singular_information",
                   "latents_too_few_groups")
@@ -55,7 +57,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   }
   se <- if (is.null(inference)) rep(NA_real_, nrow(table)) else
     sqrt(pmax(diag(inference$vcov)[selected], 0))
-  z <- stats::qnorm(1 - (1 - level) / 2)
+  z <- .inference_critical(level, "one_minus")
   table$standard_error <- unname(se)
   table$statistic <- table$estimate / table$standard_error
   table$p_value <- 2 * stats::pnorm(-abs(table$statistic))
@@ -366,17 +368,18 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
                                       missing(vcov_type))
   inference <- .lta_inference(x, vcov_type, step)
   table <- rbind(
-    cbind(block = "transition", .lta_coefficient_table(x, "transition", level, vcov_type)[,
+    cbind(block = "transition", .lta_coefficient_table(x, "transition", level, vcov_type, inference)[,
       c("group_class", "from", "to", "term", "estimate", "standard_error",
         "statistic", "p_value", "conf_low", "conf_high")]),
     cbind(block = "initial", transform(
-      .lta_coefficient_table(x, "initial", level, vcov_type), from = NA_character_,
+      .lta_coefficient_table(x, "initial", level, vcov_type, inference),
+      from = NA_character_,
       to = profile)[, c("group_class", "from", "to", "term", "estimate",
                         "standard_error", "statistic", "p_value", "conf_low",
                         "conf_high")]))
   if ((x$order %||% 1L) >= 2L) {
     table$previous <- NA_character_
-    second <- .lta_coefficient_table(x, "transition2", level, vcov_type)
+    second <- .lta_coefficient_table(x, "transition2", level, vcov_type, inference)
     second$block <- "transition2"
     table <- rbind(table, second[, names(table)])
   }

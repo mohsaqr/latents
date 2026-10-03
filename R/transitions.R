@@ -106,35 +106,14 @@
             nrow(transition) == length(initial),
             ncol(transition) == length(initial),
             all(initial > 0), all(transition > 0))
+  # The homogeneous chain is the shared Markov structure with one transition
+  # matrix repeated over groups and occasions.
   n_groups <- nrow(layout$slot)
-  n_profiles <- length(initial)
-  n_occasions <- layout$n_occasions
-  log_transition <- log(transition)
-  later_occasions <- seq_len(n_occasions)[-1L]
-  advance <- function(state, log_weights) {
-    matrix(vapply(seq_len(n_profiles), function(profile) {
-      .multilpa_log_sum_exp(sweep(state, 2L, log_weights[, profile], "+"))
-    }, numeric(n_groups)), n_groups, n_profiles)
-  }
-  hold <- function(updated, previous, occasion) {
-    outside <- !layout$within[, occasion]
-    if (any(outside)) updated[outside, ] <- previous[outside, , drop = FALSE]
-    updated
-  }
-  alpha <- Reduce(function(previous, occasion) {
-    hold(advance(previous, log_transition) + emission[[occasion]],
-         previous, occasion)
-  }, later_occasions, init = sweep(emission[[1L]], 2L, log(initial), "+"),
-  accumulate = TRUE)
-  beta <- Reduce(function(occasion, later) {
-    hold(advance(later + emission[[occasion]], t(log_transition)),
-         later, occasion)
-  }, later_occasions, init = matrix(0, n_groups, n_profiles),
-  right = TRUE, accumulate = TRUE)
-  if (!is.list(alpha)) alpha <- list(alpha)
-  if (!is.list(beta)) beta <- list(beta)
-  list(alpha = alpha, beta = beta,
-       log_scaled = .multilpa_log_sum_exp(alpha[[n_occasions]]))
+  log_transition <- array(rep(log(transition), each = n_groups),
+                          c(n_groups, dim(transition)))
+  .latents_forward_backward(
+    emission, layout, matrix(log(initial), n_groups, length(initial), byrow = TRUE),
+    rep(list(log_transition), max(layout$n_occasions - 1L, 0L)))
 }
 
 #' Posterior occupancy and transition counts for one group class
@@ -247,21 +226,8 @@
   n_profiles <- nrow(parameters$means)
   n_types <- length(parameters$group_probabilities)
   n_groups <- nrow(layout$slot)
-  gaussian <- if (ncol(x) > 0L && (anyNA(x) || !is.null(parameters$covariances))) {
-    .multilpa_gaussian_moments(x, parameters)
-  } else NULL
-  log_density <- if (!is.null(gaussian)) gaussian$log_density else {
-    vapply(seq_len(n_profiles), function(profile) {
-      residuals <- sweep(x, 2L, parameters$means[profile, ], "-")
-      -0.5 * rowSums(sweep(residuals^2, 2L, parameters$variances[profile, ], "/") +
-        matrix(log(2 * pi) + log(parameters$variances[profile, ]),
-               nrow(x), ncol(x), byrow = TRUE))
-    }, numeric(nrow(x)))
-  }
-  if (!is.null(codes)) {
-    log_density <- log_density +
-      .multilpa_categorical_log_density(codes, parameters$response_probabilities)
-  }
+  measurement <- .latents_measurement_log_density(x, parameters, codes, offset = FALSE)
+  log_density <- measurement$log_density
   emission <- .multilpa_sequence_emission(log_density, layout)
   passes <- lapply(seq_len(n_types), function(type) {
     .multilpa_forward_backward(emission$log_density, layout,
@@ -299,7 +265,7 @@
        group_log_likelihood = group_log_likelihood,
        group_posteriors = group_posteriors,
        subject_posteriors = subject_posteriors, joint = joint,
-       sequence = sequence, gaussian_moments = gaussian$moments)
+       sequence = sequence, gaussian_moments = measurement$moments)
 }
 
 #' Maximize the expected complete-data log likelihood of a transition model
@@ -387,26 +353,19 @@
                                     structure = NULL) {
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             min_variance > 0, variance_model %in% c("varying", "equal"))
-  expectation <- .multilpa_transition_expectation(x, layout, parameters, codes)
-  history <- expectation$log_likelihood
-  converged <- FALSE
-  iteration <- 0L
-  while (iteration < max_iter && !converged) {
-    parameters <- .multilpa_transition_maximization(
-      x, expectation, variance_model, min_variance, covariance_model, codes,
-      n_categories, min_probability, structure, parameters)
-    updated <- .multilpa_transition_expectation(x, layout, parameters, codes)
-    improvement <- updated$log_likelihood - expectation$log_likelihood
-    if (improvement < -1e-10 * (1 + abs(expectation$log_likelihood))) {
-      stop("EM likelihood decreased beyond numerical roundoff.")
-    }
-    converged <- abs(improvement) <= tol * (1 + abs(expectation$log_likelihood))
-    iteration <- iteration + 1L
-    history <- c(history, updated$log_likelihood)
-    expectation <- updated
-  }
-  list(parameters = parameters, expectation = expectation,
-       converged = converged, iterations = iteration, history = history)
+  fit <- .latents_em(
+    parameters,
+    evaluate = function(point) {
+      .multilpa_transition_expectation(x, layout, point, codes)
+    },
+    maximize = function(point, expectation) {
+      .multilpa_transition_maximization(
+        x, expectation, variance_model, min_variance, covariance_model, codes,
+        n_categories, min_probability, structure, point)
+    },
+    max_iter = max_iter, tol = tol)
+  list(parameters = fit$state, expectation = fit$expectation,
+       converged = fit$converged, iterations = fit$iterations, history = fit$history)
 }
 
 #' Initialize a latent transition model
@@ -751,17 +710,7 @@ lta <- function(data, vars, id, n_profiles, time,
     stop(errorCondition("Multiple group classes are not identifiable with only singleton groups.",
         class = "latents_unidentified", call = NULL))
   }
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
-    on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-      else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-        rm(".Random.seed", envir = .GlobalEnv)
-      }
-    }, add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   # Centering is a translation of the indicators, with no density Jacobian and
   # no change of scale; the fitted means are shifted back before they are read.
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
@@ -770,32 +719,24 @@ lta <- function(data, vars, id, n_profiles, time,
     stop(errorCondition("Indicator scales overflow squared residuals; rescale the data.",
         class = "latents_bad_data", call = NULL))
   }
-  attempts <- lapply(seq_len(n_starts), function(start_index) {
-    tryCatch({
-      initial <- .multilpa_transition_initialize(
-        x, groups$index, n_profiles, n_group_classes, variance_model,
-        min_variance, start_index, covariance_model, codes, n_categories,
-        min_probability)
-      if (!is.null(structure)) {
-        initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
-      }
-      .multilpa_transition_em(x, layout, initial, variance_model, min_variance,
-                              max_iter, tol, covariance_model, codes,
-                              n_categories, min_probability, structure)
-    }, error = function(error) list(error = conditionMessage(error)))
-  })
-  valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
-  if (!any(valid)) {
-    stop(sprintf("All %d starts failed: %s", n_starts,
-                 paste(unique(vapply(attempts, `[[`, character(1), "error")),
-                       collapse = "; ")))
-  }
-  scores <- vapply(attempts, function(attempt) {
-    if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
-  }, numeric(1))
-  best_start <- .multilpa_select_start(
-    scores, vapply(attempts, function(attempt) isTRUE(attempt$converged), logical(1)),
-    select_start)
+  # Each start runs to completion or is recorded as failed; the best is
+  # chosen by the shared rule (see .latents_run_starts()).
+  starts <- .latents_run_starts(n_starts, function(start_index) {
+    initial <- .multilpa_transition_initialize(
+      x, groups$index, n_profiles, n_group_classes, variance_model,
+      min_variance, start_index, covariance_model, codes, n_categories,
+      min_probability)
+    if (!is.null(structure)) {
+      initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
+    }
+    .multilpa_transition_em(x, layout, initial, variance_model, min_variance,
+                            max_iter, tol, covariance_model, codes,
+                            n_categories, min_probability, structure)
+  }, select_start)
+  attempts <- starts$attempts
+  valid <- starts$valid
+  scores <- starts$scores
+  best_start <- starts$best_start
   best <- attempts[[best_start]]
   parameters <- best$parameters
   parameters$means <- sweep(parameters$means, 2L, centers, "+")

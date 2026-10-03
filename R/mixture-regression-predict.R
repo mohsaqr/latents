@@ -26,13 +26,16 @@
   new$offset <- as.numeric(stats::model.offset(frame) %||% rep(0, new$n))
   new$kept_rows <- seq_len(new$n)
   if (with_response) {
-    response <- .mixture_response(stats::model.response(frame), spec$family)
+    response <- .mixture_response(stats::model.response(frame), spec$family,
+                                  spec$category_levels)
     new$y <- response$y
     new$trials <- response$trials
     new$log_normalizer <- switch(spec$family,
       gaussian = rep(0, new$n),
       binomial = lchoose(response$trials, response$y),
-      poisson = -lgamma(response$y + 1))
+      poisson = ,
+      negative_binomial = -lgamma(response$y + 1),
+      ordinal = rep(0, new$n))
   } else {
     new$y <- rep(0, new$n)
     new$trials <- rep(1, new$n)
@@ -102,11 +105,17 @@
 #'   them). `"class_response"`: the mean outcome under every class, one row
 #'   per row and class. `"posterior"`: the posterior class probabilities
 #'   given the outcome, which `newdata` must then contain.
+#'   `"probabilities"` (ordinal family only): the probability of every
+#'   category under every class. For the ordinal family the "mean outcome" is
+#'   the expected category score, the categories scored 1 to C in order.
 #' @param ... Unused.
 #' @return A base `data.frame`. For `"response"`: `row` and `fitted`. For
 #'   `"class_response"`: `row`, `class`, `prior` and `fitted`, one row per
 #'   data row and class. For `"posterior"`: the same columns as
-#'   `get_results(fit, "assignments")`.
+#'   `get_results(fit, "assignments")`. For `"probabilities"`: `row`,
+#'   `class`, `category`, `prior` and `probability`, one row per data row,
+#'   class and category. Raises `latents_bad_argument` for
+#'   `"probabilities"` with another family.
 #' @examples
 #' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
 #'                           n_starts = 3, seed = 1)
@@ -116,8 +125,14 @@
 #' @export
 predict.latents_mixture_regression <- function(object, newdata = NULL,
                                    type = c("response", "class_response",
-                                            "posterior"), ...) {
+                                            "posterior", "probabilities"), ...) {
   type <- match.arg(type)
+  if (identical(type, "probabilities") && !identical(object$spec$family, "ordinal")) {
+    stop(errorCondition(paste(
+      "`type = \"probabilities\"` gives category probabilities of an ordinal",
+      "outcome; use \"response\" or \"class_response\" for this family."),
+      class = "latents_bad_argument", call = NULL))
+  }
   spec <- if (is.null(newdata)) object$spec else
     .mixture_new_spec(object, newdata, identical(type, "posterior"))
   params <- object$params
@@ -127,8 +142,11 @@ predict.latents_mixture_regression <- function(object, newdata = NULL,
     refit$expectation <- .mixture_expectation(spec, params, weighted = FALSE)
     return(.mixture_assignment_table(refit))
   }
-  means <- .mixture_class_means(spec, params)
   priors <- .mixture_row_priors(spec, params)
+  if (identical(type, "probabilities")) {
+    return(.ordinal_probability_table(spec, params, priors))
+  }
+  means <- .mixture_class_means(spec, params)
   if (identical(type, "response")) {
     return(data.frame(row = spec$kept_rows, fitted = rowSums(priors * means)))
   }
@@ -151,7 +169,9 @@ predict.latents_mixture_regression <- function(object, newdata = NULL,
 #' @param ... Unused.
 #' @return A base `data.frame` with one row per fitted row and one column per
 #'   simulation, `sim_1`, `sim_2`, ...; for a binomial fit with more than one
-#'   trial the columns hold success counts.
+#'   trial the columns hold success counts, and for an ordinal fit the
+#'   fitted categories in the outcome's own type (a factor with the fitted
+#'   levels, or the category numbers).
 #' @examples
 #' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
 #'                           n_starts = 3, seed = 1)
@@ -171,18 +191,13 @@ simulate.latents_mixture_regression <- function(object, nsim = 1, seed = NULL, .
 .mixture_draw <- function(object) {
   spec <- object$spec
   params <- object$params
-  draw_category <- function(probabilities) {
-    cumulative <- t(apply(probabilities, 1L, cumsum))
-    cumulative <- matrix(cumulative, nrow(probabilities))
-    1L + rowSums(stats::runif(nrow(probabilities)) > cumulative)
-  }
   classes <- switch(spec$nesting,
-    observation = draw_category(exp(.mixture_log_softmax(spec$w,
-                                                        params$gamma))),
-    group = draw_category(exp(.mixture_log_softmax(
+    observation = .latents_draw_rows(exp(.mixture_log_softmax(spec$w,
+                                                              params$gamma))),
+    group = .latents_draw_rows(exp(.mixture_log_softmax(
       spec$w, params$gamma)))[spec$group_index],
     "two-level" = {
-      group_class <- draw_category(exp(.mixture_log_softmax(
+      group_class <- .latents_draw_rows(exp(.mixture_log_softmax(
         spec$v, params$delta)))[spec$group_index]
       by_group_class <- lapply(seq_len(spec$n_group_classes), function(h) {
         exp(.mixture_log_softmax(.mixture_two_level_design(spec, h),
@@ -192,15 +207,18 @@ simulate.latents_mixture_regression <- function(object, nsim = 1, seed = NULL, .
                                           function(h) {
         by_group_class[[h]] * (group_class == h)
       }))
-      draw_category(probabilities)
+      .latents_draw_rows(probabilities)
     })
   classes <- pmin(classes, spec$n_classes)
+  if (identical(spec$family, "ordinal")) return(.ordinal_draw(spec, params, classes))
   eta <- .mixture_linear_predictors(spec, params)[cbind(seq_len(spec$n),
                                                       classes)]
   switch(spec$family,
     gaussian = stats::rnorm(spec$n, eta, sqrt(params$sigma2[classes])),
     binomial = stats::rbinom(spec$n, spec$trials, stats::plogis(eta)),
-    poisson = stats::rpois(spec$n, exp(eta)))
+    poisson = stats::rpois(spec$n, exp(eta)),
+    negative_binomial = stats::rnbinom(spec$n, size = 1 / params$sigma2[classes],
+                                       mu = exp(eta)))
 }
 
 #' Plot a mixture-of-regressions fit

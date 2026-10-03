@@ -13,6 +13,9 @@
     common = stats::setNames(numeric(ncol(spec$z)), colnames(spec$z)),
     sigma2 = rep(if (identical(spec$family, "gaussian"))
       max(stats::var(spec$y), spec$min_variance) else 1, n_classes))
+  if (identical(spec$family, "ordinal")) {
+    params$thresholds <- .ordinal_start_thresholds(spec)
+  }
   if (identical(spec$nesting, "two-level")) {
     params$delta <- matrix(0, ncol(spec$v), spec$n_group_classes)
     params$class_logits <- matrix(0, spec$n_group_classes + ncol(spec$w),
@@ -57,8 +60,10 @@
                         gaussian = drop(.mixture_linear_predictors(pooled, params)),
                         binomial = stats::plogis(
                           drop(.mixture_linear_predictors(pooled, params))),
-                        poisson = exp(
-                          drop(.mixture_linear_predictors(pooled, params)))))
+                        poisson = ,
+                        negative_binomial = exp(
+                          drop(.mixture_linear_predictors(pooled, params))),
+                        ordinal = drop(.mixture_class_means(pooled, params))))
   if (identical(spec$nesting, "group")) {
     residual <- drop(rowsum(residual, spec$group_index, reorder = TRUE)) /
       tabulate(spec$group_index)
@@ -203,6 +208,15 @@
       "standard error are not reliable."),
       class = "latents_separation", call = NULL))
   }
+  if (identical(spec$family, "negative_binomial") &&
+      any(params$sigma2 <= .latents_min_dispersion * (1 + 1e-6))) {
+    warning(warningCondition(paste(
+      "A negative-binomial dispersion is estimated at zero: that class's",
+      "counts show no overdispersion, which is the Poisson limit. This is a",
+      "boundary fit; its dispersion has no standard error, and",
+      "`family = \"poisson\"` may suit those data."),
+      class = "latents_boundary", call = NULL))
+  }
   best_value <- log_likelihood[best]
   completed <- vapply(results, function(r) identical(r$stage, "completed"),
                       logical(1))
@@ -232,8 +246,10 @@
 .mixture_count_parameters <- function(spec) {
   k <- spec$n_classes
   regression <- ncol(spec$x) * k + ncol(spec$z)
-  dispersion <- if (identical(spec$family, "gaussian")) {
+  dispersion <- if (spec$family %in% c("gaussian", "negative_binomial")) {
     if (identical(spec$variance, "equal")) 1L else k
+  } else if (identical(spec$family, "ordinal")) {
+    (spec$n_categories - 1L) * k
   } else 0L
   mixing <- if (identical(spec$nesting, "two-level")) {
     ncol(spec$v) * (spec$n_group_classes - 1L) +
@@ -257,8 +273,26 @@
 #' @return The reordered parameter list.
 #' @noRd
 .mixture_order_classes <- function(spec, params, expectation) {
+  orders <- .mixture_class_orders(spec, params, expectation)
+  .mixture_permute(spec, params, orders$class_order, orders$group_order)
+}
+
+#' The canonical order of the classes and group classes
+#'
+#' Classes by decreasing size, ties by their first coefficient; group classes
+#' by how much of the largest class they hold, then by size.
+#'
+#' @param spec The structure.
+#' @param params The parameter list (for `beta`).
+#' @param expectation The structure's E-step.
+#' @return A list of `class_order` and `group_order` (`NULL` for one level).
+#' @noRd
+.mixture_class_orders <- function(spec, params, expectation) {
   sizes <- colSums(expectation$tau)
-  class_order <- order(-round(sizes, 8), params$beta[1L, ])
+  # An ordinal class may have no class-specific slope; its first threshold
+  # breaks the tie instead.
+  tie_break <- if (nrow(params$beta) > 0L) params$beta[1L, ] else params$thresholds[1L, ]
+  class_order <- order(-round(sizes, 8), tie_break)
   group_order <- NULL
   if (identical(spec$nesting, "two-level")) {
     first_class <- class_order[1L]
@@ -270,7 +304,7 @@
     group_order <- order(-round(composition, 8),
                          -colSums(expectation$rho))
   }
-  .mixture_permute(spec, params, class_order, group_order)
+  list(class_order = class_order, group_order = group_order)
 }
 
 #' Relabel classes and group classes
@@ -289,22 +323,22 @@
     "`class_order` must be a permutation of the classes" =
       setequal(class_order, seq_len(spec$n_classes)) &&
       length(class_order) == spec$n_classes)
-  rebase <- function(coefficients, columns) {
-    moved <- coefficients[, columns, drop = FALSE]
-    moved - moved[, 1L]
-  }
   params$beta <- params$beta[, class_order, drop = FALSE]
   colnames(params$beta) <- paste0("class_", seq_len(spec$n_classes))
   params$sigma2 <- params$sigma2[class_order]
+  if (!is.null(params$thresholds)) {
+    params$thresholds <- params$thresholds[, class_order, drop = FALSE]
+    colnames(params$thresholds) <- colnames(params$beta)
+  }
   if (identical(spec$nesting, "two-level")) {
     group_order <- group_order %||% seq_len(spec$n_group_classes)
-    params$delta <- rebase(params$delta, group_order)
-    logits <- rebase(params$class_logits, class_order)
+    params$delta <- .latents_rebase_logits(params$delta, group_order, "first")
+    logits <- .latents_rebase_logits(params$class_logits, class_order, "first")
     intercepts <- seq_len(spec$n_group_classes)
     logits[intercepts, ] <- logits[intercepts[group_order], , drop = FALSE]
     params$class_logits <- logits
   } else {
-    params$gamma <- rebase(params$gamma, class_order)
+    params$gamma <- .latents_rebase_logits(params$gamma, class_order, "first")
   }
   params
 }

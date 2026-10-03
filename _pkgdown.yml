@@ -81,6 +81,7 @@ reference:
   - student_esm
   - study_hours
   - growth_scores
+  - growth_schools
   - srl
 
 - title: Methods
@@ -113,6 +114,7 @@ articles:
   - lca
   - lta
   - mixture-regression
+  - trajectory-classes
   - growth-mixture
 
 - title: Case studies

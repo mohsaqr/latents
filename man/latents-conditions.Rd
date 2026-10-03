@@ -190,6 +190,12 @@ error matrix.}
 person-centred fit. Group baselines were removed before estimation and
 no distribution for them is available to simulate raw data under the
 null model.}
+\item{\code{latents_unsupported_tna}}{\code{\link[=get_tna]{get_tna()}} or \code{\link[=get_group_tna]{get_group_tna()}} was
+called on a general transition fit (a \code{\link[=lta]{lta()}} fit with occasion-varying
+or covariate-dependent transitions, a second order, movers and stayers,
+or ordinal, count or weighted data), which has no single transition
+matrix to hand over; its transitions are in
+\code{get_results(x, "transitions")}.}
 \item{\code{latents_no_plot}}{\code{plot(x, what = "all")} was called on an object
 whose plot method names no views to draw.}
 \item{\code{latents_no_time}}{A sequence verb was called on a fit made without

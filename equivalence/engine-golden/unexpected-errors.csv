@@ -1,0 +1,4 @@
+"case","path","error_class","message"
+"lta_refusal_no_time","lta_refusal_no_time/refusal","simpleError,error,condition","`time` must be supplied; a transition model is defined by the ordering"
+"svc_bootstrap_lrt_mixed_families","svc_bootstrap_lrt_mixed_families/services/bootstrap_lrt/value","simpleError,error,condition","both models must be multilpa() fits of one family, with or without membership covariates"
+"svc_fit_staged_one_class","svc_fit_staged_one_class/refusal","simpleError,error,condition","`n_group_classes` must be at least two; staging one leaves nothing to estimate"

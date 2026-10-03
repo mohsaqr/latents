@@ -28,9 +28,7 @@
     unlist(lapply(matrices, cholesky)),
     if (identical(spec$random_covariance, "proportional"))
       sprintf("random.log_scale.%s", classes[-spec$n_classes]),
-    if (spec$n_classes > 1L)
-      as.vector(outer(colnames(spec$w), classes[-1L],
-                      function(term, class) sprintf("membership.%s.%s", class, term))))
+    .growth_structure_names(.growth_structure(spec)))
 }
 
 #' Pack a growth-mixture parameter list into the estimation vector
@@ -49,7 +47,7 @@
              unlist(lapply(params$random_covariance, chart)),
              if (identical(spec$random_covariance, "proportional"))
                log(params$random_scale[-spec$n_classes]),
-             if (spec$n_classes > 1L) as.vector(params$gamma[, -1L, drop = FALSE]))
+             .mixture_structure_pack(.growth_structure(spec), params))
   stats::setNames(theta, .growth_names(spec))
 }
 
@@ -81,12 +79,8 @@
   })
   params$random_scale <- if (identical(spec$random_covariance, "proportional"))
     c(exp(take(n_classes - 1L)), 1) else rep(1, n_classes)
-  if (n_classes > 1L) {
-    params$gamma[, -1L] <- take(ncol(spec$w) * (n_classes - 1L))
-  }
-  stopifnot("the estimation vector must be consumed exactly" =
-              position == length(theta))
-  params
+  .mixture_structure_unpack(.growth_structure(spec),
+                            theta[position + seq_len(length(theta) - position)], params)
 }
 
 #' Per-person scores of the growth mixture log likelihood
@@ -101,7 +95,8 @@
 #' covariance. The mixture weights each class's derivative by the person's
 #' posterior.
 #'
-#' @return A persons-by-parameters matrix (unweighted by sampling weights).
+#' @return A units-by-parameters matrix (unweighted by sampling weights): one
+#'   row per person, or per cluster for a multilevel growth mixture.
 #' @noRd
 .growth_scores <- function(spec, stats, params, expectation = NULL) {
   expectation <- expectation %||% .growth_expectation(spec, stats, params)
@@ -195,15 +190,23 @@
       }, numeric(n_persons)) |> matrix(n_persons)
       cbind(base, scale_scores)
     })
-  # Membership logits of classes 2..K.
-  prior <- exp(.mixture_log_softmax(spec$w, params$gamma))
-  membership_scores <- if (n_classes > 1L) {
-    do.call(cbind, lapply(seq_len(n_classes)[-1L], function(k) {
-      spec$w * (posterior[, k] - prior[, k])
-    }))
+  block <- cbind(beta_scores, common_scores, sigma_scores, random_scores)
+  scores <- if (is.null(spec$cluster)) {
+    # Membership logits of classes 2..K.
+    prior <- exp(.mixture_log_softmax(spec$w, params$gamma))
+    membership_scores <- if (n_classes > 1L) {
+      do.call(cbind, lapply(seq_len(n_classes)[-1L], function(k) {
+        spec$w * (posterior[, k] - prior[, k])
+      }))
+    }
+    cbind(block, membership_scores)
+  } else {
+    # The clusters are the independent units: each person's block scores
+    # (already weighted by their posteriors given the whole cluster) add up
+    # within the cluster, beside the cluster's membership scores.
+    cbind(rowsum(block, spec$cluster_index, reorder = TRUE),
+          .mixture_structure_scores(.growth_structure(spec), expectation$structure))
   }
-  scores <- cbind(beta_scores, common_scores, sigma_scores, random_scores,
-                  membership_scores)
   dimnames(scores) <- list(NULL, .growth_names(spec))
   scores
 }
@@ -224,8 +227,7 @@
   lower <- rep(-Inf, length(theta))
   lower[startsWith(names_all, "log_sigma.")] <- 0.5 * log(spec$min_variance)
   lower[startsWith(names_all, "random.log_cholesky.")] <- 0.5 * log(spec$min_variance)
-  theta <- pmax(theta, lower)
-  weights <- spec$sampling_weights %||% rep(1, length(stats$n))
+  weights <- spec$sampling_weights %||% 1
   value <- function(v) {
     -.growth_expectation(spec, stats, .growth_unpack(spec, v, params))$log_likelihood
   }
@@ -235,24 +237,12 @@
   }
   # Polished to near machine precision whatever `tol` is: with the analytic
   # gradient it is cheap, and `tol` judges convergence below.
-  control <- list(maxit = 2000L, factr = 10, pgtol = 0)
-  start_value <- value(theta)
-  found <- stats::optim(theta, value, gradient, method = "L-BFGS-B", lower = lower,
-                        control = control)
-  if (!is.finite(found$value) || found$value > start_value) {
-    return(list(params = params, converged = FALSE, log_likelihood = -start_value))
+  finish <- .latents_quasi_newton(theta, lower, value, gradient, tol,
+                                  list(maxit = 2000L, factr = 10, pgtol = 0))
+  if (!finish$improved) {
+    return(list(params = params, converged = FALSE,
+                log_likelihood = -finish$start_value))
   }
-  converged <- found$convergence == 0L
-  if (identical(found$convergence, 52L)) {
-    # The line search stops at the maximum when rounding hides any ascent.
-    again <- stats::optim(found$par, value, gradient, method = "L-BFGS-B",
-                          lower = lower, control = control)
-    if (is.finite(again$value) && again$value <= found$value) {
-      converged <- again$convergence == 0L ||
-        found$value - again$value <= tol * (1 + abs(again$value))
-      found <- again
-    }
-  }
-  list(params = .growth_unpack(spec, found$par, params), converged = converged,
-       log_likelihood = -found$value)
+  list(params = .growth_unpack(spec, finish$par, params), converged = finish$converged,
+       log_likelihood = -finish$value)
 }

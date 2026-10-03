@@ -164,13 +164,16 @@ test_that("an extrapolation that lowers the likelihood falls back to plain EM", 
   step <- function(point, point_expectation) {
     moved <- point
     moved$means[] <- 1.1 * point$means + 1
-    list(parameters = moved, expectation = evaluate(moved))
+    list(state = moved, expectation = evaluate(moved))
   }
   start <- list(means = matrix(0))
-  cycle <- latents:::.multilpa_squarem_cycle(step, start, evaluate(start),
-                                             evaluate)
+  accelerator <- list(flatten = latents:::.multilpa_flatten_parameters,
+                      restore = latents:::.multilpa_restore_parameters,
+                      valid = latents:::.multilpa_valid_parameters)
+  cycle <- latents:::.latents_squarem_cycle(step, start, evaluate(start),
+                                            evaluate, accelerator)
   expect_false(cycle$accelerated)
-  expect_equal(drop(cycle$parameters$means), 2.1)
+  expect_equal(drop(cycle$state$means), 2.1)
   expect_equal(cycle$history, c(1, 2.1, 2.1))
   # Where the landing point is better, it is taken.
   generous <- function(theta) theta
@@ -178,10 +181,10 @@ test_that("an extrapolation that lowers the likelihood falls back to plain EM", 
   step_up <- function(point, point_expectation) {
     moved <- point
     moved$means[] <- 1.1 * point$means + 1
-    list(parameters = moved, expectation = evaluate_up(moved))
+    list(state = moved, expectation = evaluate_up(moved))
   }
-  taken <- latents:::.multilpa_squarem_cycle(step_up, start, evaluate_up(start),
-                                             evaluate_up)
+  taken <- latents:::.latents_squarem_cycle(step_up, start, evaluate_up(start),
+                                            evaluate_up, accelerator)
   expect_true(taken$accelerated)
-  expect_equal(drop(taken$parameters$means), 34)
+  expect_equal(drop(taken$state$means), 34)
 })

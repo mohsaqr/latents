@@ -3,6 +3,7 @@
 \name{get_tna}
 \alias{get_tna}
 \alias{get_tna.multilpa_transitions}
+\alias{get_tna.multilpa_lta}
 \alias{get_tna.multilpa}
 \alias{get_tna.multilpa_covariates}
 \title{A transition network for the whole sample}
@@ -10,6 +11,8 @@
 get_tna(x, ...)
 
 \method{get_tna}{multilpa_transitions}(x, ...)
+
+\method{get_tna}{multilpa_lta}(x, ...)
 
 \method{get_tna}{multilpa}(x, ...)
 
@@ -40,6 +43,12 @@ the latter. If a profile has no expected outgoing moves in any class, its
 transition row has no count-based estimate; the network uses the fitted
 class rows averaged by class probability and warns that the row is
 unestimated. It never interprets absent moves as a certain self-transition.
+
+A general \code{\link[=lta]{lta()}} fit -- with occasion-varying or covariate-dependent
+transitions, a second order, movers and stayers, or ordinal, count or
+weighted data -- has no single transition matrix, and is refused with
+\code{latents_unsupported_tna}; its transitions are in
+\code{get_results(x, "transitions")}.
 
 For a \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit made with \verb{time =}, there is
 no estimated transition matrix: the network is built by \code{\link[tna:build_model]{tna::tna()}} from

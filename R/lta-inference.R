@@ -426,30 +426,18 @@
   names(theta) <- .lta_names(fit)
   scores <- .lta_group_scores(theta, fit)
   total <- function(v) colSums(.lta_group_scores(v, fit))
-  columns <- vapply(seq_along(theta), function(k) {
-    h <- step * max(1, abs(theta[k]))
-    shift <- function(m) {
-      point <- theta
-      point[k] <- point[k] + m * h
-      total(point)
-    }
-    (-shift(2) + 8 * shift(1) - 8 * shift(-1) + shift(-2)) / (12 * h)
-  }, numeric(length(theta)))
-  information <- -(columns + t(columns)) / 2
-  dimnames(information) <- list(names(theta), names(theta))
-  eigenvalues <- eigen(information, symmetric = TRUE, only.values = TRUE)$values
-  if (!all(is.finite(eigenvalues)) || min(eigenvalues) <= 1e-10 * max(eigenvalues)) {
-    stop(errorCondition("The observed information is not positive definite.",
-                        class = "latents_singular_information", call = NULL))
-  }
-  inverse <- chol2inv(chol(information))
+  # Fourth-order differences of the analytic score with h = step * max(1, |theta|),
+  # and the "min <= 1e-10 max" refusal: the arithmetic this engine has always
+  # reported, now from the shared service.
+  information <- .inference_score_information(total, theta, step,
+                                              scheme = "five_point", h_rule = "max1")
+  inverse <- .inference_invert(information, "min_le_eps_max")
   meat <- crossprod(scores)
-  if (vcov_type != "observed" && qr(scores)$rank < length(theta)) {
-    stop(errorCondition("Too few groups for a robust or OPG covariance.",
-                        class = "latents_too_few_groups", call = NULL))
+  if (vcov_type != "observed") {
+    .inference_require_rank(scores, "Too few groups for a robust or OPG covariance.")
   }
   covariance <- switch(vcov_type, observed = inverse,
-                       robust = inverse %*% meat %*% inverse,
+                       robust = .inference_sandwich(inverse, meat),
                        opg = chol2inv(chol(meat)))
   dimnames(covariance) <- dimnames(information)
   list(theta = theta, vcov = covariance, information = information,
@@ -502,44 +490,28 @@
   lower <- ifelse(startsWith(names_all, "log_variance."), log(min_variance), -Inf)
   lower[startsWith(names_all, "log_count_mean.")] <- log(1e-10)
   lower[startsWith(names_all, "log_count_dispersion.")] <- log(.latents_min_dispersion)
-  theta <- pmax(theta, lower)
   value <- function(v) {
     -.lta_expectation(spec$x, spec$codes, spec$layout, spec$designs,
                       .lta_unpack(v, spec), spec$occasion_of_row,
                       spec$sampling_weights, spec$extra_data)$log_likelihood
   }
   gradient <- function(v) -colSums(.lta_group_scores(v, spec))
-  start_value <- value(theta)
   # Convergence is the relative change of the log likelihood, as for EM: a
   # transition never observed has its maximum at probability zero, where the
   # logit runs off and the gradient decays without vanishing. That boundary is
   # flagged separately (see .lta_probability_boundary()).
-  control <- list(maxit = 5000L, factr = max(tol / .Machine$double.eps, 1), pgtol = 0)
-  found <- stats::optim(theta, value, gradient, method = "L-BFGS-B", lower = lower,
-                        control = control)
-  if (!is.finite(found$value) || found$value > start_value) {
-    return(list(parameters = parameters, log_likelihood = -start_value,
-                gradient = max(abs(gradient(theta))), converged = FALSE))
+  finish <- .latents_quasi_newton(
+    theta, lower, value, gradient, tol,
+    list(maxit = 5000L, factr = max(tol / .Machine$double.eps, 1), pgtol = 0))
+  if (!finish$improved) {
+    return(list(parameters = parameters, log_likelihood = -finish$start_value,
+                gradient = max(abs(gradient(finish$par))), converged = FALSE))
   }
-  converged <- found$convergence == 0L
-  # L-BFGS-B's line search can stop at the maximum (code 52) when rounding
-  # hides any further ascent; whether it does is platform-dependent. Restart
-  # once from where it stopped: if the likelihood cannot be raised by more
-  # than the tolerance, the relative-change rule above is met.
-  if (identical(found$convergence, 52L)) {
-    again <- stats::optim(found$par, value, gradient, method = "L-BFGS-B",
-                          lower = lower, control = control)
-    if (is.finite(again$value) && again$value <= found$value) {
-      converged <- again$convergence == 0L ||
-        found$value - again$value <= tol * (1 + abs(again$value))
-      found <- again
-    }
-  }
-  final_gradient <- gradient(found$par)
-  free <- !(found$par <= lower + 1e-12 & final_gradient > 0)
-  list(parameters = .lta_unpack(found$par, spec), log_likelihood = -found$value,
+  final_gradient <- gradient(finish$par)
+  free <- !(finish$par <= lower + 1e-12 & final_gradient > 0)
+  list(parameters = .lta_unpack(finish$par, spec), log_likelihood = -finish$value,
        gradient = max(abs(final_gradient[free]), 0),
-       converged = converged)
+       converged = finish$converged)
 }
 
 #' Does any fitted initial or transition probability sit at zero?

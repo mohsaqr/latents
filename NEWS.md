@@ -1,3 +1,81 @@
+# latents 0.9.13
+
+## One engine
+
+* Every estimator now runs on one shared kernel (see
+  `validation/ENGINE_DESIGN.md`): one EM driver (with SQUAREM for the profile
+  models), one start runner, one quasi-Newton finish, one measurement block
+  (Gaussian, categorical, ordinal and count indicators) shared by the
+  profile, covariate, cross-level and both transition engines, one
+  forward-backward pass for both transition engines, shared latent
+  structures for the regression and growth models, and shared inference,
+  alignment and simulation services. Results are unchanged: 251 recorded
+  fits of every engine and option reproduce bit for bit
+  (`equivalence/engine-golden/`), except where a defect below was fixed.
+
+## New models
+
+* Multilevel growth mixture models: `mixture_regression(cluster = )` nests
+  the persons (`id`) in clusters (schools, clinics) with `n_group_classes`
+  group classes of clusters that shift how probable each trajectory class is,
+  and `group_membership` covariates of the group class. The clusters are the
+  independent units of the likelihood, standard errors and BIC. New tables
+  `"group_classes"` and `"clusters"`; `enumerate_regressions()` compares the
+  number of group classes; `simulate()` draws the two levels. New dataset
+  `growth_schools`; the growth vignette has a section on it.
+* Negative-binomial regression mixtures: `mixture_regression(family =
+  "negative_binomial")`, NB2 with a dispersion per class or shared
+  (`variance = "equal"`). One class reproduces `MASS::glm.nb()`. A
+  dispersion at the Poisson limit warns (`latents_boundary`) and the other
+  standard errors are conditional on it.
+* Ordinal regression mixtures: `mixture_regression(family = "ordinal")`, a
+  proportional-odds (cumulative logit) regression within each class with
+  class-specific ordered thresholds in place of the intercept. The outcome
+  is an ordered factor, a factor or whole-number categories. Thresholds are
+  rows `"threshold:<lower>|<upper>"` of the coefficient table; class means
+  are expected category scores; `predict(type = "probabilities")` gives the
+  category probabilities and `simulate()` draws categories in the outcome's
+  own type. One class reproduces `MASS::polr()`. Mixtures that one outcome
+  per class assignment cannot identify (two categories, or no predictors)
+  are refused with `latents_not_identified`.
+
+## Documentation
+
+* New vignette "Latent class growth analysis: classes of trajectories"
+  (`vignette("trajectory-classes")`): trajectory classes without random
+  effects, every plot view, curved trajectories, pass/fail and ordered-band
+  trajectories, distal outcomes, and when to prefer the growth mixture model.
+  The growth mixture vignette now focuses on random effects and the
+  multilevel model, with its plots.
+* Coefficient forest plots of trajectory fits label every estimate with the
+  same number of decimals per panel (two, or three for small values).
+* The recovery table of a regression mixture prints in the report layout.
+
+## Bug fixes
+
+* Growth mixture models gain a start from the persons' own least-squares
+  trajectories. Every previous start came from the model without random
+  effects, which can split persons by their level; the growth fit then
+  stopped at a lower maximum (by 9 to 11 log-likelihood units on test data
+  where classes differ in slope).
+* A fit with a noise component: `summary()` and `get_results(x, "all")` no
+  longer fail; `"classification_errors"` and `"bch_weights"` (which were
+  wrong for noise units) refuse with `latents_unsupported_noise`.
+  `sensitivity()` no longer reports `NA` agreement for noise fits.
+* `parameter_inference()` of a general `lta()` fit now uses the caller's
+  `step` in its table, not only in the attached covariance.
+* `get_tna()` and `get_group_tna()` on a general `lta()` fit refuse with
+  `latents_unsupported_tna` instead of a bare "no applicable method".
+* An additive-family information matrix that is negative definite is
+  refused with `latents_singular_information` instead of an unclassed
+  Cholesky error.
+* A group covariate that varies within a group, and all starts failing in
+  the covariate and homogeneous transition engines, now raise classed
+  conditions (`latents_bad_data`, `latents_all_starts_failed`).
+* Two-level regression summaries label a class logit's intercept within a
+  group class "Intercept, group class 1" rather than
+  "Intercept x group_class_1".
+
 # latents 0.9.12
 
 ## Growth mixture models

@@ -673,7 +673,7 @@
     levels_for <- extra$ordinal_levels[[j]]
     probability <- exp(.latents_ordinal_log_probabilities(
       object$ordinal_intercepts[[j]], object$ordinal_locations[, j]))
-    factor(levels_for[.multilpa_draw_rows(probability[profile, , drop = FALSE])],
+    factor(levels_for[.latents_draw_rows(probability[profile, , drop = FALSE])],
            levels = levels_for, ordered = TRUE)
   })
   names(ordinal) <- colnames(extra$ordinal)
@@ -917,6 +917,7 @@
 
 #' Stable negative-binomial log-dispersion derivatives
 #'
+#' `means` is one value per profile, or a rows-by-classes matrix of means.
 #' Near the Poisson limit, differences of digamma/trigamma terms lose the
 #' small dispersion score to cancellation. Expand the NB log density relative
 #' to Poisson in alpha through order four when alpha times the count or mean
@@ -925,9 +926,11 @@
 #' Both expansion variables (alpha y and alpha mu) are then below 0.001.
 #' @noRd
 .latents_negative_binomial_dispersion_derivatives <- function(value, means, dispersion) {
-  n_profiles <- length(means)
+  # One mean per profile, or (for a regression) a rows-by-classes matrix.
+  n_profiles <- if (is.matrix(means)) ncol(means) else length(means)
   y <- matrix(value, length(value), n_profiles)
-  mu <- matrix(means, length(value), n_profiles, byrow = TRUE)
+  mu <- if (is.matrix(means)) means else
+    matrix(means, length(value), n_profiles, byrow = TRUE)
   alpha <- matrix(dispersion, length(value), n_profiles, byrow = TRUE)
   r <- 1 / alpha
   d <- digamma(y + r) - digamma(r) - log1p(mu / r) + (mu - y) / (r + mu)

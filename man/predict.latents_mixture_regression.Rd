@@ -7,7 +7,7 @@
 \method{predict}{latents_mixture_regression}(
   object,
   newdata = NULL,
-  type = c("response", "class_response", "posterior"),
+  type = c("response", "class_response", "posterior", "probabilities"),
   ...
 )
 }
@@ -21,7 +21,10 @@ predictors (and the membership covariates and \code{id} the model uses).}
 their prior probabilities (the covariates, but not the outcome, inform
 them). \code{"class_response"}: the mean outcome under every class, one row
 per row and class. \code{"posterior"}: the posterior class probabilities
-given the outcome, which \code{newdata} must then contain.}
+given the outcome, which \code{newdata} must then contain.
+\code{"probabilities"} (ordinal family only): the probability of every
+category under every class. For the ordinal family the "mean outcome" is
+the expected category score, the categories scored 1 to C in order.}
 
 \item{...}{Unused.}
 }
@@ -29,7 +32,10 @@ given the outcome, which \code{newdata} must then contain.}
 A base \code{data.frame}. For \code{"response"}: \code{row} and \code{fitted}. For
 \code{"class_response"}: \code{row}, \code{class}, \code{prior} and \code{fitted}, one row per
 data row and class. For \code{"posterior"}: the same columns as
-\code{get_results(fit, "assignments")}.
+\code{get_results(fit, "assignments")}. For \code{"probabilities"}: \code{row},
+\code{class}, \code{category}, \code{prior} and \code{probability}, one row per data row,
+class and category. Raises \code{latents_bad_argument} for
+\code{"probabilities"} with another family.
 }
 \description{
 Predict from a mixture-of-regressions fit

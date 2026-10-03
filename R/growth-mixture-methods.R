@@ -18,27 +18,21 @@
   stats <- fit$stats
   params <- fit$params
   theta <- .growth_pack(spec, params)
-  weights <- spec$sampling_weights %||% rep(1, length(stats$n))
+  # One weight per independent unit (person, or cluster); unweighted, one.
+  weights <- spec$sampling_weights %||% 1
   scores <- .growth_scores(spec, stats, params)
   total <- function(v) {
     colSums(.growth_scores(spec, stats, .growth_unpack(spec, v, params)) * weights)
   }
-  information <- if (identical(vcov_type, "opg")) crossprod(scores * sqrt(weights)) else {
-    columns <- lapply(seq_along(theta), function(j) {
-      step <- 1e-5 * (1 + abs(theta[j]))
-      up <- theta
-      down <- theta
-      up[j] <- up[j] + step
-      down[j] <- down[j] - step
-      (total(up) - total(down)) / (2 * step)
-    })
-    hessian <- do.call(cbind, columns)
-    -(hessian + t(hessian)) / 2
-  }
+  # Weighted OPG, or central differences of the weighted total score with
+  # h = 1e-5 * (1 + |theta|) (the service's "central"/"plus1" variant).
+  information <- if (identical(vcov_type, "opg")) crossprod(scores * sqrt(weights)) else
+    .inference_score_information(total, theta, 1e-5, scheme = "central",
+                                 h_rule = "plus1")
   dimnames(information) <- list(names(theta), names(theta))
   inverse <- .mixture_invert(information)
   vcov <- if (identical(vcov_type, "robust")) {
-    inverse %*% crossprod(scores * weights) %*% inverse
+    .inference_sandwich(inverse, crossprod(scores * weights))
   } else inverse
   dimnames(vcov) <- list(names(theta), names(theta))
   list(theta = theta, vcov = vcov, vcov_type = vcov_type, information = information,
@@ -74,7 +68,7 @@
   natural <- .mixture_delta(inference$theta, inference$vcov, transform)
   linked <- .mixture_delta(inference$theta, inference$vcov,
                            function(v) link(transform(v)))
-  z <- stats::qnorm(1 - (1 - level) / 2)
+  z <- .inference_critical(level, "one_minus")
   data.frame(estimate = natural$estimate, std_error = natural$std_error,
              conf_low = inverse(linked$estimate - z * linked$std_error),
              conf_high = inverse(linked$estimate + z * linked$std_error))
@@ -90,7 +84,7 @@
   class <- vapply(parts, `[`, character(1), 1L)
   term <- vapply(parts, function(p) paste(p[-1L], collapse = "."), character(1))
   data.frame(class = class, term = term,
-             .mixture_wald(unname(theta[picked]), unname(se[picked]), level),
+             .inference_wald(unname(theta[picked]), unname(se[picked]), level),
              stringsAsFactors = FALSE)
 }
 
@@ -161,8 +155,7 @@
   modal <- max.col(posterior, ties.method = "first")
   shares <- do.call(rbind, lapply(seq_along(classes), function(k) {
     .growth_delta_table(inference, function(v) {
-      params <- .growth_unpack(spec, v, template)
-      prior <- exp(.mixture_log_softmax(spec$w, params$gamma))
+      prior <- .growth_class_prior(spec, .growth_unpack(spec, v, template))
       sum(weights * prior[, k]) / sum(weights)
     }, "logit", level)
   }))
@@ -182,21 +175,48 @@
              residual_sd_std_error = sigma$std_error, stringsAsFactors = FALSE)
 }
 
+#' Each person's prior class probabilities
+#'
+#' The membership logits of their covariates; in a multilevel growth mixture,
+#' averaged over the group classes of their cluster with the cluster's
+#' group-class probabilities.
+#'
+#' @param spec The growth specification.
+#' @param params A parameter list.
+#' @return A persons-by-classes matrix whose rows sum to one.
+#' @noRd
+.growth_class_prior <- function(spec, params) {
+  structure <- .growth_structure(spec)
+  if (identical(structure$nesting, "observation")) {
+    return(exp(.mixture_log_softmax(spec$w, params$gamma)))
+  }
+  group_prior <- exp(.mixture_log_softmax(structure$v, params$delta))
+  Reduce(`+`, lapply(seq_len(structure$n_group_classes), function(h) {
+    exp(.mixture_log_softmax(.mixture_two_level_design(structure, h),
+                             params$class_logits)) *
+      group_prior[structure$group_index, h]
+  }))
+}
+
 #' Membership logits, one row per class (against class 1) and term
 #' @noRd
 .growth_membership_table <- function(x, level, inference) {
   theta <- inference$theta
   se <- sqrt(pmax(diag(inference$vcov), 0))
-  picked <- startsWith(names(theta), "membership.")
+  # Group-class logits of a multilevel growth mixture (against group class
+  # 1) come first, labelled by their group class.
+  picked <- startsWith(names(theta), "membership.") |
+    startsWith(names(theta), "group_membership.")
   if (!any(picked)) {
     return(data.frame(class = character(), term = character(), estimate = numeric(),
                       std_error = numeric(), statistic = numeric(), p_value = numeric(),
                       conf_low = numeric(), conf_high = numeric()))
   }
-  parts <- strsplit(sub("^membership\\.", "", names(theta)[picked]), ".", fixed = TRUE)
+  parts <- strsplit(sub("^(group_)?membership\\.", "", names(theta)[picked]), ".",
+                    fixed = TRUE)
   data.frame(class = vapply(parts, `[`, character(1), 1L),
              term = vapply(parts, function(p) paste(p[-1L], collapse = "."), character(1)),
-             .mixture_wald(unname(theta[picked]), unname(se[picked]), level),
+             .inference_wald(unname(theta[picked]), unname(se[picked]), level),
              stringsAsFactors = FALSE)
 }
 
@@ -230,6 +250,7 @@
   n_persons <- length(x$stats$n)
   k <- x$n_parameters
   log_likelihood <- x$log_likelihood
+  if (!is.null(spec$cluster)) return(.growth_cluster_fit_table(x))
   data.frame(
     n_classes = spec$n_classes, n_persons = n_persons, n_observations = spec$n,
     random = .growth_random_description(spec), random_covariance = spec$random_covariance,
@@ -249,6 +270,101 @@
     weights = x$weights %||% NA_character_, stringsAsFactors = FALSE)
 }
 
+#' Fit of a multilevel growth mixture
+#'
+#' The clusters are the independent units, so `bic` counts clusters, as for
+#' the two-level regression mixture and as Lukociene, Varriale and Vermunt
+#' (2010) recommend for choosing the number of group classes; `bic_persons`
+#' and `bic_rows` count persons and observations instead.
+#' @noRd
+.growth_cluster_fit_table <- function(x) {
+  spec <- x$spec
+  n_persons <- length(x$stats$n)
+  n_clusters <- spec$n_clusters
+  k <- x$n_parameters
+  log_likelihood <- x$log_likelihood
+  rho <- x$expectation$structure$rho
+  group_entropy <- -sum(rho[rho > 0] * log(rho[rho > 0]))
+  bic <- -2 * log_likelihood + log(n_clusters) * k
+  data.frame(
+    n_classes = spec$n_classes, n_group_classes = spec$n_cluster_classes,
+    n_clusters = n_clusters, n_persons = n_persons, n_observations = spec$n,
+    random = .growth_random_description(spec), random_covariance = spec$random_covariance,
+    random_diagonal = isTRUE(spec$random_diagonal), residual_variance = spec$variance,
+    n_parameters = k, log_likelihood = log_likelihood,
+    aic = -2 * log_likelihood + 2 * k, bic = bic,
+    bic_persons = -2 * log_likelihood + log(n_persons) * k,
+    bic_rows = -2 * log_likelihood + log(spec$n) * k,
+    sabic = -2 * log_likelihood + log((n_clusters + 2) / 24) * k,
+    icl = bic + 2 * (.growth_entropy_sum(x) + group_entropy),
+    entropy = .growth_entropy(x$expectation$posterior),
+    group_entropy = .growth_entropy(rho),
+    smallest_share = min(colMeans(x$expectation$posterior)),
+    random_boundary = isTRUE(x$random_boundary),
+    converged = isTRUE(x$converged), n_best_replicated = x$n_best_replicated,
+    stringsAsFactors = FALSE)
+}
+
+#' Group classes of a multilevel growth mixture: each group class's share of
+#' the clusters and its trajectory-class probabilities
+#' @noRd
+.growth_group_class_table <- function(x, level, inference) {
+  spec <- x$spec
+  structure <- .growth_structure(spec)
+  if (identical(structure$nesting, "observation")) {
+    return(data.frame(group_class = character(), class = character(),
+                      probability = numeric(), group_share = numeric()))
+  }
+  rho <- x$expectation$structure$rho
+  n_group_classes <- structure$n_group_classes
+  group_names <- paste0("group_class_", seq_len(n_group_classes))
+  classes <- .growth_class_names(x)
+  # Model-implied class probabilities within each group class, averaged over
+  # the persons of the clusters it is responsible for.
+  probabilities <- function(params, cluster_weights) {
+    vapply(seq_len(n_group_classes), function(h) {
+      prior <- exp(.mixture_log_softmax(.mixture_two_level_design(structure, h),
+                                        params$class_logits))
+      weight <- cluster_weights[structure$group_index, h]
+      colSums(prior * weight) / sum(weight)
+    }, numeric(spec$n_classes)) |> matrix(spec$n_classes)
+  }
+  estimate <- probabilities(x$params, rho)
+  standard_error <- if (ncol(structure$w) == 0L && !is.null(inference)) {
+    .mixture_delta(inference$theta, inference$vcov, function(v) {
+      as.vector(probabilities(.growth_unpack(spec, v, x$params), rho))
+    })$std_error
+  } else rep(NA_real_, length(estimate))
+  data.frame(
+    group_class = rep(group_names, each = spec$n_classes),
+    class = rep(classes, n_group_classes),
+    probability = as.vector(estimate), std_error = standard_error,
+    group_share = rep(colMeans(rho), each = spec$n_classes),
+    assigned_clusters = rep(tabulate(max.col(rho, ties.method = "first"),
+                                     n_group_classes), each = spec$n_classes),
+    stringsAsFactors = FALSE)
+}
+
+#' Each cluster's group-class posteriors and modal group class
+#' @noRd
+.growth_cluster_table <- function(x) {
+  spec <- x$spec
+  if (is.null(spec$cluster)) {
+    return(data.frame(cluster = character(), group_class = character()))
+  }
+  rho <- x$expectation$structure$rho
+  modal <- max.col(rho, ties.method = "first")
+  out <- data.frame(cluster = spec$cluster_levels,
+                    n_persons = tabulate(spec$cluster_index, spec$n_clusters),
+                    group_class = paste0("group_class_", modal),
+                    probability = rho[cbind(seq_along(modal), modal)],
+                    stringsAsFactors = FALSE)
+  names(out)[1L] <- spec$cluster
+  posterior <- as.data.frame(rho)
+  names(posterior) <- paste0("posterior_group_class_", seq_len(ncol(rho)))
+  cbind(out, posterior)
+}
+
 #' Each person's posterior class probabilities and modal class
 #' @noRd
 .growth_assignment_table <- function(x) {
@@ -257,6 +373,11 @@
   out <- data.frame(id = view$spec$group_levels, class = view$classes[view$modal],
                     probability = apply(posterior, 1L, max), stringsAsFactors = FALSE)
   names(out)[1L] <- view$spec$id
+  if (!is.null(view$spec$cluster)) {
+    out <- cbind(out[1L], stats::setNames(
+      data.frame(view$spec$cluster_levels[view$spec$cluster_index]), view$spec$cluster),
+      out[-1L])
+  }
   posterior_frame <- as.data.frame(posterior)
   names(posterior_frame) <- paste0("posterior_", view$classes)
   cbind(out, posterior_frame)
@@ -356,24 +477,26 @@
   } else linear
   out <- data.frame(id = spec$model_data[[spec$id]], class = view$classes[modal[person]],
                     observed = .trajectory_observed(view),
-                    class_mean = view$inverse_link(linear),
-                    predicted = view$inverse_link(own), stringsAsFactors = FALSE)
+                    class_mean = view$response_mean(linear, modal[person]),
+                    predicted = view$response_mean(own, modal[person]),
+                    stringsAsFactors = FALSE)
   names(out)[1L] <- spec$id
   time <- .growth_time_variable(x)
   out[[time]] <- spec$model_data[[time]]
   out[c(spec$id, time, "class", "observed", "class_mean", "predicted")]
 }
 
-.growth_tables <- function() {
+.growth_tables <- function(x = NULL) {
   c("coefficients", "classes", "random", "membership", "fit", "assignments",
-    "random_effects", "trajectories", "individual", "starts")
+    "random_effects", "trajectories", "individual", "starts",
+    if (!is.null(x$spec$cluster)) c("group_classes", "clusters"))
 }
 
 #' @noRd
 .growth_table <- function(x, what, level = 0.95, vcov_type = NULL, time = NULL,
                           data = NULL, truth = NULL) {
   needs_inference <- what %in% c("coefficients", "classes", "random", "membership",
-                                 "trajectories")
+                                 "trajectories", "group_classes")
   inference <- if (needs_inference) .growth_resolve_inference(x, vcov_type)
   table <- switch(what,
     coefficients = .growth_coefficient_table(x, level, inference),
@@ -386,6 +509,8 @@
     trajectories = .growth_trajectory_table(x, level, inference, time),
     individual = .growth_individual_table(x),
     starts = x$starts,
+    group_classes = .growth_group_class_table(x, level, inference),
+    clusters = .growth_cluster_table(x),
     # The persons' posteriors in the place the regression table reads them.
     recovery = .mixture_recovery_table(
       list(spec = x$spec, expectation = list(group_tau = x$expectation$posterior)),
@@ -437,6 +562,10 @@
     fit = list(
       title = "Model fit",
       display = list(column("Classes", "n_classes", "integer"),
+                     if (!is.null(x$spec$cluster))
+                       column("Group classes", "n_group_classes", "integer"),
+                     if (!is.null(x$spec$cluster))
+                       column("Clusters", "n_clusters", "integer"),
                      column("Persons", "n_persons", "integer"),
                      column("Observations", "n_observations", "integer"),
                      column("Random effects", "random", "text"),
@@ -450,7 +579,10 @@
                      column("Boundary", "random_boundary", "logical"))),
     assignments = list(
       title = "Class assignments",
-      display = list(column(id, id, "text"), column("Class", "class", "label"),
+      display = list(column(id, id, "text"),
+                     if (!is.null(x$spec$cluster))
+                       column(x$spec$cluster, x$spec$cluster, "text"),
+                     column("Class", "class", "label"),
                      column("Probability", "probability"))),
     random_effects = list(
       title = "Predicted random effects (most likely class)",
@@ -469,13 +601,30 @@
                      column("Class", "class", "label"), column("Observed", "observed"),
                      column("Class mean", "class_mean"), column("Predicted", "predicted"))),
     starts = list(title = "Starts", display = NULL),
+    group_classes = list(
+      title = "Group classes: trajectory classes within each",
+      display = list(column("Group class", "group_class", "label"),
+                     column("Class", "class", "label"),
+                     column("Probability", "probability", "share"),
+                     column("SE", "std_error", "share"),
+                     column("Share of clusters", "group_share", "share"),
+                     column("Clusters", "assigned_clusters", "integer"))),
+    clusters = list(
+      title = "Cluster group classes",
+      display = list(column(x$spec$cluster %||% "cluster", x$spec$cluster %||% "cluster",
+                            "text"),
+                     column("Persons", "n_persons", "integer"),
+                     column("Group class", "group_class", "label"),
+                     column("Probability", "probability"))),
     recovery = list(
       title = "Recovery of a known classification",
       display = list(column("Assigned", "assigned", "label"),
                      column(truth_label, truth_label, "text"),
                      column("Persons", "n", "integer"),
                      column("Share of assigned", "share", "share"))))
-  table <- .latents_table(table, level, plan$title, plan$display)
+  # Columns a single-level fit does not have are NULL in the plan.
+  display <- if (is.null(plan$display)) NULL else Filter(Negate(is.null), plan$display)
+  table <- .latents_table(table, level, plan$title, display)
   if (identical(what, "fit")) attr(table, "card") <- TRUE
   if (identical(what, "random")) {
     attr(table, "marks") <- ifelse(table$boundary, "  boundary: no interval", "")
@@ -505,7 +654,16 @@
 #'   `"starts"` (one row per start), `"recovery"` (needs `data` and `truth`:
 #'   the modal classes cross-tabulated against a known classification that is
 #'   constant within persons, with counts and shares of each assigned class),
-#'   or `"all"` (a named list of every table but `"recovery"`).
+#'   or `"all"` (a named list of every table but `"recovery"`). A multilevel
+#'   growth mixture (`cluster`) adds `"group_classes"` (one row per group
+#'   class and class: the class probabilities within the group class, their
+#'   standard errors without membership covariates, the group class's share
+#'   of the clusters and its assigned clusters) and `"clusters"` (one row per
+#'   cluster: persons, modal group class and posteriors); its `"membership"`
+#'   table holds the group-class logits (against group class 1) and the class
+#'   logits with one intercept per group class, `"assignments"` gains each
+#'   person's cluster, and `"fit"` counts clusters in `bic` (persons in
+#'   `bic_persons`).
 #' @param level Confidence level of the intervals.
 #' @param vcov_type `NULL` (the stored type), `"observed"`, `"robust"` or
 #'   `"opg"`. A weighted fit allows `"robust"` only.
@@ -529,14 +687,14 @@
 get_results.latents_growth_mixture <- function(x, what = "coefficients", level = 0.95,
                                                vcov_type = NULL, time = NULL,
                                                data = NULL, truth = NULL, ...) {
-  what <- match.arg(what, c(.growth_tables(), "recovery", "all"))
+  what <- match.arg(what, c(.growth_tables(x), "recovery", "all"))
   stopifnot("`level` must be a single number in (0, 1)" =
               is.numeric(level) && length(level) == 1L && is.finite(level) &&
               level > 0 && level < 1)
   if (identical(what, "all")) {
-    return(stats::setNames(lapply(.growth_tables(), function(w) {
+    return(stats::setNames(lapply(.growth_tables(x), function(w) {
       .growth_table(x, w, level, vcov_type, time)
-    }), .growth_tables()))
+    }), .growth_tables(x)))
   }
   .growth_table(x, what, level, vcov_type, time, data, truth)
 }
@@ -561,9 +719,16 @@ print.latents_growth_mixture <- function(x, digits = 4L, ...) {
   covariance <- switch(fit$random_covariance, varying = "class-specific",
                        equal = "shared across classes",
                        proportional = "proportional across classes")
-  cat("Growth mixture model\n")
-  cat(sprintf("  %d classes, %d persons, %d observations\n", fit$n_classes,
-              fit$n_persons, fit$n_observations))
+  if (is.null(x$spec$cluster)) {
+    cat("Growth mixture model\n")
+    cat(sprintf("  %d classes, %d persons, %d observations\n", fit$n_classes,
+                fit$n_persons, fit$n_observations))
+  } else {
+    cat("Multilevel growth mixture model\n")
+    cat(sprintf("  %d classes and %d group classes; %d clusters, %d persons, %d observations\n",
+                fit$n_classes, fit$n_group_classes, fit$n_clusters, fit$n_persons,
+                fit$n_observations))
+  }
   cat(sprintf("  %s%s, covariance %s; residual variance %s\n",
               toupper(substr(random, 1L, 1L)), substring(random, 2L), covariance,
               if (identical(fit$residual_variance, "equal")) "shared" else "by class"))
@@ -572,6 +737,10 @@ print.latents_growth_mixture <- function(x, digits = 4L, ...) {
               fit$bic, fit$entropy, if (fit$converged) "converged" else "NOT converged"))
   cat("\n")
   print(get_results(x, "classes"))
+  if (!is.null(x$spec$cluster)) {
+    cat("\n")
+    print(get_results(x, "group_classes"))
+  }
   cat("\n")
   print(get_results(x, "coefficients"))
   if (isTRUE(x$random_boundary)) {
@@ -590,7 +759,8 @@ print.latents_growth_mixture <- function(x, digits = 4L, ...) {
 #'   `fit`, `classes`, `coefficients`, `random` and `membership` tables.
 #' @export
 summary.latents_growth_mixture <- function(object, level = 0.95, vcov_type = NULL, ...) {
-  tables <- c("fit", "classes", "coefficients", "random", "membership")
+  tables <- c("fit", "classes", if (!is.null(object$spec$cluster)) "group_classes",
+              "coefficients", "random", "membership")
   structure(stats::setNames(lapply(tables, function(w) {
     .growth_table(object, w, level, vcov_type)
   }), tables), class = "summary_latents_growth_mixture")
@@ -625,7 +795,7 @@ vcov.latents_growth_mixture <- function(object, type = NULL, ...) {
 #' @export
 confint.latents_growth_mixture <- function(object, parm, level = 0.95, ...) {
   inference <- .growth_resolve_inference(object)
-  table <- .mixture_wald(unname(inference$theta),
+  table <- .inference_wald(unname(inference$theta),
                          sqrt(pmax(diag(inference$vcov), 0)), level)
   data.frame(parameter = names(inference$theta), table[c("estimate", "conf_low", "conf_high")],
              stringsAsFactors = FALSE)

@@ -139,32 +139,24 @@
 #' @noRd
 .lta_bootstrap_replicates <- function(x, data, iter, n_starts, max_iter, tol,
                                       reference_names) {
-  rows_by_group <- split(seq_len(nrow(data)), x$group_index)
-  replicates <- lapply(seq_len(iter), function(i) {
-    drawn <- sample.int(x$n_groups, x$n_groups, replace = TRUE)
-    resampled <- .multilpa_resample_groups(data, rows_by_group, x$id, drawn)
-    failure <- function(message) {
-      list(estimate = rep(NA_real_, length(reference_names)), message = message)
-    }
+  .latents_cluster_bootstrap(
+    data, x$group_index, x$n_groups, x$id, iter,
     # A replicate's own warnings (an unconverged start, a boundary) are judged
-    # below from the fit itself, so they are not repeated once per resample.
-    fit <- tryCatch(withCallingHandlers(
-      .lta_refit(x, resampled, n_starts, max_iter, tol),
-      warning = function(w) invokeRestart("muffleWarning"),
-      message = function(m) invokeRestart("muffleMessage")),
-      error = function(error) conditionMessage(error))
-    if (is.character(fit)) return(failure(fit))
-    if (!isTRUE(fit$converged)) return(failure("the replicate did not converge"))
-    aligned <- .lta_align_estimates(fit, x)
-    if (!setequal(names(aligned), reference_names)) {
-      return(failure("the replicate's coefficients could not be matched"))
-    }
-    list(estimate = unname(aligned[reference_names]), message = NA_character_)
-  })
-  estimates <- do.call(rbind, lapply(replicates, `[[`, "estimate"))
-  colnames(estimates) <- reference_names
-  list(estimates = estimates,
-       messages = vapply(replicates, `[[`, character(1), "message"))
+    # from the fit itself, so they are not repeated once per resample.
+    refit = function(resampled) {
+      withCallingHandlers(
+        .lta_refit(x, resampled, n_starts, max_iter, tol),
+        warning = function(w) invokeRestart("muffleWarning"),
+        message = function(m) invokeRestart("muffleMessage"))
+    },
+    extract = function(fit) {
+      aligned <- .lta_align_estimates(fit, x)
+      if (!setequal(names(aligned), reference_names)) {
+        return("the replicate's coefficients could not be matched")
+      }
+      unname(aligned[reference_names])
+    },
+    reference_names = reference_names)
 }
 
 #' A replicate's reported estimates, in the original fit's labels
@@ -198,10 +190,9 @@
 
 #' What a transition fit's profiles look like, for matching
 #'
-#' The measurement of every block, in the units `.multilpa_profile_signature()`
-#' uses: means over the reference's within-profile standard deviations,
-#' response and ordinal probabilities as they are, count means over their
-#' standard deviations.
+#' The measurement signature of every block, in the units
+#' `.latents_measurement_signature()` uses, with no mixing column: a
+#' transition fit's profile shares change from occasion to occasion.
 #'
 #' @param x A transition fit.
 #' @param reference The fit whose scale both signatures are measured in.
@@ -209,29 +200,15 @@
 #' @noRd
 .lta_profile_signature <- function(x, reference) {
   blocks_of <- function(fit) {
-    if (inherits(fit, "multilpa_lta")) return(fit$measurement)
-    list(list(means = fit$means, variances = fit$variances,
-              response_probabilities = fit$response_probabilities))
+    blocks <- if (inherits(fit, "multilpa_lta")) fit$measurement else
+      list(list(means = fit$means, variances = fit$variances,
+                response_probabilities = fit$response_probabilities))
+    lapply(blocks, function(block) c(block, list(n_profiles = fit$n_profiles)))
   }
-  mine <- blocks_of(x)
-  theirs <- blocks_of(reference)
-  features <- unlist(lapply(seq_along(mine), function(b) {
-    block <- c(mine[[b]], list(n_profiles = x$n_profiles))
-    scale <- c(theirs[[b]], list(n_profiles = reference$n_profiles))
-    parts <- list()
-    if (length(block$means) > 0L && ncol(block$means) > 0L) {
-      spread <- sqrt(colMeans(scale$variances))
-      spread[!is.finite(spread) | spread <= 0] <- 1
-      parts$means <- sweep(unname(block$means), 2L, spread, "/")
-    }
-    if (length(block$response_probabilities) > 0L) {
-      parts$response <- do.call(cbind, lapply(block$response_probabilities, unname))
-    }
-    c(parts, .multilpa_extra_signature(block, scale))
-  }), recursive = FALSE)
+  signature <- .latents_measurement_signature(blocks_of(x), blocks_of(reference))
   stopifnot("a transition fit must have measurement to match profiles on" =
-              length(features) > 0L)
-  do.call(cbind, features)
+              !is.null(signature))
+  signature
 }
 
 #' What a transition fit's group classes look like, for matching
@@ -304,7 +281,7 @@
   rebased <- unlist(unname(lapply(split(seq_along(owner), owner), function(rows) {
     eta <- numeric(n_profiles)
     eta[old_profile[rows]] <- estimates[initial][rows]
-    shifted <- eta[order] - eta[order[n_profiles]]
+    shifted <- .latents_rebase_logits(matrix(eta, 1L), order)[1L, ]
     p <- pieces[initial][[rows[1L]]]
     stats::setNames(shifted[-n_profiles],
                     paste(p[1L], p[2L], paste0("profile_", seq_len(n_profiles - 1L)),
@@ -378,15 +355,7 @@
     "`tol` must be a single positive number" =
       is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
   .multilpa_check_seed(seed)
-  if (!is.null(seed)) {
-    previous <- if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
-      get(".Random.seed", envir = .GlobalEnv) else NULL
-    on.exit(if (!is.null(previous))
-      assign(".Random.seed", previous, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-      else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
-        rm(".Random.seed", envir = .GlobalEnv), add = TRUE, after = FALSE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed, after = FALSE)
   .lta_bootstrap_inference(x, data, level, as.integer(iter), as.integer(n_starts),
                            as.integer(max_iter), tol, adjust)
 }

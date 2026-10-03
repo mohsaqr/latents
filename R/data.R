@@ -313,3 +313,50 @@
 #' get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
 #' }
 "growth_scores"
+
+#' Reading growth of students nested in schools
+#'
+#' A simulated multilevel longitudinal dataset made for the multilevel growth
+#' mixture model. 600 students in 40 schools (15 per school) sit a reading
+#' test on five occasions (`wave` 0 to 4). Two kinds of student follow two
+#' trajectories: *improving* (starts near 48, gains 3 points a wave) and
+#' *plateauing* (starts near 56, gains 0.3). Students vary around their
+#' trajectory (random intercept SD 3, random slope SD 0.6, correlation -0.2;
+#' residual SD 2). Schools are of two types: in *supportive* schools 80% of
+#' students improve, in *struggling* schools 25% do, and a school's support
+#' programme (standardized, measured once) makes it more likely to be
+#' supportive. About 8% of tests were missed at random.
+#'
+#' The school types are what a multilevel growth mixture model's group
+#' classes recover: `mixture_regression(..., cluster = "school",
+#' n_group_classes = 2)`, with `group_membership = "programme"`.
+#'
+#' @format A data frame with 2780 rows (600 students, 40 schools) and 7
+#'   columns:
+#' \describe{
+#'   \item{school}{Integer school identifier, 1 to 40. Pass it as `cluster`.}
+#'   \item{student}{Integer student identifier, 1 to 600. Pass it as `id`.}
+#'   \item{wave}{Integer test occasion, 0 to 4. The time variable.}
+#'   \item{score}{Reading score.}
+#'   \item{programme}{Standardized school support programme, constant within
+#'     school.}
+#'   \item{school_type}{Factor, `"supportive"` or `"struggling"`: the school's
+#'     generating type. Not for fitting; kept to check recovery.}
+#'   \item{trajectory}{Factor, `"improving"` or `"plateauing"`: the student's
+#'     generating kind. Not for fitting; kept to check recovery.}
+#' }
+#' @source Simulated by `data-raw/growth-schools.R` in the source repository.
+#' @seealso [mixture_regression()], [get_results.latents_growth_mixture()].
+#' @examples
+#' \donttest{
+#' fit <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
+#'                           id = "student", class_level = "group",
+#'                           random = "wave", random_covariance = "equal",
+#'                           cluster = "school", n_group_classes = 2,
+#'                           group_membership = "programme",
+#'                           n_starts = 2, seed = 1)
+#' get_results(fit, "group_classes")
+#' get_results(fit, "recovery", data = growth_schools, truth = "trajectory")
+#' }
+#' @keywords datasets
+"growth_schools"

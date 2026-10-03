@@ -574,7 +574,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
   stopifnot(inherits(object, "multilpa"), !inherits(object, "multilpa_covariates"))
   group_class <- sample.int(object$n_group_classes, object$n_groups,
                             replace = TRUE, prob = object$group_probabilities)
-  profile <- .multilpa_draw_rows(
+  profile <- .latents_draw_rows(
     object$profile_probabilities[group_class[object$group_index], , drop = FALSE])
   result <- .multilpa_draw_indicators(object, profile)
   result[[object$id]] <- object$group_values[object$group_index]
@@ -596,7 +596,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 .multilpa_cov_simulate <- function(object, frame) {
   stopifnot(inherits(object, "multilpa_covariates"))
   group_prior <- .multilpa_softmax(object$group_design, object$group_coefficients)
-  group_class <- .multilpa_draw_rows(group_prior)[object$group_index]
+  group_class <- .latents_draw_rows(group_prior)[object$group_index]
   priors <- lapply(object$profile_design, function(design) {
     .multilpa_softmax(design, object$profile_coefficients)
   })
@@ -604,7 +604,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
   profile_prior <- Reduce(`+`, lapply(seq_along(priors), function(class) {
     priors[[class]] * (group_class == class)
   }))
-  profile <- .multilpa_draw_rows(profile_prior)
+  profile <- .latents_draw_rows(profile_prior)
   simulated <- .multilpa_draw_indicators(object, profile)
   frame[object$vars] <- simulated[object$vars]
   frame
@@ -675,7 +675,7 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
         numeric_values <- suppressWarnings(as.numeric(values)) # nolint: undesirable_function_linter.
         if (!anyNA(numeric_values)) values <- numeric_values
       }
-      values[.multilpa_draw_rows(probabilities)]
+      values[.latents_draw_rows(probabilities)]
     })
     names(drawn) <- names(blocks)
     result <- cbind(result, as.data.frame(drawn, stringsAsFactors = FALSE))
@@ -683,24 +683,6 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
   extra <- .latents_draw_extra(object, profile)
   if (length(extra) > 0L) result[names(extra)] <- extra
   result[, object$vars, drop = FALSE]
-}
-
-#' Draw one category per row from a matrix of row-wise probabilities
-#'
-#' Inverse-CDF sampling in one pass. The last cumulative probability is set to
-#' exactly one so that a rounding shortfall cannot leave a draw unmatched and
-#' fall back silently to the first category.
-#'
-#' @param probabilities Matrix whose rows each sum to one.
-#' @return An integer vector, one column index per row.
-#' @noRd
-.multilpa_draw_rows <- function(probabilities) {
-  stopifnot("`probabilities` must be a matrix" = is.matrix(probabilities),
-            "`probabilities` must have at least one column" = ncol(probabilities) >= 1L)
-  cumulative <- t(apply(probabilities, 1L, cumsum))
-  if (ncol(probabilities) == 1L) cumulative <- matrix(1, nrow(probabilities), 1L)
-  cumulative[, ncol(cumulative)] <- 1
-  max.col(cumulative >= stats::runif(nrow(probabilities)), ties.method = "first")
 }
 
 #' The measurement constraint both bootstrap refits must carry
@@ -1021,14 +1003,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
             max_iter >= 1, max_iter == as.integer(max_iter),
             is.numeric(tol), length(tol) == 1L, is.finite(tol), tol > 0)
   .multilpa_check_seed(seed)
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    if (had_seed) old_seed <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-            else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
-              rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   fields <- c("vars", "id", "group_values", "group_index", "variance_model",
               "min_variance", "covariance_model")
   fields <- c(fields, "categorical", "categorical_levels", "min_probability",
@@ -1156,90 +1131,70 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
       class = "latents_reversed_likelihood", call = NULL))
   }
   observed <- max(0, observed)
-  replicates <- do.call(rbind, lapply(seq_len(iter), function(i) {
-    warning_text <- character()
-    tryCatch(withCallingHandlers({
-      simulated <- if (covariate_family) .multilpa_cov_simulate(null_model, data) else
-        .multilpa_simulate(null_model)
-      if (fiml) {
-        simulated <- .multilpa_carry_missingness(simulated, data, null_model$vars)
+  replicates <- .latents_blrt_replicates(iter, function(i) {
+    simulated <- if (covariate_family) .multilpa_cov_simulate(null_model, data) else
+      .multilpa_simulate(null_model)
+    if (fiml) {
+      simulated <- .multilpa_carry_missingness(simulated, data, null_model$vars)
+    }
+    models <- lapply(list(null_model, alternative_model), function(model) {
+      ## `variance_model` and `covariance_model` cannot express a structure
+      ## that constrains the volume, the shape or the orientation: refitting
+      ## from them alone returned a VEI replicate as VVI, two parameters
+      ## wider, so the reference distribution belonged to a different pair of
+      ## models than the statistic compared against it.
+      family <- .multilpa_structure_arguments(
+        model$covariance_structure %||% NA_character_)
+      if (length(family) == 0L) {
+        family <- list(variance_model = model$variance_model,
+                       covariance_model = model$covariance_model %||% "diagonal")
       }
-      models <- lapply(list(null_model, alternative_model), function(model) {
-        ## `variance_model` and `covariance_model` cannot express a structure
-        ## that constrains the volume, the shape or the orientation: refitting
-        ## from them alone returned a VEI replicate as VVI, two parameters
-        ## wider, so the reference distribution belonged to a different pair of
-        ## models than the statistic compared against it.
-        family <- .multilpa_structure_arguments(
-          model$covariance_structure %||% NA_character_)
-        if (length(family) == 0L) {
-          family <- list(variance_model = model$variance_model,
-                         covariance_model = model$covariance_model %||% "diagonal")
-        }
-        do.call(multilpa, c(
-          list(data = simulated, vars = model$vars, id = model$id,
-               n_profiles = model$n_profiles,
-               n_group_classes = model$n_group_classes),
-          family,
-          list(n_starts = n_starts, max_iter = max_iter, tol = tol,
-               min_variance = model$min_variance,
-               centering = model$centering %||% "none",
-               categorical = model$categorical %||% character(),
-               ordinal = model$ordinal %||% character(),
-               count = model$count %||% character(),
-               count_model = model$extra_data$count_model %||% "poisson",
-               count_dispersion = model$extra_data$count_dispersion %||% "varying",
-               min_probability = model$min_probability %||% 1e-10,
-               missing = missing_for(model),
-               start = constraint$start, fixed = constraint$fixed),
-          if (covariate_family) list(
-            profile_covariates = model$profile_covariates,
-            group_covariates = model$group_covariates,
-            profile_slopes = model$profile_slopes %||% "shared")))
-      })
-      statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
-      # The statistic reads only the maximized likelihoods. A covariate refit
-      # whose likelihood has settled but whose membership logits still drift
-      # (an empty or separated class in an over-fitted alternative) sits at
-      # the likelihood's supremum, so it is a valid replicate; the logits'
-      # state is recorded rather than silently accepted.
-      at_maximum <- function(model) {
-        isTRUE(model$converged) ||
-          (covariate_family && isTRUE(model$likelihood_converged))
-      }
-      logits_settled <- all(vapply(models, function(model) isTRUE(model$converged),
-                                   logical(1)))
-      valid <- all(vapply(models, at_maximum, logical(1))) &&
-        statistic >= -reversal_window
-      data.frame(replicate = i, statistic = if (valid) max(0, statistic) else NA_real_,
-        valid = valid, boundary = any(vapply(models, `[[`, logical(1), "boundary")),
-        logits_settled = logits_settled,
-        # Covariate fits do not count replicated maxima.
-        null_replications = models[[1L]]$n_best_replicated %||% NA_integer_,
-        alternative_replications = models[[2L]]$n_best_replicated %||% NA_integer_,
-        warnings = if (length(warning_text) == 0L) NA_character_ else
-          paste(unique(warning_text), collapse = "; "),
-        error = if (valid) NA_character_ else "Nonconvergence or reversed likelihood")
-    }, warning = function(warning) {
-      warning_text <<- c(warning_text, conditionMessage(warning))
-    }), error = function(error) {
-      data.frame(replicate = i, statistic = NA_real_, valid = FALSE, boundary = NA,
-        logits_settled = NA,
-        null_replications = NA_integer_, alternative_replications = NA_integer_,
-        warnings = paste(unique(warning_text), collapse = "; "), error = conditionMessage(error))
+      do.call(multilpa, c(
+        list(data = simulated, vars = model$vars, id = model$id,
+             n_profiles = model$n_profiles,
+             n_group_classes = model$n_group_classes),
+        family,
+        list(n_starts = n_starts, max_iter = max_iter, tol = tol,
+             min_variance = model$min_variance,
+             centering = model$centering %||% "none",
+             categorical = model$categorical %||% character(),
+             ordinal = model$ordinal %||% character(),
+             count = model$count %||% character(),
+             count_model = model$extra_data$count_model %||% "poisson",
+             count_dispersion = model$extra_data$count_dispersion %||% "varying",
+             min_probability = model$min_probability %||% 1e-10,
+             missing = missing_for(model),
+             start = constraint$start, fixed = constraint$fixed),
+        if (covariate_family) list(
+          profile_covariates = model$profile_covariates,
+          group_covariates = model$group_covariates,
+          profile_slopes = model$profile_slopes %||% "shared")))
     })
-  }))
-  valid <- all(replicates$valid)
-  p_value <- if (valid) (1 + sum(replicates$statistic >= observed)) / (iter + 1) else NA_real_
-  if (!valid) {
-    warning(warningCondition(paste(
-      "Some bootstrap fits failed validation, so p_value is NA.",
-      "summary() reports every replicate; improve fitting and rerun."),
-      class = "latents_failed_replicates"))
-  }
-  result <- list(statistic = observed, p_value = p_value,
-       monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (iter + 1)) else NA_real_,
-       iter = iter, n_valid = sum(replicates$valid), replicates = replicates,
+    statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
+    # The statistic reads only the maximized likelihoods. A covariate refit
+    # whose likelihood has settled but whose membership logits still drift
+    # (an empty or separated class in an over-fitted alternative) sits at
+    # the likelihood's supremum, so it is a valid replicate; the logits'
+    # state is recorded rather than silently accepted.
+    at_maximum <- function(model) {
+      isTRUE(model$converged) ||
+        (covariate_family && isTRUE(model$likelihood_converged))
+    }
+    logits_settled <- all(vapply(models, function(model) isTRUE(model$converged),
+                                 logical(1)))
+    valid <- all(vapply(models, at_maximum, logical(1))) &&
+      statistic >= -reversal_window
+    list(statistic = statistic, valid = valid,
+         boundary = any(vapply(models, `[[`, logical(1), "boundary")),
+         logits_settled = logits_settled,
+         # Covariate fits do not count replicated maxima.
+         null_replications = models[[1L]]$n_best_replicated %||% NA_integer_,
+         alternative_replications = models[[2L]]$n_best_replicated %||% NA_integer_)
+  }, muffle_warnings = FALSE)
+  tally <- .latents_blrt_p_value(replicates, observed, iter)
+  result <- list(statistic = observed, p_value = tally$p_value,
+       monte_carlo_se = tally$monte_carlo_se,
+       iter = iter, n_valid = tally$n_valid, replicates = replicates,
        fixed = constraint$fixed,
        null_profiles = null_model$n_profiles,
        null_group_classes = null_model$n_group_classes,

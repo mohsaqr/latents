@@ -1,0 +1,244 @@
+---
+title: "Latent class growth analysis: classes of trajectories"
+author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Latent class growth analysis: classes of trajectories}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
+                      fig.height = 4.6, fig.align = "center", dpi = 96)
+options(width = 90)
+has_ggplot <- requireNamespace("ggplot2", quietly = TRUE)
+```
+
+When the same people are measured repeatedly, **latent class growth
+analysis** (Nagin 2005; also called group-based trajectory modelling) finds a
+small number of classes, each with its own trajectory, and assigns every
+person to the class whose trajectory they follow. Everyone in a class is
+assumed to follow that trajectory exactly; what remains is noise.
+
+That assumption is its strength and its limit:
+
+- **Strength.** The model is simple, fast and fits any outcome the regression
+  mixture fits: continuous scores, pass/fail, counts, ordered ratings.
+- **Limit.** People of the same kind rarely follow one curve exactly. When
+  they vary around it, the model can only express that by adding classes, so
+  it tends to find more classes than there are kinds (Bauer and Curran 2003).
+  The growth mixture model adds random effects for that variation; it is the
+  subject of `vignette("growth-mixture")`.
+
+A useful habit is to fit both and compare them (`compare_models()`), as the
+growth-mixture vignette does.
+
+| Role | Argument | Here |
+|---|---|---|
+| Outcome, measured repeatedly | left of `~` | `score` |
+| Time (any shape) | right of `~` | `wave`, `wave + I(wave^2)` |
+| Person | `id`, with `class_level = "group"` | `student` |
+| Kind of outcome | `family` | `"gaussian"`, `"binomial"`, `"poisson"`, `"negative_binomial"`, `"ordinal"` |
+| What predicts the class | `membership` | `"motivation"` |
+
+## The data
+
+`growth_scores` is simulated so the answer is known: 300 students tested on up
+to seven waves, of three kinds (improving, stable, declining), each student
+varying a little around their kind's trajectory, with motivation predicting
+the kind. Missed tests (about 12%) need no imputation.
+
+```{r data}
+library(latents)
+head(growth_scores)
+```
+
+## Fitting and choosing the number of classes
+
+Persons are the classified units, so `id` names them and
+`class_level = "group"` keeps all of a person's measurements in one class.
+
+```{r enumerate}
+enumerate_regressions(score ~ wave, growth_scores, n_classes = 1:5,
+                      id = "student", class_level = "group",
+                      n_starts = 5, seed = 1)
+```
+
+The BIC keeps falling up to five classes, although only three kinds of
+student generated the data: the students' own spread around their kind's
+trajectory is being absorbed by extra classes. With these data the growth
+mixture model, which models that spread, picks three. Here, to keep the
+three kinds, the three-class model is read:
+
+```{r fit}
+fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
+                          id = "student", class_level = "group",
+                          membership = "motivation", n_starts = 5, seed = 1)
+fit
+```
+
+Every table is a data frame from `get_results()`:
+
+```{r tables}
+get_results(fit, "classes")
+get_results(fit, "membership")
+get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
+```
+
+## Seeing the classes
+
+Every view of a trajectory fit is one `plot()` call. Each class's trajectory
+with its confidence band, the band within which 80% of its students'
+observations lie, and the observed class means:
+
+```{r trajectories, eval = has_ggplot}
+plot(fit)
+```
+
+The same with one panel per class:
+
+```{r facet, eval = has_ggplot}
+plot(fit, facet = TRUE)
+```
+
+Individual students, chosen across each class's range of classification
+certainty: their observations and their class trajectory.
+
+```{r individuals, eval = has_ggplot, fig.height = 6.5}
+plot(fit, what = "individuals")
+```
+
+The coefficients with their intervals and p-values:
+
+```{r coefficients, eval = has_ggplot}
+plot(fit, what = "coefficients")
+```
+
+How confidently each student is classified, one bar per student:
+
+```{r classification, eval = has_ggplot, fig.height = 4.2}
+plot(fit, what = "classification")
+```
+
+## Curved trajectories
+
+Any formula works. A quadratic lets each class bend; compare it with the
+straight model fitted the same way (without `membership`):
+
+```{r quadratic}
+straight <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
+                               id = "student", class_level = "group",
+                               n_starts = 5, seed = 1)
+curved <- mixture_regression(score ~ wave + I(wave^2), growth_scores,
+                             n_classes = 3, id = "student", class_level = "group",
+                             n_starts = 5, seed = 1)
+compare_models(straight = straight, curved = curved)
+```
+
+These trajectories were generated straight, so the BIC does not reward the
+curvature.
+
+```{r quadratic-plot, eval = has_ggplot}
+plot(curved)
+```
+
+## Outcomes that are not scores
+
+This is where latent class growth analysis is needed: random effects for a
+binary, count or ordered outcome need numerical integration, which the growth
+mixture model does not do, so trajectories of such outcomes are fitted here.
+
+**Pass or fail.** Whether each test reached 60 points, with a logistic
+trajectory per class:
+
+```{r binary}
+passing <- transform(growth_scores, passed = as.integer(score >= 60))
+pass_fit <- mixture_regression(passed ~ wave, passing, n_classes = 3,
+                               family = "binomial", id = "student",
+                               class_level = "group", n_starts = 5, seed = 1)
+get_results(pass_fit, "coefficients")
+```
+
+Each class's probability of passing over the waves, and the coefficients:
+
+```{r binary-plot, eval = has_ggplot}
+plot(pass_fit)
+plot(pass_fit, what = "coefficients")
+```
+
+**Ordered bands.** The score in four ordered bands, with a cumulative-logit
+(proportional odds) trajectory per class (McCullagh 1980): each class has its
+own thresholds between the bands and its own slope over the waves.
+
+```{r ordinal}
+banded <- transform(growth_scores,
+                    band = cut(score, c(-Inf, 52, 58, 64, Inf),
+                               labels = c("low", "middle", "high", "top"),
+                               ordered_result = TRUE))
+band_fit <- mixture_regression(band ~ wave, banded, n_classes = 3,
+                               family = "ordinal", id = "student",
+                               class_level = "group", n_starts = 5, seed = 1)
+get_results(band_fit, "coefficients")
+```
+
+The plot shows each class's expected band (1 = low to 4 = top), and the
+students' own bands over the waves:
+
+```{r ordinal-plot, eval = has_ggplot}
+plot(band_fit)
+plot(band_fit, what = "individuals")
+```
+
+Counts work the same way with `family = "poisson"`, or
+`family = "negative_binomial"` when the counts are more spread out than a
+Poisson allows.
+
+## Distal outcomes
+
+Do the classes differ on something measured once per person? `three_step()`
+compares class means with the bias-corrected three-step method (Vermunt 2010;
+Bakk and Vermunt 2016), which accounts for persons being classified with
+error. The trajectory model must be fitted without `membership` for this
+correction:
+
+```{r distal}
+three_step(straight, data = growth_scores, outcome = "motivation",
+           contrast = "pairs")
+```
+
+## Choices and warnings
+
+- **Latent class growth analysis or a growth mixture model?** If persons of
+  the same kind vary around their trajectory -- they almost always do for
+  scores -- fit the growth mixture model too and compare them with
+  `compare_models()`; prefer it when it fits better. Use latent class growth
+  analysis for non-Gaussian outcomes, for a first look, and when within-class
+  variation is not plausible.
+- **Number of classes.** Read the BIC with the over-extraction above in mind;
+  the bootstrap likelihood-ratio test (`enumerate_regressions(bootstrap =)`)
+  is the stronger evidence.
+- **Starts.** Use several (`n_starts`), and check that the best likelihood is
+  reached more than once (the fit reports how many times).
+
+## References
+
+Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
+modeling with continuous distal outcomes. *Structural Equation Modeling*, 23,
+20--31.
+
+Bauer, D. J., & Curran, P. J. (2003). Distributional assumptions of growth
+mixture models: Implications for overextraction of latent trajectory classes.
+*Psychological Methods*, 8, 338--363.
+
+McCullagh, P. (1980). Regression models for ordinal data. *Journal of the
+Royal Statistical Society B*, 42, 109--142.
+
+Nagin, D. S. (2005). *Group-based modeling of development*. Harvard University
+Press.
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
+three-step approaches. *Political Analysis*, 18, 450--469.

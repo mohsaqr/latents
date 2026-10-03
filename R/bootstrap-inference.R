@@ -15,264 +15,6 @@
 # Journal of the Royal Statistical Society B, 69, 369-390; Davison & Hinkley,
 # 1997, Bootstrap Methods and their Application, chapter 3).
 
-#' Every permutation of `seq_len(k)`
-#'
-#' @param k A single positive integer.
-#' @return A matrix with `factorial(k)` rows, one permutation per row.
-#' @noRd
-.multilpa_permutations <- function(k) {
-  stopifnot("`k` must be a single positive integer" =
-              length(k) == 1L && is.finite(k) && k >= 1 && k == floor(k))
-  k <- as.integer(k)
-  if (k == 1L) return(matrix(1L, 1L, 1L))
-  smaller <- .multilpa_permutations(k - 1L)
-  orders <- do.call(rbind, lapply(seq_len(k), function(position) {
-    remaining <- seq_len(k)[-position]
-    cbind(position, matrix(remaining[smaller], nrow(smaller)))
-  }))
-  ## `cbind()` names the first column after the scalar it was given, and a
-  ## dimname here would travel into every row `apply()` hands out.
-  dimnames(orders) <- NULL
-  orders
-}
-
-#' What a profile looks like, for matching one fit's profiles to another's
-#'
-#' Bootstrap replicates come back with their profiles in whatever order the EM
-#' happened to label them, so the replicates have to be matched to the original
-#' before their spread means anything. The signature is what the matching reads:
-#' the profile means, each categorical indicator's response probabilities, and
-#' the mixing probability, side by side.
-#'
-#' Every column is put in units where a difference of one is a large difference.
-#' Means are divided by the indicator's own within-profile standard deviation,
-#' taken from `reference` so that the two signatures are measured the same way;
-#' probabilities are already on that scale and are left alone. Standardizing a
-#' column by its spread *across profiles* instead is what an earlier version did,
-#' and it is wrong: two profiles that happen to be mixed half and half give that
-#' column a spread near zero, and dividing by it turns a difference of 0.02 in a
-#' mixing proportion into the term that decides the match.
-#'
-#' @param x A fitted `multilpa` model.
-#' @param reference The fit whose scale both signatures are measured in.
-#' @return A profiles-by-features numeric matrix.
-#' @noRd
-.multilpa_profile_signature <- function(x, reference = x) {
-  stopifnot(inherits(x, "multilpa"), inherits(reference, "multilpa"))
-  blocks <- list()
-  if (length(.multilpa_continuous_names(x)) > 0L) {
-    spread <- sqrt(colMeans(reference$variances))
-    spread[!is.finite(spread) | spread <= 0] <- 1
-    blocks$means <- sweep(unname(x$means), 2L, spread, "/")
-  }
-  responses <- x$response_probabilities %||% list()
-  if (length(responses) > 0L) {
-    blocks$response <- do.call(cbind, lapply(responses, unname))
-  }
-  blocks <- c(blocks, .multilpa_extra_signature(x, reference))
-  ## A weak identifier on its own, and a tie-breaker next to the measurement:
-  ## kept on its natural scale so it can never outvote the means.
-  blocks$mixing <- matrix(colMeans(x$profile_probabilities), ncol = 1L)
-  do.call(cbind, blocks)
-}
-
-#' Ordinal probabilities and standardized count means for label matching
-#' @param x,reference Fitted models with the same extra indicators.
-#' @return A list of profiles-by-features matrices.
-#' @noRd
-.multilpa_extra_signature <- function(x, reference) {
-  blocks <- list()
-  if (length(x$ordinal_intercepts) > 0L) {
-    blocks$ordinal <- do.call(cbind, lapply(seq_along(x$ordinal_intercepts), function(j) {
-      exp(.latents_ordinal_log_probabilities(x$ordinal_intercepts[[j]],
-                                            x$ordinal_locations[, j]))
-    }))
-  }
-  if (length(x$count_means) > 0L) {
-    variance <- reference$count_means
-    if (length(reference$count_dispersion) > 0L) {
-      dispersion <- reference$count_dispersion
-      if (nrow(dispersion) == 1L) {
-        dispersion <- dispersion[rep(1L, reference$n_profiles), , drop = FALSE]
-      }
-      variance <- variance + dispersion * reference$count_means^2
-    }
-    spread <- sqrt(colMeans(variance))
-    spread[!is.finite(spread) | spread <= 0] <- 1
-    blocks$count <- sweep(unname(x$count_means), 2L, spread, "/")
-  }
-  blocks
-}
-
-#' Relabel extra-indicator parameters and restore the ordinal reference
-#' @param x A fitted profile or covariate model.
-#' @param order An integer permutation of its profiles.
-#' @return The fit with extra parameters in the new chart.
-#' @noRd
-.multilpa_permute_extra <- function(x, order) {
-  labels <- paste0("profile_", seq_len(x$n_profiles))
-  if (length(x$ordinal_intercepts) > 0L) {
-    locations <- x$ordinal_locations[order, , drop = FALSE]
-    reference <- locations[nrow(locations), ]
-    x$ordinal_intercepts <- lapply(seq_along(x$ordinal_intercepts), function(j) {
-      intercepts <- x$ordinal_intercepts[[j]]
-      intercepts + seq_along(intercepts) * reference[j]
-    })
-    names(x$ordinal_intercepts) <- x$ordinal
-    x$ordinal_locations <- sweep(locations, 2L, reference, "-")
-    rownames(x$ordinal_locations) <- labels
-  }
-  if (length(x$count_means) > 0L) {
-    x$count_means <- x$count_means[order, , drop = FALSE]
-    rownames(x$count_means) <- labels
-  }
-  if (length(x$count_dispersion) > 0L && nrow(x$count_dispersion) == x$n_profiles) {
-    x$count_dispersion <- x$count_dispersion[order, , drop = FALSE]
-    rownames(x$count_dispersion) <- labels
-  }
-  x
-}
-
-#' The order that best matches one set of profiles to another
-#'
-#' Exhaustive for the profile counts latent profile analysis actually uses; a
-#' greedy nearest match above that, because `factorial(k)` stops being free.
-#' Both signatures arrive already in comparable units, so nothing is rescaled
-#' here; see `.multilpa_profile_signature()` for why that scaling is its job.
-#'
-#' @param reference,candidate Profiles-by-features matrices with the same shape.
-#' @return An integer vector `order` with `candidate[order, ]` matched to
-#'   `reference`.
-#' @noRd
-.multilpa_match_order <- function(reference, candidate) {
-  stopifnot("the two signatures must have the same shape" =
-              is.matrix(reference) && is.matrix(candidate) &&
-              identical(dim(reference), dim(candidate)))
-  k <- nrow(reference)
-  if (k == 1L) return(1L)
-  cost <- vapply(seq_len(k), function(j) {
-    rowSums(sweep(reference, 2L, candidate[j, ], "-")^2)
-  }, numeric(k))
-  if (k <= 7L) {
-    orders <- .multilpa_permutations(k)
-    total <- vapply(seq_len(nrow(orders)), function(i) {
-      sum(cost[cbind(seq_len(k), orders[i, ])])
-    }, numeric(1))
-    return(as.integer(orders[which.min(total), ]))
-  }
-  # Greedy: give each reference profile its closest unclaimed candidate, taking
-  # the most decisive pairing first so an obvious match is not spent elsewhere.
-  Reduce(function(state, i) {
-    choice <- which(state$available)[which.min(cost[i, state$available])]
-    state$order[i] <- choice
-    state$available[choice] <- FALSE
-    state
-  }, order(apply(cost, 1L, min)),
-  init = list(order = integer(k), available = rep(TRUE, k)))$order
-}
-
-#' Reorder a fit's profile-indexed blocks
-#' @param x A fitted `multilpa` model.
-#' @param order An integer permutation of the profiles.
-#' @return The fit, with every profile-indexed block in the new order.
-#' @noRd
-.multilpa_permute_profiles <- function(x, order) {
-  stopifnot(inherits(x, "multilpa"),
-            "`order` must be a permutation of the profiles" =
-              identical(sort(as.integer(order)), seq_len(x$n_profiles)))
-  x <- .multilpa_permute_extra(x, order)
-  labels <- paste0("profile_", seq_len(x$n_profiles))
-  x$means <- x$means[order, , drop = FALSE]
-  rownames(x$means) <- labels
-  x$variances <- x$variances[order, , drop = FALSE]
-  rownames(x$variances) <- labels
-  if (!is.null(x$standard_deviations)) {
-    x$standard_deviations <- x$standard_deviations[order, , drop = FALSE]
-    rownames(x$standard_deviations) <- labels
-  }
-  if (!is.null(x$covariances)) {
-    x$covariances <- x$covariances[, , order, drop = FALSE]
-    dimnames(x$covariances)[[3L]] <- labels
-  }
-  x$profile_probabilities <- x$profile_probabilities[, order, drop = FALSE]
-  colnames(x$profile_probabilities) <- labels
-  responses <- x$response_probabilities %||% list()
-  if (length(responses) > 0L) {
-    x$response_probabilities <- lapply(responses, function(block) {
-      reordered <- block[order, , drop = FALSE]
-      rownames(reordered) <- labels
-      reordered
-    })
-  }
-  # Everything indexed by profile moves, not only the parameter blocks. The
-  # posteriors are columns and reorder like the rest; `subject_profiles` holds
-  # labels rather than positions, so it takes the inverse permutation -- a case
-  # on old profile `order[j]` is on new profile `j`. Permuting the parameters
-  # while leaving the assignments behind would leave the fit self-inconsistent,
-  # which is invisible to a caller that reads only parameters and wrong for one
-  # that compares assignments.
-  if (!is.null(x$subject_posteriors)) {
-    x$subject_posteriors <- x$subject_posteriors[, order, drop = FALSE]
-    colnames(x$subject_posteriors) <- labels
-  }
-  if (!is.null(x$subject_profiles)) {
-    x$subject_profiles <- match(x$subject_profiles, order)
-  }
-  if (!is.null(x$effective_profile_counts)) {
-    x$effective_profile_counts <- x$effective_profile_counts[order]
-    names(x$effective_profile_counts) <- labels
-  }
-  x
-}
-
-#' Reorder a fit's group-class-indexed blocks
-#' @param x A fitted `multilpa` model.
-#' @param order An integer permutation of the group classes.
-#' @return The fit, with every group-class-indexed block in the new order.
-#' @noRd
-.multilpa_permute_group_classes <- function(x, order) {
-  stopifnot(inherits(x, "multilpa"),
-            "`order` must be a permutation of the group classes" =
-              identical(sort(as.integer(order)), seq_len(x$n_group_classes)))
-  labels <- paste0("group_class_", seq_len(x$n_group_classes))
-  x$profile_probabilities <- x$profile_probabilities[order, , drop = FALSE]
-  rownames(x$profile_probabilities) <- labels
-  x$group_probabilities <- x$group_probabilities[order]
-  names(x$group_probabilities) <- labels
-  if (!is.null(x$group_posteriors)) {
-    x$group_posteriors <- x$group_posteriors[, order, drop = FALSE]
-    colnames(x$group_posteriors) <- labels
-  }
-  if (!is.null(x$group_classes)) {
-    x$group_classes <- match(x$group_classes, order)
-  }
-  if (!is.null(x$effective_group_counts)) {
-    x$effective_group_counts <- x$effective_group_counts[order]
-    names(x$effective_group_counts) <- labels
-  }
-  x
-}
-
-#' Put a replicate's labels back on the original's
-#'
-#' Profiles first, because a group class is described by the profile mixture it
-#' carries and that description only means something once the profiles agree.
-#'
-#' @param replicate A fitted `multilpa` model from a resample.
-#' @param reference The original fit.
-#' @return The replicate, relabelled to the reference.
-#' @noRd
-.multilpa_align_labels <- function(replicate, reference) {
-  replicate <- .multilpa_permute_profiles(
-    replicate,
-    .multilpa_match_order(.multilpa_profile_signature(reference, reference),
-                          .multilpa_profile_signature(replicate, reference)))
-  if (reference$n_group_classes == 1L) return(replicate)
-  signature <- function(x) cbind(x$profile_probabilities, x$group_probabilities)
-  .multilpa_permute_group_classes(
-    replicate, .multilpa_match_order(signature(reference), signature(replicate)))
-}
-
 #' The `multilpa()` arguments that refit a model as it was fitted
 #'
 #' A refit that reads `variance_model` and `covariance_model` alone silently
@@ -334,27 +76,6 @@
        missing = x$missing %||% "error", time = x$time)
 }
 
-#' One resample of the groups, as a data frame
-#'
-#' A group drawn twice has to become two groups, or the refit would pool the two
-#' copies into one unit and the resample would carry fewer groups than it drew.
-#'
-#' @param data The fitting data.
-#' @param rows_by_group Row indices of each group, in group order.
-#' @param id The group column's name.
-#' @param drawn Which groups were drawn, with replacement.
-#' @return A data frame with one relabelled group per draw.
-#' @noRd
-.multilpa_resample_groups <- function(data, rows_by_group, id, drawn) {
-  stopifnot(is.data.frame(data), is.list(rows_by_group), is.character(id),
-            length(id) == 1L)
-  taken <- rows_by_group[drawn]
-  resampled <- data[unlist(taken, use.names = FALSE), , drop = FALSE]
-  resampled[[id]] <- rep(seq_along(drawn), lengths(taken))
-  row.names(resampled) <- NULL
-  resampled
-}
-
 #' Bootstrap replicates of the natural coefficients
 #'
 #' A staged fit is refitted through [fit_staged()], both stages on every
@@ -368,34 +89,20 @@
 #'   rows are `NA`, and `messages`, the reason each failure gave.
 #' @noRd
 .multilpa_bootstrap_replicates <- function(x, data, iter, n_starts, max_iter, tol) {
-  rows_by_group <- split(seq_len(nrow(data)), x$group_index)
   staged <- isTRUE(x$staged)
   estimator <- if (staged) fit_staged else multilpa
   arguments <- if (staged) .multilpa_staged_refit_arguments(x) else
     .multilpa_refit_arguments(x)
-  reference_names <- names(.multilpa_coefficients(x, "natural"))
-  replicates <- lapply(seq_len(iter), function(i) {
-    drawn <- sample.int(x$n_groups, x$n_groups, replace = TRUE)
-    resampled <- .multilpa_resample_groups(data, rows_by_group, x$id, drawn)
-    fit <- tryCatch(
+  .latents_cluster_bootstrap(
+    data, x$group_index, x$n_groups, x$id, iter,
+    refit = function(resampled) {
       do.call(estimator, c(list(data = resampled), arguments,
-                           list(n_starts = n_starts, max_iter = max_iter, tol = tol))),
-      error = function(error) conditionMessage(error))
-    if (is.character(fit)) {
-      return(list(estimate = rep(NA_real_, length(reference_names)), message = fit))
-    }
-    if (!isTRUE(fit$converged)) {
-      return(list(estimate = rep(NA_real_, length(reference_names)),
-                  message = "the replicate did not converge"))
-    }
-    aligned <- .multilpa_align_labels(fit, x)
-    list(estimate = unname(.multilpa_coefficients(aligned, "natural")),
-         message = NA_character_)
-  })
-  estimates <- do.call(rbind, lapply(replicates, `[[`, "estimate"))
-  colnames(estimates) <- reference_names
-  list(estimates = estimates,
-       messages = vapply(replicates, `[[`, character(1), "message"))
+                           list(n_starts = n_starts, max_iter = max_iter, tol = tol)))
+    },
+    extract = function(fit) {
+      unname(.multilpa_coefficients(.multilpa_align_labels(fit, x), "natural"))
+    },
+    reference_names = names(.multilpa_coefficients(x, "natural")))
 }
 
 #' Percentile bootstrap inference for a fitted model

@@ -8,7 +8,7 @@ mixture_regression(
   formula,
   data,
   n_classes,
-  family = c("gaussian", "binomial", "poisson"),
+  family = c("gaussian", "binomial", "poisson", "negative_binomial", "ordinal"),
   id = NULL,
   class_level = c("observation", "group"),
   n_group_classes = 1L,
@@ -27,7 +27,8 @@ mixture_regression(
   weights = NULL,
   random = NULL,
   random_covariance = c("varying", "equal", "proportional"),
-  random_diagonal = FALSE
+  random_diagonal = FALSE,
+  cluster = NULL
 )
 }
 \arguments{
@@ -38,7 +39,9 @@ and \code{offset()} are supported.}
 
 \item{n_classes}{Number of regression classes.}
 
-\item{family}{\code{"gaussian"}, \code{"binomial"} or \code{"poisson"}.}
+\item{family}{\code{"gaussian"}, \code{"binomial"}, \code{"poisson"},
+\code{"negative_binomial"} or \code{"ordinal"} (proportional-odds cumulative logit;
+see \emph{Families}).}
 
 \item{id}{\code{NULL}, or the name of the column identifying groups (persons,
 schools, ...).}
@@ -62,8 +65,9 @@ Row-level for \code{"observation"}; constant within groups for \code{"group"}.}
 for the two-level model, as names or a one-sided formula. Must be
 constant within groups.}
 
-\item{variance}{\code{"varying"} (a residual standard deviation per class) or
-\code{"equal"}. Gaussian family only.}
+\item{variance}{\code{"varying"} (a residual standard deviation, or a
+negative-binomial dispersion, per class) or \code{"equal"} (one shared).
+Gaussian and negative-binomial families only.}
 
 \item{n_starts}{Number of random starts, besides one start built from the
 residuals of a pooled regression. Every start runs 50 EM iterations; the
@@ -112,6 +116,15 @@ times a class-specific scale, the last class's being one; \code{nwg = TRUE}).}
 
 \item{random_diagonal}{\code{TRUE} for uncorrelated random effects (a diagonal
 covariance, as \code{idiag = TRUE} in lcmm).}
+
+\item{cluster}{\code{NULL}, or the name of a column grouping the persons (\code{id})
+into clusters, such as schools, for the multilevel growth mixture model
+(with \code{random}): each cluster belongs to one of \code{n_group_classes} group
+classes, which shifts how probable each trajectory class is for its
+persons. The clusters are the independent units of the likelihood, the
+standard errors and the BIC; with \code{n_group_classes = 1} the model is the
+single-level growth mixture with clusters as those units, comparable by
+BIC with more group classes. See the growth mixture section.}
 }
 \value{
 An object of class \code{latents_mixture_regression}, or
@@ -163,7 +176,16 @@ data, finished by quasi-Newton with analytic scores. Such a fit has class
 \code{latents_growth_mixture}; its tables, plots and inference are described on
 \code{\link[=get_results.latents_growth_mixture]{get_results.latents_growth_mixture()}} and
 \code{\link[=plot.latents_growth_mixture]{plot.latents_growth_mixture()}}. Random effects need the gaussian family,
-\code{id}, \code{class_level = "group"} and one group class.
+\code{id} and \code{class_level = "group"}.
+
+With \code{cluster}, persons are nested in clusters (students in schools) and
+the multilevel growth mixture model is fitted: each cluster belongs to a
+group class h, and the trajectory-class logits of its persons have a
+group-class-specific intercept and shared covariate slopes,
+\deqn{L = \prod_j \sum_h \omega_h \prod_{i \in j} \sum_k \pi_{k|h} f_k(y_i)}{L = prod_j sum_h omega_h prod_(i in j) sum_k pi_(k|h) f_k(y_i)}
+(Asparouhov and Muthen 2008; Vermunt 2003). \code{group_membership} names
+cluster-level covariates of the group class. The group classes are read
+with \code{get_results(fit, "group_classes")} and \code{"clusters"}.
 }
 
 \section{Families}{
@@ -171,8 +193,35 @@ data, finished by quasi-Newton with analytic scores. Such a fit has class
 \code{"gaussian"} (identity link, a residual standard deviation per class, or
 one shared under \code{variance = "equal"}), \code{"binomial"} (logit link; the
 outcome is 0/1, logical, a two-level factor whose second level is the
-success, or \code{cbind(successes, failures)}) and \code{"poisson"} (log link;
-\code{offset()} terms in the formula are honoured).
+success, or \code{cbind(successes, failures)}), \code{"poisson"} (log link;
+\code{offset()} terms in the formula are honoured) and \code{"negative_binomial"}
+(log link, NB2: variance mu + alpha mu^2 with a dispersion alpha per class,
+or one shared under \code{variance = "equal"}, for overdispersed counts; a
+dispersion estimated at zero is the Poisson limit and raises
+\code{latents_boundary}).
+
+\code{"ordinal"} fits a cumulative-logit (proportional-odds) regression within
+each class (McCullagh 1980),
+\deqn{P(Y \le c \mid x, k) = F(t_{kc} - x'\beta_k), \quad c = 1, \ldots, C - 1,}{P(Y <= c | x, k) = plogis(t_kc - x' beta_k), c = 1, ..., C - 1,}
+with ordered thresholds \eqn{t_{k1} < \ldots < t_{k,C-1}}{t_k1 < ... < t_k,C-1}
+per class in place of the intercept, and the parametrization of
+\code{MASS::polr()}: a positive slope moves the class towards higher
+categories. The outcome is an ordered factor, a factor (its levels taken
+in order) or whole-number categories; the categories are those observed,
+at least two. \code{common} terms share their slopes across classes, and
+\code{offset()} is honoured; the formula's intercept is replaced by the
+thresholds, so it must not be removed. The thresholds appear in the
+coefficient table as terms \code{"threshold:<lower>|<upper>"}, and
+\code{exp_estimate} of a slope is the cumulative odds ratio of a higher
+category. The class "mean" of an ordinal outcome (fitted values,
+\code{predict()}, trajectories) is the expected category score
+\eqn{\sum_c c P(Y = c)}{sum_c c P(Y = c)}, the categories scored 1 to C in
+order; \code{predict(type = "probabilities")} gives the category probabilities.
+With one outcome per class assignment the classes are identified by how
+continuous predictors shift the category probabilities: a mixture with no
+predictors, or with two categories (then the logistic mixture of
+\code{"binomial"}), is refused with \code{latents_not_identified} unless
+\code{class_level = "group"} gives each class assignment several outcomes.
 
 A mixture of Bernoulli regressions with one trial per unit is not
 identified -- any mixture of Bernoullis is again a Bernoulli -- so a binary
@@ -187,7 +236,8 @@ request is refused otherwise.
 \code{latents_bad_data} for an outcome outside the family's support or a
 covariate that varies within a group where it may not;
 \code{latents_not_identified} for a binary outcome with one trial per class
-assignment; \code{latents_missing_data} for missing values under
+assignment, or an ordinal mixture with one outcome per class assignment
+and two categories or no predictors; \code{latents_missing_data} for missing values under
 \code{missing = "error"}; \code{latents_rows_dropped} (warning) under
 \code{missing = "omit"}; \code{latents_no_valid_start} when every start
 degenerated; \code{latents_unconverged} (warning) when the selected start did
@@ -207,8 +257,25 @@ by_student <- mixture_regression(score ~ hours, data = study_hours, n_classes = 
                                  id = "student", class_level = "group",
                                  n_starts = 3, seed = 1)
 get_results(by_student, "fit")
+
+\donttest{
+# Students nested in schools, each school in one of two group classes:
+schools <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
+                              id = "student", class_level = "group",
+                              random = "wave", random_covariance = "equal",
+                              cluster = "school", n_group_classes = 2,
+                              n_starts = 2, seed = 1)
+get_results(schools, "group_classes")
+}
 }
 \references{
+Asparouhov, T., & Muthen, B. (2008). Multilevel mixture models. In G. R.
+Hancock & K. M. Samuelsen (Eds.), \emph{Advances in latent variable mixture
+models} (pp. 27--51). Information Age.
+
+McCullagh, P. (1980). Regression models for ordinal data. \emph{Journal of the
+Royal Statistical Society B}, 42, 109--142.
+
 Muthen, B., & Shedden, K. (1999). Finite mixture modeling with mixture
 outcomes using the EM algorithm. \emph{Biometrics}, 55, 463--469.
 

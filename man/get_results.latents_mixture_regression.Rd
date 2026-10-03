@@ -83,7 +83,11 @@ Tables of a mixture-of-regressions fit
 \code{statistic} (Wald z), \code{p_value}, \code{conf_low}, \code{conf_high},
 \code{p_adjusted} (Benjamini-Hochberg across the non-intercept rows;
 \code{NA} for intercepts) and, for the binomial and Poisson families,
-\code{exp_estimate} (odds or rate ratio).}
+\code{exp_estimate} (odds or rate ratio). For the ordinal family each
+class's thresholds lead its rows as terms \code{"threshold:<lower>|<upper>"}
+(delta-method errors; no \code{p_adjusted} or \code{exp_estimate}), and
+\code{exp_estimate} of a slope is the cumulative odds ratio of a higher
+category.}
 \item{\code{classes}}{One row per class: \code{share} (mean posterior), \code{count}
 (summed posterior), \code{n_assigned} (modal assignment), \code{mean_posterior}
 (average posterior of the units assigned to it); \code{sigma} and

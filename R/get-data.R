@@ -80,12 +80,15 @@
 #'     class is assigned to another: `level`, `true_class`, `assigned_class`,
 #'     `probability`, summing to one within each `true_class`. Takes `level`.
 #'     On a membership-covariate fit this is a marginal summary over the fitted
-#'     units, not a classification-error adjustment conditional on covariates.}
+#'     units, not a classification-error adjustment conditional on covariates.
+#'     A fit with a noise component raises `latents_unsupported_noise`, as
+#'     [three_step()] does, and `"all"` and `summary()` leave the table out.}
 #'   \item{`"bch_weights"`}{The BCH inverse-error weights, one row per unit and
 #'     class: `level`, `unit`, `assigned_class`, `class`, `weight`. Takes
 #'     `level`; weight a regression with one level, not with `"both"`. On a
 #'     membership-covariate fit these invert the marginal error matrix and are
-#'     not a conditional three-step correction.}
+#'     not a conditional three-step correction. Refused for a fit with a noise
+#'     component, like `"classification_errors"`.}
 #'   \item{`"entropy"`}{One row per level: `level`, `n_classes`, `n_units`,
 #'     `entropy_sum`, `relative_entropy`.}
 #'   \item{`"residuals"`}{Bivariate residuals for every indicator pair, testing
@@ -525,7 +528,9 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     # A fit whose classes cannot be separated has no three-step correction to
     # report, which is a fact about the fit and not a reason for `summary()`
     # to fail.
-    "latents_inseparable_classes")
+    "latents_inseparable_classes",
+    # A noise component has no classification-error correction yet.
+    "latents_unsupported_noise")
 }
 
 #' Build every table an object can produce

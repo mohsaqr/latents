@@ -179,69 +179,16 @@
   stopifnot(is.matrix(x), !any(is.infinite(x)), is.list(parameters),
             is.list(profile_design), is.matrix(group_design), is.matrix(beta),
             is.matrix(gamma))
-  n_profiles <- nrow(parameters$means)
   # The measurement model is the covariate-free one; only the mixing weights
   # differ here. Residual covariances and missing indicators need the
   # conditional moments, which the maximization step and the scores then
   # reuse, so they are computed once and carried.
-  gaussian <- if (ncol(x) > 0L && (anyNA(x) || !is.null(parameters$covariances))) {
-    .multilpa_gaussian_moments(x, parameters)
-  } else NULL
-  log_density <- if (!is.null(gaussian)) gaussian$log_density else {
-    matrix(vapply(seq_len(n_profiles), function(k) {
-      residual <- sweep(x, 2L, parameters$means[k, ], "-")
-      -0.5 * rowSums(sweep(residual^2, 2L, parameters$variances[k, ], "/") +
-                      matrix(log(2 * pi * parameters$variances[k, ]),
-                             nrow(x), ncol(x), byrow = TRUE))
-    }, numeric(nrow(x))), nrow(x), n_profiles)
-  }
-  density_offset <- .multilpa_row_max(log_density)
-  log_density <- sweep(log_density, 1L, density_offset, "-")
-  # Categorical indicators are conditionally independent of the continuous ones
-  # given the profile, and are added after the Gaussian offset comes off so
-  # their contribution keeps its precision.
-  if (!is.null(codes)) {
-    log_density <- log_density +
-      .multilpa_categorical_log_density(codes, parameters$response_probabilities)
-  }
-  if (!is.null(extra)) {
-    log_density <- log_density +
-      .latents_extra_log_density(extra, parameters, nrow(x), n_profiles)
-  }
-  conditional <- lapply(profile_design, function(design) {
-    log_prior <- .multilpa_log_softmax(design, beta)
-    prior <- exp(log_prior)
-    scores <- log_density + log_prior
-    offset <- .multilpa_row_max(scores)
-    weights <- exp(sweep(scores, 1L, offset, "-"))
-    total <- rowSums(weights)
-    marginal <- offset + log(total)
-    list(prior = prior, marginal = marginal,
-         posterior = weights / total)
-  })
-  group_log_prior <- .multilpa_log_softmax(group_design, gamma)
-  group_prior <- exp(group_log_prior)
-  evidence <- matrix(vapply(seq_along(conditional), function(h) {
-    as.vector(rowsum(conditional[[h]]$marginal, group_index, reorder = FALSE))
-  }, numeric(nrow(group_design))), nrow(group_design))
-  evidence_offset <- .multilpa_row_max(evidence)
-  scores <- sweep(evidence, 1L, evidence_offset, "-") + group_log_prior
-  score_offset <- .multilpa_row_max(scores)
-  weights <- exp(sweep(scores, 1L, score_offset, "-"))
-  total <- rowSums(weights)
-  group_posteriors <- weights / total
-  group_log_likelihood <- evidence_offset + score_offset + log(total) +
-    as.vector(rowsum(density_offset, group_index, reorder = FALSE))
-  joint <- lapply(seq_along(conditional), function(h) {
-    conditional[[h]]$posterior * group_posteriors[group_index, h]
-  })
-  result <- list(log_likelihood = sum(group_log_likelihood),
-                 group_log_likelihood = group_log_likelihood,
-                 group_posteriors = group_posteriors,
-                 subject_posteriors = Reduce(`+`, joint),
-                 joint = joint, group_priors = group_prior,
-                 profile_priors = lapply(conditional, `[[`, "prior"),
-                 gaussian_moments = gaussian$moments)
+  measurement <- .latents_measurement_log_density(x, parameters, codes, extra,
+                                                  constant = "joint")
+  result <- c(.multilpa_logit_structure(measurement$log_density, measurement$offset,
+                                        group_index, profile_design, group_design,
+                                        beta, gamma),
+              list(gaussian_moments = measurement$moments))
   # Sampling weights scale the posteriors into weighted counts, exactly as in
   # the covariate-free model, so the logit steps and scores need no change.
   if (is.null(sampling_weights)) result else
@@ -305,14 +252,7 @@
       is.numeric(min_probability) && length(min_probability) == 1L &&
       is.finite(min_probability) && min_probability > 0 && min_probability < 1)
   .multilpa_check_seed(seed)
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    if (had_seed) old_seed <- get(".Random.seed", envir = .GlobalEnv)
-    on.exit(if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-            else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
-              rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   .multilpa_cov_check_covariates(data, profile_covariates, group_covariates,
                                vars, id)
   # The base fit validates indicators/model sizes and supplies an initial mode.
@@ -330,7 +270,10 @@
   first_rows <- match(seq_len(base$n_groups), group_index)
   if (length(group_covariates) && any(vapply(group_covariates, function(name) {
     any(data[[name]] != data[[name]][first_rows][group_index])
-  }, logical(1)))) stop("Every group_covariate must be constant within each group.")
+  }, logical(1)))) {
+    stop(errorCondition("Every group_covariate must be constant within each group.",
+                        class = "latents_bad_data", call = NULL))
+  }
   if (n_profiles == 1L && length(profile_covariates)) {
     stop("Profile covariates require at least two profiles.")
   }
@@ -366,7 +309,9 @@
                error = result$error)
   }))
   if (!any(is.finite(starts$log_likelihood))) {
-    stop(sprintf("All covariate starts failed: %s", paste(unique(starts$error), collapse = "; ")))
+    stop(errorCondition(sprintf("All covariate starts failed: %s",
+                                paste(unique(starts$error), collapse = "; ")),
+                        class = "latents_all_starts_failed", call = NULL))
   }
   ## Restarts of a mixture routinely reach the same optimum under different
   ## label permutations, and then differ only in the last bits of the
@@ -820,55 +765,47 @@ nobs.multilpa_covariates <- function(object, ...) {
     matrix(log(parameters$group_probabilities[seq_len(n_group_classes - 1L)] /
                  parameters$group_probabilities[n_group_classes]), 1L),
     matrix(0, control$n_group_covariates, n_group_classes - 1L))
-  expectation <- .multilpa_cov_expectation(x, group_index, parameters,
-                                         designs$profile_design, designs$w,
-                                         beta, gamma, designs$codes,
-                                         control$sampling_weights, designs$extra)
-  history <- expectation$log_likelihood
-  iteration <- 0L
-  converged <- FALSE
-  settled <- FALSE
+  evaluate <- function(state) {
+    .multilpa_cov_expectation(x, group_index, state$parameters,
+                              designs$profile_design, designs$w, state$beta,
+                              state$gamma, designs$codes,
+                              control$sampling_weights, designs$extra)
+  }
+  maximize <- function(state, expectation) {
+    parameters <- .multilpa_maximization(x, expectation, control$variance_model,
+                                         control$min_variance,
+                                         control$covariance_model, designs$codes,
+                                         designs$n_categories,
+                                         control$min_probability,
+                                         previous = state$parameters,
+                                         extra = designs$extra)
+    profile_update <- .multilpa_weighted_logits(designs$stacked_design,
+                                                do.call(rbind, expectation$joint),
+                                                state$beta)
+    group_update <- .multilpa_weighted_logits(designs$w,
+                                              expectation$group_posteriors,
+                                              state$gamma)
+    # Both the likelihood and the inner logit steps must settle, so a stalled
+    # regression cannot be reported as a converged fit.
+    structure(list(parameters = parameters, beta = profile_update$coefficients,
+                   gamma = group_update$coefficients),
+              solved = profile_update$converged && group_update$converged)
+  }
   ## Sweeps spent waiting only on the membership logits are bounded separately
   ## from `max_iter`: a coefficient drifting to infinity leaves that step
   ## unsolved for ever while the observed likelihood has stopped moving, and
   ## sweeping `max_iter` times against it costs a great deal and buys nothing.
-  stalled <- 0L
-  max_stalled <- 20L
-  while (iteration < control$max_iter && !converged && stalled < max_stalled) {
-    parameters <- .multilpa_maximization(x, expectation, control$variance_model,
-                                       control$min_variance,
-                                       control$covariance_model, designs$codes,
-                                       designs$n_categories,
-                                       control$min_probability,
-                                       previous = parameters, extra = designs$extra)
-    profile_update <- .multilpa_weighted_logits(designs$stacked_design,
-                                              do.call(rbind, expectation$joint), beta)
-    group_update <- .multilpa_weighted_logits(designs$w,
-                                            expectation$group_posteriors, gamma)
-    beta <- profile_update$coefficients
-    gamma <- group_update$coefficients
-    updated <- .multilpa_cov_expectation(x, group_index, parameters,
-                                       designs$profile_design, designs$w,
-                                       beta, gamma, designs$codes,
-                                       control$sampling_weights, designs$extra)
-    change <- updated$log_likelihood - expectation$log_likelihood
-    if (change < -1e-9 * (1 + abs(expectation$log_likelihood))) {
-      stop("Covariate EM decreased the observed log likelihood.")
-    }
-    iteration <- iteration + 1L
-    # Both the likelihood and the inner logit steps must have settled, so a
-    # stalled regression cannot be reported as a converged fit.
-    settled <- abs(change) <= control$tol * (1 + abs(expectation$log_likelihood))
-    logits_solved <- profile_update$converged && group_update$converged
-    converged <- settled && logits_solved
-    stalled <- if (settled && !logits_solved) stalled + 1L else 0L
-    expectation <- updated
-    history <- c(history, expectation$log_likelihood)
-  }
-  list(parameters = parameters, expectation = expectation, beta = beta,
-       gamma = gamma, iterations = iteration, converged = converged,
-       likelihood_settled = settled,
-       history = history, error = NA_character_)
+  fit <- .latents_em(
+    list(parameters = parameters, beta = beta, gamma = gamma), evaluate, maximize,
+    max_iter = control$max_iter, tol = control$tol,
+    settings = .latents_em_settings(
+      decrease_tolerance = 1e-9,
+      decrease_condition = "Covariate EM decreased the observed log likelihood.",
+      max_stalled = 20L))
+  list(parameters = fit$state$parameters, expectation = fit$expectation,
+       beta = fit$state$beta, gamma = fit$state$gamma, iterations = fit$iterations,
+       converged = fit$converged, likelihood_settled = fit$settled,
+       history = fit$history, error = NA_character_)
 }
 
 #' Assemble the covariate fit result

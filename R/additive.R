@@ -465,27 +465,15 @@
   parameters <- .additive_check_parameters(parameters, length(stats$vars))
   stopifnot("held between variances must be zero" =
               all(parameters$between[zero] == 0))
-  expectation <- .additive_expectation(stats, parameters)
-  history <- expectation$log_likelihood
-  converged <- FALSE
-  iteration <- 0L
-  # Sequential by nature: each step starts from the last point.
-  while (iteration < max_iter && !converged) {
-    updated <- .additive_maximization(stats, expectation, parameters, structure,
-                                      min_variance, zero)
-    updated_expectation <- .additive_expectation(stats, updated)
-    gain <- updated_expectation$log_likelihood - expectation$log_likelihood
-    if (gain < -1e-10 * (1 + abs(expectation$log_likelihood))) {
-      stop("EM likelihood decreased beyond numerical roundoff.")
-    }
-    converged <- abs(gain) <= tol * (1 + abs(expectation$log_likelihood))
-    iteration <- iteration + 1L
-    history <- c(history, updated_expectation$log_likelihood)
-    parameters <- updated
-    expectation <- updated_expectation
-  }
-  list(parameters = parameters, expectation = expectation,
-       converged = converged, iterations = iteration, history = history)
+  fit <- .latents_em(
+    parameters,
+    evaluate = function(point) .additive_expectation(stats, point),
+    maximize = function(point, expectation) {
+      .additive_maximization(stats, expectation, point, structure, min_variance, zero)
+    },
+    max_iter = max_iter, tol = tol)
+  list(parameters = fit$state, expectation = fit$expectation,
+       converged = fit$converged, iterations = fit$iterations, history = fit$history)
 }
 
 #' Check and, where needed, reach a zero-between-variance maximum
@@ -655,42 +643,24 @@
       n_group_classes, stats$n_groups),
       class = "latents_unidentified", call = NULL))
   }
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
-    on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-      else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-        rm(".Random.seed", envir = .GlobalEnv)
-      }
-    }, add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   none <- matrix(FALSE, n_group_classes, length(vars))
-  attempts <- lapply(seq_len(n_starts), function(start_index) {
-    tryCatch({
-      initial <- .additive_initialize(stats, n_group_classes, structure,
-                                      min_variance, start_index)
-      fit <- .additive_em(stats, initial, structure, min_variance, max_iter,
-                          tol, none)
-      if (max_iter > 0L) {
-        .additive_polish(stats, fit, structure, min_variance, max_iter, tol)
-      } else c(fit, list(zero = none, kkt = NA))
-    }, error = function(error) list(error = conditionMessage(error)))
-  })
-  valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
-  if (!any(valid)) {
-    stop(errorCondition(sprintf(
-      "All %d starts failed: %s", n_starts,
-      paste(unique(vapply(attempts, `[[`, character(1), "error")), collapse = "; ")),
-      class = "latents_all_starts_failed", call = NULL))
-  }
-  scores <- vapply(attempts, function(attempt) {
-    if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
-  }, numeric(1))
-  converged <- vapply(attempts, function(attempt) isTRUE(attempt$converged),
-                      logical(1))
-  best_start <- .multilpa_select_start(scores, converged)
+  # Each start runs to completion or is recorded as failed; the best is
+  # chosen by the shared rule (see .latents_run_starts()).
+  starts <- .latents_run_starts(n_starts, function(start_index) {
+    initial <- .additive_initialize(stats, n_group_classes, structure,
+                                    min_variance, start_index)
+    fit <- .additive_em(stats, initial, structure, min_variance, max_iter,
+                        tol, none)
+    if (max_iter > 0L) {
+      .additive_polish(stats, fit, structure, min_variance, max_iter, tol)
+    } else c(fit, list(zero = none, kkt = NA))
+  }, "likelihood")
+  attempts <- starts$attempts
+  valid <- starts$valid
+  scores <- starts$scores
+  converged <- starts$converged
+  best_start <- starts$best_start
   best <- attempts[[best_start]]
   # An interior solution is finished by Newton steps (see .additive_newton());
   # a boundary solution is left as the KKT pass returned it.

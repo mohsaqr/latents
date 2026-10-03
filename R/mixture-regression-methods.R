@@ -24,13 +24,18 @@
 }
 
 #' Mean response of each class on the response scale
+#'
+#' For the ordinal family, the expected category score (categories scored
+#' 1..C in order).
 #' @noRd
 .mixture_class_means <- function(spec, params) {
   eta <- .mixture_linear_predictors(spec, params)
   switch(spec$family,
     gaussian = eta,
     binomial = spec$trials * stats::plogis(eta),
-    poisson = exp(eta))
+    poisson = ,
+    negative_binomial = exp(eta),
+    ordinal = .ordinal_expected_scores(eta, params$thresholds))
 }
 
 #' Coefficient table
@@ -48,13 +53,24 @@
                  character(1))
   table <- cbind(
     data.frame(class = class_label, term = term),
-    .mixture_wald(theta[regression], std_error[regression], level))
-  slopes <- table$term != "(Intercept)"
+    .inference_wald(theta[regression], std_error[regression], level))
+  ordinal <- identical(spec$family, "ordinal")
+  if (ordinal) {
+    # Each class's thresholds lead its rows, as an intercept would.
+    table <- rbind(.ordinal_threshold_table(spec, inference, level), table)
+    rank <- match(table$class,
+                  c(paste0("class_", seq_len(spec$n_classes)), "common"))
+    table <- table[order(rank, seq_len(nrow(table))), , drop = FALSE]
+    rownames(table) <- NULL
+  }
+  thresholds <- startsWith(table$term, "threshold:") & ordinal
+  slopes <- table$term != "(Intercept)" & !thresholds
   table$p_adjusted <- NA_real_
   table$p_adjusted[slopes] <- stats::p.adjust(table$p_value[slopes],
                                               method = "BH")
   if (!identical(spec$family, "gaussian")) {
     table$exp_estimate <- exp(table$estimate)
+    table$exp_estimate[thresholds] <- NA_real_
   }
   table
 }
@@ -91,6 +107,16 @@
     table$sigma <- delta$estimate
     table$sigma_std_error <- delta$std_error
   }
+  if (identical(spec$family, "negative_binomial")) {
+    dispersion_names <- if (identical(spec$variance, "equal")) {
+      rep("log_dispersion.all", spec$n_classes)
+    } else paste0("log_dispersion.", class_names)
+    delta <- .mixture_delta(inference$theta, inference$vcov, function(t) {
+      exp(t[dispersion_names])
+    })
+    table$dispersion <- delta$estimate
+    table$dispersion_std_error <- delta$std_error
+  }
   if (!identical(spec$nesting, "two-level") && spec$intercept_only) {
     delta <- .mixture_delta(inference$theta, inference$vcov, function(t) {
       params <- .mixture_unpack(spec, t, x$params)
@@ -126,7 +152,7 @@
   table <- cbind(data.frame(model = model, class = class_label, term = term,
                             reference = ifelse(model == "class", "class_1",
                                                "group_class_1")),
-                 .mixture_wald(theta[mixing], std_error[mixing], level))
+                 .inference_wald(theta[mixing], std_error[mixing], level))
   table$odds_ratio <- exp(table$estimate)
   table
 }
@@ -393,7 +419,7 @@
                      column("Estimate", "estimate"),
                      interval("conf_low", "conf_high", "estimate"),
                      column("p", "p_value", "p"),
-                     column(if (identical(x$spec$family, "binomial")) "Odds ratio" else
+                     column(if (x$spec$family %in% c("binomial", "ordinal")) "Odds ratio" else
                        "Rate ratio", "exp_estimate"))),
     classes = list(
       title = "Classes",
@@ -401,7 +427,8 @@
                      column("Expected", "count"),
                      column(sprintf("%s assigned", units), "n_assigned", "integer"),
                      column("Avg. posterior", "mean_posterior", "share"),
-                     column("Residual SD", "sigma"))),
+                     column("Residual SD", "sigma"),
+                     column("Dispersion", "dispersion"))),
     membership = list(
       title = sprintf("Class membership (log odds, %s%% CI)", percent),
       display = list(column("Model", "model", "label"), column("Class", "class", "label"),
@@ -428,10 +455,16 @@
                      column("Entropy", "entropy", "share"),
                      column("Smallest class", "smallest_share", "percent"),
                      column("Converged", "converged", "logical"))),
+    # The second column is the caller's truth column.
+    recovery = list(
+      title = "Recovery of a known classification",
+      display = list(column("Assigned", "assigned", "label"),
+                     column(names(table)[2L], names(table)[2L], "text"),
+                     column(units, "n", "integer"),
+                     column("Share of assigned", "share", "share"))),
     list(title = switch(what, assignments = "Class assignments",
                         groups = "Groups", fitted = "Fitted values", starts = "Starts",
-                        classification = "Classification (average posteriors)",
-                        recovery = "Recovery of a known classification", NULL),
+                        classification = "Classification (average posteriors)", NULL),
          display = NULL))
   display <- Filter(function(spec) all(spec$column %in% names(table)), plan$display)
   if (!identical(x$spec$nesting, "two-level")) {
@@ -464,7 +497,11 @@
 #'     `statistic` (Wald z), `p_value`, `conf_low`, `conf_high`,
 #'     `p_adjusted` (Benjamini-Hochberg across the non-intercept rows;
 #'     `NA` for intercepts) and, for the binomial and Poisson families,
-#'     `exp_estimate` (odds or rate ratio).}
+#'     `exp_estimate` (odds or rate ratio). For the ordinal family each
+#'     class's thresholds lead its rows as terms `"threshold:<lower>|<upper>"`
+#'     (delta-method errors; no `p_adjusted` or `exp_estimate`), and
+#'     `exp_estimate` of a slope is the cumulative odds ratio of a higher
+#'     category.}
 #'   \item{`classes`}{One row per class: `share` (mean posterior), `count`
 #'     (summed posterior), `n_assigned` (modal assignment), `mean_posterior`
 #'     (average posterior of the units assigned to it); `sigma` and
@@ -579,6 +616,8 @@ print.latents_mixture_regression <- function(x, digits = 4L, ...) {
     print(.mixture_table(x, "classes"))
     cat("\n")
     print(.mixture_table(x, "coefficients"))
+  } else if (identical(spec$family, "ordinal")) {
+    print(rbind(x$params$thresholds, x$params$beta), digits = digits)
   } else {
     print(x$params$beta, digits = digits)
   }
@@ -637,7 +676,7 @@ confint.latents_mixture_regression <- function(object, parm, level = 0.95, ...) 
   inference <- .mixture_resolve_inference(object, NULL)
   theta <- inference$theta
   std_error <- sqrt(pmax(diag(inference$vcov), 0))
-  z <- stats::qnorm(1 - (1 - level) / 2)
+  z <- .inference_critical(level, "one_minus")
   bounds <- cbind(theta - z * std_error, theta + z * std_error)
   percent <- paste(format(100 * c((1 - level) / 2, 1 - (1 - level) / 2),
                           trim = TRUE, scientific = FALSE, digits = 3), "%")

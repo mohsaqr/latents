@@ -567,29 +567,24 @@
   free_at <- n_means + n_chart
   invisible(lapply(blocks, function(block) {
     invisible(lapply(seq_len(nrow(block)), function(profile) {
-      probabilities <- block[profile, ]
-      derivative <- diag(probabilities, nrow = length(probabilities)) -
-        tcrossprod(probabilities)
       rows <- natural_at + seq_len(ncol(block))
       columns <- free_at + seq_len(ncol(block) - 1L)
-      jacobian[rows, columns] <<- derivative[, seq_len(ncol(block) - 1L), drop = FALSE]
+      jacobian[rows, columns] <<- .inference_simplex_jacobian(block[profile, ], "last")
       natural_at <<- natural_at + ncol(block)
       free_at <<- free_at + ncol(block) - 1L
     }))
   }))
   invisible(lapply(seq_len(object$n_group_classes), function(id) {
     stopifnot(is.numeric(id), length(id) == 1L)
-    probabilities <- object$profile_probabilities[id, ]
-    block <- diag(probabilities, nrow = length(probabilities)) - tcrossprod(probabilities)
     natural_rows <- natural_offset + (id - 1L) * object$n_profiles + seq_len(object$n_profiles)
     free_columns <- free_offset + (id - 1L) * (object$n_profiles - 1L) + seq_len(object$n_profiles - 1L)
-    jacobian[natural_rows, free_columns] <<- block[, seq_len(object$n_profiles - 1L), drop = FALSE]
+    jacobian[natural_rows, free_columns] <<-
+      .inference_simplex_jacobian(object$profile_probabilities[id, ], "last")
   }))
-  probabilities <- object$group_probabilities
-  block <- diag(probabilities, nrow = length(probabilities)) - tcrossprod(probabilities)
   natural_rows <- natural_offset + object$n_group_classes * object$n_profiles + seq_len(object$n_group_classes)
   free_columns <- free_offset + object$n_group_classes * (object$n_profiles - 1L) + seq_len(object$n_group_classes - 1L)
-  jacobian[natural_rows, free_columns] <- block[, seq_len(object$n_group_classes - 1L), drop = FALSE]
+  jacobian[natural_rows, free_columns] <-
+    .inference_simplex_jacobian(object$group_probabilities, "last")
   jacobian
 }
 
@@ -807,15 +802,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
       "`tol` must be a single positive number" =
         is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
     .multilpa_check_seed(seed)
-    if (!is.null(seed)) {
-      previous <- if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
-        get(".Random.seed", envir = .GlobalEnv) else NULL
-      on.exit(if (!is.null(previous))
-        assign(".Random.seed", previous, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-        else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
-          rm(".Random.seed", envir = .GlobalEnv), add = TRUE, after = FALSE)
-      set.seed(seed)
-    }
+    .latents_local_seed(seed, after = FALSE)
     return(.multilpa_bootstrap_inference(x, data, level, as.integer(iter),
                                          as.integer(n_starts),
                                          as.integer(max_iter), tol, adjust))
@@ -915,7 +902,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
     scaled_inverse <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(scaled_cross)
-    } else scaled_inverse %*% scaled_cross %*% scaled_inverse
+    } else .inference_sandwich(scaled_inverse, scaled_cross)
   }
   covariance_unconstrained <- scaled_inverse * tcrossprod(parameter_scale)
   dimnames(hessian) <- dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
@@ -924,10 +911,10 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   ## columns is the delta method for the free parameters, not an approximation
   ## of it.
   jacobian <- .multilpa_inference_jacobian(x)[free_natural, free, drop = FALSE]
-  covariance <- jacobian %*% covariance_unconstrained %*% t(jacobian)
+  covariance <- .inference_delta_covariance(jacobian, covariance_unconstrained)
   standard_errors <- sqrt(pmax(diag(covariance), 0))
   estimates <- .multilpa_coefficients(x, "natural")[free_natural]
-  critical <- stats::qnorm((1 + level) / 2)
+  critical <- .inference_critical(level, "upper")
   intervals <- cbind(estimates - critical * standard_errors, estimates + critical * standard_errors)
   colnames(intervals) <- paste0(format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%")
   gradient <- stats::setNames(score(centered_theta), names(theta))
@@ -987,28 +974,6 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   result
 }
 
-#' Invert the outer product of the group scores
-#'
-#' The outer-product-of-gradients (BHHH) estimate of the information: the
-#' cross-product of the per-group scores, which estimates the information by the
-#' variance of the score rather than by the curvature of the likelihood. It is
-#' what `glca` reports.
-#'
-#' @param cross The (scaled) cross-product of the group scores.
-#' @return Its inverse, or `latents_singular_information` when it has none.
-#' @noRd
-.multilpa_opg_inverse <- function(cross) {
-  factor <- tryCatch(chol(cross), error = function(error) NULL)
-  if (is.null(factor) ||
-      min(diag(factor))^2 < 1e-12 * max(diag(factor))^2) {
-    stop(errorCondition(paste(
-      "The outer product of the group scores is singular; OPG inference is",
-      "unavailable. `vcov_type = \"observed\"` uses the curvature instead."),
-      class = "latents_singular_information", call = NULL))
-  }
-  chol2inv(factor)
-}
-
 #' Response probabilities sitting on their lower bound
 #'
 #' A probability held at `min_probability` has a logit on the edge of the
@@ -1041,57 +1006,6 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   })
   list(natural = unlist(lapply(pieces, `[[`, "natural")) %||% character(),
        unconstrained = unlist(lapply(pieces, `[[`, "unconstrained")) %||% character())
-}
-
-#' Wald intervals on the scale where each parameter is unbounded
-#'
-#' A symmetric interval around a probability of 0.98 with a standard error of
-#' 0.015 runs past one, and one around a small variance runs below zero:
-#' neither is a set of values the parameter can take. Each interval is formed
-#' where the parameter is unbounded and mapped back -- the logit of a
-#' probability, the log of a variance -- by the delta method, with the same
-#' standard error. It stays inside the parameter's range and becomes
-#' asymmetric near a bound, as the sampling distribution does. Every other
-#' parameter keeps the symmetric interval.
-#' @param estimate,standard_error Numeric vectors.
-#' @param kind `"probability"`, `"positive"` or anything else, per row.
-#' @param critical The normal quantile for the level.
-#' @return A list with `low` and `high`.
-#' @noRd
-.multilpa_wald_bounds <- function(estimate, standard_error, kind, critical) {
-  low <- estimate - critical * standard_error
-  high <- estimate + critical * standard_error
-  probability <- kind == "probability" & is.finite(standard_error) &
-    estimate > 0 & estimate < 1
-  if (any(probability)) {
-    centre <- stats::qlogis(estimate[probability])
-    spread <- critical * standard_error[probability] /
-      (estimate[probability] * (1 - estimate[probability]))
-    low[probability] <- stats::plogis(centre - spread)
-    high[probability] <- stats::plogis(centre + spread)
-  }
-  positive <- kind == "positive" & is.finite(standard_error) & estimate > 0
-  if (any(positive)) {
-    spread <- critical * standard_error[positive] / estimate[positive]
-    low[positive] <- estimate[positive] * exp(-spread)
-    high[positive] <- estimate[positive] * exp(spread)
-  }
-  list(low = low, high = high)
-}
-
-#' Which scale a parameter's interval is formed on
-#' @param parameter,term The tidy label columns.
-#' @param continuous The continuous indicator names.
-#' @return `"probability"`, `"positive"` or `"real"`, per row.
-#' @noRd
-.multilpa_interval_kind <- function(parameter, term, continuous) {
-  on_diagonal <- parameter == "covariance" &
-    term %in% paste(continuous, continuous, sep = ":")
-  ifelse(parameter %in% c("probability", "response", "initial_probability",
-                          "transition_probability"), "probability",
-         ifelse(parameter %in% c("variance", "count_mean", "count_dispersion") |
-                  on_diagonal,
-                "positive", "real"))
 }
 
 #' The probability below which an estimate is on its boundary
@@ -1416,41 +1330,6 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
        centers = centers, codes = codes)
 }
 
-#' Differentiate the observed information and check that it is usable
-#'
-#' Curvature is tested after scaling, so that indicators on different units do
-#' not by themselves make an identified model look singular.
-#'
-#' @return A list with the `scaled` and `natural` Hessians, the scaled
-#'   `condition_ratio`, and the `inverse` of the scaled Hessian.
-#' @noRd
-.multilpa_observed_hessian <- function(scaled_objective, scaled_gradient,
-                                     parameter_scale, step) {
-  n_parameters <- length(parameter_scale)
-  scaled <- tryCatch(
-    stats::optimHess(rep(0, n_parameters), scaled_objective, gr = scaled_gradient,
-                     control = list(ndeps = rep(step, n_parameters))),
-    error = function(error) {
-      stop(sprintf("Observed Hessian failed: %s", conditionMessage(error)))
-    })
-  natural <- scaled / tcrossprod(parameter_scale)
-  eigenvalues <- eigen(natural, symmetric = TRUE, only.values = TRUE)$values
-  scaled_eigenvalues <- eigen(scaled, symmetric = TRUE, only.values = TRUE)$values
-  condition_ratio <- min(scaled_eigenvalues) / max(scaled_eigenvalues)
-  if (any(!is.finite(eigenvalues)) || !is.finite(condition_ratio) ||
-      min(scaled_eigenvalues) <= 0 || condition_ratio <= 1e-10) {
-    stop(errorCondition(
-      "Observed information is not positive definite or is numerically singular; Wald inference is unavailable.",
-      class = "latents_singular_information", call = NULL))
-  }
-  inverse <- tryCatch(solve(scaled), error = function(error) {
-    stop(sprintf("Observed information could not be inverted: %s",
-                 conditionMessage(error)))
-  })
-  list(scaled = scaled, natural = natural, condition_ratio = condition_ratio,
-       inverse = inverse)
-}
-
 #' Split a generated parameter name into tidy columns
 #'
 #' The names are machine-generated with a strict grammar -- `mean[profile,
@@ -1532,26 +1411,3 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
 .multilpa_p_adjust_methods <- c("none",
                                 setdiff(stats::p.adjust.methods, "none"))
 
-#' Add the adjusted p-value column an inference table reports
-#'
-#' The family is the tests the table actually carries: a bounded parameter has
-#' no test, is `NA` in `p_value`, and must not inflate the correction for the
-#' parameters that do.
-#'
-#' @param result An inference table carrying `statistic` and `p_value`.
-#' @param adjust One of `.multilpa_p_adjust_methods`.
-#' @return `result` with `p_adjusted` inserted after `p_value` and the
-#'   `adjust` attribute recorded.
-#' @noRd
-.multilpa_adjust_p <- function(result, adjust) {
-  stopifnot("`result` must carry a `p_value` column" = "p_value" %in% names(result))
-  result$p_adjusted <- stats::p.adjust(result$p_value, method = adjust)
-  ordered <- c("level", "outcome", "term", "parameter", "estimate",
-               "standard_error", "statistic", "p_value", "p_adjusted",
-               "conf_low", "conf_high")
-  stopifnot("the inference table must carry exactly the documented columns" =
-              setequal(names(result), ordered))
-  result <- result[, ordered, drop = FALSE]
-  attr(result, "adjust") <- adjust
-  result
-}

@@ -62,6 +62,9 @@
 #' @return One row per ordered pair of classes at that level.
 #' @noRd
 .multilpa_error_frame <- function(x, level) {
+  # A noise unit's modal class is 0 and its posteriors lack the noise column,
+  # so the error matrix would not be a matrix of probabilities.
+  .multilpa_refuse_noise(x, "The classification-error table")
   pieces <- .multilpa_level_assignments(x, level)
   matrix_form <- .multilpa_error_matrix(pieces)
   classes <- seq_len(pieces$n_classes)
@@ -111,6 +114,7 @@
 #' @return One row per unit and class at that level.
 #' @noRd
 .multilpa_weight_frame <- function(x, level) {
+  .multilpa_refuse_noise(x, "The BCH weights table")
   pieces <- .multilpa_level_assignments(x, level)
   inverse <- .multilpa_invert_errors(.multilpa_error_matrix(pieces))
   weights <- inverse[pieces$modal, , drop = FALSE]
@@ -677,7 +681,7 @@ r3step <- function(x, data, covariates,
   covariance <- information$inverse
   if (identical(vcov_type, "robust")) {
     scores <- rowsum(score_rows(fitted$par), pieces$group_index, reorder = FALSE)
-    covariance <- covariance %*% .multilpa_cross_product(scores) %*% covariance
+    covariance <- .inference_sandwich(covariance, .multilpa_cross_product(scores))
   }
   .multilpa_r3step_frame(fitted$par, covariance, colnames(design), n_free,
                          pieces$n_classes, level, ci_level, vcov_type, adjust)
@@ -720,7 +724,7 @@ r3step <- function(x, data, covariates,
   statistic <- rep(NA_real_, length(errors))
   valid <- is.finite(errors) & errors > 0
   statistic[valid] <- estimates[valid] / errors[valid]
-  quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
+  quantile <- .inference_critical(ci_level, "one_minus")
   # Named as parameter_inference() names the same classes.
   prefix <- if (identical(level, "groups")) "group_class_" else "profile_"
   labels <- expand.grid(term = terms, outcome = paste0(prefix, seq_len(n_free)),
@@ -787,8 +791,8 @@ r3step <- function(x, data, covariates,
     rep(1, length(fitted$par)), 1e-4)
   covariance <- information$inverse
   if (identical(vcov_type, "robust")) {
-    covariance <- covariance %*%
-      .multilpa_cross_product(model$group_scores(fitted$par)) %*% covariance
+    covariance <- .inference_sandwich(
+      covariance, .multilpa_cross_product(model$group_scores(fitted$par)))
   }
   ## Back to the units the covariates arrived in.
   estimates <- fitted$par * model$unit
@@ -922,7 +926,7 @@ r3step <- function(x, data, covariates,
   tested <- labels$level == "individuals" & labels$term %in% terms
   adjusted <- rep(NA_real_, length(raw))
   adjusted[tested] <- stats::p.adjust(raw[tested], method = adjust)
-  quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
+  quantile <- .inference_critical(ci_level, "one_minus")
   result <- data.frame(
     labels, estimate = estimates, standard_error = errors_se,
     statistic = statistic, p_value = raw, p_adjusted = adjusted,

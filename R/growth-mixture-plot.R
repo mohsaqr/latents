@@ -303,10 +303,13 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
                               shared)
   levels <- c(levels(key$label), if (any(!class_rows)) shared)
   table$class_label <- factor(table$class_label, levels = rev(levels))
-  table$value_label <- sprintf("%s [%s, %s]  %s",
-                               formatC(table$estimate, format = "fg", digits = 3),
-                               formatC(table$conf_low, format = "fg", digits = 3),
-                               formatC(table$conf_high, format = "fg", digits = 3),
+  # One number of decimals per panel (term), as in the tables, at most three.
+  decimals <- vapply(split(table$estimate, table$term), function(values) {
+    min(.latents_column_decimals(values), 3L)
+  }, integer(1))[table$term]
+  number <- function(values) sprintf("%.*f", unname(decimals), values)
+  table$value_label <- sprintf("%s [%s, %s]  %s", number(table$estimate),
+                               number(table$conf_low), number(table$conf_high),
                                ifelse(table$p_value < 0.001, "p < .001",
                                       sprintf("p = %.3f", table$p_value)))
   colours <- c(stats::setNames(as.character(key$colour), as.character(key$label)),

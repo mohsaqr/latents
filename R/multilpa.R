@@ -31,108 +31,14 @@
   stopifnot(is.matrix(x), is.numeric(x), !any(is.infinite(x)),
             length(group_index) == nrow(x), is.list(parameters),
             is.null(weights) || length(weights) == max(group_index))
-  n_profiles <- nrow(parameters$means)
-  n_types <- length(parameters$group_probabilities)
-  gaussian <- if (ncol(x) > 0L && (anyNA(x) || !is.null(parameters$covariances))) {
-    .multilpa_gaussian_moments(x, parameters)
-  } else NULL
-  log_density <- if (!is.null(gaussian)) gaussian$log_density else vapply(seq_len(n_profiles), function(profile) {
-    residuals <- sweep(x, 2L, parameters$means[profile, ], "-")
-    -0.5 * rowSums(sweep(residuals^2, 2L,
-                        parameters$variances[profile, ], "/") +
-                    matrix(log(2 * pi) + log(parameters$variances[profile, ]),
-                           nrow(x), ncol(x), byrow = TRUE))
-  }, numeric(nrow(x)))
   # A noise component is one more column: a constant density over the data's
   # hypervolume, with its own mixing proportion last in the profile row.
-  if (!is.null(parameters$noise_log_density)) {
-    log_density <- cbind(log_density, parameters$noise_log_density)
-  }
-  # Remove the common measurement offset before adding log priors. Otherwise
-  # a very small density (for example log(f) = -5e15) rounds away the priors,
-  # and subtracting the absolute log marginal can produce posteriors above one.
-  density_offset <- .multilpa_row_max(log_density)
-  if (any(!is.finite(density_offset))) {
-    stop("All component densities vanished, or a density overflowed.")
-  }
-  log_density <- sweep(log_density, 1L, density_offset, "-")
-  # Categorical indicators are conditionally independent of the continuous ones
-  # given the profile. Add their log densities after removing the Gaussian
-  # offset so that small categorical contributions retain their precision too.
-  if (!is.null(codes)) {
-    log_density <- log_density +
-      .multilpa_categorical_log_density(codes, parameters$response_probabilities)
-  }
-  # Ordinal and count indicators enter the same way, after the offset.
-  if (!is.null(extra)) {
-    log_density <- log_density +
-      .latents_extra_log_density(extra, parameters, nrow(x), n_profiles)
-  }
-  # Each group type supplies a different prior over the same Gaussian profiles.
-  conditional <- lapply(seq_len(n_types), function(group_type) {
-    log_joint <- sweep(log_density, 2L,
-                       log(parameters$profile_probabilities[group_type, ]), "+")
-    log_marginal <- .multilpa_log_sum_exp(log_joint)
-    posterior <- exp(sweep(log_joint, 1L, .multilpa_row_max(log_joint), "-"))
-    list(log_marginal = log_marginal,
-         posterior = posterior / rowSums(posterior))
-  })
-  group_scores <- matrix(vapply(seq_len(n_types), function(group_type) {
-    as.numeric(rowsum(conditional[[group_type]]$log_marginal,
-                      group_index, reorder = FALSE))
-  }, numeric(max(group_index))), nrow = max(group_index), ncol = n_types)
-  # The full cross-level family adds a group-level measurement density per
-  # group class (manifest group means as between indicators); absent, nothing
-  # changes.
-  if (!is.null(parameters$group_log_density)) {
-    stopifnot("group_log_density must be groups x group classes" =
-                identical(dim(parameters$group_log_density), dim(group_scores)))
-    group_scores <- group_scores + parameters$group_log_density
-  }
-  group_offset <- .multilpa_row_max(group_scores)
-  group_scores <- sweep(sweep(group_scores, 1L, group_offset, "-"), 2L,
-                        log(parameters$group_probabilities), "+")
-  group_log_likelihood <- .multilpa_log_sum_exp(group_scores) + group_offset +
-    as.numeric(rowsum(density_offset, group_index, reorder = FALSE))
-  group_posteriors <- exp(sweep(group_scores, 1L, .multilpa_row_max(group_scores), "-"))
-  group_posteriors <- group_posteriors / rowSums(group_posteriors)
-  joint <- lapply(seq_len(n_types), function(group_type) {
-    conditional[[group_type]]$posterior * group_posteriors[group_index, group_type]
-  })
-  subject_posteriors <- Reduce(`+`, joint)
-  log_likelihood <- sum(group_log_likelihood)
-  if (!is.finite(log_likelihood) || any(!is.finite(subject_posteriors))) {
-    stop("Non-finite likelihood or posterior probabilities.")
-  }
-  result <- list(log_likelihood = log_likelihood,
-                 group_log_likelihood = group_log_likelihood,
-                 group_posteriors = group_posteriors,
-                 subject_posteriors = subject_posteriors, joint = joint,
-                 gaussian_moments = gaussian$moments)
+  measurement <- .latents_measurement_log_density(
+    x, parameters, codes, extra, noise_log_density = parameters$noise_log_density)
+  result <- c(.multilpa_nested_structure(measurement$log_density, measurement$offset,
+                                         group_index, parameters),
+              list(gaussian_moments = measurement$moments))
   if (is.null(weights)) result else .multilpa_weigh(result, weights, group_index)
-}
-
-#' Weight an expectation step by sampling weights
-#'
-#' Pseudo maximum likelihood maximizes the weighted sum of the independent
-#' units' log likelihoods. Its EM step is the ordinary one with every
-#' posterior multiplied by its unit's weight, so integer weights reproduce the
-#' fit to the data with each unit repeated that many times.
-#'
-#' @param expectation An unweighted expectation step.
-#' @param weights Sampling weight per group.
-#' @param group_index Group of each row.
-#' @return The expectation with weighted posteriors, the weighted log
-#'   likelihood, and `n_total`, the weighted row count.
-#' @noRd
-.multilpa_weigh <- function(expectation, weights, group_index) {
-  row_weights <- weights[group_index]
-  expectation$log_likelihood <- sum(weights * expectation$group_log_likelihood)
-  expectation$group_posteriors <- expectation$group_posteriors * weights
-  expectation$subject_posteriors <- expectation$subject_posteriors * row_weights
-  expectation$joint <- lapply(expectation$joint, `*`, row_weights)
-  expectation$n_total <- sum(row_weights)
-  expectation
 }
 
 #' Maximize the expected complete-data log likelihood
@@ -645,60 +551,34 @@
                         held = NULL, structure = NULL, prior = NULL,
                         accelerate_em = TRUE, sampling_weights = NULL,
                         extra = NULL) {
-  # `parameters` is the current point, which the M-step uses to warm start the
-  # covariance structures that iterate.
   stopifnot(is.matrix(x), is.list(parameters), max_iter >= 0L, tol > 0,
             length(group_index) == nrow(x), min_variance > 0,
             variance_model %in% c("varying", "equal"))
-  evaluate <- function(point) .multilpa_expectation(x, group_index, point, codes,
-                                                    sampling_weights, extra)
-  # One plain EM step, with the monotonicity guard. Under a prior the
-  # iteration climbs the posterior, not the likelihood, so the likelihood may
-  # legitimately fall; convergence is still read off the likelihood's
-  # relative change, which is mclust's rule.
-  step <- function(point, point_expectation) {
-    updated_parameters <- .multilpa_maximization(
-      x, point_expectation, variance_model, min_variance, covariance_model,
-      codes, n_categories, min_probability, held, structure, point, prior, extra)
-    updated <- evaluate(updated_parameters)
-    if (is.null(prior) &&
-        updated$log_likelihood - point_expectation$log_likelihood <
-        -1e-10 * (1 + abs(point_expectation$log_likelihood))) {
-      stop("EM likelihood decreased beyond numerical roundoff.")
-    }
-    list(parameters = updated_parameters, expectation = updated)
+  # Under a prior the iteration climbs the posterior, not the likelihood, so
+  # the likelihood may legitimately fall; convergence is still read off the
+  # likelihood's relative change, which is mclust's rule. SQUAREM needs a
+  # likelihood objective, so a prior fit takes plain steps.
+  accelerator <- if (isTRUE(accelerate_em) && is.null(prior)) {
+    list(flatten = .multilpa_flatten_parameters,
+         restore = .multilpa_restore_parameters,
+         valid = .multilpa_valid_parameters)
   }
-  expectation <- evaluate(parameters)
-  history <- expectation$log_likelihood
-  converged <- FALSE
-  iteration <- 0L
-  # SQUAREM needs three EM evaluations per cycle and a likelihood objective,
-  # so a prior fit, or a budget with fewer than three steps left, takes plain
-  # steps. The loop is sequential by nature: each step starts from the last.
-  while (iteration < max_iter && !converged) {
-    accelerate <- isTRUE(accelerate_em) && is.null(prior) &&
-      max_iter - iteration >= 3L
-    if (accelerate) {
-      cycle <- .multilpa_squarem_cycle(step, parameters, expectation, evaluate)
-      evaluations <- 3L
-    } else {
-      plain <- step(parameters, expectation)
-      cycle <- list(parameters = plain$parameters,
-                    expectation = plain$expectation,
-                    history = plain$expectation$log_likelihood)
-      evaluations <- 1L
-    }
-    # The gain is read over the whole cycle, which is at least one plain
-    # step's gain, so an accelerated fit never stops earlier than plain EM.
-    improvement <- cycle$expectation$log_likelihood - expectation$log_likelihood
-    converged <- abs(improvement) <= tol * (1 + abs(expectation$log_likelihood))
-    iteration <- iteration + evaluations
-    history <- c(history, cycle$history)
-    parameters <- cycle$parameters
-    expectation <- cycle$expectation
-  }
-  list(parameters = parameters, expectation = expectation,
-       converged = converged, iterations = iteration, history = history)
+  fit <- .latents_em(
+    parameters,
+    evaluate = function(point) {
+      .multilpa_expectation(x, group_index, point, codes, sampling_weights, extra)
+    },
+    # `point` warm-starts the covariance structures that iterate.
+    maximize = function(point, expectation) {
+      .multilpa_maximization(x, expectation, variance_model, min_variance,
+                             covariance_model, codes, n_categories,
+                             min_probability, held, structure, point, prior, extra)
+    },
+    max_iter = max_iter, tol = tol,
+    settings = .latents_em_settings(guard_decrease = is.null(prior),
+                                    accelerate = accelerator))
+  list(parameters = fit$state, expectation = fit$expectation,
+       converged = fit$converged, iterations = fit$iterations, history = fit$history)
 }
 
 #' Validate and extract an optional time column
@@ -1483,17 +1363,7 @@ multilpa <- function(data, vars, id, n_profiles,
                                     covariance_model, n_categories, min_probability,
                                     categorical, encoded$levels)
   }
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
-    on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-      else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-        rm(".Random.seed", envir = .GlobalEnv)
-      }
-    }, add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   # Center to reduce cancellation in weighted means when indicators have large
   # offsets. This is a translation, with no density Jacobian or scale change.
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
@@ -1533,49 +1403,40 @@ multilpa <- function(data, vars, id, n_profiles,
   # evaluated. Evaluate-only with a `start` therefore uses that start alone, and
   # `get_results(fit, "starts")` shows the single start that was run.
   if (max_iter == 0L && !is.null(start)) n_starts <- 1L
-  attempts <- lapply(seq_len(n_starts), function(start_index) {
-    tryCatch({
-      initial <- if (start_index == 1L && !is.null(start)) start else {
-        # The first start is Ward's hierarchical clustering, deterministic
-        # and good at profiles that differ in shape; the rest are k-means
-        # from random centres.
-        .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
-                           variance_model, min_variance, start_index,
-                           covariance_model, codes, n_categories, min_probability,
-                           hierarchical = start_index == 1L, extra = extra)
-      }
-      # Every restart begins from the held values, so a random start cannot
-      # report a measurement solution that was neither estimated nor supplied.
-      initial <- .multilpa_apply_held(initial, held)
-      initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
-      # A random start begins with a tenth of the mass on the noise component;
-      # a supplied start with the proportion it supplied.
-      if (!is.null(noise_log_density)) {
-        initial <- .multilpa_add_noise(
-          initial,
-          if (start_index == 1L && !is.null(noise_start)) noise_start else 0.1,
-          noise_log_density)
-      }
-      .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
-                 tol, covariance_model, codes, n_categories, min_probability,
-                 held, structure, prior_parameters,
-                 accelerate_em = identical(acceleration, "squarem"),
-                 sampling_weights = sampling_weights, extra = extra)
-    }, error = function(error) list(error = conditionMessage(error)))
-  })
-  valid <- vapply(attempts, function(attempt) is.null(attempt$error), logical(1))
-  if (!any(valid)) {
-    stop(errorCondition(sprintf(
-      "All %d starts failed: %s", n_starts,
-      paste(unique(vapply(attempts, `[[`, character(1), "error")), collapse = "; ")),
-      class = "latents_all_starts_failed", call = NULL))
-  }
-  scores <- vapply(attempts, function(attempt) {
-    if (is.null(attempt$error)) attempt$expectation$log_likelihood else -Inf
-  }, numeric(1))
-  best_start <- .multilpa_select_start(
-    scores, vapply(attempts, function(attempt) isTRUE(attempt$converged), logical(1)),
-    select_start)
+  # Each start runs to completion or is recorded as failed; the best is
+  # chosen by the shared rule (see .latents_run_starts()).
+  starts <- .latents_run_starts(n_starts, function(start_index) {
+    initial <- if (start_index == 1L && !is.null(start)) start else {
+      # The first start is Ward's hierarchical clustering, deterministic
+      # and good at profiles that differ in shape; the rest are k-means
+      # from random centres.
+      .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
+                         variance_model, min_variance, start_index,
+                         covariance_model, codes, n_categories, min_probability,
+                         hierarchical = start_index == 1L, extra = extra)
+    }
+    # Every restart begins from the held values, so a random start cannot
+    # report a measurement solution that was neither estimated nor supplied.
+    initial <- .multilpa_apply_held(initial, held)
+    initial <- .multilpa_project_start(initial, structure, nrow(x), min_variance)
+    # A random start begins with a tenth of the mass on the noise component;
+    # a supplied start with the proportion it supplied.
+    if (!is.null(noise_log_density)) {
+      initial <- .multilpa_add_noise(
+        initial,
+        if (start_index == 1L && !is.null(noise_start)) noise_start else 0.1,
+        noise_log_density)
+    }
+    .multilpa_em(x, group_index, initial, variance_model, min_variance, max_iter,
+               tol, covariance_model, codes, n_categories, min_probability,
+               held, structure, prior_parameters,
+               accelerate_em = identical(acceleration, "squarem"),
+               sampling_weights = sampling_weights, extra = extra)
+  }, select_start)
+  attempts <- starts$attempts
+  valid <- starts$valid
+  scores <- starts$scores
+  best_start <- starts$best_start
   best <- attempts[[best_start]]
   parameters <- best$parameters
   # The weighted expectation carries weighted posteriors, which are counts for

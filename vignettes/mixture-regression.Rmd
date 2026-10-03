@@ -23,7 +23,9 @@ names: clusterwise regression, latent class regression, regression mixture
 (DeSarbo and Cron 1988; Wedel and DeSarbo 1995).
 
 `mixture_regression()` fits it for continuous (`"gaussian"`), binary or binomial
-(`"binomial"`) and count (`"poisson"`) outcomes, at one level or two:
+(`"binomial"`), count (`"poisson"`, and `"negative_binomial"` for overdispersed
+counts) and ordered (`"ordinal"`, cumulative logit) outcomes, at one level or
+two:
 
 | Question | Call |
 |---|---|

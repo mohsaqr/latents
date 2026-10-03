@@ -107,6 +107,32 @@ get_group_tna.multilpa_transitions <- function(x, label = "Group class", ...) {
   .multilpa_as_group_tna(models, label = label)
 }
 
+#' @rdname get_tna
+#' @details A general [lta()] fit -- with occasion-varying or covariate-dependent
+#'   transitions, a second order, movers and stayers, or ordinal, count or
+#'   weighted data -- has no single transition matrix, and is refused with
+#'   `latents_unsupported_tna`; its transitions are in
+#'   `get_results(x, "transitions")`.
+#' @export
+get_tna.multilpa_lta <- function(x, ...) .lta_refuse_tna("get_tna()")
+
+#' @rdname get_group_tna
+#' @export
+get_group_tna.multilpa_lta <- function(x, ...) .lta_refuse_tna("get_group_tna()")
+
+#' Refuse a transition network for a general transition fit
+#' @param verb The verb, for the message.
+#' @return Never returns; raises `latents_unsupported_tna`.
+#' @noRd
+.lta_refuse_tna <- function(verb) {
+  stop(errorCondition(sprintf(paste(
+    "%s needs one transition matrix per group class, and this general",
+    "transition fit has none: its transitions vary by occasion, covariate,",
+    "previous profile or mover-stayer class, or it was fitted to ordinal,",
+    "count or weighted data. Its transitions are get_results(x,",
+    "\"transitions\")."), verb), class = "latents_unsupported_tna", call = NULL))
+}
+
 #' Warn when a network contains fitted transition rows without move data
 #' @return `NULL`, invisibly.
 #' @noRd

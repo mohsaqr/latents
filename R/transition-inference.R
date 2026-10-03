@@ -270,13 +270,6 @@
     c(free_blocks$measurement, free_blocks$group), drop = FALSE]
   n_profiles <- x$n_profiles
   n_types <- x$n_group_classes
-  ## Each distribution is its own simplex, with the derivative diag(p) - p p'
-  ## restricted to the free (non-reference) logits.
-  simplex <- function(probabilities) {
-    derivative <- diag(probabilities, nrow = length(probabilities)) -
-      tcrossprod(probabilities)
-    derivative[, seq_len(n_profiles - 1L), drop = FALSE]
-  }
   distributions <- c(
     lapply(seq_len(n_types), function(type) x$initial_probabilities[type, ]),
     unlist(lapply(seq_len(n_types), function(type) {
@@ -284,7 +277,9 @@
         x$transition_probabilities[from, , type]
       })
     }), recursive = FALSE))
-  blocks <- lapply(distributions, simplex)
+  ## Each distribution is its own simplex, with the derivative diag(p) - p p'
+  ## restricted to the free (non-reference) logits.
+  blocks <- lapply(distributions, .inference_simplex_jacobian, reference = "last")
   sequence_block <- matrix(0, n_profiles * length(blocks),
                            (n_profiles - 1L) * length(blocks))
   invisible(lapply(seq_along(blocks), function(index) {
@@ -424,7 +419,7 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
   estimates <- .multilpa_transition_encode(x, "natural")
   covariance <- inference$covariance
   standard_errors <- sqrt(pmax(diag(covariance), 0))
-  critical <- stats::qnorm((1 + level) / 2)
+  critical <- .inference_critical(level, "upper")
   statistic <- unname(estimates / standard_errors)
   labels <- .multilpa_transition_labels(names(estimates), inference$view)
   result <- data.frame(
@@ -522,12 +517,12 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
     cross <- .multilpa_cross_product(scores)
     scaled_inverse <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(cross)
-    } else scaled_inverse %*% cross %*% scaled_inverse
+    } else .inference_sandwich(scaled_inverse, cross)
   }
   covariance_unconstrained <- scaled_inverse * tcrossprod(scale)
   dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
   jacobian <- .multilpa_transition_jacobian(x, view)
-  list(covariance = jacobian %*% covariance_unconstrained %*% t(jacobian),
+  list(covariance = .inference_delta_covariance(jacobian, covariance_unconstrained),
        covariance_unconstrained = covariance_unconstrained, view = view)
 }
 

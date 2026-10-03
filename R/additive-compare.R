@@ -117,17 +117,7 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
             "`tol` must be finite and positive" =
               is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
   .multilpa_check_seed(seed)
-  if (!is.null(seed)) {
-    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    old_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv) else NULL
-    on.exit({
-      if (had_seed) assign(".Random.seed", old_seed, envir = .GlobalEnv)  # nolint: object_name_linter. R's name for the RNG state.
-      else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-        rm(".Random.seed", envir = .GlobalEnv)
-      }
-    }, add = TRUE)
-    set.seed(seed)
-  }
+  .latents_local_seed(seed)
   # Convergence noise allowed below zero, as in the profile models.
   reversal_window <- 100 * tol * (1 + abs(null_model$log_likelihood))
   observed <- 2 * (alternative_model$log_likelihood - null_model$log_likelihood)
@@ -146,47 +136,24 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
              n_starts = n_starts, max_iter = max_iter, tol = tol,
              min_variance = model$min_variance)
   }
-  replicates <- do.call(rbind, lapply(seq_len(iter), function(i) {
-    warning_text <- character()
-    tryCatch(withCallingHandlers({
-      simulated <- .additive_simulate(null_model)
-      models <- lapply(list(null_model, alternative_model), refit, simulated)
-      statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
-      valid <- all(vapply(models, function(m) isTRUE(m$converged), logical(1))) &&
-        statistic >= -reversal_window
-      data.frame(replicate = i, statistic = if (valid) max(0, statistic) else NA_real_,
-        valid = valid,
-        boundary = any(vapply(models, function(m) {
-          any(m$between_zero) || any(m$within_floor)
-        }, logical(1))),
-        logits_settled = NA,
-        null_replications = models[[1L]]$n_best_replicated,
-        alternative_replications = models[[2L]]$n_best_replicated,
-        warnings = if (length(warning_text) == 0L) NA_character_ else
-          paste(unique(warning_text), collapse = "; "),
-        error = if (valid) NA_character_ else "Nonconvergence or reversed likelihood")
-    }, warning = function(warning) {
-      warning_text <<- c(warning_text, conditionMessage(warning))
-      invokeRestart("muffleWarning")
-    }), error = function(error) {
-      data.frame(replicate = i, statistic = NA_real_, valid = FALSE, boundary = NA,
-        logits_settled = NA, null_replications = NA_integer_,
-        alternative_replications = NA_integer_,
-        warnings = paste(unique(warning_text), collapse = "; "),
-        error = conditionMessage(error))
-    })
-  }))
-  valid <- all(replicates$valid)
-  p_value <- if (valid) (1 + sum(replicates$statistic >= observed)) / (iter + 1) else NA_real_
-  if (!valid) {
-    warning(warningCondition(paste(
-      "Some bootstrap fits failed validation, so p_value is NA.",
-      "summary() reports every replicate; improve fitting and rerun."),
-      class = "latents_failed_replicates"))
-  }
-  result <- list(statistic = observed, p_value = p_value,
-       monte_carlo_se = if (valid) sqrt(p_value * (1 - p_value) / (iter + 1)) else NA_real_,
-       iter = iter, n_valid = sum(replicates$valid), replicates = replicates,
+  replicates <- .latents_blrt_replicates(iter, function(i) {
+    simulated <- .additive_simulate(null_model)
+    models <- lapply(list(null_model, alternative_model), refit, simulated)
+    statistic <- 2 * (models[[2L]]$log_likelihood - models[[1L]]$log_likelihood)
+    list(statistic = statistic,
+         valid = all(vapply(models, function(m) isTRUE(m$converged), logical(1))) &&
+           statistic >= -reversal_window,
+         boundary = any(vapply(models, function(m) {
+           any(m$between_zero) || any(m$within_floor)
+         }, logical(1))),
+         logits_settled = NA,
+         null_replications = models[[1L]]$n_best_replicated,
+         alternative_replications = models[[2L]]$n_best_replicated)
+  }, muffle_warnings = TRUE)
+  tally <- .latents_blrt_p_value(replicates, observed, iter)
+  result <- list(statistic = observed, p_value = tally$p_value,
+       monte_carlo_se = tally$monte_carlo_se,
+       iter = iter, n_valid = tally$n_valid, replicates = replicates,
        fixed = character(),
        null_profiles = NA_integer_,
        null_group_classes = length(null_model$group_probabilities),

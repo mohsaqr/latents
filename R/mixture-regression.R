@@ -38,14 +38,50 @@
 #' `latents_growth_mixture`; its tables, plots and inference are described on
 #' [get_results.latents_growth_mixture()] and
 #' [plot.latents_growth_mixture()]. Random effects need the gaussian family,
-#' `id`, `class_level = "group"` and one group class.
+#' `id` and `class_level = "group"`.
+#'
+#' With `cluster`, persons are nested in clusters (students in schools) and
+#' the multilevel growth mixture model is fitted: each cluster belongs to a
+#' group class h, and the trajectory-class logits of its persons have a
+#' group-class-specific intercept and shared covariate slopes,
+#' \deqn{L = \prod_j \sum_h \omega_h \prod_{i \in j} \sum_k \pi_{k|h} f_k(y_i)}{L = prod_j sum_h omega_h prod_(i in j) sum_k pi_(k|h) f_k(y_i)}
+#' (Asparouhov and Muthen 2008; Vermunt 2003). `group_membership` names
+#' cluster-level covariates of the group class. The group classes are read
+#' with `get_results(fit, "group_classes")` and `"clusters"`.
 #'
 #' @section Families:
 #' `"gaussian"` (identity link, a residual standard deviation per class, or
 #' one shared under `variance = "equal"`), `"binomial"` (logit link; the
 #' outcome is 0/1, logical, a two-level factor whose second level is the
-#' success, or `cbind(successes, failures)`) and `"poisson"` (log link;
-#' `offset()` terms in the formula are honoured).
+#' success, or `cbind(successes, failures)`), `"poisson"` (log link;
+#' `offset()` terms in the formula are honoured) and `"negative_binomial"`
+#' (log link, NB2: variance mu + alpha mu^2 with a dispersion alpha per class,
+#' or one shared under `variance = "equal"`, for overdispersed counts; a
+#' dispersion estimated at zero is the Poisson limit and raises
+#' `latents_boundary`).
+#'
+#' `"ordinal"` fits a cumulative-logit (proportional-odds) regression within
+#' each class (McCullagh 1980),
+#' \deqn{P(Y \le c \mid x, k) = F(t_{kc} - x'\beta_k), \quad c = 1, \ldots, C - 1,}{P(Y <= c | x, k) = plogis(t_kc - x' beta_k), c = 1, ..., C - 1,}
+#' with ordered thresholds \eqn{t_{k1} < \ldots < t_{k,C-1}}{t_k1 < ... < t_k,C-1}
+#' per class in place of the intercept, and the parametrization of
+#' `MASS::polr()`: a positive slope moves the class towards higher
+#' categories. The outcome is an ordered factor, a factor (its levels taken
+#' in order) or whole-number categories; the categories are those observed,
+#' at least two. `common` terms share their slopes across classes, and
+#' `offset()` is honoured; the formula's intercept is replaced by the
+#' thresholds, so it must not be removed. The thresholds appear in the
+#' coefficient table as terms `"threshold:<lower>|<upper>"`, and
+#' `exp_estimate` of a slope is the cumulative odds ratio of a higher
+#' category. The class "mean" of an ordinal outcome (fitted values,
+#' `predict()`, trajectories) is the expected category score
+#' \eqn{\sum_c c P(Y = c)}{sum_c c P(Y = c)}, the categories scored 1 to C in
+#' order; `predict(type = "probabilities")` gives the category probabilities.
+#' With one outcome per class assignment the classes are identified by how
+#' continuous predictors shift the category probabilities: a mixture with no
+#' predictors, or with two categories (then the logistic mixture of
+#' `"binomial"`), is refused with `latents_not_identified` unless
+#' `class_level = "group"` gives each class assignment several outcomes.
 #'
 #' A mixture of Bernoulli regressions with one trial per unit is not
 #' identified -- any mixture of Bernoullis is again a Bernoulli -- so a binary
@@ -57,7 +93,9 @@
 #'   and `offset()` are supported.
 #' @param data A data frame.
 #' @param n_classes Number of regression classes.
-#' @param family `"gaussian"`, `"binomial"` or `"poisson"`.
+#' @param family `"gaussian"`, `"binomial"`, `"poisson"`,
+#'   `"negative_binomial"` or `"ordinal"` (proportional-odds cumulative logit;
+#'   see *Families*).
 #' @param id `NULL`, or the name of the column identifying groups (persons,
 #'   schools, ...).
 #' @param class_level `"observation"` (each row has its own class) or
@@ -74,8 +112,9 @@
 #' @param group_membership Group-level covariates predicting the group class,
 #'   for the two-level model, as names or a one-sided formula. Must be
 #'   constant within groups.
-#' @param variance `"varying"` (a residual standard deviation per class) or
-#'   `"equal"`. Gaussian family only.
+#' @param variance `"varying"` (a residual standard deviation, or a
+#'   negative-binomial dispersion, per class) or `"equal"` (one shared).
+#'   Gaussian and negative-binomial families only.
 #' @param n_starts Number of random starts, besides one start built from the
 #'   residuals of a pooled regression. Every start runs 50 EM iterations; the
 #'   better half (at least two) continue to convergence.
@@ -113,6 +152,14 @@
 #'   times a class-specific scale, the last class's being one; `nwg = TRUE`).
 #' @param random_diagonal `TRUE` for uncorrelated random effects (a diagonal
 #'   covariance, as `idiag = TRUE` in lcmm).
+#' @param cluster `NULL`, or the name of a column grouping the persons (`id`)
+#'   into clusters, such as schools, for the multilevel growth mixture model
+#'   (with `random`): each cluster belongs to one of `n_group_classes` group
+#'   classes, which shifts how probable each trajectory class is for its
+#'   persons. The clusters are the independent units of the likelihood, the
+#'   standard errors and the BIC; with `n_group_classes = 1` the model is the
+#'   single-level growth mixture with clusters as those units, comparable by
+#'   BIC with more group classes. See the growth mixture section.
 #' @return An object of class `latents_mixture_regression`, or
 #'   `latents_growth_mixture` when `random` is given. Read it with
 #'   [as.data.frame()] (the coefficient table) or [get_results()] (every
@@ -125,7 +172,8 @@
 #'   `latents_bad_data` for an outcome outside the family's support or a
 #'   covariate that varies within a group where it may not;
 #'   `latents_not_identified` for a binary outcome with one trial per class
-#'   assignment; `latents_missing_data` for missing values under
+#'   assignment, or an ordinal mixture with one outcome per class assignment
+#'   and two categories or no predictors; `latents_missing_data` for missing values under
 #'   `missing = "error"`; `latents_rows_dropped` (warning) under
 #'   `missing = "omit"`; `latents_no_valid_start` when every start
 #'   degenerated; `latents_unconverged` (warning) when the selected start did
@@ -133,6 +181,13 @@
 #'   degenerated; `latents_separation` (warning) when a coefficient diverged.
 #'
 #' @references
+#' Asparouhov, T., & Muthen, B. (2008). Multilevel mixture models. In G. R.
+#' Hancock & K. M. Samuelsen (Eds.), *Advances in latent variable mixture
+#' models* (pp. 27--51). Information Age.
+#'
+#' McCullagh, P. (1980). Regression models for ordinal data. *Journal of the
+#' Royal Statistical Society B*, 42, 109--142.
+#'
 #' Muthen, B., & Shedden, K. (1999). Finite mixture modeling with mixture
 #' outcomes using the EM algorithm. *Biometrics*, 55, 463--469.
 #'
@@ -176,9 +231,20 @@
 #'                                  id = "student", class_level = "group",
 #'                                  n_starts = 3, seed = 1)
 #' get_results(by_student, "fit")
+#'
+#' \donttest{
+#' # Students nested in schools, each school in one of two group classes:
+#' schools <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
+#'                               id = "student", class_level = "group",
+#'                               random = "wave", random_covariance = "equal",
+#'                               cluster = "school", n_group_classes = 2,
+#'                               n_starts = 2, seed = 1)
+#' get_results(schools, "group_classes")
+#' }
 #' @export
 mixture_regression <- function(formula, data, n_classes,
-                   family = c("gaussian", "binomial", "poisson"),
+                   family = c("gaussian", "binomial", "poisson", "negative_binomial",
+                              "ordinal"),
                    id = NULL, class_level = c("observation", "group"),
                    n_group_classes = 1L, common = NULL, membership = ~1,
                    group_membership = ~1, variance = c("varying", "equal"),
@@ -189,7 +255,7 @@ mixture_regression <- function(formula, data, n_classes,
                    vcov_type = c("observed", "robust", "opg", "none"),
                    weights = NULL, random = NULL,
                    random_covariance = c("varying", "equal", "proportional"),
-                   random_diagonal = FALSE) {
+                   random_diagonal = FALSE, cluster = NULL) {
   vcov_defaulted <- missing(vcov_type)
   random_covariance <- match.arg(random_covariance)
   # Variable names may stand in for a one-sided formula, so no `~` is needed.
@@ -214,6 +280,9 @@ mixture_regression <- function(formula, data, n_classes,
       .mixture_is_count(n_group_classes),
     "`id` must be NULL or a single column name" =
       is.null(id) || (is.character(id) && length(id) == 1L && !is.na(id)),
+    "`cluster` must be NULL or a single column name" =
+      is.null(cluster) || (is.character(cluster) && length(cluster) == 1L &&
+                             !is.na(cluster)),
     "`common` must be NULL, variable names or a one-sided formula" =
       is.null(common) || (inherits(common, "formula") && length(common) == 2L),
     "`membership` must be variable names or a one-sided formula" =
@@ -237,13 +306,16 @@ mixture_regression <- function(formula, data, n_classes,
   .multilpa_check_seed(seed)
   n_classes <- as.integer(n_classes)
   n_group_classes <- as.integer(n_group_classes)
-  if (!is.null(random)) {
+  if (!is.null(random) || !is.null(cluster)) {
     .growth_check_arguments(random, family, id, class_level, n_group_classes,
-                            random_diagonal)
+                            random_diagonal, cluster)
+  }
+  if (!is.null(cluster) && !is.null(weights)) {
+    .latents_refuse_weights("a multilevel growth mixture (`cluster`)")
   }
   spec <- .mixture_spec(formula, data, n_classes, family, id, class_level,
                        n_group_classes, common, membership, group_membership,
-                       variance, min_variance, missing, random)
+                       variance, min_variance, missing, random, cluster)
   if (!is.null(weights)) {
     spec <- .mixture_weight_spec(spec, data, weights)
     if (!identical(vcov_type, "none")) {
@@ -344,22 +416,15 @@ mixture_regression <- function(formula, data, n_classes,
 }
 
 #' Evaluate code under a seed, restoring the caller's random state
+#'
+#' The expression form of `.latents_local_seed()`, for callers that scope a
+#' seed to one expression rather than to their whole body.
 #' @param seed `NULL` or a number.
 #' @param code Expression, evaluated lazily.
 #' @return The value of `code`.
 #' @noRd
 .mixture_with_seed <- function(seed, code) {
-  if (is.null(seed)) return(code)
-  had_seed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
-  old_seed <- if (had_seed) get(".Random.seed", envir = globalenv())
-  on.exit({
-    if (had_seed) {
-      assign(".Random.seed", old_seed, envir = globalenv())  # nolint: object_name_linter. R's name for the RNG state.
-    } else if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
-      rm(".Random.seed", envir = globalenv())
-    }
-  }, add = TRUE, after = FALSE)
-  set.seed(seed)
+  .latents_local_seed(seed, after = FALSE)
   code
 }
 
@@ -374,7 +439,7 @@ mixture_regression <- function(formula, data, n_classes,
 .mixture_spec <- function(formula, data, n_classes, family, id, class_level,
                          n_group_classes, common, membership,
                          group_membership, variance, min_variance, missing,
-                         random = NULL) {
+                         random = NULL, cluster = NULL) {
   bad_argument <- function(message) {
     stop(errorCondition(message, class = "latents_bad_argument", call = NULL))
   }
@@ -389,20 +454,22 @@ mixture_regression <- function(formula, data, n_classes,
       "`n_group_classes = %d` needs groups to classify; pass `id`."),
       n_group_classes))
   }
-  if (n_group_classes > 1L && identical(class_level, "group")) {
+  if (n_group_classes > 1L && identical(class_level, "group") && is.null(cluster)) {
     bad_argument(paste(
       "Group classes shift the class shares of rows within a group; with",
       "`class_level = \"group\"` a group already has a single class. Use",
       "`class_level = \"observation\"` for the two-level model."))
   }
-  if (!identical(variance, "varying") && !identical(family, "gaussian")) {
-    bad_argument("`variance` applies to the gaussian family only.")
+  if (!identical(variance, "varying") &&
+      !family %in% c("gaussian", "negative_binomial")) {
+    bad_argument(paste("`variance` applies to the gaussian and negative_binomial",
+                       "families only."))
   }
   if (!is.null(id) && !id %in% names(data)) {
     bad_argument(sprintf("`id` names column `%s`, which `data` does not have.",
                          id))
   }
-  if (!identical(nesting, "two-level") &&
+  if (!identical(nesting, "two-level") && is.null(cluster) &&
       length(all.vars(group_membership)) > 0L) {
     bad_argument(paste("`group_membership` applies to the two-level model",
                        "only (`id` with `n_group_classes >= 2`)."))
@@ -413,7 +480,7 @@ mixture_regression <- function(formula, data, n_classes,
 
   used <- unique(c(all.vars(formula), all.vars(common %||% ~1),
                    all.vars(membership), all.vars(group_membership),
-                   all.vars(random %||% ~1), id))
+                   all.vars(random %||% ~1), id, cluster))
   absent <- setdiff(used, names(data))
   if (length(absent) > 0L) {
     stop(errorCondition(sprintf("`data` has no column%s %s.",
@@ -445,6 +512,12 @@ mixture_regression <- function(formula, data, n_classes,
   full_design <- stats::model.matrix(model_terms, frame)
   offset <- stats::model.offset(frame) %||% rep(0, n)
   response <- .mixture_response(stats::model.response(frame), family)
+  ordinal <- identical(family, "ordinal")
+  if (ordinal && !isTRUE(attr(model_terms, "intercept") == 1L)) {
+    bad_argument(paste("An ordinal regression's thresholds take the intercept's",
+                       "place, so `formula` must keep its intercept (no `- 1`",
+                       "or `0 +`)."))
+  }
 
   common_names <- character()
   if (!is.null(common)) {
@@ -462,8 +535,11 @@ mixture_regression <- function(formula, data, n_classes,
       bad_argument("The intercept cannot be shared through `common`.")
     }
   }
-  varying_names <- setdiff(colnames(full_design), common_names)
-  if (length(varying_names) == 0L) {
+  # The thresholds stand in for an ordinal regression's intercept, and they
+  # always vary across classes.
+  varying_names <- setdiff(colnames(full_design),
+                           c(common_names, if (ordinal) "(Intercept)"))
+  if (length(varying_names) == 0L && !ordinal) {
     bad_argument("At least one term must vary across classes.")
   }
   x <- full_design[, varying_names, drop = FALSE]
@@ -500,6 +576,10 @@ mixture_regression <- function(formula, data, n_classes,
       "`cbind(successes, failures)`."),
       class = "latents_not_identified", call = NULL))
   }
+  if (ordinal) {
+    .ordinal_check_identified(length(response$levels), n_classes, nesting,
+                              length(varying_names) + length(common_names))
+  }
   units <- switch(nesting, observation = n, n_groups)
   if (units <= n_classes) {
     stop(errorCondition(sprintf(paste(
@@ -514,7 +594,10 @@ mixture_regression <- function(formula, data, n_classes,
   }
 
   y_variance <- if (identical(family, "gaussian")) stats::var(response$y) else 1
-  list(
+  clusters <- if (is.null(cluster)) NULL else
+    .growth_cluster_spec(data[[cluster]], group_index, row_membership,
+                         group_membership_design$matrix, n_group_classes)
+  c(list(
     family = family, nesting = nesting, variance = variance,
     n = n, n_classes = n_classes,
     n_group_classes = if (identical(nesting, "two-level")) n_group_classes else 1L,
@@ -522,7 +605,9 @@ mixture_regression <- function(formula, data, n_classes,
     log_normalizer = switch(family,
       gaussian = rep(0, n),
       binomial = lchoose(response$trials, response$y),
-      poisson = -lgamma(response$y + 1)),
+      poisson = ,
+      negative_binomial = -lgamma(response$y + 1),
+      ordinal = rep(0, n)),
     x = x, z = z, offset = as.numeric(offset),
     w = w, v = v,
     intercept_only = ncol(w) == 1L && identical(colnames(w), "(Intercept)"),
@@ -541,7 +626,12 @@ mixture_regression <- function(formula, data, n_classes,
       deparse1(formula[[2L]]),
     random = random,
     random_design = if (is.null(random)) NULL else
-      stats::model.matrix(random, data = data))
+      stats::model.matrix(random, data = data),
+    cluster = cluster), clusters,
+    if (ordinal) list(n_categories = length(response$levels),
+                      category_levels = response$levels,
+                      category_values = response$values,
+                      category_kind = response$kind))
 }
 
 #' Retain the membership design's coding for prediction
@@ -558,9 +648,12 @@ mixture_regression <- function(formula, data, n_classes,
 #' Resolve the outcome to counts and trials
 #' @param response The model response (vector, factor or two-column matrix).
 #' @param family Family name.
-#' @return A list of numeric `y` and `trials`.
+#' @param levels For the ordinal family on new data: the fitted categories.
+#' @return A list of numeric `y` and `trials` (and, for the ordinal family,
+#'   the categories; see `.ordinal_response()`).
 #' @noRd
-.mixture_response <- function(response, family) {
+.mixture_response <- function(response, family, levels = NULL) {
+  if (identical(family, "ordinal")) return(.ordinal_response(response, levels))
   bad_data <- function(message) {
     stop(errorCondition(message, class = "latents_bad_data", call = NULL))
   }
@@ -593,8 +686,8 @@ mixture_regression <- function(formula, data, n_classes,
     bad_data(sprintf("The %s family needs a numeric outcome.", family))
   }
   y <- as.numeric(response)
-  if (identical(family, "poisson") && (any(y < 0) || !whole(y))) {
-    bad_data("A poisson outcome must be non-negative whole numbers.")
+  if (family %in% c("poisson", "negative_binomial") && (any(y < 0) || !whole(y))) {
+    bad_data(sprintf("A %s outcome must be non-negative whole numbers.", family))
   }
   list(y = y, trials = rep(1, length(y)))
 }

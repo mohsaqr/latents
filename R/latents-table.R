@@ -53,6 +53,11 @@
 #' @noRd
 .latents_label <- function(values) {
   values <- as.character(values)
+  # A class logit's intercept within one group class.
+  values <- sub("^\\(Intercept\\):group_class_([0-9]+)$", "Intercept, group class \\1",
+                values)
+  # An ordinal regression's threshold between two categories, "lower|upper".
+  values <- sub("^threshold:(.*[|].*)$", "Threshold \\1", values)
   values <- sub("^class_([0-9]+)$", "Class \\1", values)
   values <- sub("^group_class_([0-9]+)$", "Group class \\1", values)
   values <- sub("^profile_([0-9]+)$", "Profile \\1", values)

@@ -180,14 +180,15 @@
   })
   log_density <- vapply(terms, `[[`, numeric(length(stats$n)), "log_density") |>
     matrix(length(stats$n), spec$n_classes)
-  log_prior <- .mixture_log_softmax(spec$w, params$gamma)
-  joint <- log_density + log_prior
-  person_log_likelihood <- .mixture_row_lse(joint)
-  posterior <- exp(joint - person_log_likelihood)
-  unit_weights <- spec$sampling_weights %||% rep(1, length(stats$n))
-  list(log_likelihood = sum(unit_weights * person_log_likelihood),
-       person_log_likelihood = person_log_likelihood,
-       tau = posterior * unit_weights, posterior = posterior,
+  structure <- .growth_structure(spec)
+  persons <- .mixture_structure_expectation(structure, params, log_density)
+  weighted <- if (is.null(structure$sampling_weights)) persons else
+    .mixture_weigh(structure, persons)
+  # `structure` keeps the (weighted) structure E-step the membership M-step
+  # and scores read: posteriors joint with each group class for two levels.
+  list(log_likelihood = weighted$log_likelihood,
+       unit_log_likelihood = persons$unit_log_likelihood,
+       tau = weighted$tau, posterior = persons$tau, structure = weighted,
        log_density = log_density,
        means = lapply(terms, `[[`, "mean"),
        covariances = lapply(terms, `[[`, "covariance"))
@@ -307,7 +308,45 @@
     diag(covariance) <- pmax(diag(covariance), spec$min_variance)
     covariance
   })
-  .mixture_update_mixing(spec, params, list(group_tau = tau, tau = tau))
+  .mixture_update_mixing(.growth_structure(spec), params, expectation$structure)
+}
+
+#' The latent structure of a growth mixture: classes over persons
+#'
+#' Each person's random effects are integrated out of their density, so the
+#' persons are the units the classes belong to. Without clusters every person
+#' has their own class, with membership logits of person covariates -- the
+#' `"observation"` structure with persons for rows. With `cluster`, persons
+#' are nested in clusters (students in schools) and a group class of the
+#' cluster shifts how probable each trajectory class is -- the `"two-level"`
+#' structure, whose independent units are the clusters: the multilevel growth
+#' mixture model (Asparouhov and Muthen 2008; Vermunt 2003).
+#'
+#' @param spec The growth specification.
+#' @return A structure list (see kernel-structures.R).
+#' @noRd
+.growth_structure <- function(spec) {
+  if (is.null(spec$cluster)) {
+    return(list(nesting = "observation", n_classes = spec$n_classes, w = spec$w,
+                intercept_only = spec$intercept_only,
+                sampling_weights = spec$sampling_weights,
+                row_weights = spec$sampling_weights))
+  }
+  list(nesting = "two-level", n_classes = spec$n_classes, n = spec$n_groups,
+       w = spec$cluster_w, n_group_classes = spec$n_cluster_classes,
+       v = spec$cluster_v, group_intercept_only = spec$cluster_intercept_only,
+       group_index = spec$cluster_index, n_groups = spec$n_clusters)
+}
+
+#' Names of a structure's free membership coefficients
+#' @noRd
+.growth_structure_names <- function(structure) {
+  k <- structure$n_classes
+  zero <- if (identical(structure$nesting, "two-level")) {
+    list(delta = matrix(0, ncol(structure$v), structure$n_group_classes),
+         class_logits = matrix(0, structure$n_group_classes + ncol(structure$w), k))
+  } else list(gamma = matrix(0, ncol(structure$w), k))
+  names(.mixture_structure_pack(structure, zero))
 }
 
 #' EM for the growth mixture model from one start
@@ -315,30 +354,16 @@
 #'   `history` and `degenerate`.
 #' @noRd
 .growth_em <- function(spec, stats, params, max_iter, tol) {
-  expectation <- .growth_expectation(spec, stats, params)
-  history <- expectation$log_likelihood
-  converged <- FALSE
-  iteration <- 0L
-  # A fixed-point iteration: every step needs the previous posteriors.
-  while (iteration < max_iter && !converged) {
-    params <- .growth_maximization(spec, stats, params, expectation)
-    updated <- .growth_expectation(spec, stats, params)
-    if (!is.finite(updated$log_likelihood)) break
-    improvement <- updated$log_likelihood - expectation$log_likelihood
-    if (improvement < -1e-7 * (1 + abs(expectation$log_likelihood))) {
-      stop(errorCondition(sprintf(paste(
-        "EM likelihood decreased by %.3g, beyond numerical roundoff. This is a",
-        "defect; please report it with the call that produced it."),
-        -improvement), class = "latents_em_decrease", call = NULL))
-    }
-    converged <- abs(improvement) <= tol * (1 + abs(expectation$log_likelihood))
-    iteration <- iteration + 1L
-    history <- c(history, updated$log_likelihood)
-    expectation <- updated
-  }
+  fit <- .latents_em(params, function(point) .growth_expectation(spec, stats, point),
+                     function(point, expectation) {
+                       .growth_maximization(spec, stats, point, expectation)
+                     },
+                     max_iter, tol, .mixture_em_settings())
+  params <- fit$state
+  expectation <- fit$expectation
   sizes <- colSums(expectation$posterior)
   degenerate <- any(sizes < ncol(spec$x) + 1) ||
     any(params$sigma2 <= spec$min_variance * (1 + 1e-8))
-  list(params = params, expectation = expectation, converged = converged,
-       iterations = iteration, history = history, degenerate = degenerate)
+  list(params = params, expectation = expectation, converged = fit$converged,
+       iterations = fit$iterations, history = fit$history, degenerate = degenerate)
 }

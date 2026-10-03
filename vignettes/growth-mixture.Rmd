@@ -21,8 +21,12 @@ has_ggplot <- requireNamespace("ggplot2", quietly = TRUE)
 When the same people are measured repeatedly, a single average trajectory
 often hides several kinds of change: some improve, some hold steady, some
 decline. A **growth model with classes** finds those kinds from the data. This
-vignette shows the two models `mixture_regression()` offers for it, how to
-choose between them, and how to read the results.
+vignette is about the growth mixture model, which lets people vary around
+their class trajectory, and its multilevel form for people nested in
+clusters; it compares it with latent class growth analysis, the model
+without that variation, which has its own vignette,
+`vignette("trajectory-classes")` (including pass/fail, count and ordered
+outcomes).
 
 ## Two models
 
@@ -201,6 +205,62 @@ How confidently each student is classified, one bar per student:
 plot(fit, what = "classification")
 ```
 
+## Students in schools
+
+When the persons are nested in clusters -- students in schools, patients in
+clinics -- the clusters may differ in which trajectories their persons
+follow. The multilevel growth mixture model (Asparouhov and Muthén 2008;
+Vermunt 2003) gives every cluster a group class, and the group class shifts
+how probable each trajectory class is for its persons. `cluster` names the
+clusters and `n_group_classes` their number of classes; `group_membership`
+names cluster-level covariates of the group class. The `growth_schools` data
+have 600 students in 40 schools of two (simulated, hidden) types, in which
+most students improve or few do, and a school support programme:
+
+```{r schools}
+schools <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
+                              id = "student", class_level = "group",
+                              random = "wave", random_covariance = "equal",
+                              cluster = "school", n_group_classes = 2,
+                              group_membership = "programme",
+                              n_starts = 4, seed = 1)
+schools
+```
+
+The schools are the independent units: the likelihood, the standard errors
+and the BIC count schools. The group classes' composition, the schools'
+classification and the membership logits (the programme makes a school less
+likely to be in the second group class):
+
+The trajectory views read the same as for one level, and the classification
+view shows how confidently each student is classified:
+
+```{r schools-plots, eval = has_ggplot}
+plot(schools)
+plot(schools, what = "coefficients")
+```
+
+```{r schools-classification, eval = has_ggplot, fig.height = 4.2}
+plot(schools, what = "classification")
+```
+
+```{r schools-tables}
+get_results(schools, "group_classes")
+head(get_results(schools, "clusters"))
+get_results(schools, "membership")
+```
+
+The number of group classes is compared like the number of classes, from one
+(the single-level model with schools as the units) upward:
+
+```{r schools-enumerate}
+enumerate_regressions(score ~ wave, growth_schools, n_classes = 2,
+                      n_group_classes = 1:3, id = "student",
+                      class_level = "group", random = "wave",
+                      random_covariance = "equal", cluster = "school",
+                      n_starts = 3, seed = 1)
+```
+
 ## Choices and warnings
 
 - **Random effects.** `random = "intercept"` lets students differ in level
@@ -221,13 +281,20 @@ plot(fit, what = "classification")
 ## How this was checked
 
 The model's likelihood equals an independently written dense-matrix
-likelihood, and the analytic scores equal numerical derivatives. Against
+likelihood, and the analytic scores equal numerical derivatives; for the
+multilevel model too, whose likelihood is checked against a dense sum over
+group classes per school, which reduces to the single-level model when the
+group classes coincide. Against
 `lcmm::hlme()` (Proust-Lima, Philipps and Liquet 2017), on configurations with
 one to three classes, shared, proportional and diagonal covariances and
 membership covariates, the likelihoods agree at `hlme`'s own estimates and
 `mixture_regression()` reaches at least `hlme`'s maximum.
 
 ## References
+
+Asparouhov, T., & Muthén, B. (2008). Multilevel mixture models. In G. R.
+Hancock & K. M. Samuelsen (Eds.), *Advances in latent variable mixture
+models* (pp. 27--51). Information Age.
 
 Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
 modeling with continuous distal outcomes. *Structural Equation Modeling*, 23,
@@ -257,6 +324,9 @@ mixed models using latent classes and latent processes: The R package lcmm.
 
 Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
 three-step approaches. *Political Analysis*, 18, 450--469.
+
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213--239.
 
 Verbeke, G., & Lesaffre, E. (1996). A linear mixed-effects model with
 heterogeneity in the random-effects population. *Journal of the American

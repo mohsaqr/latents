@@ -551,7 +551,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     cross <- .multilpa_cross_product(scores)
     free_covariance <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(cross)
-    } else free_covariance %*% cross %*% free_covariance
+    } else .inference_sandwich(free_covariance, cross)
   }
   covariance <- matrix(0, length(theta), length(theta))
   covariance[free, free] <- free_covariance
@@ -637,7 +637,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   theta <- .multilpa_cov_encode(object)
   jacobian <- .multilpa_cov_natural_jacobian(object, theta,
                                              .multilpa_cov_labels(object))
-  natural <- jacobian %*% covariance %*% t(jacobian)
+  natural <- .inference_delta_covariance(jacobian, covariance)
   natural_names <- .multilpa_cov_parameter_names(object)
   dimnames(natural) <- list(natural_names, natural_names)
   natural
@@ -681,7 +681,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   ## implies, to the natural units a reader can compare with the data.
   estimate <- .multilpa_cov_natural_estimate(object, theta, labels)
   jacobian <- .multilpa_cov_natural_jacobian(object, theta, labels)
-  errors <- sqrt(pmax(diag(jacobian %*% covariance %*% t(jacobian)), 0))
+  errors <- .inference_delta_se(jacobian, covariance, "quadratic")
   is_variance <- labels$parameter == "variance"
   is_covariance <- labels$parameter == "covariance"
   ## A response probability or a Poisson mean against zero is no hypothesis
@@ -689,7 +689,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   ## no test, and so does this one.
   is_response <- labels$parameter %in% c("response", "count_mean", "count_dispersion")
 
-  quantile <- stats::qnorm(1 - (1 - level) / 2)
+  quantile <- .inference_critical(level, "one_minus")
   statistic <- estimate / errors
   result <- data.frame(
     labels, estimate = estimate, standard_error = errors,
@@ -875,11 +875,11 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   invisible(lapply(blocks, function(block) {
     n_categories <- ncol(block)
     invisible(lapply(seq_len(nrow(block)), function(profile) {
-      probabilities <- block[profile, ]
       free <- seq_len(n_categories - 1L)
-      derivative <- diag(probabilities, n_categories)[, free, drop = FALSE] -
-        outer(probabilities, probabilities[free])
-      jacobian[row_at + seq_len(n_categories), column_at + free] <<- derivative
+      ## Spelled before as diag(p)[, free] - outer(p, p[free]); each entry is
+      ## the same single product p_i p_j, so the numbers are identical.
+      jacobian[row_at + seq_len(n_categories), column_at + free] <<-
+        .inference_simplex_jacobian(block[profile, ], "last")
       row_at <<- row_at + n_categories
       column_at <<- column_at + length(free)
     }))

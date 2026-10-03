@@ -3,7 +3,9 @@
 
 #' One simulated outcome vector from a growth mixture fit
 #'
-#' Each person's class is drawn from their membership probabilities, their
+#' Each person's class is drawn from their membership probabilities (in a
+#' multilevel growth mixture, given their cluster's group class, drawn first),
+#' their
 #' random effects from that class's covariance, and their outcomes around
 #' the class trajectory plus random effects with the class's residual
 #' variance, on the fitted design (persons, times and covariates kept).
@@ -13,7 +15,24 @@
 .growth_draw <- function(object) {
   spec <- object$spec
   params <- object$params
-  prior <- exp(.mixture_log_softmax(spec$w, params$gamma))
+  structure <- .growth_structure(spec)
+  prior <- if (identical(structure$nesting, "observation")) {
+    exp(.mixture_log_softmax(spec$w, params$gamma))
+  } else {
+    # Each cluster's group class first, then each person's class given it.
+    group_prior <- exp(.mixture_log_softmax(structure$v, params$delta))
+    group_class <- vapply(seq_len(structure$n_groups), function(j) {
+      sample.int(structure$n_group_classes, 1L, prob = group_prior[j, ])
+    }, integer(1))
+    by_group_class <- lapply(seq_len(structure$n_group_classes), function(h) {
+      exp(.mixture_log_softmax(.mixture_two_level_design(structure, h),
+                               params$class_logits))
+    })
+    person_group_class <- group_class[structure$group_index]
+    Reduce(`+`, lapply(seq_len(structure$n_group_classes), function(h) {
+      by_group_class[[h]] * (person_group_class == h)
+    }))
+  }
   n_persons <- nrow(prior)
   classes <- vapply(seq_len(n_persons), function(i) {
     sample.int(spec$n_classes, 1L, prob = prior[i, ])
