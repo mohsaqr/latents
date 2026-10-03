@@ -1,5 +1,10 @@
 # Changelog
 
+## latents 0.9.14
+
+- Declares `MASS` and `withr`, used by the tests, in Suggests (the
+  0.9.13 check warned about them as undeclared).
+
 ## latents 0.9.13
 
 ### One engine
