@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
@@ -53,6 +54,37 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.13" id="latents-0913">latents 0.9.13<a class="anchor" aria-label="anchor" href="#latents-0913"></a></h2>
+<div class="section level3">
+<h3 id="one-engine-0-9-13">One engine<a class="anchor" aria-label="anchor" href="#one-engine-0-9-13"></a></h3>
+<ul><li>Every estimator now runs on one shared kernel (see <code>validation/ENGINE_DESIGN.md</code>): one EM driver (with SQUAREM for the profile models), one start runner, one quasi-Newton finish, one measurement block (Gaussian, categorical, ordinal and count indicators) shared by the profile, covariate, cross-level and both transition engines, one forward-backward pass for both transition engines, shared latent structures for the regression and growth models, and shared inference, alignment and simulation services. Results are unchanged: 251 recorded fits of every engine and option reproduce bit for bit (<code>equivalence/engine-golden/</code>), except where a defect below was fixed.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-models-0-9-13">New models<a class="anchor" aria-label="anchor" href="#new-models-0-9-13"></a></h3>
+<ul><li>Multilevel growth mixture models: <code>mixture_regression(cluster = )</code> nests the persons (<code>id</code>) in clusters (schools, clinics) with <code>n_group_classes</code> group classes of clusters that shift how probable each trajectory class is, and <code>group_membership</code> covariates of the group class. The clusters are the independent units of the likelihood, standard errors and BIC. New tables <code>"group_classes"</code> and <code>"clusters"</code>; <code><a href="../reference/enumerate_regressions.html">enumerate_regressions()</a></code> compares the number of group classes; <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code> draws the two levels. New dataset <code>growth_schools</code>; the growth vignette has a section on it.</li>
+<li>Negative-binomial regression mixtures: <code>mixture_regression(family = "negative_binomial")</code>, NB2 with a dispersion per class or shared (<code>variance = "equal"</code>). One class reproduces <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code>. A dispersion at the Poisson limit warns (<code>latents_boundary</code>) and the other standard errors are conditional on it.</li>
+<li>Ordinal regression mixtures: <code>mixture_regression(family = "ordinal")</code>, a proportional-odds (cumulative logit) regression within each class with class-specific ordered thresholds in place of the intercept. The outcome is an ordered factor, a factor or whole-number categories. Thresholds are rows <code>"threshold:&lt;lower&gt;|&lt;upper&gt;"</code> of the coefficient table; class means are expected category scores; <code>predict(type = "probabilities")</code> gives the category probabilities and <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code> draws categories in the outcome’s own type. One class reproduces <code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code>. Mixtures that one outcome per class assignment cannot identify (two categories, or no predictors) are refused with <code>latents_not_identified</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-9-13">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-9-13"></a></h3>
+<ul><li>New vignette “Latent class growth analysis: classes of trajectories” (<code><a href="../articles/trajectory-classes.html">vignette("trajectory-classes")</a></code>): trajectory classes without random effects, every plot view, curved trajectories, pass/fail and ordered-band trajectories, distal outcomes, and when to prefer the growth mixture model. The growth mixture vignette now focuses on random effects and the multilevel model, with its plots.</li>
+<li>Coefficient forest plots of trajectory fits label every estimate with the same number of decimals per panel (two, or three for small values).</li>
+<li>The recovery table of a regression mixture prints in the report layout.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-9-13">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-9-13"></a></h3>
+<ul><li>Growth mixture models gain a start from the persons’ own least-squares trajectories. Every previous start came from the model without random effects, which can split persons by their level; the growth fit then stopped at a lower maximum (by 9 to 11 log-likelihood units on test data where classes differ in slope).</li>
+<li>A fit with a noise component: <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and <code>get_results(x, "all")</code> no longer fail; <code>"classification_errors"</code> and <code>"bch_weights"</code> (which were wrong for noise units) refuse with <code>latents_unsupported_noise</code>. <code><a href="../reference/sensitivity.html">sensitivity()</a></code> no longer reports <code>NA</code> agreement for noise fits.</li>
+<li>
+<code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> of a general <code><a href="../reference/lta.html">lta()</a></code> fit now uses the caller’s <code>step</code> in its table, not only in the attached covariance.</li>
+<li>
+<code><a href="../reference/get_tna.html">get_tna()</a></code> and <code><a href="../reference/get_group_tna.html">get_group_tna()</a></code> on a general <code><a href="../reference/lta.html">lta()</a></code> fit refuse with <code>latents_unsupported_tna</code> instead of a bare “no applicable method”.</li>
+<li>An additive-family information matrix that is negative definite is refused with <code>latents_singular_information</code> instead of an unclassed Cholesky error.</li>
+<li>A group covariate that varies within a group, and all starts failing in the covariate and homogeneous transition engines, now raise classed conditions (<code>latents_bad_data</code>, <code>latents_all_starts_failed</code>).</li>
+<li>Two-level regression summaries label a class logit’s intercept within a group class “Intercept, group class 1” rather than “Intercept x group_class_1”.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.12" id="latents-0912">latents 0.9.12<a class="anchor" aria-label="anchor" href="#latents-0912"></a></h2>
 <div class="section level3">

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
@@ -64,7 +65,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
 <span>  newdata <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"response"</span>, <span class="st">"class_response"</span>, <span class="st">"posterior"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"response"</span>, <span class="st">"class_response"</span>, <span class="st">"posterior"</span>, <span class="st">"probabilities"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -87,7 +88,10 @@ predictors (and the membership covariates and <code>id</code> the model uses).</
 their prior probabilities (the covariates, but not the outcome, inform
 them). <code>"class_response"</code>: the mean outcome under every class, one row
 per row and class. <code>"posterior"</code>: the posterior class probabilities
-given the outcome, which <code>newdata</code> must then contain.</p></dd>
+given the outcome, which <code>newdata</code> must then contain.
+<code>"probabilities"</code> (ordinal family only): the probability of every
+category under every class. For the ordinal family the "mean outcome" is
+the expected category score, the categories scored 1 to C in order.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -99,7 +103,10 @@ given the outcome, which <code>newdata</code> must then contain.</p></dd>
     <p>A base <code>data.frame</code>. For <code>"response"</code>: <code>row</code> and <code>fitted</code>. For
 <code>"class_response"</code>: <code>row</code>, <code>class</code>, <code>prior</code> and <code>fitted</code>, one row per
 data row and class. For <code>"posterior"</code>: the same columns as
-<code>get_results(fit, "assignments")</code>.</p>
+<code>get_results(fit, "assignments")</code>. For <code>"probabilities"</code>: <code>row</code>,
+<code>class</code>, <code>category</code>, <code>prior</code> and <code>probability</code>, one row per data row,
+class and category. Raises <code>latents_bad_argument</code> for
+<code>"probabilities"</code> with another family.</p>
     </div>
 
     <div class="section level2">

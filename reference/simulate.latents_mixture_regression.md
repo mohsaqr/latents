@@ -35,7 +35,9 @@ simulate(object, nsim = 1, seed = NULL, ...)
 
 A base `data.frame` with one row per fitted row and one column per
 simulation, `sim_1`, `sim_2`, ...; for a binomial fit with more than one
-trial the columns hold success counts.
+trial the columns hold success counts, and for an ordinal fit the fitted
+categories in the outcome's own type (a factor with the fitted levels,
+or the category numbers).
 
 ## Examples
 

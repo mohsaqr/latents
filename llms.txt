@@ -1476,6 +1476,8 @@ Latent transitions handed to the tna package.
   : Study hours and quiz scores under two study strategies
 - [`growth_scores`](https://pak.dynasite.org/latents/reference/growth_scores.md)
   : Achievement growth of students with three kinds of trajectory
+- [`growth_schools`](https://pak.dynasite.org/latents/reference/growth_schools.md)
+  : Reading growth of students nested in schools
 - [`srl`](https://pak.dynasite.org/latents/reference/srl.md) :
   Self-regulated learning scores simulated by a large language model
 
@@ -1695,6 +1697,8 @@ Standard generics for fitted models, enumeration grids and summaries.
   analysis](https://pak.dynasite.org/latents/articles/lta.md):
 - [Mixture
   regression](https://pak.dynasite.org/latents/articles/mixture-regression.md):
+- [Latent class growth analysis: classes of
+  trajectories](https://pak.dynasite.org/latents/articles/trajectory-classes.md):
 - [Growth mixture models: classes of
   trajectories](https://pak.dynasite.org/latents/articles/growth-mixture.md):
 

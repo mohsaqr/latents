@@ -14,7 +14,7 @@ mixture_regression(
   formula,
   data,
   n_classes,
-  family = c("gaussian", "binomial", "poisson"),
+  family = c("gaussian", "binomial", "poisson", "negative_binomial", "ordinal"),
   id = NULL,
   class_level = c("observation", "group"),
   n_group_classes = 1L,
@@ -33,7 +33,8 @@ mixture_regression(
   weights = NULL,
   random = NULL,
   random_covariance = c("varying", "equal", "proportional"),
-  random_diagonal = FALSE
+  random_diagonal = FALSE,
+  cluster = NULL
 )
 ```
 
@@ -54,7 +55,8 @@ mixture_regression(
 
 - family:
 
-  `"gaussian"`, `"binomial"` or `"poisson"`.
+  `"gaussian"`, `"binomial"`, `"poisson"`, `"negative_binomial"` or
+  `"ordinal"` (proportional-odds cumulative logit; see *Families*).
 
 - id:
 
@@ -92,8 +94,9 @@ mixture_regression(
 
 - variance:
 
-  `"varying"` (a residual standard deviation per class) or `"equal"`.
-  Gaussian family only.
+  `"varying"` (a residual standard deviation, or a negative-binomial
+  dispersion, per class) or `"equal"` (one shared). Gaussian and
+  negative-binomial families only.
 
 - n_starts:
 
@@ -167,6 +170,18 @@ mixture_regression(
   `TRUE` for uncorrelated random effects (a diagonal covariance, as
   `idiag = TRUE` in lcmm).
 
+- cluster:
+
+  `NULL`, or the name of a column grouping the persons (`id`) into
+  clusters, such as schools, for the multilevel growth mixture model
+  (with `random`): each cluster belongs to one of `n_group_classes`
+  group classes, which shifts how probable each trajectory class is for
+  its persons. The clusters are the independent units of the likelihood,
+  the standard errors and the BIC; with `n_group_classes = 1` the model
+  is the single-level growth mixture with clusters as those units,
+  comparable by BIC with more group classes. See the growth mixture
+  section.
+
 ## Value
 
 An object of class `latents_mixture_regression`, or
@@ -225,17 +240,55 @@ described on
 [`get_results.latents_growth_mixture()`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
 and
 [`plot.latents_growth_mixture()`](https://pak.dynasite.org/latents/reference/plot.latents_growth_mixture.md).
-Random effects need the gaussian family, `id`, `class_level = "group"`
-and one group class.
+Random effects need the gaussian family, `id` and
+`class_level = "group"`.
+
+With `cluster`, persons are nested in clusters (students in schools) and
+the multilevel growth mixture model is fitted: each cluster belongs to a
+group class h, and the trajectory-class logits of its persons have a
+group-class-specific intercept and shared covariate slopes, \$\$L =
+\prod_j \sum_h \omega_h \prod\_{i \in j} \sum_k \pi\_{k\|h} f_k(y_i)\$\$
+(Asparouhov and Muthen 2008; Vermunt 2003). `group_membership` names
+cluster-level covariates of the group class. The group classes are read
+with `get_results(fit, "group_classes")` and `"clusters"`.
 
 ## Families
 
 `"gaussian"` (identity link, a residual standard deviation per class, or
 one shared under `variance = "equal"`), `"binomial"` (logit link; the
 outcome is 0/1, logical, a two-level factor whose second level is the
-success, or `cbind(successes, failures)`) and `"poisson"` (log link;
+success, or `cbind(successes, failures)`), `"poisson"` (log link;
 [`offset()`](https://rdrr.io/r/stats/offset.html) terms in the formula
-are honoured).
+are honoured) and `"negative_binomial"` (log link, NB2: variance mu +
+alpha mu^2 with a dispersion alpha per class, or one shared under
+`variance = "equal"`, for overdispersed counts; a dispersion estimated
+at zero is the Poisson limit and raises `latents_boundary`).
+
+`"ordinal"` fits a cumulative-logit (proportional-odds) regression
+within each class (McCullagh 1980), \$\$P(Y \le c \mid x, k) =
+F(t\_{kc} - x'\beta_k), \quad c = 1, \ldots, C - 1,\$\$ with ordered
+thresholds \\t\_{k1} \< \ldots \< t\_{k,C-1}\\ per class in place of the
+intercept, and the parametrization of
+[`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html): a positive
+slope moves the class towards higher categories. The outcome is an
+ordered factor, a factor (its levels taken in order) or whole-number
+categories; the categories are those observed, at least two. `common`
+terms share their slopes across classes, and
+[`offset()`](https://rdrr.io/r/stats/offset.html) is honoured; the
+formula's intercept is replaced by the thresholds, so it must not be
+removed. The thresholds appear in the coefficient table as terms
+`"threshold:<lower>|<upper>"`, and `exp_estimate` of a slope is the
+cumulative odds ratio of a higher category. The class "mean" of an
+ordinal outcome (fitted values,
+[`predict()`](https://rdrr.io/r/stats/predict.html), trajectories) is
+the expected category score \\\sum_c c P(Y = c)\\, the categories scored
+1 to C in order; `predict(type = "probabilities")` gives the category
+probabilities. With one outcome per class assignment the classes are
+identified by how continuous predictors shift the category
+probabilities: a mixture with no predictors, or with two categories
+(then the logistic mixture of `"binomial"`), is refused with
+`latents_not_identified` unless `class_level = "group"` gives each class
+assignment several outcomes.
 
 A mixture of Bernoulli regressions with one trial per unit is not
 identified – any mixture of Bernoullis is again a Bernoulli – so a
@@ -249,14 +302,22 @@ request is refused otherwise.
 `latents_bad_data` for an outcome outside the family's support or a
 covariate that varies within a group where it may not;
 `latents_not_identified` for a binary outcome with one trial per class
-assignment; `latents_missing_data` for missing values under
-`missing = "error"`; `latents_rows_dropped` (warning) under
+assignment, or an ordinal mixture with one outcome per class assignment
+and two categories or no predictors; `latents_missing_data` for missing
+values under `missing = "error"`; `latents_rows_dropped` (warning) under
 `missing = "omit"`; `latents_no_valid_start` when every start
 degenerated; `latents_unconverged` (warning) when the selected start did
 not converge; `latents_degenerate_start` (warning) when some starts
 degenerated; `latents_separation` (warning) when a coefficient diverged.
 
 ## References
+
+Asparouhov, T., & Muthen, B. (2008). Multilevel mixture models. In G. R.
+Hancock & K. M. Samuelsen (Eds.), *Advances in latent variable mixture
+models* (pp. 27–51). Information Age.
+
+McCullagh, P. (1980). Regression models for ordinal data. *Journal of
+the Royal Statistical Society B*, 42, 109–142.
 
 Muthen, B., & Shedden, K. (1999). Finite mixture modeling with mixture
 outcomes using the EM algorithm. *Biometrics*, 55, 463–469.
@@ -362,4 +423,22 @@ get_results(by_student, "fit")
 #> Entropy         0.708
 #> Smallest class  47.0%
 #> Converged       yes
+
+# \donttest{
+# Students nested in schools, each school in one of two group classes:
+schools <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
+                              id = "student", class_level = "group",
+                              random = "wave", random_covariance = "equal",
+                              cluster = "school", n_group_classes = 2,
+                              n_starts = 2, seed = 1)
+get_results(schools, "group_classes")
+#> Group classes: trajectory classes within each
+#> 
+#> Group class    Class    Probability     SE  Share of clusters  Clusters
+#> -------------  -------  -----------  -----  -----------------  --------
+#> Group class 1  Class 1        0.842  0.024              0.544        22
+#> Group class 1  Class 2        0.158  0.024              0.544        22
+#> Group class 2  Class 1        0.233  0.030              0.456        18
+#> Group class 2  Class 2        0.767  0.030              0.456        18
+# }
 ```

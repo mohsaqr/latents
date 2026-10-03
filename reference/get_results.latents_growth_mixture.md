@@ -70,7 +70,16 @@ nobs(object, ...)
   `data` and `truth`: the modal classes cross-tabulated against a known
   classification that is constant within persons, with counts and shares
   of each assigned class), or `"all"` (a named list of every table but
-  `"recovery"`).
+  `"recovery"`). A multilevel growth mixture (`cluster`) adds
+  `"group_classes"` (one row per group class and class: the class
+  probabilities within the group class, their standard errors without
+  membership covariates, the group class's share of the clusters and its
+  assigned clusters) and `"clusters"` (one row per cluster: persons,
+  modal group class and posteriors); its `"membership"` table holds the
+  group-class logits (against group class 1) and the class logits with
+  one intercept per group class, `"assignments"` gains each person's
+  cluster, and `"fit"` counts clusters in `bic` (persons in
+  `bic_persons`).
 
 - level:
 

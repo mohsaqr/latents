@@ -10,8 +10,10 @@ regression, regression mixture (DeSarbo and Cron 1988; Wedel and DeSarbo
 1995).
 
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-fits it for continuous (`"gaussian"`), binary or binomial (`"binomial"`)
-and count (`"poisson"`) outcomes, at one level or two:
+fits it for continuous (`"gaussian"`), binary or binomial
+(`"binomial"`), count (`"poisson"`, and `"negative_binomial"` for
+overdispersed counts) and ordered (`"ordinal"`, cumulative logit)
+outcomes, at one level or two:
 
 | Question | Call |
 |----|----|
@@ -103,12 +105,12 @@ cross-tabulates the assigned classes against it:
 get_results(fit, "recovery", data = study_hours, truth = "strategy")
 #> Recovery of a known classification
 #> 
-#> assigned  strategy    n  share
-#> --------  --------  ---  -----
-#> class_1   deep      448   0.78
-#> class_2   deep       49   0.15
-#> class_1   surface   125   0.22
-#> class_2   surface   278   0.85
+#> Assigned  strategy  Rows  Share of assigned
+#> --------  --------  ----  -----------------
+#> Class 1   deep       448              0.782
+#> Class 2   deep        49              0.150
+#> Class 1   surface    125              0.218
+#> Class 2   surface    278              0.850
 ```
 
 ``` r
@@ -286,13 +288,13 @@ summary(two_level)
 #> 
 #> Class membership (log odds, 95% CI)
 #> 
-#> Model        Class          Term                       Estimate          95% CI      p  Odds ratio
-#> -----------  -------------  -------------------------  --------  --------------  -----  ----------
-#> group_class  Group class 2  Intercept                     -0.13  [-1.02,  0.77]   .783        0.88
-#> group_class  Group class 2  motivation                    -1.87  [-2.80, -0.93]  <.001        0.15
-#> class        Class 2        Intercept x group_class_1      1.34  [-0.52,  3.20]   .157        3.84
-#> class        Class 2        Intercept x group_class_2      4.25  [ 2.17,  6.33]  <.001       70.05
-#> class        Class 2        sleep                         -0.47  [-0.74, -0.20]  <.001        0.63
+#> Model        Class          Term                      Estimate          95% CI      p  Odds ratio
+#> -----------  -------------  ------------------------  --------  --------------  -----  ----------
+#> group_class  Group class 2  Intercept                    -0.13  [-1.02,  0.77]   .783        0.88
+#> group_class  Group class 2  motivation                   -1.87  [-2.80, -0.93]  <.001        0.15
+#> class        Class 2        Intercept, group class 1      1.34  [-0.52,  3.20]   .157        3.84
+#> class        Class 2        Intercept, group class 2      4.25  [ 2.17,  6.33]  <.001       70.05
+#> class        Class 2        sleep                        -0.47  [-0.74, -0.20]  <.001        0.63
 #> 
 #> Group classes
 #> 
@@ -315,12 +317,12 @@ get_results(two_level, "recovery", data = study_hours,
             truth = "student_type", by = "group_class")
 #> Recovery of a known classification
 #> 
-#> assigned       student_type   n  share
-#> -------------  ------------  --  -----
-#> group_class_1  steady        69  0.908
-#> group_class_2  steady         8  0.108
-#> group_class_1  erratic        7  0.092
-#> group_class_2  erratic       66  0.892
+#> Assigned       student_type  Groups  Share of assigned
+#> -------------  ------------  ------  -----------------
+#> Group class 1  steady            69              0.908
+#> Group class 2  steady             8              0.108
+#> Group class 1  erratic            7              0.092
+#> Group class 2  erratic           66              0.892
 ```
 
 ## Counts, shared effects and equal variances

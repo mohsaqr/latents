@@ -15,6 +15,9 @@ get_group_tna(x, ...)
 # S3 method for class 'multilpa_transitions'
 get_group_tna(x, label = "Group class", ...)
 
+# S3 method for class 'multilpa_lta'
+get_group_tna(x, ...)
+
 # S3 method for class 'multilpa'
 get_group_tna(x, label = "Group class", ...)
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
@@ -166,7 +167,11 @@ of them for <code>what = "all"</code>.</p>
 <code>statistic</code> (Wald z), <code>p_value</code>, <code>conf_low</code>, <code>conf_high</code>,
 <code>p_adjusted</code> (Benjamini-Hochberg across the non-intercept rows;
 <code>NA</code> for intercepts) and, for the binomial and Poisson families,
-<code>exp_estimate</code> (odds or rate ratio).</p></dd>
+<code>exp_estimate</code> (odds or rate ratio). For the ordinal family each
+class's thresholds lead its rows as terms <code>"threshold:&lt;lower&gt;|&lt;upper&gt;"</code>
+(delta-method errors; no <code>p_adjusted</code> or <code>exp_estimate</code>), and
+<code>exp_estimate</code> of a slope is the cumulative odds ratio of a higher
+category.</p></dd>
 
 <dt><code>classes</code></dt>
 <dd><p>One row per class: <code>share</code> (mean posterior), <code>count</code>
@@ -276,12 +281,12 @@ assigned class. Group-level under <code>class_level = "group"</code> or
 <span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"recovery"</span>, data <span class="op">=</span> <span class="va">study_hours</span>, truth <span class="op">=</span> <span class="st">"strategy"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Recovery of a known classification</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> assigned  strategy    n  share</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --------  --------  ---  -----</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> class_1   deep      448   0.78</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> class_2   deep       49   0.15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> class_1   surface   125   0.22</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> class_2   surface   278   0.85</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Assigned  strategy  Rows  Share of assigned</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> --------  --------  ----  -----------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 1   deep       448              0.782</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 2   deep        49              0.150</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 1   surface    125              0.218</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Class 2   surface    278              0.850</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

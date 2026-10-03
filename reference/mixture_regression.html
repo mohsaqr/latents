@@ -17,7 +17,7 @@ Cron 1988; Wedel and DeSarbo 1995)."><meta property="og:image" content="https://
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,7 @@ Cron 1988; Wedel and DeSarbo 1995)."><meta property="og:image" content="https://
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
@@ -79,7 +80,7 @@ Cron 1988; Wedel and DeSarbo 1995).</p>
 <span>  <span class="va">formula</span>,</span>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">n_classes</span>,</span>
-<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span>, <span class="st">"poisson"</span><span class="op">)</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span>, <span class="st">"poisson"</span>, <span class="st">"negative_binomial"</span>, <span class="st">"ordinal"</span><span class="op">)</span>,</span>
 <span>  id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  class_level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observation"</span>, <span class="st">"group"</span><span class="op">)</span>,</span>
 <span>  n_group_classes <span class="op">=</span> <span class="fl">1L</span>,</span>
@@ -98,7 +99,8 @@ Cron 1988; Wedel and DeSarbo 1995).</p>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  random <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  random_covariance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span>, <span class="st">"proportional"</span><span class="op">)</span>,</span>
-<span>  random_diagonal <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  random_diagonal <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  cluster <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -120,7 +122,9 @@ and <code><a href="https://rdrr.io/r/stats/offset.html" class="external-link">of
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
-<dd><p><code>"gaussian"</code>, <code>"binomial"</code> or <code>"poisson"</code>.</p></dd>
+<dd><p><code>"gaussian"</code>, <code>"binomial"</code>, <code>"poisson"</code>,
+<code>"negative_binomial"</code> or <code>"ordinal"</code> (proportional-odds cumulative logit;
+see <em>Families</em>).</p></dd>
 
 
 <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
@@ -158,8 +162,9 @@ constant within groups.</p></dd>
 
 
 <dt id="arg-variance">variance<a class="anchor" aria-label="anchor" href="#arg-variance"></a></dt>
-<dd><p><code>"varying"</code> (a residual standard deviation per class) or
-<code>"equal"</code>. Gaussian family only.</p></dd>
+<dd><p><code>"varying"</code> (a residual standard deviation, or a
+negative-binomial dispersion, per class) or <code>"equal"</code> (one shared).
+Gaussian and negative-binomial families only.</p></dd>
 
 
 <dt id="arg-n-starts">n_starts<a class="anchor" aria-label="anchor" href="#arg-n-starts"></a></dt>
@@ -233,6 +238,17 @@ times a class-specific scale, the last class's being one; <code>nwg = TRUE</code
 <dd><p><code>TRUE</code> for uncorrelated random effects (a diagonal
 covariance, as <code>idiag = TRUE</code> in lcmm).</p></dd>
 
+
+<dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
+<dd><p><code>NULL</code>, or the name of a column grouping the persons (<code>id</code>)
+into clusters, such as schools, for the multilevel growth mixture model
+(with <code>random</code>): each cluster belongs to one of <code>n_group_classes</code> group
+classes, which shifts how probable each trajectory class is for its
+persons. The clusters are the independent units of the likelihood, the
+standard errors and the BIC; with <code>n_group_classes = 1</code> the model is the
+single-level growth mixture with clusters as those units, comparable by
+BIC with more group classes. See the growth mixture section.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -283,7 +299,15 @@ data, finished by quasi-Newton with analytic scores. Such a fit has class
 <code>latents_growth_mixture</code>; its tables, plots and inference are described on
 <code><a href="get_results.latents_growth_mixture.html">get_results.latents_growth_mixture()</a></code> and
 <code><a href="plot.latents_growth_mixture.html">plot.latents_growth_mixture()</a></code>. Random effects need the gaussian family,
-<code>id</code>, <code>class_level = "group"</code> and one group class.</p>
+<code>id</code> and <code>class_level = "group"</code>.</p>
+<p>With <code>cluster</code>, persons are nested in clusters (students in schools) and
+the multilevel growth mixture model is fitted: each cluster belongs to a
+group class h, and the trajectory-class logits of its persons have a
+group-class-specific intercept and shared covariate slopes,
+$$L = \prod_j \sum_h \omega_h \prod_{i \in j} \sum_k \pi_{k|h} f_k(y_i)$$
+(Asparouhov and Muthen 2008; Vermunt 2003). <code>group_membership</code> names
+cluster-level covariates of the group class. The group classes are read
+with <code>get_results(fit, "group_classes")</code> and <code>"clusters"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="families">Families<a class="anchor" aria-label="anchor" href="#families"></a></h2>
@@ -292,8 +316,34 @@ data, finished by quasi-Newton with analytic scores. Such a fit has class
 <p><code>"gaussian"</code> (identity link, a residual standard deviation per class, or
 one shared under <code>variance = "equal"</code>), <code>"binomial"</code> (logit link; the
 outcome is 0/1, logical, a two-level factor whose second level is the
-success, or <code>cbind(successes, failures)</code>) and <code>"poisson"</code> (log link;
-<code><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset()</a></code> terms in the formula are honoured).</p>
+success, or <code>cbind(successes, failures)</code>), <code>"poisson"</code> (log link;
+<code><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset()</a></code> terms in the formula are honoured) and <code>"negative_binomial"</code>
+(log link, NB2: variance mu + alpha mu^2 with a dispersion alpha per class,
+or one shared under <code>variance = "equal"</code>, for overdispersed counts; a
+dispersion estimated at zero is the Poisson limit and raises
+<code>latents_boundary</code>).</p>
+<p><code>"ordinal"</code> fits a cumulative-logit (proportional-odds) regression within
+each class (McCullagh 1980),
+$$P(Y \le c \mid x, k) = F(t_{kc} - x'\beta_k), \quad c = 1, \ldots, C - 1,$$
+with ordered thresholds \(t_{k1} &lt; \ldots &lt; t_{k,C-1}\)
+per class in place of the intercept, and the parametrization of
+<code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code>: a positive slope moves the class towards higher
+categories. The outcome is an ordered factor, a factor (its levels taken
+in order) or whole-number categories; the categories are those observed,
+at least two. <code>common</code> terms share their slopes across classes, and
+<code><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset()</a></code> is honoured; the formula's intercept is replaced by the
+thresholds, so it must not be removed. The thresholds appear in the
+coefficient table as terms <code>"threshold:&lt;lower&gt;|&lt;upper&gt;"</code>, and
+<code>exp_estimate</code> of a slope is the cumulative odds ratio of a higher
+category. The class "mean" of an ordinal outcome (fitted values,
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>, trajectories) is the expected category score
+\(\sum_c c P(Y = c)\), the categories scored 1 to C in
+order; <code>predict(type = "probabilities")</code> gives the category probabilities.
+With one outcome per class assignment the classes are identified by how
+continuous predictors shift the category probabilities: a mixture with no
+predictors, or with two categories (then the logistic mixture of
+<code>"binomial"</code>), is refused with <code>latents_not_identified</code> unless
+<code>class_level = "group"</code> gives each class assignment several outcomes.</p>
 <p>A mixture of Bernoulli regressions with one trial per unit is not
 identified – any mixture of Bernoullis is again a Bernoulli – so a binary
 outcome requires <code>class_level = "group"</code> (several rows per class
@@ -308,7 +358,8 @@ request is refused otherwise.</p>
 <code>latents_bad_data</code> for an outcome outside the family's support or a
 covariate that varies within a group where it may not;
 <code>latents_not_identified</code> for a binary outcome with one trial per class
-assignment; <code>latents_missing_data</code> for missing values under
+assignment, or an ordinal mixture with one outcome per class assignment
+and two categories or no predictors; <code>latents_missing_data</code> for missing values under
 <code>missing = "error"</code>; <code>latents_rows_dropped</code> (warning) under
 <code>missing = "omit"</code>; <code>latents_no_valid_start</code> when every start
 degenerated; <code>latents_unconverged</code> (warning) when the selected start did
@@ -317,7 +368,12 @@ degenerated; <code>latents_separation</code> (warning) when a coefficient diverg
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Muthen, B., &amp; Shedden, K. (1999). Finite mixture modeling with mixture
+    <p>Asparouhov, T., &amp; Muthen, B. (2008). Multilevel mixture models. In G. R.
+Hancock &amp; K. M. Samuelsen (Eds.), <em>Advances in latent variable mixture
+models</em> (pp. 27–51). Information Age.</p>
+<p>McCullagh, P. (1980). Regression models for ordinal data. <em>Journal of the
+Royal Statistical Society B</em>, 42, 109–142.</p>
+<p>Muthen, B., &amp; Shedden, K. (1999). Finite mixture modeling with mixture
 outcomes using the EM algorithm. <em>Biometrics</em>, 55, 463–469.</p>
 <p>Nagin, D. S. (2005). <em>Group-based modeling of development</em>. Harvard
 University Press.</p>
@@ -410,6 +466,24 @@ and latent class regression in R. <em>Journal of Statistical Software</em>, 11(8
 <span class="r-out co"><span class="r-pr">#&gt;</span> Entropy         0.708</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Smallest class  47.0%</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Converged       yes</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># Students nested in schools, each school in one of two group classes:</span></span></span>
+<span class="r-in"><span><span class="va">schools</span> <span class="op">&lt;-</span> <span class="fu">mixture_regression</span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_schools</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>                              id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>                              random <span class="op">=</span> <span class="st">"wave"</span>, random_covariance <span class="op">=</span> <span class="st">"equal"</span>,</span></span>
+<span class="r-in"><span>                              cluster <span class="op">=</span> <span class="st">"school"</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>                              n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="get_results.html">get_results</a></span><span class="op">(</span><span class="va">schools</span>, <span class="st">"group_classes"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Group classes: trajectory classes within each</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Group class    Class    Probability     SE  Share of clusters  Clusters</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -------------  -------  -----------  -----  -----------------  --------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Group class 1  Class 1        0.842  0.024              0.544        22</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Group class 1  Class 2        0.158  0.024              0.544        22</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Group class 2  Class 1        0.233  0.030              0.456        18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Group class 2  Class 2        0.767  0.030              0.456        18</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

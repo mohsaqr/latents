@@ -111,6 +111,10 @@ for `what = "all"`.
   `p_value`, `conf_low`, `conf_high`, `p_adjusted` (Benjamini-Hochberg
   across the non-intercept rows; `NA` for intercepts) and, for the
   binomial and Poisson families, `exp_estimate` (odds or rate ratio).
+  For the ordinal family each class's thresholds lead its rows as terms
+  `"threshold:<lower>|<upper>"` (delta-method errors; no `p_adjusted` or
+  `exp_estimate`), and `exp_estimate` of a slope is the cumulative odds
+  ratio of a higher category.
 
 - `classes`:
 
@@ -225,10 +229,10 @@ get_results(fit, "coefficients", vcov_type = "robust")
 get_results(fit, "recovery", data = study_hours, truth = "strategy")
 #> Recovery of a known classification
 #> 
-#> assigned  strategy    n  share
-#> --------  --------  ---  -----
-#> class_1   deep      448   0.78
-#> class_2   deep       49   0.15
-#> class_1   surface   125   0.22
-#> class_2   surface   278   0.85
+#> Assigned  strategy  Rows  Share of assigned
+#> --------  --------  ----  -----------------
+#> Class 1   deep       448              0.782
+#> Class 2   deep        49              0.150
+#> Class 1   surface    125              0.218
+#> Class 2   surface    278              0.850
 ```

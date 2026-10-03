@@ -9,7 +9,7 @@ Predict from a mixture-of-regressions fit
 predict(
   object,
   newdata = NULL,
-  type = c("response", "class_response", "posterior"),
+  type = c("response", "class_response", "posterior", "probabilities"),
   ...
 )
 ```
@@ -33,6 +33,9 @@ predict(
   them). `"class_response"`: the mean outcome under every class, one row
   per row and class. `"posterior"`: the posterior class probabilities
   given the outcome, which `newdata` must then contain.
+  `"probabilities"` (ordinal family only): the probability of every
+  category under every class. For the ordinal family the "mean outcome"
+  is the expected category score, the categories scored 1 to C in order.
 
 - ...:
 
@@ -43,7 +46,10 @@ predict(
 A base `data.frame`. For `"response"`: `row` and `fitted`. For
 `"class_response"`: `row`, `class`, `prior` and `fitted`, one row per
 data row and class. For `"posterior"`: the same columns as
-`get_results(fit, "assignments")`.
+`get_results(fit, "assignments")`. For `"probabilities"`: `row`,
+`class`, `category`, `prior` and `probability`, one row per data row,
+class and category. Raises `latents_bad_argument` for `"probabilities"`
+with another family.
 
 ## Examples
 

@@ -3,9 +3,12 @@
 When the same people are measured repeatedly, a single average
 trajectory often hides several kinds of change: some improve, some hold
 steady, some decline. A **growth model with classes** finds those kinds
-from the data. This vignette shows the two models
-[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-offers for it, how to choose between them, and how to read the results.
+from the data. This vignette is about the growth mixture model, which
+lets people vary around their class trajectory, and its multilevel form
+for people nested in clusters; it compares it with latent class growth
+analysis, the model without that variation, which has its own vignette,
+[`vignette("trajectory-classes")`](https://pak.dynasite.org/latents/articles/trajectory-classes.md)
+(including pass/fail, count and ordered outcomes).
 
 ## Two models
 
@@ -301,6 +304,147 @@ plot(fit, what = "classification")
 
 ![](growth-mixture_files/figure-html/classification-1.png)
 
+## Students in schools
+
+When the persons are nested in clusters – students in schools, patients
+in clinics – the clusters may differ in which trajectories their persons
+follow. The multilevel growth mixture model (Asparouhov and Muthén 2008;
+Vermunt 2003) gives every cluster a group class, and the group class
+shifts how probable each trajectory class is for its persons. `cluster`
+names the clusters and `n_group_classes` their number of classes;
+`group_membership` names cluster-level covariates of the group class.
+The `growth_schools` data have 600 students in 40 schools of two
+(simulated, hidden) types, in which most students improve or few do, and
+a school support programme:
+
+``` r
+
+schools <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
+                              id = "student", class_level = "group",
+                              random = "wave", random_covariance = "equal",
+                              cluster = "school", n_group_classes = 2,
+                              group_membership = "programme",
+                              n_starts = 4, seed = 1)
+schools
+#> Multilevel growth mixture model
+#>   2 classes and 2 group classes; 40 clusters, 600 persons, 2780 observations
+#>   Random intercept + wave, covariance shared across classes; residual variance by class
+#>   Log likelihood -7019.85, BIC 14087.66, entropy 0.87, converged
+#> 
+#> Classes
+#> 
+#> Class    Share        95% CI  Persons  Avg. posterior  Residual SD
+#> -------  -----  ------------  -------  --------------  -----------
+#> Class 1   0.56  [0.48, 0.64]      338            0.97         2.01
+#> Class 2   0.44  [0.36, 0.52]      262            0.96         2.07
+#> 
+#> Group classes: trajectory classes within each
+#> 
+#> Group class    Class    Probability     SE  Share of clusters  Clusters
+#> -------------  -------  -----------  -----  -----------------  --------
+#> Group class 1  Class 1        0.851  0.024              0.528        21
+#> Group class 1  Class 2        0.149  0.024              0.528        21
+#> Group class 2  Class 1        0.245  0.029              0.472        19
+#> Group class 2  Class 2        0.755  0.029              0.472        19
+#> 
+#> Trajectory coefficients (95% CI)
+#> 
+#> Class    Term       Estimate          95% CI      p
+#> -------  ---------  --------  --------------  -----
+#> Class 1  Intercept     48.06  [47.68, 48.43]  <.001
+#> Class 1  wave           2.99  [ 2.89,  3.09]  <.001
+#> Class 2  Intercept     56.11  [55.67, 56.55]  <.001
+#> Class 2  wave           0.28  [ 0.16,  0.40]  <.001
+#> 
+#> More: get_results(x, "random"), plot(x), summary(x)
+```
+
+The schools are the independent units: the likelihood, the standard
+errors and the BIC count schools. The group classes’ composition, the
+schools’ classification and the membership logits (the programme makes a
+school less likely to be in the second group class):
+
+The trajectory views read the same as for one level, and the
+classification view shows how confidently each student is classified:
+
+``` r
+
+plot(schools)
+```
+
+![](growth-mixture_files/figure-html/schools-plots-1.png)
+
+``` r
+
+plot(schools, what = "coefficients")
+```
+
+![](growth-mixture_files/figure-html/schools-plots-2.png)
+
+``` r
+
+plot(schools, what = "classification")
+```
+
+![](growth-mixture_files/figure-html/schools-classification-1.png)
+
+``` r
+
+get_results(schools, "group_classes")
+#> Group classes: trajectory classes within each
+#> 
+#> Group class    Class    Probability     SE  Share of clusters  Clusters
+#> -------------  -------  -----------  -----  -----------------  --------
+#> Group class 1  Class 1        0.851  0.024              0.528        21
+#> Group class 1  Class 2        0.149  0.024              0.528        21
+#> Group class 2  Class 1        0.245  0.029              0.472        19
+#> Group class 2  Class 2        0.755  0.029              0.472        19
+head(get_results(schools, "clusters"))
+#> Cluster group classes
+#> 
+#> school  Persons  Group class    Probability
+#> ------  -------  -------------  -----------
+#> 1            15  Group class 2         1.00
+#> 2            15  Group class 2         1.00
+#> 3            15  Group class 2         1.00
+#> 4            15  Group class 2         1.00
+#> 5            15  Group class 1         1.00
+#> 6            15  Group class 2         1.00
+get_results(schools, "membership")
+#> Class membership (log odds against Class 1, 95% CI)
+#> 
+#> Class          Term                      Estimate            95% CI      p
+#> -------------  ------------------------  --------  ----------------  -----
+#> Group class 2  Intercept                   -0.099  [-0.917,  0.718]   .812
+#> Group class 2  programme                   -2.108  [-3.458, -0.758]   .002
+#> Class 2        Intercept, group class 1    -1.740  [-2.103, -1.377]  <.001
+#> Class 2        Intercept, group class 2     1.128  [ 0.817,  1.438]  <.001
+```
+
+The number of group classes is compared like the number of classes, from
+one (the single-level model with schools as the units) upward:
+
+``` r
+
+enumerate_regressions(score ~ wave, growth_schools, n_classes = 2,
+                      n_group_classes = 1:3, id = "student",
+                      class_level = "group", random = "wave",
+                      random_covariance = "equal", cluster = "school",
+                      n_starts = 3, seed = 1)
+#> Mixture regression class enumeration
+#> 
+#>  n_classes n_group_classes log_likelihood n_parameters   bic   icl entropy smallest_share
+#>          2               1          -7105           10 14246 14384  0.8345         0.4399
+#>          2               2          -7029           12 14102 14212  0.8699         0.4360
+#>          2               3          -7028           14 14109 14243  0.8707         0.4364
+#>  converged best_bic
+#>       TRUE    FALSE
+#>       TRUE     TRUE
+#>       TRUE    FALSE
+#> 
+#> One model: get_results(x, "model", n_classes = ).
+```
+
 ## Choices and warnings
 
 - **Random effects.** `random = "intercept"` lets students differ in
@@ -321,15 +465,21 @@ plot(fit, what = "classification")
 ## How this was checked
 
 The model’s likelihood equals an independently written dense-matrix
-likelihood, and the analytic scores equal numerical derivatives. Against
-`lcmm::hlme()` (Proust-Lima, Philipps and Liquet 2017), on
-configurations with one to three classes, shared, proportional and
-diagonal covariances and membership covariates, the likelihoods agree at
-`hlme`’s own estimates and
+likelihood, and the analytic scores equal numerical derivatives; for the
+multilevel model too, whose likelihood is checked against a dense sum
+over group classes per school, which reduces to the single-level model
+when the group classes coincide. Against `lcmm::hlme()` (Proust-Lima,
+Philipps and Liquet 2017), on configurations with one to three classes,
+shared, proportional and diagonal covariances and membership covariates,
+the likelihoods agree at `hlme`’s own estimates and
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
 reaches at least `hlme`’s maximum.
 
 ## References
+
+Asparouhov, T., & Muthén, B. (2008). Multilevel mixture models. In G. R.
+Hancock & K. M. Samuelsen (Eds.), *Advances in latent variable mixture
+models* (pp. 27–51). Information Age.
 
 Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
 modeling with continuous distal outcomes. *Structural Equation
@@ -360,6 +510,9 @@ package lcmm. *Journal of Statistical Software*, 78(2), 1–56.
 
 Vermunt, J. K. (2010). Latent class modeling with covariates: Two
 improved three-step approaches. *Political Analysis*, 18, 450–469.
+
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213–239.
 
 Verbeke, G., & Lesaffre, E. (1996). A linear mixed-effects model with
 heterogeneity in the random-effects population. *Journal of the American

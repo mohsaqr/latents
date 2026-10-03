@@ -13,6 +13,9 @@ get_tna(x, ...)
 # S3 method for class 'multilpa_transitions'
 get_tna(x, ...)
 
+# S3 method for class 'multilpa_lta'
+get_tna(x, ...)
+
 # S3 method for class 'multilpa'
 get_tna(x, ...)
 
@@ -53,6 +56,12 @@ expected outgoing moves in any class, its transition row has no
 count-based estimate; the network uses the fitted class rows averaged by
 class probability and warns that the row is unestimated. It never
 interprets absent moves as a certain self-transition.
+
+A general [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+fit – with occasion-varying or covariate-dependent transitions, a second
+order, movers and stayers, or ordinal, count or weighted data – has no
+single transition matrix, and is refused with `latents_unsupported_tna`;
+its transitions are in `get_results(x, "transitions")`.
 
 For a
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)

@@ -324,6 +324,18 @@ place of returning a number that would be wrong.
   before estimation and no distribution for them is available to
   simulate raw data under the null model.
 
+- `latents_unsupported_tna`:
+
+  [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md)
+  or
+  [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
+  was called on a general transition fit (a
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit with
+  occasion-varying or covariate-dependent transitions, a second order,
+  movers and stayers, or ordinal, count or weighted data), which has no
+  single transition matrix to hand over; its transitions are in
+  `get_results(x, "transitions")`.
+
 - `latents_no_plot`:
 
   `plot(x, what = "all")` was called on an object whose plot method

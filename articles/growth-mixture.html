@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,7 @@
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
+    <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
@@ -92,9 +93,12 @@
 <p>When the same people are measured repeatedly, a single average
 trajectory often hides several kinds of change: some improve, some hold
 steady, some decline. A <strong>growth model with classes</strong> finds
-those kinds from the data. This vignette shows the two models
-<code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> offers for it, how to choose between
-them, and how to read the results.</p>
+those kinds from the data. This vignette is about the growth mixture
+model, which lets people vary around their class trajectory, and its
+multilevel form for people nested in clusters; it compares it with
+latent class growth analysis, the model without that variation, which
+has its own vignette, <code><a href="../articles/trajectory-classes.html">vignette("trajectory-classes")</a></code>
+(including pass/fail, count and ordered outcomes).</p>
 <div class="section level2">
 <h2 id="two-models">Two models<a class="anchor" aria-label="anchor" href="#two-models"></a>
 </h2>
@@ -379,6 +383,126 @@ the model’s 95% ellipse:</p>
 <p><img src="growth-mixture_files/figure-html/classification-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
+<h2 id="students-in-schools">Students in schools<a class="anchor" aria-label="anchor" href="#students-in-schools"></a>
+</h2>
+<p>When the persons are nested in clusters – students in schools,
+patients in clinics – the clusters may differ in which trajectories
+their persons follow. The multilevel growth mixture model (Asparouhov
+and Muthén 2008; Vermunt 2003) gives every cluster a group class, and
+the group class shifts how probable each trajectory class is for its
+persons. <code>cluster</code> names the clusters and
+<code>n_group_classes</code> their number of classes;
+<code>group_membership</code> names cluster-level covariates of the
+group class. The <code>growth_schools</code> data have 600 students in
+40 schools of two (simulated, hidden) types, in which most students
+improve or few do, and a school support programme:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">schools</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_schools</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                              id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span>
+<span>                              random <span class="op">=</span> <span class="st">"wave"</span>, random_covariance <span class="op">=</span> <span class="st">"equal"</span>,</span>
+<span>                              cluster <span class="op">=</span> <span class="st">"school"</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                              group_membership <span class="op">=</span> <span class="st">"programme"</span>,</span>
+<span>                              n_starts <span class="op">=</span> <span class="fl">4</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">schools</span></span>
+<span><span class="co">#&gt; Multilevel growth mixture model</span></span>
+<span><span class="co">#&gt;   2 classes and 2 group classes; 40 clusters, 600 persons, 2780 observations</span></span>
+<span><span class="co">#&gt;   Random intercept + wave, covariance shared across classes; residual variance by class</span></span>
+<span><span class="co">#&gt;   Log likelihood -7019.85, BIC 14087.66, entropy 0.87, converged</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Classes</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Share        95% CI  Persons  Avg. posterior  Residual SD</span></span>
+<span><span class="co">#&gt; -------  -----  ------------  -------  --------------  -----------</span></span>
+<span><span class="co">#&gt; Class 1   0.56  [0.48, 0.64]      338            0.97         2.01</span></span>
+<span><span class="co">#&gt; Class 2   0.44  [0.36, 0.52]      262            0.96         2.07</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Group classes: trajectory classes within each</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Group class    Class    Probability     SE  Share of clusters  Clusters</span></span>
+<span><span class="co">#&gt; -------------  -------  -----------  -----  -----------------  --------</span></span>
+<span><span class="co">#&gt; Group class 1  Class 1        0.851  0.024              0.528        21</span></span>
+<span><span class="co">#&gt; Group class 1  Class 2        0.149  0.024              0.528        21</span></span>
+<span><span class="co">#&gt; Group class 2  Class 1        0.245  0.029              0.472        19</span></span>
+<span><span class="co">#&gt; Group class 2  Class 2        0.755  0.029              0.472        19</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Trajectory coefficients (95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class    Term       Estimate          95% CI      p</span></span>
+<span><span class="co">#&gt; -------  ---------  --------  --------------  -----</span></span>
+<span><span class="co">#&gt; Class 1  Intercept     48.06  [47.68, 48.43]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 1  wave           2.99  [ 2.89,  3.09]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  Intercept     56.11  [55.67, 56.55]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2  wave           0.28  [ 0.16,  0.40]  &lt;.001</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; More: get_results(x, "random"), plot(x), summary(x)</span></span></code></pre></div>
+<p>The schools are the independent units: the likelihood, the standard
+errors and the BIC count schools. The group classes’ composition, the
+schools’ classification and the membership logits (the programme makes a
+school less likely to be in the second group class):</p>
+<p>The trajectory views read the same as for one level, and the
+classification view shows how confidently each student is
+classified:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span><span class="op">)</span></span></code></pre></div>
+<p><img src="growth-mixture_files/figure-html/schools-plots-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span>, what <span class="op">=</span> <span class="st">"coefficients"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="growth-mixture_files/figure-html/schools-plots-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span>, what <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="growth-mixture_files/figure-html/schools-classification-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">schools</span>, <span class="st">"group_classes"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Group classes: trajectory classes within each</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Group class    Class    Probability     SE  Share of clusters  Clusters</span></span>
+<span><span class="co">#&gt; -------------  -------  -----------  -----  -----------------  --------</span></span>
+<span><span class="co">#&gt; Group class 1  Class 1        0.851  0.024              0.528        21</span></span>
+<span><span class="co">#&gt; Group class 1  Class 2        0.149  0.024              0.528        21</span></span>
+<span><span class="co">#&gt; Group class 2  Class 1        0.245  0.029              0.472        19</span></span>
+<span><span class="co">#&gt; Group class 2  Class 2        0.755  0.029              0.472        19</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">schools</span>, <span class="st">"clusters"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Cluster group classes</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; school  Persons  Group class    Probability</span></span>
+<span><span class="co">#&gt; ------  -------  -------------  -----------</span></span>
+<span><span class="co">#&gt; 1            15  Group class 2         1.00</span></span>
+<span><span class="co">#&gt; 2            15  Group class 2         1.00</span></span>
+<span><span class="co">#&gt; 3            15  Group class 2         1.00</span></span>
+<span><span class="co">#&gt; 4            15  Group class 2         1.00</span></span>
+<span><span class="co">#&gt; 5            15  Group class 1         1.00</span></span>
+<span><span class="co">#&gt; 6            15  Group class 2         1.00</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">schools</span>, <span class="st">"membership"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Class membership (log odds against Class 1, 95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class          Term                      Estimate            95% CI      p</span></span>
+<span><span class="co">#&gt; -------------  ------------------------  --------  ----------------  -----</span></span>
+<span><span class="co">#&gt; Group class 2  Intercept                   -0.099  [-0.917,  0.718]   .812</span></span>
+<span><span class="co">#&gt; Group class 2  programme                   -2.108  [-3.458, -0.758]   .002</span></span>
+<span><span class="co">#&gt; Class 2        Intercept, group class 1    -1.740  [-2.103, -1.377]  &lt;.001</span></span>
+<span><span class="co">#&gt; Class 2        Intercept, group class 2     1.128  [ 0.817,  1.438]  &lt;.001</span></span></code></pre></div>
+<p>The number of group classes is compared like the number of classes,
+from one (the single-level model with schools as the units) upward:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/enumerate_regressions.html">enumerate_regressions</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_schools</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                      n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>                      class_level <span class="op">=</span> <span class="st">"group"</span>, random <span class="op">=</span> <span class="st">"wave"</span>,</span>
+<span>                      random_covariance <span class="op">=</span> <span class="st">"equal"</span>, cluster <span class="op">=</span> <span class="st">"school"</span>,</span>
+<span>                      n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Mixture regression class enumeration</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  n_classes n_group_classes log_likelihood n_parameters   bic   icl entropy smallest_share</span></span>
+<span><span class="co">#&gt;          2               1          -7105           10 14246 14384  0.8345         0.4399</span></span>
+<span><span class="co">#&gt;          2               2          -7029           12 14102 14212  0.8699         0.4360</span></span>
+<span><span class="co">#&gt;          2               3          -7028           14 14109 14243  0.8707         0.4364</span></span>
+<span><span class="co">#&gt;  converged best_bic</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE</span></span>
+<span><span class="co">#&gt;       TRUE     TRUE</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; One model: get_results(x, "model", n_classes = ).</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="choices-and-warnings">Choices and warnings<a class="anchor" aria-label="anchor" href="#choices-and-warnings"></a>
 </h2>
 <ul>
@@ -410,16 +534,22 @@ the random effects, or drop them.</li>
 <h2 id="how-this-was-checked">How this was checked<a class="anchor" aria-label="anchor" href="#how-this-was-checked"></a>
 </h2>
 <p>The model’s likelihood equals an independently written dense-matrix
-likelihood, and the analytic scores equal numerical derivatives. Against
-<code>lcmm::hlme()</code> (Proust-Lima, Philipps and Liquet 2017), on
-configurations with one to three classes, shared, proportional and
-diagonal covariances and membership covariates, the likelihoods agree at
-<code>hlme</code>’s own estimates and <code><a href="../reference/mixture_regression.html">mixture_regression()</a></code>
-reaches at least <code>hlme</code>’s maximum.</p>
+likelihood, and the analytic scores equal numerical derivatives; for the
+multilevel model too, whose likelihood is checked against a dense sum
+over group classes per school, which reduces to the single-level model
+when the group classes coincide. Against <code>lcmm::hlme()</code>
+(Proust-Lima, Philipps and Liquet 2017), on configurations with one to
+three classes, shared, proportional and diagonal covariances and
+membership covariates, the likelihoods agree at <code>hlme</code>’s own
+estimates and <code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> reaches at least
+<code>hlme</code>’s maximum.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
+<p>Asparouhov, T., &amp; Muthén, B. (2008). Multilevel mixture models.
+In G. R. Hancock &amp; K. M. Samuelsen (Eds.), <em>Advances in latent
+variable mixture models</em> (pp. 27–51). Information Age.</p>
 <p>Bakk, Z., &amp; Vermunt, J. K. (2016). Robustness of stepwise latent
 class modeling with continuous distal outcomes. <em>Structural Equation
 Modeling</em>, 23, 20–31.</p>
@@ -444,6 +574,8 @@ package lcmm. <em>Journal of Statistical Software</em>, 78(2), 1–56.</p>
 <p>Vermunt, J. K. (2010). Latent class modeling with covariates: Two
 improved three-step approaches. <em>Political Analysis</em>, 18,
 450–469.</p>
+<p>Vermunt, J. K. (2003). Multilevel latent class models.
+<em>Sociological Methodology</em>, 33, 213–239.</p>
 <p>Verbeke, G., &amp; Lesaffre, E. (1996). A linear mixed-effects model
 with heterogeneity in the random-effects population. <em>Journal of the
 American Statistical Association</em>, 91, 217–221.</p>
