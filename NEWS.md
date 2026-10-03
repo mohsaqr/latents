@@ -1,3 +1,37 @@
+# latents 0.9.12
+
+## Growth mixture models
+
+* `mixture_regression()` gains `random`, `random_covariance` and
+  `random_diagonal`: random effects within classes, so persons scatter around
+  their class trajectory (the Gaussian growth mixture model). The likelihood
+  is exact; estimation is EM with the random effects as missing data,
+  finished by quasi-Newton with analytic scores. Validated against an
+  independent dense likelihood, numerical derivatives and `lcmm::hlme()`
+  (six configurations; the same likelihood at `hlme`'s estimates and at
+  least its maximum).
+* Variable names may replace one-sided formulas: `random = "wave"`,
+  `random = "intercept"`, `common = "x"`, `membership = "age"`.
+* A degenerate random-effect covariance (a variance at zero, or perfectly
+  correlated random effects) warns (`latents_random_boundary`) and reports
+  no interval for it.
+* New `compare_models()`: fits to the same data side by side, with BIC
+  differences and Schwarz weights; `plot()` draws the comparison.
+* Trajectory models (`id` with `class_level = "group"`, with or without
+  `random`) share new ggplot2 views: class trajectories with confidence
+  bands, the spread of persons around them and observed class means;
+  individual trajectories; a coefficient forest; predicted random effects;
+  and a classification structure plot.
+* Result tables of these fits print in a report layout (readable labels,
+  intervals as `[low, high]`, APA p-values, fit statistics as a card) while
+  remaining plain numeric data frames.
+* Growth fits work with `enumerate_regressions()`, including its bootstrap
+  likelihood-ratio test, have a `simulate()` method, and support distal
+  outcomes in `three_step()` (person-level, bias-corrected); `three_step()`
+  results print in the report layout. `predict()` and `r3step()` refuse
+  growth fits with classed conditions.
+* New dataset `growth_scores` and vignette "Growth mixture models".
+
 # latents 0.9.11
 
 * Transition fits no longer report false non-convergence. The quasi-Newton

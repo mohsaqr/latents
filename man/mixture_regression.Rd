@@ -24,7 +24,10 @@ mixture_regression(
   missing = c("error", "omit"),
   select_start = c("likelihood", "converged"),
   vcov_type = c("observed", "robust", "opg", "none"),
-  weights = NULL
+  weights = NULL,
+  random = NULL,
+  random_covariance = c("varying", "equal", "proportional"),
+  random_diagonal = FALSE
 )
 }
 \arguments{
@@ -46,17 +49,18 @@ schools, ...).}
 \item{n_group_classes}{Number of second-level group classes, for
 \code{class_level = "observation"} with \code{id}. \code{1} fits no second level.}
 
-\item{common}{\code{NULL}, or a one-sided formula naming predictor terms whose
-coefficients are shared by every class, such as \code{~ age}. Each term must
-appear in \code{formula}.}
+\item{common}{\code{NULL}, or the predictor terms whose coefficients are
+shared by every class: variable names such as \code{"age"}, or a one-sided
+formula such as \code{~ age}. Each term must appear in \code{formula}.}
 
-\item{membership}{One-sided formula of covariates predicting class
-membership (a multinomial logit, the first class as the reference).
+\item{membership}{Covariates predicting class membership (a multinomial
+logit, the first class as the reference): variable names such as
+\code{"age"}, or a one-sided formula (\code{~ 1}, the default, for none).
 Row-level for \code{"observation"}; constant within groups for \code{"group"}.}
 
-\item{group_membership}{One-sided formula of group-level covariates
-predicting the group class, for the two-level model. Must be constant
-within groups.}
+\item{group_membership}{Group-level covariates predicting the group class,
+for the two-level model, as names or a one-sided formula. Must be
+constant within groups.}
 
 \item{variance}{\code{"varying"} (a residual standard deviation per class) or
 \code{"equal"}. Gaussian family only.}
@@ -93,9 +97,25 @@ sampling weight per independent unit: per row without \code{id}, per \code{id}
 group otherwise (constant within it). Pseudo maximum likelihood with the
 weights scaled to sum to the number of units; \code{vcov_type} defaults to
 \code{"robust"} and refuses \code{"observed"} and \code{"opg"}.}
+
+\item{random}{\code{NULL} (no random effects), or the random effects within
+classes: variable names such as \code{"time"} (a random intercept and a random
+slope on \code{time}) or \code{"intercept"} (random intercepts only), or a
+one-sided formula such as \code{~ 1 + time} (needed for anything names cannot
+say, such as \code{~ 0 + time}, a slope without a random intercept). See the
+growth mixture section.}
+
+\item{random_covariance}{How the random-effect covariance differs across
+classes: \code{"varying"} (one per class), \code{"equal"} (one shared matrix, as
+\code{lcmm::hlme()} with \code{nwg = FALSE}) or \code{"proportional"} (a shared matrix
+times a class-specific scale, the last class's being one; \code{nwg = TRUE}).}
+
+\item{random_diagonal}{\code{TRUE} for uncorrelated random effects (a diagonal
+covariance, as \code{idiag = TRUE} in lcmm).}
 }
 \value{
-An object of class \code{latents_mixture_regression}. Read it with
+An object of class \code{latents_mixture_regression}, or
+\code{latents_growth_mixture} when \code{random} is given. Read it with
 \code{\link[=as.data.frame]{as.data.frame()}} (the coefficient table) or \code{\link[=get_results]{get_results()}} (every
 table, by name), and use \code{\link[=predict]{predict()}}, \code{\link[=plot]{plot()}}, \code{\link[=summary]{summary()}}, \code{\link[=coef]{coef()}},
 \code{\link[=vcov]{vcov()}}, \code{\link[=confint]{confint()}}, \code{\link[=logLik]{logLik()}} and \code{\link[=nobs]{nobs()}} on it. The tables are
@@ -125,6 +145,25 @@ probable each regression class is within its groups (Vermunt 2003).
 With \code{n_group_classes = 1} the groups only enter the \code{"robust"} standard
 errors, which are then clustered on \code{id}.}
 }
+}
+
+\section{Growth mixture models}{
+
+With repeated measures of persons (\code{id}, \code{class_level = "group"}), a time
+predictor in \code{formula} gives every class its own trajectory: latent class
+growth analysis (Nagin 2005). \code{random} adds random effects \emph{within}
+classes, so persons scatter around their class trajectory: the growth
+mixture model (Verbeke and Lesaffre 1996; Muthen and Shedden 1999). Within
+class k, person i's outcomes are
+\deqn{y_i = X_i \beta_k + Z_i b_i + e_i, \quad b_i \sim N(0, G_k),
+\quad e_i \sim N(0, \sigma_k^2 I),}{y_i = X_i beta_k + Z_i b_i + e_i, b_i ~ N(0, G_k), e_i ~ N(0, sigma_k^2 I),}
+with \code{Z} built from \code{random}. The likelihood is exact (Gaussian, no
+numerical integration); estimation is EM with the random effects as missing
+data, finished by quasi-Newton with analytic scores. Such a fit has class
+\code{latents_growth_mixture}; its tables, plots and inference are described on
+\code{\link[=get_results.latents_growth_mixture]{get_results.latents_growth_mixture()}} and
+\code{\link[=plot.latents_growth_mixture]{plot.latents_growth_mixture()}}. Random effects need the gaussian family,
+\code{id}, \code{class_level = "group"} and one group class.
 }
 
 \section{Families}{
@@ -170,6 +209,20 @@ by_student <- mixture_regression(score ~ hours, data = study_hours, n_classes = 
 get_results(by_student, "fit")
 }
 \references{
+Muthen, B., & Shedden, K. (1999). Finite mixture modeling with mixture
+outcomes using the EM algorithm. \emph{Biometrics}, 55, 463--469.
+
+Nagin, D. S. (2005). \emph{Group-based modeling of development}. Harvard
+University Press.
+
+Proust-Lima, C., Philipps, V., & Liquet, B. (2017). Estimation of extended
+mixed models using latent classes and latent processes: the R package
+lcmm. \emph{Journal of Statistical Software}, 78(2), 1--56.
+
+Verbeke, G., & Lesaffre, E. (1996). A linear mixed-effects model with
+heterogeneity in the random-effects population. \emph{Journal of the American
+Statistical Association}, 91, 217--221.
+
 DeSarbo, W. S., & Cron, W. L. (1988). A maximum likelihood methodology for
 clusterwise linear regression. \emph{Journal of Classification}, 5, 249--282.
 

@@ -61,8 +61,10 @@ matches each replicate's profiles and group classes to the original's;
 \item{iter, n_starts, max_iter, tol, seed}{Bootstrap resamples, the controls of
 each refit, and an optional seed (the caller's random state is restored).}
 
-\item{boundary}{Only \code{"error"}: a fit on a bound has no Wald inference, and
-\code{"fix"} raises \code{latents_unsupported_inference}.}
+\item{boundary}{Accepted for the generic. Transition inference holds
+nothing at a bound: with no bound active \code{"fix"} gives the same table as
+\code{"error"}, and a fit with an active bound raises \code{latents_boundary_fit}
+under either.}
 
 \item{object}{A fitted \code{multilpa_transitions} model.}
 
@@ -102,7 +104,8 @@ informed (a profile no group occupies before its last occasion);
 \code{latents_singular_information} when the information cannot be inverted;
 \code{latents_bad_inference_data} when a supplied \code{data} does not reproduce
 the fit; \code{latents_too_few_groups} for robust or OPG errors with no more
-groups than parameters; \code{latents_unsupported_inference} for \code{method = "bootstrap"} or \code{boundary = "fix"}.
+groups than parameters; \code{latents_bad_argument} for \code{method = "bootstrap"}
+without \code{data}.
 }
 
 \examples{

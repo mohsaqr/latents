@@ -23,6 +23,23 @@
 #'     errors, which are then clustered on `id`.}
 #' }
 #'
+#' @section Growth mixture models:
+#' With repeated measures of persons (`id`, `class_level = "group"`), a time
+#' predictor in `formula` gives every class its own trajectory: latent class
+#' growth analysis (Nagin 2005). `random` adds random effects *within*
+#' classes, so persons scatter around their class trajectory: the growth
+#' mixture model (Verbeke and Lesaffre 1996; Muthen and Shedden 1999). Within
+#' class k, person i's outcomes are
+#' \deqn{y_i = X_i \beta_k + Z_i b_i + e_i, \quad b_i \sim N(0, G_k),
+#' \quad e_i \sim N(0, \sigma_k^2 I),}{y_i = X_i beta_k + Z_i b_i + e_i, b_i ~ N(0, G_k), e_i ~ N(0, sigma_k^2 I),}
+#' with `Z` built from `random`. The likelihood is exact (Gaussian, no
+#' numerical integration); estimation is EM with the random effects as missing
+#' data, finished by quasi-Newton with analytic scores. Such a fit has class
+#' `latents_growth_mixture`; its tables, plots and inference are described on
+#' [get_results.latents_growth_mixture()] and
+#' [plot.latents_growth_mixture()]. Random effects need the gaussian family,
+#' `id`, `class_level = "group"` and one group class.
+#'
 #' @section Families:
 #' `"gaussian"` (identity link, a residual standard deviation per class, or
 #' one shared under `variance = "equal"`), `"binomial"` (logit link; the
@@ -47,15 +64,16 @@
 #'   `"group"` (all rows of a group share a class; needs `id`).
 #' @param n_group_classes Number of second-level group classes, for
 #'   `class_level = "observation"` with `id`. `1` fits no second level.
-#' @param common `NULL`, or a one-sided formula naming predictor terms whose
-#'   coefficients are shared by every class, such as `~ age`. Each term must
-#'   appear in `formula`.
-#' @param membership One-sided formula of covariates predicting class
-#'   membership (a multinomial logit, the first class as the reference).
+#' @param common `NULL`, or the predictor terms whose coefficients are
+#'   shared by every class: variable names such as `"age"`, or a one-sided
+#'   formula such as `~ age`. Each term must appear in `formula`.
+#' @param membership Covariates predicting class membership (a multinomial
+#'   logit, the first class as the reference): variable names such as
+#'   `"age"`, or a one-sided formula (`~ 1`, the default, for none).
 #'   Row-level for `"observation"`; constant within groups for `"group"`.
-#' @param group_membership One-sided formula of group-level covariates
-#'   predicting the group class, for the two-level model. Must be constant
-#'   within groups.
+#' @param group_membership Group-level covariates predicting the group class,
+#'   for the two-level model, as names or a one-sided formula. Must be
+#'   constant within groups.
 #' @param variance `"varying"` (a residual standard deviation per class) or
 #'   `"equal"`. Gaussian family only.
 #' @param n_starts Number of random starts, besides one start built from the
@@ -83,7 +101,20 @@
 #'   weights scaled to sum to the number of units; `vcov_type` defaults to
 #'   `"robust"` and refuses `"observed"` and `"opg"`.
 #'
-#' @return An object of class `latents_mixture_regression`. Read it with
+#' @param random `NULL` (no random effects), or the random effects within
+#'   classes: variable names such as `"time"` (a random intercept and a random
+#'   slope on `time`) or `"intercept"` (random intercepts only), or a
+#'   one-sided formula such as `~ 1 + time` (needed for anything names cannot
+#'   say, such as `~ 0 + time`, a slope without a random intercept). See the
+#'   growth mixture section.
+#' @param random_covariance How the random-effect covariance differs across
+#'   classes: `"varying"` (one per class), `"equal"` (one shared matrix, as
+#'   `lcmm::hlme()` with `nwg = FALSE`) or `"proportional"` (a shared matrix
+#'   times a class-specific scale, the last class's being one; `nwg = TRUE`).
+#' @param random_diagonal `TRUE` for uncorrelated random effects (a diagonal
+#'   covariance, as `idiag = TRUE` in lcmm).
+#' @return An object of class `latents_mixture_regression`, or
+#'   `latents_growth_mixture` when `random` is given. Read it with
 #'   [as.data.frame()] (the coefficient table) or [get_results()] (every
 #'   table, by name), and use [predict()], [plot()], [summary()], [coef()],
 #'   [vcov()], [confint()], [logLik()] and [nobs()] on it. The tables are
@@ -102,6 +133,20 @@
 #'   degenerated; `latents_separation` (warning) when a coefficient diverged.
 #'
 #' @references
+#' Muthen, B., & Shedden, K. (1999). Finite mixture modeling with mixture
+#' outcomes using the EM algorithm. *Biometrics*, 55, 463--469.
+#'
+#' Nagin, D. S. (2005). *Group-based modeling of development*. Harvard
+#' University Press.
+#'
+#' Proust-Lima, C., Philipps, V., & Liquet, B. (2017). Estimation of extended
+#' mixed models using latent classes and latent processes: the R package
+#' lcmm. *Journal of Statistical Software*, 78(2), 1--56.
+#'
+#' Verbeke, G., & Lesaffre, E. (1996). A linear mixed-effects model with
+#' heterogeneity in the random-effects population. *Journal of the American
+#' Statistical Association*, 91, 217--221.
+#'
 #' DeSarbo, W. S., & Cron, W. L. (1988). A maximum likelihood methodology for
 #' clusterwise linear regression. *Journal of Classification*, 5, 249--282.
 #'
@@ -142,8 +187,17 @@ mixture_regression <- function(formula, data, n_classes,
                    missing = c("error", "omit"),
                    select_start = c("likelihood", "converged"),
                    vcov_type = c("observed", "robust", "opg", "none"),
-                   weights = NULL) {
+                   weights = NULL, random = NULL,
+                   random_covariance = c("varying", "equal", "proportional"),
+                   random_diagonal = FALSE) {
   vcov_defaulted <- missing(vcov_type)
+  random_covariance <- match.arg(random_covariance)
+  # Variable names may stand in for a one-sided formula, so no `~` is needed.
+  caller <- parent.frame()
+  common <- .mixture_as_formula(common, "common", caller)
+  membership <- .mixture_as_formula(membership, "membership", caller)
+  group_membership <- .mixture_as_formula(group_membership, "group_membership", caller)
+  random <- .mixture_as_formula(random, "random", caller)
   family <- match.arg(family)
   class_level <- match.arg(class_level)
   variance <- match.arg(variance)
@@ -160,11 +214,11 @@ mixture_regression <- function(formula, data, n_classes,
       .mixture_is_count(n_group_classes),
     "`id` must be NULL or a single column name" =
       is.null(id) || (is.character(id) && length(id) == 1L && !is.na(id)),
-    "`common` must be NULL or a one-sided formula" =
+    "`common` must be NULL, variable names or a one-sided formula" =
       is.null(common) || (inherits(common, "formula") && length(common) == 2L),
-    "`membership` must be a one-sided formula" =
+    "`membership` must be variable names or a one-sided formula" =
       inherits(membership, "formula") && length(membership) == 2L,
-    "`group_membership` must be a one-sided formula" =
+    "`group_membership` must be variable names or a one-sided formula" =
       inherits(group_membership, "formula") && length(group_membership) == 2L,
     "`n_starts` must be a single non-negative integer" =
       is.numeric(n_starts) && length(n_starts) == 1L && is.finite(n_starts) &&
@@ -183,14 +237,35 @@ mixture_regression <- function(formula, data, n_classes,
   .multilpa_check_seed(seed)
   n_classes <- as.integer(n_classes)
   n_group_classes <- as.integer(n_group_classes)
+  if (!is.null(random)) {
+    .growth_check_arguments(random, family, id, class_level, n_group_classes,
+                            random_diagonal)
+  }
   spec <- .mixture_spec(formula, data, n_classes, family, id, class_level,
                        n_group_classes, common, membership, group_membership,
-                       variance, min_variance, missing)
+                       variance, min_variance, missing, random)
   if (!is.null(weights)) {
     spec <- .mixture_weight_spec(spec, data, weights)
     if (!identical(vcov_type, "none")) {
       vcov_type <- .latents_weighted_vcov(TRUE, vcov_type, vcov_defaulted)
     }
+  }
+  if (!is.null(random)) {
+    spec$random_covariance <- random_covariance
+    spec$random_diagonal <- random_diagonal
+    fit <- .mixture_with_seed(seed, .growth_fit(
+      spec, as.integer(n_starts), as.integer(max_iter), tol, select_start))
+    fit$call <- match.call()
+    fit$settings <- list(n_starts = as.integer(n_starts),
+                         max_iter = as.integer(max_iter), tol = tol,
+                         min_variance = min_variance, seed = seed,
+                         select_start = select_start)
+    fit$weights <- weights
+    fit$sampling_weights <- spec$sampling_weights
+    if (!identical(vcov_type, "none")) {
+      fit$inference <- .growth_inference(fit, vcov_type)
+    }
+    return(fit)
   }
   results <- .mixture_with_seed(seed, .mixture_run_starts(
     spec, as.integer(n_starts), as.integer(max_iter), tol))
@@ -206,6 +281,32 @@ mixture_regression <- function(formula, data, n_classes,
     fit$inference <- .mixture_inference(fit, vcov_type)
   }
   fit
+}
+
+#' Read variable names as a one-sided formula
+#'
+#' `"time"` means `~ 1 + time` and `c("age", "sex")` means `~ 1 + age + sex`;
+#' `"intercept"` alone means `~ 1`. Formulas pass through unchanged, so
+#' anything names cannot say (no intercept, interactions, transformations) is
+#' still written as a formula.
+#'
+#' @param value `NULL`, a character vector or a formula.
+#' @param argument The argument's name, for the message.
+#' @param env The environment the formula is evaluated in.
+#' @return `NULL` or a one-sided formula; raises `latents_bad_argument`.
+#' @noRd
+.mixture_as_formula <- function(value, argument, env = parent.frame()) {
+  if (is.null(value) || inherits(value, "formula")) return(value)
+  if (!is.character(value) || length(value) == 0L || anyNA(value) ||
+      !all(nzchar(value))) {
+    stop(errorCondition(sprintf(paste(
+      "`%s` must be variable names such as \"time\" (or \"intercept\"), or a",
+      "one-sided formula such as `~ 1 + time`."), argument),
+      class = "latents_bad_argument", call = NULL))
+  }
+  terms <- setdiff(value, c("intercept", "1"))
+  if (length(terms) == 0L) return(stats::as.formula("~ 1", env = env))
+  stats::reformulate(sprintf("`%s`", terms), env = env)
 }
 
 #' Attach sampling weights to a mixture-regression specification
@@ -272,7 +373,8 @@ mixture_regression <- function(formula, data, n_classes,
 #' @noRd
 .mixture_spec <- function(formula, data, n_classes, family, id, class_level,
                          n_group_classes, common, membership,
-                         group_membership, variance, min_variance, missing) {
+                         group_membership, variance, min_variance, missing,
+                         random = NULL) {
   bad_argument <- function(message) {
     stop(errorCondition(message, class = "latents_bad_argument", call = NULL))
   }
@@ -310,7 +412,8 @@ mixture_regression <- function(formula, data, n_classes,
   }
 
   used <- unique(c(all.vars(formula), all.vars(common %||% ~1),
-                   all.vars(membership), all.vars(group_membership), id))
+                   all.vars(membership), all.vars(group_membership),
+                   all.vars(random %||% ~1), id))
   absent <- setdiff(used, names(data))
   if (length(absent) > 0L) {
     stop(errorCondition(sprintf("`data` has no column%s %s.",
@@ -435,7 +538,10 @@ mixture_regression <- function(formula, data, n_classes,
     membership_design = membership_design,
     group_membership_design = group_membership_design,
     group_membership = group_membership, response_name =
-      deparse1(formula[[2L]]))
+      deparse1(formula[[2L]]),
+    random = random,
+    random_design = if (is.null(random)) NULL else
+      stats::model.matrix(random, data = data))
 }
 
 #' Retain the membership design's coding for prediction

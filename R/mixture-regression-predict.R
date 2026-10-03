@@ -205,30 +205,64 @@ simulate.latents_mixture_regression <- function(object, nsim = 1, seed = NULL, .
 
 #' Plot a mixture-of-regressions fit
 #'
+#' A fit that classifies persons (`id` with `class_level = "group"`) is a
+#' trajectory model, and draws the trajectory views of
+#' [plot.latents_growth_mixture()] (ggplot2): `"trajectories"` (the
+#' default), `"individuals"`, `"coefficients"` and `"classification"`. Any
+#' other fit draws base-graphics views: `"fitted"` (the default),
+#' `"coefficients"` and `"posteriors"`.
+#'
 #' @param x A fit from [mixture_regression()].
-#' @param what `"fitted"`: the outcome against one numeric predictor, rows
-#'   marked by modal class (colour and symbol), each class's regression line
-#'   drawn with the other predictors at their mean (or reference level).
-#'   `"coefficients"`: every class's estimates with confidence intervals.
-#'   `"posteriors"`: the distribution of each unit's largest posterior
-#'   probability, by class.
+#' @param what For a trajectory model: `"trajectories"` (each class's mean
+#'   trajectory with its confidence band and the observed class means),
+#'   `"individuals"`, `"coefficients"` (estimates with intervals and
+#'   p-values) or `"classification"` (`"posteriors"` is a synonym). Otherwise:
+#'   `"fitted"` (the outcome against one numeric predictor, rows marked by
+#'   modal class, each class's regression line), `"coefficients"` or
+#'   `"posteriors"` (each unit's largest posterior probability, by class).
 #' @param predictor For `"fitted"`, the numeric predictor for the horizontal
 #'   axis; defaults to the first one in the formula.
-#' @param level Confidence level for `"coefficients"`.
+#' @param level Confidence level of intervals and bands.
 #' @param main Plot title; `NULL` for the default.
+#' @param subtitle For a trajectory model, the subtitle; `NULL` for the default.
+#' @param time,facet,persons,max_persons For a trajectory model, as in
+#'   [plot.latents_growth_mixture()].
 #' @param ... Unused.
-#' @return `x`, invisibly. Called for its plot.
+#' @return For a trajectory model, a ggplot object (raises
+#'   `latents_missing_package` without ggplot2); otherwise `x`, invisibly,
+#'   called for its plot.
 #' @examples
 #' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
 #'                           n_starts = 3, seed = 1)
 #' plot(fit)
 #' plot(fit, what = "coefficients")
 #' @export
-plot.latents_mixture_regression <- function(x, what = c("fitted", "coefficients",
-                                            "posteriors"),
-                                predictor = NULL, level = 0.95, main = NULL,
-                                ...) {
-  what <- match.arg(what)
+plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
+                                            level = 0.95, main = NULL, subtitle = NULL,
+                                            time = NULL, facet = FALSE, persons = 12L,
+                                            max_persons = 120L, ...) {
+  trajectory <- identical(x$spec$nesting, "group")
+  trajectory_views <- c("trajectories", "individuals", "classification")
+  # Naming a `predictor` asks for the fitted-values view, as before.
+  what <- match.arg(what %||% if (trajectory && is.null(predictor)) "trajectories" else
+    "fitted",
+                    c("fitted", "coefficients", "posteriors", trajectory_views))
+  if (what %in% trajectory_views && !trajectory) {
+    stop(errorCondition(sprintf(paste(
+      "`what = \"%s\"` draws trajectories of persons: fit with `id` and",
+      "`class_level = \"group\"`."), what), class = "latents_bad_argument", call = NULL))
+  }
+  if (trajectory && !identical(what, "fitted")) {
+    .gg_require()
+    key <- .growth_class_key(x)
+    return(switch(what,
+      trajectories = .growth_plot_trajectories(x, key, time, facet, max_persons, 0,
+                                               level, main, subtitle),
+      individuals = .growth_plot_individuals(x, key, time, persons, main, subtitle),
+      coefficients = .growth_plot_coefficients(x, key, level, main, subtitle),
+      classification = ,
+      posteriors = .growth_plot_classification(x, key, main, subtitle)))
+  }
   old <- graphics::par(no.readonly = TRUE)
   on.exit(graphics::par(old), add = TRUE, after = FALSE)
   switch(what,

@@ -44,15 +44,19 @@ reference:
   - get_results.multilpa_cross_level
   - get_results.latents_family_enumeration
 
-- title: Mixture regression
+- title: Mixture regression and growth models
   desc: Regressions whose coefficients differ across latent classes, at one or
-    two levels, for continuous, binary and count outcomes.
+    two levels, for continuous, binary and count outcomes; classes of
+    trajectories, with random effects within classes (growth mixture models).
   contents:
   - mixture_regression
   - enumerate_regressions
+  - compare_models
   - get_results.latents_mixture_regression
+  - get_results.latents_growth_mixture
   - predict.latents_mixture_regression
   - simulate.latents_mixture_regression
+  - simulate.latents_growth_mixture
 
 - title: External variables
   desc: Three-step analysis with a correction for classification error.
@@ -76,6 +80,7 @@ reference:
   - course_engagement
   - student_esm
   - study_hours
+  - growth_scores
   - srl
 
 - title: Methods
@@ -108,6 +113,7 @@ articles:
   - lca
   - lta
   - mixture-regression
+  - growth-mixture
 
 - title: Case studies
   navbar: Case studies

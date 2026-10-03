@@ -269,8 +269,10 @@ second-order fit). \code{method = "bootstrap"} resamples persons, refits, and
 matches every replicate's profiles (on the measurement) and group classes
 to the original's, rebasing the initial logits when the reference profile
 moves; it needs \code{data}, and works where Wald inference is refused (for
-example full covariance structures). \code{boundary = "fix"} raises
-\code{latents_unsupported_inference} instead of being ignored.
+example full covariance structures). Transition inference holds nothing
+at a bound: with no bound active \code{boundary = "fix"} gives the same table
+as \code{"error"}, and a fit with an active bound raises \code{latents_boundary_fit}
+under either.
 }
 \section{Conditions}{
 

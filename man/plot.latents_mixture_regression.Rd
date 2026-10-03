@@ -6,37 +6,55 @@
 \usage{
 \method{plot}{latents_mixture_regression}(
   x,
-  what = c("fitted", "coefficients", "posteriors"),
+  what = NULL,
   predictor = NULL,
   level = 0.95,
   main = NULL,
+  subtitle = NULL,
+  time = NULL,
+  facet = FALSE,
+  persons = 12L,
+  max_persons = 120L,
   ...
 )
 }
 \arguments{
 \item{x}{A fit from \code{\link[=mixture_regression]{mixture_regression()}}.}
 
-\item{what}{\code{"fitted"}: the outcome against one numeric predictor, rows
-marked by modal class (colour and symbol), each class's regression line
-drawn with the other predictors at their mean (or reference level).
-\code{"coefficients"}: every class's estimates with confidence intervals.
-\code{"posteriors"}: the distribution of each unit's largest posterior
-probability, by class.}
+\item{what}{For a trajectory model: \code{"trajectories"} (each class's mean
+trajectory with its confidence band and the observed class means),
+\code{"individuals"}, \code{"coefficients"} (estimates with intervals and
+p-values) or \code{"classification"} (\code{"posteriors"} is a synonym). Otherwise:
+\code{"fitted"} (the outcome against one numeric predictor, rows marked by
+modal class, each class's regression line), \code{"coefficients"} or
+\code{"posteriors"} (each unit's largest posterior probability, by class).}
 
 \item{predictor}{For \code{"fitted"}, the numeric predictor for the horizontal
 axis; defaults to the first one in the formula.}
 
-\item{level}{Confidence level for \code{"coefficients"}.}
+\item{level}{Confidence level of intervals and bands.}
 
 \item{main}{Plot title; \code{NULL} for the default.}
+
+\item{subtitle}{For a trajectory model, the subtitle; \code{NULL} for the default.}
+
+\item{time, facet, persons, max_persons}{For a trajectory model, as in
+\code{\link[=plot.latents_growth_mixture]{plot.latents_growth_mixture()}}.}
 
 \item{...}{Unused.}
 }
 \value{
-\code{x}, invisibly. Called for its plot.
+For a trajectory model, a ggplot object (raises
+\code{latents_missing_package} without ggplot2); otherwise \code{x}, invisibly,
+called for its plot.
 }
 \description{
-Plot a mixture-of-regressions fit
+A fit that classifies persons (\code{id} with \code{class_level = "group"}) is a
+trajectory model, and draws the trajectory views of
+\code{\link[=plot.latents_growth_mixture]{plot.latents_growth_mixture()}} (ggplot2): \code{"trajectories"} (the
+default), \code{"individuals"}, \code{"coefficients"} and \code{"classification"}. Any
+other fit draws base-graphics views: \code{"fitted"} (the default),
+\code{"coefficients"} and \code{"posteriors"}.
 }
 \examples{
 fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,

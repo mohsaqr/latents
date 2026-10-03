@@ -121,11 +121,14 @@ calling a gap a disagreement).
 
 **Phases** (each ships only with its evidence; sizes as at the top):
 
-- [ ] **G0. Document what exists.** Example and vignette section "trajectory
+- [x] **G0. Document what exists.** (2026-10-02: vignette
+  `growth-mixture`, dataset `growth_scores`, trajectory views for models
+  without random effects.) Example and vignette section "trajectory
   classes" with `mixture_regression()`; a tidy `trajectories` table (predicted
   mean per class and time) from `get_results()`; add the `lcmm::hlme` match as
   an `equivalence/` fixture. **S** (half a day)
-- [ ] **G1. Gaussian growth mixture model, core.** Within class k,
+- [x] **G1. Gaussian growth mixture model, core.** (2026-10-02;
+  `equivalence/test-growth-mixture-lcmm.R`, six configurations.) Within class k,
   y_i ~ N(X_i b_k, Z_i G_k Z_i' + s_k^2 I), unbalanced times and missing
   occasions allowed. Closed-form marginal likelihood (Cholesky per person);
   EM over classes with a per-class weighted linear-mixed-model M-step
@@ -137,13 +140,17 @@ calling a gap a disagreement).
   `hlme` matches (log likelihood within 1e-6, estimates within 1e-4) for at
   least 6 configurations (1-4 classes; random intercept / intercept+slope;
   each covariance option; unbalanced data). **M** (about 1.5 days)
-- [ ] **G2. Inference.** Observed-information and sandwich (weighted) standard
+- [~] **G2. Inference.** (Observed and sandwich errors done and checked
+  against a numerical Hessian; bootstrap and the coverage study remain.) Observed-information and sandwich (weighted) standard
   errors on the estimation scale, delta method to variances/correlations;
   boundary handling for random-effect variances; person bootstrap via the
   existing machinery. Evidence: numerical-Hessian agreement 1e-6; coverage
   simulation (>= 200 datasets, gates as in `validation/LTA_SIMULATION.md`).
   **M** (about 1 day)
-- [ ] **G3. Integration.** `print`/`summary`/`plot` (class trajectories with
+- [~] **G3. Integration.** (Tables, print, summary, plots, weights,
+  `simulate()`, enumeration with the bootstrap LRT and distal outcomes in
+  `three_step()` done; `predict()` for new persons and `r3step()` remain,
+  both refused with classed conditions.) `print`/`summary`/`plot` (class trajectories with
   individual-curve spread), `as.data.frame()`, `predict()` (marginal and
   conditional on the random effects, i.e. empirical Bayes), posterior class
   table, `enumerate` over classes, `bootstrap_lrt()` (needs simulation from

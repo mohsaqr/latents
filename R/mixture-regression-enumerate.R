@@ -137,7 +137,8 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
                       n_best_replicated = NA_integer_,
                       note = conditionMessage(fit)))
   }
-  stats_row <- .mixture_fit_table(fit)
+  # A growth mixture fit has its own fit table with the same core columns.
+  stats_row <- as.data.frame(get_results(fit, "fit"))
   data.frame(n_classes = n_classes, n_group_classes = n_group_classes,
              stats_row[c("log_likelihood", "n_parameters", "aic", "bic",
                          "bic_rows", "sabic", "icl", "entropy",
@@ -179,7 +180,9 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
   flagged <- 0L
   statistics <- vapply(seq_len(replicates), function(b) {
     simulated <- base_data
-    simulated[[response]] <- .mixture_draw(null_fit)
+    simulated[[response]] <- if (inherits(null_fit, "latents_growth_mixture")) {
+      .growth_draw(null_fit)
+    } else .mixture_draw(null_fit)
     warned <- FALSE
     refit <- function(n) {
       withCallingHandlers(
@@ -190,6 +193,10 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
           invokeRestart("muffleWarning")
         },
         latents_degenerate_start = function(w) invokeRestart("muffleWarning"),
+        latents_random_boundary = function(w) {
+          warned <<- TRUE
+          invokeRestart("muffleWarning")
+        },
         latents_separation = function(w) {
           warned <<- TRUE
           invokeRestart("muffleWarning")

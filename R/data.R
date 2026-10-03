@@ -274,3 +274,42 @@
 #' descriptives(srl, names(srl))
 #' @keywords datasets
 "srl"
+
+#' Achievement growth of students with three kinds of trajectory
+#'
+#' A simulated longitudinal dataset made for growth models. 300 students sit
+#' an achievement test on up to seven occasions (`wave` 0 to 6). Three kinds of
+#' student follow three trajectories: *improving* (starts near 48, gains 3.5
+#' points a wave), *stable* (starts near 62, gains 0.5) and *declining*
+#' (starts near 58, loses 2.5). Within each kind, students vary around the
+#' trajectory: each has their own start and rate of change (random intercept
+#' SD 4, random slope SD 0.8, correlation -0.3, the same spread in every kind),
+#' with residual SD 3. Motivation, measured once, makes a student more likely
+#' to be improving and less likely to be declining. About 12% of tests were
+#' missed at random, so the panel is unbalanced.
+#'
+#' Because students vary within their kind, a trajectory model without random
+#' effects needs more classes than the three that generated the data; a growth
+#' mixture model with random intercepts and slopes recovers three.
+#'
+#' @format A data frame with 1844 rows (300 students) and 5 columns:
+#' \describe{
+#'   \item{student}{Integer student identifier, 1 to 300. Pass it as `id`.}
+#'   \item{wave}{Integer test occasion, 0 to 6. The time variable.}
+#'   \item{score}{Achievement score.}
+#'   \item{motivation}{Standardized motivation, constant within student.}
+#'   \item{trajectory}{Factor, `"improving"`, `"stable"` or `"declining"`:
+#'     the student's generating kind. Not for fitting; kept to check
+#'     recovery.}
+#' }
+#' @source Simulated by `data-raw/growth-scores.R` in the source repository.
+#' @seealso [mixture_regression()], [compare_models()].
+#' @examples
+#' \donttest{
+#' fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
+#'                           id = "student", class_level = "group",
+#'                           random = "wave", random_covariance = "equal",
+#'                           n_starts = 4, seed = 1)
+#' get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
+#' }
+"growth_scores"

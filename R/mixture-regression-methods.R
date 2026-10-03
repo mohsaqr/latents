@@ -369,7 +369,78 @@
     fitted = .mixture_fitted_table(x),
     starts = x$starts,
     classification = .mixture_classification_table(x),
-    recovery = .mixture_recovery_table(x, data, truth, by))
+    recovery = .mixture_recovery_table(x, data, truth, by)) |>
+    .mixture_present(what, level, x)
+}
+
+#' Attach the printed layout of a mixture-regression table
+#'
+#' The data are untouched; this chooses the title, columns, labels and
+#' number formats `print()` uses. Columns a fit does not have (`sigma` for
+#' a binomial fit, the two-level columns) are left out.
+#' @noRd
+.mixture_present <- function(table, what, level, x) {
+  column <- .latents_column
+  percent <- format(100 * level)
+  interval <- function(low, high, from) {
+    column(sprintf("%s%% CI", percent), c(low, high), "ci", from)
+  }
+  units <- if (identical(x$spec$nesting, "observation")) "Rows" else "Groups"
+  plan <- switch(what,
+    coefficients = list(
+      title = sprintf("Regression coefficients (%s%% CI)", percent),
+      display = list(column("Class", "class", "label"), column("Term", "term", "label"),
+                     column("Estimate", "estimate"),
+                     interval("conf_low", "conf_high", "estimate"),
+                     column("p", "p_value", "p"),
+                     column(if (identical(x$spec$family, "binomial")) "Odds ratio" else
+                       "Rate ratio", "exp_estimate"))),
+    classes = list(
+      title = "Classes",
+      display = list(column("Class", "class", "label"), column("Share", "share", "share"),
+                     column("Expected", "count"),
+                     column(sprintf("%s assigned", units), "n_assigned", "integer"),
+                     column("Avg. posterior", "mean_posterior", "share"),
+                     column("Residual SD", "sigma"))),
+    membership = list(
+      title = sprintf("Class membership (log odds, %s%% CI)", percent),
+      display = list(column("Model", "model", "label"), column("Class", "class", "label"),
+                     column("Term", "term", "label"), column("Estimate", "estimate"),
+                     interval("conf_low", "conf_high", "estimate"),
+                     column("p", "p_value", "p"), column("Odds ratio", "odds_ratio"))),
+    group_classes = list(
+      title = "Group classes",
+      display = list(column("Group class", "group_class", "label"),
+                     column("Class", "class", "label"),
+                     column("Probability", "probability", "share"),
+                     column("Group share", "group_share", "share"),
+                     column("Groups assigned", "n_groups_assigned", "integer"))),
+    fit = list(
+      title = "Model fit",
+      display = list(column("Family", "family", "text"), column("Nesting", "nesting", "text"),
+                     column("Classes", "n_classes", "integer"),
+                     column("Group classes", "n_group_classes", "integer"),
+                     column("Observations", "n_observations", "integer"),
+                     column("Groups", "n_groups", "integer"),
+                     column("Parameters", "n_parameters", "integer"),
+                     column("Log likelihood", "log_likelihood"), column("AIC", "aic"),
+                     column("BIC", "bic"), column("SABIC", "sabic"), column("ICL", "icl"),
+                     column("Entropy", "entropy", "share"),
+                     column("Smallest class", "smallest_share", "percent"),
+                     column("Converged", "converged", "logical"))),
+    list(title = switch(what, assignments = "Class assignments",
+                        groups = "Groups", fitted = "Fitted values", starts = "Starts",
+                        classification = "Classification (average posteriors)",
+                        recovery = "Recovery of a known classification", NULL),
+         display = NULL))
+  display <- Filter(function(spec) all(spec$column %in% names(table)), plan$display)
+  if (!identical(x$spec$nesting, "two-level")) {
+    display <- Filter(function(spec) !identical(spec$column, "model"), display)
+  }
+  table <- .latents_table(table, level, plan$title,
+                          if (length(display) > 0L) display)
+  if (identical(what, "fit")) attr(table, "card") <- TRUE
+  table
 }
 
 #' Tables of a mixture-of-regressions fit
@@ -505,9 +576,9 @@ print.latents_mixture_regression <- function(x, digits = 4L, ...) {
               fit$converged, fit$iterations, fit$n_best_replicated,
               sum(x$starts$stage == "completed"), fit$n_starts))
   if (!is.null(x$inference)) {
-    table <- .mixture_table(x, "coefficients")
-    shown <- table[c("class", "term", "estimate", "std_error", "p_value")]
-    print(shown, digits = digits, row.names = FALSE)
+    print(.mixture_table(x, "classes"))
+    cat("\n")
+    print(.mixture_table(x, "coefficients"))
   } else {
     print(x$params$beta, digits = digits)
   }
@@ -536,13 +607,10 @@ summary.latents_mixture_regression <- function(object, level = 0.95, vcov_type =
 #' @param digits Significant digits.
 #' @export
 print.summary_latents_mixture_regression <- function(x, digits = 4L, ...) {
-  headings <- c(fit = "Model fit", coefficients = "Regression coefficients",
-                classes = "Classes", membership = "Class membership (multinomial logit)",
-                group_classes = "Group classes")
-  invisible(lapply(names(x), function(name) {
-    if (nrow(x[[name]]) == 0L) return(NULL)
-    cat(headings[[name]], "\n", sep = "")
-    print(x[[name]], digits = digits, row.names = FALSE)
+  # Each table carries its own title and layout.
+  invisible(lapply(x, function(table) {
+    if (nrow(table) == 0L) return(NULL)
+    print(table)
     cat("\n")
   }))
   invisible(x)

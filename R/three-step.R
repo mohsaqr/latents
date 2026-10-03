@@ -275,17 +275,25 @@ three_step <- function(x, data, outcome,
     "`ci_level` must be a single number in (0, 1)" =
       is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1
   )
-  .multilpa_check_three_step_fit(x)
-  if (outcome %in% x$vars) {
-    stop(errorCondition(sprintf(
-      "`%s` helped define the fitted classes, so it is not a distal outcome.",
-      outcome), class = c("multilpa_indicator_reused", "latents_bad_outcome"),
-      call = NULL))
+  if (.trajectory_is_fit(x)) {
+    # Trajectory models classify persons: one outcome value per person.
+    prepared <- .trajectory_three_step_inputs(x, data, outcome)
+    pieces <- prepared$pieces
+    values <- prepared$values
+    level <- "persons"
+  } else {
+    .multilpa_check_three_step_fit(x)
+    if (outcome %in% x$vars) {
+      stop(errorCondition(sprintf(
+        "`%s` helped define the fitted classes, so it is not a distal outcome.",
+        outcome), class = c("multilpa_indicator_reused", "latents_bad_outcome"),
+        call = NULL))
+    }
+    pieces <- .multilpa_level_assignments(x, level)
+    .multilpa_check_row_count(x, data)
+    .multilpa_check_alignment(x, data)
+    values <- .multilpa_outcome_values(x, data, outcome, level)
   }
-  pieces <- .multilpa_level_assignments(x, level)
-  .multilpa_check_row_count(x, data)
-  .multilpa_check_alignment(x, data)
-  values <- .multilpa_outcome_values(x, data, outcome, level)
   weights <- .multilpa_step_weights(pieces, method)
   classes <- seq_len(pieces$n_classes)
   quantile <- stats::qnorm(1 - (1 - ci_level) / 2)
@@ -336,7 +344,15 @@ three_step <- function(x, data, outcome,
                        effective_n = totals^2 / colSums(weights^2),
                        row.names = NULL, stringsAsFactors = FALSE)
   attr(result, "vcov_type") <- vcov_type
-  result
+  column <- .latents_column
+  .latents_table(result, ci_level,
+                 sprintf("Distal outcome by class (%s, %s%% CI)", method,
+                         format(100 * ci_level)),
+                 list(column("Class", "class", "integer"), column("Mean", "estimate"),
+                      column(sprintf("%s%% CI", format(100 * ci_level)),
+                             c("conf_low", "conf_high"), "ci", "estimate"),
+                      column("SE", "standard_error"),
+                      column("Effective n", "effective_n")))
 }
 
 #' Pairwise differences between class outcome means
@@ -376,7 +392,17 @@ three_step <- function(x, data, outcome,
     row.names = NULL, stringsAsFactors = FALSE)
   attr(result, "adjust") <- adjust
   attr(result, "vcov_type") <- vcov_type
-  result
+  column <- .latents_column
+  percent <- format(100 * (2 * stats::pnorm(quantile) - 1))
+  .latents_table(result, NULL,
+                 sprintf("Distal outcome: class differences (%s, %s%% CI)", method, percent),
+                 list(column("Class", "class", "integer"),
+                      column("vs", "reference_class", "integer"),
+                      column("Difference", "estimate"),
+                      column(sprintf("%s%% CI", percent), c("conf_low", "conf_high"), "ci",
+                             "estimate"),
+                      column("p", "p_value", "p"),
+                      column(sprintf("p (%s)", adjust), "p_adjusted", "p")))
 }
 
 #' The outcome, at the level being analysed
@@ -538,6 +564,13 @@ r3step <- function(x, data, covariates,
   level <- match.arg(level)
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
+  if (.trajectory_is_fit(x)) {
+    stop(errorCondition(paste(
+      "r3step() is not implemented for trajectory models yet. Covariates that",
+      "predict class membership can be estimated in one step with",
+      "`membership =` in mixture_regression()."),
+      class = "latents_unsupported_three_step", call = NULL))
+  }
   .multilpa_refuse_noise(x, "r3step()")
   if (.latents_is_weighted(x)) .latents_refuse_weights("`r3step()` yet")
   stopifnot(
