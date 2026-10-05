@@ -59,14 +59,13 @@
     },
     binomial = y * eta - spec$trials * .mixture_log1pexp(eta) +
       spec$log_normalizer,
-    poisson = y * eta - exp(eta) + spec$log_normalizer,
+    poisson = matrix(stats::dpois(y, exp(eta), log = TRUE), nrow(eta), ncol(eta)),
     negative_binomial = {
       # NB2 with size r = 1 / alpha: log Gamma(y + r) - log Gamma(r)
       # + r log(r / (r + mu)) + y log(mu / (r + mu)) - log y!.
       size <- matrix(1 / params$sigma2, nrow(eta), ncol(eta), byrow = TRUE)
-      log_total <- log(size + exp(eta))
-      lgamma(y + size) - lgamma(size) + size * (log(size) - log_total) +
-        y * (eta - log_total) + spec$log_normalizer
+      matrix(stats::dnbinom(y, size = size, mu = exp(eta), log = TRUE),
+             nrow(eta), ncol(eta))
     },
     ordinal = .ordinal_log_density(spec, params, eta))
 }

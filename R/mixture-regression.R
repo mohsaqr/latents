@@ -511,6 +511,10 @@ mixture_regression <- function(formula, data, n_classes,
   model_terms <- stats::terms(frame)
   full_design <- stats::model.matrix(model_terms, frame)
   offset <- stats::model.offset(frame) %||% rep(0, n)
+  if (any(!is.finite(full_design)) || any(!is.finite(offset))) {
+    stop(errorCondition("The evaluated regression design and offsets must be finite.",
+                        class = "latents_bad_data", call = NULL))
+  }
   response <- .mixture_response(stats::model.response(frame), family)
   ordinal <- identical(family, "ordinal")
   if (ordinal && !isTRUE(attr(model_terms, "intercept") == 1L)) {
@@ -565,7 +569,7 @@ mixture_regression <- function(formula, data, n_classes,
                               group_index, "group_membership")
   }
 
-  if (identical(family, "binomial") && all(response$trials == 1) &&
+  if (n_classes > 1L && identical(family, "binomial") && all(response$trials == 1) &&
       !identical(nesting, "group")) {
     stop(errorCondition(paste(
       "A mixture of logistic regressions with one binary outcome per class",
@@ -597,6 +601,11 @@ mixture_regression <- function(formula, data, n_classes,
   clusters <- if (is.null(cluster)) NULL else
     .growth_cluster_spec(data[[cluster]], group_index, row_membership,
                          group_membership_design$matrix, n_group_classes)
+  random_design <- if (is.null(random)) NULL else stats::model.matrix(random, data = data)
+  if (any(!is.finite(random_design))) {
+    stop(errorCondition("The evaluated random-effects design must be finite.",
+                        class = "latents_bad_data", call = NULL))
+  }
   c(list(
     family = family, nesting = nesting, variance = variance,
     n = n, n_classes = n_classes,
@@ -625,8 +634,7 @@ mixture_regression <- function(formula, data, n_classes,
     group_membership = group_membership, response_name =
       deparse1(formula[[2L]]),
     random = random,
-    random_design = if (is.null(random)) NULL else
-      stats::model.matrix(random, data = data),
+    random_design = random_design,
     cluster = cluster), clusters,
     if (ordinal) list(n_categories = length(response$levels),
                       category_levels = response$levels,
@@ -640,6 +648,10 @@ mixture_regression <- function(formula, data, n_classes,
   frame <- stats::model.frame(formula, data, na.action = stats::na.fail)
   terms <- stats::terms(frame)
   design <- stats::model.matrix(terms, frame)
+  if (any(!is.finite(design))) {
+    stop(errorCondition("The evaluated membership design must be finite.",
+                        class = "latents_bad_data", call = NULL))
+  }
   list(matrix = design, terms = terms,
        xlevels = stats::.getXlevels(terms, frame),
        contrasts = attr(design, "contrasts"))
@@ -659,6 +671,9 @@ mixture_regression <- function(formula, data, n_classes,
   }
   whole <- function(v) all(abs(v - round(v)) < sqrt(.Machine$double.eps))
   if (identical(family, "binomial")) {
+    if (!is.numeric(response) && !is.logical(response) && !is.factor(response)) {
+      bad_data("A binomial outcome must be numeric, logical or a two-level factor.")
+    }
     if (is.matrix(response)) {
       if (ncol(response) != 2L) {
         bad_data("A binomial matrix outcome must be cbind(successes, failures).")
@@ -675,7 +690,8 @@ mixture_regression <- function(formula, data, n_classes,
       y <- as.numeric(response)
       trials <- rep(1, length(y))
     }
-    if (any(y < 0) || any(y > trials) || !whole(y) || !whole(trials)) {
+    if (any(!is.finite(y)) || any(!is.finite(trials)) ||
+        any(y < 0) || any(y > trials) || !whole(y) || !whole(trials)) {
       bad_data(paste("A binomial outcome must be 0/1, logical, a two-level",
                      "factor, or whole-number counts with successes not",
                      "exceeding trials."))
@@ -686,6 +702,7 @@ mixture_regression <- function(formula, data, n_classes,
     bad_data(sprintf("The %s family needs a numeric outcome.", family))
   }
   y <- as.numeric(response)
+  if (any(!is.finite(y))) bad_data("The outcome must contain only finite values.")
   if (family %in% c("poisson", "negative_binomial") && (any(y < 0) || !whole(y))) {
     bad_data(sprintf("A %s outcome must be non-negative whole numbers.", family))
   }

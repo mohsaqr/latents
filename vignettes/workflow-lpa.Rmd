@@ -14,7 +14,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
                       fig.height = 4.6, fig.align = "center", dpi = 96)
-options(digits = 3, width = 90)
+old_options <- options(digits = 3, width = 90)
 ```
 
 Latent profile analysis (LPA) is a mixture model for continuous indicators.
@@ -202,3 +202,7 @@ estimated with `enumerate_lpa(model = "all")`.
 
 Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
 *Pattern Recognition*, 28(5), 781–793.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

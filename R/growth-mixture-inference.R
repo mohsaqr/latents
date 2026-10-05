@@ -127,6 +127,15 @@
       }))
     }
     xr <- stats$xy - by_column(stats$xx, seq_len(n_columns), coefficients)
+    if (length(residuals$direct) && !is.null(stats$raw)) {
+      raw <- stats$raw
+      for (i in residuals$direct) {
+        rows <- raw$rows[[i]]
+        design <- raw$design[rows, , drop = FALSE]
+        residual <- raw$y[rows] - as.vector(design %*% coefficients)
+        xr[i, ] <- as.vector(crossprod(design, residual))
+      }
+    }
     xzm <- by_column(stats$xz, seq_len(n_random), means)
     zzm <- by_column(stats$zz, seq_len(n_random), means)
     d_beta <- (xr - xzm) / sigma2

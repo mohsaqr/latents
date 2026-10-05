@@ -924,6 +924,9 @@
 #' is below 0.001. The coefficients follow from expanding
 #' sum_j log(1 + j alpha) - (y + 1/alpha) log(1 + mu alpha).
 #' Both expansion variables (alpha y and alpha mu) are then below 0.001.
+#' Above that switch, large size parameters use the digamma asymptotic
+#' expansion, combining its logarithm with the likelihood terms before
+#' scaling. Subtracting two digamma/trigamma values there loses precision.
 #' @noRd
 .latents_negative_binomial_dispersion_derivatives <- function(value, means, dispersion) {
   # One mean per profile, or (for a regression) a rows-by-classes matrix.
@@ -954,6 +957,39 @@
     })
     score[small] <- Reduce(`+`, Map(`*`, terms, seq_len(4L)))
     curvature[small] <- Reduce(`+`, Map(`*`, terms, seq_len(4L)^2))
+  }
+  large <- r >= 1000 & !small
+  if (any(large)) {
+    size <- r[large]
+    count <- y[large]
+    mean <- mu[large]
+    difference <- (count - mean) / (size + mean)
+    log_remainder <- log1p(count / size) - log1p(mean / size) - difference
+    near <- abs(difference) < 0.01
+    if (any(near)) {
+      # log(1 + z) - z without cancellation around zero.
+      z <- difference[near]
+      log_remainder[near] <- Reduce(`+`, lapply(2:12, function(order) {
+        (-1)^(order + 1L) * z^order / order
+      }))
+    }
+    score_large <- -size * log_remainder
+    curvature_large <- size * (log_remainder +
+      ((size / (size + count)) * difference) * difference)
+    log_ratio <- log1p(count / size)
+    fraction <- count / (size + count)
+    powers <- c(1L, 2L, 4L, 6L, 8L)
+    coefficients <- c(0.5, 1 / 12, -1 / 120, 1 / 252, -1 / 240)
+    for (index in seq_along(powers)) {
+      power <- powers[index]
+      gap <- -expm1(-power * log_ratio)
+      coefficient <- coefficients[index] * size^(1L - power)
+      score_large <- score_large - coefficient * gap
+      curvature_large <- curvature_large + coefficient *
+        ((1L - power) * gap - power * fraction * exp(-power * log_ratio))
+    }
+    score[large] <- score_large
+    curvature[large] <- curvature_large
   }
   list(score = score, curvature = curvature)
 }

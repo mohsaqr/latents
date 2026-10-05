@@ -9,6 +9,7 @@
 \.tar\.gz$
 \.Rcheck$
 ^\.DS_Store$
+(^|/)Rplots\.pdf$
 ^\.claude$
 ^data-raw$
 ^\.github$

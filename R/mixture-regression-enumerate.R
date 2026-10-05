@@ -26,7 +26,8 @@
 #'   `converged`, `n_best_replicated`, `best_bic` (the minimum-BIC row), and,
 #'   with `bootstrap > 0`, `blrt_statistic`, `blrt_p_value` and
 #'   `blrt_replicates` (the successful replicates) and `blrt_flagged` (the
-#'   replicates in which a refit did not converge or separated). `get_results(x, "model",
+#'   failed, unconverged, separated or reversed-likelihood replicates). The
+#'   p-value is `NA` if any requested replicate fails validation. `get_results(x, "model",
 #'   n_classes = , n_group_classes = )` returns one fitted model.
 #' @section Conditions:
 #'   `latents_bad_argument` for an empty or invalid grid. A model that cannot
@@ -174,6 +175,16 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
   refit_arguments$n_starts <- starts
   refit_arguments$seed <- NULL
   refit_arguments$missing <- NULL
+  tolerance <- 100 * (arguments$tol %||% 1e-8) *
+    (1 + abs(null_fit$log_likelihood))
+  if (!isTRUE(null_fit$converged) || !isTRUE(alternative_fit$converged) ||
+      !is.finite(observed) || observed < -tolerance) {
+    warning(warningCondition(
+      "The observed fits failed validation, so blrt_p_value is NA.",
+      class = "latents_failed_replicates", call = NULL))
+    return(empty)
+  }
+  observed <- max(0, observed)
   # Replicate refits routinely meet unconverged or degenerate starts. Those
   # warnings are counted per replicate and reported in `blrt_flagged`, not
   # repeated hundreds of times on the console.
@@ -185,7 +196,7 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
     } else .mixture_draw(null_fit)
     warned <- FALSE
     refit <- function(n) {
-      withCallingHandlers(
+      tryCatch(withCallingHandlers(
         .mixture_try_fit(null_fit$spec$formula, simulated, n, h,
                         refit_arguments),
         latents_unconverged = function(w) {
@@ -200,19 +211,26 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
         latents_separation = function(w) {
           warned <<- TRUE
           invokeRestart("muffleWarning")
-        })
+        }), error = identity)
     }
     null_refit <- refit(k - 1L)
     alternative_refit <- refit(k)
-    if (warned) flagged <<- flagged + 1L
-    if (inherits(null_refit, "condition") ||
-        inherits(alternative_refit, "condition")) return(NA_real_)
-    2 * (alternative_refit$log_likelihood - null_refit$log_likelihood)
+    invalid <- warned || inherits(null_refit, "condition") ||
+      inherits(alternative_refit, "condition") ||
+      !isTRUE(null_refit$converged) || !isTRUE(alternative_refit$converged)
+    statistic <- if (invalid) NA_real_ else
+      2 * (alternative_refit$log_likelihood - null_refit$log_likelihood)
+    if (!is.finite(statistic) || statistic < -tolerance) {
+      flagged <<- flagged + 1L
+      return(NA_real_)
+    }
+    max(0, statistic)
   }, numeric(1))
-  valid <- statistics[is.finite(statistics)]
-  data.frame(blrt_statistic = observed,
-             blrt_p_value = (1 + sum(valid >= observed)) / (1 + length(valid)),
-             blrt_replicates = length(valid), blrt_flagged = flagged)
+  tally <- .latents_blrt_p_value(
+    data.frame(statistic = statistics, valid = is.finite(statistics)),
+    observed, replicates)
+  data.frame(blrt_statistic = observed, blrt_p_value = tally$p_value,
+             blrt_replicates = tally$n_valid, blrt_flagged = flagged)
 }
 
 #' @rdname enumerate_regressions
@@ -244,7 +262,9 @@ get_results.latents_regression_enumeration <- function(x, what = c("fit", "model
       class = "latents_bad_argument", call = NULL))
   }
   fit <- x$fits[[row]]
-  fit$inference <- .mixture_inference(fit, "observed")
+  fit$inference <- if (inherits(fit, "latents_growth_mixture")) {
+    .growth_resolve_inference(fit)
+  } else .mixture_resolve_inference(fit, NULL)
   fit
 }
 

@@ -117,7 +117,8 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
   do.call(rbind, lapply(seq_len(ncol(posterior)), function(k) {
     do.call(rbind, lapply(distinct, function(t) {
       at <- times == t
-      w <- posterior[at, k]
+      w <- posterior[at, k] *
+        (spec$sampling_weights %||% rep(1, spec$n_groups))[spec$group_index[at]]
       total <- sum(w)
       if (total < 1) return(NULL)
       mean <- sum(w * outcome[at]) / total
@@ -140,8 +141,7 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
   grid <- unique(bands$trajectory_time)
   variables <- setdiff(all.vars(x$spec$random), x$spec$id)
   rows <- if (length(variables) == 0L) data.frame(row = seq_along(grid)) else
-    .mixture_typical_rows(x$spec$model_data[variables], variables[1L], grid)
-  if (time %in% names(rows)) rows[[time]] <- grid
+    .mixture_typical_rows(x$spec$model_data[unique(c(time, variables))], time, grid)
   random_design <- stats::model.matrix(x$spec$random, rows)
   covariances <- .growth_covariances(x$spec, x$params)
   z <- stats::qnorm(1 - (1 - spread) / 2)
@@ -167,7 +167,7 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
     .growth_spread(x, bands, time, spread)
   }
   means <- .growth_observed_means(x, time, level)
-  observed <- as.data.frame(.growth_individual_table(x))
+  observed <- as.data.frame(.growth_individual_table(x, time))
   observed$trajectory_time <- observed[[time]]
   observed$person <- observed[[x$spec$id]]
   people <- unique(observed[c("person", "class")])
@@ -252,7 +252,7 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
 #' @noRd
 .growth_plot_individuals <- function(x, key, time, persons, main, subtitle) {
   time <- .growth_time_variable(x, time)
-  rows <- as.data.frame(.growth_individual_table(x))
+  rows <- as.data.frame(.growth_individual_table(x, time))
   rows$trajectory_time <- rows[[time]]
   rows$person <- rows[[x$spec$id]]
   assignments <- as.data.frame(.growth_assignment_table(x))

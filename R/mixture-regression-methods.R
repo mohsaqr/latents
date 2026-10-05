@@ -309,9 +309,10 @@
     x$expectation$tau
   assigned <- max.col(posterior, ties.method = "first")
   k <- spec$n_classes
-  means <- rowsum(posterior, factor(assigned, levels = seq_len(k))) /
-    pmax(tabulate(assigned, k), 1)
-  means[tabulate(assigned, k) == 0L, ] <- NA_real_
+  sizes <- tabulate(assigned, k)
+  occupied <- which(sizes > 0L)
+  means <- matrix(NA_real_, k, k)
+  means[occupied, ] <- rowsum(posterior, assigned) / sizes[occupied]
   data.frame(assigned = rep(paste0("class_", seq_len(k)), times = k),
              class = rep(paste0("class_", seq_len(k)), each = k),
              mean_posterior = as.vector(means),

@@ -21,6 +21,13 @@
   # One weight per independent unit (person, or cluster); unweighted, one.
   weights <- spec$sampling_weights %||% 1
   scores <- .growth_scores(spec, stats, params)
+  if (identical(vcov_type, "robust")) {
+    .multilpa_require_clusters(nrow(scores), length(theta),
+                               "A robust growth covariance",
+                               unit = "independent units")
+    .inference_require_rank(scores * weights,
+                             "The unit scores are rank deficient; robust inference is unavailable.")
+  }
   total <- function(v) {
     colSums(.growth_scores(spec, stats, .growth_unpack(spec, v, params)) * weights)
   }
@@ -432,7 +439,9 @@
   frame <- stats::model.frame(model_terms, newdata, xlev = spec$xlevels,
                               na.action = stats::na.fail)
   full <- stats::model.matrix(model_terms, frame, contrasts.arg = spec$contrasts)
-  cbind(full[, colnames(spec$x), drop = FALSE], full[, colnames(spec$z), drop = FALSE])
+  design <- cbind(full[, colnames(spec$x), drop = FALSE], full[, colnames(spec$z), drop = FALSE])
+  attr(design, "offset") <- as.numeric(stats::model.offset(frame) %||% rep(0, nrow(frame)))
+  design
 }
 
 #' Mean trajectory of every class over a time grid, with Wald bands
@@ -458,7 +467,7 @@
 #' `class_mean` is the modal class's fixed trajectory; `predicted` adds the
 #' person's predicted random effects (the conditional, empirical Bayes fit).
 #' @noRd
-.growth_individual_table <- function(x) {
+.growth_individual_table <- function(x, time = NULL) {
   view <- .trajectory_view(x)
   spec <- view$spec
   modal <- view$modal
@@ -481,7 +490,7 @@
                     predicted = view$response_mean(own, modal[person]),
                     stringsAsFactors = FALSE)
   names(out)[1L] <- spec$id
-  time <- .growth_time_variable(x)
+  time <- .growth_time_variable(x, time)
   out[[time]] <- spec$model_data[[time]]
   out[c(spec$id, time, "class", "observed", "class_mean", "predicted")]
 }
@@ -507,7 +516,7 @@
     assignments = .growth_assignment_table(x),
     random_effects = .growth_random_effects_table(x),
     trajectories = .growth_trajectory_table(x, level, inference, time),
-    individual = .growth_individual_table(x),
+    individual = .growth_individual_table(x, time),
     starts = x$starts,
     group_classes = .growth_group_class_table(x, level, inference),
     clusters = .growth_cluster_table(x),
@@ -530,7 +539,8 @@
   }
   percent <- format(100 * level)
   id <- x$spec$id
-  time <- if (what %in% c("trajectories", "individual")) .growth_time_variable(x) else NULL
+  time <- if (identical(what, "trajectories")) names(table)[2L] else if (
+    identical(what, "individual")) names(table)[2L] else NULL
   # The recovery table's second column is the caller's truth column.
   truth_label <- if (identical(what, "recovery")) names(table)[2L] else NULL
   plan <- switch(what,
@@ -805,9 +815,11 @@ confint.latents_growth_mixture <- function(object, parm, level = 0.95, ...) {
 #' @export
 logLik.latents_growth_mixture <- function(object, ...) {
   structure(object$log_likelihood, df = object$n_parameters,
-            nobs = length(object$stats$n), class = "logLik")
+             nobs = nobs(object), class = "logLik")
 }
 
 #' @rdname get_results.latents_growth_mixture
 #' @export
-nobs.latents_growth_mixture <- function(object, ...) length(object$stats$n)
+nobs.latents_growth_mixture <- function(object, ...) {
+  object$spec$n_clusters %||% length(object$stats$n)
+}

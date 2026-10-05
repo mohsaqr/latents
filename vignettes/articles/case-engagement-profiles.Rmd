@@ -15,7 +15,7 @@ vignette: >
 knitr::opts_chunk$set(collapse = FALSE, comment = "#>",
                       fig.width = 7, fig.height = 4.2, fig.align = "center",
                       dpi = 96)
-options(digits = 4, width = 92)
+old_options <- options(digits = 4, width = 92)
 ```
 
 Multilevel latent profile analysis (MLPA) is used when observations are nested within higher-level units and the aim is to identify latent profiles at the observation level while also describing how the prevalence of those profiles varies across units. Examples include repeated measurements nested within persons, students nested within schools, patients nested within clinics, or employees nested within organizations. Because observations from the same higher-level unit may be dependent, MLPA extends standard latent profile analysis by modeling the data at two levels. Latent profiles are defined at Level 1, whereas latent classes at Level 2 describe differences between higher-level units in the composition of those profiles.
@@ -411,3 +411,7 @@ Springer Nature Singapore.
 Saqr, M., & López-Pernas, S. (2021). The longitudinal trajectories of online
 engagement over a full program. *Computers & Education, 175*, 104325.
 [doi:10.1016/j.compedu.2021.104325](https://doi.org/10.1016/j.compedu.2021.104325).
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

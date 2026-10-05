@@ -11,7 +11,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                       fig.height = 4.5, fig.align = "center", dpi = 96)
-options(digits = 3, width = 100)
+old_options <- options(digits = 3, width = 100)
 ```
 
 Two-level latent class analysis (LCA) is used when the indicators are
@@ -201,3 +201,7 @@ multilca(first_week, vars = activities, id = "student", n_profiles = 2,
   rare answers can push probabilities to their lower bound (`min_probability`).
 - Categories are taken from the observed values; factor levels keep their
   order.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

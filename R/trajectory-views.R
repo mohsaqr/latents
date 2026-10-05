@@ -66,7 +66,7 @@
 #' @param rows A data frame of predictor values.
 #' @param inference From `.trajectory_inference()`.
 #' @param level Confidence level.
-#' @return A data frame: `class`, `estimate`, `std_error` (link scale),
+#' @return A data frame: `class`, `estimate`, `std_error` (response scale),
 #'   `conf_low`, `conf_high`, one row per class and row of `rows`.
 #' @noRd
 .trajectory_band <- function(x, rows, inference, level) {
@@ -80,11 +80,15 @@
   do.call(rbind, lapply(view$classes, function(class) {
     names <- c(sprintf("coefficient.%s.%s", class, colnames(spec$x)),
                if (ncol(spec$z) > 0L) sprintf("coefficient.common.%s", colnames(spec$z)))
-    estimate <- as.vector(design %*% inference$theta[names])
+    estimate <- as.vector(design %*% inference$theta[names]) + attr(design, "offset")
     covariance <- inference$vcov[names, names, drop = FALSE]
     std_error <- .inference_delta_se(design, covariance, "rowsums")
-    data.frame(class = class, estimate = view$inverse_link(estimate),
-               std_error = std_error,
+    response <- view$inverse_link(estimate)
+    response_derivative <- switch(view$family, gaussian = rep(1, length(estimate)),
+                                  binomial = response * (1 - response),
+                                  poisson = , negative_binomial = response)
+    data.frame(class = class, estimate = response,
+               std_error = std_error * response_derivative,
                conf_low = view$inverse_link(estimate - z * std_error),
                conf_high = view$inverse_link(estimate + z * std_error),
                stringsAsFactors = FALSE)

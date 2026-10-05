@@ -175,6 +175,10 @@ summary.multilpa <- function(object, ...) {
     best_start = object$best_start,
     n_best_replicated = object$n_best_replicated,
     replication_tolerance = object$replication_tolerance)
+  if (isTRUE(object$noise)) {
+    result$noise <- TRUE
+    result$noise_posteriors <- object$noise_posteriors
+  }
   stopifnot("the summary must not carry an unnamed field" =
               !anyNA(names(result)) && !any(names(result) == ""))
   # Every table the fit can produce, built once here, so `get_results()` on the
@@ -225,6 +229,9 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
 #' @noRd
 .multilpa_count_frame <- function(x) {
   individuals <- x$effective_profile_counts %||% colSums(x$subject_posteriors)
+  if (isTRUE(x$noise)) {
+    individuals <- c(individuals, noise = sum(x$noise_posteriors))
+  }
   groups <- x$effective_group_counts
   if (is.null(groups) && !is.null(x$group_posteriors)) {
     groups <- colSums(x$group_posteriors)
@@ -233,7 +240,11 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
                    list(individuals = individuals, groups = groups))
   rows <- lapply(names(counts), function(level) {
     count <- unname(counts[[level]])
-    data.frame(level = level, class = seq_along(count),
+    classes <- seq_along(count)
+    if (identical(level, "individuals") && isTRUE(x$noise)) {
+      classes[length(classes)] <- 0L
+    }
+    data.frame(level = level, class = classes,
                effective_count = count,
                effective_proportion = count / sum(count))
   })

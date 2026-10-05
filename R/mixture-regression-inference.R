@@ -174,6 +174,13 @@
   # estimate: the likelihood is flat there, so it is held, its errors are
   # NA, and the others are conditional on it.
   free <- !.mixture_boundary_coordinates(spec, theta)
+  if (identical(vcov_type, "robust")) {
+    .multilpa_require_clusters(nrow(scores_for_meat), sum(free),
+                               "A robust regression covariance",
+                               unit = "independent units")
+    .inference_require_rank(scores_for_meat[, free, drop = FALSE],
+                             "The unit scores are rank deficient; robust inference is unavailable.")
+  }
   inverse <- .mixture_invert(information[free, free, drop = FALSE])
   free_vcov <- if (identical(vcov_type, "robust")) {
     .inference_sandwich(inverse, meat[free, free, drop = FALSE])
@@ -226,6 +233,15 @@
 .mixture_delta <- function(theta, vcov, transform, step = 1e-6) {
   # The mixture engines have always used the rowSums((J V) * J) form.
   jacobian <- .inference_numeric_jacobian(transform, theta, step)
+  if (anyNA(vcov)) {
+    errors <- vapply(seq_len(nrow(jacobian)), function(i) {
+      used <- which(jacobian[i, ] != 0)
+      if (!length(used)) return(0)
+      .inference_delta_se(jacobian[i, used, drop = FALSE],
+                          vcov[used, used, drop = FALSE], "rowsums")
+    }, numeric(1))
+    return(list(estimate = transform(theta), std_error = errors))
+  }
   list(estimate = transform(theta),
        std_error = .inference_delta_se(jacobian, vcov, "rowsums"))
 }

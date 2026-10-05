@@ -10,7 +10,7 @@ output:
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                       fig.height = 4.5, fig.align = "center", dpi = 96)
-options(digits = 4, width = 100)
+old_options <- options(digits = 4, width = 100)
 ```
 
 Latent transition analysis (LTA) estimates the probability of moving from one
@@ -238,3 +238,7 @@ engagement over a full program. *Computers & Education, 175*, 104325.
 Tikka, S., López-Pernas, S., & Saqr, M. (2025). tna: An R package for
 transition network analysis. *Applied Psychological Measurement*.
 <https://doi.org/10.1177/01466216251348840>
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

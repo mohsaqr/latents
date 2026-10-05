@@ -11,7 +11,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                       fig.height = 4.5, fig.align = "center", dpi = 96)
-options(digits = 3, width = 100)
+old_options <- options(digits = 3, width = 100)
 ```
 
 A single regression assumes that one line describes everyone. Mixture
@@ -250,3 +250,7 @@ Methodology*, 33, 213–239.
 
 Wedel, M., & DeSarbo, W. S. (1995). A mixture likelihood approach for
 generalized linear models. *Journal of Classification*, 12, 21–55.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

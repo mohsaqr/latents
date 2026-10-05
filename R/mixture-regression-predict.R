@@ -24,6 +24,10 @@
   new$x <- full_design[, colnames(spec$x), drop = FALSE]
   new$z <- full_design[, colnames(spec$z), drop = FALSE]
   new$offset <- as.numeric(stats::model.offset(frame) %||% rep(0, new$n))
+  if (any(!is.finite(full_design)) || any(!is.finite(new$offset))) {
+    stop(errorCondition("The evaluated regression design and offsets must be finite.",
+                        class = "latents_bad_data", call = NULL))
+  }
   new$kept_rows <- seq_len(new$n)
   if (with_response) {
     response <- .mixture_response(stats::model.response(frame), spec$family,
@@ -47,8 +51,13 @@
     frame <- stats::model.frame(blueprint$terms, newdata,
                                 xlev = blueprint$xlevels,
                                 na.action = stats::na.fail)
-    stats::model.matrix(blueprint$terms, frame,
-                        contrasts.arg = blueprint$contrasts)
+    design <- stats::model.matrix(blueprint$terms, frame,
+                                   contrasts.arg = blueprint$contrasts)
+    if (any(!is.finite(design))) {
+      stop(errorCondition("The evaluated membership design must be finite.",
+                          class = "latents_bad_data", call = NULL))
+    }
+    design
   }
   row_membership <- membership_matrix("membership")
   if (!is.null(spec$id) && (!identical(spec$nesting, "observation") ||

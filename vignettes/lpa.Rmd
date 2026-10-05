@@ -11,7 +11,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                       fig.height = 4.5, fig.align = "center", dpi = 96)
-options(digits = 3, width = 100)
+old_options <- options(digits = 3, width = 100)
 ```
 
 Multilevel latent profile analysis (MLPA) estimates latent profiles at the
@@ -264,3 +264,7 @@ print(summary(fit), rows = 3)
   covariance; `covariance_model = "full"` relaxes it).
 - The numbers of profiles and group classes are chosen by the analyst; see
   the evaluation vignette for comparing them.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

@@ -11,7 +11,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                       fig.height = 4.5, fig.align = "center", dpi = 96)
-options(digits = 3, width = 100)
+old_options <- options(digits = 3, width = 100)
 ```
 
 A fitted mixture model is evaluated on four questions: whether the estimation
@@ -212,3 +212,7 @@ diagnostics(fit)                                # all classification diagnostics
 - Wald intervals assume a converged fit with no variance at its bound, and are
   conditional on the chosen numbers of profiles and classes.
 - Unmodelled dependence between indicators can make extra classes look better.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

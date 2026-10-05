@@ -29,6 +29,7 @@
   n_random <- ncol(random)
   cross <- function(a, b, i) crossprod(a[i, , drop = FALSE], b[i, , drop = FALSE])
   list(
+    raw = list(y = y, design = design, random = random, rows = rows),
     n = lengths(rows, use.names = FALSE),
     yy = vapply(rows, function(i) sum(y[i]^2), numeric(1), USE.NAMES = FALSE),
     xy = t(vapply(rows, function(i) as.vector(crossprod(design[i, , drop = FALSE], y[i])),
@@ -85,13 +86,27 @@
   n_columns <- length(coefficients)
   n_random <- dim(stats$zz)[1L]
   outer_coefficients <- as.vector(tcrossprod(coefficients))
-  rr <- stats$yy - 2 * as.vector(stats$xy %*% coefficients) +
-    colSums(matrix(stats$xx, n_columns^2, n_persons) * outer_coefficients)
+  cross <- 2 * as.vector(stats$xy %*% coefficients)
+  fitted_ss <- colSums(matrix(stats$xx, n_columns^2, n_persons) * outer_coefficients)
+  rr <- stats$yy - cross + fitted_ss
   # X'Z is columns x random x persons; beta'X'Z is random x persons.
   xz_beta <- matrix(crossprod(coefficients, matrix(stats$xz, n_columns,
                                                    n_random * n_persons)),
                     n_random, n_persons)
-  list(rr = rr, zr = stats$zy - t(xz_beta))
+  zr <- stats$zy - t(xz_beta)
+  # Recompute residuals directly when cross-product subtraction would lose
+  # more than about six digits. Ordinary-scale fits retain the fast path.
+  unstable <- which(rr <= 1e-6 * (abs(stats$yy) + abs(cross) + abs(fitted_ss)))
+  if (length(unstable) && !is.null(stats$raw)) {
+    raw <- stats$raw
+    for (i in unstable) {
+      rows <- raw$rows[[i]]
+      residual <- raw$y[rows] - as.vector(raw$design[rows, , drop = FALSE] %*% coefficients)
+      rr[i] <- sum(residual^2)
+      zr[i, ] <- as.vector(crossprod(raw$random[rows, , drop = FALSE], residual))
+    }
+  }
+  list(rr = rr, zr = zr, direct = unstable)
 }
 
 #' One class's per-person log densities and random-effect posteriors

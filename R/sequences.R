@@ -95,7 +95,8 @@
   cells <- .multilpa_sequence_matrix(x, long)
   groups <- unique(long$group)
   occasions <- as.data.frame(lapply(seq_len(ncol(cells)), function(column) {
-    factor(cells[, column], levels = seq_len(x$n_profiles))
+    factor(cells[, column], levels = c(if (isTRUE(x$noise)) 0L,
+                                      seq_len(x$n_profiles)))
   }), optional = TRUE)
   names(occasions) <- colnames(cells)
   # The group identifier is a column, not a row name: row names coerce to

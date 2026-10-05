@@ -51,7 +51,8 @@
   bad_data <- function(message) {
     stop(errorCondition(message, class = "latents_bad_data", call = NULL))
   }
-  whole <- function(v) all(abs(v - round(v)) < sqrt(.Machine$double.eps))
+  whole <- function(v) all(is.finite(v)) &&
+    all(abs(v - round(v)) < sqrt(.Machine$double.eps))
   if (is.numeric(response) && !is.matrix(response) && whole(response)) {
     response <- round(as.vector(response))
   }
@@ -533,7 +534,7 @@
   do.call(rbind, lapply(seq_along(classes), function(k) {
     delta <- .mixture_delta(inference$theta, inference$vcov, function(theta) {
       params <- .mixture_unpack(spec, theta, x$params)
-      eta <- design %*% c(params$beta[, k], params$common)
+      eta <- design %*% c(params$beta[, k], params$common) + attr(design, "offset")
       drop(.ordinal_expected_scores(eta, params$thresholds[, k, drop = FALSE]))
     })
     data.frame(class = classes[k], estimate = delta$estimate,

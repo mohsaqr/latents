@@ -13,7 +13,7 @@ vignette: >
 
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-options(digits = 6, width = 100)
+old_options <- options(digits = 6, width = 100)
 ```
 
 Multilevel latent profile analysis (MLPA) estimates latent profiles at the observation level while simultaneously modeling how the probabilities of those profiles vary across higher-level latent classes. In this framework, the observation-level profiles are defined by their characteristic indicator means, whereas the higher-level classes are distinguished by the probabilities with which those profiles occur.
@@ -227,3 +227,6 @@ The multilevel structure accounts for the nesting of repeated enrolments within 
 
 When the scientific question concerns how students move from one engagement profile to another over time, a transition model is more appropriate. The [transition vignette](case-engagement-transitions.html) extends the analysis by estimating probabilities of movement between profiles across successive enrolments.
 
+```{r restore-options, include = FALSE}
+options(old_options)
+```

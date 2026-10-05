@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
   collapse = FALSE, comment = "#>", fig.width = 7, fig.height = 5,
   dpi = 150, out.width = "100%"
 )
-options(digits = 4, width = 96)
+old_options <- options(digits = 4, width = 96)
 set.seed(2026)
 ```
 
@@ -1011,3 +1011,7 @@ believing any of them.
 
 Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
 Methodology*, 33, 213–239.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

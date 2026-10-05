@@ -14,7 +14,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
                       fig.height = 4.6, fig.align = "center", dpi = 96)
-options(width = 90)
+old_options <- options(width = 90)
 has_ggplot <- requireNamespace("ggplot2", quietly = TRUE)
 ```
 
@@ -331,3 +331,7 @@ Methodology*, 33, 213--239.
 Verbeke, G., & Lesaffre, E. (1996). A linear mixed-effects model with
 heterogeneity in the random-effects population. *Journal of the American
 Statistical Association*, 91, 217--221.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

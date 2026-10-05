@@ -1,0 +1,7 @@
+MAX RELATIVE ERROR (score/curvature): 1.060341e-13 5.299486e-13 
+   y mu alpha score_reference curvature_reference  score_error curvature_error
+27 1 50 1e-05      0.01199192          0.01198385 1.060341e-13    5.299486e-13
+FIXTURE alpha=2.001e-6, y=mu=500:
+c(-0.000499750333291542, -0.000499251165833542)
+FIXTURE alpha=.001, y=0, mu=1e20:
+c(38143.9465808988, -37143.9465808988)

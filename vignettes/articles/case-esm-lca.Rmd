@@ -14,7 +14,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                       fig.height = 4.5, fig.align = "center", dpi = 96)
-options(digits = 3, width = 100)
+old_options <- options(digits = 3, width = 100)
 ```
 
 Two-level latent class analysis estimates latent classes of categorical
@@ -289,3 +289,7 @@ observational and say nothing about causes.
 Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic adjustment on
 multiple time scales. *Zeitschrift für Erziehungswissenschaft, 27*(1),
 147-168. <https://doi.org/10.1007/s11618-023-01182-8>
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

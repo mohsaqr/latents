@@ -269,15 +269,17 @@ test_that("enumeration returns one tidy row per model and marks the BIC choice",
                class = "latents_bad_argument")
 })
 
-test_that("the bootstrap test is a valid p-value", {
+test_that("the bootstrap test withholds a p-value when refits fail validation", {
   skip_on_cran()
-  classes <- enumerate_regressions(score ~ hours, study_hours, n_classes = 1:2,
+  expect_warning(classes <- enumerate_regressions(score ~ hours, study_hours, n_classes = 1:2,
                                    n_starts = 2, seed = 1, bootstrap = 9,
-                                   bootstrap_starts = 1)
+                                   bootstrap_starts = 1),
+                  class = "latents_failed_replicates")
   table <- as.data.frame(classes)
   expect_true(is.na(table$blrt_p_value[1]))
-  expect_equal(table$blrt_p_value[2], 1 / 10)
-  expect_identical(table$blrt_replicates[2], 9L)
+  expect_true(is.na(table$blrt_p_value[2]))
+  expect_gt(table$blrt_flagged[2], 0L)
+  expect_equal(table$blrt_replicates[2] + table$blrt_flagged[2], 9L)
 })
 
 test_that("every tidy table is a data frame", {

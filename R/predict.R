@@ -121,8 +121,10 @@ predict.multilpa <- function(object, newdata = NULL,
   }
   n <- nrow(newdata)
   if (n == 0L) bad_data("`newdata` has no rows.")
-  if (!all(vapply(newdata[continuous], is.numeric, logical(1)))) {
-    bad_data("Every continuous indicator in `newdata` must be numeric.")
+  if (!all(vapply(newdata[continuous], function(value) {
+    is.numeric(value) && is.null(dim(value))
+  }, logical(1)))) {
+    bad_data("Every continuous indicator in `newdata` must be a numeric vector.")
   }
   # A zero-column frame converts to a logical matrix; the E-step needs double.
   x <- matrix(as.numeric(as.matrix(newdata[continuous])), nrow = n,

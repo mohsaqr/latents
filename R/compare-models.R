@@ -59,7 +59,13 @@ compare_models <- function(...) {
                         class = "latents_bad_argument", call = NULL))
   }
   signature <- function(fit) {
-    list(y = fit$spec$y, groups = fit$spec$group_index, response = fit$spec$response_name)
+    spec <- fit$spec
+    list(y = spec$y, trials = spec$trials, family = spec$family,
+         categories = spec$category_levels, groups = spec$group_index,
+         group_levels = spec$group_levels, clusters = spec$cluster_index,
+         cluster_levels = spec$cluster_levels,
+         weights = spec$sampling_weights, rows = spec$kept_rows,
+         response = spec$response_name)
   }
   reference <- signature(fits[[1L]])
   same <- vapply(fits, function(fit) isTRUE(all.equal(signature(fit), reference)),

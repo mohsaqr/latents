@@ -11,7 +11,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                       fig.height = 4.5, fig.align = "center", dpi = 96)
-options(digits = 3, width = 100)
+old_options <- options(digits = 3, width = 100)
 ```
 
 Variables outside the measurement model can be related to the latent classes
@@ -194,3 +194,7 @@ parameter_inference(staged)                # standard errors of the estimated st
 - Staged estimation does not carry first-stage uncertainty into the second
   stage, and its likelihood is not the joint maximum.
 - All associations are observational.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

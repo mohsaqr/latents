@@ -13,7 +13,7 @@ vignette: >
 
 ```{r options, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-options(digits = 4, width = 100)
+old_options <- options(digits = 4, width = 100)
 ```
 
 Three-step covariate analysis is a method for examining associations between latent profile membership and variables that are external to the measurement model. An important feature of this approach is that it adjusts for uncertainty in profile classification. The adjustment reduces the bias that arises when individuals are assigned to latent classes with imperfect certainty.
@@ -285,3 +285,6 @@ All of these results remain conditional on the adequacy of the underlying measur
 
 Several inferential limitations also remain. Robust standard errors that cluster enrolments within students account for dependence in the observed data structure, but they do not convert an observational association into a causal effect. In addition, both staged and three-step procedures treat quantities estimated in earlier stages as fixed. Their reported standard errors and confidence intervals therefore do not propagate all of the uncertainty associated with estimating the initial measurement model or classification-error matrix.
 
+```{r restore-options, include = FALSE}
+options(old_options)
+```

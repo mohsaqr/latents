@@ -69,7 +69,8 @@ An object of class \code{latents_regression_enumeration}. Its table (from
 \code{converged}, \code{n_best_replicated}, \code{best_bic} (the minimum-BIC row), and,
 with \code{bootstrap > 0}, \code{blrt_statistic}, \code{blrt_p_value} and
 \code{blrt_replicates} (the successful replicates) and \code{blrt_flagged} (the
-replicates in which a refit did not converge or separated). \code{get_results(x, "model", n_classes = , n_group_classes = )} returns one fitted model.
+failed, unconverged, separated or reversed-likelihood replicates). The
+p-value is \code{NA} if any requested replicate fails validation. \code{get_results(x, "model", n_classes = , n_group_classes = )} returns one fitted model.
 }
 \description{
 Fits \code{\link[=mixture_regression]{mixture_regression()}} for every requested number of classes (and of group

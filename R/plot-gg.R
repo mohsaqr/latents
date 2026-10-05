@@ -102,7 +102,8 @@ utils::globalVariables(c(
 .gg_profile_key <- function(x) {
   n_profiles <- x$n_profiles
   counts <- x$effective_profile_counts
-  share <- (counts / sum(counts))[seq_len(n_profiles)]
+  total <- sum(counts) + if (isTRUE(x$noise)) sum(x$noise_posteriors) else 0
+  share <- (counts / total)[seq_len(n_profiles)]
   ordering <- order(-share, seq_len(n_profiles))
   rank <- integer(n_profiles)
   rank[ordering] <- seq_len(n_profiles)
@@ -667,6 +668,15 @@ utils::globalVariables(c(
   codes <- .multilpa_sequence_matrix(x)[ordering, , drop = FALSE]
   classes <- layout$group_class[ordering]
   key <- .gg_profile_key(x)
+  if (isTRUE(x$noise)) {
+    levels <- c(levels(key$label), "Noise")
+    key$label <- as.character(key$label)
+    key <- rbind(key, data.frame(profile = 0L, rank = nrow(key) + 1L,
+                                 share = sum(x$noise_posteriors) / x$n_observations,
+                                 count = sum(x$noise_posteriors), label = "Noise",
+                                 colour = "grey75", shape = 4L))
+    key$label <- factor(key$label, levels = levels)
+  }
   time_values <- sort(unique(x$time_values))
   n_groups <- nrow(codes)
   cells <- expand.grid(row = seq_len(n_groups), column = seq_len(ncol(codes)))
@@ -674,10 +684,11 @@ utils::globalVariables(c(
   cells <- cells[!is.na(cells$profile), , drop = FALSE]
   cells$class_label <- factor(sprintf("Class %d", classes[cells$row]),
                               levels = sprintf("Class %d", sort(unique(classes))))
-  cells$profile_label <- factor(as.character(key$label[cells$profile]),
+  profile_at <- match(cells$profile, key$profile)
+  cells$profile_label <- factor(as.character(key$label[profile_at]),
                                 levels = levels(key$label))
   cells$cell_text <- as.character(cells$profile)
-  cells$text_colour <- .gg_ink(key$colour[cells$profile])
+  cells$text_colour <- .gg_ink(key$colour[profile_at])
   # A digit fits a cell only while the grid stays sparse enough to hold one.
   stamp <- isTRUE(cell_labels) && n_groups <= 60L && ncol(codes) <= 40L
   plot <- ggplot2::ggplot(cells, ggplot2::aes(column, row,
@@ -779,7 +790,8 @@ utils::globalVariables(c(
   key$profile_label <- factor(as.character(key$label),
                               levels = rev(levels(key$label)))
   key$bar_label <- sprintf("%.1f  (%.1f%%)", key$count, 100 * key$share)
-  total <- sum(x$effective_profile_counts)
+  total <- sum(x$effective_profile_counts) +
+    if (isTRUE(x$noise)) sum(x$noise_posteriors) else 0
   ggplot2::ggplot(key, ggplot2::aes(count, profile_label, fill = label)) +
     ggplot2::geom_col(width = 0.62) +
     ggplot2::geom_text(ggplot2::aes(label = bar_label), hjust = -0.08,
@@ -789,7 +801,8 @@ utils::globalVariables(c(
     .gg_titles(main, subtitle, "Profile sizes",
                sprintf(paste("Effective number of cases (sum of posterior",
                              "probabilities); %s in total"),
-                       format(round(total), big.mark = ","))) +
+                       format(round(total), big.mark = ",")),
+               caption = if (isTRUE(x$noise)) "Noise cases are excluded from the bars.") +
     ggplot2::labs(x = "Effective cases", y = NULL) +
     .gg_theme() +
     ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),

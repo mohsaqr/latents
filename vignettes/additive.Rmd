@@ -14,7 +14,7 @@ vignette: >
 ```{r options, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
                       fig.height = 4.4, fig.align = "center", dpi = 96)
-options(digits = 3, width = 90)
+old_options <- options(digits = 3, width = 90)
 has_ggplot <- requireNamespace("ggplot2", quietly = TRUE)
 ```
 
@@ -342,3 +342,7 @@ the package repository under `validation/ADDITIVE_SIMULATION.md`) found:
 Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
 profile analyses: A comprehensive guide. *Organizational Research Methods*.
 doi:10.1177/10944281261469432.
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```

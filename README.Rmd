@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   fig.align = "center", out.width = "100%", dpi = 150,
   error = FALSE
 )
-options(width = 95, digits = 3)
+old_options <- options(width = 95, digits = 3)
 ```
 
 # latents <img src="man/figures/logo.png" align="right" height="139" alt="latents logo" />
@@ -506,4 +506,8 @@ stopifnot(nrow(course_engagement) == 1422L,
                          get_results(fit, "profile_probabilities")$group_class,
                          sum) - 1) < 1e-8),
           nrow(get_results(fit, "assignments")) == nrow(course_engagement))
+```
+
+```{r restore-options, include = FALSE}
+options(old_options)
 ```
