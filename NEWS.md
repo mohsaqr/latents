@@ -1,3 +1,9 @@
+# latents 0.9.18
+
+* The growth mixture guide moves from the vignettes to the package website
+  (same address), so the package ships three vignettes: `lpa`, `lca` and
+  `lta`. Its model fits made it most of the vignette build time.
+
 # latents 0.9.17
 
 * The logo reads "latents" (it still showed the earlier name, "multilatent"),

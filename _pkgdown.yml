@@ -108,7 +108,6 @@ articles:
   - lpa
   - lca
   - lta
-  - growth-mixture
 
 - title: Guides
   navbar: Guides
@@ -119,6 +118,7 @@ articles:
   - articles/covariates
   - articles/mixture-regression
   - articles/trajectory-classes
+  - articles/growth-mixture
   - articles/additive
 
 - title: Case studies
