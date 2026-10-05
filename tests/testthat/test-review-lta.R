@@ -72,6 +72,7 @@ review_lta_exact <- function(theta, fit) {
 }
 
 test_that("all general LTA extensions match independent path likelihoods and scores", {
+  skip_on_cran()
   variants <- list(
     list(n_group_classes = 2L),
     list(transitions = "occasion", measurement = "occasion"),

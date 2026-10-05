@@ -252,6 +252,7 @@ weighted_groups <- function(seed, n_groups = 50, size = 6) {
 }
 
 test_that("weighted transition fits reproduce duplicated persons", {
+  skip_on_cran()
   data <- course_engagement
   set.seed(12)
   persons <- unique(data$student)
@@ -300,6 +301,7 @@ test_that("weighted transition scores are the gradient of the pseudo likelihood"
 })
 
 test_that("weighted group-class families reproduce duplicated groups", {
+  skip_on_cran()
   data <- weighted_groups(14)
   unit_weights <- data$w[!duplicated(data$id)]
   repeated <- duplicate_units(data, "id", "w")

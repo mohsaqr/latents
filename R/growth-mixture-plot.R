@@ -70,13 +70,11 @@ utils::globalVariables(c("trajectory_time", "observed", "predicted", "class_mean
 #' @param ... Unused.
 #' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
 #' @examples
-#' \donttest{
-#' fit <- mixture_regression(attendance ~ sequence, course_engagement,
-#'                           n_classes = 2, id = "student",
-#'                           class_level = "group", random = "intercept",
-#'                           random_covariance = "equal", seed = 1)
+#' few_students <- subset(growth_scores, student <= 60)
+#' fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+#'                           id = "student", class_level = "group",
+#'                           random = "intercept", seed = 1)
 #' if (requireNamespace("ggplot2", quietly = TRUE)) plot(fit)
-#' }
 #' @export
 plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals",
                                                     "coefficients", "random",

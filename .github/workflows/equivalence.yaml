@@ -1,0 +1,47 @@
+# Equivalence tests compare latents with other implementations. They live in
+# tests/equivalence/, are excluded from the package build, and run only here.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+name: equivalence
+
+permissions: read-all
+
+jobs:
+  equivalence:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      NOT_CRAN: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::devtools
+            any::numDeriv
+            any::mclust
+            any::MASS
+            any::knitr
+            any::rmarkdown
+
+      - name: Run equivalence tests
+        run: |
+          devtools::load_all()
+          results <- as.data.frame(testthat::test_dir("tests/equivalence",
+                                                      load_package = "none",
+                                                      stop_on_failure = TRUE))
+          cat(sprintf("%d cases, %d expectations\n", nrow(results), sum(results$nb)))
+        shell: Rscript {0}

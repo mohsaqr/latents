@@ -35,16 +35,16 @@ must be fitted to the same outcome, persons (or groups) and observations,
 or the comparison is refused.
 }
 \examples{
-\donttest{
-trajectories <- mixture_regression(attendance ~ sequence, course_engagement,
-                                   n_classes = 2, id = "student",
-                                   class_level = "group", seed = 1)
-growth <- mixture_regression(attendance ~ sequence, course_engagement,
-                             n_classes = 2, id = "student",
-                             class_level = "group", random = "intercept",
-                             seed = 1)
+# Fixed trajectories against growth curves with a random intercept,
+# for the first 60 students
+few_students <- subset(growth_scores, student <= 60)
+trajectories <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                                   id = "student", class_level = "group",
+                                   seed = 1)
+growth <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                             id = "student", class_level = "group",
+                             random = "intercept", seed = 1)
 compare_models(trajectories = trajectories, growth = growth)
-}
 }
 \references{
 Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike

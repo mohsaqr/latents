@@ -47,33 +47,6 @@ cross_level_reference <- function(fit, data) {
   }, numeric(1)))
 }
 
-test_that("full cross-level likelihood equals the published formula", {
-  fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
-                  n_group_classes = 2, family = "full_cross_level", tol = 1e-10,
-                  seed = 1)
-  expect_true(fit$converged)
-  expect_equal(fit$log_likelihood, cross_level_reference(fit, cross_level_data),
-               tolerance = 1e-8)
-  expect_true(all(diff(fit$log_likelihood_history) >=
-                    -1e-10 * (1 + abs(fit$log_likelihood))))
-  # 2*2 profile means + 2*2 variances + 2*(2-1) prevalences + 2*2 group means
-  # + 2*2 group-mean variances + 1 class weight.
-  expect_identical(fit$n_parameters, 19L)
-})
-
-test_that("restricted cross-level is the product of its two profile models", {
-  fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
-                  n_group_classes = 2, family = "restricted_cross_level", seed = 1)
-  expect_equal(fit$log_likelihood, cross_level_reference(fit, cross_level_data),
-               tolerance = 1e-6)
-  individual <- withCallingHandlers(
-    lpa(cross_level_data, cross_level_vars, n_profiles = 2, seed = 1),
-    latents_single_level = \(m) invokeRestart("muffleMessage"))
-  expect_equal(get_results(fit, "starts")$log_likelihood[1L],
-               individual$log_likelihood, tolerance = 1e-6)
-  expect_identical(fit$n_parameters, 18L)
-})
-
 test_that("full nests restricted, and one group class makes them coincide", {
   full <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
                    n_group_classes = 2, family = "full_cross_level", seed = 1)
@@ -123,23 +96,4 @@ test_that("tables, plots and refusals of the cross-level families", {
   plots <- lapply(c("profiles", "group_means", "composition"),
                   \(view) plot(fit, what = view))
   expect_true(all(vapply(plots, ggplot2::is_ggplot, logical(1))))
-})
-
-test_that("the full cross-level EM reaches a stationary point of the formula", {
-  skip_if_not_installed("numDeriv")
-  fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
-                  n_group_classes = 2, family = "full_cross_level", tol = 1e-12,
-                  max_iter = 5000, seed = 1)
-  # Perturb the group-mean block (class means, log variances) and the profile
-  # means; every derivative of the reference likelihood must vanish.
-  theta <- c(as.vector(fit$group_means), log(as.vector(fit$group_mean_variances)),
-             as.vector(fit$profile_means))
-  at <- function(v) {
-    moved <- fit
-    moved$group_means[] <- v[1:4]
-    moved$group_mean_variances[] <- exp(v[5:8])
-    moved$profile_means[] <- v[9:12]
-    cross_level_reference(moved, cross_level_data)
-  }
-  expect_lt(max(abs(numDeriv::grad(at, theta))), 1e-3)
 })

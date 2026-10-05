@@ -61,11 +61,9 @@ A ggplot object. Raises \code{latents_missing_package} without ggplot2.
 Plot a growth mixture model
 }
 \examples{
-\donttest{
-fit <- mixture_regression(attendance ~ sequence, course_engagement,
-                          n_classes = 2, id = "student",
-                          class_level = "group", random = "intercept",
-                          random_covariance = "equal", seed = 1)
+few_students <- subset(growth_scores, student <= 60)
+fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                          id = "student", class_level = "group",
+                          random = "intercept", seed = 1)
 if (requireNamespace("ggplot2", quietly = TRUE)) plot(fit)
-}
 }

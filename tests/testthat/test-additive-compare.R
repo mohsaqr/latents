@@ -45,6 +45,7 @@ test_that("enumeration crosses families, restrictions and class counts", {
 })
 
 test_that("the bootstrap LRT simulates the null and refits both models", {
+  skip_on_cran()
   null <- multilpa(compare_data, compare_vars, "group", n_group_classes = 1,
                    family = "additive", seed = 1)
   alternative <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,

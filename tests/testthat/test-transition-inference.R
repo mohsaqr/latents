@@ -93,25 +93,6 @@ test_that("the analytic score is the derivative of the forward-backward likeliho
                                       occasions = "grid"), "ragged, grid")
 })
 
-test_that("standard errors match a Hessian of the likelihood alone", {
-  skip_if_not_installed("numDeriv")
-  invisible(lapply(list(
-    list(data = .lta_inference_fixture(), arguments = list()),
-    list(data = .lta_inference_fixture(n = 250L, stay = c(0.95, 0.4), ragged = TRUE),
-         arguments = list(n_group_classes = 2L))), function(case) {
-    fit <- do.call(.lta_inference_fit, c(list(case$data), case$arguments))
-    pieces <- .lta_inference_pieces(fit)
-    # Richardson-extrapolated differences of the likelihood alone.
-    # optimHess() is not accurate enough to be the reference: its own error on
-    # these likelihoods is about 1e-3 relative at its default step and grows
-    # with roundoff at a finer one.
-    reference <- sqrt(diag(solve(numDeriv::hessian(pieces$negative,
-                                                   pieces$theta))))
-    reported <- sqrt(diag(vcov(fit, scale = "unconstrained")))
-    expect_lt(max(abs(reported - reference) / reference), 1e-4)
-  }))
-})
-
 test_that("transition score indexing also holds with three profiles", {
   fit <- quietly(lta(.lta_inference_fixture(), c("a", "b"), "person", 3L,
                       n_group_classes = 2L, time = "wave", n_starts = 1,

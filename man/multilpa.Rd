@@ -355,8 +355,8 @@ are finished by Newton steps. The result has class \code{multilpa_additive};
 Read it with \code{\link[=get_results.multilpa_additive]{get_results.multilpa_additive()}}; \code{summary()}, \code{plot()},
 \code{coef()}, \code{vcov()}, \code{confint()} and \code{\link[=parameter_inference]{parameter_inference()}} work on it.
 These families are experimental: enumeration over families, bootstrap
-inference, missing data and covariates are not yet available. See
-\code{vignette("additive")}.
+inference, missing data and covariates are not yet available. See the
+\href{https://pak.dynasite.org/latents/articles/additive.html}{group-class and cross-level models article}.
 
 Two cross-level families estimate individual profiles and group classes
 from the same indicators, following the manifest-aggregation

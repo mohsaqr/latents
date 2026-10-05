@@ -84,28 +84,6 @@ test_that("the likelihood is the mixture likelihood, in every nesting", {
                tolerance = 1e-10)
 })
 
-test_that("one class reduces to lm() and glm()", {
-  rows <- simulate_rows()
-  gaussian <- mixture_regression(y ~ x + w, rows, 1, n_starts = 0, vcov_type = "none")
-  expect_equal(gaussian$log_likelihood,
-               as.numeric(logLik(stats::lm(y ~ x + w, rows))),
-               tolerance = 1e-10)
-  expect_equal(unname(gaussian$params$beta[, 1]),
-               unname(stats::coef(stats::lm(y ~ x + w, rows))),
-               tolerance = 1e-8)
-  poisson <- mixture_regression(count ~ x, rows, 1, family = "poisson", n_starts = 0,
-                                vcov_type = "none")
-  reference <- stats::glm(count ~ x, stats::poisson(), rows)
-  expect_equal(poisson$log_likelihood, as.numeric(logLik(reference)),
-               tolerance = 1e-9)
-  expect_equal(unname(poisson$params$beta[, 1]), unname(stats::coef(reference)),
-               tolerance = 1e-7)
-  # Standard errors of a one-class model are the GLM's.
-  fitted <- mixture_regression(count ~ x, rows, 1, family = "poisson", n_starts = 0)
-  expect_equal(get_results(fitted)$std_error,
-               unname(sqrt(diag(stats::vcov(reference)))), tolerance = 1e-5)
-})
-
 test_that("a two-class Gaussian mixture recovers the generating regressions", {
   fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 3, seed = 1)
   table <- get_results(fit, "coefficients")

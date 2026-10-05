@@ -109,6 +109,7 @@ test_that("relabelling general logits preserves every implied probability", {
 })
 
 test_that("a permuted homogeneous fit aligns back to the original exactly", {
+  skip_on_cran()
   data <- boot_lta_data()
   fit <- boot_lta_fit(data, n_group_classes = 2, model = "VVV")
   permuted <- .lta_permute_transitions(fit, c(2L, 1L), c(2L, 1L))
@@ -119,6 +120,7 @@ test_that("a permuted homogeneous fit aligns back to the original exactly", {
 })
 
 test_that("refits whose labels switched align to the original estimates", {
+  skip_on_cran()
   data <- boot_lta_data()
   specs <- list(homogeneous = list(), covariance = list(transitions = "occasion",
                                                          model = "VVV"),
@@ -145,6 +147,7 @@ test_that("refits whose labels switched align to the original estimates", {
 })
 
 test_that("transition bootstrap matches the Wald table's layout and scale", {
+  skip_on_cran()
   data <- boot_lta_data()
   fits <- list(boot_lta_fit(data), boot_lta_fit(data, transitions = "occasion"))
   invisible(lapply(fits, function(fit) {
@@ -178,6 +181,7 @@ test_that("the transition bootstrap is reproducible and leaves the caller's seed
 })
 
 test_that("the bootstrap gives inference where Wald is refused", {
+  skip_on_cran()
   data <- boot_lta_data()
   fit <- boot_lta_fit(data, transitions = "occasion", model = "VVV")
   expect_error(parameter_inference(fit), class = "latents_unsupported_inference")

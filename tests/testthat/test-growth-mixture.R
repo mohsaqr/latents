@@ -45,6 +45,7 @@ growth_dense_log_likelihood <- function(fit, data, params) {
 }
 
 test_that("the growth mixture likelihood equals an independent dense likelihood", {
+  skip_on_cran()
   data <- growth_fixture_data()
   invisible(lapply(c("varying", "equal", "proportional"), function(covariance) {
     fit <- growth_fit(data, random_covariance = covariance, vcov_type = "none")
@@ -58,30 +59,6 @@ test_that("the growth mixture likelihood equals an independent dense likelihood"
                                       fit$params)
     expect_equal(latents:::.growth_expectation(fit$spec, fit$stats, moved)$log_likelihood,
                  growth_dense_log_likelihood(fit, data, moved), tolerance = 1e-10)
-  }))
-})
-
-test_that("analytic growth scores equal numerical derivatives", {
-  skip_if_not_installed("numDeriv")
-  data <- growth_fixture_data()
-  configurations <- list(list(covariance = "varying", variance = "varying", diagonal = FALSE),
-                         list(covariance = "equal", variance = "equal", diagonal = FALSE),
-                         list(covariance = "proportional", variance = "equal", diagonal = FALSE),
-                         list(covariance = "varying", variance = "equal", diagonal = TRUE))
-  invisible(lapply(configurations, function(cfg) {
-    fit <- growth_fit(data, random_covariance = cfg$covariance, variance = cfg$variance,
-                      random_diagonal = cfg$diagonal, vcov_type = "none")
-    set.seed(5)
-    theta <- latents:::.growth_pack(fit$spec, fit$params)
-    theta <- theta + stats::rnorm(length(theta), 0, 0.05)
-    log_likelihood <- function(v) {
-      latents:::.growth_expectation(fit$spec, fit$stats,
-                                    latents:::.growth_unpack(fit$spec, v, fit$params))$log_likelihood
-    }
-    analytic <- colSums(latents:::.growth_scores(
-      fit$spec, fit$stats, latents:::.growth_unpack(fit$spec, theta, fit$params)))
-    numerical <- numDeriv::grad(log_likelihood, theta)
-    expect_lt(max(abs(analytic - numerical)), 1e-4 * (1 + max(abs(numerical))))
   }))
 })
 
@@ -101,6 +78,7 @@ test_that("estimation coordinates round-trip and EM never decreases", {
 })
 
 test_that("the fit does not depend on the order of persons in the data", {
+  skip_on_cran()
   data <- growth_fixture_data()
   fit <- growth_fit(data, vcov_type = "none")
   set.seed(9)
@@ -132,22 +110,6 @@ test_that("integer sampling weights equal duplicated persons", {
   expect_equal(sort(unlist(weighted$params$beta)), sort(unlist(duplicated_fit$params$beta)),
                tolerance = 1e-4)
   expect_identical(weighted$inference$vcov_type, "robust")
-})
-
-test_that("observed standard errors equal the inverse numerical Hessian", {
-  skip_if_not_installed("numDeriv")
-  data <- growth_fixture_data(n = 120L)
-  fit <- mixture_regression(y ~ time, data, n_classes = 2, id = "id",
-                            class_level = "group", random = ~ 1,
-                            random_covariance = "equal", variance = "equal",
-                            n_starts = 2, seed = 1, tol = 1e-12)
-  theta <- coef(fit)
-  log_likelihood <- function(v) {
-    latents:::.growth_expectation(fit$spec, fit$stats,
-                                  latents:::.growth_unpack(fit$spec, v, fit$params))$log_likelihood
-  }
-  numerical <- solve(-numDeriv::hessian(log_likelihood, theta))
-  expect_equal(unname(sqrt(diag(vcov(fit)))), sqrt(diag(numerical)), tolerance = 1e-4)
 })
 
 test_that("growth tables are tidy and internally consistent", {
@@ -381,6 +343,7 @@ test_that("growth_scores has the documented structure", {
 })
 
 test_that("recovery compares the classes with a known classification", {
+  skip_on_cran()
   fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3, id = "student",
                             class_level = "group", random = "wave",
                             random_covariance = "equal", n_starts = 3, seed = 1)
@@ -432,6 +395,7 @@ test_that("growth fits enumerate over classes and support the bootstrap test", {
 })
 
 test_that("distal outcomes of trajectory models use the three-step correction", {
+  skip_on_cran()
   fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3, id = "student",
                             class_level = "group", random = "wave",
                             random_covariance = "equal", n_starts = 3, seed = 1)

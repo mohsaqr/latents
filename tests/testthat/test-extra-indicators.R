@@ -63,28 +63,6 @@ test_that("the ordinal M-step maximizes its concave objective", {
   expect_identical(solved$locations[3L], 0)
 })
 
-test_that("fits agree with Latent GOLD 6.1", {
-  skip_on_cran()
-  fixture <- readRDS(test_path("fixtures", "latentgold-ordinal.rds"))
-  vapply(names(fixture), function(name) {
-    case <- fixture[[name]]
-    fit <- quietly(multilpa(case$data, case$vars, if (case$two_level) "g" else NULL,
-                            case$n_profiles,
-                            n_group_classes = if (case$two_level) case$n_group_classes else 1L,
-                            ordinal = case$vars[case$types == "ordinal"],
-                            count = case$vars[case$types %in% c("count", "negbin")],
-                            count_model = if (any(case$types == "negbin"))
-                              "negative_binomial" else "poisson",
-                            count_dispersion = case$count_dispersion %||% "varying",
-                            n_starts = 10, seed = 1, tol = 1e-10, max_iter = 5000),
-                   "latents_single_level")
-    # Latent GOLD prints four decimals.
-    expect_lt(abs(fit$log_likelihood - case$latent_gold_ll), 1e-4)
-    expect_equal(fit$n_parameters, case$latent_gold_npar)
-    TRUE
-  }, logical(1))
-})
-
 test_that("a fit recovers its parameters and reports them in tables", {
   data <- extra_rows()
   fit <- extra_fit(data)

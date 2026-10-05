@@ -1,5 +1,5 @@
-# The numbers stated in the prose of vignette("workflow-lpa") and
-# vignette("workflow-lca"). The vignettes' own code is extracted and run, so
+# The numbers stated in the prose of the workflow-lpa and workflow-lca articles
+# (vignettes/articles/). The articles' own code is extracted and run, so
 # the objects checked here are the ones the text describes, produced by the
 # same calls in the same order under the same seed. A change to the
 # estimation that moves one of the stated numbers fails here.
@@ -8,7 +8,7 @@ skip_on_cran()
 skip_if_not_installed("knitr")
 
 .run_vignette <- function(name) {
-  path <- test_path("..", "..", "vignettes", paste0(name, ".Rmd"))
+  path <- test_path("..", "..", "vignettes", "articles", paste0(name, ".Rmd"))
   skip_if_not(file.exists(path), "the vignette sources are not available")
   script <- tempfile(fileext = ".R")
   knitr::purl(path, output = script, quiet = TRUE, documentation = 0L)

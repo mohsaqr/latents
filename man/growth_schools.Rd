@@ -43,6 +43,7 @@ The school types are what a multilevel growth mixture model's group
 classes recover: \code{mixture_regression(..., cluster = "school", n_group_classes = 2)}, with \code{group_membership = "programme"}.
 }
 \examples{
+descriptives(growth_schools, c("score", "programme"))
 \donttest{
 fit <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
                           id = "student", class_level = "group",

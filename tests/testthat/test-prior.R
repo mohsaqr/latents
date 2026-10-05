@@ -38,32 +38,6 @@ test_that("prior_control() carries mclust's defaults", {
   expect_equal(full$mean, unname(colMeans(data)))
 })
 
-test_that("the MAP M-step matches mclust's EM step from the same posteriors", {
-  skip_if_not_installed("mclust")
-  skip_on_cran()
-  data <- as.matrix(prior_frame())
-  set.seed(9)
-  z <- matrix(stats::runif(nrow(data) * 3L), nrow(data), 3L)
-  z <- z / rowSums(z)
-  invisible(lapply(c("EII", "EEI", "EVI", "VEV", "EEV", "VVV"), function(code) {
-    # One iteration of mclust's own EM is its M-step from `z`.
-    reference <- do.call(mclust::me, list(
-      modelName = code, data = data, z = z, prior = mclust::priorControl(),
-      control = mclust::emControl(itmax = c(1, 1e6), tol = c(1e-5, 1e-14))),
-      envir = asNamespace("mclust"))
-    hyper <- latents:::.multilpa_prior_parameters(prior_control(), data, 3L, code)
-    ours <- latents:::.multilpa_prior_maximize(data, z, code, hyper, 1e-12,
-                                               tol = 1e-14)
-    sigma <- ours$covariances %||% array(unlist(lapply(seq_len(3L), function(k) {
-      diag(ours$variances[k, ])
-    })), c(3L, 3L, 3L))
-    expect_equal(sigma, reference$parameters$variance$sigma, tolerance = 1e-10,
-                 ignore_attr = TRUE, info = code)
-    expect_equal(t(ours$means), reference$parameters$mean, tolerance = 1e-10,
-                 ignore_attr = TRUE, info = code)
-  }))
-})
-
 test_that("a prior the package does not define is refused by class", {
   data <- prior_frame()
   expect_error(prior_fit(data, "VEE"), class = "latents_unsupported_prior")

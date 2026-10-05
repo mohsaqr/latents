@@ -83,24 +83,8 @@ test_that("the likelihood equals the dense multilevel likelihood", {
                tolerance = 1e-10)
 })
 
-test_that("the analytic cluster scores are the likelihood's gradient", {
-  skip_if_not_installed("numDeriv")
-  data <- multilevel_data()
-  fit <- multilevel_fit(data)
-  theta <- latents:::.growth_pack(fit$spec, fit$params) + 0.05
-  value <- function(v) {
-    params <- latents:::.growth_unpack(fit$spec, v, fit$params)
-    latents:::.growth_expectation(fit$spec, fit$stats, params)$log_likelihood
-  }
-  params <- latents:::.growth_unpack(fit$spec, theta, fit$params)
-  scores <- latents:::.growth_scores(fit$spec, fit$stats, params)
-  # One row per cluster: the clusters are the independent units.
-  expect_identical(nrow(scores), fit$spec$n_clusters)
-  expect_equal(unname(colSums(scores)), numDeriv::grad(value, theta),
-               tolerance = 1e-6)
-})
-
 test_that("identical group classes reduce it to the single-level growth mixture", {
+  skip_on_cran()
   data <- multilevel_data()
   fit <- multilevel_fit(data)
   single <- mixture_regression(score ~ wave, data, n_classes = 2, id = "student",
@@ -120,6 +104,7 @@ test_that("identical group classes reduce it to the single-level growth mixture"
 })
 
 test_that("one group class is the single-level model with clusters as units", {
+  skip_on_cran()
   data <- multilevel_data()
   one <- mixture_regression(score ~ wave, data, n_classes = 2, id = "student",
                             class_level = "group", random = "wave",

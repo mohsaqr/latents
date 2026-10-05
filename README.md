@@ -148,17 +148,28 @@ fit <- multilpa(
   seed = 1
 )
 get_results(fit)
-#>    profile  indicator   mean variance standard_deviation
-#> 1        1     browse -0.766    0.528              0.727
-#> 2        1   lectures -0.606    0.538              0.734
-#> 3        1 forum_read -0.879    0.363              0.603
-#> 4        1 forum_post -0.753    0.421              0.649
-#> 5        1 attendance -0.921    0.374              0.611
-#> 6        2     browse  0.540    0.590              0.768
-#> 7        2   lectures  0.427    0.845              0.919
-#> 8        2 forum_read  0.620    0.481              0.694
-#> 9        2 forum_post  0.531    0.689              0.830
-#> 10       2 attendance  0.649    0.384              0.620
+#>    profile  indicator   mean variance standard_deviation mean_standard_error
+#> 1        1     browse  0.540    0.590              0.768              0.0271
+#> 2        1   lectures  0.427    0.845              0.919              0.0325
+#> 3        1 forum_read  0.620    0.481              0.694              0.0247
+#> 4        1 forum_post  0.530    0.689              0.830              0.0295
+#> 5        1 attendance  0.649    0.384              0.620              0.0223
+#> 6        2     browse -0.766    0.528              0.727              0.0312
+#> 7        2   lectures -0.606    0.538              0.734              0.0309
+#> 8        2 forum_read -0.879    0.363              0.603              0.0262
+#> 9        2 forum_post -0.753    0.421              0.649              0.0277
+#> 10       2 attendance -0.921    0.374              0.611              0.0264
+#>    variance_standard_error
+#> 1                   0.0295
+#> 2                   0.0421
+#> 3                   0.0244
+#> 4                   0.0348
+#> 5                   0.0196
+#> 6                   0.0322
+#> 7                   0.0321
+#> 8                   0.0228
+#> 9                   0.0261
+#> 10                  0.0228
 ```
 
 The arguments `n_profiles` and `n_group_classes` specify $K$ and $H$, respectively. Setting `n_group_classes = 1` reduces the model to a single-level profile analysis: there is then one common distribution over profiles, and no latent group-class heterogeneity.
@@ -185,7 +196,7 @@ plot(fit)
 <p class="caption">plot of chunk profile-plot</p>
 </div>
 
-In this solution, profile 2 has the higher engagement pattern and profile 1 the lower engagement pattern. Because the indicators were standardized within course, the separation concerns relative activity within courses. The interpretation should be based on the configuration of means across all indicators, together with within-profile dispersion, rather than on a single indicator or the numerical profile label.
+In this solution, profile 1 has the higher engagement pattern and profile 2 the lower engagement pattern. Because the indicators were standardized within course, the separation concerns relative activity within courses. The interpretation should be based on the configuration of means across all indicators, together with within-profile dispersion, rather than on a single indicator or the numerical profile label.
 
 Profile numbers are arbitrary identifiers. A different initialization or model specification can reverse their numbering without changing the substantive solution. Comparisons between fits therefore require matching the measurement patterns before comparing class-specific parameters.
 
@@ -197,10 +208,10 @@ The higher-level structure is inspected through the probabilities of the observa
 ``` r
 get_results(fit, "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1       0.829                   0.325
-#> 2           1       2       0.171                   0.325
-#> 3           2       1       0.214                   0.675
-#> 4           2       2       0.786                   0.675
+#> 1           1       1       0.786                   0.675
+#> 2           1       2       0.214                   0.675
+#> 3           2       1       0.170                   0.325
+#> 4           2       2       0.830                   0.325
 plot(fit, what = "probabilities")
 ```
 
@@ -209,7 +220,7 @@ plot(fit, what = "probabilities")
 <p class="caption">plot of chunk probabilities</p>
 </div>
 
-The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 83% probability to the less engaged profile, whereas student class 2 assigns approximately 79% probability to the more engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
+The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 79% probability to the more engaged profile, whereas student class 2 assigns approximately 83% probability to the less engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
 
 The `group_class_probability` column contains the estimates of $\eta_h$, or the proportion of students in each class. These are group-level proportions. They should be distinguished from enrolment-level profile proportions, particularly when students contribute different numbers of observations.
 
@@ -221,12 +232,12 @@ The fitted model yields posterior probabilities at both levels. Observation-leve
 ``` r
 head(get_results(fit, "posteriors", format = "wide"))
 #>   row group profile posterior_profile_1 posterior_profile_2
-#> 1   1     1       2            0.000444            1.00e+00
-#> 2   2     1       2            0.014858            9.85e-01
-#> 3   3     1       1            0.999998            2.42e-06
-#> 4   4     1       1            0.999996            3.86e-06
-#> 5   5     1       1            0.999994            5.75e-06
-#> 6   6     1       1            0.999977            2.28e-05
+#> 1   1     1       1            1.00e+00            0.000444
+#> 2   2     1       1            9.85e-01            0.014854
+#> 3   3     1       2            2.42e-06            0.999998
+#> 4   4     1       2            3.86e-06            0.999996
+#> 5   5     1       2            5.75e-06            0.999994
+#> 6   6     1       2            2.28e-05            0.999977
 head(get_results(fit, "assignments", data = course_engagement))
 #>   student course sequence browse lectures forum_read forum_post attendance previous_grade
 #> 1       1     23        1   0.73    -0.08       0.30       0.67       0.72           0.54
@@ -236,23 +247,23 @@ head(get_results(fit, "assignments", data = course_engagement))
 #> 5       1     16        5  -0.94    -0.37      -0.71      -0.28      -1.52          -0.67
 #> 6       1     29        6  -0.36    -0.46      -0.77      -0.43      -1.34          -0.40
 #>   engagement student_type profile group_class uncertainty posterior_profile_1
-#> 1    engaged     wavering       2           1    4.44e-04            0.000444
-#> 2    engaged     wavering       2           1    1.49e-02            0.014858
-#> 3 disengaged     wavering       1           1    2.42e-06            0.999998
-#> 4 disengaged     wavering       1           1    3.86e-06            0.999996
-#> 5 disengaged     wavering       1           1    5.75e-06            0.999994
-#> 6 disengaged     wavering       1           1    2.28e-05            0.999977
+#> 1    engaged     wavering       1           2    4.44e-04            1.00e+00
+#> 2    engaged     wavering       1           2    1.49e-02            9.85e-01
+#> 3 disengaged     wavering       2           2    2.42e-06            2.42e-06
+#> 4 disengaged     wavering       2           2    3.86e-06            3.86e-06
+#> 5 disengaged     wavering       2           2    5.75e-06            5.75e-06
+#> 6 disengaged     wavering       2           2    2.28e-05            2.28e-05
 #>   posterior_profile_2
-#> 1            1.00e+00
-#> 2            9.85e-01
-#> 3            2.42e-06
-#> 4            3.86e-06
-#> 5            5.75e-06
-#> 6            2.28e-05
+#> 1            0.000444
+#> 2            0.014854
+#> 3            0.999998
+#> 4            0.999996
+#> 5            0.999994
+#> 6            0.999977
 get_results(fit, "entropy")
 #>         level n_classes n_units entropy_sum relative_entropy
 #> 1 individuals         2    1422       60.94            0.938
-#> 2      groups         2     106        4.44            0.940
+#> 2      groups         2     106        4.43            0.940
 ```
 
 The assignments table records the most probable profile and group class. Such modal assignments simplify presentation but discard part of the posterior information. An observation with profile probabilities 0.51 and 0.49 has substantially more classification uncertainty than one with probabilities 0.99 and 0.01, although both receive a single assigned profile.
@@ -263,10 +274,10 @@ Relative entropy summarizes separation at each level. Values approaching one ind
 ``` r
 get_results(fit, "counts")
 #>         level class effective_count effective_proportion
-#> 1 individuals     1           587.9                0.413
-#> 2 individuals     2           834.1                0.587
-#> 3      groups     1            34.5                0.325
-#> 4      groups     2            71.5                0.675
+#> 1 individuals     1           834.1                0.587
+#> 2 individuals     2           587.9                0.413
+#> 3      groups     1            71.5                0.675
+#> 4      groups     2            34.5                0.325
 ```
 
 Effective class counts are obtained by summing posterior membership probabilities. They need not be integers and differ conceptually from counts based on modal assignments. Small effective classes may provide limited information for estimating means, variances, and membership parameters, and should be evaluated for stability and substantive plausibility.
@@ -280,14 +291,14 @@ For simulated data, classification can additionally be compared with the known g
 get_results(fit, "assignments", data = course_engagement,
             truth = c("engagement", "student_type"))
 #>    assignment class        truth      value   n proportion
-#> 1     profile     1   engagement disengaged 569     0.9726
-#> 2     profile     2   engagement disengaged  16     0.0274
-#> 3     profile     1   engagement    engaged  17     0.0203
-#> 4     profile     2   engagement    engaged 820     0.9797
-#> 5 group_class     1 student_type  committed   1     0.0161
-#> 6 group_class     2 student_type  committed  61     0.9839
-#> 7 group_class     1 student_type   wavering  34     0.7727
-#> 8 group_class     2 student_type   wavering  10     0.2273
+#> 1     profile     1   engagement disengaged  16     0.0274
+#> 2     profile     2   engagement disengaged 569     0.9726
+#> 3     profile     1   engagement    engaged 820     0.9797
+#> 4     profile     2   engagement    engaged  17     0.0203
+#> 5 group_class     1 student_type  committed  61     0.9839
+#> 6 group_class     2 student_type  committed   1     0.0161
+#> 7 group_class     1 student_type   wavering  10     0.2273
+#> 8 group_class     2 student_type   wavering  34     0.7727
 ```
 
 The enrolment-level comparison uses `engagement`, and the student-level comparison uses `student_type`, counting each student once. Agreement is interpreted after allowing for arbitrary label permutations. This analysis describes recovery under the specific simulation conditions; in empirical data, validation instead relies on the fitted structure, diagnostics, substantive evidence, and, where available, replication.
@@ -302,15 +313,15 @@ The starts table records the optimization results for the fitted model.
 ``` r
 get_results(fit, "starts")
 #>    start log_likelihood converged iterations error boundary
-#> 1      1          -8440      TRUE         10  <NA>    FALSE
-#> 2      2          -8440      TRUE         10  <NA>    FALSE
-#> 3      3          -8440      TRUE         10  <NA>    FALSE
-#> 4      4          -8440      TRUE         13  <NA>    FALSE
-#> 5      5          -8440      TRUE         10  <NA>    FALSE
+#> 1      1          -8440      TRUE          9  <NA>    FALSE
+#> 2      2          -8440      TRUE         12  <NA>    FALSE
+#> 3      3          -8440      TRUE          9  <NA>    FALSE
+#> 4      4          -8440      TRUE         12  <NA>    FALSE
+#> 5      5          -8440      TRUE          9  <NA>    FALSE
 #> 6      6          -8440      TRUE         12  <NA>    FALSE
-#> 7      7          -8440      TRUE         10  <NA>    FALSE
-#> 8      8          -8440      TRUE          8  <NA>    FALSE
-#> 9      9          -8440      TRUE         10  <NA>    FALSE
+#> 7      7          -8440      TRUE          9  <NA>    FALSE
+#> 8      8          -8440      TRUE         12  <NA>    FALSE
+#> 9      9          -8440      TRUE          9  <NA>    FALSE
 #> 10    10          -8440      TRUE          9  <NA>    FALSE
 ```
 
@@ -322,9 +333,9 @@ The `sensitivity()` function extends this inspection by refitting under differen
 ``` r
 sensitivity(fit, seeds = 1:3)
 #>   seed log_likelihood converged iterations optimum best agreement
-#> 1    1          -8440      TRUE          8       1 TRUE         1
-#> 2    2          -8440      TRUE         10       1 TRUE         1
-#> 3    3          -8440      TRUE         13       1 TRUE         1
+#> 1    1          -8440      TRUE          9       1 TRUE         1
+#> 2    2          -8440      TRUE          9       1 TRUE         1
+#> 3    3          -8440      TRUE          9       1 TRUE         1
 ```
 
 Replication across seeds strengthens confidence in the numerical solution without proving a global maximum. The number of starts should be increased when the candidate model is difficult to estimate or the best likelihood is poorly replicated.
@@ -338,20 +349,20 @@ Under a diagonal measurement model, the latent profiles account for all modeled 
 get_results(fit, "residuals", by = "overall")
 #>    profile indicator_1 indicator_2     kind observed expected residual effective_n statistic
 #> 1  overall  forum_read  attendance gaussian  0.21588        0  0.21588        1422    8.2620
-#> 2  overall    lectures  attendance gaussian  0.19234        0  0.19234        1422    7.3367
-#> 3  overall      browse  attendance gaussian  0.18077        0  0.18077        1422    6.8851
-#> 4  overall  forum_post  attendance gaussian  0.17239        0  0.17239        1422    6.5592
-#> 5  overall      browse  forum_read gaussian  0.06266        0  0.06266        1422    2.3634
-#> 6  overall      browse  forum_post gaussian -0.02511        0 -0.02511        1422   -0.9462
-#> 7  overall      browse    lectures gaussian -0.02126        0 -0.02126        1422   -0.8010
-#> 8  overall  forum_read  forum_post gaussian  0.01986        0  0.01986        1422    0.7482
-#> 9  overall    lectures  forum_post gaussian  0.01709        0  0.01709        1422    0.6438
-#> 10 overall    lectures  forum_read gaussian  0.00192        0  0.00192        1422    0.0724
+#> 2  overall    lectures  attendance gaussian  0.19234        0  0.19234        1422    7.3369
+#> 3  overall      browse  attendance gaussian  0.18077        0  0.18077        1422    6.8850
+#> 4  overall  forum_post  attendance gaussian  0.17239        0  0.17239        1422    6.5594
+#> 5  overall      browse  forum_read gaussian  0.06265        0  0.06265        1422    2.3632
+#> 6  overall      browse  forum_post gaussian -0.02511        0 -0.02511        1422   -0.9461
+#> 7  overall      browse    lectures gaussian -0.02126        0 -0.02126        1422   -0.8009
+#> 8  overall  forum_read  forum_post gaussian  0.01986        0  0.01986        1422    0.7483
+#> 9  overall    lectures  forum_post gaussian  0.01710        0  0.01710        1422    0.6440
+#> 10 overall    lectures  forum_read gaussian  0.00193        0  0.00193        1422    0.0725
 #>    df  p_value p_adjusted
 #> 1  NA 1.43e-16   1.43e-16
 #> 2  NA 2.19e-13   2.19e-13
 #> 3  NA 5.78e-12   5.78e-12
-#> 4  NA 5.41e-11   5.41e-11
+#> 4  NA 5.40e-11   5.40e-11
 #> 5  NA 1.81e-02   1.81e-02
 #> 6  NA 3.44e-01   3.44e-01
 #> 7  NA 4.23e-01   4.23e-01
@@ -386,17 +397,17 @@ rbind(
 #> diagonal          17168      16889          17002
 #> full              17123      16635          16811
 get_results(dependent, "residuals", by = "overall")
-#>    profile indicator_1 indicator_2     kind observed expected  residual effective_n statistic
-#> 1  overall  forum_read  forum_post gaussian  0.02438  0.02439 -1.32e-05        1422 -4.97e-04
-#> 2  overall    lectures  forum_post gaussian  0.02010  0.02011 -1.20e-05        1422 -4.50e-04
-#> 3  overall  forum_post  attendance gaussian  0.18793  0.18794 -1.09e-05        1422 -4.25e-04
-#> 4  overall    lectures  forum_read gaussian  0.00887  0.00888 -8.96e-06        1422 -3.38e-04
-#> 5  overall    lectures  attendance gaussian  0.20504  0.20505 -7.49e-06        1422 -2.94e-04
-#> 6  overall      browse  forum_post gaussian -0.01866 -0.01865 -6.84e-06        1422 -2.58e-04
-#> 7  overall  forum_read  attendance gaussian  0.24180  0.24180 -4.19e-06        1422 -1.68e-04
-#> 8  overall      browse    lectures gaussian -0.01380 -0.01379 -4.10e-06        1422 -1.55e-04
-#> 9  overall      browse  forum_read gaussian  0.07442  0.07441  1.16e-06        1422  4.40e-05
-#> 10 overall      browse  attendance gaussian  0.20382  0.20382  6.60e-07        1422  2.59e-05
+#>    profile indicator_1 indicator_2     kind observed expected residual effective_n statistic
+#> 1  overall    lectures  attendance gaussian  0.20502  0.20502 1.76e-06        1422  6.94e-05
+#> 2  overall      browse  attendance gaussian  0.20383  0.20382 1.57e-06        1422  6.16e-05
+#> 3  overall      browse    lectures gaussian -0.01381 -0.01381 1.51e-06        1422  5.69e-05
+#> 4  overall  forum_post  attendance gaussian  0.18790  0.18790 1.49e-06        1422  5.82e-05
+#> 5  overall    lectures  forum_post gaussian  0.02007  0.02007 1.40e-06        1422  5.29e-05
+#> 6  overall      browse  forum_post gaussian -0.01867 -0.01867 1.24e-06        1422  4.67e-05
+#> 7  overall    lectures  forum_read gaussian  0.00885  0.00885 1.17e-06        1422  4.39e-05
+#> 8  overall  forum_read  attendance gaussian  0.24179  0.24179 7.72e-07        1422  3.09e-05
+#> 9  overall      browse  forum_read gaussian  0.07442  0.07442 5.60e-07        1422  2.12e-05
+#> 10 overall  forum_read  forum_post gaussian  0.02435  0.02435 4.90e-07        1422  1.85e-05
 #>    df p_value p_adjusted
 #> 1  NA       1          1
 #> 2  NA       1          1
@@ -422,7 +433,7 @@ Class enumeration evaluates candidate values of both $K$ and $H$. The following 
 ``` r
 candidates <- enumerate_classes(
   course_engagement, vars, "student",
-  n_profiles = 2:4, n_group_classes = 1:3,
+  n_profiles = 2:4, n_group_classes = 1:3, model = "VVI",
   n_starts = 10, seed = 1
 )
 candidates
@@ -439,14 +450,14 @@ candidates
 #>           4               3   VVI          -8307           51 16716      16852          16985
 #>  icl_individual profile_entropy group_entropy converged boundary n_best_replicated
 #>           17537           0.922            NA      TRUE    FALSE                10
-#>           18018           0.772            NA      TRUE    FALSE                10
-#>           18361           0.735            NA      TRUE    FALSE                 8
+#>           18017           0.772            NA      TRUE    FALSE                10
+#>           18359           0.735            NA      TRUE    FALSE                 8
 #>           17168           0.938         0.940      TRUE    FALSE                10
 #>           17640           0.790         0.943      TRUE    FALSE                10
-#>           18023           0.739         0.937      TRUE    FALSE                10
+#>           18021           0.739         0.937      TRUE    FALSE                10
 #>           17142           0.940         0.816      TRUE    FALSE                10
-#>           17623           0.792         0.797      TRUE    FALSE                10
-#>           18017           0.738         0.823      TRUE    FALSE                10
+#>           17622           0.792         0.797      TRUE    FALSE                10
+#>           18014           0.739         0.823      TRUE    FALSE                10
 #> No candidate is selected automatically. Compare one convention consistently.
 get_results(candidates, "criteria")
 #>    criterion  convention n_profiles n_group_classes model value
@@ -482,17 +493,28 @@ An individual candidate can be retrieved for the same inspection applied to the 
 ``` r
 candidate <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 2)
 get_results(candidate)
-#>    profile  indicator   mean variance standard_deviation
-#> 1        1     browse -0.766    0.528              0.727
-#> 2        1   lectures -0.606    0.538              0.734
-#> 3        1 forum_read -0.879    0.363              0.603
-#> 4        1 forum_post -0.753    0.421              0.649
-#> 5        1 attendance -0.921    0.374              0.611
-#> 6        2     browse  0.540    0.590              0.768
-#> 7        2   lectures  0.427    0.845              0.919
-#> 8        2 forum_read  0.620    0.481              0.694
-#> 9        2 forum_post  0.531    0.689              0.830
-#> 10       2 attendance  0.649    0.384              0.620
+#>    profile  indicator   mean variance standard_deviation mean_standard_error
+#> 1        1     browse  0.540    0.590              0.768              0.0271
+#> 2        1   lectures  0.427    0.845              0.919              0.0325
+#> 3        1 forum_read  0.620    0.481              0.694              0.0247
+#> 4        1 forum_post  0.530    0.689              0.830              0.0295
+#> 5        1 attendance  0.649    0.384              0.620              0.0223
+#> 6        2     browse -0.766    0.528              0.727              0.0312
+#> 7        2   lectures -0.606    0.538              0.734              0.0309
+#> 8        2 forum_read -0.879    0.363              0.603              0.0262
+#> 9        2 forum_post -0.753    0.421              0.649              0.0277
+#> 10       2 attendance -0.921    0.374              0.611              0.0264
+#>    variance_standard_error
+#> 1                   0.0295
+#> 2                   0.0421
+#> 3                   0.0244
+#> 4                   0.0348
+#> 5                   0.0196
+#> 6                   0.0322
+#> 7                   0.0321
+#> 8                   0.0228
+#> 9                   0.0261
+#> 10                  0.0228
 ```
 
 For supported nested models differing by one class at one level, `bootstrap_lrt()` provides a parametric bootstrap likelihood-ratio comparison. It simulates data from the smaller model and estimates both models for each replicate, constructing an empirical reference distribution for the likelihood-ratio statistic. The following optional example is not evaluated during rendering because it requires hundreds of additional fits.
@@ -517,19 +539,19 @@ Parameter uncertainty is assessed after specifying the model. `parameter_inferen
 inference <- parameter_inference(fit)
 head(inference)
 #>         level   outcome       term parameter estimate standard_error statistic   p_value
-#> 1 measurement profile_1     browse      mean   -0.766         0.0312     -24.5 7.50e-133
-#> 2 measurement profile_1   lectures      mean   -0.606         0.0309     -19.6  1.33e-85
-#> 3 measurement profile_1 forum_read      mean   -0.879         0.0262     -33.5 1.48e-246
-#> 4 measurement profile_1 forum_post      mean   -0.753         0.0277     -27.2 8.47e-163
-#> 5 measurement profile_1 attendance      mean   -0.921         0.0264     -34.8 6.92e-266
-#> 6 measurement profile_2     browse      mean    0.540         0.0271      19.9  3.33e-88
+#> 1 measurement profile_1     browse      mean    0.540         0.0271      19.9  3.37e-88
+#> 2 measurement profile_1   lectures      mean    0.427         0.0325      13.2  1.56e-39
+#> 3 measurement profile_1 forum_read      mean    0.620         0.0247      25.1 1.25e-138
+#> 4 measurement profile_1 forum_post      mean    0.530         0.0295      18.0  3.71e-72
+#> 5 measurement profile_1 attendance      mean    0.649         0.0223      29.2 8.03e-187
+#> 6 measurement profile_2     browse      mean   -0.766         0.0312     -24.5 7.17e-133
 #>   p_adjusted conf_low conf_high
-#> 1  7.50e-133   -0.827    -0.704
-#> 2   1.33e-85   -0.667    -0.546
-#> 3  1.48e-246   -0.931    -0.828
-#> 4  8.47e-163   -0.807    -0.698
-#> 5  6.92e-266   -0.972    -0.869
-#> 6   3.33e-88    0.486     0.593
+#> 1   3.37e-88    0.486     0.593
+#> 2   1.56e-39    0.364     0.491
+#> 3  1.25e-138    0.571     0.668
+#> 4   3.71e-72    0.473     0.588
+#> 5  8.03e-187    0.605     0.693
+#> 6  7.17e-133   -0.827    -0.704
 ```
 
 `confint(fit)` provides confidence intervals, while `parameter_inference(fit, vcov_type = "robust")` requests a sandwich covariance estimator clustered by the observed groups. These procedures quantify uncertainty conditional on the fitted class count and measurement specification. They do not incorporate uncertainty from choosing among candidate models.
@@ -554,10 +576,10 @@ with_predictors <- multilpa(
 )
 get_results(with_predictors, "coefficients")
 #>     level       outcome           term parameter estimate
-#> 1 profile     profile_1  group_class_1     logit    1.539
-#> 2 profile     profile_1  group_class_2     logit   -1.267
-#> 3 profile     profile_1 previous_grade     logit   -0.422
-#> 4   group group_class_1    (Intercept)     logit   -0.763
+#> 1 profile     profile_1  group_class_1     logit   -1.538
+#> 2 profile     profile_1  group_class_2     logit    1.268
+#> 3 profile     profile_1 previous_grade     logit    0.422
+#> 4   group group_class_1    (Intercept)     logit   -0.762
 ```
 
 A membership coefficient represents the change in log odds of a profile relative to the reference profile for a one-unit increase in the covariate. Its exponentiation gives the corresponding odds ratio. Interpretation requires identifying the reference category and the measurement pattern associated with each profile. Since previous grade is standardized, a one-unit difference represents one standard deviation on that covariate's scale.
@@ -571,16 +593,19 @@ Three-step procedures retain an established measurement solution and account for
 
 ``` r
 three_step(fit, data = course_engagement, outcome = "previous_grade")
-#>         level method class estimate standard_error conf_low conf_high effective_n
-#> 1 individuals    bch     1   -0.315         0.0359   -0.385    -0.244         564
-#> 2 individuals    bch     2    0.222         0.0347    0.154     0.290         810
+#> Distal outcome by class (bch, 95% CI)
+#> 
+#> Class   Mean          95% CI     SE  Effective n
+#> -----  -----  --------------  -----  -----------
+#>     1   0.22  [ 0.15,  0.29]  0.035       810.27
+#>     2  -0.31  [-0.39, -0.24]  0.036       564.36
 r3step(fit, data = course_engagement, covariates = "previous_grade")
-#>         level outcome           term estimate standard_error statistic  p_value
-#> 1 individuals class_1    (Intercept)   -0.376         0.1303     -2.89 3.91e-03
-#> 2 individuals class_1 previous_grade   -0.575         0.0593     -9.69 3.35e-22
-#>   p_value_adjusted conf_low conf_high
-#> 1               NA   -0.631    -0.121
-#> 2         3.35e-22   -0.691    -0.459
+#>         level   outcome           term estimate standard_error statistic  p_value p_adjusted
+#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.90e-03         NA
+#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.35e-22   3.35e-22
+#>   conf_low conf_high
+#> 1    0.121     0.631
+#> 2    0.459     0.691
 ```
 
 The first call compares previous-grade means between enrolment profiles. The argument name `outcome` identifies the variable whose means are estimated; it does not imply that engagement precedes or causes previous grade. The second call estimates the association of previous grade with profile membership while preserving the original profile definitions.
@@ -613,17 +638,28 @@ missing_fit <- multilpa(
   n_starts = 10, seed = 1
 )
 get_results(missing_fit)
-#>    profile  indicator   mean variance standard_deviation
-#> 1        1     browse  0.531    0.600              0.775
-#> 2        1   lectures  0.419    0.847              0.921
-#> 3        1 forum_read  0.611    0.493              0.702
-#> 4        1 forum_post  0.522    0.698              0.836
-#> 5        1 attendance  0.634    0.406              0.637
-#> 6        2     browse -0.769    0.524              0.724
-#> 7        2   lectures -0.607    0.544              0.737
-#> 8        2 forum_read -0.885    0.357              0.597
-#> 9        2 forum_post -0.757    0.413              0.643
-#> 10       2 attendance -0.926    0.398              0.631
+#>    profile  indicator   mean variance standard_deviation mean_standard_error
+#> 1        1     browse  0.531    0.600              0.775              0.0281
+#> 2        1   lectures  0.419    0.847              0.921              0.0331
+#> 3        1 forum_read  0.611    0.493              0.702              0.0260
+#> 4        1 forum_post  0.522    0.698              0.836              0.0308
+#> 5        1 attendance  0.634    0.406              0.637              0.0248
+#> 6        2     browse -0.769    0.524              0.724              0.0328
+#> 7        2   lectures -0.607    0.544              0.737              0.0323
+#> 8        2 forum_read -0.885    0.357              0.597              0.0278
+#> 9        2 forum_post -0.757    0.413              0.643              0.0288
+#> 10       2 attendance -0.927    0.398              0.631              0.0307
+#>    variance_standard_error
+#> 1                   0.0308
+#> 2                   0.0426
+#> 3                   0.0259
+#> 4                   0.0365
+#> 5                   0.0227
+#> 6                   0.0335
+#> 7                   0.0334
+#> 8                   0.0237
+#> 9                   0.0270
+#> 10                  0.0272
 ```
 
 Each observation contributes the density of its observed indicators, obtained by marginalizing over its missing components. Estimation therefore uses partially observed indicator vectors without imputing values. The resulting inference assumes that the missingness mechanism is ignorable for the fitted analysis; the likelihood option itself does not establish that assumption.
@@ -647,19 +683,19 @@ over_time <- multilpa(
 )
 head(get_results(over_time, "sequences", format = "wide"))
 #>   group group_class sequence_1 sequence_2 sequence_3 sequence_4 sequence_5 sequence_6
-#> 1     1           1          2          2          1          1          1          1
-#> 2     2           1          1          1          1          1          1          1
-#> 3     3           2          2          2          2          2          2          2
-#> 4     4           2          2          2          2          2          2          2
-#> 5     5           1          1          1          1          1          1          1
-#> 6     6           2          2          1          1          1          2          2
+#> 1     1           2          1          1          2          2          2          2
+#> 2     2           2          2          2          2          2          2          2
+#> 3     3           1          1          1          1          1          1          1
+#> 4     4           1          1          1          1          1          1          1
+#> 5     5           2          2          2          2          2          2          2
+#> 6     6           1          1          2          2          2          1          1
 #>   sequence_7 sequence_8 sequence_9 sequence_10 sequence_11 sequence_12 sequence_13 sequence_14
-#> 1          1          1          1           1           1           1           1        <NA>
-#> 2          1          1          1           1           1           1           1        <NA>
-#> 3          2          2          2           2           2           2           2           2
-#> 4          2          2          2           2           2           2           2        <NA>
-#> 5          1          2          1           1           1           1           1           1
-#> 6          2          1          1           2           2           2        <NA>        <NA>
+#> 1          2          2          2           2           2           2           2        <NA>
+#> 2          2          2          2           2           2           2           2        <NA>
+#> 3          1          1          1           1           1           1           1           1
+#> 4          1          1          1           1           1           1           1        <NA>
+#> 5          2          1          2           2           2           2           2           2
+#> 6          1          2          2           1           1           1        <NA>        <NA>
 #>   sequence_15
 #> 1        <NA>
 #> 2        <NA>
@@ -732,39 +768,39 @@ lca <- multilca(
   n_starts = 10, seed = 1
 )
 get_results(lca, "responses")
-#>    profile         indicator category probability threshold
-#> 1        1 time_with_friends       no      0.8325     1.603
-#> 2        2 time_with_friends       no      0.9368     2.696
-#> 3        1 time_with_friends      yes      0.1675        NA
-#> 4        2 time_with_friends      yes      0.0632        NA
-#> 5        1   on_social_media       no      0.9233     2.488
-#> 6        2   on_social_media       no      0.3368    -0.678
-#> 7        1   on_social_media      yes      0.0767        NA
-#> 8        2   on_social_media      yes      0.6632        NA
-#> 9        1    tv_video_games       no      0.8665     1.870
-#> 10       2    tv_video_games       no      0.6312     0.538
-#> 11       1    tv_video_games      yes      0.1335        NA
-#> 12       2    tv_video_games      yes      0.3688        NA
-#> 13       1    listened_music       no      0.9406     2.763
-#> 14       2    listened_music       no      0.6463     0.603
-#> 15       1    listened_music      yes      0.0594        NA
-#> 16       2    listened_music      yes      0.3537        NA
-#> 17       1            sports       no      0.9159     2.388
-#> 18       2            sports       no      0.9406     2.762
-#> 19       1            sports      yes      0.0841        NA
-#> 20       2            sports      yes      0.0594        NA
-#> 21       1           walking       no      0.8366     1.633
-#> 22       2           walking       no      0.8865     2.056
-#> 23       1           walking      yes      0.1634        NA
-#> 24       2           walking      yes      0.1135        NA
-#> 25       1           reading       no      0.8917     2.108
-#> 26       2           reading       no      0.8790     1.983
-#> 27       1           reading      yes      0.1083        NA
-#> 28       2           reading      yes      0.1210        NA
-#> 29       1     part_time_job       no      0.9587     3.144
-#> 30       2     part_time_job       no      0.9838     4.104
-#> 31       1     part_time_job      yes      0.0413        NA
-#> 32       2     part_time_job      yes      0.0162        NA
+#>    profile         indicator category probability threshold probability_standard_error
+#> 1        1 time_with_friends       no      0.9368     2.696                    0.01281
+#> 2        2 time_with_friends       no      0.8324     1.603                    0.01525
+#> 3        1 time_with_friends      yes      0.0632        NA                    0.01281
+#> 4        2 time_with_friends      yes      0.1676        NA                    0.01525
+#> 5        1   on_social_media       no      0.3365    -0.679                    0.04591
+#> 6        2   on_social_media       no      0.9235     2.491                    0.02663
+#> 7        1   on_social_media      yes      0.6635        NA                    0.04591
+#> 8        2   on_social_media      yes      0.0765        NA                    0.02663
+#> 9        1    tv_video_games       no      0.6313     0.538                    0.02891
+#> 10       2    tv_video_games       no      0.8664     1.870                    0.01605
+#> 11       1    tv_video_games      yes      0.3687        NA                    0.02891
+#> 12       2    tv_video_games      yes      0.1336        NA                    0.01605
+#> 13       1    listened_music       no      0.6464     0.603                    0.03167
+#> 14       2    listened_music       no      0.9406     2.762                    0.01419
+#> 15       1    listened_music      yes      0.3536        NA                    0.03167
+#> 16       2    listened_music      yes      0.0594        NA                    0.01419
+#> 17       1            sports       no      0.9406     2.762                    0.01208
+#> 18       2            sports       no      0.9159     2.388                    0.01053
+#> 19       1            sports      yes      0.0594        NA                    0.01208
+#> 20       2            sports      yes      0.0841        NA                    0.01053
+#> 21       1           walking       no      0.8865     2.056                    0.01657
+#> 22       2           walking       no      0.8365     1.633                    0.01423
+#> 23       1           walking      yes      0.1135        NA                    0.01657
+#> 24       2           walking      yes      0.1635        NA                    0.01423
+#> 25       1           reading       no      0.8790     1.983                    0.01685
+#> 26       2           reading       no      0.8917     2.108                    0.01190
+#> 27       1           reading      yes      0.1210        NA                    0.01685
+#> 28       2           reading      yes      0.1083        NA                    0.01190
+#> 29       1     part_time_job       no      0.9838     4.103                    0.00625
+#> 30       2     part_time_job       no      0.9587     3.144                    0.00730
+#> 31       1     part_time_job      yes      0.0162        NA                    0.00625
+#> 32       2     part_time_job      yes      0.0413        NA                    0.00730
 plot(lca, what = "responses")
 ```
 
@@ -785,13 +821,20 @@ mixed <- multilpa(
   categorical = activities, n_starts = 10, seed = 1
 )
 get_results(mixed)
-#>   profile indicator mean variance standard_deviation
-#> 1       1     happy 5.98    0.659              0.812
-#> 2       1   relaxed 5.77    1.017              1.008
-#> 3       1 exhausted 2.33    1.977              1.406
-#> 4       2     happy 3.90    1.963              1.401
-#> 5       2   relaxed 3.66    1.946              1.395
-#> 6       2 exhausted 4.10    2.842              1.686
+#>   profile indicator mean variance standard_deviation mean_standard_error
+#> 1       1     happy 3.90    1.963              1.401                  NA
+#> 2       1   relaxed 3.66    1.946              1.395                  NA
+#> 3       1 exhausted 4.10    2.842              1.686                  NA
+#> 4       2     happy 5.98    0.659              0.812                  NA
+#> 5       2   relaxed 5.77    1.016              1.008                  NA
+#> 6       2 exhausted 2.32    1.976              1.406                  NA
+#>   variance_standard_error
+#> 1                      NA
+#> 2                      NA
+#> 3                      NA
+#> 4                      NA
+#> 5                      NA
+#> 6                      NA
 ```
 
 This specification treats the affect ratings as approximately Gaussian within profiles. The measurement table describes their means and variances, while `get_results(mixed, "responses")` provides the activity-response probabilities. Including affect changes the dimensions represented by the model and can consequently change the substantive meaning of its profiles.
@@ -830,14 +873,17 @@ Standard errors and information criteria from the staged fit are conditional on 
 regressions <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
                                   n_starts = 3, seed = 1)
 get_results(regressions, "coefficients")
-#>     class        term estimate std_error statistic  p_value conf_low conf_high p_adjusted
-#> 1 class_1 (Intercept)   34.355     0.719     47.76 0.00e+00   32.945     35.76         NA
-#> 2 class_1       hours    4.566     0.105     43.60 0.00e+00    4.361      4.77   0.00e+00
-#> 3 class_2 (Intercept)   54.895     1.093     50.24 0.00e+00   52.753     57.04         NA
-#> 4 class_2       hours    0.808     0.170      4.77 1.88e-06    0.476      1.14   1.88e-06
+#> Regression coefficients (95% CI)
+#> 
+#> Class    Term       Estimate          95% CI      p
+#> -------  ---------  --------  --------------  -----
+#> Class 1  Intercept     34.35  [32.94, 35.76]  <.001
+#> Class 1  hours          4.57  [ 4.36,  4.77]  <.001
+#> Class 2  Intercept     54.90  [52.75, 57.04]  <.001
+#> Class 2  hours          0.81  [ 0.48,  1.14]  <.001
 ```
 
-`enumerate_regressions()` compares numbers of classes, with an optional parametric bootstrap likelihood-ratio test. Standard errors come from analytic scores, with observed-information, sandwich and outer-product estimators. Single-level and group-level models reproduce `flexmix`'s likelihood at the same parameters; `vignette("mixture-regression")` walks through every nesting.
+`enumerate_regressions()` compares numbers of classes, with an optional parametric bootstrap likelihood-ratio test. Standard errors come from analytic scores, with observed-information, sandwich and outer-product estimators. Single-level and group-level models reproduce `flexmix`'s likelihood at the same parameters; the [mixture regression article](https://pak.dynasite.org/latents/articles/mixture-regression.html) walks through every nesting.
 
 ## Retrieving results and reporting an analysis
 
@@ -861,22 +907,25 @@ A methodological report should identify the Level-1 observations and Level-2 uni
 
 Interpretation should then distinguish the measurement profiles from the higher-level composition classes. Profile means or response probabilities establish the meaning of the observation-level classes; conditional profile probabilities establish the meaning of the group-level classes. Effective class sizes, posterior classification uncertainty, residual diagnostics, and the rationale for selecting the final model provide the evidence needed to assess that interpretation.
 
-Additional package vignettes develop the individual parts of this workflow in greater detail.
+The package vignettes cover the main model families.
 
 
 ``` r
 vignette("lpa", package = "latents")
-vignette("evaluation", package = "latents")
-vignette("covariates", package = "latents")
 vignette("lca", package = "latents")
 vignette("lta", package = "latents")
+vignette("growth-mixture", package = "latents")
 citation("latents")
 ```
+
+Further guides are on the [package website](https://pak.dynasite.org/latents/articles/): complete workflows for [latent profile](https://pak.dynasite.org/latents/articles/workflow-lpa.html) and [latent class](https://pak.dynasite.org/latents/articles/workflow-lca.html) analysis, [model evaluation](https://pak.dynasite.org/latents/articles/evaluation.html), [covariates and staged estimation](https://pak.dynasite.org/latents/articles/covariates.html), [mixture regression](https://pak.dynasite.org/latents/articles/mixture-regression.html), [latent class growth analysis](https://pak.dynasite.org/latents/articles/trajectory-classes.html) and [group-class and cross-level models](https://pak.dynasite.org/latents/articles/additive.html).
 
 ## Authors and citation
 
 `latents` is written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me/). Mohammed Saqr maintains the package. Questions and bug reports can be submitted through the [repository issue tracker](https://github.com/mohsaqr/latents/issues).
 
 The source repository contains further worked examples and software comparison studies. The package citation is available through `citation("latents")`.
+
+
 
 

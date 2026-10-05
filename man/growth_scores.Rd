@@ -40,6 +40,7 @@ effects needs more classes than the three that generated the data; a growth
 mixture model with random intercepts and slopes recovers three.
 }
 \examples{
+descriptives(growth_scores, c("score", "motivation"))
 \donttest{
 fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
                           id = "student", class_level = "group",

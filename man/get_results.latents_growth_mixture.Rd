@@ -98,7 +98,14 @@ Every table of a \code{mixture_regression()} fit with \verb{random =} is a base
 \code{data.frame} with one row per observation unit of that table.
 }
 \examples{
+few_students <- subset(growth_scores, student <= 60)
+small_fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                                id = "student", class_level = "group",
+                                random = "intercept", seed = 1)
+get_results(small_fit, "classes")
+get_results(small_fit, "random")
 \donttest{
+# All 300 students, with random intercepts and slopes
 fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
                           id = "student", class_level = "group",
                           random = "wave", random_covariance = "equal",

@@ -22,6 +22,7 @@ test_that("simulation keeps groups, occasions and covariates and draws the model
 })
 
 test_that("general fits simulate with covariates, occasion measurement and order 2", {
+  skip_on_cran()
   # Fifteen occasions with few groups late on: some moves never occur, so the
   # fit is on a probability boundary by design.
   fit <- quietly(lta(course_engagement, compare_activity, "student", n_profiles = 2,
@@ -52,6 +53,7 @@ test_that("the nesting rule relaxes options one way only", {
 })
 
 test_that("bootstrap LRT between nested transition fits", {
+  skip_on_cran()
   null <- lta(course_engagement, compare_activity, "student", n_profiles = 2,
               time = "sequence", n_starts = 2, seed = 1)
   alternative <- lta(course_engagement, compare_activity, "student", n_profiles = 2,
@@ -78,6 +80,7 @@ test_that("bootstrap LRT between nested transition fits", {
 })
 
 test_that("transition enumeration crosses profiles, classes and structures", {
+  skip_on_cran()
   grid <- enumerate_classes(course_engagement, compare_activity, "student",
                             time = "sequence", n_profiles = 2:3, n_group_classes = 1:2,
                             n_starts = 2, seed = 1)

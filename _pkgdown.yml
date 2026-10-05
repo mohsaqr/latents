@@ -105,17 +105,21 @@ articles:
 - title: Vignettes
   navbar: Vignettes
   contents:
-  - workflow-lpa
-  - workflow-lca
-  - additive
   - lpa
-  - evaluation
-  - covariates
   - lca
   - lta
-  - mixture-regression
-  - trajectory-classes
   - growth-mixture
+
+- title: Guides
+  navbar: Guides
+  contents:
+  - articles/workflow-lpa
+  - articles/workflow-lca
+  - articles/evaluation
+  - articles/covariates
+  - articles/mixture-regression
+  - articles/trajectory-classes
+  - articles/additive
 
 - title: Case studies
   navbar: Case studies

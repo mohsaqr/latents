@@ -958,8 +958,9 @@
 #'   Read it with [get_results.multilpa_additive()]; `summary()`, `plot()`,
 #'   `coef()`, `vcov()`, `confint()` and [parameter_inference()] work on it.
 #'   These families are experimental: enumeration over families, bootstrap
-#'   inference, missing data and covariates are not yet available. See
-#'   `vignette("additive")`.
+#'   inference, missing data and covariates are not yet available. See the
+#'   [group-class and cross-level models
+#'   article](https://pak.dynasite.org/latents/articles/additive.html).
 #'
 #'   Two cross-level families estimate individual profiles and group classes
 #'   from the same indicators, following the manifest-aggregation

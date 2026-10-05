@@ -1,9 +1,9 @@
 # Ordinal regression mixtures, mixture_regression(family = "ordinal") (phase
 # E7 of validation/ENGINE_DESIGN.md): a proportional-odds (cumulative logit)
-# regression within each class under the regression structures. References:
-# one class is MASS::polr(method = "logistic"); a likelihood written with
-# plogis() differences alone; numerical derivatives of the likelihood;
-# recovery of simulated truths; two categories are the logistic mixture.
+# regression within each class under the regression structures. Here: a
+# likelihood written with plogis() differences alone, recovery of simulated
+# truths, and two categories as the logistic mixture. The comparisons with
+# MASS::polr() and numerical derivatives are in tests/equivalence/.
 
 # Rows with one ordinal outcome each, from two classes whose slopes differ in
 # sign; categories 1..4 as an ordered factor.
@@ -49,34 +49,8 @@ ordinal_dense <- function(fit, data, design) {
   }, numeric(nrow(data))))))
 }
 
-test_that("one class is MASS::polr(method = \"logistic\")", {
-  skip_if_not_installed("MASS")
-  data <- ordinal_rows()
-  data$o <- 0.3 * data$w
-  fit <- mixture_regression(y ~ x + w + offset(o), data, n_classes = 1,
-                            family = "ordinal", n_starts = 1, seed = 1)
-  reference <- MASS::polr(y ~ x + w + offset(o), data = data, method = "logistic",
-                          Hess = TRUE, control = list(reltol = 1e-14, maxit = 1000))
-  expect_equal(fit$log_likelihood, as.numeric(stats::logLik(reference)),
-               tolerance = 1e-8)
-  expect_equal(unname(fit$params$thresholds[, 1L]), unname(reference$zeta),
-               tolerance = 1e-5)
-  expect_equal(unname(fit$params$beta[, 1L]), unname(stats::coef(reference)),
-               tolerance = 1e-5)
-  # Both are the observed information at the same estimate, polr's by
-  # optimHess() on its analytic gradient and ours by differencing the
-  # analytic scores, so the errors agree to differencing error.
-  coefficients <- get_results(fit, "coefficients")
-  expect_identical(coefficients$term,
-                   c("threshold:never|rarely", "threshold:rarely|often",
-                     "threshold:often|always", "x", "w"))
-  expect_equal(coefficients$std_error,
-               unname(sqrt(diag(stats::vcov(reference)))[
-                 c(names(reference$zeta), names(stats::coef(reference)))]),
-               tolerance = 1e-3)
-})
-
 test_that("the likelihood is the dense mixture of plogis differences", {
+  skip_on_cran()
   data <- ordinal_rows()
   fit <- mixture_regression(y ~ x + w, data, n_classes = 2, family = "ordinal",
                             common = ~ w, n_starts = 3, seed = 1)
@@ -86,29 +60,8 @@ test_that("the likelihood is the dense mixture of plogis differences", {
   expect_identical(fit$n_parameters, 10L)
 })
 
-test_that("the analytic scores are the gradient of the log likelihood", {
-  skip_if_not_installed("numDeriv")
-  check <- function(fit) {
-    theta <- latents:::.mixture_pack(fit$spec, fit$params) + 0.03
-    value <- function(v) {
-      latents:::.mixture_expectation(
-        fit$spec, latents:::.mixture_unpack(fit$spec, v, fit$params))$log_likelihood
-    }
-    params <- latents:::.mixture_unpack(fit$spec, theta, fit$params)
-    scores <- latents:::.mixture_unit_scores(
-      fit$spec, params, latents:::.mixture_expectation(fit$spec, params))
-    expect_equal(unname(colSums(scores)), numDeriv::grad(value, theta), tolerance = 1e-6)
-    # The packed coordinates round-trip to ordered thresholds.
-    expect_equal(latents:::.mixture_pack(fit$spec, params), theta, tolerance = 1e-12)
-  }
-  check(mixture_regression(y ~ x + w, ordinal_rows(), n_classes = 2, family = "ordinal",
-                           common = ~ w, n_starts = 2, seed = 1))
-  check(mixture_regression(y ~ wave, ordinal_persons(), n_classes = 2,
-                           family = "ordinal", id = "person", class_level = "group",
-                           n_starts = 2, seed = 1))
-})
-
 test_that("a simulated two-class ordinal mixture is recovered", {
+  skip_on_cran()
   data <- ordinal_rows()
   fit <- mixture_regression(y ~ x + w, data, n_classes = 2, family = "ordinal",
                             common = ~ w, n_starts = 3, seed = 1)
@@ -168,6 +121,7 @@ test_that("two categories are the logistic mixture with thresholds as negated in
 })
 
 test_that("category probabilities sum to one and relabelling leaves the likelihood", {
+  skip_on_cran()
   data <- ordinal_rows(n = 600)
   fit <- mixture_regression(y ~ x, data, n_classes = 2, family = "ordinal",
                             n_starts = 2, seed = 1)
@@ -224,6 +178,7 @@ test_that("unusable ordinal requests are refused with classed conditions", {
 })
 
 test_that("simulate() is seeded and draws the fitted categories", {
+  skip_on_cran()
   data <- ordinal_rows(n = 600)
   fit <- mixture_regression(y ~ x, data, n_classes = 2, family = "ordinal",
                             n_starts = 2, seed = 1)

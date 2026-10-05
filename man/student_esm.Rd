@@ -64,6 +64,7 @@ profile of low-worry prompts can have zero variance on it and reach the
 \code{min_variance} bound.
 }
 \examples{
+head(student_esm)
 \donttest{
 activities <- c("time_with_friends", "on_social_media", "tv_video_games",
                 "listened_music", "sports", "walking", "reading",

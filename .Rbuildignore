@@ -35,3 +35,4 @@
 ^ROADMAP\.md$
 ^_pkgdown\.yml$
 ^pkgdown$
+^tests/equivalence$

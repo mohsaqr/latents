@@ -1,3 +1,28 @@
+# latents 0.9.16
+
+* Every help page now has an example that runs in the automatic checks. The
+  growth mixture pages (`get_results()`, `plot()`, `simulate()`) and
+  `compare_models()` open with a fit on the first 60 students of
+  `growth_scores`, which runs in about a second; the full-data examples stay
+  in `\donttest{}`. The `growth_scores`, `growth_schools` and `student_esm`
+  pages open with a summary of the data. The `compare_models()` example no
+  longer fits a random intercept that `course_engagement` cannot support.
+* The package ships four vignettes: `lpa`, `lca`, `lta` and `growth-mixture`.
+  The workflow guides (`workflow-lpa`, `workflow-lca`) and the guides to
+  evaluation, covariates, mixture regression, latent class growth analysis and
+  group-class models move to articles on the package website, with unchanged
+  addresses. This keeps the installed package small and the checks quick.
+* Tests that compare latents with other implementations (`numDeriv`,
+  `mclust`, `MASS`, `glm()`, Latent GOLD and Mplus results, reference
+  implementations, the numbers in the workflow guides) move to
+  `tests/equivalence/`, which is not part of the package and runs in its own
+  CI job. `numDeriv` is no longer a suggested package. Slow tests that refit
+  many models are skipped on CRAN; every model family keeps tests that run
+  there.
+* The README's enumeration example names its covariance structure
+  (`model = "VVI"`), as `candidate_fit()` needs once several structures are
+  crossed, and its text matches the regenerated output.
+
 # latents 0.9.15
 
 * Vignettes and worked examples save and restore the user's display options

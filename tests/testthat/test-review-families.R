@@ -17,47 +17,6 @@ review_family_data <- function() {
     }))
 }
 
-test_that("reviewed family scores and information match dense Gaussian derivatives", {
-  skip_if_not_installed("numDeriv")
-  data <- review_family_data()
-  vars <- c("y1", "y2")
-  stats <- .additive_prepare(data, vars, "id", "w")
-  blocks <- lapply(unique(data$id), function(j) as.matrix(data[data$id == j, vars]))
-  cases <- list(c("additive", "varying"), c("additive", "equal"),
-                c("dispersion", "equal"), c("additive_dispersion", "varying"),
-                c("additive_dispersion", "equal"))
-  invisible(lapply(cases, function(case) {
-    structure <- .additive_structure(case[1L], case[2L])
-    shared <- function(value, mode) if (mode == "equal") value[c(1L, 1L), ] else value
-    point <- list(means = shared(rbind(c(-1, -0.5), c(1, 0.5)), structure$means),
-                  within = shared(rbind(c(0.6, 0.8), c(1.5, 1.8)), structure$within),
-                  between = shared(rbind(c(0.3, 0.4), c(0.7, 0.5)), structure$between),
-                  weights = c(0.7, 0.3))
-    classes <- c("group_class_1", "group_class_2")
-    theta <- .additive_pack(point, structure, classes, vars)
-    # Build a full covariance for every group instead of using the engine's
-    # group sufficient-statistic density or likelihood routine.
-    objective <- function(theta) {
-      p <- .additive_unpack(theta, 2L, 2L, structure)
-      sum(stats$sampling_weights * vapply(blocks, function(x) {
-        joint <- vapply(seq_len(2L), function(h) {
-          additive_dense_density(x, p$means[h, ], p$between[h, ], p$within[h, ]) +
-            log(p$weights[h])
-        }, numeric(1))
-        max(joint) + log(sum(exp(joint - max(joint))))
-      }, numeric(1)))
-    }
-    scores <- .additive_group_scores(stats, point, structure, classes, vars)
-    expect_equal(unname(colSums(scores)), numDeriv::grad(objective, theta),
-                 tolerance = 1e-6, info = paste(case, collapse = "/"))
-    information <- .additive_information(stats, theta, structure, classes, vars, 1e-4)
-    expect_equal(unname(information), -numDeriv::hessian(objective, theta),
-                 tolerance = 1e-4, info = paste(case, collapse = "/"))
-    expect_equal(.additive_expectation(stats, point)$log_likelihood, objective(theta),
-                 tolerance = 1e-10)
-  }))
-})
-
 test_that("group-class bootstrap refuses changed scatter and group sizes", {
   data <- review_family_data()
   null <- multilpa(data, c("y1", "y2"), "id", n_group_classes = 1,
@@ -176,62 +135,6 @@ review_cross_loglik <- function(fit, data, prevalence = NULL) {
     max(joint) + log(sum(exp(joint - max(joint))))
   }, numeric(1)))
 }
-
-test_that("all cross-level variance restrictions reproduce weighted raw formulas", {
-  skip_if_not_installed("numDeriv")
-  data <- review_family_data()
-  grid <- expand.grid(family = c("restricted_cross_level", "full_cross_level"),
-                       within = c("equal", "varying"),
-                       between = c("equal", "varying"), stringsAsFactors = FALSE)
-  invisible(lapply(seq_len(nrow(grid)), function(i) {
-    fit <- multilpa(data, c("y1", "y2"), "id", n_profiles = 2,
-                    n_group_classes = 2, family = grid$family[i], weights = "w",
-                    variance_model = grid$within[i], between_variance = grid$between[i],
-                    n_starts = 2, seed = 2, max_iter = 5000, tol = 1e-12)
-    expect_true(fit$converged)
-    expect_error(parameter_inference(fit), "ratings and group means computed",
-                 class = "latents_unsupported_inference")
-    expect_equal(fit$log_likelihood, review_cross_loglik(fit, data), tolerance = 1e-8)
-    expect_equal(unname(rowSums(fit$group_posteriors)), rep(1, 90L), tolerance = 1e-12)
-    expect_equal(unname(rowSums(fit$subject_posteriors)), rep(1, nrow(data)),
-                 tolerance = 1e-12)
-    if (grid$within[i] == "equal") {
-      expect_equal(fit$profile_variances[1L, ], fit$profile_variances[2L, ])
-    }
-    if (grid$between[i] == "equal") {
-      expect_equal(fit$group_mean_variances[1L, ], fit$group_mean_variances[2L, ])
-    }
-    row_weights <- unname(fit$sampling_weights)[match(data$id, unique(data$id))]
-    prevalence <- if (fit$family == "full_cross_level") fit$composition else
-      matrix(colSums(fit$subject_posteriors * row_weights) / sum(row_weights),
-             2L, 2L, byrow = TRUE)
-    block <- function(m, mode) if (mode == "equal") m[1L, ] else as.vector(m)
-    pieces <- list(as.vector(fit$profile_means),
-                   log(block(fit$profile_variances, grid$within[i])),
-                   as.vector(fit$group_means),
-                   log(block(fit$group_mean_variances, grid$between[i])),
-                   log(prevalence[if (fit$family == "full_cross_level") 1:2 else 1L, 2L] /
-                         prevalence[if (fit$family == "full_cross_level") 1:2 else 1L, 1L]),
-                   log(fit$group_probabilities[2L] / fit$group_probabilities[1L]))
-    ends <- cumsum(c(0L, lengths(pieces)))
-    objective <- function(theta) {
-      part <- function(k) theta[seq.int(ends[k] + 1L, ends[k + 1L])]
-      expand <- function(values, mode) {
-        if (mode == "equal") matrix(values, 2L, 2L, byrow = TRUE) else matrix(values, 2L)
-      }
-      moved <- fit
-      moved$profile_means[] <- part(1L)
-      moved$profile_variances <- exp(expand(part(2L), grid$within[i]))
-      moved$group_means[] <- part(3L)
-      moved$group_mean_variances <- exp(expand(part(4L), grid$between[i]))
-      weight <- plogis(part(6L))
-      moved$group_probabilities <- c(1 - weight, weight)
-      share <- rep(plogis(part(5L)), length.out = 2L)
-      review_cross_loglik(moved, data, cbind(1 - share, share))
-    }
-    expect_lt(max(abs(numDeriv::grad(objective, unlist(pieces)))), 2e-3)
-  }))
-})
 
 test_that("weighted family covariance is the sandwich of weighted group scores", {
   fit <- multilpa(review_family_data(), c("y1", "y2"), "id", n_group_classes = 1,

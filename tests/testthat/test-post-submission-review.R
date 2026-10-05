@@ -12,18 +12,6 @@ review_regression_data <- function() {
   })
 }
 
-test_that("one-class binary regression agrees with an ordinary logistic GLM", {
-  data <- review_regression_data()
-  reference <- stats::glm(binary ~ time, data, family = stats::binomial())
-  fit <- mixture_regression(binary ~ time, data, n_classes = 1,
-                            family = "binomial", n_starts = 0)
-  expect_equal(fit$log_likelihood, as.numeric(logLik(reference)), tolerance = 1e-9)
-  expect_equal(unname(fit$params$beta[, 1]), unname(stats::coef(reference)),
-               tolerance = 1e-7)
-  expect_equal(get_results(fit)$std_error, sqrt(unname(diag(stats::vcov(reference)))),
-               tolerance = 1e-5)
-})
-
 test_that("count regression densities stay accurate for large counts and Poisson limits", {
   for (family in c("poisson", "negative_binomial")) {
     y <- if (family == "poisson") c(0, 1e6, 1e12, 1e15) else 0:15
@@ -86,25 +74,6 @@ test_that("classification tables retain classes with no modal assignments", {
   expect_equal(table$mean_posterior[table$assigned == "class_1"], c(0.7, 0.3))
   expect_true(all(is.na(table$mean_posterior[table$assigned == "class_2"])))
   expect_identical(table$n_assigned, c(10L, 0L, 10L, 0L))
-})
-
-test_that("trajectory estimates include offsets and errors are on the response scale", {
-  data <- review_regression_data()
-  fit <- mixture_regression(y ~ time + offset(off), data, 1, id = "id",
-                            class_level = "group", n_starts = 0)
-  rows <- data[1:4, ]
-  inference <- latents:::.mixture_resolve_inference(fit, NULL)
-  band <- latents:::.trajectory_band(fit, rows, inference, 0.95)
-  expect_equal(band$estimate, predict(fit, rows)$fitted, tolerance = 1e-12)
-  logistic <- mixture_regression(binary ~ time, data, 1, family = "binomial",
-                                 id = "id", class_level = "group", n_starts = 0)
-  inference <- latents:::.mixture_resolve_inference(logistic, NULL)
-  band <- latents:::.trajectory_band(logistic, rows, inference, 0.95)
-  reference <- stats::glm(binary ~ time, data, family = stats::binomial())
-  predicted <- stats::predict(reference, rows, type = "link", se.fit = TRUE)
-  expected <- predicted$se.fit * stats::plogis(predicted$fit) *
-    stats::plogis(predicted$fit, lower.tail = FALSE)
-  expect_equal(band$std_error, unname(expected), tolerance = 1e-5)
 })
 
 test_that("growth residual sums survive a large response translation", {
@@ -245,6 +214,7 @@ test_that("noise shares retain all cases and sequence plots preserve noise cells
   sequences <- get_results(fit, "sequences", format = "wide")
   expect_equal(sum(as.matrix(sequences[-c(1, 2)]) == "0", na.rm = TRUE),
                sum(fit$subject_profiles == 0L))
+  skip_if_not_installed("ggplot2")
   plot <- plot(fit, what = "sequences")
   expect_equal(sum(plot$data$profile_label == "Noise"), sum(fit$subject_profiles == 0L))
   expect_equal(nrow(plot$data), fit$n_observations)

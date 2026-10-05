@@ -151,7 +151,7 @@ Because mixture likelihoods can have local maxima, estimation is repeated from m
 plot(fit)
 ```
 
-In this solution, profile 2 has the higher engagement pattern and profile 1 the lower engagement pattern. Because the indicators were standardized within course, the separation concerns relative activity within courses. The interpretation should be based on the configuration of means across all indicators, together with within-profile dispersion, rather than on a single indicator or the numerical profile label.
+In this solution, profile 1 has the higher engagement pattern and profile 2 the lower engagement pattern. Because the indicators were standardized within course, the separation concerns relative activity within courses. The interpretation should be based on the configuration of means across all indicators, together with within-profile dispersion, rather than on a single indicator or the numerical profile label.
 
 Profile numbers are arbitrary identifiers. A different initialization or model specification can reverse their numbering without changing the substantive solution. Comparisons between fits therefore require matching the measurement patterns before comparing class-specific parameters.
 
@@ -164,7 +164,7 @@ get_results(fit, "profile_probabilities")
 plot(fit, what = "probabilities")
 ```
 
-The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 83% probability to the less engaged profile, whereas student class 2 assigns approximately 79% probability to the more engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
+The `probability` column contains the estimates of $\pi_{hk}$. Student class 1 assigns approximately 79% probability to the more engaged profile, whereas student class 2 assigns approximately 83% probability to the less engaged profile. These classes describe different engagement compositions among students while retaining a shared definition of engagement at the enrolment level.
 
 The `group_class_probability` column contains the estimates of $\eta_h$, or the proportion of students in each class. These are group-level proportions. They should be distinguished from enrolment-level profile proportions, particularly when students contribute different numbers of observations.
 
@@ -256,7 +256,7 @@ Class enumeration evaluates candidate values of both $K$ and $H$. The following 
 ```{r enumeration}
 candidates <- enumerate_classes(
   course_engagement, vars, "student",
-  n_profiles = 2:4, n_group_classes = 1:3,
+  n_profiles = 2:4, n_group_classes = 1:3, model = "VVI",
   n_starts = 10, seed = 1
 )
 candidates
@@ -465,7 +465,7 @@ regressions <- mixture_regression(score ~ hours, data = study_hours, n_classes =
 get_results(regressions, "coefficients")
 ```
 
-`enumerate_regressions()` compares numbers of classes, with an optional parametric bootstrap likelihood-ratio test. Standard errors come from analytic scores, with observed-information, sandwich and outer-product estimators. Single-level and group-level models reproduce `flexmix`'s likelihood at the same parameters; `vignette("mixture-regression")` walks through every nesting.
+`enumerate_regressions()` compares numbers of classes, with an optional parametric bootstrap likelihood-ratio test. Standard errors come from analytic scores, with observed-information, sandwich and outer-product estimators. Single-level and group-level models reproduce `flexmix`'s likelihood at the same parameters; the [mixture regression article](https://pak.dynasite.org/latents/articles/mixture-regression.html) walks through every nesting.
 
 ## Retrieving results and reporting an analysis
 
@@ -481,16 +481,17 @@ A methodological report should identify the Level-1 observations and Level-2 uni
 
 Interpretation should then distinguish the measurement profiles from the higher-level composition classes. Profile means or response probabilities establish the meaning of the observation-level classes; conditional profile probabilities establish the meaning of the group-level classes. Effective class sizes, posterior classification uncertainty, residual diagnostics, and the rationale for selecting the final model provide the evidence needed to assess that interpretation.
 
-Additional package vignettes develop the individual parts of this workflow in greater detail.
+The package vignettes cover the main model families.
 
 ```{r further-reading, eval=FALSE}
 vignette("lpa", package = "latents")
-vignette("evaluation", package = "latents")
-vignette("covariates", package = "latents")
 vignette("lca", package = "latents")
 vignette("lta", package = "latents")
+vignette("growth-mixture", package = "latents")
 citation("latents")
 ```
+
+Further guides are on the [package website](https://pak.dynasite.org/latents/articles/): complete workflows for [latent profile](https://pak.dynasite.org/latents/articles/workflow-lpa.html) and [latent class](https://pak.dynasite.org/latents/articles/workflow-lca.html) analysis, [model evaluation](https://pak.dynasite.org/latents/articles/evaluation.html), [covariates and staged estimation](https://pak.dynasite.org/latents/articles/covariates.html), [mixture regression](https://pak.dynasite.org/latents/articles/mixture-regression.html), [latent class growth analysis](https://pak.dynasite.org/latents/articles/trajectory-classes.html) and [group-class and cross-level models](https://pak.dynasite.org/latents/articles/additive.html).
 
 ## Authors and citation
 

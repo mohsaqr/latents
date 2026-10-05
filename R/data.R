@@ -183,6 +183,7 @@
 #' @seealso [multilpa()] with `categorical =` for the two-level latent class
 #'   model.
 #' @examples
+#' head(student_esm)
 #' \donttest{
 #' activities <- c("time_with_friends", "on_social_media", "tv_video_games",
 #'                 "listened_music", "sports", "walking", "reading",
@@ -305,6 +306,7 @@
 #' @source Simulated by `data-raw/growth-scores.R` in the source repository.
 #' @seealso [mixture_regression()], [compare_models()].
 #' @examples
+#' descriptives(growth_scores, c("score", "motivation"))
 #' \donttest{
 #' fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
 #'                           id = "student", class_level = "group",
@@ -348,6 +350,7 @@
 #' @source Simulated by `data-raw/growth-schools.R` in the source repository.
 #' @seealso [mixture_regression()], [get_results.latents_growth_mixture()].
 #' @examples
+#' descriptives(growth_schools, c("score", "programme"))
 #' \donttest{
 #' fit <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
 #'                           id = "student", class_level = "group",
