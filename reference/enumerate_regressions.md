@@ -107,8 +107,9 @@ An object of class `latents_regression_enumeration`. Its table (from
 `bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share`, `converged`,
 `n_best_replicated`, `best_bic` (the minimum-BIC row), and, with
 `bootstrap > 0`, `blrt_statistic`, `blrt_p_value` and `blrt_replicates`
-(the successful replicates) and `blrt_flagged` (the replicates in which
-a refit did not converge or separated).
+(the successful replicates) and `blrt_flagged` (the failed, unconverged,
+separated or reversed-likelihood replicates). The p-value is `NA` if any
+requested replicate fails validation.
 `get_results(x, "model", n_classes = , n_group_classes = )` returns one
 fitted model.
 
@@ -152,6 +153,7 @@ classes
 with_test <- enumerate_regressions(score ~ hours, data = study_hours,
                                    n_classes = 1:2, n_starts = 3, seed = 1,
                                    bootstrap = 19)
+#> Warning: Some bootstrap fits failed validation, so p_value is NA. summary() reports every replicate; improve fitting and rerun.
 as.data.frame(with_test)
 #>   n_classes n_group_classes log_likelihood n_parameters      aic      bic
 #> 1         1               1      -3244.958            3 6495.916 6510.323
@@ -161,7 +163,7 @@ as.data.frame(with_test)
 #> 2 6335.632 6313.401 7030.366 0.4431723      0.4352614      TRUE
 #>   n_best_replicated note best_bic blrt_statistic blrt_p_value blrt_replicates
 #> 1                 4 <NA>    FALSE             NA           NA              NA
-#> 2                 4 <NA>     TRUE       201.9009         0.05              19
+#> 2                 4 <NA>     TRUE       201.9009           NA              14
 #>   blrt_flagged
 #> 1           NA
 #> 2            5

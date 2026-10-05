@@ -19,7 +19,7 @@ statistics at least as large as the observed one, (1 + b) / (1 + B)."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -173,7 +173,8 @@ model.</p></dd>
 <code>converged</code>, <code>n_best_replicated</code>, <code>best_bic</code> (the minimum-BIC row), and,
 with <code>bootstrap &gt; 0</code>, <code>blrt_statistic</code>, <code>blrt_p_value</code> and
 <code>blrt_replicates</code> (the successful replicates) and <code>blrt_flagged</code> (the
-replicates in which a refit did not converge or separated). <code>get_results(x, "model", n_classes = , n_group_classes = )</code> returns one fitted model.</p>
+failed, unconverged, separated or reversed-likelihood replicates). The
+p-value is <code>NA</code> if any requested replicate fails validation. <code>get_results(x, "model", n_classes = , n_group_classes = )</code> returns one fitted model.</p>
     </div>
     <div class="section level2">
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>
@@ -216,6 +217,7 @@ Monte Carlo simulation study. <em>Structural Equation Modeling</em>, 14,
 <span class="r-in"><span><span class="va">with_test</span> <span class="op">&lt;-</span> <span class="fu">enumerate_regressions</span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">hours</span>, data <span class="op">=</span> <span class="va">study_hours</span>,</span></span>
 <span class="r-in"><span>                                   n_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>                                   bootstrap <span class="op">=</span> <span class="fl">19</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Some bootstrap fits failed validation, so p_value is NA. summary() reports every replicate; improve fitting and rerun.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">with_test</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n_classes n_group_classes log_likelihood n_parameters      aic      bic</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1         1               1      -3244.958            3 6495.916 6510.323</span>
@@ -225,7 +227,7 @@ Monte Carlo simulation study. <em>Structural Equation Modeling</em>, 14,
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 6335.632 6313.401 7030.366 0.4431723      0.4352614      TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n_best_replicated note best_bic blrt_statistic blrt_p_value blrt_replicates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1                 4 &lt;NA&gt;    FALSE             NA           NA              NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                 4 &lt;NA&gt;     TRUE       201.9009         0.05              19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                 4 &lt;NA&gt;     TRUE       201.9009           NA              14</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   blrt_flagged</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1           NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2            5</span>

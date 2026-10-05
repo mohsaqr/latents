@@ -1,5 +1,37 @@
 # Changelog
 
+## latents 0.9.15
+
+- Vignettes and worked examples save and restore the user’s display
+  options (`digits` and `width`) after use, including the scripts
+  installed in `inst/doc`.
+
+- Corrects regression and growth inference: robust covariance checks the
+  number and rank of independent units, multilevel growth BIC uses
+  clusters, enumerated models retain the appropriate inference, and
+  boundary parameters no longer erase unrelated delta-method standard
+  errors.
+
+- Stabilizes Poisson and negative-binomial regression densities, NB
+  dispersion derivatives near the Poisson limit, and growth residual
+  calculations for outcomes with large locations. Single-class binary
+  regressions are accepted; nonfinite outcomes and evaluated predictors
+  are refused explicitly.
+
+- Trajectory tables include offsets and report response-scale standard
+  errors. Alternate time columns work in tables and plots; random-effect
+  spread holds other predictors fixed, and observed means respect
+  sampling weights.
+
+- Withholds regression bootstrap likelihood-ratio p-values when refits
+  fail validation. Model comparisons also check trials, weights and
+  cluster layout.
+
+- Handles unassigned regression classes, weighted transition class
+  counts and matrix-valued prediction inputs correctly. Noise cases
+  retain their mass in profile percentages and appear as class zero in
+  sequence tables and plots.
+
 ## latents 0.9.14
 
 - Declares `MASS` and `withr`, used by the tests, in Suggests (the
