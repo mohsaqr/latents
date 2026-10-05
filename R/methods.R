@@ -1,20 +1,4 @@
-#' Print a fitted multilevel latent profile model
-#' @param x An `multilpa` model.
-#' @param rows How many rows of the printed table to show before truncating.
-#' @param ... Reserved for compatibility with `print()`.
-#' @return The input model, invisibly. Called for the side effect of printing
-#'   the class counts, the sample sizes and covariance specification, the log
-#'   likelihood with AIC and group-level BIC, the convergence and restart
-#'   diagnostics, and any blocks the fit held fixed.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' print(fit)
+#' @rdname latents-print
 #' @export
 print.multilpa <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa"))
@@ -93,40 +77,7 @@ print.multilpa <- function(x, rows = 20L, ...) {
   invisible(x)
 }
 
-#' Summarize a fitted multilevel latent profile model
-#'
-#' The summary collects the estimates, the effective class counts, the
-#' information criteria and the restart diagnostics of a fit. Every field is
-#' built explicitly, and a field the fit does not carry takes its documented
-#' default rather than being silently absent, so the summary of a diagonal fit
-#' and the summary of a staged full-covariance fit have exactly the same names.
-#' Read the numbers with [as.data.frame()], which returns them as tidy tables;
-#' the printed form is a human-facing report.
-#'
-#' @param object An `multilpa` model.
-#' @param ... Reserved for compatibility with `summary()`.
-#' @return A `summary_multilpa` object: a named list, never carrying an `NA`
-#'   name, with the fit's dimensions (`n_observations`, `n_informative`,
-#'   `n_groups`, `n_profiles`, `n_group_classes`), its specification
-#'   (`variance_model`, `covariance_model`, `missing`, `continuous`, `fixed`,
-#'   `staged`), its estimates (`means`, `variances`, `standard_deviations`,
-#'   `covariances`, `response_probabilities`, `profile_probabilities`,
-#'   `group_probabilities`), the effective class counts at both levels, the
-#'   likelihood, parameter counts and information criteria, and the restart
-#'   diagnostics. `covariances` is `NULL` under the diagonal parameterization
-#'   and `response_probabilities` is `NULL` when no indicator is categorical;
-#'   both keep their names in either case. Use
-#'   [get_results()] rather than reading the fields.
-#' @seealso [get_results()] for the tidy tables.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' summary(fit)
+#' @rdname latents-summary
 #' @export
 summary.multilpa <- function(object, ...) {
   stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
@@ -189,28 +140,7 @@ summary.multilpa <- function(object, ...) {
   result
 }
 
-#' Coerce a multilevel LPA summary to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' A summary carries every table the object it describes can produce, and
-#' [get_results()] names them.
-#'
-#' @param x An object of class `summary_multilpa`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped.
-#' @return A base `data.frame`: one row per profile and continuous indicator.
-#' @seealso [get_results()] for every other table this summary holds.
-#' @examples
-#' fit <- multilpa(
-#'   course_engagement,
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
-#'   seed = 1
-#' )
-#' as.data.frame(summary(fit))
-#' get_results(summary(fit), what = "counts")
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa`" = inherits(x, "summary_multilpa"))
@@ -369,31 +299,7 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
     row.names = NULL, stringsAsFactors = FALSE)
 }
 
-#' Print a multilevel LPA summary
-#'
-#' A human-facing report of the fit. The same content is available as tidy
-#' tables from [get_results()].
-#'
-#' @param x A `summary_multilpa` object.
-#' @param digits Number of printed significant digits.
-#' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_results()` call that
-#'   returns it whole.
-#' @param ... Additional arguments passed to matrix printing.
-#' @return The summary, invisibly. Called for the side effect of printing the
-#'   estimates block by block, the effective class memberships at both levels,
-#'   the likelihood and information criteria, any convergence or boundary
-#'   warnings, and the restart diagnostics.
-#' @seealso [get_results()] for the same content as data.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' print(summary(fit), digits = 3)
+#' @rdname latents-print
 #' @export
 print.summary_multilpa <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa` object" =
@@ -421,25 +327,7 @@ print.summary_multilpa <- function(x, digits = 4L, rows = 10L, ...) {
   invisible(x)
 }
 
-#' Extract the multilevel model log likelihood
-#' @param object An `multilpa` model.
-#' @param ... Reserved for compatibility with `logLik()`.
-#' @return A `logLik` object with parameter count `df` and the number of observed
-#'   groups as `nobs`. Thus `stats::BIC()` uses group-count BIC. For the
-#'   individual-count alternative, and every other criterion, call
-#'   `get_results(x, "information_criteria")`, which reports both conventions
-#'   side by side.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' logLik(fit)
-#' AIC(fit)
-#' BIC(fit)
+#' @rdname latents-model-methods
 #' @export
 #' @importFrom stats logLik
 logLik.multilpa <- function(object, ...) {
@@ -448,22 +336,7 @@ logLik.multilpa <- function(object, ...) {
             nobs = object$n_groups, class = "logLik")
 }
 
-#' Extract the number of independent groups
-#' @param object An `multilpa` model.
-#' @param ... Reserved for compatibility with `nobs()`.
-#' @return A single integer: the number of observed groups, which are the
-#'   independent units of the two-level likelihood. For the individual count
-#'   alongside every other sample-size-dependent quantity, call
-#'   `get_results(x, "information_criteria")`.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' nobs(fit)
+#' @rdname latents-model-methods
 #' @export
 #' @importFrom stats nobs
 nobs.multilpa <- function(object, ...) {

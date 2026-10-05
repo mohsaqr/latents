@@ -1,3 +1,6 @@
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 test_that("extreme common Gaussian densities retain profile and group priors", {
   parameters <- list(means = matrix(0, 2L, 1L), variances = matrix(1, 2L, 1L),
     profile_probabilities = rbind(c(.2, .8), c(.7, .3)),

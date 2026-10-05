@@ -173,6 +173,7 @@ test_that("a seeded fit leaves the caller's stream untouched", {
 })
 
 test_that("categorical draws follow the inverse-CDF definition", {
+  skip_on_cran()
   withr::local_preserve_seed()
   set.seed(1)
   probabilities <- matrix(stats::runif(60L), 20L)

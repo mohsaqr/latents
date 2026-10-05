@@ -1,6 +1,9 @@
 # The two criteria tidyLPA reports that this package did not, and reading the
 # measurement model complete from one call.
 
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 .release_fixture <- function(seed = 2L) {
   set.seed(seed)
   frame <- data.frame(g = rep(seq_len(20), each = 8))

@@ -724,11 +724,7 @@ as.data.frame.latents_growth_mixture <- function(x, row.names = NULL, optional =
   get_results(x, what = what, ...)
 }
 
-#' Print a growth mixture model
-#' @param x A `latents_growth_mixture` fit.
-#' @param digits Significant digits.
-#' @param ... Unused.
-#' @return `x`, invisibly.
+#' @rdname latents-print
 #' @export
 print.latents_growth_mixture <- function(x, digits = 4L, ...) {
   fit <- .growth_fit_table(x)
@@ -767,13 +763,7 @@ print.latents_growth_mixture <- function(x, digits = 4L, ...) {
   invisible(x)
 }
 
-#' Summarize a growth mixture model
-#' @param object A `latents_growth_mixture` fit.
-#' @param level Confidence level.
-#' @param vcov_type As in [get_results.latents_growth_mixture()].
-#' @param ... Unused.
-#' @return An object of class `summary_latents_growth_mixture`: a list of the
-#'   `fit`, `classes`, `coefficients`, `random` and `membership` tables.
+#' @rdname latents-summary
 #' @export
 summary.latents_growth_mixture <- function(object, level = 0.95, vcov_type = NULL, ...) {
   tables <- c("fit", "classes", if (!is.null(object$spec$cluster)) "group_classes",
@@ -783,9 +773,7 @@ summary.latents_growth_mixture <- function(object, level = 0.95, vcov_type = NUL
   }), tables), class = "summary_latents_growth_mixture")
 }
 
-#' @rdname summary.latents_growth_mixture
-#' @param x A `summary_latents_growth_mixture` object.
-#' @param digits Significant digits.
+#' @rdname latents-print
 #' @export
 print.summary_latents_growth_mixture <- function(x, digits = 4L, ...) {
   invisible(lapply(x, function(table) {

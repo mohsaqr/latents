@@ -1471,15 +1471,7 @@ utils::globalVariables(c(
   structure(plots, class = "latents_plots")
 }
 
-#' Print several plots
-#'
-#' The value of `plot(x, what = "all")`, of `plot()` on a diagnostics result
-#' and of an enumeration plotted with `combine = FALSE`: a list of ggplot
-#' objects, named by view. Printing draws each in turn.
-#'
-#' @param x A `latents_plots` list.
-#' @param ... Ignored.
-#' @return `x`, invisibly. Called for the side effect of drawing.
+#' @rdname latents-print
 #' @export
 print.latents_plots <- function(x, ...) {
   invisible(lapply(x, print))

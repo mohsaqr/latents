@@ -131,6 +131,7 @@ test_that("seeded fits reproduce and leave the caller's RNG untouched", {
 })
 
 test_that("likelihood is invariant to row order", {
+  skip_on_cran()
   a <- additive_fit_quiet(additive_small, c("y1", "y2"), "group",
                           n_group_classes = 2, family = "additive", seed = 5)
   shuffled <- additive_small[rev(seq_len(nrow(additive_small))), ]

@@ -39,6 +39,7 @@ test_that("class-specific within variances: compact density equals dense", {
 })
 
 test_that("blocks are shared or class-specific as each family says", {
+  skip_on_cran()
   dispersion <- multilpa(families_data, families_vars, "group",
                          n_group_classes = 2, family = "dispersion", seed = 3)
   expect_equal(dispersion$means[1, ], dispersion$means[2, ])
@@ -63,6 +64,7 @@ test_that("blocks are shared or class-specific as each family says", {
 })
 
 test_that("nested families order their likelihoods", {
+  skip_on_cran()
   fits <- lapply(c("additive", "dispersion", "additive_dispersion"), \(family) {
     multilpa(families_data, families_vars, "group", n_group_classes = 2,
              family = family, between_variance = "equal", tol = 1e-10, seed = 3)
@@ -108,6 +110,7 @@ test_that("dispersion refuses class-specific between variances", {
 })
 
 test_that("print, summary and plots work for the new families", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   fits <- lapply(c("dispersion", "additive_dispersion"), \(family) {
     multilpa(families_data, families_vars, "group", n_group_classes = 2,

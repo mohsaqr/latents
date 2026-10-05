@@ -392,30 +392,7 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
   fit
 }
 
-#' Summarise a class-enumeration grid
-#'
-#' Reports, for every information criterion the grid carries, which candidate
-#' minimises it. Criteria disagree by construction: they differ in how they
-#' penalise parameters and in whether they count individuals or independent
-#' groups. Laying the minima side by side shows that disagreement instead of
-#' hiding it behind one default. Nothing here selects a model.
-#'
-#' @param object An `multilpa_enumeration` result from [enumerate_classes()].
-#' @param ... Reserved for compatibility with `summary()`.
-#' @return An object of class `summary_multilpa_enumeration`, with a `print`
-#'   method and an [as.data.frame()] accessor. `as.data.frame()` returns the
-#'   candidate grid. `get_results(summary(object), "criteria")` gives one row
-#'   per information criterion, with its sample-size convention, the class
-#'   counts and covariance structure of the minimising candidate, and its
-#'   value. Only converged candidates are eligible; a criterion with no
-#'   converged candidate has `NA` in the candidate and value columns.
-#' @examples
-#' set.seed(1)
-#' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
-#'                               n_group_classes = 1, n_starts = 2, seed = 1)
-#' summary(candidates)
-#' as.data.frame(summary(candidates))
+#' @rdname latents-summary
 #' @export
 summary.multilpa_enumeration <- function(object, ...) {
   stopifnot("`object` must be an `multilpa_enumeration` result" =
@@ -463,22 +440,7 @@ summary.multilpa_enumeration <- function(object, ...) {
   do.call(rbind, rows)
 }
 
-#' Print an enumeration summary
-#' @param x A `summary_multilpa_enumeration` object.
-#' @param digits Number of printed significant digits.
-#' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_results()` call that
-#'   returns it whole.
-#' @param ... Passed to the underlying `data.frame` printing.
-#' @return The summary, invisibly. Called for the side effect of printing the
-#'   candidate counts, the table of which candidate minimises each criterion,
-#'   and how many distinct candidates are minimal under some criterion.
-#' @examples
-#' set.seed(1)
-#' d <- data.frame(g = rep(seq_len(10), each = 10), y = rnorm(100))
-#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
-#'                                 n_group_classes = 1, n_starts = 2, seed = 1)
-#' print(summary(candidates))
+#' @rdname latents-print
 #' @export
 print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa_enumeration` object" =
@@ -538,28 +500,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   compact
 }
 
-#' Coerce a class-enumeration summary to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' A summary carries every table the object it describes can produce, and
-#' [get_results()] names them.
-#'
-#' @param x An object of class `summary_multilpa_enumeration`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped.
-#' @return A base `data.frame`: one row per candidate model in the grid.
-#' @seealso [get_results()] for every other table this summary holds.
-#' @examples
-#' candidates <- enumerate_classes(
-#'   course_engagement,
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 1:2, n_group_classes = 1, n_starts = 2,
-#'   seed = 1
-#' )
-#' as.data.frame(summary(candidates))
-#' get_results(summary(candidates), what = "criteria")
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_enumeration`" = inherits(x, "summary_multilpa_enumeration"))
@@ -1205,27 +1146,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   result
 }
 
-#' Print a parametric bootstrap likelihood-ratio comparison
-#' @param x An `multilpa_bootstrap_lrt` result.
-#' @param ... Reserved for compatibility with `print()`.
-#' @return The input, invisibly. Called for the side effect of printing the
-#'   two models compared, the observed statistic, the p-value with its Monte
-#'   Carlo standard error and the number of valid replicates, and the blocks
-#'   held fixed where there are any.
-#' @examples
-#' set.seed(1)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 10),
-#'   score = rnorm(100, rep(c(-2, 2), each = 50))
-#' )
-#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-#'                     n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-#'                    n_group_classes = 1, n_starts = 2, seed = 1)
-#' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-#'                             max_iter = 2000, tol = 1e-6, seed = 1)
-#' print(comparison)
+#' @rdname latents-print
 #' @export
 print.multilpa_bootstrap_lrt <- function(x, ...) {
   stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
@@ -1262,27 +1183,7 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
   invisible(x)
 }
 
-#' Summarise a parametric bootstrap likelihood-ratio comparison
-#' @param object An `multilpa_bootstrap_lrt` result.
-#' @param ... Reserved for compatibility with `summary()`.
-#' @return An object of class `summary_multilpa_bootstrap_lrt`, with a `print`
-#'   method and an [as.data.frame()] accessor. `as.data.frame()` returns the
-#'   one-row test table by default and one row per replicate with
-#'   `what = "replicates"`.
-#' @examples
-#' set.seed(1)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 10),
-#'   score = rnorm(100, rep(c(-2, 2), each = 50))
-#' )
-#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-#'                     n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-#'                    n_group_classes = 1, n_starts = 2, seed = 1)
-#' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-#'                             max_iter = 2000, tol = 1e-6, seed = 1)
-#' summary(comparison)
+#' @rdname latents-summary
 #' @export
 summary.multilpa_bootstrap_lrt <- function(object, ...) {
   stopifnot("`object` must be an `multilpa_bootstrap_lrt` result" =
@@ -1321,30 +1222,7 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
              row.names = NULL, stringsAsFactors = FALSE)
 }
 
-#' Print a bootstrap likelihood-ratio summary
-#' @param x A `summary_multilpa_bootstrap_lrt` object.
-#' @param digits Number of printed significant digits.
-#' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_results()` call that
-#'   returns it whole.
-#' @param ... Passed to the underlying `data.frame` printing.
-#' @return The summary, invisibly. Called for the side effect of printing the
-#'   one-row test table, then the number of replicates that reached a parameter
-#'   boundary and the number that raised an error.
-#' @examples
-#' set.seed(1)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 10),
-#'   score = rnorm(100, rep(c(-2, 2), each = 50))
-#' )
-#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-#'                     n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-#'                    n_group_classes = 1, n_starts = 2, seed = 1)
-#' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-#'                             max_iter = 2000, tol = 1e-6, seed = 1)
-#' print(summary(comparison))
+#' @rdname latents-print
 #' @export
 print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
                                                  ...) {
@@ -1360,68 +1238,14 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
   invisible(x)
 }
 
-#' Coerce a bootstrap likelihood-ratio comparison to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' The other tables are named rather than positional, so they belong to
-#' [get_results()], which takes `what` and refuses a name this object has not.
-#'
-#' @param x An object of class `multilpa_bootstrap_lrt`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped, because `what =` used to live on
-#'   this generic and silently returning the primary table instead of the one
-#'   that was asked for is the one outcome worth refusing.
-#' @return A base `data.frame`: the one-row test result.
-#' @seealso [get_results()] for every other table this object holds.
-#' @examples
-#' set.seed(1)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 10),
-#'   score = rnorm(100, rep(c(-2, 2), each = 50))
-#' )
-#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-#'                     n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-#'                    n_group_classes = 1, n_starts = 2, seed = 1)
-#' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-#'                             max_iter = 2000, tol = 1e-6, seed = 1)
-#' as.data.frame(comparison)
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.multilpa_bootstrap_lrt <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_bootstrap_lrt`" = inherits(x, "multilpa_bootstrap_lrt"))
   .multilpa_coerce(x, row.names, list(...))
 }
 
-#' Coerce a bootstrap comparison summary to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' A summary carries every table the object it describes can produce, and
-#' [get_results()] names them.
-#'
-#' @param x An object of class `summary_multilpa_bootstrap_lrt`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped.
-#' @return A base `data.frame`: the one-row test result.
-#' @seealso [get_results()] for every other table this summary holds.
-#' @examples
-#' set.seed(1)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 10),
-#'   score = rnorm(100, rep(c(-2, 2), each = 50))
-#' )
-#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-#'                     n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-#'                    n_group_classes = 1, n_starts = 2, seed = 1)
-#' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-#'                             max_iter = 2000, tol = 1e-6, seed = 1)
-#' as.data.frame(summary(comparison))
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.summary_multilpa_bootstrap_lrt <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_bootstrap_lrt`" = inherits(x, "summary_multilpa_bootstrap_lrt"))

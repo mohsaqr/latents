@@ -157,6 +157,7 @@ test_that("the ordering comes from time, so input row order changes nothing", {
 })
 
 test_that("enough starts reach the same maximum from either row order", {
+  skip_on_cran()
   data <- .transition_fixture()
   set.seed(2)
   shuffled <- data[sample.int(nrow(data)), ]

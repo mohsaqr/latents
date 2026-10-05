@@ -46,6 +46,7 @@ test_that("enumerate_lpa() is the single-level grid, fitted without a notice", {
 })
 
 test_that("enumerate_lca() treats every indicator as categorical", {
+  skip_on_cran()
   expect_no_message(
     models <- enumerate_lca(student_esm, esm_activities, n_classes = 1:3,
                             n_starts = 2, seed = 1))

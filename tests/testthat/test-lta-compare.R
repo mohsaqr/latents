@@ -3,6 +3,7 @@
 compare_activity <- c("browse", "lectures")
 
 test_that("simulation keeps groups, occasions and covariates and draws the model", {
+  skip_on_cran()
   fit <- lta(course_engagement, compare_activity, "student", n_profiles = 2,
              time = "sequence", n_starts = 2, seed = 1)
   set.seed(3)

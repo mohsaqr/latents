@@ -3,6 +3,9 @@
 
 # The assigned profile of each group (rows) at each position (columns), as the
 # sequence view lays them out.
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 sequence_codes <- function(plot) {
   cells <- plot$data
   codes <- matrix(NA_integer_, max(cells$row), max(cells$column))
@@ -53,6 +56,7 @@ test_that("one-group sequence images preserve dimensions and text time labels", 
 })
 
 test_that("sequence plots preserve groups with identical printed numeric identifiers", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   data <- data.frame(group = rep(c(1, 1 + 1e-15), each = 3),
                      time = rep(1:3, 2), score = c(-2, -1, -3, 2, 1, 3))

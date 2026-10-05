@@ -90,6 +90,7 @@ test_that("robust and OPG covariances follow their definitions", {
 })
 
 test_that("group-class labels do not depend on the start that won", {
+  skip_on_cran()
   a <- multilpa(additive_methods_data, c("y1", "y2"), "group",
                 n_group_classes = 2, family = "additive", tol = 1e-10, seed = 2)
   b <- multilpa(additive_methods_data, c("y1", "y2"), "group",
@@ -202,6 +203,7 @@ test_that("robust covariance needs more groups than parameters", {
 })
 
 test_that("plots are ggplot objects with intervals only when inference applies", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   fit <- additive_methods_fit
   views <- c("means", "variances", "intercepts")
@@ -223,6 +225,7 @@ test_that("plots are ggplot objects with intervals only when inference applies",
 })
 
 test_that("Newton polishing reaches the maximum EM stops short of", {
+  skip_on_cran()
   # A rare, weakly separated class: EM's likelihood-change rule stops with a
   # scaled score above 1e-2 here; the Newton finish must bring it to ~0.
   truth <- list(means = rbind(c(-0.4, -0.4), c(0.4, 0.4)),
@@ -258,6 +261,7 @@ test_that("effective groups equal class counts under perfect separation", {
 })
 
 test_that("a rare, weakly separated class raises latents_weak_class", {
+  skip_on_cran()
   truth <- list(means = rbind(c(-0.4, -0.4), c(0.4, 0.4)),
                 between = matrix(0.4, 2, 2), within = c(1, 1),
                 weights = c(0.9, 0.1))

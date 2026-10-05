@@ -56,6 +56,7 @@ test_that("permuting profiles is invertible", {
 })
 
 test_that("a resample carries one group per draw, whatever repeats", {
+  skip_on_cran()
   data <- clustered_data(n_groups = 5L, per_group = 3L)
   rows_by_group <- split(seq_len(nrow(data)), data$unit)
   drawn <- c(1L, 1L, 3L, 5L, 5L)

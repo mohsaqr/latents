@@ -1,6 +1,9 @@
 # Follow-up review of 2026-10-02: defects found by independent re-inspection
 # of the 0.9.7 review (all present before that review).
 
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 followup_lta_data <- function(n = 120L, occasions = 4L, seed = 41L) {
   set.seed(seed)
   transition <- matrix(c(0.85, 0.15, 0.15, 0.85), 2L)
@@ -18,6 +21,7 @@ followup_lta_data <- function(n = 120L, occasions = 4L, seed = 41L) {
 }
 
 test_that("bootstrap_lrt simulates full-covariance transition nulls", {
+  skip_on_cran()
   data <- followup_lta_data()
   null <- lta(data, c("y1", "y2"), "id", 2, time = "time", transitions = "occasion",
               model = "VVV", n_starts = 1, seed = 1)

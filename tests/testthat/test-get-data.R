@@ -90,6 +90,7 @@ test_that("the classification tables default to every level the fit has", {
 })
 
 test_that("as.data.frame coerces to the primary table and takes nothing else", {
+  skip_on_cran()
   fit <- two_level()
   expect_identical(as.data.frame(fit), get_results(fit, "profiles"))
   expect_error(as.data.frame(fit, what = "entropy"),
@@ -141,6 +142,7 @@ test_that("the enumeration and bootstrap objects carry their own tables", {
 })
 
 test_that("a starting-value set and a diagnostics object have catalogues", {
+  skip_on_cran()
   fit <- two_level()
   start <- starting_values(fit)
   expect_identical(as.data.frame(start), get_results(start, "profiles"))
@@ -268,6 +270,7 @@ test_that("truth refuses a column it cannot use", {
 })
 
 test_that("plot draws every supported view under what = \"all\"", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   fit <- two_level()
   drawn <- suppressMessages(plot(fit, what = "all"))

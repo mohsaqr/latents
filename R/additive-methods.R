@@ -400,12 +400,7 @@ parameter_inference.multilpa_additive <- function(
               inference$group_scores)
 }
 
-#' Summarize an additive group-class fit
-#' @param object A `multilpa_additive` fit.
-#' @param level,vcov_type As in [get_results.multilpa_additive()].
-#' @param ... Unused.
-#' @return An object of class `summary_multilpa_additive`: a named list of the
-#'   `fit`, `parameters` and `group_classes` tables, printed by its method.
+#' @rdname latents-summary
 #' @export
 summary.multilpa_additive <- function(object, level = 0.95,
                                       vcov_type = c("observed", "robust", "opg"),
@@ -418,9 +413,7 @@ summary.multilpa_additive <- function(object, level = 0.95,
   }), tables), class = "summary_multilpa_additive")
 }
 
-#' @rdname summary.multilpa_additive
-#' @param x A `summary_multilpa_additive` object.
-#' @param digits Significant digits.
+#' @rdname latents-print
 #' @export
 print.summary_multilpa_additive <- function(x, digits = 4L, ...) {
   headings <- c(fit = "Model fit", parameters = "Parameters",
@@ -434,8 +427,7 @@ print.summary_multilpa_additive <- function(x, digits = 4L, ...) {
   invisible(x)
 }
 
-#' @rdname summary.multilpa_additive
-#' @param row.names,optional Unused; part of the generic.
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.summary_multilpa_additive <- function(x, row.names = NULL,
                                                     optional = FALSE, ...) {

@@ -63,6 +63,7 @@ test_that("the growth mixture likelihood equals an independent dense likelihood"
 })
 
 test_that("estimation coordinates round-trip and EM never decreases", {
+  skip_on_cran()
   data <- growth_fixture_data()
   fit <- growth_fit(data, vcov_type = "none")
   theta <- latents:::.growth_pack(fit$spec, fit$params)
@@ -92,6 +93,7 @@ test_that("the fit does not depend on the order of persons in the data", {
 })
 
 test_that("integer sampling weights equal duplicated persons", {
+  skip_on_cran()
   data <- growth_fixture_data(n = 100L)
   set.seed(2)
   person_weight <- sample(1:3, 100L, replace = TRUE)
@@ -113,6 +115,7 @@ test_that("integer sampling weights equal duplicated persons", {
 })
 
 test_that("growth tables are tidy and internally consistent", {
+  skip_on_cran()
   data <- growth_fixture_data()
   fit <- growth_fit(data)
   classes <- get_results(fit, "classes")
@@ -148,6 +151,7 @@ test_that("growth tables are tidy and internally consistent", {
 })
 
 test_that("a proportional covariance is the shared matrix times class scales", {
+  skip_on_cran()
   data <- growth_fixture_data()
   fit <- growth_fit(data, random_covariance = "proportional", vcov_type = "none")
   covariances <- latents:::.growth_covariances(fit$spec, fit$params)
@@ -178,6 +182,7 @@ test_that("growth mixture requests outside the model are refused by class", {
 })
 
 test_that("every growth plot draws", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   data <- growth_fixture_data(n = 80L)
   fit <- growth_fit(data)
@@ -193,6 +198,7 @@ test_that("every growth plot draws", {
 })
 
 test_that("growth estimates recover the generating trajectories", {
+  skip_on_cran()
   data <- growth_fixture_data(n = 400L, seed = 7L)
   fit <- mixture_regression(y ~ time, data, n_classes = 2, id = "id",
                             class_level = "group", random = ~ 1 + time,
@@ -205,6 +211,7 @@ test_that("growth estimates recover the generating trajectories", {
 })
 
 test_that("variable names stand in for one-sided formulas", {
+  skip_on_cran()
   data <- growth_fixture_data(n = 100L)
   by_formula <- mixture_regression(y ~ time + x, data, n_classes = 2, id = "id",
                                    class_level = "group", common = ~ x,
@@ -227,6 +234,7 @@ test_that("variable names stand in for one-sided formulas", {
 })
 
 test_that("compare_models() compares fits to the same data in one tidy table", {
+  skip_on_cran()
   data <- growth_fixture_data(n = 100L)
   trajectories <- mixture_regression(y ~ time, data, 2, id = "id", class_level = "group",
                                      n_starts = 1, seed = 1)
@@ -256,6 +264,7 @@ test_that("compare_models() compares fits to the same data in one tidy table", {
 })
 
 test_that("result tables print readably and stay numeric", {
+  skip_on_cran()
   data <- growth_fixture_data(n = 100L)
   fit <- growth_fit(data)
   coefficients <- get_results(fit, "coefficients")
@@ -271,6 +280,7 @@ test_that("result tables print readably and stay numeric", {
 })
 
 test_that("a degenerate random-effect covariance warns and withholds its errors", {
+  skip_on_cran()
   # Random intercepts with no variance in the generating model: the fitted
   # variance runs to its floor.
   set.seed(4)
@@ -292,6 +302,7 @@ test_that("a degenerate random-effect covariance warns and withholds its errors"
 })
 
 test_that("trajectory models without random effects share the trajectory views", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   data <- growth_fixture_data(n = 80L)
   trajectories <- mixture_regression(y ~ time, data, 2, id = "id", class_level = "group",
@@ -318,6 +329,7 @@ test_that("trajectory models without random effects share the trajectory views",
 })
 
 test_that("a degenerate random intercept is advised away, not re-suggested", {
+  skip_on_cran()
   set.seed(4)
   n <- 120L
   data <- data.frame(id = rep(seq_len(n), each = 5L), time = rep(0:4, n))
@@ -359,6 +371,7 @@ test_that("recovery compares the classes with a known classification", {
 })
 
 test_that("simulation draws from the fitted growth model", {
+  skip_on_cran()
   data <- growth_fixture_data(n = 100L)
   fit <- growth_fit(data, vcov_type = "none")
   set.seed(42)

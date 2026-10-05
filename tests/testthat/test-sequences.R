@@ -142,6 +142,7 @@ test_that("a broken ordering is refused rather than silently reshaped", {
 })
 
 test_that("the sequence panel draws and respects the no-ordering contract", {
+  skip_on_cran()
   data <- .sequence_fixture()
   fit <- .sequence_fit(data, time = "wave")
   skip_if_not_installed("ggplot2")

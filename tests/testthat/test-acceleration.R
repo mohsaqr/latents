@@ -7,6 +7,7 @@ acceleration_data <- function() {
 }
 
 test_that("SQUAREM reaches plain EM's maximum from the same start", {
+  skip_on_cran()
   fixture <- acceleration_data()
   fit <- function(acceleration, ...) {
     multilpa(fixture$data, fixture$vars, id = "student", n_profiles = 2,

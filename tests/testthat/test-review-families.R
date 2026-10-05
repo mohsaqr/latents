@@ -1,4 +1,7 @@
 # Independent checks added in the 2026-10-01 model review.
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 review_family_data <- function() {
   old_seed <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old_seed)) rm(".Random.seed", envir = globalenv()) else

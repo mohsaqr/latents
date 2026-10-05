@@ -60,6 +60,7 @@ lta_brute_force <- function(fit, data) {
 }
 
 test_that("the general engine reproduces the homogeneous lta() exactly", {
+  skip_on_cran()
   activity <- c("browse", "lectures")
   old <- lta(course_engagement, activity, "student", n_profiles = 2,
              time = "sequence", n_starts = 3, seed = 1, tol = 1e-12, max_iter = 5000)
@@ -72,6 +73,7 @@ test_that("the general engine reproduces the homogeneous lta() exactly", {
 })
 
 test_that("covariate transitions and initial distribution match the exact path sum", {
+  skip_on_cran()
   fit <- lta(lta_small, "y", "id", n_profiles = 2, time = "time",
              transition_covariates = "z", initial_covariates = "w",
              n_starts = 3, seed = 1, tol = 1e-10)
@@ -88,6 +90,7 @@ test_that("covariate transitions and initial distribution match the exact path s
 })
 
 test_that("occasion-varying transitions and measurement match the exact path sum", {
+  skip_on_cran()
   fit <- lta(lta_small, "y", "id", n_profiles = 2, time = "time",
              transitions = "occasion", measurement = "occasion", n_starts = 3,
              seed = 1, tol = 1e-10)
@@ -102,6 +105,7 @@ test_that("occasion-varying transitions and measurement match the exact path sum
 })
 
 test_that("second-order transitions match the exact path sum and nest first order", {
+  skip_on_cran()
   data <- lta_small
   first <- lta(data, "y", "id", n_profiles = 2, time = "time", n_starts = 3,
                seed = 1, tol = 1e-10)
@@ -210,6 +214,7 @@ test_that("tables, methods and refusals of the general model", {
 })
 
 test_that("EM alone reaches a stationary point (the quasi-Newton finish masks M-step bugs)", {
+  skip_on_cran()
   fits <- list(
     covariates = lta(lta_small, "y", "id", n_profiles = 2, time = "time",
                      transition_covariates = "z", initial_covariates = "w",
@@ -285,6 +290,7 @@ test_that("mover-stayer: the stayer class never moves and matches the exact path
 })
 
 test_that("covariance structures combine with the extensions and nest", {
+  skip_on_cran()
   activity <- c("browse", "lectures")
   fits <- lapply(c("VEI", "VVI", "VVV"), \(m) {
     quietly(lta(course_engagement, activity, "student", n_profiles = 2,

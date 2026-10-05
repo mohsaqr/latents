@@ -1,3 +1,6 @@
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 test_that("pooled Gaussian residuals exclude association explained by profile means", {
   residual <- as.matrix(expand.grid(a = c(-1, 1), b = c(-1, 1)))
   data <- as.data.frame(rbind(residual - 5, residual + 5))

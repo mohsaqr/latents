@@ -2,6 +2,9 @@
 # validation/ENGINE_DESIGN.md), each fixed before the consolidation so the
 # later phases can be held to identical results.
 
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 fixes_noise_frame <- function() {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else
@@ -42,6 +45,7 @@ test_that("relabelling a noise fit keeps its noise units at profile 0", {
 })
 
 test_that("transition parameter_inference() uses the caller's step in its table", {
+  skip_on_cran()
   fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
              "student", n_profiles = 2, time = "sequence",
              transitions = "occasion", n_starts = 2, seed = 1)
@@ -91,6 +95,7 @@ test_that("a group covariate varying within groups is refused as bad data", {
 })
 
 test_that("a growth mixture is not trapped where the level-only starts lead", {
+  skip_on_cran()
   # Classes that differ in slope, with persons scattered in level: every start
   # of the model without random effects splits persons by level, and all of
   # them led the growth fit to a maximum 11 log-likelihood units below the

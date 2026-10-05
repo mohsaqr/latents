@@ -118,6 +118,7 @@ test_that("a state with no moves keeps the fit's row, not invented persistence",
 })
 
 test_that("a transition fit draws every view its catalogue claims", {
+  skip_on_cran()
   # The family refused `plot()` outright until 0.12.0, although its measurement
   # model is the one `multilpa()` fits and its means, posteriors and sequences
   # were all present. What is tested is that the catalogue and the method agree:

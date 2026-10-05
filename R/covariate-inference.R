@@ -576,46 +576,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
   .multilpa_parameter_names(.multilpa_cov_labels(object))
 }
 
-#' Covariance matrix of a covariate fit
-#'
-#' @param object A fitted `multilpa_covariates` model.
-#' @param data Optional. The data frame the model was fitted to; when omitted
-#'   it is rebuilt from the indicators, group index and designs the fit stores.
-#'   Supplying it is the stronger check that the caller still holds that frame.
-#' @param step Finite-difference step for the observed information.
-#' @param vcov_type `"observed"`, `"robust"` or `"opg"`, as for
-#'   [parameter_inference()].
-#' @param boundary `"error"` or `"fix"`, as for [parameter_inference()]: `"fix"`
-#'   holds response probabilities on their bound, whose rows and columns are
-#'   then zero.
-#' @param scale Which parameter scale the covariance is on, matching
-#'   [vcov.multilpa()]. `"natural"`, the default, is the covariance of the
-#'   estimates [coef()] and [parameter_inference()] report: variances and
-#'   residual covariances in their own units, carried from the estimation scale
-#'   by the delta method. `"unconstrained"` is the covariance on the scale the
-#'   model is estimated on, with log variances and log-Cholesky coordinates.
-#'   Means and membership coefficients are the same on both scales.
-#' @param ... Ignored, present for generic compatibility.
-#' @return A square numeric matrix with one row and column per free parameter,
-#'   named as [coef()] names them and ordered measurement means, measurement
-#'   variances or covariances, profile logits, group logits.
-#' @examples
-#' set.seed(5)
-#' school <- rep(seq_len(16), each = 8)
-#' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
-#' x <- rnorm(128)
-#' profile <- ifelse(
-#'   runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L
-#' )
-#' example_data <- data.frame(
-#'   school = school, x = x,
-#'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
-#'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
-#' )
-#' fit <- multilpa(example_data, c("y1", "y2"), "school", n_profiles = 2,
-#'                 n_group_classes = 2, profile_covariates = "x",
-#'                 n_starts = 2, seed = 1)
-#' vcov(fit, example_data, scale = "unconstrained")
+#' @rdname latents-model-methods
 #' @export
 vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
                                      vcov_type = c("observed", "robust", "opg"),
@@ -979,41 +940,7 @@ vcov.multilpa_covariates <- function(object, data = NULL, step = 1e-4,
   )
 }
 
-#' Estimated parameters of a covariate fit
-#'
-#' @param object A fitted `multilpa_covariates` model.
-#' @param scale Natural coefficients, or the unconstrained coordinates the model
-#'   is estimated on: log variances for a diagonal fit and log-Cholesky
-#'   coordinates for a full-covariance fit. Matches [coef.multilpa()].
-#' @param ... Ignored, present for generic compatibility.
-#' @return A named numeric vector of every free parameter, in the order
-#'   [parameter_inference()] reports them: measurement means, measurement
-#'   variances or residual covariances, profile logits, then group-class logits.
-#'   Names are `level.parameter.outcome.term`, the same four-part decomposition
-#'   [parameter_inference()] reports as columns and the same spelling every
-#'   fitted class in this package uses; it is what keeps a mean and a variance
-#'   on the same indicator distinguishable, and the `parameter` part names the
-#'   scale, so a log variance is never served under a name that says
-#'   `variance`. On the natural scale variances and residual covariances are in
-#'   their own units and agree with [parameter_inference()]'s `estimate` column
-#'   exactly.
-#' @examples
-#' set.seed(5)
-#' school <- rep(seq_len(16), each = 8)
-#' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
-#' x <- rnorm(128)
-#' profile <- ifelse(
-#'   runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L
-#' )
-#' example_data <- data.frame(
-#'   school = school, x = x,
-#'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
-#'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
-#' )
-#' fit <- multilpa(example_data, c("y1", "y2"), "school", n_profiles = 2,
-#'                 n_group_classes = 2, profile_covariates = "x",
-#'                 n_starts = 2, seed = 1)
-#' coef(fit)
+#' @rdname latents-model-methods
 #' @export
 coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained"),
                                      ...) {
@@ -1034,37 +961,7 @@ coef.multilpa_covariates <- function(object, scale = c("natural", "unconstrained
     .multilpa_cov_parameter_names(object))
 }
 
-#' Wald confidence intervals for a covariate fit
-#'
-#' @param object A fitted `multilpa_covariates` model.
-#' @param parm Optional parameter names or indices; defaults to all of them.
-#' @param level Confidence level strictly between zero and one.
-#' @param data Optional. The data frame the model was fitted to; when omitted
-#'   it is rebuilt from the indicators, group index and designs the fit stores.
-#'   Supplying it is the stronger check that the caller still holds that frame.
-#' @param ... Passed to [parameter_inference()], so `vcov_type = "robust"` and
-#'   `step` reach it.
-#' @return A two-column matrix of Wald intervals, one row per requested
-#'   parameter, named as [coef()] names them. Bounds are on the natural scale;
-#'   positive parameters use log-scale intervals and probabilities use
-#'   logit-scale intervals to respect their parameter ranges.
-#' @examples
-#' set.seed(5)
-#' school <- rep(seq_len(16), each = 8)
-#' high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
-#' x <- rnorm(128)
-#' profile <- ifelse(
-#'   runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L
-#' )
-#' example_data <- data.frame(
-#'   school = school, x = x,
-#'   y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
-#'   y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
-#' )
-#' fit <- multilpa(example_data, c("y1", "y2"), "school", n_profiles = 2,
-#'                 n_group_classes = 2, profile_covariates = "x",
-#'                 n_starts = 2, seed = 1)
-#' confint(fit, data = example_data)
+#' @rdname latents-model-methods
 #' @export
 confint.multilpa_covariates <- function(object, parm, level = 0.95, data = NULL,
                                         ...) {

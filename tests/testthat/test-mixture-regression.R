@@ -59,6 +59,7 @@ direct_log_likelihood <- function(fit) {
 }
 
 test_that("the likelihood is the mixture likelihood, in every nesting", {
+  skip_on_cran()
   rows <- simulate_rows()
   single <- mixture_regression(y ~ x, rows, 2, n_starts = 2, seed = 1, vcov_type = "none")
   expect_equal(single$log_likelihood, direct_log_likelihood(single),
@@ -235,6 +236,7 @@ test_that("shared coefficients are equal across classes and counted once", {
 })
 
 test_that("enumeration returns one tidy row per model and marks the BIC choice", {
+  skip_on_cran()
   classes <- enumerate_regressions(score ~ hours, study_hours, n_classes = 1:3,
                                    n_starts = 2, seed = 1)
   table <- as.data.frame(classes)
@@ -276,6 +278,7 @@ test_that("print and summary are stable", {
 })
 
 test_that("plots draw for every view", {
+  skip_on_cran()
   fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 2, seed = 1)
   path <- tempfile(fileext = ".pdf")
   grDevices::pdf(path)

@@ -75,6 +75,7 @@ test_that("every table of a fit is tidy", {
 })
 
 test_that("the standardized profile means the plot draws are available as data", {
+  skip_on_cran()
   fit <- tidy_fit()
   raw <- get_results(fit, "profiles")
   standardized <- get_results(fit, "profiles", scale = "standardized")
@@ -103,6 +104,7 @@ test_that("the standardized profile means the plot draws are available as data",
 })
 
 test_that("standardizing errors where the plot would, and only where it applies", {
+  skip_on_cran()
   fit <- tidy_fit()
   expect_error(get_results(fit, "posteriors", scale = "standardized"),
                class = "latents_bad_argument")

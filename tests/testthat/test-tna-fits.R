@@ -47,6 +47,7 @@ test_that("the grouped networks follow each group's modal group class", {
 })
 
 test_that("a covariate fit gives networks and draws its response probabilities", {
+  skip_on_cran()
   skip_if_not_installed("tna")
   fit <- suppressWarnings(.sequence_fit(covariates = TRUE)$fit)
   expect_s3_class(get_tna(fit), "tna")

@@ -17,6 +17,7 @@
 }
 
 test_that("the profile plot draws intervals, and the raincloud the data", {
+  skip_on_cran()
   fit <- .polish_fit(n_group_classes = 1)
   errors <- .multilpa_mean_error_matrix(fit, NULL)
   expect_true(is.matrix(errors))
@@ -76,6 +77,7 @@ test_that("an all-categorical fit gets a response heatmap", {
 })
 
 test_that("covariate fits draw the measurement and classification views", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   fit <- .polish_fit(n_group_classes = 1, profile_covariates = "previous_grade")
   invisible(lapply(
@@ -85,6 +87,7 @@ test_that("covariate fits draw the measurement and classification views", {
 })
 
 test_that("a single-level grid draws one BIC panel, named for display", {
+  skip_on_cran()
   grid <- data.frame(bic_groups = c(1, 2), bic_individual = c(1, 2),
                      icl_groups = c(1, 2), icl_individual = c(3, 4), aic = c(5, 6))
   chosen <- .multilpa_distinct_criteria(
@@ -123,6 +126,7 @@ test_that("with one group class the membership intercept is named as one", {
 })
 
 test_that("lpa() and lca() are the single-level fits, without the notice", {
+  skip_on_cran()
   vars <- c("cognitive_strategies", "intrinsic_value", "self_efficacy")
   expect_no_message(fit <- lpa(srl, vars, n_profiles = 2, n_starts = 2, seed = 1))
   same <- suppressMessages(multilpa(srl, vars, id = NULL, n_profiles = 2,
@@ -182,6 +186,7 @@ test_that("the measurement tables carry standard errors without being given data
 })
 
 test_that("diagnostics() draws its plots by default", {
+  skip_on_cran()
   fit <- lpa(srl, c("self_efficacy", "test_anxiety"), n_profiles = 2,
              n_starts = 2, seed = 1)
   grDevices::pdf(NULL)

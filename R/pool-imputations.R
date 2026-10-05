@@ -361,13 +361,7 @@ as.data.frame.latents_pooled <- function(x, row.names = NULL, optional = FALSE,
   get_results.latents_pooled(x, what = what)
 }
 
-#' Print a pooled multiply imputed fit
-#' @param x A `latents_pooled` object.
-#' @param digits Significant digits.
-#' @param rows How many rows of the pooled table to show.
-#' @param ... Unused.
-#' @return `x`, invisibly. Called for the side effect of printing the model,
-#'   the number of imputations and the pooled table.
+#' @rdname latents-print
 #' @export
 print.latents_pooled <- function(x, digits = 4L, rows = 20L, ...) {
   cat(sprintf(paste(
@@ -386,13 +380,7 @@ print.latents_pooled <- function(x, digits = 4L, rows = 20L, ...) {
   invisible(x)
 }
 
-#' Summarize a pooled multiply imputed fit
-#' @param object A `latents_pooled` object.
-#' @param ... Unused.
-#' @return A one-row base `data.frame`: the number of imputations, the model,
-#'   whether every imputation converged, the range of their log likelihoods,
-#'   how many needed relabelling, and the largest and median fraction of
-#'   missing information.
+#' @rdname latents-summary
 #' @export
 summary.latents_pooled <- function(object, ...) {
   fits <- object$fits
@@ -411,12 +399,7 @@ summary.latents_pooled <- function(object, ...) {
     stringsAsFactors = FALSE)
 }
 
-#' Pooled covariance of a multiply imputed fit
-#' @param object A `latents_pooled` object.
-#' @param ... Unused.
-#' @return The total covariance matrix `U + (1 + 1/m) B` of the natural-scale
-#'   parameters, named as [vcov()] names them for a single fit, or `NULL` when
-#'   the imputations' fits carried no covariance.
+#' @rdname latents-model-methods
 #' @export
 vcov.latents_pooled <- function(object, ...) {
   object$covariance

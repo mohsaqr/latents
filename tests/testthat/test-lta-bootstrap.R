@@ -22,6 +22,7 @@ boot_lta_fit <- function(data, ...) {
 }
 
 test_that("diagonal draws keep the package's random stream", {
+  skip_on_cran()
   block <- list(means = matrix(c(0, 3, 1, -1), 2L, dimnames = list(NULL, c("a", "b"))),
                 variances = matrix(c(1, 4, 0.5, 2), 2L, dimnames = list(NULL, c("a", "b"))))
   profile <- c(1L, 2L, 2L, 1L, 2L)
@@ -35,6 +36,7 @@ test_that("diagonal draws keep the package's random stream", {
 })
 
 test_that("full-covariance draws reproduce each profile's mean and covariance", {
+  skip_on_cran()
   covariance <- array(c(1, 0.6, 0.2, 0.6, 2, -0.5, 0.2, -0.5, 1.5,
                         0.5, -0.3, 0, -0.3, 1, 0.4, 0, 0.4, 3), c(3L, 3L, 2L))
   means <- matrix(c(0, 5, 1, -2, 3, 0), 2L, dimnames = list(NULL, c("a", "b", "c")))
@@ -192,6 +194,7 @@ test_that("the bootstrap gives inference where Wald is refused", {
 })
 
 test_that("weighted transition fits bootstrap with their weights", {
+  skip_on_cran()
   data <- boot_lta_data()
   set.seed(6)
   data$w <- rep(sample(1:3, 120L, replace = TRUE), each = 4L)

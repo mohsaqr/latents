@@ -1,3 +1,6 @@
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 test_that("mixed full covariance inference matches Gaussian and binomial information", {
   set.seed(7601)
   dat <- data.frame(g = rep(seq_len(30), each = 8),

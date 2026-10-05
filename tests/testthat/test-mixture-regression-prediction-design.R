@@ -40,6 +40,7 @@ test_that("two-level membership designs retain factors and transformed terms", {
 })
 
 test_that("regression plots carry membership columns and raw transformed predictors", {
+  skip_on_cran()
   set.seed(85)
   data <- data.frame(g = rep(1:30, each = 4), x = runif(120, 1, 5),
                      z = rep(c("a", "b"), each = 60))

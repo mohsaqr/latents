@@ -14,6 +14,7 @@ plot_fixture <- function(seed = 11L, n_groups = 24L, per_group = 8L) {
 }
 
 test_that("plot methods return ggplot objects for every view", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
@@ -30,6 +31,7 @@ test_that("plot methods return ggplot objects for every view", {
 })
 
 test_that("plot refuses the styling arguments it no longer takes", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
@@ -66,6 +68,7 @@ test_that("standardizing uses the observed indicator scales", {
 })
 
 test_that("enumeration plotting rejects unusable criteria by condition class", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
   candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
@@ -81,6 +84,7 @@ test_that("enumeration plotting rejects unusable criteria by condition class", {
 })
 
 test_that("the palette, symbols and line types stay aligned and recycle", {
+  skip_on_cran()
   # The base-graphics plots that remain (bootstrap, pooled, mixture
   # regression) still draw with these; colour must never be the only channel.
   invisible(lapply(c(1L, 3L, 9L, 12L), function(n) {
@@ -112,6 +116,7 @@ test_that("the palette, symbols and line types stay aligned and recycle", {
 }
 
 test_that("the sequence plot draws every group at every position", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   data <- .sequence_plot_fixture()
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
@@ -127,6 +132,7 @@ test_that("the sequence plot draws every group at every position", {
 })
 
 test_that("every plot's data is reachable through a tidy verb", {
+  skip_on_cran()
   data <- .sequence_plot_fixture()
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
                   n_group_classes = 2, n_starts = 3, seed = 1, time = "wave",
@@ -147,6 +153,7 @@ test_that("every plot's data is reachable through a tidy verb", {
 })
 
 test_that("the catalogue lists exactly the views the methods accept", {
+  skip_on_cran()
   catalogue <- plot_views()
   expect_s3_class(catalogue, "data.frame")
   expect_identical(names(catalogue), c("type", "group", "description"))
@@ -170,6 +177,7 @@ test_that("the catalogue lists exactly the views the methods accept", {
 })
 
 test_that("a view a fit cannot supply is refused by condition class", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
@@ -179,6 +187,7 @@ test_that("a view a fit cannot supply is refused by condition class", {
 })
 
 test_that("case views agree with the entropy the package reports", {
+  skip_on_cran()
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   posterior <- get_results(fit, "posteriors")
@@ -225,6 +234,7 @@ test_that("a transition fit gets bars without whiskers, not an error", {
 })
 
 test_that("the avepp view draws the average posterior matrix", {
+  skip_on_cran()
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
   averages <- .multilpa_average_posterior_matrix(fit$subject_posteriors)
@@ -239,6 +249,7 @@ test_that("the avepp view draws the average posterior matrix", {
 })
 
 test_that("a one-profile fit still draws its sizes", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
@@ -247,6 +258,7 @@ test_that("a one-profile fit still draws its sizes", {
 })
 
 test_that("what = \"all\" returns every drawable view, named", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
   fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)

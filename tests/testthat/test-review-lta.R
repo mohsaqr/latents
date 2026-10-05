@@ -1,5 +1,8 @@
 # Independent review: finite path sums and central derivatives do not call the
 # package's density, softmax, forward-backward or score implementations.
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 review_lta_data <- function() {
   data <- data.frame(id = rep(1:6, each = 4L), time = rep(1:4, 6L),
                      y = sin(seq_len(24L)), z = cos(seq_len(24L)),
@@ -252,6 +255,7 @@ test_that("negative-binomial LTA optimization respects floors and reaches statio
 })
 
 test_that("a quasi-Newton stop at the maximum (L-BFGS-B code 52) counts as converged", {
+  skip_on_cran()
   # These datasets end L-BFGS-B with ABNORMAL_TERMINATION_IN_LNSRCH locally
   # (macOS arm64, R 4.5) at points whose scores are ~1e-6 and that a restart
   # improves by < 1e-12; other platforms hit other datasets.

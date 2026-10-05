@@ -116,6 +116,7 @@ test_that("integer weights reproduce duplicated rows", {
 })
 
 test_that("prediction, bootstrap and simulation carry the new indicators", {
+  skip_on_cran()
   data <- extra_rows(6, n = 400)
   fit <- extra_fit(data)
   predicted <- predict(fit, data)
@@ -195,6 +196,7 @@ test_that("membership covariates take ordinal and count indicators", {
 })
 
 test_that("lta() takes ordinal and count indicators, invariant or by occasion", {
+  skip_on_cran()
   data <- course_engagement
   set.seed(33)
   data$posts <- rpois(nrow(data), exp(0.6 * data$forum_post + 0.5))
@@ -224,6 +226,7 @@ test_that("lta() takes ordinal and count indicators, invariant or by occasion", 
 })
 
 test_that("negative-binomial counts: recovery, scores and the Poisson limit", {
+  skip_on_cran()
   set.seed(35)
   n <- 1500
   profile <- rbinom(n, 1, 0.4) + 1

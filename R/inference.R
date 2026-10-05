@@ -1024,32 +1024,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
   max((object$min_probability %||% 1e-10) * (1 + 1e-7), 1e-6)
 }
 
-#' Extract multilevel LPA coefficients
-#' @param object A fitted `multilpa` model.
-#' @param scale Natural coefficients or unconstrained log variances (diagonal),
-#'   log-Cholesky coordinates (full covariance), log volumes, log shapes and
-#'   orientations (a structure that constrains them across profiles), and
-#'   baseline-category logits.
-#' @param ... Reserved for generic compatibility.
-#' @return A named numeric vector of every coefficient the model has, held ones
-#'   included: a block `fixed` held is part of the model and is reported here,
-#'   even though it has no standard error and no interval. Natural coefficients
-#'   include all mixing probabilities; unconstrained coefficients exclude their
-#'   reference categories. Names are `level.parameter.outcome.term`, the same four-part
-#'   decomposition [parameter_inference()] reports as columns and the same
-#'   spelling every fitted class in this package uses, so a name written for one
-#'   fit means the same thing for another. A parameter with no term -- a
-#'   group-class probability -- carries the first three parts only.
-#'   [parameter_inference()] is the tidy form and the one to prefer.
-#' @examples
-#' set.seed(3)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 8),
-#'   score_a = stats::rnorm(80), score_b = stats::rnorm(80)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' coef(fit)
+#' @rdname latents-model-methods
 #' @export
 #' @importFrom stats coef
 coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
@@ -1057,44 +1032,7 @@ coef.multilpa <- function(object, scale = c("natural", "unconstrained"), ...) {
   .multilpa_coefficients(object, match.arg(scale))
 }
 
-#' Extract multilevel LPA covariance estimates
-#' @param object A fitted `multilpa` model.
-#' @param data Optional. The data frame the model was fitted to; when omitted
-#'   it is rebuilt from the indicators, identifiers and occasions the fit
-#'   stores, which round-trip exactly. Supplying it is the stronger check that
-#'   the caller still holds that frame.
-#' @param scale Which parameter scale the covariance is on. `"natural"`, the
-#'   default, is the covariance of the estimates [coef()] reports -- variances
-#'   in their own units and probabilities as probabilities -- carried from the
-#'   estimation scale by the delta method with
-#'   `.multilpa_inference_jacobian()`. `"unconstrained"` is the covariance on
-#'   the scale the model is actually estimated on: log variances for a diagonal
-#'   fit, log-Cholesky coordinates for a full-covariance fit, the structure's
-#'   own log volumes, log shapes and orientations for one of the ten
-#'   constrained covariance structures, and
-#'   baseline-category logits for the mixing and response probabilities.
-#' @param ... Additional arguments passed to [parameter_inference()], including
-#'   `method = "bootstrap"`.
-#' @return A square numeric matrix with one row and column per *estimated*
-#'   coefficient, named as [coef()] names them, on the scale `scale` asks for. A
-#'   fit made with `fixed` held part of its measurement model at supplied
-#'   values; those coefficients were not estimated here, so they carry no row or
-#'   column. With `scale = "unconstrained"` the matrix is `n_parameters` square,
-#'   for any fit; on the natural scale it is larger by one row and column for
-#'   each set of probabilities whose reference category the estimation scale
-#'   drops, and singular by construction, because each set of probabilities sums
-#'   to one. [confint()] and the
-#'   `conf_low`/`conf_high` columns of [parameter_inference()] are built from
-#'   the natural-scale matrix.
-#' @examples
-#' set.seed(3)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 8),
-#'   score_a = stats::rnorm(80), score_b = stats::rnorm(80)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' vcov(fit, data = example_data, scale = "unconstrained")
+#' @rdname latents-model-methods
 #' @export
 #' @importFrom stats vcov
 vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrained"), ...) {
@@ -1107,32 +1045,7 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
     attr(information, "covariance_unconstrained")
 }
 
-#' Wald confidence intervals for multilevel LPA coefficients
-#' @param object A fitted `multilpa` model.
-#' @param parm Optional coefficient names or indices; defaults to every
-#'   coefficient the fit estimated. Naming a coefficient that `fixed` held
-#'   raises `latents_held_parameter`, because a held value has no interval.
-#' @param level Confidence level strictly between zero and one.
-#' @param data Optional, exactly as for [vcov()].
-#' @param ... Additional arguments passed to [parameter_inference()], including
-#'   `method = "bootstrap"`.
-#' @return A two-column matrix on the natural scale, one row per requested
-#'   coefficient and named as [coef()] names them. Wald intervals by default;
-#'   with `method = "bootstrap"` the percentile interval the replicates give,
-#'   which is the same interval `parameter_inference()` reports rather than a
-#'   normal approximation rebuilt from the bootstrap standard error. Wald bounds
-#'   are not clipped to the probability or variance parameter space. For a fit made with
-#'   `fixed`, the default rows are the estimated coefficients only and the
-#'   intervals are conditional on the held measurement solution.
-#' @examples
-#' set.seed(3)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 8),
-#'   score_a = stats::rnorm(80), score_b = stats::rnorm(80)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' confint(fit, data = example_data)
+#' @rdname latents-model-methods
 #' @export
 #' @importFrom stats confint
 confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {

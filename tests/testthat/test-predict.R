@@ -9,6 +9,7 @@ quiet_single <- function(expression) {
 }
 
 test_that("predicting the training rows reproduces the fit's posteriors", {
+  skip_on_cran()
   gappy <- latents:::.mixture_with_seed(2, {
     d <- course_engagement
     d$browse[sample(nrow(d), 80)] <- NA
@@ -47,6 +48,7 @@ test_that("predicting the training rows reproduces the fit's posteriors", {
 })
 
 test_that("a single-level fit's densities sum to its log likelihood", {
+  skip_on_cran()
   fit <- quiet_single(multilpa(course_engagement, activity, NULL, 3,
                                n_starts = 2, seed = 1))
   densities <- predict(fit, course_engagement, type = "density")

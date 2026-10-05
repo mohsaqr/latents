@@ -178,15 +178,7 @@
     if (nrow(frame) > n) sprintf("... %d more rows", nrow(frame) - n))
 }
 
-#' Print a latents result table
-#'
-#' Prints the columns people report, with readable labels and numbers; the
-#' object itself is unchanged, a base data frame with every numeric column.
-#'
-#' @param x A `latents_table`.
-#' @param n The most rows printed.
-#' @param ... Unused.
-#' @return `x`, invisibly.
+#' @rdname latents-print
 #' @export
 print.latents_table <- function(x, n = 20L, ...) {
   if (nrow(x) == 0L) {
@@ -197,9 +189,7 @@ print.latents_table <- function(x, n = 20L, ...) {
   invisible(x)
 }
 
-#' @rdname print.latents_table
-#' @param row.names,optional Passed to the data frame method.
-#' @return For `as.data.frame()`, the same table as a plain base data frame.
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.latents_table <- function(x, row.names = NULL, optional = FALSE, ...) {
   attributes(x)[c("level", "title", "display", "marks", "card")] <- NULL

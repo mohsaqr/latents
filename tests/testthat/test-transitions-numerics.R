@@ -166,6 +166,7 @@ test_that("zero iterations evaluate the start instead of failing to assemble", {
 })
 
 test_that("the prevalence reported is the one the final expectation implies", {
+  skip_on_cran()
   data <- .numerics_fixture(n_groups = 10L, occasions = 4L, seed = 21L)
   # With one group class every group belongs to it with probability one, so
   # the class's joint posteriors are the individual posteriors themselves and

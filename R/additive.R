@@ -772,16 +772,7 @@
   result
 }
 
-#' Print a group-class fit
-#'
-#' A short summary of a `multilpa(family = )` group-class fit (additive,
-#' dispersion or additive-dispersion): the family and between-variance
-#' restriction, sizes, likelihood, parameter count, BIC over groups,
-#' convergence and whether the fit is on a boundary.
-#'
-#' @param x A `multilpa_additive` object.
-#' @param ... Unused.
-#' @return `x`, invisibly.
+#' @rdname latents-print
 #' @export
 print.multilpa_additive <- function(x, ...) {
   cat(sprintf(paste0(

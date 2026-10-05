@@ -190,6 +190,7 @@ test_that("the categorical covariate score is the derivative of the likelihood",
 })
 
 test_that("categorical covariate inference reports every category coherently", {
+  skip_on_cran()
   pair <- .categorical_covariate_fit()
   fit <- pair$fit
   inference <- parameter_inference(fit)

@@ -69,6 +69,7 @@ multilevel_dense <- function(fit, data) {
 }
 
 test_that("the likelihood equals the dense multilevel likelihood", {
+  skip_on_cran()
   data <- multilevel_data()
   fit <- multilevel_fit(data)
   expect_s3_class(fit, "latents_growth_mixture")
@@ -126,6 +127,7 @@ test_that("one group class is the single-level model with clusters as units", {
 })
 
 test_that("a simulated multilevel truth is recovered", {
+  skip_on_cran()
   data <- multilevel_data(seed = 2, n_schools = 30, per_school = 12)
   fit <- multilevel_fit(data)
   expect_true(fit$converged)
@@ -148,6 +150,7 @@ test_that("a simulated multilevel truth is recovered", {
 })
 
 test_that("the tables, printing, simulation and standard errors are complete", {
+  skip_on_cran()
   data <- multilevel_data()
   fit <- multilevel_fit(data)
   tables <- get_results(fit, "all")

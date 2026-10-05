@@ -284,6 +284,7 @@ test_that("weighted transition fits reproduce duplicated persons", {
 })
 
 test_that("weighted transition scores are the gradient of the pseudo likelihood", {
+  skip_on_cran()
   data <- course_engagement
   set.seed(13)
   persons <- unique(data$student)
@@ -322,6 +323,7 @@ test_that("weighted group-class families reproduce duplicated groups", {
 })
 
 test_that("weighted additive scores are the gradient and inference is robust", {
+  skip_on_cran()
   data <- weighted_groups(15, n_groups = 60)
   data$w <- runif(60, 0.3, 3)[data$id]
   fit <- quietly(multilpa(data, c("a", "b"), "id", n_group_classes = 2,

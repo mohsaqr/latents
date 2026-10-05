@@ -108,6 +108,7 @@ test_that("a covariate fit can carry and report its ordering", {
 })
 
 test_that("plot draws what a covariate model has and refuses what it has not", {
+  skip_on_cran()
   data <- .surface_data()
   fit <- .surface_fit(data, time = "wave")
   skip_if_not_installed("ggplot2")

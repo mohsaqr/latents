@@ -1,3 +1,16 @@
+# latents 0.9.17
+
+* The logo reads "latents" (it still showed the earlier name, "multilatent"),
+  and the website icons are regenerated from it (they showed "multilpa").
+* The reference manual is shorter: the `print()`, `summary()`,
+  `as.data.frame()`, `coef()`, `vcov()`, `confint()`, `logLik()` and `nobs()`
+  methods that had a page each are documented together on four pages
+  (`?"latents-print"`, `?"latents-summary"`, `?"latents-as-data-frame"`,
+  `?"latents-model-methods"`). The methods are unchanged.
+* Fewer tests run on CRAN: tests that verify the estimators against their
+  definitions, tests that only check a plot draws, and the regression tests
+  from past audits are skipped there. All of them still run locally and in CI.
+
 # latents 0.9.16
 
 * Every help page now has an example that runs in the automatic checks. The

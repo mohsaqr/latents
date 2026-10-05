@@ -1,4 +1,7 @@
 # Independent references and edge cases missed by the post-submission additions.
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 review_regression_data <- function() {
   withr::with_seed(943, {
     data <- expand.grid(time = 0:3, id = 1:32)
@@ -193,6 +196,7 @@ test_that("transition class counts reflect sampling weights", {
 })
 
 test_that("noise shares retain all cases and sequence plots preserve noise cells", {
+  skip_on_cran()
   fit <- withr::with_seed(3, {
     data <- as.data.frame(rbind(matrix(stats::rnorm(120 * 2, -2), 120, 2),
                                 matrix(stats::rnorm(120 * 2, 2), 120, 2),

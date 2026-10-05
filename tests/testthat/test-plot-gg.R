@@ -9,6 +9,7 @@ gg_grid <- local({
 gg_fit <- candidate_fit(gg_grid, n_profiles = 4, model = "EEE")
 
 test_that("every view of a fit and a grid builds without a warning", {
+  skip_on_cran()
   fit_views <- c("profiles", "bars", "heatmap", "raincloud", "parallel",
                  "pairs", "probabilities", "sizes", "entropy", "posteriors",
                  "avepp")
@@ -53,6 +54,7 @@ test_that("case entropy is consistent with the reported relative entropy", {
 })
 
 test_that("an ellipse has the covariance it was drawn from", {
+  skip_on_cran()
   sigma <- matrix(c(2, 0.6, 0.6, 1), 2L)
   ellipse <- .gg_ellipse(c(1, -1), sigma, n = 2000L)
   expect_equal(colMeans(ellipse), c(x = 1, y = -1), tolerance = 1e-2)
@@ -104,6 +106,7 @@ test_that("a tree needs two numbers of profiles for some model", {
 })
 
 test_that("the plots of several views print each one", {
+  skip_on_cran()
   plots <- .gg_plots(list(sizes = plot(gg_fit, what = "sizes"),
                           avepp = plot(gg_fit, what = "avepp")))
   path <- tempfile(fileext = ".pdf")

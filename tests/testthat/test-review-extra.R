@@ -1,3 +1,6 @@
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 test_that("extra indicator columns are finite category/count vectors", {
   invisible(lapply(list(c(1, 2, Inf), c(1, 2, -Inf), matrix(1:3, 3)), function(value) {
     data <- data.frame(o = I(value))

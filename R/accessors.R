@@ -1,27 +1,4 @@
-#' Coerce a fitted multilevel latent profile model to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' The other tables are named rather than positional, so they belong to
-#' [get_results()], which takes `what` and refuses a name this object has not.
-#'
-#' @param x A fitted multilevel latent profile model.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped, because `what =` used to live on
-#'   this generic and silently returning the primary table instead of the one
-#'   that was asked for is the one outcome worth refusing.
-#' @return A base `data.frame`: the Gaussian measurement model, one row per
-#'   profile and continuous indicator.
-#' @seealso [get_results()] for every other table this object holds.
-#' @examples
-#' fit <- multilpa(
-#'   course_engagement,
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
-#'   seed = 1
-#' )
-#' as.data.frame(fit)
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa`" =
@@ -713,29 +690,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
         posteriors)
 }
 
-#' Coerce a class-enumeration grid to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' The other tables are named rather than positional, so they belong to
-#' [get_results()], which takes `what` and refuses a name this object has not.
-#'
-#' @param x An object of class `multilpa_enumeration`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped, because `what =` used to live on
-#'   this generic and silently returning the primary table instead of the one
-#'   that was asked for is the one outcome worth refusing.
-#' @return A base `data.frame`: one row per candidate model in the grid.
-#' @seealso [get_results()] for every other table this object holds.
-#' @examples
-#' candidates <- enumerate_classes(
-#'   course_engagement,
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 1:2, n_group_classes = 1, n_starts = 2,
-#'   seed = 1
-#' )
-#' as.data.frame(candidates)
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.multilpa_enumeration <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_enumeration`" = inherits(x, "multilpa_enumeration"))
@@ -752,28 +707,7 @@ as.data.frame.multilpa_enumeration <- function(x, row.names = NULL, optional = F
   grepl("^(profile|group)_probability\\[", parameter)
 }
 
-#' Print a class-enumeration grid
-#' @param x An `multilpa_enumeration` result.
-#' @param ... Passed to the underlying `data.frame` printing.
-#' @return The input, invisibly. Called for the side effect of printing the
-#'   candidate grid: one line per candidate with its class counts, covariance
-#'   model, log likelihood, parameter count, AIC, BIC under both sample-size
-#'   conventions, ICL counted over individuals, entropy at both levels, and the
-#'   diagnostics needed to trust a candidate (convergence, a bound reached, and
-#'   how many starts reached the best likelihood), then a count of the
-#'   candidates that did not converge. [summary()] and [as.data.frame()] give
-#'   every criterion.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' candidates <- enumerate_classes(
-#'   example_data, c("score_a", "score_b"), "school", n_profiles = 1:2,
-#'   n_group_classes = 1, n_starts = 2, seed = 1
-#' )
-#' print(candidates)
+#' @rdname latents-print
 #' @export
 print.multilpa_enumeration <- function(x, ...) {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
@@ -926,21 +860,7 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
   start
 }
 
-#' Print a set of starting values
-#'
-#' @param x A `multilpa_start` object from [starting_values()].
-#' @param ... Reserved for compatibility with `print()`.
-#' @return The input, invisibly.
-#' @seealso [get_results()] for the values as tidy tables.
-#' @examples
-#' set.seed(7)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(12), each = 10),
-#'   score_a = rnorm(120), score_b = rnorm(120)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' print(starting_values(fit))
+#' @rdname latents-print
 #' @export
 print.multilpa_start <- function(x, ...) {
   stopifnot("`x` must be a `multilpa_start` object" =
@@ -961,29 +881,7 @@ print.multilpa_start <- function(x, ...) {
   invisible(x)
 }
 
-#' Coerce a starting-value set to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' The other tables are named rather than positional, so they belong to
-#' [get_results()], which takes `what` and refuses a name this object has not.
-#'
-#' @param x An object of class `multilpa_start`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped, because `what =` used to live on
-#'   this generic and silently returning the primary table instead of the one
-#'   that was asked for is the one outcome worth refusing.
-#' @return A base `data.frame`: one row per profile and continuous indicator.
-#' @seealso [get_results()] for every other table this object holds.
-#' @examples
-#' fit <- multilpa(
-#'   course_engagement,
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 2, n_group_classes = 2, n_starts = 4,
-#'   seed = 1
-#' )
-#' as.data.frame(starting_values(fit))
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_start`" = inherits(x, "multilpa_start"))
@@ -1103,30 +1001,7 @@ as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, 
   do.call(rbind, blocks)
 }
 
-#' Coerce a fitted covariate model to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' The other tables are named rather than positional, so they belong to
-#' [get_results()], which takes `what` and refuses a name this object has not.
-#'
-#' @param x A fitted covariate model.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped, because `what =` used to live on
-#'   this generic and silently returning the primary table instead of the one
-#'   that was asked for is the one outcome worth refusing.
-#' @return A base `data.frame`: the Gaussian measurement model, one row per
-#'   profile and continuous indicator.
-#' @seealso [get_results()] for every other table this object holds.
-#' @examples
-#' fit <- multilpa(
-#'   subset(course_engagement, student <= 30),
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 2, n_group_classes = 2,
-#'   profile_covariates = "sequence", n_starts = 1, seed = 1
-#' )
-#' as.data.frame(fit)
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.multilpa_covariates <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_covariates`" =

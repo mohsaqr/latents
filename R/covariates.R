@@ -400,19 +400,7 @@
   result
 }
 
-#' Print a covariate LPA fit
-#' @param x A covariate LPA fit.
-#' @param rows How many rows of the printed table to show before truncating.
-#' @param ... Reserved.
-#' @return The model, invisibly. Called for the side effect of printing the
-#'   class counts, the covariate counts, the log likelihood with the
-#'   information criteria, and the convergence diagnostics.
-#' @examples
-#' fit <- multilpa(subset(course_engagement, student <= 40),
-#'                 c("browse", "lectures", "forum_read"), "student",
-#'                 n_profiles = 2, n_group_classes = 1,
-#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
-#' print(fit)
+#' @rdname latents-print
 #' @export
 print.multilpa_covariates <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa_covariates"))
@@ -426,27 +414,7 @@ print.multilpa_covariates <- function(x, rows = 20L, ...) {
   invisible(x)
 }
 
-#' Summarize a covariate LPA fit
-#'
-#' Collects the model-level fit, the measurement model, the membership
-#' regressions and the restart diagnostics into one object, so that none of
-#' them has to be read out of the fit by hand.
-#'
-#' @param object A covariate LPA fit from `multilpa(profile_covariates = )`.
-#' @param ... Reserved for compatibility with `summary()`.
-#' @return An object of class `summary_multilpa_covariates`, with a `print`
-#'   method and an [as.data.frame()] accessor. `as.data.frame()` returns the
-#'   one-row model summary by default; `what = "profiles"`, `"coefficients"`
-#'   and `"starts"` return the measurement model, the membership coefficients
-#'   and the restart diagnostics. The membership coefficients carry no standard
-#'   errors here; [parameter_inference()] reports those.
-#' @examples
-#' fit <- multilpa(subset(course_engagement, student <= 40),
-#'                 c("browse", "lectures", "forum_read"), "student",
-#'                 n_profiles = 2, n_group_classes = 1,
-#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
-#' summary(fit)
-#' get_results(fit, what = "coefficients")
+#' @rdname latents-summary
 #' @export
 summary.multilpa_covariates <- function(object, ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
@@ -470,23 +438,7 @@ summary.multilpa_covariates <- function(object, ...) {
   result
 }
 
-#' Print a covariate LPA summary
-#' @param x A `summary_multilpa_covariates` object.
-#' @param digits Number of printed significant digits.
-#' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_results()` call that
-#'   returns it whole.
-#' @param ... Passed to the underlying `data.frame` printing.
-#' @return The summary, invisibly. Called for the side effect of printing the
-#'   model line, the measurement model, the membership regressions, the
-#'   effective memberships at both levels, the likelihood and information
-#'   criteria, any warnings, and the restart diagnostics.
-#' @examples
-#' fit <- multilpa(subset(course_engagement, student <= 40),
-#'                 c("browse", "lectures", "forum_read"), "student",
-#'                 n_profiles = 2, n_group_classes = 1,
-#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
-#' print(summary(fit), digits = 3)
+#' @rdname latents-print
 #' @export
 print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa_covariates` object" =
@@ -514,27 +466,7 @@ print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
   invisible(x)
 }
 
-#' Coerce a covariate-model summary to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' A summary carries every table the object it describes can produce, and
-#' [get_results()] names them.
-#'
-#' @param x An object of class `summary_multilpa_covariates`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped.
-#' @return A base `data.frame`: one row per profile and continuous indicator.
-#' @seealso [get_results()] for every other table this summary holds.
-#' @examples
-#' fit <- multilpa(
-#'   subset(course_engagement, student <= 30),
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 2, n_group_classes = 2,
-#'   profile_covariates = "sequence", n_starts = 1, seed = 1
-#' )
-#' as.data.frame(summary(fit))
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_covariates`" = inherits(x, "summary_multilpa_covariates"))
@@ -597,18 +529,7 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
   result
 }
 
-#' Extract a covariate LPA log likelihood
-#' @param object A covariate LPA fit.
-#' @param ... Reserved.
-#' @return A `logLik` object carrying the maximized log likelihood, the free
-#'   parameter count as `df`, and the number of observed groups as `nobs`, so
-#'   `stats::BIC()` uses the group-count BIC.
-#' @examples
-#' fit <- multilpa(subset(course_engagement, student <= 40),
-#'                 c("browse", "lectures", "forum_read"), "student",
-#'                 n_profiles = 2, n_group_classes = 1,
-#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
-#' logLik(fit)
+#' @rdname latents-model-methods
 #' @export
 logLik.multilpa_covariates <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_covariates"))
@@ -616,17 +537,7 @@ logLik.multilpa_covariates <- function(object, ...) {
             nobs = object$n_groups, class = "logLik")
 }
 
-#' Count independent groups in a covariate LPA fit
-#' @param object A covariate LPA fit.
-#' @param ... Reserved.
-#' @return A single integer: the number of observed groups, which are the
-#'   independent units of this likelihood.
-#' @examples
-#' fit <- multilpa(subset(course_engagement, student <= 40),
-#'                 c("browse", "lectures", "forum_read"), "student",
-#'                 n_profiles = 2, n_group_classes = 1,
-#'                 profile_covariates = "previous_grade", n_starts = 2, seed = 1)
-#' nobs(fit)
+#' @rdname latents-model-methods
 #' @export
 nobs.multilpa_covariates <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_covariates"))

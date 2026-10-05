@@ -8,6 +8,7 @@ compare_data <- additive_draw(compare_truth, rep(8L, 100L), seed = 21)
 compare_vars <- c("y1", "y2")
 
 test_that("enumeration crosses families, restrictions and class counts", {
+  skip_on_cran()
   grid <- enumerate_classes(compare_data, compare_vars, "group",
                             family = c("additive", "dispersion",
                                        "additive_dispersion"),
@@ -85,6 +86,7 @@ test_that("simulation from a group-class fit has the fitted structure", {
 })
 
 test_that("bootstrap refuses non-nested or mismatched group-class fits", {
+  skip_on_cran()
   additive <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,
                        family = "additive", seed = 1)
   dispersion <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,

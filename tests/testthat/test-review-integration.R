@@ -1,4 +1,7 @@
 # Cross-model integration regressions for the 0.9.0--0.9.7 review.
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 review_discrete_rows <- function() {
   set.seed(712)
   n <- 480L
@@ -69,6 +72,7 @@ test_that("covariate relabelling preserves extra measurement and likelihood", {
 })
 
 test_that("BLRT reproduces NB likelihood and refuses different indicator specifications", {
+  skip_on_cran()
   data <- review_discrete_rows()
   null <- review_discrete_fit(data, 1L)
   alternative <- review_discrete_fit(data)

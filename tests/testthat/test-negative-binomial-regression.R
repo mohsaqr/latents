@@ -27,6 +27,7 @@ nb_dense <- function(fit, data) {
 }
 
 test_that("a simulated NB mixture is recovered", {
+  skip_on_cran()
   data <- nb_data()
   fit <- mixture_regression(y ~ x, data, n_classes = 2,
                             family = "negative_binomial", n_starts = 3, seed = 1)

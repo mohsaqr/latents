@@ -78,6 +78,7 @@ test_that("a MAP fit is translation equivariant and reports its convention", {
 })
 
 test_that("shrinkage pulls the means towards the prior mean", {
+  skip_on_cran()
   data <- prior_frame()
   loose <- prior_fit(data, "VVI", prior = prior_control(shrinkage = 0.01))
   tight <- prior_fit(data, "VVI", prior = prior_control(shrinkage = 500))

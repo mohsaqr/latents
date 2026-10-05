@@ -157,6 +157,7 @@ test_that("a candidate fit is reached by its class counts, never by position", {
 })
 
 test_that("a bootstrap comparison is classed and plots its simulated null", {
+  skip_on_cran()
   set.seed(53)
   data <- data.frame(g = rep(1:30, each = 8), y = rnorm(240))
   small <- multilpa(data, "y", "g", 1, 1, variance_model = "equal",

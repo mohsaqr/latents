@@ -113,6 +113,7 @@ test_that("two-level latent class analysis recovers its generating structure", {
 })
 
 test_that("ordinal and mixed-mode measurement fit and count parameters correctly", {
+  skip_on_cran()
   set.seed(21)
   dat <- categorical_fixture(seed = 21L, n_groups = 30L, per_group = 12L)
   ordinal <- dat
@@ -222,6 +223,7 @@ test_that("unsupported categorical combinations are refused by condition class",
 })
 
 test_that("categorical models plot their response probabilities", {
+  skip_on_cran()
   dat <- categorical_fixture(seed = 41L, n_groups = 25L, per_group = 12L)
   vars <- paste0("v", 1:5)
   fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,

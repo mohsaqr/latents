@@ -1,4 +1,7 @@
 # Every Gaussian structure, with weights, checked directly in probability space.
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 review_gaussian_density <- function(x, mean, covariance) {
   residual <- sweep(x, 2L, mean, "-")
   exp(-.5 * rowSums((residual %*% solve(covariance)) * residual)) /

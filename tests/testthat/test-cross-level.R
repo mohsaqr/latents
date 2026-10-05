@@ -76,6 +76,7 @@ test_that("the full model recovers group composition", {
 })
 
 test_that("tables, plots and refusals of the cross-level families", {
+  skip_on_cran()
   fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
                   n_group_classes = 2, family = "full_cross_level", seed = 1)
   tables <- get_results(fit, "all")

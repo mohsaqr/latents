@@ -585,11 +585,7 @@ as.data.frame.latents_mixture_regression <- function(x, row.names = NULL, option
                                          vcov_type = vcov_type)
 }
 
-#' Print a mixture-of-regressions fit
-#' @param x A fit from [mixture_regression()].
-#' @param digits Significant digits.
-#' @param ... Unused.
-#' @return `x`, invisibly.
+#' @rdname latents-print
 #' @export
 print.latents_mixture_regression <- function(x, digits = 4L, ...) {
   spec <- x$spec
@@ -626,14 +622,7 @@ print.latents_mixture_regression <- function(x, digits = 4L, ...) {
   invisible(x)
 }
 
-#' Summarize a mixture-of-regressions fit
-#' @param object A fit from [mixture_regression()].
-#' @param level Confidence level.
-#' @param vcov_type As in [get_results.latents_mixture_regression()].
-#' @param ... Unused.
-#' @return An object of class `summary_latents_mixture_regression`: a named list of the
-#'   `fit`, `coefficients`, `classes`, `membership` and `group_classes`
-#'   tables, printed by its print method.
+#' @rdname latents-summary
 #' @export
 summary.latents_mixture_regression <- function(object, level = 0.95, vcov_type = NULL, ...) {
   tables <- c("fit", "coefficients", "classes", "membership", "group_classes")
@@ -642,9 +631,7 @@ summary.latents_mixture_regression <- function(object, level = 0.95, vcov_type =
   }), tables), class = "summary_latents_mixture_regression")
 }
 
-#' @rdname summary.latents_mixture_regression
-#' @param x A `summary_latents_mixture_regression` object.
-#' @param digits Significant digits.
+#' @rdname latents-print
 #' @export
 print.summary_latents_mixture_regression <- function(x, digits = 4L, ...) {
   # Each table carries its own title and layout.

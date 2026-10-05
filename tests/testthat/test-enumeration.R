@@ -221,6 +221,7 @@ test_that("printing a grid shows the criteria and the diagnostics", {
 })
 
 test_that("the enumeration plot draws several criteria as panels or plots", {
+  skip_on_cran()
   skip_if_not_installed("ggplot2")
   grid <- quietly(enumerate_classes(engagement_small, c("browse", "lectures"),
                                     "student", n_profiles = 1:3,

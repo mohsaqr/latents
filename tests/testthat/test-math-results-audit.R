@@ -1,3 +1,6 @@
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 test_that("missing-row information criteria agree across all result accessors", {
   set.seed(183)
   d <- data.frame(g = rep(1:8, each = 6), y = rnorm(48))

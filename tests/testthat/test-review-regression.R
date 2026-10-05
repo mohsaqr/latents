@@ -1,3 +1,6 @@
+# Regression tests from past audits; CI runs them on every platform.
+skip_on_cran()
+
 review_regression_rows <- function() {
   set.seed(31)
   data <- data.frame(x = rnorm(160), g = rep(1:40, each = 4))

@@ -958,53 +958,14 @@ lta <- function(data, vars, id, n_profiles, time,
     row.names = NULL)
 }
 
-#' Coerce a fitted latent transition model to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' The other tables are named rather than positional, so they belong to
-#' [get_results()], which takes `what` and refuses a name this object has not.
-#'
-#' @param x An object of class `multilpa_transitions`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped, because `what =` used to live on
-#'   this generic and silently returning the primary table instead of the one
-#'   that was asked for is the one outcome worth refusing.
-#' @return A base `data.frame`: one row per group class and ordered pair of profiles.
-#' @seealso [get_results()] for every other table this object holds.
-#' @examples
-#' moves <- lta(
-#'   course_engagement,
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 2, n_group_classes = 2, time = "sequence",
-#'   n_starts = 2, seed = 1
-#' )
-#' as.data.frame(moves)
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.multilpa_transitions <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_transitions`" = inherits(x, "multilpa_transitions"))
   .multilpa_coerce(x, row.names, list(...))
 }
 
-#' Print a fitted latent transition model
-#'
-#' Reports the model's size, how the occasions are laid out, its fit and its
-#' convergence, and names the verbs that return the fitted quantities.
-#'
-#' @param x A fitted `multilpa_transitions` model.
-#' @param rows How many rows of the printed table to show before truncating.
-#' @param ... Ignored.
-#' @return `x`, invisibly. Called for the side effect of printing the class
-#'   counts, the occasion layout, the log likelihood with the information
-#'   criteria, the convergence and restart diagnostics, and the verbs that
-#'   return the fitted quantities.
-#' @seealso [get_results()], [lta()].
-#' @examples
-#' fit <- lta(subset(course_engagement, student <= 40),
-#'            c("browse", "lectures", "forum_read"), "student",
-#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-#' print(fit)
+#' @rdname latents-print
 #' @export
 print.multilpa_transitions <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa_transitions"))
@@ -1023,19 +984,7 @@ print.multilpa_transitions <- function(x, rows = 20L, ...) {
   invisible(x)
 }
 
-#' Log likelihood of a fitted latent transition model
-#'
-#' @param object A fitted `multilpa_transitions` model.
-#' @param ... Ignored.
-#' @return A `logLik` object carrying the maximized observed-data log
-#'   likelihood, the free parameter count as `df`, and the number of groups as
-#'   `nobs`. Groups are the independent units, because a group's occasions are
-#'   dependent by construction in this model.
-#' @examples
-#' fit <- lta(subset(course_engagement, student <= 40),
-#'            c("browse", "lectures", "forum_read"), "student",
-#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-#' logLik(fit)
+#' @rdname latents-model-methods
 #' @export
 logLik.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
@@ -1043,39 +992,14 @@ logLik.multilpa_transitions <- function(object, ...) {
             nobs = object$n_groups, class = "logLik")
 }
 
-#' Number of independent units in a fitted latent transition model
-#'
-#' @param object A fitted `multilpa_transitions` model.
-#' @param ... Ignored.
-#' @return A single integer: the number of observed groups. Occasions within a
-#'   group are dependent by construction, so they are not independent
-#'   observations.
-#' @examples
-#' fit <- lta(subset(course_engagement, student <= 40),
-#'            c("browse", "lectures", "forum_read"), "student",
-#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-#' nobs(fit)
+#' @rdname latents-model-methods
 #' @export
 nobs.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
   object$n_groups
 }
 
-#' Summarize a fitted latent transition model
-#'
-#' @param object A fitted `multilpa_transitions` model.
-#' @param ... Reserved for compatibility with `summary()`.
-#' @return A `summary_multilpa_transitions` object carrying the measurement
-#'   parameters, the initial and transition probabilities and counts, the
-#'   effective class counts, the fit statistics and the restart diagnostics.
-#'   Its tables are read with [get_results()];
-#'   `print()` reports the whole model.
-#' @seealso [get_results()] for the transition probabilities as a tidy table.
-#' @examples
-#' fit <- lta(subset(course_engagement, student <= 40),
-#'            c("browse", "lectures", "forum_read"), "student",
-#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-#' summary(fit)
+#' @rdname latents-summary
 #' @export
 summary.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
@@ -1114,47 +1038,14 @@ summary.multilpa_transitions <- function(object, ...) {
   result
 }
 
-#' Coerce a latent transition model summary to its primary table
-#'
-#' Plain coercion, as the base generic means it: one object, one data frame.
-#' A summary carries every table the object it describes can produce, and
-#' [get_results()] names them.
-#'
-#' @param x An object of class `summary_multilpa_transitions`.
-#' @param row.names Passed to `data.frame()`; `NULL` gives default row names.
-#' @param optional Ignored, present for generic compatibility.
-#' @param ... Must be empty. An argument here raises `latents_bad_argument`
-#'   naming it, rather than being dropped.
-#' @return A base `data.frame`: one row per profile and continuous indicator.
-#' @seealso [get_results()] for every other table this summary holds.
-#' @examples
-#' moves <- lta(
-#'   course_engagement,
-#'   vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
-#'   id = "student", n_profiles = 2, n_group_classes = 2, time = "sequence",
-#'   n_starts = 2, seed = 1
-#' )
-#' as.data.frame(summary(moves))
+#' @rdname latents-as-data-frame
 #' @export
 as.data.frame.summary_multilpa_transitions <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_transitions`" = inherits(x, "summary_multilpa_transitions"))
   .multilpa_coerce(x, row.names, list(...))
 }
 
-#' Print a latent transition summary
-#'
-#' @param x A `summary_multilpa_transitions` object.
-#' @param digits Number of printed significant digits.
-#' @param rows How many rows of each table to print. A longer table is shown
-#'   to that depth, with its remaining row count and the `get_results()` call that
-#'   returns it whole.
-#' @param ... Additional arguments passed to matrix printing.
-#' @return The summary, invisibly; called for what it prints.
-#' @examples
-#' fit <- lta(subset(course_engagement, student <= 40),
-#'            c("browse", "lectures", "forum_read"), "student",
-#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-#' print(summary(fit), digits = 3)
+#' @rdname latents-print
 #' @export
 print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa_transitions` object" =
@@ -1183,35 +1074,7 @@ print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) 
   invisible(x)
 }
 
-#' Fitted parameters of a latent transition model
-#'
-#' @param object A fitted `multilpa_transitions` model.
-#' @param ... Reserved for compatibility with `coef()`.
-#' @return A named numeric vector of every parameter on its natural scale, in
-#'   the order and with the names [vcov.multilpa_transitions()] and
-#'   [parameter_inference()] use: profile means, then variances (one shared set
-#'   under `variance_model = "equal"`, the covariance matrices under
-#'   `covariance_model = "full"`), categorical response probabilities where
-#'   present, the group-class probabilities, each group class's initial profile
-#'   probabilities, and its transition probabilities row by row.
-#'
-#'   Names follow the package-wide `level.parameter.outcome.term` grammar shared
-#'   with [coef.multilpa()], so one pattern matches across fit classes: for
-#'   example `measurement.mean.profile_1.reading` and
-#'   `profile.transition_probability.profile_2.group_class_1:profile_1`, whose
-#'   term names the origin the move is from. `level`, `parameter` and `outcome`
-#'   never contain a dot, so everything after the third dot is the term and the
-#'   name parses back into the columns [parameter_inference()] reports even when
-#'   an indicator name itself contains a dot.
-#'
-#'   Their standard errors come from [parameter_inference()] or
-#'   [vcov.multilpa_transitions()]. [get_results()] gives the same quantities
-#'   as tidy tables, which is the form to prefer.
-#' @examples
-#' fit <- lta(subset(course_engagement, student <= 40),
-#'            c("browse", "lectures", "forum_read"), "student",
-#'            n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
-#' coef(fit)
+#' @rdname latents-model-methods
 #' @export
 coef.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
