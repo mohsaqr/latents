@@ -403,6 +403,11 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
 #' @param main,subtitle Optional title and subtitle.
 #' @param ... Unused.
 #' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
+#' @examples
+#' fit <- lta(course_engagement, c("browse", "lectures"), "student",
+#'            n_profiles = 2, time = "sequence",
+#'            transition_covariates = "previous_grade", n_starts = 2, seed = 1)
+#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(fit)
 #' @export
 plot.multilpa_lta <- function(x, main = NULL, subtitle = NULL, ...) {
   .gg_require()

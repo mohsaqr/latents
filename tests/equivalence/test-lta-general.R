@@ -4,7 +4,7 @@
 # profile path (independent of the forward-backward code), numerical
 # derivatives, external fits (depmixS4, LMest, Mplus) bundled as fixtures.
 
-lta_references <- readRDS(test_path("..", "testthat", "fixtures", "lta-references.rds"))
+lta_references <- readRDS(test_path("fixtures", "lta-references.rds"))
 
 # Small two-profile panel with a time-varying covariate and a group-level one.
 lta_small <- local({
@@ -138,4 +138,167 @@ test_that("missing indicators (FIML) in the extended model match the exact path 
     fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(v, fit),
     fit$occasion_of_row)$log_likelihood, theta)
   expect_lt(max(abs(analytic - numeric_gradient)), 1e-5 * (1 + max(abs(numeric_gradient))))
+})
+
+
+test_that("covariate transitions and initial distribution match the exact path sum", {
+  skip_on_cran()
+  fit <- lta(lta_small, "y", "id", n_profiles = 2, time = "time",
+             transition_covariates = "z", initial_covariates = "w",
+             n_starts = 3, seed = 1, tol = 1e-10)
+  expect_true(fit$converged)
+  expect_equal(fit$log_likelihood, lta_brute_force(fit, lta_small), tolerance = 1e-9)
+  # 2 means + 2 variances + 2 initial + 2 origins x 2 terms.
+  expect_identical(fit$n_parameters, 10L)
+  coefficients <- get_results(fit, "transition_coefficients")
+  expect_identical(nrow(coefficients), 4L)
+  expect_true(all(is.finite(coefficients$standard_error)))
+  # The simulated slope (0.9) is recovered within its interval for both moves.
+  slopes <- subset(coefficients, term == "z")
+  expect_true(all(slopes$conf_low < 0.9 & slopes$conf_high > 0.9))
+})
+
+test_that("occasion-varying transitions and measurement match the exact path sum", {
+  skip_on_cran()
+  fit <- lta(lta_small, "y", "id", n_profiles = 2, time = "time",
+             transitions = "occasion", measurement = "occasion", n_starts = 3,
+             seed = 1, tol = 1e-10)
+  expect_equal(fit$log_likelihood, lta_brute_force(fit, lta_small), tolerance = 1e-9)
+  # 4 occasions x (2 means + 2 variances) + 1 initial + 3 occasions x 2 origins.
+  expect_identical(fit$n_parameters, 23L)
+  table <- get_results(fit, "transitions")
+  expect_setequal(unique(table$occasion), 2:4)
+  sums <- tapply(table$probability, paste(table$occasion, table$from), sum)
+  expect_equal(as.vector(sums), rep(1, length(sums)), tolerance = 1e-12)
+  expect_identical(length(unique(get_results(fit, "profiles")$occasion)), 4L)
+})
+
+test_that("second-order transitions match the exact path sum and nest first order", {
+  skip_on_cran()
+  data <- lta_small
+  first <- lta(data, "y", "id", n_profiles = 2, time = "time", n_starts = 3,
+               seed = 1, tol = 1e-10)
+  second <- lta(data, "y", "id", n_profiles = 2, time = "time", order = 2,
+                n_starts = 3, seed = 1, tol = 1e-10)
+  expect_gte(second$log_likelihood, first$log_likelihood - 1e-6)
+  expect_equal(second$n_parameters, first$n_parameters + 4)
+  n_states <- 2L
+  paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
+  p <- .lta_parameters(second)
+  pi0 <- exp(c(p$initial[1, 1, 1], 0))
+  pi0 <- pi0 / sum(pi0)
+  move1 <- function(a, b) {
+    m <- stats::plogis(p$transition[1, 1, a, 1])
+    if (a == b) 1 - m else m
+  }
+  move2 <- function(a, b, c) {
+    m <- stats::plogis(p$transition2[1, 1, (a - 1L) * n_states + b, 1])
+    if (b == c) 1 - m else m
+  }
+  block <- second$measurement[[1L]]
+  exact <- sum(vapply(split(data, data$id), function(rows) {
+    rows <- rows[order(rows$time), ]
+    log(sum(apply(paths, 1L, function(s) {
+      pi0[s[1L]] * move1(s[1L], s[2L]) * move2(s[1L], s[2L], s[3L]) *
+        move2(s[2L], s[3L], s[4L]) *
+        prod(stats::dnorm(rows$y, block$means[s, 1L], sqrt(block$variances[s, 1L])))
+    })))
+  }, numeric(1)))
+  expect_equal(second$log_likelihood, exact, tolerance = 1e-9)
+  expect_identical(nrow(get_results(second, "second_order_transitions")), 8L)
+})
+
+test_that("covariate transitions agree with depmixS4 (bundled fixture)", {
+  skip_on_cran()
+  ref <- lta_references$depmix_covariate
+  items <- paste0("y", 1:4)
+  long <- do.call(rbind, lapply(1:4, \(t) {
+    frame <- as.data.frame(matrix(ref$responses[, t, ], ncol = 4L))
+    names(frame) <- items
+    cbind(subject = seq_len(nrow(frame)), occasion = t, x = ref$x, frame)
+  }))
+  long[items] <- lapply(long[items], factor)
+  fit <- lta(long, items, "subject", n_profiles = 2, time = "occasion",
+             categorical = items, transition_covariates = "x", n_starts = 5,
+             seed = 1, tol = 1e-10)
+  expect_equal(fit$log_likelihood, ref$log_likelihood, tolerance = 1e-7)
+  expect_identical(fit$n_parameters, ref$n_parameters)
+  expect_equal(sort(abs(fit$transition_coefficients["x", 1L, , 1L])),
+               sort(abs(ref$slopes)), tolerance = 1e-3, ignore_attr = TRUE)
+})
+
+test_that("occasion-varying transitions agree with LMest (bundled fixture)", {
+  skip_on_cran()
+  ref <- lta_references$lmest_occasion
+  M <- dim(ref$responses)[3L]
+  items <- paste0("y", seq_len(M))
+  long <- do.call(rbind, lapply(seq_len(dim(ref$responses)[2L]), \(t) {
+    frame <- as.data.frame(matrix(ref$responses[, t, ], ncol = M))
+    names(frame) <- items
+    cbind(subject = seq_len(nrow(frame)), occasion = t, frame)
+  }))
+  long[items] <- lapply(long[items], factor)
+  fit <- lta(long, items, "subject", n_profiles = ref$K, time = "occasion",
+             categorical = items, transitions = "occasion", n_starts = 5, seed = 1,
+             tol = 1e-10)
+  expect_equal(fit$log_likelihood, ref$log_likelihood, tolerance = 1e-8)
+  expect_identical(fit$n_parameters, ref$n_parameters)
+})
+
+test_that("mover-stayer: the stayer class never moves and matches the exact path sum", {
+  skip_on_cran()
+  old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
+  on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else
+    assign(".Random.seed", old, globalenv()), add = TRUE)
+  set.seed(11)
+  n <- 150L
+  occasions <- 4L
+  stays <- stats::runif(n) < 0.35
+  data <- do.call(rbind, lapply(seq_len(n), function(j) {
+    s <- integer(occasions)
+    s[1L] <- sample(1:2, 1L)
+    for (t in 2:occasions) {  # simulation only
+      s[t] <- if (!stays[j] && stats::runif(1L) < 0.3) 3L - s[t - 1L] else s[t - 1L]
+    }
+    data.frame(id = j, time = seq_len(occasions),
+               y = stats::rnorm(occasions, c(-1, 1)[s], 0.8))
+  }))
+  fit <- quietly(lta(data, "y", "id", n_profiles = 2, time = "time",
+                     mover_stayer = TRUE, n_starts = 3, seed = 1, tol = 1e-10),
+                 "latents_boundary")
+  expect_identical(names(fit$group_probabilities), c("group_class_1", "stayers"))
+  stayers <- subset(get_results(fit, "transitions"), group_class == "stayers")
+  expect_equal(stayers$probability, as.numeric(stayers$from == stayers$to))
+  # 4 measurement + 1 class weight + 2 initial (one per class) + 2 mover moves.
+  expect_identical(fit$n_parameters, 9L)
+  p <- .lta_parameters(fit)
+  m <- fit$measurement[[1L]]
+  paths <- as.matrix(expand.grid(rep(list(1:2), occasions)))
+  shares <- lapply(1:2, \(h) {
+    e <- exp(c(p$initial[1, 1, h], 0))
+    e / sum(e)
+  })
+  move <- function(a, b) {
+    mv <- stats::plogis(p$transition[1, 1, a, 1])
+    if (a == b) 1 - mv else mv
+  }
+  exact <- sum(vapply(split(data, data$id), \(rows) {
+    log(sum(apply(paths, 1L, \(s) {
+      density <- prod(stats::dnorm(rows$y, m$means[s, 1L], sqrt(m$variances[s, 1L])))
+      fit$group_probabilities[1L] * shares[[1L]][s[1L]] *
+        prod(vapply(2:occasions, \(t) move(s[t - 1L], s[t]), numeric(1))) * density +
+        fit$group_probabilities[2L] * shares[[2L]][s[1L]] * all(s == s[1L]) * density
+    })))
+  }, numeric(1)))
+  expect_equal(fit$log_likelihood, exact, tolerance = 1e-9)
+  # Stayers and movers that never leave a profile are hard to separate in a
+  # small sample, so the fit may sit on a boundary; standard errors follow
+  # that flag either way.
+  errors <- quietly(get_results(fit, "transition_coefficients"),
+                    "latents_no_standard_errors")$standard_error
+  if (isTRUE(fit$boundary)) {
+    expect_true(all(is.na(errors)))
+  } else {
+    expect_true(all(is.finite(errors)))
+  }
 })

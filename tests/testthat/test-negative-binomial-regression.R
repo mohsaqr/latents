@@ -17,15 +17,6 @@ nb_data <- function(seed = 5, n = 1000) {
              x = x, class = class)
 }
 
-nb_dense <- function(fit, data) {
-  params <- fit$params
-  shares <- exp(params$gamma[1L, ]) / sum(exp(params$gamma[1L, ]))
-  sum(log(rowSums(vapply(seq_len(fit$spec$n_classes), function(k) {
-    mu <- exp(params$beta[1L, k] + params$beta[2L, k] * data$x)
-    shares[k] * stats::dnbinom(data$y, size = 1 / params$sigma2[k], mu = mu)
-  }, numeric(nrow(data))))))
-}
-
 test_that("a simulated NB mixture is recovered", {
   skip_on_cran()
   data <- nb_data()

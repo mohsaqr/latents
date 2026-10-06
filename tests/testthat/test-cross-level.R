@@ -20,33 +20,6 @@ cross_level_data <- local({
 })
 cross_level_vars <- c("y1", "y2")
 
-# Direct likelihood of the manifest cross-level specification.
-cross_level_reference <- function(fit, data) {
-  groups <- split(data[, cross_level_vars], factor(data$team, levels = unique(data$team)))
-  # Restricted: one prevalence vector for every class, the mean posterior.
-  composition <- if (identical(fit$family, "restricted_cross_level")) {
-    prevalence <- colMeans(fit$subject_posteriors)
-    matrix(prevalence, nrow(fit$composition), length(prevalence), byrow = TRUE)
-  } else fit$composition
-  sum(vapply(groups, function(x) {
-    x <- as.matrix(x)
-    m <- colMeans(x)
-    per_class <- vapply(seq_along(fit$group_probabilities), function(h) {
-      individual <- vapply(seq_len(nrow(fit$profile_means)), function(k) {
-        exp(rowSums(stats::dnorm(x, rep(fit$profile_means[k, ], each = nrow(x)),
-                                 rep(sqrt(fit$profile_variances[k, ]), each = nrow(x)),
-                                 log = TRUE)))
-      }, numeric(nrow(x)))
-      individual <- matrix(individual, nrow(x))
-      log(fit$group_probabilities[h]) +
-        sum(stats::dnorm(m, fit$group_means[h, ], sqrt(fit$group_mean_variances[h, ]),
-                         log = TRUE)) +
-        sum(log(individual %*% composition[h, ]))
-    }, numeric(1))
-    max(per_class) + log(sum(exp(per_class - max(per_class))))
-  }, numeric(1)))
-}
-
 test_that("full nests restricted, and one group class makes them coincide", {
   full <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
                    n_group_classes = 2, family = "full_cross_level", seed = 1)

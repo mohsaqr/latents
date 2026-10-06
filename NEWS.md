@@ -1,3 +1,18 @@
+# latents 0.9.19
+
+* Every help page has an example: the `plot()` methods for model comparisons,
+  family and transition enumerations, pooled imputations, cross-level and
+  general transition fits, and `predict()` for growth mixtures, which shows
+  the refusal and where the trajectories are.
+* The transition-enumeration example in `?get_results.latents_transition_enumeration`
+  fits the first 50 students, so it runs in a few seconds on Windows as well
+  (it took 12 s there).
+* The remaining tests that compare latents with another implementation move to
+  `tests/equivalence/`: the depmixS4 and LMest fits, exact path sums, dense
+  likelihoods, enumerated EM steps and independent Hessians, together with
+  their reference helpers and fixtures. The installed tests no longer contain
+  any such comparison.
+
 # latents 0.9.18
 
 * The growth mixture guide moves from the vignettes to the package website

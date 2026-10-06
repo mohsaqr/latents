@@ -22,46 +22,6 @@ growth_fit <- function(data, ...) {
                      random = ~ 1 + time, n_starts = 2, seed = 1, ...)
 }
 
-# An independent likelihood: each person's marginal covariance built densely.
-growth_dense_log_likelihood <- function(fit, data, params) {
-  spec <- fit$spec
-  covariances <- latents:::.growth_covariances(spec, params)
-  prior <- exp(latents:::.mixture_log_softmax(spec$w, params$gamma))
-  persons <- split(seq_len(nrow(data)), match(data$id, spec$group_levels))
-  sum(vapply(seq_along(persons), function(i) {
-    rows <- data[persons[[i]], ]
-    x <- cbind(1, rows$time, rows$x)
-    z <- cbind(1, rows$time)
-    densities <- vapply(seq_len(spec$n_classes), function(k) {
-      v <- z %*% covariances[[k]] %*% t(z) + params$sigma2[k] * diag(nrow(rows))
-      mu <- x %*% c(params$beta[, k], params$common)
-      upper <- chol(v)
-      r <- backsolve(upper, rows$y - mu, transpose = TRUE)
-      -0.5 * (nrow(rows) * log(2 * pi) + 2 * sum(log(diag(upper))) + sum(r^2))
-    }, numeric(1))
-    top <- max(densities + log(prior[i, ]))
-    top + log(sum(exp(densities + log(prior[i, ]) - top)))
-  }, numeric(1)))
-}
-
-test_that("the growth mixture likelihood equals an independent dense likelihood", {
-  skip_on_cran()
-  data <- growth_fixture_data()
-  invisible(lapply(c("varying", "equal", "proportional"), function(covariance) {
-    fit <- growth_fit(data, random_covariance = covariance, vcov_type = "none")
-    expect_s3_class(fit, "latents_growth_mixture")
-    expect_equal(fit$log_likelihood,
-                 growth_dense_log_likelihood(fit, data, fit$params), tolerance = 1e-10)
-    # Away from the maximum too.
-    set.seed(3)
-    theta <- latents:::.growth_pack(fit$spec, fit$params)
-    moved <- latents:::.growth_unpack(fit$spec, theta + stats::rnorm(length(theta), 0, 0.1),
-                                      fit$params)
-    expect_equal(latents:::.growth_expectation(fit$spec, fit$stats, moved)$log_likelihood,
-                 growth_dense_log_likelihood(fit, data, moved), tolerance = 1e-10)
-  }))
-})
-
 test_that("estimation coordinates round-trip and EM never decreases", {
   skip_on_cran()
   data <- growth_fixture_data()

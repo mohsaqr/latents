@@ -26,26 +26,6 @@ structure_fit_at <- function(code, data, n_group_classes = 1L) {
     latents:::.multilpa_structure_arguments(code))))
 }
 
-test_that("constrained-structure standard errors match an independent Hessian", {
-  data <- structure_data()
-  cases <- expand.grid(code = c("VII", "VEI", "EVI", "VEE", "EVE", "EEV", "EVV"),
-                       classes = c(1L, 2L), stringsAsFactors = FALSE)
-  invisible(lapply(seq_len(nrow(cases)), function(row) {
-    code <- cases$code[row]
-    fit <- structure_fit_at(code, data, cases$classes[row])
-    expect_true(fit$converged, label = code)
-    ours <- parameter_inference(fit)
-    reference <- reference_structure_se(fit, data)
-    expect_equal(reference$log_likelihood, fit$log_likelihood, tolerance = 1e-10,
-                 info = code)
-    expect_equal(ours$estimate, reference$estimate, tolerance = 1e-10, info = code)
-    informative <- reference$standard_error > 1e-8
-    expect_equal(ours$standard_error[informative],
-                 reference$standard_error[informative], tolerance = 1e-5,
-                 info = sprintf("%s with %d group classes", code, cases$classes[row]))
-  }))
-})
-
 test_that("the chart has one coordinate per structure parameter", {
   data <- structure_data()
   invisible(lapply(latents:::.multilpa_structures(), function(code) {

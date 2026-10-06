@@ -446,7 +446,9 @@
 #'   `bic`, `bic_individual`, relative profile `entropy`, `converged`,
 #'   `boundary`, `n_best_replicated`, `warnings` and `error`.
 #' @examples
-#' grid <- enumerate_classes(course_engagement, c("browse", "lectures"),
+#' # The first 50 students keep the example quick
+#' few_students <- subset(course_engagement, student <= 50)
+#' grid <- enumerate_classes(few_students, c("browse", "lectures"),
 #'                           "student", time = "sequence", n_profiles = 2:3,
 #'                           n_group_classes = 1, n_starts = 2, seed = 1)
 #' get_results(grid)
@@ -499,6 +501,12 @@ summary.latents_transition_enumeration <- function(object, ...) object$table
 #' @param main,subtitle Optional title and subtitle.
 #' @param ... Unused.
 #' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
+#' @examples
+#' few_students <- subset(course_engagement, student <= 50)
+#' grid <- enumerate_classes(few_students, c("browse", "lectures"),
+#'                           "student", time = "sequence", n_profiles = 2:3,
+#'                           n_group_classes = 1, n_starts = 2, seed = 1)
+#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(grid)
 #' @export
 plot.latents_transition_enumeration <- function(x, criterion = c("bic", "aic",
                                                                  "bic_individual"),

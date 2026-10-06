@@ -107,3 +107,14 @@ test_that("shared means are pooled by precision when classes are unequal", {
     stats, .additive_unpack(v, 2L, 1L, structure))$log_likelihood, theta)
   expect_lt(max(abs(gradient)), 1e-4)
 })
+
+
+test_that("class-specific within variances: compact density equals dense", {
+  stats <- .additive_prepare(families_data, families_vars, "group")
+  compact <- .additive_log_density(stats, families_truth)
+  blocks <- additive_blocks(families_data, families_vars, "group")
+  dense <- t(vapply(blocks, \(x) vapply(1:2, \(h) additive_dense_density(
+    x, families_truth$means[h, ], families_truth$between[h, ],
+    families_truth$within[h, ]), numeric(1)), numeric(2)))
+  expect_equal(unname(compact), dense, tolerance = 1e-10)
+})

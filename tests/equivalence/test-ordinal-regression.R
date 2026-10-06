@@ -98,3 +98,15 @@ test_that("the analytic scores are the gradient of the log likelihood", {
                            family = "ordinal", id = "person", class_level = "group",
                            n_starts = 2, seed = 1))
 })
+
+
+test_that("the likelihood is the dense mixture of plogis differences", {
+  skip_on_cran()
+  data <- ordinal_rows()
+  fit <- mixture_regression(y ~ x + w, data, n_classes = 2, family = "ordinal",
+                            common = ~ w, n_starts = 3, seed = 1)
+  design <- cbind(x = data$x, w = data$w)
+  expect_equal(fit$log_likelihood, ordinal_dense(fit, data, design), tolerance = 1e-10)
+  expect_identical(fit$n_parameters, length(coef(fit)))
+  expect_identical(fit$n_parameters, 10L)
+})

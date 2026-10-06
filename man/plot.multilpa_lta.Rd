@@ -20,3 +20,9 @@ A ggplot object. Raises \code{latents_missing_package} without ggplot2.
 One panel per group class (and occasion, when transitions vary): a tile
 per origin and destination, labelled with its probability.
 }
+\examples{
+fit <- lta(course_engagement, c("browse", "lectures"), "student",
+           n_profiles = 2, time = "sequence",
+           transition_covariates = "previous_grade", n_starts = 2, seed = 1)
+if (requireNamespace("ggplot2", quietly = TRUE)) plot(fit)
+}

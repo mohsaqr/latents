@@ -36,30 +36,6 @@ ordinal_persons <- function(seed = 5, persons = 300, waves = 5) {
   })
 }
 
-# The mixture likelihood from its definition: class shares times
-# plogis(t_y - eta) - plogis(t_y-1 - eta), sharing no code with the engine.
-ordinal_dense <- function(fit, data, design) {
-  params <- fit$params
-  shares <- exp(params$gamma[1L, ]) / sum(exp(params$gamma[1L, ]))
-  y <- as.integer(data$y)
-  sum(log(rowSums(vapply(seq_len(fit$spec$n_classes), function(k) {
-    eta <- drop(design %*% c(params$beta[, k], params$common))
-    bounds <- c(-Inf, params$thresholds[, k], Inf)
-    shares[k] * (stats::plogis(bounds[y + 1L] - eta) - stats::plogis(bounds[y] - eta))
-  }, numeric(nrow(data))))))
-}
-
-test_that("the likelihood is the dense mixture of plogis differences", {
-  skip_on_cran()
-  data <- ordinal_rows()
-  fit <- mixture_regression(y ~ x + w, data, n_classes = 2, family = "ordinal",
-                            common = ~ w, n_starts = 3, seed = 1)
-  design <- cbind(x = data$x, w = data$w)
-  expect_equal(fit$log_likelihood, ordinal_dense(fit, data, design), tolerance = 1e-10)
-  expect_identical(fit$n_parameters, length(coef(fit)))
-  expect_identical(fit$n_parameters, 10L)
-})
-
 test_that("a simulated two-class ordinal mixture is recovered", {
   skip_on_cran()
   data <- ordinal_rows()

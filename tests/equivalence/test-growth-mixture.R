@@ -84,3 +84,22 @@ test_that("observed standard errors equal the inverse numerical Hessian", {
   numerical <- solve(-numDeriv::hessian(log_likelihood, theta))
   expect_equal(unname(sqrt(diag(vcov(fit)))), sqrt(diag(numerical)), tolerance = 1e-4)
 })
+
+
+test_that("the growth mixture likelihood equals an independent dense likelihood", {
+  skip_on_cran()
+  data <- growth_fixture_data()
+  invisible(lapply(c("varying", "equal", "proportional"), function(covariance) {
+    fit <- growth_fit(data, random_covariance = covariance, vcov_type = "none")
+    expect_s3_class(fit, "latents_growth_mixture")
+    expect_equal(fit$log_likelihood,
+                 growth_dense_log_likelihood(fit, data, fit$params), tolerance = 1e-10)
+    # Away from the maximum too.
+    set.seed(3)
+    theta <- latents:::.growth_pack(fit$spec, fit$params)
+    moved <- latents:::.growth_unpack(fit$spec, theta + stats::rnorm(length(theta), 0, 0.1),
+                                      fit$params)
+    expect_equal(latents:::.growth_expectation(fit$spec, fit$stats, moved)$log_likelihood,
+                 growth_dense_log_likelihood(fit, data, moved), tolerance = 1e-10)
+  }))
+})

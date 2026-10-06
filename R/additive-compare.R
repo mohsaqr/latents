@@ -323,6 +323,16 @@ summary.latents_family_enumeration <- function(object, ...) {
 #' @param main,subtitle Optional title and subtitle.
 #' @param ... Unused.
 #' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
+#' @examples
+#' set.seed(1)
+#' ratings <- data.frame(
+#'   team = rep(seq_len(40), each = 6),
+#'   climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
+#'     rnorm(240))
+#' grid <- enumerate_classes(ratings, "climate", "team",
+#'                           family = c("additive", "dispersion"),
+#'                           n_group_classes = 1:2, n_starts = 3, seed = 1)
+#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(grid)
 #' @export
 plot.latents_family_enumeration <- function(x, criterion = c("bic", "aic",
                                                              "bic_individual"),

@@ -48,3 +48,20 @@ test_that("fits agree with Latent GOLD 6.1", {
     TRUE
   }, logical(1))
 })
+
+
+test_that("the ordinal M-step maximizes its concave objective", {
+  set.seed(2)
+  counts <- matrix(runif(15, 1, 40), 3L, 5L)
+  solved <- .latents_ordinal_maximize(counts, numeric(4), numeric(3))
+  objective <- function(theta) {
+    -sum(counts * .latents_ordinal_log_probabilities(theta[1:4], c(theta[5:6], 0)))
+  }
+  reference <- optim(numeric(6), objective, method = "BFGS",
+                     control = list(reltol = 1e-15, maxit = 10000))
+  ours <- objective(c(solved$intercepts, solved$locations[1:2]))
+  expect_lte(ours, reference$value + 1e-10)
+  expect_equal(c(solved$intercepts, solved$locations[1:2]), reference$par,
+               tolerance = 1e-5)
+  expect_identical(solved$locations[3L], 0)
+})

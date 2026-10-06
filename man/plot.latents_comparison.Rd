@@ -20,3 +20,14 @@ A ggplot object. Raises \code{latents_missing_package} without ggplot2.
 Each model's AIC, BIC and sample-size adjusted BIC, lowest best; the
 model with the smallest BIC is marked.
 }
+\examples{
+few_students <- subset(growth_scores, student <= 60)
+trajectories <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                                   id = "student", class_level = "group",
+                                   seed = 1)
+growth <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                             id = "student", class_level = "group",
+                             random = "intercept", seed = 1)
+comparison <- compare_models(trajectories = trajectories, growth = growth)
+if (requireNamespace("ggplot2", quietly = TRUE)) plot(comparison)
+}

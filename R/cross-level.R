@@ -525,6 +525,16 @@ parameter_inference.multilpa_cross_level <- function(x, ...) {
 #' @param main,subtitle Optional title and subtitle.
 #' @param ... Unused.
 #' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
+#' @examples
+#' set.seed(1)
+#' ratings <- data.frame(
+#'   team = rep(seq_len(40), each = 6),
+#'   climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
+#'     rnorm(240, sample(c(-1, 1), 240, replace = TRUE), 0.6))
+#' fit <- multilpa(ratings, "climate", "team", n_profiles = 2,
+#'                 n_group_classes = 2, family = "full_cross_level",
+#'                 n_starts = 3, seed = 1)
+#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(fit)
 #' @export
 plot.multilpa_cross_level <- function(x, what = c("profiles", "group_means",
                                                   "composition"),

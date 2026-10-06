@@ -28,16 +28,6 @@ families_data <- local({
 })
 families_vars <- c("y1", "y2")
 
-test_that("class-specific within variances: compact density equals dense", {
-  stats <- .additive_prepare(families_data, families_vars, "group")
-  compact <- .additive_log_density(stats, families_truth)
-  blocks <- additive_blocks(families_data, families_vars, "group")
-  dense <- t(vapply(blocks, \(x) vapply(1:2, \(h) additive_dense_density(
-    x, families_truth$means[h, ], families_truth$between[h, ],
-    families_truth$within[h, ]), numeric(1)), numeric(2)))
-  expect_equal(unname(compact), dense, tolerance = 1e-10)
-})
-
 test_that("blocks are shared or class-specific as each family says", {
   skip_on_cran()
   dispersion <- multilpa(families_data, families_vars, "group",

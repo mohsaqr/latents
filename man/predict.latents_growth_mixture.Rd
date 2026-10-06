@@ -20,3 +20,11 @@ trajectories and each fitted person's own predicted curve are tables of
 \code{\link[=get_results.latents_growth_mixture]{get_results.latents_growth_mixture()}}: \code{"trajectories"} and
 \code{"individual"}.
 }
+\examples{
+few_students <- subset(growth_scores, student <= 60)
+fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                          id = "student", class_level = "group",
+                          random = "intercept", seed = 1)
+# Prediction is refused; get_results(fit, "trajectories") has the curves
+try(predict(fit))
+}

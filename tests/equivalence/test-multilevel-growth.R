@@ -84,3 +84,20 @@ test_that("the analytic cluster scores are the likelihood's gradient", {
   expect_equal(unname(colSums(scores)), numDeriv::grad(value, theta),
                tolerance = 1e-6)
 })
+
+
+test_that("the likelihood equals the dense multilevel likelihood", {
+  skip_on_cran()
+  data <- multilevel_data()
+  fit <- multilevel_fit(data)
+  expect_s3_class(fit, "latents_growth_mixture")
+  expect_equal(fit$log_likelihood, multilevel_dense(fit, data), tolerance = 1e-10)
+  # Off the maximum too.
+  moved <- fit
+  moved$params$class_logits[1L, 2L] <- moved$params$class_logits[1L, 2L] + 0.3
+  moved$params$delta[1L, 2L] <- 0.4
+  moved$params$beta[2L, 1L] <- moved$params$beta[2L, 1L] - 0.2
+  expectation <- latents:::.growth_expectation(moved$spec, moved$stats, moved$params)
+  expect_equal(expectation$log_likelihood, multilevel_dense(moved, data),
+               tolerance = 1e-10)
+})

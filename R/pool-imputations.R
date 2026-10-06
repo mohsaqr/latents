@@ -416,6 +416,17 @@ vcov.latents_pooled <- function(object, ...) {
 #' @param main Plot title; `NULL` for the default.
 #' @param ... Unused.
 #' @return `x`, invisibly. Called for the side effect of drawing.
+#' @examples
+#' set.seed(1)
+#' completed <- lapply(1:2, function(i) {
+#'   within(subset(course_engagement, student <= 40),
+#'          previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))
+#' })
+#' pooled <- pool_imputations(completed, c("browse", "lectures", "forum_read"),
+#'                            "student", n_profiles = 2, n_group_classes = 1,
+#'                            profile_covariates = "previous_grade",
+#'                            n_starts = 2, seed = 1)
+#' plot(pooled)
 #' @export
 plot.latents_pooled <- function(x, level = c("profile", "group", "measurement"),
                                 main = NULL, ...) {

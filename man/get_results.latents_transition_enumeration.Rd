@@ -47,7 +47,9 @@ number of profiles and group classes (and covariance structure, when
 \code{model} names several).
 }
 \examples{
-grid <- enumerate_classes(course_engagement, c("browse", "lectures"),
+# The first 50 students keep the example quick
+few_students <- subset(course_engagement, student <= 50)
+grid <- enumerate_classes(few_students, c("browse", "lectures"),
                           "student", time = "sequence", n_profiles = 2:3,
                           n_group_classes = 1, n_starts = 2, seed = 1)
 get_results(grid)

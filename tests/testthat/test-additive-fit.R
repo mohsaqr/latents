@@ -67,33 +67,6 @@ additive_small <- local({
   additive_draw(truth, rep(c(2L, 3L, 5L, 6L), 15L), seed = 20260930)
 })
 
-# Dense-covariance log likelihood on an unconstrained vector: means, log W,
-# log T, baseline class logits. Shares no code with the package.
-additive_dense_loglik <- function(theta, blocks, n_classes, d, between_variance) {
-  n_between <- if (between_variance == "equal") 1L else n_classes
-  means <- matrix(theta[seq_len(n_classes * d)], n_classes, d)
-  within <- exp(theta[n_classes * d + seq_len(d)])
-  between <- matrix(exp(theta[n_classes * d + d + seq_len(n_between * d)]),
-                    n_between, d)[rep(seq_len(n_between), length.out = n_classes), ,
-                                  drop = FALSE]
-  # Class 1 is the baseline: logits are log(w_h / w_1) for h = 2..H.
-  logits <- c(0, utils::tail(theta, n_classes - 1L))
-  log_weights <- logits - log(sum(exp(logits)))
-  sum(vapply(blocks, \(x) {
-    joint <- vapply(seq_len(n_classes), \(h) log_weights[h] +
-      additive_dense_density(x, means[h, ], between[h, ], within), numeric(1))
-    max(joint) + log(sum(exp(joint - max(joint))))
-  }, numeric(1)))
-}
-
-additive_theta <- function(fit) {
-  n_classes <- nrow(fit$means)
-  between <- if (fit$between_variance == "equal") fit$between_variances[1, ] else
-    as.vector(fit$between_variances)
-  c(as.vector(fit$means), log(fit$within_variances[1, ]), log(between),
-    log(fit$group_probabilities[-1L] / fit$group_probabilities[1L]))
-}
-
 test_that("EM is monotone and equal between variances are shared", {
   fit <- additive_fit_quiet(additive_small, c("y1", "y2"), "group",
                             n_group_classes = 2, family = "additive",
