@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -255,23 +255,39 @@ items.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lca</span>, what <span class="op">=</span> <span class="st">"responses"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lca_files/figure-html/responses-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>For numeric categories, such as ratings from 1 to 5, a profile plot
+can summarize each item’s fitted distribution on the original score
+scale:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lca</span>, what <span class="op">=</span> <span class="st">"profiles"</span><span class="op">)</span>                       <span class="co"># probability-weighted means</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lca</span>, what <span class="op">=</span> <span class="st">"profiles"</span>, statistic <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span> <span class="co"># fitted medians</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lca</span>, what <span class="op">=</span> <span class="st">"profiles"</span>, statistic <span class="op">=</span> <span class="st">"mode"</span><span class="op">)</span>   <span class="co"># most probable scores</span></span></code></pre></div>
+<p>Means assume meaningful spacing between category scores. The median
+is the smallest score whose cumulative probability reaches 0.5; tied
+modes use the smallest score. These summaries use fitted probabilities,
+including in FIML models, rather than averages of cases assigned to each
+class. They require numeric category labels and use the raw scale.
+Confidence intervals are not computed, so these plots avoid the
+parameter-inference calculation used by the response-probability plot.
+In mixed models, <code>"profiles"</code> continues to show only
+continuous indicators.</p>
 <p>To obtain the profile probabilities of each group class, we call
 <code><a href="../reference/get_results.html">get_results()</a></code> with <code>"profile_probabilities"</code>,
 and to compare the classes, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
 <code>what = "probabilities"</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   group_class profile probability group_class_probability</span></span>
 <span><span class="co">#&gt; 1           1       1      0.7080                   0.483</span></span>
 <span><span class="co">#&gt; 2           1       2      0.2920                   0.483</span></span>
 <span><span class="co">#&gt; 3           2       1      0.0751                   0.517</span></span>
 <span><span class="co">#&gt; 4           2       2      0.9249                   0.517</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">lca</span>, what <span class="op">=</span> <span class="st">"probabilities"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lca_files/figure-html/probability-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>To obtain classification certainty, we call
 <code><a href="../reference/get_results.html">get_results()</a></code> with <code>"entropy"</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"entropy"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
 <span><span class="co">#&gt; 1 individuals         2    1422         411            0.583</span></span>
@@ -286,7 +302,7 @@ indicators in <code>vars</code> and only the categorical ones in
 the activities categorical. <code>worried</code> is left out: about half
 its ratings are 1, which can push a profile’s variance to its lower
 bound.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">first_week</span>,</span>
 <span>                  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"exhausted"</span>, <span class="va">activities</span><span class="op">)</span>,</span>
 <span>                  categorical <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -295,7 +311,7 @@ bound.</p>
 call <code><a href="../reference/get_results.html">get_results()</a></code> on the fit; for the answer probabilities
 of the categorical ones, <code><a href="../reference/get_results.html">get_results()</a></code> with
 <code>"responses"</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">)</span></span>
 <span><span class="co">#&gt; No standard errors in this table: data must reproduce the original indicator data, including row order and names.</span></span>
 <span><span class="co">#&gt;   profile indicator mean variance standard_deviation mean_standard_error variance_standard_error</span></span>
@@ -350,7 +366,7 @@ each would have six free probabilities in every profile; as
 every profile and one location per profile, which says how far up the
 scale that profile sits. We pass their names as
 <code>ordinal</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">affect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"worried"</span>, <span class="st">"exhausted"</span><span class="op">)</span></span>
 <span><span class="va">ordinal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">first_week</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">affect</span>, <span class="va">activities</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
 <span>                    ordinal <span class="op">=</span> <span class="va">affect</span>, categorical <span class="op">=</span> <span class="va">activities</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -389,7 +405,7 @@ scale that profile sits. We pass their names as
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
 <p><code><a href="../reference/get_results.html">get_results()</a></code> with <code>"ordinal"</code> gives each
 profile’s probability of every rating and its location.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">ordinal</span>, <span class="st">"ordinal"</span><span class="op">)</span>, <span class="fl">7</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   profile indicator category probability location location_standard_error</span></span>
 <span><span class="co">#&gt; 1       1     happy        1    2.74e-05     1.86                   0.139</span></span>
@@ -413,7 +429,7 @@ well.</p>
 </h2>
 <p>The calls below list other functions that work with categorical and
 mixed models. Each comment states what the call returns.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"classification"</span><span class="op">)</span>               <span class="co"># class sizes and average posteriors</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"residuals"</span><span class="op">)</span>                    <span class="co"># residual association within profiles</span></span>
 <span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span>                         <span class="co"># standard errors and intervals</span></span>

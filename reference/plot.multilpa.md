@@ -25,6 +25,7 @@ plot(
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
+  statistic = c("mean", "median", "mode"),
   ...
 )
 ```
@@ -42,20 +43,22 @@ plot(
   lists every value with its group and a one-line description.
 
   The measurement model: `"profiles"` draws one line per profile across
-  the continuous indicators. `"bars"` draws the same means as grouped
-  bars that start at zero. `"heatmap"` draws them as a diverging grid of
-  observed standard deviations from each indicator's observed mean, the
-  quickest read when there are many indicators or profiles; for a fit
-  whose indicators are all categorical it draws the response
-  probabilities instead. `"raincloud"` shows what the means summarize:
-  for the cases assigned to each profile, a density, the quartiles and
-  the observations of each indicator. `"parallel"` draws every case as a
-  line across the indicators, one panel per profile, faded by the
-  certainty of its assignment. `"pairs"` draws a scatter-plot matrix of
-  the indicators with each profile's 95% ellipse from the fitted
-  covariances, the view that shows the covariance structure.
-  `"responses"` is the categorical counterpart of `"profiles"`: one line
-  per profile, showing the probability of a chosen category.
+  the continuous indicators, or numeric categorical summaries when there
+  are no continuous indicators (see `statistic`). `"bars"` draws
+  continuous means as grouped bars that start at zero. `"heatmap"` draws
+  them as a diverging grid of observed standard deviations from each
+  indicator's observed mean, the quickest read when there are many
+  indicators or profiles; for a fit whose indicators are all categorical
+  it draws the response probabilities instead. `"raincloud"` shows what
+  the means summarize: for the cases assigned to each profile, a
+  density, the quartiles and the observations of each indicator.
+  `"parallel"` draws every case as a line across the indicators, one
+  panel per profile, faded by the certainty of its assignment. `"pairs"`
+  draws a scatter-plot matrix of the indicators with each profile's 95%
+  ellipse from the fitted covariances, the view that shows the
+  covariance structure. `"responses"` is the categorical counterpart of
+  `"profiles"`: one line per profile, showing the probability of a
+  chosen category.
 
   The two-level structure: `"probabilities"` plots profile prevalence
   within each group class. `"sequences"` draws one row per group and one
@@ -112,6 +115,20 @@ plot(
 - main, subtitle:
 
   Title and subtitle. `NULL` uses the view's own.
+
+- statistic:
+
+  For `what = "profiles"`, `"mean"` (default), `"median"` or `"mode"`.
+  With continuous indicators these are the same fitted Gaussian
+  location. When there are no continuous indicators, summarizes each
+  categorical indicator's fitted probabilities on its numeric category
+  scale. Means assume meaningful score spacing; medians are the smallest
+  score with cumulative probability at least 0.5; tied modes use the
+  smallest score. Category labels must be distinct finite numeric
+  scores. Categorical summaries support only `scale = "raw"` and have no
+  confidence intervals; they do not run parameter inference. Mixed
+  models retain continuous-only profile plots; use `"responses"` for
+  their categorical indicators.
 
 - ...:
 

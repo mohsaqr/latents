@@ -40,7 +40,7 @@ plot_views()
 #> 16          tree   selection
 #> 17           all       every
 #>                                                                      description
-#> 1                 Profile means across indicators, one labelled line per profile
+#> 1        Profile means, medians or modes across indicators, one line per profile
 #> 2                    Profile means as grouped bars from zero, with 95% intervals
 #> 3           Profile means in observed standard deviations from the observed mean
 #> 4  Each indicator's distribution by assigned profile: density, box, observations

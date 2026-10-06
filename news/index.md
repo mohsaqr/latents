@@ -1,5 +1,13 @@
 # Changelog
 
+## latents 0.9.22
+
+- Numeric categorical models now support `plot(what = "profiles")`, with
+  `statistic = "mean"`, `"median"`, or `"mode"` on the original category
+  scale. These summaries use fitted probabilities, support FIML and
+  membership covariates, and do not compute standard errors. Mixed-model
+  profile plots continue to show continuous indicators.
+
 ## latents 0.9.21
 
 - The version submitted to CRAN; the same code as 0.9.20.

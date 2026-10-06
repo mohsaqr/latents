@@ -25,6 +25,7 @@ plot(
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
+  statistic = c("mean", "median", "mode"),
   ...
 )
 ```
@@ -42,7 +43,7 @@ plot(
   except `"probabilities"`.
 
 - data, scale, category, labels, intervals, cell_labels, main, subtitle,
-  ...:
+  statistic, ...:
 
   As in
   [`plot.multilpa()`](https://pak.dynasite.org/latents/reference/plot.multilpa.md).

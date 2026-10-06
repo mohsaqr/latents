@@ -182,6 +182,26 @@ plot(lca, what = "responses")
 
 ![](lca_files/figure-html/responses-plot-1.png)
 
+For numeric categories, such as ratings from 1 to 5, a profile plot can
+summarize each item’s fitted distribution on the original score scale:
+
+``` r
+
+plot(lca, what = "profiles")                       # probability-weighted means
+plot(lca, what = "profiles", statistic = "median") # fitted medians
+plot(lca, what = "profiles", statistic = "mode")   # most probable scores
+```
+
+Means assume meaningful spacing between category scores. The median is
+the smallest score whose cumulative probability reaches 0.5; tied modes
+use the smallest score. These summaries use fitted probabilities,
+including in FIML models, rather than averages of cases assigned to each
+class. They require numeric category labels and use the raw scale.
+Confidence intervals are not computed, so these plots avoid the
+parameter-inference calculation used by the response-probability plot.
+In mixed models, `"profiles"` continues to show only continuous
+indicators.
+
 To obtain the profile probabilities of each group class, we call
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
 with `"profile_probabilities"`, and to compare the classes,

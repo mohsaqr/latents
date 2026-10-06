@@ -17,7 +17,7 @@ Series are labelled directly rather than through a legend."><meta property="og:i
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,6 +91,7 @@ Series are labelled directly rather than through a legend.</p>
 <span>  cell_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  statistic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"median"</span>, <span class="st">"mode"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -107,7 +108,8 @@ Series are labelled directly rather than through a legend.</p>
 <dd><p>Which view to draw. <code><a href="plot_views.html">plot_views()</a></code> lists every value with its
 group and a one-line description.</p>
 <p>The measurement model: <code>"profiles"</code> draws one line per profile across the
-continuous indicators. <code>"bars"</code> draws the same means as grouped bars that
+continuous indicators, or numeric categorical summaries when there are no
+continuous indicators (see <code>statistic</code>). <code>"bars"</code> draws continuous means as grouped bars that
 start at zero. <code>"heatmap"</code> draws them as a diverging grid of observed
 standard deviations from each indicator's observed mean, the quickest read
 when there are many indicators or profiles; for a fit whose indicators are
@@ -174,6 +176,19 @@ profile is not carried by colour alone.</p></dd>
 
 <dt id="arg-main-subtitle">main, subtitle<a class="anchor" aria-label="anchor" href="#arg-main-subtitle"></a></dt>
 <dd><p>Title and subtitle. <code>NULL</code> uses the view's own.</p></dd>
+
+
+<dt id="arg-statistic">statistic<a class="anchor" aria-label="anchor" href="#arg-statistic"></a></dt>
+<dd><p>For <code>what = "profiles"</code>, <code>"mean"</code> (default), <code>"median"</code>
+or <code>"mode"</code>. With continuous indicators these are the same fitted Gaussian
+location. When there are no continuous indicators, summarizes each
+categorical indicator's fitted probabilities on its numeric category scale.
+Means assume meaningful score spacing; medians are the smallest score with
+cumulative probability at least 0.5; tied modes use the smallest score.
+Category labels must be distinct finite numeric scores. Categorical
+summaries support only <code>scale = "raw"</code> and have no confidence intervals;
+they do not run parameter inference. Mixed models retain continuous-only
+profile plots; use <code>"responses"</code> for their categorical indicators.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
