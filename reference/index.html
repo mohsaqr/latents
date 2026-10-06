@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,17 +20,19 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
-    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
-    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
+    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -592,122 +594,10 @@
 
         <dt>
 
-          <code><a href="print.latents_growth_mixture.html">print(<i>&lt;latents_growth_mixture&gt;</i>)</a></code>
+          <code><a href="latents-print.html">print(<i>&lt;multilpa_enumeration&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;multilpa_start&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;summary_multilpa_additive&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;summary_multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;summary_multilpa_enumeration&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;summary_multilpa_bootstrap_lrt&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;summary_latents_growth_mixture&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;latents_table&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;summary_multilpa&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;summary_latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;latents_plots&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;latents_pooled&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="latents-print.html">print(<i>&lt;summary_multilpa_transitions&gt;</i>)</a></code>
 
         </dt>
-        <dd>Print a growth mixture model</dd>
-
-        <dt>
-
-          <code><a href="print.latents_mixture_regression.html">print(<i>&lt;latents_mixture_regression&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a mixture-of-regressions fit</dd>
-
-        <dt>
-
-          <code><a href="print.latents_plots.html">print(<i>&lt;latents_plots&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print several plots</dd>
-
-        <dt>
-
-          <code><a href="print.latents_pooled.html">print(<i>&lt;latents_pooled&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a pooled multiply imputed fit</dd>
-
-        <dt>
-
-          <code><a href="print.latents_table.html">print(<i>&lt;latents_table&gt;</i>)</a></code> <code><a href="print.latents_table.html">as.data.frame(<i>&lt;latents_table&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a latents result table</dd>
-
-        <dt>
-
-          <code><a href="print.multilpa.html">print(<i>&lt;multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a fitted multilevel latent profile model</dd>
-
-        <dt>
-
-          <code><a href="print.multilpa_additive.html">print(<i>&lt;multilpa_additive&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a group-class fit</dd>
-
-        <dt>
-
-          <code><a href="print.multilpa_bootstrap_lrt.html">print(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a parametric bootstrap likelihood-ratio comparison</dd>
-
-        <dt>
-
-          <code><a href="print.multilpa_covariates.html">print(<i>&lt;multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a covariate LPA fit</dd>
-
-        <dt>
-
-          <code><a href="print.multilpa_enumeration.html">print(<i>&lt;multilpa_enumeration&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a class-enumeration grid</dd>
-
-        <dt>
-
-          <code><a href="print.multilpa_start.html">print(<i>&lt;multilpa_start&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a set of starting values</dd>
-
-        <dt>
-
-          <code><a href="print.multilpa_transitions.html">print(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a fitted latent transition model</dd>
-
-        <dt>
-
-          <code><a href="print.summary_multilpa.html">print(<i>&lt;summary_multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a multilevel LPA summary</dd>
-
-        <dt>
-
-          <code><a href="print.summary_multilpa_bootstrap_lrt.html">print(<i>&lt;summary_multilpa_bootstrap_lrt&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a bootstrap likelihood-ratio summary</dd>
-
-        <dt>
-
-          <code><a href="print.summary_multilpa_covariates.html">print(<i>&lt;summary_multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a covariate LPA summary</dd>
-
-        <dt>
-
-          <code><a href="print.summary_multilpa_enumeration.html">print(<i>&lt;summary_multilpa_enumeration&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print an enumeration summary</dd>
-
-        <dt>
-
-          <code><a href="print.summary_multilpa_transitions.html">print(<i>&lt;summary_multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a latent transition summary</dd>
+        <dd>Print latents results</dd>
 
         <dt>
 
@@ -718,143 +608,10 @@
 
         <dt>
 
-          <code><a href="summary.latents_growth_mixture.html">summary(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="summary.latents_growth_mixture.html">print(<i>&lt;summary_latents_growth_mixture&gt;</i>)</a></code>
+          <code><a href="latents-summary.html">summary(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="latents-summary.html">summary(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-summary.html">summary(<i>&lt;multilpa_enumeration&gt;</i>)</a></code> <code><a href="latents-summary.html">summary(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code> <code><a href="latents-summary.html">summary(<i>&lt;latents_growth_mixture&gt;</i>)</a></code> <code><a href="latents-summary.html">summary(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-summary.html">summary(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="latents-summary.html">summary(<i>&lt;latents_pooled&gt;</i>)</a></code> <code><a href="latents-summary.html">summary(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summarize a growth mixture model</dd>
-
-        <dt>
-
-          <code><a href="summary.latents_mixture_regression.html">summary(<i>&lt;latents_mixture_regression&gt;</i>)</a></code> <code><a href="summary.latents_mixture_regression.html">print(<i>&lt;summary_latents_mixture_regression&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarize a mixture-of-regressions fit</dd>
-
-        <dt>
-
-          <code><a href="summary.multilpa_additive.html">summary(<i>&lt;multilpa_additive&gt;</i>)</a></code> <code><a href="summary.multilpa_additive.html">print(<i>&lt;summary_multilpa_additive&gt;</i>)</a></code> <code><a href="summary.multilpa_additive.html">as.data.frame(<i>&lt;summary_multilpa_additive&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarize an additive group-class fit</dd>
-
-        <dt>
-
-          <code><a href="summary.latents_pooled.html">summary(<i>&lt;latents_pooled&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarize a pooled multiply imputed fit</dd>
-
-        <dt>
-
-          <code><a href="summary.multilpa.html">summary(<i>&lt;multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarize a fitted multilevel latent profile model</dd>
-
-        <dt>
-
-          <code><a href="summary.multilpa_bootstrap_lrt.html">summary(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise a parametric bootstrap likelihood-ratio comparison</dd>
-
-        <dt>
-
-          <code><a href="summary.multilpa_covariates.html">summary(<i>&lt;multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarize a covariate LPA fit</dd>
-
-        <dt>
-
-          <code><a href="summary.multilpa_enumeration.html">summary(<i>&lt;multilpa_enumeration&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarise a class-enumeration grid</dd>
-
-        <dt>
-
-          <code><a href="summary.multilpa_transitions.html">summary(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Summarize a fitted latent transition model</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.multilpa.html">as.data.frame(<i>&lt;multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a fitted multilevel latent profile model to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.multilpa_bootstrap_lrt.html">as.data.frame(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a bootstrap likelihood-ratio comparison to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.multilpa_covariates.html">as.data.frame(<i>&lt;multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a fitted covariate model to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.multilpa_enumeration.html">as.data.frame(<i>&lt;multilpa_enumeration&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a class-enumeration grid to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.multilpa_start.html">as.data.frame(<i>&lt;multilpa_start&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a starting-value set to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.multilpa_transitions.html">as.data.frame(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a fitted latent transition model to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.summary_multilpa.html">as.data.frame(<i>&lt;summary_multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a multilevel LPA summary to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.summary_multilpa_bootstrap_lrt.html">as.data.frame(<i>&lt;summary_multilpa_bootstrap_lrt&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a bootstrap comparison summary to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.summary_multilpa_covariates.html">as.data.frame(<i>&lt;summary_multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a covariate-model summary to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.summary_multilpa_enumeration.html">as.data.frame(<i>&lt;summary_multilpa_enumeration&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a class-enumeration summary to its primary table</dd>
-
-        <dt>
-
-          <code><a href="as.data.frame.summary_multilpa_transitions.html">as.data.frame(<i>&lt;summary_multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Coerce a latent transition model summary to its primary table</dd>
+        <dd>Summarise latents results</dd>
 
         <dt>
 
@@ -886,38 +643,17 @@
 
         <dt>
 
-          <code><a href="coef.multilpa.html">coef(<i>&lt;multilpa&gt;</i>)</a></code>
+          <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;multilpa_enumeration&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;multilpa_start&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;summary_multilpa_additive&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;summary_multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;summary_multilpa_enumeration&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;multilpa_bootstrap_lrt&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;summary_multilpa_bootstrap_lrt&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;latents_table&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;summary_multilpa&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="latents-as-data-frame.html">as.data.frame(<i>&lt;summary_multilpa_transitions&gt;</i>)</a></code>
 
         </dt>
-        <dd>Extract multilevel LPA coefficients</dd>
+        <dd>Convert latents results to a data frame</dd>
 
         <dt>
 
-          <code><a href="coef.multilpa_covariates.html">coef(<i>&lt;multilpa_covariates&gt;</i>)</a></code>
+          <code><a href="latents-model-methods.html">vcov(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">coef(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">confint(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">logLik(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">nobs(<i>&lt;multilpa_covariates&gt;</i>)</a></code> <code><a href="latents-model-methods.html">coef(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">vcov(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">confint(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">logLik(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">nobs(<i>&lt;multilpa&gt;</i>)</a></code> <code><a href="latents-model-methods.html">vcov(<i>&lt;latents_pooled&gt;</i>)</a></code> <code><a href="latents-model-methods.html">logLik(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="latents-model-methods.html">nobs(<i>&lt;multilpa_transitions&gt;</i>)</a></code> <code><a href="latents-model-methods.html">coef(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
 
         </dt>
-        <dd>Estimated parameters of a covariate fit</dd>
-
-        <dt>
-
-          <code><a href="coef.multilpa_transitions.html">coef(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Fitted parameters of a latent transition model</dd>
-
-        <dt>
-
-          <code><a href="confint.multilpa.html">confint(<i>&lt;multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Wald confidence intervals for multilevel LPA coefficients</dd>
-
-        <dt>
-
-          <code><a href="confint.multilpa_covariates.html">confint(<i>&lt;multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Wald confidence intervals for a covariate fit</dd>
+        <dd>Coefficients, covariance, intervals and likelihood of latents fits</dd>
 
         <dt>
 
@@ -925,69 +661,6 @@
 
         </dt>
         <dd>Wald inference for a latent transition model</dd>
-
-        <dt>
-
-          <code><a href="vcov.latents_pooled.html">vcov(<i>&lt;latents_pooled&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Pooled covariance of a multiply imputed fit</dd>
-
-        <dt>
-
-          <code><a href="vcov.multilpa.html">vcov(<i>&lt;multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Extract multilevel LPA covariance estimates</dd>
-
-        <dt>
-
-          <code><a href="vcov.multilpa_covariates.html">vcov(<i>&lt;multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Covariance matrix of a covariate fit</dd>
-
-        <dt>
-
-          <code><a href="logLik.multilpa.html">logLik(<i>&lt;multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Extract the multilevel model log likelihood</dd>
-
-        <dt>
-
-          <code><a href="logLik.multilpa_covariates.html">logLik(<i>&lt;multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Extract a covariate LPA log likelihood</dd>
-
-        <dt>
-
-          <code><a href="logLik.multilpa_transitions.html">logLik(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Log likelihood of a fitted latent transition model</dd>
-
-        <dt>
-
-          <code><a href="nobs.multilpa.html">nobs(<i>&lt;multilpa&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Extract the number of independent groups</dd>
-
-        <dt>
-
-          <code><a href="nobs.multilpa_covariates.html">nobs(<i>&lt;multilpa_covariates&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Count independent groups in a covariate LPA fit</dd>
-
-        <dt>
-
-          <code><a href="nobs.multilpa_transitions.html">nobs(<i>&lt;multilpa_transitions&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Number of independent units in a fitted latent transition model</dd>
 
         <dt>
 

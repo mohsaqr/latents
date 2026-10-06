@@ -15,7 +15,7 @@ each profile."><meta property="og:image" content="https://pak.dynasite.org/laten
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,17 +28,19 @@ each profile."><meta property="og:image" content="https://pak.dynasite.org/laten
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
-    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
-    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
+    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -170,7 +172,29 @@ model.</p></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">student_esm</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   student day beep time_with_friends on_social_media tv_video_games</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1   0    3               yes             yes            yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       1   0    5                no              no            yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       1   1    1                no              no             no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       1   1    3                no              no            yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       1   1    4                no              no            yes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       1   2    3                no              no             no</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   listened_music sports walking reading part_time_job happy relaxed worried</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1             no    yes      no     yes            no     5       6       5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2             no     no      no      no            no     5       6       2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3             no     no      no      no            no     3       3       2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4             no     no      no      no            no     6       5       2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5             no     no      no      no            no     4       5       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6             no     no      no      no            no     5       4       5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   exhausted</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5         6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6         7</span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time_with_friends"</span>, <span class="st">"on_social_media"</span>, <span class="st">"tv_video_games"</span>,</span></span>
 <span class="r-in"><span>                <span class="st">"listened_music"</span>, <span class="st">"sports"</span>, <span class="st">"walking"</span>, <span class="st">"reading"</span>,</span></span>
 <span class="r-in"><span>                <span class="st">"part_time_job"</span><span class="op">)</span></span></span>

@@ -457,8 +457,8 @@ multilpa(
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
   work on it. These families are experimental: enumeration over
   families, bootstrap inference, missing data and covariates are not yet
-  available. See
-  [`vignette("additive")`](https://pak.dynasite.org/latents/articles/additive.md).
+  available. See the [group-class and cross-level models
+  article](https://pak.dynasite.org/latents/articles/additive.html).
 
   Two cross-level families estimate individual profiles and group
   classes from the same indicators, following the manifest-aggregation

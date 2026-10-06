@@ -6,8 +6,9 @@ steady, some decline. A **growth model with classes** finds those kinds
 from the data. This vignette is about the growth mixture model, which
 lets people vary around their class trajectory, and its multilevel form
 for people nested in clusters; it compares it with latent class growth
-analysis, the model without that variation, which has its own vignette,
-[`vignette("trajectory-classes")`](https://pak.dynasite.org/latents/articles/trajectory-classes.md)
+analysis, the model without that variation, which has its own article,
+[Latent class growth
+analysis](https://pak.dynasite.org/latents/articles/trajectory-classes.html)
 (including pass/fail, count and ordered outcomes).
 
 ## Two models

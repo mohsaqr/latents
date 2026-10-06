@@ -149,7 +149,7 @@ models. *Pattern Recognition*, 28(5), 781–793.
 
 [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
 to take one fitted model out of the grid,
-[`summary.multilpa_enumeration()`](https://pak.dynasite.org/latents/reference/summary.multilpa_enumeration.md)
+[`summary.multilpa_enumeration()`](https://pak.dynasite.org/latents/reference/latents-summary.md)
 for the criterion-by-criterion comparison.
 
 ## Examples

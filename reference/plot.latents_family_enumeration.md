@@ -37,3 +37,17 @@ plot(
 ## Value
 
 A ggplot object. Raises `latents_missing_package` without ggplot2.
+
+## Examples
+
+``` r
+set.seed(1)
+ratings <- data.frame(
+  team = rep(seq_len(40), each = 6),
+  climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
+    rnorm(240))
+grid <- enumerate_classes(ratings, "climate", "team",
+                          family = c("additive", "dispersion"),
+                          n_group_classes = 1:2, n_starts = 3, seed = 1)
+if (requireNamespace("ggplot2", quietly = TRUE)) plot(grid)
+```

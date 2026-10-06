@@ -1,5 +1,89 @@
 # Changelog
 
+## latents 0.9.19
+
+- Every help page has an example: the
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods for
+  model comparisons, family and transition enumerations, pooled
+  imputations, cross-level and general transition fits, and
+  [`predict()`](https://rdrr.io/r/stats/predict.html) for growth
+  mixtures, which shows the refusal and where the trajectories are.
+- The transition-enumeration example in
+  [`?get_results.latents_transition_enumeration`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
+  fits the first 50 students, so it runs in a few seconds on Windows as
+  well (it took 12 s there).
+- The remaining tests that compare latents with another implementation
+  move to `tests/equivalence/`: the depmixS4 and LMest fits, exact path
+  sums, dense likelihoods, enumerated EM steps and independent Hessians,
+  together with their reference helpers and fixtures. The installed
+  tests no longer contain any such comparison.
+
+## latents 0.9.18
+
+- The growth mixture guide moves from the vignettes to the package
+  website (same address), so the package ships three vignettes: `lpa`,
+  `lca` and `lta`. Its model fits made it most of the vignette build
+  time.
+
+## latents 0.9.17
+
+- The logo reads “latents” (it still showed the earlier name,
+  “multilatent”), and the website icons are regenerated from it (they
+  showed “multilpa”).
+- The reference manual is shorter: the
+  [`print()`](https://rdrr.io/r/base/print.html),
+  [`summary()`](https://rdrr.io/r/base/summary.html),
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
+  [`coef()`](https://rdrr.io/r/stats/coef.html),
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html),
+  [`confint()`](https://rdrr.io/r/stats/confint.html),
+  [`logLik()`](https://rdrr.io/r/stats/logLik.html) and
+  [`nobs()`](https://rdrr.io/r/stats/nobs.html) methods that had a page
+  each are documented together on four pages
+  ([`?"latents-print"`](https://pak.dynasite.org/latents/reference/latents-print.md),
+  [`?"latents-summary"`](https://pak.dynasite.org/latents/reference/latents-summary.md),
+  [`?"latents-as-data-frame"`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md),
+  [`?"latents-model-methods"`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)).
+  The methods are unchanged.
+- Fewer tests run on CRAN: tests that verify the estimators against
+  their definitions, tests that only check a plot draws, and the
+  regression tests from past audits are skipped there. All of them still
+  run locally and in CI.
+
+## latents 0.9.16
+
+- Every help page now has an example that runs in the automatic checks.
+  The growth mixture pages
+  ([`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
+  [`simulate()`](https://rdrr.io/r/stats/simulate.html)) and
+  [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  open with a fit on the first 60 students of `growth_scores`, which
+  runs in about a second; the full-data examples stay in `\donttest{}`.
+  The `growth_scores`, `growth_schools` and `student_esm` pages open
+  with a summary of the data. The
+  [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  example no longer fits a random intercept that `course_engagement`
+  cannot support.
+- The package ships four vignettes: `lpa`, `lca`, `lta` and
+  `growth-mixture`. The workflow guides (`workflow-lpa`, `workflow-lca`)
+  and the guides to evaluation, covariates, mixture regression, latent
+  class growth analysis and group-class models move to articles on the
+  package website, with unchanged addresses. This keeps the installed
+  package small and the checks quick.
+- Tests that compare latents with other implementations (`numDeriv`,
+  `mclust`, `MASS`, [`glm()`](https://rdrr.io/r/stats/glm.html), Latent
+  GOLD and Mplus results, reference implementations, the numbers in the
+  workflow guides) move to `tests/equivalence/`, which is not part of
+  the package and runs in its own CI job. `numDeriv` is no longer a
+  suggested package. Slow tests that refit many models are skipped on
+  CRAN; every model family keeps tests that run there.
+- The README’s enumeration example names its covariance structure
+  (`model = "VVI"`), as
+  [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
+  needs once several structures are crossed, and its text matches the
+  regenerated output.
+
 ## latents 0.9.15
 
 - Vignettes and worked examples save and restore the user’s display
@@ -90,12 +174,11 @@
 ### Documentation
 
 - New vignette “Latent class growth analysis: classes of trajectories”
-  ([`vignette("trajectory-classes")`](https://pak.dynasite.org/latents/articles/trajectory-classes.md)):
-  trajectory classes without random effects, every plot view, curved
-  trajectories, pass/fail and ordered-band trajectories, distal
-  outcomes, and when to prefer the growth mixture model. The growth
-  mixture vignette now focuses on random effects and the multilevel
-  model, with its plots.
+  (`vignette("trajectory-classes")`): trajectory classes without random
+  effects, every plot view, curved trajectories, pass/fail and
+  ordered-band trajectories, distal outcomes, and when to prefer the
+  growth mixture model. The growth mixture vignette now focuses on
+  random effects and the multilevel model, with its plots.
 - Coefficient forest plots of trajectory fits label every estimate with
   the same number of decimals per panel (two, or three for small
   values).
@@ -571,8 +654,7 @@
   converge to latents’ as its quadrature is refined (largest remaining
   gaps 1.6e-4 and 2.0e-4). Robust standard errors are needed for
   heavy-tailed ratings.
-- New vignette:
-  [`vignette("additive")`](https://pak.dynasite.org/latents/articles/additive.md).
+- New vignette: `vignette("additive")`.
 - Not yet available for these families: missing data, covariates, and an
   external Mplus comparison (Mplus is not available here).
 
@@ -714,12 +796,9 @@
   needs `model` to pick one of them.
 - New data set `srl`: five self-regulated learning scales for 300
   respondents simulated by a large language model.
-- New vignettes
-  [`vignette("workflow-lpa")`](https://pak.dynasite.org/latents/articles/workflow-lpa.md)
-  and
-  [`vignette("workflow-lca")`](https://pak.dynasite.org/latents/articles/workflow-lca.md):
-  a latent profile and a latent class analysis from the data to a
-  reported model.
+- New vignettes `vignette("workflow-lpa")` and
+  `vignette("workflow-lca")`: a latent profile and a latent class
+  analysis from the data to a reported model.
 - `get_results(fit, "profiles")` and `get_results(fit, "responses")`
   carry `mean_standard_error`, `variance_standard_error` and
   `probability_standard_error` without the data being passed; they are
@@ -984,8 +1063,7 @@
 - Single-level and group-level fits reproduce flexmix’s likelihood at
   its estimates and its binomial and Poisson estimates
   (`equivalence/test-mixture-regression-flexmix.R`).
-- New dataset `study_hours` and
-  [`vignette("mixture-regression")`](https://pak.dynasite.org/latents/articles/mixture-regression.md).
+- New dataset `study_hours` and `vignette("mixture-regression")`.
 
 ### Fixes
 

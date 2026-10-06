@@ -38,3 +38,13 @@ plot(
 ## Value
 
 A ggplot object. Raises `latents_missing_package` without ggplot2.
+
+## Examples
+
+``` r
+few_students <- subset(course_engagement, student <= 50)
+grid <- enumerate_classes(few_students, c("browse", "lectures"),
+                          "student", time = "sequence", n_profiles = 2:3,
+                          n_group_classes = 1, n_starts = 2, seed = 1)
+if (requireNamespace("ggplot2", quietly = TRUE)) plot(grid)
+```

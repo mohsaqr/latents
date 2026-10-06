@@ -120,6 +120,28 @@ with `categorical =` for the two-level latent class model.
 ## Examples
 
 ``` r
+head(student_esm)
+#>   student day beep time_with_friends on_social_media tv_video_games
+#> 1       1   0    3               yes             yes            yes
+#> 2       1   0    5                no              no            yes
+#> 3       1   1    1                no              no             no
+#> 4       1   1    3                no              no            yes
+#> 5       1   1    4                no              no            yes
+#> 6       1   2    3                no              no             no
+#>   listened_music sports walking reading part_time_job happy relaxed worried
+#> 1             no    yes      no     yes            no     5       6       5
+#> 2             no     no      no      no            no     5       6       2
+#> 3             no     no      no      no            no     3       3       2
+#> 4             no     no      no      no            no     6       5       2
+#> 5             no     no      no      no            no     4       5       1
+#> 6             no     no      no      no            no     5       4       5
+#>   exhausted
+#> 1         3
+#> 2         5
+#> 3         7
+#> 4         4
+#> 5         6
+#> 6         7
 # \donttest{
 activities <- c("time_with_friends", "on_social_media", "tv_video_games",
                 "listened_music", "sports", "walking", "reading",

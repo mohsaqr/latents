@@ -127,7 +127,28 @@ A base `data.frame` (or, for `"all"`, a named list of them).
 ## Examples
 
 ``` r
+few_students <- subset(growth_scores, student <= 60)
+small_fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                                id = "student", class_level = "group",
+                                random = "intercept", seed = 1)
+get_results(small_fit, "classes")
+#> Classes
+#> 
+#> Class    Share        95% CI  Persons  Avg. posterior  Residual SD
+#> -------  -----  ------------  -------  --------------  -----------
+#> Class 1   0.60  [0.47, 0.71]       36            0.99         4.04
+#> Class 2   0.40  [0.29, 0.53]       24            1.00         3.39
+get_results(small_fit, "random")
+#> Random effects (95% CI)
+#> 
+#> Class    Parameter  Term       Estimate          95% CI
+#> -------  ---------  ---------  --------  --------------
+#> Class 1  Variance   Intercept     47.86  [29.32, 78.13]
+#> Class 1  SD         Intercept      6.92  [ 5.41,  8.84]
+#> Class 2  Variance   Intercept     23.08  [12.49, 42.66]
+#> Class 2  SD         Intercept      4.80  [ 3.53,  6.53]
 # \donttest{
+# All 300 students, with random intercepts and slopes
 fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
                           id = "student", class_level = "group",
                           random = "wave", random_covariance = "equal",

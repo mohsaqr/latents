@@ -47,21 +47,20 @@ Akaike weights. *Psychonomic Bulletin & Review*, 11, 192–196.
 ## Examples
 
 ``` r
-# \donttest{
-trajectories <- mixture_regression(attendance ~ sequence, course_engagement,
-                                   n_classes = 2, id = "student",
-                                   class_level = "group", seed = 1)
-growth <- mixture_regression(attendance ~ sequence, course_engagement,
-                             n_classes = 2, id = "student",
-                             class_level = "group", random = "intercept",
-                             seed = 1)
-#> Warning: The random-effect covariance of class 2 is degenerate (a variance at its floor or random effects perfectly correlated): the data cannot separate those random effects. The random intercept adds nothing there: drop `random`, or keep it only if another class needs it. Its standard errors are not reported.
+# Fixed trajectories against growth curves with a random intercept,
+# for the first 60 students
+few_students <- subset(growth_scores, student <= 60)
+trajectories <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                                   id = "student", class_level = "group",
+                                   seed = 1)
+growth <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                             id = "student", class_level = "group",
+                             random = "intercept", seed = 1)
 compare_models(trajectories = trajectories, growth = growth)
 #> Model comparison
 #> 
-#> Model         Classes  Random     k    LogLik      BIC  ΔBIC  Weight  Entropy
-#> ------------  -------  ---------  -  --------  -------  ----  ------  -------
-#> trajectories        2  none       7  -1900.14  3832.93  5.88   0.050     0.85
-#> growth              2  intercept  9  -1892.54  3827.05  0.00   0.950     0.68  <- best
-# }
+#> Model         Classes  Random     k    LogLik      BIC    ΔBIC  Weight  Entropy
+#> ------------  -------  ---------  -  --------  -------  ------  ------  -------
+#> trajectories        2  none       7  -1277.94  2584.53  196.11   0.000     0.94
+#> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97  <- best
 ```

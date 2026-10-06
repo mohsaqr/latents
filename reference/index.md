@@ -236,88 +236,40 @@ Standard generics for fitted models, enumeration grids and summaries.
   [`nobs(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
   : Tables of a latent transition fit with occasion- or
   covariate-dependent transitions or occasion-specific measurement
-- [`print(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_growth_mixture.md)
-  : Print a growth mixture model
-- [`print(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_mixture_regression.md)
-  : Print a mixture-of-regressions fit
-- [`print(`*`<latents_plots>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_plots.md)
-  : Print several plots
-- [`print(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_pooled.md)
-  : Print a pooled multiply imputed fit
-- [`print(`*`<latents_table>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_table.md)
-  [`as.data.frame(`*`<latents_table>`*`)`](https://pak.dynasite.org/latents/reference/print.latents_table.md)
-  : Print a latents result table
-- [`print(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa.md)
-  : Print a fitted multilevel latent profile model
-- [`print(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_additive.md)
-  : Print a group-class fit
-- [`print(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_bootstrap_lrt.md)
-  : Print a parametric bootstrap likelihood-ratio comparison
-- [`print(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_covariates.md)
-  : Print a covariate LPA fit
-- [`print(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_enumeration.md)
-  : Print a class-enumeration grid
-- [`print(`*`<multilpa_start>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_start.md)
-  : Print a set of starting values
-- [`print(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/print.multilpa_transitions.md)
-  : Print a fitted latent transition model
-- [`print(`*`<summary_multilpa>`*`)`](https://pak.dynasite.org/latents/reference/print.summary_multilpa.md)
-  : Print a multilevel LPA summary
-- [`print(`*`<summary_multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/print.summary_multilpa_bootstrap_lrt.md)
-  : Print a bootstrap likelihood-ratio summary
-- [`print(`*`<summary_multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/print.summary_multilpa_covariates.md)
-  : Print a covariate LPA summary
-- [`print(`*`<summary_multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/print.summary_multilpa_enumeration.md)
-  : Print an enumeration summary
-- [`print(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/print.summary_multilpa_transitions.md)
-  : Print a latent transition summary
+- [`print(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<multilpa_start>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<summary_multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<summary_multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<summary_multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<summary_multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<summary_latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<latents_table>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<summary_multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<summary_latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<latents_plots>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  [`print(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
+  : Print latents results
 - [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
   [`print(`*`<latents_prior>`*`)`](https://pak.dynasite.org/latents/reference/prior_control.md)
   : Conjugate prior for Gaussian mixture estimation
-- [`summary(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_growth_mixture.md)
-  [`print(`*`<summary_latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_growth_mixture.md)
-  : Summarize a growth mixture model
-- [`summary(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.md)
-  [`print(`*`<summary_latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_mixture_regression.md)
-  : Summarize a mixture-of-regressions fit
-- [`summary(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_additive.md)
-  [`print(`*`<summary_multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_additive.md)
-  [`as.data.frame(`*`<summary_multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_additive.md)
-  : Summarize an additive group-class fit
-- [`summary(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/summary.latents_pooled.md)
-  : Summarize a pooled multiply imputed fit
-- [`summary(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa.md)
-  : Summarize a fitted multilevel latent profile model
-- [`summary(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_bootstrap_lrt.md)
-  : Summarise a parametric bootstrap likelihood-ratio comparison
-- [`summary(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_covariates.md)
-  : Summarize a covariate LPA fit
-- [`summary(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_enumeration.md)
-  : Summarise a class-enumeration grid
-- [`summary(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/summary.multilpa_transitions.md)
-  : Summarize a fitted latent transition model
-- [`as.data.frame(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.multilpa.md)
-  : Coerce a fitted multilevel latent profile model to its primary table
-- [`as.data.frame(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.multilpa_bootstrap_lrt.md)
-  : Coerce a bootstrap likelihood-ratio comparison to its primary table
-- [`as.data.frame(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.multilpa_covariates.md)
-  : Coerce a fitted covariate model to its primary table
-- [`as.data.frame(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.multilpa_enumeration.md)
-  : Coerce a class-enumeration grid to its primary table
-- [`as.data.frame(`*`<multilpa_start>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.multilpa_start.md)
-  : Coerce a starting-value set to its primary table
-- [`as.data.frame(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.multilpa_transitions.md)
-  : Coerce a fitted latent transition model to its primary table
-- [`as.data.frame(`*`<summary_multilpa>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.summary_multilpa.md)
-  : Coerce a multilevel LPA summary to its primary table
-- [`as.data.frame(`*`<summary_multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.summary_multilpa_bootstrap_lrt.md)
-  : Coerce a bootstrap comparison summary to its primary table
-- [`as.data.frame(`*`<summary_multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.summary_multilpa_covariates.md)
-  : Coerce a covariate-model summary to its primary table
-- [`as.data.frame(`*`<summary_multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.summary_multilpa_enumeration.md)
-  : Coerce a class-enumeration summary to its primary table
-- [`as.data.frame(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/as.data.frame.summary_multilpa_transitions.md)
-  : Coerce a latent transition model summary to its primary table
+- [`summary(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  [`summary(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  [`summary(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  [`summary(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  [`summary(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  [`summary(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  [`summary(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  [`summary(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  [`summary(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
+  : Summarise latents results
 - [`get_results(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
   [`as.data.frame(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
   [`coef(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
@@ -345,38 +297,39 @@ Standard generics for fitted models, enumeration grids and summaries.
   [`logLik(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
   [`nobs(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
   : Tables of an additive group-class fit
-- [`coef(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/coef.multilpa.md)
-  : Extract multilevel LPA coefficients
-- [`coef(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/coef.multilpa_covariates.md)
-  : Estimated parameters of a covariate fit
-- [`coef(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/coef.multilpa_transitions.md)
-  : Fitted parameters of a latent transition model
-- [`confint(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/confint.multilpa.md)
-  : Wald confidence intervals for multilevel LPA coefficients
-- [`confint(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/confint.multilpa_covariates.md)
-  : Wald confidence intervals for a covariate fit
+- [`as.data.frame(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<multilpa_start>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<summary_multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<summary_multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<summary_multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<summary_multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<latents_table>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<summary_multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  [`as.data.frame(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
+  : Convert latents results to a data frame
+- [`vcov(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`coef(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`confint(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`logLik(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`nobs(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`coef(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`vcov(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`confint(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`logLik(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`nobs(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`vcov(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`logLik(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`nobs(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  [`coef(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
+  : Coefficients, covariance, intervals and likelihood of latents fits
 - [`parameter_inference(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
   [`vcov(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
   [`confint(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
   : Wald inference for a latent transition model
-- [`vcov(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/vcov.latents_pooled.md)
-  : Pooled covariance of a multiply imputed fit
-- [`vcov(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa.md)
-  : Extract multilevel LPA covariance estimates
-- [`vcov(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/vcov.multilpa_covariates.md)
-  : Covariance matrix of a covariate fit
-- [`logLik(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/logLik.multilpa.md)
-  : Extract the multilevel model log likelihood
-- [`logLik(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/logLik.multilpa_covariates.md)
-  : Extract a covariate LPA log likelihood
-- [`logLik(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/logLik.multilpa_transitions.md)
-  : Log likelihood of a fitted latent transition model
-- [`nobs(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/nobs.multilpa.md)
-  : Extract the number of independent groups
-- [`nobs(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/nobs.multilpa_covariates.md)
-  : Count independent groups in a covariate LPA fit
-- [`nobs(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/nobs.multilpa_transitions.md)
-  : Number of independent units in a fitted latent transition model
 - [`predict(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_growth_mixture.md)
   : Prediction for a growth mixture model (not implemented)
 - [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_mixture_regression.md)

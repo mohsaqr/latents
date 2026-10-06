@@ -71,6 +71,10 @@ classes recover:
 ## Examples
 
 ``` r
+descriptives(growth_schools, c("score", "programme"))
+#>    variable    n n_missing        mean        sd   min   max n_distinct
+#> 1     score 2780         0 55.17003597 5.0187548 35.90 70.50        262
+#> 2 programme 2780         0  0.04313669 0.9708406 -2.36  2.25         38
 # \donttest{
 fit <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
                           id = "student", class_level = "group",

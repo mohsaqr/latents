@@ -2,28 +2,31 @@
 
 ### Vignettes
 
-- [Latent profile analysis: a complete
-  workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.md):
-- [Latent class analysis: a complete
-  workflow](https://pak.dynasite.org/latents/articles/workflow-lca.md):
-- [Group-class and cross-level models: classes of groups from raw
-  ratings](https://pak.dynasite.org/latents/articles/additive.md):
 - [Multilevel latent profile
   analysis](https://pak.dynasite.org/latents/articles/lpa.md):
-- [Evaluating a multilevel latent profile
-  model](https://pak.dynasite.org/latents/articles/evaluation.md):
-- [Covariates, outcomes and staged
-  estimation](https://pak.dynasite.org/latents/articles/covariates.md):
 - [Two-level latent class
   analysis](https://pak.dynasite.org/latents/articles/lca.md):
 - [Latent transition
   analysis](https://pak.dynasite.org/latents/articles/lta.md):
+
+### Guides
+
+- [Latent profile analysis: a complete
+  workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.md):
+- [Latent class analysis: a complete
+  workflow](https://pak.dynasite.org/latents/articles/workflow-lca.md):
+- [Evaluating a multilevel latent profile
+  model](https://pak.dynasite.org/latents/articles/evaluation.md):
+- [Covariates, outcomes and staged
+  estimation](https://pak.dynasite.org/latents/articles/covariates.md):
 - [Mixture
   regression](https://pak.dynasite.org/latents/articles/mixture-regression.md):
 - [Latent class growth analysis: classes of
   trajectories](https://pak.dynasite.org/latents/articles/trajectory-classes.md):
 - [Growth mixture models: classes of
   trajectories](https://pak.dynasite.org/latents/articles/growth-mixture.md):
+- [Group-class and cross-level models: classes of groups from raw
+  ratings](https://pak.dynasite.org/latents/articles/additive.md):
 
 ### Case studies
 

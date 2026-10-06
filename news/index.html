@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,17 +20,19 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
-    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
-    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
+    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -54,6 +56,29 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.19" id="latents-0919">latents 0.9.19<a class="anchor" aria-label="anchor" href="#latents-0919"></a></h2>
+<ul><li>Every help page has an example: the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> methods for model comparisons, family and transition enumerations, pooled imputations, cross-level and general transition fits, and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> for growth mixtures, which shows the refusal and where the trajectories are.</li>
+<li>The transition-enumeration example in <code><a href="../reference/get_results.latents_transition_enumeration.html">?get_results.latents_transition_enumeration</a></code> fits the first 50 students, so it runs in a few seconds on Windows as well (it took 12 s there).</li>
+<li>The remaining tests that compare latents with another implementation move to <code>tests/equivalence/</code>: the depmixS4 and LMest fits, exact path sums, dense likelihoods, enumerated EM steps and independent Hessians, together with their reference helpers and fixtures. The installed tests no longer contain any such comparison.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.18" id="latents-0918">latents 0.9.18<a class="anchor" aria-label="anchor" href="#latents-0918"></a></h2>
+<ul><li>The growth mixture guide moves from the vignettes to the package website (same address), so the package ships three vignettes: <code>lpa</code>, <code>lca</code> and <code>lta</code>. Its model fits made it most of the vignette build time.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.17" id="latents-0917">latents 0.9.17<a class="anchor" aria-label="anchor" href="#latents-0917"></a></h2>
+<ul><li>The logo reads “latents” (it still showed the earlier name, “multilatent”), and the website icons are regenerated from it (they showed “multilpa”).</li>
+<li>The reference manual is shorter: the <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>, <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>, <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code> and <code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code> methods that had a page each are documented together on four pages (<code><a href="../reference/latents-print.html">?"latents-print"</a></code>, <code><a href="../reference/latents-summary.html">?"latents-summary"</a></code>, <code><a href="../reference/latents-as-data-frame.html">?"latents-as-data-frame"</a></code>, <code><a href="../reference/latents-model-methods.html">?"latents-model-methods"</a></code>). The methods are unchanged.</li>
+<li>Fewer tests run on CRAN: tests that verify the estimators against their definitions, tests that only check a plot draws, and the regression tests from past audits are skipped there. All of them still run locally and in CI.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.16" id="latents-0916">latents 0.9.16<a class="anchor" aria-label="anchor" href="#latents-0916"></a></h2>
+<ul><li>Every help page now has an example that runs in the automatic checks. The growth mixture pages (<code><a href="../reference/get_results.html">get_results()</a></code>, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>, <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code>) and <code><a href="../reference/compare_models.html">compare_models()</a></code> open with a fit on the first 60 students of <code>growth_scores</code>, which runs in about a second; the full-data examples stay in <code>\donttest{}</code>. The <code>growth_scores</code>, <code>growth_schools</code> and <code>student_esm</code> pages open with a summary of the data. The <code><a href="../reference/compare_models.html">compare_models()</a></code> example no longer fits a random intercept that <code>course_engagement</code> cannot support.</li>
+<li>The package ships four vignettes: <code>lpa</code>, <code>lca</code>, <code>lta</code> and <code>growth-mixture</code>. The workflow guides (<code>workflow-lpa</code>, <code>workflow-lca</code>) and the guides to evaluation, covariates, mixture regression, latent class growth analysis and group-class models move to articles on the package website, with unchanged addresses. This keeps the installed package small and the checks quick.</li>
+<li>Tests that compare latents with other implementations (<code>numDeriv</code>, <code>mclust</code>, <code>MASS</code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>, Latent GOLD and Mplus results, reference implementations, the numbers in the workflow guides) move to <code>tests/equivalence/</code>, which is not part of the package and runs in its own CI job. <code>numDeriv</code> is no longer a suggested package. Slow tests that refit many models are skipped on CRAN; every model family keeps tests that run there.</li>
+<li>The README’s enumeration example names its covariance structure (<code>model = "VVI"</code>), as <code><a href="../reference/candidate_fit.html">candidate_fit()</a></code> needs once several structures are crossed, and its text matches the regenerated output.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.15" id="latents-0915">latents 0.9.15<a class="anchor" aria-label="anchor" href="#latents-0915"></a></h2>
 <ul><li><p>Vignettes and worked examples save and restore the user’s display options (<code>digits</code> and <code>width</code>) after use, including the scripts installed in <code>inst/doc</code>.</p></li>
@@ -81,7 +106,7 @@
 </ul></div>
 <div class="section level3">
 <h3 id="documentation-0-9-13">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-9-13"></a></h3>
-<ul><li>New vignette “Latent class growth analysis: classes of trajectories” (<code><a href="../articles/trajectory-classes.html">vignette("trajectory-classes")</a></code>): trajectory classes without random effects, every plot view, curved trajectories, pass/fail and ordered-band trajectories, distal outcomes, and when to prefer the growth mixture model. The growth mixture vignette now focuses on random effects and the multilevel model, with its plots.</li>
+<ul><li>New vignette “Latent class growth analysis: classes of trajectories” (<code>vignette("trajectory-classes")</code>): trajectory classes without random effects, every plot view, curved trajectories, pass/fail and ordered-band trajectories, distal outcomes, and when to prefer the growth mixture model. The growth mixture vignette now focuses on random effects and the multilevel model, with its plots.</li>
 <li>Coefficient forest plots of trajectory fits label every estimate with the same number of decimals per panel (two, or three for small values).</li>
 <li>The recovery table of a regression mixture prints in the report layout.</li>
 </ul></div>
@@ -266,7 +291,7 @@
 <li>
 <code>latents_weak_class</code> warning with <code>effective_groups</code> in the <code>"group_classes"</code> table: a class supported by fewer than 50 effective groups (small, poorly separated, or both) has intervals that can be miscalibrated. Threshold set by a predeclared rule and evaluated on held-out simulations (flags 100% of a rare, weakly separated condition and 0.8% of well-separated ones). Also flags designs with fewer than about 50 groups per class.</li>
 <li>Evidence (<code>validation/ADDITIVE_SIMULATION.md</code>, <code>equivalence/latentgold-families/</code>): predeclared simulations with 1000 datasets per condition (additive: 31 of 34 reference-condition parameters meet every gate; dispersion and additive-dispersion: 45 of 46; every miss is the ML small-sample downward bias of a between-group variance, coverage 0.925-0.947). Latent GOLD 6.1 agrees on parameter counts in all eight external cases, and its likelihoods and posteriors converge to latents’ as its quadrature is refined (largest remaining gaps 1.6e-4 and 2.0e-4). Robust standard errors are needed for heavy-tailed ratings.</li>
-<li>New vignette: <code><a href="../articles/additive.html">vignette("additive")</a></code>.</li>
+<li>New vignette: <code>vignette("additive")</code>.</li>
 <li>Not yet available for these families: missing data, covariates, and an external Mplus comparison (Mplus is not available here).</li>
 </ul></div>
 </div>
@@ -325,7 +350,7 @@
 <li>
 <code>enumerate_classes(model = )</code> now defaults to <code>"basic"</code>: the four structures that combine equal or varying variances with covariances absent or present (<code>EEI</code>, <code>VVI</code>, <code>EEE</code>, <code>VVV</code>). <code>"all"</code> fits the 14 structures; codes can still be named. With one continuous indicator the structures that coincide are fitted once; with only categorical indicators no structure is crossed; a structure set through the other arguments replaces the default, and <code>model = NULL</code> restores the previous grid. Because a grid now holds several structures per class count, <code><a href="../reference/candidate_fit.html">candidate_fit()</a></code> needs <code>model</code> to pick one of them.</li>
 <li>New data set <code>srl</code>: five self-regulated learning scales for 300 respondents simulated by a large language model.</li>
-<li>New vignettes <code><a href="../articles/workflow-lpa.html">vignette("workflow-lpa")</a></code> and <code><a href="../articles/workflow-lca.html">vignette("workflow-lca")</a></code>: a latent profile and a latent class analysis from the data to a reported model.</li>
+<li>New vignettes <code>vignette("workflow-lpa")</code> and <code>vignette("workflow-lca")</code>: a latent profile and a latent class analysis from the data to a reported model.</li>
 <li>
 <code>get_results(fit, "profiles")</code> and <code>get_results(fit, "responses")</code> carry <code>mean_standard_error</code>, <code>variance_standard_error</code> and <code>probability_standard_error</code> without the data being passed; they are <code>NA</code>, with a message, when the information matrix cannot be formed.</li>
 <li>
@@ -411,7 +436,7 @@
 <li>New <code><a href="../reference/enumerate_regressions.html">enumerate_regressions()</a></code> compares class counts in one table, with an optional parametric bootstrap likelihood-ratio test.</li>
 <li>A binary outcome with one trial per class assignment is refused (<code>latents_not_identified</code>), since that mixture is not identified.</li>
 <li>Single-level and group-level fits reproduce flexmix’s likelihood at its estimates and its binomial and Poisson estimates (<code>equivalence/test-mixture-regression-flexmix.R</code>).</li>
-<li>New dataset <code>study_hours</code> and <code><a href="../articles/mixture-regression.html">vignette("mixture-regression")</a></code>.</li>
+<li>New dataset <code>study_hours</code> and <code>vignette("mixture-regression")</code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="fixes-0-8-5">Fixes<a class="anchor" aria-label="anchor" href="#fixes-0-8-5"></a></h3>

@@ -16,8 +16,8 @@ That assumption is its strength and its limit:
   When they vary around it, the model can only express that by adding
   classes, so it tends to find more classes than there are kinds (Bauer
   and Curran 2003). The growth mixture model adds random effects for
-  that variation; it is the subject of
-  [`vignette("growth-mixture")`](https://pak.dynasite.org/latents/articles/growth-mixture.md).
+  that variation; it is the subject of the [growth mixture
+  article](https://pak.dynasite.org/latents/articles/growth-mixture.html).
 
 A useful habit is to fit both and compare them
 ([`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)),

@@ -27,3 +27,12 @@ plot(x, main = NULL, subtitle = NULL, ...)
 ## Value
 
 A ggplot object. Raises `latents_missing_package` without ggplot2.
+
+## Examples
+
+``` r
+fit <- lta(course_engagement, c("browse", "lectures"), "student",
+           n_profiles = 2, time = "sequence",
+           transition_covariates = "previous_grade", n_starts = 2, seed = 1)
+if (requireNamespace("ggplot2", quietly = TRUE)) plot(fit)
+```

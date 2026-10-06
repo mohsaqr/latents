@@ -13,7 +13,7 @@ get_results.latents_growth_mixture(): &quot;trajectories&quot; and
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,17 +26,19 @@ get_results.latents_growth_mixture(): &quot;trajectories&quot; and
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
-    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
-    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
+    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -91,6 +93,17 @@ trajectories and each fitted person's own predicted curve are tables of
     <p>Never returns; raises <code>latents_unsupported_prediction</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">few_students</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">growth_scores</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">60</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">few_students</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>                          id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>                          random <span class="op">=</span> <span class="st">"intercept"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Prediction is refused; get_results(fit, "trajectories") has the curves</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error : predict() is not implemented for growth mixture models yet. The class trajectories are get_results(x, "trajectories"), and each fitted person's class trajectory and own predicted curve are get_results(x, "individual").</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

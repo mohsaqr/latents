@@ -62,6 +62,10 @@ three.
 ## Examples
 
 ``` r
+descriptives(growth_scores, c("score", "motivation"))
+#>     variable    n n_missing        mean       sd   min   max n_distinct
+#> 1      score 1844         0 57.57039046 8.909898 24.90 81.20        400
+#> 2 motivation 1844         0  0.03240239 1.006345 -3.35  2.82        200
 # \donttest{
 fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
                           id = "student", class_level = "group",

@@ -2,23 +2,23 @@ pandoc: 3.8.3
 pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
-  additive: additive.html
+  articles/additive: additive.html
   articles/case-engagement-covariates: case-engagement-covariates.html
   articles/case-engagement-evaluation: case-engagement-evaluation.html
   articles/case-engagement-profiles: case-engagement-profiles.html
   articles/case-engagement-transitions: case-engagement-transitions.html
   articles/case-esm-lca: case-esm-lca.html
-  covariates: covariates.html
-  evaluation: evaluation.html
-  growth-mixture: growth-mixture.html
+  articles/covariates: covariates.html
+  articles/evaluation: evaluation.html
+  articles/growth-mixture: growth-mixture.html
   lca: lca.html
   lpa: lpa.html
   lta: lta.html
-  mixture-regression: mixture-regression.html
-  trajectory-classes: trajectory-classes.html
-  workflow-lca: workflow-lca.html
-  workflow-lpa: workflow-lpa.html
-last_built: 2026-10-05T17:37Z
+  articles/mixture-regression: mixture-regression.html
+  articles/trajectory-classes: trajectory-classes.html
+  articles/workflow-lca: workflow-lca.html
+  articles/workflow-lpa: workflow-lpa.html
+last_built: 2026-10-06T04:51Z
 urls:
   reference: https://pak.dynasite.org/latents/reference
   article: https://pak.dynasite.org/latents/articles

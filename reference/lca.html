@@ -23,7 +23,7 @@ and so on, as throughout the package."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,17 +36,19 @@ and so on, as throughout the package."><meta property="og:image" content="https:
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
-    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
-    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
+    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -149,26 +151,26 @@ two-level model; <code><a href="enumerate_lca.html">enumerate_lca()</a></code> t
 <span class="r-out co"><span class="r-pr">#&gt;</span> Latent class analysis: 2 classes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2582 observations; 4 categorical indicators</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Classes are labelled profile_1, profile_2, ... in every table.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log likelihood: -4560.238322 | AIC: 9138.477 | BIC: 9191.184</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log likelihood: -4560.238321 | AIC: 9138.477 | BIC: 9191.184</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Converged: TRUE | iterations: 96 | best start: 3/3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  profile         indicator category  probability  threshold</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1 time_with_friends       no 7.817818e-01  1.2760803</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2 time_with_friends       no 8.974465e-01  2.1691692</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1 time_with_friends       no 7.817818e-01  1.2760802</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2 time_with_friends       no 8.974465e-01  2.1691689</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1 time_with_friends      yes 2.182182e-01         NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        2 time_with_friends      yes 1.025535e-01         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   on_social_media       no 9.999994e-01 14.3945349</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   on_social_media       no 5.522218e-01  0.2096518</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1   on_social_media      yes 5.604446e-07         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2   on_social_media      yes 4.477782e-01         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1    tv_video_games       no 9.998450e-01  8.7716985</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2    tv_video_games       no 6.701119e-01  0.7086911</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1    tv_video_games      yes 1.550360e-04         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2    tv_video_games      yes 3.298881e-01         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        1            sports       no 9.021328e-01  2.2211497</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2            sports       no 9.428194e-01  2.8026606</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   on_social_media       no 9.999994e-01 14.3865832</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2   on_social_media       no 5.522219e-01  0.2096522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1   on_social_media      yes 5.649189e-07         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2   on_social_media      yes 4.477781e-01         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1    tv_video_games       no 9.998452e-01  8.7729715</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2    tv_video_games       no 6.701118e-01  0.7086909</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1    tv_video_games      yes 1.548387e-04         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2    tv_video_games      yes 3.298882e-01         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        1            sports       no 9.021327e-01  2.2211497</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2            sports       no 9.428194e-01  2.8026605</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        1            sports      yes 9.786725e-02         NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        2            sports      yes 5.718057e-02         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        2            sports      yes 5.718058e-02         NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Every other table: get_results(x, what = ), or get_results(x, "all").</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></span>

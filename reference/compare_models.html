@@ -21,7 +21,7 @@ one of them is true, with equal prior probabilities."><meta property="og:image" 
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,17 +34,19 @@ one of them is true, with equal prior probabilities."><meta property="og:image" 
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Vignettes</h6></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
-    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
-    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
+    <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
     <li><a class="dropdown-item" href="../articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
     <li><a class="dropdown-item" href="../articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
+    <li><a class="dropdown-item" href="../articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Case studies</h6></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-profiles.html">Case study: Multilevel latent profile analysis of course engagement</a></li>
@@ -118,23 +120,22 @@ weights. <em>Psychonomic Bulletin &amp; Review</em>, 11, 192–196.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="va">trajectories</span> <span class="op">&lt;-</span> <span class="fu"><a href="mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">attendance</span> <span class="op">~</span> <span class="va">sequence</span>, <span class="va">course_engagement</span>,</span></span>
-<span class="r-in"><span>                                   n_classes <span class="op">=</span> <span class="fl">2</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span></span>
-<span class="r-in"><span>                                   class_level <span class="op">=</span> <span class="st">"group"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">growth</span> <span class="op">&lt;-</span> <span class="fu"><a href="mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">attendance</span> <span class="op">~</span> <span class="va">sequence</span>, <span class="va">course_engagement</span>,</span></span>
-<span class="r-in"><span>                             n_classes <span class="op">=</span> <span class="fl">2</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span></span>
-<span class="r-in"><span>                             class_level <span class="op">=</span> <span class="st">"group"</span>, random <span class="op">=</span> <span class="st">"intercept"</span>,</span></span>
-<span class="r-in"><span>                             seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The random-effect covariance of class 2 is degenerate (a variance at its floor or random effects perfectly correlated): the data cannot separate those random effects. The random intercept adds nothing there: drop `random`, or keep it only if another class needs it. Its standard errors are not reported.</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Fixed trajectories against growth curves with a random intercept,</span></span></span>
+<span class="r-in"><span><span class="co"># for the first 60 students</span></span></span>
+<span class="r-in"><span><span class="va">few_students</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">growth_scores</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">60</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">trajectories</span> <span class="op">&lt;-</span> <span class="fu"><a href="mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">few_students</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>                                   id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>                                   seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">growth</span> <span class="op">&lt;-</span> <span class="fu"><a href="mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">few_students</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>                             id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>                             random <span class="op">=</span> <span class="st">"intercept"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span>trajectories <span class="op">=</span> <span class="va">trajectories</span>, growth <span class="op">=</span> <span class="va">growth</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model         Classes  Random     k    LogLik      BIC  ΔBIC  Weight  Entropy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ------------  -------  ---------  -  --------  -------  ----  ------  -------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> trajectories        2  none       7  -1900.14  3832.93  5.88   0.050     0.85</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> growth              2  intercept  9  -1892.54  3827.05  0.00   0.950     0.68  &lt;- best</span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model         Classes  Random     k    LogLik      BIC    ΔBIC  Weight  Entropy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ------------  -------  ---------  -  --------  -------  ------  ------  -------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> trajectories        2  none       7  -1277.94  2584.53  196.11   0.000     0.94</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97  &lt;- best</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -25,3 +25,15 @@ predict(object, ...)
 ## Value
 
 Never returns; raises `latents_unsupported_prediction`.
+
+## Examples
+
+``` r
+few_students <- subset(growth_scores, student <= 60)
+fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
+                          id = "student", class_level = "group",
+                          random = "intercept", seed = 1)
+# Prediction is refused; get_results(fit, "trajectories") has the curves
+try(predict(fit))
+#> Error : predict() is not implemented for growth mixture models yet. The class trajectories are get_results(x, "trajectories"), and each fitted person's class trajectory and own predicted curve are get_results(x, "individual").
+```

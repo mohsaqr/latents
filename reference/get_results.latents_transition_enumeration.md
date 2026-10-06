@@ -63,24 +63,24 @@ A base `data.frame`, one row per candidate: `n_profiles`,
 ## Examples
 
 ``` r
-grid <- enumerate_classes(course_engagement, c("browse", "lectures"),
+# The first 50 students keep the example quick
+few_students <- subset(course_engagement, student <= 50)
+grid <- enumerate_classes(few_students, c("browse", "lectures"),
                           "student", time = "sequence", n_profiles = 2:3,
                           n_group_classes = 1, n_starts = 2, seed = 1)
 get_results(grid)
 #>   n_profiles n_group_classes model log_likelihood n_parameters      aic
-#> 1          2               1  <NA>      -3761.447           11 7544.894
-#> 2          3               1  <NA>      -3747.521           20 7535.042
+#> 1          2               1  <NA>      -1799.274           11 3620.548
+#> 2          3               1  <NA>      -1790.352           20 3620.704
 #>        bic bic_individual   entropy converged boundary n_best_replicated
-#> 1 7574.192       7602.752 0.7290889      TRUE    FALSE                 2
-#> 2 7588.311       7640.239 0.7627614      TRUE    FALSE                 1
+#> 1 3641.580       3670.258 0.7752585      TRUE    FALSE                 2
+#> 2 3658.944       3711.087 0.7016252      TRUE    FALSE                 2
 #>   warnings error
 #> 1           <NA>
 #> 2           <NA>
 get_results(grid, "best")
-#>   n_profiles n_group_classes model log_likelihood n_parameters      aic
-#> 1          2               1  <NA>      -3761.447           11 7544.894
-#>        bic bic_individual   entropy converged boundary n_best_replicated
-#> 1 7574.192       7602.752 0.7290889      TRUE    FALSE                 2
-#>   warnings error
-#> 1           <NA>
+#>   n_profiles n_group_classes model log_likelihood n_parameters      aic     bic
+#> 1          2               1  <NA>      -1799.274           11 3620.548 3641.58
+#>   bic_individual   entropy converged boundary n_best_replicated warnings error
+#> 1       3670.258 0.7752585      TRUE    FALSE                 2           <NA>
 ```
