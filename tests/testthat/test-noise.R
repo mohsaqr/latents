@@ -62,10 +62,10 @@ test_that("unsupported combinations are refused by class", {
   data <- noise_frame()
   data$unit <- rep(seq_len(60L), each = 5L)
   expect_error(quietly(multilpa(data, c("a", "b", "c"), "unit", n_profiles = 2L,
-                                n_group_classes = 2L, noise = TRUE)),
+                                n_group_classes = 2L, noise = TRUE, n_starts = 1)),
                class = "latents_unsupported_noise")
   expect_error(quietly(multilpa(data, c("a", "b", "c"), id = NULL, n_profiles = 2L,
-                                noise = "yes")),
+                                noise = "yes", n_starts = 1)),
                class = "latents_bad_argument")
   fit <- noise_fit(noise_frame())
   expect_error(parameter_inference(fit), class = "latents_unsupported_noise")

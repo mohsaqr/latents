@@ -112,7 +112,7 @@ test_that("a fitted model's counts total its within-sequence transitions", {
   data <- .numerics_fixture(n_groups = 12L, occasions = 5L, seed = 11L)
   fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
-    n_group_classes = 2L, n_starts = 2, seed = 3, max_iter = 40))
+    n_group_classes = 2L, n_starts = 1, seed = 3, max_iter = 40))
   expect_true(all(is.finite(fit$transition_counts)))
   expect_true(all(fit$transition_counts >= 0))
   expect_equal(sum(fit$transition_counts), 12 * (5 - 1), tolerance = 1e-8)
@@ -131,7 +131,7 @@ test_that("expected counts match explicit path enumeration", {
   deviations <- vapply(cases, function(case) {
     fit <- quietly(lta(
       data, c("y1", "y2"), "g", n_profiles = case$profiles, time = "t",
-      n_group_classes = case$types, n_starts = 2, seed = 4, max_iter = 25))
+      n_group_classes = case$types, n_starts = 1, seed = 4, max_iter = 25))
     reference <- .enumerate_transition_counts(continuous, fit$group_index,
                                               data$t, fit)
     recursion <- lapply(seq_len(case$types), function(type) {
@@ -173,7 +173,7 @@ test_that("the prevalence reported is the one the final expectation implies", {
   # the implied prevalence is their normalised column sums.
   single <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
-    n_starts = 2, seed = 5, max_iter = 60))
+    n_starts = 1, seed = 5, max_iter = 60))
   shares <- colSums(single$subject_posteriors)
   expect_equal(unname(drop(single$profile_prevalence)),
                unname(shares / sum(shares)), tolerance = 1e-10)
@@ -182,7 +182,7 @@ test_that("the prevalence reported is the one the final expectation implies", {
   # a capped fit leaves a gap that depends on where the path stopped.
   nested <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
-    n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 5000))
+    n_group_classes = 2L, n_starts = 1, seed = 5, max_iter = 5000))
   expect_true(nested$converged)
   expect_true(all(is.finite(nested$profile_prevalence)))
   expect_equal(unname(rowSums(nested$profile_prevalence)), rep(1, 2),
@@ -222,7 +222,7 @@ test_that("two very long sequences fit rather than overflowing", {
 test_that("broken contracts of the moment step raise by class", {
   data <- .numerics_fixture(n_groups = 6L, occasions = 3L, seed = 31L)
   fit <- quietly(lta(
-    data, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_starts = 2,
+    data, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_starts = 1,
     seed = 6, max_iter = 20))
   # A single profile has nothing to move between, and a fit that carries no
   # ordering has no sequence to read: both are classed, not message-matched.

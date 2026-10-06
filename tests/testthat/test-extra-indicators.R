@@ -110,7 +110,7 @@ test_that("prediction, bootstrap and simulation carry the new indicators", {
   simulated <- .multilpa_draw_indicators(fit, rep(1:2, 200))
   expect_identical(levels(simulated$o), levels(data$o))
   expect_true(all(simulated$k >= 0))
-  smaller <- quietly(lpa(data, c("y", "o", "k"), 1, ordinal = "o", count = "k"),
+  smaller <- quietly(lpa(data, c("y", "o", "k"), 1, ordinal = "o", count = "k", n_starts = 1),
                      "latents_single_level")
   test <- quietly(bootstrap_lrt(smaller, fit, iter = 3, n_starts = 1, seed = 1))
   expect_true(is.finite(as.data.frame(test)$p_value))
@@ -124,17 +124,17 @@ test_that("invalid ordinal and count indicators are refused", {
   data$negative <- -data$k
   data$fraction <- data$k + 0.5
   data$text <- as.character(data$o)
-  expect_error(quietly(lpa(data, c("y", "negative"), 2, count = "negative"),
+  expect_error(quietly(lpa(data, c("y", "negative"), 2, count = "negative", n_starts = 1),
                        "latents_single_level"), class = "latents_bad_data")
-  expect_error(quietly(lpa(data, c("y", "fraction"), 2, count = "fraction"),
+  expect_error(quietly(lpa(data, c("y", "fraction"), 2, count = "fraction", n_starts = 1),
                        "latents_single_level"), class = "latents_bad_data")
-  expect_error(quietly(lpa(data, c("y", "text"), 2, ordinal = "text"),
+  expect_error(quietly(lpa(data, c("y", "text"), 2, ordinal = "text", n_starts = 1),
                        "latents_single_level"), class = "latents_bad_data")
-  expect_error(quietly(lpa(data, c("y", "o"), 2, ordinal = "o", categorical = "o"),
+  expect_error(quietly(lpa(data, c("y", "o"), 2, ordinal = "o", categorical = "o", n_starts = 1),
                        "latents_single_level"), class = "latents_bad_argument")
-  expect_error(quietly(lpa(data, "y", 2, count = "k"), "latents_single_level"),
+  expect_error(quietly(lpa(data, "y", 2, count = "k", n_starts = 1), "latents_single_level"),
                class = "latents_bad_argument")
-  expect_error(quietly(lpa(data, c("y", "k"), 2, count = "k", noise = TRUE),
+  expect_error(quietly(lpa(data, c("y", "k"), 2, count = "k", noise = TRUE, n_starts = 1),
                        "latents_single_level"),
                class = "latents_unsupported_indicator")
 })
@@ -150,7 +150,7 @@ test_that("membership covariates take ordinal and count indicators", {
                                 integer(1)),
                      k = rpois(n, c(1, 5)[profile]), w = sample(1:3, n, TRUE))
   fit <- quietly(lpa(data, c("y", "o", "k"), 2, ordinal = "o", count = "k",
-                     profile_covariates = "z", n_starts = 2, seed = 1, tol = 1e-12),
+                     profile_covariates = "z", n_starts = 1, seed = 1, tol = 1e-12),
                  "latents_single_level")
   expect_s3_class(fit, "multilpa_covariates")
   expect_equal(fit$n_parameters, 12)
@@ -170,11 +170,11 @@ test_that("membership covariates take ordinal and count indicators", {
   expect_true(all(c("ordinal_location", "count_mean") %in% inference$parameter))
   expect_true(all(is.finite(get_results(fit, "count_means")$standard_error)))
   weighted <- quietly(lpa(data, c("y", "o", "k"), 2, ordinal = "o", count = "k",
-                          profile_covariates = "z", weights = "w", n_starts = 2, seed = 1,
+                          profile_covariates = "z", weights = "w", n_starts = 1, seed = 1,
                           tol = 1e-12), "latents_single_level")
   repeated <- quietly(lpa(data[rep(seq_len(n), data$w), ], c("y", "o", "k"), 2,
                           ordinal = "o", count = "k", profile_covariates = "z",
-                          n_starts = 2, seed = 1, tol = 1e-12), "latents_single_level")
+                          n_starts = 1, seed = 1, tol = 1e-12), "latents_single_level")
   expect_equal(weighted$log_likelihood * sum(data$w) / n, repeated$log_likelihood,
                tolerance = 1e-9)
 })
@@ -188,7 +188,7 @@ test_that("lta() takes ordinal and count indicators, invariant or by occasion", 
                     labels = c("low", "mid", "high"), ordered_result = TRUE)
   indicators <- c("browse", "level", "posts")
   fit <- lta(data, indicators, "student", 2, time = "sequence", ordinal = "level",
-             count = "posts", n_starts = 2, seed = 1, tol = 1e-10)
+             count = "posts", n_starts = 1, seed = 1, tol = 1e-10)
   expect_equal(fit$n_parameters, 12)
   expect_identical(nrow(get_results(fit, "ordinal")), 6L)
   expect_identical(nrow(get_results(fit, "count_means")), 2L)
@@ -219,7 +219,7 @@ test_that("negative-binomial counts: recovery, scores and the Poisson limit", {
                                  mu = c(2, 8)[profile]))
   fits <- lapply(c("varying", "equal"), function(dispersion) {
     quietly(lpa(data, c("y", "k"), 2, count = "k", count_model = "negative_binomial",
-                count_dispersion = dispersion, n_starts = 3, seed = 1, tol = 1e-12),
+                count_dispersion = dispersion, n_starts = 1, seed = 1, tol = 1e-12),
             "latents_single_level")
   })
   expect_identical(vapply(fits, `[[`, numeric(1), "n_parameters"), c(9, 8))
@@ -240,13 +240,13 @@ test_that("negative-binomial counts: recovery, scores and the Poisson limit", {
   }, logical(1))
   counts <- get_results(fits[[1L]], "count_means")
   expect_true(all(c("dispersion", "dispersion_standard_error") %in% names(counts)))
-  poisson <- quietly(lpa(data, c("y", "k"), 2, count = "k", n_starts = 3, seed = 1),
+  poisson <- quietly(lpa(data, c("y", "k"), 2, count = "k", n_starts = 1, seed = 1),
                      "latents_single_level")
   expect_gt(fits[[1L]]$log_likelihood, poisson$log_likelihood)
   # Poisson data put the dispersion of at least one profile on its floor.
   plain <- transform(data, k = rpois(n, c(2, 8)[profile]))
   expect_warning(limit <- quietly(lpa(plain, c("y", "k"), 2, count = "k",
-                                      count_model = "negative_binomial", n_starts = 2,
+                                      count_model = "negative_binomial", n_starts = 1,
                                       seed = 1), "latents_single_level"),
                  class = "latents_boundary")
   expect_true(any(limit$count_dispersion <= 1e-8 * (1 + 1e-6)))

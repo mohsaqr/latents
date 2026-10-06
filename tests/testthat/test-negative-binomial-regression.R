@@ -21,7 +21,7 @@ test_that("a simulated NB mixture is recovered", {
   skip_on_cran()
   data <- nb_data()
   fit <- mixture_regression(y ~ x, data, n_classes = 2,
-                            family = "negative_binomial", n_starts = 3, seed = 1)
+                            family = "negative_binomial", n_starts = 1, seed = 1)
   coefficients <- get_results(fit, "coefficients")
   slopes <- sort(subset(coefficients, term == "x")$estimate)
   expect_equal(slopes, c(-1, 0.8), tolerance = 0.15)
@@ -36,7 +36,7 @@ test_that("a simulated NB mixture is recovered", {
 test_that("a shared dispersion is one parameter, and counts equal estimates", {
   data <- nb_data()
   fit <- mixture_regression(y ~ x, data, n_classes = 2, variance = "equal",
-                            family = "negative_binomial", n_starts = 2, seed = 1)
+                            family = "negative_binomial", n_starts = 1, seed = 1)
   expect_identical(length(unique(fit$params$sigma2)), 1L)
   expect_identical(fit$n_parameters, length(coef(fit)))
   expect_identical(fit$n_parameters, 6L)

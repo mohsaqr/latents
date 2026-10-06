@@ -28,7 +28,7 @@ test_that("one class, balanced groups: interior MLE matches the closed form", {
   case <- additive_balanced(seq(-2, 3, length.out = 6L))
   expect_gt(case$between, 0)
   fit <- multilpa(case$data, "y", "group", n_group_classes = 1,
-                  family = "additive", tol = 1e-13, max_iter = 5000, seed = 1)
+                  family = "additive", tol = 1e-13, max_iter = 5000, seed = 1, n_starts = 1)
   expect_equal(unname(fit$means[1, 1]), case$mean, tolerance = 1e-8)
   expect_equal(unname(fit$within_variances[1, 1]), case$within, tolerance = 1e-6)
   expect_equal(unname(fit$between_variances[1, 1]), case$between, tolerance = 1e-6)
@@ -42,7 +42,7 @@ test_that("one class, balanced groups: boundary MLE is reached exactly", {
   expect_identical(case$between, 0)
   expect_warning(
     fit <- multilpa(case$data, "y", "group", n_group_classes = 1,
-                    family = "additive", tol = 1e-12, seed = 1),
+                    family = "additive", tol = 1e-12, seed = 1, n_starts = 1),
     class = "latents_boundary")
   expect_identical(unname(fit$between_variances[1, 1]), 0)
   expect_true(fit$between_zero[1, 1])
@@ -116,29 +116,29 @@ test_that("likelihood is invariant to row order", {
 test_that("inapplicable arguments and unidentified requests are refused", {
   vars <- c("y1", "y2")
   expect_error(multilpa(additive_small, vars, "group", n_profiles = 2,
-                        family = "additive"), class = "latents_bad_argument")
+                        family = "additive", n_starts = 1), class = "latents_bad_argument")
   expect_error(multilpa(additive_small, vars, "group", n_group_classes = 2,
-                        family = "additive", categorical = "y1"),
+                        family = "additive", categorical = "y1", n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(multilpa(additive_small, vars, family = "additive"),
+  expect_error(multilpa(additive_small, vars, family = "additive", n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(multilpa(additive_small, vars, NULL, family = "additive"),
+  expect_error(multilpa(additive_small, vars, NULL, family = "additive", n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(lpa(additive_small, vars, n_profiles = 2, family = "additive"),
+  expect_error(lpa(additive_small, vars, n_profiles = 2, family = "additive", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(multilpa(additive_small, vars, "group", n_profiles = 2,
-                        between_variance = "equal"),
+                        between_variance = "equal", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(enumerate_classes(additive_small, vars, "group", n_profiles = 2,
-                                 family = "additive"),
+                                 family = "additive", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(multilpa(additive_small, vars, "group", n_group_classes = 61,
-                        family = "additive"), class = "latents_unidentified")
+                        family = "additive", n_starts = 1), class = "latents_unidentified")
   singles <- additive_small[!duplicated(additive_small$group), ]
   expect_error(multilpa(singles, vars, "group", n_group_classes = 2,
-                        family = "additive"), class = "latents_unidentified")
+                        family = "additive", n_starts = 1), class = "latents_unidentified")
   expect_error(multilpa(additive_small, vars, "group", n_group_classes = 0,
-                        family = "additive"), class = "latents_bad_argument")
+                        family = "additive", n_starts = 1), class = "latents_bad_argument")
 })
 
 test_that("the print method is short and stable", {

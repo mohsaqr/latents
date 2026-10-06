@@ -161,7 +161,7 @@ test_that("a bootstrap comparison is classed and plots its simulated null", {
   set.seed(53)
   data <- data.frame(g = rep(1:30, each = 8), y = rnorm(240))
   small <- multilpa(data, "y", "g", 1, 1, variance_model = "equal",
-                    n_starts = 2, seed = 8)
+                    n_starts = 1, seed = 8)
   large <- multilpa(data, "y", "g", 2, 1, variance_model = "equal",
                     n_starts = 1, seed = 8, max_iter = 3000, tol = 1e-7)
   result <- bootstrap_lrt(small, large, data, iter = 3, n_starts = 1,

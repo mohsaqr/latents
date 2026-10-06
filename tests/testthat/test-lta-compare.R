@@ -5,7 +5,7 @@ compare_activity <- c("browse", "lectures")
 test_that("simulation keeps groups, occasions and covariates and draws the model", {
   skip_on_cran()
   fit <- lta(course_engagement, compare_activity, "student", n_profiles = 2,
-             time = "sequence", n_starts = 2, seed = 1)
+             time = "sequence", n_starts = 1, seed = 1)
   set.seed(3)
   simulated <- .lta_simulate(fit, course_engagement)
   expect_identical(dim(simulated), dim(course_engagement))
@@ -17,7 +17,7 @@ test_that("simulation keeps groups, occasions and covariates and draws the model
   set.seed(4)
   many <- .lta_simulate(fit, course_engagement)
   refit <- lta(many, compare_activity, "student", n_profiles = 2, time = "sequence",
-               n_starts = 2, seed = 1)
+               n_starts = 1, seed = 1)
   stay <- function(f) sort(diag(f$transition_probabilities[, , 1L]))
   expect_lt(max(abs(stay(refit) - stay(fit))), 0.1)
 })
@@ -56,10 +56,10 @@ test_that("the nesting rule relaxes options one way only", {
 test_that("bootstrap LRT between nested transition fits", {
   skip_on_cran()
   null <- lta(course_engagement, compare_activity, "student", n_profiles = 2,
-              time = "sequence", n_starts = 2, seed = 1)
+              time = "sequence", n_starts = 1, seed = 1)
   alternative <- lta(course_engagement, compare_activity, "student", n_profiles = 2,
                      time = "sequence", transition_covariates = "previous_grade",
-                     n_starts = 2, seed = 1)
+                     n_starts = 1, seed = 1)
   set.seed(9)
   before <- .Random.seed
   result <- bootstrap_lrt(null, alternative, data = course_engagement, iter = 4,
@@ -84,7 +84,7 @@ test_that("transition enumeration crosses profiles, classes and structures", {
   skip_on_cran()
   grid <- enumerate_classes(course_engagement, compare_activity, "student",
                             time = "sequence", n_profiles = 2:3, n_group_classes = 1:2,
-                            n_starts = 2, seed = 1)
+                            n_starts = 1, seed = 1)
   expect_s3_class(grid, "latents_transition_enumeration")
   table <- get_results(grid)
   expect_identical(nrow(table), 4L)
@@ -94,15 +94,15 @@ test_that("transition enumeration crosses profiles, classes and structures", {
   expect_identical(as.data.frame(grid), table)
   structures <- enumerate_classes(course_engagement, compare_activity, "student",
                                   time = "sequence", n_profiles = 2,
-                                  model = c("VVI", "VEI"), n_starts = 2, seed = 1)
+                                  model = c("VVI", "VEI"), n_starts = 1, seed = 1)
   expect_identical(get_results(structures)$model, c("VVI", "VEI"))
   expect_error(candidate_fit(structures, n_profiles = 2, n_group_classes = 1),
                class = "latents_unknown_candidate")
   expect_error(enumerate_classes(course_engagement, compare_activity, "student",
-                                 time = "sequence", n_profiles = 1:2),
+                                 time = "sequence", n_profiles = 1:2, n_starts = 1),
                class = "latents_bad_transition")
   expect_error(enumerate_classes(course_engagement, compare_activity, "student",
-                                 time = "sequence", no_such_argument = 1),
+                                 time = "sequence", no_such_argument = 1, n_starts = 1),
                class = "latents_bad_argument")
   skip_if_not_installed("ggplot2")
   expect_true(ggplot2::is_ggplot(plot(grid)))

@@ -109,7 +109,7 @@ test_that("a group-level outcome is related to the group classes", {
                      a = stats::rnorm(n, ifelse(profile == 2L, 1.6, -1.6)),
                      b = stats::rnorm(n, ifelse(profile == 2L, 1.6, -1.6)))
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 2,
-                  n_starts = 6, seed = 2)
+                  n_starts = 1, seed = 2)
   result <- three_step(fit, data, "z", level = "groups")
 
   expect_equal(nrow(result), fit$n_group_classes)
@@ -225,7 +225,7 @@ test_that("the per-unit weights agree with the original table formulation", {
 test_that("R3STEP recovers a covariate effect the naive regression attenuates", {
   data <- .r3step_data()
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 5, seed = 1)
+                  n_starts = 1, seed = 1)
   corrected <- r3step(fit, data, "x")
   # r3step contrasts class 1 against the final class; orient to the generator.
   sign <- if (which.max(fit$means[, 1L]) != 1L) -1 else 1
@@ -243,7 +243,7 @@ test_that("R3STEP recovers a covariate effect the naive regression attenuates", 
 test_that("the R3STEP table is tidy and its intervals are consistent", {
   data <- .r3step_data()
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 5, seed = 1)
+                  n_starts = 1, seed = 1)
   result <- r3step(fit, data, "x")
 
   expect_named(result, c("level", "outcome", "term", "estimate",
@@ -263,7 +263,7 @@ test_that("the robust sandwich runs and more covariates are supported", {
   data <- .r3step_data()
   data$w <- stats::rnorm(nrow(data))
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 5, seed = 1)
+                  n_starts = 1, seed = 1)
   observed <- r3step(fit, data, c("x", "w"), vcov_type = "observed")
   robust <- r3step(fit, data, c("x", "w"), vcov_type = "robust")
 
@@ -291,7 +291,7 @@ test_that("R3STEP works at the group level and refuses a varying covariate", {
                      a = stats::rnorm(n, ifelse(profile == 2L, 1.6, -1.6)),
                      b = stats::rnorm(n, ifelse(profile == 2L, 1.6, -1.6)))
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 2,
-                  n_starts = 6, seed = 2)
+                  n_starts = 1, seed = 2)
 
   result <- r3step(fit, data, "w", level = "groups")
   expect_equal(nrow(result), 2L)
@@ -304,7 +304,7 @@ test_that("R3STEP works at the group level and refuses a varying covariate", {
 test_that("a broken contract is refused", {
   data <- .r3step_data()
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 4, seed = 1)
+                  n_starts = 1, seed = 1)
 
   expect_error(r3step(fit, data, "absent"), "must name columns")
   expect_error(r3step(fit, data, "truth", ci_level = 1), "`ci_level` must be")

@@ -2,7 +2,7 @@ test_that("enumeration retains failures and both BIC conventions", {
   set.seed(12)
   d <- data.frame(g = rep(1:30, each = 10), y = c(rnorm(150, -2), rnorm(150, 2)))
   result <- enumerate_classes(d, "y", "g", n_profiles = 1:2, n_group_classes = 1:2,
-                             model = NULL, n_starts = 2, seed = 12)
+                             model = NULL, n_starts = 1, seed = 12)
   grid <- as.data.frame(result)
   expect_equal(nrow(grid), 4L)
   expect_match(grid$error[3], "profile")
@@ -20,17 +20,17 @@ test_that("enumeration retains failures and both BIC conventions", {
   expect_true(is.na(grid$profile_entropy[1]))
   expect_gt(grid$profile_entropy[2], 0)
   expect_lte(grid$profile_entropy[2], 1)
-  expect_error(enumerate_classes(d, "y", "g", n_profiles = 0), "n_profiles")
+  expect_error(enumerate_classes(d, "y", "g", n_profiles = 0, n_starts = 1), "n_profiles")
   # `n_profiles` names the grid here and the count everywhere else, so a single
   # value is a one-row grid rather than the error the old `profiles =` spelling
   # had to raise when the same word arrived through `...`.
   single <- enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
-                              model = "VVI", n_starts = 2, seed = 1)
+                              model = "VVI", n_starts = 1, seed = 1)
   expect_equal(nrow(as.data.frame(single)), 1L)
   # A name multilpa() does not take is refused before any candidate is fitted,
   # so the refusal is visible at once instead of as a grid of failed fits.
   expect_error(enumerate_classes(d, "y", "g", n_profiles = 2, n_group_classes = 1,
-                                 nonsense = 1, seed = 1),
+                                 nonsense = 1, seed = 1, n_starts = 1),
                class = "latents_bad_argument")
 })
 
@@ -60,7 +60,7 @@ test_that("simulation preserves categorical types and declared factor order", {
     rating = rep(c(10L, 2L), each = 50L))
   fit <- quietly(multilpa(data, c("y", "category", "rating"), "g", 2L, 1L,
                            categorical = c("category", "rating"),
-                           n_starts = 2L, max_iter = 80L, seed = 1L))
+                           n_starts = 1, max_iter = 80L, seed = 1L))
   simulated <- .multilpa_simulate(fit)
   expect_identical(class(simulated$category), c("ordered", "factor"))
   expect_identical(levels(simulated$category), c("10", "2"))
@@ -97,7 +97,7 @@ test_that("bootstrap withholds p-values if a replicate cannot be fitted", {
 test_that("bootstrap refits generated data and reports finite simulation correction", {
   set.seed(53)
   d <- data.frame(g = rep(1:30, each = 8), y = rnorm(240))
-  small <- multilpa(d, "y", "g", 1, 1, variance_model = "equal", n_starts = 2, seed = 8)
+  small <- multilpa(d, "y", "g", 1, 1, variance_model = "equal", n_starts = 1, seed = 8)
   large <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 1, seed = 8,
                       max_iter = 3000, tol = 1e-7)
   rng <- .Random.seed
@@ -139,9 +139,9 @@ test_that("boundary convergence noise is not mistaken for a reversed likelihood"
   skip_on_cran()
   vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
   null_fit <- multilpa(engagement_small, vars, "student", n_profiles = 2,
-                       n_group_classes = 1, n_starts = 3, seed = 1, tol = 1e-8)
+                       n_group_classes = 1, n_starts = 1, seed = 1, tol = 1e-8)
   alt_fit <- multilpa(engagement_small, vars, "student", n_profiles = 2,
-                      n_group_classes = 2, n_starts = 3, seed = 1, tol = 1e-8)
+                      n_group_classes = 2, n_starts = 1, seed = 1, tol = 1e-8)
   # Under the null the alternative converges to the null solution, so every
   # replicate statistic sits at zero plus EM noise. EM stops on a RELATIVE
   # change, so that noise is about `2 * tol * |log_likelihood|`, which on a
@@ -155,7 +155,7 @@ test_that("boundary convergence noise is not mistaken for a reversed likelihood"
   # bundled dataset it was written against: each replicate now refits 1422
   # observations on five indicators. The claim is that EVERY replicate is
   # valid, and eight carry it as well as twelve did.
-  result <- quietly(bootstrap_lrt(null_fit, alt_fit, iter = 8, n_starts = 2,
+  result <- quietly(bootstrap_lrt(null_fit, alt_fit, iter = 8, n_starts = 1,
                                   max_iter = 2000, tol = 1e-8, seed = 7))
   test <- get_results(result, "test")
   expect_identical(test$n_valid, 8L)
@@ -201,11 +201,11 @@ test_that("covariance models are named with `model`, and a stray argument is ref
   # The old name would otherwise fail inside every candidate.
   expect_error(enumerate_classes(engagement_small, "browse", "student",
                                  n_profiles = 2, n_group_classes = 1,
-                                 structure = "VVI"),
+                                 structure = "VVI", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(enumerate_classes(engagement_small, "browse", "student",
                                  n_profiles = 2, n_group_classes = 1,
-                                 structure = "VVI"),
+                                 structure = "VVI", n_starts = 1),
                "`model`")
 })
 
@@ -251,10 +251,10 @@ test_that("enumerate_classes() enumerates single-level models with id = NULL", {
   expect_message(
     grid <- enumerate_classes(flowers, names(flowers), id = NULL,
                               n_profiles = 1:3, model = c("VVV", "EEE"),
-                              n_starts = 2, seed = 1),
+                              n_starts = 1, seed = 1),
     class = "latents_single_level")
   # Leaving `id` out is refused and points to the single-level verbs.
-  expect_error(enumerate_classes(flowers, names(flowers), n_profiles = 1:2),
+  expect_error(enumerate_classes(flowers, names(flowers), n_profiles = 1:2, n_starts = 1),
                class = "latents_bad_argument")
   table <- as.data.frame(grid)
   expect_identical(nrow(table), 6L)
@@ -264,7 +264,7 @@ test_that("enumerate_classes() enumerates single-level models with id = NULL", {
   expect_false(any(grepl("single-level", table$warnings)))
   # Each cell is the fit multilpa() makes on its own.
   alone <- withCallingHandlers(
-    multilpa(flowers, names(flowers), id = NULL, n_profiles = 3, n_starts = 2,
+    multilpa(flowers, names(flowers), id = NULL, n_profiles = 3, n_starts = 1,
              seed = 1, volume = "varying", shape = "varying",
              orientation = "varying"),
     latents_single_level = function(w) invokeRestart("muffleMessage"))
@@ -272,7 +272,7 @@ test_that("enumerate_classes() enumerates single-level models with id = NULL", {
                              model = "VVV")$log_likelihood,
                alone$log_likelihood)
   expect_error(enumerate_classes(flowers, names(flowers), id = NULL,
-                                 n_profiles = 1:2, n_group_classes = 1:2),
+                                 n_profiles = 1:2, n_group_classes = 1:2, n_starts = 1),
                class = "latents_bad_argument")
 })
 
@@ -280,7 +280,7 @@ test_that("`model` takes the basic set by default, all 14, or codes", {
   flowers <- stats::setNames(iris[1:4], c("sl", "sw", "pl", "pw"))
   enumerate <- function(...) {
     suppressMessages(enumerate_classes(flowers, names(flowers), id = NULL,
-                                       n_profiles = 1:2, n_starts = 2,
+                                       n_profiles = 1:2, n_starts = 1,
                                        seed = 1, ...))
   }
   basic <- as.data.frame(enumerate())
@@ -298,7 +298,7 @@ test_that("`model` takes the basic set by default, all 14, or codes", {
   # NULL crosses nothing and fits what multilpa() fits by default.
   plain <- as.data.frame(enumerate(model = NULL))
   expect_identical(nrow(plain), 2L)
-  default_fit <- lpa(flowers, names(flowers), n_profiles = 2, n_starts = 2,
+  default_fit <- lpa(flowers, names(flowers), n_profiles = 2, n_starts = 1,
                      seed = 1)
   expect_identical(unique(plain$model), default_fit$covariance_structure)
   expect_error(enumerate(model = "most"), class = "latents_bad_argument")
@@ -307,7 +307,7 @@ test_that("`model` takes the basic set by default, all 14, or codes", {
 test_that("`model = \"all\"` fits the 14 structures", {
   flowers <- stats::setNames(iris[1:4], c("sl", "sw", "pl", "pw"))
   grid <- suppressMessages(enumerate_classes(flowers, names(flowers),
-    id = NULL, n_profiles = 2, model = "all", n_starts = 2, seed = 1))
+    id = NULL, n_profiles = 2, model = "all", n_starts = 1, seed = 1))
   expect_setequal(as.data.frame(grid)$model, latents:::.multilpa_structures())
 })
 
@@ -316,34 +316,34 @@ test_that("structures the data cannot distinguish are fitted once", {
   one <- data.frame(y = c(rnorm(50), rnorm(50, 3, 2)))
   # One indicator: only equal or varying variance remains.
   grid <- suppressMessages(enumerate_classes(one, "y", id = NULL,
-    n_profiles = 2, n_starts = 2, seed = 1))
+    n_profiles = 2, n_starts = 1, seed = 1))
   expect_identical(as.data.frame(grid)$model, c("EEI", "VVI"))
   grid_all <- suppressMessages(enumerate_classes(one, "y", id = NULL,
-    n_profiles = 2, model = "all", n_starts = 2, seed = 1))
+    n_profiles = 2, model = "all", n_starts = 1, seed = 1))
   expect_identical(nrow(as.data.frame(grid_all)), 2L)
   # Only categorical indicators: no structure, one candidate per count, and
   # candidate_fit() needs no `model`.
   answers <- data.frame(a = factor(sample(c("x", "y"), 100, TRUE)),
                         b = factor(sample(c("x", "y"), 100, TRUE)))
   classes <- suppressMessages(enumerate_classes(answers, c("a", "b"),
-    id = NULL, n_profiles = 1:2, categorical = c("a", "b"), n_starts = 2,
+    id = NULL, n_profiles = 1:2, categorical = c("a", "b"), n_starts = 1,
     seed = 1))
   expect_identical(nrow(as.data.frame(classes)), 2L)
   expect_s3_class(candidate_fit(classes, n_profiles = 2), "multilpa")
   expect_error(enumerate_classes(answers, c("a", "b"), id = NULL,
                                  n_profiles = 1:2, model = "basic",
-                                 categorical = c("a", "b")),
+                                 categorical = c("a", "b"), n_starts = 1),
                class = "latents_bad_argument")
 })
 
 test_that("a structure set another way replaces the basic set", {
   flowers <- stats::setNames(iris[1:4], c("sl", "sw", "pl", "pw"))
   grid <- suppressMessages(enumerate_classes(flowers, names(flowers),
-    id = NULL, n_profiles = 1:2, covariance_model = "full", n_starts = 2,
+    id = NULL, n_profiles = 1:2, covariance_model = "full", n_starts = 1,
     seed = 1))
   expect_identical(nrow(as.data.frame(grid)), 2L)
   expect_error(enumerate_classes(flowers, names(flowers), id = NULL,
                                  n_profiles = 1:2, model = "EEE",
-                                 covariance_model = "full"),
+                                 covariance_model = "full", n_starts = 1),
                class = "latents_bad_argument")
 })

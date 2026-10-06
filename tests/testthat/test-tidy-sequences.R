@@ -97,7 +97,7 @@ test_that("a group class with no groups is still a row, with NA lengths", {
 test_that("sequence_summary refuses a fit without an ordering", {
   data <- .tidy_panel()
   bare <- multilpa(data, c("a", "b"), "school", n_profiles = 2,
-                   n_group_classes = 2, n_starts = 2, seed = 1)
+                   n_group_classes = 2, n_starts = 1, seed = 1)
   expect_error(get_results(bare, "sequence_summary"), class = "latents_no_time")
   expect_error(get_results(bare, "sequences", format = "wide"), class = "latents_no_time")
 })
@@ -106,7 +106,7 @@ test_that("the occasion columns are named after the ordering column", {
   data <- .tidy_panel(n_groups = 4L, positions = 3L)
   names(data)[names(data) == "wave"] <- "occasion number"
   fit <- multilpa(data, c("a", "b"), "school", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 2, seed = 1,
+                  n_group_classes = 2, n_starts = 1, seed = 1,
                   time = "occasion number")
   wide <- get_results(fit, "sequences", format = "wide")
 

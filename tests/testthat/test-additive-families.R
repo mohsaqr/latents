@@ -31,18 +31,18 @@ families_vars <- c("y1", "y2")
 test_that("blocks are shared or class-specific as each family says", {
   skip_on_cran()
   dispersion <- multilpa(families_data, families_vars, "group",
-                         n_group_classes = 2, family = "dispersion", seed = 3)
+                         n_group_classes = 2, family = "dispersion", seed = 3, n_starts = 1)
   expect_equal(dispersion$means[1, ], dispersion$means[2, ])
   expect_equal(dispersion$between_variances[1, ], dispersion$between_variances[2, ])
   expect_false(isTRUE(all.equal(dispersion$within_variances[1, ],
                                 dispersion$within_variances[2, ])))
   expect_identical(dispersion$n_parameters, 2L + 2L + 4L + 1L)
   both <- multilpa(families_data, families_vars, "group", n_group_classes = 2,
-                   family = "additive_dispersion", seed = 3)
+                   family = "additive_dispersion", seed = 3, n_starts = 1)
   expect_identical(both$n_parameters, 4L + 4L + 4L + 1L)
   both_equal <- multilpa(families_data, families_vars, "group",
                          n_group_classes = 2, family = "additive_dispersion",
-                         between_variance = "equal", seed = 3)
+                         between_variance = "equal", seed = 3, n_starts = 1)
   expect_identical(both_equal$n_parameters, 4L + 2L + 4L + 1L)
   table <- get_results(dispersion)
   expect_identical(subset(table, parameter == "mean")$group_class,
@@ -57,7 +57,7 @@ test_that("nested families order their likelihoods", {
   skip_on_cran()
   fits <- lapply(c("additive", "dispersion", "additive_dispersion"), \(family) {
     multilpa(families_data, families_vars, "group", n_group_classes = 2,
-             family = family, between_variance = "equal", tol = 1e-10, seed = 3)
+             family = family, between_variance = "equal", tol = 1e-10, seed = 3, n_starts = 1)
   })
   names(fits) <- c("additive", "dispersion", "additive_dispersion")
   # Additive-dispersion contains both, so it cannot fit worse than either.
@@ -69,14 +69,14 @@ test_that("nested families order their likelihoods", {
   one <- vapply(c("additive", "dispersion", "additive_dispersion"), \(family) {
     multilpa(families_data, families_vars, "group", n_group_classes = 1,
              family = family, between_variance = "equal", tol = 1e-12,
-             seed = 1)$log_likelihood
+             seed = 1, n_starts = 1)$log_likelihood
   }, numeric(1))
   expect_equal(unname(one), rep(one[[1]], 3), tolerance = 1e-8)
 })
 
 test_that("the dispersion family recovers class-specific within variances", {
   fit <- multilpa(families_data, families_vars, "group", n_group_classes = 2,
-                  family = "dispersion", seed = 3)
+                  family = "dispersion", seed = 3, n_starts = 1)
   recovery <- get_results(fit, "recovery", data = families_data, truth = "class")
   agreement <- sum(tapply(recovery$n, recovery$assigned, max)) / sum(recovery$n)
   expect_gt(agreement, 0.9)
@@ -91,11 +91,11 @@ test_that("the dispersion family recovers class-specific within variances", {
 test_that("dispersion refuses class-specific between variances", {
   expect_error(multilpa(families_data, families_vars, "group",
                         n_group_classes = 2, family = "dispersion",
-                        between_variance = "varying"),
+                        between_variance = "varying", n_starts = 1),
                class = "latents_bad_argument")
   expect_s3_class(multilpa(families_data, families_vars, "group",
                            n_group_classes = 2, family = "dispersion",
-                           between_variance = "equal", seed = 1),
+                           between_variance = "equal", seed = 1, n_starts = 1),
                   "multilpa_additive")
 })
 
@@ -104,7 +104,7 @@ test_that("print, summary and plots work for the new families", {
   skip_if_not_installed("ggplot2")
   fits <- lapply(c("dispersion", "additive_dispersion"), \(family) {
     multilpa(families_data, families_vars, "group", n_group_classes = 2,
-             family = family, seed = 3)
+             family = family, seed = 3, n_starts = 1)
   })
   expect_output(print(fits[[1]]), "Dispersion group-class model")
   expect_output(print(fits[[2]]), "Additive-dispersion group-class model")

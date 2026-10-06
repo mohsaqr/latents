@@ -41,7 +41,7 @@ test_that("identical group classes reduce it to the single-level growth mixture"
   fit <- multilevel_fit(data)
   single <- mixture_regression(score ~ wave, data, n_classes = 2, id = "student",
                                class_level = "group", random = "wave",
-                               random_covariance = "equal", n_starts = 3, seed = 1)
+                               random_covariance = "equal", n_starts = 1, seed = 1)
   # Invariant: with every group class carrying the single-level class logits,
   # the group classes are indistinguishable and the likelihoods agree.
   params <- fit$params
@@ -61,10 +61,10 @@ test_that("one group class is the single-level model with clusters as units", {
   one <- mixture_regression(score ~ wave, data, n_classes = 2, id = "student",
                             class_level = "group", random = "wave",
                             random_covariance = "equal", n_group_classes = 1,
-                            cluster = "school", n_starts = 3, seed = 1)
+                            cluster = "school", n_starts = 1, seed = 1)
   single <- mixture_regression(score ~ wave, data, n_classes = 2, id = "student",
                                class_level = "group", random = "wave",
-                               random_covariance = "equal", n_starts = 3, seed = 1)
+                               random_covariance = "equal", n_starts = 1, seed = 1)
   expect_equal(one$log_likelihood, single$log_likelihood, tolerance = 1e-8)
   expect_identical(one$n_parameters, single$n_parameters)
   expect_identical(nrow(latents:::.growth_scores(one$spec, one$stats, one$params)),
@@ -73,7 +73,7 @@ test_that("one group class is the single-level model with clusters as units", {
                                     n_group_classes = 1:2, id = "student",
                                     class_level = "group", random = "wave",
                                     random_covariance = "equal", cluster = "school",
-                                    n_starts = 2, seed = 1)
+                                    n_starts = 1, seed = 1)
   expect_identical(nrow(as.data.frame(compared)), 2L)
 })
 

@@ -36,16 +36,16 @@ test_that("the staged fit does not depend on the order `categorical` names", {
   indicators <- c(items, "score")
   measurement <- multilpa(frame, indicators, "school", n_profiles = 2,
                           n_group_classes = 1, categorical = items,
-                          n_starts = 2, seed = 1)
+                          n_starts = 1, seed = 1)
   reference <- fit_staged(frame, indicators, "school", n_profiles = 2,
                           n_group_classes = 2, categorical = items,
-                          measurement = measurement, n_starts = 2, seed = 1)
+                          measurement = measurement, n_starts = 1, seed = 1)
 
   invisible(lapply(.staged_orderings(items), function(ordering) {
     label <- paste(ordering, collapse = ", ")
     permuted <- fit_staged(frame, indicators, "school", n_profiles = 2,
                            n_group_classes = 2, categorical = ordering,
-                           measurement = measurement, n_starts = 2, seed = 1)
+                           measurement = measurement, n_starts = 1, seed = 1)
     expect_equal(permuted$log_likelihood, reference$log_likelihood,
                  tolerance = 1e-8, label = label)
     expect_identical(permuted$n_parameters, reference$n_parameters)
@@ -66,10 +66,10 @@ test_that("the staged fit does not depend on the order the factor levels are dec
   indicators <- c(items, "score")
   measurement <- multilpa(frame, indicators, "school", n_profiles = 2,
                           n_group_classes = 1, categorical = items,
-                          n_starts = 2, seed = 1)
+                          n_starts = 1, seed = 1)
   reference <- fit_staged(frame, indicators, "school", n_profiles = 2,
                           n_group_classes = 2, categorical = items,
-                          measurement = measurement, n_starts = 2, seed = 1)
+                          measurement = measurement, n_starts = 1, seed = 1)
 
   # The same responses, with one item's levels declared the other way round.
   # Nothing about the data has changed, so nothing about the fit may change.
@@ -77,7 +77,7 @@ test_that("the staged fit does not depend on the order the factor levels are dec
   reversed$a <- factor(reversed$a, levels = rev(levels(reversed$a)))
   flipped <- fit_staged(reversed, indicators, "school", n_profiles = 2,
                         n_group_classes = 2, categorical = items,
-                        measurement = measurement, n_starts = 2, seed = 1)
+                        measurement = measurement, n_starts = 1, seed = 1)
   expect_equal(flipped$log_likelihood, reference$log_likelihood,
                tolerance = 1e-8)
   expect_identical(colnames(flipped$response_probabilities$a),
@@ -97,7 +97,7 @@ test_that("the staged fit does not depend on the order the factor levels are dec
   })
   every <- fit_staged(all_reversed, indicators, "school", n_profiles = 2,
                       n_group_classes = 2, categorical = items,
-                      measurement = measurement, n_starts = 2, seed = 1)
+                      measurement = measurement, n_starts = 1, seed = 1)
   expect_equal(every$log_likelihood, reference$log_likelihood, tolerance = 1e-8)
 })
 
@@ -107,7 +107,7 @@ test_that("a first stage whose categories are not these categories is refused", 
   indicators <- c(items, "score")
   measurement <- multilpa(frame, indicators, "school", n_profiles = 2,
                           n_group_classes = 1, categorical = items,
-                          n_starts = 2, seed = 1)
+                          n_starts = 1, seed = 1)
   # The same item, recorded on a different scale. There is no alignment to
   # make, so the request must be refused rather than answered with a number.
   relabelled <- frame
@@ -115,7 +115,7 @@ test_that("a first stage whose categories are not these categories is refused", 
   expect_error(
     fit_staged(relabelled, indicators, "school", n_profiles = 2,
                n_group_classes = 2, categorical = items,
-               measurement = measurement, n_starts = 2, seed = 1),
+               measurement = measurement, n_starts = 1, seed = 1),
     class = "latents_bad_stage")
 
   # An extra category the first stage never saw cannot be held either.
@@ -125,7 +125,7 @@ test_that("a first stage whose categories are not these categories is refused", 
   expect_error(
     fit_staged(extended, indicators, "school", n_profiles = 2,
                n_group_classes = 2, categorical = items,
-               measurement = measurement, n_starts = 2, seed = 1),
+               measurement = measurement, n_starts = 1, seed = 1),
     class = "latents_bad_stage")
 })
 

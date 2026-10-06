@@ -70,7 +70,7 @@ test_that("a complete stratifier is summarized exactly as before", {
 test_that("an indicator named `profile` is summarized as itself", {
   data <- .separated_data()
   fit <- multilpa(data, c("profile", "b"), "g", n_profiles = 2,
-                  n_group_classes = 1, n_starts = 2, seed = 1)
+                  n_group_classes = 1, n_starts = 1, seed = 1)
   described <- descriptives(fit, by = "profile")
   indicator <- subset(described, variable == "profile")
   truth <- vapply(split(data$profile, fit$subject_profiles), mean, numeric(1))
@@ -87,7 +87,7 @@ test_that("an indicator named `profile` is summarized as itself", {
 test_that("an indicator named `group_class` is summarized as itself", {
   data <- .separated_data()
   fit <- multilpa(data, c("group_class", "b"), "g", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 4, seed = 1)
+                  n_group_classes = 2, n_starts = 1, seed = 1)
   described <- descriptives(fit, by = "group_class")
   indicator <- subset(described, variable == "group_class")
   assigned <- fit$group_classes[fit$group_index]

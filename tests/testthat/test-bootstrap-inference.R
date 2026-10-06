@@ -72,13 +72,13 @@ test_that("a refit reproduces the structure it was fitted with", {
   # `covariance_model` alone returned a VEI fit as VVI, a wider model.
   data <- clustered_data()
   fit <- multilpa(data, c("x", "y"), "unit", n_profiles = 2L, n_group_classes = 1L,
-                  n_starts = 3L, seed = 1L, volume = "varying", shape = "equal",
+                  n_starts = 1, seed = 1L, volume = "varying", shape = "equal",
                   orientation = "axis")
   expect_identical(fit$covariance_structure, "VEI")
   arguments <- latents:::.multilpa_refit_arguments(fit)
   expect_false(any(c("variance_model", "covariance_model") %in% names(arguments)))
   again <- do.call(multilpa, c(list(data = data), arguments,
-                               list(n_starts = 3L, seed = 1L)))
+                               list(n_starts = 1, seed = 1L)))
   expect_identical(again$covariance_structure, "VEI")
   expect_identical(again$n_parameters, fit$n_parameters)
 })
@@ -87,7 +87,7 @@ test_that("a constrained structure reports bootstrap intervals", {
   skip_on_cran()
   fit <- small_fit(volume = "varying", shape = "equal", orientation = "axis")
   boot <- parameter_inference(fit, method = "bootstrap", iter = 25L,
-                              n_starts = 2L, seed = 5L)
+                              n_starts = 1, seed = 5L)
   expect_s3_class(boot, "data.frame")
   expect_identical(attr(boot, "method"), "bootstrap")
   expect_true(all(is.finite(boot$standard_error)))
@@ -105,7 +105,7 @@ test_that("the bootstrap agrees with the sandwich where both are available", {
   fit <- small_fit()
   robust <- parameter_inference(fit, vcov_type = "robust")
   boot <- parameter_inference(fit, method = "bootstrap", iter = 150L,
-                              n_starts = 2L, seed = 9L)
+                              n_starts = 1, seed = 9L)
   expect_identical(robust$term, boot$term)
   estimated <- robust$standard_error > 0
   ratio <- boot$standard_error[estimated] / robust$standard_error[estimated]
@@ -135,7 +135,7 @@ test_that("a replicate is relabelled onto the original before it is read", {
 
 test_that("group classes are relabelled once their profiles agree", {
   fit <- multilpa(clustered_data(), c("x", "y"), "unit", n_profiles = 2L,
-                  n_group_classes = 2L, n_starts = 3L, seed = 1L)
+                  n_group_classes = 2L, n_starts = 1, seed = 1L)
   scrambled <- latents:::.multilpa_permute_group_classes(fit, c(2L, 1L))
   aligned <- latents:::.multilpa_align_labels(scrambled, fit)
   expect_equal(aligned$profile_probabilities, fit$profile_probabilities)
@@ -197,8 +197,8 @@ test_that("confint reports the interval parameter_inference reports", {
   # would be a second, different interval for the same fit.
   fit <- small_fit(volume = "varying", shape = "equal", orientation = "axis")
   table <- parameter_inference(fit, method = "bootstrap", iter = 25L,
-                               n_starts = 2L, seed = 6L)
-  interval <- confint(fit, method = "bootstrap", iter = 25L, n_starts = 2L, seed = 6L)
+                               n_starts = 1, seed = 6L)
+  interval <- confint(fit, method = "bootstrap", iter = 25L, n_starts = 1, seed = 6L)
   expect_equal(unname(interval[, 1L]), table$conf_low)
   expect_equal(unname(interval[, 2L]), table$conf_high)
 })
@@ -207,13 +207,13 @@ test_that("vcov and confint reach the bootstrap for a constrained structure", {
   skip_on_cran()
   fit <- small_fit(volume = "equal", shape = "spherical")
   expect_identical(fit$covariance_structure, "EII")
-  covariance <- vcov(fit, method = "bootstrap", iter = 20L, n_starts = 2L, seed = 2L)
+  covariance <- vcov(fit, method = "bootstrap", iter = 20L, n_starts = 1, seed = 2L)
   expect_true(is.matrix(covariance))
   expect_identical(nrow(covariance), ncol(covariance))
   # A covariance matrix of replicates is symmetric with a non-negative diagonal.
   expect_equal(covariance, t(covariance))
   expect_true(all(diag(covariance) >= 0))
-  interval <- confint(fit, method = "bootstrap", iter = 20L, n_starts = 2L, seed = 2L)
+  interval <- confint(fit, method = "bootstrap", iter = 20L, n_starts = 1, seed = 2L)
   expect_identical(nrow(interval), nrow(covariance))
   expect_true(all(interval[, 1L] <= interval[, 2L]))
 })
@@ -228,7 +228,7 @@ test_that("a covariate fit refuses the bootstrap rather than ignoring it", {
   # fixture's doing, and it is the one warning this call legitimately raises.
   fit <- quietly(multilpa(data, c("x", "y"), "unit", n_profiles = 2L,
                           n_group_classes = 2L, profile_covariates = "w",
-                          n_starts = 2L, seed = 1L))
+                          n_starts = 1, seed = 1L))
   expect_s3_class(fit, "multilpa_covariates")
   expect_error(parameter_inference(fit, method = "bootstrap"),
                class = "latents_unsupported_inference")

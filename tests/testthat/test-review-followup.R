@@ -64,7 +64,7 @@ test_that("categorical transition response tables keep their standard errors", {
   set.seed(4)
   data$c1 <- factor(ifelse(data$y1 + stats::rnorm(nrow(data)) > 1.5, "hi", "lo"))
   fit <- lta(data, c("y1", "c1"), "id", 2, time = "time", categorical = "c1",
-             n_starts = 2, seed = 1)
+             n_starts = 1, seed = 1)
   expect_true(isTRUE(fit$converged))
   # 0.9.8 refused boundary = "fix", so this table silently lost every error.
   responses <- get_results(fit, "responses")
@@ -102,7 +102,7 @@ test_that("near-Poisson negative-binomial dispersion reaches the profile maximum
   y <- stats::rnbinom(2000L, size = 1e9, mu = 500)
   data <- data.frame(x1 = x1, c1 = y)
   fit <- lpa(data, c("x1", "c1"), 1, count = "c1",
-             count_model = "negative_binomial", n_starts = 2)
+             count_model = "negative_binomial", n_starts = 1)
   # One profile: the NB2 mean MLE is the sample mean, so the dispersion MLE is
   # the maximum of the profile likelihood in alpha alone.
   profile <- function(log_alpha) {
@@ -138,7 +138,7 @@ test_that("bootstrap_lrt accepts the caller's frame for single-level fits", {
   data <- data.frame(x1 = c(stats::rnorm(60), stats::rnorm(60, 3)),
                      x2 = c(stats::rnorm(60), stats::rnorm(60, 2)))
   one <- lpa(data, c("x1", "x2"), 1, n_starts = 1)
-  two <- lpa(data, c("x1", "x2"), 2, n_starts = 2, seed = 1)
+  two <- lpa(data, c("x1", "x2"), 2, n_starts = 1, seed = 1)
   stored <- bootstrap_lrt(one, two, iter = 2, n_starts = 1, seed = 5)
   supplied <- bootstrap_lrt(one, two, data = data, iter = 2, n_starts = 1, seed = 5)
   expect_equal(supplied$statistic, stored$statistic, tolerance = 1e-12)
@@ -157,9 +157,9 @@ test_that("weighted classification tables use weighted class totals", {
                      x2 = stats::rnorm(n, rep(c(0, 2), each = 60L)))
   data$w <- sample(1:4, n, replace = TRUE)
   replicated <- data[rep(seq_len(n), data$w), ]
-  weighted <- lpa(data, c("x1", "x2"), 2, weights = "w", seed = 1, n_starts = 5,
+  weighted <- lpa(data, c("x1", "x2"), 2, weights = "w", seed = 1, n_starts = 1,
                   tol = 1e-12)
-  frequency <- lpa(replicated, c("x1", "x2"), 2, seed = 1, n_starts = 5, tol = 1e-12)
+  frequency <- lpa(replicated, c("x1", "x2"), 2, seed = 1, n_starts = 1, tol = 1e-12)
   table_w <- get_results(weighted, "classification", level = "individuals")
   table_f <- get_results(frequency, "classification", level = "individuals")
   # Integer weights are frequency weights: shares and OCC match replication.
@@ -178,7 +178,7 @@ test_that("weighted classification tables use weighted class totals", {
   expect_equal(sum(table_w$estimated_proportion), 1, tolerance = 1e-12)
   # Modal counts stay per-unit descriptions of the rows supplied.
   expect_identical(sum(table_w$n_modal), n)
-  unweighted <- lpa(data, c("x1", "x2"), 2, seed = 1, n_starts = 5, tol = 1e-12)
+  unweighted <- lpa(data, c("x1", "x2"), 2, seed = 1, n_starts = 1, tol = 1e-12)
   expect_equal(get_results(unweighted, "classification", level = "individuals")$estimated_n,
                unname(colSums(unweighted$subject_posteriors)), tolerance = 1e-12)
 })
@@ -205,7 +205,7 @@ test_that("restricted cross-level composition and class counts use group weights
   }))
   fit <- function(frame, weights) {
     multilpa(frame, c("x1", "x2"), "id", 2, 2, family = "restricted_cross_level",
-             weights = weights, seed = 4, n_starts = 10, tol = 1e-14, max_iter = 20000)
+             weights = weights, seed = 4, n_starts = 1, tol = 1e-14, max_iter = 20000)
   }
   weighted <- fit(data, "w")
   frequency <- fit(replicated, NULL)

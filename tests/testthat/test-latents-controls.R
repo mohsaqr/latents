@@ -87,7 +87,7 @@ test_that("select_start reaches every fitting path", {
 test_that("group-class R3STEP reduces to the pooled regression with one group class", {
   data <- subset(course_engagement, student <= 40)
   fit <- multilpa(data, c("browse", "lectures", "forum_read"), "student", 2, 1,
-                  n_starts = 2, seed = 1)
+                  n_starts = 1, seed = 1)
   for (type in c("observed", "robust")) {
     pooled <- r3step(fit, data, "previous_grade", vcov_type = type)
     nested <- r3step(fit, data, "previous_grade", vcov_type = type,
@@ -116,7 +116,7 @@ test_that("group-class R3STEP reduces to the pooled regression with one group cl
 test_that("the two-level R3STEP gradient is the derivative of its likelihood", {
   data <- .two_level_membership(n_groups = 40)
   fit <- multilpa(data, c("a", "b", "c"), "g", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 3, seed = 1)
+                  n_group_classes = 2, n_starts = 1, seed = 1)
   pieces <- .multilpa_level_assignments(fit, "individuals")
   model <- .multilpa_r3step_group_model(fit, as.matrix(data["z"]), pieces,
                                         .multilpa_error_matrix(pieces))
@@ -131,7 +131,7 @@ test_that("the two-level R3STEP gradient is the derivative of its likelihood", {
 test_that("the two-level R3STEP recovers the slope the pooled one attenuates", {
   data <- .two_level_membership()
   fit <- multilpa(data, c("a", "b", "c"), "g", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 3, seed = 1)
+                  n_group_classes = 2, n_starts = 1, seed = 1)
   nested <- r3step(fit, data, "z", by_group_class = TRUE)
   pooled <- r3step(fit, data, "z")
   slope <- abs(subset(nested, term == "z")$estimate)
@@ -151,7 +151,7 @@ test_that("the two-level R3STEP recovers the slope the pooled one attenuates", {
 test_that("the two-level R3STEP is refused where it does not apply", {
   data <- .two_level_membership(n_groups = 30)
   fit <- multilpa(data, c("a", "b", "c"), "g", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 2, seed = 1)
+                  n_group_classes = 2, n_starts = 1, seed = 1)
   expect_error(r3step(fit, data, "z", level = "groups", by_group_class = TRUE),
                class = "latents_bad_argument")
   expect_error(r3step(fit, data, "z", by_group_class = NA), "TRUE or FALSE")
@@ -165,7 +165,7 @@ test_that("the two-level R3STEP is refused where it does not apply", {
 test_that("r3step now defaults to standard errors clustered on groups", {
   data <- .two_level_membership(n_groups = 30)
   fit <- multilpa(data, c("a", "b", "c"), "g", n_profiles = 2,
-                  n_group_classes = 1, n_starts = 2, seed = 1)
+                  n_group_classes = 1, n_starts = 1, seed = 1)
   expect_identical(attr(r3step(fit, data, "z"), "vcov_type"), "robust")
 })
 
@@ -225,7 +225,7 @@ test_that("a mixed covariate fit carries both measurement blocks", {
   data <- .lca_design(continuous = TRUE)
   fit <- multilpa(data, vars = c(.lca_items, "w"), id = "g", n_profiles = 2,
                   n_group_classes = 2, profile_covariates = "z",
-                  categorical = .lca_items, n_starts = 2, seed = 1,
+                  categorical = .lca_items, n_starts = 1, seed = 1,
                   select_start = "converged")
   inference <- parameter_inference(fit)
   expect_setequal(unique(inference$parameter),
@@ -258,7 +258,7 @@ test_that("bound-active response probabilities are refused or held on request", 
   # probability is driven to the floor.
   data$y6 <- ifelse(data$y1 == 1L, 1L, sample(1:2, nrow(data), TRUE))
   fit <- multilca(data, vars = c(.lca_items, "y6"), id = "g", n_profiles = 2,
-                  n_group_classes = 2, profile_covariates = "z", n_starts = 2,
+                  n_group_classes = 2, profile_covariates = "z", n_starts = 1,
                   seed = 1, select_start = "converged")
   floor_hit <- any(unlist(fit$response_probabilities) <= 1e-10 * (1 + 1e-7))
   skip_if_not(floor_hit && fit$converged, "no probability reached the floor")

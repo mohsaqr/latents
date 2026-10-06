@@ -25,7 +25,7 @@ test_that("class wrappers partition structured discrete indicators", {
   data <- review_discrete_rows()
   arguments <- list(data = data, vars = c("o", "k", "a"), n_profiles = 2,
                     ordinal = "o", count = "k", count_model = "negative_binomial",
-                    n_starts = 2, seed = 7)
+                    n_starts = 1, seed = 7)
   reference <- quietly(do.call(multilpa, c(arguments, list(id = NULL, categorical = "a"))))
   single <- do.call(lca, c(arguments[setdiff(names(arguments), "n_profiles")],
                           list(n_classes = 2)))

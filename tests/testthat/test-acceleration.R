@@ -105,7 +105,7 @@ test_that("a converged EVE/VVE fit is a fixed point of the full orientation solv
   invisible(lapply(c("EVE", "VVE"), function(code) {
     fit <- withCallingHandlers(
       do.call(multilpa, c(list(data = x, vars = fixture$vars, id = NULL,
-                               n_profiles = 2, n_starts = 2, seed = 1,
+                               n_profiles = 2, n_starts = 1, seed = 1,
                                tol = 1e-12, max_iter = 20000),
                           latents:::.multilpa_structure_arguments(code))),
       latents_single_level = function(w) invokeRestart("muffleMessage"))

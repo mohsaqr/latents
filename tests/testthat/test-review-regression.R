@@ -30,7 +30,7 @@ test_that("weighted regression class sizes use weighted posteriors", {
 test_that("two-level regression group shares and composition use sampling weights", {
   data <- review_regression_rows()
   fit <- quietly(mixture_regression(y ~ x, data, 2, id = "g", n_group_classes = 2,
-                                     weights = "w", n_starts = 2, seed = 1,
+                                     weights = "w", n_starts = 1, seed = 1,
                                      membership = ~ x, vcov_type = "none"),
                  classes = c(.multilpa_expected_warnings, "latents_separation"))
   # This table is defined without Wald inference when row covariates occur.
@@ -50,15 +50,15 @@ test_that("regression counts and iteration controls reject fractional or overflo
   data <- review_regression_rows()
   lapply(c(.5, 2^31, Inf, NA_real_), function(value) {
     expect_error(mixture_regression(y ~ x, data, 1, n_starts = value), "n_starts")
-    expect_error(mixture_regression(y ~ x, data, 1, max_iter = value), "max_iter")
-    expect_error(enumerate_regressions(y ~ x, data, 1, bootstrap = value), "bootstrap")
-    expect_error(enumerate_regressions(y ~ x, data, 1, bootstrap_starts = value),
+    expect_error(mixture_regression(y ~ x, data, 1, max_iter = value, n_starts = 1), "max_iter")
+    expect_error(enumerate_regressions(y ~ x, data, 1, bootstrap = value, n_starts = 1), "bootstrap")
+    expect_error(enumerate_regressions(y ~ x, data, 1, bootstrap_starts = value, n_starts = 1),
                  "bootstrap_starts")
   })
-  expect_error(mixture_regression(y ~ x, data, 1.000000001), "n_classes")
-  expect_error(mixture_regression(y ~ x, data, 2^31), "n_classes")
-  expect_error(mixture_regression(y ~ x, data, 1, seed = Inf), class = "latents_bad_argument")
-  expect_error(enumerate_regressions(y ~ x, data, 1, seed = .1),
+  expect_error(mixture_regression(y ~ x, data, 1.000000001, n_starts = 1), "n_classes")
+  expect_error(mixture_regression(y ~ x, data, 2^31, n_starts = 1), "n_classes")
+  expect_error(mixture_regression(y ~ x, data, 1, seed = Inf, n_starts = 1), class = "latents_bad_argument")
+  expect_error(enumerate_regressions(y ~ x, data, 1, seed = .1, n_starts = 1),
                class = "latents_bad_argument")
   fit <- quietly(mixture_regression(y ~ x, data, 1, n_starts = 0, max_iter = 0,
                                     vcov_type = "none"))

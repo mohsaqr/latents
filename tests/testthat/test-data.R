@@ -267,7 +267,7 @@ test_that("a fit recovers the two-level structure, not just the profiles", {
 test_that("the sequence recovers the persistence it was generated with", {
   skip_on_cran()
   moves <- lta(course_engagement, vars = .activity, id = "student",
-                           time = "sequence", n_profiles = 2, n_starts = 4,
+                           time = "sequence", n_profiles = 2, n_starts = 1,
                            seed = 1)
   staying <- get_results(moves, "transitions", stable = TRUE)$probability
   expect_length(staying, 2L)

@@ -22,22 +22,22 @@ cross_level_vars <- c("y1", "y2")
 
 test_that("full nests restricted, and one group class makes them coincide", {
   full <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
-                   n_group_classes = 2, family = "full_cross_level", seed = 1)
+                   n_group_classes = 2, family = "full_cross_level", seed = 1, n_starts = 1)
   restricted <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
                          n_group_classes = 2, family = "restricted_cross_level",
-                         seed = 1)
+                         seed = 1, n_starts = 1)
   expect_gte(full$log_likelihood, restricted$log_likelihood - 1e-6)
   one <- vapply(c("full_cross_level", "restricted_cross_level"), \(family) {
     multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
              n_group_classes = 1, family = family, tol = 1e-12,
-             seed = 1)$log_likelihood
+             seed = 1, n_starts = 1)$log_likelihood
   }, numeric(1))
   expect_equal(one[[1]], one[[2]], tolerance = 1e-6)
 })
 
 test_that("the full model recovers group composition", {
   fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
-                  n_group_classes = 2, family = "full_cross_level", seed = 1)
+                  n_group_classes = 2, family = "full_cross_level", seed = 1, n_starts = 1)
   groups <- get_results(fit, "groups")
   truth <- cross_level_data$type[!duplicated(cross_level_data$team)]
   agreement <- max(mean(groups$group_class == paste0("group_class_", truth)),
@@ -51,7 +51,7 @@ test_that("the full model recovers group composition", {
 test_that("tables, plots and refusals of the cross-level families", {
   skip_on_cran()
   fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
-                  n_group_classes = 2, family = "full_cross_level", seed = 1)
+                  n_group_classes = 2, family = "full_cross_level", seed = 1, n_starts = 1)
   tables <- get_results(fit, "all")
   expect_true(all(vapply(tables, is.data.frame, logical(1))))
   expect_identical(nrow(tables$assignments), nrow(cross_level_data))
@@ -61,10 +61,10 @@ test_that("tables, plots and refusals of the cross-level families", {
   expect_output(print(fit), "Full cross-level model")
   expect_error(parameter_inference(fit), class = "latents_unsupported_inference")
   expect_error(multilpa(cross_level_data, cross_level_vars, "team",
-                        n_group_classes = 2, family = "full_cross_level"),
+                        n_group_classes = 2, family = "full_cross_level", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
-                        family = "full_cross_level", categorical = "y1"),
+                        family = "full_cross_level", categorical = "y1", n_starts = 1),
                class = "latents_bad_argument")
   skip_if_not_installed("ggplot2")
   plots <- lapply(c("profiles", "group_means", "composition"),

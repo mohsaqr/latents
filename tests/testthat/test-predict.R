@@ -19,16 +19,16 @@ test_that("predicting the training rows reproduces the fit's posteriors", {
   esm <- subset(student_esm, day <= 3)
   fits <- list(
     two_level = multilpa(course_engagement, activity, "student", 2, 2,
-                         n_starts = 2, seed = 1),
+                         n_starts = 1, seed = 1),
     full = multilpa(course_engagement, activity, "student", 2, 2,
-                    covariance_model = "full", n_starts = 2, seed = 1),
+                    covariance_model = "full", n_starts = 1, seed = 1),
     fiml = multilpa(gappy, activity, "student", 2, 2, missing = "fiml",
-                    n_starts = 2, seed = 1),
+                    n_starts = 1, seed = 1),
     person = multilpa(course_engagement, activity, "student", 2, 2,
-                      centering = "person", n_starts = 2, seed = 1),
-    lca = multilca(esm, activities, "student", 2, 2, n_starts = 2, seed = 1),
+                      centering = "person", n_starts = 1, seed = 1),
+    lca = multilca(esm, activities, "student", 2, 2, n_starts = 1, seed = 1),
     noise = quiet_single(multilpa(course_engagement, activity, NULL, 2,
-                                  noise = TRUE, n_starts = 2, seed = 1)))
+                                  noise = TRUE, n_starts = 1, seed = 1)))
   data_for <- list(two_level = course_engagement, full = course_engagement,
                    fiml = gappy, person = course_engagement, lca = esm,
                    noise = course_engagement)
@@ -50,7 +50,7 @@ test_that("predicting the training rows reproduces the fit's posteriors", {
 test_that("a single-level fit's densities sum to its log likelihood", {
   skip_on_cran()
   fit <- quiet_single(multilpa(course_engagement, activity, NULL, 3,
-                               n_starts = 2, seed = 1))
+                               n_starts = 1, seed = 1))
   densities <- predict(fit, course_engagement, type = "density")
   expect_equal(sum(densities$log_density), fit$log_likelihood,
                tolerance = 1e-10)
@@ -58,7 +58,7 @@ test_that("a single-level fit's densities sum to its log likelihood", {
 
 test_that("a new group is classified from its own rows alone", {
   fit <- multilpa(subset(course_engagement, student <= 60), activity,
-                  "student", 2, 2, n_starts = 2, seed = 1)
+                  "student", 2, 2, n_starts = 1, seed = 1)
   newcomers <- subset(course_engagement, student > 100)
   together <- predict(fit, newcomers, type = "posterior")
   alone <- predict(fit, subset(newcomers, student == 101), type = "posterior")

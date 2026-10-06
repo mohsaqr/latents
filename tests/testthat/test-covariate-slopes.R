@@ -148,9 +148,9 @@ test_that("slopes by group class without a profile covariate are refused by clas
   data <- .slopes_fixture()
   data$w <- stats::ave(data$z, data$g)
   expect_error(multilpa(data, c("y1", "y2"), "g", 2L, 2L,
-                        profile_slopes = "group_class"),
+                        profile_slopes = "group_class", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(multilpa(data, c("y1", "y2"), "g", 2L, 2L, group_covariates = "w",
-                        profile_slopes = "group_class"),
+                        profile_slopes = "group_class", n_starts = 1),
                class = "latents_bad_argument")
 })

@@ -42,7 +42,7 @@ test_that("the first week supports a two-level latent class model", {
   expect_identical(nrow(first_week), 1422L)
   lca <- multilpa(first_week, vars = .leisure, id = "student",
                   n_profiles = 2, n_group_classes = 2,
-                  categorical = .leisure, n_starts = 3, seed = 1)
+                  categorical = .leisure, n_starts = 1, seed = 1)
   model <- get_results(lca, "model")
   expect_true(model$converged)
   expect_false(model$boundary)

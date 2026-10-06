@@ -72,7 +72,7 @@ test_that("every measurement model reproduces the likelihood written from its de
   invisible(lapply(cases, function(case) {
     fit <- quietly(do.call(multilpa, c(list(
       data, case$vars, "g", 2L, 2L, profile_covariates = "z",
-      n_starts = 2, seed = 3, max_iter = 50), case$extra)))
+      n_starts = 1, seed = 3, max_iter = 50), case$extra)))
     expect_equal(fit$log_likelihood, .cov_independent_likelihood(fit, data),
                  tolerance = 1e-10, label = case$label)
     expect_false(is.unsorted(fit$log_likelihood_history))
@@ -82,13 +82,13 @@ test_that("every measurement model reproduces the likelihood written from its de
 test_that("the measurement blocks and parameter counts match the model fitted", {
   data <- .cov_measurement_fixture()
   gaussian <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, max_iter = 50))
+    profile_covariates = "z", n_starts = 1, seed = 3, max_iter = 50))
   full <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, max_iter = 50, covariance_model = "full"))
+    profile_covariates = "z", n_starts = 1, seed = 3, max_iter = 50, covariance_model = "full"))
   mixed <- quietly(multilpa(data, c("y1", "y2", "q", "r"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, max_iter = 50, categorical = c("q", "r")))
+    profile_covariates = "z", n_starts = 1, seed = 3, max_iter = 50, categorical = c("q", "r")))
   categorical <- quietly(multilpa(data, c("q", "r"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, max_iter = 50, categorical = c("q", "r")))
+    profile_covariates = "z", n_starts = 1, seed = 3, max_iter = 50, categorical = c("q", "r")))
 
   expect_identical(gaussian$measurement_model, "gaussian")
   expect_identical(mixed$measurement_model, "mixed")
@@ -133,7 +133,7 @@ test_that("with no covariates the covariate model is the covariate-free one", {
 test_that("the full-covariance score is the derivative of the likelihood", {
   data <- .cov_measurement_fixture(n_groups = 24L)
   fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 3, seed = 1, covariance_model = "full",
+    profile_covariates = "z", n_starts = 1, seed = 1, covariance_model = "full",
     max_iter = 2000, tol = 1e-11))
   theta <- .multilpa_cov_encode(fit)
   expect_equal(length(theta), fit$n_parameters)
@@ -165,7 +165,7 @@ test_that("the full-covariance score is the derivative of the likelihood", {
 test_that("full-covariance standard errors match an independent information matrix", {
   data <- .cov_measurement_fixture(n_groups = 24L)
   fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 3, seed = 1, covariance_model = "full",
+    profile_covariates = "z", n_starts = 1, seed = 1, covariance_model = "full",
     max_iter = 2000, tol = 1e-11))
   theta <- .multilpa_cov_encode(fit)
   x <- sweep(as.matrix(data[c("y1", "y2")]), 2L, fit$center, "-")
@@ -189,7 +189,7 @@ test_that("full-covariance standard errors match an independent information matr
 test_that("covariance estimates are reported in natural units with their own tests", {
   data <- .cov_measurement_fixture(n_groups = 24L)
   fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 3, seed = 1, covariance_model = "full",
+    profile_covariates = "z", n_starts = 1, seed = 1, covariance_model = "full",
     max_iter = 2000, tol = 1e-11))
   inference <- parameter_inference(fit, data)
   covariances <- inference[inference$parameter == "covariance", ]
@@ -213,7 +213,7 @@ test_that("covariance estimates are reported in natural units with their own tes
 test_that("inference counts every parameter of a mixed covariate fit", {
   data <- .cov_measurement_fixture()
   fit <- quietly(multilpa(data, c("y1", "y2", "q"), "g", 2L, 1L,
-    profile_covariates = "z", n_starts = 2, seed = 3, categorical = "q",
+    profile_covariates = "z", n_starts = 1, seed = 3, categorical = "q",
     select_start = "converged"))
   skip_if_not(fit$converged, "no start converged on this fixture")
   # The categorical block used to be refused because it had no score; it is

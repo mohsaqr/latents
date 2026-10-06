@@ -46,7 +46,7 @@ test_that("matching a relabelled profile fit recovers the inverse permutation", 
 test_that("matching a relabelled covariate fit restores its logits and likelihood", {
   data <- alignment_covariate_rows()
   fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L, profile_covariates = "z",
-                          n_starts = 2, seed = 1),
+                          n_starts = 1, seed = 1),
                  classes = c(.multilpa_expected_warnings, "latents_extreme_coefficients"))
   scrambled <- .multilpa_cov_permute(fit, c(2L, 1L), 1L)
   expect_false(isTRUE(all.equal(scrambled$profile_coefficients, fit$profile_coefficients)))
@@ -93,7 +93,7 @@ test_that("ordinal and count signatures are permutation invariant", {
                      }, integer(1))),
                      k = stats::rnbinom(n, mu = c(2, 14)[z], size = 2))
   fit <- quietly(multilpa(data, c("o", "k"), "g", 2L, 1L, ordinal = "o", count = "k",
-                          count_model = "negative_binomial", n_starts = 2, seed = 7))
+                          count_model = "negative_binomial", n_starts = 1, seed = 7))
   moved <- .multilpa_permute_profiles(fit, 2:1)
   # The ordinal reference is rebased, so the probabilities agree to rounding.
   expect_equal(.multilpa_profile_signature(moved, fit),

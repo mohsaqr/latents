@@ -59,7 +59,7 @@ test_that("centring reproduces the transform done by hand", {
     by_hand[[v]] - stats::ave(by_hand[[v]], by_hand$student, FUN = mean)
   })
   manual <- multilpa(by_hand, activity, "student", n_profiles = 3,
-                     n_group_classes = 1, n_starts = 5, seed = 1)
+                     n_group_classes = 1, n_starts = 1, seed = 1)
   fit <- centred_fit()
   expect_equal(fit$log_likelihood, manual$log_likelihood)
   expect_equal(fit$means, manual$means)
@@ -103,7 +103,7 @@ test_that("the diagnostics work on the scale the model was fitted on", {
     by_hand[[v]] - stats::ave(by_hand[[v]], by_hand$student, FUN = mean)
   })
   manual <- multilpa(by_hand, activity, "student", n_profiles = 3,
-                     n_group_classes = 1, n_starts = 5, seed = 1)
+                     n_group_classes = 1, n_starts = 1, seed = 1)
   expect_equal(from_fit$residual, get_results(manual, "residuals")$residual)
 })
 

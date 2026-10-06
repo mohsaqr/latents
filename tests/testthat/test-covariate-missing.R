@@ -90,11 +90,11 @@ test_that("without covariates the FIML fit is the covariate-free FIML model", {
     plain <- quietly(multilpa(data, c("y1", "y2", "q"), "g", 2L, 1L,
                               categorical = "q", missing = "fiml",
                               covariance_model = covariance_model,
-                              n_starts = 3, seed = 1, tol = 1e-12,
+                              n_starts = 1, seed = 1, tol = 1e-12,
                               max_iter = 5000))
     covariate <- quietly(.multilpa_fit_covariates(
       data, c("y1", "y2", "q"), "g", 2L, 1L, categorical = "q",
-      missing = "fiml", covariance_model = covariance_model, n_starts = 3,
+      missing = "fiml", covariance_model = covariance_model, n_starts = 1,
       seed = 1, tol = 1e-12, max_iter = 5000))
     expect_equal(covariate$log_likelihood, plain$log_likelihood,
                  tolerance = 1e-9)

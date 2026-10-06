@@ -79,7 +79,7 @@ test_that("mixed continuous and categorical measurement is supported", {
     y = rnorm(length(group), ifelse(profile == 2L, 2, -2), 0.8),
     u = ifelse(runif(length(group)) < ifelse(profile == 2L, 0.8, 0.2), 1L, 0L))
   fit <- multilpa(data, c("y", "u"), "clus", n_profiles = 2, n_group_classes = 1,
-                  categorical = "u", n_starts = 5, seed = 2)
+                  categorical = "u", n_starts = 1, seed = 2)
   inference <- parameter_inference(fit, data)
 
   expect_identical(fit$measurement_model, "mixed")

@@ -152,7 +152,7 @@ test_that("two groups cannot carry a variance for two classes", {
     b = stats::rnorm(n, ifelse(truth == 2L, 1.5, -1.5)),
     y = stats::rnorm(n, ifelse(truth == 2L, 5, 0)))
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 4, seed = 1)
+                  n_starts = 1, seed = 1)
   expect_equal(fit$n_groups, 2)
 
   # Two groups leave one independent contribution for a two-by-two covariance,
@@ -174,7 +174,7 @@ test_that("r3step refuses a robust covariance its groups cannot support", {
     g = 1, x = stats::rnorm(200),
     a = c(stats::rnorm(100, -2), stats::rnorm(100, 2)))
   fit <- multilpa(one_group, "a", "g", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 4, seed = 1)
+                  n_starts = 1, seed = 1)
   expect_error(r3step(fit, one_group, "x", vcov_type = "robust"),
                class = "latents_too_few_groups")
   # The model-based alternative is still available and is labelled as such.
@@ -193,7 +193,7 @@ test_that("r3step refuses a robust covariance its groups cannot support", {
     a = stats::rnorm(n, ifelse(truth == 2L, 1.5, -1.5)),
     b = stats::rnorm(n, ifelse(truth == 2L, 1.5, -1.5)))
   small <- multilpa(three, c("a", "b"), "g", n_profiles = 2,
-                    n_group_classes = 1, n_starts = 4, seed = 1)
+                    n_group_classes = 1, n_starts = 1, seed = 1)
   expect_equal(small$n_groups, 3)
   expect_error(r3step(small, three, c("x", "w"), vcov_type = "robust"),
                class = "latents_too_few_groups")
@@ -213,7 +213,7 @@ test_that("a robust r3step with many groups is unchanged and comparable", {
     a = stats::rnorm(n, ifelse(truth == 2L, 1.2, -1.2)),
     b = stats::rnorm(n, ifelse(truth == 2L, 1.2, -1.2)))
   fit <- multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 4, seed = 1)
+                  n_starts = 1, seed = 1)
 
   robust <- r3step(fit, data, "x", vcov_type = "robust")
   observed <- r3step(fit, data, "x", vcov_type = "observed")

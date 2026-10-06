@@ -31,7 +31,7 @@ test_that("the general engine reproduces the homogeneous lta() exactly", {
   skip_on_cran()
   activity <- c("browse", "lectures")
   old <- lta(course_engagement, activity, "student", n_profiles = 2,
-             time = "sequence", n_starts = 3, seed = 1, tol = 1e-12, max_iter = 5000)
+             time = "sequence", n_starts = 1, seed = 1, tol = 1e-12, max_iter = 5000)
   new <- .lta_fit_general(course_engagement, activity, "student", "sequence", 2L, 1L,
                           "varying", 3L, 5000L, 1e-12, 1e-6, 1L, character(), 1e-10,
                           "observed", "homogeneous", character(), character(),
@@ -45,7 +45,7 @@ test_that("covariance structures in lta() nest and reproduce the default", {
   fits <- lapply(c(default = NA, VVI = "VVI", VEI = "VEI", EEI = "EEI"), \(m) {
     suppressWarnings(lta(course_engagement, activity, "student", n_profiles = 2,
                          time = "sequence", model = if (is.na(m)) NULL else m,
-                         n_starts = 3, seed = 1))
+                         n_starts = 1, seed = 1))
   })
   expect_equal(fits$VVI$log_likelihood, fits$default$log_likelihood)
   expect_lte(fits$EEI$log_likelihood, fits$VEI$log_likelihood + 1e-6)
@@ -56,7 +56,7 @@ test_that("covariance structures in lta() nest and reproduce the default", {
 
 test_that("tables, methods and refusals of the general model", {
   fit <- lta(lta_small, "y", "id", n_profiles = 2, time = "time",
-             transition_covariates = "z", n_starts = 2, seed = 1)
+             transition_covariates = "z", n_starts = 1, seed = 1)
   tables <- get_results(fit, "all")
   expect_true(all(vapply(tables, is.data.frame, logical(1))))
   expect_identical(nrow(tables$assignments), nrow(lta_small))
@@ -64,15 +64,15 @@ test_that("tables, methods and refusals of the general model", {
   expect_identical(nobs(fit), 60L)
   expect_output(print(fit), "transitions on z")
   expect_s3_class(parameter_inference(fit), "data.frame")
-  expect_error(lta(lta_small, "y", "id", n_profiles = 2, time = "time", order = 3),
+  expect_error(lta(lta_small, "y", "id", n_profiles = 2, time = "time", order = 3, n_starts = 1),
                class = "latents_bad_argument")
   expect_error(lta(lta_small, "y", "id", n_profiles = 2, time = "time",
-                   transition_covariates = "missing_column"),
+                   transition_covariates = "missing_column", n_starts = 1),
                class = "latents_bad_data")
   with_na <- lta_small
   with_na$z[3] <- NA
   expect_error(lta(with_na, "y", "id", n_profiles = 2, time = "time",
-                   transition_covariates = "z"), class = "latents_bad_data")
+                   transition_covariates = "z", n_starts = 1), class = "latents_bad_data")
   skip_if_not_installed("ggplot2")
   expect_true(ggplot2::is_ggplot(plot(fit)))
 })
@@ -101,7 +101,7 @@ test_that("covariance structures combine with the extensions and nest", {
   fits <- lapply(c("VEI", "VVI", "VVV"), \(m) {
     quietly(lta(course_engagement, activity, "student", n_profiles = 2,
                 time = "sequence", transition_covariates = "previous_grade",
-                model = m, n_starts = 2, seed = 1), "latents_boundary")
+                model = m, n_starts = 1, seed = 1), "latents_boundary")
   })
   expect_lte(fits[[1L]]$log_likelihood, fits[[2L]]$log_likelihood + 1e-6)
   expect_lte(fits[[2L]]$log_likelihood, fits[[3L]]$log_likelihood + 1e-6)

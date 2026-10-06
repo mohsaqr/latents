@@ -40,7 +40,7 @@ test_that("a simulated two-class ordinal mixture is recovered", {
   skip_on_cran()
   data <- ordinal_rows()
   fit <- mixture_regression(y ~ x + w, data, n_classes = 2, family = "ordinal",
-                            common = ~ w, n_starts = 3, seed = 1)
+                            common = ~ w, n_starts = 1, seed = 1)
   coefficients <- get_results(fit, "coefficients")
   # One outcome per row identifies the classes only through the slopes, so
   # the estimates are judged against their own standard errors.
@@ -63,7 +63,7 @@ test_that("a simulated two-class ordinal mixture is recovered", {
 test_that("persons with repeated ordinal outcomes are classified (class_level = group)", {
   data <- ordinal_persons()
   fit <- mixture_regression(y ~ wave, data, n_classes = 2, family = "ordinal",
-                            id = "person", class_level = "group", n_starts = 3, seed = 1)
+                            id = "person", class_level = "group", n_starts = 1, seed = 1)
   coefficients <- get_results(fit, "coefficients")
   expect_equal(subset(coefficients, term == "wave")$estimate, c(0.8, -0.6),
                tolerance = 0.2)
@@ -85,10 +85,10 @@ test_that("two categories are the logistic mixture with thresholds as negated in
   hours <- study_hours
   ordinal <- mixture_regression(factor(passed) ~ hours, hours, n_classes = 2,
                                 family = "ordinal", id = "student",
-                                class_level = "group", n_starts = 2, seed = 1)
+                                class_level = "group", n_starts = 1, seed = 1)
   binomial <- mixture_regression(passed ~ hours, hours, n_classes = 2,
                                  family = "binomial", id = "student",
-                                 class_level = "group", n_starts = 2, seed = 1)
+                                 class_level = "group", n_starts = 1, seed = 1)
   expect_equal(ordinal$log_likelihood, binomial$log_likelihood, tolerance = 1e-10)
   expect_equal(unname(ordinal$params$thresholds[1L, ]),
                unname(-binomial$params$beta["(Intercept)", ]), tolerance = 1e-6)
@@ -100,7 +100,7 @@ test_that("category probabilities sum to one and relabelling leaves the likeliho
   skip_on_cran()
   data <- ordinal_rows(n = 600)
   fit <- mixture_regression(y ~ x, data, n_classes = 2, family = "ordinal",
-                            n_starts = 2, seed = 1)
+                            n_starts = 1, seed = 1)
   probabilities <- predict(fit, type = "probabilities")
   totals <- stats::aggregate(probability ~ row + class, data = probabilities, FUN = sum)
   expect_identical(nrow(totals), 2L * nrow(data))

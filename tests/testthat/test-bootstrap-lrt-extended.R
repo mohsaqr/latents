@@ -40,7 +40,7 @@ test_that("a likelihood-ratio bootstrap refuses posterior-mode estimates", {
                       y = c(rnorm(75, -2), rnorm(75, 2)))
   fit <- function(k, prior = NULL) {
     .lrt_quietly(multilpa(frame, "y", "g", k, 1, prior = prior,
-                          n_starts = 2, seed = 1))
+                          n_starts = 1, seed = 1))
   }
   null <- fit(1)
   alternative <- fit(2)
@@ -57,7 +57,7 @@ test_that("a likelihood-ratio bootstrap refuses posterior-mode estimates", {
 test_that("simulated data carry the observed missing cells, and only those", {
   frame <- .lrt_fixture()
   fit <- .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", 2L, 1L, missing = "fiml",
-                               n_starts = 2, seed = 1))
+                               n_starts = 1, seed = 1))
   set.seed(4)
   simulated <- .multilpa_carry_missingness(.multilpa_simulate(fit), frame,
                                            c("y1", "y2"))
@@ -69,9 +69,9 @@ test_that("simulated data carry the observed missing cells, and only those", {
 test_that("a FIML comparison is bootstrapped with the same missingness", {
   frame <- .lrt_fixture()
   one <- .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", 1L, 1L, missing = "fiml",
-                               n_starts = 2, seed = 1))
+                               n_starts = 1, seed = 1))
   two <- .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", 2L, 1L, missing = "fiml",
-                               n_starts = 2, seed = 1))
+                               n_starts = 1, seed = 1))
   # Every replicate must go through the missingness mask; count the calls
   # made from inside the verb rather than trusting the helper's own test.
   carry <- .multilpa_carry_missingness
@@ -80,7 +80,7 @@ test_that("a FIML comparison is bootstrapped with the same missingness", {
     calls <<- calls + 1L
     carry(simulated, observed, vars)
   })
-  test <- .lrt_quietly(bootstrap_lrt(one, two, iter = 9, n_starts = 2, seed = 1))
+  test <- .lrt_quietly(bootstrap_lrt(one, two, iter = 9, n_starts = 1, seed = 1))
   expect_identical(calls, 9L)
   result <- as.data.frame(test)
   expect_identical(result$n_valid, 9L)
@@ -88,7 +88,7 @@ test_that("a FIML comparison is bootstrapped with the same missingness", {
   expect_equal(result$p_value, 0.1)
   # A FIML fit against a complete-data fit is not a comparison of one model.
   complete <- .lrt_quietly(multilpa(stats::na.omit(frame), c("y1", "y2"), "g",
-                                    2L, 1L, n_starts = 2, seed = 1))
+                                    2L, 1L, n_starts = 1, seed = 1))
   expect_error(bootstrap_lrt(one, complete, iter = 2),
                class = "latents_incomparable_models")
 })
@@ -96,7 +96,7 @@ test_that("a FIML comparison is bootstrapped with the same missingness", {
 test_that("covariate simulation holds the covariates and follows the logits", {
   frame <- .lrt_fixture(n_groups = 150L, share = 0)
   fit <- .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", 2L, 1L,
-                               profile_covariates = "z", n_starts = 2, seed = 1))
+                               profile_covariates = "z", n_starts = 1, seed = 1))
   set.seed(6)
   simulated <- .multilpa_cov_simulate(fit, frame)
   expect_identical(simulated$z, frame$z)
@@ -104,7 +104,7 @@ test_that("covariate simulation holds the covariates and follows the logits", {
   # Refitting the simulated data recovers the fitted slope, which a draw that
   # ignored the covariate would flatten to zero.
   refit <- .lrt_quietly(multilpa(simulated, c("y1", "y2"), "g", 2L, 1L,
-                                 profile_covariates = "z", n_starts = 2, seed = 1))
+                                 profile_covariates = "z", n_starts = 1, seed = 1))
   fitted_slope <- abs(fit$profile_coefficients["z", 1L])
   expect_lt(abs(abs(refit$profile_coefficients["z", 1L]) - fitted_slope), 0.35)
 })
@@ -113,13 +113,13 @@ test_that("covariate models are bootstrapped, one group class against two", {
   frame <- .lrt_fixture(n_groups = 80L, share = 0.1, group_classes = TRUE)
   null <- .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", 2L, 1L,
                                 profile_covariates = "z", missing = "fiml",
-                                n_starts = 2, seed = 1))
+                                n_starts = 1, seed = 1))
   alternative <- .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", 2L, 2L,
                                        profile_covariates = "z",
                                        group_covariates = "w", missing = "fiml",
-                                       n_starts = 2, seed = 1))
+                                       n_starts = 1, seed = 1))
   # The null's own stored columns lack `w`; the verb reads the alternative's.
-  test <- .lrt_quietly(bootstrap_lrt(null, alternative, iter = 5, n_starts = 2,
+  test <- .lrt_quietly(bootstrap_lrt(null, alternative, iter = 5, n_starts = 1,
                                      seed = 1))
   expect_identical(nrow(get_results(test, "replicates")), 5L)
   expect_true(all(get_results(test, "replicates")$valid))
@@ -128,7 +128,7 @@ test_that("covariate models are bootstrapped, one group class against two", {
 test_that("covariate models that are not nested are refused by class", {
   frame <- .lrt_fixture(share = 0)
   fit <- function(...) {
-    .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", n_starts = 2, seed = 1, ...))
+    .lrt_quietly(multilpa(frame, c("y1", "y2"), "g", n_starts = 1, seed = 1, ...))
   }
   with_z <- fit(n_profiles = 2L, n_group_classes = 1L, profile_covariates = "z")
   with_w <- fit(n_profiles = 3L, n_group_classes = 1L, profile_covariates = "w")

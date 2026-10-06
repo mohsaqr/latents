@@ -17,13 +17,13 @@ test_that("plot methods return ggplot objects for every view", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   expect_plot(plot(fit))
   expect_plot(plot(fit, what = "probabilities"))
   expect_plot(plot(fit, scale = "standardized"))
   expect_plot(plot(fit, labels = FALSE))
   candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
-                                 n_group_classes = 1:2, n_starts = 3, seed = 3)
+                                 n_group_classes = 1:2, n_starts = 1, seed = 3)
   expect_plot(plot(candidates))
   expect_plot(plot(candidates, criterion = "sabic_individual"))
   expect_plot(plot(candidates, labels = FALSE, mark_minimum = FALSE))
@@ -34,7 +34,7 @@ test_that("plot refuses the styling arguments it no longer takes", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   # Styling is ggplot2's job now; a dropped argument is named, not ignored.
   expect_error(plot(fit, palette = c("#000000", "#FFFFFF")),
                class = "latents_bad_argument")
@@ -48,7 +48,7 @@ test_that("plot refuses the styling arguments it no longer takes", {
 
 test_that("standardizing uses the observed indicator scales", {
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   observed <- fit$indicator_data
   centre <- colMeans(observed)
   spread <- c(stats::sd(observed[, 1L]), stats::sd(observed[, 2L]))
@@ -72,7 +72,7 @@ test_that("enumeration plotting rejects unusable criteria by condition class", {
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
   candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
-                                 n_group_classes = 1, n_starts = 3, seed = 3)
+                                 n_group_classes = 1, n_starts = 1, seed = 3)
   expect_error(plot(candidates, criterion = "not_a_column"),
                class = "latents_unknown_criterion")
   expect_error(plot(candidates, criterion = "structure"),
@@ -120,7 +120,7 @@ test_that("the sequence plot draws every group at every position", {
   skip_if_not_installed("ggplot2")
   data <- .sequence_plot_fixture()
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 3, seed = 1, time = "wave",
+                  n_group_classes = 2, n_starts = 1, seed = 1, time = "wave",
                   acceleration = "none")
   drawn <- expect_plot(plot(fit, what = "sequences"))$data
   expect_identical(nrow(drawn), 12L * 10L)
@@ -135,11 +135,11 @@ test_that("every plot's data is reachable through a tidy verb", {
   skip_on_cran()
   data <- .sequence_plot_fixture()
   fit <- multilpa(data, c("score_a", "score_b"), "school", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 3, seed = 1, time = "wave",
+                  n_group_classes = 2, n_starts = 1, seed = 1, time = "wave",
                   acceleration = "none")
   candidates <- enumerate_classes(data, c("score_a", "score_b"), "school",
                                   n_profiles = 1:2, n_group_classes = 1,
-                                  n_starts = 2, seed = 3)
+                                  n_starts = 1, seed = 3)
   # No plot is the only way to see what it draws: the reader can always get the
   # numbers as a data frame instead of measuring them off the picture.
   expect_s3_class(get_results(fit, "profiles"), "data.frame")
@@ -180,7 +180,7 @@ test_that("a view a fit cannot supply is refused by condition class", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   expect_error(plot(fit, what = "responses"), class = "latents_no_categorical")
   expect_error(plot(fit, what = "sequences"), class = "latents_no_time")
   expect_error(plot(fit, what = "not_a_view"))
@@ -189,7 +189,7 @@ test_that("a view a fit cannot supply is refused by condition class", {
 test_that("case views agree with the entropy the package reports", {
   skip_on_cran()
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   posterior <- get_results(fit, "posteriors")
   expect_true(all(c("row", "profile", "posterior", "modal") %in% names(posterior)))
   skip_if_not_installed("ggplot2")
@@ -205,7 +205,7 @@ test_that("case views agree with the entropy the package reports", {
 
 test_that("bar intervals come from the fit's own data, not from the caller", {
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5,
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5,
                   tol = 1e-10)
   supplied <- .multilpa_mean_error_matrix(fit, dat)
   carried <- .multilpa_mean_error_matrix(fit, NULL)
@@ -227,7 +227,7 @@ test_that("a transition fit gets bars without whiskers, not an error", {
   # would refuse: on these pure-noise data a probability sits at its bound and
   # parameter_inference() raises latents_boundary_fit.
   moves <- lta(data, c("score_a", "score_b"), "school",
-               n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+               n_profiles = 2, time = "wave", n_starts = 1, seed = 1)
   expect_error(parameter_inference(moves), class = "latents_boundary_fit")
   bars <- expect_plot(plot(moves, what = "bars"))
   expect_true(all(is.na(bars$data$upper)))
@@ -236,7 +236,7 @@ test_that("a transition fit gets bars without whiskers, not an error", {
 test_that("the avepp view draws the average posterior matrix", {
   skip_on_cran()
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   averages <- .multilpa_average_posterior_matrix(fit$subject_posteriors)
   expect_equal(unname(rowSums(averages)), rep(1, ncol(averages)))
   table <- get_results(fit, "average_posteriors")
@@ -252,7 +252,7 @@ test_that("a one-profile fit still draws its sizes", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 1, seed = 5)
   expect_plot(plot(fit, what = "sizes"))
   expect_error(plot(fit, what = "posteriors"), class = "latents_nothing_to_plot")
 })
@@ -261,7 +261,7 @@ test_that("what = \"all\" returns every drawable view, named", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   # The views this fit lacks the ingredients for are never attempted, so
   # nothing is refused and nothing needs saying.
   everything <- expect_plots(expect_no_message(plot(fit, what = "all")))
@@ -269,7 +269,7 @@ test_that("what = \"all\" returns every drawable view, named", {
                     names(everything)))
   expect_false(any(c("responses", "sequences") %in% names(everything)))
   # A view that refuses for a reason only it knows is named, not dropped.
-  one_profile <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 2, seed = 5)
+  one_profile <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 1, seed = 5)
   fewer <- expect_plots(plot(one_profile, what = "all"))
   expect_false(any(c("entropy", "posteriors") %in% names(fewer)))
 })

@@ -36,7 +36,7 @@ test_that("max_iter = 0 scores externally supplied parameters without moving", {
   frame <- categorical_frame()
   items <- c("a", "b", "c")
   fit <- multilpa(frame, items, "school", n_profiles = 2, n_group_classes = 1,
-                  categorical = items, n_starts = 4, seed = 1)
+                  categorical = items, n_starts = 1, seed = 1)
   start <- starting_values(fit)
   # Perturb one item's response probabilities: the evaluated likelihood must
   # move, and must fall, because the fit was at a maximum.
@@ -52,7 +52,7 @@ test_that("max_iter = 0 does not warn about convergence it was not asked to reac
   frame <- categorical_frame()
   items <- c("a", "b", "c")
   fit <- multilpa(frame, items, "school", n_profiles = 2, n_group_classes = 1,
-                  categorical = items, n_starts = 4, seed = 1)
+                  categorical = items, n_starts = 1, seed = 1)
   expect_no_warning(
     multilpa(frame, items, "school", n_profiles = 2, n_group_classes = 1,
              categorical = items, n_starts = 1, start = starting_values(fit),
@@ -93,11 +93,11 @@ test_that("max_iter must be a nonnegative integer", {
   items <- c("a", "b", "c")
   expect_error(
     multilpa(frame, items, "school", n_profiles = 2, n_group_classes = 1,
-             categorical = items, max_iter = -1),
+             categorical = items, max_iter = -1, n_starts = 1),
     "nonnegative integer")
   expect_error(
     multilpa(frame, items, "school", n_profiles = 2, n_group_classes = 1,
-             categorical = items, max_iter = 2.5),
+             categorical = items, max_iter = 2.5, n_starts = 1),
     "nonnegative integer")
 })
 
@@ -105,13 +105,13 @@ test_that("rows with no observed indicator are excluded from the BIC sample size
   frame <- categorical_frame()
   items <- c("a", "b", "c")
   fit <- multilpa(frame, items, "school", n_profiles = 2, n_group_classes = 1,
-                  categorical = items, n_starts = 4, seed = 1)
+                  categorical = items, n_starts = 1, seed = 1)
   expect_identical(fit$n_informative, fit$n_observations)
 
   blanked <- frame
   blanked[c(5L, 60L, 120L), items] <- NA
   sparse <- multilpa(blanked, items, "school", n_profiles = 2, n_group_classes = 1,
-                     categorical = items, n_starts = 4, seed = 1, missing = "fiml")
+                     categorical = items, n_starts = 1, seed = 1, missing = "fiml")
   # Reported, not warned about, so that resampling verbs do not emit one warning
   # per replicate.
   expect_no_warning(multilpa(blanked, items, "school", n_profiles = 2,

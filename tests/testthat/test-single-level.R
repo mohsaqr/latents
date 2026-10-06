@@ -21,23 +21,23 @@ test_that("a forgotten id raises, and a stated one warns", {
   # The hazard this guards: before `id = NULL` existed, omitting `id` raised.
   # It must keep raising, or a forgotten grouping silently becomes a different
   # model.
-  expect_error(multilpa(data, c("x", "y"), n_profiles = 2L, n_starts = 2L),
+  expect_error(multilpa(data, c("x", "y"), n_profiles = 2L, n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(multilpa(data, c("x", "y"), n_profiles = 2L, n_starts = 2L),
+  expect_error(multilpa(data, c("x", "y"), n_profiles = 2L, n_starts = 1),
                "needs `id`")
   # Saying it explicitly works, and says so back.
   expect_message(multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L,
-                          n_starts = 2L, seed = 1L),
+                          n_starts = 1, seed = 1L),
                  class = "latents_single_level")
 })
 
 test_that("id = NULL is the fit you get by numbering the rows yourself", {
   data <- single_level_data()
-  implicit <- flat_fit(n_starts = 5L, seed = 1L, data = data)
+  implicit <- flat_fit(n_starts = 1, seed = 1L, data = data)
   explicit_data <- data
   explicit_data$unit <- seq_len(nrow(explicit_data))
   explicit <- multilpa(explicit_data, c("x", "y"), id = "unit", n_profiles = 2L,
-                       n_group_classes = 1L, n_starts = 5L, seed = 1L)
+                       n_group_classes = 1L, n_starts = 1, seed = 1L)
   expect_equal(implicit$log_likelihood, explicit$log_likelihood)
   expect_equal(unname(implicit$means), unname(explicit$means))
   expect_equal(unname(implicit$variances), unname(explicit$variances))
@@ -46,7 +46,7 @@ test_that("id = NULL is the fit you get by numbering the rows yourself", {
 })
 
 test_that("a single-level fit records what it is", {
-  fit <- flat_fit(n_starts = 3L, seed = 1L)
+  fit <- flat_fit(n_starts = 1, seed = 1L)
   expect_true(fit$single_level)
   expect_identical(fit$n_group_classes, 1L)
   expect_identical(fit$n_groups, fit$n_observations)
@@ -58,7 +58,7 @@ test_that("a single-level fit records what it is", {
 })
 
 test_that("the fabricated unit column is not handed back", {
-  fit <- flat_fit(n_starts = 3L, seed = 1L)
+  fit <- flat_fit(n_starts = 1, seed = 1L)
   # The caller never wrote `.observation`, so no table may return it.
   expect_identical(names(get_results(fit, "data")), c("x", "y"))
   expect_false(".observation" %in% names(get_results(fit, "assignments")))
@@ -66,17 +66,17 @@ test_that("the fabricated unit column is not handed back", {
   data <- single_level_data()
   data$unit <- rep(seq_len(40L), each = 4L)
   grouped <- multilpa(data, c("x", "y"), id = "unit", n_profiles = 2L,
-                      n_group_classes = 2L, n_starts = 3L, seed = 1L)
+                      n_group_classes = 2L, n_starts = 1, seed = 1L)
   expect_true("unit" %in% names(get_results(grouped, "data")))
 })
 
 test_that("group classes without an id are refused, not silently dropped", {
   expect_error(
     multilpa(single_level_data(), c("x", "y"), id = NULL, n_profiles = 2L,
-             n_group_classes = 2L, n_starts = 2L),
+             n_group_classes = 2L, n_starts = 1),
     class = "latents_bad_argument")
   # Naming one explicitly is the same request as leaving it alone, so it passes.
-  expect_s3_class(flat_fit(n_group_classes = 1L, n_starts = 2L, seed = 1L),
+  expect_s3_class(flat_fit(n_group_classes = 1L, n_starts = 1, seed = 1L),
                   "multilpa")
 })
 
@@ -84,13 +84,13 @@ test_that("a column already called .observation is refused", {
   data <- single_level_data()
   data$.observation <- seq_len(nrow(data))
   expect_error(
-    multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L, n_starts = 2L),
+    multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L, n_starts = 1),
     class = "latents_bad_data")
 })
 
 test_that("the package's verbs work on a single-level fit", {
   skip_on_cran()
-  fit <- flat_fit(n_starts = 2L, seed = 1L)
+  fit <- flat_fit(n_starts = 1, seed = 1L)
   # Inference, classification and the tables, on a fit with no second level.
   inference <- parameter_inference(fit)
   expect_true(all(is.finite(inference$standard_error)))
@@ -120,7 +120,7 @@ test_that("a truth column cross-tabulates against profiles, not a single class",
   data <- single_level_data()
   data$known <- rep(c("a", "b"), each = nrow(data) / 2L)
   fit <- quietly(multilpa(data, c("x", "y"), id = NULL, n_profiles = 2L,
-                          n_starts = 3L, seed = 1L))
+                          n_starts = 1, seed = 1L))
   recovery <- get_results(fit, "assignments", data = data, truth = "known")
   expect_identical(unique(recovery$assignment), "profile")
   expect_identical(nrow(recovery), 4L)
@@ -133,7 +133,7 @@ test_that("a truth column cross-tabulates against profiles, not a single class",
   grouped_data$unit <- rep(seq_len(40L), each = 4L)
   grouped_data$kind <- rep(c("a", "b"), each = nrow(grouped_data) / 2L)
   grouped <- multilpa(grouped_data, c("x", "y"), id = "unit", n_profiles = 2L,
-                      n_group_classes = 2L, n_starts = 3L, seed = 1L)
+                      n_group_classes = 2L, n_starts = 1, seed = 1L)
   expect_identical(
     unique(get_results(grouped, "assignments", data = grouped_data,
                     truth = "kind")$assignment),

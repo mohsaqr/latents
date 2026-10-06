@@ -169,11 +169,11 @@ test_that("model comparisons reject different weights and likelihood scales", {
 
 test_that("nonfinite evaluated predictors and outcomes are refused explicitly", {
   data <- data.frame(y = 1:10, x = 0:9, id = rep(1:5, each = 2))
-  expect_error(mixture_regression(y ~ log(x), data, 1), class = "latents_bad_data")
+  expect_error(mixture_regression(y ~ log(x), data, 1, n_starts = 1), class = "latents_bad_data")
   for (family in c("gaussian", "binomial", "poisson", "ordinal")) {
     expect_error(latents:::.mixture_response(c(1, Inf), family), class = "latents_bad_data")
   }
-  expect_error(mixture_regression(y ~ x, data, 1, membership = ~ log(x)),
+  expect_error(mixture_regression(y ~ x, data, 1, membership = ~ log(x), n_starts = 1),
                class = "latents_bad_data")
   data$y <- data$y + sin(data$x)
   fit <- mixture_regression(y ~ x, data, 1, n_starts = 0)
@@ -205,7 +205,7 @@ test_that("noise shares retain all cases and sequence plots preserve noise cells
     data$id <- rep(seq_len(90), each = 3)
     data$time <- rep(1:3, 90)
     quietly(multilpa(data, c("a", "b"), "id", 2, 1, time = "time",
-                     noise = TRUE, seed = 1, n_starts = 3))
+                     noise = TRUE, seed = 1, n_starts = 1))
   })
   expect_gt(sum(fit$subject_profiles == 0L), 0)
   key <- latents:::.gg_profile_key(fit)

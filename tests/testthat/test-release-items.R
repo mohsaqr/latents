@@ -17,7 +17,7 @@ skip_on_cran()
 test_that("KIC and CLC are the criteria their definitions say they are", {
   data <- .release_fixture()
   fit <- quietly(multilpa(data, c("a", "b"), "g", 2L, 2L,
-                                   n_starts = 3, seed = 1))
+                                   n_starts = 1, seed = 1))
   criteria <- get_results(fit, "information_criteria", format = "long")
   q <- fit$n_parameters
   log_likelihood <- fit$log_likelihood
@@ -50,7 +50,7 @@ test_that("KIC and CLC are the criteria their definitions say they are", {
 test_that("the criteria table keeps its shape as criteria are added", {
   data <- .release_fixture()
   fit <- quietly(multilpa(data, c("a", "b"), "g", 2L, 2L,
-                                   n_starts = 2, seed = 1))
+                                   n_starts = 1, seed = 1))
   criteria <- get_results(fit, "information_criteria", format = "long")
   expect_named(criteria, c("criterion", "convention", "n", "value"))
   expect_setequal(unique(criteria$criterion),
@@ -78,7 +78,7 @@ test_that("the criteria table keeps its shape as criteria are added", {
 test_that("the measurement tables carry their own standard errors when asked", {
   data <- .release_fixture()
   fit <- quietly(multilpa(data, c("a", "b", "q"), "g", 2L, 1L,
-    categorical = "q", n_starts = 3, seed = 1))
+    categorical = "q", n_starts = 1, seed = 1))
   bare <- as.data.frame(fit)
   with_errors <- get_results(fit, "profiles", data = data)
   # Supplying the data must not change the estimates or the shape.
@@ -113,7 +113,7 @@ test_that("asking for errors a fit cannot supply raises rather than returning bl
   transitions_data <- data
   transitions_data$t <- rep(seq_len(8), times = 20)
   transition_fit <- quietly(lta(transitions_data,
-    c("a", "b"), "g", n_profiles = 2L, time = "t", n_starts = 2, seed = 1))
+    c("a", "b"), "g", n_profiles = 2L, time = "t", n_starts = 1, seed = 1))
   # Transition fits now have standard errors, so asking the measurement table
   # for them fills the columns rather than refusing.
   profiles <- get_results(transition_fit, "profiles", data = transitions_data)

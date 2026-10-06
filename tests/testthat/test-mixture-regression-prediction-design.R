@@ -4,7 +4,7 @@ test_that("membership predictions retain training factor coding", {
   state <- rbinom(240, 1, c(0.2, 0.5, 0.8)[match(data$z, c("a", "b", "c"))])
   data$y <- 4 * state + data$x + rnorm(240)
   fit <- mixture_regression(y ~ x, data, 2, membership = ~z,
-                            n_starts = 2, seed = 1, vcov_type = "none")
+                            n_starts = 1, seed = 1, vcov_type = "none")
   expected <- predict(fit, type = "class_response")
   reversed <- data
   reversed$z <- factor(reversed$z, levels = c("c", "b", "a"))

@@ -36,7 +36,7 @@ test_that("three profiles and group classes retain all matrix dimensions", {
   synthetic <- data.frame(group = group_index,
                           score = rnorm(length(profiles), c(-4, 0, 4)[profiles], 0.4))
   fit <- multilpa(synthetic, "score", "group", 3L, 3L,
-                    n_starts = 4L, seed = 998)
+                    n_starts = 1, seed = 998)
   expect_true(fit$converged)
   expect_equal(dim(fit$means), c(3L, 1L))
   expect_equal(dim(fit$variances), c(3L, 1L))

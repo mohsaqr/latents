@@ -45,7 +45,7 @@ test_that("categorical bootstraps preserve probability constraints and data iden
   small <- multilpa(d, c("a", "b"), "g", 1, 1, categorical = c("a", "b"),
                     min_probability = .1, n_starts = 1)
   large <- multilpa(d, c("a", "b"), "g", 2, 1, categorical = c("a", "b"),
-                    min_probability = .1, n_starts = 2, seed = 1)
+                    min_probability = .1, n_starts = 1, seed = 1)
   changed <- d
   changed$a <- ifelse(d$a == "a", "renamed-a", "renamed-b")
   expect_error(bootstrap_lrt(small, large, changed, iter = 2), "categorical levels")

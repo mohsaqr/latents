@@ -158,7 +158,7 @@ test_that("full-covariance score and Jacobian match numerical derivatives with m
   dat$y2[seq(3, nrow(dat), by = 7)] <- NA_real_
   invisible(lapply(c("varying", "equal"), function(variance_model) {
     stopifnot(is.character(variance_model))
-    fit <- multilpa(dat, c("y1", "y2"), "g", 2, 2, n_starts = 2,
+    fit <- multilpa(dat, c("y1", "y2"), "g", 2, 2, n_starts = 1,
       covariance_model = "full", missing = "fiml", variance_model = variance_model,
       seed = 791, tol = 1e-12)
     theta <- coef(fit, scale = "unconstrained")

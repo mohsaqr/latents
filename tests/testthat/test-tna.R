@@ -146,7 +146,7 @@ test_that("the transition panel is the fitted matrix, per class", {
   # A single-class fit still draws one panel rather than refusing.
   single <- quietly(lta(course_engagement, vars = c("browse", "lectures"),
                         id = "student", time = "sequence", n_profiles = 2,
-                        n_group_classes = 1, n_starts = 2, max_iter = 300,
+                        n_group_classes = 1, n_starts = 1, max_iter = 300,
                         seed = 1))
   skip_if_not_installed("ggplot2")
   panel <- expect_plot(plot(single, what = "transitions"))$data

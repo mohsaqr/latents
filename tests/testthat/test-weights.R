@@ -41,10 +41,10 @@ test_that("integer weights reproduce the duplicated data under every structure",
   duplicated <- data[rep(seq_len(nrow(data)), data$w), ]
   vapply(c("VVI", "EEI", "VVV", "VEI"), function(structure) {
     weighted <- quietly(lpa(data, c("a", "b"), 2, weights = "w", model = structure,
-                            n_starts = 3, seed = 1, tol = 1e-12),
+                            n_starts = 1, seed = 1, tol = 1e-12),
                         "latents_single_level")
     repeated <- quietly(lpa(duplicated, c("a", "b"), 2, model = structure,
-                            n_starts = 3, seed = 1, tol = 1e-12),
+                            n_starts = 1, seed = 1, tol = 1e-12),
                         "latents_single_level")
     expect_equal(on_duplicate_scale(weighted, data$w), repeated$log_likelihood,
                  tolerance = 1e-10)
@@ -60,10 +60,10 @@ test_that("integer weights reproduce duplication for categorical and FIML fits",
   data$a[c(3, 9, 40)] <- NA
   duplicated <- data[rep(seq_len(nrow(data)), data$w), ]
   weighted <- quietly(lpa(data, c("a", "b", "c"), 2, categorical = "c",
-                          missing = "fiml", weights = "w", n_starts = 3, seed = 1,
+                          missing = "fiml", weights = "w", n_starts = 1, seed = 1,
                           tol = 1e-12), "latents_single_level")
   repeated <- quietly(lpa(duplicated, c("a", "b", "c"), 2, categorical = "c",
-                          missing = "fiml", n_starts = 3, seed = 1, tol = 1e-12),
+                          missing = "fiml", n_starts = 1, seed = 1, tol = 1e-12),
                       "latents_single_level")
   expect_equal(on_duplicate_scale(weighted, data$w), repeated$log_likelihood,
                tolerance = 1e-10)
@@ -77,10 +77,10 @@ test_that("two-level weights weight groups, and reproduce duplicated groups", {
   data$a <- data$a + rep(sample(c(0, 3), 30, TRUE), each = 5) * rbinom(150, 1, 0.7)
   data$w <- rep(sample(1:3, 30, TRUE), each = 5)
   unit_weights <- data$w[!duplicated(data$id)]
-  weighted <- multilpa(data, c("a", "b"), "id", 2, 2, weights = "w", n_starts = 5,
+  weighted <- multilpa(data, c("a", "b"), "id", 2, 2, weights = "w", n_starts = 1,
                        seed = 1, tol = 1e-12)
   repeated <- multilpa(duplicate_units(data, "id", "w"), c("a", "b"), "id", 2, 2,
-                       n_starts = 5, seed = 1, tol = 1e-12)
+                       n_starts = 1, seed = 1, tol = 1e-12)
   expect_equal(on_duplicate_scale(weighted, unit_weights), repeated$log_likelihood,
                tolerance = 1e-10)
   expect_equal(sort(weighted$means), sort(repeated$means), tolerance = 1e-5)
@@ -102,10 +102,10 @@ test_that("membership covariates take weights and reproduce duplication", {
                      z = z, w = sample(1:3, n, TRUE))
   duplicated <- data[rep(seq_len(n), data$w), ]
   weighted <- quietly(lpa(data, c("a", "b"), 2, profile_covariates = "z",
-                          weights = "w", n_starts = 3, seed = 1, tol = 1e-12),
+                          weights = "w", n_starts = 1, seed = 1, tol = 1e-12),
                       "latents_single_level")
   repeated <- quietly(lpa(duplicated, c("a", "b"), 2, profile_covariates = "z",
-                          n_starts = 3, seed = 1, tol = 1e-12),
+                          n_starts = 1, seed = 1, tol = 1e-12),
                       "latents_single_level")
   expect_equal(on_duplicate_scale(weighted, data$w), repeated$log_likelihood,
                tolerance = 1e-10)
@@ -118,17 +118,17 @@ test_that("unit weights change nothing and weights are scale invariant", {
   data <- weighted_rows(5)
   data$one <- 1
   data$scaled <- data$w * 7.5
-  plain <- quietly(lpa(data, c("a", "b"), 2, n_starts = 3, seed = 1, tol = 1e-12),
+  plain <- quietly(lpa(data, c("a", "b"), 2, n_starts = 1, seed = 1, tol = 1e-12),
                    "latents_single_level")
-  unit <- quietly(lpa(data, c("a", "b"), 2, weights = "one", n_starts = 3, seed = 1,
+  unit <- quietly(lpa(data, c("a", "b"), 2, weights = "one", n_starts = 1, seed = 1,
                       tol = 1e-12), "latents_single_level")
   expect_equal(unit$log_likelihood, plain$log_likelihood, tolerance = 1e-12)
   expect_equal(parameter_inference(unit)$standard_error,
                parameter_inference(plain, vcov_type = "robust")$standard_error,
                tolerance = 1e-8)
-  once <- quietly(lpa(data, c("a", "b"), 2, weights = "w", n_starts = 3, seed = 1,
+  once <- quietly(lpa(data, c("a", "b"), 2, weights = "w", n_starts = 1, seed = 1,
                       tol = 1e-12), "latents_single_level")
-  scaled <- quietly(lpa(data, c("a", "b"), 2, weights = "scaled", n_starts = 3,
+  scaled <- quietly(lpa(data, c("a", "b"), 2, weights = "scaled", n_starts = 1,
                         seed = 1, tol = 1e-12), "latents_single_level")
   expect_equal(scaled$log_likelihood, once$log_likelihood, tolerance = 1e-12)
   expect_equal(scaled$bic, once$bic, tolerance = 1e-12)
@@ -138,9 +138,9 @@ test_that("weighted scores are the gradient of the weighted pseudo likelihood", 
   data <- weighted_rows(6)
   data$w <- runif(nrow(data), 0.3, 3)
   fits <- list(
-    quietly(lpa(data, c("a", "b"), 2, weights = "w", model = "VVV", n_starts = 2,
+    quietly(lpa(data, c("a", "b"), 2, weights = "w", model = "VVV", n_starts = 1,
                 seed = 1), "latents_single_level"),
-    quietly(lpa(data, c("a", "b"), 2, weights = "w", model = "VEI", n_starts = 2,
+    quietly(lpa(data, c("a", "b"), 2, weights = "w", model = "VEI", n_starts = 1,
                 seed = 1), "latents_single_level"))
   vapply(fits, function(fit) {
     prepared <- .multilpa_inference_matrix(fit, data)
@@ -166,7 +166,7 @@ test_that("weighted scores are the gradient of the weighted pseudo likelihood", 
   groups$b <- rnorm(300)
   groups$w <- rep(runif(60, 0.3, 3), each = 5)
   fit <- multilpa(groups, c("a", "b"), "id", 2, 2, group_covariates = "u",
-                  weights = "w", n_starts = 2, seed = 1)
+                  weights = "w", n_starts = 1, seed = 1)
   x <- sweep(as.matrix(groups[c("a", "b")]), 2L, fit$center, "-")
   theta <- .multilpa_cov_encode(fit) + rnorm(length(.multilpa_cov_encode(fit)), 0, 0.05)
   objective <- function(point) {
@@ -182,7 +182,7 @@ test_that("weighted scores are the gradient of the weighted pseudo likelihood", 
 
 test_that("weighted fits default to robust errors and refuse the others", {
   data <- weighted_rows(9)
-  fit <- quietly(lpa(data, c("a", "b"), 2, weights = "w", n_starts = 2, seed = 1),
+  fit <- quietly(lpa(data, c("a", "b"), 2, weights = "w", n_starts = 1, seed = 1),
                  "latents_single_level")
   inference <- parameter_inference(fit)
   expect_identical(attr(inference, "vcov_type"), "robust")
@@ -203,24 +203,24 @@ test_that("weights are validated and unsupported pairings refused", {
   data$missing_weight <- replace(data$w, 4, NA)
   invalid <- c("not_a_column", "negative", "text", "missing_weight")
   vapply(invalid, function(column) {
-    expect_error(quietly(lpa(data, c("a", "b"), 2, weights = column),
+    expect_error(quietly(lpa(data, c("a", "b"), 2, weights = column, n_starts = 1),
                          "latents_single_level"),
                  class = "latents_bad_weights")
     TRUE
   }, logical(1))
   grouped <- data.frame(id = rep(seq_len(20), each = 5), a = rnorm(100),
                         b = rnorm(100), w = runif(100))
-  expect_error(multilpa(grouped, c("a", "b"), "id", 2, 1, weights = "w"),
+  expect_error(multilpa(grouped, c("a", "b"), "id", 2, 1, weights = "w", n_starts = 1),
                class = "latents_bad_weights")
-  expect_error(quietly(lpa(data, c("a", "b"), 2, weights = "w", noise = TRUE),
+  expect_error(quietly(lpa(data, c("a", "b"), 2, weights = "w", noise = TRUE, n_starts = 1),
                        "latents_single_level"),
                class = "latents_unsupported_weights")
   expect_error(quietly(lpa(data, c("a", "b"), 2, weights = "w",
-                           prior = prior_control()), "latents_single_level"),
+                           prior = prior_control(), n_starts = 1), "latents_single_level"),
                class = "latents_unsupported_weights")
-  fit <- quietly(lpa(data, c("a", "b"), 2, weights = "w", n_starts = 2, seed = 1),
+  fit <- quietly(lpa(data, c("a", "b"), 2, weights = "w", n_starts = 1, seed = 1),
                  "latents_single_level")
-  smaller <- quietly(lpa(data, c("a", "b"), 1, weights = "w"), "latents_single_level")
+  smaller <- quietly(lpa(data, c("a", "b"), 1, weights = "w", n_starts = 1), "latents_single_level")
   expect_error(bootstrap_lrt(smaller, fit, iter = 2),
                class = "latents_unsupported_weights")
   expect_error(three_step(fit, data, "a"), class = "latents_unsupported_weights")
@@ -229,11 +229,11 @@ test_that("weights are validated and unsupported pairings refused", {
 
 test_that("a weighted fit says so when printed", {
   data <- weighted_rows(11)
-  fit <- quietly(lpa(data, c("a", "b"), 2, weights = "w", n_starts = 2, seed = 1),
+  fit <- quietly(lpa(data, c("a", "b"), 2, weights = "w", n_starts = 1, seed = 1),
                  "latents_single_level")
   expect_output(print(fit), "Sampling weights `w`.*Kish effective n")
   expect_identical(get_results(fit, "model")$weights, "w")
-  plain <- quietly(lpa(data, c("a", "b"), 2, n_starts = 2, seed = 1),
+  plain <- quietly(lpa(data, c("a", "b"), 2, n_starts = 1, seed = 1),
                    "latents_single_level")
   expect_identical(get_results(plain, "model")$weights, NA_character_)
 })
@@ -261,18 +261,18 @@ test_that("weighted transition fits reproduce duplicated persons", {
   repeated <- duplicate_units(data, "student", "w")
   activity <- c("browse", "lectures")
   weighted <- lta(data, activity, "student", n_profiles = 2, time = "sequence",
-                  weights = "w", n_starts = 2, seed = 1, tol = 1e-10)
+                  weights = "w", n_starts = 1, seed = 1, tol = 1e-10)
   expect_s3_class(weighted, "multilpa_lta")
   plain <- lta(repeated, activity, "student", n_profiles = 2, time = "sequence",
-               n_starts = 2, seed = 1, tol = 1e-10)
+               n_starts = 1, seed = 1, tol = 1e-10)
   expect_equal(on_duplicate_scale(weighted, person_weight), plain$log_likelihood,
                tolerance = 1e-8)
   covariate <- lta(data, activity, "student", n_profiles = 2, time = "sequence",
                    transition_covariates = "previous_grade", weights = "w",
-                   n_starts = 2, seed = 1, tol = 1e-10)
+                   n_starts = 1, seed = 1, tol = 1e-10)
   covariate_plain <- lta(repeated, activity, "student", n_profiles = 2,
                          time = "sequence", transition_covariates = "previous_grade",
-                         n_starts = 2, seed = 1, tol = 1e-10)
+                         n_starts = 1, seed = 1, tol = 1e-10)
   expect_equal(on_duplicate_scale(covariate, person_weight),
                covariate_plain$log_likelihood, tolerance = 1e-8)
   expect_equal(covariate$transition_coefficients,
@@ -290,7 +290,7 @@ test_that("weighted transition scores are the gradient of the pseudo likelihood"
   persons <- unique(data$student)
   data$w <- runif(length(persons), 0.3, 3)[match(data$student, persons)]
   fit <- lta(data, c("browse", "lectures"), "student", n_profiles = 2,
-             time = "sequence", weights = "w", n_starts = 2, seed = 1)
+             time = "sequence", weights = "w", n_starts = 1, seed = 1)
   theta <- coef(fit) + rnorm(length(coef(fit)), 0, 0.03)
   objective <- function(point) {
     -.lta_expectation(fit$x, fit$codes, fit$layout, fit$designs,
@@ -309,7 +309,7 @@ test_that("weighted group-class families reproduce duplicated groups", {
   vapply(c("additive", "additive_dispersion", "restricted_cross_level",
            "full_cross_level"), function(family) {
     arguments <- list(vars = c("a", "b"), id = "id", n_group_classes = 2,
-                      family = family, n_starts = 3, seed = 1, tol = 1e-12)
+                      family = family, n_starts = 1, seed = 1, tol = 1e-12)
     if (endsWith(family, "cross_level")) arguments$n_profiles <- 2
     weighted <- quietly(do.call(multilpa, c(list(data = data, weights = "w"),
                                             arguments)))
@@ -327,7 +327,7 @@ test_that("weighted additive scores are the gradient and inference is robust", {
   data <- weighted_groups(15, n_groups = 60)
   data$w <- runif(60, 0.3, 3)[data$id]
   fit <- quietly(multilpa(data, c("a", "b"), "id", n_group_classes = 2,
-                          family = "additive", weights = "w", n_starts = 3,
+                          family = "additive", weights = "w", n_starts = 1,
                           seed = 1))
   stats <- fit$sufficient_statistics
   class_names <- names(fit$group_probabilities)
@@ -356,9 +356,9 @@ test_that("weighted mixture regressions reproduce duplication at every nesting",
                      w = sample(1:3, n, TRUE), id = rep(seq_len(60), each = 5))
   data$group_weight <- sample(1:3, 60, TRUE)[data$id]
   rows <- data[rep(seq_len(n), data$w), ]
-  weighted <- mixture_regression(y ~ x, data, 2, weights = "w", n_starts = 3,
+  weighted <- mixture_regression(y ~ x, data, 2, weights = "w", n_starts = 1,
                                  seed = 1, tol = 1e-12)
-  plain <- mixture_regression(y ~ x, rows, 2, n_starts = 3, seed = 1, tol = 1e-12)
+  plain <- mixture_regression(y ~ x, rows, 2, n_starts = 1, seed = 1, tol = 1e-12)
   expect_equal(on_duplicate_scale(weighted, data$w), plain$log_likelihood,
                tolerance = 1e-10)
   expect_equal(weighted$params$beta, plain$params$beta, tolerance = 1e-6)
@@ -368,17 +368,17 @@ test_that("weighted mixture regressions reproduce duplication at every nesting",
   group_weights <- data$group_weight[!duplicated(data$id)]
   weighted_group <- mixture_regression(y ~ x, data, 2, id = "id",
                                        class_level = "group",
-                                       weights = "group_weight", n_starts = 3,
+                                       weights = "group_weight", n_starts = 1,
                                        seed = 1, tol = 1e-12, vcov_type = "none")
   plain_group <- mixture_regression(y ~ x, groups, 2, id = "id",
-                                    class_level = "group", n_starts = 3, seed = 1,
+                                    class_level = "group", n_starts = 1, seed = 1,
                                     tol = 1e-12, vcov_type = "none")
   expect_equal(on_duplicate_scale(weighted_group, group_weights),
                plain_group$log_likelihood, tolerance = 1e-9)
   expect_error(mixture_regression(y ~ x, data, 2, weights = "w",
-                                  vcov_type = "opg"),
+                                  vcov_type = "opg", n_starts = 1),
                class = "latents_unsupported_weights")
   expect_error(enumerate_regressions(y ~ x, data, n_classes = 1:2, bootstrap = 2,
-                                     weights = "w"),
+                                     weights = "w", n_starts = 1),
                class = "latents_unsupported_weights")
 })

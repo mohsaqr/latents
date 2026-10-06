@@ -47,7 +47,7 @@ test_that("per-group scores sum to the aggregate gradient in every model family"
   invisible(lapply(specifications, function(specification) {
     fit <- do.call(multilpa, c(list(data = specification$data,
       vars = c("a", "b"), id = "g", n_profiles = 2,
-      n_group_classes = 2, n_starts = 5, seed = 5), specification$arguments))
+      n_group_classes = 2, n_starts = 1, seed = 5), specification$arguments))
     # The identity holds at any parameter value. At the estimate both sides
     # are near zero and a relative tolerance compares roundoff, so it is
     # checked at a perturbed point, where the scores are of order one.
@@ -64,7 +64,7 @@ test_that("per-group scores sum to the aggregate gradient in every model family"
 
 test_that("per-group scores are localized to their own group", {
   dat <- robust_fixture_data()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 5, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   theta <- centered_theta(fit, dat)
   # Perturb one group's data only. Centering would spread that change across
   # every group, so the comparison uses the uncentered indicators directly.
@@ -79,7 +79,7 @@ test_that("per-group scores are localized to their own group", {
 
 test_that("robust and observed covariances differ only through the score product", {
   dat <- robust_fixture_data()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   observed <- parameter_inference(fit, dat)
   robust <- parameter_inference(fit, dat, vcov_type = "robust")
   expect_identical(attr(observed, "vcov_type"), "observed")
@@ -113,7 +113,7 @@ test_that("robust inference refuses fits with too few groups", {
   # independent units for the cross-product matrix to have full rank.
   small <- data.frame(g = rep(seq_len(3L), each = 20L),
                       a = stats::rnorm(60L), b = stats::rnorm(60L))
-  fit <- multilpa(small, c("a", "b"), "g", 2, 1, n_starts = 4, seed = 1)
+  fit <- multilpa(small, c("a", "b"), "g", 2, 1, n_starts = 1, seed = 1)
   expect_gt(fit$n_parameters, fit$n_groups)
   expect_error(parameter_inference(fit, small, vcov_type = "robust"),
                class = "latents_too_few_groups")
@@ -128,7 +128,7 @@ test_that("the cross-product matrix rejects non-finite scores", {
 
 test_that("robust standard errors are invariant to indicator location", {
   dat <- robust_fixture_data()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   robust <- parameter_inference(fit, dat, vcov_type = "robust")
   shifted <- dat
   shifted$a <- shifted$a + 100

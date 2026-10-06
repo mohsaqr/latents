@@ -73,7 +73,7 @@ test_that("the recursion reproduces the likelihood enumeration gives", {
   invisible(lapply(cases, function(case) {
     fit <- quietly(lta(
       data, c("y1", "y2"), "g", n_profiles = case$profiles, time = "t",
-      n_group_classes = case$types, n_starts = 2, seed = 4, max_iter = 25))
+      n_group_classes = case$types, n_starts = 1, seed = 4, max_iter = 25))
     expect_equal(fit$log_likelihood,
                  .transition_enumerate(continuous, NULL, fit$group_index,
                                        data$t, fit),
@@ -87,7 +87,7 @@ test_that("enumeration agrees for categorical, mixed and incomplete indicators",
   data <- .transition_fixture()
   mixed <- quietly(lta(
     data, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
-    categorical = "c1", n_starts = 2, seed = 8, max_iter = 25))
+    categorical = "c1", n_starts = 1, seed = 8, max_iter = 25))
   expect_equal(mixed$log_likelihood,
                .transition_enumerate(as.matrix(data[, c("y1", "y2")]),
                                      mixed$categorical_data, mixed$group_index,
@@ -95,7 +95,7 @@ test_that("enumeration agrees for categorical, mixed and incomplete indicators",
 
   pure <- quietly(lta(
     data, "c1", "g", n_profiles = 2L, time = "t", categorical = "c1",
-    n_starts = 2, seed = 8, max_iter = 25))
+    n_starts = 1, seed = 8, max_iter = 25))
   expect_equal(pure$log_likelihood,
                .transition_enumerate(matrix(numeric(0), nrow(data), 0L),
                                      pure$categorical_data, pure$group_index,
@@ -107,7 +107,7 @@ test_that("enumeration agrees for categorical, mixed and incomplete indicators",
   incomplete$y2[c(5L, 9L)] <- NA
   fiml <- quietly(lta(
     incomplete, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
-    categorical = "c1", missing = "fiml", n_starts = 2, seed = 8, max_iter = 25))
+    categorical = "c1", missing = "fiml", n_starts = 1, seed = 8, max_iter = 25))
   expect_equal(fiml$log_likelihood,
                .transition_enumerate(as.matrix(incomplete[, c("y1", "y2")]),
                                      fiml$categorical_data, fiml$group_index,
@@ -175,7 +175,7 @@ test_that("a grid of occasions differs from consecutive ones only when a wave is
   data <- .transition_fixture(n_groups = 8L, occasions = 5L, seed = 31L)
   fit <- function(frame, occasions) {
     quietly(lta(frame, c("y1", "y2"), "g", n_profiles = 2L,
-      time = "t", n_starts = 2, seed = 6, max_iter = 25, occasions = occasions))
+      time = "t", n_starts = 1, seed = 6, max_iter = 25, occasions = occasions))
   }
   balanced_observed <- fit(data, "observed")
   balanced_grid <- fit(data, "grid")
@@ -203,7 +203,7 @@ test_that("the fitted quantities satisfy their own definitions", {
   data <- .transition_fixture()
   fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 3L, time = "t", n_group_classes = 2L,
-    n_starts = 2, seed = 5, max_iter = 60))
+    n_starts = 1, seed = 5, max_iter = 60))
   expect_equal(rowSums(fit$initial_probabilities), rep(1, 2),
                ignore_attr = TRUE)
   expect_equal(unname(apply(fit$transition_probabilities, c(1L, 3L), sum)),
@@ -223,7 +223,7 @@ test_that("the free parameter count is the one the model actually has", {
   data <- .transition_fixture()
   fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 3L, time = "t", n_group_classes = 2L,
-    n_starts = 2, seed = 5, max_iter = 20))
+    n_starts = 1, seed = 5, max_iter = 20))
   # 3 profiles x 2 indicators means and variances, one group-class split,
   # two initial distributions and two 3x3 transition matrices.
   expect_identical(fit$n_parameters, 12L + 1L + 2L * 2L + 2L * 3L * 2L)
@@ -262,7 +262,7 @@ test_that("the accessors return the tidy tables they promise", {
   data <- .transition_fixture()
   fit <- quietly(lta(
     data, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
-    categorical = "c1", n_group_classes = 2L, n_starts = 2, seed = 5,
+    categorical = "c1", n_group_classes = 2L, n_starts = 1, seed = 5,
     max_iter = 30))
 
   moves <- get_results(fit, "transitions")
@@ -319,7 +319,7 @@ test_that("transitions() restricts by argument instead of by bracket", {
   data <- .transition_fixture()
   fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
-    n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 30))
+    n_group_classes = 2L, n_starts = 1, seed = 5, max_iter = 30))
 
   every <- get_results(fit, "transitions")
   moves <- get_results(fit, "transitions", stable = FALSE)
@@ -355,7 +355,7 @@ test_that("the summary keeps named fields only, and reports its own tables", {
   data <- .transition_fixture()
   fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t",
-    n_group_classes = 2L, n_starts = 2, seed = 5, max_iter = 30))
+    n_group_classes = 2L, n_starts = 1, seed = 5, max_iter = 30))
   digest <- summary(fit)
 
   # A Gaussian, diagonal-covariance fit has neither `covariances` nor
@@ -387,7 +387,7 @@ test_that("the shared sequence and diagnostic verbs accept a transition fit", {
   data <- .transition_fixture()
   fit <- quietly(lta(
     data, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_group_classes = 2L,
-    n_starts = 2, seed = 5, max_iter = 30))
+    n_starts = 1, seed = 5, max_iter = 30))
   long <- get_results(fit, "sequences")
   expect_named(long, c("group", "group_class", "time", "profile"))
   expect_identical(nrow(long), nrow(data))
@@ -403,7 +403,7 @@ test_that("groups of one occasion contribute an initial state and no transition"
   short <- rbind(data, data.frame(g = 10L, t = 1L, y1 = 0.4, y2 = -0.2,
                                   c1 = "lo"))
   fit <- quietly(lta(
-    short, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_starts = 2,
+    short, c("y1", "y2"), "g", n_profiles = 2L, time = "t", n_starts = 1,
     seed = 7, max_iter = 25))
   expect_identical(unname(fit$sequence_lengths[10L]), 1L)
   expect_equal(sum(fit$transition_counts), sum(fit$sequence_lengths - 1L))
@@ -472,7 +472,7 @@ test_that("the generics either answer or refuse, and never answer emptily", {
   data <- .transition_fixture()
   fit <- quietly(lta(
     data, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
-    categorical = "c1", n_starts = 2, seed = 5, max_iter = 30))
+    categorical = "c1", n_starts = 1, seed = 5, max_iter = 30))
 
   estimates <- coef(fit)
   expect_true(is.numeric(estimates) && !is.null(names(estimates)))

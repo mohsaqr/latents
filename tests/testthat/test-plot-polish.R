@@ -67,7 +67,7 @@ test_that("a fit without intervals says why instead of failing", {
 test_that("an all-categorical fit gets a response heatmap", {
   binary <- quietly(multilca(student_esm,
                              c("time_with_friends", "on_social_media", "sports"),
-                             id = NULL, n_profiles = 2, n_starts = 2, seed = 1))
+                             id = NULL, n_profiles = 2, n_starts = 1, seed = 1))
   skip_if_not_installed("ggplot2")
   responses <- expect_plot(plot(binary, what = "heatmap"))
   expect_true(all(responses$data$probability >= 0 &
@@ -112,7 +112,7 @@ test_that("the enumeration print shows a compact candidates table", {
 test_that("a latent class model is printed as one", {
   fit <- quietly(multilca(student_esm,
                           c("time_with_friends", "on_social_media", "sports"),
-                          id = NULL, n_profiles = 2, n_starts = 2, seed = 1))
+                          id = NULL, n_profiles = 2, n_starts = 1, seed = 1))
   output <- utils::capture.output(print(fit))
   expect_match(output[1L], "^Latent class analysis: 2 classes")
   expect_false(any(grepl("residual covariance", output)))
@@ -128,44 +128,44 @@ test_that("with one group class the membership intercept is named as one", {
 test_that("lpa() and lca() are the single-level fits, without the notice", {
   skip_on_cran()
   vars <- c("cognitive_strategies", "intrinsic_value", "self_efficacy")
-  expect_no_message(fit <- lpa(srl, vars, n_profiles = 2, n_starts = 2, seed = 1))
+  expect_no_message(fit <- lpa(srl, vars, n_profiles = 2, n_starts = 1, seed = 1))
   same <- suppressMessages(multilpa(srl, vars, id = NULL, n_profiles = 2,
-                                    n_starts = 2, seed = 1))
+                                    n_starts = 1, seed = 1))
   expect_equal(fit$log_likelihood, same$log_likelihood)
   expect_true(isTRUE(fit$single_level))
   activities <- c("time_with_friends", "on_social_media", "sports")
   expect_no_message(classes <- lca(student_esm, activities, n_classes = 2,
-                                   n_starts = 2, seed = 1))
+                                   n_starts = 1, seed = 1))
   expect_identical(classes$n_profiles, 2L)
   expect_equal(classes$log_likelihood,
                suppressMessages(multilca(student_esm, activities, id = NULL,
-                                         n_profiles = 2, n_starts = 2,
+                                         n_profiles = 2, n_starts = 1,
                                          seed = 1))$log_likelihood)
-  expect_error(lpa(srl, vars, n_profiles = 2, id = "x"),
+  expect_error(lpa(srl, vars, n_profiles = 2, id = "x", n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(lca(student_esm, activities, n_classes = 2, n_group_classes = 2),
+  expect_error(lca(student_esm, activities, n_classes = 2, n_group_classes = 2, n_starts = 1),
                class = "latents_bad_argument")
 })
 
 test_that("`model` names the covariance structure as enumerate_classes() does", {
   vars <- c("cognitive_strategies", "intrinsic_value", "test_anxiety")
-  named <- lpa(srl, vars, n_profiles = 2, model = "EEE", n_starts = 2, seed = 1)
+  named <- lpa(srl, vars, n_profiles = 2, model = "EEE", n_starts = 1, seed = 1)
   switched <- lpa(srl, vars, n_profiles = 2, variance_model = "equal",
-                  covariance_model = "full", n_starts = 2, seed = 1)
+                  covariance_model = "full", n_starts = 1, seed = 1)
   expect_identical(named$covariance_structure, "EEE")
   expect_equal(named$log_likelihood, switched$log_likelihood)
   expect_identical(lpa(srl, vars, n_profiles = 2, model = "VEV", n_starts = 1,
                        seed = 1)$covariance_structure, "VEV")
   expect_error(lpa(srl, vars, n_profiles = 2, model = "EEE",
-                   variance_model = "equal"), class = "latents_bad_argument")
-  expect_error(lpa(srl, vars, n_profiles = 2, model = "XYZ"),
+                   variance_model = "equal", n_starts = 1), class = "latents_bad_argument")
+  expect_error(lpa(srl, vars, n_profiles = 2, model = "XYZ", n_starts = 1),
                class = "latents_bad_argument")
 })
 
 test_that("the measurement tables carry standard errors without being given data", {
   vars <- c("cognitive_strategies", "intrinsic_value", "test_anxiety")
   invisible(lapply(c("EEI", "VVI", "EEE", "VVV"), function(structure) {
-    fit <- lpa(srl, vars, n_profiles = 2, model = structure, n_starts = 2, seed = 1)
+    fit <- lpa(srl, vars, n_profiles = 2, model = structure, n_starts = 1, seed = 1)
     profiles <- get_results(fit, "profiles")
     expect_false(anyNA(profiles$mean_standard_error), label = structure)
     expect_false(anyNA(profiles$variance_standard_error), label = structure)
@@ -188,7 +188,7 @@ test_that("the measurement tables carry standard errors without being given data
 test_that("diagnostics() draws its plots by default", {
   skip_on_cran()
   fit <- lpa(srl, c("self_efficacy", "test_anxiety"), n_profiles = 2,
-             n_starts = 2, seed = 1)
+             n_starts = 1, seed = 1)
   grDevices::pdf(NULL)
   on.exit(grDevices::dev.off(), add = TRUE)
   before <- grDevices::recordPlot()

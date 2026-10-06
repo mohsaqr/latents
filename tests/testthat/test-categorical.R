@@ -90,7 +90,7 @@ test_that("two-level latent class analysis recovers its generating structure", {
   dat <- categorical_fixture()
   vars <- paste0("v", 1:5)
   fit <- multilpa(dat, vars, "school", n_profiles = 2, n_group_classes = 2,
-                    categorical = vars, n_starts = 20, seed = 3)
+                    categorical = vars, n_starts = 1, seed = 3)
   expect_identical(fit$measurement_model, "categorical")
   expect_true(fit$converged)
   # (H - 1) + H (K - 1) + K sum(C - 1), with no Gaussian parameters.
@@ -122,13 +122,13 @@ test_that("ordinal and mixed-mode measurement fit and count parameters correctly
   ordinal$v2 <- NULL
   vars <- c("v1", "v3", "v4", "v5")
   fit <- multilpa(ordinal, vars, "school", 2, 2, categorical = vars,
-                    n_starts = 12, seed = 4)
+                    n_starts = 1, seed = 4)
   expect_identical(ncol(fit$response_probabilities$v1), 3L)
   expect_equal(fit$n_parameters, 1 + 2 + 2 * (2 + 1 + 1 + 1))
   mixed <- dat
   mixed$score <- stats::rnorm(nrow(dat))
   mixed_fit <- multilpa(mixed, c("score", paste0("v", 1:5)), "school", 2, 2,
-                          categorical = paste0("v", 1:5), n_starts = 12, seed = 4)
+                          categorical = paste0("v", 1:5), n_starts = 1, seed = 4)
   expect_identical(mixed_fit$measurement_model, "mixed")
   expect_identical(mixed_fit$continuous, "score")
   expect_identical(mixed_fit$categorical, paste0("v", 1:5))
@@ -147,11 +147,11 @@ test_that("categorical indicators support observed-data maximum likelihood", {
   incomplete$v1[sample(nrow(dat), 60L)] <- NA
   incomplete$v4[sample(nrow(dat), 40L)] <- NA
   expect_error(multilpa(incomplete, vars, "school", 2, 2,
-                          categorical = vars, n_starts = 2, seed = 1),
+                          categorical = vars, n_starts = 1, seed = 1),
                "missing or non-finite")
   fit <- multilpa(incomplete, vars, "school", 2, 2,
                     categorical = vars, missing = "fiml",
-                    n_starts = 12, seed = 1)
+                    n_starts = 1, seed = 1)
   expect_true(fit$converged)
   expect_equal(unname(fit$n_observed_by_indicator[["v1"]]), nrow(dat) - 60)
   expect_equal(unname(fit$n_observed_by_indicator[["v2"]]), nrow(dat))
@@ -164,7 +164,7 @@ test_that("the responses accessor reports probabilities and thresholds", {
   dat <- categorical_fixture(seed = 15L, n_groups = 25L, per_group = 12L)
   vars <- paste0("v", 1:5)
   fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,
-                    n_starts = 10, seed = 6)
+                    n_starts = 1, seed = 6)
   responses <- get_results(fit, "responses")
   expect_identical(names(responses),
     c("profile", "indicator", "category", "probability", "threshold",
@@ -180,7 +180,7 @@ test_that("the responses accessor reports probabilities and thresholds", {
   expect_equal(stats::plogis(first$threshold), first$probability)
   # A Gaussian-only fit returns an empty table of the same shape, not an error.
   gaussian <- multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
-                         "y", "g", 2, 1, n_starts = 3, seed = 1)
+                         "y", "g", 2, 1, n_starts = 1, seed = 1)
   expect_identical(nrow(get_results(gaussian, "responses")), 0L)
 })
 
@@ -188,9 +188,9 @@ test_that("unsupported categorical combinations are refused by condition class",
   dat <- categorical_fixture(seed = 31L, n_groups = 25L, per_group = 12L)
   vars <- paste0("v", 1:5)
   fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,
-                    n_starts = 8, seed = 2)
+                    n_starts = 1, seed = 2)
   smaller <- multilpa(dat, vars, "school", 1, 1, categorical = vars,
-                        n_starts = 3, seed = 2)
+                        n_starts = 1, seed = 2)
   # Categorical measurement now carries analytic scores, so inference works.
   categorical_inference <- parameter_inference(fit, dat)
   expect_true(all(categorical_inference$standard_error >= 0))
@@ -202,18 +202,18 @@ test_that("unsupported categorical combinations are refused by condition class",
   # profile with two group classes is unidentifiable, so the step is taken at
   # the group level instead: two profiles, one class against two.
   one_class <- multilpa(dat, vars, "school", 2, 1,
-                        categorical = vars, n_starts = 3, seed = 2)
+                        categorical = vars, n_starts = 1, seed = 2)
   bootstrap <- quietly(
-    bootstrap_lrt(one_class, fit, dat, iter = 3, n_starts = 3, seed = 1))
+    bootstrap_lrt(one_class, fit, dat, iter = 3, n_starts = 1, seed = 1))
   expect_gt(bootstrap$statistic, 0)
   expect_equal(bootstrap$iter, 3L)
   expect_true(all(c("replicate", "statistic", "valid") %in%
                     names(bootstrap$replicates)))
   expect_equal(nrow(bootstrap$replicates), 3L)
   expect_error(multilpa(dat, vars, "school", 2, 2, categorical = "absent",
-                          n_starts = 2), class = "latents_bad_categorical")
+                          n_starts = 1), class = "latents_bad_categorical")
   expect_error(multilpa(dat, vars, "school", 2, 2,
-                          categorical = c("v1", "v1"), n_starts = 2),
+                          categorical = c("v1", "v1"), n_starts = 1),
                class = "latents_bad_categorical")
   # Categorical starts are supported; a start that names nothing the model uses
   # is rejected on its contents rather than refused outright.
@@ -227,7 +227,7 @@ test_that("categorical models plot their response probabilities", {
   dat <- categorical_fixture(seed = 41L, n_groups = 25L, per_group = 12L)
   vars <- paste0("v", 1:5)
   fit <- multilpa(dat, vars, "school", 2, 2, categorical = vars,
-                    n_starts = 8, seed = 2)
+                    n_starts = 1, seed = 2)
   skip_if_not_installed("ggplot2")
   last <- expect_plot(plot(fit, what = "responses"))
   first <- expect_plot(plot(fit, what = "responses", category = "first"))
@@ -239,6 +239,6 @@ test_that("categorical models plot their response probabilities", {
   # A model with no continuous indicators cannot draw a profile-means plot.
   expect_error(plot(fit, what = "profiles"), class = "latents_no_continuous")
   gaussian <- multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
-                         "y", "g", 2, 1, n_starts = 3, seed = 1)
+                         "y", "g", 2, 1, n_starts = 1, seed = 1)
   expect_error(plot(gaussian, what = "responses"), class = "latents_no_categorical")
 })

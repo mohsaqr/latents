@@ -201,7 +201,7 @@ test_that("coef reports the same numbers the tidy table does, on both spread mod
     fit <- multilpa(data, c("y1", "y2"), "school", n_profiles = 2,
                           n_group_classes = 1, profile_covariates = "x",
                           covariance_model = covariance_model,
-                          n_starts = 3, seed = 1)
+                          n_starts = 1, seed = 1)
     inference <- parameter_inference(fit, data)
     expect_equal(unname(coef(fit)), inference$estimate, info = covariance_model)
     expect_identical(names(coef(fit)),
@@ -232,7 +232,7 @@ test_that("a transition fit reports standard errors named as its coefficients", 
   data$score_a <- stats::rnorm(150)
   data$score_b <- stats::rnorm(150)
   fit <- lta(data, c("score_a", "score_b"), "person",
-                         n_profiles = 2, time = "wave", n_starts = 2, seed = 1)
+                         n_profiles = 2, time = "wave", n_starts = 1, seed = 1)
 
   inference <- parameter_inference(fit, data)
   expect_identical(.multilpa_parameter_names(inference), names(coef(fit)))

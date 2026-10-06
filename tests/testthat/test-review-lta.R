@@ -124,7 +124,7 @@ test_that("second-order occasion models omit unused logits and report stayer ide
 test_that("extended LTA refuses unidentified panels and invalid inference controls", {
   data <- review_lta_data()
   expect_error(lta(data[data$time <= 2, ], "y", "id", 2, time = "time",
-    order = 2, missing = "fiml"), class = "latents_bad_transition")
+    order = 2, missing = "fiml", n_starts = 1), class = "latents_bad_transition")
   expect_error(review_lta_fit(n_group_classes = 7L), class = "latents_unidentified")
   fit <- review_lta_fit()
   fit$converged <- TRUE

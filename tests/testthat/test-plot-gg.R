@@ -100,7 +100,7 @@ test_that("tree bars are posterior shares and every row sums to one", {
 
 test_that("a tree needs two numbers of profiles for some model", {
   single <- enumerate_lpa(as.data.frame(scale(iris[gg_vars])), gg_vars,
-                          n_profiles = 3, model = "EEE", n_starts = 2,
+                          n_profiles = 3, model = "EEE", n_starts = 1,
                           seed = 1)
   expect_error(plot(single, what = "tree"), class = "latents_nothing_to_plot")
 })

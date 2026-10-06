@@ -84,7 +84,7 @@ test_that("a single fit and its enumeration grid name the same things", {
                     a = stats::rnorm(120L), b = stats::rnorm(120L))
   grid <- as.data.frame(enumerate_classes(
     dat, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
-    n_starts = 2, seed = 1))
+    n_starts = 1, seed = 1))
   shared <- intersect(names(wide), names(grid))
   expect_setequal(shared, setdiff(names(wide), character()))
   expect_true(all(c("aic", "kic", "bic_groups", "bic_individual",
@@ -184,7 +184,7 @@ test_that("a mixed fit puts both kinds of pair on one scale", {
   data <- .mixed_fit_data()
   fit <- multilpa(data, c("a", "b", "u1", "u2", "u3"), "school", n_profiles = 2,
                   n_group_classes = 1, categorical = c("u1", "u2", "u3"),
-                  n_starts = 5, seed = 3)
+                  n_starts = 1, seed = 3)
   residuals <- get_results(fit, "residuals", data = data)
   expect_setequal(unique(residuals$kind), c("gaussian", "categorical"))
   # `residual` is observed minus expected for every kind, not only one.
@@ -213,7 +213,7 @@ test_that("df is a column that does not apply to a Gaussian pair", {
   data <- .mixed_fit_data()
   fit <- multilpa(data, c("a", "b", "u1", "u2", "u3"), "school", n_profiles = 2,
                   n_group_classes = 1, categorical = c("u1", "u2", "u3"),
-                  n_starts = 5, seed = 3)
+                  n_starts = 1, seed = 3)
   residuals <- get_results(fit, "residuals", data = data, by = "overall")
   expect_type(residuals$df, "integer")
   # A Fisher z is a standard normal deviate and has no degrees of freedom.
@@ -225,7 +225,7 @@ test_that("df is a column that does not apply to a Gaussian pair", {
   expect_false(any(is.na(residuals$p_value)))
   # The empty table declares the same column types as a populated one.
   single <- multilpa(data, "a", "school", n_profiles = 2, n_group_classes = 1,
-                     n_starts = 2, seed = 1)
+                     n_starts = 1, seed = 1)
   empty <- get_results(single, "residuals", data = data)
   expect_identical(names(empty), names(residuals))
   expect_type(empty$df, "integer")

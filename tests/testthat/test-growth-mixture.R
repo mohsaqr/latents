@@ -123,16 +123,16 @@ test_that("a proportional covariance is the shared matrix times class scales", {
 
 test_that("growth mixture requests outside the model are refused by class", {
   data <- growth_fixture_data(n = 60L)
-  expect_error(mixture_regression(y ~ time, data, 2, random = ~ 1),
+  expect_error(mixture_regression(y ~ time, data, 2, random = ~ 1, n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(mixture_regression(y ~ time, data, 2, id = "id", random = ~ 1),
+  expect_error(mixture_regression(y ~ time, data, 2, id = "id", random = ~ 1, n_starts = 1),
                class = "latents_bad_argument")
   data$k <- stats::rpois(nrow(data), 3)
   expect_error(mixture_regression(k ~ time, data, 2, family = "poisson", id = "id",
-                                  class_level = "group", random = ~ 1),
+                                  class_level = "group", random = ~ 1, n_starts = 1),
                class = "latents_bad_argument")
   expect_error(mixture_regression(y ~ time, data, 2, id = "id", class_level = "group",
-                                  random = ~ 1, random_diagonal = NA),
+                                  random = ~ 1, random_diagonal = NA, n_starts = 1),
                class = "latents_bad_argument")
   expect_error(get_results(mixture_regression(y ~ time, data, 2, id = "id",
                                               class_level = "group", random = ~ 1,
@@ -162,7 +162,7 @@ test_that("growth estimates recover the generating trajectories", {
   data <- growth_fixture_data(n = 400L, seed = 7L)
   fit <- mixture_regression(y ~ time, data, n_classes = 2, id = "id",
                             class_level = "group", random = ~ 1 + time,
-                            n_starts = 3, seed = 1)
+                            n_starts = 1, seed = 1)
   coefficients <- get_results(fit, "coefficients")
   intercepts <- sort(coefficients$estimate[coefficients$term == "(Intercept)"])
   expect_equal(intercepts, c(2, 6), tolerance = 0.1)
@@ -188,9 +188,9 @@ test_that("variable names stand in for one-sided formulas", {
                                        vcov_type = "none")
   expect_identical(colnames(intercept_only$spec$random_design), "(Intercept)")
   expect_error(mixture_regression(y ~ time, data, 2, id = "id", class_level = "group",
-                                  random = 3), class = "latents_bad_argument")
+                                  random = 3, n_starts = 1), class = "latents_bad_argument")
   expect_error(mixture_regression(y ~ time, data, 2, id = "id", class_level = "group",
-                                  random = ""), class = "latents_bad_argument")
+                                  random = "", n_starts = 1), class = "latents_bad_argument")
 })
 
 test_that("compare_models() compares fits to the same data in one tidy table", {
@@ -249,7 +249,7 @@ test_that("a degenerate random-effect covariance warns and withholds its errors"
   data$y <- rep(c(0, 3), n / 2)[data$id] + stats::rnorm(nrow(data), 0, 0.5)
   expect_warning(
     fit <- mixture_regression(y ~ time, data, 2, id = "id", class_level = "group",
-                              random = "intercept", n_starts = 2, seed = 1),
+                              random = "intercept", n_starts = 1, seed = 1),
     class = "latents_random_boundary")
   expect_true(get_results(fit, "fit")$random_boundary)
   random <- get_results(fit, "random")
@@ -296,7 +296,7 @@ test_that("a degenerate random intercept is advised away, not re-suggested", {
   data$y <- rep(c(0, 3), n / 2)[data$id] + stats::rnorm(nrow(data), 0, 0.5)
   warning_text <- tryCatch(
     mixture_regression(y ~ time, data, 2, id = "id", class_level = "group",
-                       random = "intercept", n_starts = 2, seed = 1),
+                       random = "intercept", n_starts = 1, seed = 1),
     latents_random_boundary = function(w) conditionMessage(w))
   expect_match(warning_text, "drop `random`")
   expect_no_match(warning_text, 'random = "intercept"', fixed = TRUE)
@@ -318,7 +318,7 @@ test_that("recovery compares the classes with a known classification", {
   skip_on_cran()
   fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3, id = "student",
                             class_level = "group", random = "wave",
-                            random_covariance = "equal", n_starts = 3, seed = 1)
+                            random_covariance = "equal", n_starts = 1, seed = 1)
   recovery <- get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
   expect_identical(sum(recovery$n), 300L)
   expect_equal(as.vector(tapply(recovery$share, recovery$assigned, sum)), rep(1, 3),
@@ -371,7 +371,7 @@ test_that("distal outcomes of trajectory models use the three-step correction", 
   skip_on_cran()
   fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3, id = "student",
                             class_level = "group", random = "wave",
-                            random_covariance = "equal", n_starts = 3, seed = 1)
+                            random_covariance = "equal", n_starts = 1, seed = 1)
   means <- three_step(fit, data = growth_scores, outcome = "motivation")
   expect_s3_class(means, "data.frame")
   expect_identical(unique(means$level), "persons")
@@ -403,7 +403,7 @@ test_that("distal outcomes of trajectory models use the three-step correction", 
                class = "latents_unsupported_three_step")
   trajectories <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
                                      id = "student", class_level = "group",
-                                     n_starts = 2, seed = 1)
+                                     n_starts = 1, seed = 1)
   expect_identical(nrow(three_step(trajectories, data = growth_scores,
                                    outcome = "motivation")), 3L)
 })

@@ -35,7 +35,7 @@ test_that("Rubin's rules agree with mice::pool.scalar for every parameter", {
   skip_if_not_installed("mice")
   pooled <- .pool_quietly(pool_imputations(
     .pool_imputed(.pool_fixture()), c("y1", "y2"), "g", 2L,
-    n_group_classes = 1L, profile_covariates = "z", n_starts = 2, seed = 1))
+    n_group_classes = 1L, profile_covariates = "z", n_starts = 1, seed = 1))
   estimates <- as.data.frame(pooled)
   per_imputation <- get_results(pooled, "imputations")
   key <- function(table) paste(table$level, table$outcome, table$term, table$parameter)
@@ -53,10 +53,10 @@ test_that("identical imputations pool to the single fit, with no missing informa
   frame <- .pool_fixture()
   pooled <- .pool_quietly(pool_imputations(
     list(frame, frame, frame), c("y1", "y2"), "g", 2L, n_group_classes = 1L,
-    profile_covariates = "z", n_starts = 2, seed = 1))
+    profile_covariates = "z", n_starts = 1, seed = 1))
   single <- parameter_inference(.pool_quietly(multilpa(
     frame, c("y1", "y2"), "g", 2L, 1L, profile_covariates = "z",
-    n_starts = 2, seed = 1)))
+    n_starts = 1, seed = 1)))
   estimates <- as.data.frame(pooled)
   expect_equal(estimates$estimate, single$estimate)
   expect_equal(estimates$standard_error, single$standard_error)
@@ -70,7 +70,7 @@ test_that("relabelling a covariate fit leaves its likelihood and inference intac
   # covariate: every block the relabelling has to move is present.
   fit <- .pool_quietly(multilpa(frame, c("y1", "y2"), "g", 3L, 2L,
                                 profile_covariates = "z", group_covariates = "w",
-                                profile_slopes = "group_class", n_starts = 2,
+                                profile_slopes = "group_class", n_starts = 1,
                                 seed = 1, max_iter = 300))
   moved <- .multilpa_cov_permute(fit, c(3L, 1L, 2L), c(2L, 1L))
   x <- sweep(as.matrix(frame[c("y1", "y2")]), 2L, fit$center, "-")
@@ -94,7 +94,7 @@ test_that("relabelling a covariate fit leaves its likelihood and inference intac
 test_that("alignment undoes a scrambled imputation before pooling", {
   frame <- .pool_fixture()
   fit <- .pool_quietly(multilpa(frame, c("y1", "y2"), "g", 2L, 1L,
-                                profile_covariates = "z", n_starts = 2, seed = 1))
+                                profile_covariates = "z", n_starts = 1, seed = 1))
   scrambled <- .multilpa_cov_permute(fit, c(2L, 1L), 1L)
   expect_false(isTRUE(all.equal(scrambled$profile_coefficients,
                                 fit$profile_coefficients)))
@@ -137,7 +137,7 @@ test_that("covariate-free fits are pooled too", {
     copy
   })
   pooled <- .pool_quietly(pool_imputations(imputed, c("y1", "y2"), "g", 2L,
-                                           n_group_classes = 1L, n_starts = 2,
+                                           n_group_classes = 1L, n_starts = 1,
                                            seed = 1))
   expect_identical(pooled$model, "multilpa")
   expect_true(all(is.finite(as.data.frame(pooled)$standard_error)))
@@ -147,7 +147,7 @@ test_that("covariate-free fits are pooled too", {
 test_that("the methods return what they document", {
   pooled <- .pool_quietly(pool_imputations(
     .pool_imputed(.pool_fixture()), c("y1", "y2"), "g", 2L,
-    n_group_classes = 1L, profile_covariates = "z", n_starts = 2, seed = 1))
+    n_group_classes = 1L, profile_covariates = "z", n_starts = 1, seed = 1))
   expect_s3_class(summary(pooled), "data.frame")
   expect_identical(nrow(summary(pooled)), 1L)
   expect_identical(dim(vcov(pooled)),

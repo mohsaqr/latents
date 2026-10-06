@@ -26,10 +26,10 @@ test_that("multilca() is multilpa() with every indicator categorical", {
 
 test_that("multilca() refuses `categorical` and checks `vars`", {
   expect_error(multilca(.lca_data, vars = .lca_items, id = "student",
-                        n_profiles = 2, categorical = "sports"),
+                        n_profiles = 2, categorical = "sports", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(multilca(.lca_data, vars = character(), id = "student",
-                        n_profiles = 2))
+                        n_profiles = 2, n_starts = 1))
 })
 
 test_that("multilca() with id = NULL fits one group class without being told", {

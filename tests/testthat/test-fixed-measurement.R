@@ -93,9 +93,9 @@ test_that("holding nothing leaves the maximization step exactly as it was", {
     .multilpa_maximization(x, expectation, "varying", 1e-6, "diagonal"))
   # And an ordinary fit is untouched by the new argument existing.
   plain <- multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                    n_group_classes = 2L, n_starts = 2, seed = 1)
+                    n_group_classes = 2L, n_starts = 1, seed = 1)
   explicit <- multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                       n_group_classes = 2L, n_starts = 2, seed = 1,
+                       n_group_classes = 2L, n_starts = 1, seed = 1,
                        fixed = character())
   expect_equal(plain$log_likelihood, explicit$log_likelihood)
   expect_equal(plain$means, explicit$means)
@@ -181,7 +181,7 @@ test_that("a measurement-only start carries no mixing values", {
 test_that("a `fixed` request that cannot be met is refused by class", {
   data <- .fixed_fixture()
   fit <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                                   n_group_classes = 1L, n_starts = 2, seed = 1))
+                                   n_group_classes = 1L, n_starts = 1, seed = 1))
   start <- starting_values(fit, what = "measurement")
   expect_error(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
                         n_group_classes = 2L, n_starts = 1, seed = 1,
@@ -230,33 +230,33 @@ test_that("a staged fit holds its first stage and improves on it", {
 test_that("a supplied first stage is used, and a mismatched one is refused", {
   data <- .fixed_structured()
   staged <- fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                                  n_group_classes = 2L, n_starts = 5, seed = 2)
+                                  n_group_classes = 2L, n_starts = 1, seed = 2)
   measurement <- multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                          n_group_classes = 1L, n_starts = 5, seed = 2)
+                          n_group_classes = 1L, n_starts = 1, seed = 2)
   again <- fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                                 n_group_classes = 2L, n_starts = 5, seed = 2,
+                                 n_group_classes = 2L, n_starts = 1, seed = 2,
                                  measurement = measurement)
   expect_equal(again$log_likelihood, staged$log_likelihood)
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                          n_group_classes = 2L, n_starts = 2, seed = 2,
+                          n_group_classes = 2L, n_starts = 1, seed = 2,
                           measurement = staged),
                class = "latents_bad_stage")
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 3L,
-                                     n_group_classes = 2L, n_starts = 2, seed = 2,
+                                     n_group_classes = 2L, n_starts = 1, seed = 2,
                                      measurement = measurement),
                class = "latents_bad_stage")
   expect_error(fit_staged(data, "a", "school", n_profiles = 2L,
-                                     n_group_classes = 2L, n_starts = 2, seed = 2,
+                                     n_group_classes = 2L, n_starts = 1, seed = 2,
                                      measurement = measurement),
                class = "latents_bad_stage")
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                                     n_group_classes = 1L, n_starts = 2, seed = 2))
+                                     n_group_classes = 1L, n_starts = 1, seed = 2))
 })
 
 test_that("the stages table describes staged and ordinary fits alike", {
   data <- .fixed_structured()
   staged <- fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                                  n_group_classes = 2L, n_starts = 3, seed = 2)
+                                  n_group_classes = 2L, n_starts = 1, seed = 2)
   table_staged <- get_results(staged, "stages")
   expect_named(table_staged, c("stage", "group_classes", "fixed",
                                "log_likelihood", "parameters",
@@ -267,7 +267,7 @@ test_that("the stages table describes staged and ordinary fits alike", {
   expect_identical(table_staged$fixed[2L], "means, variances")
 
   joint <- multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                    n_group_classes = 2L, n_starts = 3, seed = 2)
+                    n_group_classes = 2L, n_starts = 1, seed = 2)
   table_joint <- get_results(joint, "stages")
   expect_identical(nrow(table_joint), 1L)
   expect_identical(table_joint$stage, "joint")
@@ -279,7 +279,7 @@ test_that("the stages table describes staged and ordinary fits alike", {
 test_that("held values survive a fit that performs no update at all", {
   data <- .fixed_fixture()
   stage_one <- quietly(multilpa(data, c("a", "b"), "school",
-    n_profiles = 2L, n_group_classes = 1L, n_starts = 2, seed = 1))
+    n_profiles = 2L, n_group_classes = 1L, n_starts = 1, seed = 1))
   start <- starting_values(stage_one, what = "measurement")
   # max_iter = 0 runs no maximization, so nothing can put the held values back
   # afterwards. They must already be in place, or this reports a measurement
@@ -328,21 +328,21 @@ test_that("a constrained measurement is refused, not fitted as a wider one", {
                      x = stats::rnorm(n, ifelse(high, 2, -2), 1),
                      y = stats::rnorm(n, ifelse(high, 1, -1), 1))
   constrained <- multilpa(data, c("x", "y"), "unit", n_profiles = 2L,
-                          n_group_classes = 1L, n_starts = 3L, seed = 1L,
+                          n_group_classes = 1L, n_starts = 1, seed = 1L,
                           volume = "varying", shape = "equal", orientation = "axis")
   expect_identical(constrained$covariance_structure, "VEI")
   expect_error(
     fit_staged(data, c("x", "y"), "unit", n_profiles = 2L, n_group_classes = 2L,
-               measurement = constrained, n_starts = 2L, seed = 1L),
+               measurement = constrained, n_starts = 1, seed = 1L),
     class = "latents_bad_stage")
 
   # The four the two switches can name still stage as they always did.
   free <- multilpa(data, c("x", "y"), "unit", n_profiles = 2L,
-                   n_group_classes = 1L, n_starts = 3L, seed = 1L)
+                   n_group_classes = 1L, n_starts = 1, seed = 1L)
   expect_identical(free$covariance_structure, "VVI")
   staged <- fit_staged(data, c("x", "y"), "unit", n_profiles = 2L,
                        n_group_classes = 2L, measurement = free,
-                       n_starts = 2L, seed = 1L)
+                       n_starts = 1, seed = 1L)
   expect_identical(staged$covariance_structure, "VVI")
   expect_equal(unname(staged$means), unname(free$means))
 })

@@ -25,7 +25,7 @@ test_that("group-class bootstrap refuses changed scatter and group sizes", {
   null <- multilpa(data, c("y1", "y2"), "id", n_group_classes = 1,
                    family = "additive", seed = 1, n_starts = 1)
   alternative <- multilpa(data, c("y1", "y2"), "id", n_group_classes = 2,
-                          family = "additive", seed = 1, n_starts = 2)
+                          family = "additive", seed = 1, n_starts = 1)
   # Same group averages, different raw-rating likelihood.
   changed <- data
   changed$y1[1:2] <- changed$y1[1:2] + c(-0.5, 0.5)
@@ -35,7 +35,7 @@ test_that("group-class bootstrap refuses changed scatter and group sizes", {
                                    y1 = mean(data$y1[data$id == 1L]),
                                    y2 = mean(data$y2[data$id == 1L])))
   other <- multilpa(enlarged, c("y1", "y2"), "id", n_group_classes = 2,
-                    family = "additive", seed = 1, n_starts = 2)
+                    family = "additive", seed = 1, n_starts = 1)
   expect_error(bootstrap_lrt(null, other, iter = 1),
                class = "latents_bad_inference_data")
 })
@@ -158,11 +158,11 @@ test_that("restricted cross-level weights preserve a similarly named indicator",
   data <- review_family_data()
   ordinary <- multilpa(data, c("y1", "y2"), "id", n_profiles = 2,
                        n_group_classes = 2, family = "restricted_cross_level",
-                       weights = "w", n_starts = 2, seed = 1, tol = 1e-10)
+                       weights = "w", n_starts = 1, seed = 1, tol = 1e-10)
   names(data)[names(data) == "y1"] <- ".sampling_weight"
   named <- multilpa(data, c(".sampling_weight", "y2"), "id", n_profiles = 2,
                     n_group_classes = 2, family = "restricted_cross_level",
-                    weights = "w", n_starts = 2, seed = 1, tol = 1e-10)
+                    weights = "w", n_starts = 1, seed = 1, tol = 1e-10)
   expect_equal(named$log_likelihood, ordinary$log_likelihood, tolerance = 1e-10)
   expect_equal(unname(named$profile_means), unname(ordinary$profile_means),
                tolerance = 1e-10)
@@ -183,6 +183,6 @@ test_that("cross-level counts refuse overflow before integer conversion", {
 test_that("family enumeration rejects missing variance restrictions explicitly", {
   expect_error(enumerate_classes(review_family_data(), c("y1", "y2"), "id",
                                  family = "additive", n_group_classes = 1,
-                                 between_variance = c("equal", NA_character_)),
+                                 between_variance = c("equal", NA_character_), n_starts = 1),
                class = "latents_bad_argument")
 })

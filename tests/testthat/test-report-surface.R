@@ -80,7 +80,7 @@ test_that("a single-profile fit refuses the case diagnostics by class", {
   # "`breaks` must be increasing", which reads as an internal fault.
   fits <- list(
     multilpa(.surface_data(), c("a", "b"), "school", n_profiles = 1L,
-             n_group_classes = 1L, n_starts = 2L, seed = 1))
+             n_group_classes = 1L, n_starts = 1, seed = 1))
   skip_if_not_installed("ggplot2")
   invisible(lapply(fits, function(fit) {
     expect_error(plot(fit, what = "entropy"), class = "latents_nothing_to_plot")
@@ -103,7 +103,7 @@ test_that("report() draws every view it offers, for every family", {
                                 n_group_classes = 1L, profile_covariates = "z",
                                 n_starts = 1L, seed = 1),
     one_profile = multilpa(data, c("a", "b"), "school", n_profiles = 1L,
-                           n_group_classes = 1L, n_starts = 2L, seed = 1))
+                           n_group_classes = 1L, n_starts = 1, seed = 1))
   draw(invisible(lapply(fits, function(fit) {
     expect_identical(utils::capture.output(report(fit, plots = TRUE))[1L],
                      utils::capture.output(print(summary(fit)))[1L])

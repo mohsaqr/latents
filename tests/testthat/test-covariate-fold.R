@@ -27,7 +27,7 @@ test_that("a group covariate alone also takes the covariate path", {
   data$mean_grade <- stats::ave(data$previous_grade, data$student, FUN = mean)
   fit <- multilpa(data, activity, "student", n_profiles = 2,
                   n_group_classes = 2, group_covariates = "mean_grade",
-                  n_starts = 2, max_iter = 4000, tol = 1e-8, seed = 1)
+                  n_starts = 1, max_iter = 4000, tol = 1e-8, seed = 1)
   expect_s3_class(fit, "multilpa_covariates")
   expect_identical(fit$group_covariates, "mean_grade")
   expect_length(fit$profile_covariates, 0L)
@@ -95,10 +95,10 @@ test_that("the two arguments the covariate path cannot honour are refused", {
 
 test_that("a non-character covariate name is refused before any fitting", {
   expect_error(multilpa(course_engagement, activity, "student", n_profiles = 2,
-                        n_group_classes = 2, profile_covariates = 1),
+                        n_group_classes = 2, profile_covariates = 1, n_starts = 1),
                "must be a character vector")
   expect_error(multilpa(course_engagement, activity, "student", n_profiles = 2,
-                        n_group_classes = 2, group_covariates = NA_character_),
+                        n_group_classes = 2, group_covariates = NA_character_, n_starts = 1),
                "must be a character vector")
 })
 

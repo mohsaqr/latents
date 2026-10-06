@@ -47,7 +47,7 @@ test_that("diagonal FIML single-profile estimates equal available-case Gaussian 
   expect_equal(fit$n_observed_by_indicator, c(x = 164L, y = 149L))
   expect_true(all(diff(fit$log_likelihood_history) >= -1e-9))
   expect_equal(fit$subject_posteriors[1L, 1L], 1)
-  expect_error(multilpa(data, c("x", "y"), "group", 1, 1), "missing")
+  expect_error(multilpa(data, c("x", "y"), "group", 1, 1, n_starts = 1), "missing")
 })
 
 test_that("full covariance complete-data Gaussian ML has analytic means and covariance", {
@@ -82,7 +82,7 @@ test_that("FIML multilevel rows use their observed group context", {
   invisible(lapply(c("equal", "varying"), function(variance_model) {
     fit <- multilpa(data, c("x", "y"), "group", 2, 2, missing = "fiml",
                       covariance_model = "full", variance_model = variance_model,
-                      n_starts = 3, seed = 23, tol = 1e-10)
+                      n_starts = 1, seed = 23, tol = 1e-10)
     expect_true(fit$converged)
     expect_true(all(diff(fit$log_likelihood_history) >= -1e-8))
     expected <- as.numeric(fit$group_posteriors[fit$group_index[1], ] %*%
@@ -111,13 +111,13 @@ test_that("covariance eigenvalue bounds and invalid missing-data inputs are expl
   expect_true(fit$starts$boundary)
   data$x <- NA_real_
   expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
-                          missing = "fiml"), "observed values")
+                          missing = "fiml", n_starts = 1), "observed values")
   data$x <- c(Inf, rep(NA_real_, 19))
   expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
-                          missing = "fiml"), "non-finite")
+                          missing = "fiml", n_starts = 1), "non-finite")
   data$x <- c(1, rep(NA_real_, 19))
   expect_error(multilpa(data, c("x", "y"), "group", 1, 1,
-                          missing = "fiml"), "Constant")
+                          missing = "fiml", n_starts = 1), "Constant")
   start <- list(means = matrix(c(0, 0), 1), covariances = array(diag(2), c(2, 2, 1)),
                 profile_probabilities = matrix(1), group_probabilities = 1)
   valid <- .multilpa_validate_start(start, 1, 1, 2, "varying", .1, "full")
@@ -132,5 +132,5 @@ test_that("covariance eigenvalue bounds and invalid missing-data inputs are expl
 })
 test_that("FIML rejects NaN consistently with inference", {
   data <- data.frame(group = rep(1:3, each = 2), y = c(1, 2, NaN, 4, 5, 6))
-  expect_error(multilpa(data, "y", "group", 1, 1, missing = "fiml"), "non-finite")
+  expect_error(multilpa(data, "y", "group", 1, 1, missing = "fiml", n_starts = 1), "non-finite")
 })

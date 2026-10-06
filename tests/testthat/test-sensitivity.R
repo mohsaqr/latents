@@ -49,7 +49,7 @@ test_that("permuting a fit moves its assignments, not only its parameters", {
 test_that("permuting group classes keeps their posterior tables and labels aligned", {
   data <- separated_data(n_groups = 18L)
   fit <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                           n_group_classes = 3L, n_starts = 2L,
+                           n_group_classes = 3L, n_starts = 1,
                            max_iter = 80L, seed = 1L))
   permutation <- c(3L, 1L, 2L)
   moved <- latents:::.multilpa_permute_group_classes(fit, permutation)
@@ -106,7 +106,7 @@ test_that("agreement is a proportion and the reference seed reproduces itself", 
 test_that("a short original run is replayed with its own iteration settings", {
   data <- separated_data()
   fit <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                           n_group_classes = 2L, n_starts = 2L, seed = 1L,
+                           n_group_classes = 2L, n_starts = 1, seed = 1L,
                            max_iter = 2L, tol = 1e-6))
   expect_identical(fit$max_iter, 2L)
   expect_equal(fit$tol, 1e-6)
@@ -121,7 +121,7 @@ test_that("a categorical refit preserves declared factor coding", {
   data$category <- ordered(ifelse(data$a > 0, "high", "low"),
                            levels = c("high", "low"))
   fit <- quietly(multilpa(data, c("a", "category"), "school", 2L, 2L,
-                           categorical = "category", n_starts = 2L,
+                           categorical = "category", n_starts = 1,
                            max_iter = 60L, seed = 1L))
   result <- quietly(sensitivity(fit, seeds = 1:2))
   reference <- result[result$seed == 1L, ]
@@ -156,7 +156,7 @@ test_that("a family that cannot be refit is refused by class, not attempted", {
   activity <- c("browse", "lectures")
   transitions <- quietly(lta(engagement_small, vars = activity, id = "student",
                              time = "sequence", n_profiles = 2L,
-                             n_starts = 2L, max_iter = 300L, seed = 1L))
+                             n_starts = 1, max_iter = 300L, seed = 1L))
   expect_error(sensitivity(transitions, seeds = 1:3),
                class = "latents_unsupported_sensitivity")
 })
@@ -202,7 +202,7 @@ test_that("a partially fixed fit is not silently refitted as a joint model", {
   data <- separated_data()
   initial <- separated_fit()
   held <- quietly(multilpa(data, c("a", "b"), "school", n_profiles = 2L,
-                            n_group_classes = 2L, n_starts = 2L, seed = 1L,
+                            n_group_classes = 2L, n_starts = 1, seed = 1L,
                             start = starting_values(initial), fixed = "means"))
   expect_error(sensitivity(held, seeds = 1:2),
                class = "latents_unsupported_sensitivity")

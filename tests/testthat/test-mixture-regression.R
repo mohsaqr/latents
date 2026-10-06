@@ -61,32 +61,32 @@ direct_log_likelihood <- function(fit) {
 test_that("the likelihood is the mixture likelihood, in every nesting", {
   skip_on_cran()
   rows <- simulate_rows()
-  single <- mixture_regression(y ~ x, rows, 2, n_starts = 2, seed = 1, vcov_type = "none")
+  single <- mixture_regression(y ~ x, rows, 2, n_starts = 1, seed = 1, vcov_type = "none")
   expect_equal(single$log_likelihood, direct_log_likelihood(single),
                tolerance = 1e-10)
-  concomitant <- mixture_regression(y ~ x, rows, 2, membership = ~ w, n_starts = 2,
+  concomitant <- mixture_regression(y ~ x, rows, 2, membership = ~ w, n_starts = 1,
                                     seed = 1, vcov_type = "none")
   expect_equal(concomitant$log_likelihood,
                direct_log_likelihood(concomitant), tolerance = 1e-10)
   grouped <- mixture_regression(passed ~ hours, study_hours, 2, family = "binomial",
-                                id = "student", class_level = "group", n_starts = 2,
+                                id = "student", class_level = "group", n_starts = 1,
                                 seed = 1, vcov_type = "none")
   expect_equal(grouped$log_likelihood, direct_log_likelihood(grouped),
                tolerance = 1e-10)
   two_level <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
                                   n_group_classes = 2, membership = ~ sleep,
-                                  group_membership = ~ motivation, n_starts = 2,
+                                  group_membership = ~ motivation, n_starts = 1,
                                   seed = 1, vcov_type = "none")
   expect_equal(two_level$log_likelihood, direct_log_likelihood(two_level),
                tolerance = 1e-10)
-  counts <- mixture_regression(count ~ x, rows, 2, family = "poisson", n_starts = 2,
+  counts <- mixture_regression(count ~ x, rows, 2, family = "poisson", n_starts = 1,
                                seed = 1, vcov_type = "none")
   expect_equal(counts$log_likelihood, direct_log_likelihood(counts),
                tolerance = 1e-10)
 })
 
 test_that("a two-class Gaussian mixture recovers the generating regressions", {
-  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 3, seed = 1)
+  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 1, seed = 1)
   table <- get_results(fit, "coefficients")
   truth <- c(35, 4.5, 55, 0.8)
   expect_true(all(abs(table$estimate - truth) < 3 * table$std_error + 0.5))
@@ -117,29 +117,29 @@ test_that("standard errors match a numerical Hessian of the likelihood", {
     analytic <- sqrt(diag(fit$inference$vcov))
     expect_lt(max(abs(analytic / numerical - 1)), 1e-4)
   }
-  check(mixture_regression(y ~ x, rows, 2, membership = ~ w, n_starts = 2, seed = 1,
+  check(mixture_regression(y ~ x, rows, 2, membership = ~ w, n_starts = 1, seed = 1,
                            tol = 1e-12))
   check(mixture_regression(y ~ x + w, rows, 2, common = ~ w, variance = "equal",
-                           n_starts = 2, seed = 1, tol = 1e-12))
-  check(mixture_regression(count ~ x, rows, 2, family = "poisson", n_starts = 2, seed = 1,
+                           n_starts = 1, seed = 1, tol = 1e-12))
+  check(mixture_regression(count ~ x, rows, 2, family = "poisson", n_starts = 1, seed = 1,
                            tol = 1e-12))
   check(mixture_regression(passed ~ hours, study_hours, 2, family = "binomial",
                            id = "student", class_level = "group",
-                           membership = ~ motivation, n_starts = 2, seed = 1, tol = 1e-12))
+                           membership = ~ motivation, n_starts = 1, seed = 1, tol = 1e-12))
   check(mixture_regression(score ~ hours, study_hours, 2, id = "student",
                            n_group_classes = 2, membership = ~ sleep,
-                           group_membership = ~ motivation, n_starts = 2, seed = 1,
+                           group_membership = ~ motivation, n_starts = 1, seed = 1,
                            tol = 1e-12))
 })
 
 test_that("the score vanishes at the estimate", {
   fit <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
-                            n_group_classes = 2, n_starts = 2, seed = 1, tol = 1e-12)
+                            n_group_classes = 2, n_starts = 1, seed = 1, tol = 1e-12)
   expect_lt(fit$inference$score_norm, 1e-2)
 })
 
 test_that("the robust covariance is the sandwich clustered on the unit", {
-  fit <- mixture_regression(y ~ x, simulate_rows(), 2, n_starts = 2, seed = 1)
+  fit <- mixture_regression(y ~ x, simulate_rows(), 2, n_starts = 1, seed = 1)
   robust <- vcov(fit, type = "robust")
   information <- fit$inference$information
   scores <- latents:::.mixture_unit_scores(fit$spec, fit$params,
@@ -150,7 +150,7 @@ test_that("the robust covariance is the sandwich clustered on the unit", {
   # A single-level fit given `id` clusters on it, which changes the meat.
   clustered_rows <- cbind(simulate_rows(), cluster = rep(seq_len(60), 5))
   clustered <- mixture_regression(y ~ x, clustered_rows, 2, id = "cluster",
-                                  n_starts = 2, seed = 1, vcov_type = "robust")
+                                  n_starts = 1, seed = 1, vcov_type = "robust")
   expect_identical(clustered$inference$clustered_on, "cluster")
 })
 
@@ -166,9 +166,9 @@ test_that("classes are ordered by size and the order is invariant to starts", {
 test_that("row order does not change the fit", {
   rows <- simulate_rows()
   shuffled <- rows[rev(seq_len(nrow(rows))), ]
-  original <- mixture_regression(y ~ x, rows, 2, n_starts = 3, seed = 1,
+  original <- mixture_regression(y ~ x, rows, 2, n_starts = 1, seed = 1,
                                  vcov_type = "none")
-  reversed <- mixture_regression(y ~ x, shuffled, 2, n_starts = 3, seed = 1,
+  reversed <- mixture_regression(y ~ x, shuffled, 2, n_starts = 1, seed = 1,
                                  vcov_type = "none")
   expect_equal(original$log_likelihood, reversed$log_likelihood,
                tolerance = 1e-7)
@@ -176,7 +176,7 @@ test_that("row order does not change the fit", {
 
 test_that("posteriors and priors are probability distributions", {
   fit <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
-                            n_group_classes = 2, membership = ~ sleep, n_starts = 2,
+                            n_group_classes = 2, membership = ~ sleep, n_starts = 1,
                             seed = 1, vcov_type = "none")
   assignments <- get_results(fit, "assignments")
   probabilities <- assignments[c("probability_class_1", "probability_class_2")]
@@ -202,7 +202,7 @@ test_that("a seed makes the fit reproducible and restores the caller's state", {
 })
 
 test_that("predict() on the fitted rows agrees with the fitted table", {
-  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 2, seed = 1)
+  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 1, seed = 1)
   posterior <- predict(fit, study_hours, type = "posterior")
   expect_equal(posterior$probability_class_1,
                get_results(fit, "assignments")$probability_class_1,
@@ -214,13 +214,13 @@ test_that("predict() on the fitted rows agrees with the fitted table", {
 })
 
 test_that("simulate() reproduces the fitted class structure", {
-  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 2, seed = 1)
+  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 1, seed = 1)
   draws <- simulate(fit, nsim = 2, seed = 3)
   expect_identical(dim(draws), c(nrow(study_hours), 2L))
   expect_identical(draws, simulate(fit, nsim = 2, seed = 3))
   refit_data <- study_hours
   refit_data$score <- draws$sim_1
-  refit <- mixture_regression(score ~ hours, refit_data, 2, n_starts = 3, seed = 1,
+  refit <- mixture_regression(score ~ hours, refit_data, 2, n_starts = 1, seed = 1,
                               vcov_type = "none")
   expect_equal(unname(refit$params$beta), unname(fit$params$beta),
                tolerance = 0.15)
@@ -228,7 +228,7 @@ test_that("simulate() reproduces the fitted class structure", {
 
 test_that("shared coefficients are equal across classes and counted once", {
   fit <- mixture_regression(score ~ hours + sleep, study_hours, 2, common = ~ sleep,
-                            n_starts = 2, seed = 1)
+                            n_starts = 1, seed = 1)
   table <- get_results(fit, "coefficients")
   expect_identical(sum(table$term == "sleep"), 1L)
   expect_identical(table$class[table$term == "sleep"], "common")
@@ -238,7 +238,7 @@ test_that("shared coefficients are equal across classes and counted once", {
 test_that("enumeration returns one tidy row per model and marks the BIC choice", {
   skip_on_cran()
   classes <- enumerate_regressions(score ~ hours, study_hours, n_classes = 1:3,
-                                   n_starts = 2, seed = 1)
+                                   n_starts = 1, seed = 1)
   table <- as.data.frame(classes)
   expect_identical(table$n_classes, 1:3)
   expect_identical(sum(table$best_bic), 1L)
@@ -252,7 +252,7 @@ test_that("enumeration returns one tidy row per model and marks the BIC choice",
 test_that("the bootstrap test withholds a p-value when refits fail validation", {
   skip_on_cran()
   expect_warning(classes <- enumerate_regressions(score ~ hours, study_hours, n_classes = 1:2,
-                                   n_starts = 2, seed = 1, bootstrap = 9,
+                                   n_starts = 1, seed = 1, bootstrap = 9,
                                    bootstrap_starts = 1),
                   class = "latents_failed_replicates")
   table <- as.data.frame(classes)
@@ -264,7 +264,7 @@ test_that("the bootstrap test withholds a p-value when refits fail validation", 
 
 test_that("every tidy table is a data frame", {
   fit <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
-                            n_group_classes = 2, n_starts = 2, seed = 1)
+                            n_group_classes = 2, n_starts = 1, seed = 1)
   tables <- get_results(fit, "all")
   expect_true(all(vapply(tables, is.data.frame, logical(1))))
   expect_identical(nrow(tables$groups), 150L)
@@ -279,7 +279,7 @@ test_that("print and summary are stable", {
 
 test_that("plots draw for every view", {
   skip_on_cran()
-  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 2, seed = 1)
+  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 1, seed = 1)
   path <- tempfile(fileext = ".pdf")
   grDevices::pdf(path)
   on.exit({
@@ -292,25 +292,25 @@ test_that("plots draw for every view", {
 })
 
 test_that("misspecified requests are refused by class", {
-  expect_error(mixture_regression(passed ~ hours, study_hours, 2, family = "binomial"),
+  expect_error(mixture_regression(passed ~ hours, study_hours, 2, family = "binomial", n_starts = 1),
                                   class = "latents_not_identified")
-  expect_error(mixture_regression(score ~ hours, study_hours, 2, class_level = "group"),
+  expect_error(mixture_regression(score ~ hours, study_hours, 2, class_level = "group", n_starts = 1),
                                   class = "latents_bad_argument")
-  expect_error(mixture_regression(score ~ hours, study_hours, 2, n_group_classes = 2),
+  expect_error(mixture_regression(score ~ hours, study_hours, 2, n_group_classes = 2, n_starts = 1),
                                   class = "latents_bad_argument")
   expect_error(mixture_regression(score ~ hours, study_hours, 2, id = "student",
-                                  class_level = "group", membership = ~ sleep),
+                                  class_level = "group", membership = ~ sleep, n_starts = 1),
                                   class = "latents_bad_data")
-  expect_error(mixture_regression(score ~ hours, study_hours, 2, common = ~ sleep),
+  expect_error(mixture_regression(score ~ hours, study_hours, 2, common = ~ sleep, n_starts = 1),
                                   class = "latents_bad_argument")
-  expect_error(mixture_regression(score ~ hours, study_hours, 2, family = "poisson"),
+  expect_error(mixture_regression(score ~ hours, study_hours, 2, family = "poisson", n_starts = 1),
                                   class = "latents_bad_data")
   expect_error(mixture_regression(score ~ hours, study_hours, 2, family = "poisson",
-                                  variance = "equal"),
+                                  variance = "equal", n_starts = 1),
                                   class = "latents_bad_argument")
   gappy <- study_hours
   gappy$hours[1:3] <- NA
-  expect_error(mixture_regression(score ~ hours, gappy, 2), class = "latents_missing_data")
+  expect_error(mixture_regression(score ~ hours, gappy, 2, n_starts = 1), class = "latents_missing_data")
   expect_warning(mixture_regression(score ~ hours, gappy, 2, missing = "omit",
                                     n_starts = 1, seed = 1, vcov_type = "none"),
                                     class = "latents_rows_dropped")
@@ -327,7 +327,7 @@ test_that("binomial counts with several trials are identified row by row", {
     data.frame(x, successes, failures = trials - successes)
   })
   fit <- mixture_regression(cbind(successes, failures) ~ x, rows, 2, family = "binomial",
-                            n_starts = 3, seed = 1)
+                            n_starts = 1, seed = 1)
   expect_equal(fit$log_likelihood, direct_log_likelihood(fit),
                tolerance = 1e-10)
   expect_equal(sort(get_results(fit)$estimate[c(2, 4)]), c(-1, 2),
@@ -335,7 +335,7 @@ test_that("binomial counts with several trials are identified row by row", {
 })
 
 test_that("the recovery table cross-tabulates assignments against the truth", {
-  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 2, seed = 1,
+  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 1, seed = 1,
                             vcov_type = "none")
   recovery <- get_results(fit, "recovery", data = study_hours,
                           truth = "strategy")
@@ -344,7 +344,7 @@ test_that("the recovery table cross-tabulates assignments against the truth", {
   expect_equal(as.vector(tapply(recovery$share, recovery$assigned, sum)),
                c(1, 1))
   two_level <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
-                                  n_group_classes = 2, n_starts = 2, seed = 1,
+                                  n_group_classes = 2, n_starts = 1, seed = 1,
                                   vcov_type = "none")
   by_student <- get_results(two_level, "recovery", data = study_hours,
                             truth = "student_type", by = "group_class")
@@ -356,7 +356,7 @@ test_that("the recovery table cross-tabulates assignments against the truth", {
 })
 
 test_that("the classification table's rows are probability distributions", {
-  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 2, seed = 1,
+  fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 1, seed = 1,
                             vcov_type = "none")
   classification <- get_results(fit, "classification")
   expect_identical(nrow(classification), 4L)

@@ -135,7 +135,7 @@ test_that("refits whose labels switched align to the original estimates", {
       persons <- sample(unique(data$id))
       shuffled <- data[order(match(data$id, persons), data$time), ]
       refit <- suppressWarnings(do.call(lta, c(list(shuffled, c("y1", "y2"), "id", 2,
-                                                    time = "time", n_starts = 3, seed = s),
+                                                    time = "time", n_starts = 1, seed = s),
                                                spec)))
       expect_equal(refit$log_likelihood, reference$log_likelihood, tolerance = 1e-6)
       expect_equal(.lta_align_estimates(refit, reference)[names(target)], target,
@@ -155,7 +155,7 @@ test_that("transition bootstrap matches the Wald table's layout and scale", {
   invisible(lapply(fits, function(fit) {
     wald <- parameter_inference(fit)
     boot <- parameter_inference(fit, data = data, method = "bootstrap", iter = 40,
-                                n_starts = 2, seed = 3)
+                                n_starts = 1, seed = 3)
     expect_identical(names(boot), names(wald))
     expect_identical(nrow(boot), nrow(wald))
     expect_equal(boot$estimate, wald$estimate, tolerance = 1e-12)
@@ -188,7 +188,7 @@ test_that("the bootstrap gives inference where Wald is refused", {
   fit <- boot_lta_fit(data, transitions = "occasion", model = "VVV")
   expect_error(parameter_inference(fit), class = "latents_unsupported_inference")
   boot <- parameter_inference(fit, data = data, method = "bootstrap", iter = 30,
-                              n_starts = 2, seed = 2)
+                              n_starts = 1, seed = 2)
   expect_true(all(is.finite(boot$standard_error) & boot$standard_error > 0))
   expect_identical(unique(boot$block), c("transition", "initial"))
 })
@@ -200,7 +200,7 @@ test_that("weighted transition fits bootstrap with their weights", {
   data$w <- rep(sample(1:3, 120L, replace = TRUE), each = 4L)
   fit <- boot_lta_fit(data, weights = "w")
   boot <- parameter_inference(fit, data = data, method = "bootstrap", iter = 20,
-                              n_starts = 2, seed = 1)
+                              n_starts = 1, seed = 1)
   expect_true(all(is.finite(boot$standard_error)))
   expect_equal(boot$estimate, parameter_inference(fit)$estimate, tolerance = 1e-12)
 })

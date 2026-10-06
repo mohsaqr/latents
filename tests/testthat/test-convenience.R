@@ -59,17 +59,17 @@ test_that("mixed fits retain numeric indicators and typed categorical values", {
   indicators <- c("a", "b", "passed", "rating")
   categorical <- c("passed", "rating")
   fit <- quietly(multilpa(data, indicators, "school", 2L, 1L,
-                           categorical = categorical, n_starts = 2L,
+                           categorical = categorical, n_starts = 1,
                            max_iter = 80L, seed = 1L))
   centered <- quietly(multilpa(data, indicators, "school", 2L, 1L,
                                 categorical = categorical, centering = "person",
                                 n_starts = 1L, max_iter = 40L, seed = 1L))
   transition <- quietly(lta(data, indicators, "school", n_profiles = 2L,
                             time = "wave", categorical = categorical,
-                            n_starts = 2L, max_iter = 80L, seed = 1L))
+                            n_starts = 1, max_iter = 80L, seed = 1L))
   covariate <- quietly(multilpa(data, indicators, "school", 2L, 1L,
                                  categorical = categorical,
-                                 profile_covariates = "z", n_starts = 2L,
+                                 profile_covariates = "z", n_starts = 1,
                                  max_iter = 80L, seed = 1L))
   expected <- data[c("school", indicators)]
   expect_identical(get_results(fit, "data"), expected)
@@ -233,7 +233,7 @@ test_that("report draws only the views a given fit can supply", {
                     .multilpa_supported_views(gaussian)))
   timed <- multilpa(engagement_small, .activity,
                     id = "student", n_profiles = 2, n_group_classes = 2,
-                    time = "sequence", n_starts = 2, seed = 1)
+                    time = "sequence", n_starts = 1, seed = 1)
   expect_true("sequences" %in% .multilpa_supported_views(timed))
 })
 

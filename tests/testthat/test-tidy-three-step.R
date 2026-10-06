@@ -178,7 +178,7 @@ test_that("three-step variables must be external to the measurement model", {
 
   predicted <- quietly(multilpa(
     data, c("a", "b"), "g", n_profiles = 2L, n_group_classes = 1L,
-    profile_covariates = "x", n_starts = 2L, seed = 1L))
+    profile_covariates = "x", n_starts = 1, seed = 1L))
   expect_s3_class(predicted, "multilpa_covariates")
   expect_error(three_step(predicted, data, "y"),
                class = "latents_unsupported_three_step")

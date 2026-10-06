@@ -4,7 +4,7 @@
 test_that("relabelling classes and group classes leaves the likelihood unchanged", {
   fit <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
                             n_group_classes = 2, membership = ~ sleep,
-                            group_membership = ~ motivation, n_starts = 2, seed = 1,
+                            group_membership = ~ motivation, n_starts = 1, seed = 1,
                             vcov_type = "none")
   swapped <- latents:::.mixture_permute(fit$spec, fit$params, 2:1, 2:1)
   expect_equal(latents:::.mixture_expectation(fit$spec, swapped)$log_likelihood,
@@ -17,7 +17,7 @@ test_that("relabelling classes and group classes leaves the likelihood unchanged
 
 test_that("group classes are ordered by their share of the first class", {
   fit <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
-                            n_group_classes = 2, n_starts = 2, seed = 1)
+                            n_group_classes = 2, n_starts = 1, seed = 1)
   composition <- subset(get_results(fit, "group_classes"), class == "class_1")
   expect_true(all(diff(composition$probability) < 0))
 })

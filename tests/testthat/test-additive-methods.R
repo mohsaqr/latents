@@ -16,11 +16,11 @@ additive_methods_fit_large <- function() {
                 between = rbind(c(0.25, 0.5), c(0.5, 0.25)),
                 within = c(1, 1), weights = c(0.5, 0.5))
   multilpa(additive_draw(truth, rep(10L, 200), seed = 1), c("y1", "y2"),
-           "group", n_group_classes = 2, family = "additive", seed = 3)
+           "group", n_group_classes = 2, family = "additive", seed = 3, n_starts = 2)
 }
 additive_methods_fit <- multilpa(additive_methods_data, c("y1", "y2"), "group",
                                  n_group_classes = 2, family = "additive",
-                                 tol = 1e-10, seed = 2)
+                                 tol = 1e-10, seed = 2, n_starts = 2)
 
 test_that("pack and unpack are inverse on both between-variance restrictions", {
   p <- additive_methods_truth
@@ -43,7 +43,7 @@ test_that("one class, balanced groups: the SE of the mean is exact", {
                        rep(c(-1, -0.4, 0, 0.5, 0.9), 30) *
                        rep(c(1, 0.8, 1.2), length.out = 150))
   fit <- multilpa(data, "y", "group", n_group_classes = 1, family = "additive",
-                  tol = 1e-13, max_iter = 5000, seed = 1)
+                  tol = 1e-13, max_iter = 5000, seed = 1, n_starts = 1)
   expect_false(any(fit$between_zero))
   table <- get_results(fit)
   mean_row <- subset(table, parameter == "mean")
@@ -92,7 +92,7 @@ test_that("robust and OPG covariances follow their definitions", {
 test_that("group-class labels do not depend on the start that won", {
   skip_on_cran()
   a <- multilpa(additive_methods_data, c("y1", "y2"), "group",
-                n_group_classes = 2, family = "additive", tol = 1e-10, seed = 2)
+                n_group_classes = 2, family = "additive", tol = 1e-10, seed = 2, n_starts = 2)
   b <- multilpa(additive_methods_data, c("y1", "y2"), "group",
                 n_group_classes = 2, family = "additive", tol = 1e-10, seed = 77,
                 n_starts = 5)
@@ -105,7 +105,7 @@ test_that("group-class labels do not depend on the start that won", {
   data <- additive_draw(three, rep(8L, 150), seed = 9)
   fits <- lapply(c(1, 5), \(seed) multilpa(data, c("y1", "y2"), "group",
                                            n_group_classes = 3, family = "additive",
-                                           between_variance = "equal", seed = seed))
+                                           between_variance = "equal", seed = seed, n_starts = 2))
   expect_equal(coef(fits[[1]]), coef(fits[[2]]), tolerance = 1e-5)
   expect_true(all(diff(fits[[1]]$group_probabilities) <= 0))
 })
@@ -168,7 +168,7 @@ test_that("inference is refused, by class, where Wald inference does not apply",
                            c(-1, -0.3, 0.3, 1))
   boundary <- suppressWarnings(multilpa(balanced, "y", "group",
                                         n_group_classes = 1, family = "additive",
-                                        seed = 1))
+                                        seed = 1, n_starts = 1))
   expect_true(boundary$between_zero[1, 1])
   expect_error(vcov(boundary), class = "latents_boundary_fit")
   expect_error(parameter_inference(boundary), class = "latents_boundary_fit")
@@ -178,7 +178,7 @@ test_that("inference is refused, by class, where Wald inference does not apply",
   expect_identical(table$estimate, unname(coef(boundary)))
   unconverged <- suppressWarnings(multilpa(
     additive_methods_data, c("y1", "y2"), "group", n_group_classes = 2,
-    family = "additive", max_iter = 2, seed = 1))
+    family = "additive", max_iter = 2, seed = 1, n_starts = 1))
   expect_error(vcov(unconverged), class = "latents_no_converge")
   expect_error(parameter_inference(additive_methods_fit, method = "bootstrap"),
                class = "latents_unsupported_inference")
@@ -195,7 +195,7 @@ test_that("robust covariance needs more groups than parameters", {
                 within = c(1, 1), weights = 1)
   few <- additive_draw(truth, rep(6L, 5L), seed = 3)
   fit <- multilpa(few, c("y1", "y2"), "group", n_group_classes = 1,
-                  family = "additive", seed = 1)
+                  family = "additive", seed = 1, n_starts = 1)
   expect_false(any(fit$between_zero))
   expect_identical(fit$n_parameters, 6L)
   expect_error(vcov(fit, type = "robust"), class = "latents_too_few_groups")
@@ -217,7 +217,7 @@ test_that("plots are ggplot objects with intervals only when inference applies",
                            c(-1, -0.3, 0.3, 1))
   boundary <- suppressWarnings(multilpa(balanced, "y", "group",
                                         n_group_classes = 1, family = "additive",
-                                        seed = 1))
+                                        seed = 1, n_starts = 1))
   bare <- plot(boundary)
   expect_false(any(vapply(bare$layers, \(layer)
     inherits(layer$geom, "GeomErrorbar"), logical(1))))
@@ -233,7 +233,7 @@ test_that("Newton polishing reaches the maximum EM stops short of", {
                 weights = c(0.9, 0.1))
   data <- additive_draw(truth, rep(10L, 200), seed = 5)
   fit <- multilpa(data, c("y1", "y2"), "group", n_group_classes = 2,
-                  family = "additive", between_variance = "equal", seed = 1)
+                  family = "additive", between_variance = "equal", seed = 1, n_starts = 1)
   expect_gt(fit$newton_steps, 0L)
   expect_warning(inference <- parameter_inference(fit),
                  class = "latents_weak_class")
@@ -250,13 +250,13 @@ test_that("effective groups equal class counts under perfect separation", {
                 within = c(1, 1), weights = c(0.7, 0.3))
   data <- additive_draw(truth, rep(10L, 300), seed = 1)
   fit <- multilpa(data, c("y1", "y2"), "group", n_group_classes = 2,
-                  family = "additive", seed = 1)
+                  family = "additive", seed = 1, n_starts = 1)
   classes <- get_results(fit, "group_classes")
   expect_equal(classes$effective_groups, classes$count, tolerance = 1e-6)
   expect_equal(get_results(fit, "fit")$min_effective_groups,
                min(classes$effective_groups))
   one <- multilpa(data, c("y1", "y2"), "group", n_group_classes = 1,
-                  family = "additive", seed = 1)
+                  family = "additive", seed = 1, n_starts = 1)
   expect_true(is.na(get_results(one, "group_classes")$effective_groups))
 })
 
@@ -267,7 +267,7 @@ test_that("a rare, weakly separated class raises latents_weak_class", {
                 weights = c(0.9, 0.1))
   data <- additive_draw(truth, rep(10L, 200), seed = 5)
   fit <- multilpa(data, c("y1", "y2"), "group", n_group_classes = 2,
-                  family = "additive", between_variance = "equal", seed = 1)
+                  family = "additive", between_variance = "equal", seed = 1, n_starts = 1)
   expect_warning(get_results(fit), class = "latents_weak_class")
   expect_warning(parameter_inference(fit), class = "latents_weak_class")
   expect_lt(get_results(fit, "fit")$min_effective_groups, 50)

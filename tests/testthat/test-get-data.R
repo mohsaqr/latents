@@ -99,7 +99,7 @@ test_that("as.data.frame coerces to the primary table and takes nothing else", {
                class = "latents_bad_argument")
   moves <- lta(engagement_small, activity, "student",
                            n_profiles = 2, n_group_classes = 2,
-                           time = "sequence", n_starts = 2, seed = 1)
+                           time = "sequence", n_starts = 1, seed = 1)
   # The primary table is the measurement model for every fitted family, so a
   # transition fit coerces to its profiles and not to its transition matrix.
   expect_identical(as.data.frame(moves), get_results(moves, "profiles"))
@@ -133,7 +133,7 @@ test_that("the summary print shows every table and honours `rows`", {
 test_that("the enumeration and bootstrap objects carry their own tables", {
   candidates <- enumerate_classes(engagement_small, activity, "student",
                                   n_profiles = 1:2, n_group_classes = 1,
-                                  n_starts = 2, seed = 1)
+                                  n_starts = 1, seed = 1)
   expect_identical(as.data.frame(candidates), get_results(candidates, "candidates"))
   expect_s3_class(get_results(candidates, "criteria"), "data.frame")
   expect_named(get_results(candidates, "all"), c("candidates", "criteria"))
@@ -187,7 +187,7 @@ test_that("`model` reports the columns of the family, not a padded union", {
   covariates <- multilpa(engagement_small, activity, "student", n_profiles = 2,
                          n_group_classes = 2,
                          profile_covariates = "previous_grade",
-                         n_starts = 2, seed = 1)
+                         n_starts = 1, seed = 1)
   expect_true("n_profile_covariates" %in% names(get_results(covariates, "model")))
   expect_false("n_profile_covariates" %in% names(get_results(two_level(), "model")))
   # The one table whose columns are the same for every family, which is what
@@ -293,7 +293,7 @@ test_that("a fit prints its means one row per profile, not one per cell", {
   # that has three rows. The long table is still what `get_results()` returns.
   indicators <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
   fit <- quietly(multilpa(engagement_small, indicators, "student",
-                          n_profiles = 3L, n_group_classes = 1L, n_starts = 3L,
+                          n_profiles = 3L, n_group_classes = 1L, n_starts = 1,
                           seed = 1L, max_iter = 5000))
   wide <- latents:::.multilpa_wide_means(fit)
   expect_identical(nrow(wide), 3L)

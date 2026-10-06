@@ -1,3 +1,8 @@
+# latents 0.9.20
+
+* Tests fit each model from a single start unless the test is about starts,
+  which halves the time the tests take on CRAN. No package code changed.
+
 # latents 0.9.19
 
 * Every help page has an example: the `plot()` methods for model comparisons,

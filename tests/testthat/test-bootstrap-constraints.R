@@ -45,7 +45,7 @@ test_that("every bootstrap refit carries the held blocks and their values", {
   recorder <- refit_recorder()
   testthat::local_mocked_bindings(multilpa = recorder$mock)
   result <- bootstrap_lrt(models$null_model, models$alternative_model,
-                          models$data, iter = 2, n_starts = 2, seed = 45,
+                          models$data, iter = 2, n_starts = 1, seed = 45,
                           tol = 1e-8)
   calls <- recorder$calls()
   # Two refits per replicate, null and alternative.
@@ -70,12 +70,12 @@ test_that("an unconstrained comparison is refitted without a constraint", {
   set.seed(53)
   data <- data.frame(g = rep(seq_len(30), each = 8), y = rnorm(240))
   small <- multilpa(data, "y", "g", 1, 1, variance_model = "equal",
-                    n_starts = 2, seed = 8)
+                    n_starts = 1, seed = 8)
   large <- multilpa(data, "y", "g", 2, 1, variance_model = "equal",
-                    n_starts = 2, seed = 8, max_iter = 3000, tol = 1e-7)
+                    n_starts = 1, seed = 8, max_iter = 3000, tol = 1e-7)
   recorder <- refit_recorder()
   testthat::local_mocked_bindings(multilpa = recorder$mock)
-  result <- bootstrap_lrt(small, large, data, iter = 2, n_starts = 2,
+  result <- bootstrap_lrt(small, large, data, iter = 2, n_starts = 1,
                           max_iter = 3000, tol = 1e-7, seed = 42)
   calls <- recorder$calls()
   expect_identical(length(calls), 4L)
@@ -128,7 +128,7 @@ test_that("the held constraint is named on the public surface", {
   skip_on_cran()
   models <- constrained_pair()
   result <- bootstrap_lrt(models$null_model, models$alternative_model,
-                          models$data, iter = 2, n_starts = 2, seed = 45,
+                          models$data, iter = 2, n_starts = 1, seed = 45,
                           tol = 1e-8)
   test <- get_results(result, "test")
   expect_identical(test$fixed, "means, variances")
@@ -143,7 +143,7 @@ test_that("a constrained pair that is not nested is refused", {
                     seed = 11, tol = 1e-10)
   shifted <- starting_values(other, what = "measurement")
   shifted$means <- shifted$means + 0.5
-  mismatched <- multilpa(models$data, c("a", "b"), "g", 2, 2, n_starts = 2,
+  mismatched <- multilpa(models$data, c("a", "b"), "g", 2, 2, n_starts = 1,
                          start = shifted, fixed = "measurement", seed = 5,
                          tol = 1e-10)
   expect_error(
@@ -169,14 +169,14 @@ test_that("a constraint on only one of the two models is refused", {
   skip_on_cran()
   models <- constrained_pair()
   free_alternative <- multilpa(models$data, c("a", "b"), "g", 2, 2,
-                               n_starts = 3, seed = 5, tol = 1e-10)
+                               n_starts = 1, seed = 5, tol = 1e-10)
   expect_error(
     bootstrap_lrt(models$null_model, free_alternative, models$data, iter = 2,
                   seed = 1),
     class = "latents_bad_nesting")
   # And the other way round: an unconstrained null against a constrained
   # alternative is equally not a nested pair.
-  free_null <- multilpa(models$data, c("a", "b"), "g", 2, 1, n_starts = 3,
+  free_null <- multilpa(models$data, c("a", "b"), "g", 2, 1, n_starts = 1,
                         seed = 5, tol = 1e-10)
   expect_error(
     bootstrap_lrt(free_null, models$alternative_model, models$data, iter = 2,
@@ -187,7 +187,7 @@ test_that("a constraint on only one of the two models is refused", {
 test_that("models holding different blocks are refused", {
   skip_on_cran()
   models <- constrained_pair()
-  means_only <- multilpa(models$data, c("a", "b"), "g", 2, 2, n_starts = 3,
+  means_only <- multilpa(models$data, c("a", "b"), "g", 2, 2, n_starts = 1,
                          start = models$start, fixed = "means", seed = 5,
                          tol = 1e-10)
   expect_error(

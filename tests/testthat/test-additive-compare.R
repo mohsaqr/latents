@@ -12,7 +12,7 @@ test_that("enumeration crosses families, restrictions and class counts", {
   grid <- enumerate_classes(compare_data, compare_vars, "group",
                             family = c("additive", "dispersion",
                                        "additive_dispersion"),
-                            n_group_classes = 1:2, seed = 1, n_starts = 3)
+                            n_group_classes = 1:2, seed = 1, n_starts = 1)
   expect_s3_class(grid, "latents_family_enumeration")
   table <- get_results(grid)
   # Two class counts x (additive x2 + dispersion x1 + additive-dispersion x2).
@@ -36,10 +36,10 @@ test_that("enumeration crosses families, restrictions and class counts", {
   expect_error(candidate_fit(grid, n_group_classes = 2),
                class = "latents_unknown_candidate")
   expect_error(enumerate_classes(compare_data, compare_vars, "group",
-                                 family = "additive", model = "VVI"),
+                                 family = "additive", model = "VVI", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(enumerate_classes(compare_data, compare_vars, "group",
-                                 family = "additive", categorical = "y1"),
+                                 family = "additive", categorical = "y1", n_starts = 1),
                class = "latents_bad_argument")
   skip_if_not_installed("ggplot2")
   expect_true(ggplot2::is_ggplot(plot(grid)))
@@ -48,12 +48,12 @@ test_that("enumeration crosses families, restrictions and class counts", {
 test_that("the bootstrap LRT simulates the null and refits both models", {
   skip_on_cran()
   null <- multilpa(compare_data, compare_vars, "group", n_group_classes = 1,
-                   family = "additive", seed = 1)
+                   family = "additive", seed = 1, n_starts = 1)
   alternative <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,
-                          family = "additive", seed = 1)
+                          family = "additive", seed = 1, n_starts = 1)
   set.seed(5)
   before <- .Random.seed
-  result <- bootstrap_lrt(null, alternative, iter = 9, n_starts = 2, seed = 3)
+  result <- bootstrap_lrt(null, alternative, iter = 9, n_starts = 1, seed = 3)
   expect_identical(.Random.seed, before)
   expect_s3_class(result, "multilpa_bootstrap_lrt")
   test <- get_results(result, "test")
@@ -65,13 +65,13 @@ test_that("the bootstrap LRT simulates the null and refits both models", {
   # Two well-separated classes: no null replicate reaches the observed value.
   expect_equal(test$p_value, 1 / 10)
   expect_output(print(result), "additive, 1 group class")
-  again <- bootstrap_lrt(null, alternative, iter = 9, n_starts = 2, seed = 3)
+  again <- bootstrap_lrt(null, alternative, iter = 9, n_starts = 1, seed = 3)
   expect_identical(get_results(again, "replicates"), get_results(result, "replicates"))
 })
 
 test_that("simulation from a group-class fit has the fitted structure", {
   fit <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,
-                  family = "additive", seed = 1)
+                  family = "additive", seed = 1, n_starts = 1)
   set.seed(9)
   simulated <- .additive_simulate(fit)
   expect_identical(names(simulated), c("group", "y1", "y2"))
@@ -88,20 +88,20 @@ test_that("simulation from a group-class fit has the fitted structure", {
 test_that("bootstrap refuses non-nested or mismatched group-class fits", {
   skip_on_cran()
   additive <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,
-                       family = "additive", seed = 1)
+                       family = "additive", seed = 1, n_starts = 1)
   dispersion <- multilpa(compare_data, compare_vars, "group", n_group_classes = 2,
-                         family = "dispersion", seed = 1)
+                         family = "dispersion", seed = 1, n_starts = 1)
   expect_error(bootstrap_lrt(additive, dispersion, iter = 3),
                class = "latents_bad_argument")
   expect_error(bootstrap_lrt(additive, additive, iter = 3),
                class = "latents_bad_argument")
   other <- multilpa(compare_data[compare_data$group != "g01", ], compare_vars,
                     "group", n_group_classes = 2, family = "additive_dispersion",
-                    seed = 1)
+                    seed = 1, n_starts = 1)
   expect_error(bootstrap_lrt(additive, other, iter = 3),
                class = "latents_bad_inference_data")
   profile <- suppressMessages(lpa(compare_data, compare_vars, n_profiles = 2,
-                                  n_starts = 2, seed = 1))
+                                  n_starts = 1, seed = 1))
   expect_error(bootstrap_lrt(additive, profile, iter = 3),
                class = "latents_bad_argument")
 })

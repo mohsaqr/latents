@@ -47,7 +47,7 @@ test_that("evaluate-only ignores n_starts and never substitutes a random start",
   # a much higher likelihood for parameters the caller never supplied.
   defaulted <- multilpa(frame, c("a", "b"), "school", n_profiles = 1,
                         n_group_classes = 1, start = start, max_iter = 0,
-                        seed = 1)
+                        seed = 1, n_starts = 2)
   many <- multilpa(frame, c("a", "b"), "school", n_profiles = 1,
                    n_group_classes = 1, start = start, max_iter = 0,
                    n_starts = 25, seed = 1)
@@ -86,10 +86,10 @@ test_that("max_iter = 0 without a start still scores every requested start", {
 test_that("evaluate-only with a held measurement returns the held values", {
   frame <- .evaluate_frame()
   stage_one <- multilpa(frame, c("a", "b"), "school", n_profiles = 2,
-                        n_group_classes = 1, n_starts = 3, seed = 1)
+                        n_group_classes = 1, n_starts = 1, seed = 1)
   start <- starting_values(stage_one, what = "measurement")
   evaluated <- multilpa(frame, c("a", "b"), "school", n_profiles = 2,
-                        n_group_classes = 2, n_starts = 4, seed = 3,
+                        n_group_classes = 2, n_starts = 1, seed = 3,
                         max_iter = 0, start = start, fixed = "measurement")
   expect_equal(evaluated$means, stage_one$means)
   expect_equal(evaluated$variances, stage_one$variances)

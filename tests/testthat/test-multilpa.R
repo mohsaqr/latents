@@ -143,7 +143,7 @@ test_that("one profile gives the analytic maximum likelihood solution", {
 
 test_that("equal variances are shared across profiles and counted correctly", {
   fit <- multilpa(multilpa_fixture$data, c("reading", "maths"), "group",
-                   2L, 2L, variance_model = "equal", n_starts = 2L, seed = 712)
+                   2L, 2L, variance_model = "equal", n_starts = 1, seed = 712)
   expect_equal(fit$variances[1L, ], fit$variances[2L, ], ignore_attr = TRUE)
   expect_equal(fit$n_parameters, 9L)
   expect_true(all(diff(fit$log_likelihood_history) >= -1e-7))
@@ -216,7 +216,7 @@ test_that("a single group class permits singleton groups and one indicator", {
   data <- data.frame(group = seq_len(12L), x = c(seq(-3, -2, length.out = 6L),
                                                 seq(2, 3, length.out = 6L)))
   fit <- multilpa(data, "x", "group", 2L, 1L,
-                   n_starts = 2L, seed = 62)
+                   n_starts = 1, seed = 62)
   expect_equal(dim(fit$means), c(2L, 1L))
   expect_equal(dim(fit$variances), c(2L, 1L))
   expect_equal(dim(fit$group_posteriors), c(12L, 1L))

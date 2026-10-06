@@ -48,7 +48,7 @@ test_that("transition parameter_inference() uses the caller's step in its table"
   skip_on_cran()
   fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
              "student", n_profiles = 2, time = "sequence",
-             transitions = "occasion", n_starts = 2, seed = 1)
+             transitions = "occasion", n_starts = 1, seed = 1)
   expect_s3_class(fit, "multilpa_lta")
   coarse <- parameter_inference(fit, step = 1e-2)
   fine <- parameter_inference(fit, step = 1e-4)
@@ -65,7 +65,7 @@ test_that("a general transition fit refuses a single transition network", {
   skip_if_not_installed("tna")
   fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
              "student", n_profiles = 2, time = "sequence",
-             transitions = "occasion", n_starts = 2, seed = 1)
+             transitions = "occasion", n_starts = 1, seed = 1)
   expect_error(get_tna(fit), class = "latents_unsupported_tna")
   expect_error(get_group_tna(fit), class = "latents_unsupported_tna")
 })
@@ -75,7 +75,7 @@ test_that("a negative definite additive information is refused with a class", {
                      y = rep(seq(-2, 3, length.out = 8L), each = 4L) +
                        c(-1, -0.3, 0.3, 1))
   fit <- multilpa(case, "y", "group", n_group_classes = 1, family = "additive",
-                  tol = 1e-12, seed = 1)
+                  tol = 1e-12, seed = 1, n_starts = 1)
   local_mocked_bindings(.additive_information = function(...) -diag(3))
   expect_error(.additive_inference(fit, "observed"),
                class = "latents_singular_information")

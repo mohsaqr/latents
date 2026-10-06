@@ -166,7 +166,7 @@ test_that("a qualified fit warns by class and never tells the caller to use $", 
   data <- .core_fixture(n_groups = 8L, per_group = 4L, seed = 9L)
   seen <- list()
   fit <- withCallingHandlers(
-    multilpa(data, c("a", "b"), "school", 3L, 2L, n_starts = 2, seed = 4,
+    multilpa(data, c("a", "b"), "school", 3L, 2L, n_starts = 1, seed = 4,
              max_iter = 1L),
     warning = function(w) {
       seen[[length(seen) + 1L]] <<- w
@@ -206,7 +206,7 @@ test_that("the starts diagnostics are reachable as a tidy frame, not by $", {
 test_that("multilpa() returns a tidy frame for each `what`", {
   data <- .core_fixture()
   fit <- quietly(multilpa(data, c("a", "b", "c"), "school", 2L, 2L,
-                                   categorical = "c", n_starts = 3, seed = 1))
+                                   categorical = "c", n_starts = 1, seed = 1))
   profiles <- as.data.frame(fit)
   expect_s3_class(profiles, "data.frame")
   # One row per profile x continuous indicator.
@@ -222,7 +222,7 @@ test_that("multilpa() returns a tidy frame for each `what`", {
 test_that("fit_staged() reaches the staged workflow in one call", {
   data <- .core_fixture()
   staged <- fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                       n_group_classes = 2L, n_starts = 3, seed = 1)
+                       n_group_classes = 2L, n_starts = 1, seed = 1)
   expect_s3_class(staged, "multilpa")
   expect_true(isTRUE(staged$staged))
   stages <- get_results(staged, "stages")
@@ -237,14 +237,14 @@ test_that("fit_staged() reaches the staged workflow in one call", {
 test_that("fit_staged() refuses a staging request it cannot meet", {
   data <- .core_fixture()
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                          n_group_classes = 1L, n_starts = 2, seed = 1))
+                          n_group_classes = 1L, n_starts = 1, seed = 1))
   # "3" >= 2L compares as strings and used to pass silently.
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                          n_group_classes = "3", n_starts = 2, seed = 1))
+                          n_group_classes = "3", n_starts = 1, seed = 1))
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                          n_group_classes = 2.5, n_starts = 2, seed = 1))
+                          n_group_classes = 2.5, n_starts = 1, seed = 1))
   expect_error(fit_staged(data, c("a", "b"), "school", n_profiles = 2L,
-                          n_group_classes = 2L, n_starts = 2, seed = 1,
+                          n_group_classes = 2L, n_starts = 1, seed = 1,
                           measurement = "not a fit"))
 })
 

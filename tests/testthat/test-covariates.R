@@ -36,12 +36,12 @@ test_that("covariate expectation reduces to the independently verified original"
 test_that("no predictors agrees with the base model and single-level works", {
   set.seed(25)
   d <- data.frame(g = rep(1:30, each = 10), y = c(rnorm(150, -3), rnorm(150, 3)), z = rnorm(300))
-  base <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 2, seed = 42, tol = 1e-10)
+  base <- multilpa(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 1, seed = 42, tol = 1e-10)
   # A covariate model with no covariates is the empty-coefficient-block edge
   # case of the covariate estimator, which `multilpa()` cannot be asked for:
   # naming no covariate is a request for the covariate-free model. The
   # estimator is reached directly so the edge case stays covered.
-  fit <- latents:::.multilpa_fit_covariates(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 2, seed = 42, tol = 1e-10)
+  fit <- latents:::.multilpa_fit_covariates(d, "y", "g", 2, 1, variance_model = "equal", n_starts = 1, seed = 42, tol = 1e-10)
   expect_equal(fit$log_likelihood, base$log_likelihood, tolerance = 1e-7)
   expect_equal(fit$n_parameters, base$n_parameters)
   expect_equal(ncol(fit$group_coefficients), 0L)

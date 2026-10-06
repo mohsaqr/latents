@@ -13,7 +13,7 @@ make_two_level <- function(seed = 11L, n_groups = 30L, per_group = 8L) {
 
 test_that("information criteria match their documented formulas", {
   dat <- make_two_level()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   indices <- get_results(fit, "information_criteria", format = "long")
   expect_s3_class(indices, "data.frame")
   expect_identical(names(indices), c("criterion", "convention", "n", "value"))
@@ -63,8 +63,8 @@ test_that("information criteria match their documented formulas", {
 
 test_that("information criteria order candidate models sensibly", {
   dat <- make_two_level()
-  one <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 3, seed = 5)
-  two <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  one <- multilpa(dat, c("a", "b"), "g", 1, 1, n_starts = 1, seed = 5)
+  two <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   criteria <- c("bic", "sabic", "caic", "icl", "awe")
   better <- vapply(criteria, function(criterion_name) {
     one_value <- get_results(one, "information_criteria", format = "long")
@@ -82,7 +82,7 @@ test_that("information criteria order candidate models sensibly", {
 
 test_that("classification diagnostics are internally consistent", {
   dat <- make_two_level()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   summary_table <- get_results(fit, "classification", level = "both")
   expect_identical(nrow(summary_table), 4L)
   expect_true(all(summary_table$average_posterior >= 0 &
@@ -118,7 +118,7 @@ test_that("classification diagnostics handle a class with no modal members", {
 
 test_that("entropy is bounded and undefined for a single class", {
   dat <- make_two_level()
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   entropy <- get_results(fit, "entropy")
   expect_identical(nrow(entropy), 2L)
   expect_true(all(entropy$relative_entropy > 0 & entropy$relative_entropy <= 1))
@@ -177,7 +177,7 @@ test_that("tidy accessors return the documented shapes", {
 test_that("enumeration and inference tidy and print", {
   dat <- make_two_level()
   candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
-                                 n_group_classes = 1:2, model = NULL, n_starts = 3,
+                                 n_group_classes = 1:2, model = NULL, n_starts = 1,
                                  seed = 3)
   expect_s3_class(candidates, "multilpa_enumeration")
   grid <- as.data.frame(candidates)
@@ -189,7 +189,7 @@ test_that("enumeration and inference tidy and print", {
   failed <- subset(grid, !converged)
   expect_true(all(is.na(failed$sabic_individual)))
   expect_output(print(candidates), "Class enumeration")
-  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 6, seed = 5)
+  fit <- multilpa(dat, c("a", "b"), "g", 2, 2, n_starts = 1, seed = 5)
   information <- parameter_inference(fit, dat)
   # The verb returns the tidy table itself; there is no wrapper to unpack.
   expect_s3_class(information, "data.frame")
@@ -372,7 +372,7 @@ test_that("extracted covariate and inference helpers keep their contracts", {
                "rank deficient")
 
   # Inference contracts, previously inline in parameter_inference().
-  fit <- multilpa(dat, c("a", "b"), "school", 2, 2, n_starts = 5, seed = 1)
+  fit <- multilpa(dat, c("a", "b"), "school", 2, 2, n_starts = 1, seed = 1)
   prepared <- .multilpa_inference_matrix(fit, dat)
   expect_identical(dim(prepared$x), c(n, 2L))
   expect_equal(unname(colMeans(prepared$x)), c(0, 0))

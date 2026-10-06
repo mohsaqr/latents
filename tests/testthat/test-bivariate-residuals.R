@@ -14,7 +14,7 @@
 test_that("a planted dependence is found and the innocent pairs are not", {
   data <- .dependent_data()
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
-                  n_group_classes = 1, n_starts = 4, seed = 1)
+                  n_group_classes = 1, n_starts = 1, seed = 1)
   residuals <- get_results(fit, "residuals", data = data)
   worst <- head(residuals, 1L)
 
@@ -32,9 +32,9 @@ test_that("a planted dependence is found and the innocent pairs are not", {
 test_that("estimating the association makes the residual vanish", {
   data <- .dependent_data()
   diagonal <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
-                       n_group_classes = 1, n_starts = 4, seed = 1)
+                       n_group_classes = 1, n_starts = 1, seed = 1)
   full <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
-                   n_group_classes = 1, n_starts = 4, seed = 1,
+                   n_group_classes = 1, n_starts = 1, seed = 1,
                    covariance_model = "full")
 
   flagged <- get_results(diagonal, "residuals", data = data)
@@ -51,7 +51,7 @@ test_that("estimating the association makes the residual vanish", {
 test_that("the table is tidy, complete and correctly weighted", {
   data <- .dependent_data()
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
-                  n_group_classes = 1, n_starts = 4, seed = 1)
+                  n_group_classes = 1, n_starts = 1, seed = 1)
   residuals <- get_results(fit, "residuals", data = data)
 
   expect_named(residuals, c("profile", "indicator_1", "indicator_2", "kind",
@@ -71,7 +71,7 @@ test_that("the table is tidy, complete and correctly weighted", {
 test_that("pooling gives one row per pair", {
   data <- .dependent_data()
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
-                  n_group_classes = 1, n_starts = 4, seed = 1)
+                  n_group_classes = 1, n_starts = 1, seed = 1)
   pooled <- get_results(fit, "residuals", data = data, by = "overall")
 
   expect_equal(nrow(pooled), 3L)
@@ -99,7 +99,7 @@ test_that("categorical pairs are assessed with a chi-square", {
   vars <- c("u1", "u2", "u3", "u4", "u5")
   fit <- multilpa(data, vars, "school", n_profiles = 2,
                   n_group_classes = 1, categorical = vars,
-                  n_starts = 6, seed = 3)
+                  n_starts = 1, seed = 3)
   pooled <- get_results(fit, "residuals", data = data, by = "overall")
 
   expect_true(all(pooled$kind == "categorical"))
@@ -132,7 +132,7 @@ test_that("a covariate fit is assessed too", {
 test_that("a broken contract is refused", {
   data <- .dependent_data()
   fit <- multilpa(data, c("a", "b", "c"), "school", n_profiles = 2,
-                  n_group_classes = 1, n_starts = 3, seed = 1)
+                  n_group_classes = 1, n_starts = 1, seed = 1)
 
   expect_error(get_results(fit, "residuals", data = data[1:10, ]),
                "one row per observation")
@@ -145,7 +145,7 @@ test_that("a broken contract is refused", {
 test_that("a single indicator has no pair to assess", {
   data <- .dependent_data()
   fit <- multilpa(data, "a", "school", n_profiles = 2, n_group_classes = 1,
-                  n_starts = 3, seed = 1)
+                  n_starts = 1, seed = 1)
   residuals <- get_results(fit, "residuals", data = data)
 
   expect_s3_class(residuals, "data.frame")
@@ -161,7 +161,7 @@ test_that("the residual table corrects for the number of pairs it tests", {
   skip_on_cran()
   activity <- activity
   fit <- multilpa(engagement_small, activity, "student", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 4, seed = 1)
+                  n_group_classes = 2, n_starts = 1, seed = 1)
 
   # `attendance` is generated from the click measures, so these indicators are
   # deliberately locally dependent and the table has real findings in it. Ten

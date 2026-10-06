@@ -191,7 +191,7 @@ test_that("the structure grid crosses models with class counts", {
   candidates <- quietly(enumerate_classes(
     engagement_small, activity, "student", n_profiles = 2:3,
     n_group_classes = 1, model = c("EEI", "EVI", "EEE"),
-    n_starts = 2, seed = 1, max_iter = 50))
+    n_starts = 1, seed = 1, max_iter = 50))
   grid <- get_results(candidates, "candidates")
   expect_true("model" %in% names(grid))
   expect_identical(nrow(grid), 6L)

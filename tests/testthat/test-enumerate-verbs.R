@@ -14,7 +14,7 @@ test_that("enumerate_lpa preserves an omitted model argument", {
                lpa(data, names(data), 1, variance_model = "equal",
                    n_starts = 1, seed = 1)$log_likelihood)
   expect_error(enumerate_lpa(data, names(data), 1, model = "basic",
-                            variance_model = "equal"),
+                            variance_model = "equal", n_starts = 1),
                class = "latents_bad_argument")
   categorical <- data.frame(a = rep(c("yes", "no"), 10))
   grid <- enumerate_lpa(categorical, "a", 1, categorical = "a",
@@ -26,7 +26,7 @@ test_that("enumerate_lpa preserves an omitted model argument", {
 test_that("enumerate_lpa() is the single-level grid, fitted without a notice", {
   expect_no_message(
     models <- enumerate_lpa(srl, srl_indicators, n_profiles = 1:2,
-                            n_starts = 2, seed = 1))
+                            n_starts = 1, seed = 1))
   expect_s3_class(models, "multilpa_enumeration")
   table <- as.data.frame(models)
   # The basic structures crossed with the counts, one group class throughout.
@@ -35,11 +35,11 @@ test_that("enumerate_lpa() is the single-level grid, fitted without a notice", {
   expect_true(all(table$n_group_classes == 1L))
   # The same grid as the two-level verb with id = NULL.
   same <- suppressMessages(enumerate_classes(srl, srl_indicators, id = NULL,
-    n_profiles = 1:2, n_starts = 2, seed = 1))
+    n_profiles = 1:2, n_starts = 1, seed = 1))
   expect_equal(table, as.data.frame(same))
   # Each candidate is the fit lpa() makes.
   alone <- lpa(srl, srl_indicators, n_profiles = 2, model = "EEE",
-               n_starts = 2, seed = 1)
+               n_starts = 1, seed = 1)
   expect_equal(candidate_fit(models, n_profiles = 2,
                              model = "EEE")$log_likelihood,
                alone$log_likelihood)
@@ -49,34 +49,34 @@ test_that("enumerate_lca() treats every indicator as categorical", {
   skip_on_cran()
   expect_no_message(
     models <- enumerate_lca(student_esm, esm_activities, n_classes = 1:3,
-                            n_starts = 2, seed = 1))
+                            n_starts = 1, seed = 1))
   table <- as.data.frame(models)
   # No covariance structure is crossed, so one candidate per count.
   expect_identical(table$n_profiles, 1:3)
   expect_true(all(is.na(table$model)))
   same <- suppressMessages(enumerate_classes(student_esm, esm_activities,
-    id = NULL, n_profiles = 1:3, categorical = esm_activities, n_starts = 2,
+    id = NULL, n_profiles = 1:3, categorical = esm_activities, n_starts = 1,
     seed = 1))
   expect_equal(table, as.data.frame(same))
-  alone <- lca(student_esm, esm_activities, n_classes = 2, n_starts = 2,
+  alone <- lca(student_esm, esm_activities, n_classes = 2, n_starts = 1,
                seed = 1)
   expect_equal(candidate_fit(models, n_profiles = 2)$log_likelihood,
                alone$log_likelihood)
 })
 
 test_that("the single-level verbs refuse two-level and misplaced arguments", {
-  expect_error(enumerate_lpa(srl, srl_indicators, id = "x"),
+  expect_error(enumerate_lpa(srl, srl_indicators, id = "x", n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(enumerate_lpa(srl, srl_indicators, n_group_classes = 2),
+  expect_error(enumerate_lpa(srl, srl_indicators, n_group_classes = 2, n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(enumerate_lpa(srl, srl_indicators, model = "most"),
+  expect_error(enumerate_lpa(srl, srl_indicators, model = "most", n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(enumerate_lca(student_esm, esm_activities, id = "student"),
+  expect_error(enumerate_lca(student_esm, esm_activities, id = "student", n_starts = 1),
                class = "latents_bad_argument")
   expect_error(enumerate_lca(student_esm, esm_activities,
-                             categorical = esm_activities),
+                             categorical = esm_activities, n_starts = 1),
                class = "latents_bad_argument")
-  expect_error(enumerate_lca(student_esm, esm_activities, model = "EEE"),
+  expect_error(enumerate_lca(student_esm, esm_activities, model = "EEE", n_starts = 1),
                class = "latents_bad_argument")
 })
 
@@ -100,10 +100,10 @@ test_that("the two-level verbs name the analysis they fitted with id = NULL", {
 })
 
 test_that("a two-level verb without `id` points to the single-level verbs", {
-  expect_error(enumerate_classes(srl, srl_indicators),
+  expect_error(enumerate_classes(srl, srl_indicators, n_starts = 1),
                "enumerate_lpa", class = "latents_bad_argument")
-  expect_error(multilpa(srl, srl_indicators, n_profiles = 2),
+  expect_error(multilpa(srl, srl_indicators, n_profiles = 2, n_starts = 1),
                "lpa()", fixed = TRUE, class = "latents_bad_argument")
-  expect_error(multilca(student_esm, esm_activities, n_profiles = 2),
+  expect_error(multilca(student_esm, esm_activities, n_profiles = 2, n_starts = 1),
                "lca()", fixed = TRUE, class = "latents_bad_argument")
 })
