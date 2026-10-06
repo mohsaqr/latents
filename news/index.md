@@ -1,5 +1,9 @@
 # Changelog
 
+## latents 0.9.21
+
+- The version submitted to CRAN; the same code as 0.9.20.
+
 ## latents 0.9.20
 
 - Tests fit each model from a single start unless the test is about
