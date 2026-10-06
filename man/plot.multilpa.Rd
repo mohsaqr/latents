@@ -16,6 +16,7 @@
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
+  statistic = c("mean", "median", "mode"),
   ...
 )
 }
@@ -26,7 +27,8 @@
 group and a one-line description.
 
 The measurement model: \code{"profiles"} draws one line per profile across the
-continuous indicators. \code{"bars"} draws the same means as grouped bars that
+continuous indicators, or numeric categorical summaries when there are no
+continuous indicators (see \code{statistic}). \code{"bars"} draws continuous means as grouped bars that
 start at zero. \code{"heatmap"} draws them as a diverging grid of observed
 standard deviations from each indicator's observed mean, the quickest read
 when there are many indicators or profiles; for a fit whose indicators are
@@ -82,6 +84,17 @@ number in each cell while the grid is sparse enough to hold one, so the
 profile is not carried by colour alone.}
 
 \item{main, subtitle}{Title and subtitle. \code{NULL} uses the view's own.}
+
+\item{statistic}{For \code{what = "profiles"}, \code{"mean"} (default), \code{"median"}
+or \code{"mode"}. With continuous indicators these are the same fitted Gaussian
+location. When there are no continuous indicators, summarizes each
+categorical indicator's fitted probabilities on its numeric category scale.
+Means assume meaningful score spacing; medians are the smallest score with
+cumulative probability at least 0.5; tied modes use the smallest score.
+Category labels must be distinct finite numeric scores. Categorical
+summaries support only \code{scale = "raw"} and have no confidence intervals;
+they do not run parameter inference. Mixed models retain continuous-only
+profile plots; use \code{"responses"} for their categorical indicators.}
 
 \item{...}{Nothing further is accepted; an unknown argument raises an error
 of class \code{latents_bad_argument}. Style the returned plot with ggplot2.}

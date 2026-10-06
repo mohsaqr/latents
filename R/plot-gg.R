@@ -304,19 +304,83 @@ utils::globalVariables(c(
     (if (!isTRUE(labels_on)) .gg_top_legend())
 }
 
+#' Numeric category scores for a categorical profile plot
 #' @noRd
-.gg_view_profiles <- function(x, scale, labels, errors, main, subtitle) {
+.gg_category_scores <- function(blocks) {
+  stopifnot(is.list(blocks))
+  lapply(names(blocks), function(indicator) {
+    block <- blocks[[indicator]]
+    scores <- suppressWarnings(as.numeric(colnames(block)))
+    if (length(scores) != ncol(block) || any(!is.finite(scores)) ||
+        anyDuplicated(scores)) {
+      stop(errorCondition(sprintf(
+        paste("Categorical profile summaries need distinct finite numeric category",
+              "labels; `%s` does not have them. Use `what = \"responses\"` instead."),
+        indicator), class = "latents_bad_argument", call = NULL))
+    }
+    scores
+  })
+}
+
+#' Summarize the fitted categorical distributions on their score scale
+#' @noRd
+.gg_categorical_summary_frame <- function(x, key, statistic) {
+  stopifnot(statistic %in% c("mean", "median", "mode"))
+  blocks <- x$response_probabilities
+  scores <- .gg_category_scores(blocks)
+  values <- lapply(seq_along(blocks), function(index) {
+    ordered <- order(scores[[index]])
+    score <- scores[[index]][ordered]
+    probability <- blocks[[index]][, ordered, drop = FALSE]
+    if (statistic == "mean") return(drop(probability %*% score))
+    apply(probability, 1L, function(p) {
+      if (statistic == "median") score[which(cumsum(p) >= 0.5)[1L]] else
+        score[which.max(p)]
+    })
+  })
+  vars <- names(blocks)
+  cells <- expand.grid(profile = seq_len(x$n_profiles), position = seq_along(vars))
+  frame <- data.frame(
+    profile = cells$profile, position = cells$position,
+    indicator = factor(vars[cells$position], levels = vars),
+    mean = unlist(values, use.names = FALSE), lower = NA_real_, upper = NA_real_)
+  frame$profile_label <- key$label[frame$profile]
+  frame$rank <- key$rank[frame$profile]
+  list(frame = frame, vars = vars, range = range(unlist(scores)))
+}
+
+#' @noRd
+.gg_view_profiles <- function(x, scale, labels, errors, main, subtitle,
+                              statistic = "mean", intervals = TRUE) {
   key <- .gg_profile_key(x)
+  if (length(.multilpa_continuous_names(x)) == 0L &&
+      length(x$response_probabilities) > 0L) {
+    if (scale != "raw") {
+      stop(errorCondition(
+        "Categorical profile summaries require `scale = \"raw\"`.",
+        class = "latents_bad_argument", call = NULL))
+    }
+    summaries <- .gg_categorical_summary_frame(x, key, statistic)
+    return(.gg_series_plot(
+      summaries$frame, key, labels, FALSE,
+      y_label = paste("Estimated", statistic, "(category score)"),
+      x_labels = summaries$vars, ylim = summaries$range) +
+      .gg_titles(main, subtitle, sprintf("Profile %ss across %d categorical indicators",
+                                        statistic, length(summaries$vars)),
+        sprintf("%d profiles%s; original category scale%s", x$n_profiles,
+                .gg_group_class_text(x),
+                if (intervals) "; intervals unavailable for categorical summaries" else "")))
+  }
   means <- .gg_mean_frame(x, key, scale, errors)
   standardized <- identical(scale, "standardized")
   .gg_series_plot(means$frame, key, labels, means$has_errors,
-                  y_label = if (standardized) "Standardized mean" else
-                    "Estimated mean",
+                  y_label = paste(if (standardized) "Standardized" else "Estimated",
+                                  statistic),
                   x_labels = means$vars,
                   reference = if (standardized) 0) +
     .gg_titles(main, subtitle,
-               sprintf("Profile means across %d indicator%s",
-                       length(means$vars),
+               sprintf("Profile %ss across %d indicator%s",
+                       statistic, length(means$vars),
                        if (length(means$vars) == 1L) "" else "s"),
                sprintf("%d profiles%s; %s scale%s", x$n_profiles,
                        .gg_group_class_text(x),

@@ -236,8 +236,9 @@ test_that("categorical models plot their response probabilities", {
   expect_plot(plot(fit, what = "probabilities"))
   expect_error(plot(fit, what = "responses", category = "nope"),
                class = "latents_unknown_category")
-  # A model with no continuous indicators cannot draw a profile-means plot.
-  expect_error(plot(fit, what = "profiles"), class = "latents_no_continuous")
+  # Numeric categorical scores have fitted means on their original scale.
+  means <- expect_plot(plot(fit, what = "profiles"))
+  expect_true(all(means$data$mean >= 1 & means$data$mean <= 2))
   gaussian <- multilpa(data.frame(g = rep(1:10, each = 8), y = stats::rnorm(80)),
                          "y", "g", 2, 1, n_starts = 1, seed = 1)
   expect_error(plot(gaussian, what = "responses"), class = "latents_no_categorical")

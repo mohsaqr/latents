@@ -304,6 +304,12 @@ report <- function(x, data = NULL, plots = TRUE,
   Filter(function(view) {
     if (identical(view, "responses")) return(length(x$categorical) > 0L)
     if (identical(view, "sequences")) return(!is.null(x$time))
+    if (identical(view, "profiles") &&
+        length(.multilpa_continuous_names(x)) == 0L &&
+        length(x$response_probabilities) > 0L) {
+      return(tryCatch({ .gg_category_scores(x$response_probabilities); TRUE },
+                      latents_bad_argument = function(e) FALSE))
+    }
     if (view %in% c("profiles", "bars", "heatmap")) {
       return(!is.null(x$means) && ncol(x$means) > 0L)
     }

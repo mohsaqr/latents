@@ -16,7 +16,8 @@
 #'   group and a one-line description.
 #'
 #'   The measurement model: `"profiles"` draws one line per profile across the
-#'   continuous indicators. `"bars"` draws the same means as grouped bars that
+#'   continuous indicators, or numeric categorical summaries when there are no
+#'   continuous indicators (see `statistic`). `"bars"` draws continuous means as grouped bars that
 #'   start at zero. `"heatmap"` draws them as a diverging grid of observed
 #'   standard deviations from each indicator's observed mean, the quickest read
 #'   when there are many indicators or profiles; for a fit whose indicators are
@@ -55,6 +56,16 @@
 #'   as `as.data.frame(scale = "standardized")`.
 #' @param category For `what = "responses"`, which category's probability to
 #'   plot: `"last"`, `"first"`, or a single category label or index.
+#' @param statistic For `what = "profiles"`, `"mean"` (default), `"median"`
+#'   or `"mode"`. With continuous indicators these are the same fitted Gaussian
+#'   location. When there are no continuous indicators, summarizes each
+#'   categorical indicator's fitted probabilities on its numeric category scale.
+#'   Means assume meaningful score spacing; medians are the smallest score with
+#'   cumulative probability at least 0.5; tied modes use the smallest score.
+#'   Category labels must be distinct finite numeric scores. Categorical
+#'   summaries support only `scale = "raw"` and have no confidence intervals;
+#'   they do not run parameter inference. Mixed models retain continuous-only
+#'   profile plots; use `"responses"` for their categorical indicators.
 #' @param labels `TRUE` labels each series at its right end; `FALSE` uses a
 #'   legend instead.
 #' @param intervals For `"profiles"` and `"responses"`, `TRUE` draws 95%
@@ -106,12 +117,15 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
                           data = NULL, scale = c("raw", "standardized"),
                           category = "last", labels = TRUE, intervals = TRUE,
                           cell_labels = TRUE, main = NULL, subtitle = NULL,
+                          statistic = c("mean", "median", "mode"),
                           ...) {
   stopifnot("`x` must be a `multilpa` fit" = inherits(x, "multilpa"))
   .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,
                                  category)
   what <- match.arg(what)
   scale <- match.arg(scale)
+  statistic <- match.arg(statistic)
+  .multilpa_check_plot_statistic(what, statistic)
   .gg_require()
   if (identical(what, "all")) {
     return(.gg_every_view(x, match.call(), parent.frame()))
@@ -119,7 +133,18 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
   .multilpa_draw_view(x, what, data = data, scale = scale,
                       category = category, labels = labels,
                       intervals = intervals, cell_labels = cell_labels,
-                      main = main, subtitle = subtitle)
+                      main = main, subtitle = subtitle, statistic = statistic)
+}
+
+#' Validate where a profile summary statistic applies
+#' @noRd
+.multilpa_check_plot_statistic <- function(what, statistic) {
+  stopifnot(is.character(what), is.character(statistic))
+  if (!what %in% c("profiles", "all") && statistic != "mean") {
+    stop(errorCondition("`statistic` applies only to `what = \"profiles\"`.",
+                        class = "latents_bad_argument", call = NULL))
+  }
+  invisible(NULL)
 }
 
 #' Validate the arguments every fit's plot method shares
@@ -147,7 +172,7 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
 #' @noRd
 .multilpa_draw_view <- function(x, what, data, scale, category, labels,
                                 intervals, cell_labels, main, subtitle,
-                                errors_available = TRUE) {
+                                errors_available = TRUE, statistic = "mean") {
   if (what %in% c("entropy", "posteriors", "avepp")) {
     .multilpa_refuse_noise(x, sprintf("plot(what = \"%s\")", what),
                            class = "latents_nothing_to_plot")
@@ -156,7 +181,8 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
   switch(what,
     profiles = .gg_view_profiles(
       x, scale, labels,
-      if (with_errors) .multilpa_mean_error_matrix(x, data), main, subtitle),
+      if (with_errors) .multilpa_mean_error_matrix(x, data), main, subtitle,
+      statistic = statistic, intervals = with_errors),
     bars = .gg_view_bars(
       x, scale,
       if (isTRUE(errors_available)) .multilpa_mean_error_matrix(x, data),
@@ -202,6 +228,7 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
   refused <- \(condition) NULL
   plots <- lapply(views, \(view) {
     call$what <- view
+    if (view != "profiles") call$statistic <- NULL
     tryCatch(eval(call, env),
              latents_no_plot = refused,
              latents_nothing_to_plot = refused,
@@ -408,7 +435,7 @@ plot.multilpa_enumeration <- function(x, what = c("enumeration", "tree"),
 #' @param x A fitted `multilpa_covariates` model.
 #' @param what The view; every view of [plot.multilpa()] except
 #'   `"probabilities"`.
-#' @param data,scale,category,labels,intervals,cell_labels,main,subtitle,...
+#' @param data,scale,category,labels,intervals,cell_labels,main,subtitle,statistic,...
 #'   As in [plot.multilpa()].
 #' @return A ggplot object; for `what = "all"`, a `latents_plots` list.
 #' @examples
@@ -441,7 +468,8 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
                                      scale = c("raw", "standardized"),
                                      category = "last", labels = TRUE,
                                      intervals = TRUE, cell_labels = TRUE,
-                                     main = NULL, subtitle = NULL, ...) {
+                                     main = NULL, subtitle = NULL,
+                                     statistic = c("mean", "median", "mode"), ...) {
   stopifnot("`x` must be a fitted `multilpa_covariates` model" =
               inherits(x, "multilpa_covariates"))
   .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,
@@ -454,6 +482,8 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
   }
   what <- match.arg(what)
   scale <- match.arg(scale)
+  statistic <- match.arg(statistic)
+  .multilpa_check_plot_statistic(what, statistic)
   .gg_require()
   if (identical(what, "all")) {
     return(.gg_every_view(x, match.call(), parent.frame()))
@@ -461,7 +491,7 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
   .multilpa_draw_view(x, what, data = data, scale = scale,
                       category = category, labels = labels,
                       intervals = intervals, cell_labels = cell_labels,
-                      main = main, subtitle = subtitle)
+                      main = main, subtitle = subtitle, statistic = statistic)
 }
 
 #' The plots this package can draw
@@ -486,7 +516,7 @@ plot_views <- function() {
     group = c(rep("measurement", 7L), rep("structure", 3L),
               rep("diagnostics", 4L), rep("selection", 2L), "every"),
     description = c(
-      "Profile means across indicators, one labelled line per profile",
+      "Profile means, medians or modes across indicators, one line per profile",
       "Profile means as grouped bars from zero, with 95% intervals",
       "Profile means in observed standard deviations from the observed mean",
       "Each indicator's distribution by assigned profile: density, box, observations",

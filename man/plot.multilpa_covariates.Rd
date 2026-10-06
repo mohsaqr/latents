@@ -16,6 +16,7 @@
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
+  statistic = c("mean", "median", "mode"),
   ...
 )
 }
@@ -25,7 +26,7 @@
 \item{what}{The view; every view of \code{\link[=plot.multilpa]{plot.multilpa()}} except
 \code{"probabilities"}.}
 
-\item{data, scale, category, labels, intervals, cell_labels, main, subtitle, ...}{As in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
+\item{data, scale, category, labels, intervals, cell_labels, main, subtitle, statistic, ...}{As in \code{\link[=plot.multilpa]{plot.multilpa()}}.}
 }
 \value{
 A ggplot object; for \code{what = "all"}, a \code{latents_plots} list.
