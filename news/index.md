@@ -1,5 +1,18 @@
 # Changelog
 
+## latents 0.9.23
+
+- New
+  [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
+  draws the information criteria of an enumeration grid with its
+  arguments listed on its own, so an editor completes them; it is the
+  view [`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws
+  for an enumeration.
+- [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
+  [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
+  take `criterion = "all"` for every information criterion in the grid.
+  Pairs that coincide in a single-level grid are drawn once.
+
 ## latents 0.9.22
 
 - Numeric categorical models now support `plot(what = "profiles")`, with

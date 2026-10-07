@@ -137,6 +137,8 @@ Three-step analysis with a correction for classification error.
 
 - [`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md)
   : The plots this package can draw
+- [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
+  : Plot information criteria across an enumeration grid
 - [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`as.data.frame(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   [`print(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)

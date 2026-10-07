@@ -44,10 +44,13 @@ plot(
 - criterion:
 
   For `"enumeration"`, one or more criterion columns of
-  `as.data.frame(x)`, such as `"bic_individual"` or `"sabic_groups"`.
-  The default draws AIC, BIC under both sample-size conventions and ICL
-  counted over individuals; a criterion identical at both levels, as in
-  a single-level grid, is drawn once.
+  `as.data.frame(x)`, such as `"bic_individual"` or `"sabic_groups"`, or
+  `"all"` for every information criterion. The default draws AIC, BIC
+  under both sample-size conventions and ICL counted over individuals; a
+  criterion identical at both levels, as in a single-level grid, is
+  drawn once.
+  [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
+  draws the same view with these arguments listed on its own.
 
 - combine:
 
