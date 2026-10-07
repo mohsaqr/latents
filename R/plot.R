@@ -319,10 +319,12 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
 #'   [enumerate_lpa()] or [enumerate_lca()].
 #' @param what `"enumeration"` (the default) or `"tree"`.
 #' @param criterion For `"enumeration"`, one or more criterion columns of
-#'   `as.data.frame(x)`, such as `"bic_individual"` or `"sabic_groups"`. The
-#'   default draws AIC, BIC under both sample-size conventions and ICL counted
-#'   over individuals; a criterion identical at both levels, as in a
-#'   single-level grid, is drawn once.
+#'   `as.data.frame(x)`, such as `"bic_individual"` or `"sabic_groups"`, or
+#'   `"all"` for every information criterion. The default draws AIC, BIC
+#'   under both sample-size conventions and ICL counted over individuals; a
+#'   criterion identical at both levels, as in a single-level grid, is drawn
+#'   once. [plot_enumeration()] draws the same view with these arguments
+#'   listed on its own.
 #' @param combine `TRUE` draws several criteria as panels of one plot; `FALSE`
 #'   returns one plot per criterion.
 #' @param labels `TRUE` labels each series at its right end.
@@ -358,21 +360,79 @@ plot.multilpa_enumeration <- function(x, what = c("enumeration", "tree"),
                                       mark_minimum = TRUE, main = NULL,
                                       subtitle = NULL, ...) {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
+              inherits(x, "multilpa_enumeration"))
+  .multilpa_reject_extra_arguments(
+    list(...), "plot()",
+    "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
+  what <- match.arg(what)
+  if (identical(what, "tree")) {
+    .gg_require()
+    return(.gg_view_tree(x, main, subtitle))
+  }
+  plot_enumeration(x, criterion = criterion, combine = combine,
+                   labels = labels, mark_minimum = mark_minimum,
+                   main = main, subtitle = subtitle)
+}
+
+#' Plot information criteria across an enumeration grid
+#'
+#' Draws information criteria against the number of profiles, one panel per
+#' criterion and one line per covariance model and number of group classes. It
+#' is the view `plot(x)` draws for an enumeration, as a function of its own so
+#' that its arguments are listed (and completed by an editor) without going
+#' through `what =`. A candidate that failed to converge is marked with a cross
+#' on its panel's floor, so a gap in a line reads as a failure and not as a
+#' missing candidate.
+#'
+#' @param x A `multilpa_enumeration` result from [enumerate_classes()],
+#'   [enumerate_lpa()] or [enumerate_lca()].
+#' @param criterion One or more criterion columns of `as.data.frame(x)`, such
+#'   as `"bic_individual"` or `"sabic_groups"`, or `"all"` for every
+#'   information criterion in the grid. The default draws AIC, BIC under both
+#'   sample-size conventions and ICL counted over individuals. A criterion
+#'   identical at both levels, as in a single-level grid, is drawn once.
+#' @param combine `TRUE` draws several criteria as panels of one plot; `FALSE`
+#'   returns one plot per criterion.
+#' @param labels `TRUE` labels each series at its right end.
+#' @param mark_minimum `TRUE` rings each criterion's lowest value among
+#'   converged candidates. This marks an extremum; it does not select a model.
+#' @param main,subtitle Title and subtitle. `NULL` uses the view's own.
+#' @return A ggplot object, one panel per criterion; with `combine = FALSE`
+#'   and several criteria, a `latents_plots` list of ggplot objects, one per
+#'   criterion, named by its criterion column.
+#' @section Errors: `latents_unknown_criterion` for a criterion that is not an
+#'   information criterion of the grid; `latents_nothing_to_plot` when no
+#'   converged candidate has a finite value.
+#' @seealso [plot.multilpa_enumeration()] for the profile tree,
+#'   [summary.multilpa_enumeration()] for the candidate each criterion prefers.
+#' @examples
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   set.seed(7)
+#'   example_data <- data.frame(score_a = rnorm(120), score_b = rnorm(120))
+#'   candidates <- enumerate_lpa(example_data, c("score_a", "score_b"),
+#'                               n_profiles = 1:3, n_starts = 2)
+#'   plot_enumeration(candidates)
+#'   plot_enumeration(candidates, criterion = "all")
+#' }
+#' @export
+plot_enumeration <- function(x, criterion = c("aic", "bic_groups",
+                                              "bic_individual",
+                                              "icl_individual"),
+                             combine = TRUE, labels = TRUE,
+                             mark_minimum = TRUE, main = NULL,
+                             subtitle = NULL) {
+  stopifnot("`x` must be an `multilpa_enumeration` result" =
               inherits(x, "multilpa_enumeration"),
-            "`criterion` must name one or more columns" =
+            "`criterion` must name one or more columns, or be \"all\"" =
               is.character(criterion) && length(criterion) >= 1L &&
               !anyNA(criterion),
             "`combine` must be TRUE or FALSE" = isTRUE(combine) || isFALSE(combine),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
             "`mark_minimum` must be TRUE or FALSE" =
               isTRUE(mark_minimum) || isFALSE(mark_minimum))
-  .multilpa_reject_extra_arguments(
-    list(...), "plot()",
-    "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
-  what <- match.arg(what)
   .gg_require()
-  if (identical(what, "tree")) return(.gg_view_tree(x, main, subtitle))
   grid <- as.data.frame(x)
+  if (identical(criterion, "all")) criterion <- .multilpa_enumeration_criteria()
   unknown <- setdiff(criterion, .multilpa_enumeration_criteria())
   if (length(unknown) > 0L) {
     stop(errorCondition(sprintf(

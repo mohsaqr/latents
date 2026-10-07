@@ -23,10 +23,12 @@
 \item{what}{\code{"enumeration"} (the default) or \code{"tree"}.}
 
 \item{criterion}{For \code{"enumeration"}, one or more criterion columns of
-\code{as.data.frame(x)}, such as \code{"bic_individual"} or \code{"sabic_groups"}. The
-default draws AIC, BIC under both sample-size conventions and ICL counted
-over individuals; a criterion identical at both levels, as in a
-single-level grid, is drawn once.}
+\code{as.data.frame(x)}, such as \code{"bic_individual"} or \code{"sabic_groups"}, or
+\code{"all"} for every information criterion. The default draws AIC, BIC
+under both sample-size conventions and ICL counted over individuals; a
+criterion identical at both levels, as in a single-level grid, is drawn
+once. \code{\link[=plot_enumeration]{plot_enumeration()}} draws the same view with these arguments
+listed on its own.}
 
 \item{combine}{\code{TRUE} draws several criteria as panels of one plot; \code{FALSE}
 returns one plot per criterion.}

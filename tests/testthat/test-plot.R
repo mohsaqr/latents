@@ -83,6 +83,49 @@ test_that("enumeration plotting rejects unusable criteria by condition class", {
                class = "latents_nothing_to_plot")
 })
 
+test_that("plot_enumeration() draws the enumeration view plot() draws", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  dat <- plot_fixture()
+  candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
+                                 n_group_classes = 1:2, n_starts = 1, seed = 3)
+  # The named function and the generic share one implementation, so the drawn
+  # data must agree exactly, for the default and for an explicit criterion.
+  expect_equal(expect_plot(plot_enumeration(candidates))$data,
+               plot(candidates)$data)
+  expect_equal(plot_enumeration(candidates, criterion = "sabic_groups")$data,
+               plot(candidates, criterion = "sabic_groups")$data)
+  # Its arguments are its own formals, so a misspelt one is refused by R.
+  expect_error(plot_enumeration(candidates, palette = "x"), "unused argument")
+})
+
+test_that("criterion = \"all\" draws every information criterion once", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  dat <- plot_fixture()
+  two_level <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
+                                n_group_classes = 1:2, n_starts = 1, seed = 3)
+  every <- expect_plot(plot_enumeration(two_level, criterion = "all"))
+  # A two-level grid differs at the two levels for every criterion, so each
+  # column of the grid gets its own panel.
+  expect_identical(nlevels(every$data$title),
+                   length(.multilpa_enumeration_criteria()))
+  expect_equal(plot(two_level, criterion = "all")$data, every$data)
+  separate <- plot_enumeration(two_level, criterion = "all", combine = FALSE)
+  expect_s3_class(separate, "latents_plots")
+  expect_named(separate, .multilpa_enumeration_criteria())
+  # Single level: a criterion whose two versions coincide is drawn once.
+  single <- enumerate_lpa(dat, c("a", "b"), n_profiles = 1:2, n_starts = 1,
+                          seed = 3)
+  drawn <- plot_enumeration(single, criterion = "all")$data
+  expect_lt(nlevels(drawn$title), length(.multilpa_enumeration_criteria()))
+  expect_true(all(c("AIC", "BIC", "SABIC", "CAIC") %in% levels(drawn$title)))
+  expect_false("BIC (groups)" %in% levels(drawn$title))
+  # "all" is a whole value, not a column to mix with others.
+  expect_error(plot_enumeration(two_level, criterion = c("all", "aic")),
+               class = "latents_unknown_criterion")
+})
+
 test_that("the palette, symbols and line types stay aligned and recycle", {
   skip_on_cran()
   # The base-graphics plots that remain (bootstrap, pooled, mixture

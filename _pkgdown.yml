@@ -67,6 +67,7 @@ reference:
 - title: Plots
   contents:
   - plot_views
+  - plot_enumeration
   - starts_with("plot.")
 
 - title: Transition networks
