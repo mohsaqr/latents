@@ -271,15 +271,15 @@ not adjusted for multiple comparisons.
 
 r3step(fit, data = course_engagement, covariates = "previous_grade", vcov_type = "robust")
 #>         level   outcome           term estimate standard_error statistic   p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)   0.3065        0.10625     2.884 3.924e-03         NA
-#> 2 individuals profile_1 previous_grade  -0.2085        0.10437    -1.998 4.571e-02  4.571e-02
-#> 3 individuals profile_2    (Intercept)   0.4473        0.13666     3.273 1.063e-03         NA
-#> 4 individuals profile_2 previous_grade  -0.6809        0.08655    -7.867 3.626e-15  7.252e-15
+#> 1 individuals profile_1    (Intercept)   0.3065        0.10676     2.871 4.097e-03         NA
+#> 2 individuals profile_1 previous_grade  -0.2085        0.10486    -1.989 4.674e-02  4.674e-02
+#> 3 individuals profile_2    (Intercept)   0.4473        0.13731     3.258 1.123e-03         NA
+#> 4 individuals profile_2 previous_grade  -0.6809        0.08697    -7.830 4.878e-15  9.755e-15
 #>   conf_low conf_high
-#> 1  0.09821  0.514719
-#> 2 -0.41310 -0.003979
-#> 3  0.17949  0.715180
-#> 4 -0.85059 -0.511302
+#> 1  0.09722  0.515708
+#> 2 -0.41407 -0.003008
+#> 3  0.17821  0.716453
+#> 4 -0.85140 -0.510496
 ```
 
 In the fitted model, a one-standard-deviation increase in previous grade
@@ -368,7 +368,7 @@ three_step(
 #> Class  vs  Difference          95% CI      p  p (BH)
 #> -----  --  ----------  --------------  -----  ------
 #>     2   1       -0.44  [-0.56, -0.32]  <.001   <.001
-#>     3   1        0.19  [ 0.00,  0.37]   .046    .046
+#>     3   1        0.19  [ 0.00,  0.38]   .047    .047
 #>     3   2        0.63  [ 0.48,  0.78]  <.001   <.001
 ```
 
@@ -409,7 +409,7 @@ three_step(
 #> Class  vs  Difference          95% CI      p  p (BH)
 #> -----  --  ----------  --------------  -----  ------
 #>     2   1       -0.45  [-0.55, -0.34]  <.001   <.001
-#>     3   1        0.15  [ 0.02,  0.28]   .029    .029
+#>     3   1        0.15  [ 0.01,  0.28]   .030    .030
 #>     3   2        0.59  [ 0.46,  0.72]  <.001   <.001
 ```
 

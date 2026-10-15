@@ -98,11 +98,11 @@ if (requireNamespace("tna", quietly = TRUE)) {
 #> Transition Probability Matrix :
 #> 
 #>           profile_1 profile_2
-#> profile_1 0.8151872 0.1848128
-#> profile_2 0.1373717 0.8626283
+#> profile_1 0.8626333 0.1373667
+#> profile_2 0.1848046 0.8151954
 #> 
 #> Initial Probabilities : 
 #> 
 #> profile_1 profile_2 
-#> 0.3675166 0.6324834 
+#> 0.6324896 0.3675104 
 ```

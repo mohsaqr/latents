@@ -137,9 +137,10 @@ mixture_regression(
 - vcov_type:
 
   Covariance of the estimates stored with the fit: `"observed"` (inverse
-  observed information), `"robust"` (sandwich, clustered on the
-  top-level unit, or on `id` for a single-level fit given `id`) or
-  `"opg"` (outer product of the scores). `"none"` skips inference.
+  observed information), `"robust"` (sandwich with the CR1 factor
+  `G / (G - 1)`, clustered on the top-level unit, or on `id` for a
+  single-level fit given `id`) or `"opg"` (outer product of the scores).
+  `"none"` skips inference.
 
 - weights:
 

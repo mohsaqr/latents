@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,6 +58,14 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.31" id="latents-0931">latents 0.9.31<a class="anchor" aria-label="anchor" href="#latents-0931"></a></h2>
+<ul><li>Cluster-robust standard errors now carry the CR1 small-sample factor <code>G / (G - 1)</code> for <code>G</code> independent units, the default of <code>sandwich::vcovCL()</code>. It applies to every <code>vcov_type = "robust"</code> result (profile, covariate, transition, family, mixture-regression and growth fits) and to <code><a href="../reference/three_step.html">three_step()</a></code> (both <code>vcov_type</code>s, every <code>method</code>) and <code><a href="../reference/r3step.html">r3step()</a></code>. Robust standard errors rise by <code>sqrt(G / (G - 1))</code>: about 2.6% with 20 groups and 0.5% with 100. A one-class robust regression now reproduces <code>sandwich::vcovCL()</code> exactly.</li>
+<li>Wald inference is refused (<code>latents_boundary_fit</code>) for a membership-covariate fit whose logit coefficients are heading to infinity because a covariate separates the classes. Previously the refusal held only when the observed information happened to be numerically singular; otherwise a coefficient such as -504 was reported with a standard error of 669 and p = 0.45.</li>
+<li>The separation check (and the <code>latents_extreme_coefficients</code> warning) measures each coefficient per root-mean-square unit of its covariate, so it no longer depends on the units a covariate is recorded in: a real effect of a covariate in tiny units is no longer flagged, and a separating covariate in large units no longer escapes.</li>
+<li>
+<code><a href="../reference/lta.html">lta()</a></code> defaults to <code>tol = 1e-10</code> (was <code>1e-8</code>), as do the bootstrap refits of its <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>. The group-class shares and the mean group posteriors, one EM step apart, now agree to about <code>2e-5</code> instead of <code>2e-4</code>, for roughly 1.5 times the iterations.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.30" id="latents-0930">latents 0.9.30<a class="anchor" aria-label="anchor" href="#latents-0930"></a></h2>
 <ul><li>Released function and method names and argument spellings remain available. Tables retain their existing columns (new columns are added; in an enumeration grid’s tables <code>candidate</code> now comes first). Corrections to statistical results and input validation are described below.</li>

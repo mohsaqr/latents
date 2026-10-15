@@ -167,9 +167,9 @@ fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
 r3step(fit, example_data, "x")
 #>         level   outcome        term   estimate standard_error statistic
-#> 1 individuals profile_1 (Intercept) -0.5701505      0.1179658 -4.833184
-#> 2 individuals profile_1           x  1.2187597      0.1255499  9.707371
+#> 1 individuals profile_1 (Intercept) -0.5701505      0.1191635 -4.784608
+#> 2 individuals profile_1           x  1.2187597      0.1268246  9.609807
 #>        p_value   p_adjusted   conf_low  conf_high
-#> 1 1.343666e-06           NA -0.8013593 -0.3389418
-#> 2 2.804771e-22 2.804771e-22  0.9726864  1.4648330
+#> 1 1.713214e-06           NA -0.8037066 -0.3365944
+#> 2 7.268487e-22 7.268487e-22  0.9701881  1.4673313
 ```

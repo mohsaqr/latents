@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -194,7 +194,7 @@ treats each case’s most probable profile as known.</p>
 <span><span class="co">#&gt; Class   Mean          95% CI     SE  Effective n</span></span>
 <span><span class="co">#&gt; -----  -----  --------------  -----  -----------</span></span>
 <span><span class="co">#&gt;     1   0.21  [ 0.15,  0.28]  0.034          836</span></span>
-<span><span class="co">#&gt;     2  -0.30  [-0.37, -0.23]  0.036          586</span></span></code></pre></div>
+<span><span class="co">#&gt;     2  -0.30  [-0.38, -0.23]  0.036          586</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="predicting-class-membership">Predicting class membership<a class="anchor" aria-label="anchor" href="#predicting-class-membership"></a>
@@ -209,11 +209,11 @@ groups.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>       vcov_type <span class="op">=</span> <span class="st">"robust"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level   outcome           term estimate standard_error statistic  p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.91e-03         NA</span></span>
-<span><span class="co">#&gt; 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.38e-22   3.38e-22</span></span>
+<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.09e-03         NA</span></span>
+<span><span class="co">#&gt; 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.29e-22   5.29e-22</span></span>
 <span><span class="co">#&gt;   conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1    0.121     0.631</span></span>
-<span><span class="co">#&gt; 2    0.458     0.691</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    0.119     0.632</span></span>
+<span><span class="co">#&gt; 2    0.458     0.692</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="one-step-estimation">One-step estimation<a class="anchor" aria-label="anchor" href="#one-step-estimation"></a>

@@ -17,7 +17,7 @@ Cron 1988; Wedel and DeSarbo 1995)."><meta property="og:image" content="https://
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -209,8 +209,8 @@ likelihood; <code>"converged"</code> prefers the best start that converged.</p><
 
 <dt id="arg-vcov-type">vcov_type<a class="anchor" aria-label="anchor" href="#arg-vcov-type"></a></dt>
 <dd><p>Covariance of the estimates stored with the fit:
-<code>"observed"</code> (inverse observed information), <code>"robust"</code> (sandwich,
-clustered on the top-level unit, or on <code>id</code> for a single-level fit given
+<code>"observed"</code> (inverse observed information), <code>"robust"</code> (sandwich with
+the CR1 factor <code>G / (G - 1)</code>, clustered on the top-level unit, or on <code>id</code> for a single-level fit given
 <code>id</code>) or <code>"opg"</code> (outer product of the scores). <code>"none"</code> skips inference.</p></dd>
 
 

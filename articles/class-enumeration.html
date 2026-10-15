@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1460,9 +1460,9 @@ classification with the BCH method.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class   Mean          95% CI     SE  Effective n</span></span>
 <span><span class="co">#&gt; -----  -----  --------------  -----  -----------</span></span>
-<span><span class="co">#&gt;     1   0.17  [ 0.08,  0.27]  0.049       338.59</span></span>
-<span><span class="co">#&gt;     2  -0.30  [-0.41, -0.18]  0.057       255.57</span></span>
-<span><span class="co">#&gt;     3  -0.36  [-0.53, -0.20]  0.083       111.57</span></span>
+<span><span class="co">#&gt;     1   0.17  [ 0.07,  0.27]  0.050       338.59</span></span>
+<span><span class="co">#&gt;     2  -0.30  [-0.41, -0.18]  0.058       255.57</span></span>
+<span><span class="co">#&gt;     3  -0.36  [-0.53, -0.20]  0.084       111.57</span></span>
 <span><span class="co">#&gt;     4   0.32  [ 0.18,  0.45]  0.069       210.39</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -1692,27 +1692,27 @@ across the occasions, here the order of each student’s enrolments in
 <span><span class="co">#&gt; Transition-model enumeration: 5 candidates</span></span>
 <span><span class="co">#&gt;          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy</span></span>
 <span><span class="co">#&gt;  profiles2_groups1          2               1  &lt;NA&gt;          -8335           23 16778 16717  0.9611</span></span>
-<span><span class="co">#&gt;  profiles3_groups1          3               1  &lt;NA&gt;          -8262           38 16701 16600  0.8004</span></span>
-<span><span class="co">#&gt;  profiles4_groups1          4               1  &lt;NA&gt;          -8219           55 16695 16548  0.7349</span></span>
+<span><span class="co">#&gt;  profiles3_groups1          3               1  &lt;NA&gt;          -8262           38 16701 16600  0.8006</span></span>
+<span><span class="co">#&gt;  profiles4_groups1          4               1  &lt;NA&gt;          -8219           55 16695 16548  0.7352</span></span>
 <span><span class="co">#&gt;  profiles5_groups1          5               1  &lt;NA&gt;          -8195           74 16736 16538  0.7793</span></span>
-<span><span class="co">#&gt;  profiles6_groups1          6               1  &lt;NA&gt;          -8180           95 16804 16551  0.7003</span></span>
+<span><span class="co">#&gt;  profiles6_groups1          6               1  &lt;NA&gt;          -8180           95 16804 16551  0.7006</span></span>
 <span><span class="co">#&gt;  converged boundary</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
-<span><span class="co">#&gt;       TRUE    FALSE</span></span>
+<span><span class="co">#&gt;      FALSE    FALSE</span></span>
 <span><span class="co">#&gt; Pick one by its name: get_candidate(x, "&lt;candidate&gt;").</span></span>
 <span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">transition_models</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model comparison</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model              Profiles   k    LogLik       BIC    ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8</span></span>
 <span><span class="co">#&gt; -----------------  --------  --  --------  --------  ------  ------  --------  -------  ---------  -----</span></span>
-<span><span class="co">#&gt; profiles2_groups1         2  23  -8335.29  16777.83   83.10   0.000  16914.14     0.96       0.99      0</span></span>
-<span><span class="co">#&gt; profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17423.59     0.80       0.85      0</span></span>
-<span><span class="co">#&gt; profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17882.79     0.73       0.82      0  &lt;- lowest BIC</span></span>
-<span><span class="co">#&gt; profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.73     0.78       0.81      0</span></span>
-<span><span class="co">#&gt; profiles6_groups1         6  95  -8180.50  16804.02  109.29   0.000  18578.12     0.70       0.70      4</span></span></code></pre></div>
+<span><span class="co">#&gt; profiles2_groups1         2  23  -8335.29  16777.83   83.11   0.000  16914.15     0.96       0.99      0</span></span>
+<span><span class="co">#&gt; profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17422.93     0.80       0.85      0</span></span>
+<span><span class="co">#&gt; profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.71     0.74       0.82      0  &lt;- lowest BIC</span></span>
+<span><span class="co">#&gt; profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.96     0.78       0.81      0</span></span>
+<span><span class="co">#&gt; profiles6_groups1         6  95  -8180.50  16804.02  109.29   0.000  18576.32     0.70       0.69      4</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

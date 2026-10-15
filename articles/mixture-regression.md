@@ -369,7 +369,7 @@ get_results(fit, "coefficients", vcov_type = "robust")
 #> -------  ---------  --------  --------------  -----
 #> Class 1  Intercept     34.35  [32.77, 35.94]  <.001
 #> Class 1  hours          4.57  [ 4.34,  4.79]  <.001
-#> Class 2  Intercept     54.90  [52.71, 57.08]  <.001
+#> Class 2  Intercept     54.90  [52.70, 57.09]  <.001
 #> Class 2  hours          0.81  [ 0.46,  1.15]  <.001
 plot(fit, what = "coefficients")
 ```

@@ -557,59 +557,59 @@ parameter_inference(fit)
 #> 26         NA    0.240     0.425
 parameter_inference(fit, vcov_type = "robust")
 #>          level       outcome          term   parameter estimate standard_error statistic   p_value
-#> 1  measurement     profile_1        browse        mean    0.540         0.0306      17.6  1.24e-69
-#> 2  measurement     profile_1      lectures        mean    0.427         0.0311      13.8  4.77e-43
-#> 3  measurement     profile_1    forum_read        mean    0.620         0.0248      25.0 2.57e-138
-#> 4  measurement     profile_1    forum_post        mean    0.530         0.0292      18.2  1.16e-73
-#> 5  measurement     profile_1    attendance        mean    0.649         0.0235      27.6 1.53e-167
-#> 6  measurement     profile_2        browse        mean   -0.766         0.0306     -25.0 4.29e-138
-#> 7  measurement     profile_2      lectures        mean   -0.606         0.0355     -17.1  1.54e-65
-#> 8  measurement     profile_2    forum_read        mean   -0.879         0.0267     -32.9 3.97e-237
-#> 9  measurement     profile_2    forum_post        mean   -0.753         0.0274     -27.4 9.56e-166
-#> 10 measurement     profile_2    attendance        mean   -0.921         0.0274     -33.6 1.57e-247
-#> 11 measurement     profile_1        browse    variance    0.590         0.0278        NA        NA
-#> 12 measurement     profile_1      lectures    variance    0.845         0.0451        NA        NA
-#> 13 measurement     profile_1    forum_read    variance    0.481         0.0216        NA        NA
-#> 14 measurement     profile_1    forum_post    variance    0.689         0.0338        NA        NA
-#> 15 measurement     profile_1    attendance    variance    0.384         0.0180        NA        NA
-#> 16 measurement     profile_2        browse    variance    0.528         0.0288        NA        NA
-#> 17 measurement     profile_2      lectures    variance    0.538         0.0305        NA        NA
-#> 18 measurement     profile_2    forum_read    variance    0.363         0.0203        NA        NA
-#> 19 measurement     profile_2    forum_post    variance    0.421         0.0277        NA        NA
-#> 20 measurement     profile_2    attendance    variance    0.374         0.0226        NA        NA
-#> 21     profile     profile_1 group_class_1 probability    0.786         0.0230        NA        NA
-#> 22     profile     profile_2 group_class_1 probability    0.214         0.0230        NA        NA
-#> 23     profile     profile_1 group_class_2 probability    0.170         0.0328        NA        NA
-#> 24     profile     profile_2 group_class_2 probability    0.830         0.0328        NA        NA
-#> 25       group group_class_1          <NA> probability    0.675         0.0487        NA        NA
-#> 26       group group_class_2          <NA> probability    0.325         0.0487        NA        NA
+#> 1  measurement     profile_1        browse        mean    0.540         0.0307      17.6  5.42e-69
+#> 2  measurement     profile_1      lectures        mean    0.427         0.0312      13.7  1.17e-42
+#> 3  measurement     profile_1    forum_read        mean    0.620         0.0249      24.9 4.97e-137
+#> 4  measurement     profile_1    forum_post        mean    0.530         0.0294      18.1  5.50e-73
+#> 5  measurement     profile_1    attendance        mean    0.649         0.0236      27.5 5.56e-166
+#> 6  measurement     profile_2        browse        mean   -0.766         0.0308     -24.9 8.25e-137
+#> 7  measurement     profile_2      lectures        mean   -0.606         0.0356     -17.0  6.13e-65
+#> 8  measurement     profile_2    forum_read        mean   -0.879         0.0269     -32.7 6.55e-235
+#> 9  measurement     profile_2    forum_post        mean   -0.753         0.0276     -27.3 3.35e-164
+#> 10 measurement     profile_2    attendance        mean   -0.921         0.0275     -33.4 3.25e-245
+#> 11 measurement     profile_1        browse    variance    0.590         0.0279        NA        NA
+#> 12 measurement     profile_1      lectures    variance    0.845         0.0453        NA        NA
+#> 13 measurement     profile_1    forum_read    variance    0.481         0.0217        NA        NA
+#> 14 measurement     profile_1    forum_post    variance    0.689         0.0339        NA        NA
+#> 15 measurement     profile_1    attendance    variance    0.384         0.0181        NA        NA
+#> 16 measurement     profile_2        browse    variance    0.528         0.0289        NA        NA
+#> 17 measurement     profile_2      lectures    variance    0.538         0.0307        NA        NA
+#> 18 measurement     profile_2    forum_read    variance    0.363         0.0204        NA        NA
+#> 19 measurement     profile_2    forum_post    variance    0.421         0.0279        NA        NA
+#> 20 measurement     profile_2    attendance    variance    0.374         0.0227        NA        NA
+#> 21     profile     profile_1 group_class_1 probability    0.786         0.0231        NA        NA
+#> 22     profile     profile_2 group_class_1 probability    0.214         0.0231        NA        NA
+#> 23     profile     profile_1 group_class_2 probability    0.170         0.0330        NA        NA
+#> 24     profile     profile_2 group_class_2 probability    0.830         0.0330        NA        NA
+#> 25       group group_class_1          <NA> probability    0.675         0.0489        NA        NA
+#> 26       group group_class_2          <NA> probability    0.325         0.0489        NA        NA
 #>    p_adjusted conf_low conf_high
-#> 1    1.24e-69    0.480     0.600
-#> 2    4.77e-43    0.367     0.488
-#> 3   2.57e-138    0.571     0.668
-#> 4    1.16e-73    0.473     0.588
-#> 5   1.53e-167    0.603     0.695
-#> 6   4.29e-138   -0.826    -0.706
-#> 7    1.54e-65   -0.676    -0.537
-#> 8   3.97e-237   -0.932    -0.827
-#> 9   9.56e-166   -0.806    -0.699
-#> 10  1.57e-247   -0.974    -0.867
+#> 1    5.42e-69    0.479     0.600
+#> 2    1.17e-42    0.366     0.489
+#> 3   4.97e-137    0.571     0.669
+#> 4    5.50e-73    0.473     0.588
+#> 5   5.56e-166    0.603     0.695
+#> 6   8.25e-137   -0.826    -0.705
+#> 7    6.13e-65   -0.676    -0.537
+#> 8   6.55e-235   -0.932    -0.827
+#> 9   3.35e-164   -0.807    -0.699
+#> 10  3.25e-245   -0.975    -0.867
 #> 11         NA    0.538     0.647
-#> 12         NA    0.761     0.938
+#> 12         NA    0.760     0.938
 #> 13         NA    0.441     0.526
-#> 14         NA    0.626     0.758
+#> 14         NA    0.625     0.759
 #> 15         NA    0.350     0.421
 #> 16         NA    0.475     0.588
-#> 17         NA    0.482     0.602
+#> 17         NA    0.481     0.602
 #> 18         NA    0.325     0.405
 #> 19         NA    0.370     0.479
 #> 20         NA    0.332     0.421
-#> 21         NA    0.738     0.828
-#> 22         NA    0.172     0.262
+#> 21         NA    0.737     0.828
+#> 22         NA    0.172     0.263
 #> 23         NA    0.115     0.245
 #> 24         NA    0.755     0.885
-#> 25         NA    0.573     0.762
-#> 26         NA    0.238     0.427
+#> 25         NA    0.573     0.763
+#> 26         NA    0.237     0.427
 ```
 
 ## Reference

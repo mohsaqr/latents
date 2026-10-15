@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -347,15 +347,15 @@ and are not adjusted for multiple comparisons.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span>, vcov_type <span class="op">=</span> <span class="st">"robust"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level   outcome           term estimate standard_error statistic   p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)   0.3065        0.10625     2.884 3.924e-03         NA</span></span>
-<span><span class="co">#&gt; 2 individuals profile_1 previous_grade  -0.2085        0.10437    -1.998 4.571e-02  4.571e-02</span></span>
-<span><span class="co">#&gt; 3 individuals profile_2    (Intercept)   0.4473        0.13666     3.273 1.063e-03         NA</span></span>
-<span><span class="co">#&gt; 4 individuals profile_2 previous_grade  -0.6809        0.08655    -7.867 3.626e-15  7.252e-15</span></span>
+<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)   0.3065        0.10676     2.871 4.097e-03         NA</span></span>
+<span><span class="co">#&gt; 2 individuals profile_1 previous_grade  -0.2085        0.10486    -1.989 4.674e-02  4.674e-02</span></span>
+<span><span class="co">#&gt; 3 individuals profile_2    (Intercept)   0.4473        0.13731     3.258 1.123e-03         NA</span></span>
+<span><span class="co">#&gt; 4 individuals profile_2 previous_grade  -0.6809        0.08697    -7.830 4.878e-15  9.755e-15</span></span>
 <span><span class="co">#&gt;   conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1  0.09821  0.514719</span></span>
-<span><span class="co">#&gt; 2 -0.41310 -0.003979</span></span>
-<span><span class="co">#&gt; 3  0.17949  0.715180</span></span>
-<span><span class="co">#&gt; 4 -0.85059 -0.511302</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  0.09722  0.515708</span></span>
+<span><span class="co">#&gt; 2 -0.41407 -0.003008</span></span>
+<span><span class="co">#&gt; 3  0.17821  0.716453</span></span>
+<span><span class="co">#&gt; 4 -0.85140 -0.510496</span></span></code></pre></div>
 <p>In the fitted model, a one-standard-deviation increase in previous
 grade is associated with a 0.677 increase in the log odds of belonging
 to the higher-activity profile rather than the lower-activity profile.
@@ -440,7 +440,7 @@ contrasts.</p>
 <span><span class="co">#&gt; Class  vs  Difference          95% CI      p  p (BH)</span></span>
 <span><span class="co">#&gt; -----  --  ----------  --------------  -----  ------</span></span>
 <span><span class="co">#&gt;     2   1       -0.44  [-0.56, -0.32]  &lt;.001   &lt;.001</span></span>
-<span><span class="co">#&gt;     3   1        0.19  [ 0.00,  0.37]   .046    .046</span></span>
+<span><span class="co">#&gt;     3   1        0.19  [ 0.00,  0.38]   .047    .047</span></span>
 <span><span class="co">#&gt;     3   2        0.63  [ 0.48,  0.78]  &lt;.001   &lt;.001</span></span></code></pre></div>
 <p>The BCH-adjusted estimates show that previous grades in the
 lower-activity profile are 0.629 standard deviations below those in the
@@ -480,7 +480,7 @@ classification-error-adjusted weights.</p>
 <span><span class="co">#&gt; Class  vs  Difference          95% CI      p  p (BH)</span></span>
 <span><span class="co">#&gt; -----  --  ----------  --------------  -----  ------</span></span>
 <span><span class="co">#&gt;     2   1       -0.45  [-0.55, -0.34]  &lt;.001   &lt;.001</span></span>
-<span><span class="co">#&gt;     3   1        0.15  [ 0.02,  0.28]   .029    .029</span></span>
+<span><span class="co">#&gt;     3   1        0.15  [ 0.01,  0.28]   .030    .030</span></span>
 <span><span class="co">#&gt;     3   2        0.59  [ 0.46,  0.72]  &lt;.001   &lt;.001</span></span></code></pre></div>
 <p>Modal analysis is simple to interpret, but it treats estimated
 profile assignments as if they were observed without error. Its standard

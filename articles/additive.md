@@ -262,36 +262,36 @@ argument:
 ``` r
 
 get_results(fit, "parameters", vcov_type = "robust")
-#> Warning: Group classes supported by fewer than 50 effective groups (group_class_2: 38.5
+#> Warning: Group classes supported by fewer than 50 effective groups (group_class_2: 38.2
 #> effective of 49.3 expected groups, 78% of the information kept). A small information
 #> share means poor separation; a small expected count means few groups. Wald intervals for
 #> class means and weights can be miscalibrated; see get_results(x, "group_classes").
 #>          level   group_class indicator parameter estimate standard_error statistic
-#> 1      between group_class_1   climate      mean    0.754         0.0627     12.03
-#> 2      between group_class_1   support      mean    0.588         0.0778      7.56
-#> 3      between group_class_2   climate      mean   -0.976         0.1063     -9.18
-#> 4      between group_class_2   support      mean   -0.465         0.0863     -5.39
-#> 5       within        shared   climate  variance    0.795         0.0437        NA
-#> 6       within        shared   support  variance    0.909         0.0488        NA
-#> 7      between group_class_1   climate  variance    0.143         0.0602        NA
-#> 8      between group_class_1   support  variance    0.195         0.0652        NA
-#> 9      between group_class_2   climate  variance    0.260         0.0744        NA
-#> 10     between group_class_2   support  variance    0.208         0.0532        NA
-#> 11 group_class group_class_1      <NA>    weight    0.589         0.0508        NA
-#> 12 group_class group_class_2      <NA>    weight    0.411         0.0508        NA
+#> 1      between group_class_1   climate      mean    0.754         0.0629     11.98
+#> 2      between group_class_1   support      mean    0.588         0.0781      7.53
+#> 3      between group_class_2   climate      mean   -0.976         0.1068     -9.14
+#> 4      between group_class_2   support      mean   -0.465         0.0867     -5.36
+#> 5       within        shared   climate  variance    0.795         0.0439        NA
+#> 6       within        shared   support  variance    0.909         0.0490        NA
+#> 7      between group_class_1   climate  variance    0.143         0.0605        NA
+#> 8      between group_class_1   support  variance    0.195         0.0655        NA
+#> 9      between group_class_2   climate  variance    0.260         0.0747        NA
+#> 10     between group_class_2   support  variance    0.208         0.0535        NA
+#> 11 group_class group_class_1      <NA>    weight    0.589         0.0510        NA
+#> 12 group_class group_class_2      <NA>    weight    0.411         0.0510        NA
 #>     p_value p_adjusted conf_low conf_high
-#> 1  2.48e-33   2.48e-33   0.6312     0.877
-#> 2  4.08e-14   4.08e-14   0.4355     0.740
-#> 3  4.19e-20   4.19e-20  -1.1847    -0.768
-#> 4  7.20e-08   7.20e-08  -0.6342    -0.296
-#> 5        NA         NA   0.7135     0.885
-#> 6        NA         NA   0.8179     1.010
-#> 7        NA         NA   0.0623     0.326
-#> 8        NA         NA   0.1014     0.376
-#> 9        NA         NA   0.1486     0.456
-#> 10       NA         NA   0.1257     0.343
-#> 11       NA         NA   0.4876     0.684
-#> 12       NA         NA   0.3158     0.512
+#> 1  4.56e-33   4.56e-33   0.6306     0.877
+#> 2  5.20e-14   5.20e-14   0.4349     0.741
+#> 3  5.97e-20   5.97e-20  -1.1856    -0.767
+#> 4  8.16e-08   8.16e-08  -0.6349    -0.295
+#> 5        NA         NA   0.7132     0.886
+#> 6        NA         NA   0.8175     1.010
+#> 7        NA         NA   0.0621     0.327
+#> 8        NA         NA   0.1012     0.377
+#> 9        NA         NA   0.1482     0.457
+#> 10       NA         NA   0.1255     0.344
+#> 11       NA         NA   0.4872     0.685
+#> 12       NA         NA   0.3155     0.513
 ```
 
 ## Groups and their intercepts

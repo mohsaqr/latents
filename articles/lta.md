@@ -44,13 +44,13 @@ moves <- lta(course_engagement,
 moves
 #> Latent transition model: 3 profiles, 2 group classes
 #> 1422 observations in 106 groups, up to 15 occasions (unbalanced, observed grid)
-#> Log likelihood: -8242.967653; 47 parameters; BIC (groups): 16705.1169
-#> Converged: TRUE after 84 iterations; best of 3 starts
+#> Log likelihood: -8242.966914; 47 parameters; BIC (groups): 16705.1155
+#> Converged: TRUE after 132 iterations; best of 3 starts
 #> 
 #>  profile browse lectures forum_read forum_post attendance count proportion
 #>        1 -0.776   -0.612     -0.888     -0.761     -0.929   579      0.407
-#>        2  0.705    0.711      0.806      0.746      1.122   374      0.263
-#>        3  0.395    0.188      0.453      0.344      0.252   469      0.330
+#>        2  0.706    0.712      0.807      0.747      1.124   372      0.262
+#>        3  0.396    0.189      0.454      0.345      0.254   471      0.331
 #> 
 #> Variances and standard errors: get_results(x, "profiles"). 
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
@@ -65,9 +65,9 @@ solution.
 
 get_results(moves, "starts")
 #>   start log_likelihood converged iterations error
-#> 1     1          -8243      TRUE         84  <NA>
-#> 2     2          -8243      TRUE         91  <NA>
-#> 3     3          -8243      TRUE         84  <NA>
+#> 1     1          -8243      TRUE        133  <NA>
+#> 2     2          -8243      TRUE        158  <NA>
+#> 3     3          -8243      TRUE        132  <NA>
 ```
 
 ## Profiles
@@ -108,12 +108,12 @@ profile, `prevalence` the expected share of all occasions in it, and
 
 get_results(moves, "initial")
 #>   group_class profile probability prevalence group_class_probability
-#> 1           1       1    2.04e-01     0.2296                   0.699
-#> 2           1       2    4.45e-01     0.3344                   0.699
-#> 3           1       3    3.51e-01     0.4359                   0.699
-#> 4           2       1    7.62e-01     0.8190                   0.301
-#> 5           2       2    2.38e-01     0.0969                   0.301
-#> 6           2       3    1.87e-05     0.0841                   0.301
+#> 1           1       1    2.04e-01     0.2297                     0.7
+#> 2           1       2    4.44e-01     0.3331                     0.7
+#> 3           1       3    3.53e-01     0.4371                     0.7
+#> 4           2       1    7.62e-01     0.8193                     0.3
+#> 5           2       2    2.38e-01     0.0966                     0.3
+#> 6           2       3    6.81e-07     0.0841                     0.3
 ```
 
 ## Transitions
@@ -130,24 +130,24 @@ of each profile sum to one. `stable` marks staying in the same profile,
 
 get_results(moves, "transitions")
 #>    group_class from to probability expected_count stable estimated group_class_probability
-#> 1            1    1  1      0.6144         127.80   TRUE      TRUE                   0.699
-#> 2            1    1  2      0.1763          36.67  FALSE      TRUE                   0.699
-#> 3            1    1  3      0.2092          43.53  FALSE      TRUE                   0.699
-#> 4            1    2  1      0.1276          38.98  FALSE      TRUE                   0.699
-#> 5            1    2  2      0.3786         115.61   TRUE      TRUE                   0.699
-#> 6            1    2  3      0.4938         150.81  FALSE      TRUE                   0.699
-#> 7            1    3  1      0.1140          46.33  FALSE      TRUE                   0.699
-#> 8            1    3  2      0.3621         147.07  FALSE      TRUE                   0.699
-#> 9            1    3  3      0.5238         212.83   TRUE      TRUE                   0.699
-#> 10           2    1  1      0.9385         303.35   TRUE      TRUE                   0.301
-#> 11           2    1  2      0.0313          10.13  FALSE      TRUE                   0.301
-#> 12           2    1  3      0.0302           9.75  FALSE      TRUE                   0.301
-#> 13           2    2  1      0.2964          11.68  FALSE      TRUE                   0.301
-#> 14           2    2  2      0.4823          19.01   TRUE      TRUE                   0.301
-#> 15           2    2  3      0.2213           8.72  FALSE      TRUE                   0.301
-#> 16           2    3  1      0.3379          11.40  FALSE      TRUE                   0.301
-#> 17           2    3  2      0.1420           4.79  FALSE      TRUE                   0.301
-#> 18           2    3  3      0.5200          17.54   TRUE      TRUE                   0.301
+#> 1            1    1  1      0.6146         127.94   TRUE      TRUE                     0.7
+#> 2            1    1  2      0.1756          36.56  FALSE      TRUE                     0.7
+#> 3            1    1  3      0.2098          43.68  FALSE      TRUE                     0.7
+#> 4            1    2  1      0.1277          38.86  FALSE      TRUE                     0.7
+#> 5            1    2  2      0.3773         114.82   TRUE      TRUE                     0.7
+#> 6            1    2  3      0.4950         150.61  FALSE      TRUE                     0.7
+#> 7            1    3  1      0.1141          46.48  FALSE      TRUE                     0.7
+#> 8            1    3  2      0.3605         146.89  FALSE      TRUE                     0.7
+#> 9            1    3  3      0.5254         214.12   TRUE      TRUE                     0.7
+#> 10           2    1  1      0.9386         303.23   TRUE      TRUE                     0.3
+#> 11           2    1  2      0.0313          10.10  FALSE      TRUE                     0.3
+#> 12           2    1  3      0.0302           9.75  FALSE      TRUE                     0.3
+#> 13           2    2  1      0.2961          11.62  FALSE      TRUE                     0.3
+#> 14           2    2  2      0.4819          18.91   TRUE      TRUE                     0.3
+#> 15           2    2  3      0.2220           8.71  FALSE      TRUE                     0.3
+#> 16           2    3  1      0.3392          11.44  FALSE      TRUE                     0.3
+#> 17           2    3  2      0.1406           4.74  FALSE      TRUE                     0.3
+#> 18           2    3  3      0.5202          17.54   TRUE      TRUE                     0.3
 ```
 
 To draw the transition matrices, we call
@@ -189,7 +189,7 @@ separation.
 
 get_results(moves, "entropy")
 #>         level n_classes n_units entropy_sum relative_entropy
-#> 1 individuals         3    1422       309.8            0.802
+#> 1 individuals         3    1422       309.5            0.802
 #> 2      groups         2     106        16.3            0.778
 ```
 
@@ -274,15 +274,15 @@ grade <- lta(course_engagement, activity, "student", n_profiles = 2,
              seed = 1)
 get_results(grade, "transition_coefficients")
 #>     group_class      from        to           term estimate standard_error statistic  p_value
-#> 1 group_class_1 profile_1 profile_2    (Intercept)  -1.4634          0.130   -11.257 2.14e-29
-#> 2 group_class_1 profile_1 profile_2 previous_grade   0.0440          0.130     0.339 7.35e-01
-#> 3 group_class_1 profile_2 profile_1    (Intercept)  -1.8402          0.118   -15.566 1.25e-54
-#> 4 group_class_1 profile_2 profile_1 previous_grade   0.0342          0.121     0.283 7.77e-01
+#> 1 group_class_1 profile_1 profile_2    (Intercept)  -1.8399          0.118   -15.565 1.25e-54
+#> 2 group_class_1 profile_1 profile_2 previous_grade   0.0339          0.121     0.281 7.79e-01
+#> 3 group_class_1 profile_2 profile_1    (Intercept)  -1.4632          0.130   -11.256 2.17e-29
+#> 4 group_class_1 profile_2 profile_1 previous_grade   0.0437          0.130     0.336 7.37e-01
 #>   conf_low conf_high odds_ratio
-#> 1   -1.718    -1.209      0.231
-#> 2   -0.211     0.299      1.045
-#> 3   -2.072    -1.608      0.159
-#> 4   -0.202     0.271      1.035
+#> 1   -2.072    -1.608      0.159
+#> 2   -0.203     0.271      1.034
+#> 3   -1.718    -1.208      0.231
+#> 4   -0.211     0.298      1.045
 ```
 
 The grade’s odds ratios are close to one and their intervals include

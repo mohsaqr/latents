@@ -1430,9 +1430,9 @@ three_step(chosen, data = course_engagement, outcome = "previous_grade")
 #> 
 #> Class   Mean          95% CI     SE  Effective n
 #> -----  -----  --------------  -----  -----------
-#>     1   0.17  [ 0.08,  0.27]  0.049       338.59
-#>     2  -0.30  [-0.41, -0.18]  0.057       255.57
-#>     3  -0.36  [-0.53, -0.20]  0.083       111.57
+#>     1   0.17  [ 0.07,  0.27]  0.050       338.59
+#>     2  -0.30  [-0.41, -0.18]  0.058       255.57
+#>     3  -0.36  [-0.53, -0.20]  0.084       111.57
 #>     4   0.32  [ 0.18,  0.45]  0.069       210.39
 ```
 
@@ -1678,27 +1678,27 @@ transition_models
 #> Transition-model enumeration: 5 candidates
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy
 #>  profiles2_groups1          2               1  <NA>          -8335           23 16778 16717  0.9611
-#>  profiles3_groups1          3               1  <NA>          -8262           38 16701 16600  0.8004
-#>  profiles4_groups1          4               1  <NA>          -8219           55 16695 16548  0.7349
+#>  profiles3_groups1          3               1  <NA>          -8262           38 16701 16600  0.8006
+#>  profiles4_groups1          4               1  <NA>          -8219           55 16695 16548  0.7352
 #>  profiles5_groups1          5               1  <NA>          -8195           74 16736 16538  0.7793
-#>  profiles6_groups1          6               1  <NA>          -8180           95 16804 16551  0.7003
+#>  profiles6_groups1          6               1  <NA>          -8180           95 16804 16551  0.7006
 #>  converged boundary
 #>       TRUE    FALSE
 #>       TRUE    FALSE
 #>       TRUE    FALSE
 #>       TRUE    FALSE
-#>       TRUE    FALSE
+#>      FALSE    FALSE
 #> Pick one by its name: get_candidate(x, "<candidate>").
 compare_models(transition_models)
 #> Model comparison
 #> 
 #> Model              Profiles   k    LogLik       BIC    ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8
 #> -----------------  --------  --  --------  --------  ------  ------  --------  -------  ---------  -----
-#> profiles2_groups1         2  23  -8335.29  16777.83   83.10   0.000  16914.14     0.96       0.99      0
-#> profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17423.59     0.80       0.85      0
-#> profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17882.79     0.73       0.82      0  <- lowest BIC
-#> profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.73     0.78       0.81      0
-#> profiles6_groups1         6  95  -8180.50  16804.02  109.29   0.000  18578.12     0.70       0.70      4
+#> profiles2_groups1         2  23  -8335.29  16777.83   83.11   0.000  16914.15     0.96       0.99      0
+#> profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17422.93     0.80       0.85      0
+#> profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.71     0.74       0.82      0  <- lowest BIC
+#> profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.96     0.78       0.81      0
+#> profiles6_groups1         6  95  -8180.50  16804.02  109.29   0.000  18576.32     0.70       0.69      4
 ```
 
 ## Functions

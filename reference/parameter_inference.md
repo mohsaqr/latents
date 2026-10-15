@@ -93,7 +93,7 @@ parameter_inference(
   iter = 199L,
   n_starts = 10L,
   max_iter = 1000L,
-  tol = 1e-08,
+  tol = 1e-10,
   seed = NULL,
   boundary = c("error", "fix")
 )
@@ -127,17 +127,20 @@ parameter_inference(
 
   `"observed"` inverts the observed information. `"robust"` returns the
   Huber-White sandwich `A^-1 B A^-1`, where `B` accumulates the outer
-  product of the per-group scores. Groups are the independent units, so
-  robust errors relax the assumption that the Gaussian within-group
-  model is correctly specified. They do not relax the assumption that
-  groups are independent. `"opg"` inverts the outer product of the
-  per-group scores (the BHHH or outer-product-of-gradients estimate),
-  which estimates the information by the variance of the score rather
-  than by the curvature of the likelihood. It is the estimator `glca`
-  reports, so it reproduces that package's standard errors; the two
-  agree with `"observed"` in large samples and can differ noticeably in
-  small ones, where `"observed"` is usually the more reliable.
-  `"robust"` and `"opg"` need more groups than parameters.
+  product of the per-group scores, multiplied by the CR1 small-sample
+  factor `G / (G - 1)` for `G` groups (the default of
+  `sandwich::vcovCL()`; every robust standard error in the package
+  carries it). Groups are the independent units, so robust errors relax
+  the assumption that the Gaussian within-group model is correctly
+  specified. They do not relax the assumption that groups are
+  independent. `"opg"` inverts the outer product of the per-group scores
+  (the BHHH or outer-product-of-gradients estimate), which estimates the
+  information by the variance of the score rather than by the curvature
+  of the likelihood. It is the estimator `glca` reports, so it
+  reproduces that package's standard errors; the two agree with
+  `"observed"` in large samples and can differ noticeably in small ones,
+  where `"observed"` is usually the more reliable. `"robust"` and
+  `"opg"` need more groups than parameters.
 
 - adjust:
 

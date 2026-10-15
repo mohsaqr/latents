@@ -117,7 +117,7 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
 #> Class   Mean          95% CI     SE  Effective n
 #> -----  -----  --------------  -----  -----------
 #>     1   0.21  [ 0.15,  0.28]  0.034          836
-#>     2  -0.30  [-0.37, -0.23]  0.036          586
+#>     2  -0.30  [-0.38, -0.23]  0.036          586
 ```
 
 ## Predicting class membership
@@ -133,11 +133,11 @@ error. `vcov_type = "robust"` clusters the standard errors on groups.
 r3step(fit, data = course_engagement, covariates = "previous_grade",
        vcov_type = "robust")
 #>         level   outcome           term estimate standard_error statistic  p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.91e-03         NA
-#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.38e-22   3.38e-22
+#> 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.09e-03         NA
+#> 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.29e-22   5.29e-22
 #>   conf_low conf_high
-#> 1    0.121     0.631
-#> 2    0.458     0.691
+#> 1    0.119     0.632
+#> 2    0.458     0.692
 ```
 
 ## One-step estimation

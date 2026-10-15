@@ -375,14 +375,14 @@ reports sandwich standard errors by default and refuses
 
 head(parameter_inference(weighted_fit), 4)
 #>         level   outcome       term parameter estimate standard_error statistic   p_value p_adjusted
-#> 1 measurement profile_1     browse      mean    0.525         0.0323      16.3  1.76e-59   1.76e-59
-#> 2 measurement profile_1   lectures      mean    0.446         0.0365      12.2  2.23e-34   2.23e-34
-#> 3 measurement profile_1 forum_read      mean    0.605         0.0263      23.0 6.60e-117  6.60e-117
-#> 4 measurement profile_1 forum_post      mean    0.515         0.0317      16.2  2.72e-59   2.72e-59
+#> 1 measurement profile_1     browse      mean    0.525         0.0324      16.2  6.16e-59   6.16e-59
+#> 2 measurement profile_1   lectures      mean    0.446         0.0367      12.2  4.54e-34   4.54e-34
+#> 3 measurement profile_1 forum_read      mean    0.605         0.0264      22.9 8.01e-116  8.01e-116
+#> 4 measurement profile_1 forum_post      mean    0.515         0.0319      16.2  9.48e-59   9.48e-59
 #>   conf_low conf_high
 #> 1    0.462     0.589
-#> 2    0.375     0.518
-#> 3    0.553     0.656
+#> 2    0.374     0.518
+#> 3    0.553     0.657
 #> 4    0.453     0.578
 ```
 

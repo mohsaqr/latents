@@ -124,10 +124,11 @@ Nothing; this page documents conditions rather than a function.
 
 - `latents_boundary_fit`:
 
-  A variance or a response probability sits at its bound, or a mixing
-  probability is zero, so the parameter is on the edge of its space and
-  the asymptotic normal approximation Wald inference relies on does not
-  hold. The standard error is refused rather than reported.
+  A variance or a response probability sits at its bound, a mixing
+  probability is zero, or a membership logit coefficient is heading to
+  infinity (separation), so the parameter is on the edge of its space
+  and the asymptotic normal approximation Wald inference relies on does
+  not hold. The standard error is refused rather than reported.
 
 - `latents_singular_information`:
 
@@ -493,9 +494,11 @@ others through.
 
 - `latents_extreme_coefficients`:
 
-  A membership logit coefficient is large enough that the class is close
-  to separated, so the estimate is driven by scaling, a sparse class or
-  separation rather than by the data.
+  A membership logit coefficient, measured per root-mean-square unit of
+  its covariate so the verdict does not depend on the covariate's units,
+  is large enough that the class is close to separated, so the estimate
+  is driven by scaling, a sparse class or separation rather than by the
+  data.
 
 - `latents_empty_transition_row`:
 

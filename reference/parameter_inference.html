@@ -27,7 +27,7 @@ boundary solutions and unidentified Hessians do not admit this calculation."><me
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -172,7 +172,7 @@ boundary solutions and unidentified Hessians do not admit this calculation.</p>
 <span>  iter <span class="op">=</span> <span class="fl">199L</span>,</span>
 <span>  n_starts <span class="op">=</span> <span class="fl">10L</span>,</span>
 <span>  max_iter <span class="op">=</span> <span class="fl">1000L</span>,</span>
-<span>  tol <span class="op">=</span> <span class="fl">1e-08</span>,</span>
+<span>  tol <span class="op">=</span> <span class="fl">1e-10</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"fix"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -207,7 +207,10 @@ provides a weaker consistency check.</p></dd>
 <dt id="arg-vcov-type">vcov_type<a class="anchor" aria-label="anchor" href="#arg-vcov-type"></a></dt>
 <dd><p><code>"observed"</code> inverts the observed information.
 <code>"robust"</code> returns the Huber-White sandwich <code>A^-1 B A^-1</code>, where <code>B</code>
-accumulates the outer product of the per-group scores. Groups are the
+accumulates the outer product of the per-group scores, multiplied by the
+CR1 small-sample factor <code>G / (G - 1)</code> for <code>G</code> groups (the default of
+<code>sandwich::vcovCL()</code>; every robust standard error in the package carries
+it). Groups are the
 independent units, so robust errors relax the assumption that the Gaussian
 within-group model is correctly specified. They do not relax the assumption
 that groups are independent.

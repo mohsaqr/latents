@@ -25,7 +25,7 @@ lta(
   variance_model = c("varying", "equal"),
   n_starts = 10L,
   max_iter = 1000L,
-  tol = 1e-08,
+  tol = 1e-10,
   min_variance = 1e-06,
   seed = NULL,
   missing = c("error", "fiml"),
@@ -117,7 +117,13 @@ lta(
 
   Positive relative log-likelihood tolerance. Convergence requires
   absolute change no greater than
-  `tol * (1 + abs(previous log likelihood))`.
+  `tol * (1 + abs(previous log likelihood))`. The default, `1e-10`, is
+  tighter than the `1e-8` of
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md):
+  the group-class shares are re-estimated from posteriors one EM step
+  behind them, and at `1e-8` the two still differed by up to about
+  `2e-4`; at `1e-10` they agree to about `2e-5`, for roughly 1.5 times
+  the iterations.
 
 - min_variance:
 
@@ -337,10 +343,10 @@ fit <- lta(
 )
 get_results(fit, what = "transitions")
 #>   group_class from to probability expected_count stable estimated
-#> 1           1    1  1   0.8614039      670.56162   TRUE      TRUE
-#> 2           1    1  2   0.1385961      107.89439  FALSE      TRUE
-#> 3           1    2  1   0.1850203       99.45941  FALSE      TRUE
-#> 4           1    2  2   0.8149797      438.08458   TRUE      TRUE
+#> 1           1    1  1   0.8613981      670.56011   TRUE      TRUE
+#> 2           1    1  2   0.1386019      107.89512  FALSE      TRUE
+#> 3           1    2  1   0.1850265       99.46008  FALSE      TRUE
+#> 4           1    2  2   0.8149735      438.08469   TRUE      TRUE
 #>   group_class_probability
 #> 1                       1
 #> 2                       1
@@ -398,7 +404,7 @@ summary(fit)
 #> -- transitions -----------------------------------------------------
 #>  group_class from to probability expected_count stable estimated
 #>            1    1  1      0.8614         670.56   TRUE      TRUE
-#>            1    1  2      0.1386         107.89  FALSE      TRUE
+#>            1    1  2      0.1386         107.90  FALSE      TRUE
 #>            1    2  1      0.1850          99.46  FALSE      TRUE
 #>            1    2  2      0.8150         438.08   TRUE      TRUE
 #>  group_class_probability
@@ -423,7 +429,7 @@ summary(fit)
 #>    1     1       1 1.000e+00  TRUE
 #>    2     1       1 9.971e-01  TRUE
 #>    3     1       1 1.387e-05 FALSE
-#>    4     1       1 8.982e-07 FALSE
+#>    4     1       1 8.981e-07 FALSE
 #>    5     1       1 1.263e-06 FALSE
 #>    6     1       1 4.927e-06 FALSE
 #>    7     1       1 4.797e-06 FALSE
@@ -460,9 +466,9 @@ summary(fit)
 #>        1       10   0.26    -0.95      -0.51      -1.89      -1.45       2
 #>  group_class uncertainty posterior_profile_1 posterior_profile_2
 #>            1   1.174e-05           1.000e+00           1.174e-05
-#>            1   2.864e-03           9.971e-01           2.864e-03
+#>            1   2.865e-03           9.971e-01           2.865e-03
 #>            1   1.387e-05           1.387e-05           1.000e+00
-#>            1   8.982e-07           8.982e-07           1.000e+00
+#>            1   8.981e-07           8.981e-07           1.000e+00
 #>            1   1.263e-06           1.263e-06           1.000e+00
 #>            1   4.927e-06           4.927e-06           1.000e+00
 #>            1   4.797e-06           4.797e-06           1.000e+00
@@ -478,23 +484,23 @@ summary(fit)
 #>       groups     1     106           1.0000       106.0               1.0000
 #>  average_posterior odds_correct_classification
 #>             0.9915                       81.98
-#>             0.9890                      128.22
+#>             0.9890                      128.23
 #>             1.0000                          NA
 #> 
 #> -- average_posteriors ----------------------------------------------
 #>        level assigned_class class n_assigned average_posterior
-#>  individuals              1     1        837          0.991531
-#>  individuals              1     2        837          0.008469
-#>  individuals              2     1        585          0.011015
-#>  individuals              2     2        585          0.988985
-#>       groups              1     1        106          1.000000
+#>  individuals              1     1        837           0.99153
+#>  individuals              1     2        837           0.00847
+#>  individuals              2     1        585           0.01101
+#>  individuals              2     2        585           0.98899
+#>       groups              1     1        106           1.00000
 #> 
 #> -- classification_errors -------------------------------------------
 #>        level true_class assigned_class probability
-#>  individuals          1              1    0.992295
-#>  individuals          1              2    0.007705
-#>  individuals          2              1    0.012104
-#>  individuals          2              2    0.987896
+#>  individuals          1              1    0.992296
+#>  individuals          1              2    0.007704
+#>  individuals          2              1    0.012105
+#>  individuals          2              2    0.987895
 #>       groups          1              1    1.000000
 #> 
 #> -- bch_weights -----------------------------------------------------
@@ -518,27 +524,27 @@ summary(fit)
 #> 
 #> -- residuals -------------------------------------------------------
 #>    profile indicator_1 indicator_2     kind observed expected residual
-#>  profile_1    lectures  attendance gaussian  0.23623        0  0.23623
+#>  profile_1    lectures  attendance gaussian  0.23622        0  0.23622
 #>  profile_2  forum_read  attendance gaussian  0.23302        0  0.23302
 #>  profile_1  forum_read  attendance gaussian  0.21662        0  0.21662
 #>  profile_1  forum_post  attendance gaussian  0.20818        0  0.20818
-#>  profile_2      browse  attendance gaussian  0.19679        0  0.19679
+#>  profile_2      browse  attendance gaussian  0.19680        0  0.19680
 #>  profile_1      browse  attendance gaussian  0.16968        0  0.16968
 #>  profile_2    lectures  attendance gaussian  0.11963        0  0.11963
 #>  profile_2  forum_post  attendance gaussian  0.11548        0  0.11548
 #>  profile_2      browse  forum_read gaussian  0.10229        0  0.10229
 #>  profile_2  forum_read  forum_post gaussian  0.06942        0  0.06942
 #>  effective_n statistic df   p_value p_adjusted
-#>        836.4     6.951 NA 3.637e-12  3.637e-12
+#>        836.4     6.951 NA 3.638e-12  3.638e-12
 #>        585.6     5.730 NA 1.005e-08  1.005e-08
-#>        836.4     6.354 NA 2.096e-10  2.096e-10
+#>        836.4     6.354 NA 2.097e-10  2.097e-10
 #>        836.4     6.099 NA 1.068e-09  1.068e-09
 #>        585.6     4.813 NA 1.487e-06  1.487e-06
-#>        836.4     4.946 NA 7.573e-07  7.573e-07
+#>        836.4     4.946 NA 7.574e-07  7.574e-07
 #>        585.6     2.901 NA 3.714e-03  3.714e-03
-#>        585.6     2.800 NA 5.113e-03  5.113e-03
+#>        585.6     2.800 NA 5.112e-03  5.112e-03
 #>        585.6     2.478 NA 1.322e-02  1.322e-02
-#>        585.6     1.678 NA 9.329e-02  9.329e-02
+#>        585.6     1.678 NA 9.328e-02  9.328e-02
 #>    ... 10 more rows.  get_results(x, what = "residuals")
 #> 
 #> -- information_criteria --------------------------------------------
@@ -557,7 +563,7 @@ summary(fit)
 #>    aic bic_groups bic_individual converged iterations boundary small_classes
 #>  16717      16778          16838      TRUE          6    FALSE         FALSE
 #>  best_start n_best_replicated weights
-#>           2                 2    <NA>
+#>           1                 2    <NA>
 #> 
 #> -- sequences -------------------------------------------------------
 #>  group group_class time profile
@@ -595,8 +601,8 @@ summary(fit)
 #> 
 #> -- starts ----------------------------------------------------------
 #>  start log_likelihood converged iterations error
-#>      1          -8335      TRUE          4  <NA>
-#>      2          -8335      TRUE          6  <NA>
+#>      1          -8335      TRUE          6  <NA>
+#>      2          -8335      TRUE          7  <NA>
 #> 
 #> -- data ------------------------------------------------------------
 #>  student sequence browse lectures forum_read forum_post attendance

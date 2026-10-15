@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -418,14 +418,14 @@ standard errors by default and refuses
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">weighted_fit</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level   outcome       term parameter estimate standard_error statistic   p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1 measurement profile_1     browse      mean    0.525         0.0323      16.3  1.76e-59   1.76e-59</span></span>
-<span><span class="co">#&gt; 2 measurement profile_1   lectures      mean    0.446         0.0365      12.2  2.23e-34   2.23e-34</span></span>
-<span><span class="co">#&gt; 3 measurement profile_1 forum_read      mean    0.605         0.0263      23.0 6.60e-117  6.60e-117</span></span>
-<span><span class="co">#&gt; 4 measurement profile_1 forum_post      mean    0.515         0.0317      16.2  2.72e-59   2.72e-59</span></span>
+<span><span class="co">#&gt; 1 measurement profile_1     browse      mean    0.525         0.0324      16.2  6.16e-59   6.16e-59</span></span>
+<span><span class="co">#&gt; 2 measurement profile_1   lectures      mean    0.446         0.0367      12.2  4.54e-34   4.54e-34</span></span>
+<span><span class="co">#&gt; 3 measurement profile_1 forum_read      mean    0.605         0.0264      22.9 8.01e-116  8.01e-116</span></span>
+<span><span class="co">#&gt; 4 measurement profile_1 forum_post      mean    0.515         0.0319      16.2  9.48e-59   9.48e-59</span></span>
 <span><span class="co">#&gt;   conf_low conf_high</span></span>
 <span><span class="co">#&gt; 1    0.462     0.589</span></span>
-<span><span class="co">#&gt; 2    0.375     0.518</span></span>
-<span><span class="co">#&gt; 3    0.553     0.656</span></span>
+<span><span class="co">#&gt; 2    0.374     0.518</span></span>
+<span><span class="co">#&gt; 3    0.553     0.657</span></span>
 <span><span class="co">#&gt; 4    0.453     0.578</span></span></code></pre></div>
 <p><code><a href="../reference/lta.html">lta()</a></code>, <code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> and every
 <code>family</code> of <code><a href="../reference/multilpa.html">multilpa()</a></code> take <code>weights</code>
