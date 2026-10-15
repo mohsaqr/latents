@@ -51,8 +51,8 @@ Under the model's conditional independence assumptions, the contribution of grou
 $$
 L_j = \sum_{h=1}^{H}\eta_h
 \prod_{i=1}^{n_j}
-\left\{\sum_{k=1}^{K}\pi_{hk}
-\phi_D(\mathbf{y}_{ij};\boldsymbol{\mu}_k,\boldsymbol{\Sigma}_k)\right\}.
+\left\lbrace \sum_{k=1}^{K}\pi_{hk}
+\phi_D(\mathbf{y}_{ij};\boldsymbol{\mu}_k,\boldsymbol{\Sigma}_k)\right\rbrace.
 $$
 
 This expression makes the two levels explicit. The inner mixture combines the observation-level profiles. The outer mixture combines the group classes, each with its own distribution over those profiles. Observations in a group share the same latent group class; integrating over that class induces dependence among them.
@@ -271,7 +271,7 @@ Candidate models should be assessed jointly for information criteria, convergenc
 An individual candidate can be retrieved for the same inspection applied to the initial fit.
 
 ```{r retrieve-candidate}
-candidate <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 2)
+candidate <- get_candidate(candidates, n_profiles = 2, n_group_classes = 2)
 get_results(candidate)
 ```
 

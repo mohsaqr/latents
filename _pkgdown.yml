@@ -34,15 +34,11 @@ reference:
   - enumerate_lpa
   - enumerate_lca
   - enumerate_classes
-  - candidate_fit
+  - get_candidate
   - bootstrap_lrt
   - sensitivity
   - starts_with("parameter_inference")
   - pool_imputations
-  - get_results.latents_pooled
-  - get_results.multilpa_additive
-  - get_results.multilpa_cross_level
-  - get_results.latents_family_enumeration
 
 - title: Mixture regression and growth models
   desc: Regressions whose coefficients differ across latent classes, at one or
@@ -52,11 +48,7 @@ reference:
   - mixture_regression
   - enumerate_regressions
   - compare_models
-  - get_results.latents_mixture_regression
-  - get_results.latents_growth_mixture
-  - predict.latents_mixture_regression
-  - simulate.latents_mixture_regression
-  - simulate.latents_growth_mixture
+  - latents-predict
 
 - title: External variables
   desc: Three-step analysis with a correction for classification error.
@@ -66,9 +58,7 @@ reference:
 
 - title: Plots
   contents:
-  - plot_views
-  - plot_enumeration
-  - starts_with("plot.")
+  - latents-plots
 
 - title: Transition networks
   desc: Latent transitions handed to the tna package.
@@ -86,17 +76,9 @@ reference:
   - srl
 
 - title: Methods
-  desc: Standard generics for fitted models, enumeration grids and summaries.
+  desc: Coefficients, covariance, intervals and likelihood of a fit.
   contents:
-  - starts_with("print.")
-  - starts_with("summary.")
-  - starts_with("as.data.frame.")
-  - starts_with("coef.")
-  - starts_with("confint.")
-  - starts_with("vcov.")
-  - starts_with("logLik.")
-  - starts_with("nobs.")
-  - starts_with("predict.")
+  - latents-model-methods
 
 - title: Conditions
   contents:
@@ -109,12 +91,14 @@ articles:
   - lpa
   - lca
   - lta
+  - enumeration
 
 - title: Guides
   navbar: Guides
   contents:
   - articles/workflow-lpa
   - articles/workflow-lca
+  - articles/class-enumeration
   - articles/evaluation
   - articles/covariates
   - articles/mixture-regression

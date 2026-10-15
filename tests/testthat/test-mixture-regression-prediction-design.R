@@ -48,9 +48,9 @@ test_that("regression plots carry membership columns and raw transformed predict
   fit <- mixture_regression(y ~ log(x), data, 1, id = "g", class_level = "group",
                             membership = ~z, n_starts = 1, seed = 1,
                             vcov_type = "none")
-  grDevices::pdf(NULL)
-  on.exit(grDevices::dev.off(), add = TRUE)
-  expect_invisible(plot(fit, predictor = "x"))
+  if (requireNamespace("ggplot2", quietly = TRUE)) {
+    expect_plot(plot(fit, predictor = "x"))
+  }
   row_fit <- mixture_regression(y ~ x, data, 1, id = "g",
                                 n_starts = 1, seed = 1, vcov_type = "none")
   subset <- data[c(9, 1), ]

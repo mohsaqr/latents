@@ -6,7 +6,7 @@ test_that("enumeration retains failures and both BIC conventions", {
   grid <- as.data.frame(result)
   expect_equal(nrow(grid), 4L)
   expect_match(grid$error[3], "profile")
-  expect_error(candidate_fit(result, n_profiles = 1, n_group_classes = 2),
+  expect_error(get_candidate(result, n_profiles = 1, n_group_classes = 2),
                class = "latents_failed_candidate")
   # Every criterion the grid names must actually carry numbers. `aic` was
   # silently an all-missing column named `NA.`, so a finiteness assertion on
@@ -14,7 +14,7 @@ test_that("enumeration retains failures and both BIC conventions", {
   expect_true("aic" %in% names(grid))
   expect_true(all(is.finite(grid$aic[c(1, 2, 4)])))
   expect_true(all(c("kic", "clc_groups", "clc_individual") %in% names(grid)))
-  one_profile <- candidate_fit(result, n_profiles = 1, n_group_classes = 1)
+  one_profile <- get_candidate(result, n_profiles = 1, n_group_classes = 1)
   expect_equal(grid$bic_groups[1], one_profile$bic)
   expect_equal(grid$bic_individual[1], one_profile$bic_individual)
   expect_true(is.na(grid$profile_entropy[1]))
@@ -195,7 +195,7 @@ test_that("covariance models are named with `model`, and a stray argument is ref
                                     max_iter = 20, seed = 1))
   table <- as.data.frame(grid)
   expect_identical(sort(table$model), c("EEI", "VVI"))
-  expect_s3_class(candidate_fit(grid, n_profiles = 2, n_group_classes = 1,
+  expect_s3_class(get_candidate(grid, n_profiles = 2, n_group_classes = 1,
                                 model = "EEI"), "multilpa")
   expect_true("model" %in% names(get_results(grid, "criteria")))
   # The old name would otherwise fail inside every candidate.
@@ -233,15 +233,15 @@ test_that("the enumeration plot draws several criteria as panels or plots", {
                    names(.multilpa_distinct_criteria(
                      as.data.frame(grid),
                      c("aic", "bic_groups", "bic_individual", "icl_individual"))))
-  expect_plot(plot(grid, criterion = "bic_groups"))
-  expect_plot(plot(grid, criterion = c("aic", "bic_individual")))
+  expect_plot(plot(grid, what = "bic_groups"))
+  expect_plot(plot(grid, what = c("aic", "bic_individual")))
   # Separate plots: one per criterion.
-  separate <- expect_plots(plot(grid, criterion = c("aic", "bic_groups"),
+  separate <- expect_plots(plot(grid, what = c("aic", "bic_groups"),
                                 combine = FALSE))
   expect_length(separate, 2L)
   expect_plot(plot(grid, what = "tree"))
   expect_error(plot(grid, combine = NA))
-  expect_error(plot(grid, criterion = c("aic", "not_a_criterion")),
+  expect_error(plot(grid, what = c("aic", "not_a_criterion")),
                class = "latents_unknown_criterion")
 })
 
@@ -268,7 +268,7 @@ test_that("enumerate_classes() enumerates single-level models with id = NULL", {
              seed = 1, volume = "varying", shape = "varying",
              orientation = "varying"),
     latents_single_level = function(w) invokeRestart("muffleMessage"))
-  expect_equal(candidate_fit(grid, n_profiles = 3, n_group_classes = 1,
+  expect_equal(get_candidate(grid, n_profiles = 3, n_group_classes = 1,
                              model = "VVV")$log_likelihood,
                alone$log_likelihood)
   expect_error(enumerate_classes(flowers, names(flowers), id = NULL,
@@ -322,14 +322,14 @@ test_that("structures the data cannot distinguish are fitted once", {
     n_profiles = 2, model = "all", n_starts = 1, seed = 1))
   expect_identical(nrow(as.data.frame(grid_all)), 2L)
   # Only categorical indicators: no structure, one candidate per count, and
-  # candidate_fit() needs no `model`.
+  # get_candidate() needs no `model`.
   answers <- data.frame(a = factor(sample(c("x", "y"), 100, TRUE)),
                         b = factor(sample(c("x", "y"), 100, TRUE)))
   classes <- suppressMessages(enumerate_classes(answers, c("a", "b"),
     id = NULL, n_profiles = 1:2, categorical = c("a", "b"), n_starts = 1,
     seed = 1))
   expect_identical(nrow(as.data.frame(classes)), 2L)
-  expect_s3_class(candidate_fit(classes, n_profiles = 2), "multilpa")
+  expect_s3_class(get_candidate(classes, n_profiles = 2), "multilpa")
   expect_error(enumerate_classes(answers, c("a", "b"), id = NULL,
                                  n_profiles = 1:2, model = "basic",
                                  categorical = c("a", "b"), n_starts = 1),
@@ -346,4 +346,523 @@ test_that("a structure set another way replaces the basic set", {
                                  n_profiles = 1:2, model = "EEE",
                                  covariance_model = "full", n_starts = 1),
                class = "latents_bad_argument")
+})
+
+test_that("the grid compares every candidate's AvePP and entropy", {
+  set.seed(3)
+  d <- data.frame(g = rep(1:30, each = 10),
+                  y = c(rnorm(150, -2), rnorm(150, 2)),
+                  z = rnorm(300))
+  result <- enumerate_classes(d, c("y", "z"), "g", n_profiles = 1:3,
+                              n_group_classes = 1:2, model = "VVI",
+                              n_starts = 2, seed = 3)
+  grid <- as.data.frame(result)
+  summaries <- c(paste0("avepp_", c("min", "max", "mean", "below")),
+                 paste0("group_avepp_", c("min", "max", "mean", "below")))
+  # Next to the entropies they are read with.
+  after <- match("group_entropy", names(grid))
+  expect_identical(names(grid)[after + seq_along(summaries)], summaries)
+  expect_type(grid$avepp_below, "integer")
+  # Calibration against the definition: each class's mean posterior over the
+  # units modally assigned to it.
+  fit <- get_candidate(result, n_profiles = 3, n_group_classes = 1)
+  posteriors <- fit$subject_posteriors
+  assigned <- max.col(posteriors, ties.method = "first")
+  avepp <- vapply(seq_len(3L), \(k) mean(posteriors[assigned == k, k]),
+                  numeric(1L))
+  row <- subset(grid, n_profiles == 3 & n_group_classes == 1)
+  expect_equal(row$avepp_min, min(avepp))
+  expect_equal(row$avepp_max, max(avepp))
+  expect_equal(row$avepp_mean, mean(avepp))
+  expect_identical(row$avepp_below, sum(avepp < 0.8))
+  # The cutoff is an argument; the extremes bracket every class.
+  # "Below" is strict: a class whose units all have posterior exactly 1 (this
+  # grid's 2 x 2 candidate) is not below a cutoff of 1.
+  everything <- get_results(result, "candidates", cutoff = 1)
+  fitted <- subset(everything, n_profiles > 1 & !is.na(log_likelihood))
+  expect_true(all(fitted$avepp_below <= fitted$n_profiles))
+  imperfect <- subset(fitted, avepp_max < 1)
+  expect_gt(nrow(imperfect), 0L)
+  expect_identical(imperfect$avepp_below, imperfect$n_profiles)
+  none <- get_results(result, "candidates", cutoff = min(avepp) / 2)
+  expect_identical(subset(none, n_profiles == 3 & n_group_classes == 1)$
+                     avepp_below, 0L)
+  expect_true(all(with(subset(grid, !is.na(avepp_min)),
+                       avepp_min <= avepp_mean &
+                         avepp_mean <= avepp_max &
+                         avepp_max <= 1)))
+  expect_error(get_results(result, "candidates", cutoff = 2), "cutoff")
+  expect_error(as.data.frame(result, cutoff = 0.7),
+               class = "latents_bad_argument")
+  # One class classifies nothing, at either level.
+  expect_true(all(is.na(subset(grid, n_profiles == 1)$avepp_min)))
+  expect_true(all(is.na(subset(grid, n_group_classes == 1)$group_avepp_below)))
+
+  classification <- get_results(result, "classification")
+  expect_s3_class(classification, "data.frame")
+  expect_true(all(c("n_profiles", "n_group_classes", "model", "level", "class",
+                    "average_posterior", "relative_entropy")
+                  %in% names(classification)))
+  # Invariants: one row per class of every fitted level with two or more
+  # classes; its AvePPs give the candidate's summaries; the entropy is the
+  # candidate's entropy.
+  expect_false(any(classification$n_profiles == 1 &
+                     classification$level == "individuals"))
+  expect_false(any(classification$n_group_classes == 1 &
+                     classification$level == "groups"))
+  three <- subset(classification, n_profiles == 3 & n_group_classes == 1)
+  expect_equal(nrow(three), 3L)
+  expect_equal(three$average_posterior, avepp)
+  expect_equal(unique(three$relative_entropy), row$profile_entropy)
+  failed <- subset(grid, is.na(log_likelihood))
+  expect_equal(nrow(merge(failed, classification,
+                          by = c("n_profiles", "n_group_classes"))), 0L)
+  expect_identical(get_results(summary(result), "classification"), classification)
+
+  # Computed from the stored fits when read, so a grid fitted before the
+  # columns existed reports them without refitting.
+  expect_false(any(summaries %in% names(result$table)))
+  # A grid that stored such columns itself is read the same way: the stored
+  # copy is replaced by the values its fits give.
+  old <- result
+  old$table$avepp_min <- -1
+  old$table$profile_min_average_posterior <- -1
+  expect_identical(as.data.frame(old), grid)
+  expect_identical(get_results(summary(old), "candidates"), grid)
+  printed <- paste(utils::capture.output(print(old)), collapse = "\n")
+  invisible(lapply(summaries, \(column) expect_match(printed, column, fixed = TRUE)))
+})
+
+test_that("AvePP summaries handle empty and single classes", {
+  # Class 2 has no modally assigned unit: no AvePP, counted below the cutoff.
+  posteriors <- cbind(c(0.9, 0.8, 0.7), c(0.1, 0.2, 0.3))
+  summary_empty <- .multilpa_avepp_summary(posteriors, cutoff = 0.5)
+  expect_equal(unname(summary_empty), c(0.8, 0.8, 0.8, 1))
+  expect_true(all(is.na(.multilpa_avepp_summary(NULL, 0.8))))
+  expect_true(all(is.na(.multilpa_avepp_summary(matrix(1, 3, 1), 0.8))))
+  separated <- cbind(c(0.9, 0.2, 0.4), c(0.1, 0.8, 0.6))
+  expect_equal(.multilpa_avepp_summary(separated, cutoff = 0.75),
+               c(min = 0.7, max = 0.9, mean = 0.8, below = 1))
+})
+
+test_that("a candidate records a readable call, not a copy of the data", {
+  set.seed(4)
+  frame <- data.frame(g = rep(1:30, each = 10), y = rnorm(300), z = rnorm(300))
+  grid <- enumerate_classes(frame, c("y", "z"), "g", n_profiles = 1:2,
+                            n_group_classes = 1, model = "VVI", n_starts = 1,
+                            seed = 4)
+  call <- get_candidate(grid, 2, 1)$call
+  expect_identical(call[[1L]], as.name("multilpa"))
+  expect_identical(call$data, as.name("frame"))
+  expect_identical(call$n_profiles, 2L)
+  expect_false(any(vapply(as.list(call), \(part) is.data.frame(part) ||
+                            is.function(part), logical(1L))))
+  # The grid no longer grows by one data copy per candidate: a candidate's
+  # call is a few hundred bytes whatever the data size.
+  expect_lt(length(serialize(call, NULL)), 2000)
+})
+
+test_that("compare_models() compares candidates of a grid by name or counts", {
+  set.seed(5)
+  n_groups <- 50
+  g <- rep(seq_len(n_groups), each = 10)
+  group_class <- rep(sample(1:2, n_groups, TRUE), each = 10)
+  profile <- ifelse(runif(length(g)) < ifelse(group_class == 1, 0.8, 0.2), 1, 2)
+  d <- data.frame(g = g, y = rnorm(length(g), 3 * profile),
+                  z = rnorm(length(g), profile))
+  grid <- quietly(enumerate_classes(d, c("y", "z"), "g", n_profiles = 2:3,
+                                    n_group_classes = 1:2, model = "VVI",
+                                    n_starts = 2, seed = 5))
+  compared <- compare_models(grid, "profiles2_groups2", "profiles3_groups2",
+                             c(3, 1))
+  expect_s3_class(compared, c("latents_comparison", "data.frame"))
+  expect_identical(compared$model,
+                   c("profiles2_groups2", "profiles3_groups2", "profiles3_groups1"))
+  # The numbers are the candidates table's, row for row.
+  candidates <- as.data.frame(grid)
+  shared <- c("log_likelihood", "n_parameters", "aic", "bic_groups",
+              "bic_individual", "icl_individual", "profile_entropy",
+              "group_entropy", "avepp_min", "avepp_below",
+              "group_avepp_mean")
+  matched <- merge(compared, candidates, by.x = "model", by.y = "candidate",
+                   suffixes = c("", "_grid"), sort = FALSE)
+  invisible(lapply(shared, function(column) {
+    expect_equal(matched[[column]], matched[[paste0(column, "_grid")]],
+                 info = column)
+  }))
+  # Schwarz weights: a distribution with the best model at delta zero.
+  expect_equal(sum(compared$bic_weight), 1)
+  expect_equal(min(compared$delta_bic), 0)
+  expect_equal(compared$delta_bic, compared$bic_groups - min(compared$bic_groups))
+  # Order of the candidates does not change any row.
+  reversed <- compare_models(grid, c(3, 1), "profiles3_groups2", "profiles2_groups2")
+  expect_equal(as.data.frame(reversed)[3:1, "bic_weight"], compared$bic_weight)
+  # The same as passing the fits themselves, named.
+  direct <- compare_models(profiles2_groups2 = grid$profiles2_groups2,
+                           profiles3_groups2 = grid$profiles3_groups2,
+                           profiles3_groups1 = grid$profiles3_groups1)
+  expect_equal(as.data.frame(direct), as.data.frame(compared))
+  named <- compare_models(grid, small = "profiles2_groups2", large = c(3, 2))
+  expect_identical(named$model, c("small", "large"))
+  expect_identical(compare_models(grid, c(2, 2), c(3, 2), cutoff = 1)$avepp_below,
+                   c(2L, 3L))
+  # Selecting by class counts instead of naming.
+  by_profiles <- compare_models(grid, n_profiles = 3)
+  expect_identical(by_profiles$model, c("profiles3_groups1", "profiles3_groups2"))
+  block <- compare_models(grid, n_profiles = 2:3, n_group_classes = 2)
+  expect_identical(block$model, c("profiles2_groups2", "profiles3_groups2"))
+  expect_identical(nrow(compare_models(grid)), 4L)
+
+  expect_error(compare_models(grid, "profiles2_groups2"), class = "latents_bad_argument")
+  expect_error(compare_models(grid, "profiles2_groups2", "profiles9_groups9"),
+               class = "latents_unknown_candidate")
+  expect_error(compare_models(grid, c(2, 2), c(2, 2, 1)), class = "latents_bad_argument")
+  expect_error(compare_models(grid, c(2, 2), c(5, 1)), class = "latents_unknown_candidate")
+  expect_error(compare_models(grid, c(2, 2), n_profiles = 3),
+               class = "latents_bad_argument")
+  expect_error(compare_models(grid, n_profiles = 7), class = "latents_unknown_candidate")
+  expect_error(compare_models(grid, n_profiles = 2, n_group_classes = 1),
+               class = "latents_bad_argument")
+  expect_error(compare_models(grid$profiles2_groups1, grid$profiles2_groups2,
+                              n_profiles = 2), class = "latents_bad_argument")
+  other <- quietly(multilpa(d[-1, ], c("y", "z"), "g", 2, 1, n_starts = 1, seed = 1))
+  expect_error(compare_models(a = grid$profiles2_groups1, b = other),
+               class = "latents_incomparable_models")
+  skip_if_not_installed("ggplot2")
+  drawn <- expect_plot(plot(compared))
+  expect_setequal(levels(drawn$data$criterion), c("AIC", "BIC", "SABIC"))
+})
+
+test_that("a selection leaves out candidates that failed, and says so", {
+  set.seed(12)
+  d <- data.frame(g = rep(1:30, each = 10), y = c(rnorm(150, -2), rnorm(150, 2)))
+  grid <- enumerate_classes(d, "y", "g", n_profiles = 1:2, n_group_classes = 1:2,
+                            model = NULL, n_starts = 1, seed = 12)
+  failed <- subset(as.data.frame(grid), is.na(log_likelihood))$candidate
+  expect_identical(failed, "profiles1_groups2")
+  expect_message(compared <- compare_models(grid, n_profiles = 1:2),
+                 "profiles1_groups2")
+  expect_false("profiles1_groups2" %in% compared$model)
+  expect_error(compare_models(grid, "profiles1_groups1", "profiles1_groups2"),
+               class = "latents_failed_candidate")
+  expect_null(grid$profiles1_groups2)
+  expect_error(get_candidate(grid, "profiles1_groups2"),
+               class = "latents_failed_candidate")
+})
+
+test_that("compare_models() compares latent class candidates and fits", {
+  set.seed(5)
+  n <- 400
+  latent <- sample(1:3, n, TRUE)
+  item <- function(p) factor(ifelse(runif(n) < p[latent], "yes", "no"))
+  d <- data.frame(g = rep(1:40, each = 10), i1 = item(c(.9, .2, .5)),
+                  i2 = item(c(.8, .1, .9)), i3 = item(c(.85, .3, .2)),
+                  i4 = item(c(.1, .8, .5)))
+  items <- paste0("i", 1:4)
+  single <- quietly(enumerate_lca(d, items, n_classes = 2:3, n_starts = 2, seed = 1))
+  # A single-level latent class grid names candidates by classes alone.
+  expect_identical(as.data.frame(single)$candidate, c("classes2", "classes3"))
+  by_name <- compare_models(single, "classes2", "classes3")
+  expect_equal(as.data.frame(by_name)[-1L],
+               as.data.frame(compare_models(single, 2, 3))[-1L])
+  # lca() fits directly give the same numbers as the grid's candidates.
+  direct <- compare_models(two = single$classes2, three = single$classes3)
+  expect_equal(direct$bic_groups, by_name$bic_groups)
+  printed <- paste(utils::capture.output(print(by_name)), collapse = "\n")
+  expect_match(printed, "Classes", fixed = TRUE)
+  expect_false(grepl("Group classes", printed, fixed = TRUE))
+  expect_true(all(is.na(by_name$structure)))
+
+  multilevel <- quietly(enumerate_classes(d, items, "g", n_profiles = 2,
+                                          n_group_classes = 1:2,
+                                          categorical = items, n_starts = 2,
+                                          seed = 1))
+  expect_identical(names(multilevel$fits), c("classes2_groups1", "classes2_groups2"))
+  grouped <- compare_models(multilevel)
+  printed <- paste(utils::capture.output(print(grouped)), collapse = "\n")
+  expect_match(printed, "Group classes", fixed = TRUE)
+  expect_error(compare_models(single, 2, 2.5), class = "latents_bad_argument")
+  expect_error(compare_models(single, 2, 0), class = "latents_bad_argument")
+})
+
+test_that("one name reaches a candidate everywhere", {
+  set.seed(5)
+  d <- data.frame(g = rep(1:40, each = 10),
+                  y = c(rnorm(200, -2), rnorm(200, 2)), z = rnorm(400))
+  grid <- quietly(enumerate_classes(d, c("y", "z"), "g", n_profiles = 1:2,
+                                    n_group_classes = 1:2, model = "VVI",
+                                    n_starts = 2, seed = 5))
+  names <- c("profiles1_groups1", "profiles2_groups1", "profiles1_groups2",
+             "profiles2_groups2")
+  expect_identical(names(grid$fits), names)
+  expect_identical(as.data.frame(grid)$candidate, names)
+  expect_identical(names(as.data.frame(grid))[1L], "candidate")
+  # Every route returns the identical model.
+  model <- get_candidate(grid, 2, 2)
+  expect_identical(grid$profiles2_groups2, model)
+  expect_identical(grid$fits$profiles2_groups2, model)
+  expect_identical(get_candidate(grid, "profiles2_groups2"), model)
+  expect_identical(get_candidate(grid, c(2, 2)), model)
+  expect_identical(get_candidate(grid, 2, 2, model = "VVI"), model)
+  expect_identical(candidate_fit(grid, "profiles2_groups2"), model)
+  compared <- compare_models(grid, "profiles2_groups1", "profiles2_groups2")
+  expect_identical(get_candidate(compared, "profiles2_groups2"), model)
+  # The grid's own components are untouched, and $ still matches as on a list.
+  expect_s3_class(grid$table, "data.frame")
+  expect_type(grid$fits, "list")
+  expect_true(is.call(grid$call))
+  expect_identical(grid$tab, grid$table)
+  expect_null(grid$profiles9_groups9)
+  # An editor completes the components and every candidate.
+  expect_identical(utils::.DollarNames(grid, "^profiles2"),
+                   c("profiles2_groups1", "profiles2_groups2"))
+  expect_true(all(c("table", "fits", "call") %in% utils::.DollarNames(grid, "")))
+  # The criteria and classification tables name their candidates.
+  picks <- get_results(grid, "criteria")
+  expect_true(all(picks$candidate %in% names))
+  classification <- get_results(grid, "classification")
+  expect_identical(names(classification)[1L], "candidate")
+  expect_true(all(classification$candidate %in% names))
+
+  # A grid saved before names existed is named the same way.
+  old <- grid
+  old$fits <- unname(old$fits)
+  old$table$candidate <- NULL
+  expect_identical(as.data.frame(old)$candidate, names)
+  expect_identical(old$profiles2_groups2, model)
+  expect_identical(get_candidate(old, "profiles2_groups2"), model)
+
+  # Comparison models and per-class rows.
+  tables <- get_results(compared, "all")
+  expect_named(tables, c("comparison", "classification"))
+  expect_null(attr(tables$comparison, "models"))
+  expect_identical(unique(tables$classification$model),
+                   c("profiles2_groups1", "profiles2_groups2"))
+  invisible(lapply(unique(tables$classification$model), function(label) {
+    rows <- subset(tables$classification, model == label & level == "individuals")
+    expect_equal(min(rows$average_posterior),
+                 subset(compared, model == label)$avepp_min)
+  }))
+  expect_error(get_candidate(compared, "profiles9_groups9"),
+               class = "latents_unknown_candidate")
+  expect_error(get_candidate(head(compared, 1L), "profiles2_groups2"),
+               class = "latents_unknown_candidate")
+  stripped <- compared
+  attr(stripped, "models") <- NULL
+  expect_error(get_candidate(stripped, "profiles2_groups2"),
+               class = "latents_incomplete_fit")
+  expect_error(get_candidate(grid, "profiles2_groups2", n_group_classes = 2),
+               class = "latents_bad_argument")
+  expect_error(get_candidate(grid, "two"), class = "latents_unknown_candidate")
+})
+
+test_that("names follow the grid: structures, single level, transitions, families", {
+  set.seed(6)
+  d <- data.frame(g = rep(1:30, each = 10), y = rnorm(300), z = rnorm(300))
+  crossed <- quietly(enumerate_lpa(d, c("y", "z"), n_profiles = 1:2,
+                                   model = c("VVI", "EEE"), n_starts = 1, seed = 1))
+  expect_identical(names(crossed$fits),
+                   c("profiles1_VVI", "profiles2_VVI", "profiles1_EEE", "profiles2_EEE"))
+  expect_error(get_candidate(crossed, 2), class = "latents_unknown_candidate")
+  expect_identical(get_candidate(crossed, "profiles2_EEE"),
+                   get_candidate(crossed, 2, model = "EEE"))
+  transitions <- quietly(enumerate_classes(
+    subset(course_engagement, student <= 30), c("browse", "lectures"), "student",
+    time = "sequence", n_profiles = 2:3, n_group_classes = 1, n_starts = 1,
+    seed = 1))
+  expect_identical(as.data.frame(transitions)$candidate,
+                   c("profiles2_groups1", "profiles3_groups1"))
+  expect_identical(transitions$profiles3_groups1, get_candidate(transitions, 3, 1))
+  ratings <- data.frame(team = rep(1:40, each = 6), climate = rnorm(240))
+  families <- quietly(enumerate_classes(ratings, "climate", "team",
+                                        family = c("additive", "dispersion"),
+                                        n_group_classes = 1:2, n_starts = 1,
+                                        seed = 1))
+  expect_true("additive_equal_groups2" %in% as.data.frame(families)$candidate)
+  expect_identical(families$dispersion_groups2,
+                   get_candidate(families, n_group_classes = 2, model = "dispersion"))
+  expect_identical(get_candidate(families, "dispersion_groups2"),
+                   families$dispersion_groups2)
+  expect_error(compare_models(families, "additive_groups1", "additive_groups2"),
+               class = "latents_bad_argument")
+})
+
+test_that("plot(grid, what = ) draws entropy and AvePP across the candidates", {
+  skip_if_not_installed("ggplot2")
+  set.seed(5)
+  n <- 400
+  group <- rep(1:40, each = 10)
+  group_class <- rep(sample(1:2, 40, TRUE), each = 10)
+  latent <- ifelse(runif(n) < ifelse(group_class == 1, 0.8, 0.2), 1, 2)
+  item <- function(p) factor(ifelse(runif(n) < p[latent], "yes", "no"))
+  d <- data.frame(g = group, i1 = item(c(.9, .2)), i2 = item(c(.8, .1)),
+                  i3 = item(c(.85, .3)), i4 = item(c(.1, .8)))
+  items <- paste0("i", 1:4)
+  grid <- quietly(enumerate_classes(d, items, "g", n_profiles = 2:3,
+                                    n_group_classes = 1:2, categorical = items,
+                                    n_starts = 2, seed = 1))
+  candidates <- as.data.frame(grid)
+  avepp <- expect_plot(plot(grid, what = "avepp"))
+  expect_identical(levels(avepp$data$title),
+                   c("Lowest AvePP, individuals", "Lowest AvePP, groups"))
+  expect_identical(avepp$labels$x, "Number of classes")
+  # The drawn values are the candidates table's.
+  individuals <- subset(avepp$data, title == "Lowest AvePP, individuals")
+  expect_equal(sort(individuals$value), sort(candidates$avepp_min))
+  groups <- subset(avepp$data, title == "Lowest AvePP, groups")
+  expect_equal(sort(groups$value),
+               sort(candidates$group_avepp_min[is.finite(candidates$group_avepp_min)]))
+  # The cutoff is drawn and reported.
+  cut <- plot_enumeration(grid, what = "avepp", cutoff = 0.9)
+  expect_true(any(vapply(cut$layers, \(layer) inherits(layer$geom, "GeomHline"),
+                         logical(1))))
+  expect_match(cut$labels$subtitle, "0.9", fixed = TRUE)
+  entropy <- expect_plot(plot(grid, what = "entropy"))
+  expect_equal(sort(subset(entropy$data, title == "Entropy, individuals")$value),
+               sort(candidates$profile_entropy))
+  both <- expect_plot(plot(grid, what = "diagnostics"))
+  expect_length(levels(both$data$title), 4L)
+  separate <- plot(grid, what = "diagnostics", combine = FALSE)
+  expect_s3_class(separate, "latents_plots")
+  expect_named(separate, c("entropy", "avepp"))
+  # A single-level grid has no group panels.
+  single <- quietly(enumerate_lca(d, items, n_classes = 2:3, n_starts = 2, seed = 1))
+  expect_identical(levels(plot(single, what = "diagnostics")$data$title),
+                   c("Entropy", "Lowest AvePP"))
+  expect_error(plot(grid, what = c("aic", "avepp")), class = "latents_bad_argument")
+  expect_error(plot(grid, what = "avepp", cutoff = 2), "cutoff")
+  one_class <- quietly(enumerate_lca(d, items, n_classes = 1, n_starts = 1, seed = 1))
+  expect_error(plot(one_class, what = "entropy"), class = "latents_nothing_to_plot")
+})
+
+test_that("Kneedle reproduces a hand-worked curve and a published value", {
+  # Rescaled: x = 0, 1/3, 2/3, 1 and y = 1, 1/9, 1/18, 0. The line is 1 - x,
+  # so the points lie 0, 5/9, 5/18, 0 below it, and perpendicular to it
+  # those distances shrink by sqrt(2).
+  knee <- .latents_kneedle(1:4, c(10, 2, 1.5, 1))
+  expect_identical(knee$at, 2L)
+  expect_equal(knee$distance, c(0, 5 / 9, 5 / 18, 0) / sqrt(2))
+  # A two-level LCA grid's BIC (groups) at 4 group classes, 2 to 8 classes:
+  # Kneedle was reported at 4 classes with a perpendicular distance of 0.1915.
+  bic <- c(1143453, 1101283, 1083371, 1070010, 1060205, 1051111, 1044007)
+  published <- .latents_kneedle(2:8, bic)
+  expect_identical((2:8)[published$at], 4L)
+  expect_equal(round(published$distance[published$at], 4), 0.1915)
+  # A straight line has no knee; nor do fewer than three points.
+  expect_identical(.latents_kneedle(1:5, 10:6)$at, NA_integer_)
+  expect_identical(.latents_kneedle(1:2, c(5, 1))$at, NA_integer_)
+  # The knee does not depend on the criterion's origin or units.
+  expect_identical(.latents_kneedle(1:4, 1000 + 7 * c(10, 2, 1.5, 1))$at, 2L)
+})
+
+test_that("deltas and knees read the candidates table in both directions", {
+  set.seed(5)
+  n <- 400
+  group <- rep(1:40, each = 10)
+  group_class <- rep(sample(1:2, 40, TRUE), each = 10)
+  latent <- ifelse(runif(n) < ifelse(group_class == 1, 0.8, 0.2), 1, 2)
+  d <- data.frame(g = group, y = rnorm(n, 3 * latent), z = rnorm(n, latent))
+  grid <- quietly(enumerate_classes(d, c("y", "z"), "g", n_profiles = 1:4,
+                                    n_group_classes = 1:3, model = "VVI",
+                                    n_starts = 2, seed = 1))
+  candidates <- as.data.frame(grid)
+  bic <- function(name) subset(candidates, candidate == name)$bic_groups
+  deltas <- get_results(grid, "deltas")
+  expect_identical(deltas$candidate, candidates$candidate)
+  row <- subset(deltas, candidate == "profiles3_groups2")
+  expect_equal(row$delta_profile, bic("profiles2_groups2") - bic("profiles3_groups2"))
+  expect_identical(row$from_profile, "profiles2_groups2")
+  expect_equal(row$delta_group_class, bic("profiles3_groups1") - bic("profiles3_groups2"))
+  expect_identical(row$from_group_class, "profiles3_groups1")
+  # No smaller neighbour, or a neighbour that failed: no delta.
+  expect_true(is.na(subset(deltas, candidate == "profiles1_groups1")$delta_profile))
+  # profiles1_groups2 could not be fitted, so profiles2_groups2 has no
+  # profile delta.
+  expect_true(is.na(bic("profiles1_groups2")))
+  expect_true(is.na(subset(deltas, candidate == "profiles2_groups2")$delta_profile))
+  expect_true(all(is.na(subset(deltas, is.na(value))$delta_profile)))
+  icl <- get_results(grid, "deltas", using = "icl_individual")
+  expect_identical(unique(icl$criterion), "icl_individual")
+
+  knees <- get_results(grid, "knees")
+  expect_setequal(unique(knees$direction), c("profiles", "group_classes", "parameters"))
+  expect_true(all(knees$knee_candidate %in% c(candidates$candidate, NA)))
+  expect_true(all(knees$n_points >= 1L))
+  expect_named(get_results(grid, "all"),
+               c("candidates", "criteria", "classification", "deltas", "knees"))
+
+  skip_if_not_installed("ggplot2")
+  views <- c("deltas", "heatmap", "smallest", "trust")
+  invisible(lapply(views, function(view) expect_plot(plot(grid, what = view))))
+  everything <- plot(grid, what = "selection")
+  expect_s3_class(everything, "latents_plots")
+  expect_named(everything, c(views, "diagnostics"))
+  drawn <- plot(grid, what = "deltas")
+  expect_setequal(as.character(unique(drawn$data$panel)),
+                  c("Adding a profile", "Adding a group class"))
+  expect_equal(sort(subset(drawn$data, panel == "Adding a profile")$delta),
+               sort(deltas$delta_profile[is.finite(deltas$delta_profile)]))
+  heatmap <- plot(grid, what = "heatmap")
+  expect_identical(subset(heatmap$data, tile_label == "lowest")$candidate,
+                   subset(get_results(grid, "criteria"),
+                          criterion == "bic" & convention == "groups")$candidate)
+  expect_false(any(heatmap$data$tile_label == "best"))
+  trust <- plot(grid, what = "trust")
+  expect_true("not fitted" %in% trust$data$status)
+  expect_error(plot(grid, what = "deltas", using = "nonsense"),
+               class = "latents_bad_argument")
+  expect_error(plot(grid, what = c("aic", "deltas")), class = "latents_bad_argument")
+  expect_error(plot(grid, what = "elbow"), class = "latents_unknown_criterion")
+})
+
+test_that("review fixes: alias, transitions, rising lines, empty grids", {
+  grid <- quietly(enumerate_lpa(srl, c("self_efficacy", "test_anxiety"),
+                                n_profiles = 1:3, model = "VVI", n_starts = 2,
+                                seed = 1))
+  # The 0.9.21 alias calls the package's function, whatever the caller has
+  # named `get_candidate`.
+  local({
+    get_candidate <- function(...) "not the package's"
+    expect_s3_class(candidate_fit(grid, 2), "multilpa")
+  })
+  # A grid made through a wrapper names the caller's data.
+  expect_identical(get_candidate(grid, 2)$call$data, as.name("srl"))
+
+  transitions <- quietly(enumerate_classes(
+    subset(course_engagement, student <= 40), c("browse", "lectures"),
+    "student", time = "sequence", n_profiles = 2:3, n_group_classes = 1,
+    n_starts = 1, seed = 1))
+  compared <- compare_models(transitions)
+  expect_gt(nrow(get_results(compared, "classification")), 0L)
+  skip_if_not_installed("ggplot2")
+  expect_error(plot(transitions, what = "bic_groups"), class = "latents_bad_argument")
+  # 0.9.21 matched these with match.arg(), so abbreviations still work.
+  expect_identical(plot(transitions, what = "bic_i")$labels$y,
+                   plot(transitions, what = "bic_individual")$labels$y)
+  expect_warning(plot(transitions, colour = "red"), "\"bic\"",
+                 class = "latents_unused_argument")
+
+  # A criterion that rises along a line has no knee.
+  rising <- .latents_kneedle(1:4, c(100, 101, 150, 300))
+  expect_identical(rising$at, NA_integer_)
+  expect_true(rising$rising)
+
+  # A grid where nothing could be fitted gives empty tables, not NULL.
+  d <- data.frame(g = rep(1:30, each = 10), y = stats::rnorm(300))
+  empty <- quietly(enumerate_classes(d, "y", "g", n_profiles = 1,
+                                     n_group_classes = 2, model = NULL,
+                                     n_starts = 1, seed = 1))
+  expect_s3_class(get_results(empty, "classification"), "data.frame")
+  expect_identical(nrow(get_results(empty, "classification")), 0L)
+  expect_identical(nrow(get_results(empty, "knees")), 0L)
+  expect_error(plot(empty, what = "heatmap"), class = "latents_nothing_to_plot")
+
+  # A deltas panel whose lines have one point draws without warnings.
+  two <- quietly(enumerate_classes(d, "y", "g", n_profiles = 1:3,
+                                   n_group_classes = 1:2, model = "VVI",
+                                   n_starts = 1, seed = 1))
+  expect_no_warning(ggplot2::ggplot_build(plot(two, what = "deltas")))
+  comparison <- compare_models(two, n_profiles = 2:3)
+  expect_error(get_candidate(comparison), class = "latents_bad_argument")
+  expect_error(compare_models(two, n_profiles = 0), class = "latents_bad_argument")
 })

@@ -638,6 +638,8 @@ r3step <- function(x, data, covariates,
       x, design[, -1L, drop = FALSE], pieces, errors, ci_level, vcov_type,
       adjust))
   }
+  design_scale <- .multilpa_design_scale(design)
+  design <- sweep(design, 2L, design_scale, "/")
   ## The likelihood of the assigned class, given the covariates and an error
   ## matrix fixed at its step-one value.
   by_assigned <- t(errors)[pieces$modal, , drop = FALSE]
@@ -683,7 +685,9 @@ r3step <- function(x, data, covariates,
     scores <- rowsum(score_rows(fitted$par), pieces$group_index, reorder = FALSE)
     covariance <- .inference_sandwich(covariance, .multilpa_cross_product(scores))
   }
-  .multilpa_r3step_frame(fitted$par, covariance, colnames(design), n_free,
+  natural_scale <- rep(1 / design_scale, n_free)
+  .multilpa_r3step_frame(fitted$par * natural_scale,
+                         covariance * tcrossprod(natural_scale), colnames(design), n_free,
                          pieces$n_classes, level, ci_level, vcov_type, adjust)
 }
 
@@ -706,7 +710,7 @@ r3step <- function(x, data, covariates,
     values <- values[!duplicated(object$group_index), , drop = FALSE]
   }
   design <- cbind(`(Intercept)` = 1, as.matrix(values))
-  if (qr(design)$rank < ncol(design)) {
+  if (qr(sweep(design, 2L, .multilpa_design_scale(design), "/"))$rank < ncol(design)) {
     stop(errorCondition(
       "The covariate design is rank deficient; remove constant or collinear predictors.",
       class = "latents_bad_covariate", call = NULL))

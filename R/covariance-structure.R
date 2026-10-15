@@ -165,6 +165,11 @@
       length(structure) == 1L && structure %in% .multilpa_structures())
   d <- ncol(diagonals)
   n <- sum(weights)
+  tied <- structure %in% c("EVI", "VEI")
+  if (tied && any(diagonals / weights <= min_variance)) {
+    return(.multilpa_bounded_variances(diagonals, weights, structure,
+                                      min_variance))
+  }
   variances <- switch(structure,
     VVI = diagonals / weights,
     EEI = matrix(colSums(diagonals) / n, length(weights), d, byrow = TRUE),
@@ -172,6 +177,10 @@
     VII = matrix(rowSums(diagonals) / (weights * d), length(weights), d),
     EVI = .multilpa_evi_variances(diagonals, n, min_variance),
     VEI = .multilpa_vei_variances(diagonals, weights, min_variance, max_iter, tol))
+  if (tied && any(variances < min_variance)) {
+    return(.multilpa_bounded_variances(diagonals, weights, structure,
+                                      min_variance))
+  }
   pmax(variances, min_variance)
 }
 
@@ -377,6 +386,14 @@
   k <- length(weights)
   n <- sum(weights)
   symmetric <- lapply(scatter, function(block) (block + t(block)) / 2)
+  tied <- structure %in% c("EEV", "VEV", "EVV", "VEE", "EVE", "VVE")
+  if (tied && any(vapply(seq_len(k), function(profile) {
+    min(eigen(symmetric[[profile]], symmetric = TRUE, only.values = TRUE)$values) /
+      weights[profile] <= min_variance
+  }, logical(1)))) {
+    return(.multilpa_bounded_covariances(symmetric, weights, structure,
+      min_variance, start, inner_steps %||% max_iter, tol))
+  }
   covariances <- switch(structure,
     EEE = rep(list(Reduce(`+`, symmetric) / n), k),
     VVV = lapply(seq_len(k), function(profile) symmetric[[profile]] / weights[profile]),
@@ -399,6 +416,12 @@
         .multilpa_scatter_diagonals(symmetric), weights, structure,
         min_variance, max_iter, tol)[profile, ], d)
     }))
+  if (tied && any(vapply(covariances, function(block) {
+    min(eigen(block, symmetric = TRUE, only.values = TRUE)$values) < min_variance
+  }, logical(1)))) {
+    return(.multilpa_bounded_covariances(symmetric, weights, structure,
+      min_variance, start, inner_steps %||% max_iter, tol))
+  }
   array(unlist(lapply(covariances, function(block) {
     .multilpa_bound_covariance(block, min_variance)
   }), use.names = FALSE), c(d, d, k))
@@ -727,3 +750,216 @@
 #' @return A single positive integer.
 #' @noRd
 .multilpa_orientation_steps <- function() 5L
+
+#' Log-eigenvalue design for volume and shape constraints
+#' @param k,d Numbers of profiles and dimensions.
+#' @param structure Covariance structure code.
+#' @return A design whose rows are profile-major log eigenvalues.
+#' @noRd
+.multilpa_eigenvalue_design <- function(k, d, structure) {
+  stopifnot(k >= 1L, d >= 1L, structure %in% .multilpa_structures())
+  equal_volume <- startsWith(structure, "E")
+  equal_shape <- substr(structure, 2L, 2L) == "E"
+  volume <- if (equal_volume) matrix(1, k * d, 1L) else
+    diag(k)[rep(seq_len(k), each = d), , drop = FALSE]
+  if (d == 1L) return(volume)
+  shape <- rbind(diag(d - 1L), rep(-1, d - 1L))
+  if (equal_shape) return(cbind(volume, shape[rep(seq_len(d), k), , drop = FALSE]))
+  shape_design <- matrix(0, k * d, k * (d - 1L))
+  invisible(lapply(seq_len(k), function(profile) {
+    shape_design[(profile - 1L) * d + seq_len(d),
+                 (profile - 1L) * (d - 1L) + seq_len(d - 1L)] <<- shape
+  }))
+  cbind(volume, shape_design)
+}
+
+#' Optimize floored variances inside a volume/shape family
+#'
+#' The Gaussian M-step objective is convex in log eigenvalues. The volume and
+#' determinant-one shape coordinates make its equality constraints linear;
+#' the eigenvalue floor is a linear inequality in those same coordinates.
+#' Thus a bound never changes the requested family, unlike clipping individual
+#' eigenvalues after an unrestricted update.
+#' @param scatter Posterior-weighted scatter diagonals, profiles by dimensions.
+#' @param weights Effective membership per profile.
+#' @param structure Axis-parallel structure code.
+#' @param min_variance Eigenvalue floor.
+#' @return Feasible profile-by-dimension variances.
+#' @noRd
+.multilpa_bounded_variances <- function(scatter, weights, structure, min_variance) {
+  stopifnot(is.matrix(scatter), nrow(scatter) == length(weights),
+            all(weights > 0), all(is.finite(scatter)), min_variance > 0)
+  k <- nrow(scatter)
+  d <- ncol(scatter)
+  scatter <- pmax(scatter, 0)
+  if (k == 1L || structure == "VVI") return(pmax(scatter / weights, min_variance))
+  if (structure == "EEI") return(matrix(pmax(colSums(scatter) / sum(weights),
+    min_variance), k, d, byrow = TRUE))
+  if (structure == "EII") return(matrix(max(sum(scatter) / (sum(weights) * d),
+    min_variance), k, d))
+  if (structure == "VII") return(matrix(pmax(rowSums(scatter) / (weights * d),
+    min_variance), k, d))
+  if (d == 1L) return(.multilpa_bounded_variances(scatter, weights,
+    if (startsWith(structure, "E")) "EEI" else "VVI", min_variance))
+  design <- .multilpa_eigenvalue_design(k, d, structure)
+  lower <- log(min_variance)
+  # A spherical start is strictly inside every inequality. The barrier solver
+  # then minimizes one convex objective rather than alternating blocks that
+  # can become stuck when a volume and a shape bound are active together.
+  n_volume <- if (startsWith(structure, "E")) 1L else k
+  initial_volume <- if (n_volume == 1L) sum(scatter) / (sum(weights) * d) else
+    rowSums(scatter) / (weights * d)
+  initial <- c(log(pmax(initial_volume, min_variance)) + 0.1,
+               numeric(ncol(design) - n_volume))
+  counts <- rep(weights, each = d)
+  values <- as.vector(t(scatter))
+  total <- sum(weights)
+  objective <- function(point) {
+    logs <- as.vector(design %*% point)
+    sum(counts * logs + values * exp(-logs)) / total
+  }
+  gradient <- function(point) {
+    logs <- as.vector(design %*% point)
+    as.vector(crossprod(design, counts - values * exp(-logs))) / total
+  }
+  optimum <- stats::constrOptim(initial, objective, gradient, design,
+    rep(lower, k * d), mu = 1e-10,
+    control = list(reltol = 1e-12, maxit = 1000L),
+    outer.iterations = 100L, outer.eps = 1e-12)
+  logs <- as.vector(design %*% optimum$par)
+  stopifnot("the bounded chart must remain feasible" =
+    all(is.finite(logs)), all(logs >= lower - 1e-12))
+  matrix(exp(logs), k, d, byrow = TRUE)
+}
+
+#' Rotate a common orientation while retaining its eigenvalues
+#' @param orientation Shared orthogonal eigenvectors.
+#' @param scatter Posterior-weighted scatter matrices.
+#' @param variances Profile-by-dimension eigenvalues.
+#' @return Orientation after one exact sweep of pairwise rotations.
+#' @noRd
+.multilpa_bounded_orientation <- function(orientation, scatter, variances) {
+  stopifnot(is.matrix(orientation), is.list(scatter), is.matrix(variances),
+            length(scatter) == nrow(variances), all(variances > 0))
+  d <- nrow(orientation)
+  if (d == 1L) return(orientation)
+  pairs <- which(upper.tri(diag(d)), arr.ind = TRUE)
+  Reduce(function(current, pair) {
+    a <- pairs[pair, 1L]
+    b <- pairs[pair, 2L]
+    pieces <- lapply(scatter, function(block) crossprod(current, block %*% current))
+    precision_difference <- 1 / variances[, a] - 1 / variances[, b]
+    cosine <- sum(precision_difference * vapply(pieces,
+      function(block) (block[a, a] - block[b, b]) / 2, numeric(1)))
+    sine <- sum(precision_difference * vapply(pieces,
+      function(block) block[a, b], numeric(1)))
+    if (cosine == 0 && sine == 0) return(current)
+    angle <- atan2(-sine, -cosine) / 2
+    rotation <- diag(d)
+    rotation[c(a, b), c(a, b)] <- matrix(c(cos(angle), sin(angle),
+      -sin(angle), cos(angle)), 2L)
+    current %*% rotation
+  }, seq_len(nrow(pairs)), init = orientation)
+}
+
+#' Covariance M-step with eigenvalue floors inside the ellipsoidal family
+#' @param scatter,weights Posterior-weighted scatter and membership.
+#' @param structure Covariance structure code.
+#' @param min_variance Eigenvalue floor.
+#' @param start Previous covariance array, or NULL for initial projection.
+#' @param max_iter,tol Orientation iteration controls.
+#' @return A dimension-by-dimension-by-profile covariance array.
+#' @noRd
+.multilpa_bounded_covariances <- function(scatter, weights, structure,
+                                         min_variance, start, max_iter, tol) {
+  stopifnot(is.list(scatter), length(scatter) == length(weights), all(weights > 0))
+  k <- length(weights)
+  d <- nrow(scatter[[1L]])
+  common <- endsWith(structure, "E")
+  eigen_structure <- paste0(substr(structure, 1L, 2L), "I")
+  orientations <- if (common) {
+    seed <- .multilpa_seed_block(start, d) %||% Reduce(`+`, scatter)
+    rep(list(eigen(seed, symmetric = TRUE)$vectors), k)
+  } else lapply(scatter, function(block) eigen(block, symmetric = TRUE)$vectors)
+  solve_values <- function(rotations) {
+    diagonals <- t(vapply(seq_len(k), function(profile) {
+      diag(crossprod(rotations[[profile]], scatter[[profile]] %*% rotations[[profile]]))
+    }, numeric(d))) |> matrix(k, d)
+    .multilpa_bounded_variances(diagonals, weights, eigen_structure, min_variance)
+  }
+  values <- solve_values(orientations)
+  objective <- function(rotations, values) sum(vapply(seq_len(k), function(profile) {
+    weights[profile] * sum(log(values[profile, ])) +
+      sum(diag(crossprod(rotations[[profile]], scatter[[profile]] %*%
+        rotations[[profile]])) / values[profile, ])
+  }, numeric(1)))
+  current <- objective(orientations, values)
+  iteration <- 0L
+  settled <- !common
+  while (common && iteration < max_iter && !settled) {
+    rotated <- .multilpa_bounded_orientation(orientations[[1L]], scatter, values)
+    next_orientations <- rep(list(rotated), k)
+    next_values <- solve_values(next_orientations)
+    next_objective <- objective(next_orientations, next_values)
+    if (next_objective > current) break
+    settled <- current - next_objective <= tol * (1 + abs(current))
+    orientations <- next_orientations
+    values <- next_values
+    current <- next_objective
+    iteration <- iteration + 1L
+  }
+  blocks <- lapply(seq_len(k), function(profile) {
+    covariance <- orientations[[profile]] %*% diag(values[profile, ], d) %*%
+      t(orientations[[profile]])
+    (covariance + t(covariance)) / 2
+  })
+  # The previous feasible covariance is a valid generalized EM update if a
+  # bounded orientation search cannot improve it at the available precision.
+  if (!is.null(start) && identical(as.integer(dim(start)), c(d, d, k))) {
+    previous <- lapply(seq_len(k), function(profile) matrix(start[, , profile], d, d))
+    feasible <- all(vapply(previous, function(block) {
+      min(eigen(block, symmetric = TRUE, only.values = TRUE)$values) >=
+        min_variance * (1 - 1e-10)
+    }, logical(1)))
+    if (feasible) {
+      # A SQUAREM proposal can be positive definite while lying outside the
+      # nonlinear covariance family. It can seed the orientation search, but
+      # cannot be retained as a feasible fallback merely because it fits well.
+      eigenvalues <- t(vapply(previous, function(block) {
+        eigen(block, symmetric = TRUE, only.values = TRUE)$values
+      }, numeric(d))) |> matrix(k, d)
+      log_volume <- rowMeans(log(eigenvalues))
+      if (startsWith(structure, "E")) {
+        feasible <- max(abs(log_volume - log_volume[1L])) <= 1e-10
+      }
+      if (structure %in% c("EEV", "VEV")) {
+        log_shape <- log(eigenvalues) - log_volume
+        feasible <- feasible && max(abs(sweep(log_shape, 2L, log_shape[1L, ]))) <= 1e-10
+      }
+      normalized <- lapply(seq_len(k), function(profile) {
+        previous[[profile]] / exp(log_volume[profile])
+      })
+      if (structure == "VEE") {
+        feasible <- feasible && all(vapply(normalized, function(block) {
+          max(abs(block - normalized[[1L]])) <= 1e-10 * max(1, max(abs(block)))
+        }, logical(1)))
+      }
+      if (structure %in% c("EVE", "VVE")) {
+        first <- previous[[1L]] / max(abs(previous[[1L]]))
+        feasible <- feasible && all(vapply(previous, function(block) {
+          block <- block / max(abs(block))
+          max(abs(first %*% block - block %*% first)) <= 1e-10
+        }, logical(1)))
+      }
+    }
+    if (feasible) {
+      previous_objective <- sum(vapply(seq_len(k), function(profile) {
+        factor <- chol(previous[[profile]])
+        2 * weights[profile] * sum(log(diag(factor))) +
+          sum(chol2inv(factor) * scatter[[profile]])
+      }, numeric(1)))
+      if (previous_objective < current) blocks <- previous
+    }
+  }
+  array(unlist(blocks, use.names = FALSE), c(d, d, k))
+}

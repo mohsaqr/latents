@@ -109,6 +109,32 @@
   list(rr = rr, zr = zr, direct = unstable)
 }
 
+#' Direct residual cross-products after conditioning on random effects
+#' @param stats Per-person sufficient statistics with their raw fallback.
+#' @param coefficients Class-specific and common regression coefficients.
+#' @param means Per-person conditional random-effect means.
+#' @param rows Persons whose cross-product subtraction lost precision.
+#' @return Their residual sums of squares and fixed/random design products.
+#' @noRd
+.growth_direct_residuals <- function(stats, coefficients, means, rows) {
+  stopifnot(is.list(stats$raw), is.matrix(means), is.numeric(coefficients))
+  raw <- stats$raw
+  values <- lapply(rows, function(i) {
+    at <- raw$rows[[i]]
+    residual <- raw$y[at] -
+      as.vector(raw$design[at, , drop = FALSE] %*% coefficients) -
+      as.vector(raw$random[at, , drop = FALSE] %*% means[i, ])
+    list(rr = sum(residual^2),
+         xr = as.vector(crossprod(raw$design[at, , drop = FALSE], residual)),
+         zr = as.vector(crossprod(raw$random[at, , drop = FALSE], residual)))
+  })
+  list(rr = vapply(values, `[[`, numeric(1), "rr"),
+       xr = t(matrix(vapply(values, `[[`, numeric(length(coefficients)), "xr"),
+                     length(coefficients), length(rows))),
+       zr = t(matrix(vapply(values, `[[`, numeric(ncol(means)), "zr"),
+                     ncol(means), length(rows))))
+}
+
 #' One class's per-person log densities and random-effect posteriors
 #'
 #' Persons who share a design (the same Z'Z, as in a balanced or
@@ -145,9 +171,21 @@
   }))
   log_det <- stats$n * log(sigma2) +
     vapply(per_pattern, `[[`, numeric(1), "log_det")[pattern]
-  quadratic <- (residuals$rr - rowSums(u * solved) / sigma2) / sigma2
+  correction <- rowSums(u * solved) / sigma2
+  quadratic <- (residuals$rr - correction) / sigma2
+  means <- tcrossprod(solved, factor) / sigma2
+  unstable <- which(quadratic <=
+    1e-6 * (abs(residuals$rr) + abs(correction)) / sigma2)
+  if (length(unstable) && !is.null(stats$raw)) {
+    # The Woodbury difference equals the penalized conditional residual:
+    # ||r - Z L a||^2 / sigma2 + ||a||^2, a = A^-1 L'Z'r / sigma2.
+    # Neither term subtracts two large squared quantities.
+    direct <- .growth_direct_residuals(stats, coefficients, means, unstable)
+    quadratic[unstable] <- direct$rr / sigma2 +
+      rowSums((solved[unstable, , drop = FALSE] / sigma2)^2)
+  }
   list(log_density = -0.5 * (stats$n * log(2 * pi) + log_det + quadratic),
-       mean = tcrossprod(solved, factor) / sigma2,
+       mean = means,
        covariance = array(vapply(per_pattern, `[[`, matrix(0, n_random, n_random),
                                  "covariance"),
                           c(n_random, n_random, length(per_pattern))),
@@ -277,8 +315,16 @@
     residuals <- .growth_residuals(stats, .growth_coefficients(params, k))
     means <- expectation$means[[k]]
     covariance_flat <- matrix(expectation$covariances[[k]], n_random^2)
-    per_person <- residuals$rr - 2 * rowSums(means * residuals$zr) +
-      colSums(zz_flat * outer_means(means)) +
+    cross <- 2 * rowSums(means * residuals$zr)
+    fitted_ss <- colSums(zz_flat * outer_means(means))
+    residual_ss <- residuals$rr - cross + fitted_ss
+    unstable <- which(residual_ss <=
+      1e-6 * (abs(residuals$rr) + abs(cross) + abs(fitted_ss)))
+    if (length(unstable) && !is.null(stats$raw)) {
+      residual_ss[unstable] <- .growth_direct_residuals(
+        stats, .growth_coefficients(params, k), means, unstable)$rr
+    }
+    per_person <- residual_ss +
       colSums(zz_flat * covariance_flat[, stats$pattern, drop = FALSE])
     sum(tau[, k] * per_person)
   }, numeric(1))

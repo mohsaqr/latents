@@ -1,3 +1,146 @@
+# latents 0.9.30
+
+* Released function and method names and argument spellings remain available.
+  Tables retain their existing columns (new columns are added; in an
+  enumeration grid's tables `candidate` now comes first). Corrections to
+  statistical results and input validation are described below.
+* Audit corrections: bootstrap inference verifies supplied data, ordering and
+  sampling weights before resampling; membership-covariate models apply and
+  retain requested centering; constrained covariance updates preserve their
+  structure at an active variance floor; growth likelihoods retain residual
+  information at extreme random-effect scales; R3STEP inference is stable
+  under predictor-unit changes; pooling structural constants reports zero
+  missing information; descriptives refuse matrix-valued columns.
+* Weighted residual tables use weighted descriptive moments and withhold
+  unsupported design-based test statistics and p-values. Weighted profile
+  trees use the fitted weights for shares and flows. Noise-model entropy
+  includes noise mass; named noise diagnostics retain the supported sizes
+  view and refuse unsupported entropy, posterior and AvePP views.
+* Comparisons support homogeneous/general transition and membership-covariate
+  fits both directly and through enumeration; classification follows the
+  retained comparison rows. Data identity includes raw indicators, category
+  labels, centering, grouping, occasions and weights. Covariate enumeration
+  tolerates unavailable start-replication counts. `get_results(x, "all")`
+  returns the available tables for regression comparisons and family/transition
+  enumerations. Smallest-profile curves distinguish covariance structures.
+* Aggregated-binomial prediction consistently reports expected successes.
+  New-data trial counts are inferred from the response columns or supplied
+  with the named-only `trials` argument (a number, vector or column name).
+  When neither is available, a classed data error requests trial counts;
+  `trials = 1` explicitly requests per-trial probabilities.
+* Every candidate of an enumeration grid has a name, and the one name
+  reaches it everywhere. `classes3_groups4` is 3 classes and 4 group classes
+  (`profiles` when an indicator is continuous; no `_groups` part on a
+  single-level grid; `_VVI` etc. when the grid crosses structures;
+  `<model>_groups2`, such as `additive_equal_groups2`, on a group-class
+  family grid). The name is the first
+  column, `candidate`, of the grid's table and names each pick in
+  `get_results(grid, "criteria")`; `grid$classes3_groups4` is that model, and
+  an editor completes the names after `grid$`. Grids saved by earlier versions
+  are named the same way.
+* New `get_candidate()`, beside `get_results()`, takes one model out of a
+  grid: `get_candidate(grid, "classes3_groups4")`, `get_candidate(grid, 3, 4)`
+  or `get_candidate(grid, c(3, 4))`. `candidate_fit()`, its 0.9.21 name,
+  still works.
+* `compare_models()` compares candidates of a grid: by name,
+  `compare_models(grid, "classes3_groups4", "classes3_groups5")`; by class
+  counts, `compare_models(grid, c(3, 4), c(3, 5))`; or by selection,
+  `compare_models(grid, n_profiles = 3)`, or every candidate,
+  `compare_models(grid)` (candidates that failed are left out, with a
+  message). It gives one row per candidate with its information criteria
+  (the candidates table's numbers), entropies, AvePP summaries, smallest
+  share, convergence, `delta_bic` and `bic_weight`, and takes a `cutoff` for
+  the AvePP count. It also compares fits from `multilpa()`, `lpa()`, `lca()`
+  or `get_candidate()` directly, refusing fits to different data. The
+  printout marks the row with the lowest BIC as "lowest BIC" (it read
+  "best", also for mixture-regression comparisons, whose columns are
+  unchanged).
+* A comparison carries the models it compared:
+  `get_candidate(comparison, "classes3_groups4")` returns the model behind a
+  row, and `get_results(comparison, "classification")` gives every class's
+  AvePP and sizes for compared profile, class and transition models.
+* Enumeration grids are much smaller in memory and on disk. Each candidate
+  used to record, as its `call`, the whole fitting function and a full copy of
+  the data, so a grid held one copy of the data per candidate. A candidate's
+  call is now a short call that names the data, for example
+  `multilpa(data = d, vars = ..., n_profiles = 3, n_group_classes = 8, ...)`.
+  This applies to `enumerate_classes()` (profile, transition and group-class
+  family grids) and `enumerate_regressions()`.
+* Model-selection evidence for an enumeration grid, none of which selects a
+  model, each reading the criterion in `using` (default `"bic_groups"`):
+  `get_results(grid, "deltas")` gives, for every candidate, how much the
+  criterion fell from one profile fewer and from one group class fewer;
+  `get_results(grid, "knees")` gives a maximum perpendicular chord-distance
+  knee, a simplified Kneedle-inspired rule without smoothing or sensitivity
+  thresholds, along the profiles, along the group classes and
+  over every candidate by its number of parameters, with the range it was
+  found on and whether it holds without the last candidate.
+  `plot(grid, what = "deltas")`, `"heatmap"`, `"smallest"` and `"trust"`
+  draw the evidence; `what = "selection"` draws them all with the entropy
+  and AvePP views.
+* `plot(grid, what = "entropy")`, `"avepp"` and `"diagnostics"` (both) draw
+  classification quality across the candidates of an enumeration grid, in
+  the words of a single model's plot: relative entropy and the lowest AvePP
+  of each candidate against the number of classes, one panel per level, the
+  AvePP `cutoff` (0.8) dashed. `plot_enumeration()` takes them too.
+* An enumeration grid compares classification quality across candidates. Its
+  candidates table gains, beside the two entropies, the smallest, largest and
+  mean average posterior probability (AvePP) of each candidate's profiles and
+  group classes and the number of classes below a cutoff:
+  `avepp_min`, `avepp_max`, `avepp_mean`, `avepp_below` and the same four
+  prefixed `group_` for the group classes.
+  The cutoff defaults to 0.8 and is set with
+  `get_results(grid, "candidates", cutoff = )`. The columns are computed from
+  the stored fits when the table is read, so grids fitted by earlier versions
+  report them without refitting. `get_results(grid, "classification")` gives
+  every class's AvePP, modal and estimated sizes, odds of correct
+  classification and relative entropy for every candidate in one table.
+* Named plot functions for the main views, each with its own listed arguments
+  so an editor completes them: `plot_profiles()`, `plot_responses()`,
+  `plot_prevalence()`, `plot_diagnostics()`, `plot_transitions()` and
+  `plot_tree()`, alongside `plot_enumeration()`. Each draws exactly what the
+  matching `plot(x, what = )` draws, and an argument the fit's family does not
+  take is refused by name. `plot()` on a `diagnostics()` result now draws
+  through `plot_diagnostics()`.
+* Enumeration plots choose their criteria with `what`, as every other plot
+  does: `plot(grid, what = "bic_groups")`, `plot(grid, what = "all")`,
+  `plot(grid, what = "tree")`, and `plot_enumeration(grid, what = )`. The
+  0.9.21 spelling, `criterion =` (alone or with `what = "enumeration"`),
+  draws the same plot; `criterion` with any other `what` is an error of class
+  `latents_bad_argument` (with `what = "tree"`, a warning, as the tree uses no
+  criterion). This applies to transition and group-class family grids too.
+* Every plot now returns a ggplot object. The last base-graphics plots are
+  ported: `plot()` on a pooled imputation fit, on a `bootstrap_lrt()` result
+  and on a mixture regression (`"fitted"`, `"coefficients"`, `"posteriors"`).
+  Style them with ggplot2. The bootstrap plot still takes `palette`; its
+  base-graphics `style` constants have nothing to set on a ggplot, so passing
+  them draws the plot with a warning of class `latents_unused_argument`. The
+  posterior strip of a mixture regression spreads its points deterministically
+  and no longer draws from the random number stream.
+  These formerly base plots draw when called, including inside loops, and
+  return the ggplot invisibly. Code that used their previous returned fit
+  object should keep its original fit separately; the returned object is now
+  the reusable plot.
+* `plot()` on a pooled fit chooses its parameters with `what` (`level`, which
+  elsewhere means a confidence level, still works) and takes `subtitle`.
+* No `plot()` method drops an argument it does not use without a word. Those
+  that ignored one silently in 0.9.21 (comparison, growth mixture, mixture
+  regression, pooled, additive, cross-level, general transition fits,
+  bootstrap tests, transition and group-class family grids) now draw with a
+  warning of class `latents_unused_argument`; the others refuse it with an
+  error of class `latents_bad_argument`, as they did.
+* `graphics` is no longer imported.
+* The reference manual consolidates the former 74 help pages into 38 topics.
+  Released help aliases are retained, and plot/prediction method usages list
+  their actual arguments and defaults. `print()`, `summary()` and
+  `as.data.frame()` are described once on
+  `?get_results`, which also lists every family's tables (the eight
+  `get_results.<class>` pages are folded in). All plotting, the fourteen
+  `plot.<class>` pages and the `plot_*()` functions, is on one page,
+  `?"latents-plots"`. `predict()` and `simulate()` share `?"latents-predict"`.
+* The README's likelihood equation renders on GitHub: `\left\{` was stripped
+  to `\left{` by GitHub's markdown, so the braces are now `\lbrace`/`\rbrace`.
+
 # latents 0.9.23
 
 * New `plot_enumeration()` draws the information criteria of an enumeration

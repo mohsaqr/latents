@@ -42,6 +42,15 @@
 #' the average sample variance (axis-parallel and spherical structures), for
 #' `G` profiles.
 #'
+#' The updates follow mclust's fitted-model convention, including its
+#' structure-specific departures from a textbook conjugate update. For `EII`,
+#' `scale` does not enter the variance update. For `EEI`, `shrinkage` and
+#' `mean` enter the variance calculation but do not shrink the fitted means.
+#' For `VEV`, `dof` does not enter the update. `EEI`, `EVI` and `EEV` count the
+#' mean-prior contribution once rather than once per profile. These
+#' conventions are retained for agreement with mclust; the controls therefore
+#' have different effects across covariance structures.
+#'
 #' @param shrinkage Non-negative prior precision factor for the means, `kappa`;
 #'   mclust's default `0.01`. Zero leaves the means unshrunk.
 #' @param mean Optional prior mean, one value per continuous indicator, in the
@@ -260,6 +269,17 @@ print.latents_prior <- function(x, ...) {
       scale + scatter[[profile]] + mean_terms[[profile]]
     }), weights, d, max_iter, tol))
   if (.multilpa_is_ellipsoidal(structure)) {
+    if (structure == "VEV" && any(vapply(spread, function(block) {
+      min(eigen(block, symmetric = TRUE, only.values = TRUE)$values) < min_variance
+    }, logical(1)))) {
+      bounded <- .multilpa_bounded_covariances(lapply(seq_len(k), function(profile) {
+        scale + scatter[[profile]] + mean_terms[[profile]]
+      }), weights, structure, min_variance, NULL, max_iter, tol)
+      return(list(means = means,
+        variances = matrix(vapply(seq_len(k), function(profile) {
+          diag(matrix(bounded[, , profile], d, d))
+        }, numeric(d)), k, d, byrow = TRUE), covariances = bounded))
+    }
     covariances <- lapply(spread, function(block) {
       .multilpa_bound_covariance((block + t(block)) / 2, min_variance)
     })
@@ -268,6 +288,12 @@ print.latents_prior <- function(x, ...) {
                                    byrow = TRUE),
                 covariances = array(unlist(covariances, use.names = FALSE),
                                     c(d, d, k))))
+  }
+  if (structure %in% c("EVI", "VEI") && any(spread < min_variance)) {
+    pseudo_weights <- if (structure == "EVI") rep((dof + n + 1 + bump) / k, k) else
+      (dof + weights * d + 2 + bump) / d
+    spread <- .multilpa_bounded_variances(scale + diagonals + mean_diagonals,
+      pseudo_weights, structure, min_variance)
   }
   list(means = means, variances = pmax(spread, min_variance))
 }

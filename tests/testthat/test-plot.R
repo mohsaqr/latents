@@ -25,7 +25,7 @@ test_that("plot methods return ggplot objects for every view", {
   candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
                                  n_group_classes = 1:2, n_starts = 1, seed = 3)
   expect_plot(plot(candidates))
-  expect_plot(plot(candidates, criterion = "sabic_individual"))
+  expect_plot(plot(candidates, what = "sabic_individual"))
   expect_plot(plot(candidates, labels = FALSE, mark_minimum = FALSE))
   expect_plot(plot(candidates, what = "tree"))
 })
@@ -73,13 +73,13 @@ test_that("enumeration plotting rejects unusable criteria by condition class", {
   dat <- plot_fixture()
   candidates <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
                                  n_group_classes = 1, n_starts = 1, seed = 3)
-  expect_error(plot(candidates, criterion = "not_a_column"),
+  expect_error(plot(candidates, what = "not_a_column"),
                class = "latents_unknown_criterion")
-  expect_error(plot(candidates, criterion = "structure"),
+  expect_error(plot(candidates, what = "structure"),
                class = "latents_unknown_criterion")
   empty <- candidates
   empty$table$bic_individual <- NA_real_
-  expect_error(plot(empty, criterion = "bic_individual"),
+  expect_error(plot(empty, what = "bic_individual"),
                class = "latents_nothing_to_plot")
 })
 
@@ -93,57 +93,46 @@ test_that("plot_enumeration() draws the enumeration view plot() draws", {
   # data must agree exactly, for the default and for an explicit criterion.
   expect_equal(expect_plot(plot_enumeration(candidates))$data,
                plot(candidates)$data)
-  expect_equal(plot_enumeration(candidates, criterion = "sabic_groups")$data,
-               plot(candidates, criterion = "sabic_groups")$data)
+  expect_equal(plot_enumeration(candidates, what = "sabic_groups")$data,
+               plot(candidates, what = "sabic_groups")$data)
   # Its arguments are its own formals, so a misspelt one is refused by R.
   expect_error(plot_enumeration(candidates, palette = "x"), "unused argument")
 })
 
-test_that("criterion = \"all\" draws every information criterion once", {
+test_that("what = \"all\" draws every information criterion once", {
   skip_on_cran()
   skip_if_not_installed("ggplot2")
   dat <- plot_fixture()
   two_level <- enumerate_classes(dat, c("a", "b"), "g", n_profiles = 1:2,
                                 n_group_classes = 1:2, n_starts = 1, seed = 3)
-  every <- expect_plot(plot_enumeration(two_level, criterion = "all"))
+  every <- expect_plot(plot_enumeration(two_level, what = "all"))
   # A two-level grid differs at the two levels for every criterion, so each
   # column of the grid gets its own panel.
   expect_identical(nlevels(every$data$title),
                    length(.multilpa_enumeration_criteria()))
-  expect_equal(plot(two_level, criterion = "all")$data, every$data)
-  separate <- plot_enumeration(two_level, criterion = "all", combine = FALSE)
+  expect_equal(plot(two_level, what = "all")$data, every$data)
+  separate <- plot_enumeration(two_level, what = "all", combine = FALSE)
   expect_s3_class(separate, "latents_plots")
   expect_named(separate, .multilpa_enumeration_criteria())
   # Single level: a criterion whose two versions coincide is drawn once.
   single <- enumerate_lpa(dat, c("a", "b"), n_profiles = 1:2, n_starts = 1,
                           seed = 3)
-  drawn <- plot_enumeration(single, criterion = "all")$data
+  drawn <- plot_enumeration(single, what = "all")$data
   expect_lt(nlevels(drawn$title), length(.multilpa_enumeration_criteria()))
   expect_true(all(c("AIC", "BIC", "SABIC", "CAIC") %in% levels(drawn$title)))
   expect_false("BIC (groups)" %in% levels(drawn$title))
   # "all" is a whole value, not a column to mix with others.
-  expect_error(plot_enumeration(two_level, criterion = c("all", "aic")),
+  expect_error(plot_enumeration(two_level, what = c("all", "aic")),
                class = "latents_unknown_criterion")
 })
 
-test_that("the palette, symbols and line types stay aligned and recycle", {
-  skip_on_cran()
-  # The base-graphics plots that remain (bootstrap, pooled, mixture
-  # regression) still draw with these; colour must never be the only channel.
-  invisible(lapply(c(1L, 3L, 9L, 12L), function(n) {
-    expect_length(.multilpa_palette(n), n)
-    expect_length(.multilpa_symbols(n), n)
-    expect_length(.multilpa_linetypes(n), n)
-  }))
-  expect_identical(.multilpa_palette(1L), "#E69F00")
+test_that("every plot draws from the Okabe-Ito palette, yellow last", {
   okabe_ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442",
                  "#0072B2", "#D55E00", "#CC79A7", "#999999", "#000000")
-  expect_true(all(.multilpa_palette(20L) %in% okabe_ito))
-  expect_identical(.multilpa_palette(11L)[10L], .multilpa_palette(1L))
-  expect_false("#F0E442" %in% .multilpa_palette(6L))
-  # The ggplot2 views draw from the same palette, yellow last.
-  expect_true(all(.gg_okabe_ito %in% okabe_ito))
+  expect_setequal(.gg_okabe_ito, okabe_ito)
+  # Yellow is the least visible on a light panel, so it is reached last.
   expect_identical(.gg_okabe_ito[length(.gg_okabe_ito)], "#F0E442")
+  expect_true(all(.gg_shapes %in% 21:25))
 })
 
 # Twelve schools do not identify the group-class split in this fixture: the
@@ -214,9 +203,9 @@ test_that("the catalogue lists exactly the views the methods accept", {
                       plot.multilpa_transitions)
   fit_views <- unique(unlist(lapply(fit_methods, function(method)
     eval(formals(method)$what)), use.names = FALSE))
-  grid_views <- eval(formals(plot.multilpa_enumeration)$what)
-  expect_setequal(catalogue$type, c(fit_views, grid_views))
-  expect_setequal(grid_views, c("enumeration", "tree"))
+  # An enumeration's `what` takes its criteria by name; the catalogue lists
+  # the two views it draws.
+  expect_setequal(catalogue$type, c(fit_views, "enumeration", "tree"))
 })
 
 test_that("a view a fit cannot supply is refused by condition class", {

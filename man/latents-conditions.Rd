@@ -256,7 +256,7 @@ not valid at that parameter.}
 membership below one, so it is supported by less than one observation.}
 \item{\code{latents_weak_class}}{\code{multilpa(family = "additive")} only: a
 group class is supported by fewer than 50 effective groups (see
-\code{effective_groups} in \code{\link[=get_results.multilpa_additive]{get_results.multilpa_additive()}}), because it is
+\code{effective_groups} in \code{\link[=get_results]{get_results()}}), because it is
 small, poorly separated, or both. Standard errors are still reported,
 but intervals for class means and weights can be miscalibrated.}
 \item{\code{latents_failed_replicates}}{Some bootstrap replicates failed

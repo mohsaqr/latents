@@ -51,34 +51,7 @@
   stats::rnorm(spec$n, mean, sqrt(params$sigma2[row_class]))
 }
 
-#' Simulate outcomes from a growth mixture model
-#'
-#' Draws new outcomes on the fitted design: each person's class from their
-#' membership probabilities, their random effects from that class's
-#' covariance, and their outcomes around their own trajectory with the
-#' class's residual variance.
-#'
-#' @param object A `latents_growth_mixture` fit.
-#' @param nsim Number of simulated outcome vectors.
-#' @param seed `NULL` or an integer seed; the caller's random state is
-#'   restored afterwards.
-#' @param ... Unused.
-#' @return A base `data.frame` with one row per fitted row and one column per
-#'   simulation, `sim_1`, `sim_2`, ...
-#' @examples
-#' few_students <- subset(growth_scores, student <= 60)
-#' small_fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
-#'                                 id = "student", class_level = "group",
-#'                                 random = "intercept", seed = 1)
-#' head(simulate(small_fit, nsim = 2, seed = 1))
-#' \donttest{
-#' # All 300 students, with random intercepts and slopes
-#' fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
-#'                           id = "student", class_level = "group",
-#'                           random = "wave", random_covariance = "equal",
-#'                           n_starts = 2, seed = 1)
-#' head(simulate(fit, nsim = 2, seed = 1))
-#' }
+#' @rdname latents-predict
 #' @export
 simulate.latents_growth_mixture <- function(object, nsim = 1, seed = NULL, ...) {
   stopifnot("`nsim` must be a single positive integer" = .mixture_is_count(nsim))
@@ -88,23 +61,7 @@ simulate.latents_growth_mixture <- function(object, nsim = 1, seed = NULL, ...) 
   })
 }
 
-#' Prediction for a growth mixture model (not implemented)
-#'
-#' Predictions for new persons are not implemented yet. The fitted class
-#' trajectories and each fitted person's own predicted curve are tables of
-#' [get_results.latents_growth_mixture()]: `"trajectories"` and
-#' `"individual"`.
-#'
-#' @param object A `latents_growth_mixture` fit.
-#' @param ... Unused.
-#' @return Never returns; raises `latents_unsupported_prediction`.
-#' @examples
-#' few_students <- subset(growth_scores, student <= 60)
-#' fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
-#'                           id = "student", class_level = "group",
-#'                           random = "intercept", seed = 1)
-#' # Prediction is refused; get_results(fit, "trajectories") has the curves
-#' try(predict(fit))
+#' @rdname latents-predict
 #' @export
 predict.latents_growth_mixture <- function(object, ...) {
   stop(errorCondition(paste(

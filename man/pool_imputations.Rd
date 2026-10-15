@@ -65,6 +65,10 @@ sample, which is what maximum-likelihood inference assumes.
 Pooled intervals are symmetric t intervals on this scale; unlike the
 transformed Wald intervals of \code{\link[=parameter_inference]{parameter_inference()}}, they can extend
 outside the parameter space for probabilities or variances.
+A structural constant, such as the sole class's probability of one, has
+zero within- and between-imputation variance and zero missing information.
+If within-imputation variance is zero but between-imputation variance is
+positive, \code{riv} is infinite and \code{fmi} is one.
 }
 \section{Choosing the imputation model}{
 

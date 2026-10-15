@@ -1,3 +1,5 @@
+utils::globalVariables("statistic")
+
 #' Enumerate numbers of individual profiles and group classes
 #'
 #' Fits every requested combination and retains errors and warnings alongside
@@ -38,7 +40,7 @@
 #'   `"additive_dispersion"` enumerates those instead, over `family`,
 #'   `n_group_classes` and `between_variance`; `n_profiles` and `model` are
 #'   then refused, and the result is a `latents_family_enumeration` read with
-#'   [get_results.latents_family_enumeration()] and [candidate_fit()].
+#'   [get_results()] and [get_candidate()].
 #' @param between_variance For group-class families: the between-variance
 #'   restrictions to cross, `"varying"`, `"equal"` or both (the default). The
 #'   dispersion family is always fitted with `"equal"`.
@@ -47,17 +49,26 @@
 #'   (default `1`), holding every other `lta()` argument given in `...`
 #'   fixed. `model`, when given, crosses those covariance structures. The
 #'   result is a `latents_transition_enumeration`, read with
-#'   [get_results.latents_transition_enumeration()] and [candidate_fit()].
+#'   [get_results()] and [get_candidate()].
 #' @param ... Further arguments to [multilpa()] (or to [lta()] with `time`); for group-class families only
 #'   `n_starts`, `max_iter`, `tol` and `min_variance`.
 #' @return An object of class `multilpa_enumeration`. Read it with the verbs
 #'   that describe it rather than by reaching into it: [as.data.frame()] gives
-#'   one row per candidate model with every criterion and diagnostic,
-#'   [summary()] gives one row per information criterion naming the candidate
-#'   that minimises it, [plot()] draws one criterion across the grid, and
-#'   [candidate_fit()] returns the fitted model for one cell of the grid.
-#' @seealso [candidate_fit()] to take one fitted model out of the grid,
-#'   [summary.multilpa_enumeration()] for the criterion-by-criterion comparison.
+#'   one row per candidate model with every criterion and diagnostic
+#'   (including both entropies and, at each level, the smallest, largest and
+#'   mean average posterior probability and the number of classes below a
+#'   cutoff), `get_results(x, "criteria")` names the candidate each
+#'   criterion's minimum falls on, `get_results(x, "classification")` gives
+#'   every class's average posterior probability and relative entropy for
+#'   every candidate, `get_results(x, "deltas")` and `"knees"` give the
+#'   model-selection evidence, [summary()] prints each criterion's minimum and
+#'   every table, [plot()] draws the information criteria (and, with `what`,
+#'   classification quality and model-selection views), [get_candidate()]
+#'   returns the fitted model of one candidate, and [compare_models()] puts
+#'   candidates side by side. Each candidate has a name, the first column of
+#'   the table (`"profiles3_groups2"`), which these verbs take.
+#' @seealso [get_candidate()] to take one fitted model out of the grid,
+#'   `summary()` for the criterion-by-criterion comparison.
 #' @section Conditions:
 #'   `latents_bad_argument` when `model` names an unknown structure, when it is
 #'   given together with another way of setting the structure, or when it is
@@ -85,6 +96,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                               seed = NULL, family = "profiles",
                               between_variance = c("varying", "equal"),
                               time = NULL, ...) {
+  data_expression <- substitute(data)
   if (missing(id)) {
     .multilpa_missing_id("enumerate_classes",
                          "`enumerate_lpa()` or `enumerate_lca()`")
@@ -185,25 +197,31 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
         error_text <<- conditionMessage(error)
         NULL
       })
+    if (!is.null(fit)) {
+      fit$call <- .latents_candidate_call("multilpa", data_expression, c(
+        list(vars = vars, id = id, n_profiles = grid$n_profiles[i],
+             n_group_classes = grid$n_group_classes[i], seed = seed),
+        requested, extra))
+    }
     row <- cbind(
       data.frame(n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
         # A latent class model has no covariance structure; naming one (the
         # default the fit records for its absent Gaussian block) misleads.
         model = if (is.null(fit)) grid$model[i] else
           if (length(.multilpa_continuous_names(fit)) == 0L) NA_character_ else
-            fit$covariance_structure,
+            .latents_comparison_structure(fit),
         log_likelihood = if (is.null(fit)) NA_real_ else fit$log_likelihood,
         n_parameters = if (is.null(fit)) NA_integer_ else fit$n_parameters,
         stringsAsFactors = FALSE),
       .multilpa_enumeration_indices(fit),
       data.frame(
         profile_entropy = if (is.null(fit)) NA_real_ else
-          .multilpa_relative_entropy(fit$subject_posteriors),
+          .multilpa_relative_entropy(.multilpa_class_posteriors(fit)),
         group_entropy = if (is.null(fit)) NA_real_ else
           .multilpa_relative_entropy(fit$group_posteriors),
         converged = !is.null(fit) && fit$converged,
         boundary = if (is.null(fit)) NA else fit$boundary,
-        n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated,
+        n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated %||% NA_integer_,
         warnings = paste(unique(warnings), collapse = "; "), error = error_text))
     list(fit = fit, row = row)
   })
@@ -214,7 +232,25 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   result <- list(table = do.call(rbind, lapply(runs, `[[`, "row")),
        fits = lapply(runs, `[[`, "fit"), call = match.call())
   class(result) <- "multilpa_enumeration"
+  names(result$fits) <- .latents_candidate_names(result)
   result
+}
+
+#' A candidate's call as the caller would have written it
+#'
+#' A fit made through `do.call(multilpa, arguments)` records the function's
+#' whole body and every argument's value, the data frame included, as its
+#' `call`, so a grid held one copy of the data in every candidate. A fit's
+#' call is only displayed, never evaluated; this one names the verb and the
+#' caller's expression for the data, with the other arguments written out.
+#'
+#' @param verb The fitting function's name.
+#' @param data_expression The caller's expression for `data`.
+#' @param arguments The other arguments the candidate was fitted with.
+#' @return A call.
+#' @noRd
+.latents_candidate_call <- function(verb, data_expression, arguments) {
+  as.call(c(as.name(verb), list(data = data_expression), arguments))
 }
 
 #' The covariance structures an enumeration crosses
@@ -278,38 +314,78 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   codes
 }
 
-#' Take one fitted model out of an enumeration grid
+#' Take one fitted model out of an enumeration grid or a comparison
 #'
-#' An enumeration keeps every candidate it fitted. This returns one of them, so
-#' that a caller who wants to plot, summarise or test a particular candidate
-#' names it by its class counts instead of indexing the grid by position.
+#' An enumeration keeps every candidate it fitted, and [compare_models()]
+#' keeps every model it compared. This returns one of them, so that a caller
+#' who wants to plot, summarise or test a particular candidate names it by its
+#' class counts instead of indexing the grid by position.
 #'
-#' @param x An `multilpa_enumeration` result from [enumerate_classes()].
-#' @param n_profiles Number of individual profiles identifying the candidate.
+#' A candidate is named by its name, `get_candidate(grid, "classes3_groups4")`,
+#' as the grid's `candidate` column shows it; by its class counts,
+#' `get_candidate(grid, 3, 4)` or `get_candidate(grid, c(3, 4))`; or, on a grid
+#' that crosses covariance structures, by its counts and `model`. From a
+#' comparison, name the row: `get_candidate(comparison, "classes3_groups4")`.
+#' The same model is `grid$classes3_groups4`.
+#'
+#' @param x An enumeration grid from [enumerate_classes()] (a profile, latent
+#'   class, transition or group-class family grid), or a comparison from
+#'   [compare_models()]. On a family grid, give the name, or `n_group_classes`
+#'   with `model`.
+#' @param n_profiles Number of individual profiles identifying the candidate,
+#'   the candidate's name (`"profiles3_groups4"`), or its two class counts
+#'   (`c(3, 4)`). For a comparison, the label of the row, as its `model`
+#'   column shows it.
 #' @param n_group_classes Number of group classes identifying the candidate.
 #' @param model The covariance model identifying the candidate, needed when
 #'   [enumerate_classes()] was given several `model`s and the class counts
-#'   alone name several candidates. Naming counts that match more than one
-#'   candidate raises `latents_unknown_candidate` listing the models it could
-#'   have meant.
+#'   alone name several candidates. Counts that match more than one
+#'   candidate raise `latents_unknown_candidate`, listing their names.
 #' @return The fitted model for that cell of the grid: an object of class
-#'   `multilpa`, exactly as [multilpa()] returned it, with every verb of this
-#'   package available on it.
+#'   `multilpa`, the same kind of object [multilpa()] returns, so the verbs
+#'   for a fitted model apply to it.
 #' @section Conditions:
-#'   `latents_unknown_candidate` when the requested class counts are not in
-#'   the grid, and `latents_failed_candidate` when they are in the grid but
-#'   that fit raised an error, so no model exists to return. Neither situation
-#'   returns `NULL`, because a `NULL` would flow silently into whatever the
-#'   caller did next.
+#'   `latents_unknown_candidate` for a name or class counts not in the grid,
+#'   for counts that match several candidates (the message lists their
+#'   names), and for a label that is not a row of a comparison;
+#'   `latents_failed_candidate` when the candidate is in the grid but its fit
+#'   raised an error, so no model exists to return; `latents_bad_argument`
+#'   for a name or pair of counts given together with `n_group_classes` or
+#'   `model`, or for a value that names no candidate; `latents_incomplete_fit`
+#'   for a comparison that no longer carries its models. Counts that are not
+#'   whole positive numbers raise an error from the argument checks. None of
+#'   these returns `NULL`, because a `NULL` would flow silently into whatever
+#'   the caller did next.
 #' @examples
 #' set.seed(1)
 #' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
 #' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
 #'                               n_group_classes = 1, n_starts = 2, seed = 1)
-#' candidate_fit(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
+#' get_candidate(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
+#' # This grid crosses two structures, so the names carry them:
+#' candidates
+#' get_candidate(candidates, "profiles2_groups1_VVI")
+#' compared <- compare_models(candidates, "profiles1_groups1_VVI",
+#'                            "profiles2_groups1_VVI")
+#' get_candidate(compared, "profiles2_groups1_VVI")
 #' @export
-candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
+get_candidate <- function(x, n_profiles, n_group_classes = 1L,
                           model = NULL) {
+  if (inherits(x, "latents_comparison")) {
+    if (missing(n_profiles)) return(.latents_compared_model(x))
+    return(.latents_compared_model(x, n_profiles))
+  }
+  # A name, or a pair of counts, names the candidate on its own. (A
+  # group-class family grid names candidates without `n_profiles`.)
+  if (!missing(n_profiles) && (is.character(n_profiles) || length(n_profiles) == 2L)) {
+    if (!missing(n_group_classes) || !is.null(model)) {
+      stop(errorCondition(paste(
+        "A candidate's name, or its pair of class counts, names it on its",
+        "own; give that or the separate counts, not both."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    return(.latents_candidate_at(x, .latents_candidate_row(x, n_profiles)))
+  }
   if (inherits(x, "latents_transition_enumeration")) {
     at <- which(x$table$n_profiles == n_profiles &
                   x$table$n_group_classes == n_group_classes &
@@ -373,8 +449,9 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
     # A grid crossed with covariance structures has several candidates per
     # pair of class counts, so the counts alone no longer name one.
     stop(errorCondition(sprintf(paste(
-      "%d candidates have %s: %s. Name one with `model`."),
-      length(at), described, paste(grid$model[at], collapse = ", ")),
+      "%d candidates have %s: %s. Name one, or give its `model`."),
+      length(at), described,
+      paste(sprintf("\"%s\"", .latents_candidate_names(x)[at]), collapse = ", ")),
       class = "latents_unknown_candidate", call = NULL))
   }
   if (length(at) != 1L) {
@@ -392,12 +469,27 @@ candidate_fit <- function(x, n_profiles, n_group_classes = 1L,
   fit
 }
 
-#' @rdname latents-summary
+#' @rdname get_candidate
+#' @details `candidate_fit()` is the name this function had in latents 0.9.21.
+#'   It is still accepted with the same arguments and without a warning, so
+#'   code written for that release keeps working; it forwards to
+#'   `get_candidate()`, which new code uses.
+#' @export
+candidate_fit <- function(x, n_profiles, n_group_classes = 1L, model = NULL) {
+  # Forwarded as a call, so an argument the caller left out stays missing;
+  # the function itself is inserted, so a `get_candidate` defined by the
+  # caller cannot stand in for it.
+  call <- match.call()
+  call[[1L]] <- get_candidate
+  eval(call, parent.frame())
+}
+
+#' @noRd
 #' @export
 summary.multilpa_enumeration <- function(object, ...) {
   stopifnot("`object` must be an `multilpa_enumeration` result" =
               inherits(object, "multilpa_enumeration"))
-  grid <- object$table
+  grid <- .multilpa_enumeration_grid(object)
   result <- list(criteria = .multilpa_enumeration_minima(grid),
                  candidates = grid,
                  n_candidates = nrow(grid),
@@ -428,6 +520,8 @@ summary.multilpa_enumeration <- function(object, ...) {
       criterion = sub("_(groups|individual)$", "", name),
       convention = if (grepl("_groups$", name)) "groups" else
         if (grepl("_individual$", name)) "individuals" else NA_character_,
+      candidate = if (is.na(best) || is.null(grid$candidate)) NA_character_ else
+        grid$candidate[best],
       n_profiles = if (is.na(best)) NA_integer_ else
         as.integer(grid$n_profiles[best]),
       n_group_classes = if (is.na(best)) NA_integer_ else
@@ -440,7 +534,129 @@ summary.multilpa_enumeration <- function(object, ...) {
   do.call(rbind, rows)
 }
 
-#' @rdname latents-print
+#' The candidates table of an enumeration, with its AvePP columns
+#'
+#' The average posterior probability (AvePP) summaries at each level are
+#' computed here from the stored fits, each time the table is read, rather
+#' than when the grid is fitted. Grids fitted before these columns existed
+#' carry the same fits, so they report the same numbers without refitting. The
+#' columns sit after `group_entropy`, beside the entropies they are read with.
+#'
+#' @param x A `multilpa_enumeration` result.
+#' @param cutoff The AvePP below which a class is counted in `*_avepp_below`.
+#' @return `x$table` with `avepp_min`, `_max`, `_mean`, `_below` and
+#'   the same four for `group_`; `NA` for a candidate whose fit failed.
+#' @noRd
+.multilpa_enumeration_grid <- function(x, cutoff = 0.8) {
+  stopifnot(
+    "`cutoff` must be a single number between 0 and 1" =
+      is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
+      cutoff > 0 && cutoff <= 1,
+    "the enumeration must hold one fit slot per candidate" =
+      length(x$fits) == nrow(x$table))
+  statistics <- c("min", "max", "mean", "below")
+  added <- c(paste0("avepp_", statistics),
+             paste0("group_avepp_", statistics))
+  # Names an earlier development build stored in the table.
+  stale <- c("profile_min_average_posterior", "group_min_average_posterior")
+  grid <- x$table[setdiff(names(x$table), c(added, stale))]
+  level_summary <- function(posteriors_of, prefix) {
+    rows <- vapply(unname(x$fits), function(fit) {
+      if (is.null(fit)) rep(NA_real_, 4L) else
+        .multilpa_avepp_summary(posteriors_of(fit), cutoff)
+    }, numeric(4L))
+    columns <- as.data.frame(t(rows))
+    names(columns) <- paste0(prefix, statistics)
+    columns[[paste0(prefix, "below")]] <- as.integer(rows[4L, ])
+    columns
+  }
+  columns <- cbind(
+    level_summary(.multilpa_class_posteriors, "avepp_"),
+    level_summary(\(fit) fit$group_posteriors, "group_avepp_"))
+  at <- match("group_entropy", names(grid))
+  .latents_named_table(x, cbind(grid[seq_len(at)], columns,
+                                grid[setdiff(seq_along(grid), seq_len(at))]))
+}
+
+#' Smallest, largest and mean AvePP at one level, and the classes below a cutoff
+#'
+#' AvePP is the diagonal of the average posterior matrix: for the units
+#' modally assigned to a class, their mean posterior of belonging to it
+#' (Nagin, 2005). A class with no assigned unit has no AvePP; the smallest,
+#' largest and mean are taken over the classes that have one, and such a class
+#' is counted as below the cutoff, since nothing is classified into it. A level
+#' with no posteriors or a single class classifies nothing and gives `NA`s,
+#' the same rule as relative entropy.
+#'
+#' @param probabilities Posterior probability matrix, or `NULL`.
+#' @param cutoff The AvePP below which a class is counted.
+#' @return A numeric vector: `min`, `max`, `mean`, `below`.
+#' @noRd
+.multilpa_avepp_summary <- function(probabilities, cutoff) {
+  if (is.null(probabilities) || ncol(probabilities) < 2L) {
+    return(c(min = NA_real_, max = NA_real_, mean = NA_real_, below = NA_real_))
+  }
+  avepp <- diag(.multilpa_average_posterior_matrix(probabilities))
+  assigned <- avepp[!is.na(avepp)]
+  c(min = min(assigned), max = max(assigned), mean = mean(assigned),
+    below = sum(is.na(avepp) | avepp < cutoff))
+}
+
+#' One fit's classification table with its relative entropy, one-class levels
+#' left out
+#'
+#' @param fit A fitted model of this package.
+#' @return The fit's `"classification"` rows at every level with two or more
+#'   classes, with that level's `relative_entropy`.
+#' @noRd
+.multilpa_informative_classification <- function(fit) {
+  quality <- .multilpa_classification_table(
+    fit, level = .multilpa_default_level(fit, NULL))
+  entropy <- .multilpa_entropy_table(fit)
+  # A level with one class classifies nothing: its AvePP is 1 by
+  # construction and would only pad the table.
+  informative <- entropy$level[entropy$n_classes > 1L]
+  quality <- quality[quality$level %in% informative, , drop = FALSE]
+  quality$relative_entropy <-
+    entropy$relative_entropy[match(quality$level, entropy$level)]
+  quality
+}
+
+#' Per-class classification quality of every candidate in a grid
+#'
+#' The `"classification"` table of each fitted candidate, keyed by the
+#' candidate's class counts and model and carrying that level's relative
+#' entropy, so AvePP and entropy are compared across the grid in one table.
+#' Candidates whose fit failed have no posteriors and contribute no rows, and
+#' neither does a level with a single class.
+#'
+#' @param x A `multilpa_enumeration` result.
+#' @return A base `data.frame`, one row per candidate, level and class.
+#' @noRd
+.multilpa_enumeration_classification <- function(x) {
+  fitted <- which(!vapply(x$fits, is.null, logical(1L)))
+  if (length(fitted) == 0L) {
+    return(data.frame(candidate = character(), n_profiles = integer(),
+                      n_group_classes = integer(), model = character(),
+                      level = character(), class = integer(), n_modal = integer(),
+                      proportion_modal = numeric(), estimated_n = numeric(),
+                      estimated_proportion = numeric(), average_posterior = numeric(),
+                      odds_correct_classification = numeric(),
+                      relative_entropy = numeric()))
+  }
+  rows <- lapply(fitted, function(i) {
+    quality <- .multilpa_informative_classification(x$fits[[i]])
+    keys <- x$table[rep(i, nrow(quality)),
+                    c("n_profiles", "n_group_classes", "model"), drop = FALSE]
+    cbind(candidate = rep(.latents_candidate_names(x)[i], nrow(quality)),
+          keys, quality)
+  })
+  result <- do.call(rbind, rows)
+  row.names(result) <- NULL
+  result
+}
+
+#' @noRd
 #' @export
 print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa_enumeration` object" =
@@ -488,19 +704,22 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
       isTRUE(all.equal(grid[[both[1L]]], grid[[both[2L]]]))
   }
   bic <- if (same_levels("bic")) "bic_groups" else c("bic_groups", "bic_individual")
-  keep <- c("n_profiles",
+  keep <- c("candidate", "n_profiles",
             if (varies("n_group_classes")) "n_group_classes",
             if (varies("model")) "model",
             "log_likelihood", "n_parameters", "aic", bic, "icl_individual",
             "profile_entropy",
             if (!all(is.na(grid$group_entropy))) "group_entropy",
+            paste0("avepp_", c("min", "mean", "below")),
+            if (!all(is.na(grid$group_avepp_min)))
+              paste0("group_avepp_", c("min", "mean", "below")),
             "converged", "boundary")
   compact <- grid[, intersect(keep, names(grid)), drop = FALSE]
   if (same_levels("bic")) names(compact)[names(compact) == "bic_groups"] <- "bic"
   compact
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_enumeration`" = inherits(x, "summary_multilpa_enumeration"))
@@ -1146,7 +1365,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
   result
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.multilpa_bootstrap_lrt <- function(x, ...) {
   stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
@@ -1183,7 +1402,7 @@ print.multilpa_bootstrap_lrt <- function(x, ...) {
   invisible(x)
 }
 
-#' @rdname latents-summary
+#' @noRd
 #' @export
 summary.multilpa_bootstrap_lrt <- function(object, ...) {
   stopifnot("`object` must be an `multilpa_bootstrap_lrt` result" =
@@ -1222,7 +1441,7 @@ summary.multilpa_bootstrap_lrt <- function(object, ...) {
              row.names = NULL, stringsAsFactors = FALSE)
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
                                                  ...) {
@@ -1238,56 +1457,37 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
   invisible(x)
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.multilpa_bootstrap_lrt <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_bootstrap_lrt`" = inherits(x, "multilpa_bootstrap_lrt"))
   .multilpa_coerce(x, row.names, list(...))
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.summary_multilpa_bootstrap_lrt <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_bootstrap_lrt`" = inherits(x, "summary_multilpa_bootstrap_lrt"))
   .multilpa_coerce(x, row.names, list(...))
 }
 
-#' Plot a simulated bootstrap null distribution
-#'
-#' Draws the replicate likelihood-ratio statistics as a histogram with the
-#' observed statistic marked, so that the p-value can be read as a tail area of
-#' the distribution that was actually simulated. Invalid replicates carry no
-#' statistic and are counted in the subtitle rather than dropped silently.
-#'
-#' @param x An `multilpa_bootstrap_lrt` result.
-#' @param main,subtitle Panel title and secondary line, or `NULL` for defaults.
-#' @param palette A vector of at least two colours: the histogram fill and the
-#'   observed-statistic marker. `NULL` uses the package palette.
-#' @param style A list of visual constants, as built by `.multilpa_style()`.
-#' @param ... Further named visual constants, merged into `style`.
-#' @return The input, invisibly. Called for the side effect of drawing.
-#' @section Conditions:
-#'   `latents_nothing_to_plot` when no replicate produced a finite statistic.
-#' @examples
-#' set.seed(1)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 10),
-#'   score = rnorm(100, rep(c(-2, 2), each = 50))
-#' )
-#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-#'                     n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-#'                    n_group_classes = 1, n_starts = 2, seed = 1)
-#' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-#'                             max_iter = 2000, tol = 1e-6, seed = 1)
-#' plot(comparison)
+#' @rdname latents-plots
 #' @export
 plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
-                                        palette = NULL,
-                                        style = .multilpa_style(), ...) {
+                                        palette = NULL, style = NULL, ...) {
   stopifnot("`x` must be an `multilpa_bootstrap_lrt` result" =
-              inherits(x, "multilpa_bootstrap_lrt"))
+              inherits(x, "multilpa_bootstrap_lrt"),
+            "`palette` must be NULL or a vector of colours" =
+              is.null(palette) || (is.character(palette) &&
+                                     length(palette) >= 1L && !anyNA(palette)))
+  # `style` and named constants through `...` tuned the base-graphics drawing
+  # of 0.9.21; the plot is ggplot now, so they have nothing to set.
+  .latents_warn_unused_arguments(
+    c(if (is.null(style)) list() else list(style = style), list(...)),
+    "plot()",
+    "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
+  colours <- if (is.null(palette)) .gg_okabe_ito[c(1L, 2L)] else
+    rep_len(palette, 2L)
   values <- x$replicates$statistic
   values <- values[is.finite(values)]
   if (length(values) == 0L) {
@@ -1295,30 +1495,26 @@ plot.multilpa_bootstrap_lrt <- function(x, main = NULL, subtitle = NULL,
       "No replicate produced a finite statistic; there is nothing to plot.",
       class = "latents_nothing_to_plot", call = NULL))
   }
-  style <- utils::modifyList(style, list(...))
-  colours <- if (is.null(palette)) .multilpa_palette(2L) else
-    rep(palette, length.out = 2L)
-  previous <- graphics::par(no.readonly = TRUE)
-  on.exit(graphics::par(previous), add = TRUE, after = FALSE)
-  graphics::par(xpd = NA, mar = style$margins)
+  .gg_require()
   breaks <- pretty(range(c(values, x$statistic, 0)), n = 12L)
-  counts <- graphics::hist(values, breaks = breaks, plot = FALSE)
-  .multilpa_panel(xlim = range(breaks), ylim = c(0, max(counts$counts) * 1.12),
-    xlab = "Simulated likelihood-ratio statistic", ylab = "Replicates",
-    main = if (is.null(main)) "Simulated null distribution" else main,
-    subtitle = if (is.null(subtitle)) sprintf(
+  # The label sits on the side of the line with more room.
+  right_half <- x$statistic > mean(range(breaks))
+  drawn <- ggplot2::ggplot(data.frame(statistic = values), ggplot2::aes(statistic)) +
+    ggplot2::geom_histogram(breaks = breaks, fill = colours[1L],
+                            colour = "white", linewidth = 0.4) +
+    ggplot2::geom_vline(xintercept = x$statistic, colour = colours[2L],
+                        linetype = "dashed", linewidth = 0.9) +
+    ggplot2::annotate("text", x = x$statistic, y = Inf,
+                      label = if (right_half) "observed " else " observed",
+                      hjust = if (right_half) 1 else 0, vjust = 1.5,
+                      colour = colours[2L], fontface = "bold", size = 3.4) +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.08))) +
+    .gg_theme() +
+    ggplot2::labs(x = "Simulated likelihood-ratio statistic", y = "Replicates") +
+    .gg_titles(main, subtitle, "Simulated null distribution", sprintf(
       "%d of %d replicates valid; observed %.3f, p = %s", x$n_valid, x$iter,
-      x$statistic, format(x$p_value, digits = 3L)) else subtitle,
-    style = style)
-  graphics::rect(counts$breaks[-length(counts$breaks)], 0,
-                 counts$breaks[-1L], counts$counts, col = colours[1L],
-                 border = style$panel_fill, lwd = 1.2)
-  graphics::abline(v = x$statistic, col = colours[2L], lwd = style$line_width,
-                   lty = 2L)
-  graphics::text(x$statistic, max(counts$counts) * 1.06, " observed",
-                 adj = c(0, 0.5), col = colours[2L],
-                 cex = style$label_text_size, font = 2L)
-  invisible(x)
+      x$statistic, format(x$p_value, digits = 3L)))
+  .gg_draw_on_call(drawn)
 }
 
 #' Spread the information criteria of one candidate into a single row

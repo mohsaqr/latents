@@ -88,7 +88,7 @@ test_that("transition enumeration crosses profiles, classes and structures", {
   expect_s3_class(grid, "latents_transition_enumeration")
   table <- get_results(grid)
   expect_identical(nrow(table), 4L)
-  fit <- candidate_fit(grid, n_profiles = 3, n_group_classes = 1)
+  fit <- get_candidate(grid, n_profiles = 3, n_group_classes = 1)
   expect_equal(subset(table, n_profiles == 3 & n_group_classes == 1)$bic, fit$bic)
   expect_equal(get_results(grid, "best")$bic, min(table$bic))
   expect_identical(as.data.frame(grid), table)
@@ -96,7 +96,7 @@ test_that("transition enumeration crosses profiles, classes and structures", {
                                   time = "sequence", n_profiles = 2,
                                   model = c("VVI", "VEI"), n_starts = 1, seed = 1)
   expect_identical(get_results(structures)$model, c("VVI", "VEI"))
-  expect_error(candidate_fit(structures, n_profiles = 2, n_group_classes = 1),
+  expect_error(get_candidate(structures, n_profiles = 2, n_group_classes = 1),
                class = "latents_unknown_candidate")
   expect_error(enumerate_classes(course_engagement, compare_activity, "student",
                                  time = "sequence", n_profiles = 1:2, n_starts = 1),

@@ -154,18 +154,18 @@ number of groups and with the number of observations.
 get_results(candidates, "criteria")
 ```
 
-To draw one criterion across the grid, we call `plot()` with `criterion` for
-its name.
+To draw one criterion across the grid, we call `plot()` with its name as
+`what`; `what = "all"` draws every criterion.
 
 ```{r enumeration-plot}
-plot(candidates, criterion = "bic_groups")
+plot(candidates, what = "bic_groups")
 ```
 
 To take one candidate out of the grid as a fitted model, we call
-`candidate_fit()` with its `n_profiles`, `n_group_classes` and `model`.
+`get_candidate()` with its `n_profiles`, `n_group_classes` and `model`.
 
 ```{r candidate}
-candidate_fit(candidates, n_profiles = 3, n_group_classes = 2, model = "VVI")
+get_candidate(candidates, n_profiles = 3, n_group_classes = 2, model = "VVI")
 ```
 
 ## Parameter uncertainty
@@ -191,7 +191,7 @@ get_results(fit, "classification_errors")       # P(assigned class | true class)
 get_results(fit, "residuals")                   # residuals within each profile
 get_results(candidates, "candidates")           # the full enumeration grid
 summary(candidates)                             # the best candidate on each criterion
-bootstrap_lrt(fit, candidate_fit(candidates, n_profiles = 3,
+bootstrap_lrt(fit, get_candidate(candidates, n_profiles = 3,
                                 n_group_classes = 2, model = "VVI"),
               iter = 199, seed = 42)            # bootstrap test of one more class (slow)
 enumerate_classes(course_engagement, vars = c("browse", "lectures"),

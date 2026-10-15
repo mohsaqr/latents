@@ -7,6 +7,11 @@
 #' what it can offer and `what` names it, so the same call shape reads a
 #' measurement model, a classification diagnostic and a transition matrix.
 #'
+#' Every object also answers the usual generics: `print()` shows a compact
+#' overview, `summary()` collects its main tables (taking `level` and
+#' `vcov_type` where the model has standard errors), and `as.data.frame()`
+#' returns its primary table, the same as `get_results(x)`.
+#'
 #' @param x A fitted model of this package, an enumeration grid, a bootstrap
 #'   comparison, a starting-value set, a classification-diagnostics object, or
 #'   the summary of any of them.
@@ -143,14 +148,64 @@
 #'     profile: `group_class`, `profile`, `probability`, `prevalence`,
 #'     `group_class_probability`. `"sequence_lengths"` has one row per group:
 #'     `group`, `group_class`, `occasions`, `observations`, `complete`.}
-#'   \item{`"candidates"`, `"criteria"`}{An enumeration grid.
-#'     `"criteria"` has one row per information criterion, naming the candidate
-#'     that minimises it. `"candidates"` has one row per candidate model,
-#'     with its class counts, its covariance `model`, log likelihood,
+#'   \item{`"candidates"`, `"criteria"`, `"classification"`}{An enumeration
+#'     grid. `"criteria"` has one row per information criterion and
+#'     sample-size convention: `criterion`, `convention`, `candidate` (the
+#'     candidate its minimum falls on), `n_profiles`, `n_group_classes`,
+#'     `model` and `value`. `"candidates"` has one row per candidate model:
+#'     its name (`candidate`, first), its class counts, its covariance
+#'     `model`, log likelihood,
 #'     parameter count, every criterion
-#'     under both sample-size conventions, both entropies, and the convergence,
-#'     boundary, replication, warning and error diagnostics. Failed candidates
-#'     are retained with `NA` estimates and their error text.}
+#'     under both sample-size conventions, both entropies, the average
+#'     posterior probability (AvePP) summaries of each level --
+#'     `avepp_min`, `avepp_max`, `avepp_mean`,
+#'     `avepp_below` and the same four prefixed `group_` -- and the
+#'     convergence, boundary, replication, warning and error diagnostics.
+#'     Failed candidates are retained with `NA` estimates and their error text.
+#'     `"candidates"` takes `cutoff` (default `0.8`): `avepp_below` and
+#'     `group_avepp_below` count the classes whose AvePP is below it. A class with no modally assigned
+#'     unit has no AvePP; it is left out of the smallest, largest and mean and
+#'     counted as below the cutoff. A level with one class has `NA`
+#'     summaries. `"classification"` has one row per fitted candidate,
+#'     level and class: `candidate`, `n_profiles`, `n_group_classes`,
+#'     `model`, then the
+#'     columns of a fit's `"classification"` table and that level's
+#'     `relative_entropy`. Failed candidates and levels with a single class
+#'     contribute no rows.}
+#'   \item{`"deltas"`, `"knees"`}{Model-selection evidence of an enumeration
+#'     grid, each taking `using` (default `"bic_groups"`). Neither selects a
+#'     model. `"deltas"` has one row per candidate: `candidate`, its class
+#'     counts and `model`, `criterion`, `value`, `delta_profile` (how much the
+#'     criterion fell from the converged candidate with one profile fewer and
+#'     the same group classes and structure; positive means this candidate is
+#'     lower) with `from_profile` naming that candidate, and
+#'     `delta_group_class` with `from_group_class` for one group class fewer.
+#'     `value` and both deltas are `NA` for a candidate that did not converge,
+#'     and a delta is `NA` when the smaller neighbour is missing or did not
+#'     converge. `"knees"` has one row per
+#'     line of the grid: `direction` (`"profiles"`, along the profiles at
+#'     fixed group classes; `"group_classes"`, along the group classes at
+#'     fixed profiles; `"parameters"`, every candidate by its number of
+#'     parameters, one line per structure), `line`, `criterion`, `from`, `to`,
+#'     `n_points`,
+#'     `knee_candidate` (the maximum chord-distance knee: with both axes
+#'     rescaled to 0-1, the
+#'     candidate furthest below the straight line from the first to the last,
+#'     measured perpendicular to it), `distance`,
+#'     `knee_without_largest` (the knee when the last candidate of the line is
+#'     left out), `stable` and `note`. This is a simplified geometric rule
+#'     inspired by Kneedle, without its smoothing or sensitivity thresholds;
+#'     a very small positive distance can therefore still name a knee.
+#'     A line needs three candidates for a
+#'     knee and four for `knee_without_largest` and `stable`; otherwise they
+#'     are `NA` and `note` says why.}
+#'   \item{`"comparison"`, `"classification"`}{A [compare_models()] result.
+#'     `"comparison"` is its table, one row per model. `"classification"`,
+#'     for profile, class, membership-covariate and transition models, has
+#'     one row per model, level and class:
+#'     `model`, then the columns of a fit's `"classification"` table and that
+#'     level's `relative_entropy`; levels with one class are left out. The
+#'     models themselves come back with [get_candidate()].}
 #'   \item{`"test"`, `"replicates"`}{A bootstrap comparison. `"test"` is the
 #'     one-row result; `"replicates"` has one row per simulated dataset.}
 #'   \item{`"covariances"`}{A starting-value set. One row per profile and
@@ -158,6 +213,74 @@
 #'     `indicator_2`, `covariance`.}
 #' }
 #'
+#' @section Tables of the other model families:
+#' Each family's first table is its default `what`; `"all"` returns a named
+#' list of every table (without `"recovery"`, which needs `data` and `truth`).
+#' Tables with intervals take `level`, and `vcov_type` (`"observed"`,
+#' `"robust"` or `"opg"`; `NULL` reuses the type stored with a regression
+#' fit). The usual generics answer as well: `coef()`, `vcov(type = )`,
+#' `confint(parm = , level = )`, `logLik()` and `nobs()`.
+#' \describe{
+#'   \item{Mixture regressions ([mixture_regression()])}{`"coefficients"`
+#'     (one row per class and term, with Wald statistics, `p_adjusted` by
+#'     Benjamini-Hochberg over non-intercepts and `exp_estimate` for the
+#'     binomial, Poisson and ordinal families; ordinal thresholds lead each
+#'     class as terms `"threshold:<lower>|<upper>"`), `"classes"`,
+#'     `"membership"` (multinomial logits and odds ratios), `"group_classes"`
+#'     (two-level fits), `"fit"` (`bic` penalised by independent units,
+#'     `bic_rows` by rows as flexmix reports it), `"assignments"`,
+#'     `"groups"`, `"fitted"`, `"starts"` (`stage` `"screened"` or
+#'     `"completed"`), `"classification"` and `"recovery"` (`by = "class"` or
+#'     `"group_class"`).}
+#'   \item{Growth mixtures (`mixture_regression(random = )`)}{The tables
+#'     above plus `"random"` (random-effect variances, standard deviations
+#'     and correlations, with intervals on the log and Fisher-z scales),
+#'     `"random_effects"` (one row per person), `"trajectories"` (each class's
+#'     mean trajectory with a band) and `"individual"` (each person's own
+#'     predicted curve); the last two take `time`. A multilevel growth mixture
+#'     adds `"group_classes"` and `"clusters"`, and its `"fit"` counts clusters
+#'     in `bic` (persons in `bic_persons`).}
+#'   \item{Additive fits (`multilpa(family = "additive")`)}{`"parameters"`
+#'     (class means, between- and within-group variances and class weights;
+#'     variance intervals on the log scale, weights on the logit scale;
+#'     `adjust` sets the p-value adjustment, `"none"` by default),
+#'     `"group_classes"`, `"groups"`, `"intercepts"` and
+#'     `"conditional_intercepts"` (each group's posterior intercept, overall
+#'     or given each class), `"assignments"`, `"classification"`, `"fit"`,
+#'     `"recovery"` and `"starts"`. `effective_groups` in `"group_classes"` is
+#'     `w^2 (1 - w) / Var(w)`, the number of perfectly classified groups that
+#'     would estimate the class weight as precisely; below 50 the class's
+#'     intervals carry a `latents_weak_class` warning.}
+#'   \item{Cross-level fits (`multilpa(family = "full_cross_level")` or
+#'     `"restricted_cross_level"`)}{`"profiles"` (individual profiles, then
+#'     the group classes' means of group means), `"group_classes"`,
+#'     `"composition"` (profile shares within each class: model-implied for
+#'     the full family, a posterior-weighted description for the restricted
+#'     one), `"groups"`, `"assignments"`, `"fit"` and `"starts"`. The
+#'     likelihood is a working likelihood, comparable only between
+#'     cross-level fits of the same data.}
+#'   \item{General transition fits ([lta()] with `transitions = "occasion"`,
+#'     transition or initial covariates, or `measurement = "occasion"`)}{
+#'     `"transitions"` (model-implied, averaged over the groups observed),
+#'     `"transition_coefficients"` (log odds of each move against staying,
+#'     with odds ratios), `"second_order_transitions"` and
+#'     `"second_order_coefficients"` (`order = 2`), `"initial"` and
+#'     `"initial_coefficients"`, `"profiles"`, `"group_classes"`,
+#'     `"assignments"`, `"fit"` and `"starts"`.}
+#'   \item{Pooled imputations ([pool_imputations()])}{`"estimates"` (the
+#'     pooled table), `"imputations"` (each imputation's aligned estimates)
+#'     and `"fits"` (one row per imputation).}
+#'   \item{Transition and group-class family grids
+#'     (`enumerate_classes(time = )`, `enumerate_classes(family = )`)}{
+#'     `"candidates"` (one row per candidate, its name first, with its
+#'     likelihood, criteria, entropy and diagnostics) or `"best"`, the row
+#'     with the lowest `criterion` (`"bic"` by groups, the default, `"aic"`
+#'     or `"bic_individual"`): the lowest value of a criterion, not a choice
+#'     of model. With one group class every family is the same model, so
+#'     those rows share a likelihood. Their candidates are taken out by name
+#'     with [get_candidate()]; transition grids can also be compared with
+#'     [compare_models()].}
+#' }
 #' @section What `"all"` returns: A named list of every table the object can
 #'   produce, in catalogue order, built from the same definitions a single
 #'   `what` uses, so the two can never disagree. It takes no further arguments:
@@ -291,6 +414,10 @@
 #'   enumeration grid will otherwise absorb by asking for an extra profile. The
 #'   p-values are approximate, and `p_adjusted` applies the multiplicity
 #'   correction named by `adjust` across the pairs.
+#'   A fit with sampling weights uses those weights in its descriptive
+#'   associations and `effective_n`. Design-based residual inference is not
+#'   implemented: `statistic`, `df`, `p_value` and `p_adjusted` are `NA` for
+#'   weighted fits rather than unweighted tests attached to weighted moments.
 #'
 #' @references Schwarz, G. (1978). Estimating the dimension of a model.
 #'   *Annals of Statistics*, 6, 461--464.
@@ -336,6 +463,94 @@
 #' # which the model never saw. Both recovery checks are one call.
 #' get_results(fit, what = "assignments", data = course_engagement,
 #'          truth = c("engagement", "student_type"))
+#' @aliases latents-as-data-frame latents-print latents-summary
+#' @aliases as.data.frame.latents_family_enumeration
+#' @aliases as.data.frame.latents_growth_mixture
+#' @aliases as.data.frame.latents_mixture_regression
+#' @aliases as.data.frame.latents_pooled
+#' @aliases as.data.frame.latents_table
+#' @aliases as.data.frame.latents_transition_enumeration
+#' @aliases as.data.frame.multilpa
+#' @aliases as.data.frame.multilpa_additive
+#' @aliases as.data.frame.multilpa_bootstrap_lrt
+#' @aliases as.data.frame.multilpa_covariates
+#' @aliases as.data.frame.multilpa_cross_level
+#' @aliases as.data.frame.multilpa_enumeration
+#' @aliases as.data.frame.multilpa_lta
+#' @aliases as.data.frame.multilpa_start
+#' @aliases as.data.frame.multilpa_transitions
+#' @aliases as.data.frame.summary_multilpa
+#' @aliases as.data.frame.summary_multilpa_additive
+#' @aliases as.data.frame.summary_multilpa_bootstrap_lrt
+#' @aliases as.data.frame.summary_multilpa_covariates
+#' @aliases as.data.frame.summary_multilpa_enumeration
+#' @aliases as.data.frame.summary_multilpa_transitions
+#' @aliases coef.latents_growth_mixture
+#' @aliases coef.latents_mixture_regression
+#' @aliases coef.multilpa_additive
+#' @aliases coef.multilpa_lta
+#' @aliases confint.latents_growth_mixture
+#' @aliases confint.latents_mixture_regression
+#' @aliases confint.multilpa_additive
+#' @aliases get_results.latents_family_enumeration
+#' @aliases get_results.latents_growth_mixture
+#' @aliases get_results.latents_mixture_regression
+#' @aliases get_results.latents_pooled
+#' @aliases get_results.latents_transition_enumeration
+#' @aliases get_results.multilpa_additive
+#' @aliases get_results.multilpa_cross_level
+#' @aliases get_results.multilpa_lta
+#' @aliases logLik.latents_growth_mixture
+#' @aliases logLik.latents_mixture_regression
+#' @aliases logLik.multilpa_additive
+#' @aliases logLik.multilpa_cross_level
+#' @aliases logLik.multilpa_lta
+#' @aliases nobs.latents_growth_mixture
+#' @aliases nobs.latents_mixture_regression
+#' @aliases nobs.multilpa_additive
+#' @aliases nobs.multilpa_cross_level
+#' @aliases nobs.multilpa_lta
+#' @aliases print.latents_family_enumeration
+#' @aliases print.latents_growth_mixture
+#' @aliases print.latents_mixture_regression
+#' @aliases print.latents_plots
+#' @aliases print.latents_pooled
+#' @aliases print.latents_table
+#' @aliases print.latents_transition_enumeration
+#' @aliases print.multilpa
+#' @aliases print.multilpa_additive
+#' @aliases print.multilpa_bootstrap_lrt
+#' @aliases print.multilpa_covariates
+#' @aliases print.multilpa_cross_level
+#' @aliases print.multilpa_enumeration
+#' @aliases print.multilpa_lta
+#' @aliases print.multilpa_start
+#' @aliases print.multilpa_transitions
+#' @aliases print.summary_latents_growth_mixture
+#' @aliases print.summary_latents_mixture_regression
+#' @aliases print.summary_multilpa
+#' @aliases print.summary_multilpa_additive
+#' @aliases print.summary_multilpa_bootstrap_lrt
+#' @aliases print.summary_multilpa_covariates
+#' @aliases print.summary_multilpa_enumeration
+#' @aliases print.summary_multilpa_transitions
+#' @aliases summary.latents_family_enumeration
+#' @aliases summary.latents_growth_mixture
+#' @aliases summary.latents_mixture_regression
+#' @aliases summary.latents_pooled
+#' @aliases summary.latents_transition_enumeration
+#' @aliases summary.multilpa
+#' @aliases summary.multilpa_additive
+#' @aliases summary.multilpa_bootstrap_lrt
+#' @aliases summary.multilpa_covariates
+#' @aliases summary.multilpa_cross_level
+#' @aliases summary.multilpa_enumeration
+#' @aliases summary.multilpa_lta
+#' @aliases summary.multilpa_transitions
+#' @aliases vcov.latents_growth_mixture
+#' @aliases vcov.latents_mixture_regression
+#' @aliases vcov.multilpa_additive
+#' @aliases vcov.multilpa_lta
 #' @export
 get_results <- function(x, what = NULL, ...) {
   UseMethod("get_results")
@@ -372,6 +587,12 @@ get_results.multilpa_transitions <- function(x, what = NULL, ...) {
 #' @rdname get_results
 #' @export
 get_results.multilpa_enumeration <- function(x, what = NULL, ...) {
+  .multilpa_dispatch_table(x, what, list(...))
+}
+
+#' @rdname get_results
+#' @export
+get_results.latents_comparison <- function(x, what = NULL, ...) {
   .multilpa_dispatch_table(x, what, list(...))
 }
 
@@ -574,9 +795,28 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 .multilpa_catalogue <- function(x) {
   if (inherits(x, "multilpa_enumeration")) {
     return(list(
-      candidates = .multilpa_table(function(x) x$table),
+      candidates = .multilpa_table(
+        function(x, cutoff = 0.8) .multilpa_enumeration_grid(x, cutoff),
+        "cutoff"),
       criteria = .multilpa_table(
-        function(x) .multilpa_enumeration_minima(x$table))))
+        function(x) .multilpa_enumeration_minima(.multilpa_enumeration_grid(x))),
+      classification = .multilpa_table(.multilpa_enumeration_classification),
+      deltas = .multilpa_table(
+        function(x, using = "bic_groups") .latents_deltas_table(x, using), "using"),
+      knees = .multilpa_table(
+        function(x, using = "bic_groups") .latents_knees_table(x, using), "using")))
+  }
+  if (inherits(x, "latents_comparison")) {
+    catalogue <- list(comparison = .multilpa_table(function(x) {
+      attr(x, "models") <- NULL
+      x
+    }))
+    models <- attr(x, "models")
+    if (is.null(models) || all(vapply(models, .latents_comparison_measurement_fit,
+                                    logical(1)))) {
+      catalogue$classification <- .multilpa_table(.latents_comparison_classification)
+    }
+    return(catalogue)
   }
   if (inherits(x, "multilpa_bootstrap_lrt")) {
     return(list(

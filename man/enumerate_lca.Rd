@@ -21,7 +21,7 @@ enumerate_lca(data, vars, n_classes = 1:4, ...)
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}
 returns: \code{\link[=as.data.frame]{as.data.frame()}} gives one row per candidate, \code{\link[=summary]{summary()}} the
 candidate each criterion prefers, \code{\link[=plot]{plot()}} the criteria against the
-number of classes, and \code{\link[=candidate_fit]{candidate_fit()}} one fitted candidate, named by
+number of classes, and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate, named by
 its \code{n_profiles}.
 }
 \description{

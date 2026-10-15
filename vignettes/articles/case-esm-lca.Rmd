@@ -107,7 +107,7 @@ starts.
 The ICL plot shows the same choice across the grid.
 
 ```{r icl-plot}
-plot(candidates, criterion = "icl_individual")
+plot(candidates, what = "icl_individual")
 ```
 
 The plot marks the minimum at two profiles and two classes, and the analysis

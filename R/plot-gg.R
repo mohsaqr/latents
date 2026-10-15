@@ -36,6 +36,15 @@ utils::globalVariables(c(
   invisible(TRUE)
 }
 
+#' Draw a plot while preserving the side effect of a former base method
+#' @param plot A ggplot object.
+#' @return The same plot, invisibly, so an interactive call draws it once.
+#' @noRd
+.gg_draw_on_call <- function(plot) {
+  print(plot)
+  invisible(plot)
+}
+
 #' Whether plots can be drawn, telling the caller once when they cannot
 #'
 #' diagnostics() and report() draw by default; without ggplot2 they still
@@ -310,7 +319,9 @@ utils::globalVariables(c(
   stopifnot(is.list(blocks))
   lapply(names(blocks), function(indicator) {
     block <- blocks[[indicator]]
-    scores <- suppressWarnings(as.numeric(colnames(block)))
+    scores <- withCallingHandlers(as.numeric(colnames(block)), warning = function(w) {
+      invokeRestart("muffleWarning")
+    })
     if (length(scores) != ncol(block) || any(!is.finite(scores)) ||
         anyDuplicated(scores)) {
       stop(errorCondition(sprintf(
@@ -1390,15 +1401,20 @@ utils::globalVariables(c(
     rows_in <- model == series_model & grid$n_group_classes == classes
     counts <- sort(unique(grid$n_profiles[rows_in]))
     if (length(counts) < 2L) return(NULL)
-    posteriors <- lapply(counts, \(k) {
-      candidate_fit(x, n_profiles = k, n_group_classes = classes,
-                    model = if (nzchar(series_model)) series_model)$subject_posteriors
+    fits <- lapply(counts, \(k) {
+      get_candidate(x, n_profiles = k, n_group_classes = classes,
+                    model = if (nzchar(series_model)) series_model)
     })
-    n_cases <- nrow(posteriors[[1L]])
+    posteriors <- lapply(fits, `[[`, "subject_posteriors")
+    weights <- if (is.null(fits[[1L]]$sampling_weights)) {
+      rep(1, nrow(posteriors[[1L]]))
+    } else unname(fits[[1L]]$sampling_weights)[fits[[1L]]$group_index]
+    total_weight <- sum(weights)
     flows <- lapply(seq_along(counts)[-1L], \(level) {
-      crossprod(posteriors[[level - 1L]], posteriors[[level]]) / n_cases
+      crossprod(posteriors[[level - 1L]] * weights, posteriors[[level]]) /
+        total_weight
     })
-    first_share <- colSums(posteriors[[1L]]) / n_cases
+    first_share <- colSums(posteriors[[1L]] * weights) / total_weight
     first_order <- order(-first_share, seq_along(first_share))
     # Order each row's profiles by the flow-weighted centre of their parents,
     # so bands cross only where cases really are reshuffled.
@@ -1535,9 +1551,108 @@ utils::globalVariables(c(
   structure(plots, class = "latents_plots")
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.latents_plots <- function(x, ...) {
   invisible(lapply(x, print))
   invisible(x)
+}
+
+#' Entropy and lowest AvePP of every candidate, across the grid
+#'
+#' The classification-quality view of an enumeration: relative entropy and
+#' the lowest average posterior probability (AvePP) of each candidate, at each
+#' level, against the number of classes, one line per group-class count (and
+#' structure). Higher is sharper. A dashed line marks the AvePP cutoff. A
+#' level with one class has neither number, so its panel is left out.
+#'
+#' @param x A `multilpa_enumeration`.
+#' @param measures `"entropy"`, `"avepp"` or both.
+#' @param labels `TRUE` labels each series directly while they fit.
+#' @param main,subtitle Titles; `NULL` uses the view's own.
+#' @param cutoff The AvePP cutoff drawn on the AvePP panels.
+#' @return A ggplot object.
+#' @noRd
+.gg_view_enumeration_quality <- function(x, measures, labels, main, subtitle,
+                                         cutoff) {
+  grid <- .multilpa_enumeration_grid(x, cutoff)
+  columns <- c(
+    if ("entropy" %in% measures) c("Entropy, individuals" = "profile_entropy",
+                                   "Entropy, groups" = "group_entropy"),
+    if ("avepp" %in% measures) c("Lowest AvePP, individuals" = "avepp_min",
+                                 "Lowest AvePP, groups" = "group_avepp_min"))
+  present <- columns[vapply(columns, function(column) {
+    any(grid$converged %in% TRUE & is.finite(grid[[column]]))
+  }, logical(1))]
+  if (length(present) == 0L) {
+    stop(errorCondition(paste(
+      "No converged candidate has two or more classes, so there is no entropy",
+      "or AvePP to plot."), class = "latents_nothing_to_plot", call = NULL))
+  }
+  # With no group level the panels are simply "Entropy" and "Lowest AvePP".
+  if (!any(grepl("groups$", names(present)))) {
+    names(present) <- sub(", individuals$", "", names(present))
+  }
+  long <- .gg_enumeration_frame(grid, present)
+  long$title <- factor(long$title, levels = names(present))
+  series_levels <- unique(long$series[order(grid$n_group_classes, grid$model)])
+  long$series <- factor(long$series, levels = series_levels)
+  ok <- long[long$eligible, , drop = FALSE]
+  n_series <- nlevels(long$series)
+  colours <- stats::setNames(rep_len(.gg_okabe_ito, n_series), series_levels)
+  shapes <- stats::setNames(rep_len(.gg_shapes, n_series), series_levels)
+  labelled <- isTRUE(labels) && n_series > 1L && n_series <= 5L
+  legend <- n_series > 1L && !labelled
+  guide <- if (legend) "legend" else "none"
+  avepp_panels <- grep("AvePP", names(present), value = TRUE)
+  reference <- data.frame(title = factor(avepp_panels, levels = names(present)),
+                          y = rep(cutoff, length(avepp_panels)))
+  plot <- ggplot2::ggplot(ok, ggplot2::aes(n_profiles, value, colour = series,
+                                           group = series)) +
+    ggplot2::geom_line(linewidth = 0.8) +
+    ggplot2::geom_point(ggplot2::aes(shape = series, fill = series),
+                        size = 2.3, colour = "white", stroke = 0.6)
+  if (nrow(reference) > 0L) {
+    plot <- plot + ggplot2::geom_hline(
+      data = reference, ggplot2::aes(yintercept = y), linetype = "dashed",
+      colour = "grey35", linewidth = 0.5)
+  }
+  if (labelled) {
+    ends <- do.call(rbind, lapply(split(ok, list(ok$title, ok$series),
+                                        drop = TRUE),
+                                  \(s) s[which.max(s$n_profiles), ]))
+    ends <- do.call(rbind, lapply(split(ends, ends$title, drop = TRUE), \(p) {
+      span <- diff(range(ok$value[ok$title == p$title[1L]], cutoff))
+      p$y <- .gg_spread(p$value, gap = 0.07 * max(span, 1e-8))
+      p
+    }))
+    ends$x <- max(ok$n_profiles) + 0.28
+    plot <- plot + ggplot2::geom_text(
+      data = ends, ggplot2::aes(x = x, y = y, label = series, colour = series),
+      hjust = 0, size = 3.2, fontface = "bold", inherit.aes = FALSE)
+  }
+  failures <- sum(!grid$converged)
+  plot +
+    ggplot2::facet_wrap(ggplot2::vars(title), scales = "free_y",
+                        ncol = if (length(present) > 2L) 2L else NULL) +
+    ggplot2::scale_x_continuous(
+      breaks = sort(unique(grid$n_profiles)),
+      expand = ggplot2::expansion(add = c(0.3, if (labelled) 1.1 else 0.3))) +
+    ggplot2::scale_colour_manual(values = colours, guide = guide) +
+    ggplot2::scale_fill_manual(values = colours, guide = guide) +
+    ggplot2::scale_shape_manual(values = shapes, guide = guide) +
+    ggplot2::coord_cartesian(clip = "off") +
+    .gg_titles(main, subtitle, "Classification quality by candidate model",
+               sprintf("%d candidates%s; higher is sharper%s", nrow(grid),
+                       if (failures == 0L) "" else
+                         sprintf(", %d did not converge", failures),
+                       if (nrow(reference) == 0L) "" else
+                         sprintf("; dashed line: AvePP %s", format(cutoff)))) +
+    ggplot2::labs(x = sprintf("Number of %s", .latents_class_word(x)), y = NULL) +
+    .gg_theme() +
+    ggplot2::theme(panel.spacing = ggplot2::unit(1.6, "lines"),
+                   strip.text = ggplot2::element_text(
+                     face = "bold", hjust = 0, size = ggplot2::rel(0.95)),
+                   legend.position = if (legend) "bottom" else "none",
+                   legend.title = ggplot2::element_blank())
 }

@@ -93,8 +93,10 @@ test_that("an enumeration summary names the minimising candidate per criterion",
   expect_output(print.summary_multilpa_enumeration(summary_object),
                 "-- criteria", fixed = TRUE)
   criteria <- get_results(summary_object, "criteria")
-  expect_identical(names(criteria), c("criterion", "convention", "n_profiles",
-                                      "n_group_classes", "model", "value"))
+  # Each pick is named by its candidate, beside its class counts.
+  expect_identical(names(criteria), c("criterion", "convention", "candidate",
+                                      "n_profiles", "n_group_classes", "model",
+                                      "value"))
   expect_identical(nrow(criteria), 14L)
   expect_setequal(unique(criteria$criterion),
                   c("aic", "kic", "bic", "sabic", "caic", "awe", "icl", "clc"))
@@ -139,19 +141,20 @@ test_that("an enumeration summary names the minimising candidate per criterion",
 
 test_that("a candidate fit is reached by its class counts, never by position", {
   candidates <- .tidy_enumeration()
-  chosen <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 1)
+  chosen <- get_candidate(candidates, n_profiles = 2, n_group_classes = 1)
   expect_s3_class(chosen, "multilpa")
   expect_identical(chosen$n_profiles, 2L)
   expect_identical(chosen$n_group_classes, 1L)
   expect_equal(chosen$bic, subset(as.data.frame(candidates),
                                   n_profiles == 2L)$bic_groups)
-  expect_error(candidate_fit(candidates, n_profiles = 9),
+  expect_error(get_candidate(candidates, n_profiles = 9),
                class = "latents_unknown_candidate")
-  expect_error(candidate_fit(candidates, n_profiles = "two"),
+  # A string is a candidate's name; one the grid does not have is refused.
+  expect_error(get_candidate(candidates, n_profiles = "two"),
+               class = "latents_unknown_candidate")
+  expect_error(get_candidate(candidates, n_profiles = 1.5),
                "single positive integer")
-  expect_error(candidate_fit(candidates, n_profiles = 1.5),
-               "single positive integer")
-  expect_error(candidate_fit(candidates, n_profiles = 2,
+  expect_error(get_candidate(candidates, n_profiles = 2,
                              n_group_classes = 1.5),
                "single positive integer")
 })
@@ -175,11 +178,21 @@ test_that("a bootstrap comparison is classed and plots its simulated null", {
   expect_identical(test$null_profiles, 1L)
   expect_identical(test$alternative_profiles, 2L)
   expect_identical(nrow(get_results(summary_object, "replicates")), 3L)
-  file <- tempfile(fileext = ".pdf")
-  on.exit(unlink(file), add = TRUE)
-  grDevices::pdf(file)
-  on.exit(grDevices::dev.off(), add = TRUE, after = FALSE)
-  expect_s3_class(plot.multilpa_bootstrap_lrt(result), "multilpa_bootstrap_lrt")
+  skip_if_not_installed("ggplot2")
+  drawn <- expect_plot(plot.multilpa_bootstrap_lrt(result))
+  expect_equal(sum(plot_layer(drawn, 1L)$count),
+               sum(is.finite(get_results(result, "replicates")$statistic)))
+  # 0.9.21's `palette` still colours the histogram and the observed line;
+  # its base-graphics `style` has nothing to set on a ggplot and says so.
+  coloured <- plot(result, palette = c("#0072B2", "#D55E00"))
+  expect_identical(unique(plot_layer(coloured, 1L)$fill), "#0072B2")
+  expect_identical(unique(plot_layer(coloured, 2L)$colour), "#D55E00")
+  expect_identical(unique(plot_layer(plot(result, palette = "#009E73"), 2L)$colour),
+                   "#009E73")
+  expect_error(plot(result, palette = 3), "palette")
+  expect_warning(plot(result, style = list(line_width = 3)),
+                 class = "latents_unused_argument")
+  expect_warning(plot(result, line_width = 3), class = "latents_unused_argument")
 })
 
 test_that("the new methods dispatch through their generics", {

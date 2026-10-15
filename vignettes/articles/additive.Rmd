@@ -132,7 +132,7 @@ every parameter.
 
 `enumerate_classes()` fits every combination of family, between-variance
 restriction and number of group classes in one call. The `model` column names
-each candidate for `candidate_fit()`.
+each candidate for `get_candidate()`.
 
 ```{r enumerate}
 grid <- enumerate_classes(ratings, c("climate", "support"), "team",
@@ -157,8 +157,8 @@ likelihood-ratio statistic has no chi-square reference distribution there, so
 `bootstrap_lrt()` simulates it from the one-class fit:
 
 ```{r bootstrap}
-one_class <- candidate_fit(grid, n_group_classes = 1, model = "additive_equal")
-two_classes <- candidate_fit(grid, n_group_classes = 2, model = "additive_equal")
+one_class <- get_candidate(grid, n_group_classes = 1, model = "additive_equal")
+two_classes <- get_candidate(grid, n_group_classes = 2, model = "additive_equal")
 bootstrap_lrt(one_class, two_classes, iter = 19, n_starts = 3, seed = 1)
 ```
 

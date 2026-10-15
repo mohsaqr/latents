@@ -202,50 +202,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     starts = fit$starts)
 }
 
-#' Tables of a latent transition fit with occasion- or covariate-dependent
-#' transitions or occasion-specific measurement
-#'
-#' The result of [lta()] with `transitions = "occasion"`,
-#' `transition_covariates`, `initial_covariates` or `measurement = "occasion"`.
-#'
-#' @param x A `multilpa_lta` fit.
-#' @param what Which table; `"all"` for a named list of every table.
-#' @param level Confidence level of the coefficient intervals.
-#' @param vcov_type `"observed"`, `"robust"` (CR0 over groups) or `"opg"`.
-#' @param ... Unused.
-#' @section Tables:
-#' \describe{
-#'   \item{`transitions`}{Model-implied transition probabilities, one row per
-#'     group class, origin `from` and destination `to`; with occasion-varying
-#'     or covariate-dependent transitions, one set per destination
-#'     `occasion`, averaged over the groups observed there.}
-#'   \item{`transition_coefficients`}{One row per group class, move `from` ->
-#'     `to` and design `term`: the log odds of that move rather than staying
-#'     in `from`, its standard error, Wald statistic, p-value, interval and
-#'     `odds_ratio`. Terms are `(Intercept)` or `occasion_t` and each
-#'     covariate column.}
-#'   \item{`second_order_transitions`, `second_order_coefficients`}{With
-#'     `order = 2`: the probability of moving `to` given the profiles at the
-#'     two previous occasions (`previous`, `from`), averaged over the groups
-#'     observed from the third occasion on, and its logit coefficients
-#'     (reference: staying in `from`). The `transitions` tables then describe
-#'     the first move only.}
-#'   \item{`initial`, `initial_coefficients`}{The initial distribution
-#'     (averaged over groups) and its logit coefficients, reference: the last
-#'     profile.}
-#'   \item{`profiles`}{Means and variances per profile and indicator, per
-#'     `occasion` when measurement is occasion-specific.}
-#'   \item{`group_classes`, `assignments`, `fit`, `starts`}{As for other fits.}
-#' }
-#' @return A base `data.frame`, or a named list of them for `what = "all"`.
-#' @examples
-#' # Does the grade in the previous course shift the chance of switching
-#' # engagement profile? `previous_grade` changes from course to course.
-#' fit <- lta(course_engagement, c("browse", "lectures"), "student",
-#'            n_profiles = 2, time = "sequence",
-#'            transition_covariates = "previous_grade", n_starts = 2, seed = 1)
-#' get_results(fit, "transition_coefficients")
-#' get_results(fit, "transitions")
+#' @noRd
 #' @export
 get_results.multilpa_lta <- function(x, what = "transitions", level = 0.95,
                                      vcov_type = c("observed", "robust", "opg"), ...) {
@@ -262,7 +219,7 @@ get_results.multilpa_lta <- function(x, what = "transitions", level = 0.95,
   .lta_table(x, what, level, vcov_type)
 }
 
-#' @rdname get_results.multilpa_lta
+#' @noRd
 #' @param row.names,optional Unused; part of the generic.
 #' @export
 as.data.frame.multilpa_lta <- function(x, row.names = NULL, optional = FALSE,
@@ -270,7 +227,7 @@ as.data.frame.multilpa_lta <- function(x, row.names = NULL, optional = FALSE,
   get_results.multilpa_lta(x, what = what, ...)
 }
 
-#' @rdname get_results.multilpa_lta
+#' @noRd
 #' @export
 print.multilpa_lta <- function(x, ...) {
   pieces <- c(if (isTRUE(x$mover_stayer)) "with a stayer class",
@@ -295,14 +252,14 @@ print.multilpa_lta <- function(x, ...) {
   invisible(x)
 }
 
-#' @rdname get_results.multilpa_lta
+#' @noRd
 #' @param object A `multilpa_lta` fit.
 #' @export
 summary.multilpa_lta <- function(object, ...) {
   get_results.multilpa_lta(object, "all")
 }
 
-#' @rdname get_results.multilpa_lta
+#' @noRd
 #' @export
 coef.multilpa_lta <- function(object, ...) {
   stats::setNames(.lta_pack(.lta_parameters(object), object$variance_model,
@@ -310,7 +267,7 @@ coef.multilpa_lta <- function(object, ...) {
                   .lta_names(object))
 }
 
-#' @rdname get_results.multilpa_lta
+#' @noRd
 #' @param type Covariance type, as `vcov_type`.
 #' @export
 vcov.multilpa_lta <- function(object, type = c("observed", "robust", "opg"), ...) {
@@ -318,14 +275,14 @@ vcov.multilpa_lta <- function(object, type = c("observed", "robust", "opg"), ...
                                                 match.arg(type), missing(type)))$vcov
 }
 
-#' @rdname get_results.multilpa_lta
+#' @noRd
 #' @export
 logLik.multilpa_lta <- function(object, ...) {
   structure(object$log_likelihood, df = object$n_parameters, nobs = object$n_groups,
             class = "logLik")
 }
 
-#' @rdname get_results.multilpa_lta
+#' @noRd
 #' @export
 nobs.multilpa_lta <- function(object, ...) object$n_groups
 
@@ -395,21 +352,12 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
 }
 
 
-#' Plot transition probabilities of a general transition fit
-#'
-#' One panel per group class (and occasion, when transitions vary): a tile
-#' per origin and destination, labelled with its probability.
-#' @param x A `multilpa_lta` fit.
-#' @param main,subtitle Optional title and subtitle.
-#' @param ... Unused.
-#' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
-#' @examples
-#' fit <- lta(course_engagement, c("browse", "lectures"), "student",
-#'            n_profiles = 2, time = "sequence",
-#'            transition_covariates = "previous_grade", n_starts = 2, seed = 1)
-#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(fit)
+#' @rdname latents-plots
 #' @export
 plot.multilpa_lta <- function(x, main = NULL, subtitle = NULL, ...) {
+  .latents_warn_unused_arguments(
+    list(...), "plot()",
+    "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
   .gg_require()
   frame <- .lta_table(x, "transitions")
   frame$panel <- if (all(is.na(frame$occasion))) frame$group_class else

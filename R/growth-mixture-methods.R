@@ -642,64 +642,7 @@
   table
 }
 
-#' Tidy results of a growth mixture model
-#'
-#' Every table of a `mixture_regression()` fit with `random =` is a base
-#' `data.frame` with one row per observation unit of that table.
-#'
-#' @param x A `latents_growth_mixture` fit.
-#' @param what Which table: `"coefficients"` (one row per class and term,
-#'   with Wald statistics; shared terms have class `"common"`), `"classes"`
-#'   (share with interval, expected and assigned persons, average posterior,
-#'   residual standard deviation), `"random"` (per class: random-effect
-#'   variances, standard deviations and correlations with intervals formed on
-#'   the log and Fisher-z scales), `"membership"` (membership logits against
-#'   class 1), `"fit"` (one row: log likelihood, information criteria with
-#'   persons as the sample size, entropy, convergence), `"assignments"` (one
-#'   row per person: modal class and posteriors), `"random_effects"` (one row
-#'   per person: predicted random effects under the modal class),
-#'   `"trajectories"` (one row per class and time point: the mean trajectory
-#'   with a confidence band), `"individual"` (one row per observation:
-#'   observed value, class trajectory and the person's own predicted curve),
-#'   `"starts"` (one row per start), `"recovery"` (needs `data` and `truth`:
-#'   the modal classes cross-tabulated against a known classification that is
-#'   constant within persons, with counts and shares of each assigned class),
-#'   or `"all"` (a named list of every table but `"recovery"`). A multilevel
-#'   growth mixture (`cluster`) adds `"group_classes"` (one row per group
-#'   class and class: the class probabilities within the group class, their
-#'   standard errors without membership covariates, the group class's share
-#'   of the clusters and its assigned clusters) and `"clusters"` (one row per
-#'   cluster: persons, modal group class and posteriors); its `"membership"`
-#'   table holds the group-class logits (against group class 1) and the class
-#'   logits with one intercept per group class, `"assignments"` gains each
-#'   person's cluster, and `"fit"` counts clusters in `bic` (persons in
-#'   `bic_persons`).
-#' @param level Confidence level of the intervals.
-#' @param vcov_type `NULL` (the stored type), `"observed"`, `"robust"` or
-#'   `"opg"`. A weighted fit allows `"robust"` only.
-#' @param time For `"trajectories"` and `"individual"`, the numeric variable
-#'   to draw along; by default the first numeric variable of `random`.
-#' @param data,truth For `"recovery"`: the data frame the model was fitted to
-#'   and the name of its column holding the known classes.
-#' @param ... Unused.
-#' @return A base `data.frame` (or, for `"all"`, a named list of them).
-#' @examples
-#' few_students <- subset(growth_scores, student <= 60)
-#' small_fit <- mixture_regression(score ~ wave, few_students, n_classes = 2,
-#'                                 id = "student", class_level = "group",
-#'                                 random = "intercept", seed = 1)
-#' get_results(small_fit, "classes")
-#' get_results(small_fit, "random")
-#' \donttest{
-#' # All 300 students, with random intercepts and slopes
-#' fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
-#'                           id = "student", class_level = "group",
-#'                           random = "wave", random_covariance = "equal",
-#'                           n_starts = 3, seed = 1)
-#' get_results(fit, "classes")
-#' get_results(fit, "random")
-#' get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
-#' }
+#' @noRd
 #' @export
 get_results.latents_growth_mixture <- function(x, what = "coefficients", level = 0.95,
                                                vcov_type = NULL, time = NULL,
@@ -716,7 +659,7 @@ get_results.latents_growth_mixture <- function(x, what = "coefficients", level =
   .growth_table(x, what, level, vcov_type, time, data, truth)
 }
 
-#' @rdname get_results.latents_growth_mixture
+#' @noRd
 #' @param row.names,optional Unused; for the generic.
 #' @export
 as.data.frame.latents_growth_mixture <- function(x, row.names = NULL, optional = FALSE,
@@ -724,7 +667,7 @@ as.data.frame.latents_growth_mixture <- function(x, row.names = NULL, optional =
   get_results(x, what = what, ...)
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.latents_growth_mixture <- function(x, digits = 4L, ...) {
   fit <- .growth_fit_table(x)
@@ -763,7 +706,7 @@ print.latents_growth_mixture <- function(x, digits = 4L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-summary
+#' @noRd
 #' @export
 summary.latents_growth_mixture <- function(object, level = 0.95, vcov_type = NULL, ...) {
   tables <- c("fit", "classes", if (!is.null(object$spec$cluster)) "group_classes",
@@ -773,7 +716,7 @@ summary.latents_growth_mixture <- function(object, level = 0.95, vcov_type = NUL
   }), tables), class = "summary_latents_growth_mixture")
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.summary_latents_growth_mixture <- function(x, digits = 4L, ...) {
   invisible(lapply(x, function(table) {
@@ -783,19 +726,19 @@ print.summary_latents_growth_mixture <- function(x, digits = 4L, ...) {
   invisible(x)
 }
 
-#' @rdname get_results.latents_growth_mixture
+#' @noRd
 #' @param object A `latents_growth_mixture` fit.
 #' @export
 coef.latents_growth_mixture <- function(object, ...) .growth_pack(object$spec, object$params)
 
-#' @rdname get_results.latents_growth_mixture
+#' @noRd
 #' @param type As `vcov_type`.
 #' @export
 vcov.latents_growth_mixture <- function(object, type = NULL, ...) {
   .growth_resolve_inference(object, type)$vcov
 }
 
-#' @rdname get_results.latents_growth_mixture
+#' @noRd
 #' @param parm Unused.
 #' @export
 confint.latents_growth_mixture <- function(object, parm, level = 0.95, ...) {
@@ -806,14 +749,14 @@ confint.latents_growth_mixture <- function(object, parm, level = 0.95, ...) {
              stringsAsFactors = FALSE)
 }
 
-#' @rdname get_results.latents_growth_mixture
+#' @noRd
 #' @export
 logLik.latents_growth_mixture <- function(object, ...) {
   structure(object$log_likelihood, df = object$n_parameters,
              nobs = nobs(object), class = "logLik")
 }
 
-#' @rdname get_results.latents_growth_mixture
+#' @noRd
 #' @export
 nobs.latents_growth_mixture <- function(object, ...) {
   object$spec$n_clusters %||% length(object$stats$n)

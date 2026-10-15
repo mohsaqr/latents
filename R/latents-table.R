@@ -178,7 +178,7 @@
     if (nrow(frame) > n) sprintf("... %d more rows", nrow(frame) - n))
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.latents_table <- function(x, n = 20L, ...) {
   if (nrow(x) == 0L) {
@@ -189,7 +189,7 @@ print.latents_table <- function(x, n = 20L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.latents_table <- function(x, row.names = NULL, optional = FALSE, ...) {
   attributes(x)[c("level", "title", "display", "marks", "card")] <- NULL

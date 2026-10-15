@@ -1,4 +1,4 @@
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.multilpa <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa"))
@@ -77,7 +77,7 @@ print.multilpa <- function(x, rows = 20L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-summary
+#' @noRd
 #' @export
 summary.multilpa <- function(object, ...) {
   stopifnot("`object` must be an `multilpa` fit" = inherits(object, "multilpa"))
@@ -140,7 +140,7 @@ summary.multilpa <- function(object, ...) {
   result
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa`" = inherits(x, "summary_multilpa"))
@@ -296,10 +296,11 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
     extreme_logits = x$extreme_logits,
     n_starts = nrow(x$starts),
     weights = .multilpa_one(x$weights, NA_character_),
+    centering = x$centering %||% "none",
     row.names = NULL, stringsAsFactors = FALSE)
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.summary_multilpa <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa` object" =

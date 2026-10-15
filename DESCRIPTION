@@ -1,6 +1,6 @@
 Package: latents
 Title: Multilevel Latent Profile, Class and Transition Models
-Version: 0.9.23
+Version: 0.9.30
 Authors@R: c(
     person("Mohammed", "Saqr", , "saqr@saqr.me", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-5881-3109")),
@@ -23,7 +23,7 @@ BugReports: https://github.com/mohsaqr/latents/issues
 License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
-Imports: stats, graphics, grDevices, utils
+Imports: stats, grDevices, utils
 Suggests: testthat (>= 3.0.0), knitr, rmarkdown, tna, mclust, mice, ggplot2,
     MASS, withr
 VignetteBuilder: knitr

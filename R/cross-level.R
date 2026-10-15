@@ -352,51 +352,7 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     "starts")
 }
 
-#' Tables of a cross-level fit
-#'
-#' Tidy tables of a fit from `multilpa(family = "restricted_cross_level")` or
-#' `multilpa(family = "full_cross_level")`.
-#'
-#' @param x A `multilpa_cross_level` fit.
-#' @param what Which table; `"all"` returns a named list of every table.
-#' @param ... Unused.
-#' @section Tables:
-#' \describe{
-#'   \item{`profiles`}{One row per individual profile and indicator: `level =
-#'     "individual"`, `profile`, `indicator`, `mean`, `variance`; then one row
-#'     per group class and indicator for the group means: `level = "group"`,
-#'     the class in `profile`, and the class's `mean` and `variance` of the
-#'     group means.}
-#'   \item{`group_classes`}{One row per group class: `weight`, `count`
-#'     (summed posterior) and `n_assigned`.}
-#'   \item{`composition`}{One row per group class and profile: the share of
-#'     the class's members in each profile. Model-implied for the full
-#'     family; for the restricted family a posterior-weighted description,
-#'     since its prevalences do not depend on the class.}
-#'   \item{`groups`}{One row per group: size, modal group class, its
-#'     posterior and every class probability.}
-#'   \item{`assignments`}{One row per data row: its modal `profile` and
-#'     posterior, and its group's modal `group_class` (inherited).}
-#'   \item{`fit`}{One row: family, log likelihood, `n_parameters`, `aic`,
-#'     `bic` (by groups), `bic_individual` (by rows), sizes, convergence and
-#'     `boundary`. The likelihood is the working likelihood of the manifest
-#'     specification (the group means are computed from the same ratings), so
-#'     it is comparable only between cross-level fits of the same data.}
-#'   \item{`starts`}{The start records (full family) or the two parts'
-#'     likelihoods (restricted family).}
-#' }
-#' @return A base `data.frame`, or a named list of them for `what = "all"`.
-#' @examples
-#' set.seed(1)
-#' ratings <- data.frame(
-#'   team = rep(seq_len(40), each = 6),
-#'   climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
-#'     rnorm(240, sample(c(-1, 1), 240, replace = TRUE), 0.6))
-#' fit <- multilpa(ratings, "climate", "team", n_profiles = 2,
-#'                 n_group_classes = 2, family = "full_cross_level",
-#'                 n_starts = 3, seed = 1)
-#' get_results(fit)
-#' get_results(fit, "composition")
+#' @noRd
 #' @export
 get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
   what <- match.arg(what, c(.cross_level_tables(), "all"))
@@ -463,7 +419,7 @@ get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
     starts = x$starts)
 }
 
-#' @rdname get_results.multilpa_cross_level
+#' @noRd
 #' @param row.names,optional Unused; part of the generic.
 #' @export
 as.data.frame.multilpa_cross_level <- function(x, row.names = NULL, optional = FALSE,
@@ -471,7 +427,7 @@ as.data.frame.multilpa_cross_level <- function(x, row.names = NULL, optional = F
   get_results.multilpa_cross_level(x, what = what)
 }
 
-#' @rdname get_results.multilpa_cross_level
+#' @noRd
 #' @export
 print.multilpa_cross_level <- function(x, ...) {
   label <- if (identical(x$family, "full_cross_level")) "Full" else "Restricted"
@@ -487,21 +443,21 @@ print.multilpa_cross_level <- function(x, ...) {
   invisible(x)
 }
 
-#' @rdname get_results.multilpa_cross_level
+#' @noRd
 #' @param object A `multilpa_cross_level` fit.
 #' @export
 summary.multilpa_cross_level <- function(object, ...) {
   get_results.multilpa_cross_level(object, "all")
 }
 
-#' @rdname get_results.multilpa_cross_level
+#' @noRd
 #' @export
 logLik.multilpa_cross_level <- function(object, ...) {
   structure(object$log_likelihood, df = object$n_parameters,
             nobs = object$n_groups, class = "logLik")
 }
 
-#' @rdname get_results.multilpa_cross_level
+#' @noRd
 #' @export
 nobs.multilpa_cross_level <- function(object, ...) object$n_groups
 
@@ -514,31 +470,14 @@ parameter_inference.multilpa_cross_level <- function(x, ...) {
     class = "latents_unsupported_inference", call = NULL))
 }
 
-#' Plot a cross-level fit
-#'
-#' `"profiles"` shows the individual profiles' means per indicator;
-#' `"group_means"` the group classes' means of the group means;
-#' `"composition"` the profile shares within each group class. Profiles and
-#' classes are told apart by colour and point shape.
-#' @param x A `multilpa_cross_level` fit.
-#' @param what Which view.
-#' @param main,subtitle Optional title and subtitle.
-#' @param ... Unused.
-#' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
-#' @examples
-#' set.seed(1)
-#' ratings <- data.frame(
-#'   team = rep(seq_len(40), each = 6),
-#'   climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
-#'     rnorm(240, sample(c(-1, 1), 240, replace = TRUE), 0.6))
-#' fit <- multilpa(ratings, "climate", "team", n_profiles = 2,
-#'                 n_group_classes = 2, family = "full_cross_level",
-#'                 n_starts = 3, seed = 1)
-#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(fit)
+#' @rdname latents-plots
 #' @export
 plot.multilpa_cross_level <- function(x, what = c("profiles", "group_means",
                                                   "composition"),
                                       main = NULL, subtitle = NULL, ...) {
+  .latents_warn_unused_arguments(
+    list(...), "plot()",
+    "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
   what <- match.arg(what)
   .gg_require()
   if (identical(what, "composition")) {

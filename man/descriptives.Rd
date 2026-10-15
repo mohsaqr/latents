@@ -25,7 +25,8 @@ columns it was built from, so \code{vars} and \code{id} are read from it.}
 \item{...}{Passed between methods.}
 
 \item{vars}{Character vector of column names to describe. Repeated names
-are described once. For a data frame, defaults to every numeric column
+are described once. Columns must be vectors; matrix-valued columns raise
+\code{latents_bad_data}. For a data frame, defaults to every numeric column
 that is not \code{id}.}
 
 \item{id}{Optional. The column identifying the groups rows are nested in.

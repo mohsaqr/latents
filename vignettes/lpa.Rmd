@@ -208,7 +208,7 @@ sensitivity(fit, seeds = 1:10)       # refits under several seeds
 starting_values(fit)                 # parameters to start another fit
 ```
 
-The evaluation vignette covers `enumerate_classes()`, `candidate_fit()` and
+The evaluation vignette covers `enumerate_classes()`, `get_candidate()` and
 `bootstrap_lrt()`; the covariates vignette covers `three_step()`, `r3step()`
 and `fit_staged()`; the transitions vignette covers `lta()`, `get_tna()` and
 `get_group_tna()`.

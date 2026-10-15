@@ -35,6 +35,8 @@
                            function(k) x$subject_posteriors[, k]),
                     paste0("profile_", seq_len(x$n_profiles)))
   } else list(overall = rep(1, x$n_observations))
+  sampling <- .multilpa_level_weights(x, "individuals", x$n_observations)
+  if (!is.null(sampling)) weights <- lapply(weights, `*`, sampling)
 
   rows <- lapply(names(weights), function(label) {
     weight <- weights[[label]]
@@ -101,6 +103,7 @@
   # On the scale the model was fitted on, which is not the caller's scale
   # when the fit centred its indicators.
   x <- .multilpa_center_like(object, as.matrix(data[continuous]))
+  sampling <- .multilpa_level_weights(object, "individuals", object$n_observations)
   pairs <- utils::combn(seq_along(continuous), 2L)
   profiles <- if (identical(by, "profile"))
     as.integer(sub("^profile_", "", label)) else seq_len(object$n_profiles)
@@ -110,6 +113,7 @@
     effective <- sum(weight[observed_rows])
     moments <- lapply(profiles, function(profile) {
       profile_weight <- object$subject_posteriors[observed_rows, profile]
+      if (!is.null(sampling)) profile_weight <- profile_weight * sampling[observed_rows]
       residual <- sweep(x[observed_rows, pair, drop = FALSE], 2L,
                         object$means[profile, pair], "-")
       covariance <- if (identical(object$covariance_model, "full"))
@@ -124,7 +128,8 @@
       observed_covariance[1L, 2L] / sqrt(prod(diag(observed_covariance))) else NA_real_
     expected <- if (all(diag(expected_covariance) > 0))
       expected_covariance[1L, 2L] / sqrt(prod(diag(expected_covariance))) else NA_real_
-    statistic <- if (effective > 3 && is.finite(observed) && is.finite(expected)) {
+    statistic <- if (is.null(sampling) && effective > 3 &&
+                     is.finite(observed) && is.finite(expected)) {
       (atanh(pmin(pmax(observed, -0.999999), 0.999999)) -
          atanh(pmin(pmax(expected, -0.999999), 0.999999))) * sqrt(effective - 3)
     } else NA_real_
@@ -146,6 +151,8 @@
   if (length(categorical) < 2L) return(NULL)
   blocks <- object$response_probabilities
   posteriors <- object$subject_posteriors
+  sampling <- .multilpa_level_weights(object, "individuals", object$n_observations)
+  if (!is.null(sampling)) posteriors <- posteriors * sampling
   pairs <- utils::combn(seq_along(categorical), 2L)
   rows <- lapply(seq_len(ncol(pairs)), function(index) {
     first <- categorical[pairs[1L, index]]
@@ -169,7 +176,7 @@
     expected <- Reduce(`+`, lapply(seq_len(object$n_profiles), function(k)
       counts[k] * outer(blocks[[first]][k, ], blocks[[second]][k, ])))
     positive <- expected > 0
-    statistic <- if (sum(pair_weight) <= 0) NA_real_ else
+    statistic <- if (!is.null(sampling) || sum(pair_weight) <= 0) NA_real_ else
       if (any(!positive & observed > 0)) Inf else
         sum((observed[positive] - expected[positive])^2 / expected[positive])
     degrees <- (nrow(observed) - 1L) * (ncol(observed) - 1L)
@@ -185,7 +192,7 @@
       expected = expected_association,
       residual = observed_association - expected_association,
       effective_n = sum(pair_weight), statistic = statistic,
-      df = as.integer(degrees),
+      df = if (is.null(sampling)) as.integer(degrees) else NA_integer_,
       p_value = stats::pchisq(statistic, degrees, lower.tail = FALSE),
       row.names = NULL, stringsAsFactors = FALSE)
   })

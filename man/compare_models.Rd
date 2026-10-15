@@ -4,20 +4,49 @@
 \alias{compare_models}
 \title{Compare fitted models on the same data}
 \usage{
-compare_models(...)
+compare_models(..., n_profiles = NULL, n_group_classes = NULL, cutoff = 0.8)
 }
 \arguments{
-\item{...}{Two or more fits from \code{\link[=mixture_regression]{mixture_regression()}} (with or without
-\code{random}). Name them to label the rows; unnamed fits are labelled by
-their expression.}
+\item{...}{Either an enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}} followed
+by the candidates to compare (none for all of them, or a selection
+through \code{n_profiles} and \code{n_group_classes}); or two or more fits from \code{\link[=multilpa]{multilpa()}},
+\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=lta]{lta()}} or \code{\link[=get_candidate]{get_candidate()}}; or two or more fits from
+\code{\link[=mixture_regression]{mixture_regression()}} (with or without \code{random}). Name fits to label
+the rows; unnamed fits are labelled by their expression, candidates by
+their name.}
+
+\item{n_profiles, n_group_classes}{With a grid, the class counts of the
+candidates to compare, instead of naming them; \code{NULL} takes every count.
+Candidates whose fit failed are left out, with a message.}
+
+\item{cutoff}{For profile and class models, the average posterior
+probability below which a class is counted in \code{avepp_below} and
+\code{group_avepp_below}. Not used for mixture regressions.}
 }
 \value{
 A base \code{data.frame} of class \code{latents_comparison} with one row per
-model: \code{model}, \code{n_classes}, \code{random}, \code{n_parameters}, \code{log_likelihood},
-\code{aic}, \code{bic}, \code{sabic}, \code{icl}, \code{entropy}, \code{smallest_share}, \code{delta_bic},
-\code{bic_weight}, \code{converged}. Raises \code{latents_bad_argument} for fits it
-cannot compare and \code{latents_incomparable_models} for fits to different
-data.
+model. For mixture regressions: \code{model}, \code{n_classes}, \code{random},
+\code{n_parameters}, \code{log_likelihood}, \code{aic}, \code{bic}, \code{sabic}, \code{icl},
+\code{entropy}, \code{smallest_share}, \code{delta_bic}, \code{bic_weight}, \code{converged}. For
+profile and class models: \code{model}, \code{n_profiles}, \code{n_group_classes},
+\code{structure} (the covariance structure, \code{NA} without continuous
+indicators), \code{n_parameters}, \code{log_likelihood}, every information
+criterion of \code{\link[=enumerate_classes]{enumerate_classes()}}'s candidates table, \code{profile_entropy},
+\code{group_entropy}, \code{avepp_min}, \code{avepp_max}, \code{avepp_mean}, \code{avepp_below}
+and the same four prefixed \code{group_}, \code{smallest_share} (the smallest estimated profile
+share, relative to all observation mass including any noise component), \code{converged}, \code{n_best_replicated}, and \code{delta_bic} and
+\code{bic_weight} on \code{bic_groups} (the BIC that counts groups as the
+independent units; on a single-level model it is the ordinary BIC). The
+numbers are the ones the grid's candidates table reports. The printout
+marks the row with the lowest BIC; that is a fact about the criterion,
+not a choice. Raises \code{latents_bad_argument} for fits it cannot compare,
+for a group-class family grid (compare those in their own table), for
+candidates named together with \code{n_profiles} or \code{n_group_classes}, and for
+\code{n_profiles} or \code{n_group_classes} without a grid;
+\code{latents_unknown_candidate} for a name or counts not in the grid;
+\code{latents_failed_candidate} for a named candidate that could not be
+fitted; and \code{latents_incomparable_models} for fits to different data. A
+\code{cutoff} outside (0, 1] fails the argument checks.
 }
 \description{
 One row per model with its log likelihood, number of parameters,
@@ -33,6 +62,16 @@ one of them is true, with equal prior probabilities.
 Information criteria are comparable only on the same data: every model
 must be fitted to the same outcome, persons (or groups) and observations,
 or the comparison is refused.
+
+Candidates of an enumeration grid are compared by naming them, as the
+grid's \code{candidate} column shows them:
+\code{compare_models(grid, "classes3_groups4", "classes3_groups5")}, or by their
+class counts, \code{compare_models(grid, c(3, 4), c(3, 5))} (one number is one
+group class). \code{n_profiles} and \code{n_group_classes} select candidates instead:
+\code{compare_models(grid, n_profiles = 3)} compares every candidate with 3
+profiles; \code{compare_models(grid)} compares them all. Latent class models are
+compared the same way; their \code{n_profiles} column counts classes. Fits from \code{\link[=multilpa]{multilpa()}}, \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=lta]{lta()}} or \code{\link[=get_candidate]{get_candidate()}}
+can also be passed directly.
 }
 \examples{
 # Fixed trajectories against growth curves with a random intercept,
@@ -45,6 +84,15 @@ growth <- mixture_regression(score ~ wave, few_students, n_classes = 2,
                              id = "student", class_level = "group",
                              random = "intercept", seed = 1)
 compare_models(trajectories = trajectories, growth = growth)
+
+# Candidates of an enumeration grid, by name, by class counts, or selected
+grid <- enumerate_classes(subset(course_engagement, student <= 40),
+                          c("browse", "lectures"), "student",
+                          n_profiles = 2:3, n_group_classes = 1:2,
+                          model = "VVI", n_starts = 2, seed = 1)
+compare_models(grid, "profiles2_groups2", "profiles3_groups2")
+compare_models(grid, c(2, 2), c(3, 2))
+compare_models(grid, n_group_classes = 2)
 }
 \references{
 Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike

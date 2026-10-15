@@ -279,16 +279,24 @@ test_that("print and summary are stable", {
 
 test_that("plots draw for every view", {
   skip_on_cran()
+  skip_if_not_installed("ggplot2")
   fit <- mixture_regression(score ~ hours, study_hours, 2, n_starts = 1, seed = 1)
-  path <- tempfile(fileext = ".pdf")
-  grDevices::pdf(path)
-  on.exit({
-    grDevices::dev.off()
-    unlink(path)
-  }, add = TRUE)
-  expect_invisible(plot(fit))
-  expect_invisible(plot(fit, what = "coefficients"))
-  expect_invisible(plot(fit, what = "posteriors"))
+  fitted <- expect_plot(plot(fit))
+  # One point per row, and one line per class over the predictor's range.
+  expect_identical(nrow(plot_layer(fitted, 1L)), nrow(study_hours))
+  expect_identical(length(unique(plot_layer(fitted, 2L)$group)), 2L)
+  coefficients <- expect_plot(plot(fit, what = "coefficients"))
+  expect_equal(sort(coefficients$data$estimate),
+               sort(get_results(fit, "coefficients")$estimate))
+  set.seed(4)
+  before <- .Random.seed
+  certainty <- expect_plot(plot(fit, what = "posteriors"))
+  # The spread of the strip is deterministic: no random jitter, no RNG drawn.
+  expect_identical(.Random.seed, before)
+  expect_identical(plot(fit, what = "posteriors")$data, certainty$data)
+  expect_true(all(certainty$data$certainty >= 0.5 & certainty$data$certainty <= 1))
+  # 0.9.21 ignored an argument it did not use; it now says so and draws.
+  expect_warning(plot(fit, colour = "red"), class = "latents_unused_argument")
 })
 
 test_that("misspecified requests are refused by class", {

@@ -120,7 +120,7 @@ lca <- function(data, vars, n_classes, ...) {
 #' @return An object of class `multilpa_enumeration`, as [enumerate_classes()]
 #'   returns: [as.data.frame()] gives one row per candidate, [summary()] the
 #'   candidate each criterion prefers, [plot()] the criteria against the
-#'   number of profiles, and [candidate_fit()] one fitted candidate.
+#'   number of profiles, and [get_candidate()] one fitted candidate.
 #' @section Conditions:
 #'   `latents_bad_argument` when `id` or `n_group_classes` is passed, or when
 #'   `model` names an unknown structure.
@@ -142,13 +142,15 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
   .multilpa_single_level_call("enumerate_lpa", "enumerate_classes", list(...))
   # Preserve omission: the default gives way to legacy covariance switches
   # and to all-categorical data, whereas an explicit model does not.
+  data_expression <- substitute(data)
   if (missing(model)) {
-    return(.multilpa_quiet_single_level(
-      enumerate_classes(data, vars, id = NULL, n_profiles = n_profiles, ...)))
+    return(.latents_candidate_data(.multilpa_quiet_single_level(
+      enumerate_classes(data, vars, id = NULL, n_profiles = n_profiles, ...)),
+      data_expression))
   }
-  .multilpa_quiet_single_level(
+  .latents_candidate_data(.multilpa_quiet_single_level(
     enumerate_classes(data, vars, id = NULL, n_profiles = n_profiles,
-                      model = model, ...))
+                      model = model, ...)), data_expression)
 }
 
 #' Compare latent class models
@@ -173,7 +175,7 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
 #' @return An object of class `multilpa_enumeration`, as [enumerate_classes()]
 #'   returns: [as.data.frame()] gives one row per candidate, [summary()] the
 #'   candidate each criterion prefers, [plot()] the criteria against the
-#'   number of classes, and [candidate_fit()] one fitted candidate, named by
+#'   number of classes, and [get_candidate()] one fitted candidate, named by
 #'   its `n_profiles`.
 #' @section Conditions:
 #'   `latents_bad_argument` when `id`, `n_group_classes`, `categorical` or
@@ -195,9 +197,10 @@ enumerate_lca <- function(data, vars, n_classes = 1:4, ...) {
       "`vars` is categorical. Use enumerate_lpa() for mixed indicators."),
       class = "latents_bad_argument", call = NULL))
   }
-  .multilpa_quiet_single_level(
+  .latents_candidate_data(.multilpa_quiet_single_level(
     enumerate_classes(data, vars, id = NULL, n_profiles = n_classes,
-                      categorical = setdiff(vars, c(extra$ordinal, extra$count)), ...))
+                      categorical = setdiff(vars, c(extra$ordinal, extra$count)), ...)),
+    substitute(data))
 }
 
 #' Refuse the two-level arguments in a single-level verb

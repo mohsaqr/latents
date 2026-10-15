@@ -215,6 +215,13 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
         error_text <<- conditionMessage(error)
         NULL
       })
+    if (!is.null(fit)) {
+      fit$call <- .latents_candidate_call("multilpa", call$data, c(
+        list(vars = vars, id = id, n_group_classes = grid$n_group_classes[i],
+             family = grid$family[i],
+             between_variance = grid$between_variance[i], seed = seed),
+        extra))
+    }
     fit_row <- if (is.null(fit)) NULL else get_results(fit, "fit")
     row <- data.frame(
       model = .additive_model_code(grid$family[i], grid$between_variance[i]),
@@ -236,108 +243,63 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
   })
   table <- do.call(rbind, lapply(runs, `[[`, "row"))
   rownames(table) <- NULL
-  structure(list(table = table, fits = lapply(runs, `[[`, "fit"), call = call),
-            class = "latents_family_enumeration")
+  result <- structure(list(table = table, fits = lapply(runs, `[[`, "fit"),
+                           call = call), class = "latents_family_enumeration")
+  names(result$fits) <- .latents_candidate_names(result)
+  result
 }
 
-#' Tables of a group-class family enumeration
-#'
-#' The result of `enumerate_classes(family = )` with group-class families:
-#' one fitted candidate per family, between-variance restriction and number
-#' of group classes.
-#'
-#' @param x A `latents_family_enumeration` result.
-#' @param what `"candidates"` (one row per candidate) or `"best"` (the
-#'   candidate with the lowest value of `criterion`).
-#' @param criterion `"bic"` (penalized by the number of groups, the default),
-#'   `"aic"` or `"bic_individual"`.
-#' @param ... Unused.
-#' @return A base `data.frame`, one row per candidate: `model` (the code
-#'   [candidate_fit()] takes), `family`, `between_variance`,
-#'   `n_group_classes`, `log_likelihood`, `n_parameters`, `aic`, `bic`,
-#'   `bic_individual`, relative `entropy`, `smallest_class`,
-#'   `min_effective_groups`, `converged`, `boundary`, `n_best_replicated`,
-#'   and the candidate's `warnings` and `error`. With one group class every
-#'   family is the same model, so those rows share a likelihood.
-#' @examples
-#' set.seed(1)
-#' ratings <- data.frame(
-#'   team = rep(seq_len(40), each = 6),
-#'   climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
-#'     rnorm(240))
-#' grid <- enumerate_classes(ratings, "climate", "team",
-#'                           family = c("additive", "dispersion"),
-#'                           n_group_classes = 1:2, n_starts = 3, seed = 1)
-#' get_results(grid)
-#' get_results(grid, "best")
+#' @noRd
 #' @export
-get_results.latents_family_enumeration <- function(x, what = c("candidates", "best"),
+get_results.latents_family_enumeration <- function(x, what = c("candidates", "best", "all"),
                                                    criterion = c("bic", "aic",
                                                                  "bic_individual"),
                                                    ...) {
   what <- match.arg(what)
   criterion <- match.arg(criterion)
-  table <- x$table
-  if (identical(what, "candidates")) return(table)
-  usable <- which(is.finite(table[[criterion]]))
-  if (length(usable) == 0L) {
-    stop(errorCondition("No candidate was fitted.",
-                        class = "latents_failed_candidate", call = NULL))
-  }
-  best <- usable[which.min(table[[criterion]][usable])]
-  table[best, , drop = FALSE]
+  table <- .latents_named_table(x)
+  .latents_grid_result_tables(table, what, criterion)
 }
 
-#' @rdname get_results.latents_family_enumeration
+#' @noRd
 #' @param row.names,optional Unused; part of the generic.
 #' @export
 as.data.frame.latents_family_enumeration <- function(x, row.names = NULL,
                                                      optional = FALSE, ...) {
-  x$table
+  .latents_named_table(x)
 }
 
-#' @rdname get_results.latents_family_enumeration
+#' @noRd
 #' @export
 print.latents_family_enumeration <- function(x, ...) {
-  cat(sprintf("Group-class family enumeration: %d candidates\n", nrow(x$table)))
-  print(x$table[, c("model", "n_group_classes", "log_likelihood", "n_parameters",
-                    "bic", "aic", "entropy", "min_effective_groups", "converged",
-                    "boundary")], digits = 4, row.names = FALSE)
-  cat("Pick one with candidate_fit(x, n_group_classes = , model = ).\n")
+  table <- .latents_named_table(x)
+  cat(sprintf("Group-class family enumeration: %d candidates\n", nrow(table)))
+  print(table[, c("candidate", "model", "n_group_classes", "log_likelihood",
+                  "n_parameters", "bic", "aic", "entropy", "min_effective_groups",
+                  "converged", "boundary")], digits = 4, row.names = FALSE)
+  cat("Pick one by its name: get_candidate(x, \"<candidate>\").\n")
   invisible(x)
 }
 
-#' @rdname get_results.latents_family_enumeration
+#' @noRd
 #' @param object A `latents_family_enumeration` result.
 #' @export
 summary.latents_family_enumeration <- function(object, ...) {
-  object$table
+  .latents_named_table(object)
 }
 
-#' Plot information criteria across group-class families
-#'
-#' One line per model code, criterion against the number of group classes;
-#' models are told apart by colour, point shape and line type.
-#' @param x A `latents_family_enumeration` result.
-#' @param criterion `"bic"`, `"aic"` or `"bic_individual"`.
-#' @param main,subtitle Optional title and subtitle.
-#' @param ... Unused.
-#' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
-#' @examples
-#' set.seed(1)
-#' ratings <- data.frame(
-#'   team = rep(seq_len(40), each = 6),
-#'   climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
-#'     rnorm(240))
-#' grid <- enumerate_classes(ratings, "climate", "team",
-#'                           family = c("additive", "dispersion"),
-#'                           n_group_classes = 1:2, n_starts = 3, seed = 1)
-#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(grid)
+#' @rdname latents-plots
 #' @export
-plot.latents_family_enumeration <- function(x, criterion = c("bic", "aic",
-                                                             "bic_individual"),
-                                            main = NULL, subtitle = NULL, ...) {
-  criterion <- match.arg(criterion)
+plot.latents_family_enumeration <- function(x, what = c("bic", "aic",
+                                                        "bic_individual"),
+                                            main = NULL, subtitle = NULL,
+                                            criterion = NULL, ...) {
+  stopifnot(inherits(x, "latents_family_enumeration"))
+  .latents_warn_unused_arguments(
+    list(...), "plot()", .latents_grid_plot_advice())
+  what <- .latents_former_argument(what, !missing(what), criterion,
+                                   c("what", "criterion"))
+  criterion <- .latents_grid_criterion(what)
   .gg_require()
   frame <- x$table
   frame$value <- frame[[criterion]]

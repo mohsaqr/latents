@@ -140,13 +140,53 @@
     zzm <- by_column(stats$zz, seq_len(n_random), means)
     d_beta <- (xr - xzm) / sigma2
     residual_ss <- residuals$rr - 2 * rowSums(means * residuals$zr) + rowSums(means * zzm)
+    unstable <- which(residual_ss <= 1e-6 * (abs(residuals$rr) +
+      2 * abs(rowSums(means * residuals$zr)) + abs(rowSums(means * zzm))))
+    direct <- if (length(unstable) && !is.null(stats$raw)) {
+      .growth_direct_residuals(stats, coefficients, means, unstable)
+    } else NULL
+    if (!is.null(direct)) {
+      residual_ss[unstable] <- direct$rr
+      d_beta[unstable, ] <- direct$xr / sigma2
+    }
     trace_term <- colSums(zz_flat * pattern_covariance)
     d_sigma2 <- (residual_ss / sigma2 - stats$n + trace_term / sigma2) / (2 * sigma2)
     # q = Z'V^-1 r = (Z'r - Z'Z m) / sigma^2; Z'V^-1 Z depends on the pattern only.
     q <- (residuals$zr - zzm) / sigma2
+    if (!is.null(direct)) q[unstable, ] <- direct$zr / sigma2
     zvz <- vapply(seq_len(dim(stats$pattern_zz)[3L]), function(g) {
       zz <- matrix(stats$pattern_zz[, , g], n_random)
       s <- matrix(expectation$covariances[[k]][, , g], n_random)
+      factor <- .growth_factor(covariances[[k]])
+      kernel <- crossprod(factor, zz %*% factor) / sigma2
+      if (max(abs(kernel)) > 1e6) {
+        # At a large random/residual variance ratio the Woodbury difference
+        # also loses precision in Z'V^-1 Z and Z'V^-1 r. Work in the random
+        # space, where I - A^-1 stays away from catastrophic cancellation.
+        inverse_factor <- forwardsolve(factor, diag(n_random))
+        a_inverse <- chol2inv(chol(diag(n_random) + kernel))
+        members <- which(stats$pattern == g)
+        stable_q <- (residuals$zr[members, , drop = FALSE] %*%
+          factor %*% a_inverse / sigma2) %*% inverse_factor
+        if (!is.null(stats$raw)) {
+          # Decompose the fixed design into its random-design projection and
+          # orthogonal residual. Replace the cancellation-prone projected
+          # score by B' (Z'V^-1 r), retaining the directly computed residual.
+          difference <- stable_q - q[members, , drop = FALSE]
+          invisible(lapply(seq_along(members), function(at) {
+            i <- members[at]
+            rows <- stats$raw$rows[[i]]
+            projection <- qr.coef(qr(stats$raw$random[rows, , drop = FALSE]),
+                                  stats$raw$design[rows, , drop = FALSE])
+            projection[is.na(projection)] <- 0
+            d_beta[i, ] <<- d_beta[i, ] +
+              as.vector(crossprod(projection, difference[at, ]))
+          }))
+        }
+        q[members, ] <<- stable_q
+        return(as.vector(crossprod(inverse_factor,
+          (diag(n_random) - a_inverse) %*% inverse_factor)))
+      }
       as.vector((zz - zz %*% s %*% zz / sigma2) / sigma2)
     }, numeric(n_random^2)) |> matrix(n_random^2)
     outer_q <- t(q[, rep(seq_len(n_random), n_random), drop = FALSE] *

@@ -36,7 +36,7 @@ test_that("class wrappers partition structured discrete indicators", {
   grid <- enumerate_lca(data, c("o", "k", "a"), n_classes = 1,
                         ordinal = "o", count = "k", n_starts = 1, seed = 7)
   expect_true(is.finite(grid$table$log_likelihood))
-  expect_identical(candidate_fit(grid, 1)$categorical, "a")
+  expect_identical(get_candidate(grid, 1)$categorical, "a")
 })
 
 test_that("profile permutation preserves ordinal and NB likelihood and labels", {

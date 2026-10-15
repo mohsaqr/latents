@@ -72,7 +72,7 @@ test_that("the numbers in the latent class workflow hold", {
   expect_identical(which.min(icl[-1L]) + 1L, 2L)
   expect_lt(candidates$profile_entropy[2], 0.5)
   # "The fourth class contains 1.3% of the reports"
-  four <- candidate_fit(run$models, n_profiles = 4, n_group_classes = 1)
+  four <- get_candidate(run$models, n_profiles = 4, n_group_classes = 1)
   expect_equal(round(min(get_results(four, "profile_probabilities")$probability), 3),
                0.013)
 

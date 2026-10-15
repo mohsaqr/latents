@@ -1,3 +1,6 @@
+utils::globalVariables(c("predictor_value", "outcome", "class_label",
+                         "position", "certainty"))
+
 # predict(), simulate() and plot() for mixture_regression() fits.
 
 #' Rebuild a specification on new data with the fitted design
@@ -104,37 +107,13 @@
     })
 }
 
-#' Predict from a mixture-of-regressions fit
-#'
-#' @param object A fit from [mixture_regression()].
-#' @param newdata `NULL` for the fitted rows, or a data frame with the
-#'   predictors (and the membership covariates and `id` the model uses).
-#' @param type `"response"`: the mean outcome averaged over the classes with
-#'   their prior probabilities (the covariates, but not the outcome, inform
-#'   them). `"class_response"`: the mean outcome under every class, one row
-#'   per row and class. `"posterior"`: the posterior class probabilities
-#'   given the outcome, which `newdata` must then contain.
-#'   `"probabilities"` (ordinal family only): the probability of every
-#'   category under every class. For the ordinal family the "mean outcome" is
-#'   the expected category score, the categories scored 1 to C in order.
-#' @param ... Unused.
-#' @return A base `data.frame`. For `"response"`: `row` and `fitted`. For
-#'   `"class_response"`: `row`, `class`, `prior` and `fitted`, one row per
-#'   data row and class. For `"posterior"`: the same columns as
-#'   `get_results(fit, "assignments")`. For `"probabilities"`: `row`,
-#'   `class`, `category`, `prior` and `probability`, one row per data row,
-#'   class and category. Raises `latents_bad_argument` for
-#'   `"probabilities"` with another family.
-#' @examples
-#' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
-#'                           n_starts = 3, seed = 1)
-#' new_students <- data.frame(hours = c(2, 10))
-#' predict(fit, new_students, type = "class_response")
+#' @rdname latents-predict
 #' @importFrom stats predict
 #' @export
 predict.latents_mixture_regression <- function(object, newdata = NULL,
                                    type = c("response", "class_response",
-                                            "posterior", "probabilities"), ...) {
+                                            "posterior", "probabilities"), ...,
+                                   trials = NULL) {
   type <- match.arg(type)
   if (identical(type, "probabilities") && !identical(object$spec$family, "ordinal")) {
     stop(errorCondition(paste(
@@ -143,7 +122,16 @@ predict.latents_mixture_regression <- function(object, newdata = NULL,
       class = "latents_bad_argument", call = NULL))
   }
   spec <- if (is.null(newdata)) object$spec else
-    .mixture_new_spec(object, newdata, identical(type, "posterior"))
+    .mixture_prediction_data(.mixture_new_spec(
+      object, newdata, identical(type, "posterior")))
+  if (identical(spec$family, "binomial")) {
+    resolved <- .mixture_prediction_trials(object, newdata, spec, trials,
+                                            identical(type, "posterior"))
+    spec$trials <- resolved
+  } else if (!is.null(trials)) {
+    stop(errorCondition("`trials` applies only to binomial predictions.",
+                        class = "latents_bad_argument", call = NULL))
+  }
   params <- object$params
   if (identical(type, "posterior")) {
     refit <- object
@@ -165,26 +153,66 @@ predict.latents_mixture_regression <- function(object, newdata = NULL,
              prior = as.vector(priors), fitted = as.vector(means))
 }
 
-#' Simulate outcomes from a mixture-of-regressions fit
+#' Translate evaluated prediction-data failures into the public condition
+#' @param expression A prediction specification or response expression.
+#' @return Its value, or an error of class `latents_bad_data`.
+#' @noRd
+.mixture_prediction_data <- function(expression) {
+  tryCatch(expression, error = function(condition) {
+    stop(errorCondition(conditionMessage(condition), class = "latents_bad_data",
+                        call = NULL))
+  })
+}
+
+#' Resolve binomial exposure without changing the units of a prediction
 #'
-#' Draws class memberships from the fitted mixing model (group classes first
-#' in the two-level model, one class per group under `class_level =
-#' "group"`), then outcomes from each row's class regression, at the fitted
-#' rows' predictors.
-#'
-#' @param object A fit from [mixture_regression()].
-#' @param nsim Number of simulated outcome vectors.
-#' @param seed `NULL` or an integer; the caller's random state is restored.
-#' @param ... Unused.
-#' @return A base `data.frame` with one row per fitted row and one column per
-#'   simulation, `sim_1`, `sim_2`, ...; for a binomial fit with more than one
-#'   trial the columns hold success counts, and for an ordinal fit the
-#'   fitted categories in the outcome's own type (a factor with the fitted
-#'   levels, or the category numbers).
-#' @examples
-#' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
-#'                           n_starts = 3, seed = 1)
-#' head(simulate(fit, nsim = 2, seed = 1))
+#' The training response gives the fitted trial counts. New counts can come
+#' from an explicit vector/column, or the evaluated response when supplied.
+#' Without either, an aggregated fit cannot assume one trial per new row.
+#' @param object A fitted mixture regression.
+#' @param newdata `NULL` or the new data frame.
+#' @param spec The specification prepared for prediction.
+#' @param trials `NULL`, a numeric vector, or a column name.
+#' @param posterior Whether the outcome is being used to classify rows.
+#' @return A numeric trial-count vector of length `spec$n`.
+#' @noRd
+.mixture_prediction_trials <- function(object, newdata, spec, trials, posterior) {
+  bad_data <- function(message) {
+    stop(errorCondition(message, class = "latents_bad_data", call = NULL))
+  }
+  if (!is.null(trials)) {
+    if (is.character(trials) && length(trials) == 1L && !is.na(trials)) {
+      frame <- newdata %||% object$spec$model_data
+      if (!trials %in% names(frame)) bad_data("`trials` names no column of the prediction data.")
+      trials <- frame[[trials]]
+    }
+    if (!is.numeric(trials) || !is.null(dim(trials)) ||
+        !length(trials) %in% c(1L, spec$n) || any(!is.finite(trials)) ||
+        any(trials < 0) ||
+        any(abs(trials - round(trials)) > sqrt(.Machine$double.eps))) {
+      bad_data("`trials` must be finite, non-negative whole numbers: one value or one per prediction row.")
+    }
+    if (length(trials) == 1L) trials <- rep(trials, spec$n)
+    trials <- as.numeric(trials)
+    if (posterior && !isTRUE(all.equal(trials, as.numeric(spec$trials)))) {
+      bad_data("For posterior prediction, `trials` must agree with the observed binomial response.")
+    }
+    return(trials)
+  }
+  if (is.null(newdata) || posterior) return(spec$trials)
+  response <- attr(object$spec$terms, "variables")[[2L]]
+  counts <- any(object$spec$trials != 1) || is.matrix(.mixture_prediction_data(
+    eval(response, object$spec$model_data, environment(object$spec$terms))))
+  if (!counts) return(rep(1, spec$n))
+  if (all(all.vars(response) %in% names(newdata))) {
+    return(.mixture_prediction_data(.mixture_response(
+      eval(response, newdata, environment(object$spec$terms)), "binomial"))$trials)
+  }
+  bad_data(paste("Binomial count predictions need `trials` or the response",
+                 "columns in `newdata`; trial counts cannot be inferred from predictors alone."))
+}
+
+#' @rdname latents-predict
 #' @importFrom stats simulate
 #' @export
 simulate.latents_mixture_regression <- function(object, nsim = 1, seed = NULL, ...) {
@@ -230,44 +258,17 @@ simulate.latents_mixture_regression <- function(object, nsim = 1, seed = NULL, .
                                        mu = exp(eta)))
 }
 
-#' Plot a mixture-of-regressions fit
-#'
-#' A fit that classifies persons (`id` with `class_level = "group"`) is a
-#' trajectory model, and draws the trajectory views of
-#' [plot.latents_growth_mixture()] (ggplot2): `"trajectories"` (the
-#' default), `"individuals"`, `"coefficients"` and `"classification"`. Any
-#' other fit draws base-graphics views: `"fitted"` (the default),
-#' `"coefficients"` and `"posteriors"`.
-#'
-#' @param x A fit from [mixture_regression()].
-#' @param what For a trajectory model: `"trajectories"` (each class's mean
-#'   trajectory with its confidence band and the observed class means),
-#'   `"individuals"`, `"coefficients"` (estimates with intervals and
-#'   p-values) or `"classification"` (`"posteriors"` is a synonym). Otherwise:
-#'   `"fitted"` (the outcome against one numeric predictor, rows marked by
-#'   modal class, each class's regression line), `"coefficients"` or
-#'   `"posteriors"` (each unit's largest posterior probability, by class).
-#' @param predictor For `"fitted"`, the numeric predictor for the horizontal
-#'   axis; defaults to the first one in the formula.
-#' @param level Confidence level of intervals and bands.
-#' @param main Plot title; `NULL` for the default.
-#' @param subtitle For a trajectory model, the subtitle; `NULL` for the default.
-#' @param time,facet,persons,max_persons For a trajectory model, as in
-#'   [plot.latents_growth_mixture()].
-#' @param ... Unused.
-#' @return For a trajectory model, a ggplot object (raises
-#'   `latents_missing_package` without ggplot2); otherwise `x`, invisibly,
-#'   called for its plot.
-#' @examples
-#' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
-#'                           n_starts = 3, seed = 1)
-#' plot(fit)
-#' plot(fit, what = "coefficients")
+#' @rdname latents-plots
 #' @export
 plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
                                             level = 0.95, main = NULL, subtitle = NULL,
                                             time = NULL, facet = FALSE, persons = 12L,
                                             max_persons = 120L, ...) {
+  stopifnot("`x` must be a `latents_mixture_regression` fit" =
+              inherits(x, "latents_mixture_regression"))
+  .latents_warn_unused_arguments(
+    list(...), "plot()",
+    "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
   trajectory <- identical(x$spec$nesting, "group")
   trajectory_views <- c("trajectories", "individuals", "classification")
   # Naming a `predictor` asks for the fitted-values view, as before.
@@ -290,17 +291,16 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
       classification = ,
       posteriors = .growth_plot_classification(x, key, main, subtitle)))
   }
-  old <- graphics::par(no.readonly = TRUE)
-  on.exit(graphics::par(old), add = TRUE, after = FALSE)
-  switch(what,
-    fitted = .mixture_plot_fitted(x, predictor, main),
-    coefficients = .mixture_plot_coefficients(x, level, main),
-    posteriors = .mixture_plot_posteriors(x, main))
-  invisible(x)
+  .gg_require()
+  drawn <- switch(what,
+    fitted = .mixture_plot_fitted(x, predictor, main, subtitle),
+    coefficients = .mixture_plot_coefficients(x, level, main, subtitle),
+    posteriors = .mixture_plot_posteriors(x, main, subtitle))
+  .gg_draw_on_call(drawn)
 }
 
 #' @noRd
-.mixture_plot_fitted <- function(x, predictor, main) {
+.mixture_plot_fitted <- function(x, predictor, main, subtitle) {
   spec <- x$spec
   frame <- .mixture_model_data(x)
   predictors <- all.vars(stats::delete.response(spec$terms))
@@ -312,18 +312,11 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
       "one with `predictor`."), class = "latents_bad_argument", call = NULL))
   }
   k <- spec$n_classes
-  colours <- .multilpa_palette(k)
-  symbols <- .multilpa_symbols(k)
-  lines_types <- .multilpa_linetypes(k)
-  class <- max.col(x$expectation$tau, ties.method = "first")
+  classes <- paste("class", seq_len(k))
+  modal <- max.col(x$expectation$tau, ties.method = "first")
   observed <- if (identical(spec$family, "binomial") && any(spec$trials > 1)) {
     spec$y / spec$trials
   } else spec$y
-  graphics::plot(frame[[predictor]], observed, pch = symbols[class],
-                 col = colours[class], bg = grDevices::adjustcolor(
-                   colours[class], alpha.f = 0.4),
-                 xlab = predictor, ylab = spec$response_name,
-                 main = main %||% sprintf("%d-class mixture regression", k))
   grid_values <- seq(min(frame[[predictor]]), max(frame[[predictor]]),
                      length.out = 100L)
   typical <- .mixture_typical_rows(frame, predictor, grid_values)
@@ -331,13 +324,22 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
   means <- .mixture_class_means(new_spec, x$params)
   if (identical(spec$family, "binomial")) means <- stats::plogis(
     .mixture_linear_predictors(new_spec, x$params))
-  invisible(lapply(seq_len(k), function(j) {
-    graphics::lines(grid_values, means[, j], col = colours[j],
-                    lty = lines_types[j], lwd = 2)
-  }))
-  graphics::legend("topleft", legend = paste("class", seq_len(k)),
-                   col = colours, pch = symbols, pt.bg = colours,
-                   lty = lines_types, lwd = 2, bty = "n")
+  points <- data.frame(predictor_value = frame[[predictor]], outcome = observed,
+                       class_label = factor(classes[modal], levels = classes))
+  curves <- data.frame(predictor_value = rep(grid_values, times = k),
+                       outcome = as.vector(means),
+                       class_label = factor(rep(classes, each = length(grid_values)),
+                                            levels = classes))
+  ggplot2::ggplot(points, ggplot2::aes(predictor_value, outcome, colour = class_label,
+                                       fill = class_label, shape = class_label)) +
+    ggplot2::geom_point(size = 1.8, alpha = 0.45) +
+    ggplot2::geom_line(data = curves, ggplot2::aes(linetype = class_label),
+                       linewidth = 1) +
+    .mixture_class_scales(classes) +
+    .gg_theme() + .gg_top_legend() +
+    ggplot2::labs(x = predictor, y = spec$response_name) +
+    .gg_titles(main, subtitle, sprintf("%d-class mixture regression", k),
+               "Rows marked by their most likely class; a line per class")
 }
 
 #' The data columns the model used, in fitted row order
@@ -364,47 +366,71 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
 }
 
 #' @noRd
-.mixture_plot_coefficients <- function(x, level, main) {
+.mixture_plot_coefficients <- function(x, level, main, subtitle) {
   table <- .mixture_table(x, "coefficients", level)
-  k <- x$spec$n_classes
-  labels <- unique(table$term)
+  terms <- unique(table$term)
   classes <- unique(table$class)
-  colours <- .multilpa_palette(length(classes))
-  symbols <- .multilpa_symbols(length(classes))
-  term_position <- match(table$term, labels)
-  class_position <- match(table$class, classes)
-  offset <- (class_position - (length(classes) + 1) / 2) * 0.15
-  y <- term_position + offset
-  graphics::par(mar = c(4, 9, 3, 1))
-  range_x <- range(c(table$conf_low, table$conf_high), na.rm = TRUE)
-  graphics::plot(table$estimate, y, xlim = range_x, yaxt = "n",
-                 pch = symbols[class_position],
-                 col = colours[class_position], bg = colours[class_position],
-                 xlab = sprintf("Estimate with %g%% interval", 100 * level),
-                 ylab = "", main = main %||% "Class regression coefficients")
-  graphics::segments(table$conf_low, y, table$conf_high, y,
-                     col = colours[class_position])
-  graphics::abline(v = 0, lty = 3, col = "#999999")
-  graphics::axis(2, at = seq_along(labels), labels = labels, las = 1)
-  graphics::legend("topright", legend = classes, col = colours, pch = symbols,
-                   pt.bg = colours, bty = "n")
+  # Classes side by side within each term, the first term at the top.
+  offset <- (match(table$class, classes) - (length(classes) + 1) / 2) * 0.18
+  table$position <- length(terms) + 1L - match(table$term, terms) + offset
+  table$class_label <- factor(sub("_", " ", table$class),
+                              levels = sub("_", " ", classes))
+  ggplot2::ggplot(table, ggplot2::aes(estimate, position, colour = class_label,
+                                      fill = class_label, shape = class_label)) +
+    ggplot2::geom_vline(xintercept = 0, linetype = "dotted", colour = "#999999") +
+    ggplot2::geom_segment(ggplot2::aes(x = conf_low, xend = conf_high,
+                                       yend = position), linewidth = 0.8,
+                         show.legend = FALSE) +
+    ggplot2::geom_point(size = 2.8, colour = "grey20") +
+    .mixture_class_scales(levels(table$class_label), lines = FALSE) +
+    ggplot2::scale_y_continuous(breaks = rev(seq_along(terms)), labels = terms) +
+    .gg_theme() + .gg_top_legend() +
+    ggplot2::labs(x = sprintf("Estimate with %g%% interval", 100 * level), y = NULL) +
+    .gg_titles(main, subtitle, "Class regression coefficients", NULL)
 }
 
 #' @noRd
-.mixture_plot_posteriors <- function(x, main) {
+.mixture_plot_posteriors <- function(x, main, subtitle) {
   spec <- x$spec
   posterior <- if (identical(spec$nesting, "group")) x$expectation$group_tau else
     x$expectation$tau
-  class <- max.col(posterior, ties.method = "first")
-  largest <- posterior[cbind(seq_len(nrow(posterior)), class)]
   k <- spec$n_classes
-  colours <- .multilpa_palette(k)
-  symbols <- .multilpa_symbols(k)
-  graphics::stripchart(split(largest, factor(class, levels = seq_len(k))),
-                       method = "jitter", vertical = TRUE, pch = symbols,
-                       col = colours, bg = colours,
-                       group.names = paste("class", seq_len(k)),
-                       ylab = "Largest posterior probability", ylim = c(0, 1),
-                       main = main %||% "Classification certainty")
-  graphics::abline(h = 1 / k, lty = 3, col = "#999999")
+  classes <- paste("class", seq_len(k))
+  modal <- max.col(posterior, ties.method = "first")
+  certainty <- posterior[cbind(seq_len(nrow(posterior)), modal)]
+  # A deterministic spread (golden-ratio offsets of each unit's rank within its
+  # class), as the fits' own case strips use: no random jitter, no RNG drawn.
+  within <- stats::ave(certainty, modal, FUN = \(v) rank(v, ties.method = "first"))
+  cases <- data.frame(class_label = factor(classes[modal], levels = classes),
+                      position = modal + 0.5 * ((within * 0.618) %% 1 - 0.5),
+                      certainty = certainty)
+  ggplot2::ggplot(cases, ggplot2::aes(position, certainty, colour = class_label,
+                                      fill = class_label, shape = class_label)) +
+    ggplot2::geom_hline(yintercept = 1 / k, linetype = "dotted", colour = "#999999") +
+    ggplot2::geom_point(size = 1.6, alpha = 0.6) +
+    .mixture_class_scales(classes, lines = FALSE) +
+    ggplot2::scale_x_continuous(breaks = seq_len(k), labels = classes) +
+    ggplot2::scale_y_continuous(limits = c(0, 1)) +
+    .gg_theme() + .gg_top_legend() +
+    ggplot2::labs(x = NULL, y = "Largest posterior probability") +
+    .gg_titles(main, subtitle, "Classification certainty",
+               "Each unit's largest posterior probability; dotted line: chance")
+}
+
+#' Colour, fill, shape and line-type scales for mixture classes
+#' @param classes Class labels, in order.
+#' @param lines Whether to add the line-type scale.
+#' @return A list of ggplot2 scales.
+#' @noRd
+.mixture_class_scales <- function(classes, lines = TRUE) {
+  colours <- stats::setNames(rep_len(.gg_okabe_ito, length(classes)), classes)
+  scales <- list(
+    ggplot2::scale_colour_manual(values = colours),
+    ggplot2::scale_fill_manual(values = colours),
+    ggplot2::scale_shape_manual(values = stats::setNames(
+      rep_len(.gg_shapes, length(classes)), classes)))
+  if (!lines) return(scales)
+  c(scales, list(ggplot2::scale_linetype_manual(values = stats::setNames(
+    rep_len(c("solid", "dashed", "dotdash", "dotted", "longdash"),
+            length(classes)), classes))))
 }

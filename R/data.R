@@ -348,7 +348,7 @@
 #'     generating kind. Not for fitting; kept to check recovery.}
 #' }
 #' @source Simulated by `data-raw/growth-schools.R` in the source repository.
-#' @seealso [mixture_regression()], [get_results.latents_growth_mixture()].
+#' @seealso [mixture_regression()], [get_results()].
 #' @examples
 #' descriptives(growth_schools, c("score", "programme"))
 #' \donttest{

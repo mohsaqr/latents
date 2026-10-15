@@ -25,10 +25,9 @@ n_courses <- 32L
 max_sequence <- 15L
 
 # ---- measurement ----------------------------------------------------------
-# Activity counts are strongly right-skewed, so both the calibration and the
-# model live on the log scale; the shipped indicators are `log1p(count)`.
-# An earlier draft shipped the raw counts and the skew alone looked like an
-# extra class, exactly as a floor effect does.
+# Indicators are simulated directly as continuous values with parameters
+# representing a log-count scale, then standardized within course and rounded.
+# The simulation does not generate raw counts or apply a log1p transformation.
 indicators <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 #
 # The real export's disengaged pattern piles up against zero on the two forum

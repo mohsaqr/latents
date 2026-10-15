@@ -132,7 +132,7 @@ An object of class \code{latents_mixture_regression}, or
 \code{\link[=as.data.frame]{as.data.frame()}} (the coefficient table) or \code{\link[=get_results]{get_results()}} (every
 table, by name), and use \code{\link[=predict]{predict()}}, \code{\link[=plot]{plot()}}, \code{\link[=summary]{summary()}}, \code{\link[=coef]{coef()}},
 \code{\link[=vcov]{vcov()}}, \code{\link[=confint]{confint()}}, \code{\link[=logLik]{logLik()}} and \code{\link[=nobs]{nobs()}} on it. The tables are
-described on \code{\link[=get_results.latents_mixture_regression]{get_results.latents_mixture_regression()}}.
+described on \code{\link[=get_results]{get_results()}}.
 }
 \description{
 Fits a regression whose coefficients differ across latent classes: the
@@ -174,8 +174,8 @@ with \code{Z} built from \code{random}. The likelihood is exact (Gaussian, no
 numerical integration); estimation is EM with the random effects as missing
 data, finished by quasi-Newton with analytic scores. Such a fit has class
 \code{latents_growth_mixture}; its tables, plots and inference are described on
-\code{\link[=get_results.latents_growth_mixture]{get_results.latents_growth_mixture()}} and
-\code{\link[=plot.latents_growth_mixture]{plot.latents_growth_mixture()}}. Random effects need the gaussian family,
+\code{\link[=get_results]{get_results()}} and
+\link[=latents-plots]{plot()}. Random effects need the gaussian family,
 \code{id} and \code{class_level = "group"}.
 
 With \code{cluster}, persons are nested in clusters (students in schools) and

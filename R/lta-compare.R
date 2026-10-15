@@ -405,6 +405,14 @@
         error_text <<- conditionMessage(error)
         NULL
       })
+    if (!is.null(fit)) {
+      fit$call <- .latents_candidate_call("lta", call$data, c(
+        list(vars = vars, id = id, time = time,
+             n_profiles = grid$n_profiles[i],
+             n_group_classes = grid$n_group_classes[i], seed = seed,
+             model = if (is.na(grid$model[i])) NULL else grid$model[i]),
+        extra))
+    }
     entropy <- if (is.null(fit)) NA_real_ else
       .multilpa_relative_entropy(fit$subject_posteriors)
     row <- data.frame(
@@ -425,93 +433,63 @@
   })
   table <- do.call(rbind, lapply(runs, `[[`, "row"))
   rownames(table) <- NULL
-  structure(list(table = table, fits = lapply(runs, `[[`, "fit"), call = call),
-            class = "latents_transition_enumeration")
+  result <- structure(list(table = table, fits = lapply(runs, `[[`, "fit"),
+                           call = call), class = "latents_transition_enumeration")
+  names(result$fits) <- .latents_candidate_names(result)
+  result
 }
 
-#' Tables of a transition-model enumeration
-#'
-#' The result of `enumerate_classes(..., time = )`: one transition model per
-#' number of profiles and group classes (and covariance structure, when
-#' `model` names several).
-#'
-#' @param x A `latents_transition_enumeration` result.
-#' @param what `"candidates"` (one row per candidate) or `"best"` (the lowest
-#'   value of `criterion`).
-#' @param criterion `"bic"` (penalized by the number of groups), `"aic"` or
-#'   `"bic_individual"`.
-#' @param ... Unused.
-#' @return A base `data.frame`, one row per candidate: `n_profiles`,
-#'   `n_group_classes`, `model`, `log_likelihood`, `n_parameters`, `aic`,
-#'   `bic`, `bic_individual`, relative profile `entropy`, `converged`,
-#'   `boundary`, `n_best_replicated`, `warnings` and `error`.
-#' @examples
-#' # The first 50 students keep the example quick
-#' few_students <- subset(course_engagement, student <= 50)
-#' grid <- enumerate_classes(few_students, c("browse", "lectures"),
-#'                           "student", time = "sequence", n_profiles = 2:3,
-#'                           n_group_classes = 1, n_starts = 2, seed = 1)
-#' get_results(grid)
-#' get_results(grid, "best")
+#' @noRd
 #' @export
 get_results.latents_transition_enumeration <- function(
-    x, what = c("candidates", "best"),
+    x, what = c("candidates", "best", "all"),
     criterion = c("bic", "aic", "bic_individual"), ...) {
   what <- match.arg(what)
   criterion <- match.arg(criterion)
-  if (identical(what, "candidates")) return(x$table)
-  usable <- which(is.finite(x$table[[criterion]]))
-  if (length(usable) == 0L) {
-    stop(errorCondition("No candidate was fitted.", class = "latents_failed_candidate",
-                        call = NULL))
-  }
-  x$table[usable[which.min(x$table[[criterion]][usable])], , drop = FALSE]
+  table <- .latents_named_table(x)
+  .latents_grid_result_tables(table, what, criterion)
 }
 
-#' @rdname get_results.latents_transition_enumeration
+#' @noRd
 #' @param row.names,optional Unused; part of the generic.
 #' @export
 as.data.frame.latents_transition_enumeration <- function(x, row.names = NULL,
                                                          optional = FALSE, ...) {
-  x$table
+  .latents_named_table(x)
 }
 
-#' @rdname get_results.latents_transition_enumeration
+#' @noRd
 #' @export
 print.latents_transition_enumeration <- function(x, ...) {
-  cat(sprintf("Transition-model enumeration: %d candidates\n", nrow(x$table)))
-  print(x$table[, c("n_profiles", "n_group_classes", "model", "log_likelihood",
-                    "n_parameters", "bic", "aic", "entropy", "converged", "boundary")],
+  table <- .latents_named_table(x)
+  cat(sprintf("Transition-model enumeration: %d candidates\n", nrow(table)))
+  print(table[, c("candidate", "n_profiles", "n_group_classes", "model",
+                  "log_likelihood", "n_parameters", "bic", "aic", "entropy",
+                  "converged", "boundary")],
         digits = 4, row.names = FALSE)
-  cat("Pick one with candidate_fit(x, n_profiles = , n_group_classes = ).\n")
+  cat("Pick one by its name: get_candidate(x, \"<candidate>\").\n")
   invisible(x)
 }
 
-#' @rdname get_results.latents_transition_enumeration
+#' @noRd
 #' @param object A `latents_transition_enumeration` result.
 #' @export
-summary.latents_transition_enumeration <- function(object, ...) object$table
+summary.latents_transition_enumeration <- function(object, ...) {
+  .latents_named_table(object)
+}
 
-#' Plot information criteria across transition models
-#'
-#' The criterion against the number of profiles, one line per number of group
-#' classes (and structure), told apart by colour, shape and line type.
-#' @param x A `latents_transition_enumeration` result.
-#' @param criterion `"bic"`, `"aic"` or `"bic_individual"`.
-#' @param main,subtitle Optional title and subtitle.
-#' @param ... Unused.
-#' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
-#' @examples
-#' few_students <- subset(course_engagement, student <= 50)
-#' grid <- enumerate_classes(few_students, c("browse", "lectures"),
-#'                           "student", time = "sequence", n_profiles = 2:3,
-#'                           n_group_classes = 1, n_starts = 2, seed = 1)
-#' if (requireNamespace("ggplot2", quietly = TRUE)) plot(grid)
+#' @rdname latents-plots
 #' @export
-plot.latents_transition_enumeration <- function(x, criterion = c("bic", "aic",
-                                                                 "bic_individual"),
-                                                main = NULL, subtitle = NULL, ...) {
-  criterion <- match.arg(criterion)
+plot.latents_transition_enumeration <- function(x, what = c("bic", "aic",
+                                                            "bic_individual"),
+                                                main = NULL, subtitle = NULL,
+                                                criterion = NULL, ...) {
+  stopifnot(inherits(x, "latents_transition_enumeration"))
+  .latents_warn_unused_arguments(
+    list(...), "plot()", .latents_grid_plot_advice())
+  what <- .latents_former_argument(what, !missing(what), criterion,
+                                   c("what", "criterion"))
+  criterion <- .latents_grid_criterion(what)
   .gg_require()
   frame <- x$table
   frame$value <- frame[[criterion]]

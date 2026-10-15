@@ -25,7 +25,7 @@ test_that("enumeration crosses families, restrictions and class counts", {
   expect_equal(one$log_likelihood, rep(one$log_likelihood[1], nrow(one)),
                tolerance = 1e-6)
   # Each candidate's row reproduces its own fit.
-  fit <- candidate_fit(grid, n_group_classes = 2, model = "additive")
+  fit <- get_candidate(grid, n_group_classes = 2, model = "additive")
   expect_s3_class(fit, "multilpa_additive")
   expect_equal(subset(table, n_group_classes == 2 & model == "additive")$bic,
                fit$bic)
@@ -33,7 +33,7 @@ test_that("enumeration crosses families, restrictions and class counts", {
   expect_identical(nrow(best), 1L)
   expect_equal(best$bic, min(table$bic, na.rm = TRUE))
   expect_identical(as.data.frame(grid), table)
-  expect_error(candidate_fit(grid, n_group_classes = 2),
+  expect_error(get_candidate(grid, n_group_classes = 2),
                class = "latents_unknown_candidate")
   expect_error(enumerate_classes(compare_data, compare_vars, "group",
                                  family = "additive", model = "VVI", n_starts = 1),

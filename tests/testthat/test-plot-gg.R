@@ -6,7 +6,7 @@ gg_grid <- local({
   enumerate_lpa(as.data.frame(scale(iris[gg_vars])), gg_vars,
                 n_profiles = 2:4, model = c("EEE", "VVI"), n_starts = 3)
 })
-gg_fit <- candidate_fit(gg_grid, n_profiles = 4, model = "EEE")
+gg_fit <- get_candidate(gg_grid, n_profiles = 4, model = "EEE")
 
 test_that("every view of a fit and a grid builds without a warning", {
   skip_on_cran()
@@ -66,7 +66,7 @@ test_that("an ellipse has the covariance it was drawn from", {
 })
 
 test_that("a diagonal structure's ellipses come from its variances", {
-  vvi <- candidate_fit(gg_grid, n_profiles = 3, model = "VVI")
+  vvi <- get_candidate(gg_grid, n_profiles = 3, model = "VVI")
   expect_null(vvi$covariances)
   expect_equal(.gg_pair_covariance(vvi, 2L, 1L, 3L),
                diag(vvi$variances[2L, c(1L, 3L)]))
@@ -90,7 +90,7 @@ test_that("tree bars are posterior shares and every row sums to one", {
   row_total <- tapply(widths, list(bars$PANEL, bars$row), sum)
   expect_equal(as.vector(row_total), rep(1, length(row_total)),
                tolerance = 1e-8)
-  fit_three <- candidate_fit(gg_grid, n_profiles = 3, model = "EEE")
+  fit_three <- get_candidate(gg_grid, n_profiles = 3, model = "EEE")
   counts <- get_results(fit_three, what = "counts")
   shares <- counts$effective_proportion[counts$level == "individuals"]
   eee <- which(levels(tree$layers[[2L]]$data$panel) == "EEE")

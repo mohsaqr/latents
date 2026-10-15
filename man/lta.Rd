@@ -195,7 +195,7 @@ given for this model family.
 With \code{transitions = "occasion"}, \code{transition_covariates},
 \code{initial_covariates}, \code{measurement = "occasion"} or \code{order = 2} the
 result is a \code{multilpa_lta} object instead, read with
-\code{\link[=get_results.multilpa_lta]{get_results.multilpa_lta()}}: transition and initial logit coefficients
+\code{\link[=get_results]{get_results()}}: transition and initial logit coefficients
 with Wald standard errors (observed, robust or OPG, from analytic
 scores), model-implied transition probabilities per occasion, profiles
 per occasion. Missing indicators (\code{missing = "fiml"}) and covariance

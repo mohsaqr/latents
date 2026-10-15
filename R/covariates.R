@@ -234,7 +234,8 @@
                                   select_start = "likelihood", call = NULL,
                                   weights = NULL, ordinal = character(),
                                   count = character(), count_model = "poisson",
-                                  count_dispersion = "varying") {
+                                  count_dispersion = "varying",
+                                  centering = "none") {
   stopifnot(is.data.frame(data), is.character(vars), is.character(id),
             is.character(profile_covariates), is.character(group_covariates),
             !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
@@ -264,7 +265,8 @@
                      categorical = categorical,
                      min_probability = min_probability, missing = missing,
                      weights = weights, ordinal = ordinal, count = count,
-                     count_model = count_model, count_dispersion = count_dispersion)
+                     count_model = count_model, count_dispersion = count_dispersion,
+                     centering = centering)
   group_index <- base$group_index
   sampling_weights <- unname(base$sampling_weights)
   first_rows <- match(seq_len(base$n_groups), group_index)
@@ -284,7 +286,8 @@
                                  group_covariates, first_rows, n_group_classes,
                                  categorical, min_probability, missing,
                                  profile_slopes, ordinal, count, count_model,
-                                 count_dispersion)
+                                 count_dispersion, centering = centering,
+                                 group_index = group_index)
   x <- designs$x
   center <- designs$center
   control <- list(variance_model = variance_model, min_variance = min_variance,
@@ -357,6 +360,8 @@
   result$min_probability <- min_probability
   ## Read by inference to accept, and integrate over, the same missing values.
   result$missing <- missing
+  result$centering <- centering
+  result$centering_offsets <- base$centering_offsets
   ## Read by inference to rebuild the same design.
   result$profile_slopes <- profile_slopes
   ## The same effective counts the Gaussian fit carries, so the shared
@@ -400,7 +405,7 @@
   result
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.multilpa_covariates <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa_covariates"))
@@ -414,7 +419,7 @@ print.multilpa_covariates <- function(x, rows = 20L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-summary
+#' @noRd
 #' @export
 summary.multilpa_covariates <- function(object, ...) {
   stopifnot("`object` must be a fitted `multilpa_covariates` model" =
@@ -438,7 +443,7 @@ summary.multilpa_covariates <- function(object, ...) {
   result
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa_covariates` object" =
@@ -466,7 +471,7 @@ print.summary_multilpa_covariates <- function(x, digits = 4L, rows = 10L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_covariates`" = inherits(x, "summary_multilpa_covariates"))
@@ -497,7 +502,7 @@ as.data.frame.summary_multilpa_covariates <- function(x, row.names = NULL, optio
       class = "latents_no_indicator_data", call = NULL))
   }
   result <- data.frame(row.names = seq_len(object$n_observations))
-  result <- cbind(result, as.data.frame(object$indicator_data))
+  result <- cbind(result, as.data.frame(.multilpa_uncentered_indicators(object)))
   ## Categorical indicators come back from their codes through the one typed
   ## value stored for each category, so a factor returns as that factor and a
   ## number as that number.
@@ -589,11 +594,17 @@ nobs.multilpa_covariates <- function(object, ...) {
                                 min_probability = 1e-10, missing = "error",
                                 profile_slopes = "shared", ordinal = character(),
                                 count = character(), count_model = "poisson",
-                                count_dispersion = "varying") {
+                                count_dispersion = "varying",
+                                centering = "none", group_index = NULL) {
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                               missing, min_probability,
                                               other = c(ordinal, count))
   x <- measurement$x
+  if (!identical(centering, "none")) {
+    stopifnot(length(group_index) == nrow(x))
+    x <- .multilpa_center_indicators(x, group_index, max(group_index), centering)$x
+    .multilpa_check_centered(x, centering)
+  }
   # The centre is only a location shift that is added back to the reported
   # means, so the observed values' mean serves; every indicator has some,
   # which the indicator check above guarantees.
@@ -766,7 +777,7 @@ nobs.multilpa_covariates <- function(object, ...) {
     log(nrow(data)) * result$n_parameters
   result$n_observations <- nrow(data)
   result$n_informative <- base$n_informative
-  result$indicator_data <- as.matrix(data[designs$continuous])
+  result$indicator_data <- base$indicator_data
   result$n_groups <- base$n_groups
   result$n_profiles <- as.integer(n_profiles)
   result$n_group_classes <- as.integer(n_group_classes)

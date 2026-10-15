@@ -2,11 +2,102 @@
 % Please edit documentation in R/get-data.R
 \name{get_results}
 \alias{get_results}
+\alias{latents-as-data-frame}
+\alias{latents-print}
+\alias{latents-summary}
+\alias{as.data.frame.latents_family_enumeration}
+\alias{as.data.frame.latents_growth_mixture}
+\alias{as.data.frame.latents_mixture_regression}
+\alias{as.data.frame.latents_pooled}
+\alias{as.data.frame.latents_table}
+\alias{as.data.frame.latents_transition_enumeration}
+\alias{as.data.frame.multilpa}
+\alias{as.data.frame.multilpa_additive}
+\alias{as.data.frame.multilpa_bootstrap_lrt}
+\alias{as.data.frame.multilpa_covariates}
+\alias{as.data.frame.multilpa_cross_level}
+\alias{as.data.frame.multilpa_enumeration}
+\alias{as.data.frame.multilpa_lta}
+\alias{as.data.frame.multilpa_start}
+\alias{as.data.frame.multilpa_transitions}
+\alias{as.data.frame.summary_multilpa}
+\alias{as.data.frame.summary_multilpa_additive}
+\alias{as.data.frame.summary_multilpa_bootstrap_lrt}
+\alias{as.data.frame.summary_multilpa_covariates}
+\alias{as.data.frame.summary_multilpa_enumeration}
+\alias{as.data.frame.summary_multilpa_transitions}
+\alias{coef.latents_growth_mixture}
+\alias{coef.latents_mixture_regression}
+\alias{coef.multilpa_additive}
+\alias{coef.multilpa_lta}
+\alias{confint.latents_growth_mixture}
+\alias{confint.latents_mixture_regression}
+\alias{confint.multilpa_additive}
+\alias{get_results.latents_family_enumeration}
+\alias{get_results.latents_growth_mixture}
+\alias{get_results.latents_mixture_regression}
+\alias{get_results.latents_pooled}
+\alias{get_results.latents_transition_enumeration}
+\alias{get_results.multilpa_additive}
+\alias{get_results.multilpa_cross_level}
+\alias{get_results.multilpa_lta}
+\alias{logLik.latents_growth_mixture}
+\alias{logLik.latents_mixture_regression}
+\alias{logLik.multilpa_additive}
+\alias{logLik.multilpa_cross_level}
+\alias{logLik.multilpa_lta}
+\alias{nobs.latents_growth_mixture}
+\alias{nobs.latents_mixture_regression}
+\alias{nobs.multilpa_additive}
+\alias{nobs.multilpa_cross_level}
+\alias{nobs.multilpa_lta}
+\alias{print.latents_family_enumeration}
+\alias{print.latents_growth_mixture}
+\alias{print.latents_mixture_regression}
+\alias{print.latents_plots}
+\alias{print.latents_pooled}
+\alias{print.latents_table}
+\alias{print.latents_transition_enumeration}
+\alias{print.multilpa}
+\alias{print.multilpa_additive}
+\alias{print.multilpa_bootstrap_lrt}
+\alias{print.multilpa_covariates}
+\alias{print.multilpa_cross_level}
+\alias{print.multilpa_enumeration}
+\alias{print.multilpa_lta}
+\alias{print.multilpa_start}
+\alias{print.multilpa_transitions}
+\alias{print.summary_latents_growth_mixture}
+\alias{print.summary_latents_mixture_regression}
+\alias{print.summary_multilpa}
+\alias{print.summary_multilpa_additive}
+\alias{print.summary_multilpa_bootstrap_lrt}
+\alias{print.summary_multilpa_covariates}
+\alias{print.summary_multilpa_enumeration}
+\alias{print.summary_multilpa_transitions}
+\alias{summary.latents_family_enumeration}
+\alias{summary.latents_growth_mixture}
+\alias{summary.latents_mixture_regression}
+\alias{summary.latents_pooled}
+\alias{summary.latents_transition_enumeration}
+\alias{summary.multilpa}
+\alias{summary.multilpa_additive}
+\alias{summary.multilpa_bootstrap_lrt}
+\alias{summary.multilpa_covariates}
+\alias{summary.multilpa_cross_level}
+\alias{summary.multilpa_enumeration}
+\alias{summary.multilpa_lta}
+\alias{summary.multilpa_transitions}
+\alias{vcov.latents_growth_mixture}
+\alias{vcov.latents_mixture_regression}
+\alias{vcov.multilpa_additive}
+\alias{vcov.multilpa_lta}
 \alias{get_results.default}
 \alias{get_results.multilpa}
 \alias{get_results.multilpa_covariates}
 \alias{get_results.multilpa_transitions}
 \alias{get_results.multilpa_enumeration}
+\alias{get_results.latents_comparison}
 \alias{get_results.multilpa_bootstrap_lrt}
 \alias{get_results.multilpa_start}
 \alias{get_results.multilpa_diagnostics}
@@ -28,6 +119,8 @@ get_results(x, what = NULL, ...)
 \method{get_results}{multilpa_transitions}(x, what = NULL, ...)
 
 \method{get_results}{multilpa_enumeration}(x, what = NULL, ...)
+
+\method{get_results}{latents_comparison}(x, what = NULL, ...)
 
 \method{get_results}{multilpa_bootstrap_lrt}(x, what = NULL, ...)
 
@@ -74,6 +167,12 @@ methods with their own \code{what} catalogues; a reader had to know which verb
 owned which table before they could ask for it. Here the object decides
 what it can offer and \code{what} names it, so the same call shape reads a
 measurement model, a classification diagnostic and a transition matrix.
+}
+\details{
+Every object also answers the usual generics: \code{print()} shows a compact
+overview, \code{summary()} collects its main tables (taking \code{level} and
+\code{vcov_type} where the model has standard errors), and \code{as.data.frame()}
+returns its primary table, the same as \code{get_results(x)}.
 }
 \section{Tables}{
 
@@ -197,19 +296,140 @@ profiles, with \code{group_class}, \code{from}, \code{to}, \code{probability},
 profile: \code{group_class}, \code{profile}, \code{probability}, \code{prevalence},
 \code{group_class_probability}. \code{"sequence_lengths"} has one row per group:
 \code{group}, \code{group_class}, \code{occasions}, \code{observations}, \code{complete}.}
-\item{\code{"candidates"}, \code{"criteria"}}{An enumeration grid.
-\code{"criteria"} has one row per information criterion, naming the candidate
-that minimises it. \code{"candidates"} has one row per candidate model,
-with its class counts, its covariance \code{model}, log likelihood,
+\item{\code{"candidates"}, \code{"criteria"}, \code{"classification"}}{An enumeration
+grid. \code{"criteria"} has one row per information criterion and
+sample-size convention: \code{criterion}, \code{convention}, \code{candidate} (the
+candidate its minimum falls on), \code{n_profiles}, \code{n_group_classes},
+\code{model} and \code{value}. \code{"candidates"} has one row per candidate model:
+its name (\code{candidate}, first), its class counts, its covariance
+\code{model}, log likelihood,
 parameter count, every criterion
-under both sample-size conventions, both entropies, and the convergence,
-boundary, replication, warning and error diagnostics. Failed candidates
-are retained with \code{NA} estimates and their error text.}
+under both sample-size conventions, both entropies, the average
+posterior probability (AvePP) summaries of each level --
+\code{avepp_min}, \code{avepp_max}, \code{avepp_mean},
+\code{avepp_below} and the same four prefixed \code{group_} -- and the
+convergence, boundary, replication, warning and error diagnostics.
+Failed candidates are retained with \code{NA} estimates and their error text.
+\code{"candidates"} takes \code{cutoff} (default \code{0.8}): \code{avepp_below} and
+\code{group_avepp_below} count the classes whose AvePP is below it. A class with no modally assigned
+unit has no AvePP; it is left out of the smallest, largest and mean and
+counted as below the cutoff. A level with one class has \code{NA}
+summaries. \code{"classification"} has one row per fitted candidate,
+level and class: \code{candidate}, \code{n_profiles}, \code{n_group_classes},
+\code{model}, then the
+columns of a fit's \code{"classification"} table and that level's
+\code{relative_entropy}. Failed candidates and levels with a single class
+contribute no rows.}
+\item{\code{"deltas"}, \code{"knees"}}{Model-selection evidence of an enumeration
+grid, each taking \code{using} (default \code{"bic_groups"}). Neither selects a
+model. \code{"deltas"} has one row per candidate: \code{candidate}, its class
+counts and \code{model}, \code{criterion}, \code{value}, \code{delta_profile} (how much the
+criterion fell from the converged candidate with one profile fewer and
+the same group classes and structure; positive means this candidate is
+lower) with \code{from_profile} naming that candidate, and
+\code{delta_group_class} with \code{from_group_class} for one group class fewer.
+\code{value} and both deltas are \code{NA} for a candidate that did not converge,
+and a delta is \code{NA} when the smaller neighbour is missing or did not
+converge. \code{"knees"} has one row per
+line of the grid: \code{direction} (\code{"profiles"}, along the profiles at
+fixed group classes; \code{"group_classes"}, along the group classes at
+fixed profiles; \code{"parameters"}, every candidate by its number of
+parameters, one line per structure), \code{line}, \code{criterion}, \code{from}, \code{to},
+\code{n_points},
+\code{knee_candidate} (the maximum chord-distance knee: with both axes
+rescaled to 0-1, the
+candidate furthest below the straight line from the first to the last,
+measured perpendicular to it), \code{distance},
+\code{knee_without_largest} (the knee when the last candidate of the line is
+left out), \code{stable} and \code{note}. This is a simplified geometric rule
+inspired by Kneedle, without its smoothing or sensitivity thresholds;
+a very small positive distance can therefore still name a knee.
+A line needs three candidates for a
+knee and four for \code{knee_without_largest} and \code{stable}; otherwise they
+are \code{NA} and \code{note} says why.}
+\item{\code{"comparison"}, \code{"classification"}}{A \code{\link[=compare_models]{compare_models()}} result.
+\code{"comparison"} is its table, one row per model. \code{"classification"},
+for profile, class, membership-covariate and transition models, has
+one row per model, level and class:
+\code{model}, then the columns of a fit's \code{"classification"} table and that
+level's \code{relative_entropy}; levels with one class are left out. The
+models themselves come back with \code{\link[=get_candidate]{get_candidate()}}.}
 \item{\code{"test"}, \code{"replicates"}}{A bootstrap comparison. \code{"test"} is the
 one-row result; \code{"replicates"} has one row per simulated dataset.}
 \item{\code{"covariances"}}{A starting-value set. One row per profile and
 ordered pair of continuous indicators: \code{profile}, \code{indicator},
 \code{indicator_2}, \code{covariance}.}
+}
+}
+
+\section{Tables of the other model families}{
+
+Each family's first table is its default \code{what}; \code{"all"} returns a named
+list of every table (without \code{"recovery"}, which needs \code{data} and \code{truth}).
+Tables with intervals take \code{level}, and \code{vcov_type} (\code{"observed"},
+\code{"robust"} or \code{"opg"}; \code{NULL} reuses the type stored with a regression
+fit). The usual generics answer as well: \code{coef()}, \code{vcov(type = )},
+\code{confint(parm = , level = )}, \code{logLik()} and \code{nobs()}.
+\describe{
+\item{Mixture regressions (\code{\link[=mixture_regression]{mixture_regression()}})}{\code{"coefficients"}
+(one row per class and term, with Wald statistics, \code{p_adjusted} by
+Benjamini-Hochberg over non-intercepts and \code{exp_estimate} for the
+binomial, Poisson and ordinal families; ordinal thresholds lead each
+class as terms \code{"threshold:<lower>|<upper>"}), \code{"classes"},
+\code{"membership"} (multinomial logits and odds ratios), \code{"group_classes"}
+(two-level fits), \code{"fit"} (\code{bic} penalised by independent units,
+\code{bic_rows} by rows as flexmix reports it), \code{"assignments"},
+\code{"groups"}, \code{"fitted"}, \code{"starts"} (\code{stage} \code{"screened"} or
+\code{"completed"}), \code{"classification"} and \code{"recovery"} (\code{by = "class"} or
+\code{"group_class"}).}
+\item{Growth mixtures (\code{mixture_regression(random = )})}{The tables
+above plus \code{"random"} (random-effect variances, standard deviations
+and correlations, with intervals on the log and Fisher-z scales),
+\code{"random_effects"} (one row per person), \code{"trajectories"} (each class's
+mean trajectory with a band) and \code{"individual"} (each person's own
+predicted curve); the last two take \code{time}. A multilevel growth mixture
+adds \code{"group_classes"} and \code{"clusters"}, and its \code{"fit"} counts clusters
+in \code{bic} (persons in \code{bic_persons}).}
+\item{Additive fits (\code{multilpa(family = "additive")})}{\code{"parameters"}
+(class means, between- and within-group variances and class weights;
+variance intervals on the log scale, weights on the logit scale;
+\code{adjust} sets the p-value adjustment, \code{"none"} by default),
+\code{"group_classes"}, \code{"groups"}, \code{"intercepts"} and
+\code{"conditional_intercepts"} (each group's posterior intercept, overall
+or given each class), \code{"assignments"}, \code{"classification"}, \code{"fit"},
+\code{"recovery"} and \code{"starts"}. \code{effective_groups} in \code{"group_classes"} is
+\code{w^2 (1 - w) / Var(w)}, the number of perfectly classified groups that
+would estimate the class weight as precisely; below 50 the class's
+intervals carry a \code{latents_weak_class} warning.}
+\item{Cross-level fits (\code{multilpa(family = "full_cross_level")} or
+\code{"restricted_cross_level"})}{\code{"profiles"} (individual profiles, then
+the group classes' means of group means), \code{"group_classes"},
+\code{"composition"} (profile shares within each class: model-implied for
+the full family, a posterior-weighted description for the restricted
+one), \code{"groups"}, \code{"assignments"}, \code{"fit"} and \code{"starts"}. The
+likelihood is a working likelihood, comparable only between
+cross-level fits of the same data.}
+\item{General transition fits (\code{\link[=lta]{lta()}} with \code{transitions = "occasion"},
+transition or initial covariates, or \code{measurement = "occasion"})}{
+\code{"transitions"} (model-implied, averaged over the groups observed),
+\code{"transition_coefficients"} (log odds of each move against staying,
+with odds ratios), \code{"second_order_transitions"} and
+\code{"second_order_coefficients"} (\code{order = 2}), \code{"initial"} and
+\code{"initial_coefficients"}, \code{"profiles"}, \code{"group_classes"},
+\code{"assignments"}, \code{"fit"} and \code{"starts"}.}
+\item{Pooled imputations (\code{\link[=pool_imputations]{pool_imputations()}})}{\code{"estimates"} (the
+pooled table), \code{"imputations"} (each imputation's aligned estimates)
+and \code{"fits"} (one row per imputation).}
+\item{Transition and group-class family grids
+(\code{enumerate_classes(time = )}, \code{enumerate_classes(family = )})}{
+\code{"candidates"} (one row per candidate, its name first, with its
+likelihood, criteria, entropy and diagnostics) or \code{"best"}, the row
+with the lowest \code{criterion} (\code{"bic"} by groups, the default, \code{"aic"}
+or \code{"bic_individual"}): the lowest value of a criterion, not a choice
+of model. With one group class every family is the same model, so
+those rows share a likelihood. Their candidates are taken out by name
+with \code{\link[=get_candidate]{get_candidate()}}; transition grids can also be compared with
+\code{\link[=compare_models]{compare_models()}}.}
 }
 }
 
@@ -357,6 +577,10 @@ residual is evidence of local dependence between two indicators, which the
 enumeration grid will otherwise absorb by asking for an extra profile. The
 p-values are approximate, and \code{p_adjusted} applies the multiplicity
 correction named by \code{adjust} across the pairs.
+A fit with sampling weights uses those weights in its descriptive
+associations and \code{effective_n}. Design-based residual inference is not
+implemented: \code{statistic}, \code{df}, \code{p_value} and \code{p_adjusted} are \code{NA} for
+weighted fits rather than unweighted tests attached to weighted moments.
 }
 
 \examples{

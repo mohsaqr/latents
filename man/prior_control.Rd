@@ -48,6 +48,15 @@ degrees of freedom are \code{d + 2} for \code{d} indicators, and the scale is
 \code{(1/G)^(2/d)} times the sample covariance (ellipsoidal structures) or times
 the average sample variance (axis-parallel and spherical structures), for
 \code{G} profiles.
+
+The updates follow mclust's fitted-model convention, including its
+structure-specific departures from a textbook conjugate update. For \code{EII},
+\code{scale} does not enter the variance update. For \code{EEI}, \code{shrinkage} and
+\code{mean} enter the variance calculation but do not shrink the fitted means.
+For \code{VEV}, \code{dof} does not enter the update. \code{EEI}, \code{EVI} and \code{EEV} count the
+mean-prior contribution once rather than once per profile. These
+conventions are retained for agreement with mclust; the controls therefore
+have different effects across covariance structures.
 }
 \section{Conditions}{
 

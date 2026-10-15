@@ -22,8 +22,9 @@ engagement changes from students who differ only in where it starts.
 ## Data and model
 
 `course_engagement` holds 1,422 course enrolments of 106 students, ordered
-within each student by `sequence`. The five indicators are simulated on the
-`log1p` scale of activity counts and standardized within course. The data are
+within each student by `sequence`. The five indicators are simulated as
+continuous values representing a log-count scale and standardized within
+course; no raw counts or `log1p()` transformation are generated. The data are
 synthetic and revisit the design of Saqr and López-Pernas (2021), who asked how
 students' online engagement develops across a program. That study
 identified course-level engagement states and longer-term trajectories with

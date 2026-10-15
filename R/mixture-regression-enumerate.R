@@ -57,6 +57,7 @@
 enumerate_regressions <- function(formula, data, n_classes = 1:4,
                              n_group_classes = 1L, bootstrap = 0L,
                              bootstrap_starts = 3L, seed = NULL, ...) {
+  data_expression <- substitute(data)
   stopifnot(
     "`n_classes` must be positive whole numbers" =
       is.numeric(n_classes) && length(n_classes) >= 1L &&
@@ -89,8 +90,14 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
                       n_group_classes = sort(unique(as.integer(n_group_classes))))
   .mixture_with_seed(seed, {
     fits <- lapply(seq_len(nrow(grid)), function(row) {
-      .mixture_try_fit(formula, data, grid$n_classes[row],
-                      grid$n_group_classes[row], arguments)
+      fit <- .mixture_try_fit(formula, data, grid$n_classes[row],
+                              grid$n_group_classes[row], arguments)
+      if (!inherits(fit, "latents_mixture_regression")) return(fit)
+      fit$call <- .latents_candidate_call("mixture_regression", data_expression,
+        c(list(formula = formula, n_classes = grid$n_classes[row],
+               n_group_classes = grid$n_group_classes[row],
+               vcov_type = "none"), arguments))
+      fit
     })
     table <- do.call(rbind, Map(function(fit, row) {
       .mixture_enumeration_row(fit, grid$n_classes[row],

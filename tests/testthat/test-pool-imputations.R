@@ -155,10 +155,20 @@ test_that("the methods return what they document", {
   expect_true(all(c("df", "riv", "fmi", "within", "between", "p_adjusted") %in%
                     names(as.data.frame(pooled))))
   expect_output(print(pooled), "Pooled over 3 imputations")
-  grDevices::pdf(NULL)
-  on.exit(grDevices::dev.off(), add = TRUE)
-  expect_identical(plot(pooled), pooled)
+  skip_if_not_installed("ggplot2")
+  drawn <- expect_plot(plot(pooled))
+  # Every profile-level estimate is drawn once pooled and once per imputation.
+  profile_rows <- sum(as.data.frame(pooled)$level == "profile")
+  expect_identical(nrow(drawn$data), profile_rows * (1L + pooled$m))
+  expect_plot(plot(pooled, what = "measurement"))
+  expect_error(plot(pooled, what = "group"), class = "latents_bad_argument")
+  # 0.9.21 chose the parameters with `level`; that call still works.
+  expect_equal(plot(pooled, level = "measurement")$data,
+               plot(pooled, what = "measurement")$data)
   expect_error(plot(pooled, level = "group"), class = "latents_bad_argument")
+  expect_error(plot(pooled, what = "profile", level = "measurement"),
+               class = "latents_bad_argument")
+  expect_warning(plot(pooled, colour = "red"), class = "latents_unused_argument")
 })
 
 test_that("bad input and a failing imputation are refused by class", {

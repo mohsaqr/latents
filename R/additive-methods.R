@@ -182,88 +182,7 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
     recovery = .additive_recovery(x, data, truth))
 }
 
-#' Tables of an additive group-class fit
-#'
-#' Tidy tables of a fit from `multilpa(family = "additive")`. Every table is a
-#' base `data.frame`; the fit itself never needs to be reached into.
-#'
-#' @param x A `multilpa_additive` fit.
-#' @param what Which table; `"all"` returns a named list of every table.
-#' @param level Confidence level of the intervals in `"parameters"`.
-#' @param vcov_type `"observed"` (inverse observed information), `"robust"`
-#'   (CR0 sandwich over groups) or `"opg"` (inverse outer product of the group
-#'   scores).
-#' @param adjust p-value adjustment across the class means, one of
-#'   [stats::p.adjust.methods]; `"none"` by default, as elsewhere in latents.
-#' @param data,truth For `what = "recovery"` only: the data the fit was made
-#'   from and the name of a column, constant within groups, holding a known
-#'   group classification.
-#' @param ... Unused.
-#' @section Tables:
-#' \describe{
-#'   \item{`parameters`}{One row per natural parameter: `level` (`"between"`
-#'     for class means and between-group variances, `"within"` for the shared
-#'     within-group variances, `"group_class"` for class weights),
-#'     `group_class` (`"shared"` for a parameter common to all classes),
-#'     `indicator` (`NA` for weights), `parameter` (`"mean"`, `"variance"`,
-#'     `"weight"`), `estimate`, `standard_error`, `statistic`, `p_value`,
-#'     `p_adjusted`, `conf_low`, `conf_high`. Only means carry a Wald test.
-#'     Intervals for variances are formed on the log scale and for weights on
-#'     the logit scale. When inference is refused (boundary, unconverged,
-#'     singular information) the standard-error columns are `NA` and a
-#'     `latents_no_standard_errors` message says why.}
-#'   \item{`group_classes`}{One row per group class: `weight`, `count`
-#'     (summed posterior), `n_assigned` (modal), `mean_posterior` among the
-#'     groups assigned to it, and `effective_groups`: the number of perfectly
-#'     classified groups that would estimate the class weight as precisely as
-#'     this fit does, `w^2 (1 - w) / Var(w)`. It equals the class's expected
-#'     group count when classes are perfectly separated and falls when a
-#'     class is small or poorly separated. Below 50, intervals for class
-#'     parameters are flagged with a `latents_weak_class` warning (threshold
-#'     and its simulation evaluation: `validation/ADDITIVE_SIMULATION.md` in
-#'     the source repository). `NA` for one class or when inference is refused.}
-#'   \item{`groups`}{One row per group (named by the `id` column): size `n`,
-#'     modal `group_class`, its `posterior`, and `probability_group_class_h`.}
-#'   \item{`intercepts`}{One row per group and indicator: `n`, the observed
-#'     group `average`, and the posterior mean and variance of the group's
-#'     intercept, mixed over its class posterior (so the variance includes
-#'     uncertainty about class membership). Conditional on the estimated
-#'     parameters; not a statement about their sampling uncertainty.}
-#'   \item{`conditional_intercepts`}{As `intercepts`, one row per group,
-#'     indicator and group class, conditional on that class, with the class
-#'     `posterior`.}
-#'   \item{`assignments`}{One row per data row: `row`, the `id` column, the
-#'     group's modal `group_class` and `posterior`, and
-#'     `assignment_level = "group"`: every row inherits its group's class.}
-#'   \item{`classification`}{One row per assigned and group class: the
-#'     `mean_posterior` of `group_class` among groups assigned to `assigned`.}
-#'   \item{`fit`}{One row: log likelihood, `n_parameters`, `aic`, `bic`
-#'     (penalized by the number of groups), `bic_individual` (by rows),
-#'     `n_groups`, `n_obs`, relative `entropy` over groups, the smallest class
-#'     weight, `min_effective_groups`, `converged`, `boundary`, `kkt` and start
-#'     replication.}
-#'   \item{`recovery`}{Needs `data` and `truth`: one row per modal group
-#'     class and known value, with the number of groups `n` and their `share`
-#'     of the assigned class. Not part of `what = "all"`.}
-#'   \item{`starts`}{One row per start: likelihood, convergence, iterations,
-#'     number of between variances held at zero, error message of a failed
-#'     start, and which start was selected.}
-#' }
-#' @return A base `data.frame`, or a named list of them for `what = "all"`.
-#' @examples
-#' set.seed(1)
-#' ratings <- data.frame(
-#'   team = rep(seq_len(40), each = 6),
-#'   climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
-#'     rnorm(240),
-#'   support = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
-#'     rnorm(240))
-#' fit <- multilpa(ratings, c("climate", "support"), "team",
-#'                 n_group_classes = 2, family = "additive", n_starts = 3,
-#'                 seed = 1)
-#' get_results(fit)
-#' get_results(fit, "group_classes")
-#' get_results(fit, "parameters", vcov_type = "robust")
+#' @noRd
 #' @export
 get_results.multilpa_additive <- function(x, what = "parameters", level = 0.95,
                                           vcov_type = c("observed", "robust", "opg"),
@@ -284,7 +203,7 @@ get_results.multilpa_additive <- function(x, what = "parameters", level = 0.95,
   .additive_table(x, what, level, vcov_type, adjust, data, truth)
 }
 
-#' @rdname get_results.multilpa_additive
+#' @noRd
 #' @param row.names,optional Unused; part of the generic.
 #' @export
 as.data.frame.multilpa_additive <- function(x, row.names = NULL, optional = FALSE,
@@ -292,7 +211,7 @@ as.data.frame.multilpa_additive <- function(x, row.names = NULL, optional = FALS
   get_results.multilpa_additive(x, what = what, ...)
 }
 
-#' @rdname get_results.multilpa_additive
+#' @noRd
 #' @param object A `multilpa_additive` fit.
 #' @param scale `"natural"` (means, variances, class weights) or
 #'   `"unconstrained"` (means, log variances, class-1-baseline logits). Names of
@@ -312,7 +231,7 @@ coef.multilpa_additive <- function(object, scale = c("natural", "unconstrained")
                     object$structure, class_names)$estimate
 }
 
-#' @rdname get_results.multilpa_additive
+#' @noRd
 #' @param type Covariance type, as `vcov_type`.
 #' @export
 vcov.multilpa_additive <- function(object, type = c("observed", "robust", "opg"),
@@ -327,7 +246,7 @@ vcov.multilpa_additive <- function(object, type = c("observed", "robust", "opg")
   .inference_delta_covariance(jacobian, inference$vcov)
 }
 
-#' @rdname get_results.multilpa_additive
+#' @noRd
 #' @param parm Natural parameter names or positions; all by default.
 #' @export
 confint.multilpa_additive <- function(object, parm, level = 0.95,
@@ -343,14 +262,14 @@ confint.multilpa_additive <- function(object, parm, level = 0.95,
   bounds
 }
 
-#' @rdname get_results.multilpa_additive
+#' @noRd
 #' @export
 logLik.multilpa_additive <- function(object, ...) {
   structure(object$log_likelihood, df = object$n_parameters,
             nobs = object$n_groups, class = "logLik")
 }
 
-#' @rdname get_results.multilpa_additive
+#' @noRd
 #' @export
 nobs.multilpa_additive <- function(object, ...) object$n_groups
 
@@ -400,7 +319,7 @@ parameter_inference.multilpa_additive <- function(
               inference$group_scores)
 }
 
-#' @rdname latents-summary
+#' @noRd
 #' @export
 summary.multilpa_additive <- function(object, level = 0.95,
                                       vcov_type = c("observed", "robust", "opg"),
@@ -413,7 +332,7 @@ summary.multilpa_additive <- function(object, level = 0.95,
   }), tables), class = "summary_multilpa_additive")
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.summary_multilpa_additive <- function(x, digits = 4L, ...) {
   headings <- c(fit = "Model fit", parameters = "Parameters",
@@ -427,7 +346,7 @@ print.summary_multilpa_additive <- function(x, digits = 4L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.summary_multilpa_additive <- function(x, row.names = NULL,
                                                     optional = FALSE, ...) {
@@ -450,40 +369,14 @@ as.data.frame.summary_multilpa_additive <- function(x, row.names = NULL,
              stringsAsFactors = FALSE)
 }
 
-#' Plot an additive group-class fit
-#'
-#' `"means"` shows each group class's mean per indicator with its Wald
-#' interval (when the fit supports inference). `"variances"` sets the shared
-#' within-group variance beside each between-group variance. `"intercepts"`
-#' shows every group's posterior intercept mean, marked by its modal class,
-#' with the class means over them. Classes are distinguished by colour and by
-#' point shape.
-#'
-#' @param x A `multilpa_additive` fit.
-#' @param what Which view.
-#' @param level Confidence level of the intervals.
-#' @param main,subtitle Optional title and subtitle.
-#' @param ... Unused.
-#' @return A ggplot object. Raises `latents_missing_package` without ggplot2.
-#' @examples
-#' if (requireNamespace("ggplot2", quietly = TRUE)) {
-#'   set.seed(1)
-#'   ratings <- data.frame(
-#'     team = rep(seq_len(40), each = 6),
-#'     climate = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
-#'       rnorm(240),
-#'     support = rep(rnorm(40, rep(c(-1, 1), each = 20), 0.5), each = 6) +
-#'       rnorm(240))
-#'   fit <- multilpa(ratings, c("climate", "support"), "team",
-#'                   n_group_classes = 2, family = "additive", n_starts = 3,
-#'                   seed = 1)
-#'   plot(fit)
-#'   plot(fit, what = "intercepts")
-#' }
+#' @rdname latents-plots
 #' @export
 plot.multilpa_additive <- function(x, what = c("means", "variances", "intercepts"),
                                    level = 0.95, main = NULL, subtitle = NULL,
                                    ...) {
+  .latents_warn_unused_arguments(
+    list(...), "plot()",
+    "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
   what <- match.arg(what)
   .gg_require()
   key <- .additive_key(x)

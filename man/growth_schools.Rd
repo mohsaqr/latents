@@ -56,6 +56,6 @@ get_results(fit, "recovery", data = growth_schools, truth = "trajectory")
 }
 }
 \seealso{
-\code{\link[=mixture_regression]{mixture_regression()}}, \code{\link[=get_results.latents_growth_mixture]{get_results.latents_growth_mixture()}}.
+\code{\link[=mixture_regression]{mixture_regression()}}, \code{\link[=get_results]{get_results()}}.
 }
 \keyword{datasets}

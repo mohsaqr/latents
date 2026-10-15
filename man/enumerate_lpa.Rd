@@ -25,7 +25,7 @@ three-letter codes. See \code{\link[=enumerate_classes]{enumerate_classes()}}.}
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}
 returns: \code{\link[=as.data.frame]{as.data.frame()}} gives one row per candidate, \code{\link[=summary]{summary()}} the
 candidate each criterion prefers, \code{\link[=plot]{plot()}} the criteria against the
-number of profiles, and \code{\link[=candidate_fit]{candidate_fit()}} one fitted candidate.
+number of profiles, and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate.
 }
 \description{
 Fits single-level latent profile models with each number of profiles in

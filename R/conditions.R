@@ -238,7 +238,7 @@
 #'     membership below one, so it is supported by less than one observation.}
 #'   \item{`latents_weak_class`}{`multilpa(family = "additive")` only: a
 #'     group class is supported by fewer than 50 effective groups (see
-#'     `effective_groups` in [get_results.multilpa_additive()]), because it is
+#'     `effective_groups` in [get_results()]), because it is
 #'     small, poorly separated, or both. Standard errors are still reported,
 #'     but intervals for class means and weights can be miscalibrated.}
 #'   \item{`latents_failed_replicates`}{Some bootstrap replicates failed

@@ -352,7 +352,7 @@ variances estimated at zero are reached by a boundary maximization with a
 Karush-Kuhn-Tucker check and flagged (\code{latents_boundary}); interior fits
 are finished by Newton steps. The result has class \code{multilpa_additive};
 \code{bic} uses the number of groups and \code{bic_individual} the number of rows.
-Read it with \code{\link[=get_results.multilpa_additive]{get_results.multilpa_additive()}}; \code{summary()}, \code{plot()},
+Read it with \code{\link[=get_results]{get_results()}}; \code{summary()}, \code{plot()},
 \code{coef()}, \code{vcov()}, \code{confint()} and \code{\link[=parameter_inference]{parameter_inference()}} work on it.
 These families are experimental: enumeration over families, bootstrap
 inference, missing data and covariates are not yet available. See the
@@ -378,7 +378,7 @@ group means are computed from the same ratings, so the likelihood is the
 specification's working likelihood: comparable between cross-level fits
 of the same data, not with the other families. Standard errors are not
 available (\code{latents_unsupported_inference}). The result has class
-\code{multilpa_cross_level}, read with \code{\link[=get_results.multilpa_cross_level]{get_results.multilpa_cross_level()}}.}
+\code{multilpa_cross_level}, read with \code{\link[=get_results]{get_results()}}.}
 
 \item{between_variance}{For the additive and additive-dispersion families:
 \code{"varying"} (the default) estimates between-group variances per group

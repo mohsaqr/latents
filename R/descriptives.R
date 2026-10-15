@@ -12,7 +12,8 @@
 #' @param x A data frame, or a fitted model of this package. A fit carries the
 #'   columns it was built from, so `vars` and `id` are read from it.
 #' @param vars Character vector of column names to describe. Repeated names
-#'   are described once. For a data frame, defaults to every numeric column
+#'   are described once. Columns must be vectors; matrix-valued columns raise
+#'   `latents_bad_data`. For a data frame, defaults to every numeric column
 #'   that is not `id`.
 #' @param id Optional. The column identifying the groups rows are nested in.
 #'   Supplying it adds `n_groups` and `icc`; omitting it leaves them out.
@@ -97,6 +98,7 @@ descriptives.data.frame <- function(x, vars = NULL, id = NULL, by = NULL, ...) {
     stop(errorCondition("There are no variables to describe.",
                         class = "latents_nothing_to_describe", call = NULL))
   }
+  .multilpa_check_descriptive_columns(x, unique(c(vars, id, by)))
   if (is.null(by)) return(.multilpa_describe(x, vars, id))
   .multilpa_describe_by(x, vars, id, x[[by]], by)
 }
@@ -223,6 +225,7 @@ descriptives.multilpa_covariates <- descriptives.multilpa
 #' @return A base `data.frame`, one row per variable.
 #' @noRd
 .multilpa_describe <- function(data, vars, id) {
+  .multilpa_check_descriptive_columns(data, unique(c(vars, id)))
   described <- lapply(vars, function(name) {
     values <- data[[name]]
     observed <- values[!is.na(values)]
@@ -246,6 +249,26 @@ descriptives.multilpa_covariates <- descriptives.multilpa
   result <- do.call(rbind, described)
   row.names(result) <- NULL
   result
+}
+
+#' Require one descriptive value per data-frame row
+#' @param data A data frame.
+#' @param columns The variables, identifier and stratifier to be used.
+#' @return `NULL`, invisibly; raises `latents_bad_data` for matrix/array columns.
+#' @noRd
+.multilpa_check_descriptive_columns <- function(data, columns) {
+  stopifnot(is.data.frame(data), is.character(columns),
+            all(columns %in% names(data)))
+  invalid <- vapply(data[columns], function(value) {
+    !is.null(dim(value)) || length(value) != nrow(data)
+  }, logical(1))
+  if (any(invalid)) {
+    stop(errorCondition(sprintf(
+      "Descriptive columns must be vectors with one value per row: %s.",
+      paste(sprintf("`%s`", columns[invalid]), collapse = ", ")),
+      class = "latents_bad_data", call = NULL))
+  }
+  invisible(NULL)
 }
 
 #' One-way random-effects intraclass correlation

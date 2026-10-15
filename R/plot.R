@@ -1,114 +1,4 @@
-#' Plot a fitted multilevel latent profile model
-#'
-#' Draws one view of a fit as a ggplot object, which can be printed, saved
-#' with `ggplot2::ggsave()` or styled further with `+ ggplot2::theme()`.
-#' Every view shares one profile order (largest first), one profile share (the
-#' posterior share every table reports) and one set of Okabe-Ito colours
-#' paired with point shapes, so a profile looks the same in every view.
-#' Series are labelled directly rather than through a legend.
-#'
-#' The plots need the ggplot2 package, which latents suggests rather than
-#' requires; without it a plot is refused with an error of class
-#' `latents_missing_package`.
-#'
-#' @param x A fitted `multilpa` model.
-#' @param what Which view to draw. [plot_views()] lists every value with its
-#'   group and a one-line description.
-#'
-#'   The measurement model: `"profiles"` draws one line per profile across the
-#'   continuous indicators, or numeric categorical summaries when there are no
-#'   continuous indicators (see `statistic`). `"bars"` draws continuous means as grouped bars that
-#'   start at zero. `"heatmap"` draws them as a diverging grid of observed
-#'   standard deviations from each indicator's observed mean, the quickest read
-#'   when there are many indicators or profiles; for a fit whose indicators are
-#'   all categorical it draws the response probabilities instead.
-#'   `"raincloud"` shows what the means summarize: for the cases assigned to
-#'   each profile, a density, the quartiles and the observations of each
-#'   indicator. `"parallel"` draws every case as a line across the indicators,
-#'   one panel per profile, faded by the certainty of its assignment.
-#'   `"pairs"` draws a scatter-plot matrix of the indicators with each
-#'   profile's 95% ellipse from the fitted covariances, the view that shows the
-#'   covariance structure. `"responses"` is the categorical counterpart of
-#'   `"profiles"`: one line per profile, showing the probability of a chosen
-#'   category.
-#'
-#'   The two-level structure: `"probabilities"` plots profile prevalence within
-#'   each group class. `"sequences"` draws one row per group and one column per
-#'   position, filled with the assigned profile; it needs a fit made with
-#'   `time =`.
-#'
-#'   Classification: `"sizes"` draws each profile's effective count, the
-#'   posterior mass it carries. `"posteriors"` draws the posterior probability
-#'   of each case's assigned profile and `"entropy"` each case's entropy
-#'   relative to a flat posterior, one strip per profile with its mean marked.
-#'   A one-profile fit refuses both with an error of class
-#'   `latents_nothing_to_plot`. `"avepp"` draws the average posterior
-#'   probability matrix: rows are assigned profiles, columns profiles, and the
-#'   diagonal is the avePP usually reported.
-#'
-#'   `"all"` returns every view the fit has the ingredients for.
-#' @param data Optional. The data frame the model was fitted to. A fit carries
-#'   the columns it was built from, so intervals are drawn without it; pass it
-#'   only to compute them from a different frame.
-#' @param scale For the mean views and `"raincloud"`, `"raw"` keeps each
-#'   indicator in its input units and `"standardized"` divides its deviation
-#'   from the observed mean by its observed standard deviation, the same map
-#'   as `as.data.frame(scale = "standardized")`.
-#' @param category For `what = "responses"`, which category's probability to
-#'   plot: `"last"`, `"first"`, or a single category label or index.
-#' @param statistic For `what = "profiles"`, `"mean"` (default), `"median"`
-#'   or `"mode"`. With continuous indicators these are the same fitted Gaussian
-#'   location. When there are no continuous indicators, summarizes each
-#'   categorical indicator's fitted probabilities on its numeric category scale.
-#'   Means assume meaningful score spacing; medians are the smallest score with
-#'   cumulative probability at least 0.5; tied modes use the smallest score.
-#'   Category labels must be distinct finite numeric scores. Categorical
-#'   summaries support only `scale = "raw"` and have no confidence intervals;
-#'   they do not run parameter inference. Mixed models retain continuous-only
-#'   profile plots; use `"responses"` for their categorical indicators.
-#' @param labels `TRUE` labels each series at its right end; `FALSE` uses a
-#'   legend instead.
-#' @param intervals For `"profiles"` and `"responses"`, `TRUE` draws 95%
-#'   intervals when the fit has standard errors (a probability's is clipped to
-#'   `[0, 1]`). A fit without them is drawn without whiskers and its subtitle
-#'   says why.
-#' @param cell_labels For `what = "sequences"`, `TRUE` prints the profile
-#'   number in each cell while the grid is sparse enough to hold one, so the
-#'   profile is not carried by colour alone.
-#' @param main,subtitle Title and subtitle. `NULL` uses the view's own.
-#' @param ... Nothing further is accepted; an unknown argument raises an error
-#'   of class `latents_bad_argument`. Style the returned plot with ggplot2.
-#' @return A ggplot object; for `what = "all"`, a `latents_plots` list of them,
-#'   named by view, that draws every one when printed.
-#' @details `"profiles"` and `"bars"` draw 95% Wald intervals when the fit has
-#'   standard errors. Profile numbers are arbitrary, so two fits must have
-#'   their labels aligned before their plots are compared. With
-#'   `scale = "standardized"` the standard deviations are the observed
-#'   indicator standard deviations, not the within-profile ones, so the values
-#'   are comparable across indicators but are not effect sizes.
-#' @section Errors: `latents_missing_package` without ggplot2;
-#'   `latents_no_continuous`, `latents_no_categorical`, `latents_no_time` and
-#'   `latents_nothing_to_plot` when the fit lacks what a view needs;
-#'   `latents_bad_argument` for an argument the method does not use.
-#' @references Zappia, L. and Oshlack, A. (2018). Clustering trees: a
-#'   visualization for evaluating clusterings at multiple resolutions.
-#'   *GigaScience*, 7(7), giy083.
-#' @examples
-#' if (requireNamespace("ggplot2", quietly = TRUE)) {
-#'   set.seed(7)
-#'   example_data <- data.frame(
-#'     school = rep(seq_len(12), each = 10),
-#'     score_a = rnorm(120), score_b = rnorm(120)
-#'   )
-#'   fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2)
-#'   plot(fit)
-#'   plot(fit, scale = "standardized")
-#'   plot(fit, what = "bars")
-#'   plot(fit, what = "pairs")
-#'   plot(fit, what = "avepp")
-#' }
-#' @seealso [plot_views()] for the catalogue of views.
+#' @rdname latents-plots
 #' @export
 plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud",
                                       "parallel", "pairs", "responses",
@@ -185,7 +75,7 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
       statistic = statistic, intervals = with_errors),
     bars = .gg_view_bars(
       x, scale,
-      if (isTRUE(errors_available)) .multilpa_mean_error_matrix(x, data),
+      if (with_errors) .multilpa_mean_error_matrix(x, data),
       main, subtitle),
     heatmap = .gg_view_heatmap(x, main, subtitle),
     raincloud = .gg_view_raincloud(x, scale, main, subtitle),
@@ -303,136 +193,155 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
        profile = x$subject_profiles[kept])
 }
 
-#' Plot a class-enumeration grid
-#'
-#' `what = "enumeration"` draws information criteria against the number of
-#' profiles, one panel per criterion and one line per covariance model and
-#' number of group classes. A candidate that failed to converge is marked with
-#' a cross on its panel's floor, so a gap in a line reads as a failure and not
-#' as a missing candidate. `what = "tree"` draws how profiles split as more are
-#' added: each row is one solution divided into its profiles by posterior
-#' share, and bands carry the posterior mass shared by a profile and one in the
-#' next solution, coloured by lineage. A band that forks is a profile split in
-#' two; bands that merge or cross are cases reshuffled.
-#'
-#' @param x A `multilpa_enumeration` result from [enumerate_classes()],
-#'   [enumerate_lpa()] or [enumerate_lca()].
-#' @param what `"enumeration"` (the default) or `"tree"`.
-#' @param criterion For `"enumeration"`, one or more criterion columns of
-#'   `as.data.frame(x)`, such as `"bic_individual"` or `"sabic_groups"`, or
-#'   `"all"` for every information criterion. The default draws AIC, BIC
-#'   under both sample-size conventions and ICL counted over individuals; a
-#'   criterion identical at both levels, as in a single-level grid, is drawn
-#'   once. [plot_enumeration()] draws the same view with these arguments
-#'   listed on its own.
-#' @param combine `TRUE` draws several criteria as panels of one plot; `FALSE`
-#'   returns one plot per criterion.
-#' @param labels `TRUE` labels each series at its right end.
-#' @param mark_minimum `TRUE` rings each criterion's lowest value among
-#'   converged candidates. This marks an extremum; it does not select a model.
-#' @param main,subtitle Title and subtitle. `NULL` uses the view's own.
-#' @param ... Nothing further is accepted; an unknown argument raises an error
-#'   of class `latents_bad_argument`.
-#' @return A ggplot object, or with `combine = FALSE` and several criteria a
-#'   `latents_plots` list of them, one per criterion.
-#' @section Errors: `latents_unknown_criterion` for a criterion that is not a
-#'   column of the grid; `latents_nothing_to_plot` when no converged candidate
-#'   has a finite value, or when a tree has fewer than two numbers of profiles
-#'   for every model.
-#' @references Zappia, L. and Oshlack, A. (2018). Clustering trees: a
-#'   visualization for evaluating clusterings at multiple resolutions.
-#'   *GigaScience*, 7(7), giy083.
-#' @examples
-#' if (requireNamespace("ggplot2", quietly = TRUE)) {
-#'   set.seed(7)
-#'   example_data <- data.frame(score_a = rnorm(120), score_b = rnorm(120))
-#'   candidates <- enumerate_lpa(example_data, c("score_a", "score_b"),
-#'                               n_profiles = 1:3, n_starts = 2)
-#'   plot(candidates)
-#'   plot(candidates, what = "tree")
-#' }
+#' @rdname latents-plots
 #' @export
-plot.multilpa_enumeration <- function(x, what = c("enumeration", "tree"),
-                                      criterion = c("aic", "bic_groups",
-                                                    "bic_individual",
-                                                    "icl_individual"),
+plot.multilpa_enumeration <- function(x, what = c("aic", "bic_groups",
+                                               "bic_individual",
+                                               "icl_individual"),
+                                      criterion = NULL,
                                       combine = TRUE, labels = TRUE,
                                       mark_minimum = TRUE, main = NULL,
-                                      subtitle = NULL, ...) {
+                                      subtitle = NULL, cutoff = 0.8,
+                                      using = "bic_groups", ...) {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
               inherits(x, "multilpa_enumeration"))
   .multilpa_reject_extra_arguments(
-    list(...), "plot()",
-    "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
-  what <- match.arg(what)
+    list(...), "plot()", .multilpa_enumeration_plot_advice())
+  # The released view names were matched with match.arg(), so their unique
+  # abbreviations remain valid alongside the new criterion names.
+  if (is.null(what)) what <- "enumeration"
+  legacy <- if (is.character(what) && length(what) == 1L && !is.na(what)) {
+    pmatch(what, c("enumeration", "tree"))
+  } else NA_integer_
+  if (!is.na(legacy)) what <- c("enumeration", "tree")[legacy]
   if (identical(what, "tree")) {
-    .gg_require()
-    return(.gg_view_tree(x, main, subtitle))
+    # In 0.9.21 `criterion` always had a value and the tree did not use it.
+    .latents_warn_unused_arguments(
+      if (is.null(criterion)) list() else list(criterion = criterion),
+      "plot(what = \"tree\")", "The tree shows no criterion.")
+    return(plot_tree(x, main = main, subtitle = subtitle))
   }
-  plot_enumeration(x, criterion = criterion, combine = combine,
-                   labels = labels, mark_minimum = mark_minimum,
-                   main = main, subtitle = subtitle)
+  # 0.9.21 chose the view with `what = "enumeration"` and the criteria with
+  # `criterion`; both spellings still draw the same plot.
+  what <- .latents_former_argument(
+    what, !missing(what) && !identical(what, "enumeration"), criterion,
+    c("what", "criterion"))
+  if ("tree" %in% what) {
+    stop(errorCondition(
+      "`what = \"tree\"` draws the tree on its own; ask for criteria separately.",
+      class = "latents_bad_argument", call = NULL))
+  }
+  # The view's name before criteria were chosen through `what`.
+  if (identical(what, "enumeration")) what <- eval(formals(plot_enumeration)$what)
+  plot_enumeration(x, what = what, combine = combine, labels = labels,
+                   mark_minimum = mark_minimum, main = main,
+                   subtitle = subtitle, cutoff = cutoff, using = using)
 }
 
-#' Plot information criteria across an enumeration grid
+#' What an enumeration plot takes instead of a refused argument
+#' @return One sentence for `.multilpa_reject_extra_arguments()`.
+#' @noRd
+.multilpa_enumeration_plot_advice <- function() {
+  paste("Name the criteria with `what`, for example `what = \"bic_groups\"`",
+        "or `what = \"all\"`, and style the plot with ggplot2.")
+}
+
+#' What a transition or group-class family grid's plot takes instead
+#' @return One sentence for the unused-argument warning.
+#' @noRd
+.latents_grid_plot_advice <- function() {
+  paste("Name the criterion with `what`: \"bic\", \"aic\" or",
+        "\"bic_individual\"; style the plot with ggplot2.")
+}
+
+#' The criterion a transition or family grid's plot draws
 #'
-#' Draws information criteria against the number of profiles, one panel per
-#' criterion and one line per covariance model and number of group classes. It
-#' is the view `plot(x)` draws for an enumeration, as a function of its own so
-#' that its arguments are listed (and completed by an editor) without going
-#' through `what =`. A candidate that failed to converge is marked with a cross
-#' on its panel's floor, so a gap in a line reads as a failure and not as a
-#' missing candidate.
+#' As `match.arg()`, which these methods used in 0.9.21 (so abbreviations
+#' such as `"bic_i"` still work), but refusing with a classed condition.
 #'
-#' @param x A `multilpa_enumeration` result from [enumerate_classes()],
-#'   [enumerate_lpa()] or [enumerate_lca()].
-#' @param criterion One or more criterion columns of `as.data.frame(x)`, such
-#'   as `"bic_individual"` or `"sabic_groups"`, or `"all"` for every
-#'   information criterion in the grid. The default draws AIC, BIC under both
-#'   sample-size conventions and ICL counted over individuals. A criterion
-#'   identical at both levels, as in a single-level grid, is drawn once.
-#' @param combine `TRUE` draws several criteria as panels of one plot; `FALSE`
-#'   returns one plot per criterion.
-#' @param labels `TRUE` labels each series at its right end.
-#' @param mark_minimum `TRUE` rings each criterion's lowest value among
-#'   converged candidates. This marks an extremum; it does not select a model.
-#' @param main,subtitle Title and subtitle. `NULL` uses the view's own.
-#' @return A ggplot object, one panel per criterion; with `combine = FALSE`
-#'   and several criteria, a `latents_plots` list of ggplot objects, one per
-#'   criterion, named by its criterion column.
-#' @section Errors: `latents_unknown_criterion` for a criterion that is not an
-#'   information criterion of the grid; `latents_nothing_to_plot` when no
-#'   converged candidate has a finite value.
-#' @seealso [plot.multilpa_enumeration()] for the profile tree,
-#'   [summary.multilpa_enumeration()] for the candidate each criterion prefers.
-#' @examples
-#' if (requireNamespace("ggplot2", quietly = TRUE)) {
-#'   set.seed(7)
-#'   example_data <- data.frame(score_a = rnorm(120), score_b = rnorm(120))
-#'   candidates <- enumerate_lpa(example_data, c("score_a", "score_b"),
-#'                               n_profiles = 1:3, n_starts = 2)
-#'   plot_enumeration(candidates)
-#'   plot_enumeration(candidates, criterion = "all")
-#' }
+#' @param what The caller's `what`.
+#' @return One of `"bic"`, `"aic"`, `"bic_individual"`.
+#' @noRd
+.latents_grid_criterion <- function(what) {
+  choices <- c("bic", "aic", "bic_individual")
+  if (identical(what, choices)) return(choices[1L])
+  at <- if (is.character(what) && length(what) == 1L && !is.na(what)) {
+    pmatch(what, choices)
+  } else NA_integer_
+  if (is.na(at)) {
+    stop(errorCondition(sprintf(
+      "`what` must be one of \"bic\", \"aic\" or \"bic_individual\", not %s.",
+      deparse1(what)), class = "latents_bad_argument", call = NULL))
+  }
+  choices[at]
+}
+
+#' @rdname latents-plots
 #' @export
-plot_enumeration <- function(x, criterion = c("aic", "bic_groups",
-                                              "bic_individual",
-                                              "icl_individual"),
+plot_enumeration <- function(x, what = c("aic", "bic_groups",
+                                         "bic_individual", "icl_individual"),
                              combine = TRUE, labels = TRUE,
                              mark_minimum = TRUE, main = NULL,
-                             subtitle = NULL) {
+                             subtitle = NULL, cutoff = 0.8,
+                             using = "bic_groups") {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
               inherits(x, "multilpa_enumeration"),
-            "`criterion` must name one or more columns, or be \"all\"" =
-              is.character(criterion) && length(criterion) >= 1L &&
-              !anyNA(criterion),
+            "`what` must name one or more criteria, or be \"all\"" =
+              is.character(what) && length(what) >= 1L && !anyNA(what),
             "`combine` must be TRUE or FALSE" = isTRUE(combine) || isFALSE(combine),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
             "`mark_minimum` must be TRUE or FALSE" =
               isTRUE(mark_minimum) || isFALSE(mark_minimum))
   .gg_require()
+  quality <- c("entropy", "avepp", "diagnostics")
+  # Model selection: each view on its own plot; "selection" draws them all,
+  # with classification quality, which is part of choosing a model.
+  selection <- .latents_selection_views()
+  if (any(what %in% c(selection, "selection"))) {
+    if (!all(what %in% c(selection, "selection", quality))) {
+      stop(errorCondition(paste(
+        "Plot information criteria and the selection views separately: `what`",
+        "takes criteria, or views such as \"deltas\", \"heatmap\" and \"selection\"."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    stopifnot("`cutoff` must be a single number between 0 and 1" =
+                is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
+                cutoff > 0 && cutoff <= 1)
+    views <- unique(unlist(lapply(what, function(view) {
+      if (identical(view, "selection")) c(selection, "diagnostics") else view
+    })))
+    plots <- stats::setNames(lapply(views, function(view) {
+      if (view %in% quality) {
+        .gg_view_enumeration_quality(
+          x, if (identical(view, "diagnostics")) c("entropy", "avepp") else view,
+          labels, main, subtitle, cutoff)
+      } else .gg_selection_view(x, view, using, main, subtitle)
+    }), views)
+    if (length(plots) == 1L) return(plots[[1L]])
+    return(.gg_plots(plots))
+  }
+  # Classification quality: the same words as a single model's plot.
+  if (any(what %in% quality)) {
+    if (!all(what %in% quality)) {
+      stop(errorCondition(paste(
+        "Plot information criteria and classification quality separately:",
+        "`what` takes criteria, or \"entropy\", \"avepp\" and \"diagnostics\"."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    stopifnot("`cutoff` must be a single number between 0 and 1" =
+                is.numeric(cutoff) && length(cutoff) == 1L && is.finite(cutoff) &&
+                cutoff > 0 && cutoff <= 1)
+    measures <- if ("diagnostics" %in% what) c("entropy", "avepp") else what
+    if (isFALSE(combine) && length(measures) > 1L) {
+      return(.gg_plots(stats::setNames(lapply(measures, \(measure) {
+        .gg_view_enumeration_quality(x, measure, labels, main, subtitle, cutoff)
+      }), measures)))
+    }
+    return(.gg_view_enumeration_quality(x, measures, labels, main, subtitle,
+                                        cutoff))
+  }
   grid <- as.data.frame(x)
-  if (identical(criterion, "all")) criterion <- .multilpa_enumeration_criteria()
+  criterion <- if (identical(what, "all")) .multilpa_enumeration_criteria() else what
   unknown <- setdiff(criterion, .multilpa_enumeration_criteria())
   if (length(unknown) > 0L) {
     stop(errorCondition(sprintf(
@@ -483,40 +392,7 @@ plot_enumeration <- function(x, criterion = c("aic", "bic_groups",
   stats::setNames(criterion[keep], titles[keep])
 }
 
-#' Plot a covariate model
-#'
-#' Draws the parts of a covariate fit that are still fixed quantities: the
-#' measurement model, the assignments and the classification diagnostics, as
-#' [plot.multilpa()] draws them. Profile prevalence cannot be drawn: a
-#' covariate model has no single prevalence vector, because prevalence varies
-#' with each unit's covariates, so asking for it is refused rather than
-#' answered with an average that no unit has.
-#'
-#' @param x A fitted `multilpa_covariates` model.
-#' @param what The view; every view of [plot.multilpa()] except
-#'   `"probabilities"`.
-#' @param data,scale,category,labels,intervals,cell_labels,main,subtitle,statistic,...
-#'   As in [plot.multilpa()].
-#' @return A ggplot object; for `what = "all"`, a `latents_plots` list.
-#' @examples
-#' if (requireNamespace("ggplot2", quietly = TRUE)) {
-#'   set.seed(5)
-#'   school <- rep(seq_len(16), each = 8)
-#'   high_class <- rep(rep(c(FALSE, TRUE), length.out = 16), each = 8)
-#'   x <- rnorm(128)
-#'   profile <- ifelse(
-#'     runif(128) < plogis(-1 + 2 * high_class + 0.8 * x), 2L, 1L
-#'   )
-#'   example_data <- data.frame(
-#'     school = school, x = x,
-#'     y1 = rnorm(128, ifelse(profile == 2L, 2, -2), 0.7),
-#'     y2 = rnorm(128, ifelse(profile == 2L, 1.5, -1.5), 0.7)
-#'   )
-#'   fit <- multilpa(example_data, c("y1", "y2"), "school", n_profiles = 2,
-#'                   n_group_classes = 2, profile_covariates = "x",
-#'                   n_starts = 2)
-#'   plot(fit)
-#' }
+#' @rdname latents-plots
 #' @export
 plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
                                                  "raincloud", "parallel",
@@ -554,18 +430,7 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
                       main = main, subtitle = subtitle, statistic = statistic)
 }
 
-#' The plots this package can draw
-#'
-#' Returns the catalogue of `what =` values accepted by the `plot()` methods,
-#' with the group each belongs to, so the available views can be listed rather
-#' than recalled from a help page.
-#'
-#' @return A base `data.frame` with one row per plot type and the columns
-#'   `type` (the value to pass as `what`), `group` (`"measurement"`,
-#'   `"structure"`, `"diagnostics"`, `"selection"` or `"every"`), and
-#'   `description`.
-#' @examples
-#' plot_views()
+#' @rdname latents-plots
 #' @export
 plot_views <- function() {
   data.frame(
@@ -590,7 +455,7 @@ plot_views <- function() {
       "Each case's entropy relative to a flat posterior, by profile",
       "Posterior probability of each case's assigned profile, by profile",
       "Average posterior probability: assigned profile by posterior profile",
-      "Information criteria across a candidate grid (plot an enumeration)",
+      "Information criteria across a candidate grid (plot an enumeration; or name criteria in `what`)",
       "How profiles split as more are added (plot an enumeration)",
       "Every view above that this fit has the ingredients for, in one call"
     ),

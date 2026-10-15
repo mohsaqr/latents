@@ -253,7 +253,7 @@ classes may add a day to G1-G2.
   without whiskers and says why (2026-09-28).
 - [ ] Scalar accessors so prose can quote one number with one verb:
   `entropy(fit, level = )`, `worst_residual(fit)`. **S**
-- [ ] Named plot functions for fitted models, starting with
+- [x] Named plot functions for fitted models (2026-10-07):
   `plot_profiles()`: the `plot(fit, what = )` sweep hides each view's
   arguments from editor completion. `plot_enumeration()` (2026-10-07) is the
   pattern: the generic delegates to the named function, which has no `...`.

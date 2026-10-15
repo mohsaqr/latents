@@ -540,7 +540,7 @@
 #'   With `transitions = "occasion"`, `transition_covariates`,
 #'   `initial_covariates`, `measurement = "occasion"` or `order = 2` the
 #'   result is a `multilpa_lta` object instead, read with
-#'   [get_results.multilpa_lta()]: transition and initial logit coefficients
+#'   [get_results()]: transition and initial logit coefficients
 #'   with Wald standard errors (observed, robust or OPG, from analytic
 #'   scores), model-implied transition probabilities per occasion, profiles
 #'   per occasion. Missing indicators (`missing = "fiml"`) and covariance
@@ -958,14 +958,14 @@ lta <- function(data, vars, id, n_profiles, time,
     row.names = NULL)
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.multilpa_transitions <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_transitions`" = inherits(x, "multilpa_transitions"))
   .multilpa_coerce(x, row.names, list(...))
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.multilpa_transitions <- function(x, rows = 20L, ...) {
   stopifnot(inherits(x, "multilpa_transitions"))
@@ -999,7 +999,7 @@ nobs.multilpa_transitions <- function(object, ...) {
   object$n_groups
 }
 
-#' @rdname latents-summary
+#' @noRd
 #' @export
 summary.multilpa_transitions <- function(object, ...) {
   stopifnot(inherits(object, "multilpa_transitions"))
@@ -1038,14 +1038,14 @@ summary.multilpa_transitions <- function(object, ...) {
   result
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.summary_multilpa_transitions <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `summary_multilpa_transitions`" = inherits(x, "summary_multilpa_transitions"))
   .multilpa_coerce(x, row.names, list(...))
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.summary_multilpa_transitions <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa_transitions` object" =
@@ -1086,45 +1086,7 @@ coef.multilpa_transitions <- function(object, ...) {
                                 .multilpa_transition_view(object))))
 }
 
-#' Plot a fitted latent transition model
-#'
-#' The measurement model is the one [multilpa()] fits, so every measurement and
-#' classification view it draws is available here. `what = "transitions"` is the
-#' view this family adds: the estimated transition matrix, one panel per group
-#' class, with a row that has no data support labelled in parentheses because
-#' it is uniform by construction rather than estimated.
-#'
-#' @param x A fitted `multilpa_transitions` model.
-#' @param what The view to draw. `"transitions"` draws the estimated transition
-#'   matrix, one panel per group class. `"profiles"`, `"bars"` and `"heatmap"`
-#'   draw the measurement model, `"responses"` the categorical response curves,
-#'   `"sequences"` each group's profile at each occasion, and `"sizes"`,
-#'   `"entropy"`, `"posteriors"` and `"avepp"` the classification diagnostics.
-#'   `"all"` returns every view this fit has the ingredients for.
-#' @param data Optional. Accepted for consistency with [plot.multilpa()]; this
-#'   family's views draw point estimates, and [parameter_inference()] reports
-#'   the standard errors.
-#' @param scale `"raw"` keeps the indicators in their own units;
-#'   `"standardized"` divides by each indicator's observed standard deviation.
-#' @param category For `"responses"`, which category to draw.
-#' @param labels Whether to label series directly.
-#' @param cell_labels For `"sequences"`, whether to print the profile number in
-#'   each cell.
-#' @param main,subtitle Title and subtitle. `NULL` uses the view's own.
-#' @param ... Nothing further is accepted; an unknown argument raises an error
-#'   of class `latents_bad_argument`.
-#' @return A ggplot object; for `what = "all"`, a `latents_plots` list.
-#' @seealso [get_tna()] and [get_group_tna()] to draw the transitions as a
-#'   network instead, and [plot.multilpa()] for the same views on a
-#'   cross-sectional fit.
-#' @examples
-#' if (requireNamespace("ggplot2", quietly = TRUE)) {
-#'   fit <- lta(subset(course_engagement, student <= 40),
-#'              c("browse", "lectures", "forum_read"), "student",
-#'              n_profiles = 2, time = "sequence", n_starts = 2)
-#'   plot(fit, what = "transitions")
-#'   plot(fit, what = "profiles")
-#' }
+#' @rdname latents-plots
 #' @export
 plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
                                                   "bars", "heatmap", "responses",

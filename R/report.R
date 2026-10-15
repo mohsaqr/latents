@@ -176,6 +176,52 @@ print.multilpa_diagnostics <- function(x, ...) {
     class = "latents_bad_argument", call = NULL))
 }
 
+#' Warn about arguments a released method used to ignore
+#'
+#' Up to latents 0.9.21 these `plot()` methods ignored any argument they did not
+#' use. Refusing one now would break code written for that release, and
+#' ignoring it silently would hide a call that does not do what it says, so the
+#' method draws as before and says what it ignored.
+#'
+#' @param extra `list(...)` as the method received it.
+#' @param verb The call, for the message.
+#' @param advice What to do instead.
+#' @return `NULL`, invisibly; warns with class `latents_unused_argument`.
+#' @noRd
+.latents_warn_unused_arguments <- function(extra, verb, advice) {
+  if (length(extra) == 0L) return(invisible(NULL))
+  supplied <- names(extra) %||% rep("", length(extra))
+  labels <- ifelse(nzchar(supplied), sprintf("`%s`", supplied),
+                   "an unnamed argument")
+  warning(warningCondition(
+    sprintf("%s ignores %s. %s", verb, paste(labels, collapse = ", "), advice),
+    class = "latents_unused_argument", call = NULL))
+  invisible(NULL)
+}
+
+#' Take a value given under an argument's 0.9.21 name
+#'
+#' Arguments renamed after latents 0.9.21 keep their old name as a second
+#' formal, so code written for that release runs unchanged. Giving both names
+#' is ambiguous and refused.
+#'
+#' @param current The value of the argument under its present name.
+#' @param current_given Whether the caller supplied the present name.
+#' @param former The value under the 0.9.21 name, `NULL` when not given.
+#' @param names The present and the former name, for the message.
+#' @return The value to use.
+#' @noRd
+.latents_former_argument <- function(current, current_given, former, names) {
+  if (is.null(former)) return(current)
+  if (current_given) {
+    stop(errorCondition(sprintf(paste(
+      "`%s` and `%s` are the same argument (`%s` is its name in latents",
+      "0.9.21); give one of them."), names[1L], names[2L], names[2L]),
+      class = "latents_bad_argument", call = NULL))
+  }
+  former
+}
+
 #' @rdname diagnostics
 #' @export
 plot.multilpa_diagnostics <- function(x, ...) {
@@ -183,17 +229,7 @@ plot.multilpa_diagnostics <- function(x, ...) {
   .multilpa_reject_extra_arguments(
     list(...), "plot()",
     "Style the returned plots with ggplot2, for example `+ ggplot2::theme()`.")
-  .gg_require()
-  # Built from the fit's posteriors and effective counts directly rather than
-  # through `plot(fit, what = )`: every family carries those, while not every
-  # family's plot() method offers every view.
-  fit <- x$fit
-  views <- list(sizes = .gg_view_sizes, posteriors = .gg_view_posteriors,
-                entropy = .gg_view_entropy, avepp = .gg_view_avepp)
-  if (ncol(fit$subject_posteriors) < 2L) {
-    views <- views[c("sizes", "avepp")]
-  }
-  .gg_plots(lapply(views, \(view) view(fit, NULL, NULL)))
+  plot_diagnostics(x$fit)
 }
 
 #' Everything about a fit, in one call
@@ -292,7 +328,7 @@ report <- function(x, data = NULL, plots = TRUE,
   # every class takes the full catalogue. A covariate fit's plot method offers
   # "profiles" and "sequences" only, so report() must not hand it a view it has
   # never heard of.
-  method <- utils::getS3method("plot", class(x)[1L], optional = TRUE)
+  method <- .multilpa_plot_method(x)
   if (is.null(method)) return(character())
   # A method with no `what` draws one thing. `NA_character_` stands for "call
   # plot() with no view", which `report()` passes through as a bare plot(x).

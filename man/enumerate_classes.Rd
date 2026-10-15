@@ -60,7 +60,7 @@ group-class families \code{"additive"}, \code{"dispersion"} and
 \code{"additive_dispersion"} enumerates those instead, over \code{family},
 \code{n_group_classes} and \code{between_variance}; \code{n_profiles} and \code{model} are
 then refused, and the result is a \code{latents_family_enumeration} read with
-\code{\link[=get_results.latents_family_enumeration]{get_results.latents_family_enumeration()}} and \code{\link[=candidate_fit]{candidate_fit()}}.}
+\code{\link[=get_results]{get_results()}} and \code{\link[=get_candidate]{get_candidate()}}.}
 
 \item{between_variance}{For group-class families: the between-variance
 restrictions to cross, \code{"varying"}, \code{"equal"} or both (the default). The
@@ -71,7 +71,7 @@ dispersion family is always fitted with \code{"equal"}.}
 (default \code{1}), holding every other \code{lta()} argument given in \code{...}
 fixed. \code{model}, when given, crosses those covariance structures. The
 result is a \code{latents_transition_enumeration}, read with
-\code{\link[=get_results.latents_transition_enumeration]{get_results.latents_transition_enumeration()}} and \code{\link[=candidate_fit]{candidate_fit()}}.}
+\code{\link[=get_results]{get_results()}} and \code{\link[=get_candidate]{get_candidate()}}.}
 
 \item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}} (or to \code{\link[=lta]{lta()}} with \code{time}); for group-class families only
 \code{n_starts}, \code{max_iter}, \code{tol} and \code{min_variance}.}
@@ -79,10 +79,19 @@ result is a \code{latents_transition_enumeration}, read with
 \value{
 An object of class \code{multilpa_enumeration}. Read it with the verbs
 that describe it rather than by reaching into it: \code{\link[=as.data.frame]{as.data.frame()}} gives
-one row per candidate model with every criterion and diagnostic,
-\code{\link[=summary]{summary()}} gives one row per information criterion naming the candidate
-that minimises it, \code{\link[=plot]{plot()}} draws one criterion across the grid, and
-\code{\link[=candidate_fit]{candidate_fit()}} returns the fitted model for one cell of the grid.
+one row per candidate model with every criterion and diagnostic
+(including both entropies and, at each level, the smallest, largest and
+mean average posterior probability and the number of classes below a
+cutoff), \code{get_results(x, "criteria")} names the candidate each
+criterion's minimum falls on, \code{get_results(x, "classification")} gives
+every class's average posterior probability and relative entropy for
+every candidate, \code{get_results(x, "deltas")} and \code{"knees"} give the
+model-selection evidence, \code{\link[=summary]{summary()}} prints each criterion's minimum and
+every table, \code{\link[=plot]{plot()}} draws the information criteria (and, with \code{what},
+classification quality and model-selection views), \code{\link[=get_candidate]{get_candidate()}}
+returns the fitted model of one candidate, and \code{\link[=compare_models]{compare_models()}} puts
+candidates side by side. Each candidate has a name, the first column of
+the table (\code{"profiles3_groups2"}), which these verbs take.
 }
 \description{
 Fits every requested combination and retains errors and warnings alongside
@@ -117,6 +126,6 @@ Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
 \emph{Pattern Recognition}, 28(5), 781--793.
 }
 \seealso{
-\code{\link[=candidate_fit]{candidate_fit()}} to take one fitted model out of the grid,
-\code{\link[=summary.multilpa_enumeration]{summary.multilpa_enumeration()}} for the criterion-by-criterion comparison.
+\code{\link[=get_candidate]{get_candidate()}} to take one fitted model out of the grid,
+\code{summary()} for the criterion-by-criterion comparison.
 }

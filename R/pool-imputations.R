@@ -1,3 +1,5 @@
+utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high"))
+
 # Fitting a model to multiply imputed data and pooling it with Rubin's rules.
 #
 # Missing indicators are integrated out by `missing = "fiml"`; missing
@@ -27,6 +29,10 @@
 #' Pooled intervals are symmetric t intervals on this scale; unlike the
 #' transformed Wald intervals of [parameter_inference()], they can extend
 #' outside the parameter space for probabilities or variances.
+#' A structural constant, such as the sole class's probability of one, has
+#' zero within- and between-imputation variance and zero missing information.
+#' If within-imputation variance is zero but between-imputation variance is
+#' positive, `riv` is infinite and `fmi` is one.
 #'
 #' @section Choosing the imputation model:
 #' Rubin's rules are only as good as the imputations. The covariate and the
@@ -243,8 +249,9 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
   between <- apply(estimates, 1L, stats::var)
   total <- within + (1 + 1 / m) * between
   riv <- (1 + 1 / m) * between / within
+  riv[!is.na(within) & !is.na(between) & within == 0 & between == 0] <- 0
   df <- ifelse(between > 0, (m - 1) * (1 + 1 / riv)^2, Inf)
-  fmi <- (riv + 2 / (df + 3)) / (riv + 1)
+  fmi <- ifelse(is.infinite(riv), 1, (riv + 2 / (df + 3)) / (riv + 1))
   standard_error <- sqrt(total)
   ## A test is reported only where the imputations' tables report one.
   tested <- !is.na(tables[[1L]]$statistic)
@@ -326,26 +333,7 @@ pool_imputations <- function(imputed, vars, id, n_profiles, ..., level = 0.95,
     stringsAsFactors = FALSE)
 }
 
-#' Tables of a pooled multiply imputed fit
-#'
-#' @param x A `latents_pooled` object from [pool_imputations()].
-#' @param what `"estimates"` (the pooled table), `"imputations"` (every
-#'   imputation's aligned estimates) or `"fits"` (one row per imputation).
-#' @param ... Unused.
-#' @return A base `data.frame`; see [pool_imputations()] for the columns.
-#' @examples
-#' set.seed(1)
-#' # Two stand-in completed data sets. With real missing covariates, pass the
-#' # `mids` object mice::mice() returns instead.
-#' completed <- lapply(1:2, function(i) {
-#'   within(subset(course_engagement, student <= 40),
-#'          previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))
-#' })
-#' pooled <- pool_imputations(completed, c("browse", "lectures", "forum_read"),
-#'                            "student", n_profiles = 2, n_group_classes = 1,
-#'                            profile_covariates = "previous_grade",
-#'                            n_starts = 2, seed = 1)
-#' get_results(pooled, "imputations")
+#' @noRd
 #' @export
 get_results.latents_pooled <- function(x, what = c("estimates", "imputations", "fits"),
                                        ...) {
@@ -353,7 +341,7 @@ get_results.latents_pooled <- function(x, what = c("estimates", "imputations", "
   x[[what]]
 }
 
-#' @rdname get_results.latents_pooled
+#' @noRd
 #' @param row.names,optional Unused; part of the generic.
 #' @export
 as.data.frame.latents_pooled <- function(x, row.names = NULL, optional = FALSE,
@@ -361,7 +349,7 @@ as.data.frame.latents_pooled <- function(x, row.names = NULL, optional = FALSE,
   get_results.latents_pooled(x, what = what)
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.latents_pooled <- function(x, digits = 4L, rows = 20L, ...) {
   cat(sprintf(paste(
@@ -380,7 +368,7 @@ print.latents_pooled <- function(x, digits = 4L, rows = 20L, ...) {
   invisible(x)
 }
 
-#' @rdname latents-summary
+#' @noRd
 #' @export
 summary.latents_pooled <- function(object, ...) {
   fits <- object$fits
@@ -405,61 +393,52 @@ vcov.latents_pooled <- function(object, ...) {
   object$covariance
 }
 
-#' Plot a pooled multiply imputed fit
-#'
-#' One row per parameter: each imputation's aligned estimate as an open circle
-#' and the pooled estimate as a filled circle with its interval, so the
-#' between-imputation spread is visible next to the total uncertainty.
-#' @param x A `latents_pooled` object.
-#' @param level Which parameter level to show: `"profile"` (the profile
-#'   membership coefficients or probabilities), `"group"` or `"measurement"`.
-#' @param main Plot title; `NULL` for the default.
-#' @param ... Unused.
-#' @return `x`, invisibly. Called for the side effect of drawing.
-#' @examples
-#' set.seed(1)
-#' completed <- lapply(1:2, function(i) {
-#'   within(subset(course_engagement, student <= 40),
-#'          previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))
-#' })
-#' pooled <- pool_imputations(completed, c("browse", "lectures", "forum_read"),
-#'                            "student", n_profiles = 2, n_group_classes = 1,
-#'                            profile_covariates = "previous_grade",
-#'                            n_starts = 2, seed = 1)
-#' plot(pooled)
+#' @rdname latents-plots
 #' @export
-plot.latents_pooled <- function(x, level = c("profile", "group", "measurement"),
-                                main = NULL, ...) {
-  level <- match.arg(level)
-  estimates <- x$estimates[x$estimates$level %in% level, , drop = FALSE]
-  imputations <- x$imputations[x$imputations$level %in% level, , drop = FALSE]
+plot.latents_pooled <- function(x, what = c("profile", "group", "measurement"),
+                                main = NULL, subtitle = NULL, level = NULL,
+                                ...) {
+  stopifnot("`x` must be a `latents_pooled` result" = inherits(x, "latents_pooled"))
+  .latents_warn_unused_arguments(
+    list(...), "plot()",
+    "Choose the parameters with `what`, and style the plot with ggplot2.")
+  what <- .latents_former_argument(what, !missing(what), level,
+                                   c("what", "level"))
+  what <- match.arg(what, c("profile", "group", "measurement"))
+  estimates <- x$estimates[x$estimates$level %in% what, , drop = FALSE]
+  imputations <- x$imputations[x$imputations$level %in% what, , drop = FALSE]
   if (nrow(estimates) == 0L) {
-    stop(errorCondition(sprintf("This fit has no `%s` parameters to plot.", level),
+    stop(errorCondition(sprintf("This fit has no `%s` parameters to plot.", what),
                         class = "latents_bad_argument", call = NULL))
   }
-  old <- graphics::par(no.readonly = TRUE)
-  on.exit(graphics::par(old), add = TRUE, after = FALSE)
+  .gg_require()
   label <- function(table) paste(table$outcome, table$term, table$parameter)
-  labels <- unique(label(estimates))
-  position <- rev(seq_along(labels))
-  pooled_y <- position[match(label(estimates), labels)]
-  imputed_y <- position[match(label(imputations), labels)]
-  colours <- .multilpa_palette(2L)
-  ## Sized from the label lengths: measuring text needs an open plot.
-  graphics::par(mar = c(4, min(0.45 * max(nchar(labels)) + 1, 20), 3, 1))
-  range_x <- range(c(estimates$conf_low, estimates$conf_high,
-                     imputations$estimate), na.rm = TRUE)
-  graphics::plot(imputations$estimate, imputed_y, xlim = range_x,
-                 ylim = c(0.5, length(labels) + 0.5), yaxt = "n", pch = 1,
-                 col = colours[2L],
-                 xlab = sprintf("Estimate with pooled %g%% interval", 100 * x$level),
-                 ylab = "", main = main %||% sprintf("Pooled over %d imputations", x$m))
-  graphics::segments(estimates$conf_low, pooled_y, estimates$conf_high, pooled_y,
-                     col = colours[1L], lwd = 2)
-  graphics::points(estimates$estimate, pooled_y, pch = 16, col = colours[1L],
-                   cex = 1.3)
-  graphics::axis(2, at = position, labels = labels, las = 1, cex.axis = 0.8)
-  graphics::legend("topright", legend = c("pooled", "one imputation"),
-                   pch = c(16, 1), col = colours, bty = "n")
-  invisible(x)
+  sources <- c("Pooled", "One imputation")
+  rows <- rbind(
+    data.frame(label = label(imputations), estimate = imputations$estimate,
+               conf_low = NA_real_, conf_high = NA_real_, source = sources[2L]),
+    data.frame(label = label(estimates), estimate = estimates$estimate,
+               conf_low = estimates$conf_low, conf_high = estimates$conf_high,
+               source = sources[1L]))
+  # The first parameter at the top, as the tables list them.
+  rows$label <- factor(rows$label, levels = rev(unique(label(estimates))))
+  rows$source <- factor(rows$source, levels = sources)
+  pooled <- rows[rows$source == sources[1L], , drop = FALSE]
+  colours <- stats::setNames(.gg_okabe_ito[c(1L, 2L)], sources)
+  drawn <- ggplot2::ggplot(rows, ggplot2::aes(estimate, label, colour = source,
+                                     shape = source)) +
+    ggplot2::geom_segment(data = pooled,
+                          ggplot2::aes(x = conf_low, xend = conf_high,
+                                       y = label, yend = label),
+                          linewidth = 0.9, show.legend = FALSE) +
+    ggplot2::geom_point(size = 2.6, stroke = 0.8) +
+    ggplot2::scale_colour_manual(values = colours) +
+    ggplot2::scale_shape_manual(values = stats::setNames(c(16L, 1L), sources)) +
+    .gg_theme() + .gg_top_legend() +
+    ggplot2::labs(x = sprintf("Estimate with pooled %g%% interval", 100 * x$level),
+                  y = NULL) +
+    .gg_titles(main, subtitle, sprintf("Pooled over %d imputations", x$m),
+               sprintf("%s%s parameters; open circles are the single imputations",
+                       toupper(substr(what, 1L, 1L)), substring(what, 2L)))
+  .gg_draw_on_call(drawn)
 }

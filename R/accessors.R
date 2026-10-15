@@ -1,4 +1,4 @@
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa`" =
@@ -690,7 +690,7 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
         posteriors)
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.multilpa_enumeration <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_enumeration`" = inherits(x, "multilpa_enumeration"))
@@ -707,17 +707,21 @@ as.data.frame.multilpa_enumeration <- function(x, row.names = NULL, optional = F
   grepl("^(profile|group)_probability\\[", parameter)
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.multilpa_enumeration <- function(x, ...) {
   stopifnot("`x` must be an `multilpa_enumeration` result" =
               inherits(x, "multilpa_enumeration"))
-  table <- x$table
+  table <- .multilpa_enumeration_grid(x)
   cat(sprintf("Class enumeration: %d candidate models\n", nrow(table)))
-  columns <- intersect(c("n_profiles", "n_group_classes", "model",
+  columns <- intersect(c("candidate", "n_profiles", "n_group_classes", "model",
                          "log_likelihood", "n_parameters", "aic", "bic_groups",
                          "bic_individual", "icl_individual", "profile_entropy",
-                         "group_entropy", "converged", "boundary",
+                         "group_entropy", "avepp_min", "avepp_max",
+                         "avepp_mean", "avepp_below",
+                         "group_avepp_min", "group_avepp_max",
+                         "group_avepp_mean", "group_avepp_below",
+                         "converged", "boundary",
                          "n_best_replicated"),
                        names(table))
   print(table[, columns, drop = FALSE], row.names = FALSE, ...)
@@ -860,7 +864,7 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
   start
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.multilpa_start <- function(x, ...) {
   stopifnot("`x` must be a `multilpa_start` object" =
@@ -881,7 +885,7 @@ print.multilpa_start <- function(x, ...) {
   invisible(x)
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_start`" = inherits(x, "multilpa_start"))
@@ -1001,7 +1005,7 @@ as.data.frame.multilpa_start <- function(x, row.names = NULL, optional = FALSE, 
   do.call(rbind, blocks)
 }
 
-#' @rdname latents-as-data-frame
+#' @noRd
 #' @export
 as.data.frame.multilpa_covariates <- function(x, row.names = NULL, optional = FALSE, ...) {
   stopifnot("`x` must be an object of class `multilpa_covariates`" =

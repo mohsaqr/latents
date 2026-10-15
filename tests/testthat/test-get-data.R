@@ -136,7 +136,8 @@ test_that("the enumeration and bootstrap objects carry their own tables", {
                                   n_starts = 1, seed = 1)
   expect_identical(as.data.frame(candidates), get_results(candidates, "candidates"))
   expect_s3_class(get_results(candidates, "criteria"), "data.frame")
-  expect_named(get_results(candidates, "all"), c("candidates", "criteria"))
+  expect_named(get_results(candidates, "all"),
+               c("candidates", "criteria", "classification", "deltas", "knees"))
   expect_identical(get_results(summary(candidates), "criteria"),
                    get_results(candidates, "criteria"))
 })

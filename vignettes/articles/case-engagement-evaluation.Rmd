@@ -28,7 +28,7 @@ library(latents)
 
 ## Data and starting model
 
-The `course_engagement` dataset contains repeated course enrolments nested within students. The bundled data are synthetic, and their relationship to the longitudinal engagement study is described in the [introductory vignette](case-engagement-profiles.html). Engagement is measured using five course-level indicators: course-page views (`browse`), lecture-video views (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and days active (`attendance`). Each indicator is simulated on the `log1p` scale of an activity count and standardized within course. The vector `vars` holds their names.
+The `course_engagement` dataset contains repeated course enrolments nested within students. The bundled data are synthetic, and their relationship to the longitudinal engagement study is described in the [introductory vignette](case-engagement-profiles.html). Engagement is measured using five course-level indicators: course-page views (`browse`), lecture-video views (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and days active (`attendance`). Each indicator is simulated as a continuous value representing a log-count scale and standardized within course; no raw counts or `log1p()` transformation are generated. The vector `vars` holds their names.
 
 ```{r variables}
 vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
@@ -179,10 +179,10 @@ Most candidate models also show stable likelihood replication across starts. The
 
 Taken together, these results show that support for the original three-profile, three-class specification depends on the assumptions made about within-profile covariance. Under the diagonal model, the three-by-three solution is preferred within the candidate set. Once residual correlations are estimated directly, a two-profile, three-class model receives stronger BIC support. The original three-by-three model should therefore be regarded as a working representation whose support depends on the measurement assumptions.
 
-The `candidate_fit()` function can be used to retrieve a fitted candidate with a particular combination of profile count, student-class count, and covariance structure. Examining its residual correlations provides a direct check of whether the estimated covariance parameters reproduce the within-profile associations observed in the data.
+The `get_candidate()` function can be used to retrieve a fitted candidate with a particular combination of profile count, student-class count, and covariance structure. Examining its residual correlations provides a direct check of whether the estimated covariance parameters reproduce the within-profile associations observed in the data.
 
 ```{r covariance-check}
-full <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 3,
+full <- get_candidate(candidates, n_profiles = 2, n_group_classes = 3,
                       model = "VVV")
 get_results(full, "residuals") |> head(4)
 ```

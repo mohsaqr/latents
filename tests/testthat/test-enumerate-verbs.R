@@ -10,7 +10,7 @@ test_that("enumerate_lpa preserves an omitted model argument", {
   grid <- enumerate_lpa(data, names(data), n_profiles = 1,
                         variance_model = "equal", n_starts = 1, seed = 1)
   expect_identical(as.data.frame(grid)$model, "EEI")
-  expect_equal(candidate_fit(grid, 1)$log_likelihood,
+  expect_equal(get_candidate(grid, 1)$log_likelihood,
                lpa(data, names(data), 1, variance_model = "equal",
                    n_starts = 1, seed = 1)$log_likelihood)
   expect_error(enumerate_lpa(data, names(data), 1, model = "basic",
@@ -40,7 +40,7 @@ test_that("enumerate_lpa() is the single-level grid, fitted without a notice", {
   # Each candidate is the fit lpa() makes.
   alone <- lpa(srl, srl_indicators, n_profiles = 2, model = "EEE",
                n_starts = 1, seed = 1)
-  expect_equal(candidate_fit(models, n_profiles = 2,
+  expect_equal(get_candidate(models, n_profiles = 2,
                              model = "EEE")$log_likelihood,
                alone$log_likelihood)
 })
@@ -60,7 +60,7 @@ test_that("enumerate_lca() treats every indicator as categorical", {
   expect_equal(table, as.data.frame(same))
   alone <- lca(student_esm, esm_activities, n_classes = 2, n_starts = 1,
                seed = 1)
-  expect_equal(candidate_fit(models, n_profiles = 2)$log_likelihood,
+  expect_equal(get_candidate(models, n_profiles = 2)$log_likelihood,
                alone$log_likelihood)
 })
 

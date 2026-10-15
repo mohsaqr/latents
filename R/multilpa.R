@@ -955,7 +955,7 @@
 #'   Karush-Kuhn-Tucker check and flagged (`latents_boundary`); interior fits
 #'   are finished by Newton steps. The result has class `multilpa_additive`;
 #'   `bic` uses the number of groups and `bic_individual` the number of rows.
-#'   Read it with [get_results.multilpa_additive()]; `summary()`, `plot()`,
+#'   Read it with [get_results()]; `summary()`, `plot()`,
 #'   `coef()`, `vcov()`, `confint()` and [parameter_inference()] work on it.
 #'   These families are experimental: enumeration over families, bootstrap
 #'   inference, missing data and covariates are not yet available. See the
@@ -980,7 +980,7 @@
 #'   specification's working likelihood: comparable between cross-level fits
 #'   of the same data, not with the other families. Standard errors are not
 #'   available (`latents_unsupported_inference`). The result has class
-#'   `multilpa_cross_level`, read with [get_results.multilpa_cross_level()].
+#'   `multilpa_cross_level`, read with [get_results()].
 #' @param between_variance For the additive and additive-dispersion families:
 #'   `"varying"` (the default) estimates between-group variances per group
 #'   class, `"equal"` one set shared by all classes. The dispersion family
@@ -1289,7 +1289,8 @@ multilpa <- function(data, vars, id, n_profiles,
       categorical = categorical, min_probability = min_probability,
       time = time, fixed = fixed, select_start = select_start, call = call,
       weights = weights, ordinal = ordinal, count = count,
-      count_model = count_model, count_dispersion = count_dispersion)
+      count_model = count_model, count_dispersion = count_dispersion,
+      centering = centering)
     result$single_level <- single_level
     return(result)
   }
@@ -1795,7 +1796,8 @@ multilpa <- function(data, vars, id, n_profiles,
                                       fixed, select_start = "likelihood",
                                       call, weights = NULL, ordinal = character(),
                                       count = character(), count_model = "poisson",
-                                      count_dispersion = "varying") {
+                                      count_dispersion = "varying",
+                                      centering = "none") {
   unsupported <- c(
     start = !is.null(start),
     fixed = length(fixed) > 0L)
@@ -1819,5 +1821,6 @@ multilpa <- function(data, vars, id, n_profiles,
     min_probability = min_probability, missing = missing,
     profile_slopes = profile_slopes, select_start = select_start, call = call,
     weights = weights, ordinal = ordinal, count = count,
-    count_model = count_model, count_dispersion = count_dispersion)
+    count_model = count_model, count_dispersion = count_dispersion,
+    centering = centering)
 }

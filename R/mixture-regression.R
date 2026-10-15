@@ -36,8 +36,8 @@
 #' numerical integration); estimation is EM with the random effects as missing
 #' data, finished by quasi-Newton with analytic scores. Such a fit has class
 #' `latents_growth_mixture`; its tables, plots and inference are described on
-#' [get_results.latents_growth_mixture()] and
-#' [plot.latents_growth_mixture()]. Random effects need the gaussian family,
+#' [get_results()] and
+#' [plot()][latents-plots]. Random effects need the gaussian family,
 #' `id` and `class_level = "group"`.
 #'
 #' With `cluster`, persons are nested in clusters (students in schools) and
@@ -165,7 +165,7 @@
 #'   [as.data.frame()] (the coefficient table) or [get_results()] (every
 #'   table, by name), and use [predict()], [plot()], [summary()], [coef()],
 #'   [vcov()], [confint()], [logLik()] and [nobs()] on it. The tables are
-#'   described on [get_results.latents_mixture_regression()].
+#'   described on [get_results()].
 #'
 #' @section Conditions:
 #'   `latents_bad_argument` for an inconsistent specification;

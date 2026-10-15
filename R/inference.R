@@ -802,6 +802,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
       "`tol` must be a single positive number" =
         is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
     .multilpa_check_seed(seed)
+    data <- .multilpa_validate_bootstrap_data(x, data)
     .latents_local_seed(seed, after = FALSE)
     return(.multilpa_bootstrap_inference(x, data, level, as.integer(iter),
                                          as.integer(n_starts),
@@ -1211,7 +1212,7 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
       class = "latents_bad_inference_data", call = NULL))
   }
   if (!is.null(object$indicator_data) && ncol(x) > 0L &&
-      !identical(x, object$indicator_data)) {
+      !isTRUE(all.equal(x, object$indicator_data, tolerance = 1e-12))) {
     stop(errorCondition(
       "data must reproduce the original indicator data, including row order and names.",
       class = "latents_bad_inference_data", call = NULL))
@@ -1241,6 +1242,52 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   centers <- if (ncol(x) > 0L) colMeans(x, na.rm = TRUE) else numeric(0)
   list(x = if (ncol(x) > 0L) sweep(x, 2L, centers, "-") else x,
        centers = centers, codes = codes)
+}
+
+#' Validate the original observations before any bootstrap resampling
+#'
+#' A bootstrap reports uncertainty for the fit's estimates, so its data must
+#' reproduce the same observations, grouping, ordering and normalized sampling
+#' weights. A likelihood check also protects older fits without stored rows.
+#' @param object A fitted `multilpa` model.
+#' @param data The supplied or reconstructed original data frame.
+#' @return The checked data, including a single-level fit's internal row ID.
+#' @noRd
+.multilpa_validate_bootstrap_data <- function(object, data) {
+  stopifnot(inherits(object, "multilpa"), is.data.frame(data))
+  data <- .multilpa_number_single_level(object, data)
+  prepared <- .multilpa_inference_matrix(object, data)
+  .multilpa_check_alignment(object, data)
+  if (!is.null(object$weights)) {
+    supplied_weights <- tryCatch(
+      .latents_sampling_weights(data, object$weights, object$group_index,
+                               object$n_groups),
+      error = function(condition) {
+        stop(errorCondition(paste("data must reproduce the fitted sampling weights:",
+                                  conditionMessage(condition)),
+                            class = "latents_bad_inference_data", call = NULL))
+      })
+    if (!isTRUE(all.equal(unname(supplied_weights),
+                          unname(object$sampling_weights), tolerance = 1e-12))) {
+      stop(errorCondition("data must reproduce the fitted sampling weights.",
+                          class = "latents_bad_inference_data", call = NULL))
+    }
+  }
+  parameters <- .multilpa_decode(.multilpa_coefficients(object, "unconstrained"),
+                                 object)
+  if (length(prepared$centers)) {
+    parameters$means <- sweep(parameters$means, 2L, prepared$centers, "-")
+  }
+  likelihood <- .multilpa_expectation(
+    prepared$x, object$group_index, parameters, prepared$codes,
+    unname(object$sampling_weights), object$extra_data)$log_likelihood
+  if (!is.finite(likelihood) ||
+      abs(likelihood - object$log_likelihood) >
+        1e-8 * (1 + abs(object$log_likelihood))) {
+    stop(errorCondition("data must reproduce the fitted log likelihood.",
+                        class = "latents_bad_inference_data", call = NULL))
+  }
+  data
 }
 
 #' Split a generated parameter name into tidy columns

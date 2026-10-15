@@ -465,7 +465,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     object$n_group_classes, categorical = categorical,
     missing = object$missing %||% "error",
     profile_slopes = object$profile_slopes %||% "shared",
-    ordinal = object$ordinal %||% character(), count = object$count %||% character())
+    ordinal = object$ordinal %||% character(), count = object$count %||% character(),
+    centering = object$centering %||% "none", group_index = object$group_index)
   codes <- designs$codes
   if (!identical(designs$extra$ordinal_levels, object$extra_data$ordinal_levels) ||
       !identical(unname(designs$extra$ordinal), unname(object$extra_data$ordinal)) ||
@@ -474,8 +475,10 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
                         class = "latents_bad_inference_data", call = NULL))
   }
   same <- function(left, right) identical(unname(left), unname(right))
+  model_indicators <- .multilpa_center_like(object, as.matrix(data[continuous]))
   if ((!is.null(object$indicator_data) &&
-       !same(as.matrix(data[continuous]), object$indicator_data)) ||
+       !isTRUE(all.equal(unname(model_indicators), unname(object$indicator_data),
+                         tolerance = 1e-12))) ||
       (length(categorical) > 0L && !same(codes, object$categorical_data)) ||
       !all(vapply(seq_along(designs$profile_design), function(index) {
         same(designs$profile_design[[index]], object$profile_design[[index]])
@@ -486,7 +489,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     stop(errorCondition("`data` must reproduce the original indicators and covariates.",
                         class = "latents_bad_inference_data", call = NULL))
   }
-  x <- as.matrix(data[continuous])
+  x <- model_indicators
   if (ncol(x) > 0L) x <- sweep(x, 2L, object$center, "-")
   theta <- .multilpa_cov_encode(object)
   objective <- function(parameters) {

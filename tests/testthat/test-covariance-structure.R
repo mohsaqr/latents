@@ -198,9 +198,9 @@ test_that("the structure grid crosses models with class counts", {
   expect_setequal(unique(grid$model), c("EEI", "EVI", "EEE"))
   # The class counts alone no longer name one candidate, and saying so beats
   # returning whichever came first.
-  expect_error(candidate_fit(candidates, n_profiles = 3, n_group_classes = 1),
+  expect_error(get_candidate(candidates, n_profiles = 3, n_group_classes = 1),
                class = "latents_unknown_candidate")
-  fitted <- candidate_fit(candidates, n_profiles = 3, n_group_classes = 1,
+  fitted <- get_candidate(candidates, n_profiles = 3, n_group_classes = 1,
                           model = "EVI")
   expect_identical(fitted$covariance_structure, "EVI")
   # And the print method names the column, so the grid is readable.

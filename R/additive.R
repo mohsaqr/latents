@@ -772,7 +772,7 @@
   result
 }
 
-#' @rdname latents-print
+#' @noRd
 #' @export
 print.multilpa_additive <- function(x, ...) {
   cat(sprintf(paste0(
