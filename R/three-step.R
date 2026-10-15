@@ -335,6 +335,9 @@ three_step <- function(x, data, outcome,
             "unit instead, which ignores the nesting and must be reported as",
             "having done so.")
     })
+  ## CR1: scaling the unit contributions by sqrt(G / (G - 1)) scales every
+  ## variance and covariance formed from them, class means and differences.
+  clustered <- clustered * sqrt(.inference_cluster_factor(nrow(clustered)))
 
   if (identical(contrast, "pairs")) {
     return(.multilpa_step_pairs(centered_estimates, clustered, level, method, quantile,
@@ -683,7 +686,8 @@ r3step <- function(x, data, covariates,
   covariance <- information$inverse
   if (identical(vcov_type, "robust")) {
     scores <- rowsum(score_rows(fitted$par), pieces$group_index, reorder = FALSE)
-    covariance <- .inference_sandwich(covariance, .multilpa_cross_product(scores))
+    covariance <- .inference_sandwich(covariance, .multilpa_cross_product(scores),
+                                      nrow(scores))
   }
   natural_scale <- rep(1 / design_scale, n_free)
   .multilpa_r3step_frame(fitted$par * natural_scale,
@@ -795,8 +799,9 @@ r3step <- function(x, data, covariates,
     rep(1, length(fitted$par)), 1e-4)
   covariance <- information$inverse
   if (identical(vcov_type, "robust")) {
-    covariance <- .inference_sandwich(
-      covariance, .multilpa_cross_product(model$group_scores(fitted$par)))
+    scores <- model$group_scores(fitted$par)
+    covariance <- .inference_sandwich(covariance, .multilpa_cross_product(scores),
+                                      nrow(scores))
   }
   ## Back to the units the covariates arrived in.
   estimates <- fitted$par * model$unit

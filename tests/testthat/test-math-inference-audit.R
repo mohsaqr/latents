@@ -29,7 +29,9 @@ test_that("mixed full covariance inference matches Gaussian and binomial informa
     residual[, 1] * residual[, 2] - covariance[1, 2],
     residual[, 2]^2 - covariance[2, 2],
     (dat$u == 1) - probability, (dat$u == 2) - (1 - probability), 0, 0)
-  expected_robust <- crossprod(rowsum(influence, dat$g)) / nrow(dat)^2
+  n_groups <- length(unique(dat$g))
+  expected_robust <- crossprod(rowsum(influence, dat$g)) / nrow(dat)^2 *
+    n_groups / (n_groups - 1)
   robust <- parameter_inference(fit, dat, vcov_type = "robust")
   expect_equal(unname(attr(robust, "covariance")), unname(expected_robust),
                tolerance = 1e-7)
@@ -99,7 +101,8 @@ test_that("covariate inference supports empty membership coefficient blocks", {
   influence <- cbind(residual, residual^2 - variance)
   robust <- parameter_inference(fit, dat, vcov_type = "robust")
   expect_equal(robust$standard_error,
-               sqrt(diag(crossprod(rowsum(influence, dat$g)))) / nrow(dat),
+               sqrt(diag(crossprod(rowsum(influence, dat$g))) *
+                      length(unique(dat$g)) / (length(unique(dat$g)) - 1)) / nrow(dat),
                ignore_attr = TRUE, tolerance = 1e-7)
 
   dat$y <- dat$y * 1e6

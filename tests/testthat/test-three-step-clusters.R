@@ -75,11 +75,12 @@ test_that("the unclustered variance is offered explicitly and is the right size"
                          "standard_error", "conf_low", "conf_high",
                          "effective_n"))
   # A one-profile fit gives every unit the weight 1, so the influence
-  # contribution of observation i is (y_i - ybar) / n and the unclustered
-  # standard error is exactly sd(y) * sqrt((n - 1) / n) / sqrt(n). That is an
-  # algebraic identity, not an approximation, so it is asserted tightly.
+  # contribution of observation i is (y_i - ybar) / n; with the CR1 factor
+  # n / (n - 1) the unclustered standard error is exactly sd(y) / sqrt(n), the
+  # textbook standard error of a mean. That is an algebraic identity, not an
+  # approximation, so it is asserted tightly.
   n <- nrow(parts$data)
-  identity <- stats::sd(parts$data$y) * sqrt((n - 1) / n) / sqrt(n)
+  identity <- stats::sd(parts$data$y) / sqrt(n)
   expect_equal(result$standard_error, identity, tolerance = 1e-12)
   # And it sits within a percent of the order of magnitude the review names as
   # the sane one, sd(y) / sqrt(n), instead of 5.9e-17.

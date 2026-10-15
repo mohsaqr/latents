@@ -573,6 +573,40 @@ nobs.multilpa_covariates <- function(object, ...) {
   invisible(NULL)
 }
 
+#' Whether a covariate fit's membership logits are near separation
+#'
+#' Each coefficient is measured per root-mean-square unit of its design
+#' column, the unit-free coordinates the fit is searched in (see
+#' `.multilpa_design_scale()`), so the verdict does not depend on the units a
+#' covariate arrived in. A logit that moves by more than `limit` over one such
+#' unit (an odds ratio above `exp(20)`) is drifting to the boundary of the
+#' parameter space: the class is separated by the covariate, or empty. The fit
+#' warns with `latents_extreme_coefficients`, and Wald inference is refused,
+#' because a standard error at a coefficient heading to infinity is
+#' meaningless (Hauck and Donner, 1977).
+#'
+#' @param profile_coefficients Profile logit coefficients, one row per column
+#'   of the stacked profile design.
+#' @param group_coefficients Group-class logit coefficients, one row per
+#'   column of `group_design`.
+#' @param profile_design List of profile design matrices.
+#' @param group_design Group-level design matrix.
+#' @param limit Largest unit-free coefficient treated as finite.
+#' @return `TRUE` or `FALSE`.
+#' @noRd
+.multilpa_cov_extreme <- function(profile_coefficients, group_coefficients,
+                                  profile_design, group_design, limit = 20) {
+  stopifnot("`profile_design` must be a list of matrices" =
+              is.list(profile_design) && length(profile_design) >= 1L,
+            "`group_design` must be a matrix" = is.matrix(group_design))
+  unit_free <- function(coefficients, design) {
+    as.matrix(coefficients) * .multilpa_design_scale(design)
+  }
+  scaled <- c(unit_free(profile_coefficients, do.call(rbind, profile_design)),
+              unit_free(group_coefficients, group_design))
+  any(abs(scaled) > limit)
+}
+
 #' Build the centered indicator matrix and both membership designs
 #'
 #' The profile design repeats one group-class indicator block per group class,
@@ -838,7 +872,8 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$boundary <- .multilpa_covariance_boundary(
     list(means = result$means, variances = result$variances,
          covariances = result$covariances), min_variance)
-  result$extreme_logits <- any(abs(c(best$beta, best$gamma)) > 20)
+  result$extreme_logits <- .multilpa_cov_extreme(best$beta, best$gamma,
+                                                 designs$profile_design, designs$w)
   result$call <- call
   structure(result, class = "multilpa_covariates")
 }

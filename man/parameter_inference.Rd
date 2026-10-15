@@ -82,7 +82,7 @@ parameter_inference(
   iter = 199L,
   n_starts = 10L,
   max_iter = 1000L,
-  tol = 1e-08,
+  tol = 1e-10,
   seed = NULL,
   boundary = c("error", "fix")
 )
@@ -104,7 +104,10 @@ provides a weaker consistency check.}
 
 \item{vcov_type}{\code{"observed"} inverts the observed information.
 \code{"robust"} returns the Huber-White sandwich \verb{A^-1 B A^-1}, where \code{B}
-accumulates the outer product of the per-group scores. Groups are the
+accumulates the outer product of the per-group scores, multiplied by the
+CR1 small-sample factor \code{G / (G - 1)} for \code{G} groups (the default of
+\code{sandwich::vcovCL()}; every robust standard error in the package carries
+it). Groups are the
 independent units, so robust errors relax the assumption that the Gaussian
 within-group model is correctly specified. They do not relax the assumption
 that groups are independent.

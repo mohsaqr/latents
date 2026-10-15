@@ -17,7 +17,7 @@
   iter = 199L,
   n_starts = 10L,
   max_iter = 1000L,
-  tol = 1e-08,
+  tol = 1e-10,
   seed = NULL,
   boundary = c("error", "fix")
 )

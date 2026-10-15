@@ -1,3 +1,28 @@
+# latents 0.9.31
+
+* Cluster-robust standard errors now carry the CR1 small-sample factor
+  `G / (G - 1)` for `G` independent units, the default of
+  `sandwich::vcovCL()`. It applies to every `vcov_type = "robust"` result
+  (profile, covariate, transition, family, mixture-regression and growth fits)
+  and to `three_step()` (both `vcov_type`s, every `method`) and `r3step()`.
+  Robust standard errors rise by `sqrt(G / (G - 1))`: about 2.6% with 20
+  groups and 0.5% with 100. A one-class
+  robust regression now reproduces `sandwich::vcovCL()` exactly.
+* Wald inference is refused (`latents_boundary_fit`) for a membership-covariate
+  fit whose logit coefficients are heading to infinity because a covariate
+  separates the classes. Previously the refusal held only when the observed
+  information happened to be numerically singular; otherwise a coefficient
+  such as -504 was reported with a standard error of 669 and p = 0.45.
+* The separation check (and the `latents_extreme_coefficients` warning)
+  measures each coefficient per root-mean-square unit of its covariate, so it
+  no longer depends on the units a covariate is recorded in: a real effect of
+  a covariate in tiny units is no longer flagged, and a separating covariate
+  in large units no longer escapes.
+* `lta()` defaults to `tol = 1e-10` (was `1e-8`), as do the bootstrap refits of
+  its `parameter_inference()`. The group-class shares and the mean group
+  posteriors, one EM step apart, now agree to about `2e-5` instead of `2e-4`,
+  for roughly 1.5 times the iterations.
+
 # latents 0.9.30
 
 * Released function and method names and argument spellings remain available.

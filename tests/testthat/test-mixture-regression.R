@@ -145,7 +145,8 @@ test_that("the robust covariance is the sandwich clustered on the unit", {
   scores <- latents:::.mixture_unit_scores(fit$spec, fit$params,
                                           fit$expectation)
   bread <- solve(information)
-  expect_equal(unname(robust), unname(bread %*% crossprod(scores) %*% bread),
+  cr1 <- nrow(scores) / (nrow(scores) - 1)
+  expect_equal(unname(robust), unname(bread %*% crossprod(scores) %*% bread * cr1),
                tolerance = 1e-8)
   # A single-level fit given `id` clusters on it, which changes the meat.
   clustered_rows <- cbind(simulate_rows(), cluster = rep(seq_len(60), 5))

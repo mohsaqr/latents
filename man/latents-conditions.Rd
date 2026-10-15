@@ -76,7 +76,8 @@ enough for the requested three-step correction.}
 converge, and using it would report an unconverged estimate as final.
 Raised for a plain \code{multilpa} fit and for a covariate fit alike.}
 \item{\code{latents_boundary_fit}}{A variance or a response probability sits
-at its bound, or a mixing probability is zero, so the parameter is on
+at its bound, a mixing probability is zero, or a membership logit
+coefficient is heading to infinity (separation), so the parameter is on
 the edge of its space and the asymptotic normal approximation Wald
 inference relies on does not hold. The standard error is refused rather
 than reported.}
@@ -274,8 +275,10 @@ count the interval rests on is never quietly smaller than \code{iter}.}
 fit in \code{\link[=sensitivity]{sensitivity()}}. Their rows are \code{NA} rather than absent, and the
 warning names how many failed and the first reason, so the table is never
 quietly shorter than \code{seeds}.}
-\item{\code{latents_extreme_coefficients}}{A membership logit coefficient is
-large enough that the class is close to separated, so the estimate is
+\item{\code{latents_extreme_coefficients}}{A membership logit coefficient,
+measured per root-mean-square unit of its covariate so the verdict does
+not depend on the covariate's units, is large enough that the class is
+close to separated, so the estimate is
 driven by scaling, a sparse class or separation rather than by the data.}
 \item{\code{latents_empty_transition_row}}{A profile is never occupied before a
 final occasion, so its transition row is uniform by construction rather

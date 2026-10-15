@@ -39,7 +39,7 @@
   dimnames(information) <- list(names(theta), names(theta))
   inverse <- .mixture_invert(information)
   vcov <- if (identical(vcov_type, "robust")) {
-    .inference_sandwich(inverse, crossprod(scores * weights))
+    .inference_sandwich(inverse, crossprod(scores * weights), nrow(scores))
   } else inverse
   dimnames(vcov) <- list(names(theta), names(theta))
   list(theta = theta, vcov = vcov, vcov_type = vcov_type, information = information,

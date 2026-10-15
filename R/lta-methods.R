@@ -307,7 +307,7 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
                                              adjust = .multilpa_p_adjust_methods,
                                              method = c("wald", "bootstrap"),
                                              iter = 199L, n_starts = 10L,
-                                             max_iter = 1000L, tol = 1e-8,
+                                             max_iter = 1000L, tol = 1e-10,
                                              seed = NULL,
                                              boundary = c("error", "fix")) {
   stopifnot("`level` must be a single finite number in (0, 1)" =

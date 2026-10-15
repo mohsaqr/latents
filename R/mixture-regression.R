@@ -131,8 +131,8 @@
 #' @param select_start `"likelihood"` keeps the start with the highest
 #'   likelihood; `"converged"` prefers the best start that converged.
 #' @param vcov_type Covariance of the estimates stored with the fit:
-#'   `"observed"` (inverse observed information), `"robust"` (sandwich,
-#'   clustered on the top-level unit, or on `id` for a single-level fit given
+#'   `"observed"` (inverse observed information), `"robust"` (sandwich with
+#'   the CR1 factor `G / (G - 1)`, clustered on the top-level unit, or on `id` for a single-level fit given
 #'   `id`) or `"opg"` (outer product of the scores). `"none"` skips inference.
 #' @param weights `NULL`, or the name of a numeric column of `data` with a
 #'   sampling weight per independent unit: per row without `id`, per `id`

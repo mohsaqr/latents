@@ -183,7 +183,7 @@
   }
   inverse <- .mixture_invert(information[free, free, drop = FALSE])
   free_vcov <- if (identical(vcov_type, "robust")) {
-    .inference_sandwich(inverse, meat[free, free, drop = FALSE])
+    .inference_sandwich(inverse, meat[free, free, drop = FALSE], nrow(scores_for_meat))
   } else inverse
   vcov <- matrix(NA_real_, length(theta), length(theta))
   vcov[free, free] <- free_vcov

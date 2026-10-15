@@ -25,9 +25,12 @@ test_that("bootstrap_lrt simulates full-covariance transition nulls", {
   data <- followup_lta_data()
   null <- lta(data, c("y1", "y2"), "id", 2, time = "time", transitions = "occasion",
               model = "VVV", n_starts = 1, seed = 1)
-  alternative <- lta(data, c("y1", "y2"), "id", 2, time = "time",
-                     transitions = "occasion", order = 2, model = "VVV",
-                     n_starts = 1, seed = 1)
+  # At the default tol = 1e-10 the second-order fit runs on to a move this
+  # small fixture never makes, a transition probability at zero; that boundary
+  # (`latents_boundary`) is expected and does not affect the bootstrap.
+  alternative <- quietly(lta(data, c("y1", "y2"), "id", 2, time = "time",
+                             transitions = "occasion", order = 2, model = "VVV",
+                             n_starts = 1, seed = 1))
   # 0.9.7 failed every replicate (a swallowed refusal) and returned p = NA;
   # 0.9.8 refused up front; full covariances are now simulated.
   result <- bootstrap_lrt(null, alternative, data = data, iter = 4,

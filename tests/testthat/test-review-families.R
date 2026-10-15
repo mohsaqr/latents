@@ -145,7 +145,8 @@ test_that("weighted family covariance is the sandwich of weighted group scores",
                   tol = 1e-12)
   inference <- parameter_inference(fit)
   bread <- solve(-attr(inference, "hessian"))
-  expected <- bread %*% crossprod(attr(inference, "group_scores")) %*% bread
+  scores <- attr(inference, "group_scores")
+  expected <- bread %*% crossprod(scores) %*% bread * nrow(scores) / (nrow(scores) - 1)
   expect_identical(attr(inference, "vcov_type"), "robust")
   expect_equal(attr(inference, "covariance_unconstrained"), expected, tolerance = 1e-10)
   expect_equal(vcov(fit, scale = "unconstrained"), expected, tolerance = 1e-10)

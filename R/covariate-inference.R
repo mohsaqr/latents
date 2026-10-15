@@ -316,7 +316,8 @@
 #' @param level Confidence level for the intervals, between 0 and 1.
 #' @param step Finite-difference step for the observed information.
 #' @param vcov_type `"observed"` uses the observed information;
-#'   `"robust"` uses the group-clustered sandwich, which is the appropriate
+#'   `"robust"` uses the group-clustered sandwich (with the CR1 factor
+#'   `G / (G - 1)` for `G` groups), which is the appropriate
 #'   choice when the measurement model may be misspecified; `"opg"` inverts the
 #'   outer product of the group scores, as `glca` does.
 #' @param adjust Multiplicity correction applied to `p_value` to produce
@@ -430,6 +431,15 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       class = "latents_unsupported_inference", call = NULL))
   }
   .multilpa_check_regularity(object, vcov_type, boundary)
+  if (.multilpa_cov_extreme(object$profile_coefficients, object$group_coefficients,
+                            object$profile_design, object$group_design)) {
+    stop(errorCondition(paste(
+      "Wald inference is unavailable: a membership logit coefficient is heading",
+      "to infinity (separation or an empty class), so its standard error and",
+      "test are meaningless. Rescale or drop the separating covariate, or",
+      "merge the sparse class."),
+      class = "latents_boundary_fit", call = NULL))
+  }
   if (isTRUE(object$single_level) && !object$id %in% names(data) &&
       nrow(data) == object$n_observations) {
     data[[object$id]] <- object$group_values[object$group_index]
@@ -554,7 +564,7 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     cross <- .multilpa_cross_product(scores)
     free_covariance <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(cross)
-    } else .inference_sandwich(free_covariance, cross)
+    } else .inference_sandwich(free_covariance, cross, nrow(scores))
   }
   covariance <- matrix(0, length(theta), length(theta))
   covariance[free, free] <- free_covariance

@@ -437,7 +437,7 @@
     .inference_require_rank(scores, "Too few groups for a robust or OPG covariance.")
   }
   covariance <- switch(vcov_type, observed = inverse,
-                       robust = .inference_sandwich(inverse, meat),
+                       robust = .inference_sandwich(inverse, meat, nrow(scores)),
                        opg = chol2inv(chol(meat)))
   dimnames(covariance) <- dimnames(information)
   list(theta = theta, vcov = covariance, information = information,

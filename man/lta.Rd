@@ -14,7 +14,7 @@ lta(
   variance_model = c("varying", "equal"),
   n_starts = 10L,
   max_iter = 1000L,
-  tol = 1e-08,
+  tol = 1e-10,
   min_variance = 1e-06,
   seed = NULL,
   missing = c("error", "fiml"),
@@ -80,7 +80,11 @@ best of some random initializations that were never asked for. Without
 scored and the highest is returned.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
-absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.}
+absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.
+The default, \code{1e-10}, is tighter than the \code{1e-8} of \code{\link[=multilpa]{multilpa()}}: the
+group-class shares are re-estimated from posteriors one EM step behind
+them, and at \code{1e-8} the two still differed by up to about \code{2e-4}; at
+\code{1e-10} they agree to about \code{2e-5}, for roughly 1.5 times the iterations.}
 
 \item{min_variance}{Positive lower bound on each variance, or each covariance
 eigenvalue for full covariance, in squared input units. This defines a constrained maximum-likelihood problem. Bound-active

@@ -163,16 +163,36 @@
   invisible(NULL)
 }
 
+#' Small-sample factor of a cluster-robust variance
+#'
+#' `G / (G - 1)` for `G` independent units: the CR1 correction, which is the
+#' default of `sandwich::vcovCL()` (Cameron and Miller, 2015). Without it the
+#' variance (CR0) is biased downward when there are few units.
+#'
+#' @param n_units Number of independent units (groups, or rows when each row
+#'   is its own unit).
+#' @return A single number above 1.
+#' @noRd
+.inference_cluster_factor <- function(n_units) {
+  stopifnot("`n_units` must be a single count of at least two units" =
+              is.numeric(n_units) && length(n_units) == 1L && n_units >= 2)
+  n_units / (n_units - 1)
+}
+
 #' Robust (sandwich) covariance
 #'
 #' `bread %*% meat %*% bread`, left to right, with the meat the cross-product
-#' of the unit scores (clustered scores where units are clustered).
+#' of the unit scores (clustered scores where units are clustered), scaled by
+#' the CR1 factor `G / (G - 1)`.
 #'
 #' @param bread The inverse information.
 #' @param meat `crossprod()` of the unit scores.
+#' @param n_units Number of units whose scores form `meat`.
 #' @return The sandwich.
 #' @noRd
-.inference_sandwich <- function(bread, meat) bread %*% meat %*% bread
+.inference_sandwich <- function(bread, meat, n_units) {
+  bread %*% (meat * .inference_cluster_factor(n_units)) %*% bread
+}
 
 #' Delta-method covariance of derived quantities
 #'

@@ -105,12 +105,12 @@ test_that("a covariate fit is invariant to the units its covariate arrives in", 
   # profile is numbered first, which the start decides, so its size is tested.
   expect_gt(abs(unname(table["slope_original_units", 1L])), 1)
 
-  # Nothing is suppressed: at 1e-7 units the coefficient genuinely is above the
-  # extreme-logit threshold, and the fit says so, at every other unit it is not.
-  expect_equal(fitted[[1L]]$warnings, character())
-  expect_equal(fitted[[3L]]$warnings, character())
-  expect_equal(fitted[[4L]]$warnings, character())
-  expect_true(length(fitted[[2L]]$warnings) >= 1L)
+  # Nothing is suppressed, and the extreme-logit verdict is unit-free too: the
+  # coefficient is measured per root-mean-square unit of its covariate, so the
+  # natural-unit slope of about 1e7 at 1e-7 units is not mistaken for
+  # separation (before 0.9.31 it was, and only at that unit).
+  invisible(lapply(fitted, \(recorded) expect_equal(recorded$warnings, character())))
+  expect_false(any(vapply(fitted, \(recorded) recorded$fit$extreme_logits, logical(1))))
 })
 
 test_that("full-covariance inference survives an indicator held in large units", {

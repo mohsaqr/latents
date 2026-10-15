@@ -92,8 +92,8 @@ warning stating how many.}
 likelihood; \code{"converged"} prefers the best start that converged.}
 
 \item{vcov_type}{Covariance of the estimates stored with the fit:
-\code{"observed"} (inverse observed information), \code{"robust"} (sandwich,
-clustered on the top-level unit, or on \code{id} for a single-level fit given
+\code{"observed"} (inverse observed information), \code{"robust"} (sandwich with
+the CR1 factor \code{G / (G - 1)}, clustered on the top-level unit, or on \code{id} for a single-level fit given
 \code{id}) or \code{"opg"} (outer product of the scores). \code{"none"} skips inference.}
 
 \item{weights}{\code{NULL}, or the name of a numeric column of \code{data} with a

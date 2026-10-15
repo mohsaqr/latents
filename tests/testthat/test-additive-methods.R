@@ -78,7 +78,9 @@ test_that("robust and OPG covariances follow their definitions", {
   information <- -attr(robust, "hessian")
   inverse <- solve(information)
   expect_equal(attr(robust, "covariance_unconstrained"),
-               inverse %*% crossprod(scores) %*% inverse, tolerance = 1e-8,
+               # CR1: the meat carries G / (G - 1).
+               inverse %*% crossprod(scores) %*% inverse *
+                 nrow(scores) / (nrow(scores) - 1), tolerance = 1e-8,
                ignore_attr = TRUE)
   opg <- parameter_inference(fit, vcov_type = "opg")
   expect_equal(attr(opg, "covariance_unconstrained"), solve(crossprod(scores)),

@@ -608,7 +608,10 @@
 #' @param step Positive finite-difference step for the analytic score derivative.
 #' @param vcov_type `"observed"` inverts the observed information.
 #'   `"robust"` returns the Huber-White sandwich `A^-1 B A^-1`, where `B`
-#'   accumulates the outer product of the per-group scores. Groups are the
+#'   accumulates the outer product of the per-group scores, multiplied by the
+#'   CR1 small-sample factor `G / (G - 1)` for `G` groups (the default of
+#'   `sandwich::vcovCL()`; every robust standard error in the package carries
+#'   it). Groups are the
 #'   independent units, so robust errors relax the assumption that the Gaussian
 #'   within-group model is correctly specified. They do not relax the assumption
 #'   that groups are independent.
@@ -903,7 +906,7 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
     scaling_correction <- sum(diag(scaled_inverse %*% scaled_cross)) / length(theta)
     scaled_inverse <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(scaled_cross)
-    } else .inference_sandwich(scaled_inverse, scaled_cross)
+    } else .inference_sandwich(scaled_inverse, scaled_cross, nrow(group_scores))
   }
   covariance_unconstrained <- scaled_inverse * tcrossprod(parameter_scale)
   dimnames(hessian) <- dimnames(covariance_unconstrained) <- list(names(theta), names(theta))

@@ -165,7 +165,7 @@
 #'
 #' @param x A `multilpa_additive` fit.
 #' @param vcov_type `"observed"` (inverse observed information), `"robust"`
-#'   (the CR0 group-score sandwich) or `"opg"` (inverse outer product of the
+#'   (the group-score sandwich with the CR1 factor `G / (G - 1)`) or `"opg"` (inverse outer product of the
 #'   group scores).
 #' @param step Relative finite-difference step for the information.
 #' @return A list with `theta`, `vcov`, `information`, `gradient`,
@@ -224,7 +224,7 @@
   meat <- crossprod(scores)
   covariance <- switch(vcov_type,
     observed = inverse,
-    robust = .inference_sandwich(inverse, meat),
+    robust = .inference_sandwich(inverse, meat, nrow(scores)),
     opg = chol2inv(chol(meat)))
   dimnames(covariance) <- dimnames(information)
   inference <- list(theta = theta, vcov = covariance, information = information,

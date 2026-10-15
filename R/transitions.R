@@ -501,6 +501,12 @@
 #'   `"occasion"` estimates them separately at each occasion, so a profile is
 #'   defined by its position in the sequence of transitions rather than by
 #'   one fixed measurement model.
+#' @param tol Positive relative log-likelihood tolerance. Convergence requires
+#'   absolute change no greater than `tol * (1 + abs(previous log likelihood))`.
+#'   The default, `1e-10`, is tighter than the `1e-8` of [multilpa()]: the
+#'   group-class shares are re-estimated from posteriors one EM step behind
+#'   them, and at `1e-8` the two still differed by up to about `2e-4`; at
+#'   `1e-10` they agree to about `2e-5`, for roughly 1.5 times the iterations.
 #' @param order `1` (the default) or `2`. With `2`, the profile at each
 #'   occasion from the third on depends on the profiles at the two previous
 #'   occasions (a second-order Markov chain); the first move stays first
@@ -589,7 +595,7 @@
 lta <- function(data, vars, id, n_profiles, time,
                             n_group_classes = 1L,
                             variance_model = c("varying", "equal"),
-                            n_starts = 10L, max_iter = 1000L, tol = 1e-8,
+                            n_starts = 10L, max_iter = 1000L, tol = 1e-10,
                             min_variance = 1e-6, seed = NULL,
                             missing = c("error", "fiml"),
                             covariance_model = c("diagonal", "full"),

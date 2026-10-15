@@ -89,9 +89,8 @@ homogeneous and measurement-invariant.
   VVI, EEE, VVV). Until 0.9.6 any other `model =` was silently fitted as one
   of those four; it is now refused (`latents_unsupported_structure`). **S–M**
 - [ ] `start` and `fixed` for covariate models (both refused today). **M**
-- [ ] Missing covariates beyond multiple imputation: integrate out a normal
-  covariate by quadrature, for one or two continuous covariates only. Decide
-  first whether the assumption is worth offering. **M**
+- [x] ~~Missing covariates beyond multiple imputation by quadrature~~ —
+  decided against (2026-10-15); `pool_imputations()` is the route.
 
 ### 1.4 Random effects
 
@@ -269,16 +268,19 @@ classes may add a day to G1-G2.
 
 ## Priority 4 — Decisions for the owner
 
-- [ ] Cluster-robust variance is CR0. Apply the `G/(G-1)` correction? Moves
-  every cluster-robust standard error by about 1% and the calibrated bounds in
-  `tests/testthat/test-tidy-three-step.R`.
-- [ ] Should a separated covariate fit be refused `parameter_inference()` /
-  `vcov()`? It is today, because it is reported unconverged.
-- [ ] `group_probabilities` on a transition fit is one M-step stale, so
-  "class-weighted prevalence = overall profile share" holds only to EM
-  tolerance (4.7e-6 at `max_iter = 60`).
-- [ ] Missing covariates: keep refusing under FIML and point to
-  `pool_imputations()` (current), or add the quadrature option in 1.3.
+All four decided 2026-10-15 (0.9.31).
+
+- [x] Cluster-robust variance: **CR1** (`G/(G-1)`) everywhere, matching
+  `sandwich::vcovCL()`; one helper, `.inference_cluster_factor()`, and a
+  required `n_units` on `.inference_sandwich()` so no robust path can skip it.
+- [x] Separated covariate fit: **refuse** Wald inference
+  (`latents_boundary_fit`) on a unit-free check (coefficient per RMS unit of
+  its covariate > 20), shared with the `latents_extreme_coefficients` warning.
+  The old refusal relied on a singular information and failed on some seeds.
+- [x] Transition `group_probabilities` vs posteriors: **tighter tolerance**,
+  `lta(tol = 1e-10)`; gap 2e-4 -> 2e-5 for ~1.5x iterations.
+- [x] Missing covariates: **keep refusing** under FIML (`latents_bad_data`),
+  pointing to `pool_imputations()`; quadrature dropped from 1.3.
 
 ---
 
