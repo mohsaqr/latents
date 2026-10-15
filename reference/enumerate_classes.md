@@ -89,9 +89,9 @@ enumerate_classes(
   `n_group_classes` and `between_variance`; `n_profiles` and `model` are
   then refused, and the result is a `latents_family_enumeration` read
   with
-  [`get_results.latents_family_enumeration()`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
   and
-  [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md).
+  [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md).
 
 - between_variance:
 
@@ -109,9 +109,9 @@ enumerate_classes(
   given in `...` fixed. `model`, when given, crosses those covariance
   structures. The result is a `latents_transition_enumeration`, read
   with
-  [`get_results.latents_transition_enumeration()`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
   and
-  [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md).
+  [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md).
 
 - ...:
 
@@ -126,13 +126,23 @@ enumerate_classes(
 An object of class `multilpa_enumeration`. Read it with the verbs that
 describe it rather than by reaching into it:
 [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) gives one
-row per candidate model with every criterion and diagnostic,
-[`summary()`](https://rdrr.io/r/base/summary.html) gives one row per
-information criterion naming the candidate that minimises it,
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws one
-criterion across the grid, and
-[`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
-returns the fitted model for one cell of the grid.
+row per candidate model with every criterion and diagnostic (including
+both entropies and, at each level, the smallest, largest and mean
+average posterior probability and the number of classes below a cutoff),
+`get_results(x, "criteria")` names the candidate each criterion's
+minimum falls on, `get_results(x, "classification")` gives every class's
+average posterior probability and relative entropy for every candidate,
+`get_results(x, "deltas")` and `"knees"` give the model-selection
+evidence, [`summary()`](https://rdrr.io/r/base/summary.html) prints each
+criterion's minimum and every table,
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws the
+information criteria (and, with `what`, classification quality and
+model-selection views),
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
+returns the fitted model of one candidate, and
+[`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+puts candidates side by side. Each candidate has a name, the first
+column of the table (`"profiles3_groups2"`), which these verbs take.
 
 ## Conditions
 
@@ -147,10 +157,10 @@ models. *Pattern Recognition*, 28(5), 781–793.
 
 ## See also
 
-[`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
 to take one fitted model out of the grid,
-[`summary.multilpa_enumeration()`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-for the criterion-by-criterion comparison.
+[`summary()`](https://rdrr.io/r/base/summary.html) for the
+criterion-by-criterion comparison.
 
 ## Examples
 
@@ -160,26 +170,36 @@ d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
 candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
                               n_group_classes = 1, n_starts = 2, seed = 1)
 as.data.frame(candidates)
-#>   n_profiles n_group_classes model log_likelihood n_parameters      aic
-#> 1          1               1   EEI      -130.6550            2 265.3100
-#> 2          2               1   EEI      -130.5791            4 269.1581
-#> 3          1               1   VVI      -130.6550            2 265.3100
-#> 4          2               1   VVI      -130.5920            5 271.1839
-#>        kic bic_groups bic_individual sabic_groups sabic_individual caic_groups
-#> 1 270.3100   265.9152       270.5204     259.9237         264.2039    267.9152
-#> 2 276.1581   270.3684       279.5788     258.3855         266.9458    274.3684
-#> 3 270.3100   265.9152       270.5204     259.9237         264.2039    267.9152
-#> 4 279.1839   272.6968       284.2098     257.7182         268.4185    277.6968
-#>   caic_individual awe_groups awe_individual icl_groups icl_individual
-#> 1        272.5204   276.5204       285.7307   265.9152       270.5204
-#> 2        283.5788   291.5788       386.0639   270.3684       355.6432
-#> 3        272.5204   276.5204       285.7307   265.9152       270.5204
-#> 4        289.2098   299.2098       449.6156   272.6968       411.5897
-#>   clc_groups clc_individual profile_entropy group_entropy converged boundary
-#> 1   261.3100       261.3100              NA            NA      TRUE    FALSE
-#> 2   261.1581       337.2225      0.45131114            NA      TRUE    FALSE
-#> 3   261.3100       261.3100              NA            NA      TRUE    FALSE
-#> 4   261.1839       388.5639      0.08114782            NA      TRUE    FALSE
+#>               candidate n_profiles n_group_classes model log_likelihood
+#> 1 profiles1_groups1_EEI          1               1   EEI      -130.6550
+#> 2 profiles2_groups1_EEI          2               1   EEI      -130.5791
+#> 3 profiles1_groups1_VVI          1               1   VVI      -130.6550
+#> 4 profiles2_groups1_VVI          2               1   VVI      -130.5920
+#>   n_parameters      aic      kic bic_groups bic_individual sabic_groups
+#> 1            2 265.3100 270.3100   265.9152       270.5204     259.9237
+#> 2            4 269.1581 276.1581   270.3684       279.5788     258.3855
+#> 3            2 265.3100 270.3100   265.9152       270.5204     259.9237
+#> 4            5 271.1839 279.1839   272.6968       284.2098     257.7182
+#>   sabic_individual caic_groups caic_individual awe_groups awe_individual
+#> 1         264.2039    267.9152        272.5204   276.5204       285.7307
+#> 2         266.9458    274.3684        283.5788   291.5788       386.0639
+#> 3         264.2039    267.9152        272.5204   276.5204       285.7307
+#> 4         268.4185    277.6968        289.2098   299.2098       449.6156
+#>   icl_groups icl_individual clc_groups clc_individual profile_entropy
+#> 1   265.9152       270.5204   261.3100       261.3100              NA
+#> 2   270.3684       355.6432   261.1581       337.2225      0.45131114
+#> 3   265.9152       270.5204   261.3100       261.3100              NA
+#> 4   272.6968       411.5897   261.1839       388.5639      0.08114782
+#>   group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min
+#> 1            NA        NA        NA         NA          NA              NA
+#> 2            NA 0.6413011 0.8527078  0.7470045           1              NA
+#> 3            NA        NA        NA         NA          NA              NA
+#> 4            NA 0.6380900 0.6405463  0.6393181           2              NA
+#>   group_avepp_max group_avepp_mean group_avepp_below converged boundary
+#> 1              NA               NA                NA      TRUE    FALSE
+#> 2              NA               NA                NA      TRUE    FALSE
+#> 3              NA               NA                NA      TRUE    FALSE
+#> 4              NA               NA                NA      TRUE    FALSE
 #>   n_best_replicated warnings error
 #> 1                 2           <NA>
 #> 2                 2           <NA>
@@ -189,35 +209,97 @@ summary(candidates)
 #> Class enumeration: 4 candidates, 4 converged, 0 failed to fit
 #> 3 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 11 of its 26 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 15 of its 35 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
-#>  n_profiles model log_likelihood n_parameters   aic bic_groups bic_individual
-#>           1   EEI         -130.7            2 265.3      265.9          270.5
-#>           2   EEI         -130.6            4 269.2      270.4          279.6
-#>           1   VVI         -130.7            2 265.3      265.9          270.5
-#>           2   VVI         -130.6            5 271.2      272.7          284.2
-#>  icl_individual profile_entropy converged boundary
-#>           270.5              NA      TRUE    FALSE
-#>           355.6         0.45131      TRUE    FALSE
-#>           270.5              NA      TRUE    FALSE
-#>           411.6         0.08115      TRUE    FALSE
+#>              candidate n_profiles model log_likelihood n_parameters   aic
+#>  profiles1_groups1_EEI          1   EEI         -130.7            2 265.3
+#>  profiles2_groups1_EEI          2   EEI         -130.6            4 269.2
+#>  profiles1_groups1_VVI          1   VVI         -130.7            2 265.3
+#>  profiles2_groups1_VVI          2   VVI         -130.6            5 271.2
+#>  bic_groups bic_individual icl_individual profile_entropy avepp_min avepp_mean
+#>       265.9          270.5          270.5              NA        NA         NA
+#>       270.4          279.6          355.6         0.45131    0.6413     0.7470
+#>       265.9          270.5          270.5              NA        NA         NA
+#>       272.7          284.2          411.6         0.08115    0.6381     0.6393
+#>  avepp_below converged boundary
+#>           NA      TRUE    FALSE
+#>            1      TRUE    FALSE
+#>           NA      TRUE    FALSE
+#>            2      TRUE    FALSE
 #> 
 #> -- criteria --------------------------------------------------------
-#>  criterion  convention n_profiles n_group_classes model value
-#>        aic        <NA>          1               1   EEI 265.3
-#>        kic        <NA>          1               1   EEI 270.3
-#>        bic      groups          1               1   EEI 265.9
-#>        bic individuals          1               1   EEI 270.5
-#>      sabic      groups          2               1   VVI 257.7
-#>      sabic individuals          1               1   EEI 264.2
-#>       caic      groups          1               1   EEI 267.9
-#>       caic individuals          1               1   EEI 272.5
-#>        awe      groups          1               1   EEI 276.5
-#>        awe individuals          1               1   EEI 285.7
+#>  criterion  convention             candidate n_profiles n_group_classes model
+#>        aic        <NA> profiles1_groups1_EEI          1               1   EEI
+#>        kic        <NA> profiles1_groups1_EEI          1               1   EEI
+#>        bic      groups profiles1_groups1_EEI          1               1   EEI
+#>        bic individuals profiles1_groups1_EEI          1               1   EEI
+#>      sabic      groups profiles2_groups1_VVI          2               1   VVI
+#>      sabic individuals profiles1_groups1_EEI          1               1   EEI
+#>       caic      groups profiles1_groups1_EEI          1               1   EEI
+#>       caic individuals profiles1_groups1_EEI          1               1   EEI
+#>        awe      groups profiles1_groups1_EEI          1               1   EEI
+#>        awe individuals profiles1_groups1_EEI          1               1   EEI
+#>  value
+#>  265.3
+#>  270.3
+#>  265.9
+#>  270.5
+#>  257.7
+#>  264.2
+#>  267.9
+#>  272.5
+#>  276.5
+#>  285.7
 #>    ... 4 more rows.  get_results(x, what = "criteria")
 #> 
-#> 2 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- classification --------------------------------------------------
+#>              candidate n_profiles n_group_classes model       level class
+#>  profiles2_groups1_EEI          2               1   EEI individuals     1
+#>  profiles2_groups1_EEI          2               1   EEI individuals     2
+#>  profiles2_groups1_VVI          2               1   VVI individuals     1
+#>  profiles2_groups1_VVI          2               1   VVI individuals     2
+#>  n_modal proportion_modal estimated_n estimated_proportion average_posterior
+#>       94             0.94       82.31               0.8231            0.8527
+#>        6             0.06       17.69               0.1769            0.6413
+#>       31             0.31       44.58               0.4458            0.6381
+#>       69             0.69       55.42               0.5542            0.6405
+#>  odds_correct_classification relative_entropy
+#>                        1.244          0.45131
+#>                        8.317          0.45131
+#>                        2.192          0.08115
+#>                        1.434          0.08115
+#> 
+#> -- deltas ----------------------------------------------------------
+#>              candidate n_profiles n_group_classes model  criterion value
+#>  profiles1_groups1_EEI          1               1   EEI bic_groups 265.9
+#>  profiles2_groups1_EEI          2               1   EEI bic_groups 270.4
+#>  profiles1_groups1_VVI          1               1   VVI bic_groups 265.9
+#>  profiles2_groups1_VVI          2               1   VVI bic_groups 272.7
+#>  delta_profile          from_profile delta_group_class from_group_class
+#>             NA                  <NA>                NA             <NA>
+#>         -4.453 profiles1_groups1_EEI                NA             <NA>
+#>             NA                  <NA>                NA             <NA>
+#>         -6.782 profiles1_groups1_VVI                NA             <NA>
+#> 
+#> -- knees -----------------------------------------------------------
+#>   direction                line  criterion                  from
+#>    profiles  1 group class, EEI bic_groups profiles1_groups1_EEI
+#>    profiles  1 group class, VVI bic_groups profiles1_groups1_VVI
+#>  parameters all candidates, EEI bic_groups profiles1_groups1_EEI
+#>  parameters all candidates, VVI bic_groups profiles1_groups1_VVI
+#>                     to n_points knee_candidate distance knee_without_largest
+#>  profiles2_groups1_EEI        2           <NA>       NA                 <NA>
+#>  profiles2_groups1_VVI        2           <NA>       NA                 <NA>
+#>  profiles2_groups1_EEI        2           <NA>       NA                 <NA>
+#>  profiles2_groups1_VVI        2           <NA>       NA                 <NA>
+#>  stable                        note
+#>      NA fewer than three candidates
+#>      NA fewer than three candidates
+#>      NA fewer than three candidates
+#>      NA fewer than three candidates
+#> 
+#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 
 # Single level, crossing class counts with two named structures:
@@ -229,38 +311,113 @@ summary(single)
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 10 of its 26 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 14 of its 35 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
-#>  n_profiles model log_likelihood n_parameters   aic   bic icl_individual
-#>           1   VVV         -379.9           14 787.8 830.0          830.0
-#>           2   VVV         -214.4           29 486.7 574.0          574.0
-#>           3   VVV         -180.2           44 448.4 580.8          590.6
-#>           1   EEE         -379.9           14 787.8 830.0          830.0
-#>           2   EEE         -296.4           19 630.9 688.1          688.1
-#>           3   EEE         -256.4           24 560.7 633.0          645.6
-#>  profile_entropy converged boundary
-#>               NA      TRUE    FALSE
-#>           0.9999      TRUE    FALSE
-#>           0.9704      TRUE    FALSE
-#>               NA      TRUE    FALSE
-#>           0.9999      TRUE    FALSE
-#>           0.9616      TRUE    FALSE
+#>      candidate n_profiles model log_likelihood n_parameters   aic   bic
+#>  profiles1_VVV          1   VVV         -379.9           14 787.8 830.0
+#>  profiles2_VVV          2   VVV         -214.4           29 486.7 574.0
+#>  profiles3_VVV          3   VVV         -180.2           44 448.4 580.8
+#>  profiles1_EEE          1   EEE         -379.9           14 787.8 830.0
+#>  profiles2_EEE          2   EEE         -296.4           19 630.9 688.1
+#>  profiles3_EEE          3   EEE         -256.4           24 560.7 633.0
+#>  icl_individual profile_entropy avepp_min avepp_mean avepp_below converged
+#>           830.0              NA        NA         NA          NA      TRUE
+#>           574.0          0.9999    1.0000     1.0000           0      TRUE
+#>           590.6          0.9704    0.9823     0.9900           0      TRUE
+#>           830.0              NA        NA         NA          NA      TRUE
+#>           688.1          0.9999    1.0000     1.0000           0      TRUE
+#>           645.6          0.9616    0.9742     0.9855           0      TRUE
+#>  boundary
+#>     FALSE
+#>     FALSE
+#>     FALSE
+#>     FALSE
+#>     FALSE
+#>     FALSE
 #> 
 #> -- criteria --------------------------------------------------------
-#>  criterion  convention n_profiles n_group_classes model value
-#>        aic        <NA>          3               1   VVV 448.4
-#>        kic        <NA>          3               1   VVV 495.4
-#>        bic      groups          2               1   VVV 574.0
-#>        bic individuals          2               1   VVV 574.0
-#>      sabic      groups          3               1   VVV 441.6
-#>      sabic individuals          3               1   VVV 441.6
-#>       caic      groups          2               1   VVV 603.0
-#>       caic individuals          2               1   VVV 603.0
-#>        awe      groups          2               1   VVV 806.3
-#>        awe individuals          2               1   VVV 806.3
+#>  criterion  convention     candidate n_profiles n_group_classes model value
+#>        aic        <NA> profiles3_VVV          3               1   VVV 448.4
+#>        kic        <NA> profiles3_VVV          3               1   VVV 495.4
+#>        bic      groups profiles2_VVV          2               1   VVV 574.0
+#>        bic individuals profiles2_VVV          2               1   VVV 574.0
+#>      sabic      groups profiles3_VVV          3               1   VVV 441.6
+#>      sabic individuals profiles3_VVV          3               1   VVV 441.6
+#>       caic      groups profiles2_VVV          2               1   VVV 603.0
+#>       caic individuals profiles2_VVV          2               1   VVV 603.0
+#>        awe      groups profiles2_VVV          2               1   VVV 806.3
+#>        awe individuals profiles2_VVV          2               1   VVV 806.3
 #>    ... 4 more rows.  get_results(x, what = "criteria")
 #> 
-#> 2 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- classification --------------------------------------------------
+#>      candidate n_profiles n_group_classes model       level class n_modal
+#>  profiles2_VVV          2               1   VVV individuals     1      50
+#>  profiles2_VVV          2               1   VVV individuals     2     100
+#>  profiles3_VVV          3               1   VVV individuals     1      50
+#>  profiles3_VVV          3               1   VVV individuals     2      45
+#>  profiles3_VVV          3               1   VVV individuals     3      55
+#>  profiles2_EEE          2               1   EEE individuals     1      50
+#>  profiles2_EEE          2               1   EEE individuals     2     100
+#>  profiles3_EEE          3               1   EEE individuals     1      50
+#>  profiles3_EEE          3               1   EEE individuals     2      49
+#>  profiles3_EEE          3               1   EEE individuals     3      51
+#>  proportion_modal estimated_n estimated_proportion average_posterior
+#>            0.3333       50.00               0.3333            1.0000
+#>            0.6667      100.00               0.6667            1.0000
+#>            0.3333       50.00               0.3333            1.0000
+#>            0.3000       44.88               0.2992            0.9823
+#>            0.3667       55.12               0.3675            0.9877
+#>            0.3333       50.00               0.3333            1.0000
+#>            0.6667      100.00               0.6667            1.0000
+#>            0.3333       50.00               0.3333            1.0000
+#>            0.3267       49.44               0.3296            0.9822
+#>            0.3400       50.56               0.3371            0.9742
+#>  odds_correct_classification relative_entropy
+#>                    1.580e+05           0.9999
+#>                           NA           0.9999
+#>                    1.801e+16           0.9704
+#>                    1.300e+02           0.9704
+#>                    1.384e+02           0.9704
+#>                    3.297e+05           0.9999
+#>                    1.477e+05           0.9999
+#>                    6.775e+12           0.9616
+#>                    1.122e+02           0.9616
+#>                    7.441e+01           0.9616
+#> 
+#> -- deltas ----------------------------------------------------------
+#>      candidate n_profiles n_group_classes model  criterion value delta_profile
+#>  profiles1_VVV          1               1   VVV bic_groups 830.0            NA
+#>  profiles2_VVV          2               1   VVV bic_groups 574.0       255.960
+#>  profiles3_VVV          3               1   VVV bic_groups 580.8        -6.821
+#>  profiles1_EEE          1               1   EEE bic_groups 830.0            NA
+#>  profiles2_EEE          2               1   EEE bic_groups 688.1       141.881
+#>  profiles3_EEE          3               1   EEE bic_groups 633.0        55.134
+#>   from_profile delta_group_class from_group_class
+#>           <NA>                NA             <NA>
+#>  profiles1_VVV                NA             <NA>
+#>  profiles2_VVV                NA             <NA>
+#>           <NA>                NA             <NA>
+#>  profiles1_EEE                NA             <NA>
+#>  profiles2_EEE                NA             <NA>
+#> 
+#> -- knees -----------------------------------------------------------
+#>   direction                line  criterion          from            to n_points
+#>    profiles  1 group class, EEE bic_groups profiles1_EEE profiles3_EEE        3
+#>    profiles  1 group class, VVV bic_groups profiles1_VVV profiles3_VVV        3
+#>  parameters all candidates, EEE bic_groups profiles1_EEE profiles3_EEE        3
+#>  parameters all candidates, VVV bic_groups profiles1_VVV profiles3_VVV        3
+#>  knee_candidate distance knee_without_largest stable
+#>   profiles2_EEE   0.1557                 <NA>     NA
+#>   profiles2_VVV   0.3678                 <NA>     NA
+#>   profiles2_EEE   0.1557                 <NA>     NA
+#>   profiles2_VVV   0.3678                 <NA>     NA
+#>                                      note
+#>  three candidates: stability not assessed
+#>  three candidates: stability not assessed
+#>  three candidates: stability not assessed
+#>  three candidates: stability not assessed
+#> 
+#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```

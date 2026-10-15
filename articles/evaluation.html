@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,10 +43,12 @@
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -300,80 +302,80 @@ model.</p>
 <span>                                id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">4</span>,</span>
 <span>                                n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">candidates</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    n_profiles n_group_classes model log_likelihood n_parameters   aic   kic bic_groups</span></span>
-<span><span class="co">#&gt; 1           2               1   EEI          -8655           16 17341 17360      17384</span></span>
-<span><span class="co">#&gt; 2           3               1   EEI          -8588           22 17219 17244      17278</span></span>
-<span><span class="co">#&gt; 3           4               1   EEI          -8545           28 17145 17176      17220</span></span>
-<span><span class="co">#&gt; 4           2               2   EEI          -8479           18 16994 17015      17042</span></span>
-<span><span class="co">#&gt; 5           3               2   EEI          -8415           25 16879 16907      16946</span></span>
-<span><span class="co">#&gt; 6           4               2   EEI          -8369           32 16802 16837      16888</span></span>
-<span><span class="co">#&gt; 7           2               3   EEI          -8460           20 16960 16983      17013</span></span>
-<span><span class="co">#&gt; 8           3               3   EEI          -8399           28 16853 16884      16928</span></span>
-<span><span class="co">#&gt; 9           4               3   EEI          -8350           36 16771 16810      16867</span></span>
-<span><span class="co">#&gt; 10          2               1   VVI          -8615           21 17272 17296      17328</span></span>
-<span><span class="co">#&gt; 11          3               1   VVI          -8537           32 17137 17172      17222</span></span>
-<span><span class="co">#&gt; 12          4               1   VVI          -8501           43 17088 17134      17203</span></span>
-<span><span class="co">#&gt; 13          2               2   VVI          -8440           23 16926 16952      16987</span></span>
-<span><span class="co">#&gt; 14          3               2   VVI          -8365           35 16799 16837      16892</span></span>
-<span><span class="co">#&gt; 15          4               2   VVI          -8326           47 16746 16796      16872</span></span>
-<span><span class="co">#&gt; 16          2               3   VVI          -8421           25 16892 16920      16959</span></span>
-<span><span class="co">#&gt; 17          3               3   VVI          -8348           38 16773 16814      16874</span></span>
-<span><span class="co">#&gt; 18          4               3   VVI          -8307           51 16716 16770      16852</span></span>
-<span><span class="co">#&gt; 19          2               1   EEE          -8536           26 17125 17154      17194</span></span>
-<span><span class="co">#&gt; 20          3               1   EEE          -8514           32 17092 17127      17177</span></span>
-<span><span class="co">#&gt; 21          4               1   EEE          -8510           38 17096 17137      17197</span></span>
-<span><span class="co">#&gt; 22          2               2   EEE          -8360           28 16775 16806      16850</span></span>
-<span><span class="co">#&gt; 23          3               2   EEE          -8332           35 16734 16772      16827</span></span>
-<span><span class="co">#&gt; 24          4               2   EEE          -8329           42 16742 16787      16854</span></span>
-<span><span class="co">#&gt; 25          2               3   EEE          -8341           30 16742 16775      16822</span></span>
-<span><span class="co">#&gt; 26          3               3   EEE          -8314           38 16704 16745      16806</span></span>
-<span><span class="co">#&gt; 27          4               3   EEE          -8301           46 16693 16742      16816</span></span>
-<span><span class="co">#&gt; 28          2               1   VVV          -8490           41 17061 17105      17170</span></span>
-<span><span class="co">#&gt; 29          3               1   VVV          -8472           62 17067 17132      17232</span></span>
-<span><span class="co">#&gt; 30          4               1   VVV          -8436           83 17038 17124      17259</span></span>
-<span><span class="co">#&gt; 31          2               2   VVV          -8313           43 16712 16758      16827</span></span>
-<span><span class="co">#&gt; 32          3               2   VVV          -8291           65 16713 16781      16886</span></span>
-<span><span class="co">#&gt; 33          4               2   VVV          -8261           87 16696 16786      16927</span></span>
-<span><span class="co">#&gt; 34          2               3   VVV          -8295           45 16681 16729      16801</span></span>
-<span><span class="co">#&gt; 35          3               3   VVV          -8275           68 16686 16757      16867</span></span>
-<span><span class="co">#&gt; 36          4               3   VVV          -8238           91 16658 16752      16901</span></span>
-<span><span class="co">#&gt;    bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups</span></span>
-<span><span class="co">#&gt; 1           17425        17333            17374       17400           17441      17506</span></span>
-<span><span class="co">#&gt; 2           17335        17209            17265       17300           17357      17447</span></span>
-<span><span class="co">#&gt; 3           17293        17131            17204       17248           17321      17435</span></span>
-<span><span class="co">#&gt; 4           17089        16985            17032       17060           17107      17189</span></span>
-<span><span class="co">#&gt; 5           17011        16867            16932       16971           17036      17146</span></span>
-<span><span class="co">#&gt; 6           16971        16787            16869       16920           17003      17142</span></span>
-<span><span class="co">#&gt; 7           17065        16950            17002       17033           17085      17208</span></span>
-<span><span class="co">#&gt; 8           17000        16839            16911       16956           17028      17188</span></span>
-<span><span class="co">#&gt; 9           16961        16753            16846       16903           16997      17182</span></span>
-<span><span class="co">#&gt; 10          17383        17262            17316       17349           17404      17489</span></span>
-<span><span class="co">#&gt; 11          17306        17121            17204       17254           17338      17468</span></span>
-<span><span class="co">#&gt; 12          17314        17067            17178       17246           17357      17532</span></span>
-<span><span class="co">#&gt; 13          17047        16914            16974       17010           17070      17172</span></span>
-<span><span class="co">#&gt; 14          16983        16782            16872       16927           17018      17169</span></span>
-<span><span class="co">#&gt; 15          16994        16723            16844       16919           17041      17241</span></span>
-<span><span class="co">#&gt; 16          17024        16880            16944       16984           17049      17193</span></span>
-<span><span class="co">#&gt; 17          16973        16754            16852       16912           17011      17212</span></span>
-<span><span class="co">#&gt; 18          16985        16691            16823       16903           17036      17284</span></span>
-<span><span class="co">#&gt; 19          17262        17112            17179       17220           17288      17393</span></span>
-<span><span class="co">#&gt; 20          17260        17076            17158       17209           17292      17422</span></span>
-<span><span class="co">#&gt; 21          17296        17077            17175       17235           17334      17489</span></span>
-<span><span class="co">#&gt; 22          16922        16761            16833       16878           16950      17073</span></span>
-<span><span class="co">#&gt; 23          16918        16717            16807       16862           16953      17103</span></span>
-<span><span class="co">#&gt; 24          16963        16722            16830       16896           17005      17184</span></span>
-<span><span class="co">#&gt; 25          16900        16727            16804       16852           16930      17093</span></span>
-<span><span class="co">#&gt; 26          16904        16686            16784       16844           16942      17134</span></span>
-<span><span class="co">#&gt; 27          16935        16671            16789       16862           16981      17205</span></span>
-<span><span class="co">#&gt; 28          17277        17041            17147       17211           17318      17485</span></span>
-<span><span class="co">#&gt; 29          17393        17036            17196       17294           17455      17707</span></span>
-<span><span class="co">#&gt; 30          17474        16996            17210       17342           17557      17895</span></span>
-<span><span class="co">#&gt; 31          16938        16691            16802       16870           16981      17165</span></span>
-<span><span class="co">#&gt; 32          17055        16681            16848       16951           17120      17392</span></span>
-<span><span class="co">#&gt; 33          17153        16652            16877       17014           17240      17602</span></span>
-<span><span class="co">#&gt; 34          16917        16658            16775       16846           16962      17188</span></span>
-<span><span class="co">#&gt; 35          17044        16652            16828       16935           17112      17429</span></span>
-<span><span class="co">#&gt; 36          17137        16613            16848       16992           17228      17634</span></span>
+<span><span class="co">#&gt;                candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic</span></span>
+<span><span class="co">#&gt; 1  profiles2_groups1_EEI          2               1   EEI          -8655           16 17341 17360</span></span>
+<span><span class="co">#&gt; 2  profiles3_groups1_EEI          3               1   EEI          -8588           22 17219 17244</span></span>
+<span><span class="co">#&gt; 3  profiles4_groups1_EEI          4               1   EEI          -8545           28 17145 17176</span></span>
+<span><span class="co">#&gt; 4  profiles2_groups2_EEI          2               2   EEI          -8479           18 16994 17015</span></span>
+<span><span class="co">#&gt; 5  profiles3_groups2_EEI          3               2   EEI          -8415           25 16879 16907</span></span>
+<span><span class="co">#&gt; 6  profiles4_groups2_EEI          4               2   EEI          -8369           32 16802 16837</span></span>
+<span><span class="co">#&gt; 7  profiles2_groups3_EEI          2               3   EEI          -8460           20 16960 16983</span></span>
+<span><span class="co">#&gt; 8  profiles3_groups3_EEI          3               3   EEI          -8399           28 16853 16884</span></span>
+<span><span class="co">#&gt; 9  profiles4_groups3_EEI          4               3   EEI          -8350           36 16771 16810</span></span>
+<span><span class="co">#&gt; 10 profiles2_groups1_VVI          2               1   VVI          -8615           21 17272 17296</span></span>
+<span><span class="co">#&gt; 11 profiles3_groups1_VVI          3               1   VVI          -8537           32 17137 17172</span></span>
+<span><span class="co">#&gt; 12 profiles4_groups1_VVI          4               1   VVI          -8501           43 17088 17134</span></span>
+<span><span class="co">#&gt; 13 profiles2_groups2_VVI          2               2   VVI          -8440           23 16926 16952</span></span>
+<span><span class="co">#&gt; 14 profiles3_groups2_VVI          3               2   VVI          -8365           35 16799 16837</span></span>
+<span><span class="co">#&gt; 15 profiles4_groups2_VVI          4               2   VVI          -8326           47 16746 16796</span></span>
+<span><span class="co">#&gt; 16 profiles2_groups3_VVI          2               3   VVI          -8421           25 16892 16920</span></span>
+<span><span class="co">#&gt; 17 profiles3_groups3_VVI          3               3   VVI          -8348           38 16773 16814</span></span>
+<span><span class="co">#&gt; 18 profiles4_groups3_VVI          4               3   VVI          -8307           51 16716 16770</span></span>
+<span><span class="co">#&gt; 19 profiles2_groups1_EEE          2               1   EEE          -8536           26 17125 17154</span></span>
+<span><span class="co">#&gt; 20 profiles3_groups1_EEE          3               1   EEE          -8514           32 17092 17127</span></span>
+<span><span class="co">#&gt; 21 profiles4_groups1_EEE          4               1   EEE          -8510           38 17096 17137</span></span>
+<span><span class="co">#&gt; 22 profiles2_groups2_EEE          2               2   EEE          -8360           28 16775 16806</span></span>
+<span><span class="co">#&gt; 23 profiles3_groups2_EEE          3               2   EEE          -8332           35 16734 16772</span></span>
+<span><span class="co">#&gt; 24 profiles4_groups2_EEE          4               2   EEE          -8329           42 16742 16787</span></span>
+<span><span class="co">#&gt; 25 profiles2_groups3_EEE          2               3   EEE          -8341           30 16742 16775</span></span>
+<span><span class="co">#&gt; 26 profiles3_groups3_EEE          3               3   EEE          -8314           38 16704 16745</span></span>
+<span><span class="co">#&gt; 27 profiles4_groups3_EEE          4               3   EEE          -8301           46 16693 16742</span></span>
+<span><span class="co">#&gt; 28 profiles2_groups1_VVV          2               1   VVV          -8490           41 17061 17105</span></span>
+<span><span class="co">#&gt; 29 profiles3_groups1_VVV          3               1   VVV          -8472           62 17067 17132</span></span>
+<span><span class="co">#&gt; 30 profiles4_groups1_VVV          4               1   VVV          -8436           83 17038 17124</span></span>
+<span><span class="co">#&gt; 31 profiles2_groups2_VVV          2               2   VVV          -8313           43 16712 16758</span></span>
+<span><span class="co">#&gt; 32 profiles3_groups2_VVV          3               2   VVV          -8291           65 16713 16781</span></span>
+<span><span class="co">#&gt; 33 profiles4_groups2_VVV          4               2   VVV          -8261           87 16696 16786</span></span>
+<span><span class="co">#&gt; 34 profiles2_groups3_VVV          2               3   VVV          -8295           45 16681 16729</span></span>
+<span><span class="co">#&gt; 35 profiles3_groups3_VVV          3               3   VVV          -8275           68 16686 16757</span></span>
+<span><span class="co">#&gt; 36 profiles4_groups3_VVV          4               3   VVV          -8238           91 16658 16752</span></span>
+<span><span class="co">#&gt;    bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups</span></span>
+<span><span class="co">#&gt; 1       17384          17425        17333            17374       17400           17441      17506</span></span>
+<span><span class="co">#&gt; 2       17278          17335        17209            17265       17300           17357      17447</span></span>
+<span><span class="co">#&gt; 3       17220          17293        17131            17204       17248           17321      17435</span></span>
+<span><span class="co">#&gt; 4       17042          17089        16985            17032       17060           17107      17189</span></span>
+<span><span class="co">#&gt; 5       16946          17011        16867            16932       16971           17036      17146</span></span>
+<span><span class="co">#&gt; 6       16888          16971        16787            16869       16920           17003      17142</span></span>
+<span><span class="co">#&gt; 7       17013          17065        16950            17002       17033           17085      17208</span></span>
+<span><span class="co">#&gt; 8       16928          17000        16839            16911       16956           17028      17188</span></span>
+<span><span class="co">#&gt; 9       16867          16961        16753            16846       16903           16997      17182</span></span>
+<span><span class="co">#&gt; 10      17328          17383        17262            17316       17349           17404      17489</span></span>
+<span><span class="co">#&gt; 11      17222          17306        17121            17204       17254           17338      17468</span></span>
+<span><span class="co">#&gt; 12      17203          17314        17067            17178       17246           17357      17532</span></span>
+<span><span class="co">#&gt; 13      16987          17047        16914            16974       17010           17070      17172</span></span>
+<span><span class="co">#&gt; 14      16892          16983        16782            16872       16927           17018      17169</span></span>
+<span><span class="co">#&gt; 15      16872          16994        16723            16844       16919           17041      17241</span></span>
+<span><span class="co">#&gt; 16      16959          17024        16880            16944       16984           17049      17193</span></span>
+<span><span class="co">#&gt; 17      16874          16973        16754            16852       16912           17011      17212</span></span>
+<span><span class="co">#&gt; 18      16852          16985        16691            16823       16903           17036      17284</span></span>
+<span><span class="co">#&gt; 19      17194          17262        17112            17179       17220           17288      17393</span></span>
+<span><span class="co">#&gt; 20      17177          17260        17076            17158       17209           17292      17422</span></span>
+<span><span class="co">#&gt; 21      17197          17296        17077            17175       17235           17334      17489</span></span>
+<span><span class="co">#&gt; 22      16850          16922        16761            16833       16878           16950      17073</span></span>
+<span><span class="co">#&gt; 23      16827          16918        16717            16807       16862           16953      17103</span></span>
+<span><span class="co">#&gt; 24      16854          16963        16722            16830       16896           17005      17184</span></span>
+<span><span class="co">#&gt; 25      16822          16900        16727            16804       16852           16930      17093</span></span>
+<span><span class="co">#&gt; 26      16806          16904        16686            16784       16844           16942      17134</span></span>
+<span><span class="co">#&gt; 27      16816          16935        16671            16789       16862           16981      17205</span></span>
+<span><span class="co">#&gt; 28      17170          17277        17041            17147       17211           17318      17485</span></span>
+<span><span class="co">#&gt; 29      17232          17393        17036            17196       17294           17455      17707</span></span>
+<span><span class="co">#&gt; 30      17259          17474        16996            17210       17342           17557      17895</span></span>
+<span><span class="co">#&gt; 31      16827          16938        16691            16802       16870           16981      17165</span></span>
+<span><span class="co">#&gt; 32      16886          17055        16681            16848       16951           17120      17392</span></span>
+<span><span class="co">#&gt; 33      16927          17153        16652            16877       17014           17240      17602</span></span>
+<span><span class="co">#&gt; 34      16801          16917        16658            16775       16846           16962      17188</span></span>
+<span><span class="co">#&gt; 35      16867          17044        16652            16828       16935           17112      17429</span></span>
+<span><span class="co">#&gt; 36      16901          17137        16613            16848       16992           17228      17634</span></span>
 <span><span class="co">#&gt;    awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy</span></span>
 <span><span class="co">#&gt; 1           17755      17384          17591      17309          17475           0.916            NA</span></span>
 <span><span class="co">#&gt; 2           18396      17278          18170      17175          18010           0.733            NA</span></span>
@@ -411,74 +413,112 @@ model.</p>
 <span><span class="co">#&gt; 34          17558      16843          17096      16634          16770           0.909         0.816</span></span>
 <span><span class="co">#&gt; 35          18279      16908          17581      16591          17088           0.828         0.824</span></span>
 <span><span class="co">#&gt; 36          18772      16937          17838      16512          17178           0.822         0.845</span></span>
-<span><span class="co">#&gt;    converged boundary n_best_replicated warnings error</span></span>
-<span><span class="co">#&gt; 1       TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2       TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3       TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4       TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 5       TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6       TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 7       TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 8       TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 9       TRUE    FALSE                 2           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 10      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 11      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 12      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 13      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 14      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 15      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 16      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 17      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 18      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 19      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 20      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 21      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 22      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 23      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 24      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 25      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 26      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 27      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 28      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 29      TRUE    FALSE                 2           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 30      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 31      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 32      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 33      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 34      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 35      TRUE    FALSE                 2           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 36      TRUE    FALSE                 1           &lt;NA&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;    avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean</span></span>
+<span><span class="co">#&gt; 1      0.976     0.977      0.977           0              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 2      0.795     0.961      0.860           1              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 3      0.816     0.844      0.830           0              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 4      0.982     0.982      0.982           0           0.967           0.991            0.979</span></span>
+<span><span class="co">#&gt; 5      0.793     0.976      0.861           1           0.975           0.993            0.984</span></span>
+<span><span class="co">#&gt; 6      0.818     0.838      0.827           0           0.974           0.989            0.982</span></span>
+<span><span class="co">#&gt; 7      0.982     0.983      0.983           0           0.885           0.967            0.921</span></span>
+<span><span class="co">#&gt; 8      0.797     0.976      0.860           1           0.883           0.971            0.915</span></span>
+<span><span class="co">#&gt; 9      0.818     0.836      0.827           0           0.877           0.976            0.925</span></span>
+<span><span class="co">#&gt; 10     0.974     0.982      0.978           0              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 11     0.832     0.964      0.886           0              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 12     0.803     0.849      0.835           0              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 13     0.982     0.985      0.983           0           0.969           0.992            0.980</span></span>
+<span><span class="co">#&gt; 14     0.849     0.979      0.893           0           0.977           0.992            0.985</span></span>
+<span><span class="co">#&gt; 15     0.791     0.858      0.835           1           0.975           0.990            0.983</span></span>
+<span><span class="co">#&gt; 16     0.982     0.986      0.984           0           0.900           0.962            0.923</span></span>
+<span><span class="co">#&gt; 17     0.845     0.978      0.892           0           0.864           0.977            0.913</span></span>
+<span><span class="co">#&gt; 18     0.801     0.854      0.836           0           0.874           0.981            0.923</span></span>
+<span><span class="co">#&gt; 19     0.961     0.967      0.964           0              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 20     0.756     0.954      0.832           2              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 21     0.557     0.906      0.761           2              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 22     0.972     0.975      0.974           0           0.968           0.992            0.980</span></span>
+<span><span class="co">#&gt; 23     0.749     0.970      0.842           1           0.983           0.990            0.987</span></span>
+<span><span class="co">#&gt; 24     0.588     0.889      0.771           2           0.984           0.988            0.986</span></span>
+<span><span class="co">#&gt; 25     0.975     0.975      0.975           0           0.904           0.951            0.923</span></span>
+<span><span class="co">#&gt; 26     0.750     0.969      0.842           1           0.856           0.960            0.921</span></span>
+<span><span class="co">#&gt; 27     0.653     0.971      0.771           3           0.841           0.971            0.920</span></span>
+<span><span class="co">#&gt; 28     0.959     0.971      0.965           0              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 29     0.665     0.956      0.833           1              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 30     0.627     0.943      0.829           1              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 31     0.973     0.978      0.976           0           0.971           0.993            0.982</span></span>
+<span><span class="co">#&gt; 32     0.649     0.972      0.845           1           0.982           0.990            0.986</span></span>
+<span><span class="co">#&gt; 33     0.785     0.973      0.854           1           0.962           0.995            0.979</span></span>
+<span><span class="co">#&gt; 34     0.974     0.978      0.976           0           0.903           0.960            0.923</span></span>
+<span><span class="co">#&gt; 35     0.649     0.973      0.841           1           0.878           0.955            0.920</span></span>
+<span><span class="co">#&gt; 36     0.650     0.977      0.798           2           0.904           0.975            0.932</span></span>
+<span><span class="co">#&gt;    group_avepp_below converged boundary n_best_replicated warnings error</span></span>
+<span><span class="co">#&gt; 1                 NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2                 NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3                 NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4                  0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5                  0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6                  0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7                  0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8                  0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9                  0      TRUE    FALSE                 2           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10                NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11                NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 12                NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 13                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 14                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 15                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 16                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 17                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 18                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 19                NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 20                NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 21                NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 22                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 23                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 24                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 25                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 26                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 27                 0      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 28                NA      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 29                NA      TRUE    FALSE                 2           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 30                NA      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 31                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 32                 0      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 33                 0      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 34                 0      TRUE    FALSE                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 35                 0      TRUE    FALSE                 2           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 36                 0      TRUE    FALSE                 1           &lt;NA&gt;</span></span></code></pre></div>
 <p>To find which candidate minimizes each criterion, we call
 <code><a href="../reference/get_results.html">get_results()</a></code> with <code>"criteria"</code>. Criteria that
 depend on a sample size are reported with the number of groups and with
 the number of observations.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">candidates</span>, <span class="st">"criteria"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    criterion  convention n_profiles n_group_classes model value</span></span>
-<span><span class="co">#&gt; 1        aic        &lt;NA&gt;          4               3   VVV 16658</span></span>
-<span><span class="co">#&gt; 2        kic        &lt;NA&gt;          2               3   VVV 16729</span></span>
-<span><span class="co">#&gt; 3        bic      groups          2               3   VVV 16801</span></span>
-<span><span class="co">#&gt; 4        bic individuals          2               3   EEE 16900</span></span>
-<span><span class="co">#&gt; 5      sabic      groups          4               3   VVV 16613</span></span>
-<span><span class="co">#&gt; 6      sabic individuals          2               3   VVV 16775</span></span>
-<span><span class="co">#&gt; 7       caic      groups          3               3   EEE 16844</span></span>
-<span><span class="co">#&gt; 8       caic individuals          2               3   EEE 16930</span></span>
-<span><span class="co">#&gt; 9        awe      groups          2               2   EEE 17073</span></span>
-<span><span class="co">#&gt; 10       awe individuals          2               3   EEE 17396</span></span>
-<span><span class="co">#&gt; 11       icl      groups          3               2   EEE 16835</span></span>
-<span><span class="co">#&gt; 12       icl individuals          2               3   EEE 17089</span></span>
-<span><span class="co">#&gt; 13       clc      groups          4               3   VVV 16512</span></span>
-<span><span class="co">#&gt; 14       clc individuals          2               3   VVV 16770</span></span></code></pre></div>
+<span><span class="co">#&gt;    criterion  convention             candidate n_profiles n_group_classes model value</span></span>
+<span><span class="co">#&gt; 1        aic        &lt;NA&gt; profiles4_groups3_VVV          4               3   VVV 16658</span></span>
+<span><span class="co">#&gt; 2        kic        &lt;NA&gt; profiles2_groups3_VVV          2               3   VVV 16729</span></span>
+<span><span class="co">#&gt; 3        bic      groups profiles2_groups3_VVV          2               3   VVV 16801</span></span>
+<span><span class="co">#&gt; 4        bic individuals profiles2_groups3_EEE          2               3   EEE 16900</span></span>
+<span><span class="co">#&gt; 5      sabic      groups profiles4_groups3_VVV          4               3   VVV 16613</span></span>
+<span><span class="co">#&gt; 6      sabic individuals profiles2_groups3_VVV          2               3   VVV 16775</span></span>
+<span><span class="co">#&gt; 7       caic      groups profiles3_groups3_EEE          3               3   EEE 16844</span></span>
+<span><span class="co">#&gt; 8       caic individuals profiles2_groups3_EEE          2               3   EEE 16930</span></span>
+<span><span class="co">#&gt; 9        awe      groups profiles2_groups2_EEE          2               2   EEE 17073</span></span>
+<span><span class="co">#&gt; 10       awe individuals profiles2_groups3_EEE          2               3   EEE 17396</span></span>
+<span><span class="co">#&gt; 11       icl      groups profiles3_groups2_EEE          3               2   EEE 16835</span></span>
+<span><span class="co">#&gt; 12       icl individuals profiles2_groups3_EEE          2               3   EEE 17089</span></span>
+<span><span class="co">#&gt; 13       clc      groups profiles4_groups3_VVV          4               3   VVV 16512</span></span>
+<span><span class="co">#&gt; 14       clc individuals profiles2_groups3_VVV          2               3   VVV 16770</span></span></code></pre></div>
 <p>To draw one criterion across the grid, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>
-with <code>criterion</code> for its name.</p>
+with its name as <code>what</code>; <code>what = "all"</code> draws
+every criterion.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">candidates</span>, criterion <span class="op">=</span> <span class="st">"bic_groups"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">candidates</span>, what <span class="op">=</span> <span class="st">"bic_groups"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="evaluation_files/figure-html/enumeration-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>To take one candidate out of the grid as a fitted model, we call
-<code><a href="../reference/candidate_fit.html">candidate_fit()</a></code> with its <code>n_profiles</code>,
+<code><a href="../reference/get_candidate.html">get_candidate()</a></code> with its <code>n_profiles</code>,
 <code>n_group_classes</code> and <code>model</code>.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/candidate_fit.html">candidate_fit</a></span><span class="op">(</span><span class="va">candidates</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, model <span class="op">=</span> <span class="st">"VVI"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">candidates</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, model <span class="op">=</span> <span class="st">"VVI"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Two-level latent profile analysis: 3 profiles, 2 group classes</span></span>
 <span><span class="co">#&gt; 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)</span></span>
 <span><span class="co">#&gt; Log likelihood: -8364.520142 | AIC: 16799.040 | BIC (groups): 16892.261</span></span>
@@ -623,7 +663,7 @@ comment states what the call returns.</p>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"residuals"</span><span class="op">)</span>                   <span class="co"># residuals within each profile</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">candidates</span>, <span class="st">"candidates"</span><span class="op">)</span>           <span class="co"># the full enumeration grid</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">candidates</span><span class="op">)</span>                             <span class="co"># the best candidate on each criterion</span></span>
-<span><span class="fu"><a href="../reference/bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">fit</span>, <span class="fu"><a href="../reference/candidate_fit.html">candidate_fit</a></span><span class="op">(</span><span class="va">candidates</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>,</span>
+<span><span class="fu"><a href="../reference/bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">fit</span>, <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">candidates</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>                                n_group_classes <span class="op">=</span> <span class="fl">2</span>, model <span class="op">=</span> <span class="st">"VVI"</span><span class="op">)</span>,</span>
 <span>              iter <span class="op">=</span> <span class="fl">199</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span>            <span class="co"># bootstrap test of one more class (slow)</span></span>
 <span><span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span><span class="op">)</span>,</span>

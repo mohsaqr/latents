@@ -28,6 +28,9 @@ get_results(x, what = NULL, ...)
 # S3 method for class 'multilpa_enumeration'
 get_results(x, what = NULL, ...)
 
+# S3 method for class 'latents_comparison'
+get_results(x, what = NULL, ...)
+
 # S3 method for class 'multilpa_bootstrap_lrt'
 get_results(x, what = NULL, ...)
 
@@ -83,6 +86,16 @@ get_results(x, what = NULL, ...)
 
 A base `data.frame` for a single `what`, whose columns are given under
 *Tables*, or a named list of such data frames for `what = "all"`.
+
+## Details
+
+Every object also answers the usual generics:
+[`print()`](https://rdrr.io/r/base/print.html) shows a compact overview,
+[`summary()`](https://rdrr.io/r/base/summary.html) collects its main
+tables (taking `level` and `vcov_type` where the model has standard
+errors), and
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
+its primary table, the same as `get_results(x)`.
 
 ## Tables
 
@@ -271,15 +284,67 @@ And each family adds its own:
   `group_class_probability`. `"sequence_lengths"` has one row per group:
   `group`, `group_class`, `occasions`, `observations`, `complete`.
 
-- `"candidates"`, `"criteria"`:
+- `"candidates"`, `"criteria"`, `"classification"`:
 
   An enumeration grid. `"criteria"` has one row per information
-  criterion, naming the candidate that minimises it. `"candidates"` has
-  one row per candidate model, with its class counts, its covariance
-  `model`, log likelihood, parameter count, every criterion under both
-  sample-size conventions, both entropies, and the convergence,
-  boundary, replication, warning and error diagnostics. Failed
-  candidates are retained with `NA` estimates and their error text.
+  criterion and sample-size convention: `criterion`, `convention`,
+  `candidate` (the candidate its minimum falls on), `n_profiles`,
+  `n_group_classes`, `model` and `value`. `"candidates"` has one row per
+  candidate model: its name (`candidate`, first), its class counts, its
+  covariance `model`, log likelihood, parameter count, every criterion
+  under both sample-size conventions, both entropies, the average
+  posterior probability (AvePP) summaries of each level – `avepp_min`,
+  `avepp_max`, `avepp_mean`, `avepp_below` and the same four prefixed
+  `group_` – and the convergence, boundary, replication, warning and
+  error diagnostics. Failed candidates are retained with `NA` estimates
+  and their error text. `"candidates"` takes `cutoff` (default `0.8`):
+  `avepp_below` and `group_avepp_below` count the classes whose AvePP is
+  below it. A class with no modally assigned unit has no AvePP; it is
+  left out of the smallest, largest and mean and counted as below the
+  cutoff. A level with one class has `NA` summaries. `"classification"`
+  has one row per fitted candidate, level and class: `candidate`,
+  `n_profiles`, `n_group_classes`, `model`, then the columns of a fit's
+  `"classification"` table and that level's `relative_entropy`. Failed
+  candidates and levels with a single class contribute no rows.
+
+- `"deltas"`, `"knees"`:
+
+  Model-selection evidence of an enumeration grid, each taking `using`
+  (default `"bic_groups"`). Neither selects a model. `"deltas"` has one
+  row per candidate: `candidate`, its class counts and `model`,
+  `criterion`, `value`, `delta_profile` (how much the criterion fell
+  from the converged candidate with one profile fewer and the same group
+  classes and structure; positive means this candidate is lower) with
+  `from_profile` naming that candidate, and `delta_group_class` with
+  `from_group_class` for one group class fewer. `value` and both deltas
+  are `NA` for a candidate that did not converge, and a delta is `NA`
+  when the smaller neighbour is missing or did not converge. `"knees"`
+  has one row per line of the grid: `direction` (`"profiles"`, along the
+  profiles at fixed group classes; `"group_classes"`, along the group
+  classes at fixed profiles; `"parameters"`, every candidate by its
+  number of parameters, one line per structure), `line`, `criterion`,
+  `from`, `to`, `n_points`, `knee_candidate` (the maximum chord-distance
+  knee: with both axes rescaled to 0-1, the candidate furthest below the
+  straight line from the first to the last, measured perpendicular to
+  it), `distance`, `knee_without_largest` (the knee when the last
+  candidate of the line is left out), `stable` and `note`. This is a
+  simplified geometric rule inspired by Kneedle, without its smoothing
+  or sensitivity thresholds; a very small positive distance can
+  therefore still name a knee. A line needs three candidates for a knee
+  and four for `knee_without_largest` and `stable`; otherwise they are
+  `NA` and `note` says why.
+
+- `"comparison"`, `"classification"`:
+
+  A
+  [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  result. `"comparison"` is its table, one row per model.
+  `"classification"`, for profile, class, membership-covariate and
+  transition models, has one row per model, level and class: `model`,
+  then the columns of a fit's `"classification"` table and that level's
+  `relative_entropy`; levels with one class are left out. The models
+  themselves come back with
+  [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md).
 
 - `"test"`, `"replicates"`:
 
@@ -291,6 +356,97 @@ And each family adds its own:
   A starting-value set. One row per profile and ordered pair of
   continuous indicators: `profile`, `indicator`, `indicator_2`,
   `covariance`.
+
+## Tables of the other model families
+
+Each family's first table is its default `what`; `"all"` returns a named
+list of every table (without `"recovery"`, which needs `data` and
+`truth`). Tables with intervals take `level`, and `vcov_type`
+(`"observed"`, `"robust"` or `"opg"`; `NULL` reuses the type stored with
+a regression fit). The usual generics answer as well:
+[`coef()`](https://rdrr.io/r/stats/coef.html), `vcov(type = )`,
+`confint(parm = , level = )`,
+[`logLik()`](https://rdrr.io/r/stats/logLik.html) and
+[`nobs()`](https://rdrr.io/r/stats/nobs.html).
+
+- Mixture regressions
+  ([`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)):
+
+  `"coefficients"` (one row per class and term, with Wald statistics,
+  `p_adjusted` by Benjamini-Hochberg over non-intercepts and
+  `exp_estimate` for the binomial, Poisson and ordinal families; ordinal
+  thresholds lead each class as terms `"threshold:<lower>|<upper>"`),
+  `"classes"`, `"membership"` (multinomial logits and odds ratios),
+  `"group_classes"` (two-level fits), `"fit"` (`bic` penalised by
+  independent units, `bic_rows` by rows as flexmix reports it),
+  `"assignments"`, `"groups"`, `"fitted"`, `"starts"` (`stage`
+  `"screened"` or `"completed"`), `"classification"` and `"recovery"`
+  (`by = "class"` or `"group_class"`).
+
+- Growth mixtures (`mixture_regression(random = )`):
+
+  The tables above plus `"random"` (random-effect variances, standard
+  deviations and correlations, with intervals on the log and Fisher-z
+  scales), `"random_effects"` (one row per person), `"trajectories"`
+  (each class's mean trajectory with a band) and `"individual"` (each
+  person's own predicted curve); the last two take `time`. A multilevel
+  growth mixture adds `"group_classes"` and `"clusters"`, and its
+  `"fit"` counts clusters in `bic` (persons in `bic_persons`).
+
+- Additive fits (`multilpa(family = "additive")`):
+
+  `"parameters"` (class means, between- and within-group variances and
+  class weights; variance intervals on the log scale, weights on the
+  logit scale; `adjust` sets the p-value adjustment, `"none"` by
+  default), `"group_classes"`, `"groups"`, `"intercepts"` and
+  `"conditional_intercepts"` (each group's posterior intercept, overall
+  or given each class), `"assignments"`, `"classification"`, `"fit"`,
+  `"recovery"` and `"starts"`. `effective_groups` in `"group_classes"`
+  is `w^2 (1 - w) / Var(w)`, the number of perfectly classified groups
+  that would estimate the class weight as precisely; below 50 the
+  class's intervals carry a `latents_weak_class` warning.
+
+- Cross-level fits (`multilpa(family = "full_cross_level")` or
+  `"restricted_cross_level"`):
+
+  `"profiles"` (individual profiles, then the group classes' means of
+  group means), `"group_classes"`, `"composition"` (profile shares
+  within each class: model-implied for the full family, a
+  posterior-weighted description for the restricted one), `"groups"`,
+  `"assignments"`, `"fit"` and `"starts"`. The likelihood is a working
+  likelihood, comparable only between cross-level fits of the same data.
+
+- General transition fits
+  ([`lta()`](https://pak.dynasite.org/latents/reference/lta.md) with
+  `transitions = "occasion"`, transition or initial covariates, or
+  `measurement = "occasion"`):
+
+  `"transitions"` (model-implied, averaged over the groups observed),
+  `"transition_coefficients"` (log odds of each move against staying,
+  with odds ratios), `"second_order_transitions"` and
+  `"second_order_coefficients"` (`order = 2`), `"initial"` and
+  `"initial_coefficients"`, `"profiles"`, `"group_classes"`,
+  `"assignments"`, `"fit"` and `"starts"`.
+
+- Pooled imputations
+  ([`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)):
+
+  `"estimates"` (the pooled table), `"imputations"` (each imputation's
+  aligned estimates) and `"fits"` (one row per imputation).
+
+- Transition and group-class family grids (`enumerate_classes(time = )`,
+  `enumerate_classes(family = )`):
+
+  `"candidates"` (one row per candidate, its name first, with its
+  likelihood, criteria, entropy and diagnostics) or `"best"`, the row
+  with the lowest `criterion` (`"bic"` by groups, the default, `"aic"`
+  or `"bic_individual"`): the lowest value of a criterion, not a choice
+  of model. With one group class every family is the same model, so
+  those rows share a likelihood. Their candidates are taken out by name
+  with
+  [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md);
+  transition grids can also be compared with
+  [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md).
 
 ## What `"all"` returns
 
@@ -453,7 +609,11 @@ posterior; the alignment is checked rather than assumed. A large
 residual is evidence of local dependence between two indicators, which
 the enumeration grid will otherwise absorb by asking for an extra
 profile. The p-values are approximate, and `p_adjusted` applies the
-multiplicity correction named by `adjust` across the pairs.
+multiplicity correction named by `adjust` across the pairs. A fit with
+sampling weights uses those weights in its descriptive associations and
+`effective_n`. Design-based residual inference is not implemented:
+`statistic`, `df`, `p_value` and `p_adjusted` are `NA` for weighted fits
+rather than unweighted tests attached to weighted moments.
 
 ## References
 

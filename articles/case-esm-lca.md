@@ -103,26 +103,26 @@ candidates <- enumerate_classes(student_esm, vars = activities,
                                 n_profiles = 2:4, n_group_classes = 1:3,
                                 n_starts = 5, seed = 1)
 as.data.frame(candidates)
-#>   n_profiles n_group_classes model log_likelihood n_parameters   aic   kic bic_groups
-#> 1          2               1  <NA>          -7892           17 15819 15839      15863
-#> 2          3               1  <NA>          -7848           26 15749 15778      15817
-#> 3          4               1  <NA>          -7811           35 15692 15730      15783
-#> 4          2               2  <NA>          -7740           19 15518 15540      15567
-#> 5          3               2  <NA>          -7686           29 15429 15461      15505
-#> 6          4               2  <NA>          -7634           39 15346 15388      15447
-#> 7          2               3  <NA>          -7710           21 15462 15486      15517
-#> 8          3               3  <NA>          -7593           32 15250 15285      15334
-#> 9          4               3  <NA>          -7548           43 15183 15229      15295
-#>   bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups
-#> 1          15918        15809            15864       15880           15935      15992
-#> 2          15901        15735            15819       15843           15927      16014
-#> 3          15897        15672            15786       15818           15932      16049
-#> 4          15629        15507            15569       15586           15648      15729
-#> 5          15599        15413            15507       15534           15628      15739
-#> 6          15574        15324            15450       15486           15613      15756
-#> 7          15585        15450            15518       15538           15606      15717
-#> 8          15438        15233            15336       15366           15470      15602
-#> 9          15435        15159            15298       15338           15478      15645
+#>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic
+#> 1 classes2_groups1          2               1  <NA>          -7892           17 15819 15839
+#> 2 classes3_groups1          3               1  <NA>          -7848           26 15749 15778
+#> 3 classes4_groups1          4               1  <NA>          -7811           35 15692 15730
+#> 4 classes2_groups2          2               2  <NA>          -7740           19 15518 15540
+#> 5 classes3_groups2          3               2  <NA>          -7686           29 15429 15461
+#> 6 classes4_groups2          4               2  <NA>          -7634           39 15346 15388
+#> 7 classes2_groups3          2               3  <NA>          -7710           21 15462 15486
+#> 8 classes3_groups3          3               3  <NA>          -7593           32 15250 15285
+#> 9 classes4_groups3          4               3  <NA>          -7548           43 15183 15229
+#>   bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups
+#> 1      15863          15918        15809            15864       15880           15935      15992
+#> 2      15817          15901        15735            15819       15843           15927      16014
+#> 3      15783          15897        15672            15786       15818           15932      16049
+#> 4      15567          15629        15507            15569       15586           15648      15729
+#> 5      15505          15599        15413            15507       15534           15628      15739
+#> 6      15447          15574        15324            15450       15486           15613      15756
+#> 7      15517          15585        15450            15518       15538           15606      15717
+#> 8      15334          15438        15233            15336       15366           15470      15602
+#> 9      15295          15435        15159            15298       15338           15478      15645
 #>   awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy
 #> 1          17956      15863          17771      15785          17638           0.482            NA
 #> 2          18102      15817          17820      15697          17615           0.662            NA
@@ -133,32 +133,42 @@ as.data.frame(candidates)
 #> 7          17213      15557          16985      15461          16820           0.609         0.814
 #> 8          17854      15359          17507      15212          17255           0.635         0.884
 #> 9          18864      15318          18397      15120          18059           0.586         0.896
-#>   converged boundary n_best_replicated warnings error
-#> 1      TRUE    FALSE                 5           <NA>
-#> 2      TRUE    FALSE                 2           <NA>
-#> 3      TRUE    FALSE                 1           <NA>
-#> 4      TRUE    FALSE                 4           <NA>
-#> 5      TRUE    FALSE                 1           <NA>
-#> 6      TRUE    FALSE                 1           <NA>
-#> 7      TRUE    FALSE                 4           <NA>
-#> 8      TRUE    FALSE                 1           <NA>
-#> 9      TRUE    FALSE                 1           <NA>
+#>   avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean
+#> 1     0.706     0.940      0.823           1              NA              NA               NA
+#> 2     0.704     0.952      0.863           1              NA              NA               NA
+#> 3     0.722     0.997      0.814           3              NA              NA               NA
+#> 4     0.859     0.926      0.892           0           0.960           0.980            0.970
+#> 5     0.642     0.879      0.783           1           0.959           0.977            0.968
+#> 6     0.631     0.992      0.819           1           0.974           0.986            0.980
+#> 7     0.878     0.888      0.883           0           0.885           0.931            0.912
+#> 8     0.816     0.852      0.839           0           0.939           0.973            0.952
+#> 9     0.662     0.873      0.771           2           0.937           0.968            0.957
+#>   group_avepp_below converged boundary n_best_replicated warnings error
+#> 1                NA      TRUE    FALSE                 5           <NA>
+#> 2                NA      TRUE    FALSE                 2           <NA>
+#> 3                NA      TRUE    FALSE                 1           <NA>
+#> 4                 0      TRUE    FALSE                 4           <NA>
+#> 5                 0      TRUE    FALSE                 1           <NA>
+#> 6                 0      TRUE    FALSE                 1           <NA>
+#> 7                 0      TRUE    FALSE                 4           <NA>
+#> 8                 0      TRUE    FALSE                 1           <NA>
+#> 9                 0      TRUE    FALSE                 1           <NA>
 get_results(candidates, "criteria")
-#>    criterion  convention n_profiles n_group_classes model value
-#> 1        aic        <NA>          4               3  <NA> 15183
-#> 2        kic        <NA>          4               3  <NA> 15229
-#> 3        bic      groups          4               3  <NA> 15295
-#> 4        bic individuals          4               3  <NA> 15435
-#> 5      sabic      groups          4               3  <NA> 15159
-#> 6      sabic individuals          4               3  <NA> 15298
-#> 7       caic      groups          4               3  <NA> 15338
-#> 8       caic individuals          3               3  <NA> 15470
-#> 9        awe      groups          3               3  <NA> 15602
-#> 10       awe individuals          2               2  <NA> 17025
-#> 11       icl      groups          4               3  <NA> 15318
-#> 12       icl individuals          2               2  <NA> 16818
-#> 13       clc      groups          4               3  <NA> 15120
-#> 14       clc individuals          2               2  <NA> 16669
+#>    criterion  convention        candidate n_profiles n_group_classes model value
+#> 1        aic        <NA> classes4_groups3          4               3  <NA> 15183
+#> 2        kic        <NA> classes4_groups3          4               3  <NA> 15229
+#> 3        bic      groups classes4_groups3          4               3  <NA> 15295
+#> 4        bic individuals classes4_groups3          4               3  <NA> 15435
+#> 5      sabic      groups classes4_groups3          4               3  <NA> 15159
+#> 6      sabic individuals classes4_groups3          4               3  <NA> 15298
+#> 7       caic      groups classes4_groups3          4               3  <NA> 15338
+#> 8       caic individuals classes3_groups3          3               3  <NA> 15470
+#> 9        awe      groups classes3_groups3          3               3  <NA> 15602
+#> 10       awe individuals classes2_groups2          2               2  <NA> 17025
+#> 11       icl      groups classes4_groups3          4               3  <NA> 15318
+#> 12       icl individuals classes2_groups2          2               2  <NA> 16818
+#> 13       clc      groups classes4_groups3          4               3  <NA> 15120
+#> 14       clc individuals classes2_groups2          2               2  <NA> 16669
 ```
 
 The criteria disagree, and the diagnostics explain why. BIC with the
@@ -175,7 +185,7 @@ The ICL plot shows the same choice across the grid.
 
 ``` r
 
-plot(candidates, criterion = "icl_individual")
+plot(candidates, what = "icl_individual")
 ```
 
 ![](case-esm-lca_files/figure-html/icl-plot-1.png)
@@ -364,16 +374,16 @@ largest are shown.
 
 get_results(lca, "residuals") |> head(10)
 #>      profile       indicator_1   indicator_2        kind observed expected residual effective_n
-#> 1  profile_1            sports       walking categorical   0.1706 5.43e-17   0.1706         678
-#> 2  profile_1 time_with_friends       walking categorical   0.1404 3.81e-17   0.1404         678
-#> 3  profile_1    listened_music       walking categorical   0.1334 1.14e-16   0.1334         678
-#> 4  profile_1    listened_music       reading categorical   0.1063 1.59e-16   0.1063         678
-#> 5  profile_1    listened_music        sports categorical   0.1045 1.09e-16   0.1045         678
-#> 6  profile_2    tv_video_games       walking categorical   0.0940 4.35e-17   0.0940        1904
-#> 7  profile_2    tv_video_games part_time_job categorical   0.0925 1.59e-16   0.0925        1904
-#> 8  profile_2 time_with_friends part_time_job categorical   0.0865 1.34e-16   0.0865        1904
-#> 9  profile_2 time_with_friends       reading categorical   0.0727 1.50e-17   0.0727        1904
-#> 10 profile_2           reading part_time_job categorical   0.0683 3.74e-17   0.0683        1904
+#> 1  profile_1            sports       walking categorical   0.1706 7.21e-17   0.1706         678
+#> 2  profile_1 time_with_friends       walking categorical   0.1404 6.88e-17   0.1404         678
+#> 3  profile_1    listened_music       walking categorical   0.1334 4.25e-17   0.1334         678
+#> 4  profile_1    listened_music       reading categorical   0.1063 8.75e-17   0.1063         678
+#> 5  profile_1    listened_music        sports categorical   0.1045 3.26e-17   0.1045         678
+#> 6  profile_2    tv_video_games       walking categorical   0.0940 4.94e-17   0.0940        1904
+#> 7  profile_2    tv_video_games part_time_job categorical   0.0925 4.19e-17   0.0925        1904
+#> 8  profile_2 time_with_friends part_time_job categorical   0.0865 2.80e-16   0.0865        1904
+#> 9  profile_2 time_with_friends       reading categorical   0.0727 1.46e-16   0.0727        1904
+#> 10 profile_2           reading part_time_job categorical   0.0683 4.88e-17   0.0683        1904
 #>    statistic df  p_value p_adjusted
 #> 1      19.75  1 8.83e-06   8.83e-06
 #> 2      13.37  1 2.55e-04   2.55e-04

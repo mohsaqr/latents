@@ -8,6 +8,8 @@
   analysis](https://pak.dynasite.org/latents/articles/lca.md):
 - [Latent transition
   analysis](https://pak.dynasite.org/latents/articles/lta.md):
+- [Class
+  enumeration](https://pak.dynasite.org/latents/articles/enumeration.md):
 
 ### Guides
 
@@ -15,6 +17,8 @@
   workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.md):
 - [Latent class analysis: a complete
   workflow](https://pak.dynasite.org/latents/articles/workflow-lca.md):
+- [Class enumeration in mixture
+  models](https://pak.dynasite.org/latents/articles/class-enumeration.md):
 - [Evaluating a multilevel latent profile
   model](https://pak.dynasite.org/latents/articles/evaluation.md):
 - [Covariates, outcomes and staged

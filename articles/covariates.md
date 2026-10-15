@@ -133,11 +133,11 @@ error. `vcov_type = "robust"` clusters the standard errors on groups.
 r3step(fit, data = course_engagement, covariates = "previous_grade",
        vcov_type = "robust")
 #>         level   outcome           term estimate standard_error statistic  p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.90e-03         NA
-#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.35e-22   3.35e-22
+#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.91e-03         NA
+#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.38e-22   3.38e-22
 #>   conf_low conf_high
 #> 1    0.121     0.631
-#> 2    0.459     0.691
+#> 2    0.458     0.691
 ```
 
 ## One-step estimation

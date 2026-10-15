@@ -21,7 +21,7 @@ one of them is true, with equal prior probabilities."><meta property="og:image" 
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,10 +37,12 @@ one of them is true, with equal prior probabilities."><meta property="og:image" 
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -84,7 +86,7 @@ one of them is true, with equal prior probabilities.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">...</span>, n_profiles <span class="op">=</span> <span class="cn">NULL</span>, n_group_classes <span class="op">=</span> <span class="cn">NULL</span>, cutoff <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -92,25 +94,67 @@ one of them is true, with equal prior probabilities.</p>
 
 
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Two or more fits from <code><a href="mixture_regression.html">mixture_regression()</a></code> (with or without
-<code>random</code>). Name them to label the rows; unnamed fits are labelled by
-their expression.</p></dd>
+<dd><p>Either an enumeration grid from <code><a href="enumerate_classes.html">enumerate_classes()</a></code> followed
+by the candidates to compare (none for all of them, or a selection
+through <code>n_profiles</code> and <code>n_group_classes</code>); or two or more fits from <code><a href="multilpa.html">multilpa()</a></code>,
+<code><a href="lpa.html">lpa()</a></code>, <code><a href="lca.html">lca()</a></code>, <code><a href="lta.html">lta()</a></code> or <code><a href="get_candidate.html">get_candidate()</a></code>; or two or more fits from
+<code><a href="mixture_regression.html">mixture_regression()</a></code> (with or without <code>random</code>). Name fits to label
+the rows; unnamed fits are labelled by their expression, candidates by
+their name.</p></dd>
+
+
+<dt id="arg-n-profiles-n-group-classes">n_profiles, n_group_classes<a class="anchor" aria-label="anchor" href="#arg-n-profiles-n-group-classes"></a></dt>
+<dd><p>With a grid, the class counts of the
+candidates to compare, instead of naming them; <code>NULL</code> takes every count.
+Candidates whose fit failed are left out, with a message.</p></dd>
+
+
+<dt id="arg-cutoff">cutoff<a class="anchor" aria-label="anchor" href="#arg-cutoff"></a></dt>
+<dd><p>For profile and class models, the average posterior
+probability below which a class is counted in <code>avepp_below</code> and
+<code>group_avepp_below</code>. Not used for mixture regressions.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A base <code>data.frame</code> of class <code>latents_comparison</code> with one row per
-model: <code>model</code>, <code>n_classes</code>, <code>random</code>, <code>n_parameters</code>, <code>log_likelihood</code>,
-<code>aic</code>, <code>bic</code>, <code>sabic</code>, <code>icl</code>, <code>entropy</code>, <code>smallest_share</code>, <code>delta_bic</code>,
-<code>bic_weight</code>, <code>converged</code>. Raises <code>latents_bad_argument</code> for fits it
-cannot compare and <code>latents_incomparable_models</code> for fits to different
-data.</p>
+model. For mixture regressions: <code>model</code>, <code>n_classes</code>, <code>random</code>,
+<code>n_parameters</code>, <code>log_likelihood</code>, <code>aic</code>, <code>bic</code>, <code>sabic</code>, <code>icl</code>,
+<code>entropy</code>, <code>smallest_share</code>, <code>delta_bic</code>, <code>bic_weight</code>, <code>converged</code>. For
+profile and class models: <code>model</code>, <code>n_profiles</code>, <code>n_group_classes</code>,
+<code>structure</code> (the covariance structure, <code>NA</code> without continuous
+indicators), <code>n_parameters</code>, <code>log_likelihood</code>, every information
+criterion of <code><a href="enumerate_classes.html">enumerate_classes()</a></code>'s candidates table, <code>profile_entropy</code>,
+<code>group_entropy</code>, <code>avepp_min</code>, <code>avepp_max</code>, <code>avepp_mean</code>, <code>avepp_below</code>
+and the same four prefixed <code>group_</code>, <code>smallest_share</code> (the smallest estimated profile
+share, relative to all observation mass including any noise component), <code>converged</code>, <code>n_best_replicated</code>, and <code>delta_bic</code> and
+<code>bic_weight</code> on <code>bic_groups</code> (the BIC that counts groups as the
+independent units; on a single-level model it is the ordinary BIC). The
+numbers are the ones the grid's candidates table reports. The printout
+marks the row with the lowest BIC; that is a fact about the criterion,
+not a choice. Raises <code>latents_bad_argument</code> for fits it cannot compare,
+for a group-class family grid (compare those in their own table), for
+candidates named together with <code>n_profiles</code> or <code>n_group_classes</code>, and for
+<code>n_profiles</code> or <code>n_group_classes</code> without a grid;
+<code>latents_unknown_candidate</code> for a name or counts not in the grid;
+<code>latents_failed_candidate</code> for a named candidate that could not be
+fitted; and <code>latents_incomparable_models</code> for fits to different data. A
+<code>cutoff</code> outside (0, 1] fails the argument checks.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Information criteria are comparable only on the same data: every model
 must be fitted to the same outcome, persons (or groups) and observations,
 or the comparison is refused.</p>
+<p>Candidates of an enumeration grid are compared by naming them, as the
+grid's <code>candidate</code> column shows them:
+<code>compare_models(grid, "classes3_groups4", "classes3_groups5")</code>, or by their
+class counts, <code>compare_models(grid, c(3, 4), c(3, 5))</code> (one number is one
+group class). <code>n_profiles</code> and <code>n_group_classes</code> select candidates instead:
+<code>compare_models(grid, n_profiles = 3)</code> compares every candidate with 3
+profiles; <code>compare_models(grid)</code> compares them all. Latent class models are
+compared the same way; their <code>n_profiles</code> column counts classes. Fits from <code><a href="multilpa.html">multilpa()</a></code>, <code><a href="lpa.html">lpa()</a></code>, <code><a href="lca.html">lca()</a></code>, <code><a href="lta.html">lta()</a></code> or <code><a href="get_candidate.html">get_candidate()</a></code>
+can also be passed directly.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -135,7 +179,34 @@ weights. <em>Psychonomic Bulletin &amp; Review</em>, 11, 192–196.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model         Classes  Random     k    LogLik      BIC    ΔBIC  Weight  Entropy</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ------------  -------  ---------  -  --------  -------  ------  ------  -------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> trajectories        2  none       7  -1277.94  2584.53  196.11   0.000     0.94</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97  &lt;- best</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97  &lt;- lowest BIC</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Candidates of an enumeration grid, by name, by class counts, or selected</span></span></span>
+<span class="r-in"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">40</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                          <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span><span class="op">)</span>, <span class="st">"student"</span>,</span></span>
+<span class="r-in"><span>                          n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span></span>
+<span class="r-in"><span>                          model <span class="op">=</span> <span class="st">"VVI"</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">grid</span>, <span class="st">"profiles2_groups2"</span>, <span class="st">"profiles3_groups2"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  &lt;- lowest BIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97</span>
+<span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">grid</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  &lt;- lowest BIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97</span>
+<span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">grid</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  &lt;- lowest BIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

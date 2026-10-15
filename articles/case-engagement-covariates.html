@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,10 +43,12 @@
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -127,9 +129,10 @@ five activity indicators: page views (<code>browse</code>), lecture
 videos viewed (<code>lectures</code>), forum posts read
 (<code>forum_read</code>), forum posts written
 (<code>forum_post</code>), and active days (<code>attendance</code>).
-Each indicator is simulated on the <code>log1p</code> scale of an
-activity count and standardized within course to make activity levels
-comparable across courses.</p>
+Each indicator is simulated as a continuous value representing a
+log-count scale and standardized within course to make activity levels
+comparable across courses. The simulation generates neither raw counts
+nor a <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log1p()</a></code> transformation.</p>
 <p>The variable <code>previous_grade</code> represents the standardized
 grade obtained in the preceding course. For a student’s first observed
 course, an entry grade is used instead. Because this grade is measured
@@ -349,10 +352,10 @@ and are not adjusted for multiple comparisons.</p>
 <span><span class="co">#&gt; 3 individuals profile_2    (Intercept)   0.4473        0.13666     3.273 1.063e-03         NA</span></span>
 <span><span class="co">#&gt; 4 individuals profile_2 previous_grade  -0.6809        0.08655    -7.867 3.626e-15  7.252e-15</span></span>
 <span><span class="co">#&gt;   conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1  0.09821  0.514720</span></span>
+<span><span class="co">#&gt; 1  0.09821  0.514719</span></span>
 <span><span class="co">#&gt; 2 -0.41310 -0.003979</span></span>
-<span><span class="co">#&gt; 3  0.17949  0.715181</span></span>
-<span><span class="co">#&gt; 4 -0.85059 -0.511301</span></span></code></pre></div>
+<span><span class="co">#&gt; 3  0.17949  0.715180</span></span>
+<span><span class="co">#&gt; 4 -0.85059 -0.511302</span></span></code></pre></div>
 <p>In the fitted model, a one-standard-deviation increase in previous
 grade is associated with a 0.677 increase in the log odds of belonging
 to the higher-activity profile rather than the lower-activity profile.

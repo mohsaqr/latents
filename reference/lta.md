@@ -272,7 +272,7 @@ given for this model family.
 With `transitions = "occasion"`, `transition_covariates`,
 `initial_covariates`, `measurement = "occasion"` or `order = 2` the
 result is a `multilpa_lta` object instead, read with
-[`get_results.multilpa_lta()`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md):
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md):
 transition and initial logit coefficients with Wald standard errors
 (observed, robust or OPG, from analytic scores), model-implied
 transition probabilities per occasion, profiles per occasion. Missing

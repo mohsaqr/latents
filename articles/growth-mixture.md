@@ -91,7 +91,7 @@ comparison
 #> trajectories_4        4  none              15  -5777.54  11640.63   837.04   0.000     0.94
 #> trajectories_5        5  none              19  -5658.21  11424.79   621.20   0.000     0.94
 #> growth_2              2  intercept + wave  10  -5416.53  10890.11    86.51   0.000     0.92
-#> growth_3              3  intercept + wave  14  -5361.87  10803.59     0.00   1.000     0.90  <- best
+#> growth_3              3  intercept + wave  14  -5361.87  10803.59     0.00   1.000     0.90  <- lowest BIC
 #> growth_4              4  intercept + wave  18  -5358.94  10820.56    16.96   0.000     0.81
 ```
 

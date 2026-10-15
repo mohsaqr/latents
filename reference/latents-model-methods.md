@@ -83,8 +83,8 @@ coef(object, ...)
 
   Optional. The data frame the model was fitted to. When omitted it is
   rebuilt from what the fit stores (indicators, identifiers, occasions
-  and designs), which round-trips exactly; supplying it is the stronger
-  check that the caller still holds that frame.
+  and designs), which round-trips to floating-point precision; supplying
+  it is the stronger check that the caller still holds that frame.
 
 - step:
 

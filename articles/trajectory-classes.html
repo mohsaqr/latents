@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,10 +43,12 @@
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -324,7 +326,7 @@ the straight model fitted the same way (without
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model     Classes  Random   k    LogLik       BIC   ΔBIC  Weight  Entropy</span></span>
 <span><span class="co">#&gt; --------  -------  ------  --  --------  --------  -----  ------  -------</span></span>
-<span><span class="co">#&gt; straight        3  none    11  -5889.55  11841.85   0.00   1.000     0.92  &lt;- best</span></span>
+<span><span class="co">#&gt; straight        3  none    11  -5889.55  11841.85   0.00   1.000     0.92  &lt;- lowest BIC</span></span>
 <span><span class="co">#&gt; curved          3  none    14  -5888.78  11857.41  15.56   0.000     0.92</span></span></code></pre></div>
 <p>These trajectories were generated straight, so the BIC does not
 reward the curvature.</p>

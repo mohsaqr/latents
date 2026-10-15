@@ -318,7 +318,7 @@ starting_values(fit)                 # parameters to start another fit
 
 The evaluation vignette covers
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
-[`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
 and
 [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md);
 the covariates vignette covers

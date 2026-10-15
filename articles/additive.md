@@ -150,7 +150,7 @@ varying model to show every parameter.
 fits every combination of family, between-variance restriction and
 number of group classes in one call. The `model` column names each
 candidate for
-[`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md).
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md).
 
 ``` r
 
@@ -159,12 +159,12 @@ grid <- enumerate_classes(ratings, c("climate", "support"), "team",
                                      "additive_dispersion"),
                           n_group_classes = 1:3, seed = 1)
 get_results(grid, "best")
-#>            model   family between_variance n_group_classes log_likelihood n_parameters
-#> 7 additive_equal additive            equal               2          -2594            9
-#>    aic  bic bic_individual entropy smallest_class min_effective_groups converged boundary
-#> 7 5206 5231           5249    0.87          0.395                 39.6      TRUE    FALSE
-#>   n_best_replicated warnings error
-#> 7                10           <NA>
+#>                candidate          model   family between_variance n_group_classes
+#> 7 additive_equal_groups2 additive_equal additive            equal               2
+#>   log_likelihood n_parameters  aic  bic bic_individual entropy smallest_class
+#> 7          -2594            9 5206 5231           5249    0.87          0.395
+#>   min_effective_groups converged boundary n_best_replicated warnings error
+#> 7                 39.6      TRUE    FALSE                10           <NA>
 ```
 
 The lowest BIC belongs to two additive classes with equal between-group
@@ -189,8 +189,8 @@ simulates it from the one-class fit:
 
 ``` r
 
-one_class <- candidate_fit(grid, n_group_classes = 1, model = "additive_equal")
-two_classes <- candidate_fit(grid, n_group_classes = 2, model = "additive_equal")
+one_class <- get_candidate(grid, n_group_classes = 1, model = "additive_equal")
+two_classes <- get_candidate(grid, n_group_classes = 2, model = "additive_equal")
 bootstrap_lrt(one_class, two_classes, iter = 19, n_starts = 3, seed = 1)
 #> Parametric bootstrap likelihood-ratio comparison
 #> Null: additive_equal, 1 group class; alternative: additive_equal, 2 group classes

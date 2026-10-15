@@ -87,8 +87,8 @@ of group $`j`$ to the likelihood is
 ``` math
 L_j = \sum_{h=1}^{H}\eta_h
 \prod_{i=1}^{n_j}
-\left\{\sum_{k=1}^{K}\pi_{hk}
-\phi_D(\mathbf{y}_{ij};\boldsymbol{\mu}_k,\boldsymbol{\Sigma}_k)\right\}.
+\left\lbrace \sum_{k=1}^{K}\pi_{hk}
+\phi_D(\mathbf{y}_{ij};\boldsymbol{\mu}_k,\boldsymbol{\Sigma}_k)\right\rbrace.
 ```
 
 This expression makes the two levels explicit. The inner mixture
@@ -647,43 +647,63 @@ candidates <- enumerate_classes(
 )
 candidates
 #> Class enumeration: 9 candidate models
-#>  n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups bic_individual
-#>           2               1   VVI          -8615           21 17272      17328          17383
-#>           3               1   VVI          -8537           32 17137      17222          17306
-#>           4               1   VVI          -8501           43 17088      17203          17314
-#>           2               2   VVI          -8440           23 16926      16987          17047
-#>           3               2   VVI          -8365           35 16799      16892          16983
-#>           4               2   VVI          -8326           47 16746      16872          16994
-#>           2               3   VVI          -8421           25 16892      16959          17024
-#>           3               3   VVI          -8348           38 16773      16874          16973
-#>           4               3   VVI          -8307           51 16716      16852          16985
-#>  icl_individual profile_entropy group_entropy converged boundary n_best_replicated
-#>           17537           0.922            NA      TRUE    FALSE                10
-#>           18017           0.772            NA      TRUE    FALSE                10
-#>           18359           0.735            NA      TRUE    FALSE                 8
-#>           17168           0.938         0.940      TRUE    FALSE                10
-#>           17640           0.790         0.943      TRUE    FALSE                10
-#>           18021           0.739         0.937      TRUE    FALSE                10
-#>           17142           0.940         0.816      TRUE    FALSE                10
-#>           17622           0.792         0.797      TRUE    FALSE                10
-#>           18014           0.739         0.823      TRUE    FALSE                10
+#>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic
+#>  profiles2_groups1          2               1   VVI          -8615           21 17272
+#>  profiles3_groups1          3               1   VVI          -8537           32 17137
+#>  profiles4_groups1          4               1   VVI          -8501           43 17088
+#>  profiles2_groups2          2               2   VVI          -8440           23 16926
+#>  profiles3_groups2          3               2   VVI          -8365           35 16799
+#>  profiles4_groups2          4               2   VVI          -8326           47 16746
+#>  profiles2_groups3          2               3   VVI          -8421           25 16892
+#>  profiles3_groups3          3               3   VVI          -8348           38 16773
+#>  profiles4_groups3          4               3   VVI          -8307           51 16716
+#>  bic_groups bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max
+#>       17328          17383          17537           0.922            NA     0.974     0.982
+#>       17222          17306          18017           0.772            NA     0.832     0.964
+#>       17203          17314          18359           0.735            NA     0.803     0.849
+#>       16987          17047          17168           0.938         0.940     0.982     0.985
+#>       16892          16983          17640           0.790         0.943     0.849     0.979
+#>       16872          16994          18021           0.739         0.937     0.792     0.858
+#>       16959          17024          17142           0.940         0.816     0.982     0.986
+#>       16874          16973          17622           0.792         0.797     0.845     0.978
+#>       16852          16985          18014           0.739         0.823     0.801     0.854
+#>  avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below
+#>       0.978           0              NA              NA               NA                NA
+#>       0.886           0              NA              NA               NA                NA
+#>       0.835           0              NA              NA               NA                NA
+#>       0.983           0           0.969           0.992            0.980                 0
+#>       0.893           0           0.977           0.992            0.985                 0
+#>       0.835           1           0.975           0.990            0.983                 0
+#>       0.984           0           0.900           0.962            0.923                 0
+#>       0.892           0           0.864           0.977            0.913                 0
+#>       0.836           0           0.874           0.981            0.923                 0
+#>  converged boundary n_best_replicated
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                 8
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
 #> No candidate is selected automatically. Compare one convention consistently.
 get_results(candidates, "criteria")
-#>    criterion  convention n_profiles n_group_classes model value
-#> 1        aic        <NA>          4               3   VVI 16716
-#> 2        kic        <NA>          4               3   VVI 16770
-#> 3        bic      groups          4               3   VVI 16852
-#> 4        bic individuals          3               3   VVI 16973
-#> 5      sabic      groups          4               3   VVI 16691
-#> 6      sabic individuals          4               3   VVI 16823
-#> 7       caic      groups          4               3   VVI 16903
-#> 8       caic individuals          3               3   VVI 17011
-#> 9        awe      groups          3               2   VVI 17169
-#> 10       awe individuals          2               3   VVI 17398
-#> 11       icl      groups          4               2   VVI 16881
-#> 12       icl individuals          2               3   VVI 17142
-#> 13       clc      groups          4               3   VVI 16656
-#> 14       clc individuals          2               3   VVI 16960
+#>    criterion  convention         candidate n_profiles n_group_classes model value
+#> 1        aic        <NA> profiles4_groups3          4               3   VVI 16716
+#> 2        kic        <NA> profiles4_groups3          4               3   VVI 16770
+#> 3        bic      groups profiles4_groups3          4               3   VVI 16852
+#> 4        bic individuals profiles3_groups3          3               3   VVI 16973
+#> 5      sabic      groups profiles4_groups3          4               3   VVI 16691
+#> 6      sabic individuals profiles4_groups3          4               3   VVI 16823
+#> 7       caic      groups profiles4_groups3          4               3   VVI 16903
+#> 8       caic individuals profiles3_groups3          3               3   VVI 17011
+#> 9        awe      groups profiles3_groups2          3               2   VVI 17169
+#> 10       awe individuals profiles2_groups3          2               3   VVI 17398
+#> 11       icl      groups profiles4_groups2          4               2   VVI 16881
+#> 12       icl individuals profiles2_groups3          2               3   VVI 17142
+#> 13       clc      groups profiles4_groups3          4               3   VVI 16656
+#> 14       clc individuals profiles2_groups3          2               3   VVI 16960
 plot(candidates)
 ```
 
@@ -712,7 +732,7 @@ to the initial fit.
 
 ``` r
 
-candidate <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 2)
+candidate <- get_candidate(candidates, n_profiles = 2, n_group_classes = 2)
 get_results(candidate)
 #>    profile  indicator   mean variance standard_deviation mean_standard_error
 #> 1        1     browse  0.540    0.590              0.768              0.0271
@@ -873,11 +893,11 @@ three_step(fit, data = course_engagement, outcome = "previous_grade")
 #>     2  -0.31  [-0.39, -0.24]  0.036       564.36
 r3step(fit, data = course_engagement, covariates = "previous_grade")
 #>         level   outcome           term estimate standard_error statistic  p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.90e-03         NA
-#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.35e-22   3.35e-22
+#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.91e-03         NA
+#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.38e-22   3.38e-22
 #>   conf_low conf_high
 #> 1    0.121     0.631
-#> 2    0.459     0.691
+#> 2    0.458     0.691
 ```
 
 The first call compares previous-grade means between enrolment profiles.

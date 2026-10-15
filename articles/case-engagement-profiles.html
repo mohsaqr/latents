@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,10 +43,12 @@
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -165,10 +167,11 @@ of enrolments. The MLPA model accounts for the grouping of enrolments
 within students; it does not include a separate course-level random
 effect or latent structure.</p>
 <p>Five activity indicators describe the student’s engagement during
-each enrolment. The indicators are simulated on the
-<code>log1p(count)</code> scale and standardized within course. Each
-value can therefore be interpreted as the enrolment’s distance from the
-mean of that particular course, expressed in course-specific standard
+each enrolment. The indicators are simulated as continuous values
+representing a log-count scale, then standardized within course. No raw
+counts or <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log1p()</a></code> transformation are generated. Each value
+can therefore be interpreted as the enrolment’s distance from the mean
+of that particular course, expressed in course-specific standard
 deviations. A value above zero indicates more activity than the course
 average, whereas a value below zero indicates less activity than the
 course average.</p>

@@ -70,39 +70,99 @@ summary(models)
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 4 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.
-#> The candidates table shows 9 of its 26 columns; get_results(x, what = "candidates") returns all of them.
+#> The candidates table shows 13 of its 35 columns; get_results(x, what = "candidates") returns all of them.
 #> 
 #> -- candidates ------------------------------------------------------
-#>  n_profiles log_likelihood n_parameters   aic   bic icl_individual profile_entropy
-#>           1          -8035            8 16086 16133          16133              NA
-#>           2          -7892           17 15819 15918          17771          0.4823
-#>           3          -7848           26 15749 15901          17820          0.6618
-#>           4          -7807           35 15683 15888          17931          0.7146
-#>           5          -7795           44 15678 15935          18074          0.7427
-#>           6          -7771           53 15648 15959          18299          0.7471
-#>  converged boundary
-#>       TRUE    FALSE
-#>       TRUE    FALSE
-#>       TRUE    FALSE
-#>       TRUE    FALSE
-#>       TRUE    FALSE
-#>       TRUE    FALSE
+#>  candidate n_profiles log_likelihood n_parameters   aic   bic icl_individual
+#>   classes1          1          -8035            8 16086 16133          16133
+#>   classes2          2          -7892           17 15819 15918          17771
+#>   classes3          3          -7848           26 15749 15901          17820
+#>   classes4          4          -7807           35 15683 15888          17931
+#>   classes5          5          -7795           44 15678 15935          18074
+#>   classes6          6          -7771           53 15648 15959          18299
+#>  profile_entropy avepp_min avepp_mean avepp_below converged boundary
+#>               NA        NA         NA          NA      TRUE    FALSE
+#>           0.4823    0.7057     0.8226           1      TRUE    FALSE
+#>           0.6618    0.7046     0.8632           1      TRUE    FALSE
+#>           0.7146    0.7144     0.8306           2      TRUE    FALSE
+#>           0.7426    0.5196     0.8051           2      TRUE    FALSE
+#>           0.7471    0.6011     0.7794           4      TRUE    FALSE
 #> 
 #> -- criteria --------------------------------------------------------
-#>  criterion  convention n_profiles n_group_classes model value
-#>        aic        <NA>          6               1  <NA> 15648
-#>        kic        <NA>          6               1  <NA> 15704
-#>        bic      groups          4               1  <NA> 15888
-#>        bic individuals          4               1  <NA> 15888
-#>      sabic      groups          4               1  <NA> 15777
-#>      sabic individuals          4               1  <NA> 15777
-#>       caic      groups          4               1  <NA> 15923
-#>       caic individuals          4               1  <NA> 15923
-#>        awe      groups          2               1  <NA> 16103
-#>        awe individuals          1               1  <NA> 16220
+#>  criterion  convention candidate n_profiles n_group_classes model value
+#>        aic        <NA>  classes6          6               1  <NA> 15648
+#>        kic        <NA>  classes6          6               1  <NA> 15704
+#>        bic      groups  classes4          4               1  <NA> 15888
+#>        bic individuals  classes4          4               1  <NA> 15888
+#>      sabic      groups  classes4          4               1  <NA> 15777
+#>      sabic individuals  classes4          4               1  <NA> 15777
+#>       caic      groups  classes4          4               1  <NA> 15923
+#>       caic individuals  classes4          4               1  <NA> 15923
+#>        awe      groups  classes2          2               1  <NA> 16103
+#>        awe individuals  classes1          1               1  <NA> 16220
 #>    ... 4 more rows.  get_results(x, what = "criteria")
 #> 
-#> 2 tables above, truncated to fit. get_results(x, what = ) returns any
+#> -- classification --------------------------------------------------
+#>  candidate n_profiles n_group_classes model       level class n_modal proportion_modal
+#>   classes2          2               1  <NA> individuals     1    1276          0.49419
+#>   classes2          2               1  <NA> individuals     2    1306          0.50581
+#>   classes3          3               1  <NA> individuals     1    1180          0.45701
+#>   classes3          3               1  <NA> individuals     2      98          0.03796
+#>   classes3          3               1  <NA> individuals     3    1304          0.50503
+#>   classes4          4               1  <NA> individuals     1    1258          0.48722
+#>   classes4          4               1  <NA> individuals     2      98          0.03796
+#>   classes4          4               1  <NA> individuals     3    1191          0.46127
+#>   classes4          4               1  <NA> individuals     4      35          0.01356
+#>   classes5          5               1  <NA> individuals     1     915          0.35438
+#>  estimated_n estimated_proportion average_posterior odds_correct_classification
+#>       979.41              0.37932            0.7057                       3.923
+#>      1602.59              0.62068            0.9395                       9.496
+#>      1490.65              0.57732            0.9329                      10.175
+#>        93.58              0.03624            0.9521                     527.981
+#>       997.77              0.38643            0.7046                       3.788
+#>      1466.11              0.56782            0.8871                       5.981
+#>        93.99              0.03640            0.9554                     566.454
+#>       989.52              0.38324            0.7144                       4.026
+#>        32.38              0.01254            0.7654                     256.835
+#>      1229.10              0.47602            0.9174                      12.230
+#>  relative_entropy
+#>            0.4823
+#>            0.4823
+#>            0.6618
+#>            0.6618
+#>            0.6618
+#>            0.7146
+#>            0.7146
+#>            0.7146
+#>            0.7146
+#>            0.7426
+#>    ... 10 more rows.  get_results(x, what = "classification")
+#> 
+#> -- deltas ----------------------------------------------------------
+#>  candidate n_profiles n_group_classes model  criterion value delta_profile from_profile
+#>   classes1          1               1  <NA> bic_groups 16133            NA         <NA>
+#>   classes2          2               1  <NA> bic_groups 15918        214.97     classes1
+#>   classes3          3               1  <NA> bic_groups 15901         17.20     classes2
+#>   classes4          4               1  <NA> bic_groups 15888         13.17     classes3
+#>   classes5          5               1  <NA> bic_groups 15935        -47.40     classes4
+#>   classes6          6               1  <NA> bic_groups 15959        -23.35     classes5
+#>  delta_group_class from_group_class
+#>                 NA             <NA>
+#>                 NA             <NA>
+#>                 NA             <NA>
+#>                 NA             <NA>
+#>                 NA             <NA>
+#>                 NA             <NA>
+#> 
+#> -- knees -----------------------------------------------------------
+#>   direction           line  criterion     from       to n_points knee_candidate distance
+#>    profiles  1 group class bic_groups classes1 classes6        6       classes2   0.5979
+#>  parameters all candidates bic_groups classes1 classes6        6       classes2   0.5979
+#>  knee_without_largest stable note
+#>              classes2   TRUE     
+#>              classes2   TRUE     
+#> 
+#> 5 tables above, truncated to fit. get_results(x, what = ) returns any
 #> of them whole, and get_results(x, what = "all") returns every one.
 ```
 

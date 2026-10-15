@@ -87,7 +87,11 @@ assumes. Pooled intervals are symmetric t intervals on this scale;
 unlike the transformed Wald intervals of
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
 they can extend outside the parameter space for probabilities or
-variances.
+variances. A structural constant, such as the sole class's probability
+of one, has zero within- and between-imputation variance and zero
+missing information. If within-imputation variance is zero but
+between-imputation variance is positive, `riv` is infinite and `fmi` is
+one.
 
 ## Choosing the imputation model
 

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,10 +43,12 @@
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -124,9 +126,10 @@ Engagement is measured using five course-level indicators: course-page
 views (<code>browse</code>), lecture-video views
 (<code>lectures</code>), forum posts read (<code>forum_read</code>),
 forum posts written (<code>forum_post</code>), and days active
-(<code>attendance</code>). Each indicator is simulated on the
-<code>log1p</code> scale of an activity count and standardized within
-course. The vector <code>vars</code> holds their names.</p>
+(<code>attendance</code>). Each indicator is simulated as a continuous
+value representing a log-count scale and standardized within course; no
+raw counts or <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log1p()</a></code> transformation are generated. The
+vector <code>vars</code> holds their names.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span></code></pre></div>
 <p>The variable <code>student</code> identifies the higher-level unit,
@@ -521,24 +524,24 @@ exists.</p>
 <span>                                model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VVI"</span>, <span class="st">"VVV"</span><span class="op">)</span>, n_starts <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>                                max_iter <span class="op">=</span> <span class="fl">2000</span>, tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">candidates</span>, <span class="st">"candidates"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   n_profiles n_group_classes model log_likelihood n_parameters     aic     bic bic_individual</span></span>
-<span><span class="co">#&gt; 1          2               2   VVI       -8316.08           27 16686.2 16758.1        16828.2</span></span>
-<span><span class="co">#&gt; 2          3               2   VVI       -8242.97           47 16579.9 16705.1        16827.1</span></span>
-<span><span class="co">#&gt; 3          2               3   VVI       -8315.22           31 16692.4 16775.0        16855.5</span></span>
-<span><span class="co">#&gt; 4          3               3   VVI       -8235.04           56 16582.1 16731.2        16876.6</span></span>
-<span><span class="co">#&gt; 5          2               2   VVV       -8188.37           47 16470.7 16595.9        16717.9</span></span>
-<span><span class="co">#&gt; 6          3               2   VVV       -8152.59           77 16459.2 16664.3        16864.2</span></span>
-<span><span class="co">#&gt; 7          2               3   VVV       -8187.09           51 16476.2 16612.0        16744.4</span></span>
-<span><span class="co">#&gt; 8          3               3   VVV       -8150.59           86 16473.2 16702.2        16925.5</span></span>
-<span><span class="co">#&gt;    entropy converged boundary n_best_replicated warnings error</span></span>
-<span><span class="co">#&gt; 1 0.959375      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2 0.801915      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3 0.959205      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4 0.805030      TRUE    FALSE                 5           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 5 0.942670      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6 0.901181      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 7 0.942885      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 8 0.903794      TRUE    FALSE                 1           &lt;NA&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;               candidate n_profiles n_group_classes model log_likelihood n_parameters     aic</span></span>
+<span><span class="co">#&gt; 1 profiles2_groups2_VVI          2               2   VVI       -8316.08           27 16686.2</span></span>
+<span><span class="co">#&gt; 2 profiles3_groups2_VVI          3               2   VVI       -8242.97           47 16579.9</span></span>
+<span><span class="co">#&gt; 3 profiles2_groups3_VVI          2               3   VVI       -8315.22           31 16692.4</span></span>
+<span><span class="co">#&gt; 4 profiles3_groups3_VVI          3               3   VVI       -8235.04           56 16582.1</span></span>
+<span><span class="co">#&gt; 5 profiles2_groups2_VVV          2               2   VVV       -8188.37           47 16470.7</span></span>
+<span><span class="co">#&gt; 6 profiles3_groups2_VVV          3               2   VVV       -8152.59           77 16459.2</span></span>
+<span><span class="co">#&gt; 7 profiles2_groups3_VVV          2               3   VVV       -8187.09           51 16476.2</span></span>
+<span><span class="co">#&gt; 8 profiles3_groups3_VVV          3               3   VVV       -8150.59           86 16473.2</span></span>
+<span><span class="co">#&gt;       bic bic_individual  entropy converged boundary n_best_replicated warnings error</span></span>
+<span><span class="co">#&gt; 1 16758.1        16828.2 0.959375      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2 16705.1        16827.1 0.801915      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3 16775.0        16855.5 0.959205      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4 16731.2        16876.6 0.805030      TRUE    FALSE                 5           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5 16595.9        16717.9 0.942670      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6 16664.3        16864.2 0.901181      TRUE    FALSE                 1           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7 16612.0        16744.4 0.942885      TRUE    FALSE                 6           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8 16702.2        16925.5 0.903794      TRUE    FALSE                 1           &lt;NA&gt;</span></span></code></pre></div>
 <p>Under the diagonal covariance specification, the lowest BIC is
 obtained for the model with three profiles and three student classes,
 with a BIC of 16874.1. When residual covariances are allowed to vary
@@ -562,14 +565,14 @@ residual correlations are estimated directly, a two-profile, three-class
 model receives stronger BIC support. The original three-by-three model
 should therefore be regarded as a working representation whose support
 depends on the measurement assumptions.</p>
-<p>The <code><a href="../reference/candidate_fit.html">candidate_fit()</a></code> function can be used to retrieve a
+<p>The <code><a href="../reference/get_candidate.html">get_candidate()</a></code> function can be used to retrieve a
 fitted candidate with a particular combination of profile count,
 student-class count, and covariance structure. Examining its residual
 correlations provides a direct check of whether the estimated covariance
 parameters reproduce the within-profile associations observed in the
 data.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">full</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/candidate_fit.html">candidate_fit</a></span><span class="op">(</span><span class="va">candidates</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">3</span>,</span>
+<code class="sourceCode R"><span><span class="va">full</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">candidates</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>                      model <span class="op">=</span> <span class="st">"VVV"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">full</span>, <span class="st">"residuals"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     profile indicator_1 indicator_2     kind  observed  expected    residual effective_n</span></span>

@@ -67,6 +67,16 @@ indicators, and the scale is `(1/G)^(2/d)` times the sample covariance
 (ellipsoidal structures) or times the average sample variance
 (axis-parallel and spherical structures), for `G` profiles.
 
+The updates follow mclust's fitted-model convention, including its
+structure-specific departures from a textbook conjugate update. For
+`EII`, `scale` does not enter the variance update. For `EEI`,
+`shrinkage` and `mean` enter the variance calculation but do not shrink
+the fitted means. For `VEV`, `dof` does not enter the update. `EEI`,
+`EVI` and `EEV` count the mean-prior contribution once rather than once
+per profile. These conventions are retained for agreement with mclust;
+the controls therefore have different effects across covariance
+structures.
+
 ## Conditions
 
 Raises `latents_bad_argument` for a negative or non-finite `shrinkage`,

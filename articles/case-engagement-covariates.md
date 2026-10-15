@@ -39,8 +39,10 @@ records nested within students. Engagement is represented by five
 activity indicators: page views (`browse`), lecture videos viewed
 (`lectures`), forum posts read (`forum_read`), forum posts written
 (`forum_post`), and active days (`attendance`). Each indicator is
-simulated on the `log1p` scale of an activity count and standardized
-within course to make activity levels comparable across courses.
+simulated as a continuous value representing a log-count scale and
+standardized within course to make activity levels comparable across
+courses. The simulation generates neither raw counts nor a
+[`log1p()`](https://rdrr.io/r/base/Log.html) transformation.
 
 The variable `previous_grade` represents the standardized grade obtained
 in the preceding course. For a student’s first observed course, an entry
@@ -274,10 +276,10 @@ r3step(fit, data = course_engagement, covariates = "previous_grade", vcov_type =
 #> 3 individuals profile_2    (Intercept)   0.4473        0.13666     3.273 1.063e-03         NA
 #> 4 individuals profile_2 previous_grade  -0.6809        0.08655    -7.867 3.626e-15  7.252e-15
 #>   conf_low conf_high
-#> 1  0.09821  0.514720
+#> 1  0.09821  0.514719
 #> 2 -0.41310 -0.003979
-#> 3  0.17949  0.715181
-#> 4 -0.85059 -0.511301
+#> 3  0.17949  0.715180
+#> 4 -0.85059 -0.511302
 ```
 
 In the fitted model, a one-standard-deviation increase in previous grade

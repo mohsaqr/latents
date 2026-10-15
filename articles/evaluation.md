@@ -247,80 +247,80 @@ candidates <- enumerate_classes(course_engagement,
                                 id = "student", n_profiles = 2:4,
                                 n_group_classes = 1:3, n_starts = 3, seed = 1)
 as.data.frame(candidates)
-#>    n_profiles n_group_classes model log_likelihood n_parameters   aic   kic bic_groups
-#> 1           2               1   EEI          -8655           16 17341 17360      17384
-#> 2           3               1   EEI          -8588           22 17219 17244      17278
-#> 3           4               1   EEI          -8545           28 17145 17176      17220
-#> 4           2               2   EEI          -8479           18 16994 17015      17042
-#> 5           3               2   EEI          -8415           25 16879 16907      16946
-#> 6           4               2   EEI          -8369           32 16802 16837      16888
-#> 7           2               3   EEI          -8460           20 16960 16983      17013
-#> 8           3               3   EEI          -8399           28 16853 16884      16928
-#> 9           4               3   EEI          -8350           36 16771 16810      16867
-#> 10          2               1   VVI          -8615           21 17272 17296      17328
-#> 11          3               1   VVI          -8537           32 17137 17172      17222
-#> 12          4               1   VVI          -8501           43 17088 17134      17203
-#> 13          2               2   VVI          -8440           23 16926 16952      16987
-#> 14          3               2   VVI          -8365           35 16799 16837      16892
-#> 15          4               2   VVI          -8326           47 16746 16796      16872
-#> 16          2               3   VVI          -8421           25 16892 16920      16959
-#> 17          3               3   VVI          -8348           38 16773 16814      16874
-#> 18          4               3   VVI          -8307           51 16716 16770      16852
-#> 19          2               1   EEE          -8536           26 17125 17154      17194
-#> 20          3               1   EEE          -8514           32 17092 17127      17177
-#> 21          4               1   EEE          -8510           38 17096 17137      17197
-#> 22          2               2   EEE          -8360           28 16775 16806      16850
-#> 23          3               2   EEE          -8332           35 16734 16772      16827
-#> 24          4               2   EEE          -8329           42 16742 16787      16854
-#> 25          2               3   EEE          -8341           30 16742 16775      16822
-#> 26          3               3   EEE          -8314           38 16704 16745      16806
-#> 27          4               3   EEE          -8301           46 16693 16742      16816
-#> 28          2               1   VVV          -8490           41 17061 17105      17170
-#> 29          3               1   VVV          -8472           62 17067 17132      17232
-#> 30          4               1   VVV          -8436           83 17038 17124      17259
-#> 31          2               2   VVV          -8313           43 16712 16758      16827
-#> 32          3               2   VVV          -8291           65 16713 16781      16886
-#> 33          4               2   VVV          -8261           87 16696 16786      16927
-#> 34          2               3   VVV          -8295           45 16681 16729      16801
-#> 35          3               3   VVV          -8275           68 16686 16757      16867
-#> 36          4               3   VVV          -8238           91 16658 16752      16901
-#>    bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups
-#> 1           17425        17333            17374       17400           17441      17506
-#> 2           17335        17209            17265       17300           17357      17447
-#> 3           17293        17131            17204       17248           17321      17435
-#> 4           17089        16985            17032       17060           17107      17189
-#> 5           17011        16867            16932       16971           17036      17146
-#> 6           16971        16787            16869       16920           17003      17142
-#> 7           17065        16950            17002       17033           17085      17208
-#> 8           17000        16839            16911       16956           17028      17188
-#> 9           16961        16753            16846       16903           16997      17182
-#> 10          17383        17262            17316       17349           17404      17489
-#> 11          17306        17121            17204       17254           17338      17468
-#> 12          17314        17067            17178       17246           17357      17532
-#> 13          17047        16914            16974       17010           17070      17172
-#> 14          16983        16782            16872       16927           17018      17169
-#> 15          16994        16723            16844       16919           17041      17241
-#> 16          17024        16880            16944       16984           17049      17193
-#> 17          16973        16754            16852       16912           17011      17212
-#> 18          16985        16691            16823       16903           17036      17284
-#> 19          17262        17112            17179       17220           17288      17393
-#> 20          17260        17076            17158       17209           17292      17422
-#> 21          17296        17077            17175       17235           17334      17489
-#> 22          16922        16761            16833       16878           16950      17073
-#> 23          16918        16717            16807       16862           16953      17103
-#> 24          16963        16722            16830       16896           17005      17184
-#> 25          16900        16727            16804       16852           16930      17093
-#> 26          16904        16686            16784       16844           16942      17134
-#> 27          16935        16671            16789       16862           16981      17205
-#> 28          17277        17041            17147       17211           17318      17485
-#> 29          17393        17036            17196       17294           17455      17707
-#> 30          17474        16996            17210       17342           17557      17895
-#> 31          16938        16691            16802       16870           16981      17165
-#> 32          17055        16681            16848       16951           17120      17392
-#> 33          17153        16652            16877       17014           17240      17602
-#> 34          16917        16658            16775       16846           16962      17188
-#> 35          17044        16652            16828       16935           17112      17429
-#> 36          17137        16613            16848       16992           17228      17634
+#>                candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic
+#> 1  profiles2_groups1_EEI          2               1   EEI          -8655           16 17341 17360
+#> 2  profiles3_groups1_EEI          3               1   EEI          -8588           22 17219 17244
+#> 3  profiles4_groups1_EEI          4               1   EEI          -8545           28 17145 17176
+#> 4  profiles2_groups2_EEI          2               2   EEI          -8479           18 16994 17015
+#> 5  profiles3_groups2_EEI          3               2   EEI          -8415           25 16879 16907
+#> 6  profiles4_groups2_EEI          4               2   EEI          -8369           32 16802 16837
+#> 7  profiles2_groups3_EEI          2               3   EEI          -8460           20 16960 16983
+#> 8  profiles3_groups3_EEI          3               3   EEI          -8399           28 16853 16884
+#> 9  profiles4_groups3_EEI          4               3   EEI          -8350           36 16771 16810
+#> 10 profiles2_groups1_VVI          2               1   VVI          -8615           21 17272 17296
+#> 11 profiles3_groups1_VVI          3               1   VVI          -8537           32 17137 17172
+#> 12 profiles4_groups1_VVI          4               1   VVI          -8501           43 17088 17134
+#> 13 profiles2_groups2_VVI          2               2   VVI          -8440           23 16926 16952
+#> 14 profiles3_groups2_VVI          3               2   VVI          -8365           35 16799 16837
+#> 15 profiles4_groups2_VVI          4               2   VVI          -8326           47 16746 16796
+#> 16 profiles2_groups3_VVI          2               3   VVI          -8421           25 16892 16920
+#> 17 profiles3_groups3_VVI          3               3   VVI          -8348           38 16773 16814
+#> 18 profiles4_groups3_VVI          4               3   VVI          -8307           51 16716 16770
+#> 19 profiles2_groups1_EEE          2               1   EEE          -8536           26 17125 17154
+#> 20 profiles3_groups1_EEE          3               1   EEE          -8514           32 17092 17127
+#> 21 profiles4_groups1_EEE          4               1   EEE          -8510           38 17096 17137
+#> 22 profiles2_groups2_EEE          2               2   EEE          -8360           28 16775 16806
+#> 23 profiles3_groups2_EEE          3               2   EEE          -8332           35 16734 16772
+#> 24 profiles4_groups2_EEE          4               2   EEE          -8329           42 16742 16787
+#> 25 profiles2_groups3_EEE          2               3   EEE          -8341           30 16742 16775
+#> 26 profiles3_groups3_EEE          3               3   EEE          -8314           38 16704 16745
+#> 27 profiles4_groups3_EEE          4               3   EEE          -8301           46 16693 16742
+#> 28 profiles2_groups1_VVV          2               1   VVV          -8490           41 17061 17105
+#> 29 profiles3_groups1_VVV          3               1   VVV          -8472           62 17067 17132
+#> 30 profiles4_groups1_VVV          4               1   VVV          -8436           83 17038 17124
+#> 31 profiles2_groups2_VVV          2               2   VVV          -8313           43 16712 16758
+#> 32 profiles3_groups2_VVV          3               2   VVV          -8291           65 16713 16781
+#> 33 profiles4_groups2_VVV          4               2   VVV          -8261           87 16696 16786
+#> 34 profiles2_groups3_VVV          2               3   VVV          -8295           45 16681 16729
+#> 35 profiles3_groups3_VVV          3               3   VVV          -8275           68 16686 16757
+#> 36 profiles4_groups3_VVV          4               3   VVV          -8238           91 16658 16752
+#>    bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups
+#> 1       17384          17425        17333            17374       17400           17441      17506
+#> 2       17278          17335        17209            17265       17300           17357      17447
+#> 3       17220          17293        17131            17204       17248           17321      17435
+#> 4       17042          17089        16985            17032       17060           17107      17189
+#> 5       16946          17011        16867            16932       16971           17036      17146
+#> 6       16888          16971        16787            16869       16920           17003      17142
+#> 7       17013          17065        16950            17002       17033           17085      17208
+#> 8       16928          17000        16839            16911       16956           17028      17188
+#> 9       16867          16961        16753            16846       16903           16997      17182
+#> 10      17328          17383        17262            17316       17349           17404      17489
+#> 11      17222          17306        17121            17204       17254           17338      17468
+#> 12      17203          17314        17067            17178       17246           17357      17532
+#> 13      16987          17047        16914            16974       17010           17070      17172
+#> 14      16892          16983        16782            16872       16927           17018      17169
+#> 15      16872          16994        16723            16844       16919           17041      17241
+#> 16      16959          17024        16880            16944       16984           17049      17193
+#> 17      16874          16973        16754            16852       16912           17011      17212
+#> 18      16852          16985        16691            16823       16903           17036      17284
+#> 19      17194          17262        17112            17179       17220           17288      17393
+#> 20      17177          17260        17076            17158       17209           17292      17422
+#> 21      17197          17296        17077            17175       17235           17334      17489
+#> 22      16850          16922        16761            16833       16878           16950      17073
+#> 23      16827          16918        16717            16807       16862           16953      17103
+#> 24      16854          16963        16722            16830       16896           17005      17184
+#> 25      16822          16900        16727            16804       16852           16930      17093
+#> 26      16806          16904        16686            16784       16844           16942      17134
+#> 27      16816          16935        16671            16789       16862           16981      17205
+#> 28      17170          17277        17041            17147       17211           17318      17485
+#> 29      17232          17393        17036            17196       17294           17455      17707
+#> 30      17259          17474        16996            17210       17342           17557      17895
+#> 31      16827          16938        16691            16802       16870           16981      17165
+#> 32      16886          17055        16681            16848       16951           17120      17392
+#> 33      16927          17153        16652            16877       17014           17240      17602
+#> 34      16801          16917        16658            16775       16846           16962      17188
+#> 35      16867          17044        16652            16828       16935           17112      17429
+#> 36      16901          17137        16613            16848       16992           17228      17634
 #>    awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy
 #> 1           17755      17384          17591      17309          17475           0.916            NA
 #> 2           18396      17278          18170      17175          18010           0.733            NA
@@ -358,43 +358,80 @@ as.data.frame(candidates)
 #> 34          17558      16843          17096      16634          16770           0.909         0.816
 #> 35          18279      16908          17581      16591          17088           0.828         0.824
 #> 36          18772      16937          17838      16512          17178           0.822         0.845
-#>    converged boundary n_best_replicated warnings error
-#> 1       TRUE    FALSE                 3           <NA>
-#> 2       TRUE    FALSE                 3           <NA>
-#> 3       TRUE    FALSE                 3           <NA>
-#> 4       TRUE    FALSE                 3           <NA>
-#> 5       TRUE    FALSE                 3           <NA>
-#> 6       TRUE    FALSE                 3           <NA>
-#> 7       TRUE    FALSE                 3           <NA>
-#> 8       TRUE    FALSE                 3           <NA>
-#> 9       TRUE    FALSE                 2           <NA>
-#> 10      TRUE    FALSE                 3           <NA>
-#> 11      TRUE    FALSE                 3           <NA>
-#> 12      TRUE    FALSE                 3           <NA>
-#> 13      TRUE    FALSE                 3           <NA>
-#> 14      TRUE    FALSE                 3           <NA>
-#> 15      TRUE    FALSE                 3           <NA>
-#> 16      TRUE    FALSE                 3           <NA>
-#> 17      TRUE    FALSE                 3           <NA>
-#> 18      TRUE    FALSE                 3           <NA>
-#> 19      TRUE    FALSE                 3           <NA>
-#> 20      TRUE    FALSE                 3           <NA>
-#> 21      TRUE    FALSE                 3           <NA>
-#> 22      TRUE    FALSE                 3           <NA>
-#> 23      TRUE    FALSE                 3           <NA>
-#> 24      TRUE    FALSE                 3           <NA>
-#> 25      TRUE    FALSE                 3           <NA>
-#> 26      TRUE    FALSE                 3           <NA>
-#> 27      TRUE    FALSE                 1           <NA>
-#> 28      TRUE    FALSE                 3           <NA>
-#> 29      TRUE    FALSE                 2           <NA>
-#> 30      TRUE    FALSE                 1           <NA>
-#> 31      TRUE    FALSE                 3           <NA>
-#> 32      TRUE    FALSE                 1           <NA>
-#> 33      TRUE    FALSE                 1           <NA>
-#> 34      TRUE    FALSE                 3           <NA>
-#> 35      TRUE    FALSE                 2           <NA>
-#> 36      TRUE    FALSE                 1           <NA>
+#>    avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean
+#> 1      0.976     0.977      0.977           0              NA              NA               NA
+#> 2      0.795     0.961      0.860           1              NA              NA               NA
+#> 3      0.816     0.844      0.830           0              NA              NA               NA
+#> 4      0.982     0.982      0.982           0           0.967           0.991            0.979
+#> 5      0.793     0.976      0.861           1           0.975           0.993            0.984
+#> 6      0.818     0.838      0.827           0           0.974           0.989            0.982
+#> 7      0.982     0.983      0.983           0           0.885           0.967            0.921
+#> 8      0.797     0.976      0.860           1           0.883           0.971            0.915
+#> 9      0.818     0.836      0.827           0           0.877           0.976            0.925
+#> 10     0.974     0.982      0.978           0              NA              NA               NA
+#> 11     0.832     0.964      0.886           0              NA              NA               NA
+#> 12     0.803     0.849      0.835           0              NA              NA               NA
+#> 13     0.982     0.985      0.983           0           0.969           0.992            0.980
+#> 14     0.849     0.979      0.893           0           0.977           0.992            0.985
+#> 15     0.791     0.858      0.835           1           0.975           0.990            0.983
+#> 16     0.982     0.986      0.984           0           0.900           0.962            0.923
+#> 17     0.845     0.978      0.892           0           0.864           0.977            0.913
+#> 18     0.801     0.854      0.836           0           0.874           0.981            0.923
+#> 19     0.961     0.967      0.964           0              NA              NA               NA
+#> 20     0.756     0.954      0.832           2              NA              NA               NA
+#> 21     0.557     0.906      0.761           2              NA              NA               NA
+#> 22     0.972     0.975      0.974           0           0.968           0.992            0.980
+#> 23     0.749     0.970      0.842           1           0.983           0.990            0.987
+#> 24     0.588     0.889      0.771           2           0.984           0.988            0.986
+#> 25     0.975     0.975      0.975           0           0.904           0.951            0.923
+#> 26     0.750     0.969      0.842           1           0.856           0.960            0.921
+#> 27     0.653     0.971      0.771           3           0.841           0.971            0.920
+#> 28     0.959     0.971      0.965           0              NA              NA               NA
+#> 29     0.665     0.956      0.833           1              NA              NA               NA
+#> 30     0.627     0.943      0.829           1              NA              NA               NA
+#> 31     0.973     0.978      0.976           0           0.971           0.993            0.982
+#> 32     0.649     0.972      0.845           1           0.982           0.990            0.986
+#> 33     0.785     0.973      0.854           1           0.962           0.995            0.979
+#> 34     0.974     0.978      0.976           0           0.903           0.960            0.923
+#> 35     0.649     0.973      0.841           1           0.878           0.955            0.920
+#> 36     0.650     0.977      0.798           2           0.904           0.975            0.932
+#>    group_avepp_below converged boundary n_best_replicated warnings error
+#> 1                 NA      TRUE    FALSE                 3           <NA>
+#> 2                 NA      TRUE    FALSE                 3           <NA>
+#> 3                 NA      TRUE    FALSE                 3           <NA>
+#> 4                  0      TRUE    FALSE                 3           <NA>
+#> 5                  0      TRUE    FALSE                 3           <NA>
+#> 6                  0      TRUE    FALSE                 3           <NA>
+#> 7                  0      TRUE    FALSE                 3           <NA>
+#> 8                  0      TRUE    FALSE                 3           <NA>
+#> 9                  0      TRUE    FALSE                 2           <NA>
+#> 10                NA      TRUE    FALSE                 3           <NA>
+#> 11                NA      TRUE    FALSE                 3           <NA>
+#> 12                NA      TRUE    FALSE                 3           <NA>
+#> 13                 0      TRUE    FALSE                 3           <NA>
+#> 14                 0      TRUE    FALSE                 3           <NA>
+#> 15                 0      TRUE    FALSE                 3           <NA>
+#> 16                 0      TRUE    FALSE                 3           <NA>
+#> 17                 0      TRUE    FALSE                 3           <NA>
+#> 18                 0      TRUE    FALSE                 3           <NA>
+#> 19                NA      TRUE    FALSE                 3           <NA>
+#> 20                NA      TRUE    FALSE                 3           <NA>
+#> 21                NA      TRUE    FALSE                 3           <NA>
+#> 22                 0      TRUE    FALSE                 3           <NA>
+#> 23                 0      TRUE    FALSE                 3           <NA>
+#> 24                 0      TRUE    FALSE                 3           <NA>
+#> 25                 0      TRUE    FALSE                 3           <NA>
+#> 26                 0      TRUE    FALSE                 3           <NA>
+#> 27                 0      TRUE    FALSE                 1           <NA>
+#> 28                NA      TRUE    FALSE                 3           <NA>
+#> 29                NA      TRUE    FALSE                 2           <NA>
+#> 30                NA      TRUE    FALSE                 1           <NA>
+#> 31                 0      TRUE    FALSE                 3           <NA>
+#> 32                 0      TRUE    FALSE                 1           <NA>
+#> 33                 0      TRUE    FALSE                 1           <NA>
+#> 34                 0      TRUE    FALSE                 3           <NA>
+#> 35                 0      TRUE    FALSE                 2           <NA>
+#> 36                 0      TRUE    FALSE                 1           <NA>
 ```
 
 To find which candidate minimizes each criterion, we call
@@ -405,41 +442,41 @@ with the number of groups and with the number of observations.
 ``` r
 
 get_results(candidates, "criteria")
-#>    criterion  convention n_profiles n_group_classes model value
-#> 1        aic        <NA>          4               3   VVV 16658
-#> 2        kic        <NA>          2               3   VVV 16729
-#> 3        bic      groups          2               3   VVV 16801
-#> 4        bic individuals          2               3   EEE 16900
-#> 5      sabic      groups          4               3   VVV 16613
-#> 6      sabic individuals          2               3   VVV 16775
-#> 7       caic      groups          3               3   EEE 16844
-#> 8       caic individuals          2               3   EEE 16930
-#> 9        awe      groups          2               2   EEE 17073
-#> 10       awe individuals          2               3   EEE 17396
-#> 11       icl      groups          3               2   EEE 16835
-#> 12       icl individuals          2               3   EEE 17089
-#> 13       clc      groups          4               3   VVV 16512
-#> 14       clc individuals          2               3   VVV 16770
+#>    criterion  convention             candidate n_profiles n_group_classes model value
+#> 1        aic        <NA> profiles4_groups3_VVV          4               3   VVV 16658
+#> 2        kic        <NA> profiles2_groups3_VVV          2               3   VVV 16729
+#> 3        bic      groups profiles2_groups3_VVV          2               3   VVV 16801
+#> 4        bic individuals profiles2_groups3_EEE          2               3   EEE 16900
+#> 5      sabic      groups profiles4_groups3_VVV          4               3   VVV 16613
+#> 6      sabic individuals profiles2_groups3_VVV          2               3   VVV 16775
+#> 7       caic      groups profiles3_groups3_EEE          3               3   EEE 16844
+#> 8       caic individuals profiles2_groups3_EEE          2               3   EEE 16930
+#> 9        awe      groups profiles2_groups2_EEE          2               2   EEE 17073
+#> 10       awe individuals profiles2_groups3_EEE          2               3   EEE 17396
+#> 11       icl      groups profiles3_groups2_EEE          3               2   EEE 16835
+#> 12       icl individuals profiles2_groups3_EEE          2               3   EEE 17089
+#> 13       clc      groups profiles4_groups3_VVV          4               3   VVV 16512
+#> 14       clc individuals profiles2_groups3_VVV          2               3   VVV 16770
 ```
 
 To draw one criterion across the grid, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
-`criterion` for its name.
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with its name
+as `what`; `what = "all"` draws every criterion.
 
 ``` r
 
-plot(candidates, criterion = "bic_groups")
+plot(candidates, what = "bic_groups")
 ```
 
 ![](evaluation_files/figure-html/enumeration-plot-1.png)
 
 To take one candidate out of the grid as a fitted model, we call
-[`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
 with its `n_profiles`, `n_group_classes` and `model`.
 
 ``` r
 
-candidate_fit(candidates, n_profiles = 3, n_group_classes = 2, model = "VVI")
+get_candidate(candidates, n_profiles = 3, n_group_classes = 2, model = "VVI")
 #> Two-level latent profile analysis: 3 profiles, 2 group classes
 #> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
 #> Log likelihood: -8364.520142 | AIC: 16799.040 | BIC (groups): 16892.261
@@ -588,7 +625,7 @@ get_results(fit, "classification_errors")       # P(assigned class | true class)
 get_results(fit, "residuals")                   # residuals within each profile
 get_results(candidates, "candidates")           # the full enumeration grid
 summary(candidates)                             # the best candidate on each criterion
-bootstrap_lrt(fit, candidate_fit(candidates, n_profiles = 3,
+bootstrap_lrt(fit, get_candidate(candidates, n_profiles = 3,
                                 n_group_classes = 2, model = "VVI"),
               iter = 199, seed = 42)            # bootstrap test of one more class (slow)
 enumerate_classes(course_engagement, vars = c("browse", "lectures"),

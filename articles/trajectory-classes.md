@@ -227,7 +227,7 @@ compare_models(straight = straight, curved = curved)
 #> 
 #> Model     Classes  Random   k    LogLik       BIC   ΔBIC  Weight  Entropy
 #> --------  -------  ------  --  --------  --------  -----  ------  -------
-#> straight        3  none    11  -5889.55  11841.85   0.00   1.000     0.92  <- best
+#> straight        3  none    11  -5889.55  11841.85   0.00   1.000     0.92  <- lowest BIC
 #> curved          3  none    14  -5888.78  11857.41  15.56   0.000     0.92
 ```
 

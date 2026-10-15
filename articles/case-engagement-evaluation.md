@@ -38,9 +38,10 @@ vignette](https://pak.dynasite.org/latents/articles/case-engagement-profiles.md)
 Engagement is measured using five course-level indicators: course-page
 views (`browse`), lecture-video views (`lectures`), forum posts read
 (`forum_read`), forum posts written (`forum_post`), and days active
-(`attendance`). Each indicator is simulated on the `log1p` scale of an
-activity count and standardized within course. The vector `vars` holds
-their names.
+(`attendance`). Each indicator is simulated as a continuous value
+representing a log-count scale and standardized within course; no raw
+counts or [`log1p()`](https://rdrr.io/r/base/Log.html) transformation
+are generated. The vector `vars` holds their names.
 
 ``` r
 
@@ -458,24 +459,24 @@ candidates <- enumerate_classes(course_engagement, vars, id = "student",
                                 model = c("VVI", "VVV"), n_starts = 6,
                                 max_iter = 2000, tol = 1e-10, seed = 1)
 get_results(candidates, "candidates")
-#>   n_profiles n_group_classes model log_likelihood n_parameters     aic     bic bic_individual
-#> 1          2               2   VVI       -8316.08           27 16686.2 16758.1        16828.2
-#> 2          3               2   VVI       -8242.97           47 16579.9 16705.1        16827.1
-#> 3          2               3   VVI       -8315.22           31 16692.4 16775.0        16855.5
-#> 4          3               3   VVI       -8235.04           56 16582.1 16731.2        16876.6
-#> 5          2               2   VVV       -8188.37           47 16470.7 16595.9        16717.9
-#> 6          3               2   VVV       -8152.59           77 16459.2 16664.3        16864.2
-#> 7          2               3   VVV       -8187.09           51 16476.2 16612.0        16744.4
-#> 8          3               3   VVV       -8150.59           86 16473.2 16702.2        16925.5
-#>    entropy converged boundary n_best_replicated warnings error
-#> 1 0.959375      TRUE    FALSE                 6           <NA>
-#> 2 0.801915      TRUE    FALSE                 6           <NA>
-#> 3 0.959205      TRUE    FALSE                 1           <NA>
-#> 4 0.805030      TRUE    FALSE                 5           <NA>
-#> 5 0.942670      TRUE    FALSE                 6           <NA>
-#> 6 0.901181      TRUE    FALSE                 1           <NA>
-#> 7 0.942885      TRUE    FALSE                 6           <NA>
-#> 8 0.903794      TRUE    FALSE                 1           <NA>
+#>               candidate n_profiles n_group_classes model log_likelihood n_parameters     aic
+#> 1 profiles2_groups2_VVI          2               2   VVI       -8316.08           27 16686.2
+#> 2 profiles3_groups2_VVI          3               2   VVI       -8242.97           47 16579.9
+#> 3 profiles2_groups3_VVI          2               3   VVI       -8315.22           31 16692.4
+#> 4 profiles3_groups3_VVI          3               3   VVI       -8235.04           56 16582.1
+#> 5 profiles2_groups2_VVV          2               2   VVV       -8188.37           47 16470.7
+#> 6 profiles3_groups2_VVV          3               2   VVV       -8152.59           77 16459.2
+#> 7 profiles2_groups3_VVV          2               3   VVV       -8187.09           51 16476.2
+#> 8 profiles3_groups3_VVV          3               3   VVV       -8150.59           86 16473.2
+#>       bic bic_individual  entropy converged boundary n_best_replicated warnings error
+#> 1 16758.1        16828.2 0.959375      TRUE    FALSE                 6           <NA>
+#> 2 16705.1        16827.1 0.801915      TRUE    FALSE                 6           <NA>
+#> 3 16775.0        16855.5 0.959205      TRUE    FALSE                 1           <NA>
+#> 4 16731.2        16876.6 0.805030      TRUE    FALSE                 5           <NA>
+#> 5 16595.9        16717.9 0.942670      TRUE    FALSE                 6           <NA>
+#> 6 16664.3        16864.2 0.901181      TRUE    FALSE                 1           <NA>
+#> 7 16612.0        16744.4 0.942885      TRUE    FALSE                 6           <NA>
+#> 8 16702.2        16925.5 0.903794      TRUE    FALSE                 1           <NA>
 ```
 
 Under the diagonal covariance specification, the lowest BIC is obtained
@@ -504,7 +505,7 @@ should therefore be regarded as a working representation whose support
 depends on the measurement assumptions.
 
 The
-[`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
 function can be used to retrieve a fitted candidate with a particular
 combination of profile count, student-class count, and covariance
 structure. Examining its residual correlations provides a direct check
@@ -513,7 +514,7 @@ within-profile associations observed in the data.
 
 ``` r
 
-full <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 3,
+full <- get_candidate(candidates, n_profiles = 2, n_group_classes = 3,
                       model = "VVV")
 get_results(full, "residuals") |> head(4)
 #>     profile indicator_1 indicator_2     kind  observed  expected    residual effective_n

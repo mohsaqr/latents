@@ -456,7 +456,7 @@ others through.
 
   `multilpa(family = "additive")` only: a group class is supported by
   fewer than 50 effective groups (see `effective_groups` in
-  [`get_results.multilpa_additive()`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)),
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)),
   because it is small, poorly separated, or both. Standard errors are
   still reported, but intervals for class means and weights can be
   miscalibrated.

@@ -73,12 +73,14 @@ enrolments within students; it does not include a separate course-level
 random effect or latent structure.
 
 Five activity indicators describe the student’s engagement during each
-enrolment. The indicators are simulated on the `log1p(count)` scale and
-standardized within course. Each value can therefore be interpreted as
-the enrolment’s distance from the mean of that particular course,
-expressed in course-specific standard deviations. A value above zero
-indicates more activity than the course average, whereas a value below
-zero indicates less activity than the course average.
+enrolment. The indicators are simulated as continuous values
+representing a log-count scale, then standardized within course. No raw
+counts or [`log1p()`](https://rdrr.io/r/base/Log.html) transformation
+are generated. Each value can therefore be interpreted as the
+enrolment’s distance from the mean of that particular course, expressed
+in course-specific standard deviations. A value above zero indicates
+more activity than the course average, whereas a value below zero
+indicates less activity than the course average.
 
 This within-course standardization is important for the interpretation
 of the profiles. Raw activity volumes can differ substantially across

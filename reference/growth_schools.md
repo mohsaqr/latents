@@ -66,7 +66,7 @@ classes recover:
 ## See also
 
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md),
-[`get_results.latents_growth_mixture()`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md).
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
 
 ## Examples
 

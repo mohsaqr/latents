@@ -21,7 +21,7 @@ here."><meta property="og:image" content="https://pak.dynasite.org/latents/logo.
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,10 +37,12 @@ here."><meta property="og:image" content="https://pak.dynasite.org/latents/logo.
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -150,7 +152,11 @@ variance. Degrees of freedom follow Rubin (1987) with a large complete-data
 sample, which is what maximum-likelihood inference assumes.
 Pooled intervals are symmetric t intervals on this scale; unlike the
 transformed Wald intervals of <code><a href="parameter_inference.html">parameter_inference()</a></code>, they can extend
-outside the parameter space for probabilities or variances.</p>
+outside the parameter space for probabilities or variances.
+A structural constant, such as the sole class's probability of one, has
+zero within- and between-imputation variance and zero missing information.
+If within-imputation variance is zero but between-imputation variance is
+positive, <code>riv</code> is infinite and <code>fmi</code> is one.</p>
     </div>
     <div class="section level2">
     <h2 id="choosing-the-imputation-model">Choosing the imputation model<a class="anchor" aria-label="anchor" href="#choosing-the-imputation-model"></a></h2>

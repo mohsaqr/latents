@@ -17,7 +17,7 @@ class and the covariate cannot explain why."><meta property="og:image" content="
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,10 +33,12 @@ class and the covariate cannot explain why."><meta property="og:image" content="
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -228,11 +230,11 @@ one-step alternative that estimates everything jointly.</p></div>
 <span class="r-in"><span>                n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">4</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">r3step</span><span class="op">(</span><span class="va">fit</span>, <span class="va">example_data</span>, <span class="st">"x"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         level   outcome        term   estimate standard_error statistic</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 individuals profile_1 (Intercept) -0.5701524      0.1179663 -4.833179</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 individuals profile_1           x  1.2187719      0.1255513  9.707359</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 individuals profile_1 (Intercept) -0.5701505      0.1179658 -4.833184</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 individuals profile_1           x  1.2187597      0.1255499  9.707371</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        p_value   p_adjusted   conf_low  conf_high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.343696e-06           NA -0.8013622 -0.3389427</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2.805106e-22 2.805106e-22  0.9726958  1.4648481</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.343666e-06           NA -0.8013593 -0.3389418</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2.804771e-22 2.804771e-22  0.9726864  1.4648330</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

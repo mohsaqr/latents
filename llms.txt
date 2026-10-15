@@ -87,8 +87,8 @@ of group $`j`$ to the likelihood is
 ``` math
 L_j = \sum_{h=1}^{H}\eta_h
 \prod_{i=1}^{n_j}
-\left\{\sum_{k=1}^{K}\pi_{hk}
-\phi_D(\mathbf{y}_{ij};\boldsymbol{\mu}_k,\boldsymbol{\Sigma}_k)\right\}.
+\left\lbrace \sum_{k=1}^{K}\pi_{hk}
+\phi_D(\mathbf{y}_{ij};\boldsymbol{\mu}_k,\boldsymbol{\Sigma}_k)\right\rbrace.
 ```
 
 This expression makes the two levels explicit. The inner mixture
@@ -647,43 +647,63 @@ candidates <- enumerate_classes(
 )
 candidates
 #> Class enumeration: 9 candidate models
-#>  n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups bic_individual
-#>           2               1   VVI          -8615           21 17272      17328          17383
-#>           3               1   VVI          -8537           32 17137      17222          17306
-#>           4               1   VVI          -8501           43 17088      17203          17314
-#>           2               2   VVI          -8440           23 16926      16987          17047
-#>           3               2   VVI          -8365           35 16799      16892          16983
-#>           4               2   VVI          -8326           47 16746      16872          16994
-#>           2               3   VVI          -8421           25 16892      16959          17024
-#>           3               3   VVI          -8348           38 16773      16874          16973
-#>           4               3   VVI          -8307           51 16716      16852          16985
-#>  icl_individual profile_entropy group_entropy converged boundary n_best_replicated
-#>           17537           0.922            NA      TRUE    FALSE                10
-#>           18017           0.772            NA      TRUE    FALSE                10
-#>           18359           0.735            NA      TRUE    FALSE                 8
-#>           17168           0.938         0.940      TRUE    FALSE                10
-#>           17640           0.790         0.943      TRUE    FALSE                10
-#>           18021           0.739         0.937      TRUE    FALSE                10
-#>           17142           0.940         0.816      TRUE    FALSE                10
-#>           17622           0.792         0.797      TRUE    FALSE                10
-#>           18014           0.739         0.823      TRUE    FALSE                10
+#>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic
+#>  profiles2_groups1          2               1   VVI          -8615           21 17272
+#>  profiles3_groups1          3               1   VVI          -8537           32 17137
+#>  profiles4_groups1          4               1   VVI          -8501           43 17088
+#>  profiles2_groups2          2               2   VVI          -8440           23 16926
+#>  profiles3_groups2          3               2   VVI          -8365           35 16799
+#>  profiles4_groups2          4               2   VVI          -8326           47 16746
+#>  profiles2_groups3          2               3   VVI          -8421           25 16892
+#>  profiles3_groups3          3               3   VVI          -8348           38 16773
+#>  profiles4_groups3          4               3   VVI          -8307           51 16716
+#>  bic_groups bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max
+#>       17328          17383          17537           0.922            NA     0.974     0.982
+#>       17222          17306          18017           0.772            NA     0.832     0.964
+#>       17203          17314          18359           0.735            NA     0.803     0.849
+#>       16987          17047          17168           0.938         0.940     0.982     0.985
+#>       16892          16983          17640           0.790         0.943     0.849     0.979
+#>       16872          16994          18021           0.739         0.937     0.792     0.858
+#>       16959          17024          17142           0.940         0.816     0.982     0.986
+#>       16874          16973          17622           0.792         0.797     0.845     0.978
+#>       16852          16985          18014           0.739         0.823     0.801     0.854
+#>  avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below
+#>       0.978           0              NA              NA               NA                NA
+#>       0.886           0              NA              NA               NA                NA
+#>       0.835           0              NA              NA               NA                NA
+#>       0.983           0           0.969           0.992            0.980                 0
+#>       0.893           0           0.977           0.992            0.985                 0
+#>       0.835           1           0.975           0.990            0.983                 0
+#>       0.984           0           0.900           0.962            0.923                 0
+#>       0.892           0           0.864           0.977            0.913                 0
+#>       0.836           0           0.874           0.981            0.923                 0
+#>  converged boundary n_best_replicated
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                 8
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
+#>       TRUE    FALSE                10
 #> No candidate is selected automatically. Compare one convention consistently.
 get_results(candidates, "criteria")
-#>    criterion  convention n_profiles n_group_classes model value
-#> 1        aic        <NA>          4               3   VVI 16716
-#> 2        kic        <NA>          4               3   VVI 16770
-#> 3        bic      groups          4               3   VVI 16852
-#> 4        bic individuals          3               3   VVI 16973
-#> 5      sabic      groups          4               3   VVI 16691
-#> 6      sabic individuals          4               3   VVI 16823
-#> 7       caic      groups          4               3   VVI 16903
-#> 8       caic individuals          3               3   VVI 17011
-#> 9        awe      groups          3               2   VVI 17169
-#> 10       awe individuals          2               3   VVI 17398
-#> 11       icl      groups          4               2   VVI 16881
-#> 12       icl individuals          2               3   VVI 17142
-#> 13       clc      groups          4               3   VVI 16656
-#> 14       clc individuals          2               3   VVI 16960
+#>    criterion  convention         candidate n_profiles n_group_classes model value
+#> 1        aic        <NA> profiles4_groups3          4               3   VVI 16716
+#> 2        kic        <NA> profiles4_groups3          4               3   VVI 16770
+#> 3        bic      groups profiles4_groups3          4               3   VVI 16852
+#> 4        bic individuals profiles3_groups3          3               3   VVI 16973
+#> 5      sabic      groups profiles4_groups3          4               3   VVI 16691
+#> 6      sabic individuals profiles4_groups3          4               3   VVI 16823
+#> 7       caic      groups profiles4_groups3          4               3   VVI 16903
+#> 8       caic individuals profiles3_groups3          3               3   VVI 17011
+#> 9        awe      groups profiles3_groups2          3               2   VVI 17169
+#> 10       awe individuals profiles2_groups3          2               3   VVI 17398
+#> 11       icl      groups profiles4_groups2          4               2   VVI 16881
+#> 12       icl individuals profiles2_groups3          2               3   VVI 17142
+#> 13       clc      groups profiles4_groups3          4               3   VVI 16656
+#> 14       clc individuals profiles2_groups3          2               3   VVI 16960
 plot(candidates)
 ```
 
@@ -712,7 +732,7 @@ to the initial fit.
 
 ``` r
 
-candidate <- candidate_fit(candidates, n_profiles = 2, n_group_classes = 2)
+candidate <- get_candidate(candidates, n_profiles = 2, n_group_classes = 2)
 get_results(candidate)
 #>    profile  indicator   mean variance standard_deviation mean_standard_error
 #> 1        1     browse  0.540    0.590              0.768              0.0271
@@ -873,11 +893,11 @@ three_step(fit, data = course_engagement, outcome = "previous_grade")
 #>     2  -0.31  [-0.39, -0.24]  0.036       564.36
 r3step(fit, data = course_engagement, covariates = "previous_grade")
 #>         level   outcome           term estimate standard_error statistic  p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.90e-03         NA
-#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.35e-22   3.35e-22
+#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.91e-03         NA
+#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.38e-22   3.38e-22
 #>   conf_low conf_high
 #> 1    0.121     0.631
-#> 2    0.459     0.691
+#> 2    0.458     0.691
 ```
 
 The first call compares previous-grade means between enrolment profiles.
@@ -1394,8 +1414,9 @@ Every table of a fitted model, retrieved by name.
   : Compare latent class models
 - [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
   : Enumerate numbers of individual profiles and group classes
-- [`candidate_fit()`](https://pak.dynasite.org/latents/reference/candidate_fit.md)
-  : Take one fitted model out of an enumeration grid
+- [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
+  [`candidate_fit()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
+  : Take one fitted model out of an enumeration grid or a comparison
 - [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
   : Parametric bootstrap likelihood-ratio comparison
 - [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
@@ -1408,29 +1429,6 @@ Every table of a fitted model, retrieved by name.
   : Wald inference for a latent transition model
 - [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
   : Fit a model to multiply imputed data and pool it with Rubin's rules
-- [`get_results(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
-  [`as.data.frame(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
-  : Tables of a pooled multiply imputed fit
-- [`get_results(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`as.data.frame(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`coef(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`vcov(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`confint(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`logLik(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`nobs(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  : Tables of an additive group-class fit
-- [`get_results(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`as.data.frame(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`print(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`summary(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`logLik(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`nobs(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  : Tables of a cross-level fit
-- [`get_results(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
-  [`as.data.frame(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
-  [`print(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
-  [`summary(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
-  : Tables of a group-class family enumeration
 
 ## Mixture regression and growth models
 
@@ -1448,28 +1446,12 @@ models).
   : Compare mixture regressions with different numbers of classes
 - [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
   : Compare fitted models on the same data
-- [`get_results(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`as.data.frame(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`coef(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`vcov(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`confint(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`logLik(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`nobs(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  : Tables of a mixture-of-regressions fit
-- [`get_results(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`as.data.frame(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`coef(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`vcov(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`confint(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`logLik(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`nobs(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  : Tidy results of a growth mixture model
-- [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_mixture_regression.md)
-  : Predict from a mixture-of-regressions fit
-- [`simulate(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/simulate.latents_mixture_regression.md)
-  : Simulate outcomes from a mixture-of-regressions fit
-- [`simulate(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/simulate.latents_growth_mixture.md)
-  : Simulate outcomes from a growth mixture model
+- [`simulate(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+  [`predict(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+  [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+  [`simulate(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+  [`predict(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+  : Predict from and simulate a fitted model
 
 ## External variables
 
@@ -1483,43 +1465,29 @@ Three-step analysis with a correction for classification error.
 
 ## Plots
 
-- [`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md)
-  : The plots this package can draw
-- [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
-  : Plot information criteria across an enumeration grid
-- [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  [`as.data.frame(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  [`print(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  [`plot(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  : Every classification diagnostic, in one call
-- [`plot(`*`<latents_comparison>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_comparison.md)
-  : Plot a model comparison
-- [`plot(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_family_enumeration.md)
-  : Plot information criteria across group-class families
-- [`plot(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_growth_mixture.md)
-  : Plot a growth mixture model
-- [`plot(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_mixture_regression.md)
-  : Plot a mixture-of-regressions fit
-- [`plot(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_pooled.md)
-  : Plot a pooled multiply imputed fit
-- [`plot(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/plot.latents_transition_enumeration.md)
-  : Plot information criteria across transition models
-- [`plot(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa.md)
-  : Plot a fitted multilevel latent profile model
-- [`plot(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_additive.md)
-  : Plot an additive group-class fit
-- [`plot(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_bootstrap_lrt.md)
-  : Plot a simulated bootstrap null distribution
-- [`plot(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_covariates.md)
-  : Plot a covariate model
-- [`plot(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_cross_level.md)
-  : Plot a cross-level fit
-- [`plot(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_enumeration.md)
-  : Plot a class-enumeration grid
-- [`plot(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_lta.md)
-  : Plot transition probabilities of a general transition fit
-- [`plot(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/plot.multilpa_transitions.md)
-  : Plot a fitted latent transition model
+- [`plot(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<latents_comparison>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot_responses()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot_prevalence()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot_transitions()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot_tree()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot_views()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  [`plot(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  : Plot latents results
 
 ## Transition networks
 
@@ -1547,120 +1515,8 @@ Latent transitions handed to the tna package.
 
 ## Methods
 
-Standard generics for fitted models, enumeration grids and summaries.
+Coefficients, covariance, intervals and likelihood of a fit.
 
-- [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  [`as.data.frame(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  [`print(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  [`plot(`*`<multilpa_diagnostics>`*`)`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  : Every classification diagnostic, in one call
-- [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
-  [`as.data.frame(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
-  [`get_results(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
-  [`print(`*`<latents_regression_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
-  : Compare mixture regressions with different numbers of classes
-- [`get_results(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
-  [`as.data.frame(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
-  [`print(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
-  [`summary(`*`<latents_family_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_family_enumeration.md)
-  : Tables of a group-class family enumeration
-- [`get_results(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
-  [`as.data.frame(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
-  [`print(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
-  [`summary(`*`<latents_transition_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_transition_enumeration.md)
-  : Tables of a transition-model enumeration
-- [`get_results(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`as.data.frame(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`print(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`summary(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`logLik(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  [`nobs(`*`<multilpa_cross_level>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md)
-  : Tables of a cross-level fit
-- [`get_results(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
-  [`as.data.frame(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
-  [`print(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
-  [`summary(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
-  [`coef(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
-  [`vcov(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
-  [`logLik(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
-  [`nobs(`*`<multilpa_lta>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_lta.md)
-  : Tables of a latent transition fit with occasion- or
-  covariate-dependent transitions or occasion-specific measurement
-- [`print(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<multilpa_start>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<summary_multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<summary_multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<summary_multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<summary_multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<summary_latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<latents_table>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<summary_multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<summary_latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<latents_plots>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  [`print(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-print.md)
-  : Print latents results
-- [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
-  [`print(`*`<latents_prior>`*`)`](https://pak.dynasite.org/latents/reference/prior_control.md)
-  : Conjugate prior for Gaussian mixture estimation
-- [`summary(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  [`summary(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  [`summary(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  [`summary(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  [`summary(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  [`summary(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  [`summary(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  [`summary(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  [`summary(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-summary.md)
-  : Summarise latents results
-- [`get_results(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`as.data.frame(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`coef(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`vcov(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`confint(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`logLik(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  [`nobs(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
-  : Tidy results of a growth mixture model
-- [`get_results(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`as.data.frame(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`coef(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`vcov(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`confint(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`logLik(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  [`nobs(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md)
-  : Tables of a mixture-of-regressions fit
-- [`get_results(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
-  [`as.data.frame(`*`<latents_pooled>`*`)`](https://pak.dynasite.org/latents/reference/get_results.latents_pooled.md)
-  : Tables of a pooled multiply imputed fit
-- [`get_results(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`as.data.frame(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`coef(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`vcov(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`confint(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`logLik(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  [`nobs(`*`<multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md)
-  : Tables of an additive group-class fit
-- [`as.data.frame(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<multilpa_start>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<summary_multilpa_additive>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<summary_multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<summary_multilpa_enumeration>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<summary_multilpa_bootstrap_lrt>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<latents_table>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<summary_multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  [`as.data.frame(`*`<summary_multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-as-data-frame.md)
-  : Convert latents results to a data frame
 - [`vcov(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
   [`coef(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
   [`confint(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
@@ -1676,16 +1532,6 @@ Standard generics for fitted models, enumeration grids and summaries.
   [`nobs(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
   [`coef(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
   : Coefficients, covariance, intervals and likelihood of latents fits
-- [`parameter_inference(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
-  [`vcov(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
-  [`confint(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/parameter_inference.multilpa_transitions.md)
-  : Wald inference for a latent transition model
-- [`predict(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_growth_mixture.md)
-  : Prediction for a growth mixture model (not implemented)
-- [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/predict.latents_mixture_regression.md)
-  : Predict from a mixture-of-regressions fit
-- [`predict(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/predict.multilpa.md)
-  : Classify new observations with a fitted model
 
 ## Conditions
 
@@ -1702,6 +1548,8 @@ Standard generics for fitted models, enumeration grids and summaries.
   analysis](https://pak.dynasite.org/latents/articles/lca.md):
 - [Latent transition
   analysis](https://pak.dynasite.org/latents/articles/lta.md):
+- [Class
+  enumeration](https://pak.dynasite.org/latents/articles/enumeration.md):
 
 ### Guides
 
@@ -1709,6 +1557,8 @@ Standard generics for fitted models, enumeration grids and summaries.
   workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.md):
 - [Latent class analysis: a complete
   workflow](https://pak.dynasite.org/latents/articles/workflow-lca.md):
+- [Class enumeration in mixture
+  models](https://pak.dynasite.org/latents/articles/class-enumeration.md):
 - [Evaluating a multilevel latent profile
   model](https://pak.dynasite.org/latents/articles/evaluation.md):
 - [Covariates, outcomes and staged

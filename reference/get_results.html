@@ -17,7 +17,7 @@ measurement model, a classification diagnostic and a transition matrix."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,10 +33,12 @@ measurement model, a classification diagnostic and a transition matrix."><meta p
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -95,6 +97,9 @@ measurement model, a classification diagnostic and a transition matrix.</p>
 <span><span class="co"># S3 method for class 'multilpa_enumeration'</span></span>
 <span><span class="fu">get_results</span><span class="op">(</span><span class="va">x</span>, what <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># S3 method for class 'latents_comparison'</span></span>
+<span><span class="fu">get_results</span><span class="op">(</span><span class="va">x</span>, what <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># S3 method for class 'multilpa_bootstrap_lrt'</span></span>
 <span><span class="fu">get_results</span><span class="op">(</span><span class="va">x</span>, what <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -151,6 +156,13 @@ dropped on the way to a table that would then answer a different question.</p></
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A base <code>data.frame</code> for a single <code>what</code>, whose columns are given
 under <em>Tables</em>, or a named list of such data frames for <code>what = "all"</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Every object also answers the usual generics: <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> shows a compact
+overview, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> collects its main tables (taking <code>level</code> and
+<code>vcov_type</code> where the model has standard errors), and <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>
+returns its primary table, the same as <code>get_results(x)</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="tables">Tables<a class="anchor" aria-label="anchor" href="#tables"></a></h2>
@@ -314,15 +326,69 @@ profile: <code>group_class</code>, <code>profile</code>, <code>probability</code
 <code>group_class_probability</code>. <code>"sequence_lengths"</code> has one row per group:
 <code>group</code>, <code>group_class</code>, <code>occasions</code>, <code>observations</code>, <code>complete</code>.</p></dd>
 
-<dt><code>"candidates"</code>, <code>"criteria"</code></dt>
-<dd><p>An enumeration grid.
-<code>"criteria"</code> has one row per information criterion, naming the candidate
-that minimises it. <code>"candidates"</code> has one row per candidate model,
-with its class counts, its covariance <code>model</code>, log likelihood,
+<dt><code>"candidates"</code>, <code>"criteria"</code>, <code>"classification"</code></dt>
+<dd><p>An enumeration
+grid. <code>"criteria"</code> has one row per information criterion and
+sample-size convention: <code>criterion</code>, <code>convention</code>, <code>candidate</code> (the
+candidate its minimum falls on), <code>n_profiles</code>, <code>n_group_classes</code>,
+<code>model</code> and <code>value</code>. <code>"candidates"</code> has one row per candidate model:
+its name (<code>candidate</code>, first), its class counts, its covariance
+<code>model</code>, log likelihood,
 parameter count, every criterion
-under both sample-size conventions, both entropies, and the convergence,
-boundary, replication, warning and error diagnostics. Failed candidates
-are retained with <code>NA</code> estimates and their error text.</p></dd>
+under both sample-size conventions, both entropies, the average
+posterior probability (AvePP) summaries of each level –
+<code>avepp_min</code>, <code>avepp_max</code>, <code>avepp_mean</code>,
+<code>avepp_below</code> and the same four prefixed <code>group_</code> – and the
+convergence, boundary, replication, warning and error diagnostics.
+Failed candidates are retained with <code>NA</code> estimates and their error text.
+<code>"candidates"</code> takes <code>cutoff</code> (default <code>0.8</code>): <code>avepp_below</code> and
+<code>group_avepp_below</code> count the classes whose AvePP is below it. A class with no modally assigned
+unit has no AvePP; it is left out of the smallest, largest and mean and
+counted as below the cutoff. A level with one class has <code>NA</code>
+summaries. <code>"classification"</code> has one row per fitted candidate,
+level and class: <code>candidate</code>, <code>n_profiles</code>, <code>n_group_classes</code>,
+<code>model</code>, then the
+columns of a fit's <code>"classification"</code> table and that level's
+<code>relative_entropy</code>. Failed candidates and levels with a single class
+contribute no rows.</p></dd>
+
+<dt><code>"deltas"</code>, <code>"knees"</code></dt>
+<dd><p>Model-selection evidence of an enumeration
+grid, each taking <code>using</code> (default <code>"bic_groups"</code>). Neither selects a
+model. <code>"deltas"</code> has one row per candidate: <code>candidate</code>, its class
+counts and <code>model</code>, <code>criterion</code>, <code>value</code>, <code>delta_profile</code> (how much the
+criterion fell from the converged candidate with one profile fewer and
+the same group classes and structure; positive means this candidate is
+lower) with <code>from_profile</code> naming that candidate, and
+<code>delta_group_class</code> with <code>from_group_class</code> for one group class fewer.
+<code>value</code> and both deltas are <code>NA</code> for a candidate that did not converge,
+and a delta is <code>NA</code> when the smaller neighbour is missing or did not
+converge. <code>"knees"</code> has one row per
+line of the grid: <code>direction</code> (<code>"profiles"</code>, along the profiles at
+fixed group classes; <code>"group_classes"</code>, along the group classes at
+fixed profiles; <code>"parameters"</code>, every candidate by its number of
+parameters, one line per structure), <code>line</code>, <code>criterion</code>, <code>from</code>, <code>to</code>,
+<code>n_points</code>,
+<code>knee_candidate</code> (the maximum chord-distance knee: with both axes
+rescaled to 0-1, the
+candidate furthest below the straight line from the first to the last,
+measured perpendicular to it), <code>distance</code>,
+<code>knee_without_largest</code> (the knee when the last candidate of the line is
+left out), <code>stable</code> and <code>note</code>. This is a simplified geometric rule
+inspired by Kneedle, without its smoothing or sensitivity thresholds;
+a very small positive distance can therefore still name a knee.
+A line needs three candidates for a
+knee and four for <code>knee_without_largest</code> and <code>stable</code>; otherwise they
+are <code>NA</code> and <code>note</code> says why.</p></dd>
+
+<dt><code>"comparison"</code>, <code>"classification"</code></dt>
+<dd><p>A <code><a href="compare_models.html">compare_models()</a></code> result.
+<code>"comparison"</code> is its table, one row per model. <code>"classification"</code>,
+for profile, class, membership-covariate and transition models, has
+one row per model, level and class:
+<code>model</code>, then the columns of a fit's <code>"classification"</code> table and that
+level's <code>relative_entropy</code>; levels with one class are left out. The
+models themselves come back with <code><a href="get_candidate.html">get_candidate()</a></code>.</p></dd>
 
 <dt><code>"test"</code>, <code>"replicates"</code></dt>
 <dd><p>A bootstrap comparison. <code>"test"</code> is the
@@ -332,6 +398,88 @@ one-row result; <code>"replicates"</code> has one row per simulated dataset.</p>
 <dd><p>A starting-value set. One row per profile and
 ordered pair of continuous indicators: <code>profile</code>, <code>indicator</code>,
 <code>indicator_2</code>, <code>covariance</code>.</p></dd>
+
+
+</dl></div>
+    <div class="section level2">
+    <h2 id="tables-of-the-other-model-families">Tables of the other model families<a class="anchor" aria-label="anchor" href="#tables-of-the-other-model-families"></a></h2>
+
+
+<p>Each family's first table is its default <code>what</code>; <code>"all"</code> returns a named
+list of every table (without <code>"recovery"</code>, which needs <code>data</code> and <code>truth</code>).
+Tables with intervals take <code>level</code>, and <code>vcov_type</code> (<code>"observed"</code>,
+<code>"robust"</code> or <code>"opg"</code>; <code>NULL</code> reuses the type stored with a regression
+fit). The usual generics answer as well: <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code>vcov(type = )</code>,
+<code>confint(parm = , level = )</code>, <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code> and <code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code>.</p><dl><dt>Mixture regressions (<code><a href="mixture_regression.html">mixture_regression()</a></code>)</dt>
+<dd><p><code>"coefficients"</code>
+(one row per class and term, with Wald statistics, <code>p_adjusted</code> by
+Benjamini-Hochberg over non-intercepts and <code>exp_estimate</code> for the
+binomial, Poisson and ordinal families; ordinal thresholds lead each
+class as terms <code>"threshold:&lt;lower&gt;|&lt;upper&gt;"</code>), <code>"classes"</code>,
+<code>"membership"</code> (multinomial logits and odds ratios), <code>"group_classes"</code>
+(two-level fits), <code>"fit"</code> (<code>bic</code> penalised by independent units,
+<code>bic_rows</code> by rows as flexmix reports it), <code>"assignments"</code>,
+<code>"groups"</code>, <code>"fitted"</code>, <code>"starts"</code> (<code>stage</code> <code>"screened"</code> or
+<code>"completed"</code>), <code>"classification"</code> and <code>"recovery"</code> (<code>by = "class"</code> or
+<code>"group_class"</code>).</p></dd>
+
+<dt>Growth mixtures (<code>mixture_regression(random = )</code>)</dt>
+<dd><p>The tables
+above plus <code>"random"</code> (random-effect variances, standard deviations
+and correlations, with intervals on the log and Fisher-z scales),
+<code>"random_effects"</code> (one row per person), <code>"trajectories"</code> (each class's
+mean trajectory with a band) and <code>"individual"</code> (each person's own
+predicted curve); the last two take <code>time</code>. A multilevel growth mixture
+adds <code>"group_classes"</code> and <code>"clusters"</code>, and its <code>"fit"</code> counts clusters
+in <code>bic</code> (persons in <code>bic_persons</code>).</p></dd>
+
+<dt>Additive fits (<code>multilpa(family = "additive")</code>)</dt>
+<dd><p><code>"parameters"</code>
+(class means, between- and within-group variances and class weights;
+variance intervals on the log scale, weights on the logit scale;
+<code>adjust</code> sets the p-value adjustment, <code>"none"</code> by default),
+<code>"group_classes"</code>, <code>"groups"</code>, <code>"intercepts"</code> and
+<code>"conditional_intercepts"</code> (each group's posterior intercept, overall
+or given each class), <code>"assignments"</code>, <code>"classification"</code>, <code>"fit"</code>,
+<code>"recovery"</code> and <code>"starts"</code>. <code>effective_groups</code> in <code>"group_classes"</code> is
+<code>w^2 (1 - w) / Var(w)</code>, the number of perfectly classified groups that
+would estimate the class weight as precisely; below 50 the class's
+intervals carry a <code>latents_weak_class</code> warning.</p></dd>
+
+<dt>Cross-level fits (<code>multilpa(family = "full_cross_level")</code> or
+<code>"restricted_cross_level"</code>)</dt>
+<dd><p><code>"profiles"</code> (individual profiles, then
+the group classes' means of group means), <code>"group_classes"</code>,
+<code>"composition"</code> (profile shares within each class: model-implied for
+the full family, a posterior-weighted description for the restricted
+one), <code>"groups"</code>, <code>"assignments"</code>, <code>"fit"</code> and <code>"starts"</code>. The
+likelihood is a working likelihood, comparable only between
+cross-level fits of the same data.</p></dd>
+
+<dt>General transition fits (<code><a href="lta.html">lta()</a></code> with <code>transitions = "occasion"</code>,
+transition or initial covariates, or <code>measurement = "occasion"</code>)</dt>
+<dd><p><code>"transitions"</code> (model-implied, averaged over the groups observed),
+<code>"transition_coefficients"</code> (log odds of each move against staying,
+with odds ratios), <code>"second_order_transitions"</code> and
+<code>"second_order_coefficients"</code> (<code>order = 2</code>), <code>"initial"</code> and
+<code>"initial_coefficients"</code>, <code>"profiles"</code>, <code>"group_classes"</code>,
+<code>"assignments"</code>, <code>"fit"</code> and <code>"starts"</code>.</p></dd>
+
+<dt>Pooled imputations (<code><a href="pool_imputations.html">pool_imputations()</a></code>)</dt>
+<dd><p><code>"estimates"</code> (the
+pooled table), <code>"imputations"</code> (each imputation's aligned estimates)
+and <code>"fits"</code> (one row per imputation).</p></dd>
+
+<dt>Transition and group-class family grids
+(<code>enumerate_classes(time = )</code>, <code>enumerate_classes(family = )</code>)</dt>
+<dd><p><code>"candidates"</code> (one row per candidate, its name first, with its
+likelihood, criteria, entropy and diagnostics) or <code>"best"</code>, the row
+with the lowest <code>criterion</code> (<code>"bic"</code> by groups, the default, <code>"aic"</code>
+or <code>"bic_individual"</code>): the lowest value of a criterion, not a choice
+of model. With one group class every family is the same model, so
+those rows share a likelihood. Their candidates are taken out by name
+with <code><a href="get_candidate.html">get_candidate()</a></code>; transition grids can also be compared with
+<code><a href="compare_models.html">compare_models()</a></code>.</p></dd>
 
 
 </dl></div>
@@ -481,7 +629,11 @@ else's posterior; the alignment is checked rather than assumed. A large
 residual is evidence of local dependence between two indicators, which the
 enumeration grid will otherwise absorb by asking for an extra profile. The
 p-values are approximate, and <code>p_adjusted</code> applies the multiplicity
-correction named by <code>adjust</code> across the pairs.</p>
+correction named by <code>adjust</code> across the pairs.
+A fit with sampling weights uses those weights in its descriptive
+associations and <code>effective_n</code>. Design-based residual inference is not
+implemented: <code>statistic</code>, <code>df</code>, <code>p_value</code> and <code>p_adjusted</code> are <code>NA</code> for
+weighted fits rather than unweighted tests attached to weighted moments.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

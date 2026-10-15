@@ -199,7 +199,7 @@ coefficient table) or
 [`logLik()`](https://rdrr.io/r/stats/logLik.html) and
 [`nobs()`](https://rdrr.io/r/stats/nobs.html) on it. The tables are
 described on
-[`get_results.latents_mixture_regression()`](https://pak.dynasite.org/latents/reference/get_results.latents_mixture_regression.md).
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
 
 ## Nesting
 
@@ -237,9 +237,9 @@ no numerical integration); estimation is EM with the random effects as
 missing data, finished by quasi-Newton with analytic scores. Such a fit
 has class `latents_growth_mixture`; its tables, plots and inference are
 described on
-[`get_results.latents_growth_mixture()`](https://pak.dynasite.org/latents/reference/get_results.latents_growth_mixture.md)
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
 and
-[`plot.latents_growth_mixture()`](https://pak.dynasite.org/latents/reference/plot.latents_growth_mixture.md).
+[plot()](https://pak.dynasite.org/latents/reference/latents-plots.md).
 Random effects need the gaussian family, `id` and
 `class_level = "group"`.
 

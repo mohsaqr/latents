@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,10 +43,12 @@
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -243,19 +245,19 @@ varying model to show every parameter.</p>
 <p><code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> fits every combination of family,
 between-variance restriction and number of group classes in one call.
 The <code>model</code> column names each candidate for
-<code><a href="../reference/candidate_fit.html">candidate_fit()</a></code>.</p>
+<code><a href="../reference/get_candidate.html">get_candidate()</a></code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">ratings</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"climate"</span>, <span class="st">"support"</span><span class="op">)</span>, <span class="st">"team"</span>,</span>
 <span>                          family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"additive"</span>, <span class="st">"dispersion"</span>,</span>
 <span>                                     <span class="st">"additive_dispersion"</span><span class="op">)</span>,</span>
 <span>                          n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">grid</span>, <span class="st">"best"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;            model   family between_variance n_group_classes log_likelihood n_parameters</span></span>
-<span><span class="co">#&gt; 7 additive_equal additive            equal               2          -2594            9</span></span>
-<span><span class="co">#&gt;    aic  bic bic_individual entropy smallest_class min_effective_groups converged boundary</span></span>
-<span><span class="co">#&gt; 7 5206 5231           5249    0.87          0.395                 39.6      TRUE    FALSE</span></span>
-<span><span class="co">#&gt;   n_best_replicated warnings error</span></span>
-<span><span class="co">#&gt; 7                10           &lt;NA&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;                candidate          model   family between_variance n_group_classes</span></span>
+<span><span class="co">#&gt; 7 additive_equal_groups2 additive_equal additive            equal               2</span></span>
+<span><span class="co">#&gt;   log_likelihood n_parameters  aic  bic bic_individual entropy smallest_class</span></span>
+<span><span class="co">#&gt; 7          -2594            9 5206 5231           5249    0.87          0.395</span></span>
+<span><span class="co">#&gt;   min_effective_groups converged boundary n_best_replicated warnings error</span></span>
+<span><span class="co">#&gt; 7                 39.6      TRUE    FALSE                10           &lt;NA&gt;</span></span></code></pre></div>
 <p>The lowest BIC belongs to two additive classes with equal
 between-group spread, the model chosen above. Adding class-specific
 within-group variances (additive-dispersion) does not improve the fit
@@ -270,8 +272,8 @@ two. The likelihood-ratio statistic has no chi-square reference
 distribution there, so <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> simulates it from
 the one-class fit:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">one_class</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/candidate_fit.html">candidate_fit</a></span><span class="op">(</span><span class="va">grid</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span>, model <span class="op">=</span> <span class="st">"additive_equal"</span><span class="op">)</span></span>
-<span><span class="va">two_classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/candidate_fit.html">candidate_fit</a></span><span class="op">(</span><span class="va">grid</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, model <span class="op">=</span> <span class="st">"additive_equal"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">one_class</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">grid</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span>, model <span class="op">=</span> <span class="st">"additive_equal"</span><span class="op">)</span></span>
+<span><span class="va">two_classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">grid</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, model <span class="op">=</span> <span class="st">"additive_equal"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">one_class</span>, <span class="va">two_classes</span>, iter <span class="op">=</span> <span class="fl">19</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Parametric bootstrap likelihood-ratio comparison</span></span>
 <span><span class="co">#&gt; Null: additive_equal, 1 group class; alternative: additive_equal, 2 group classes</span></span>

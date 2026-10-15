@@ -37,7 +37,8 @@ descriptives(x, by = NULL, ...)
 - vars:
 
   Character vector of column names to describe. Repeated names are
-  described once. For a data frame, defaults to every numeric column
+  described once. Columns must be vectors; matrix-valued columns raise
+  `latents_bad_data`. For a data frame, defaults to every numeric column
   that is not `id`.
 
 - id:

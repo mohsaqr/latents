@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,10 +46,12 @@
     <li><a class="dropdown-item" href="articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="articles/mixture-regression.html">Mixture regression</a></li>
@@ -114,8 +116,8 @@
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mi>j</mi></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>h</mi><mo>=</mo><mn>1</mn></mrow><mi>H</mi></munderover><msub><mi>η</mi><mi>h</mi></msub><munderover><mo>∏</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><msub><mi>n</mi><mi>j</mi></msub></munderover><mrow><mo stretchy="true" form="prefix">{</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>π</mi><mrow><mi>h</mi><mi>k</mi></mrow></msub><msub><mi>ϕ</mi><mi>D</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>𝐲</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>;</mo><msub><mi>𝛍</mi><mi>k</mi></msub><mo>,</mo><msub><mi>𝚺</mi><mi>k</mi></msub><mo stretchy="false" form="postfix">)</mo><mo stretchy="true" form="postfix">}</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
 L_j = \sum_{h=1}^{H}\eta_h
 \prod_{i=1}^{n_j}
-\left\{\sum_{k=1}^{K}\pi_{hk}
-\phi_D(\mathbf{y}_{ij};\boldsymbol{\mu}_k,\boldsymbol{\Sigma}_k)\right\}.
+\left\lbrace \sum_{k=1}^{K}\pi_{hk}
+\phi_D(\mathbf{y}_{ij};\boldsymbol{\mu}_k,\boldsymbol{\Sigma}_k)\right\rbrace.
 </annotation></semantics></math></p>
 <p>This expression makes the two levels explicit. The inner mixture combines the observation-level profiles. The outer mixture combines the group classes, each with its own distribution over those profiles. Observations in a group share the same latent group class; integrating over that class induces dependence among them.</p>
 </div>
@@ -454,43 +456,63 @@ plot of chunk probabilities
 <span><span class="op">)</span></span>
 <span><span class="va">candidates</span></span>
 <span><span class="co">#&gt; Class enumeration: 9 candidate models</span></span>
-<span><span class="co">#&gt;  n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups bic_individual</span></span>
-<span><span class="co">#&gt;           2               1   VVI          -8615           21 17272      17328          17383</span></span>
-<span><span class="co">#&gt;           3               1   VVI          -8537           32 17137      17222          17306</span></span>
-<span><span class="co">#&gt;           4               1   VVI          -8501           43 17088      17203          17314</span></span>
-<span><span class="co">#&gt;           2               2   VVI          -8440           23 16926      16987          17047</span></span>
-<span><span class="co">#&gt;           3               2   VVI          -8365           35 16799      16892          16983</span></span>
-<span><span class="co">#&gt;           4               2   VVI          -8326           47 16746      16872          16994</span></span>
-<span><span class="co">#&gt;           2               3   VVI          -8421           25 16892      16959          17024</span></span>
-<span><span class="co">#&gt;           3               3   VVI          -8348           38 16773      16874          16973</span></span>
-<span><span class="co">#&gt;           4               3   VVI          -8307           51 16716      16852          16985</span></span>
-<span><span class="co">#&gt;  icl_individual profile_entropy group_entropy converged boundary n_best_replicated</span></span>
-<span><span class="co">#&gt;           17537           0.922            NA      TRUE    FALSE                10</span></span>
-<span><span class="co">#&gt;           18017           0.772            NA      TRUE    FALSE                10</span></span>
-<span><span class="co">#&gt;           18359           0.735            NA      TRUE    FALSE                 8</span></span>
-<span><span class="co">#&gt;           17168           0.938         0.940      TRUE    FALSE                10</span></span>
-<span><span class="co">#&gt;           17640           0.790         0.943      TRUE    FALSE                10</span></span>
-<span><span class="co">#&gt;           18021           0.739         0.937      TRUE    FALSE                10</span></span>
-<span><span class="co">#&gt;           17142           0.940         0.816      TRUE    FALSE                10</span></span>
-<span><span class="co">#&gt;           17622           0.792         0.797      TRUE    FALSE                10</span></span>
-<span><span class="co">#&gt;           18014           0.739         0.823      TRUE    FALSE                10</span></span>
+<span><span class="co">#&gt;          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic</span></span>
+<span><span class="co">#&gt;  profiles2_groups1          2               1   VVI          -8615           21 17272</span></span>
+<span><span class="co">#&gt;  profiles3_groups1          3               1   VVI          -8537           32 17137</span></span>
+<span><span class="co">#&gt;  profiles4_groups1          4               1   VVI          -8501           43 17088</span></span>
+<span><span class="co">#&gt;  profiles2_groups2          2               2   VVI          -8440           23 16926</span></span>
+<span><span class="co">#&gt;  profiles3_groups2          3               2   VVI          -8365           35 16799</span></span>
+<span><span class="co">#&gt;  profiles4_groups2          4               2   VVI          -8326           47 16746</span></span>
+<span><span class="co">#&gt;  profiles2_groups3          2               3   VVI          -8421           25 16892</span></span>
+<span><span class="co">#&gt;  profiles3_groups3          3               3   VVI          -8348           38 16773</span></span>
+<span><span class="co">#&gt;  profiles4_groups3          4               3   VVI          -8307           51 16716</span></span>
+<span><span class="co">#&gt;  bic_groups bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max</span></span>
+<span><span class="co">#&gt;       17328          17383          17537           0.922            NA     0.974     0.982</span></span>
+<span><span class="co">#&gt;       17222          17306          18017           0.772            NA     0.832     0.964</span></span>
+<span><span class="co">#&gt;       17203          17314          18359           0.735            NA     0.803     0.849</span></span>
+<span><span class="co">#&gt;       16987          17047          17168           0.938         0.940     0.982     0.985</span></span>
+<span><span class="co">#&gt;       16892          16983          17640           0.790         0.943     0.849     0.979</span></span>
+<span><span class="co">#&gt;       16872          16994          18021           0.739         0.937     0.792     0.858</span></span>
+<span><span class="co">#&gt;       16959          17024          17142           0.940         0.816     0.982     0.986</span></span>
+<span><span class="co">#&gt;       16874          16973          17622           0.792         0.797     0.845     0.978</span></span>
+<span><span class="co">#&gt;       16852          16985          18014           0.739         0.823     0.801     0.854</span></span>
+<span><span class="co">#&gt;  avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below</span></span>
+<span><span class="co">#&gt;       0.978           0              NA              NA               NA                NA</span></span>
+<span><span class="co">#&gt;       0.886           0              NA              NA               NA                NA</span></span>
+<span><span class="co">#&gt;       0.835           0              NA              NA               NA                NA</span></span>
+<span><span class="co">#&gt;       0.983           0           0.969           0.992            0.980                 0</span></span>
+<span><span class="co">#&gt;       0.893           0           0.977           0.992            0.985                 0</span></span>
+<span><span class="co">#&gt;       0.835           1           0.975           0.990            0.983                 0</span></span>
+<span><span class="co">#&gt;       0.984           0           0.900           0.962            0.923                 0</span></span>
+<span><span class="co">#&gt;       0.892           0           0.864           0.977            0.913                 0</span></span>
+<span><span class="co">#&gt;       0.836           0           0.874           0.981            0.923                 0</span></span>
+<span><span class="co">#&gt;  converged boundary n_best_replicated</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                10</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                10</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                 8</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                10</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                10</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                10</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                10</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                10</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE                10</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Compare one convention consistently.</span></span>
 <span><span class="fu"><a href="reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">candidates</span>, <span class="st">"criteria"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    criterion  convention n_profiles n_group_classes model value</span></span>
-<span><span class="co">#&gt; 1        aic        &lt;NA&gt;          4               3   VVI 16716</span></span>
-<span><span class="co">#&gt; 2        kic        &lt;NA&gt;          4               3   VVI 16770</span></span>
-<span><span class="co">#&gt; 3        bic      groups          4               3   VVI 16852</span></span>
-<span><span class="co">#&gt; 4        bic individuals          3               3   VVI 16973</span></span>
-<span><span class="co">#&gt; 5      sabic      groups          4               3   VVI 16691</span></span>
-<span><span class="co">#&gt; 6      sabic individuals          4               3   VVI 16823</span></span>
-<span><span class="co">#&gt; 7       caic      groups          4               3   VVI 16903</span></span>
-<span><span class="co">#&gt; 8       caic individuals          3               3   VVI 17011</span></span>
-<span><span class="co">#&gt; 9        awe      groups          3               2   VVI 17169</span></span>
-<span><span class="co">#&gt; 10       awe individuals          2               3   VVI 17398</span></span>
-<span><span class="co">#&gt; 11       icl      groups          4               2   VVI 16881</span></span>
-<span><span class="co">#&gt; 12       icl individuals          2               3   VVI 17142</span></span>
-<span><span class="co">#&gt; 13       clc      groups          4               3   VVI 16656</span></span>
-<span><span class="co">#&gt; 14       clc individuals          2               3   VVI 16960</span></span>
+<span><span class="co">#&gt;    criterion  convention         candidate n_profiles n_group_classes model value</span></span>
+<span><span class="co">#&gt; 1        aic        &lt;NA&gt; profiles4_groups3          4               3   VVI 16716</span></span>
+<span><span class="co">#&gt; 2        kic        &lt;NA&gt; profiles4_groups3          4               3   VVI 16770</span></span>
+<span><span class="co">#&gt; 3        bic      groups profiles4_groups3          4               3   VVI 16852</span></span>
+<span><span class="co">#&gt; 4        bic individuals profiles3_groups3          3               3   VVI 16973</span></span>
+<span><span class="co">#&gt; 5      sabic      groups profiles4_groups3          4               3   VVI 16691</span></span>
+<span><span class="co">#&gt; 6      sabic individuals profiles4_groups3          4               3   VVI 16823</span></span>
+<span><span class="co">#&gt; 7       caic      groups profiles4_groups3          4               3   VVI 16903</span></span>
+<span><span class="co">#&gt; 8       caic individuals profiles3_groups3          3               3   VVI 17011</span></span>
+<span><span class="co">#&gt; 9        awe      groups profiles3_groups2          3               2   VVI 17169</span></span>
+<span><span class="co">#&gt; 10       awe individuals profiles2_groups3          2               3   VVI 17398</span></span>
+<span><span class="co">#&gt; 11       icl      groups profiles4_groups2          4               2   VVI 16881</span></span>
+<span><span class="co">#&gt; 12       icl individuals profiles2_groups3          2               3   VVI 17142</span></span>
+<span><span class="co">#&gt; 13       clc      groups profiles4_groups3          4               3   VVI 16656</span></span>
+<span><span class="co">#&gt; 14       clc individuals profiles2_groups3          2               3   VVI 16960</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">candidates</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="reference/figures/README-enumeration-1.png" alt="plot of chunk enumeration" width="100%"><p class="caption">
@@ -501,7 +523,7 @@ plot of chunk enumeration
 <p>Candidate models should be assessed jointly for information criteria, convergence, replication of the likelihood, effective class sizes, residual dependence, and substantive interpretability. A criterion that continues to improve at the boundary of the grid indicates that the examined grid has not located an interior optimum for that criterion. It does not by itself justify adopting the largest fitted model.</p>
 <p>An individual candidate can be retrieved for the same inspection applied to the initial fit.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">candidate</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/candidate_fit.html">candidate_fit</a></span><span class="op">(</span><span class="va">candidates</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">candidate</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">candidates</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">candidate</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    profile  indicator   mean variance standard_deviation mean_standard_error</span></span>
 <span><span class="co">#&gt; 1        1     browse  0.540    0.590              0.768              0.0271</span></span>
@@ -597,11 +619,11 @@ plot of chunk enumeration
 <span><span class="co">#&gt;     2  -0.31  [-0.39, -0.24]  0.036       564.36</span></span>
 <span><span class="fu"><a href="reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level   outcome           term estimate standard_error statistic  p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.90e-03         NA</span></span>
-<span><span class="co">#&gt; 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.35e-22   3.35e-22</span></span>
+<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.91e-03         NA</span></span>
+<span><span class="co">#&gt; 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.38e-22   3.38e-22</span></span>
 <span><span class="co">#&gt;   conf_low conf_high</span></span>
 <span><span class="co">#&gt; 1    0.121     0.631</span></span>
-<span><span class="co">#&gt; 2    0.459     0.691</span></span></code></pre></div>
+<span><span class="co">#&gt; 2    0.458     0.691</span></span></code></pre></div>
 <p>The first call compares previous-grade means between enrolment profiles. The argument name <code>outcome</code> identifies the variable whose means are estimated; it does not imply that engagement precedes or causes previous grade. The second call estimates the association of previous grade with profile membership while preserving the original profile definitions.</p>
 <p>Differences from the jointly estimated regression are therefore expected: the two procedures use different constraints on the measurement solution. <code><a href="reference/three_step.html">three_step()</a></code> clusters its variance estimates by group by default, while <code><a href="reference/r3step.html">r3step()</a></code> uses the observed information by default and offers clustered sandwich inference through <code>vcov_type = "robust"</code>.</p>
 <p>The supplied data must preserve the original observation order and include the external variables. The package uses shared fitted columns to check alignment between the data and the stored fit.</p>

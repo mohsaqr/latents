@@ -448,7 +448,7 @@ multilpa(
   (`latents_boundary`); interior fits are finished by Newton steps. The
   result has class `multilpa_additive`; `bic` uses the number of groups
   and `bic_individual` the number of rows. Read it with
-  [`get_results.multilpa_additive()`](https://pak.dynasite.org/latents/reference/get_results.multilpa_additive.md);
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md);
   [`summary()`](https://rdrr.io/r/base/summary.html),
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
   [`coef()`](https://rdrr.io/r/stats/coef.html),
@@ -483,7 +483,7 @@ multilpa(
   cross-level fits of the same data, not with the other families.
   Standard errors are not available (`latents_unsupported_inference`).
   The result has class `multilpa_cross_level`, read with
-  [`get_results.multilpa_cross_level()`](https://pak.dynasite.org/latents/reference/get_results.multilpa_cross_level.md).
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
 
 - between_variance:
 

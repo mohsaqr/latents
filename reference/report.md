@@ -76,7 +76,7 @@ rather than from here.
 [`summary()`](https://rdrr.io/r/base/summary.html),
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
-[`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md).
+[`plot_views()`](https://pak.dynasite.org/latents/reference/latents-plots.md).
 
 ## Examples
 

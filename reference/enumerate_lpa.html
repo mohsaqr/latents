@@ -15,7 +15,7 @@ it returns the same object."><meta property="og:image" content="https://pak.dyna
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.23</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,10 +31,12 @@ it returns the same object."><meta property="og:image" content="https://pak.dyna
     <li><a class="dropdown-item" href="../articles/lpa.html">Multilevel latent profile analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lca.html">Two-level latent class analysis</a></li>
     <li><a class="dropdown-item" href="../articles/lta.html">Latent transition analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/enumeration.html">Class enumeration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -111,7 +113,7 @@ three-letter codes. See <code><a href="enumerate_classes.html">enumerate_classes
     <p>An object of class <code>multilpa_enumeration</code>, as <code><a href="enumerate_classes.html">enumerate_classes()</a></code>
 returns: <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> gives one row per candidate, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> the
 candidate each criterion prefers, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> the criteria against the
-number of profiles, and <code><a href="candidate_fit.html">candidate_fit()</a></code> one fitted candidate.</p>
+number of profiles, and <code><a href="get_candidate.html">get_candidate()</a></code> one fitted candidate.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -147,48 +149,149 @@ another.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Class enumeration: 12 candidates, 12 converged, 0 failed to fit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 distinct candidate(s) are minimal under some criterion.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> No candidate is selected automatically. Choose one convention and keep it.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> The candidates table shows 10 of its 26 columns; get_results(x, what = "candidates") returns all of them.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> The candidates table shows 14 of its 35 columns; get_results(x, what = "candidates") returns all of them.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- candidates ------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  n_profiles model log_likelihood n_parameters  aic  bic icl_individual</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           1   EEI        -1247.3           10 2515 2552           2552</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           2   EEI         -906.7           16 1845 1905           1949</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           3   EEI         -757.7           22 1559 1641           1707</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           1   VVI        -1247.3           10 2515 2552           2552</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           2   VVI         -889.3           21 1821 1898           1940</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           3   VVI         -735.7           32 1535 1654           1714</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           1   EEE         -615.7           20 1271 1345           1345</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           2   EEE         -600.9           26 1254 1350           1457</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           3   EEE         -594.4           32 1253 1371           1606</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           1   VVV         -615.7           20 1271 1345           1345</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  profile_entropy converged boundary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               NA      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           0.8939      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           0.9003      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               NA      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           0.8991      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           0.9089      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               NA      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           0.7440      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           0.6442      TRUE    FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               NA      TRUE    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      candidate n_profiles model log_likelihood n_parameters  aic  bic</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_EEI          1   EEI        -1247.3           10 2515 2552</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_EEI          2   EEI         -906.7           16 1845 1905</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_EEI          3   EEI         -757.7           22 1559 1641</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_VVI          1   VVI        -1247.3           10 2515 2552</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_VVI          2   VVI         -889.3           21 1821 1898</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_VVI          3   VVI         -735.7           32 1535 1654</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_EEE          1   EEE         -615.7           20 1271 1345</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_EEE          2   EEE         -600.9           26 1254 1350</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_EEE          3   EEE         -594.4           32 1253 1371</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_VVV          1   VVV         -615.7           20 1271 1345</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  icl_individual profile_entropy avepp_min avepp_mean avepp_below converged</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            2552              NA        NA         NA          NA      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1949          0.8939    0.9657     0.9712           0      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1707          0.9003    0.9452     0.9535           0      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            2552              NA        NA         NA          NA      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1940          0.8991    0.9686     0.9740           0      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1714          0.9089    0.9356     0.9591           0      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1345              NA        NA         NA          NA      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1457          0.7440    0.8801     0.9169           0      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1606          0.6442    0.7797     0.8391           1      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            1345              NA        NA         NA          NA      TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  boundary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 2 more rows.  get_results(x, what = "candidates")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- criteria --------------------------------------------------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention n_profiles n_group_classes model value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt;          3               1   VVV  1193</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt;          3               1   VVV  1258</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        bic      groups          1               1   EEE  1345</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        bic individuals          1               1   EEE  1345</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic      groups          3               1   VVV  1226</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic individuals          3               1   VVV  1226</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       caic      groups          1               1   EEE  1365</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       caic individuals          1               1   EEE  1365</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        awe      groups          1               1   EEE  1520</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals          1               1   EEE  1520</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention     candidate n_profiles n_group_classes model value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt; profiles3_VVV          3               1   VVV  1193</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt; profiles3_VVV          3               1   VVV  1258</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic      groups profiles1_EEE          1               1   EEE  1345</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        bic individuals profiles1_EEE          1               1   EEE  1345</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic      groups profiles3_VVV          3               1   VVV  1226</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      sabic individuals profiles3_VVV          3               1   VVV  1226</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic      groups profiles1_EEE          1               1   EEE  1365</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       caic individuals profiles1_EEE          1               1   EEE  1365</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe      groups profiles1_EEE          1               1   EEE  1520</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals profiles1_EEE          1               1   EEE  1520</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "criteria")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 tables above, truncated to fit. get_results(x, what = ) returns any</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- classification --------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      candidate n_profiles n_group_classes model       level class n_modal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_EEI          2               1   EEI individuals     1     131</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_EEI          2               1   EEI individuals     2     169</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_EEI          3               1   EEI individuals     1     123</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_EEI          3               1   EEI individuals     2     120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_EEI          3               1   EEI individuals     3      57</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_VVI          2               1   VVI individuals     1     140</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_VVI          2               1   VVI individuals     2     160</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_VVI          3               1   VVI individuals     1     118</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_VVI          3               1   VVI individuals     2     122</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_VVI          3               1   VVI individuals     3      60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  proportion_modal estimated_n estimated_proportion average_posterior</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.4367      130.43               0.4348            0.9657</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.5633      169.57               0.5652            0.9768</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.4100      123.06               0.4102            0.9452</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.4000      120.59               0.4020            0.9687</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.1900       56.34               0.1878            0.9466</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.4667      142.13               0.4738            0.9793</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.5333      157.87               0.5262            0.9686</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.3933      115.46               0.3849            0.9356</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.4067      124.18               0.4139            0.9748</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            0.2000       60.36               0.2012            0.9668</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  odds_correct_classification relative_entropy</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        36.56           0.8939</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        32.32           0.8939</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        24.81           0.9003</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        46.01           0.9003</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        76.70           0.9003</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        52.62           0.8991</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        27.77           0.8991</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        23.22           0.9089</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        54.87           0.9089</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       115.74           0.9089</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 10 more rows.  get_results(x, what = "classification")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- deltas ----------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      candidate n_profiles n_group_classes model  criterion value delta_profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_EEI          1               1   EEI bic_groups  2552            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_EEI          2               1   EEI bic_groups  1905       646.836</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_EEI          3               1   EEI bic_groups  1641       263.844</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_VVI          1               1   VVI bic_groups  2552            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_VVI          2               1   VVI bic_groups  1898       653.179</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_VVI          3               1   VVI bic_groups  1654       244.369</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_EEE          1               1   EEE bic_groups  1345            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_EEE          2               1   EEE bic_groups  1350        -4.704</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles3_EEE          3               1   EEE bic_groups  1371       -21.098</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_VVV          1               1   VVV bic_groups  1345            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   from_profile delta_group_class from_group_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           &lt;NA&gt;                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_EEI                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_EEI                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           &lt;NA&gt;                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_VVI                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_VVI                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           &lt;NA&gt;                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles1_EEE                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  profiles2_EEE                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           &lt;NA&gt;                NA             &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 2 more rows.  get_results(x, what = "deltas")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- knees -----------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   direction                line  criterion          from            to n_points</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    profiles  1 group class, EEE bic_groups profiles1_EEE profiles3_EEE        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    profiles  1 group class, EEI bic_groups profiles1_EEI profiles3_EEI        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    profiles  1 group class, VVI bic_groups profiles1_VVI profiles3_VVI        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    profiles  1 group class, VVV bic_groups profiles1_VVV profiles3_VVV        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  parameters all candidates, EEE bic_groups profiles1_EEE profiles3_EEE        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  parameters all candidates, EEI bic_groups profiles1_EEI profiles3_EEI        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  parameters all candidates, VVI bic_groups profiles1_VVI profiles3_VVI        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  parameters all candidates, VVV bic_groups profiles1_VVV profiles3_VVV        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  knee_candidate distance knee_without_largest stable</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            &lt;NA&gt;       NA                 &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profiles2_EEI   0.1487                 &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profiles2_VVI   0.1610                 &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            &lt;NA&gt;       NA                 &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            &lt;NA&gt;       NA                 &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profiles2_EEI   0.1487                 &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   profiles2_VVI   0.1610                 &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            &lt;NA&gt;       NA                 &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                         note</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  the criterion does not fall along this line</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     three candidates: stability not assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     three candidates: stability not assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  the criterion does not fall along this line</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  the criterion does not fall along this line</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     three candidates: stability not assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     three candidates: stability not assessed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  the criterion does not fall along this line</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 tables above, truncated to fit. get_results(x, what = ) returns any</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> of them whole, and get_results(x, what = "all") returns every one.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="enumerate_lpa-1.png" alt="" width="700" height="433"></span>
