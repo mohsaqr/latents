@@ -1,3 +1,10 @@
+# latents 0.9.36
+
+* `plot_enumeration()` of a grid over group classes at one number of
+  profiles puts the group classes on the x-axis; it used to stack every
+  candidate in a single column with overlapping labels. Grids over profiles
+  plot as before.
+
 # latents 0.9.35
 
 * A posterior probability that rounds a hair past 1 no longer gives a

@@ -91,3 +91,24 @@ test_that("a legend of more than four keys wraps into rows instead of running of
   expect_identical(.gg_scales(four, legend = TRUE)$colour$guide, "legend")
   expect_identical(.gg_scales(key, legend = FALSE)$colour$guide, "none")
 })
+
+test_that("a grid over group classes at one profile count puts the classes on the x-axis", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+  grid <- quietly(
+    enumerate_classes(course_engagement, vars, "student", n_profiles = 3,
+                      n_group_classes = 2:4, n_starts = 1, seed = 1),
+    c("latents_boundary", "latents_small_classes", "latents_unconverged"))
+  built <- ggplot2::ggplot_build(plot_enumeration(grid))
+  points <- built$data[[2L]]
+  expect_setequal(unique(points$x), 2:4)
+  expect_match(built$plot$labels$x, "group classes")
+  # A grid over profiles keeps profiles on the x-axis.
+  profiles <- quietly(
+    enumerate_classes(course_engagement, vars, "student", n_profiles = 2:3,
+                      n_group_classes = 2, n_starts = 1, seed = 1),
+    c("latents_boundary", "latents_small_classes", "latents_unconverged"))
+  expect_identical(ggplot2::ggplot_build(plot_enumeration(profiles))$plot$labels$x,
+                   "Number of profiles")
+})

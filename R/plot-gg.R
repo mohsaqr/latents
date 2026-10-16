@@ -1313,7 +1313,7 @@ utils::globalVariables(c(
 #' A series is one covariance model at one number of group classes; its label
 #' names only what tells the series apart.
 #' @noRd
-.gg_enumeration_frame <- function(grid, criteria) {
+.gg_enumeration_frame <- function(grid, criteria, by_classes = FALSE) {
   model <- grid$model
   known <- unique(stats::na.omit(model))
   if (length(known) == 1L) model[is.na(model)] <- known
@@ -1321,7 +1321,8 @@ utils::globalVariables(c(
   classes_text <- sprintf("%d group class%s", grid$n_group_classes,
                           ifelse(grid$n_group_classes == 1L, "", "es"))
   several_models <- length(unique(model)) > 1L
-  several_groups <- length(unique(grid$n_group_classes)) > 1L
+  # With the group classes on the x-axis they are no longer a series.
+  several_groups <- !by_classes && length(unique(grid$n_group_classes)) > 1L
   series <- if (several_models && several_groups) {
     paste(model, classes_text, sep = ", ")
   } else if (several_models) model else if (several_groups) classes_text else
@@ -1329,7 +1330,9 @@ utils::globalVariables(c(
   do.call(rbind, Map(\(column, title) {
     values <- grid[[column]]
     eligible <- grid$converged %in% TRUE & is.finite(values)
-    data.frame(title = title, series = series, n_profiles = grid$n_profiles,
+    data.frame(title = title, series = series,
+               n_profiles = if (by_classes) grid$n_group_classes else
+                 grid$n_profiles,
                value = values, eligible = eligible)
   }, criteria, names(criteria)))
 }
@@ -1339,7 +1342,11 @@ utils::globalVariables(c(
 .gg_view_enumeration <- function(x, criteria, labels, mark_minimum, main,
                                  subtitle) {
   grid <- as.data.frame(x)
-  long <- .gg_enumeration_frame(grid, criteria)
+  # A grid over group classes at one number of profiles would stack every
+  # candidate in one column; the group classes then go on the x-axis.
+  by_classes <- length(unique(grid$n_profiles)) == 1L &&
+    length(unique(grid$n_group_classes)) > 1L
+  long <- .gg_enumeration_frame(grid, criteria, by_classes)
   long$title <- factor(long$title, levels = names(criteria))
   series_levels <- unique(long$series[order(grid$n_group_classes, grid$model)])
   long$series <- factor(long$series, levels = series_levels)
@@ -1398,7 +1405,7 @@ utils::globalVariables(c(
                         nrow = if (length(criteria) <= 3L) 1L else NULL,
                         ncol = if (length(criteria) > 3L) 2L else NULL) +
     ggplot2::scale_x_continuous(
-      breaks = sort(unique(grid$n_profiles)),
+      breaks = sort(unique(long$n_profiles)),
       expand = ggplot2::expansion(add = c(0.3, if (labelled) 1.1 else 0.3))) +
     ggplot2::scale_colour_manual(values = colours, guide = guide) +
     ggplot2::scale_fill_manual(values = colours, guide = guide) +
@@ -1413,7 +1420,10 @@ utils::globalVariables(c(
                        if (failures == 0L) "" else
                          sprintf(", %d did not converge (x)", failures),
                        if (isTRUE(mark_minimum)) ", ring = lowest" else "")) +
-    ggplot2::labs(x = "Number of profiles",
+    ggplot2::labs(x = if (by_classes) {
+                    sprintf("Number of group classes (%d profiles)",
+                            grid$n_profiles[[1L]])
+                  } else "Number of profiles",
                   y = if (several) NULL else names(criteria)) +
     .gg_theme() +
     ggplot2::theme(panel.spacing = ggplot2::unit(1.6, "lines"),
