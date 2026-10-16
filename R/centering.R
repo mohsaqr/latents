@@ -57,9 +57,12 @@
   # indicator has no mean to centre on, and subtracting a global stand-in would
   # silently mix the two scales, so that cell's offset is zero and the values
   # stay on the raw scale -- recorded, because `offsets` is returned.
+  # `reorder = TRUE` sorts the sums by group index, which is the order of
+  # `present`; first-occurrence order would pair them only when the indices
+  # happen to appear in increasing order.
   observed <- !is.na(x)
-  totals <- rowsum(ifelse(observed, x, 0), group_index, reorder = FALSE)
-  counts <- rowsum(observed * 1, group_index, reorder = FALSE)
+  totals <- rowsum(ifelse(observed, x, 0), group_index, reorder = TRUE)
+  counts <- rowsum(observed * 1, group_index, reorder = TRUE)
   present <- sort(unique(group_index))
   offsets <- matrix(0, nrow = n_groups, ncol = ncol(x),
                     dimnames = list(NULL, colnames(x)))
@@ -111,13 +114,37 @@
 #' and a constant column identifies no profile, so it is refused here rather
 #' than surfacing as a degenerate variance later.
 #'
+#' A person-centred column is constant exactly when every unit's observed
+#' values are all equal (its deviations sum to zero, so a constant deviation
+#' is zero), which is read off the raw values without a tolerance. Judging the
+#' centred values against an absolute threshold instead made the verdict
+#' depend on the units: indicators recorded in units of `1e-9` were refused
+#' under either scheme while `centering = "none"` fitted them.
+#'
 #' @param x The centred indicator matrix.
 #' @param centering The scheme that produced it.
+#' @param raw,group_index The indicator matrix before centring and the unit
+#'   of each row. Without them the centred values are compared with an
+#'   absolute `sqrt(.Machine$double.eps)`, which suits values of order one
+#'   only.
 #' @return `NULL`, invisibly.
 #' @noRd
-.multilpa_check_centered <- function(x, centering) {
+.multilpa_check_centered <- function(x, centering, raw = NULL,
+                                     group_index = NULL) {
   if (identical(centering, "none") || ncol(x) == 0L) return(invisible(NULL))
+  exact <- !is.null(raw) && !is.null(group_index)
+  stopifnot("`raw` must match `x`" = !exact || identical(dim(raw), dim(x)),
+            "`group_index` must have one unit per row" =
+              !exact || length(group_index) == nrow(x))
   flat <- vapply(seq_len(ncol(x)), function(column) {
+    if (exact) {
+      observed <- !is.na(raw[, column])
+      units <- if (identical(centering, "person")) group_index[observed] else
+        rep(1L, sum(observed))
+      within <- tapply(raw[observed, column], units,
+                       function(values) length(unique(values)) < 2L)
+      return(sum(observed) == 0L || all(within))
+    }
     values <- x[, column]
     values <- values[!is.na(values)]
     length(values) == 0L || diff(range(values)) < sqrt(.Machine$double.eps)

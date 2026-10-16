@@ -112,7 +112,15 @@ observations, grouping, covariance structure, centering or missing-data
 handling; \code{latents_bad_data} when the data have missing indicators and
 the models were not fitted with \code{missing = "fiml"}; \code{latents_bad_nesting}
 also when two covariate models use different covariates or slope
-specifications (other than a one-group-class null).
+specifications (other than a one-group-class null), and when the models
+do not differ by exactly one class at one level.
+\code{latents_no_converge} when either original model has not converged or
+has an active variance bound; \code{latents_reversed_likelihood} when the
+alternative's log likelihood is below the null's by more than \code{tol} can
+explain; \code{latents_bad_inference_data} when \code{data} does not reproduce a
+fitted likelihood; \code{latents_unsupported_weights} for fits with sampling
+weights; \code{latents_unsupported_noise} for fits with a noise component;
+\code{latents_bad_argument} for an invalid \code{seed}.
 }
 
 \examples{

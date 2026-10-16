@@ -399,8 +399,8 @@
            seed = seed, model = if (is.na(grid$model[i])) NULL else grid$model[i]),
       extra)),
       warning = function(warning) {
+        # Recorded per candidate and passed on, as the profile grid does.
         warnings <<- c(warnings, conditionMessage(warning))
-        invokeRestart("muffleWarning")
       }), error = function(error) {
         error_text <<- conditionMessage(error)
         NULL
@@ -446,6 +446,8 @@ get_results.latents_transition_enumeration <- function(
     criterion = c("bic", "aic", "bic_individual"), ...) {
   what <- match.arg(what)
   criterion <- match.arg(criterion)
+  .latents_warn_unused_arguments(list(...), "get_results()",
+                                 "An enumeration's tables take only `what` and `criterion`.")
   table <- .latents_named_table(x)
   .latents_grid_result_tables(table, what, criterion)
 }

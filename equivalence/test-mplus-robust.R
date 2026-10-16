@@ -19,7 +19,11 @@ test_that("robust standard errors reproduce genuine Mplus MLR results", {
   jacobian[q, c(q - 2L, q - 1L)] <- c(1, -1)
   standard_errors <- sqrt(diag(jacobian %*% attr(information, "covariance_unconstrained") %*%
                                  t(jacobian)))
-  expect_lt(max(abs(standard_errors - reference$mplus_standard_errors)), 1e-6)
+  # Mplus MLR applies no small-sample factor (CR0); latents uses CR1 since
+  # 0.9.31, so its errors are exactly sqrt(G / (G - 1)) times Mplus's.
+  n_groups <- length(unique(dat$clus))
+  mplus_cr1 <- reference$mplus_standard_errors * sqrt(n_groups / (n_groups - 1))
+  expect_lt(max(abs(standard_errors - mplus_cr1)), 1e-6)
   expect_lt(abs(attr(information, "scaling_correction") - reference$mplus_scaling), 1e-6)
   indices <- get_results(fit, "information_criteria", format = "long")
   # A criterion that has no sample-size convention -- AIC counts parameters, not

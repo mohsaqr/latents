@@ -26,7 +26,11 @@
 #'   named fit views and `plot_diagnostics()`, an
 #'   enumeration from [enumerate_classes()], [enumerate_lpa()] or
 #'   [enumerate_lca()] for `plot_enumeration()` and `plot_tree()`, a
-#'   transition fit from [lta()] for `plot_transitions()`.
+#'   transition fit from [lta()] for `plot_transitions()`. A general [lta()]
+#'   fit (occasion-varying transitions, covariates, mover-stayer, second
+#'   order, weights, ordinal or count indicators) draws only its transition
+#'   matrix, with `plot_transitions()` or `plot()`; a transition or
+#'   group-class family grid plots with `plot(x, what = )`.
 #' @param what For `plot_diagnostics()`: `"all"` (default), `"sizes"`
 #'   (effective profile counts), `"posteriors"` (posterior probability of each
 #'   case's assigned profile), `"entropy"` (each case's entropy relative to a
@@ -53,8 +57,12 @@
 #'   deviation.
 #' @param intervals For profile, bar and response views, `TRUE` draws 95%
 #'   intervals when the fit has standard
-#'   errors; otherwise the subtitle says why there are none.
+#'   errors; otherwise the subtitle says why there are none. They are the
+#'   `conf_low` and `conf_high` of [parameter_inference()]: a response
+#'   probability's interval is built on the logit scale.
 #' @param labels `TRUE` labels each series directly; `FALSE` uses a legend.
+#'   On sequence views, `TRUE` blocks the groups by group class under
+#'   labelled strips.
 #' @param data Optional. The data the model was fitted to, used only to
 #'   compute intervals from a different frame.
 #' @param category Which category's probability to draw: `"last"` (default),
@@ -112,14 +120,19 @@
 #' draw with a `latents_unused_argument` warning, as listed below.
 #' \describe{
 #'   \item{Fitted profile and class models}{From [multilpa()], [multilca()],
-#'     [lpa()], [lca()], covariate models and [lta()]: `"profiles"`
+#'     [lpa()], [lca()] and covariate models: `"profiles"`
 #'     (default), `"bars"`, `"heatmap"`, `"raincloud"`, `"parallel"`,
 #'     `"pairs"` (each profile's 95% covariance ellipse), `"responses"`,
 #'     `"probabilities"` (not for covariate models), `"sequences"` (fits with
 #'     `time`; `cell_labels = TRUE` prints the profile in each cell),
-#'     `"transitions"` (transition fits), `"sizes"`, `"entropy"`,
-#'     `"posteriors"`, `"avepp"` and `"all"`. Transition fits draw point
-#'     estimates and take no `intervals` or `statistic`.}
+#'     `"sizes"`, `"entropy"`, `"posteriors"`, `"avepp"` and `"all"`. The
+#'     profile views name in a caption any ordinal, count or (for the means)
+#'     categorical indicator they leave out.}
+#'   \item{Transition fits}{From [lta()]: `"transitions"` (default), then
+#'     `"profiles"`, `"bars"`, `"heatmap"`, `"responses"`, `"sequences"`,
+#'     `"sizes"`, `"entropy"`, `"posteriors"`, `"avepp"` and `"all"`, as point
+#'     estimates without `intervals` or `statistic`. A general [lta()] fit
+#'     takes no `what` and draws its transition matrix.}
 #'   \item{Enumerations}{Criterion columns or `"all"` (with `combine`,
 #'     `labels` and `mark_minimum`), `"tree"`, the classification-quality
 #'     views `"entropy"`, `"avepp"` and `"diagnostics"` (with `cutoff`), and
@@ -162,13 +175,18 @@
 #'   with `what` on a pooled fit is an error of the same class.
 #' @section Errors: `latents_missing_package` without ggplot2;
 #'   `latents_bad_argument` for an argument the object's plot does not take;
-#'   the plots of additive, cross-level, transition (`lta()`), growth-mixture,
+#'   the plots of additive, cross-level, general transition (`lta()`), growth-mixture,
 #'   mixture-regression, pooled, comparison, bootstrap and transition or
 #'   group-class family grids instead warn with class
 #'   `latents_unused_argument` and draw, as they ignored such arguments in
 #'   0.9.21 (this includes a bootstrap plot's former `style`);
+#'   `latents_bad_argument` also when a named plot function is given an
+#'   object it does not draw;
 #'   `latents_nothing_to_plot` when the fit lacks what a view needs (for
-#'   example posteriors or entropy of a one-profile fit);
+#'   example posteriors or entropy of a one-profile fit, prevalence of a
+#'   covariate model, or the case-level views of a centred fit);
+#'   `latents_unknown_category` when `category` names no category of an
+#'   indicator;
 #'   `latents_no_continuous`, `latents_no_categorical` and `latents_no_time`
 #'   when a view needs indicators or occasions the fit does not have;
 #'   `latents_unknown_criterion` for a criterion not in the grid.

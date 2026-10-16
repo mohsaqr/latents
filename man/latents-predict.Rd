@@ -8,6 +8,8 @@
 \alias{simulate.latents_mixture_regression}
 \alias{latents-predict}
 \alias{predict.multilpa}
+\alias{predict.multilpa_covariates}
+\alias{predict.multilpa_transitions}
 \title{Predict from and simulate a fitted model}
 \usage{
 \method{simulate}{latents_growth_mixture}(object, nsim = 1, seed = NULL, ...)
@@ -25,6 +27,10 @@
 \method{simulate}{latents_mixture_regression}(object, nsim = 1, seed = NULL, ...)
 
 \method{predict}{multilpa}(object, newdata = NULL, type = c("class", "posterior", "density"), ...)
+
+\method{predict}{multilpa_covariates}(object, ...)
+
+\method{predict}{multilpa_transitions}(object, ...)
 }
 \arguments{
 \item{object}{A fitted model.}
@@ -75,7 +81,9 @@ fit's posteriors exactly. In a two-level model the groups in \code{newdata} are
 new groups, each classified from its own rows. For \code{\link[=mixture_regression]{mixture_regression()}}
 fits it returns fitted outcomes or class probabilities. Growth mixtures
 refuse with \code{latents_unsupported_prediction}; their fitted curves are the
-\code{"trajectories"} and \code{"individual"} tables of \code{\link[=get_results]{get_results()}}.
+\code{"trajectories"} and \code{"individual"} tables of \code{\link[=get_results]{get_results()}}. Membership-
+covariate and latent transition fits refuse with the same class; their
+fitted rows' posteriors are \code{get_results(x, "posteriors")}.
 }
 \details{
 \code{simulate()} draws new outcomes on the fitted design of a mixture
@@ -90,7 +98,8 @@ the fit cannot handle, or a regression design cannot be evaluated.
 Binomial count predictions without trial counts also raise
 \code{latents_bad_data}; \code{latents_bad_argument} for \code{"probabilities"}
 outside the ordinal family; \code{latents_unsupported_prediction} for
-\code{predict()} on a growth mixture.
+\code{predict()} on a growth mixture, a membership-covariate fit or a latent
+transition fit.
 }
 
 \examples{

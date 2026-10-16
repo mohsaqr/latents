@@ -2,7 +2,7 @@
 
 utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter",
                          "conf_high", "component", "intercept_mean",
-                         "offset_x"))
+                         "offset_x", "panel"))
 
 .additive_tables <- function() {
   c("parameters", "group_classes", "groups", "intercepts",
@@ -26,16 +26,26 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
   .additive_parameter_table(x, inference, level, adjust)
 }
 
+#' The covariance a fit's tables use by default: observed, or the sandwich
+#' for a weighted (pseudo likelihood) fit, whose observed errors are refused
+#' @noRd
+.additive_default_vcov <- function(x) {
+  .latents_weighted_vcov(.latents_is_weighted(x), "observed", TRUE)
+}
+
 #' Effective groups per class, or `NA` where inference does not apply
 #'
 #' Computed without warning: the parameter table carries the warning, and a
-#' refused fit has no intervals whose calibration could be in question.
+#' refused fit has no intervals whose calibration could be in question. The
+#' covariance is the fit's default, so the count agrees with the
+#' `latents_weak_class` warning of the default parameter table.
 #' @noRd
 .additive_effective_or_na <- function(x) {
   refusals <- c("latents_boundary_fit", "latents_no_converge",
                 "latents_singular_information", "latents_too_few_groups")
   inference <- tryCatch(
-    withCallingHandlers(.additive_inference(x, "observed", warn_weak = FALSE),
+    withCallingHandlers(.additive_inference(x, .additive_default_vcov(x),
+                                            warn_weak = FALSE),
                         latents_unconverged = function(w) {
                           invokeRestart("muffleWarning")
                         }),
@@ -106,7 +116,8 @@ utils::globalVariables(c("group_class_label", "estimate", "conf_low", "parameter
     group_classes = data.frame(
       group_class = class_names,
       weight = unname(x$group_probabilities),
-      count = unname(colSums(posterior)),
+      # Effective counts are weighted, like the class weights they sum to.
+      count = unname(colSums(posterior * (x$sampling_weights %||% 1))),
       n_assigned = tabulate(assigned, length(class_names)),
       mean_posterior = vapply(seq_along(class_names), function(h) {
         if (any(assigned == h)) mean(posterior[assigned == h, h]) else NA_real_
@@ -360,12 +371,14 @@ as.data.frame.summary_multilpa_additive <- function(x, row.names = NULL,
   share <- unname(x$group_probabilities)
   label <- sprintf("Group class %d (%s)", seq_along(class_names),
                    .gg_percent(share))
-  # A block shared by every class is drawn once, in grey, with its own shape.
+  # A block shared by every class is drawn once, in grey, with its own shape;
+  # the classes never take that grey or that shape.
   label <- c(label, "All group classes (shared)")
   data.frame(group_class = c(class_names, "shared"),
              label = factor(label, levels = label),
-             colour = c(rep_len(.gg_okabe_ito, length(class_names)), "#999999"),
-             shape = c(rep_len(.gg_shapes, length(class_names)), 23L),
+             colour = c(rep_len(.gg_class_palette, length(class_names)),
+                        .gg_reserved_grey),
+             shape = c(rep_len(setdiff(.gg_shapes, 23L), length(class_names)), 23L),
              stringsAsFactors = FALSE)
 }
 
@@ -383,7 +396,7 @@ plot.multilpa_additive <- function(x, what = c("means", "variances", "intercepts
   # The refusal notice is replaced by the caption below, so only that one
   # classed message is muffled.
   table <- withCallingHandlers(
-    .additive_table(x, "parameters", level),
+    .additive_table(x, "parameters", level, .additive_default_vcov(x)),
     latents_no_standard_errors = function(condition) {
       invokeRestart("muffleMessage")
     })
@@ -416,33 +429,34 @@ plot.multilpa_additive <- function(x, what = c("means", "variances", "intercepts
                    "Means of the group intercepts in each class", caption)
     },
     variances = {
+      # One panel per level; within a panel each class (or the shared block)
+      # has the class key's colour and shape, as in the means view.
       frame <- subset(table, parameter == "variance")
-      frame$component <- paste(
-        ifelse(frame$level == "within", "Within groups", "Between groups"),
-        ifelse(frame$group_class == "shared", "(shared)",
-               paste0("(", sub("group_class_", "class ", frame$group_class), ")")))
-      components <- unique(frame$component)
-      frame$component <- factor(frame$component, levels = components)
+      frame$label <- key$label[match(frame$group_class, key$group_class)]
+      frame$label <- droplevels(frame$label)
+      key <- subset(key, label %in% levels(frame$label))
+      key$label <- droplevels(key$label)
+      frame$panel <- factor(ifelse(frame$level == "within", "Within groups",
+                                   "Between groups"),
+                            levels = c("Within groups", "Between groups"))
       frame$indicator <- factor(frame$indicator, levels = x$vars)
-      # Shared components grey; class-specific ones by the class palette.
-      shared <- grepl("(shared)", components, fixed = TRUE)
-      colours <- stats::setNames(ifelse(shared, "#999999", rep_len(
-        .gg_okabe_ito, length(components))), components)
-      shapes <- stats::setNames(rep_len(c(23L, .gg_shapes), length(components)),
-                                components)
       dodge <- ggplot2::position_dodge(width = 0.5)
       plot <- ggplot2::ggplot(frame, ggplot2::aes(
-        x = indicator, y = estimate, colour = component, fill = component,
-        shape = component)) +
+        x = indicator, y = estimate, colour = label, fill = label,
+        shape = label, group = label)) +
         ggplot2::geom_point(size = 3, colour = "grey20", position = dodge)
       if (has_errors) {
         plot <- plot + ggplot2::geom_errorbar(
           ggplot2::aes(ymin = conf_low, ymax = conf_high), width = 0.15,
           position = dodge)
       }
-      plot + ggplot2::scale_colour_manual(values = colours) +
-        ggplot2::scale_fill_manual(values = colours) +
-        ggplot2::scale_shape_manual(values = shapes) +
+      # Points are filled and shaped by class; colour maps only the interval
+      # bars, so its scale is added only when there are bars to colour.
+      plot + ggplot2::facet_wrap(ggplot2::vars(panel), scales = "free_y") +
+        .gg_scales(data.frame(label = key$label, colour = key$colour,
+                              shape = key$shape),
+                   aesthetics = c(if (has_errors) "colour", "fill", "shape"),
+                   legend = TRUE) +
         ggplot2::expand_limits(y = 0) +
         .gg_theme() + .gg_top_legend() +
         ggplot2::labs(x = NULL, y = "Variance") +

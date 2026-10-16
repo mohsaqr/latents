@@ -180,15 +180,17 @@ Every fitted model offers these:
 \describe{
 \item{\code{"profiles"}}{The Gaussian measurement model, one row per profile
 and continuous indicator: \code{profile}, \code{indicator}, \code{mean}, \code{variance},
-\code{standard_deviation}. Zero rows when every indicator is categorical.
-Takes \code{scale}, and \code{data}, which adds \code{mean_standard_error} and
-\code{variance_standard_error}.}
+\code{standard_deviation}, \code{mean_standard_error}, \code{variance_standard_error}.
+Zero rows, with the same columns, when every indicator is categorical.
+Takes \code{scale} and \code{data}.}
 \item{\code{"responses"}}{The categorical measurement model, one row per
 profile, categorical indicator and category: \code{profile}, \code{indicator},
-\code{category}, \code{probability}, \code{threshold}. The threshold is
-\code{qlogis(P(y <= category))} and is \code{NA_real_} for each indicator's final
-category, where the cumulative probability is one. Takes \code{data}, which
-adds \code{probability_standard_error}.}
+\code{category}, \code{probability}, \code{threshold}, \code{probability_standard_error}.
+The threshold is \code{qlogis(P(y <= category))} and is \code{NA_real_} for each
+indicator's final category, where the cumulative probability is one; a
+probability held on its bound has an \code{NA_real_} standard error. Zero
+rows, with the same columns, when no indicator is categorical. Takes
+\code{data}.}
 \item{\code{"covariances"}}{The within-profile residual covariance matrices,
 one row per profile and ordered pair of continuous indicators:
 \code{profile}, \code{indicator}, \code{indicator_2}, \code{covariance}. The diagonal
@@ -212,7 +214,8 @@ does have one column set for every family.}
 \item{\code{"assignments"}}{One row per observation, the columns the fit was
 built from (or those of \code{data}) followed by \code{profile}, \code{group_class}
 where the model has one, \code{uncertainty}, and one \verb{posterior_profile_*}
-column per profile. \code{uncertainty} is one minus the posterior of the
+column per profile (and \code{posterior_noise} for a fit with a noise
+component, whose cases are profile 0). \code{uncertainty} is one minus the posterior of the
 assigned profile, which is what modal assignment discards. Takes \code{data}
 and \code{truth}; \code{truth} returns a recovery cross-tabulation instead,
 described below.}
@@ -262,9 +265,11 @@ data it contributes: \code{group_class}, \code{groups}, \code{observations},
 \code{converged}, \code{iterations}, \code{error} and, where the family records it,
 \code{boundary}.}
 \item{\code{"data"}}{The columns of the original data the model was fitted to,
-one row per observation in input order: the identifier, the occasion
-where there is one, and the indicators under their original names.
-Columns a model never saw are not here, which is why \code{\link[=three_step]{three_step()}} and
+one row per observation in input order: the identifier (except for a
+single-level fit), the occasion where there is one, the sampling
+weights of a weighted fit (as rescaled for fitting), and the indicators
+under their original names. Columns a model never saw, membership
+covariates included, are not here, which is why \code{\link[=three_step]{three_step()}} and
 \code{\link[=r3step]{r3step()}} still take \code{data}.}
 }
 Every family with discrete group classes adds:
@@ -377,7 +382,7 @@ Benjamini-Hochberg over non-intercepts and \code{exp_estimate} for the
 binomial, Poisson and ordinal families; ordinal thresholds lead each
 class as terms \code{"threshold:<lower>|<upper>"}), \code{"classes"},
 \code{"membership"} (multinomial logits and odds ratios), \code{"group_classes"}
-(two-level fits), \code{"fit"} (\code{bic} penalised by independent units,
+(rows for two-level fits only), \code{"fit"} (\code{bic} penalised by independent units,
 \code{bic_rows} by rows as flexmix reports it), \code{"assignments"},
 \code{"groups"}, \code{"fitted"}, \code{"starts"} (\code{stage} \code{"screened"} or
 \code{"completed"}), \code{"classification"} and \code{"recovery"} (\code{by = "class"} or
@@ -410,12 +415,19 @@ one), \code{"groups"}, \code{"assignments"}, \code{"fit"} and \code{"starts"}. T
 likelihood is a working likelihood, comparable only between
 cross-level fits of the same data.}
 \item{General transition fits (\code{\link[=lta]{lta()}} with \code{transitions = "occasion"},
-transition or initial covariates, or \code{measurement = "occasion"})}{
-\code{"transitions"} (model-implied, averaged over the groups observed),
+transition or initial covariates, \code{measurement = "occasion"},
+\code{order = 2}, \code{mover_stayer = TRUE}, \code{weights}, or \code{ordinal}/\code{count}
+indicators)}{
+\code{"transitions"} (model-implied, averaged over the groups observed,
+with their sampling weights in a weighted fit; \code{"initial"} and
+\code{"second_order_transitions"} likewise),
 \code{"transition_coefficients"} (log odds of each move against staying,
 with odds ratios), \code{"second_order_transitions"} and
 \code{"second_order_coefficients"} (\code{order = 2}), \code{"initial"} and
-\code{"initial_coefficients"}, \code{"profiles"}, \code{"group_classes"},
+\code{"initial_coefficients"}, \code{"profiles"}, \code{"responses"} (categorical
+indicators: \code{occasion}, \code{profile}, \code{indicator}, \code{category},
+\code{probability}), \code{"ordinal"} and
+\code{"count_means"} (ordinal and count indicators), \code{"group_classes"},
 \code{"assignments"}, \code{"fit"} and \code{"starts"}.}
 \item{Pooled imputations (\code{\link[=pool_imputations]{pool_imputations()}})}{\code{"estimates"} (the
 pooled table), \code{"imputations"} (each imputation's aligned estimates)
@@ -452,9 +464,12 @@ These reach the requested table through \code{...}, and each table takes
 only the ones listed for it under \emph{Tables} above.
 \describe{
 \item{\code{data}}{A data frame with one row per observation of the fit, in the
-order it was fitted in. \code{NULL} uses the columns the fit carries. For
-\code{"profiles"} and \code{"responses"} it triggers \code{\link[=parameter_inference]{parameter_inference()}} and
-adds a standard error beside every estimate.
+order it was fitted in. \code{NULL} uses the columns the fit carries. The
+standard errors of \code{"profiles"} and \code{"responses"} come from
+\code{\link[=parameter_inference]{parameter_inference()}} on these data. Without \code{data}, a fit that cannot
+supply them (bound-active, unconverged, singular information, a noise
+component) gives \code{NA} with a \code{latents_no_standard_errors} message; with
+\code{data}, it raises the underlying condition, as asked.
 }
 \item{\code{scale}}{For \code{"profiles"}, \code{"raw"} reports the estimates in input units
 and \code{"standardized"} divides each indicator's deviation from its grand

@@ -190,7 +190,7 @@ get_results(fit, "average_posteriors")          # mean posterior by assigned cla
 get_results(fit, "classification_errors")       # P(assigned class | true class)
 get_results(fit, "residuals")                   # residuals within each profile
 get_results(candidates, "candidates")           # the full enumeration grid
-summary(candidates)                             # the best candidate on each criterion
+summary(candidates)                             # every grid table, truncated
 bootstrap_lrt(fit, get_candidate(candidates, n_profiles = 3,
                                 n_group_classes = 2, model = "VVI"),
               iter = 199, seed = 42)            # bootstrap test of one more class (slow)

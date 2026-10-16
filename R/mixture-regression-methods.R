@@ -216,6 +216,9 @@
   n_units <- if (identical(spec$nesting, "observation")) spec$n else spec$n_groups
   k <- x$n_parameters
   log_lik <- x$log_likelihood
+  # ICL's entropy term sums every unit's own (unweighted) posteriors, also for
+  # a sampling-weighted fit, as the profile and class models do; only the log
+  # likelihood is the weighted pseudo-likelihood.
   entropy_sum <- -sum(unit_posterior[unit_posterior > 0] *
                         log(unit_posterior[unit_posterior > 0]))
   bic <- -2 * log_lik + k * log(n_units)
@@ -354,7 +357,12 @@
   }
   if (group_level) {
     first <- match(seq_len(spec$n_groups), spec$group_index)
-    if (any(values != values[first][spec$group_index])) {
+    reference <- values[first][spec$group_index]
+    # A missing known class is a value of its own: it must be missing for the
+    # whole group, and is tabulated (as NA) rather than dropped.
+    same <- (is.na(values) & is.na(reference)) |
+      (!is.na(values) & !is.na(reference) & values == reference)
+    if (!all(same)) {
       stop(errorCondition(sprintf(paste(
         "`%s` varies within groups, so it cannot be compared with a",
         "group-level classification."), truth),
@@ -371,7 +379,7 @@
   counts <- as.data.frame(table(
     assigned = factor(paste0(prefix, assigned),
                       levels = paste0(prefix, seq_len(ncol(posterior)))),
-    truth = values), responseName = "n", stringsAsFactors = FALSE)
+    truth = values, useNA = "ifany"), responseName = "n", stringsAsFactors = FALSE)
   names(counts)[names(counts) == "truth"] <- truth
   totals <- tapply(counts$n, counts$assigned, sum)
   counts$share <- counts$n / pmax(totals[counts$assigned], 1)
@@ -591,8 +599,26 @@ confint.latents_mixture_regression <- function(object, parm, level = 0.95, ...) 
   percent <- paste(format(100 * c((1 - level) / 2, 1 - (1 - level) / 2),
                           trim = TRUE, scientific = FALSE, digits = 3), "%")
   dimnames(bounds) <- list(names(theta), percent)
-  if (!missing(parm)) bounds <- bounds[parm, , drop = FALSE]
+  if (!missing(parm)) bounds <- bounds[.mixture_confint_rows(parm, names(theta)), , drop = FALSE]
   bounds
+}
+
+#' Rows of a `confint()` result picked by `parm`
+#' @param parm Parameter names, or positions among `names`.
+#' @param names The names of the estimates, in order.
+#' @return Integer positions; raises `latents_bad_argument` for a name or
+#'   position that is not an estimate.
+#' @noRd
+.mixture_confint_rows <- function(parm, names) {
+  rows <- if (is.character(parm)) match(parm, names) else if (is.numeric(parm) &&
+    all(is.finite(parm)) && all(abs(parm - round(parm)) < sqrt(.Machine$double.eps)))
+    as.integer(round(parm)) else NA_integer_
+  if (length(rows) == 0L || anyNA(rows) || any(rows < 1L | rows > length(names))) {
+    stop(errorCondition(paste(
+      "`parm` must name estimates of the fit (see names(coef(x))) or give",
+      "their positions."), class = "latents_bad_argument", call = NULL))
+  }
+  rows
 }
 
 #' @noRd

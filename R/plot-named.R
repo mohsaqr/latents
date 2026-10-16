@@ -56,13 +56,52 @@
   mget(supplied, envir = env)
 }
 
+#' Refuse an object the named fit views cannot draw, with a classed error
+#'
+#' The named views draw profile, class and transition models. Every other
+#' result of the package has views of its own under `plot()`, and a general
+#' [lta()] fit draws its transition matrix, so the refusal says where to go.
+#' @param x The object passed to the named plot function.
+#' @param verb The calling function's name, for the message.
+#' @return `NULL`, invisibly, when `x` is a fit the named views take.
+#' @noRd
+.gg_require_fit <- function(x, verb) {
+  if (.multilpa_any_fit(x)) return(invisible(NULL))
+  advice <- if (inherits(x, "multilpa_lta")) {
+    " This lta() fit draws its transition matrix: use plot_transitions()."
+  } else if (any(grepl("^(latents|multilpa)_", class(x)))) {
+    " Use plot() for this result's own views."
+  } else ""
+  stop(errorCondition(sprintf(
+    "%s() takes a profile, class or transition model of this package, not a `%s` object.%s",
+    verb, class(x)[1L], advice), class = "latents_bad_argument", call = NULL))
+}
+
+#' Refuse a grid other than a profile or class enumeration
+#' @param x The object passed to `plot_enumeration()` or `plot_tree()`.
+#' @param verb The calling function's name, for the message.
+#' @return `NULL`, invisibly, for a `multilpa_enumeration`.
+#' @noRd
+.gg_require_enumeration <- function(x, verb) {
+  if (inherits(x, "multilpa_enumeration")) return(invisible(NULL))
+  advice <- if (inherits(x, c("latents_transition_enumeration",
+                              "latents_family_enumeration"))) {
+    paste(" A transition or group-class family grid plots with",
+          "`plot(x, what = \"bic\")`, `\"aic\"` or `\"bic_individual\"`.")
+  } else ""
+  stop(errorCondition(sprintf(paste(
+    "%s() takes a `multilpa_enumeration` from enumerate_classes(),",
+    "enumerate_lpa() or enumerate_lca(), not a `%s` object.%s"),
+    verb, class(x)[1L], advice), class = "latents_bad_argument", call = NULL))
+}
+
 #' @rdname latents-plots
 #' @export
 plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
                           scale = c("raw", "standardized"), intervals = TRUE,
                           labels = TRUE, data = NULL, main = NULL,
                           subtitle = NULL) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  .gg_require_fit(x, "plot_profiles")
   statistic <- match.arg(statistic)
   scale <- match.arg(scale)
   .multilpa_plot_named_view(
@@ -75,7 +114,7 @@ plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
 plot_responses <- function(x, category = "last", intervals = TRUE,
                            labels = TRUE, data = NULL, main = NULL,
                            subtitle = NULL) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  .gg_require_fit(x, "plot_responses")
   .multilpa_plot_named_view(
     x, "responses", .multilpa_supplied_arguments(match.call(), environment()),
     "plot_responses")
@@ -84,7 +123,7 @@ plot_responses <- function(x, category = "last", intervals = TRUE,
 #' @rdname latents-plots
 #' @export
 plot_prevalence <- function(x, labels = TRUE, main = NULL, subtitle = NULL) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  .gg_require_fit(x, "plot_prevalence")
   .multilpa_plot_named_view(
     x, "probabilities",
     .multilpa_supplied_arguments(match.call(), environment()),
@@ -96,7 +135,7 @@ plot_prevalence <- function(x, labels = TRUE, main = NULL, subtitle = NULL) {
 plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
                                          "entropy", "avepp"),
                              main = NULL, subtitle = NULL) {
-  stopifnot("`x` must be a fitted model of this package" = .multilpa_any_fit(x))
+  .gg_require_fit(x, "plot_diagnostics")
   what <- match.arg(what)
   .gg_require()
   # Profile, class and transition fits carry posteriors and effective counts.
@@ -130,8 +169,7 @@ plot_transitions <- function(x, main = NULL, subtitle = NULL) {
 #' @rdname latents-plots
 #' @export
 plot_tree <- function(x, main = NULL, subtitle = NULL) {
-  stopifnot("`x` must be an `multilpa_enumeration` result" =
-              inherits(x, "multilpa_enumeration"))
+  .gg_require_enumeration(x, "plot_tree")
   .gg_require()
   .gg_view_tree(x, main, subtitle)
 }

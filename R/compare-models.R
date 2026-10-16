@@ -53,9 +53,8 @@ utils::globalVariables(c("model", "criterion", "value"))
 #'   share, relative to all observation mass including any noise component), `converged`, `n_best_replicated`, and `delta_bic` and
 #'   `bic_weight` on `bic_groups` (the BIC that counts groups as the
 #'   independent units; on a single-level model it is the ordinary BIC). The
-#'   numbers are the ones the grid's candidates table reports. The printout
-#'   marks the row with the lowest BIC; that is a fact about the criterion,
-#'   not a choice. Raises `latents_bad_argument` for fits it cannot compare,
+#'   numbers are the ones the grid's candidates table reports. No row is
+#'   marked as best: `delta_bic` and `bic_weight` carry the evidence. Raises `latents_bad_argument` for fits it cannot compare,
 #'   for a group-class family grid (compare those in their own table), for
 #'   candidates named together with `n_profiles` or `n_group_classes`, and for
 #'   `n_profiles` or `n_group_classes` without a grid;
@@ -167,9 +166,8 @@ compare_models <- function(..., n_profiles = NULL, n_group_classes = NULL,
     column("LogLik", "log_likelihood"), column("BIC", "bic"),
     column(if (isTRUE(l10n_info()$`UTF-8`)) "\u0394BIC" else "dBIC", "delta_bic"), column("Weight", "bic_weight", "share"),
     column("Entropy", "entropy")))
-  # Marks the lowest BIC, which is a fact about the criterion, not a choice.
-  attr(table, "marks") <- ifelse(seq_len(nrow(table)) == which.min(table$delta_bic),
-                                 "  <- lowest BIC", "")
+  # No row is marked: delta_bic and bic_weight carry the evidence, and the
+  # choice stays with the reader.
   attr(table, "models") <- stats::setNames(fits, labels)
   class(table) <- c("latents_comparison", class(table))
   table
@@ -191,21 +189,18 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
   long <- do.call(rbind, lapply(names(criteria), function(column) {
     data.frame(model = factor(table$model, levels = table$model),
                criterion = factor(criteria[[column]], levels = unname(criteria)),
-               value = table[[column]], best = table[[column]] == min(table[[column]]),
-               stringsAsFactors = FALSE)
+               value = table[[column]], stringsAsFactors = FALSE)
   }))
   ggplot2::ggplot(long, ggplot2::aes(model, value, group = criterion,
                                      colour = criterion, shape = criterion)) +
     ggplot2::geom_line(linewidth = 0.6) +
     ggplot2::geom_point(size = 2.6) +
-    ggplot2::geom_point(data = long[long$best, , drop = FALSE], size = 5.2, shape = 21,
-                        fill = NA, colour = "black", stroke = 0.6) +
     ggplot2::scale_colour_manual(values = .gg_okabe_ito[c(1L, 4L, 3L)]) +
     ggplot2::scale_shape_manual(values = c(16L, 17L, 15L)) +
     ggplot2::labs(x = NULL, y = "Information criterion (lower is better)") +
     .gg_theme() + .gg_top_legend() +
     .gg_titles(main, subtitle, "Model comparison",
-               "Each criterion's best model is circled")
+               "Each criterion across the compared models")
 }
 
 #' Compare candidates of an enumeration grid
@@ -372,9 +367,8 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
          column(sprintf("< %g", cutoff), "avepp_below", "integer")),
     if (grouped) list(column("Group entropy", "group_entropy"),
                       column("Group min AvePP", "group_avepp_min"))))
-  # Marks the lowest BIC, which is a fact about the criterion, not a choice.
-  attr(table, "marks") <- ifelse(seq_len(nrow(table)) == which.min(table$delta_bic),
-                                 "  <- lowest BIC", "")
+  # No row is marked: delta_bic and bic_weight carry the evidence, and the
+  # choice stays with the reader.
   attr(table, "models") <- stats::setNames(fits, labels)
   class(table) <- c("latents_comparison", class(table))
   table

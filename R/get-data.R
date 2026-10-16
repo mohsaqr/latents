@@ -32,15 +32,17 @@
 #' \describe{
 #'   \item{`"profiles"`}{The Gaussian measurement model, one row per profile
 #'     and continuous indicator: `profile`, `indicator`, `mean`, `variance`,
-#'     `standard_deviation`. Zero rows when every indicator is categorical.
-#'     Takes `scale`, and `data`, which adds `mean_standard_error` and
-#'     `variance_standard_error`.}
+#'     `standard_deviation`, `mean_standard_error`, `variance_standard_error`.
+#'     Zero rows, with the same columns, when every indicator is categorical.
+#'     Takes `scale` and `data`.}
 #'   \item{`"responses"`}{The categorical measurement model, one row per
 #'     profile, categorical indicator and category: `profile`, `indicator`,
-#'     `category`, `probability`, `threshold`. The threshold is
-#'     `qlogis(P(y <= category))` and is `NA_real_` for each indicator's final
-#'     category, where the cumulative probability is one. Takes `data`, which
-#'     adds `probability_standard_error`.}
+#'     `category`, `probability`, `threshold`, `probability_standard_error`.
+#'     The threshold is `qlogis(P(y <= category))` and is `NA_real_` for each
+#'     indicator's final category, where the cumulative probability is one; a
+#'     probability held on its bound has an `NA_real_` standard error. Zero
+#'     rows, with the same columns, when no indicator is categorical. Takes
+#'     `data`.}
 #'   \item{`"covariances"`}{The within-profile residual covariance matrices,
 #'     one row per profile and ordered pair of continuous indicators:
 #'     `profile`, `indicator`, `indicator_2`, `covariance`. The diagonal
@@ -64,7 +66,8 @@
 #'   \item{`"assignments"`}{One row per observation, the columns the fit was
 #'     built from (or those of `data`) followed by `profile`, `group_class`
 #'     where the model has one, `uncertainty`, and one `posterior_profile_*`
-#'     column per profile. `uncertainty` is one minus the posterior of the
+#'     column per profile (and `posterior_noise` for a fit with a noise
+#'     component, whose cases are profile 0). `uncertainty` is one minus the posterior of the
 #'     assigned profile, which is what modal assignment discards. Takes `data`
 #'     and `truth`; `truth` returns a recovery cross-tabulation instead,
 #'     described below.}
@@ -114,9 +117,11 @@
 #'     `converged`, `iterations`, `error` and, where the family records it,
 #'     `boundary`.}
 #'   \item{`"data"`}{The columns of the original data the model was fitted to,
-#'     one row per observation in input order: the identifier, the occasion
-#'     where there is one, and the indicators under their original names.
-#'     Columns a model never saw are not here, which is why [three_step()] and
+#'     one row per observation in input order: the identifier (except for a
+#'     single-level fit), the occasion where there is one, the sampling
+#'     weights of a weighted fit (as rescaled for fitting), and the indicators
+#'     under their original names. Columns a model never saw, membership
+#'     covariates included, are not here, which is why [three_step()] and
 #'     [r3step()] still take `data`.}
 #' }
 #' Every family with discrete group classes adds:
@@ -227,7 +232,7 @@
 #'     binomial, Poisson and ordinal families; ordinal thresholds lead each
 #'     class as terms `"threshold:<lower>|<upper>"`), `"classes"`,
 #'     `"membership"` (multinomial logits and odds ratios), `"group_classes"`
-#'     (two-level fits), `"fit"` (`bic` penalised by independent units,
+#'     (rows for two-level fits only), `"fit"` (`bic` penalised by independent units,
 #'     `bic_rows` by rows as flexmix reports it), `"assignments"`,
 #'     `"groups"`, `"fitted"`, `"starts"` (`stage` `"screened"` or
 #'     `"completed"`), `"classification"` and `"recovery"` (`by = "class"` or
@@ -260,12 +265,19 @@
 #'     likelihood is a working likelihood, comparable only between
 #'     cross-level fits of the same data.}
 #'   \item{General transition fits ([lta()] with `transitions = "occasion"`,
-#'     transition or initial covariates, or `measurement = "occasion"`)}{
-#'     `"transitions"` (model-implied, averaged over the groups observed),
+#'     transition or initial covariates, `measurement = "occasion"`,
+#'     `order = 2`, `mover_stayer = TRUE`, `weights`, or `ordinal`/`count`
+#'     indicators)}{
+#'     `"transitions"` (model-implied, averaged over the groups observed,
+#'     with their sampling weights in a weighted fit; `"initial"` and
+#'     `"second_order_transitions"` likewise),
 #'     `"transition_coefficients"` (log odds of each move against staying,
 #'     with odds ratios), `"second_order_transitions"` and
 #'     `"second_order_coefficients"` (`order = 2`), `"initial"` and
-#'     `"initial_coefficients"`, `"profiles"`, `"group_classes"`,
+#'     `"initial_coefficients"`, `"profiles"`, `"responses"` (categorical
+#'     indicators: `occasion`, `profile`, `indicator`, `category`,
+#'     `probability`), `"ordinal"` and
+#'     `"count_means"` (ordinal and count indicators), `"group_classes"`,
 #'     `"assignments"`, `"fit"` and `"starts"`.}
 #'   \item{Pooled imputations ([pool_imputations()])}{`"estimates"` (the
 #'     pooled table), `"imputations"` (each imputation's aligned estimates)
@@ -297,9 +309,12 @@
 #'   only the ones listed for it under *Tables* above.
 #' \describe{
 #'   \item{`data`}{A data frame with one row per observation of the fit, in the
-#'   order it was fitted in. `NULL` uses the columns the fit carries. For
-#'   `"profiles"` and `"responses"` it triggers [parameter_inference()] and
-#'   adds a standard error beside every estimate.
+#'   order it was fitted in. `NULL` uses the columns the fit carries. The
+#'   standard errors of `"profiles"` and `"responses"` come from
+#'   [parameter_inference()] on these data. Without `data`, a fit that cannot
+#'   supply them (bound-active, unconverged, singular information, a noise
+#'   component) gives `NA` with a `latents_no_standard_errors` message; with
+#'   `data`, it raises the underlying condition, as asked.
 #'   }
 #'   \item{`scale`}{For `"profiles"`, `"raw"` reports the estimates in input units
 #'   and `"standardized"` divides each indicator's deviation from its grand
@@ -1047,6 +1062,12 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
 #' @noRd
 .multilpa_diagnostic_residuals <- function(x) {
   if (!is.null(x$residuals)) return(x$residuals)
+  if (isTRUE(x$fit$noise)) {
+    stop(errorCondition(paste(
+      "This fit has no bivariate residuals: they do not account for a noise",
+      "component yet."),
+      class = "latents_unsupported_noise", call = NULL))
+  }
   stop(errorCondition(
     "This fit has no bivariate residuals: they need a discrete group-class model.",
     class = "latents_no_group_classes", call = NULL))
@@ -1092,7 +1113,9 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
       cat("   (no rows)\n")
       return(invisible(NULL))
     }
-    print(utils::head(frame, rows), digits = digits, row.names = FALSE)
+    # `rows = 0` asks for the headings alone; printing a zero-row head would
+    # dump the column names as if the table were empty.
+    if (rows > 0) print(utils::head(frame, rows), digits = digits, row.names = FALSE)
     if (nrow(frame) > rows) {
       cat(sprintf("   ... %d more rows.  get_results(x, what = \"%s\")\n",
                   nrow(frame) - rows, name))
@@ -1188,7 +1211,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
     wide$count <- individuals$effective_count[at]
     wide$proportion <- individuals$effective_proportion[at]
     cat("\n")
-    print(utils::head(wide, rows), row.names = FALSE)
+    if (rows > 0) print(utils::head(wide, rows), row.names = FALSE)
     if (nrow(wide) > rows) {
       cat(sprintf("   ... %d more profiles.\n", nrow(wide) - rows))
     }
@@ -1202,7 +1225,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   }
   if (nrow(table) == 0L) return(invisible(NULL))
   cat("\n")
-  print(utils::head(table, rows), row.names = FALSE)
+  if (rows > 0) print(utils::head(table, rows), row.names = FALSE)
   if (nrow(table) > rows) {
     cat(sprintf("   ... %d more rows.  get_results(x, \"%s\")\n",
                 nrow(table) - rows, name))

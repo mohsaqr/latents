@@ -13,8 +13,11 @@ prior_control(shrinkage = 0.01, mean = NULL, dof = NULL, scale = NULL)
 \item{shrinkage}{Non-negative prior precision factor for the means, \code{kappa};
 mclust's default \code{0.01}. Zero leaves the means unshrunk.}
 
-\item{mean}{Optional prior mean, one value per continuous indicator, in the
-indicators' own units. Naming one needs a positive \code{shrinkage}.}
+\item{mean}{Optional prior mean, one value per continuous indicator, on the
+scale the profile means are estimated on: the indicators' own units, or
+their centred values when \code{\link[=multilpa]{multilpa()}}'s \code{centering} centres them (so a
+mean of the raw data is far from the centred data's and is not the
+default). Naming one needs a positive \code{shrinkage}.}
 
 \item{dof}{Optional prior degrees of freedom, a single number.}
 
@@ -61,7 +64,9 @@ have different effects across covariance structures.
 \section{Conditions}{
 
 Raises \code{latents_bad_argument} for a negative or non-finite \code{shrinkage}, a
-\code{mean} with a zero \code{shrinkage}, or a non-positive \code{dof} or \code{scale}.
+\code{mean} with a zero \code{shrinkage}, a non-positive \code{dof}, or a \code{scale} that is
+neither a positive number nor a square, symmetric, positive-definite
+matrix.
 }
 
 \examples{

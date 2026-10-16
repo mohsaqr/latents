@@ -1,5 +1,5 @@
 # Wald standard errors of all fourteen covariance structures against the
-# independent reference in tests/testthat/helper-structure-reference.R: its own
+# independent reference in tests/equivalence/helper-structure-reference.R: its own
 # likelihood, its own chart of each structure, and no analytic derivative
 # anywhere. The Hessian is the reference's central second difference at
 # h = 2e-4 (about eps^(1/4), the step that balances truncation against
@@ -8,7 +8,7 @@
 # for the curvature: at its default steps it loses about 1e-4 relative
 # precision on these likelihoods (tried and measured on the VVV fit, where
 # the package's chart is the long-validated log-Cholesky one).
-source(file.path("..", "tests", "testthat", "helper-structure-reference.R"),
+source(file.path("..", "tests", "equivalence", "helper-structure-reference.R"),
        local = TRUE)
 
 structure_reference_data <- function() {

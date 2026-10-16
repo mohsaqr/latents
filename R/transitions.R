@@ -417,6 +417,32 @@
   parameters
 }
 
+#' Refuse numbers written as text whose alphabetical order is not numeric
+#'
+#' Occasions are ordered by `sort()`, which orders character strings
+#' alphabetically. Positions written as `"1"`, ..., `"10"` would put `"10"`
+#' second and fit transitions between the wrong occasions without a word.
+#' Strings whose alphabetical order is already right (zero-padded numbers,
+#' ISO dates, labels) are accepted.
+#'
+#' @param values The time values.
+#' @param time The time column name, for the message.
+#' @return `NULL`, invisibly; raises `latents_bad_time` (also `latents_bad_data`).
+#' @noRd
+.lta_check_time_order <- function(values, time) {
+  if (!is.character(values)) return(invisible(NULL))
+  # type.convert() turns the strings into numbers only when all of them parse.
+  numbers <- utils::type.convert(values, as.is = TRUE)
+  if (!is.numeric(numbers) || !all(is.finite(numbers))) return(invisible(NULL))
+  lexical <- sort(unique(values))
+  if (!is.unsorted(numbers[match(lexical, values)])) return(invisible(NULL))
+  stop(errorCondition(sprintf(paste(
+    "`%s` holds numbers stored as text, which sort alphabetically (\"10\"",
+    "before \"2\") and would put the occasions out of order. Convert it with",
+    "as.numeric() first."), time),
+    class = c("latents_bad_time", "latents_bad_data"), call = NULL))
+}
+
 #' Count the free parameters of a latent transition model
 #' @param n_profiles Number of profiles.
 #' @param n_group_classes Number of group classes.
@@ -464,7 +490,12 @@
 #' @param n_profiles Integer number of individual profiles, at least two.
 #' @param time Name of the column giving each observation's occasion within its
 #'   group. Required: this model is defined by the ordering. Values must be
-#'   complete and unique within each group.
+#'   complete and unique within each group. They are ordered as [sort()]
+#'   orders them: numbers numerically, a factor by its levels, and character
+#'   strings alphabetically. Numbers stored as text whose alphabetical order
+#'   is not their numeric order (`"2"`, `"10"`) are refused
+#'   (`latents_bad_time`, also `latents_bad_data`); zero-padded numbers and ISO dates sort correctly
+#'   and are accepted.
 #' @param n_group_classes Positive integer number of latent group classes. One
 #'   gives an ordinary single-level latent transition model; more than one fits
 #'   a mixture of transition models over groups.
@@ -484,7 +515,10 @@
 #'   the grid of every position seen in the data, so a group that skips a
 #'   position still consumes a transition across the gap and contributes no
 #'   measurement information at it. The two agree whenever every group is
-#'   observed at every position.
+#'   observed at every position. Under either, a group's first observation is
+#'   its first occasion, so a group that enters late starts the sequence there:
+#'   occasion-specific transitions and measurement count occasions from each
+#'   group's own start, not from the first position in the data.
 #' @param transitions `"homogeneous"` (the default) uses one transition matrix
 #'   for every occasion; `"occasion"` estimates a separate one for each move
 #'   (occasion 1 to 2, 2 to 3, ...).
@@ -492,7 +526,11 @@
 #'   transition probabilities through a multinomial logit per origin profile:
 #'   the log odds of moving to each other profile rather than staying. A
 #'   column may change over occasions; the value at the destination occasion
-#'   is used. Factors are expanded to indicator columns.
+#'   is used. Factors are expanded to indicator columns. With `occasions =
+#'   "grid"`, a move into a position the group skipped has no row to read the
+#'   covariates from, and the fit is refused (`latents_bad_data`): use
+#'   `occasions = "observed"`, or add the skipped rows with their covariate
+#'   values (their indicators may be missing under `missing = "fiml"`).
 #' @param initial_covariates Names of columns that shift the initial profile
 #'   distribution (a multinomial logit, reference: the last profile), read at
 #'   each group's first occasion.
@@ -507,6 +545,12 @@
 #'   group-class shares are re-estimated from posteriors one EM step behind
 #'   them, and at `1e-8` the two still differed by up to about `2e-4`; at
 #'   `1e-10` they agree to about `2e-5`, for roughly 1.5 times the iterations.
+#' @param max_iter Nonnegative integer maximum number of EM updates per start.
+#'   The default, `5000`, is higher than the `1000` of [multilpa()] because
+#'   the tighter `tol` needs more of them: on `course_engagement`, three- and
+#'   four-profile models of two indicators take 1,000 to 1,500. A fit that
+#'   still stops short warns (`latents_unconverged`). `max_iter = 0` updates
+#'   nothing and evaluates the starting values.
 #' @param order `1` (the default) or `2`. With `2`, the profile at each
 #'   occasion from the third on depends on the profiles at the two previous
 #'   occasions (a second-order Markov chain); the first move stays first
@@ -520,7 +564,9 @@
 #'   [multilpa()]: pseudo maximum likelihood with the weights scaled to sum to
 #'   the number of `id` units, sandwich standard errors by default, and
 #'   integer weights equal to repeating each sequence. A weighted fit uses the
-#'   general transition engine and returns a `multilpa_lta`.
+#'   general transition engine and returns a `multilpa_lta`, whose
+#'   model-implied `"transitions"` and `"initial"` tables average the groups
+#'   with their weights.
 #' @param ordinal,count,count_model,count_dispersion Ordinal and count
 #'   indicators, as in [multilpa()]; with `measurement = "occasion"` their
 #'   parameters are estimated per occasion. Read them with
@@ -538,13 +584,13 @@
 #'   indexing the profile moved from), `group_probabilities`, posterior
 #'   matrices, classifications, log likelihood, information criteria, restart
 #'   diagnostics and convergence history. Use [get_results()] for the tidy
-#'   transition table and for the other
-#'   tables. No standard
-#'   errors, likelihood-ratio tests or guarantees of global optimality are
-#'   given for this model family.
+#'   transition table and for the other tables, [parameter_inference()] for
+#'   Wald or bootstrap standard errors and [bootstrap_lrt()] to compare nested
+#'   fits. Global optimality is not guaranteed; compare several starts.
 #'
 #'   With `transitions = "occasion"`, `transition_covariates`,
-#'   `initial_covariates`, `measurement = "occasion"` or `order = 2` the
+#'   `initial_covariates`, `measurement = "occasion"`, `order = 2`,
+#'   `mover_stayer = TRUE`, `weights`, `ordinal` or `count` the
 #'   result is a `multilpa_lta` object instead, read with
 #'   [get_results()]: transition and initial logit coefficients
 #'   with Wald standard errors (observed, robust or OPG, from analytic
@@ -595,7 +641,7 @@
 lta <- function(data, vars, id, n_profiles, time,
                             n_group_classes = 1L,
                             variance_model = c("varying", "equal"),
-                            n_starts = 10L, max_iter = 1000L, tol = 1e-10,
+                            n_starts = 10L, max_iter = 5000L, tol = 1e-10,
                             min_variance = 1e-6, seed = NULL,
                             missing = c("error", "fiml"),
                             covariance_model = c("diagonal", "full"),

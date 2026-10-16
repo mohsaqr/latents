@@ -17,20 +17,26 @@ three_step(
 )
 }
 \arguments{
-\item{x}{A covariate-free fitted \code{\link[=multilpa]{multilpa()}} or \code{\link[=lta]{lta()}} model. A fit that
-already uses membership covariates cannot be corrected by the fixed,
-unconditional classification-error matrix used here.}
+\item{x}{A covariate-free fitted \code{\link[=multilpa]{multilpa()}} or \code{\link[=lta]{lta()}} model, or a
+trajectory model that classifies persons (\code{\link[=mixture_regression]{mixture_regression()}} with
+\code{class_level = "group"}, with or without \code{random} effects) fitted without
+\code{membership} covariates. A fit that already uses membership covariates
+cannot be corrected by the fixed, unconditional classification-error
+matrix used here.}
 
 \item{data}{The data frame carrying the outcome, in the fit's row order.
 Shared fit columns are checked row by row; a frame with too little
-identifying information warns that alignment cannot be verified.}
+identifying information warns that alignment cannot be verified. For a
+trajectory model it must be the data frame the model was fitted to.}
 
 \item{outcome}{Name of a numeric outcome column not used as a measurement
 indicator in \code{x}. For \code{level = "groups"} it must be constant within each
-group.}
+group, and for a trajectory model within each person.}
 
 \item{level}{\code{"individuals"} relates the outcome to profiles, \code{"groups"} to
-group classes.}
+group classes. A trajectory model relates the outcome to its person
+classes, reported with \code{level = "persons"}; \code{"groups"} is refused there
+with \code{latents_bad_argument}.}
 
 \item{method}{\code{"bch"} applies the Bolck-Croon-Hagenaars weights;
 \code{"proportional"} weights by the posteriors, which is simpler and
@@ -99,7 +105,9 @@ This is a marginal profile-outcome analysis; it does not estimate an
 outcome effect on transitions or a sequence-level outcome model.
 
 A cluster-robust variance is the sum of one outer product per independent
-unit, and those contributions sum to zero at the estimate, so it has rank
+unit, scaled by the small-sample (CR1) factor \code{G / (G - 1)} for \code{G} units
+(groups, or observations under \code{vcov_type = "independent"}). Those
+contributions sum to zero at the estimate, so it has rank
 at most one less than the number of units. With a single group it is
 exactly zero and with as many groups as classes it is singular. Both are
 refused with \code{latents_too_few_groups} rather than reported as a very

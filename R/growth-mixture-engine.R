@@ -98,13 +98,12 @@
   # more than about six digits. Ordinary-scale fits retain the fast path.
   unstable <- which(rr <= 1e-6 * (abs(stats$yy) + abs(cross) + abs(fitted_ss)))
   if (length(unstable) && !is.null(stats$raw)) {
-    raw <- stats$raw
-    for (i in unstable) {
-      rows <- raw$rows[[i]]
-      residual <- raw$y[rows] - as.vector(raw$design[rows, , drop = FALSE] %*% coefficients)
-      rr[i] <- sum(residual^2)
-      zr[i, ] <- as.vector(crossprod(raw$random[rows, , drop = FALSE], residual))
-    }
+    # The fixed-effects residual r = y - X beta: the direct form with zero
+    # random-effect means.
+    direct <- .growth_direct_residuals(stats, coefficients,
+                                       matrix(0, n_persons, n_random), unstable)
+    rr[unstable] <- direct$rr
+    zr[unstable, ] <- direct$zr
   }
   list(rr = rr, zr = zr, direct = unstable)
 }

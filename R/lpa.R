@@ -23,11 +23,13 @@
 #'   indicators; name categorical ones in `categorical`.
 #' @param n_profiles Number of profiles, a positive whole number.
 #' @param ... Further arguments for [multilpa()]: the covariance structure
-#'   (`variance_model`, `covariance_model`, or `volume`, `shape`,
-#'   `orientation`), `missing`, `categorical`, `n_starts`, `seed`, `prior`,
-#'   `noise`, `profile_covariates` and the others it documents, except `id`
-#'   and `n_group_classes`, which a single-level model does not have.
-#' @return A fitted `multilpa` object, as [multilpa()] returns.
+#'   (`model`, or `variance_model` and `covariance_model`, or `volume`,
+#'   `shape` and `orientation`), `missing`, `categorical`, `n_starts`,
+#'   `seed`, `prior`, `noise`, `profile_covariates` and the others it
+#'   documents, except `id` and `n_group_classes`, which a single-level model
+#'   does not have.
+#' @return A fitted `multilpa` object, as [multilpa()] returns, recording the
+#'   `lpa()` call as written.
 #' @section Conditions:
 #'   `latents_bad_argument` when `id` or `n_group_classes` is passed; the
 #'   conditions [multilpa()] raises otherwise.
@@ -47,8 +49,12 @@
 #' @export
 lpa <- function(data, vars, n_profiles, ...) {
   .multilpa_single_level_call("lpa", "multilpa", list(...))
-  .multilpa_quiet_single_level(
+  fit <- .multilpa_quiet_single_level(
     multilpa(data, vars, id = NULL, n_profiles = n_profiles, ...))
+  # The call the caller wrote, so that `update()` refits from the caller's
+  # objects rather than from this function's argument names.
+  fit$call <- match.call()
+  fit
 }
 
 #' Latent class analysis
@@ -75,10 +81,11 @@ lpa <- function(data, vars, n_profiles, ...) {
 #' @param ... Further arguments for [multilca()], such as `missing`,
 #'   `n_starts`, `seed`, `min_probability` and `profile_covariates`, except
 #'   `id` and `n_group_classes`, which a single-level model does not have.
-#' @return A fitted `multilpa` object, as [multilca()] returns.
+#' @return A fitted `multilpa` object, as [multilca()] returns, recording the
+#'   `lca()` call as written.
 #' @section Conditions:
-#'   `latents_bad_argument` when `id` or `n_group_classes` is passed; the
-#'   conditions [multilca()] raises otherwise.
+#'   `latents_bad_argument` when `id`, `n_group_classes` or `n_profiles` is
+#'   passed; the conditions [multilca()] raises otherwise.
 #' @references
 #' Lazarsfeld, P. F., & Henry, N. W. (1968). *Latent Structure Analysis*.
 #' Houghton Mifflin.
@@ -93,8 +100,15 @@ lpa <- function(data, vars, n_profiles, ...) {
 #' @export
 lca <- function(data, vars, n_classes, ...) {
   .multilpa_single_level_call("lca", "multilca", list(...))
-  .multilpa_quiet_single_level(
+  if ("n_profiles" %in% names(list(...))) {
+    stop(errorCondition(
+      "`lca()` takes the number of classes as `n_classes`, not `n_profiles`.",
+      class = "latents_bad_argument", call = NULL))
+  }
+  fit <- .multilpa_quiet_single_level(
     multilca(data, vars, id = NULL, n_profiles = n_classes, ...))
+  fit$call <- match.call()
+  fit
 }
 
 #' Compare latent profile models

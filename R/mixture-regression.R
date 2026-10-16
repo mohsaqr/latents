@@ -81,7 +81,11 @@
 #' continuous predictors shift the category probabilities: a mixture with no
 #' predictors, or with two categories (then the logistic mixture of
 #' `"binomial"`), is refused with `latents_not_identified` unless
-#' `class_level = "group"` gives each class assignment several outcomes.
+#' `class_level = "group"` gives each class assignment several outcomes. So
+#' is a single-level mixture whose predictors take too few distinct values:
+#' with P distinct covariate patterns the data hold at most P (C - 1) free
+#' category probabilities, and a model with more free parameters than that
+#' (for example two classes and one binary factor) cannot be identified.
 #'
 #' A mixture of Bernoulli regressions with one trial per unit is not
 #' identified -- any mixture of Bernoullis is again a Bernoulli -- so a binary
@@ -138,7 +142,9 @@
 #'   sampling weight per independent unit: per row without `id`, per `id`
 #'   group otherwise (constant within it). Pseudo maximum likelihood with the
 #'   weights scaled to sum to the number of units; `vcov_type` defaults to
-#'   `"robust"` and refuses `"observed"` and `"opg"`.
+#'   `"robust"` and refuses `"observed"` and `"opg"`. The information
+#'   criteria use the weighted log likelihood; the entropy term of ICL sums
+#'   the units' own posteriors unweighted, as in the profile models.
 #'
 #' @param random `NULL` (no random effects), or the random effects within
 #'   classes: variable names such as `"time"` (a random intercept and a random
@@ -173,12 +179,20 @@
 #'   covariate that varies within a group where it may not;
 #'   `latents_not_identified` for a binary outcome with one trial per class
 #'   assignment, or an ordinal mixture with one outcome per class assignment
-#'   and two categories or no predictors; `latents_missing_data` for missing values under
+#'   and two categories, no predictors, or fewer distinct covariate patterns
+#'   times C - 1 than free parameters; `latents_missing_data` for missing
+#'   values under
 #'   `missing = "error"`; `latents_rows_dropped` (warning) under
 #'   `missing = "omit"`; `latents_no_valid_start` when every start
 #'   degenerated; `latents_unconverged` (warning) when the selected start did
 #'   not converge; `latents_degenerate_start` (warning) when some starts
-#'   degenerated; `latents_separation` (warning) when a coefficient diverged.
+#'   degenerated; `latents_separation` (warning) when a coefficient diverged;
+#'   `latents_failed_starts` (warning) when some growth-mixture starts could
+#'   not be built (they are marked `"failed"` in the starts table);
+#'   `latents_boundary` (warning) for a negative-binomial dispersion at the
+#'   Poisson limit; `latents_random_boundary` (warning) for a degenerate
+#'   random-effect covariance; `latents_singular_information` (warning) when
+#'   some standard errors cannot be computed.
 #'
 #' @references
 #' Asparouhov, T., & Muthen, B. (2008). Multilevel mixture models. In G. R.
@@ -259,11 +273,10 @@ mixture_regression <- function(formula, data, n_classes,
   vcov_defaulted <- missing(vcov_type)
   random_covariance <- match.arg(random_covariance)
   # Variable names may stand in for a one-sided formula, so no `~` is needed.
-  caller <- parent.frame()
-  common <- .mixture_as_formula(common, "common", caller)
-  membership <- .mixture_as_formula(membership, "membership", caller)
-  group_membership <- .mixture_as_formula(group_membership, "group_membership", caller)
-  random <- .mixture_as_formula(random, "random", caller)
+  common <- .mixture_as_formula(common, "common")
+  membership <- .mixture_as_formula(membership, "membership")
+  group_membership <- .mixture_as_formula(group_membership, "group_membership")
+  random <- .mixture_as_formula(random, "random")
   family <- match.arg(family)
   class_level <- match.arg(class_level)
   variance <- match.arg(variance)
@@ -362,13 +375,22 @@ mixture_regression <- function(formula, data, n_classes,
 #' anything names cannot say (no intercept, interactions, transformations) is
 #' still written as a formula.
 #'
+#' A formula built from names, or one without variables (the default
+#' `~ 1`), gets the base environment: its variables all come from the data,
+#' and the environment it was made in -- the fitting function's own frame,
+#' holding the data and every start's result -- would otherwise be stored
+#' (and serialized) with the fit.
+#'
 #' @param value `NULL`, a character vector or a formula.
 #' @param argument The argument's name, for the message.
-#' @param env The environment the formula is evaluated in.
 #' @return `NULL` or a one-sided formula; raises `latents_bad_argument`.
 #' @noRd
-.mixture_as_formula <- function(value, argument, env = parent.frame()) {
-  if (is.null(value) || inherits(value, "formula")) return(value)
+.mixture_as_formula <- function(value, argument) {
+  if (is.null(value)) return(NULL)
+  if (inherits(value, "formula")) {
+    if (length(all.vars(value)) == 0L) environment(value) <- baseenv()
+    return(value)
+  }
   if (!is.character(value) || length(value) == 0L || anyNA(value) ||
       !all(nzchar(value))) {
     stop(errorCondition(sprintf(paste(
@@ -377,8 +399,8 @@ mixture_regression <- function(formula, data, n_classes,
       class = "latents_bad_argument", call = NULL))
   }
   terms <- setdiff(value, c("intercept", "1"))
-  if (length(terms) == 0L) return(stats::as.formula("~ 1", env = env))
-  stats::reformulate(sprintf("`%s`", terms), env = env)
+  if (length(terms) == 0L) return(stats::as.formula("~ 1", env = baseenv()))
+  stats::reformulate(sprintf("`%s`", terms), env = baseenv())
 }
 
 #' Attach sampling weights to a mixture-regression specification
@@ -523,22 +545,8 @@ mixture_regression <- function(formula, data, n_classes,
                        "or `0 +`)."))
   }
 
-  common_names <- character()
-  if (!is.null(common)) {
-    common_design <- stats::model.matrix(
-      stats::update(common, ~ . + 0), data = data)
-    common_names <- colnames(common_design)
-    unknown <- setdiff(common_names, colnames(full_design))
-    if (length(unknown) > 0L) {
-      bad_argument(sprintf(paste(
-        "`common` names %s, which `formula` does not produce; every shared",
-        "term must also be in `formula`."),
-        paste(sprintf("`%s`", unknown), collapse = ", ")))
-    }
-    if ("(Intercept)" %in% common_names) {
-      bad_argument("The intercept cannot be shared through `common`.")
-    }
-  }
+  common_names <- if (is.null(common)) character() else
+    .mixture_common_columns(common, model_terms, full_design)
   # The thresholds stand in for an ordinal regression's intercept, and they
   # always vary across classes.
   varying_names <- setdiff(colnames(full_design),
@@ -606,7 +614,7 @@ mixture_regression <- function(formula, data, n_classes,
     stop(errorCondition("The evaluated random-effects design must be finite.",
                         class = "latents_bad_data", call = NULL))
   }
-  c(list(
+  spec <- c(list(
     family = family, nesting = nesting, variance = variance,
     n = n, n_classes = n_classes,
     n_group_classes = if (identical(nesting, "two-level")) n_group_classes else 1L,
@@ -640,6 +648,45 @@ mixture_regression <- function(formula, data, n_classes,
                       category_levels = response$levels,
                       category_values = response$values,
                       category_kind = response$kind))
+  if (ordinal) .ordinal_check_patterns(spec)
+  spec
+}
+
+#' The design columns of the terms shared by every class
+#'
+#' A `common` term is matched to a term of `formula` by the variables it
+#' involves (so `~ b:a` matches `a:b`), and contributes every design column
+#' that term produces in `formula`'s own coding: a factor shares its contrast
+#' columns, not the full dummy set a formula without intercept would build.
+#' Columns follow the order of the terms in `common`.
+#'
+#' @param common A one-sided formula.
+#' @param model_terms The terms of the fitted formula.
+#' @param full_design Its model matrix (with the `assign` attribute).
+#' @return A character vector of column names of `full_design`; raises
+#'   `latents_bad_argument` for a term `formula` does not have.
+#' @noRd
+.mixture_common_columns <- function(common, model_terms, full_design) {
+  term_keys <- function(terms) {
+    factors <- attr(terms, "factors")
+    if (length(factors) == 0L) return(character())
+    vapply(seq_len(ncol(factors)), function(j) {
+      paste(sort(rownames(factors)[factors[, j] > 0]), collapse = "\r")
+    }, character(1))
+  }
+  common_terms <- stats::terms(common)
+  labels <- attr(common_terms, "term.labels")
+  position <- match(term_keys(common_terms), term_keys(model_terms))
+  if (anyNA(position)) {
+    stop(errorCondition(sprintf(paste(
+      "`common` names %s, which `formula` does not produce; every shared",
+      "term must also be in `formula`."),
+      paste(sprintf("`%s`", labels[is.na(position)]), collapse = ", ")),
+      class = "latents_bad_argument", call = NULL))
+  }
+  assign <- attr(full_design, "assign")
+  columns <- unlist(lapply(position, function(term) which(assign == term)))
+  colnames(full_design)[as.integer(columns)]
 }
 
 #' Retain the membership design's coding for prediction

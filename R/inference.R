@@ -611,7 +611,8 @@
 #'   accumulates the outer product of the per-group scores, multiplied by the
 #'   CR1 small-sample factor `G / (G - 1)` for `G` groups (the default of
 #'   `sandwich::vcovCL()`; every robust standard error in the package carries
-#'   it). Groups are the
+#'   it). Mplus's MLR applies no such factor, so these errors are exactly
+#'   `sqrt(G / (G - 1))` times Mplus's (0.8% larger with 60 groups). Groups are the
 #'   independent units, so robust errors relax the assumption that the Gaussian
 #'   within-group model is correctly specified. They do not relax the assumption
 #'   that groups are independent.
@@ -622,6 +623,9 @@
 #'   standard errors; the two agree with `"observed"` in large samples and can
 #'   differ noticeably in small ones, where `"observed"` is usually the more
 #'   reliable. `"robust"` and `"opg"` need more groups than parameters.
+#'   `vcov_type` and `step` belong to the Wald path; `method = "bootstrap"`
+#'   does not use them, since resampling groups already makes its errors
+#'   robust in the sense `"robust"` is.
 #' @param adjust Multiplicity correction applied to `p_value` to produce
 #'   `p_adjusted`, one of the methods [stats::p.adjust()] accepts. The default
 #'   `"none"` leaves the two columns equal: a correction changes what a p-value
@@ -653,7 +657,8 @@
 #'   is a fresh fit, so `n_starts` buys the same protection against a local
 #'   maximum here as it does in [multilpa()], at the same multiple of the cost.
 #' @param seed Optional seed for the resampling: any whole number `set.seed()`
-#'   accepts; a fraction raises `latents_bad_argument`. The stream is restored on exit,
+#'   accepts; anything else raises `latents_bad_argument`, on either path. The
+#'   Wald path draws nothing, so it uses no seed. The stream is restored on exit,
 #'   so a seeded call leaves the caller's random state exactly as it found it.
 #' @param boundary What to do when categorical response probabilities sit on
 #'   their lower bound, `min_probability`. There the likelihood is flat in the
@@ -711,12 +716,16 @@
 #'   Diagnostics of the fit as a whole travel as attributes rather than as
 #'   columns repeated down every row: `covariance` and `covariance_unconstrained`
 #'   (natural and estimation-scale covariance of the estimates), `hessian`,
-#'   `gradient`, `scaled_score`, `condition_ratio`, `level`, `step`, `vcov_type`,
-#'   `fixed` (the measurement blocks this fit held, `character()` when none) and
-#'   `adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
-#'   groups-by-parameters score matrix and `scaling_correction` the MLR scaling
-#'   correction factor `tr(A^-1 B) / q`, used for scaled likelihood-ratio
-#'   difference tests.
+#'   `gradient`, `scaled_score`, `score_displacement` (the largest score times
+#'   its estimation-scale standard error, the quantity the
+#'   `latents_unconverged` warning reads), `condition_ratio`, `level`, `step`,
+#'   `method`, `vcov_type`, `fixed` (the measurement blocks this fit held,
+#'   `character()` when none), `fixed_at_bound` (the probabilities
+#'   `boundary = "fix"` held) and `adjust`. When `vcov_type` is `"robust"` or
+#'   `"opg"`, `group_scores` holds the groups-by-parameters score matrix and
+#'   `scaling_correction` the MLR scaling correction factor `tr(A^-1 B) / q`,
+#'   with `B` the cross-product of those scores without the CR1 factor, used
+#'   for scaled likelihood-ratio difference tests; it is `NA` otherwise.
 #' @section Conditions:
 #'   `latents_no_converge` for an unconverged fit, `latents_boundary_fit` when
 #'   a variance, a response probability or a mixing probability sits at its
@@ -724,7 +733,8 @@
 #'   be inverted, `latents_no_free_parameters` when `fixed` held every
 #'   parameter, `latents_bad_inference_data` when a supplied `data` does not
 #'   reproduce the fit, and `latents_too_few_groups` for `vcov_type = "robust"`
-#'   with fewer independent groups than reported parameters. A fit whose score
+#'   or `"opg"` when the fit has no more independent groups than free
+#'   parameters. A fit whose score
 #'   is still far from zero is reported with a `latents_unconverged` warning
 #'   rather than refused. A fit made with `multilpa(prior = )` is refused by
 #'   the Wald path with `latents_unsupported_inference` (it sits at a
@@ -791,6 +801,9 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
                                       match.arg(vcov_type), missing(vcov_type))
   adjust <- match.arg(adjust)
   method <- match.arg(method)
+  # A seed set.seed() would not take is refused on either path, so the
+  # argument means the same thing whichever method is asked for.
+  .multilpa_check_seed(seed)
   if (identical(method, "bootstrap")) {
     stopifnot(
       "`iter` must be a single integer of at least two" =
@@ -804,7 +817,6 @@ parameter_inference.multilpa <- function(x, data = NULL, level = 0.95, step = 1e
         max_iter >= 1 && max_iter == floor(max_iter),
       "`tol` must be a single positive number" =
         is.numeric(tol) && length(tol) == 1L && is.finite(tol) && tol > 0)
-    .multilpa_check_seed(seed)
     data <- .multilpa_validate_bootstrap_data(x, data)
     .latents_local_seed(seed, after = FALSE)
     return(.multilpa_bootstrap_inference(x, data, level, as.integer(iter),
@@ -1045,8 +1057,19 @@ vcov.multilpa <- function(object, data = NULL, scale = c("natural", "unconstrain
   # `data` is no longer required: a fit carries the columns it was built from,
   # and `parameter_inference()` falls back to them.
   information <- parameter_inference(object, data, ...)
-  if (scale == "natural") attr(information, "covariance") else
-    attr(information, "covariance_unconstrained")
+  if (scale == "natural") return(attr(information, "covariance"))
+  covariance <- attr(information, "covariance_unconstrained")
+  # The bootstrap refits each resample in its own coordinates and reads the
+  # natural parameters only, so it has no estimation-scale covariance. Saying
+  # so is the answer; a NULL would flow silently into the caller's next step.
+  if (is.null(covariance)) {
+    stop(errorCondition(paste(
+      "The bootstrap has no covariance on the estimation scale: it reads the",
+      "natural parameters of each refit. Use `scale = \"natural\"`, or the",
+      "Wald path (`method = \"wald\"`) for the estimation scale."),
+      class = "latents_unsupported_inference", call = NULL))
+  }
+  covariance
 }
 
 #' @rdname latents-model-methods
@@ -1069,11 +1092,15 @@ confint.multilpa <- function(object, parm, level = 0.95, data = NULL, ...) {
   if (missing(parm)) parm <- estimated
   if (is.numeric(parm)) {
     if (anyNA(parm) || any(!is.finite(parm)) || any(parm != floor(parm)) ||
-        any(parm < 1) || any(parm > length(estimates))) stop("Invalid coefficient indices in parm.")
+        any(parm < 1) || any(parm > length(estimates))) {
+      stop(errorCondition("Invalid coefficient indices in parm.",
+                          class = "latents_bad_argument", call = NULL))
+    }
     parm <- names(estimates)[parm]
   }
   if (!is.character(parm) || anyNA(parm) || !all(parm %in% names(estimates))) {
-    stop("parm must identify existing coefficient names or indices.")
+    stop(errorCondition("parm must identify existing coefficient names or indices.",
+                        class = "latents_bad_argument", call = NULL))
   }
   held <- setdiff(parm, estimated)
   if (length(held) > 0L) {

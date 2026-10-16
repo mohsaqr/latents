@@ -12,10 +12,12 @@
 #'     absent column name, an indicator that is not a numeric vector, an
 #'     indicator that is constant or wholly unobserved, missing or non-finite
 #'     values under `missing = "error"`, or a missing group identifier.}
-#'   \item{`latents_bad_argument`}{A scalar argument is outside its contract:
-#'     `n_profiles`, `n_group_classes`, `n_starts`, `max_iter`, `tol`,
-#'     `min_variance`, or a `seed` or `seeds` that is not a whole number
-#'     `set.seed()` accepts.}
+#'   \item{`latents_bad_argument`}{An argument is outside its contract: a
+#'     scalar such as `n_profiles`, `n_group_classes`, `n_starts`, `max_iter`,
+#'     `tol`, `min_variance`, or a `seed` or `seeds` that is not a whole number
+#'     `set.seed()` accepts; a `what` naming a table or view the object does
+#'     not have; or an argument a verb or table does not use, which is named
+#'     back rather than dropped.}
 #'   \item{`latents_bad_time`}{`time` is missing, or repeats a position within
 #'     a group, so the ordering it is supposed to supply does not exist.}
 #'   \item{`latents_bad_categorical`}{A categorical indicator cannot be
@@ -28,7 +30,9 @@
 #'     not have, or one that `start` does not supply, or `start` is absent.}
 #'   \item{`latents_bad_stage`}{A `measurement` fit offered to [fit_staged()]
 #'     has already estimated multiple group classes, or was fitted to different
-#'     indicators, profiles or measurement options than the stage requested.}
+#'     indicators, profiles or measurement options than the stage requested,
+#'     or was fitted with `weights`, `centering`, or ordinal or count
+#'     indicators, which the staged likelihood cannot hold faithfully.}
 #'   \item{`latents_bad_transition`}{A transition model was asked for with
 #'     fewer than two profiles, or with no group observed at two occasions.}
 #'   \item{`latents_bad_inference_data`}{The data passed to a verb alongside
@@ -103,7 +107,10 @@
 #'   \item{`latents_bad_covariate`}{A predictor given to [r3step()] varies
 #'     within a group when group-level membership is predicted, makes the
 #'     design rank deficient, or is a measurement indicator that already
-#'     helped define the classes. The counterpart of `latents_bad_outcome`.}
+#'     helped define the classes; or, given to
+#'     `multilpa(profile_covariates =, group_covariates =)`, is an indicator
+#'     or the group identifier, or makes the membership design rank
+#'     deficient. The counterpart of `latents_bad_outcome`.}
 #'   \item{`multilpa_indicator_reused`}{A measurement indicator was offered
 #'     as an external variable, to [three_step()] as an outcome or to
 #'     [r3step()] as a predictor. Raised alongside `latents_bad_outcome` or
@@ -187,6 +194,10 @@
 #'     whose plot method names no views to draw.}
 #'   \item{`latents_no_time`}{A sequence verb was called on a fit made without
 #'     `time`, so it carries no ordering.}
+#'   \item{`latents_unsupported_prediction`}{`predict()` was called on a
+#'     growth mixture, a membership-covariate fit or a latent transition fit,
+#'     for which prediction on new rows is not implemented; their fitted
+#'     rows' results are tables of [get_results()].}
 #'   \item{`latents_missing_package`}{A verb needs a package listed in
 #'     `Suggests` that is not installed. Raised by [get_tna()] and
 #'     [get_group_tna()] when the `tna` package is absent; the message names
@@ -203,7 +214,9 @@
 #'   \item{`latents_nothing_to_plot`}{The requested panel has no rows to draw.}
 #'   \item{`latents_unknown_category`, `latents_unknown_criterion`}{A named
 #'     category or information criterion does not exist in this fit.}
-#'   \item{`latents_bad_scale`}{An unrecognised plotting scale was requested.}
+#'   \item{`latents_bad_scale`}{An unrecognised plotting scale was requested,
+#'     or `scale = "standardized"` met an indicator with zero or undefined
+#'     standard deviation, which it cannot be divided by.}
 #' }
 #'
 #' @section Warnings:
@@ -271,6 +284,26 @@
 #'     little fitted information to establish row order, for example only a
 #'     repeated group identifier. The result is returned on the caller's
 #'     assurance that the rows are in fitting order.}
+#'   \item{`latents_random_boundary`}{A growth mixture's random-effect
+#'     covariance is degenerate in a class (a variance at its floor, or random
+#'     effects perfectly correlated), so the data cannot separate those random
+#'     effects and their standard errors are not reported.}
+#'   \item{`latents_unused_argument`}{A method that ignored unknown arguments
+#'     up to latents 0.9.21 (several `plot()` methods, and [descriptives()] of
+#'     a data frame) was given one. It still runs as before and names what it
+#'     did not use.}
+#'   \item{`latents_unused_category`}{An ordinal indicator is a factor that
+#'     declares levels never observed in the data. Their intercepts diverge,
+#'     so Wald inference is refused; call `droplevels()` before fitting. A
+#'     warning rather than an error, because bootstrap refits keep the
+#'     fitted categories on purpose.}
+#'   \item{`latents_no_standard_errors`}{A message, not a warning: a table
+#'     that carries standard errors by default could not compute them for this
+#'     fit (a bound-active or unconverged fit, singular information, or a
+#'     family or noise component without inference), so they are `NA` and the
+#'     message gives the reason. Passing `data` to `get_results(x,
+#'     "profiles")` or `"responses"` raises the underlying condition
+#'     instead.}
 #' }
 #'
 #' @return Nothing; this page documents conditions rather than a function.

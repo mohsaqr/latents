@@ -49,7 +49,9 @@ An object of class \code{multilpa_diagnostics}. Read its tables with
 \code{get_results(result, what = )}, which offers \code{"entropy"}, \code{"classification"},
 \code{"average_posteriors"}, \code{"residuals"} and \code{"all"}, and never with \code{$}. A
 model family that has no bivariate residuals leaves that table out of
-\code{"all"}, and asking for it by name raises \code{latents_no_group_classes}.
+\code{"all"}, and asking for it by name raises \code{latents_no_group_classes}; a
+fit with a noise component has none either, and raises
+\code{latents_unsupported_noise}.
 
 \code{print()} returns the object invisibly, having printed one line per
 diagnostic: relative entropy, smallest class, lowest average posterior and

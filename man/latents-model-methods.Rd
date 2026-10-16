@@ -81,7 +81,9 @@ scale the model is estimated on: log variances (diagonal), log-Cholesky
 coordinates (full covariance), log volumes, shapes and orientations (a
 structure that constrains them across profiles), and baseline-category
 logits for mixing and response probabilities. In a covariate model, means
-and membership coefficients are the same on both scales.}
+and membership coefficients are the same on both scales. With
+\code{method = "bootstrap"} only the natural scale exists, and
+\code{scale = "unconstrained"} raises \code{latents_unsupported_inference}.}
 
 \item{boundary}{\code{"error"} or \code{"fix"}, as for \code{\link[=parameter_inference]{parameter_inference()}}:
 \code{"fix"} holds response probabilities on their bound, whose rows and
@@ -94,7 +96,8 @@ otherwise.}
 
 \item{parm}{Optional coefficient names or indices; defaults to every
 estimated coefficient. Naming a coefficient that \code{fixed} held raises
-\code{latents_held_parameter}, because a held value has no interval.}
+\code{latents_held_parameter}, because a held value has no interval; an
+unknown name or an out-of-range index raises \code{latents_bad_argument}.}
 
 \item{level}{Confidence level strictly between zero and one.}
 }

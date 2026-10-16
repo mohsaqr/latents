@@ -13,7 +13,7 @@ lta(
   n_group_classes = 1L,
   variance_model = c("varying", "equal"),
   n_starts = 10L,
-  max_iter = 1000L,
+  max_iter = 5000L,
   tol = 1e-10,
   min_variance = 1e-06,
   seed = NULL,
@@ -40,7 +40,8 @@ lta(
 \arguments{
 \item{data}{A data frame containing indicators and a group identifier.}
 
-\item{vars}{Unique character vector of continuous indicator column names.}
+\item{vars}{Unique character vector of indicator column names. Columns not
+named in \code{categorical}, \code{ordinal} or \code{count} are continuous indicators.}
 
 \item{id}{Name of the observed group identifier column. Character, factor, or
 numeric identifiers are supported; missing identifiers are not. Required
@@ -51,7 +52,12 @@ single-level form and does not take \code{multilpa()}'s \code{id = NULL}.}
 
 \item{time}{Name of the column giving each observation's occasion within its
 group. Required: this model is defined by the ordering. Values must be
-complete and unique within each group.}
+complete and unique within each group. They are ordered as \code{\link[=sort]{sort()}}
+orders them: numbers numerically, a factor by its levels, and character
+strings alphabetically. Numbers stored as text whose alphabetical order
+is not their numeric order (\code{"2"}, \code{"10"}) are refused
+(\code{latents_bad_time}, also \code{latents_bad_data}); zero-padded numbers and ISO dates sort correctly
+and are accepted.}
 
 \item{n_group_classes}{Positive integer number of latent group classes. One
 gives an ordinary single-level latent transition model; more than one fits
@@ -72,12 +78,11 @@ evaluates the supplied parameters and nothing else, so exactly one start is
 run whatever \code{n_starts} says.}
 
 \item{max_iter}{Nonnegative integer maximum number of EM updates per start.
-\code{max_iter = 0} performs no update. With \code{start}, it returns the model
-evaluated at exactly those values, whatever \code{n_starts} is, so that
-\code{logLik()} scores a parameter set supplied from elsewhere rather than the
-best of some random initializations that were never asked for. Without
-\code{start} there is nothing to evaluate at, so the random initializations are
-scored and the highest is returned.}
+The default, \code{5000}, is higher than the \code{1000} of \code{\link[=multilpa]{multilpa()}} because
+the tighter \code{tol} needs more of them: on \code{course_engagement}, three- and
+four-profile models of two indicators take 1,000 to 1,500. A fit that
+still stops short warns (\code{latents_unconverged}). \code{max_iter = 0} updates
+nothing and evaluates the starting values.}
 
 \item{tol}{Positive relative log-likelihood tolerance. Convergence requires
 absolute change no greater than \verb{tol * (1 + abs(previous log likelihood))}.
@@ -121,7 +126,10 @@ transition always links two adjacent observations. \code{"grid"} places them on
 the grid of every position seen in the data, so a group that skips a
 position still consumes a transition across the gap and contributes no
 measurement information at it. The two agree whenever every group is
-observed at every position.}
+observed at every position. Under either, a group's first observation is
+its first occasion, so a group that enters late starts the sequence there:
+occasion-specific transitions and measurement count occasions from each
+group's own start, not from the first position in the data.}
 
 \item{select_start}{Which start the fit reports. \code{"likelihood"}, the
 default, takes the highest log likelihood across starts, preferring a
@@ -142,7 +150,10 @@ for every occasion; \code{"occasion"} estimates a separate one for each move
 transition probabilities through a multinomial logit per origin profile:
 the log odds of moving to each other profile rather than staying. A
 column may change over occasions; the value at the destination occasion
-is used. Factors are expanded to indicator columns.}
+is used. Factors are expanded to indicator columns. With \code{occasions = "grid"}, a move into a position the group skipped has no row to read the
+covariates from, and the fit is refused (\code{latents_bad_data}): use
+\code{occasions = "observed"}, or add the skipped rows with their covariate
+values (their indicators may be missing under \code{missing = "fiml"}).}
 
 \item{initial_covariates}{Names of columns that shift the initial profile
 distribution (a multinomial logit, reference: the last profile), read at
@@ -175,7 +186,9 @@ sampling weight per \code{id} (constant over its occasions). As in
 \code{\link[=multilpa]{multilpa()}}: pseudo maximum likelihood with the weights scaled to sum to
 the number of \code{id} units, sandwich standard errors by default, and
 integer weights equal to repeating each sequence. A weighted fit uses the
-general transition engine and returns a \code{multilpa_lta}.}
+general transition engine and returns a \code{multilpa_lta}, whose
+model-implied \code{"transitions"} and \code{"initial"} tables average the groups
+with their weights.}
 
 \item{ordinal, count, count_model, count_dispersion}{Ordinal and count
 indicators, as in \code{\link[=multilpa]{multilpa()}}; with \code{measurement = "occasion"} their
@@ -191,13 +204,13 @@ optional \code{covariances} and \code{response_probabilities},
 indexing the profile moved from), \code{group_probabilities}, posterior
 matrices, classifications, log likelihood, information criteria, restart
 diagnostics and convergence history. Use \code{\link[=get_results]{get_results()}} for the tidy
-transition table and for the other
-tables. No standard
-errors, likelihood-ratio tests or guarantees of global optimality are
-given for this model family.
+transition table and for the other tables, \code{\link[=parameter_inference]{parameter_inference()}} for
+Wald or bootstrap standard errors and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} to compare nested
+fits. Global optimality is not guaranteed; compare several starts.
 
 With \code{transitions = "occasion"}, \code{transition_covariates},
-\code{initial_covariates}, \code{measurement = "occasion"} or \code{order = 2} the
+\code{initial_covariates}, \code{measurement = "occasion"}, \code{order = 2},
+\code{mover_stayer = TRUE}, \code{weights}, \code{ordinal} or \code{count} the
 result is a \code{multilpa_lta} object instead, read with
 \code{\link[=get_results]{get_results()}}: transition and initial logit coefficients
 with Wald standard errors (observed, robust or OPG, from analytic

@@ -52,7 +52,9 @@ are fitted once; with only categorical indicators there is no structure
 to cross. A structure set through \code{variance_model}, \code{covariance_model},
 \code{volume}, \code{shape} or \code{orientation} replaces the default.}
 
-\item{seed}{Optional reproducible seed for each fit.}
+\item{seed}{Optional reproducible seed for each fit: any whole number
+\code{set.seed()} accepts. Anything else raises \code{latents_bad_argument} before
+any candidate is fitted.}
 
 \item{family}{\code{"profiles"} (the default) enumerates the profile model over
 \code{n_profiles}, \code{n_group_classes} and \code{model}. One or more of the
@@ -102,8 +104,9 @@ boundary, and unreplicated fits are reported, not silently selected.
 \section{Conditions}{
 
 \code{latents_bad_argument} when \code{model} names an unknown structure, when it is
-given together with another way of setting the structure, or when it is
-given although every indicator is categorical.
+given together with another way of setting the structure, when it is
+given although every indicator is categorical, or when \code{seed} is not a
+seed \code{set.seed()} accepts.
 }
 
 \examples{

@@ -358,9 +358,11 @@ plot.latents_mixture_regression <- function(x, what = NULL, predictor = NULL,
       factor(levels(column)[1L], levels = levels(column))
     } else column[1L]
   })
-  rows <- as.data.frame(lapply(typical, rep, length(grid_values)),
-                        stringsAsFactors = FALSE)
-  names(rows) <- names(predictors)
+  # A model without other predictors (`y ~ 1`) still needs one row per grid
+  # value.
+  rows <- if (length(typical) == 0L) data.frame(row.names = seq_along(grid_values)) else
+    stats::setNames(as.data.frame(lapply(typical, rep, length(grid_values)),
+                                  stringsAsFactors = FALSE), names(predictors))
   rows[[predictor]] <- grid_values
   rows
 }

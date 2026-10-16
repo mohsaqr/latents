@@ -82,6 +82,16 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
       is.null(n_starts) || (is.numeric(n_starts) && length(n_starts) == 1L &&
         is.finite(n_starts) && n_starts >= 1 &&
         n_starts == floor(n_starts) && n_starts <= .Machine$integer.max),
+    # Checked here, not left to each refit: a refit's refusal is caught and
+    # recorded as that seed's failure, so a mistyped control would come back
+    # as a table of NA rows and a warning instead of an error.
+    "`max_iter` must be a single non-negative whole number, or NULL" =
+      is.null(max_iter) || (is.numeric(max_iter) && length(max_iter) == 1L &&
+        is.finite(max_iter) && max_iter >= 0 && max_iter == floor(max_iter) &&
+        max_iter <= .Machine$integer.max),
+    "`tol` must be a single positive number, or NULL" =
+      is.null(tol) || (is.numeric(tol) && length(tol) == 1L &&
+                         is.finite(tol) && tol > 0),
     "`tolerance` must be a single positive number, or NULL" =
       is.null(tolerance) || (is.numeric(tolerance) && length(tolerance) == 1L &&
                                is.finite(tolerance) && tolerance > 0))

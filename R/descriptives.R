@@ -10,7 +10,9 @@
 #' profile prevalence, or other features of their distributions.
 #'
 #' @param x A data frame, or a fitted model of this package. A fit carries the
-#'   columns it was built from, so `vars` and `id` are read from it.
+#'   columns it was built from, so `vars` and `id` are read from it. A
+#'   single-level fit (`id = NULL`) has no groups, so its table has no
+#'   `n_groups` or `icc`.
 #' @param vars Character vector of column names to describe. Repeated names
 #'   are described once. Columns must be vectors; matrix-valued columns raise
 #'   `latents_bad_data`. For a data frame, defaults to every numeric column
@@ -24,7 +26,9 @@
 #'   in the `by` column and reported last, so that the strata account for every
 #'   input row exactly once. The stratifier is never compared with `==`, so a
 #'   missing value cannot select rows it does not belong to.
-#' @param ... Passed between methods.
+#' @param ... Nothing further is used. For a data frame, any other argument is
+#'   reported with a `latents_unused_argument` warning; for a fit, which
+#'   supplies its own `vars` and `id`, it raises `latents_bad_argument`.
 #' @return A base `data.frame`, one row per variable, or one row per variable
 #'   and `by` level, with the columns
 #'   \describe{
@@ -89,6 +93,10 @@ descriptives.data.frame <- function(x, vars = NULL, id = NULL, by = NULL, ...) {
               is.null(id) || (is.character(id) && length(id) == 1L && id %in% names(x)),
             "`by` must be a single column name of `x`" =
               is.null(by) || (is.character(by) && length(by) == 1L && by %in% names(x)))
+  # Released versions dropped anything else without a word; it still describes
+  # as before, but says what it did not use.
+  .latents_warn_unused_arguments(list(...), "descriptives()",
+                                 "It takes `vars`, `id` and `by`.")
   if (is.null(vars)) {
     numeric_columns <- names(x)[vapply(x, is.numeric, logical(1))]
     vars <- setdiff(numeric_columns, c(id, by))
@@ -109,14 +117,22 @@ descriptives.multilpa <- function(x, by = NULL, ...) {
   stopifnot("`by` must be \"profile\" or \"group_class\"" =
               is.null(by) || (is.character(by) && length(by) == 1L &&
                                 by %in% c("profile", "group_class")))
+  # `vars` and `id` are the fit's own, so there is nothing further to pass on;
+  # a supplied one would otherwise collide with them or be dropped unread.
+  .multilpa_reject_extra_arguments(
+    list(...), "descriptives()",
+    "A fit supplies its own `vars` and `id`; describe a data frame to choose them.")
   frame <- .multilpa_model_frame(x)
+  # A single-level fit numbers its rows as one-row groups of its own making.
+  # Its grouping summaries would describe that numbering, not the data.
+  id <- if (isTRUE(x$single_level)) NULL else x$id
   if (is.null(by)) {
-    return(descriptives.data.frame(frame, vars = x$vars, id = x$id, ...))
+    return(descriptives.data.frame(frame, vars = x$vars, id = id))
   }
   # The assignment is metadata, not a measurement: it is carried beside the
   # frame rather than written into it, so an indicator the caller named
   # `profile` or `group_class` keeps its own values.
-  .multilpa_describe_by(frame, x$vars, x$id,
+  .multilpa_describe_by(frame, x$vars, id,
                         .multilpa_assignment_values(x, by), by)
 }
 

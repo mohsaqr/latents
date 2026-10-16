@@ -28,8 +28,13 @@ the mice package (which is then completed here).}
 
 \item{level}{Confidence level of the pooled intervals.}
 
-\item{vcov_type, adjust}{As in \code{\link[=parameter_inference]{parameter_inference()}}, applied to every
+\item{vcov_type}{As in \code{\link[=parameter_inference]{parameter_inference()}}, applied to every
 imputation's fit.}
+
+\item{adjust}{Multiplicity correction, as in \code{\link[=parameter_inference]{parameter_inference()}},
+applied to the pooled p-values to give \code{p_adjusted}. Each imputation's
+own table is computed without one, since only the pooled p-values are
+reported.}
 }
 \value{
 An object of class \code{latents_pooled}. \code{\link[=as.data.frame]{as.data.frame()}} and
@@ -107,7 +112,7 @@ Warnings from the individual fits are passed on as they are raised.
 set.seed(1)
 # Two stand-in completed data sets. With real missing covariates, pass the
 # `mids` object mice::mice() returns instead.
-completed <- lapply(1:2, function(i) {
+completed <- lapply(seq_len(2), function(i) {
   within(subset(course_engagement, student <= 40),
          previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))
 })

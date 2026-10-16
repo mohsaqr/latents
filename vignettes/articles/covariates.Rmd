@@ -94,7 +94,7 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
 To regress profile membership on a covariate, we call `r3step()` with `data`
 for the data frame and `covariates` for the predictors. It returns
 multinomial logit coefficients, corrected for classification error.
-`vcov_type = "robust"` clusters the standard errors on groups.
+`vcov_type = "robust"`, the default, clusters the standard errors on groups.
 
 ```{r r3step}
 r3step(fit, data = course_engagement, covariates = "previous_grade",
@@ -106,8 +106,8 @@ r3step(fit, data = course_engagement, covariates = "previous_grade",
 To estimate the covariate together with the profiles, we call `multilpa()`
 with `profile_covariates` for predictors of profile membership.
 `group_covariates` does the same for group-class membership and needs a
-variable that is constant within groups. Covariate models require complete
-data.
+variable that is constant within groups. Covariates must have no missing
+values; missing indicators are integrated out with `missing = "fiml"`.
 
 ```{r one-step}
 one_step <- multilpa(course_engagement,
@@ -164,8 +164,8 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
            method = "proportional")        # weighting by posterior probabilities
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            vcov_type = "independent")      # standard errors without clustering
-r3step(fit, data = course_engagement,
-       covariates = "previous_grade")      # observed-information standard errors
+r3step(fit, data = course_engagement, covariates = "previous_grade",
+       vcov_type = "observed")             # observed-information standard errors
 measurement <- multilpa(course_engagement,
                         vars = c("browse", "lectures", "forum_read",
                                  "forum_post", "attendance"),

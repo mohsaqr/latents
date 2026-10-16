@@ -178,7 +178,8 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
     stop(errorCondition(paste(
       "This view draws the indicators as supplied, and this fit was",
       "centred, so its means are on a different scale."),
-      class = "latents_bad_argument", call = NULL))
+      class = c("latents_nothing_to_plot", "latents_bad_argument"),
+      call = NULL))
   }
   values <- x$indicator_data
   if (is.null(values) || is.null(x$subject_profiles)) {
@@ -284,9 +285,8 @@ plot_enumeration <- function(x, what = c("aic", "bic_groups",
                              mark_minimum = TRUE, main = NULL,
                              subtitle = NULL, cutoff = 0.8,
                              using = "bic_groups") {
-  stopifnot("`x` must be an `multilpa_enumeration` result" =
-              inherits(x, "multilpa_enumeration"),
-            "`what` must name one or more criteria, or be \"all\"" =
+  .gg_require_enumeration(x, "plot_enumeration")
+  stopifnot("`what` must name one or more criteria, or be \"all\"" =
               is.character(what) && length(what) >= 1L && !anyNA(what),
             "`combine` must be TRUE or FALSE" = isTRUE(combine) || isFALSE(combine),
             "`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
@@ -410,7 +410,12 @@ plot.multilpa_covariates <- function(x, what = c("profiles", "bars", "heatmap",
               inherits(x, "multilpa_covariates"))
   .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,
                                  category)
-  if (identical(what, "probabilities")) {
+  # Asked for by name or by a unique abbreviation, as match.arg() would take
+  # it, so "prob" gets the reason too rather than a bare match.arg() error.
+  offered <- c(eval(formals(plot.multilpa_covariates)$what), "probabilities")
+  asks_prevalence <- is.character(what) && length(what) == 1L && !is.na(what) &&
+    identical(offered[pmatch(what, offered)], "probabilities")
+  if (asks_prevalence) {
     stop(errorCondition(
       paste("A covariate model has no single profile prevalence: it varies with",
             "each unit's covariates. Use parameter_inference() for the logits."),

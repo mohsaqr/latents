@@ -33,7 +33,9 @@ utils::globalVariables("statistic")
 #'   are fitted once; with only categorical indicators there is no structure
 #'   to cross. A structure set through `variance_model`, `covariance_model`,
 #'   `volume`, `shape` or `orientation` replaces the default.
-#' @param seed Optional reproducible seed for each fit.
+#' @param seed Optional reproducible seed for each fit: any whole number
+#'   `set.seed()` accepts. Anything else raises `latents_bad_argument` before
+#'   any candidate is fitted.
 #' @param family `"profiles"` (the default) enumerates the profile model over
 #'   `n_profiles`, `n_group_classes` and `model`. One or more of the
 #'   group-class families `"additive"`, `"dispersion"` and
@@ -71,8 +73,9 @@ utils::globalVariables("statistic")
 #'   `summary()` for the criterion-by-criterion comparison.
 #' @section Conditions:
 #'   `latents_bad_argument` when `model` names an unknown structure, when it is
-#'   given together with another way of setting the structure, or when it is
-#'   given although every indicator is categorical.
+#'   given together with another way of setting the structure, when it is
+#'   given although every indicator is categorical, or when `seed` is not a
+#'   seed `set.seed()` accepts.
 #' @references
 #' Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
 #' *Pattern Recognition*, 28(5), 781--793.
@@ -101,6 +104,10 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
     .multilpa_missing_id("enumerate_classes",
                          "`enumerate_lpa()` or `enumerate_lca()`")
   }
+  # Every candidate's refusal is recorded as that candidate's failure, so a
+  # seed set.seed() would not take must be refused here, once, or it comes
+  # back as a grid in which every candidate failed.
+  .multilpa_check_seed(seed)
   if (!is.null(time)) {
     # Transition models: profiles x group classes (x structures when `model`
     # names codes); every other lta() argument is held fixed through `...`.
@@ -387,6 +394,9 @@ get_candidate <- function(x, n_profiles, n_group_classes = 1L,
     return(.latents_candidate_at(x, .latents_candidate_row(x, n_profiles)))
   }
   if (inherits(x, "latents_transition_enumeration")) {
+    # The same contract as the profile grid below: a fractional count would
+    # otherwise be printed truncated, as if a present candidate were absent.
+    .latents_check_candidate_counts(n_profiles, n_group_classes)
     at <- which(x$table$n_profiles == n_profiles &
                   x$table$n_group_classes == n_group_classes &
                   (is.null(model) | x$table$model %in% (model %||% "")))
@@ -425,17 +435,10 @@ get_candidate <- function(x, n_profiles, n_group_classes = 1L,
   stopifnot(
     "`x` must be an `multilpa_enumeration` result" =
       inherits(x, "multilpa_enumeration"),
-    "`n_profiles` must be a single positive integer" =
-      is.numeric(n_profiles) && length(n_profiles) == 1L &&
-      is.finite(n_profiles) && n_profiles >= 1 &&
-      n_profiles == floor(n_profiles),
-    "`n_group_classes` must be a single positive integer" =
-      is.numeric(n_group_classes) && length(n_group_classes) == 1L &&
-      is.finite(n_group_classes) && n_group_classes >= 1 &&
-      n_group_classes == floor(n_group_classes),
     "`model` must be a single model code, or NULL" =
       is.null(model) || (is.character(model) &&
                            length(model) == 1L && !is.na(model)))
+  .latents_check_candidate_counts(n_profiles, n_group_classes)
   grid <- x$table
   at <- which(grid$n_profiles == n_profiles &
                 grid$n_group_classes == n_group_classes)
@@ -467,6 +470,24 @@ get_candidate <- function(x, n_profiles, n_group_classes = 1L,
       class = "latents_failed_candidate", call = NULL))
   }
   fit
+}
+
+#' Check the class counts that name a candidate
+#' @param n_profiles,n_group_classes The counts [get_candidate()] received.
+#' @return `NULL`, invisibly; an argument error for anything but a single
+#'   positive whole number each.
+#' @noRd
+.latents_check_candidate_counts <- function(n_profiles, n_group_classes) {
+  stopifnot(
+    "`n_profiles` must be a single positive integer" =
+      is.numeric(n_profiles) && length(n_profiles) == 1L &&
+      is.finite(n_profiles) && n_profiles >= 1 &&
+      n_profiles == floor(n_profiles),
+    "`n_group_classes` must be a single positive integer" =
+      is.numeric(n_group_classes) && length(n_group_classes) == 1L &&
+      is.finite(n_group_classes) && n_group_classes >= 1 &&
+      n_group_classes == floor(n_group_classes))
+  invisible(NULL)
 }
 
 #' @rdname get_candidate
@@ -1069,7 +1090,15 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'   handling; `latents_bad_data` when the data have missing indicators and
 #'   the models were not fitted with `missing = "fiml"`; `latents_bad_nesting`
 #'   also when two covariate models use different covariates or slope
-#'   specifications (other than a one-group-class null).
+#'   specifications (other than a one-group-class null), and when the models
+#'   do not differ by exactly one class at one level.
+#'   `latents_no_converge` when either original model has not converged or
+#'   has an active variance bound; `latents_reversed_likelihood` when the
+#'   alternative's log likelihood is below the null's by more than `tol` can
+#'   explain; `latents_bad_inference_data` when `data` does not reproduce a
+#'   fitted likelihood; `latents_unsupported_weights` for fits with sampling
+#'   weights; `latents_unsupported_noise` for fits with a noise component;
+#'   `latents_bad_argument` for an invalid `seed`.
 #' @param null_model Smaller, converged [multilpa()] model, with or without
 #'   membership covariates.
 #' @param alternative_model Larger model fitted to exactly the same data.
@@ -1224,9 +1253,12 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
         "Original models must be converged with inactive variance bounds.",
         class = "latents_no_converge", call = NULL))
     }
+    # Groups are matched by value, as parameter_inference() matches them, so
+    # the same identifiers stored as double rather than integer still agree.
     if (!all(c(model$vars, model$id) %in% names(data)) ||
         nrow(data) != model$n_observations ||
-        !identical(data[[model$id]], model$group_values[model$group_index])) {
+        !identical(match(data[[model$id]], model$group_values),
+                   model$group_index)) {
       stop(errorCondition("data must preserve the original observations and group ordering.",
         class = "latents_bad_inference_data", call = NULL))
     }
@@ -1449,7 +1481,11 @@ print.summary_multilpa_bootstrap_lrt <- function(x, digits = 4L, rows = 10L,
               inherits(x, "summary_multilpa_bootstrap_lrt"))
   .multilpa_check_print_arguments(digits, rows)
   cat("Parametric bootstrap likelihood-ratio comparison\n")
-  cat(sprintf("%d replicate(s) reached a parameter boundary; %d raised an error.\n",
+  # `n_errors` counts every invalid replicate: one whose refit raised an
+  # error, did not converge, or reversed the likelihood.
+  cat(sprintf(paste("%d replicate(s) reached a parameter boundary; %d were",
+                    "invalid (an error, no convergence or a reversed",
+                    "likelihood).\n"),
               x$n_boundary, x$n_errors))
   cat("The reference distribution is simulated, not chi-square.\n")
   .multilpa_print_tables(x$tables, rows = rows, digits = digits)

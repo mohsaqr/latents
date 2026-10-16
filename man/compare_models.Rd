@@ -37,9 +37,8 @@ and the same four prefixed \code{group_}, \code{smallest_share} (the smallest es
 share, relative to all observation mass including any noise component), \code{converged}, \code{n_best_replicated}, and \code{delta_bic} and
 \code{bic_weight} on \code{bic_groups} (the BIC that counts groups as the
 independent units; on a single-level model it is the ordinary BIC). The
-numbers are the ones the grid's candidates table reports. The printout
-marks the row with the lowest BIC; that is a fact about the criterion,
-not a choice. Raises \code{latents_bad_argument} for fits it cannot compare,
+numbers are the ones the grid's candidates table reports. No row is
+marked as best: \code{delta_bic} and \code{bic_weight} carry the evidence. Raises \code{latents_bad_argument} for fits it cannot compare,
 for a group-class family grid (compare those in their own table), for
 candidates named together with \code{n_profiles} or \code{n_group_classes}, and for
 \code{n_profiles} or \code{n_group_classes} without a grid;

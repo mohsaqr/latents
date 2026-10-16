@@ -37,8 +37,8 @@ indicator as categorical; `multilpa()` with some indicators named in
   row.
 - **Standard errors.** Observed-information and robust
   (`vcov_type = "robust"`) standard errors through `parameter_inference()`.
-- **Model comparison.** `enumerate_classes()` and, for complete data,
-  `bootstrap_lrt()`.
+- **Model comparison.** `enumerate_classes()` and `bootstrap_lrt()`, which
+  keeps each row's pattern of missing answers in a FIML fit.
 - **External variables.** `three_step()` and `r3step()` work on a categorical
   fit.
 - **Membership covariates.** `profile_covariates` and `group_covariates` work

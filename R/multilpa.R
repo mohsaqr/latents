@@ -621,6 +621,9 @@
       "`time` must be unique within each group; a position cannot occur twice.",
       class = "latents_bad_time", call = NULL))
   }
+  # Every reader of the ordering sorts these values, so numbers stored as text
+  # whose alphabetical order is wrong are refused here, once, for every model.
+  .lta_check_time_order(values, time)
   values
 }
 
@@ -655,13 +658,17 @@
       "as `id` if it is the nesting unit."), name),
       class = "latents_bad_data", call = NULL))
   }
-  if (!is.null(n_group_classes) && !isTRUE(as.integer(n_group_classes) == 1L)) {
+  # Exactly one: `as.integer()` would let 1.5 or "1" through as a request for
+  # one group class, which a fit with `id` refuses as not a positive integer.
+  if (!is.null(n_group_classes) &&
+      !(is.numeric(n_group_classes) && length(n_group_classes) == 1L &&
+        identical(as.numeric(n_group_classes), 1))) {
     stop(errorCondition(sprintf(paste(
       "`id = NULL` puts one observation in each unit, so there is no",
       "composition for a second-level class to differ in and",
       "`n_group_classes = %s` has nothing to estimate. Pass `id` to fit group",
       "classes, or leave `n_group_classes` alone for a single-level fit."),
-      format(n_group_classes)),
+      paste(deparse(n_group_classes), collapse = "")),
       class = "latents_bad_argument", call = NULL))
   }
   .multilpa_single_level_notice(latent_class)
@@ -679,7 +686,8 @@
 #' missing indicators are available.
 #'
 #' @param data A data frame containing indicators and a group identifier.
-#' @param vars Unique character vector of continuous indicator column names.
+#' @param vars Unique character vector of indicator column names. Columns not
+#'   named in `categorical`, `ordinal` or `count` are continuous indicators.
 #' @param id Name of the observed group identifier column. Character, factor, or
 #'   numeric identifiers are supported; missing identifiers are not.
 #'
@@ -845,7 +853,8 @@
 #'   likelihood's score is not zero at a posterior mode;
 #'   `method = "bootstrap"` refits every resample with the same prior. The
 #'   fit records the request as `prior` and the resolved hyperparameters, in
-#'   the indicators' units, as `prior_parameters`.
+#'   the indicators' units (centred, under `centering`), as
+#'   `prior_parameters`.
 #' @param noise `FALSE`, the default, or `TRUE` to add a noise component: one
 #'   more mixture component with a constant density `1 / V` over the
 #'   hypervolume `V` of the data, which absorbs observations no Gaussian
@@ -910,7 +919,10 @@
 #'   not use it; it is stored so that `get_results(x, "sequences")`,
 #'   `get_results(x, "sequence_summary")` and
 #'   `plot(what = "sequences")` can read the assignments back in order. Values
-#'   must be complete and unique within each group.
+#'   must be complete and unique within each group. They are ordered as
+#'   [sort()] orders them; numbers stored as text whose alphabetical order is
+#'   not their numeric order (`"2"`, `"10"`) are refused (`latents_bad_time`),
+#'   while zero-padded numbers and ISO dates are accepted.
 #' @param fixed Character vector naming measurement blocks to hold at the
 #'   values `start` supplies, instead of estimating them: any of `"means"`,
 #'   `"variances"` and `"response_probabilities"`, or `"measurement"` for every
@@ -947,8 +959,9 @@
 #'     within-group variances.
 #'
 #'   These families take only `data`, `vars`, `id`, `n_group_classes`,
-#'   `between_variance`, `n_starts`, `max_iter`, `tol`, `min_variance` and
-#'   `seed`; any other argument is refused with `latents_bad_argument`.
+#'   `between_variance`, `n_starts`, `max_iter`, `tol`, `min_variance`,
+#'   `seed` and `weights`; any other argument is refused with
+#'   `latents_bad_argument`.
 #'   Indicators must be complete and continuous, and at least one group must
 #'   have more than one row (`latents_unidentified` otherwise). Between
 #'   variances estimated at zero are reached by a boundary maximization with a
@@ -956,9 +969,14 @@
 #'   are finished by Newton steps. The result has class `multilpa_additive`;
 #'   `bic` uses the number of groups and `bic_individual` the number of rows.
 #'   Read it with [get_results()]; `summary()`, `plot()`,
-#'   `coef()`, `vcov()`, `confint()` and [parameter_inference()] work on it.
-#'   These families are experimental: enumeration over families, bootstrap
-#'   inference, missing data and covariates are not yet available. See the
+#'   `coef()`, `vcov()`, `confint()` and [parameter_inference()] work on it,
+#'   [enumerate_classes()] compares families through its `family` argument,
+#'   and [bootstrap_lrt()] tests one number of group classes against another.
+#'   These families are experimental: `parameter_inference(method =
+#'   "bootstrap")` is refused (`latents_unsupported_inference`), and missing
+#'   indicators (`latents_bad_data`), `missing`, membership covariates and
+#'   ordinal or count indicators (`latents_bad_argument`) are not yet
+#'   available. See the
 #'   [group-class and cross-level models
 #'   article](https://pak.dynasite.org/latents/articles/additive.html).
 #'
@@ -975,12 +993,17 @@
 #'
 #'   These take `data`, `vars`, `id`, `n_profiles`, `n_group_classes`,
 #'   `variance_model` (individual profiles), `between_variance` (group
-#'   classes), `n_starts`, `max_iter`, `tol`, `min_variance` and `seed`. The
+#'   classes), `n_starts`, `max_iter`, `tol`, `min_variance`, `seed` and
+#'   `weights`. The
 #'   group means are computed from the same ratings, so the likelihood is the
 #'   specification's working likelihood: comparable between cross-level fits
 #'   of the same data, not with the other families. Standard errors are not
 #'   available (`latents_unsupported_inference`). The result has class
-#'   `multilpa_cross_level`, read with [get_results()].
+#'   `multilpa_cross_level`, read with [get_results()]. Its
+#'   `get_results(fit, "profiles")` table ends with a `prevalence` column:
+#'   each individual profile's prevalence (estimated and shared for the
+#'   restricted family, the class-weighted marginal for the full family) and,
+#'   on the group-class rows, the class weight.
 #' @param between_variance For the additive and additive-dispersion families:
 #'   `"varying"` (the default) estimates between-group variances per group
 #'   class, `"equal"` one set shared by all classes. The dispersion family
@@ -1011,14 +1034,18 @@
 #'   indicator against `C (K - 1)` for a `categorical` one. This is Latent
 #'   GOLD's default ordinal model, against which it is checked. Read the
 #'   category probabilities and locations with `get_results(fit, "ordinal")`.
+#'   A factor level never observed in the data raises the
+#'   `latents_unused_category` warning; drop it with `droplevels()`.
 #' @param count Names of indicators in `vars` holding non-negative whole
 #'   numbers, modelled as Poisson with one mean per profile (or negative
 #'   binomial, see `count_model`); read the means with
 #'   `get_results(fit, "count_means")`. Ordinal and count indicators take
 #'   `missing = "fiml"`, `weights`, two-level fits, membership covariates,
 #'   Wald and bootstrap inference, [bootstrap_lrt()], [predict()] and
-#'   [lta()]; `start`, `fixed`, `prior`, `noise` and the group-class families
-#'   do not take them yet (`latents_unsupported_indicator`).
+#'   [lta()]; `start`, `fixed`, `prior` and `noise` do not take them yet
+#'   (`latents_unsupported_indicator`), and the group-class and cross-level
+#'   families refuse them as arguments they do not take
+#'   (`latents_bad_argument`).
 #' @param count_model `"poisson"` (the default) or `"negative_binomial"`: NB2,
 #'   with mean `mu` and variance `mu + alpha mu^2`, for counts more variable
 #'   than a Poisson within a profile (Latent GOLD's `poisson overdispersed`).
@@ -1027,7 +1054,7 @@
 #' @param count_dispersion For `count_model = "negative_binomial"`: one
 #'   dispersion per profile (`"varying"`, the default) or one shared by every
 #'   profile (`"equal"`).
-#' @return An `multilpa` object containing `means`, `variances`, optional
+#' @return A `multilpa` object containing `means`, `variances`, optional
 #'   `covariances` (indicators by indicators by profiles),
 #'   `profile_probabilities`, `group_probabilities`, posterior matrices,
 #'   classifications, log likelihood, information criteria, restart diagnostics,
@@ -1036,7 +1063,10 @@
 #'   count; `bic_individual` uses `n_informative`, the number of rows carrying at
 #'   least one observed indicator. These are alternative
 #'   conventions, not interchangeable criteria. `boundary` identifies variance
-#'   bounds; `small_classes` flags effective memberships below one. The fit
+#'   bounds; `small_classes` flags a profile or group class whose effective
+#'   membership (`effective_profile_counts`, `effective_group_counts`, which
+#'   are weighted for a fit with `weights`) is below one, and the fit then
+#'   warns with `latents_small_classes`. The fit
 #'   itself carries no standard errors: [parameter_inference()] computes them
 #'   from the fit and the data it was fitted to, and [bootstrap_lrt()] tests
 #'   nested models. No guarantee of global optimality is
@@ -1186,6 +1216,13 @@ multilpa <- function(data, vars, id, n_profiles,
       is.numeric(min_probability) && length(min_probability) == 1L &&
       is.finite(min_probability) && min_probability > 0 &&
       min_probability < 1)
+  # Every later reader of `start` indexes it as a list, so anything else would
+  # surface as an unclassed `$` error from deep inside the fit.
+  if (!is.null(start) && !is.list(start)) {
+    stop(errorCondition(
+      "`start` must be NULL or a list of parameter blocks, such as starting_values(fit).",
+      class = "latents_bad_start", call = NULL))
+  }
   call <- match.call()
   single_level <- is.null(id)
   if (single_level) {
@@ -1323,8 +1360,9 @@ multilpa <- function(data, vars, id, n_profiles,
   # a supplied frame on the same scale from the offsets kept on the fit.
   centred <- .multilpa_center_indicators(x, group_index, n_groups, centering)
   if (!identical(centering, "none") && ncol(x) > 0L) {
+    .multilpa_check_centered(centred$x, centering, raw = x,
+                             group_index = group_index)
     x <- centred$x
-    .multilpa_check_centered(x, centering)
     indicator_frame <- as.data.frame(x)
   }
   group_sizes <- groups$sizes
@@ -1511,7 +1549,16 @@ multilpa <- function(data, vars, id, n_profiles,
   # refit the same data many times, and a warning would fire once per replicate.
   n_informative <- sum(observed_per_row > 0L)
   boundary <- .multilpa_covariance_boundary(parameters, min_variance)
-  small_classes <- any(colSums(subject_posteriors) < 1) || any(colSums(group_posteriors) < 1)
+  # Effective memberships are the counts the fit reports: weighted for a
+  # weighted fit, so the flag, its warning and the printed counts agree.
+  effective_profile_counts <- if (is.null(sampling_weights))
+    colSums(subject_posteriors) else
+      setNames(colSums(weighted_expectation$subject_posteriors), profile_names)
+  effective_group_counts <- if (is.null(sampling_weights))
+    colSums(group_posteriors) else
+      setNames(colSums(weighted_expectation$group_posteriors), type_names)
+  small_classes <- any(effective_profile_counts < 1) ||
+    any(effective_group_counts < 1)
   result <- c(parameters, list(
     call = call, vars = vars, continuous = continuous,
     continuous_types = vapply(data[continuous], typeof, character(1)),
@@ -1559,12 +1606,8 @@ multilpa <- function(data, vars, id, n_profiles,
     converged = best$converged, iterations = best$iterations,
     log_likelihood_history = best$history, starts = starts, best_start = best_start,
     n_failed_starts = sum(!valid), boundary = boundary, small_classes = small_classes,
-    effective_profile_counts = if (is.null(sampling_weights))
-      colSums(subject_posteriors) else
-        setNames(colSums(weighted_expectation$subject_posteriors), profile_names),
-    effective_group_counts = if (is.null(sampling_weights))
-      colSums(group_posteriors) else
-        setNames(colSums(weighted_expectation$group_posteriors), type_names),
+    effective_profile_counts = effective_profile_counts,
+    effective_group_counts = effective_group_counts,
     n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
                              1e-6 * (1 + abs(log_likelihood))),
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))), noise_fields)

@@ -202,8 +202,12 @@
 #'   carried forward rather than refitted. Its profiles, indicators and
 #'   measurement options must match the ones requested here, and it must have
 #'   one group class: a multi-class fit already estimates group structure and
-#'   is not a measurement-only first stage. When `NULL`, the first stage is
-#'   fitted here with one group class.
+#'   is not a measurement-only first stage. A fit made with `weights`,
+#'   `centering` or `ordinal`/`count` indicators is refused too, since the
+#'   second stage fitted here uses none of them and would hold the measurement
+#'   under a likelihood it was not estimated on. Every refusal raises
+#'   `latents_bad_stage`. When `NULL`, the first stage is fitted here with one
+#'   group class.
 #' @param n_starts Number of EM starts, used for both stages.
 #' @return A `multilpa` object for the second stage, so that every accessor,
 #'   diagnostic and method works on it unchanged. Its measurement parameters
@@ -282,6 +286,25 @@ fit_staged <- function(data, vars, id, n_profiles,
         class = "latents_bad_stage", call = NULL))
     }
     .multilpa_refuse_noise(measurement, "fit_staged(measurement = )")
+    ## The second stage is fitted unweighted, to uncentred indicators, with
+    ## every indicator continuous or categorical. A measurement estimated under
+    ## sampling weights, on group-centred indicators or with ordinal or count
+    ## indicators would be held under a likelihood it was never estimated on:
+    ## centred means applied to raw scores describe no profile at all.
+    options_used <- c(
+      "sampling weights" = .latents_is_weighted(measurement),
+      "centred indicators" =
+        !identical(measurement$centering %||% "none", "none"),
+      "ordinal or count indicators" =
+        length(c(measurement$ordinal, measurement$count)) > 0L)
+    if (any(options_used)) {
+      stop(errorCondition(sprintf(paste(
+        "`measurement` was fitted with %s, which the staged second stage does",
+        "not use, so its measurement cannot be held there. Fit both levels",
+        "together with `multilpa()` instead."),
+        paste(names(options_used)[options_used], collapse = " and ")),
+        class = "latents_bad_stage", call = NULL))
+    }
     held_structure <- measurement$covariance_structure %||% NA_character_
     if (!is.na(held_structure) &&
         !held_structure %in% .multilpa_separable_structures()) {

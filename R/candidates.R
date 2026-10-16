@@ -211,14 +211,26 @@
 }
 
 #' Candidate and minimum-criterion tables of a family or transition grid
+#'
+#' The minimum is taken over the candidates that converged, as the profile
+#' grid's criteria table takes it: an unconverged fit is reported in the
+#' candidates table, never returned as the minimum.
+#'
+#' @param table The named candidates table.
+#' @param what `"candidates"`, `"best"` or `"all"`.
+#' @param criterion The criterion column.
+#' @return The table, the minimum row, or a list of both; `"all"` without a
+#'   converged candidate returns the candidates alone, and `"best"` raises
+#'   `latents_failed_candidate`.
 #' @noRd
 .latents_grid_result_tables <- function(table, what, criterion) {
   if (identical(what, "candidates")) return(table)
-  usable <- which(is.finite(table[[criterion]]))
+  usable <- which(is.finite(table[[criterion]]) & table$converged %in% TRUE)
   if (length(usable) == 0L) {
     if (identical(what, "all")) return(list(candidates = table))
-    stop(errorCondition("No candidate was fitted.",
-                        class = "latents_failed_candidate", call = NULL))
+    stop(errorCondition(
+      "No candidate was fitted and converged, so no criterion has a minimum.",
+      class = "latents_failed_candidate", call = NULL))
   }
   minimum <- table[usable[which.min(table[[criterion]][usable])], , drop = FALSE]
   if (identical(what, "all")) return(list(candidates = table, best = minimum))

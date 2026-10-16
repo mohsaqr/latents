@@ -115,7 +115,12 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   # and cross-tabulate it against a group class that is the same for all of
   # them. There is no group-level question to ask of singleton groups, so the
   # answer is the profile.
-  grouped <- !is.null(x$group_classes) && max(x$group_sizes) > 1L &&
+  #
+  # The sizes are counted from the group index every fit carries: a covariate
+  # fit stores no `group_sizes`, and `max()` of that absent field sent every
+  # group-level truth to the profile comparison.
+  grouped <- !is.null(x$group_classes) &&
+    max(tabulate(x$group_index)) > 1L &&
     .multilpa_constant_within(values, x$group_index)
   assignment <- if (grouped) "group_class" else "profile"
   # A group-level truth labels groups, not the observations inside them.
@@ -427,7 +432,14 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
     # Derived rather than read from the fit, because not every result class
     # stores a standard-deviation matrix.
     standard_deviation = sqrt(as.vector(t(variances))))
-  if (!isTRUE(standard_errors) || nrow(frame) == 0L) return(frame)
+  if (!isTRUE(standard_errors)) return(frame)
+  # An all-categorical fit has no Gaussian rows, but its table keeps the
+  # columns every other fit's has, so a caller can bind or select them.
+  if (nrow(frame) == 0L) {
+    frame$mean_standard_error <- numeric()
+    frame$variance_standard_error <- numeric()
+    return(frame)
+  }
   errors <- .multilpa_table_errors(x, data)
   if (is.null(errors)) {
     frame$mean_standard_error <- NA_real_
@@ -573,9 +585,12 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
               .multilpa_any_fit(x) || inherits(x, "summary_multilpa"))
   blocks <- x$response_probabilities
   if (is.null(blocks) || length(blocks) == 0L) {
-    return(data.frame(profile = integer(), indicator = character(),
-                      category = character(), probability = numeric(),
-                      threshold = numeric()))
+    empty <- data.frame(profile = integer(), indicator = character(),
+                        category = character(), probability = numeric(),
+                        threshold = numeric())
+    # The same columns a categorical fit's table has, standard error included.
+    if (isTRUE(standard_errors)) empty$probability_standard_error <- numeric()
+    return(empty)
   }
   rows <- lapply(names(blocks), function(indicator) {
     block <- blocks[[indicator]]
@@ -791,7 +806,7 @@ print.multilpa_enumeration <- function(x, ...) {
 #' @export
 starting_values <- function(x, covariance = c("auto", "drop", "keep"),
                             what = c("all", "measurement")) {
-  stopifnot("`object` must be a list or an `multilpa` fit" = is.list(x))
+  stopifnot("`x` must be a list or a `multilpa` fit" = is.list(x))
   .multilpa_refuse_noise(x, "starting_values()")
   covariance <- match.arg(covariance)
   what <- match.arg(what)
@@ -803,13 +818,13 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
   }
   missing_fields <- setdiff(required, names(x))
   if (length(missing_fields) > 0L) {
-    stop(errorCondition(sprintf("`object` is missing starting values for %s.",
+    stop(errorCondition(sprintf("`x` is missing starting values for %s.",
                                 paste(missing_fields, collapse = ", ")),
                         class = "latents_bad_start", call = NULL))
   }
   has_covariances <- !is.null(x$covariances)
   if (identical(covariance, "keep") && !has_covariances) {
-    stop(errorCondition("`object` carries no covariances to keep.",
+    stop(errorCondition("`x` carries no covariances to keep.",
                         class = "latents_bad_start", call = NULL))
   }
   use_covariances <- has_covariances && !identical(covariance, "drop")
@@ -820,7 +835,7 @@ starting_values <- function(x, covariance = c("auto", "drop", "keep"),
     if (has_responses && ncol(as.matrix(means)) == 0L) {
       variances <- matrix(0, n_profiles, 0L)
     } else if (!has_covariances) {
-      stop(errorCondition("`object` is missing starting values for variances.",
+      stop(errorCondition("`x` is missing starting values for variances.",
                           class = "latents_bad_start", call = NULL))
     } else {
     dimension <- dim(x$covariances)[1L]

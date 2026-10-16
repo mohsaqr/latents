@@ -122,8 +122,9 @@
     coefficients <- .growth_coefficients(params, modal[i])
     residual <- y[at] - as.vector(design[at, , drop = FALSE] %*% coefficients)
     random <- spec$random_design[at, , drop = FALSE]
-    fit <- tryCatch(qr.coef(qr(random), residual), error = function(e) NULL)
-    if (is.null(fit) || anyNA(fit)) rep(NA_real_, n_random) else fit
+    # A rank-deficient person design leaves NA coefficients: no deviation.
+    fit <- qr.coef(qr(random), residual)
+    if (anyNA(fit)) rep(NA_real_, n_random) else fit
   }, numeric(n_random))) |> matrix(length(rows), n_random)
   fallback <- diag(max(stats::var(y) * 0.1, spec$min_variance), n_random)
   start_covariance <- function(members) {
@@ -245,6 +246,8 @@
              list(.growth_trajectory_seed(spec)))
   screening <- min(max_iter, 50L)
   screened <- lapply(seq_along(seeds), function(index) {
+    # A start that cannot be built is kept, marked failed with its message, and
+    # reported by a `latents_failed_starts` warning once the fit is selected.
     start <- tryCatch(.growth_start(spec, stats, seeds[[index]], first = index == 1L),
                       error = function(e) e)
     if (inherits(start, "error")) {
@@ -334,6 +337,16 @@
       "random effects. %s Its standard errors are not reported."),
       paste(degenerate_classes, collapse = " and "), advice),
       class = "latents_random_boundary", call = NULL))
+  }
+  failed <- vapply(results, function(r) !usable_result(r), logical(1))
+  if (any(failed)) {
+    # As in every other family: the fit stands on the surviving starts, and
+    # the failed ones are named, not only marked in the starts table.
+    warning(warningCondition(sprintf(paste(
+      "%d of %d starts failed (%s); see get_results(fit, \"starts\")."),
+      sum(failed), length(results),
+      paste(unique(vapply(results[failed], `[[`, character(1), "failed")),
+            collapse = "; ")), class = "latents_failed_starts", call = NULL))
   }
   best_value <- log_likelihood[best]
   completed <- vapply(results, function(r) identical(r$stage, "completed"), logical(1))

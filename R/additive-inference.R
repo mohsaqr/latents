@@ -379,8 +379,9 @@
 #' Newton steps on the estimation scale, with the analytic score and the
 #' observed information, converge quadratically from there. Each step is
 #' halved until the likelihood does not fall and every within variance stays
-#' at or above `min_variance`; a non-positive-definite information stops the
-#' polishing and returns the EM point unchanged.
+#' at or above `min_variance`; a non-finite or numerically non-positive-
+#' definite information stops the polishing and returns the last accepted
+#' point (the EM point when no step was taken).
 #'
 #' @return A list with `parameters`, `steps` (Newton steps taken) and
 #'   `decrement` (the final Newton decrement, `NA` if not computed).
@@ -405,8 +406,15 @@
                                                class_names, vars))
     information <- .additive_information(stats, theta, structure,
                                          class_names, vars, step)
-    factor <- tryCatch(chol(information), error = function(error) NULL)
-    if (is.null(factor)) break
+    # Polishing stops, keeping the last accepted point, unless the information
+    # is finite and numerically positive definite (then chol() succeeds).
+    if (!all(is.finite(information))) break
+    eigenvalues <- eigen(information, symmetric = TRUE, only.values = TRUE)$values
+    if (min(eigenvalues) <=
+          100 * nrow(information) * .Machine$double.eps * max(eigenvalues)) {
+      break
+    }
+    factor <- chol(information)
     direction <- backsolve(factor, forwardsolve(t(factor), gradient))
     decrement <- sqrt(max(0, sum(gradient * direction)))
     if (decrement < 1e-8 || steps >= max_steps) break

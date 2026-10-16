@@ -15,11 +15,15 @@
 #' @param data A data frame, one row per observation.
 #' @param vars Names of the continuous indicator columns.
 #' @param id Name of the group identifier column.
+#' @param weights `NULL`, or the name of a column holding one sampling weight
+#'   per group (see `.latents_sampling_weights()`).
 #' @return A list of class `latents_additive_data` with `ids` (group labels in
 #'   first-occurrence order), `index` (group of each row), `sizes` (n_j),
 #'   `n_groups` (J), `n_obs` (N), `vars`, `averages` and `scatter` (J x d
-#'   matrices, rows named by group) and `pooled_scatter` (sum over groups of
-#'   the scatter, one value per indicator).
+#'   matrices, rows named by group), `pooled_scatter` (sum over groups of
+#'   the scatter, one value per indicator), `sampling_weights` (one per group,
+#'   scaled to sum to J, or `NULL`) and `weighted_n_obs` (sum of the group
+#'   weights times sizes, or `NULL`).
 #' @section Conditions:
 #' `latents_bad_data` for a malformed frame, a non-numeric, missing,
 #' non-finite or constant indicator, or a missing group identifier.
@@ -199,8 +203,10 @@
 #'
 #' @param stats Result of `.additive_prepare()`.
 #' @param parameters Group-class parameters.
-#' @return A list with `log_likelihood` (scalar), `group_log_likelihood`
-#'   (length J), `log_density` (J x H), `posterior` (J x H, rows sum to one),
+#' @return A list with `log_likelihood` (scalar; the weighted pseudo log
+#'   likelihood under sampling weights), `group_log_likelihood` (length J,
+#'   unweighted), `log_density` (J x H), `posterior` (J x H, rows sum to one,
+#'   unweighted),
 #'   `conditional_mean` and `conditional_variance` (J x d x H arrays),
 #'   `intercept_mean` and `intercept_variance` (J x d matrices).
 #' @noRd
@@ -453,15 +459,54 @@
        weights = counts / stats$n_groups)
 }
 
-#' Plain EM for a group-class family from one starting point
+#' What SQUAREM needs from a group-class parameter list
+#'
+#' The extrapolation runs over the means, between and within variances and
+#' class weights as they are stored (H x d blocks, shared blocks as identical
+#' rows, so a shared block stays shared). A point is valid when every value is
+#' finite, the within variances and class weights positive, and every between
+#' variance positive except those held at zero, which the extrapolation leaves
+#' at exactly zero because they never move.
+#'
+#' @param zero H x d logical matrix of between variances held at zero.
+#' @return A list of `flatten`, `restore` and `valid` for `.latents_em_settings()`.
+#' @noRd
+.additive_accelerator <- function(zero) {
+  blocks <- c("means", "between", "within", "weights")
+  list(
+    flatten = function(parameters) unlist(parameters[blocks], use.names = FALSE),
+    restore = function(template, values) {
+      sizes <- lengths(template[blocks])
+      ends <- cumsum(sizes)
+      template[blocks] <- lapply(seq_along(blocks), function(k) {
+        block <- template[[blocks[k]]]
+        block[] <- values[seq.int(ends[k] - sizes[k] + 1L, length.out = sizes[k])]
+        block
+      })
+      template
+    },
+    valid = function(parameters) {
+      values <- unlist(parameters[blocks], use.names = FALSE)
+      all(is.finite(values)) && all(parameters$within > 0) &&
+        all(parameters$weights > 0) && all(parameters$between[!zero] > 0) &&
+        all(parameters$between[zero] == 0)
+    })
+}
+
+#' EM for a group-class family from one starting point
+#'
+#' SQUAREM-accelerated by default (Varadhan & Roland, 2008): plain EM crawls
+#' when classes overlap or a between variance heads for zero, and with the
+#' default `max_iter` such fits stopped unconverged.
 #'
 #' @param zero H x d logical matrix of between variances held at zero; they
 #'   must be zero in `parameters`.
+#' @param accelerate Whether to run SQUAREM cycles (`FALSE` gives plain EM).
 #' @return A list with `parameters`, `expectation`, `converged`, `iterations`
 #'   and `history` (log likelihood after each step, the start first).
 #' @noRd
 .additive_em <- function(stats, parameters, structure, min_variance,
-                         max_iter, tol, zero) {
+                         max_iter, tol, zero, accelerate = TRUE) {
   parameters <- .additive_check_parameters(parameters, length(stats$vars))
   stopifnot("held between variances must be zero" =
               all(parameters$between[zero] == 0))
@@ -471,7 +516,9 @@
     maximize = function(point, expectation) {
       .additive_maximization(stats, expectation, point, structure, min_variance, zero)
     },
-    max_iter = max_iter, tol = tol)
+    max_iter = max_iter, tol = tol,
+    settings = .latents_em_settings(
+      accelerate = if (isTRUE(accelerate)) .additive_accelerator(zero)))
   list(parameters = fit$state, expectation = fit$expectation,
        converged = fit$converged, iterations = fit$iterations, history = fit$history)
 }

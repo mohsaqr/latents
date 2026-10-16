@@ -181,10 +181,16 @@ test_that("the equal-shape iteration is bounded and says when it stops short", {
   diagonals <- rbind(c(4, 1, 1), c(1, 1, 9))
   # One iteration cannot reach the fixed point from this start, and the
   # estimator says so instead of returning the last value as if it were the
-  # maximiser.
-  expect_warning(solve(diagonals, c(10, 20), "VEI", 1e-10, max_iter = 1L),
-                 class = "latents_no_converge")
+  # maximiser: the capped M-step is counted, and the fit reports the count
+  # once, as for every other structure.
+  latents:::.multilpa_reset_structure_log()
+  expect_silent(solve(diagonals, c(10, 20), "VEI", 1e-10, max_iter = 1L))
+  expect_silent(solve(diagonals, c(10, 20), "VEI", 1e-10, max_iter = 1L))
+  expect_warning(latents:::.multilpa_report_structure_log(),
+                 "2 M-step\\(s\\) of the VEI", class = "latents_no_converge")
+  latents:::.multilpa_reset_structure_log()
   expect_silent(solve(diagonals, c(10, 20), "VEI", 1e-10))
+  expect_silent(latents:::.multilpa_report_structure_log())
 })
 
 test_that("the structure grid crosses models with class counts", {

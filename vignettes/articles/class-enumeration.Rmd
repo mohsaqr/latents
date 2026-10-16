@@ -146,7 +146,8 @@ aic_pick <- with(subset(criteria, criterion == "aic"), candidate)
 # The code below names these candidates; stop if the results ever change.
 stopifnot(bic_groups_pick == "profiles4_groups3",
           icl_groups_pick == "profiles4_groups2",
-          awe_groups_pick == "profiles3_groups2")
+          awe_groups_pick == "profiles3_groups2",
+          aic_pick == "profiles6_groups4")
 ```
 
 The result holds `r n_candidates` fitted candidates. Each candidate is named
@@ -539,12 +540,16 @@ srl_bic <- with(subset(get_results(srl_models, "criteria"),
                 candidate)
 eight_on_boundary <- with(subset(as.data.frame(srl_models),
                                  candidate == "profiles8"), boundary)
-stopifnot(srl_bic == "profiles6", isTRUE(eight_on_boundary))
+warned <- with(subset(as.data.frame(srl_models), nzchar(warnings)), candidate)
+stopifnot(srl_bic == "profiles6", isTRUE(eight_on_boundary),
+          identical(warned, "profiles8"))
 ```
 
 BIC is lowest for `r srl_bic`. The candidate with eight profiles reaches the
 lower bound of a variance and contains a nearly empty profile, which marks
-the end of the range that `r nrow(srl)` observations support.
+the end of the range that `r nrow(srl)` observations support. The two
+warnings printed during the enumeration come from that candidate, and the
+table keeps them in its `warnings` column.
 
 ### Several covariance structures
 
@@ -565,15 +570,21 @@ compare_models(crossed_models, "profiles3_VVI", "profiles3_EEE")
 ### Transition models
 
 With `time`, every candidate is a latent transition model across the
-occasions, here the order of each student's enrolments in `sequence`.
+occasions, here the order of each student's enrolments in `sequence`. The
+six-profile model needs more than the default 1,000 EM iterations to meet
+the convergence tolerance, so `max_iter` is raised.
 
 ```{r transitions}
 transition_models <- enumerate_classes(course_engagement, activity, "student",
                                        time = "sequence", n_profiles = 2:6,
                                        n_group_classes = 1, n_starts = 3,
-                                       seed = 1)
+                                       max_iter = 2000, seed = 1)
 transition_models
 compare_models(transition_models)
+```
+
+```{r transitions-check, include = FALSE}
+stopifnot(all(as.data.frame(transition_models)$converged))
 ```
 
 ## Functions

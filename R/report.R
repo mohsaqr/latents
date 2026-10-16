@@ -35,7 +35,9 @@
 #'   `get_results(result, what = )`, which offers `"entropy"`, `"classification"`,
 #'   `"average_posteriors"`, `"residuals"` and `"all"`, and never with `$`. A
 #'   model family that has no bivariate residuals leaves that table out of
-#'   `"all"`, and asking for it by name raises `latents_no_group_classes`.
+#'   `"all"`, and asking for it by name raises `latents_no_group_classes`; a
+#'   fit with a noise component has none either, and raises
+#'   `latents_unsupported_noise`.
 #'
 #'   `print()` returns the object invisibly, having printed one line per
 #'   diagnostic: relative entropy, smallest class, lowest average posterior and
@@ -76,10 +78,12 @@ diagnostics <- function(x, data = NULL, plots = TRUE,
     entropy = .multilpa_entropy_table(x),
     classification = .multilpa_classification_table(x, level = level),
     average_posteriors = .multilpa_average_posteriors(x, level = level),
-    # Residuals need a discrete group-class model; a fit without one refuses
-    # rather than returning a table of a different meaning.
+    # Residuals need a discrete group-class model and no noise component; a
+    # fit without them has no such table, as `get_results(x, "all")` says, and
+    # the other three diagnostics are still reported.
     residuals = tryCatch(.multilpa_bivariate_residuals(x, data, by = by),
-                         latents_no_group_classes = function(condition) NULL),
+                         latents_no_group_classes = function(condition) NULL,
+                         latents_unsupported_noise = function(condition) NULL),
     fit = x)
   class(result) <- "multilpa_diagnostics"
   if (isTRUE(plots) && .gg_available()) print(plot(result))
@@ -106,7 +110,8 @@ as.data.frame.multilpa_diagnostics <- function(x, row.names = NULL,
 print.multilpa_diagnostics <- function(x, ...) {
   stopifnot(inherits(x, "multilpa_diagnostics"))
   fit <- x$fit
-  cat(sprintf("Classification quality: %d profiles", fit$n_profiles))
+  cat(sprintf("Classification quality: %d profile%s", fit$n_profiles,
+              if (identical(as.integer(fit$n_profiles), 1L)) "" else "s"))
   one_group_class <- is.null(fit$n_group_classes) ||
     identical(as.integer(fit$n_group_classes), 1L)
   if (!one_group_class) cat(sprintf(", %d group classes", fit$n_group_classes))
@@ -141,7 +146,9 @@ print.multilpa_diagnostics <- function(x, ...) {
     sprintf("%s %.3f", level, min(rows$average_posterior))
   }))
   if (is.null(x$residuals)) {
-    line("Largest residual", "not available for this model family")
+    line("Largest residual",
+         if (isTRUE(fit$noise)) "not available for a fit with a noise component"
+         else "not available for this model family")
   } else {
     worst <- x$residuals[which.max(abs(x$residuals$residual)), , drop = FALSE]
     line("Largest residual",

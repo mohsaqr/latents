@@ -61,11 +61,13 @@ get_results(moves, "starts")
 
 ## Profiles
 
-To see the profiles, we call `plot()` on the fit. Each line is a profile's
-mean on each indicator, and its label gives the profile's share of the cases.
+To see the profiles, we call `plot()` with `what = "profiles"` (on a
+transition fit, `plot()` alone draws the transition matrices). Each line is a
+profile's mean on each indicator, and its label gives the profile's share of
+the cases.
 
 ```{r profiles}
-plot(moves)
+plot(moves, what = "profiles")
 ```
 
 To compare profiles on a common scale, we call `plot()` with
@@ -186,7 +188,8 @@ grade <- lta(course_engagement, activity, "student", n_profiles = 2,
 get_results(grade, "transition_coefficients")
 ```
 
-The grade's odds ratios are close to one and their intervals include one: in
+The grade's odds ratios are close to one, and its intervals, on the log-odds
+scale of `estimate`, include zero: in
 these data, the previous grade does not change the chance of switching
 profile. A second-order chain, where the next profile depends on the two
 previous ones, does not earn its extra parameters either:

@@ -48,7 +48,8 @@ multilpa(
 \arguments{
 \item{data}{A data frame containing indicators and a group identifier.}
 
-\item{vars}{Unique character vector of continuous indicator column names.}
+\item{vars}{Unique character vector of indicator column names. Columns not
+named in \code{categorical}, \code{ordinal} or \code{count} are continuous indicators.}
 
 \item{id}{Name of the observed group identifier column. Character, factor, or
 numeric identifiers are supported; missing identifiers are not.
@@ -170,7 +171,10 @@ within its group, such as a wave, occasion or course number. The model does
 not use it; it is stored so that \code{get_results(x, "sequences")},
 \code{get_results(x, "sequence_summary")} and
 \code{plot(what = "sequences")} can read the assignments back in order. Values
-must be complete and unique within each group.}
+must be complete and unique within each group. They are ordered as
+\code{\link[=sort]{sort()}} orders them; numbers stored as text whose alphabetical order is
+not their numeric order (\code{"2"}, \code{"10"}) are refused (\code{latents_bad_time}),
+while zero-padded numbers and ISO dates are accepted.}
 
 \item{fixed}{Character vector naming measurement blocks to hold at the
 values \code{start} supplies, instead of estimating them: any of \code{"means"},
@@ -278,7 +282,8 @@ refused for such a fit (\code{latents_unsupported_inference}), because the
 likelihood's score is not zero at a posterior mode;
 \code{method = "bootstrap"} refits every resample with the same prior. The
 fit records the request as \code{prior} and the resolved hyperparameters, in
-the indicators' units, as \code{prior_parameters}.}
+the indicators' units (centred, under \code{centering}), as
+\code{prior_parameters}.}
 
 \item{noise}{\code{FALSE}, the default, or \code{TRUE} to add a noise component: one
 more mixture component with a constant density \code{1 / V} over the
@@ -344,8 +349,9 @@ within-group variances.
 }
 
 These families take only \code{data}, \code{vars}, \code{id}, \code{n_group_classes},
-\code{between_variance}, \code{n_starts}, \code{max_iter}, \code{tol}, \code{min_variance} and
-\code{seed}; any other argument is refused with \code{latents_bad_argument}.
+\code{between_variance}, \code{n_starts}, \code{max_iter}, \code{tol}, \code{min_variance},
+\code{seed} and \code{weights}; any other argument is refused with
+\code{latents_bad_argument}.
 Indicators must be complete and continuous, and at least one group must
 have more than one row (\code{latents_unidentified} otherwise). Between
 variances estimated at zero are reached by a boundary maximization with a
@@ -353,9 +359,13 @@ Karush-Kuhn-Tucker check and flagged (\code{latents_boundary}); interior fits
 are finished by Newton steps. The result has class \code{multilpa_additive};
 \code{bic} uses the number of groups and \code{bic_individual} the number of rows.
 Read it with \code{\link[=get_results]{get_results()}}; \code{summary()}, \code{plot()},
-\code{coef()}, \code{vcov()}, \code{confint()} and \code{\link[=parameter_inference]{parameter_inference()}} work on it.
-These families are experimental: enumeration over families, bootstrap
-inference, missing data and covariates are not yet available. See the
+\code{coef()}, \code{vcov()}, \code{confint()} and \code{\link[=parameter_inference]{parameter_inference()}} work on it,
+\code{\link[=enumerate_classes]{enumerate_classes()}} compares families through its \code{family} argument,
+and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} tests one number of group classes against another.
+These families are experimental: \code{parameter_inference(method = "bootstrap")} is refused (\code{latents_unsupported_inference}), and missing
+indicators (\code{latents_bad_data}), \code{missing}, membership covariates and
+ordinal or count indicators (\code{latents_bad_argument}) are not yet
+available. See the
 \href{https://pak.dynasite.org/latents/articles/additive.html}{group-class and cross-level models article}.
 
 Two cross-level families estimate individual profiles and group classes
@@ -373,12 +383,17 @@ the profile composition of each class is reported descriptively.
 
 These take \code{data}, \code{vars}, \code{id}, \code{n_profiles}, \code{n_group_classes},
 \code{variance_model} (individual profiles), \code{between_variance} (group
-classes), \code{n_starts}, \code{max_iter}, \code{tol}, \code{min_variance} and \code{seed}. The
+classes), \code{n_starts}, \code{max_iter}, \code{tol}, \code{min_variance}, \code{seed} and
+\code{weights}. The
 group means are computed from the same ratings, so the likelihood is the
 specification's working likelihood: comparable between cross-level fits
 of the same data, not with the other families. Standard errors are not
 available (\code{latents_unsupported_inference}). The result has class
-\code{multilpa_cross_level}, read with \code{\link[=get_results]{get_results()}}.}
+\code{multilpa_cross_level}, read with \code{\link[=get_results]{get_results()}}. Its
+\code{get_results(fit, "profiles")} table ends with a \code{prevalence} column:
+each individual profile's prevalence (estimated and shared for the
+restricted family, the class-weighted marginal for the full family) and,
+on the group-class rows, the class weight.}
 
 \item{between_variance}{For the additive and additive-dispersion families:
 \code{"varying"} (the default) estimates between-group variances per group
@@ -411,7 +426,9 @@ intercepts shared by every profile and one location per profile,
 profile's location fixed at zero: \code{(K - 1) + (C - 1)} parameters per
 indicator against \code{C (K - 1)} for a \code{categorical} one. This is Latent
 GOLD's default ordinal model, against which it is checked. Read the
-category probabilities and locations with \code{get_results(fit, "ordinal")}.}
+category probabilities and locations with \code{get_results(fit, "ordinal")}.
+A factor level never observed in the data raises the
+\code{latents_unused_category} warning; drop it with \code{droplevels()}.}
 
 \item{count}{Names of indicators in \code{vars} holding non-negative whole
 numbers, modelled as Poisson with one mean per profile (or negative
@@ -419,8 +436,10 @@ binomial, see \code{count_model}); read the means with
 \code{get_results(fit, "count_means")}. Ordinal and count indicators take
 \code{missing = "fiml"}, \code{weights}, two-level fits, membership covariates,
 Wald and bootstrap inference, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=predict]{predict()}} and
-\code{\link[=lta]{lta()}}; \code{start}, \code{fixed}, \code{prior}, \code{noise} and the group-class families
-do not take them yet (\code{latents_unsupported_indicator}).}
+\code{\link[=lta]{lta()}}; \code{start}, \code{fixed}, \code{prior} and \code{noise} do not take them yet
+(\code{latents_unsupported_indicator}), and the group-class and cross-level
+families refuse them as arguments they do not take
+(\code{latents_bad_argument}).}
 
 \item{count_model}{\code{"poisson"} (the default) or \code{"negative_binomial"}: NB2,
 with mean \code{mu} and variance \verb{mu + alpha mu^2}, for counts more variable
@@ -433,7 +452,7 @@ dispersion per profile (\code{"varying"}, the default) or one shared by every
 profile (\code{"equal"}).}
 }
 \value{
-An \code{multilpa} object containing \code{means}, \code{variances}, optional
+A \code{multilpa} object containing \code{means}, \code{variances}, optional
 \code{covariances} (indicators by indicators by profiles),
 \code{profile_probabilities}, \code{group_probabilities}, posterior matrices,
 classifications, log likelihood, information criteria, restart diagnostics,
@@ -442,7 +461,10 @@ retain first-occurrence order. \code{bic} and \code{bic_groups} use the observed
 count; \code{bic_individual} uses \code{n_informative}, the number of rows carrying at
 least one observed indicator. These are alternative
 conventions, not interchangeable criteria. \code{boundary} identifies variance
-bounds; \code{small_classes} flags effective memberships below one. The fit
+bounds; \code{small_classes} flags a profile or group class whose effective
+membership (\code{effective_profile_counts}, \code{effective_group_counts}, which
+are weighted for a fit with \code{weights}) is below one, and the fit then
+warns with \code{latents_small_classes}. The fit
 itself carries no standard errors: \code{\link[=parameter_inference]{parameter_inference()}} computes them
 from the fit and the data it was fitted to, and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} tests
 nested models. No guarantee of global optimality is

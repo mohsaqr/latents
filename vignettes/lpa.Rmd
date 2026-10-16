@@ -208,10 +208,12 @@ sensitivity(fit, seeds = 1:10)       # refits under several seeds
 starting_values(fit)                 # parameters to start another fit
 ```
 
-The evaluation vignette covers `enumerate_classes()`, `get_candidate()` and
-`bootstrap_lrt()`; the covariates vignette covers `three_step()`, `r3step()`
-and `fit_staged()`; the transitions vignette covers `lta()`, `get_tna()` and
-`get_group_tna()`.
+`vignette("enumeration", package = "latents")` covers `enumerate_classes()`
+and `get_candidate()`; `vignette("lta", package = "latents")` covers `lta()`,
+`get_tna()` and `get_group_tna()`. The evaluation article on the
+[package website](https://pak.dynasite.org/latents/articles/) covers
+`bootstrap_lrt()`, and the covariates article covers `three_step()`,
+`r3step()` and `fit_staged()`.
 
 ## Sampling weights
 
@@ -263,7 +265,7 @@ print(summary(fit), rows = 3)
 - Indicators are independent within a profile (the default diagonal
   covariance; `covariance_model = "full"` relaxes it).
 - The numbers of profiles and group classes are chosen by the analyst; see
-  the evaluation vignette for comparing them.
+  `vignette("enumeration", package = "latents")` for comparing them.
 
 ```{r restore-options, include = FALSE}
 options(old_options)

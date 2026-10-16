@@ -63,8 +63,12 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 #'   `profile_covariates`, `group_covariates`, `categorical`, `n_starts` and
 #'   `seed`. The same arguments fit every imputation.
 #' @param level Confidence level of the pooled intervals.
-#' @param vcov_type,adjust As in [parameter_inference()], applied to every
+#' @param vcov_type As in [parameter_inference()], applied to every
 #'   imputation's fit.
+#' @param adjust Multiplicity correction, as in [parameter_inference()],
+#'   applied to the pooled p-values to give `p_adjusted`. Each imputation's
+#'   own table is computed without one, since only the pooled p-values are
+#'   reported.
 #' @return An object of class `latents_pooled`. [as.data.frame()] and
 #'   `get_results(x, "estimates")` give one row per parameter, with the columns
 #'   of [parameter_inference()] (`level`, `outcome`, `term`, `parameter`,
@@ -98,7 +102,7 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 #' set.seed(1)
 #' # Two stand-in completed data sets. With real missing covariates, pass the
 #' # `mids` object mice::mice() returns instead.
-#' completed <- lapply(1:2, function(i) {
+#' completed <- lapply(seq_len(2), function(i) {
 #'   within(subset(course_engagement, student <= 40),
 #'          previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))
 #' })

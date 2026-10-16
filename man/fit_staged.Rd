@@ -27,7 +27,8 @@ fit_staged(
 \arguments{
 \item{data}{A data frame containing indicators and a group identifier.}
 
-\item{vars}{Unique character vector of continuous indicator column names.}
+\item{vars}{Unique character vector of indicator column names. Columns not
+named in \code{categorical}, \code{ordinal} or \code{count} are continuous indicators.}
 
 \item{id}{Name of the observed group identifier column. Character, factor, or
 numeric identifiers are supported; missing identifiers are not. Required
@@ -44,8 +45,12 @@ stage, so that a measurement solution already chosen and inspected is
 carried forward rather than refitted. Its profiles, indicators and
 measurement options must match the ones requested here, and it must have
 one group class: a multi-class fit already estimates group structure and
-is not a measurement-only first stage. When \code{NULL}, the first stage is
-fitted here with one group class.}
+is not a measurement-only first stage. A fit made with \code{weights},
+\code{centering} or \code{ordinal}/\code{count} indicators is refused too, since the
+second stage fitted here uses none of them and would hold the measurement
+under a likelihood it was not estimated on. Every refusal raises
+\code{latents_bad_stage}. When \code{NULL}, the first stage is fitted here with one
+group class.}
 
 \item{variance_model}{Either \code{"varying"} (profile-specific variances or
 covariance matrices) or \code{"equal"} (shared across profiles).}
@@ -97,7 +102,10 @@ within its group, such as a wave, occasion or course number. The model does
 not use it; it is stored so that \code{get_results(x, "sequences")},
 \code{get_results(x, "sequence_summary")} and
 \code{plot(what = "sequences")} can read the assignments back in order. Values
-must be complete and unique within each group.}
+must be complete and unique within each group. They are ordered as
+\code{\link[=sort]{sort()}} orders them; numbers stored as text whose alphabetical order is
+not their numeric order (\code{"2"}, \code{"10"}) are refused (\code{latents_bad_time}),
+while zero-padded numbers and ISO dates are accepted.}
 }
 \value{
 A \code{multilpa} object for the second stage, so that every accessor,

@@ -18,7 +18,7 @@ equivalence_fixture <- function(...) {
 
 # testthat runs every file with this folder as the working directory, so
 # paths are relative to equivalence/. The in-house exhaustive-enumeration
-# reference is shared with the shipped tests, so it is read from there rather
-# than copied.
-source(file.path("..", "tests", "testthat", "helper-independent-likelihood.R"),
+# reference is shared with the in-package equivalence tests, so it is read
+# from there rather than copied (it moved out of tests/testthat in 0.9.19).
+source(file.path("..", "tests", "equivalence", "helper-independent-likelihood.R"),
        local = TRUE)

@@ -8,7 +8,9 @@
 #' new groups, each classified from its own rows. For [mixture_regression()]
 #' fits it returns fitted outcomes or class probabilities. Growth mixtures
 #' refuse with `latents_unsupported_prediction`; their fitted curves are the
-#' `"trajectories"` and `"individual"` tables of [get_results()].
+#' `"trajectories"` and `"individual"` tables of [get_results()]. Membership-
+#' covariate and latent transition fits refuse with the same class; their
+#' fitted rows' posteriors are `get_results(x, "posteriors")`.
 #'
 #' `simulate()` draws new outcomes on the fitted design of a mixture
 #' regression or growth mixture: class memberships from the fitted mixing
@@ -51,7 +53,8 @@
 #'   Binomial count predictions without trial counts also raise
 #'   `latents_bad_data`; `latents_bad_argument` for `"probabilities"`
 #'   outside the ordinal family; `latents_unsupported_prediction` for
-#'   `predict()` on a growth mixture.
+#'   `predict()` on a growth mixture, a membership-covariate fit or a latent
+#'   transition fit.
 #' @examples
 #' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
 #'                           n_starts = 2, seed = 1)

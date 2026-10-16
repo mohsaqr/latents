@@ -79,12 +79,15 @@ test_that("tables, methods and refusals of the general model", {
 
 test_that("EM alone reaches a stationary point (the quasi-Newton finish masks M-step bugs)", {
   skip_on_cran()
+  # Five EM steps on the small panel can leave a move at zero: an expected boundary.
   fits <- list(
-    covariates = lta(lta_small, "y", "id", n_profiles = 2, time = "time",
-                     transition_covariates = "z", initial_covariates = "w",
-                     n_starts = 1, seed = 1, max_iter = 5),
-    second = lta(lta_small, "y", "id", n_profiles = 2, time = "time", order = 2,
-                 transitions = "occasion", n_starts = 1, seed = 1, max_iter = 5))
+    covariates = quietly(lta(lta_small, "y", "id", n_profiles = 2, time = "time",
+                             transition_covariates = "z", initial_covariates = "w",
+                             n_starts = 1, seed = 1, max_iter = 5),
+                         c("latents_boundary", "latents_unconverged")),
+    second = quietly(lta(lta_small, "y", "id", n_profiles = 2, time = "time", order = 2,
+                         transitions = "occasion", n_starts = 1, seed = 1, max_iter = 5),
+                     c("latents_boundary", "latents_unconverged")))
   lapply(fits, \(fit) {
     em <- .lta_em(fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(coef(fit), fit),
                   fit$occasion_of_row, fit$variance_model, 1e-6, NULL, 1e-10,

@@ -362,7 +362,9 @@
 #'   nothing at a bound: with no bound active `"fix"` gives the same table as
 #'   `"error"`, and a fit with an active bound raises `latents_boundary_fit`
 #'   under either.
-#' @param ... Unused.
+#' @param ... For `confint()`, further arguments to `parameter_inference()`,
+#'   such as `vcov_type`. `vcov()` takes none and warns
+#'   (`latents_unused_argument`) about any it is given.
 #' @return A base `data.frame` with one row per natural parameter and the
 #'   columns of [parameter_inference()]: `level`, `outcome`, `term`,
 #'   `parameter`, `estimate`, `standard_error`, `statistic`, `p_value`,
@@ -397,7 +399,7 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
                                                      adjust = .multilpa_p_adjust_methods,
                                                      method = c("wald", "bootstrap"),
                                                      iter = 199L, n_starts = 10L,
-                                                     max_iter = 1000L, tol = 1e-10,
+                                                     max_iter = 5000L, tol = 1e-10,
                                                      seed = NULL,
                                                      boundary = c("error", "fix")) {
   stopifnot(inherits(x, "multilpa_transitions"),
@@ -608,6 +610,10 @@ parameter_inference.multilpa_transitions <- function(x, data = NULL, level = 0.9
 vcov.multilpa_transitions <- function(object, data = NULL, step = 1e-4,
                                       vcov_type = c("observed", "robust", "opg"),
                                       scale = c("natural", "unconstrained"), ...) {
+  # `type = "robust"`, the name the general transition fit uses, used to fall
+  # into `...` and return the observed-information covariance without a word.
+  .latents_warn_unused_arguments(list(...), "vcov()",
+                                 "Choose the covariance with `vcov_type =`.")
   vcov_type <- match.arg(vcov_type)
   scale <- match.arg(scale)
   inference <- .multilpa_transition_covariance(object, data, step, vcov_type)

@@ -7,7 +7,7 @@ utils::globalVariables(c("trajectory_time", "observed", "predicted", "class_mean
                          "estimate", "conf_low", "conf_high", "label_y", "probability",
                          "person", "spread_low", "spread_high", "observed_mean",
                          "observed_low", "observed_high", "value_label",
-                         "position", "posterior_class", "note"))
+                         "position", "posterior_class", "note", "centre", "name"))
 
 #' One row per class: share, display rank, label, colour, line type and shape
 #' @noRd
@@ -22,7 +22,8 @@ utils::globalVariables(c("trajectory_time", "observed", "predicted", "class_mean
   label <- sprintf("Class %d (%s)", seq_len(n_classes), .gg_percent(share))
   data.frame(class = .growth_class_names(x), rank = rank, share = share,
              label = factor(label, levels = label[ordering]),
-             colour = rep_len(.gg_okabe_ito, n_classes)[rank],
+             # The grey is kept for terms shared by every class.
+             colour = rep_len(.gg_class_palette, n_classes)[rank],
              linetype = rep_len(c("solid", "dashed", "dotdash", "longdash", "twodash",
                                   "dotted"), n_classes)[rank],
              shape = rep_len(.gg_shapes, n_classes)[rank],
@@ -282,7 +283,7 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
                                ifelse(table$p_value < 0.001, "p < .001",
                                       sprintf("p = %.3f", table$p_value)))
   colours <- c(stats::setNames(as.character(key$colour), as.character(key$label)),
-               stats::setNames("grey35", shared))
+               stats::setNames(.gg_reserved_grey, shared))
   shapes <- c(stats::setNames(key$shape, as.character(key$label)),
               stats::setNames(21L, shared))
   ggplot2::ggplot(table, ggplot2::aes(estimate, class_label, colour = class_label)) +
@@ -326,19 +327,29 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
   }
   if (length(terms) == 1L) {
     effects$effect_x <- effects[[terms[1L]]]
-    plot <- ggplot2::ggplot(effects, ggplot2::aes(effect_x, class_label,
+    # A deterministic vertical spread (golden-ratio offsets of each person's
+    # rank within their class), as the case strips use: no random jitter, so
+    # the plot is the same on every draw and draws nothing from the RNG.
+    row_of <- function(label) as.integer(factor(label, levels = levels(key$label)))
+    within <- stats::ave(effects$effect_x, effects$class,
+                         FUN = \(v) rank(v, ties.method = "first"))
+    effects$effect_y <- row_of(effects$class_label) + 0.36 * ((within * 0.618) %% 1 - 0.5)
+    plot <- ggplot2::ggplot(effects, ggplot2::aes(effect_x, effect_y,
                                                   colour = class_label)) +
       ggplot2::geom_vline(xintercept = 0, colour = "grey60", linewidth = 0.4) +
-      ggplot2::geom_jitter(ggplot2::aes(fill = class_label, shape = class_label),
-                           colour = "white", height = 0.18, width = 0, alpha = 0.85,
-                           size = 2, stroke = 0.3) +
+      ggplot2::geom_point(ggplot2::aes(fill = class_label, shape = class_label),
+                          colour = "white", alpha = 0.85, size = 2, stroke = 0.3) +
+      ggplot2::scale_y_continuous(breaks = seq_along(levels(key$label)),
+                                  labels = levels(key$label)) +
       .growth_scales(key) +
       ggplot2::labs(x = sprintf("Predicted random effect: %s", terms[1L]), y = NULL) +
       .gg_theme() +
       .gg_titles(main, subtitle, "Predicted random effects",
                  "Each point is a person's deviation from their class trajectory")
     if (!is.null(notes)) {
-      plot <- plot + ggplot2::geom_text(data = notes, ggplot2::aes(label = note),
+      notes$effect_y <- row_of(notes$class_label)
+      plot <- plot + ggplot2::geom_text(data = notes,
+                                        ggplot2::aes(y = effect_y, label = note),
                                         x = Inf, hjust = 1.02, vjust = -1.2, size = 3.1,
                                         colour = "#D55E00", inherit.aes = FALSE)
     }
@@ -391,6 +402,26 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
     class_label = rep(key$label[modal], times = length(classes)),
     posterior_class = rep(key$label, each = length(modal)),
     probability = as.vector(posterior), stringsAsFactors = FALSE)
+  # A second channel besides the fill: every class's band is named directly on
+  # the bar of each panel's least certain person, where the competing classes
+  # are widest. Bars stack the first legend level on top, so a band's centre
+  # is the mass of the levels after it plus half its own; bands too thin to
+  # hold a name stay unlabelled.
+  middle <- unlist(lapply(seq_along(classes), function(k) {
+    members <- which(modal == k)
+    if (length(members) == 0L) return(integer())
+    members[which.max(position[members])]
+  }))
+  stack_order <- match(levels(key$label), as.character(key$label))
+  names_on_bars <- do.call(rbind, lapply(middle, function(i) {
+    shares <- posterior[i, stack_order]
+    below <- rev(cumsum(rev(shares))) - shares
+    data.frame(position = position[i], class_label = key$label[modal[i]],
+               name = sub(" \\(.*", "", levels(key$label)),
+               centre = below + shares / 2, share = shares,
+               stringsAsFactors = FALSE)
+  }))
+  names_on_bars <- names_on_bars[names_on_bars$share >= 0.12, , drop = FALSE]
   average <- vapply(seq_along(classes), function(k) mean(certainty[modal == k]), numeric(1))
   subtitle_text <- paste0("One bar per person, split by their class probabilities. ",
                           "Average probability of the assigned class: ",
@@ -398,6 +429,11 @@ plot.latents_growth_mixture <- function(x, what = c("trajectories", "individuals
                                 collapse = ", "))
   ggplot2::ggplot(long, ggplot2::aes(position, probability, fill = posterior_class)) +
     ggplot2::geom_col(width = 1, colour = NA) +
+    ggplot2::geom_label(data = names_on_bars,
+                        ggplot2::aes(position, centre, label = name),
+                        hjust = 1, fill = "white", colour = "black", size = 3,
+                        label.padding = ggplot2::unit(1.5, "pt"),
+                        inherit.aes = FALSE) +
     ggplot2::facet_grid(~ class_label, scales = "free_x", space = "free_x") +
     ggplot2::scale_y_continuous(expand = c(0, 0), breaks = c(0, 0.5, 1)) +
     ggplot2::scale_x_continuous(expand = c(0, 0), breaks = NULL) +

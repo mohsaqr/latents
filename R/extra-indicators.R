@@ -55,11 +55,34 @@
     }, integer(nrow(data))), nrow(data), length(ordinal),
     dimnames = list(NULL, ordinal))
   categories <- lengths(ordinal_levels)
-  if (any(categories < 2L)) {
+  # A factor can carry levels nobody chose, so identification is checked on
+  # the categories actually observed, not on the levels.
+  observed_categories <- vapply(ordinal, function(name) {
+    length(unique(ordinal_codes[!is.na(ordinal_codes[, name]), name]))
+  }, integer(1))
+  if (any(observed_categories < 2L)) {
     stop(errorCondition(sprintf(
       "Ordinal indicator %s has fewer than two observed categories.",
-      paste(sprintf("`%s`", ordinal[categories < 2L]), collapse = ", ")),
+      paste(sprintf("`%s`", ordinal[observed_categories < 2L]), collapse = ", ")),
       class = "latents_bad_data", call = NULL))
+  }
+  # A declared category nobody chose has no data for its intercept, which
+  # then diverges and leaves the whole fit without standard errors. It is a
+  # warning, not a refusal: bootstrap refits keep the fit's categories on
+  # purpose (a resample or a parametric draw can miss a rare one), and the
+  # refit must still be the same model.
+  unused <- ordinal[observed_categories < categories]
+  if (length(unused) > 0L) {
+    warning(warningCondition(sprintf(paste(
+      "Ordinal indicator %s declares categories that are never observed (%s);",
+      "their intercepts diverge and Wald inference will be refused. Drop them",
+      "first, for example with droplevels()."),
+      paste(sprintf("`%s`", unused), collapse = ", "),
+      paste(vapply(unused, function(name) {
+        seen <- unique(ordinal_codes[!is.na(ordinal_codes[, name]), name])
+        paste(sprintf("`%s`", ordinal_levels[[name]][-seen]), collapse = ", ")
+      }, character(1)), collapse = "; ")),
+      class = "latents_unused_category", call = NULL))
   }
   counts <- if (length(count) == 0L) NULL else
     matrix(vapply(count, function(name) {
@@ -118,7 +141,8 @@
 #'
 #' @param extra Result of `.latents_prepare_extra()`, or `NULL`.
 #' @param parameters A parameter list carrying `ordinal_intercepts` (a list of
-#'   intercept vectors), `ordinal_locations` (C x J matrix) and `count_means`
+#'   intercept vectors), `ordinal_locations` (C x J matrix), `count_means`
+#'   (C x J matrix) and, for negative-binomial counts, `count_dispersion`
 #'   (C x J matrix).
 #' @param n_rows,n_profiles Dimensions of the result.
 #' @return An n x C matrix; zero when there is nothing to add.
@@ -252,8 +276,9 @@
 #' @param extra Prepared indicators.
 #' @param posteriors n x C posterior weights (weighted, under sampling weights).
 #' @param previous The current parameters, the Newton start for ordinal ones.
-#' @return A list with `ordinal_intercepts`, `ordinal_locations` and
-#'   `count_means`, each `NULL` when absent.
+#' @return A list with `ordinal_intercepts`, `ordinal_locations`,
+#'   `count_means` and `count_dispersion` (negative-binomial counts only), each
+#'   `NULL` when absent.
 #' @noRd
 .latents_extra_maximize <- function(extra, posteriors, previous) {
   n_profiles <- ncol(posteriors)
@@ -420,9 +445,10 @@
 #'
 #' Per ordinal indicator: its K - 1 intercepts (shared by every profile), then
 #' the first C - 1 profile locations (the last is the reference, zero); then
-#' per count indicator its C means. Ordinal coordinates are already on the
+#' per count indicator its C means, then (negative binomial) its dispersions,
+#' one shared or one per profile. Ordinal coordinates are already on the
 #' logit scale, so the natural and unconstrained values coincide; count means
-#' are estimated on the log scale.
+#' and dispersions are estimated on the log scale.
 #'
 #' @param parameters A parameter list or fit carrying the blocks.
 #' @param extra Prepared indicators (for names and levels).
@@ -470,7 +496,8 @@
 }
 
 #' Rebuild the ordinal and count blocks from unconstrained coordinates
-#' @return A list with `ordinal_intercepts`, `ordinal_locations`, `count_means`.
+#' @return A list with `ordinal_intercepts`, `ordinal_locations`,
+#'   `count_means` and `count_dispersion` (`NULL` for Poisson counts).
 #' @noRd
 .latents_extra_decode <- function(theta, extra, n_profiles) {
   at <- 0L
@@ -503,7 +530,9 @@
 #'
 #' By Fisher's identity each row's score is its posterior-weighted
 #' complete-data score: for an ordinal indicator the observed feature minus
-#' its expectation in each profile, for a count `y - lambda` on the log mean.
+#' its expectation in each profile, for a Poisson count `y - lambda` on the
+#' log mean; negative-binomial counts use
+#' `.latents_negative_binomial_scores()` on the log mean and log dispersion.
 #' Missing values contribute nothing.
 #'
 #' @param extra Prepared indicators.
@@ -561,8 +590,8 @@
 }
 
 #' Natural-by-unconstrained Jacobian of the ordinal and count block
-#' @return A square diagonal matrix: one for ordinal coordinates, the mean for
-#'   count ones.
+#' @return A square diagonal matrix: one for ordinal coordinates, the value
+#'   itself for count means and dispersions (estimated on the log scale).
 #' @noRd
 .latents_extra_jacobian <- function(parameters, extra, n_profiles) {
   natural <- .latents_extra_coordinates(parameters, extra, n_profiles, "natural")
@@ -617,7 +646,9 @@
 #' @param x A fit carrying count indicators.
 #' @param data Optional fitting data.
 #' @return One row per profile and count indicator: `profile`, `indicator`,
-#'   `mean` (the Poisson mean) and `standard_error`.
+#'   `mean` and, for negative-binomial counts, `dispersion`; with
+#'   `standard_errors`, also `standard_error` and (negative binomial)
+#'   `dispersion_standard_error`.
 #' @noRd
 .latents_count_frame <- function(x, data = NULL, standard_errors = TRUE) {
   means <- x$count_means
@@ -980,16 +1011,17 @@
     fraction <- count / (size + count)
     powers <- c(1L, 2L, 4L, 6L, 8L)
     coefficients <- c(0.5, 1 / 12, -1 / 120, 1 / 252, -1 / 240)
-    for (index in seq_along(powers)) {
+    # The asymptotic terms are added in order, lowest power first.
+    totals <- Reduce(function(total, index) {
       power <- powers[index]
       gap <- -expm1(-power * log_ratio)
       coefficient <- coefficients[index] * size^(1L - power)
-      score_large <- score_large - coefficient * gap
-      curvature_large <- curvature_large + coefficient *
-        ((1L - power) * gap - power * fraction * exp(-power * log_ratio))
-    }
-    score[large] <- score_large
-    curvature[large] <- curvature_large
+      list(score = total$score - coefficient * gap,
+           curvature = total$curvature + coefficient *
+             ((1L - power) * gap - power * fraction * exp(-power * log_ratio)))
+    }, seq_along(powers), list(score = score_large, curvature = curvature_large))
+    score[large] <- totals$score
+    curvature[large] <- totals$curvature
   }
   list(score = score, curvature = curvature)
 }

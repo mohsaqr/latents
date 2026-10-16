@@ -7,6 +7,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     if (!is.null(fit) && isTRUE(fit$order >= 2L))
       c("second_order_transitions", "second_order_coefficients"),
     "initial", "initial_coefficients", "profiles",
+    if (length(fit$categorical) > 0L) "responses",
     if (!is.null(fit$extra_data$ordinal)) "ordinal",
     if (!is.null(fit$extra_data$count)) "count_means",
     "group_classes", "assignments", "fit", "starts")
@@ -30,15 +31,14 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
   names_all <- .lta_names(fit)
   theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
   selected <- startsWith(names_all, paste0(block, "."))
-  parts <- do.call(rbind, strsplit(names_all[selected], ".", fixed = TRUE))
-  # name layout: block.group_class.profile(s).term ; a term may contain dots.
+  # name layout: block.group_class.profile(s).term ; a term may contain dots,
+  # so the pieces differ in length and are read by position, never bound.
   pieces <- strsplit(names_all[selected], ".", fixed = TRUE)
   table <- data.frame(
     group_class = vapply(pieces, `[`, character(1), 2L),
     outcome = vapply(pieces, `[`, character(1), 3L),
     term = vapply(pieces, function(p) paste(p[-(1:3)], collapse = "."), character(1)),
     estimate = theta[selected], stringsAsFactors = FALSE)
-  rm(parts)
   if (identical(block, "transition")) {
     moves <- strsplit(table$outcome, "->", fixed = TRUE)
     table$from <- vapply(moves, `[`, character(1), 1L)
@@ -73,6 +73,9 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
 #' @noRd
 .lta_probability_table <- function(fit, what) {
   parameters <- .lta_parameters(fit)
+  # A weighted fit describes the population, so its groups are averaged with
+  # their sampling weights; unweighted, every group counts once.
+  unit_weights <- if (is.null(fit$sampling_weights)) NULL else unname(fit$sampling_weights)
   n_states <- fit$n_profiles
   profiles <- paste0("profile_", seq_len(n_states))
   classes <- names(fit$group_probabilities)
@@ -81,7 +84,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
       p <- exp(.lta_log_initial(fit$designs$initial,
                                 matrix(parameters$initial[, , h], ncol(fit$designs$initial))))
       data.frame(group_class = classes[h], profile = profiles,
-                 probability = colMeans(p), stringsAsFactors = FALSE)
+                 probability = .lta_group_mean(p, unit_weights), stringsAsFactors = FALSE)
     })))
   }
   by_occasion <- !identical(fit$transitions, "homogeneous") ||
@@ -96,10 +99,10 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
       } else .lta_log_transition(fit$designs$transition[[t]][active, , drop = FALSE],
                                  array(parameters$transition[, , , h],
                                        dim(parameters$transition)[1:3]))
-      apply(exp(log_p), c(2L, 3L), mean)
+      .lta_group_mean(exp(log_p), unit_weights[active])
     })
     weights <- vapply(transition_occasions, function(t) {
-      sum(fit$layout$within[, t + 1L])
+      sum((unit_weights %||% 1) * fit$layout$within[, t + 1L])
     }, numeric(1))
     if (!by_occasion) per_occasion <- list(Reduce(`+`, Map(`*`, per_occasion, weights)) /
                                              sum(weights))
@@ -122,12 +125,15 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
 #' @noRd
 .lta_second_order_table <- function(fit) {
   parameters <- .lta_parameters(fit)
+  unit_weights <- if (is.null(fit$sampling_weights)) NULL else unname(fit$sampling_weights)
   n_states <- fit$n_profiles
   profiles <- paste0("profile_", seq_len(n_states))
   classes <- names(fit$group_probabilities)
   do.call(rbind, lapply(seq_len(fit$n_group_classes), function(h) {
     occasions <- seq_along(fit$designs$transition)[-1L]
-    weights <- vapply(occasions, function(t) sum(fit$layout$within[, t + 1L]), numeric(1))
+    weights <- vapply(occasions, function(t) {
+      sum((unit_weights %||% 1) * fit$layout$within[, t + 1L])
+    }, numeric(1))
     averaged <- Reduce(`+`, Map(function(t, w) {
       active <- fit$layout$within[, t + 1L]
       log_p <- if (isTRUE(parameters$stayer[h])) {
@@ -135,7 +141,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
       } else .lta_log_transition2(fit$designs$transition[[t]][active, , drop = FALSE],
                                     array(parameters$transition2[, , , h],
                                           dim(parameters$transition2)[1:3]))
-      apply(exp(log_p), c(2L, 3L), mean) * w
+      .lta_group_mean(exp(log_p), unit_weights[active]) * w
     }, occasions, weights)) / sum(weights)
     cells <- expand.grid(to = seq_len(n_states), pair = seq_len(n_states^2))
     data.frame(group_class = classes[h],
@@ -144,6 +150,48 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                to = profiles[cells$to],
                probability = averaged[cbind(cells$pair, cells$to)],
                stringsAsFactors = FALSE)
+  }))
+}
+
+#' Average a groups-first array over its groups
+#'
+#' @param values A groups x ... array (or groups x K matrix).
+#' @param weights Sampling weights of those groups, or `NULL` for a plain mean.
+#' @return The remaining dimensions, averaged.
+#' @noRd
+.lta_group_mean <- function(values, weights = NULL) {
+  dimensions <- seq_along(dim(values))[-1L]
+  if (is.null(weights)) {
+    return(if (length(dimensions) == 1L) colMeans(values) else
+      apply(values, dimensions, mean))
+  }
+  apply(values, dimensions, function(v) sum(weights * v) / sum(weights))
+}
+
+#' Response probabilities of a general transition fit's categorical indicators
+#'
+#' The layout of the profile model's `"responses"` table, with an `occasion`
+#' column (`NA` for invariant measurement) as in `"profiles"`.
+#' @param fit A `multilpa_lta` fit.
+#' @return One row per occasion block, indicator, category and profile.
+#' @noRd
+.lta_responses_table <- function(fit) {
+  profiles <- paste0("profile_", seq_len(fit$n_profiles))
+  do.call(rbind, lapply(seq_along(fit$measurement), function(b) {
+    block <- fit$measurement[[b]]
+    do.call(rbind, lapply(seq_along(fit$categorical), function(i) {
+      indicator <- fit$categorical[[i]]
+      probabilities <- block$response_probabilities[[i]]
+      levels <- fit$categorical_levels[[indicator]] %||%
+        as.character(seq_len(ncol(probabilities)))
+      cells <- expand.grid(profile = seq_len(fit$n_profiles),
+                           category = seq_len(ncol(probabilities)))
+      data.frame(occasion = if (length(fit$measurement) == 1L) NA_integer_ else b,
+                 profile = profiles[cells$profile], indicator = indicator,
+                 category = levels[cells$category],
+                 probability = probabilities[cbind(cells$profile, cells$category)],
+                 stringsAsFactors = FALSE)
+    }))
   }))
 }
 
@@ -171,6 +219,7 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
                  variance = block$variances[cbind(cells$profile, cells$indicator)],
                  stringsAsFactors = FALSE)
     })),
+    responses = .lta_responses_table(fit),
     ordinal = .lta_extra_table(fit, "ordinal"),
     count_means = .lta_extra_table(fit, "count_means"),
     group_classes = data.frame(group_class = classes,
@@ -209,6 +258,12 @@ get_results.multilpa_lta <- function(x, what = "transitions", level = 0.95,
   stopifnot("`level` must be a single finite number in (0, 1)" =
     is.numeric(level) && length(level) == 1L && is.finite(level) && level > 0 && level < 1)
   what <- match.arg(what, c(.lta_tables(x), "all"))
+  # No table of this fit takes a further argument. A released call that passed
+  # one (`estimated = FALSE`, say) still gets its table, but is told the
+  # argument changed nothing rather than left to read the table as filtered.
+  .latents_warn_unused_arguments(
+    list(...), "get_results()",
+    "The tables of a general transition fit take only `what`, `level` and `vcov_type`.")
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), match.arg(vcov_type),
                                       missing(vcov_type))
   if (identical(what, "all")) {
@@ -239,10 +294,12 @@ print.multilpa_lta <- function(x, ...) {
                 sprintf("initial profiles on %s", paste(x$initial_covariates, collapse = ", ")),
               if (!identical(x$measurement_model, "invariant")) "occasion-specific measurement")
   if (length(pieces) == 0L) pieces <- "homogeneous transitions"
-  cat(sprintf(paste0("Latent transition model: %d profiles, %d group classes (%s)\n",
+  cat(sprintf(paste0("Latent transition model: %d profiles, %d group %s (%s)\n",
                      "%d groups, %d observations, %d occasions; log-likelihood %.3f, ",
                      "%d parameters, BIC %.3f\nconverged: %s\n"),
-              x$n_profiles, x$n_group_classes, paste(pieces, collapse = "; "),
+              x$n_profiles, x$n_group_classes,
+              if (x$n_group_classes == 1L) "class" else "classes",
+              paste(pieces, collapse = "; "),
               x$n_groups, x$n_observations, x$n_occasions, x$log_likelihood,
               x$n_parameters, x$bic, if (x$converged) "yes" else "no"))
   .latents_print_extra(x)
@@ -271,6 +328,10 @@ coef.multilpa_lta <- function(object, ...) {
 #' @param type Covariance type, as `vcov_type`.
 #' @export
 vcov.multilpa_lta <- function(object, type = c("observed", "robust", "opg"), ...) {
+  # `vcov_type = "robust"`, the name parameter_inference() uses, used to fall
+  # into `...` and return the observed-information covariance without a word.
+  .latents_warn_unused_arguments(list(...), "vcov()",
+                                 "Choose the covariance with `type =`.")
   .lta_inference(object, .latents_weighted_vcov(.latents_is_weighted(object),
                                                 match.arg(type), missing(type)))$vcov
 }
@@ -307,7 +368,7 @@ parameter_inference.multilpa_lta <- function(x, data = NULL, level = 0.95,
                                              adjust = .multilpa_p_adjust_methods,
                                              method = c("wald", "bootstrap"),
                                              iter = 199L, n_starts = 10L,
-                                             max_iter = 1000L, tol = 1e-10,
+                                             max_iter = 5000L, tol = 1e-10,
                                              seed = NULL,
                                              boundary = c("error", "fix")) {
   stopifnot("`level` must be a single finite number in (0, 1)" =
@@ -362,10 +423,15 @@ plot.multilpa_lta <- function(x, main = NULL, subtitle = NULL, ...) {
   frame <- .lta_table(x, "transitions")
   frame$panel <- if (all(is.na(frame$occasion))) frame$group_class else
     paste(frame$group_class, "occasion", frame$occasion)
+  # The same white-to-blue probability ramp and legible ink as the profile
+  # models' transition view (.gg_view_transitions()).
+  frame$text_colour <- .gg_ink(.gg_probability_fill(frame$probability))
   ggplot2::ggplot(frame, ggplot2::aes(x = to, y = from, fill = probability)) +
     ggplot2::geom_tile(colour = "white") +
-    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.2f", probability)), size = 3.2) +
-    ggplot2::scale_fill_gradient(low = "#FFFFFF", high = "#4A6FE3", limits = c(0, 1)) +
+    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.2f", probability),
+                                    colour = text_colour), size = 3.2) +
+    ggplot2::scale_colour_identity() +
+    .gg_probability_scale("Probability") +
     ggplot2::facet_wrap(~panel) +
     .gg_theme() +
     ggplot2::labs(x = "To", y = "From") +

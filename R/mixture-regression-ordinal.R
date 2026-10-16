@@ -128,6 +128,38 @@
   invisible(NULL)
 }
 
+#' Refuse a single-level ordinal mixture with too few covariate patterns
+#'
+#' With one outcome per row, the data determine at most C - 1 category
+#' probabilities for each distinct covariate pattern (the class-specific and
+#' shared design rows, the offset and the membership covariates), so P
+#' patterns identify at most P (C - 1) parameters. A mixture with more free
+#' parameters -- every predictor discrete, say one binary factor -- is not
+#' identified: its information matrix is singular at every estimate.
+#'
+#' @param spec The ordinal specification.
+#' @return `NULL`, invisibly; raises `latents_not_identified`.
+#' @noRd
+.ordinal_check_patterns <- function(spec) {
+  if (spec$n_classes < 2L || !identical(spec$nesting, "observation")) {
+    return(invisible(NULL))
+  }
+  patterns <- nrow(unique(cbind(spec$x, spec$z, spec$offset, spec$w)))
+  capacity <- patterns * (spec$n_categories - 1L)
+  n_parameters <- .mixture_count_parameters(spec)
+  if (capacity < n_parameters) {
+    stop(errorCondition(sprintf(paste(
+      "This ordinal mixture is not identified: its predictors take %d distinct",
+      "covariate pattern%s, which with %d categories determine at most %d",
+      "category probabilities, fewer than its %d free parameters. Add a",
+      "continuous predictor, fit fewer classes, or give each class assignment",
+      "several outcomes with `id` and `class_level = \"group\"`."),
+      patterns, if (patterns == 1L) "" else "s", spec$n_categories, capacity,
+      n_parameters), class = "latents_not_identified", call = NULL))
+  }
+  invisible(NULL)
+}
+
 #' Threshold labels, `"lower|upper"` as MASS::polr() names them
 #' @param spec The model specification.
 #' @return A character vector of length C - 1.

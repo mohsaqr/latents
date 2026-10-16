@@ -157,17 +157,23 @@
 #' the outcome pull the classes toward itself; doing it naively by modal class
 #' instead attenuates every difference. This does neither.
 #'
-#' @param x A covariate-free fitted [multilpa()] or [lta()] model. A fit that
-#'   already uses membership covariates cannot be corrected by the fixed,
-#'   unconditional classification-error matrix used here.
+#' @param x A covariate-free fitted [multilpa()] or [lta()] model, or a
+#'   trajectory model that classifies persons ([mixture_regression()] with
+#'   `class_level = "group"`, with or without `random` effects) fitted without
+#'   `membership` covariates. A fit that already uses membership covariates
+#'   cannot be corrected by the fixed, unconditional classification-error
+#'   matrix used here.
 #' @param data The data frame carrying the outcome, in the fit's row order.
 #'   Shared fit columns are checked row by row; a frame with too little
-#'   identifying information warns that alignment cannot be verified.
+#'   identifying information warns that alignment cannot be verified. For a
+#'   trajectory model it must be the data frame the model was fitted to.
 #' @param outcome Name of a numeric outcome column not used as a measurement
 #'   indicator in `x`. For `level = "groups"` it must be constant within each
-#'   group.
+#'   group, and for a trajectory model within each person.
 #' @param level `"individuals"` relates the outcome to profiles, `"groups"` to
-#'   group classes.
+#'   group classes. A trajectory model relates the outcome to its person
+#'   classes, reported with `level = "persons"`; `"groups"` is refused there
+#'   with `latents_bad_argument`.
 #' @param method `"bch"` applies the Bolck-Croon-Hagenaars weights;
 #'   `"proportional"` weights by the posteriors, which is simpler and
 #'   attenuated; `"modal"` is the naive assignment, shown for comparison.
@@ -220,7 +226,9 @@
 #'   outcome effect on transitions or a sequence-level outcome model.
 #'
 #'   A cluster-robust variance is the sum of one outer product per independent
-#'   unit, and those contributions sum to zero at the estimate, so it has rank
+#'   unit, scaled by the small-sample (CR1) factor `G / (G - 1)` for `G` units
+#'   (groups, or observations under `vcov_type = "independent"`). Those
+#'   contributions sum to zero at the estimate, so it has rank
 #'   at most one less than the number of units. With a single group it is
 #'   exactly zero and with as many groups as classes it is singular. Both are
 #'   refused with `latents_too_few_groups` rather than reported as a very
@@ -281,6 +289,12 @@ three_step <- function(x, data, outcome,
   )
   if (.trajectory_is_fit(x)) {
     # Trajectory models classify persons: one outcome value per person.
+    if (identical(level, "groups")) {
+      stop(errorCondition(paste(
+        "A trajectory model classifies persons and has no group classes, so",
+        "`level = \"groups\"` does not apply; its outcome is related to the",
+        "person classes."), class = "latents_bad_argument", call = NULL))
+    }
     prepared <- .trajectory_three_step_inputs(x, data, outcome)
     pieces <- prepared$pieces
     values <- prepared$values
@@ -477,7 +491,8 @@ three_step <- function(x, data, outcome,
 #'   predicts group-class membership.
 #' @param ci_level Confidence level for the intervals.
 #' @param vcov_type `"robust"`, the default, uses the sandwich clustered on the
-#'   fit's groups, which is the honest choice when the covariates are measured
+#'   fit's groups, with the small-sample (CR1) factor `G / (G - 1)` for `G`
+#'   groups, which is the honest choice when the covariates are measured
 #'   on observations nested inside them, and matches the default of
 #'   [three_step()]. `"observed"` uses the observed information; for the pooled
 #'   regression it treats every observation as independent, and with
@@ -641,8 +656,14 @@ r3step <- function(x, data, covariates,
       x, design[, -1L, drop = FALSE], pieces, errors, ci_level, vcov_type,
       adjust))
   }
-  design_scale <- .multilpa_design_scale(design)
-  design <- sweep(design, 2L, design_scale, "/")
+  ## The search runs on orthonormal coordinates of the design, which move with
+  ## neither the units nor the origin of a covariate; a covariate held far from
+  ## zero relative to its spread is otherwise nearly collinear with the
+  ## intercept, and BFGS then stops far from the maximum or not at all.
+  basis <- .multilpa_design_basis(design) %||%
+    diag(.multilpa_design_scale(design), ncol(design))
+  terms <- colnames(design)
+  design <- t(backsolve(basis, t(design), transpose = TRUE))
   ## The likelihood of the assigned class, given the covariates and an error
   ## matrix fixed at its step-one value.
   by_assigned <- t(errors)[pieces$modal, , drop = FALSE]
@@ -672,7 +693,8 @@ r3step <- function(x, data, covariates,
   gradient <- function(theta) -colSums(score_rows(theta))
 
   fitted <- stats::optim(rep(0, ncol(design) * n_free), objective, gradient,
-                         method = "BFGS", control = list(maxit = 500L))
+                         method = "BFGS",
+                         control = list(maxit = 1000L, reltol = 1e-12))
   if (!identical(fitted$convergence, 0L)) {
     stop(errorCondition(
       sprintf("The membership regression did not converge (optim code %d).",
@@ -689,9 +711,10 @@ r3step <- function(x, data, covariates,
     covariance <- .inference_sandwich(covariance, .multilpa_cross_product(scores),
                                       nrow(scores))
   }
-  natural_scale <- rep(1 / design_scale, n_free)
-  .multilpa_r3step_frame(fitted$par * natural_scale,
-                         covariance * tcrossprod(natural_scale), colnames(design), n_free,
+  ## Back to the covariates' own units and origin, one logit column at a time.
+  natural <- kronecker(diag(n_free), backsolve(basis, diag(ncol(design))))
+  .multilpa_r3step_frame(as.vector(natural %*% fitted$par),
+                         natural %*% covariance %*% t(natural), terms, n_free,
                          pieces$n_classes, level, ci_level, vcov_type, adjust)
 }
 
@@ -803,9 +826,9 @@ r3step <- function(x, data, covariates,
     covariance <- .inference_sandwich(covariance, .multilpa_cross_product(scores),
                                       nrow(scores))
   }
-  ## Back to the units the covariates arrived in.
-  estimates <- fitted$par * model$unit
-  covariance <- covariance * tcrossprod(model$unit)
+  ## Back to the units and origin the covariates arrived in.
+  estimates <- as.vector(model$transform %*% fitted$par)
+  covariance <- model$transform %*% covariance %*% t(model$transform)
   .multilpa_r3step_group_frame(estimates, covariance, colnames(z), n_free,
                                n_group_classes, n_classes, ci_level, vcov_type,
                                adjust, -fitted$value)
@@ -818,8 +841,9 @@ r3step <- function(x, data, covariates,
 #' @param pieces The result of `.multilpa_level_assignments()` for individuals.
 #' @param errors The step-one classification-error matrix.
 #' @return A list with `objective` (negative log likelihood), `gradient`,
-#'   `group_scores` (one row per group), `start`, and `unit`, the factors that
-#'   return the coordinates to the covariates' own units.
+#'   `group_scores` (one row per group), `start`, and `transform`, the matrix
+#'   that returns the search coordinates to the covariates' own units and
+#'   origin.
 #' @noRd
 .multilpa_r3step_group_model <- function(x, z, pieces, errors) {
   n_classes <- pieces$n_classes
@@ -829,12 +853,29 @@ r3step <- function(x, data, covariates,
   group_index <- pieces$group_index
   n_groups <- max(group_index)
   by_assigned <- t(errors)[pieces$modal, , drop = FALSE]
-  ## The search runs on unit-free covariates, as every other membership
-  ## regression in the package does, and the slopes are divided back afterwards.
-  z_scale <- .multilpa_design_scale(z)
-  scaled_z <- sweep(z, 2L, z_scale, "/")
+  ## The search runs on the orthonormal coordinates of `cbind(1, z)` (see
+  ## `.multilpa_design_basis()`), which move with neither the units nor the
+  ## origin of a covariate. With `cbind(1, z) = Q R`, `z = r' + Q_z R_z`, so
+  ## `alpha_h + z beta = (alpha_h + r' beta) + Q_z (R_z beta)`: the search
+  ## estimates the bracketed intercepts and `R_z beta`, and `transform` maps
+  ## them back to the covariates' own units and origin.
+  basis <- .multilpa_design_basis(cbind(1, z))
+  shift <- if (is.null(basis)) rep(0, n_covariates) else basis[1L, -1L]
+  slope_basis <- if (is.null(basis)) {
+    diag(.multilpa_design_scale(z), n_covariates)
+  } else basis[-1L, -1L, drop = FALSE]
+  scaled_z <- t(backsolve(slope_basis, t(sweep(z, 2L, shift, "-")),
+                          transpose = TRUE))
   n_alpha <- n_group_classes * n_free
   n_beta <- n_covariates * n_free
+  slope_inverse <- backsolve(slope_basis, diag(n_covariates))
+  ## beta = R_z^-1 beta'; alpha_h = alpha'_h - r' R_z^-1 beta'.
+  transform <- diag(n_alpha + n_beta + n_group_classes - 1L)
+  transform[n_alpha + seq_len(n_beta), n_alpha + seq_len(n_beta)] <-
+    kronecker(diag(n_free), slope_inverse)
+  transform[seq_len(n_alpha), n_alpha + seq_len(n_beta)] <-
+    kronecker(diag(n_free), -matrix(1, n_group_classes, 1L) %*%
+                (shift %*% slope_inverse))
   unpack <- function(theta) {
     list(alpha = matrix(theta[seq_len(n_alpha)], n_group_classes, n_free),
          beta = matrix(theta[n_alpha + seq_len(n_beta)], n_covariates, n_free),
@@ -894,9 +935,7 @@ r3step <- function(x, data, covariates,
              log(pmax(x$group_probabilities[seq_len(n_group_classes - 1L)], 1e-8) /
                    max(x$group_probabilities[n_group_classes], 1e-8)))
   list(objective = objective, gradient = gradient, group_scores = group_scores,
-       start = start,
-       unit = c(rep(1, n_alpha), rep(1 / z_scale, n_free),
-                rep(1, n_group_classes - 1L)))
+       start = start, transform = transform)
 }
 
 #' Assemble the table of R3STEP with group-class intercepts

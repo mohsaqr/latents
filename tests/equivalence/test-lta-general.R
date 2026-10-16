@@ -265,7 +265,7 @@ test_that("mover-stayer: the stayer class never moves and matches the exact path
   }))
   fit <- quietly(lta(data, "y", "id", n_profiles = 2, time = "time",
                      mover_stayer = TRUE, n_starts = 3, seed = 1, tol = 1e-10),
-                 "latents_boundary")
+                 c("latents_boundary", "latents_small_classes"))
   expect_identical(names(fit$group_probabilities), c("group_class_1", "stayers"))
   stayers <- subset(get_results(fit, "transitions"), group_class == "stayers")
   expect_equal(stayers$probability, as.numeric(stayers$from == stayers$to))

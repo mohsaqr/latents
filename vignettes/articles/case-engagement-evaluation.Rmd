@@ -57,7 +57,7 @@ fit <- multilpa(course_engagement, vars, id = "student", time = "sequence",
 fit
 ```
 
-The fitted model summarizes 1,422 course enrolments contributed by 106 students. The three estimated profiles show a clear ordering across the engagement indicators. Profile 1 has the highest mean on every indicator, Profile 2 has intermediate means, and Profile 3 has the lowest means. For example, the estimated attendance means are 1.133, 0.256, and -0.940 standard deviations relative to the corresponding course mean for Profiles 1, 2, and 3, respectively.
+The fitted model summarizes 1,422 course enrolments contributed by 106 students. The three estimated profiles show a clear ordering across the engagement indicators. Profile 3 has the highest mean on every indicator, Profile 1 has intermediate means, and Profile 2 has the lowest means. For example, the estimated attendance means are 1.133, 0.256, and -0.940 standard deviations relative to the corresponding course mean for Profiles 3, 1, and 2, respectively.
 
 These differences in indicator means define the substantive interpretation of the fitted profiles. In this example, the profiles can therefore be understood as representing progressively lower levels of engagement across the observed activity measures. However, the presence of distinct estimated means does not by itself establish that the profiles are well supported. The diagnostic checks that follow examine the extent to which the data support this separation and whether the fitted solution is numerically stable.
 
@@ -112,9 +112,9 @@ The command `get_results(fit, "classification")` reports these class-specific cl
 get_results(fit, "classification")
 ```
 
-The class-specific results show that classification certainty varies across profiles and student classes. At the enrolment level, 478 enrolments are assigned to Profile 2, with an average posterior probability of 0.853. By comparison, the 576 enrolments assigned to Profile 3 have a much higher average posterior probability of 0.978. This indicates that enrolments classified into Profile 2 are, on average, more ambiguous than those classified into Profile 3.
+The class-specific results show that classification certainty varies across profiles and student classes. At the enrolment level, 479 enrolments are assigned to the intermediate-activity Profile 1, with an average posterior probability of 0.853. By comparison, the 576 enrolments assigned to the lower-activity Profile 2 have a much higher average posterior probability of 0.978. This indicates that enrolments classified into Profile 1 are, on average, more ambiguous than those classified into Profile 2.
 
-A similar pattern appears at the student level. Students assigned to Class 2 have an average posterior probability of 0.864, whereas those assigned to Class 3 have an average posterior probability of 0.977. The student-level classifications are therefore not equally certain across classes, even though the overall relative entropy is similar across the two levels.
+A similar pattern appears at the student level. Students assigned to Class 3 have an average posterior probability of 0.864, whereas those assigned to Class 2 have an average posterior probability of 0.977. The student-level classifications are therefore not equally certain across classes, even though the overall relative entropy is similar across the two levels.
 
 These differences matter for subsequent analyses because modal class assignments treat the most likely class as if it were observed without error. When average posterior probabilities are lower, that simplification discards more of the uncertainty contained in the posterior distribution. Later analyses should therefore retain or adjust for classification uncertainty.
 
@@ -140,7 +140,7 @@ The command `get_results(fit, "residuals")` returns the indicator pairs ordered 
 get_results(fit, "residuals") |> head(4)
 ```
 
-The largest residual correlation is 0.211 between forum reading and attendance in Profile 3. The next largest is 0.177 between browsing and attendance, also in Profile 3. Notably, all four of the largest residuals involve the attendance indicator. This pattern suggests that the three-profile model does not completely account for the association between recorded online activity and the number of days on which students are active.
+The largest residual correlation is 0.211 between forum reading and attendance in the lower-activity Profile 2. The next largest is 0.177 between browsing and attendance, also in Profile 2. Notably, all four of the largest residuals involve the attendance indicator. This pattern suggests that the three-profile model does not completely account for the association between recorded online activity and the number of days on which students are active.
 
 The concentration of the largest residuals around attendance provides a specific direction for further model evaluation. The results identify a particular part of the measurement structure where the conditional-independence assumption may be too restrictive. Alternative specifications could therefore examine whether allowing selected within-profile associations involving attendance changes the estimated profiles or improves the representation of the engagement data.
 
@@ -166,8 +166,7 @@ These diagnostics should be considered before interpreting differences in BIC. C
 
 ```{r enumeration}
 candidates <- enumerate_classes(course_engagement, vars, id = "student",
-                                time = "sequence", n_profiles = 2:3,
-                                n_group_classes = 2:3,
+                                n_profiles = 2:3, n_group_classes = 2:3,
                                 model = c("VVI", "VVV"), n_starts = 6,
                                 max_iter = 2000, tol = 1e-10, seed = 1)
 get_results(candidates, "candidates")
@@ -175,7 +174,7 @@ get_results(candidates, "candidates")
 
 Under the diagonal covariance specification, the lowest BIC is obtained for the model with three profiles and three student classes, with a BIC of 16874.1. When residual covariances are allowed to vary freely within profiles, however, the preferred profile count changes. The two-profile, three-class full-covariance model has a BIC of 16800.6, the lowest value among the models in the candidate grid, and its best likelihood is reproduced across all six starting values. The three-profile, three-class full-covariance model has a higher BIC of 16867.3.
 
-Most candidate models also show stable likelihood replication across starts. The exception is the three-profile, two-class full-covariance model, whose best solution is recovered only once across the six initializations. This weaker replication suggests greater numerical uncertainty for that candidate and illustrates why class enumeration should not be based on information criteria alone.
+Most candidate models also show stable likelihood replication across starts. The exception is the three-profile, two-class full-covariance model, whose best solution is recovered by only three of the six initializations. This weaker replication suggests greater numerical uncertainty for that candidate and illustrates why class enumeration should not be based on information criteria alone.
 
 Taken together, these results show that support for the original three-profile, three-class specification depends on the assumptions made about within-profile covariance. Under the diagonal model, the three-by-three solution is preferred within the candidate set. Once residual correlations are estimated directly, a two-profile, three-class model receives stronger BIC support. The original three-by-three model should therefore be regarded as a working representation whose support depends on the measurement assumptions.
 
@@ -187,7 +186,7 @@ full <- get_candidate(candidates, n_profiles = 2, n_group_classes = 3,
 get_results(full, "residuals") |> head(4)
 ```
 
-In the two-profile, three-class full-covariance model, the estimated correlation between forum reading and attendance in Profile 2 is approximately 0.267, which is nearly identical to the corresponding observed within-profile correlation. As a result, the residual correlations displayed for the largest indicator pairs are close to zero. This is expected because the full-covariance specification estimates these within-profile associations directly rather than constraining them to zero.
+In the two-profile, three-class full-covariance model, the estimated correlation between forum reading and attendance in Profile 1 is 0.226, which matches the corresponding observed within-profile correlation to six decimal places. As a result, even the largest residual correlations are close to zero. This is expected because the full-covariance specification estimates these within-profile associations directly rather than constraining them to zero.
 
 The close agreement between the observed and expected correlations therefore verifies that the fitted covariance structure is reproducing the associations it was designed to model. It should not, however, be interpreted as independent evidence that the two-profile solution or the three student classes are substantively correct. Those questions require consideration of the broader pattern of model fit, numerical stability, classification quality, and substantive interpretability.
 
@@ -213,7 +212,7 @@ The `parameter_inference()` function calculates standard errors and confidence i
 parameter_inference(fit)
 ```
 
-For Profile 1, the estimated attendance mean is 1.133 standard deviations above the course mean, with a standard error of 0.061 and a 95% Wald interval from 1.013 to 1.252. Profile 2 has an interval from 0.155 to 0.357, while Profile 3 has an interval from $-0.993$ to $-0.887$.
+For the higher-activity Profile 3, the estimated attendance mean is 1.133 standard deviations above the course mean, with a standard error of 0.061 and a 95% Wald interval from 1.013 to 1.252. The intermediate-activity Profile 1 has an interval from 0.155 to 0.357, while the lower-activity Profile 2 has an interval from $-0.993$ to $-0.887$.
 
 Within the original three-profile, three-class specification, these intervals show clear separation among the attendance means. This provides evidence that the fitted profiles differ substantially in their expected levels of attendance under that model. However, the precision of these estimates should not be interpreted as resolving the model-specification uncertainty identified in the covariance comparison. The confidence intervals quantify uncertainty in the profile means conditional on the three-by-three model; they do not address whether a different covariance structure or profile count provides a preferable representation of the data.
 

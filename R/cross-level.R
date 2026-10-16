@@ -213,6 +213,9 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
 }
 
 #' Keep the best start of the full cross-level EM, with every start's record
+#'
+#' Failed starts are kept in the record and announced with a
+#' `latents_failed_starts` warning, as in every other family.
 #' @noRd
 .cross_level_select <- function(starts, n_starts) {
   attempts <- starts$attempts
@@ -221,6 +224,11 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   converged <- starts$converged
   best_start <- starts$best_start
   best <- attempts[[best_start]]
+  if (any(!valid)) {
+    warning(warningCondition(sprintf(
+      "%d of %d starts failed; the start records keep their errors.",
+      sum(!valid), n_starts), class = "latents_failed_starts", call = NULL))
+  }
   best$starts <- data.frame(
     start = seq_len(n_starts), log_likelihood = ifelse(valid, scores, NA_real_),
     converged = converged,
@@ -264,11 +272,10 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
   subject <- unname(individual$subject_posteriors)
   parameters <- list(
     means = unname(individual$means), variances = unname(individual$variances),
-    profile_probabilities = matrix(
-      if (is.null(row_weights)) colMeans(subject) else
-        colSums(subject * row_weights) / sum(row_weights),
-      n_group_classes, n_profiles,
-                                   byrow = TRUE),
+    # The shared prevalences are the rating part's estimates (weighted under
+    # sampling weights), the same in every group class.
+    profile_probabilities = matrix(unname(individual$profile_probabilities[1L, ]),
+                                   n_group_classes, n_profiles, byrow = TRUE),
     group_probabilities = unname(if (is.null(sampling_weights)) colMeans(group_posterior) else
       colSums(group_posterior * sampling_weights) / sum(sampling_weights)),
     between_means = unname(groups$means),
@@ -334,7 +341,12 @@ utils::globalVariables(c("group_class", "share", "profile", "level"))
     converged = isTRUE(fitted$converged), iterations = fitted$iterations,
     log_likelihood_history = fitted$history, boundary = boundary,
     starts = fitted$starts, sufficient_statistics = stats,
-    min_variance = min_variance)
+    min_variance = min_variance,
+    # Restricted: the estimated prevalences shared by every group class.
+    # Full: the model-implied marginal prevalences, sum_h omega_h pi_{k|h}.
+    profile_prevalences = stats::setNames(
+      drop(crossprod(p$group_probabilities, p$profile_probabilities)),
+      profile_names))
   class(result) <- "multilpa_cross_level"
   if (!result$converged) {
     warning(warningCondition("The cross-level fit did not converge; increase max_iter.",
@@ -367,17 +379,24 @@ get_results.multilpa_cross_level <- function(x, what = "profiles", ...) {
 #' Build one table of a cross-level fit
 #' @noRd
 .cross_level_table <- function(x, what) {
-  long <- function(means, variances, level) {
+  # `prevalence` is a profile's share of the individuals (see
+  # `profile_prevalences`) or a group class's weight; fits made before it was
+  # stored have `NA` for the profiles.
+  long <- function(means, variances, level, prevalence) {
     cells <- expand.grid(row = seq_len(nrow(means)), indicator = seq_along(x$vars))
     data.frame(level = level, profile = rownames(means)[cells$row],
                indicator = x$vars[cells$indicator], mean = as.vector(means),
-               variance = as.vector(variances), stringsAsFactors = FALSE)
+               variance = as.vector(variances),
+               prevalence = unname(prevalence)[cells$row], stringsAsFactors = FALSE)
   }
   class_names <- names(x$group_probabilities)
   assigned <- max.col(x$group_posteriors, ties.method = "first")
   switch(what,
-    profiles = rbind(long(x$profile_means, x$profile_variances, "individual"),
-                     long(x$group_means, x$group_mean_variances, "group")),
+    profiles = rbind(long(x$profile_means, x$profile_variances, "individual",
+                          x$profile_prevalences %||%
+                            rep(NA_real_, nrow(x$profile_means))),
+                     long(x$group_means, x$group_mean_variances, "group",
+                          x$group_probabilities)),
     group_classes = data.frame(group_class = class_names,
                                weight = unname(x$group_probabilities),
                                count = unname(colSums(x$group_posteriors *

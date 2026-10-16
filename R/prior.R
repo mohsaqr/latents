@@ -53,8 +53,11 @@
 #'
 #' @param shrinkage Non-negative prior precision factor for the means, `kappa`;
 #'   mclust's default `0.01`. Zero leaves the means unshrunk.
-#' @param mean Optional prior mean, one value per continuous indicator, in the
-#'   indicators' own units. Naming one needs a positive `shrinkage`.
+#' @param mean Optional prior mean, one value per continuous indicator, on the
+#'   scale the profile means are estimated on: the indicators' own units, or
+#'   their centred values when [multilpa()]'s `centering` centres them (so a
+#'   mean of the raw data is far from the centred data's and is not the
+#'   default). Naming one needs a positive `shrinkage`.
 #' @param dof Optional prior degrees of freedom, a single number.
 #' @param scale Optional prior scale: a single positive number for an
 #'   axis-parallel or spherical structure, or a positive-definite `d` by `d`
@@ -64,7 +67,9 @@
 #'   computed from the data.
 #' @section Conditions:
 #'   Raises `latents_bad_argument` for a negative or non-finite `shrinkage`, a
-#'   `mean` with a zero `shrinkage`, or a non-positive `dof` or `scale`.
+#'   `mean` with a zero `shrinkage`, a non-positive `dof`, or a `scale` that is
+#'   neither a positive number nor a square, symmetric, positive-definite
+#'   matrix.
 #' @references Fraley, C., & Raftery, A. E. (2007). Bayesian regularization for
 #'   normal mixture estimation and model-based clustering. *Journal of
 #'   Classification*, 24, 155--181. \doi{10.1007/s00357-007-0004-5}
@@ -93,8 +98,9 @@ prior_control <- function(shrinkage = 0.01, mean = NULL, dof = NULL,
                         !is.finite(dof) || dof <= 0)) {
     bad("`dof` must be NULL or a single positive number.")
   }
-  if (!is.null(scale) && (!is.numeric(scale) || any(!is.finite(scale)) ||
-                          any(diag(as.matrix(scale)) <= 0))) {
+  if (!is.null(scale) && (!is.numeric(scale) || length(scale) == 0L ||
+                          any(!is.finite(scale)) ||
+                          !.multilpa_positive_scale(scale))) {
     bad("`scale` must be NULL, a positive number or a positive-definite matrix.")
   }
   structure(list(shrinkage = shrinkage, mean = mean, dof = dof, scale = scale),
@@ -117,6 +123,23 @@ print.latents_prior <- function(x, ...) {
               format(x$shrinkage), describe(x$mean), describe(x$dof),
               describe(x$scale)))
   invisible(x)
+}
+
+#' Is a prior scale a positive number or a positive-definite matrix?
+#'
+#' A matrix is checked as one: square, symmetric to a relative `1e-10` and
+#' with a positive smallest eigenvalue. Positive diagonal entries alone admit
+#' indefinite matrices, which only failed later, at fit time.
+#'
+#' @param scale A finite numeric scalar, vector or matrix.
+#' @return A single logical.
+#' @noRd
+.multilpa_positive_scale <- function(scale) {
+  if (length(scale) == 1L) return(scale[[1L]] > 0)
+  if (!is.matrix(scale) || nrow(scale) != ncol(scale)) return(FALSE)
+  max(abs(scale - t(scale))) <= 1e-10 * max(abs(scale)) &&
+    min(eigen((scale + t(scale)) / 2, symmetric = TRUE,
+              only.values = TRUE)$values) > 0
 }
 
 #' The structures mclust defines a conjugate prior for

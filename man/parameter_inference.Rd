@@ -81,7 +81,7 @@ parameter_inference(
   method = c("wald", "bootstrap"),
   iter = 199L,
   n_starts = 10L,
-  max_iter = 1000L,
+  max_iter = 5000L,
   tol = 1e-10,
   seed = NULL,
   boundary = c("error", "fix")
@@ -107,7 +107,8 @@ provides a weaker consistency check.}
 accumulates the outer product of the per-group scores, multiplied by the
 CR1 small-sample factor \code{G / (G - 1)} for \code{G} groups (the default of
 \code{sandwich::vcovCL()}; every robust standard error in the package carries
-it). Groups are the
+it). Mplus's MLR applies no such factor, so these errors are exactly
+\code{sqrt(G / (G - 1))} times Mplus's (0.8\% larger with 60 groups). Groups are the
 independent units, so robust errors relax the assumption that the Gaussian
 within-group model is correctly specified. They do not relax the assumption
 that groups are independent.
@@ -117,7 +118,10 @@ the variance of the score rather than by the curvature of the likelihood.
 It is the estimator \code{glca} reports, so it reproduces that package's
 standard errors; the two agree with \code{"observed"} in large samples and can
 differ noticeably in small ones, where \code{"observed"} is usually the more
-reliable. \code{"robust"} and \code{"opg"} need more groups than parameters.}
+reliable. \code{"robust"} and \code{"opg"} need more groups than parameters.
+\code{vcov_type} and \code{step} belong to the Wald path; \code{method = "bootstrap"}
+does not use them, since resampling groups already makes its errors
+robust in the sense \code{"robust"} is.}
 
 \item{adjust}{Multiplicity correction applied to \code{p_value} to produce
 \code{p_adjusted}, one of the methods \code{\link[stats:p.adjust]{stats::p.adjust()}} accepts. The default
@@ -157,7 +161,8 @@ is a fresh fit, so \code{n_starts} buys the same protection against a local
 maximum here as it does in \code{\link[=multilpa]{multilpa()}}, at the same multiple of the cost.}
 
 \item{seed}{Optional seed for the resampling: any whole number \code{set.seed()}
-accepts; a fraction raises \code{latents_bad_argument}. The stream is restored on exit,
+accepts; anything else raises \code{latents_bad_argument}, on either path. The
+Wald path draws nothing, so it uses no seed. The stream is restored on exit,
 so a seeded call leaves the caller's random state exactly as it found it.}
 
 \item{boundary}{What to do when categorical response probabilities sit on
@@ -234,12 +239,16 @@ estimation-scale chart is what this path does without.
 Diagnostics of the fit as a whole travel as attributes rather than as
 columns repeated down every row: \code{covariance} and \code{covariance_unconstrained}
 (natural and estimation-scale covariance of the estimates), \code{hessian},
-\code{gradient}, \code{scaled_score}, \code{condition_ratio}, \code{level}, \code{step}, \code{vcov_type},
-\code{fixed} (the measurement blocks this fit held, \code{character()} when none) and
-\code{adjust}. When \code{vcov_type} is \code{"robust"}, \code{group_scores} holds the
-groups-by-parameters score matrix and \code{scaling_correction} the MLR scaling
-correction factor \verb{tr(A^-1 B) / q}, used for scaled likelihood-ratio
-difference tests.
+\code{gradient}, \code{scaled_score}, \code{score_displacement} (the largest score times
+its estimation-scale standard error, the quantity the
+\code{latents_unconverged} warning reads), \code{condition_ratio}, \code{level}, \code{step},
+\code{method}, \code{vcov_type}, \code{fixed} (the measurement blocks this fit held,
+\code{character()} when none), \code{fixed_at_bound} (the probabilities
+\code{boundary = "fix"} held) and \code{adjust}. When \code{vcov_type} is \code{"robust"} or
+\code{"opg"}, \code{group_scores} holds the groups-by-parameters score matrix and
+\code{scaling_correction} the MLR scaling correction factor \verb{tr(A^-1 B) / q},
+with \code{B} the cross-product of those scores without the CR1 factor, used
+for scaled likelihood-ratio difference tests; it is \code{NA} otherwise.
 }
 \description{
 Standard errors, tests and intervals for every free parameter of
@@ -258,10 +267,16 @@ boundary solutions and unidentified Hessians do not admit this calculation.
 \details{
 Class-membership coefficients are on the multinomial logit scale
 with the final profile and the final group class as references, so a
-coefficient is a log odds against that reference. The tests are Wald tests
-and inherit the usual caveat: they are unreliable for a coefficient driven
-to the boundary by separation, which the size of the estimate and its
-standard error together will reveal.
+coefficient is a log odds against that reference. The tests are Wald tests,
+which are meaningless for a coefficient driven to the boundary by
+separation or an empty class. A fit with a membership logit above 20 in
+coordinates that depend neither on the covariates' units nor on their
+origin (roughly, a slope per standard deviation of its covariate and an
+intercept at the covariates' means) is therefore refused with
+\code{latents_boundary_fit} rather than given a standard error; the fit itself
+warns with \code{latents_extreme_coefficients}. Only
+\code{method = "wald"} is implemented for a covariate fit; \code{"bootstrap"} is
+refused with \code{latents_unsupported_inference}.
 
 For a general transition fit (an \code{\link[=lta]{lta()}} fit with covariate,
 occasion-varying or second-order transitions), the table has one row per
@@ -285,7 +300,8 @@ bound, \code{latents_singular_information} when the observed information cannot
 be inverted, \code{latents_no_free_parameters} when \code{fixed} held every
 parameter, \code{latents_bad_inference_data} when a supplied \code{data} does not
 reproduce the fit, and \code{latents_too_few_groups} for \code{vcov_type = "robust"}
-with fewer independent groups than reported parameters. A fit whose score
+or \code{"opg"} when the fit has no more independent groups than free
+parameters. A fit whose score
 is still far from zero is reported with a \code{latents_unconverged} warning
 rather than refused. A fit made with \code{multilpa(prior = )} is refused by
 the Wald path with \code{latents_unsupported_inference} (it sits at a

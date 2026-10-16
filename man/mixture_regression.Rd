@@ -100,7 +100,9 @@ the CR1 factor \code{G / (G - 1)}, clustered on the top-level unit, or on \code{
 sampling weight per independent unit: per row without \code{id}, per \code{id}
 group otherwise (constant within it). Pseudo maximum likelihood with the
 weights scaled to sum to the number of units; \code{vcov_type} defaults to
-\code{"robust"} and refuses \code{"observed"} and \code{"opg"}.}
+\code{"robust"} and refuses \code{"observed"} and \code{"opg"}. The information
+criteria use the weighted log likelihood; the entropy term of ICL sums
+the units' own posteriors unweighted, as in the profile models.}
 
 \item{random}{\code{NULL} (no random effects), or the random effects within
 classes: variable names such as \code{"time"} (a random intercept and a random
@@ -221,7 +223,11 @@ With one outcome per class assignment the classes are identified by how
 continuous predictors shift the category probabilities: a mixture with no
 predictors, or with two categories (then the logistic mixture of
 \code{"binomial"}), is refused with \code{latents_not_identified} unless
-\code{class_level = "group"} gives each class assignment several outcomes.
+\code{class_level = "group"} gives each class assignment several outcomes. So
+is a single-level mixture whose predictors take too few distinct values:
+with P distinct covariate patterns the data hold at most P (C - 1) free
+category probabilities, and a model with more free parameters than that
+(for example two classes and one binary factor) cannot be identified.
 
 A mixture of Bernoulli regressions with one trial per unit is not
 identified -- any mixture of Bernoullis is again a Bernoulli -- so a binary
@@ -237,12 +243,20 @@ request is refused otherwise.
 covariate that varies within a group where it may not;
 \code{latents_not_identified} for a binary outcome with one trial per class
 assignment, or an ordinal mixture with one outcome per class assignment
-and two categories or no predictors; \code{latents_missing_data} for missing values under
+and two categories, no predictors, or fewer distinct covariate patterns
+times C - 1 than free parameters; \code{latents_missing_data} for missing
+values under
 \code{missing = "error"}; \code{latents_rows_dropped} (warning) under
 \code{missing = "omit"}; \code{latents_no_valid_start} when every start
 degenerated; \code{latents_unconverged} (warning) when the selected start did
 not converge; \code{latents_degenerate_start} (warning) when some starts
-degenerated; \code{latents_separation} (warning) when a coefficient diverged.
+degenerated; \code{latents_separation} (warning) when a coefficient diverged;
+\code{latents_failed_starts} (warning) when some growth-mixture starts could
+not be built (they are marked \code{"failed"} in the starts table);
+\code{latents_boundary} (warning) for a negative-binomial dispersion at the
+Poisson limit; \code{latents_random_boundary} (warning) for a degenerate
+random-effect covariance; \code{latents_singular_information} (warning) when
+some standard errors cannot be computed.
 }
 
 \examples{

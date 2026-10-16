@@ -34,6 +34,7 @@ jobs:
             any::numDeriv
             any::mclust
             any::MASS
+            any::sandwich
             any::knitr
             any::rmarkdown
 

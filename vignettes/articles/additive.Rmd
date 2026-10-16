@@ -106,8 +106,9 @@ BIC(fit_one, fit, fit_three)
 Two classes have the lowest BIC. The three-class fit also warns that a
 between-group variance went to zero: with a third class there is no
 between-team spread left for some class to explain. A likelihood-ratio test of
-two against three classes would need a bootstrap reference distribution,
-not the chi-square, and that is not yet available for this family.
+two against three classes needs a bootstrap reference distribution, not the
+chi-square; `bootstrap_lrt()` provides it, as shown below for one against two
+classes.
 
 ## Do the classes differ in spread?
 
@@ -288,13 +289,18 @@ plot(full, what = "composition")
 
 ```{r check-families, include = FALSE}
 best <- get_results(grid, "best")
-stopifnot(best$model == "additive_equal", best$n_group_classes == 2,
-          with(subset(get_results(grid), n_group_classes == 2),
-               bic[model == "dispersion"] > bic[model == "additive_equal"] + 50))
-comparison <- rbind(get_results(full, "fit"), get_results(restricted, "fit"))
+dispersion_two <- subset(get_results(grid),
+                         n_group_classes == 2 & model == "dispersion")
+additive_two <- subset(get_results(grid),
+                       n_group_classes == 2 & model == "additive_equal")
+full_fit <- get_results(full, "fit")
+restricted_fit <- get_results(restricted, "fit")
 composition <- get_results(full, "composition")
-stopifnot(comparison$log_likelihood[1] > comparison$log_likelihood[2] + 100,
-          comparison$bic[1] < comparison$bic[2],
+stopifnot(best$model == "additive_equal", best$n_group_classes == 2,
+          dispersion_two$bic > additive_two$bic + 50,
+          full_fit$log_likelihood > restricted_fit$log_likelihood + 100,
+          full_fit$bic < restricted_fit$bic,
+          full_fit$n_parameters == restricted_fit$n_parameters + 1,
           max(composition$share) > 0.75)
 ```
 

@@ -32,6 +32,18 @@
       stop(errorCondition(sprintf("Categorical indicator `%s` has fewer than two observed categories.", indicator),
                           class = "latents_bad_categorical", call = NULL))
     }
+    # Categories are reported, aligned and mapped back to values by their
+    # labels, so two distinct values with one label (0.3 and 0.1 + 0.2 both
+    # print as "0.3") would be two categories nobody can tell apart.
+    labels <- as.character(levels_observed)
+    if (anyDuplicated(labels) > 0L) {
+      stop(errorCondition(sprintf(paste(
+        "Categorical indicator `%s` has distinct values that print alike (%s);",
+        "round the column so that each category has its own label."),
+        indicator, paste(sprintf("\"%s\"", unique(labels[duplicated(labels)])),
+                         collapse = ", ")),
+        class = "latents_bad_categorical", call = NULL))
+    }
     code <- if (is.factor(value)) {
       match(as.character(value), levels_observed)
     } else match(value, levels_observed)

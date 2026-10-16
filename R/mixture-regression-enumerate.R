@@ -2,9 +2,9 @@
 
 #' Compare mixture regressions with different numbers of classes
 #'
-#' Fits [mixture_regression()] for every requested number of classes (and of group
-#'                          classes, for the two-level model) and returns their fit statistics in one
-#' table. Optionally adds a parametric bootstrap likelihood-ratio test of
+#' Fits [mixture_regression()] for every requested number of classes (and of
+#' group classes, for the two-level model) and returns their fit statistics in
+#' one table. Optionally adds a parametric bootstrap likelihood-ratio test of
 #' `k - 1` against `k` classes (McLachlan 1987; Nylund, Asparouhov and Muthen
 #' 2007): outcomes are simulated from the `k - 1` class fit, both models are
 #' refitted to every replicate, and the p-value is the share of replicate
@@ -23,7 +23,8 @@
 #'   [as.data.frame()] or `get_results(x, "fit")`) has one row per model:
 #'   `n_classes`, `n_group_classes`, `log_likelihood`, `n_parameters`,
 #'   `aic`, `bic`, `bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share`,
-#'   `converged`, `n_best_replicated`, `best_bic` (the minimum-BIC row), and,
+#'   `converged`, `n_best_replicated`, `note` (why a cell could not be
+#'   fitted), `best_bic` (the minimum-BIC row), and,
 #'   with `bootstrap > 0`, `blrt_statistic`, `blrt_p_value` and
 #'   `blrt_replicates` (the successful replicates) and `blrt_flagged` (the
 #'   failed, unconverged, separated or reversed-likelihood replicates). The
@@ -92,7 +93,9 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
     fits <- lapply(seq_len(nrow(grid)), function(row) {
       fit <- .mixture_try_fit(formula, data, grid$n_classes[row],
                               grid$n_group_classes[row], arguments)
-      if (!inherits(fit, "latents_mixture_regression")) return(fit)
+      # A failed cell keeps its condition; a fit, regression or growth mixture,
+      # records a call that names the data rather than holding it by value.
+      if (inherits(fit, "condition")) return(fit)
       fit$call <- .latents_candidate_call("mixture_regression", data_expression,
         c(list(formula = formula, n_classes = grid$n_classes[row],
                n_group_classes = grid$n_group_classes[row],
@@ -103,8 +106,9 @@ enumerate_regressions <- function(formula, data, n_classes = 1:4,
       .mixture_enumeration_row(fit, grid$n_classes[row],
                               grid$n_group_classes[row])
     }, fits, seq_len(nrow(grid))))
-    table$best_bic <- !is.na(table$bic) &
-      table$bic == min(table$bic, na.rm = TRUE)
+    # When every cell failed there is no lowest BIC, and no row is marked.
+    lowest <- if (all(is.na(table$bic))) NA_real_ else min(table$bic, na.rm = TRUE)
+    table$best_bic <- !is.na(table$bic) & table$bic == lowest
     if (bootstrap > 0) {
       tests <- do.call(rbind, lapply(seq_len(nrow(grid)), function(row) {
         .mixture_blrt(fits, grid, row, as.integer(bootstrap),

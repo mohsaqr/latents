@@ -34,7 +34,8 @@ predicts group-class membership.}
 \item{ci_level}{Confidence level for the intervals.}
 
 \item{vcov_type}{\code{"robust"}, the default, uses the sandwich clustered on the
-fit's groups, which is the honest choice when the covariates are measured
+fit's groups, with the small-sample (CR1) factor \code{G / (G - 1)} for \code{G}
+groups, which is the honest choice when the covariates are measured
 on observations nested inside them, and matches the default of
 \code{\link[=three_step]{three_step()}}. \code{"observed"} uses the observed information; for the pooled
 regression it treats every observation as independent, and with

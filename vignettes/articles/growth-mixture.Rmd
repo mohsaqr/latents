@@ -72,7 +72,7 @@ Fit both models for a range of classes and compare them in one table.
 `random_covariance = "equal"` gives every class the same random-effect spread,
 the usual first choice.
 
-```{r fits, warning = FALSE}
+```{r fits}
 trajectories <- function(k) {
   mixture_regression(score ~ wave, growth_scores, n_classes = k,
                      id = "student", class_level = "group",
@@ -103,8 +103,9 @@ For a test rather than a criterion, `enumerate_regressions()` fits a range of
 classes and, with `bootstrap`, adds the bootstrap likelihood-ratio test of
 each number of classes against one fewer (McLachlan 1987; Nylund, Asparouhov
 and Muthén 2007). It refits both models on data simulated from the smaller
-one, so it takes minutes; on these data it rejects two classes in favour of
-three and keeps three against four.
+one, so it is slow: with 99 replicates per comparison it took about an hour
+on these data. It rejects two classes in favour of three (p = 0.01) and keeps
+three against four (p = 0.40).
 
 ```{r blrt, eval = FALSE}
 enumerate_regressions(score ~ wave, growth_scores, n_classes = 1:4,
@@ -232,6 +233,12 @@ and the BIC count schools. The group classes' composition, the schools'
 classification and the membership logits (the programme makes a school less
 likely to be in the second group class):
 
+```{r schools-tables}
+get_results(schools, "group_classes")
+head(get_results(schools, "clusters"))
+get_results(schools, "membership")
+```
+
 The trajectory views read the same as for one level, and the classification
 view shows how confidently each student is classified:
 
@@ -242,12 +249,6 @@ plot(schools, what = "coefficients")
 
 ```{r schools-classification, eval = has_ggplot, fig.height = 4.2}
 plot(schools, what = "classification")
-```
-
-```{r schools-tables}
-get_results(schools, "group_classes")
-head(get_results(schools, "clusters"))
-get_results(schools, "membership")
 ```
 
 The number of group classes is compared like the number of classes, from one

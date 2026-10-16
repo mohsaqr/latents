@@ -15,13 +15,15 @@ indicators; name categorical ones in \code{categorical}.}
 \item{n_profiles}{Number of profiles, a positive whole number.}
 
 \item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}: the covariance structure
-(\code{variance_model}, \code{covariance_model}, or \code{volume}, \code{shape},
-\code{orientation}), \code{missing}, \code{categorical}, \code{n_starts}, \code{seed}, \code{prior},
-\code{noise}, \code{profile_covariates} and the others it documents, except \code{id}
-and \code{n_group_classes}, which a single-level model does not have.}
+(\code{model}, or \code{variance_model} and \code{covariance_model}, or \code{volume},
+\code{shape} and \code{orientation}), \code{missing}, \code{categorical}, \code{n_starts},
+\code{seed}, \code{prior}, \code{noise}, \code{profile_covariates} and the others it
+documents, except \code{id} and \code{n_group_classes}, which a single-level model
+does not have.}
 }
 \value{
-A fitted \code{multilpa} object, as \code{\link[=multilpa]{multilpa()}} returns.
+A fitted \code{multilpa} object, as \code{\link[=multilpa]{multilpa()}} returns, recording the
+\code{lpa()} call as written.
 }
 \description{
 Fits a single-level latent profile model: a finite mixture of multivariate

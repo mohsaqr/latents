@@ -237,12 +237,9 @@
     shape <- updated
     if (converged) break
   }
-  if (!converged) {
-    warning(warningCondition(sprintf(paste(
-      "The equal-shape covariance did not settle in %d iterations, so this",
-      "M-step returns the last shape it reached rather than the maximiser."),
-      max_iter), class = "latents_no_converge"))
-  }
+  # Counted and reported once per fit (`latents_no_converge`), as every other
+  # structure's capped M-step is; a warning here fired once per EM iteration.
+  if (!converged) .multilpa_warn_structure("VEI", max_iter)
   volumes <- rowSums(sweep(bounded, 2L, shape, "/")) / (weights * d)
   outer(volumes, shape)
 }

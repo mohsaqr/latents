@@ -16,7 +16,7 @@
   method = c("wald", "bootstrap"),
   iter = 199L,
   n_starts = 10L,
-  max_iter = 1000L,
+  max_iter = 5000L,
   tol = 1e-10,
   seed = NULL,
   boundary = c("error", "fix")
@@ -70,7 +70,9 @@ under either.}
 
 \item{scale}{\code{"natural"} (probabilities) or \code{"unconstrained"} (logits).}
 
-\item{...}{Unused.}
+\item{...}{For \code{confint()}, further arguments to \code{parameter_inference()},
+such as \code{vcov_type}. \code{vcov()} takes none and warns
+(\code{latents_unused_argument}) about any it is given.}
 
 \item{parm}{Parameters to report, as names or positions of the natural
 coefficients; all by default.}

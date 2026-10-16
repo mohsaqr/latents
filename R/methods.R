@@ -94,8 +94,12 @@ summary.multilpa <- function(object, ...) {
     n_group_classes = object$n_group_classes,
     variance_model = object$variance_model,
     covariance_model = object$covariance_model %||% "diagonal",
-    missing = object$missing %||% "listwise",
+    # "error" is the mode every fit made before the field was recorded used;
+    # "listwise" is not a mode this package has.
+    missing = object$missing %||% "error",
+    single_level = isTRUE(object$single_level),
     continuous = .multilpa_continuous_names(object),
+    categorical = object$categorical %||% character(),
     fixed = object$fixed %||% character(),
     staged = isTRUE(object$staged),
     means = object$means,
@@ -306,10 +310,27 @@ print.summary_multilpa <- function(x, digits = 4L, rows = 10L, ...) {
   stopifnot("`x` must be a `summary_multilpa` object" =
               inherits(x, "summary_multilpa"))
   .multilpa_check_print_arguments(digits, rows)
-  cat(sprintf("Multilevel LPA: %d profiles and %d group classes\n",
-              x$n_profiles, x$n_group_classes))
-  cat(sprintf("Individuals: %d; groups: %d; parameters: %d; converged: %s\n",
-              x$n_observations, x$n_groups, x$n_parameters, x$converged))
+  # Named as print() names the fit: a latent class analysis when every
+  # indicator is categorical, and a single-level fit without the one-row
+  # groups and the single group class it was fitted through.
+  class_model <- length(x$continuous) == 0L && length(x$categorical) > 0L
+  kind <- if (class_model) "latent class analysis" else "latent profile analysis"
+  plural <- function(n, word) {
+    sprintf("%d %s%s", n, word,
+            if (n == 1L) "" else if (endsWith(word, "s")) "es" else "s")
+  }
+  classes <- plural(x$n_profiles, if (class_model) "class" else "profile")
+  if (isTRUE(x$single_level)) {
+    cat(sprintf("%s%s: %s\n", toupper(substr(kind, 1L, 1L)), substring(kind, 2L),
+                classes))
+    cat(sprintf("Observations: %d; parameters: %d; converged: %s\n",
+                x$n_observations, x$n_parameters, x$converged))
+  } else {
+    cat(sprintf("Two-level %s: %s, %s\n", kind, classes,
+                plural(x$n_group_classes, "group class")))
+    cat(sprintf("Individuals: %d; groups: %d; parameters: %d; converged: %s\n",
+                x$n_observations, x$n_groups, x$n_parameters, x$converged))
+  }
   if (length(x$fixed %||% character()) > 0L) {
     cat(sprintf("Held fixed%s: %s; parameters with the held measurement: %d\n",
                 if (isTRUE(x$staged)) " from the first stage" else "",

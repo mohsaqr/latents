@@ -20,9 +20,13 @@ descriptives(x, ...)
 }
 \arguments{
 \item{x}{A data frame, or a fitted model of this package. A fit carries the
-columns it was built from, so \code{vars} and \code{id} are read from it.}
+columns it was built from, so \code{vars} and \code{id} are read from it. A
+single-level fit (\code{id = NULL}) has no groups, so its table has no
+\code{n_groups} or \code{icc}.}
 
-\item{...}{Passed between methods.}
+\item{...}{Nothing further is used. For a data frame, any other argument is
+reported with a \code{latents_unused_argument} warning; for a fit, which
+supplies its own \code{vars} and \code{id}, it raises \code{latents_bad_argument}.}
 
 \item{vars}{Character vector of column names to describe. Repeated names
 are described once. Columns must be vectors; matrix-valued columns raise

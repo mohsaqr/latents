@@ -20,7 +20,8 @@ discrete indicators and the remaining columns are categorical.}
 \code{id} and \code{n_group_classes}, which a single-level model does not have.}
 }
 \value{
-A fitted \code{multilpa} object, as \code{\link[=multilca]{multilca()}} returns.
+A fitted \code{multilpa} object, as \code{\link[=multilca]{multilca()}} returns, recording the
+\code{lca()} call as written.
 }
 \description{
 Fits a single-level latent class model: each observation belongs to one of
@@ -40,8 +41,8 @@ observations.
 }
 \section{Conditions}{
 
-\code{latents_bad_argument} when \code{id} or \code{n_group_classes} is passed; the
-conditions \code{\link[=multilca]{multilca()}} raises otherwise.
+\code{latents_bad_argument} when \code{id}, \code{n_group_classes} or \code{n_profiles} is
+passed; the conditions \code{\link[=multilca]{multilca()}} raises otherwise.
 }
 
 \examples{

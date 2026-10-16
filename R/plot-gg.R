@@ -23,6 +23,10 @@ utils::globalVariables(c(
 
 .gg_okabe_ito <- c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00",
                    "#CC79A7", "#999999", "#000000", "#F0E442")
+# The palette's grey marks a category that is not a class (noise, a block
+# shared by every class); classes then cycle through the other colours.
+.gg_reserved_grey <- "#999999"
+.gg_class_palette <- setdiff(.gg_okabe_ito, .gg_reserved_grey)
 .gg_shapes <- c(21L, 22L, 24L, 23L, 25L)
 
 #' Stop unless ggplot2 is installed
@@ -123,7 +127,9 @@ utils::globalVariables(c(
     share = share,
     count = counts[seq_len(n_profiles)],
     label = factor(label, levels = label[ordering]),
-    colour = rep_len(.gg_okabe_ito, n_profiles)[rank],
+    # With a noise component, the palette's grey is kept for noise alone.
+    colour = rep_len(if (isTRUE(x$noise)) .gg_class_palette else .gg_okabe_ito,
+                     n_profiles)[rank],
     shape = rep_len(.gg_shapes, n_profiles)[rank],
     stringsAsFactors = FALSE
   )
@@ -380,7 +386,8 @@ utils::globalVariables(c(
                                         statistic, length(summaries$vars)),
         sprintf("%d profiles%s; original category scale%s", x$n_profiles,
                 .gg_group_class_text(x),
-                if (intervals) "; intervals unavailable for categorical summaries" else "")))
+                if (intervals) "; intervals unavailable for categorical summaries" else ""),
+        caption = .gg_undrawn_caption(x, summaries$vars)))
   }
   means <- .gg_mean_frame(x, key, scale, errors)
   standardized <- identical(scale, "standardized")
@@ -396,7 +403,8 @@ utils::globalVariables(c(
                sprintf("%d profiles%s; %s scale%s", x$n_profiles,
                        .gg_group_class_text(x),
                        if (standardized) "standardized" else "input",
-                       means$note))
+                       means$note),
+               caption = .gg_undrawn_caption(x, means$vars))
 }
 
 #' @noRd
@@ -420,7 +428,8 @@ utils::globalVariables(c(
                sprintf("%d profiles; %s scale; bars start at zero%s",
                        x$n_profiles,
                        if (identical(scale, "standardized")) "standardized" else
-                         "input", means$note)) +
+                         "input", means$note),
+               caption = .gg_undrawn_caption(x, means$vars)) +
     ggplot2::labs(x = NULL, y = if (identical(scale, "standardized"))
       "Standardized mean" else "Estimated mean") +
     .gg_theme() +
@@ -458,7 +467,9 @@ utils::globalVariables(c(
     ggplot2::scale_y_discrete(expand = c(0, 0)) +
     .gg_titles(main, subtitle, "Profile means in standard deviations",
                paste("Each profile mean minus the indicator's observed mean,",
-                     "in observed standard deviations")) +
+                     "in observed standard deviations"),
+               caption = .gg_undrawn_caption(
+                 x, .multilpa_continuous_names(x))) +
     ggplot2::labs(x = NULL, y = NULL) +
     .gg_theme() +
     .gg_tile_theme()
@@ -507,7 +518,8 @@ utils::globalVariables(c(
     ggplot2::scale_y_discrete(expand = c(0, 0)) +
     .gg_titles(main, subtitle, "Response probabilities",
                sprintf("Probability of each response in each profile%s",
-                       shown)) +
+                       shown),
+               caption = .gg_undrawn_caption(x, names(blocks))) +
     ggplot2::labs(x = NULL, y = NULL) +
     .gg_theme() +
     .gg_tile_theme()
@@ -666,16 +678,16 @@ utils::globalVariables(c(
       blocks[[cells$position[row]]][cells$profile[row],
                                     chosen[[cells$position[row]]]]
     }, numeric(1)))
-  spread <- if (is.null(errors)) rep(NA_real_, nrow(frame)) else
-    .multilpa_match_error(errors, "response", frame$profile,
-                          sprintf("%s:%s", vars[frame$position],
-                                  category_labels[frame$position]))
-  # A probability's interval is clipped to [0, 1], where it lives.
-  frame$lower <- pmax(0, frame$mean - stats::qnorm(0.975) * spread)
-  frame$upper <- pmin(1, frame$mean + stats::qnorm(0.975) * spread)
+  # The whiskers are the inference table's own bounds, which a probability
+  # takes on the logit scale, so the plot and parameter_inference() agree.
+  bounds <- .gg_match_bounds(errors, "response", frame$profile,
+                             sprintf("%s:%s", vars[frame$position],
+                                     category_labels[frame$position]))
+  frame$lower <- bounds$lower
+  frame$upper <- bounds$upper
   frame$profile_label <- key$label[frame$profile]
   frame$rank <- key$rank[frame$profile]
-  has_errors <- any(is.finite(spread))
+  has_errors <- any(is.finite(frame$lower) & is.finite(frame$upper))
   held <- isTRUE(attr(errors, "held"))
   note <- if (has_errors) {
     if (held) "; whiskers: 95% intervals where estimable" else
@@ -694,6 +706,53 @@ utils::globalVariables(c(
                sprintf("%d profiles%s, %d categorical indicator%s%s",
                        n_profiles, .gg_group_class_text(x), length(vars),
                        if (length(vars) == 1L) "" else "s", note))
+}
+
+#' The confidence bounds an inference table reports for the requested cells
+#'
+#' @param errors Measurement rows of [parameter_inference()], or `NULL`.
+#' @param parameter Which kind of parameter to take.
+#' @param profile Integer profile indices wanted, one per output row.
+#' @param term Term labels wanted, one per output row.
+#' @return A data frame with `lower` and `upper`, one row per requested cell,
+#'   `NA` where the table reports no interval.
+#' @noRd
+.gg_match_bounds <- function(errors, parameter, profile, term) {
+  stopifnot(length(profile) == length(term))
+  if (is.null(errors)) {
+    return(data.frame(lower = rep(NA_real_, length(profile)),
+                      upper = rep(NA_real_, length(profile))))
+  }
+  wanted <- errors[errors$parameter == parameter, , drop = FALSE]
+  at <- match(paste(profile, term, sep = "\r"),
+              paste(sub("^profile_", "", wanted$outcome), wanted$term,
+                    sep = "\r"))
+  data.frame(lower = wanted$conf_low[at], upper = wanted$conf_high[at])
+}
+
+#' A caption naming the indicators a view leaves out, and where they are
+#'
+#' The profile views draw continuous means (or categorical summaries); an
+#' indicator of another kind is not on them, which the caption says rather
+#' than letting the indicator count in the title pass for every indicator.
+#' @param x A fitted model.
+#' @param drawn The indicators the view draws.
+#' @return A single string, or `NULL` when every indicator is drawn.
+#' @noRd
+.gg_undrawn_caption <- function(x, drawn) {
+  stopifnot(is.character(drawn))
+  kinds <- list(
+    list(vars = x$categorical, text = "categorical %s (what = \"responses\")"),
+    list(vars = x$ordinal, text = "ordinal %s (get_results(fit, \"ordinal\"))"),
+    list(vars = x$count, text = "count %s (get_results(fit, \"counts\"))"))
+  parts <- vapply(kinds, \(kind) {
+    missing_vars <- setdiff(as.character(kind$vars), drawn)
+    if (length(missing_vars) == 0L) return(NA_character_)
+    sprintf(kind$text, paste(missing_vars, collapse = ", "))
+  }, character(1))
+  parts <- parts[!is.na(parts)]
+  if (length(parts) == 0L) return(NULL)
+  sprintf("Not drawn: %s.", paste(parts, collapse = "; "))
 }
 
 # -- structure ----------------------------------------------------------------
@@ -732,7 +791,12 @@ utils::globalVariables(c(
                   ylim = c(0, 1)) +
     .gg_titles(main, subtitle, "Profile prevalence by group class",
                sprintf("%d group class%s over %d observed groups", n_classes,
-                       if (n_classes == 1L) "" else "es", x$n_groups))
+                       if (n_classes == 1L) "" else "es", x$n_groups),
+               # The Gaussian profiles' shares sum to one minus the noise
+               # share, so the caption accounts for the rest.
+               caption = if (isTRUE(x$noise)) sprintf(
+                 "The noise component takes the remaining %s.",
+                 .gg_percent(x$noise_probability)))
 }
 
 #' Each group's assigned profile at each position, blocked by group class
@@ -749,7 +813,7 @@ utils::globalVariables(c(
     key <- rbind(key, data.frame(profile = 0L, rank = nrow(key) + 1L,
                                  share = sum(x$noise_posteriors) / x$n_observations,
                                  count = sum(x$noise_posteriors), label = "Noise",
-                                 colour = "grey75", shape = 4L))
+                                 colour = .gg_reserved_grey, shape = 4L))
     key$label <- factor(key$label, levels = levels)
   }
   time_values <- sort(unique(x$time_values))

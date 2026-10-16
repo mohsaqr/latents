@@ -44,8 +44,9 @@
 #'   intercept per occasion from the second on).
 #' @return A list with `initial` (groups x p0), `transition` (a list over
 #'   occasions 2..T of groups x p matrices; transition covariates are read at
-#'   the destination occasion, zero where it is not observed) and the column
-#'   names.
+#'   the destination occasion, zero past a group's last occasion, where no
+#'   move is made; `.lta_check_covariate_gaps()` refuses skipped positions
+#'   inside a span) and the column names.
 #' @noRd
 .lta_designs <- function(layout, covariate_rows, initial_rows, transitions) {
   n_groups <- nrow(layout$slot)
@@ -68,6 +69,43 @@
     cbind(intercepts, values)
   })
   list(initial = initial, transition = transition)
+}
+
+#' Refuse transition covariates at grid positions a group skipped
+#'
+#' Under `occasions = "grid"` a move into a skipped position has no data row,
+#' so its covariates have no value. Any fill-in (zero, the last value) would be
+#' an assumption the likelihood then depends on: with zero, shifting a
+#' covariate by a constant changed the fit. The move is refused instead.
+#'
+#' @param layout Sequence layout.
+#' @param groups Prepared groups (`ids`, `index`).
+#' @param time_values Each row's position.
+#' @param transition_covariates Transition covariate names.
+#' @return `NULL`, invisibly; raises `latents_bad_data`.
+#' @noRd
+.lta_check_covariate_gaps <- function(layout, groups, time_values,
+                                      transition_covariates) {
+  if (length(transition_covariates) == 0L || layout$n_occasions < 2L) {
+    return(invisible(NULL))
+  }
+  # Inside a group's span, a slot without a row is a skipped position. The
+  # first slot is always observed, so only destinations can be skipped.
+  skipped <- which(layout$within & is.na(layout$slot), arr.ind = TRUE)
+  if (nrow(skipped) == 0L) return(invisible(NULL))
+  positions <- sort(unique(time_values))
+  first <- as.integer(tapply(match(time_values, positions), groups$index, min))
+  cells <- unique(data.frame(
+    group = groups$ids[skipped[, "row"]],
+    position = positions[first[skipped[, "row"]] + skipped[, "col"] - 1L]))
+  shown <- utils::head(cells, 5L)
+  stop(errorCondition(sprintf(paste(
+    "Transition covariates have no value where a group skips a grid position:",
+    "%s%s. Use occasions = \"observed\", or add those rows (indicators may be",
+    "missing under missing = \"fiml\") with their covariate values."),
+    paste(sprintf("group %s at %s", shown$group, shown$position), collapse = ", "),
+    if (nrow(cells) > nrow(shown)) sprintf(" and %d more", nrow(cells) - nrow(shown)) else ""),
+    class = "latents_bad_data", call = NULL))
 }
 
 #' Log transition probabilities of one class at one occasion
@@ -562,6 +600,7 @@
       "classes (including stayers) cannot exceed the number of groups."),
       class = "latents_unidentified", call = NULL))
   }
+  .lta_check_covariate_gaps(layout, groups, time_values, transition_covariates)
   sampling_weights <- .latents_sampling_weights(data, weights, groups$index, groups$n)
   occasion_of_row <- integer(nrow(x))
   occasion_of_row[layout$slot[!is.na(layout$slot)]] <- col(layout$slot)[!is.na(layout$slot)]
@@ -812,6 +851,13 @@
       "errors are withheld.") else
       "A variance reached min_variance; this is a bound-active fit.",
       class = "latents_boundary", call = NULL))
+  }
+  # As in the homogeneous engine: a class that has emptied (a stayer class no
+  # one belongs to, say) is reported, not left to look like an estimate.
+  if (any(colSums(subject_posteriors) < 1) || any(colSums(group_posteriors) < 1)) {
+    warning(warningCondition(
+      "A profile or group class has effective membership below one.",
+      class = "latents_small_classes", call = NULL))
   }
   result
 }

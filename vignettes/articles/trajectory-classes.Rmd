@@ -92,8 +92,10 @@ get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
 ## Seeing the classes
 
 Every view of a trajectory fit is one `plot()` call. Each class's trajectory
-with its confidence band, the band within which 80% of its students'
-observations lie, and the observed class means:
+with its confidence band, the observed class means, and a sample of students'
+observed trajectories as thin lines (a band for the spread of students
+around their class needs random effects, so it appears only in the growth
+mixture model):
 
 ```{r trajectories, eval = has_ggplot}
 plot(fit)

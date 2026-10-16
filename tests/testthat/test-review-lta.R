@@ -3,7 +3,12 @@
 # Regression tests from past audits; CI runs them on every platform.
 skip_on_cran()
 
-review_lta_data <- function() {
+# Rows 2 and 11 sit inside their groups' spans. By default they are kept with
+# every indicator missing, an occasion without measurement information whose
+# transition covariates are known; `gaps = TRUE` drops them, so the grid skips
+# those positions -- which lta() refuses with transition covariates, since a
+# skipped position has no covariate value.
+review_lta_data <- function(gaps = FALSE) {
   data <- data.frame(id = rep(1:6, each = 4L), time = rep(1:4, 6L),
                      y = sin(seq_len(24L)), z = cos(seq_len(24L)),
                      w = rep(seq_len(6L) / 7, each = 4L),
@@ -14,14 +19,19 @@ review_lta_data <- function() {
   data[c(3L, 18L), "y"] <- NA_real_
   data[c(7L, 14L), "o"] <- NA
   data[c(8L, 17L), "k"] <- NA_real_
-  data[-c(2L, 11L, 23L, 24L), ]
+  if (gaps) return(data[-c(2L, 11L, 23L, 24L), ])
+  data[c(2L, 11L), c("y", "c", "o", "k")] <- NA
+  data[-c(23L, 24L), ]
 }
 
-review_lta_fit <- function(...) {
-  quietly(lta(review_lta_data(), c("y", "c", "o", "k"), "id", 3L,
+review_lta_fit <- function(..., gaps = FALSE,
+                           transition_covariates = if (gaps) character() else "z") {
+  quietly(lta(review_lta_data(gaps), c("y", "c", "o", "k"), "id", 3L,
     time = "time", categorical = "c", ordinal = "o", count = "k", missing = "fiml",
-    transition_covariates = "z", initial_covariates = "w", occasions = "grid",
-    n_starts = 1L, max_iter = 0L, seed = 51L, ...), c("latents_unconverged", "latents_boundary"))
+    transition_covariates = transition_covariates, initial_covariates = "w",
+    occasions = "grid",
+    n_starts = 1L, max_iter = 0L, seed = 51L, ...),
+          c("latents_unconverged", "latents_boundary", "latents_small_classes"))
 }
 
 review_lta_exact <- function(theta, fit) {
@@ -81,7 +91,9 @@ test_that("all general LTA extensions match independent path likelihoods and sco
     list(transitions = "occasion", measurement = "occasion"),
     list(order = 2L, transitions = "occasion", mover_stayer = TRUE),
     list(count_model = "negative_binomial", count_dispersion = "equal"),
-    list(count_model = "negative_binomial", count_dispersion = "varying", weights = "weight"))
+    list(count_model = "negative_binomial", count_dispersion = "varying", weights = "weight"),
+    # Skipped grid positions (no row, no covariate) with occasion transitions.
+    list(gaps = TRUE, transitions = "occasion", n_group_classes = 2L))
   lapply(variants, function(arguments) {
     fit <- do.call(review_lta_fit, arguments)
     theta <- coef(fit)
@@ -102,8 +114,8 @@ test_that("all general LTA extensions match independent path likelihoods and sco
     expect_equal(length(theta), fit$n_parameters)
     expect_equal(.lta_pack(.lta_unpack(theta, fit), fit$variance_model, fit$extra_data),
                  unname(theta), tolerance = 1e-12)
-    expect_invisible(.lta_check_data(fit, review_lta_data()))
-    changed <- review_lta_data()
+    expect_invisible(.lta_check_data(fit, review_lta_data(isTRUE(arguments$gaps))))
+    changed <- review_lta_data(isTRUE(arguments$gaps))
     changed$k[1L] <- changed$k[1L] + 1
     expect_error(.lta_check_data(fit, changed), class = "latents_bad_inference_data")
   })

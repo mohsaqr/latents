@@ -339,10 +339,16 @@
 #'   estimated on, and no Wald test, as for the covariate-free model.
 #' @details Class-membership coefficients are on the multinomial logit scale
 #'   with the final profile and the final group class as references, so a
-#'   coefficient is a log odds against that reference. The tests are Wald tests
-#'   and inherit the usual caveat: they are unreliable for a coefficient driven
-#'   to the boundary by separation, which the size of the estimate and its
-#'   standard error together will reveal.
+#'   coefficient is a log odds against that reference. The tests are Wald tests,
+#'   which are meaningless for a coefficient driven to the boundary by
+#'   separation or an empty class. A fit with a membership logit above 20 in
+#'   coordinates that depend neither on the covariates' units nor on their
+#'   origin (roughly, a slope per standard deviation of its covariate and an
+#'   intercept at the covariates' means) is therefore refused with
+#'   `latents_boundary_fit` rather than given a standard error; the fit itself
+#'   warns with `latents_extreme_coefficients`. Only
+#'   `method = "wald"` is implemented for a covariate fit; `"bootstrap"` is
+#'   refused with `latents_unsupported_inference`.
 #' @examples
 #' # Two separated profiles, membership driven by `x` and by the group's class.
 #' set.seed(5)
@@ -535,40 +541,52 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
       object$variances, dimension, .multilpa_cov_spread_rows(object))
     scale[length(object$means) + seq_along(covariance_scale)] <- covariance_scale
   }
-  ## A coefficient's unit is the reciprocal of its predictor's.
-  profile_scale <- 1 / .multilpa_design_scale(do.call(rbind, object$profile_design))
-  group_scale <- 1 / .multilpa_design_scale(object$group_design)
+  ## The membership coefficients are differenced in the coordinates in which
+  ## their design is orthonormal (`.multilpa_design_basis()`), the same ones
+  ## the fit was searched in: per-column scaling alone leaves a covariate held
+  ## far from zero relative to its spread nearly collinear with the intercept,
+  ## and the information is then declared singular for no other reason. So the
+  ## displacement is mapped to the parameters by `transform`, diagonal (the
+  ## scale above) except for those two blocks, `theta + transform %*% d`.
   membership <- length(theta) - length(object$profile_coefficients) -
     length(object$group_coefficients)
-  scale[membership + seq_len(length(theta) - membership)] <-
-    c(rep(profile_scale, ncol(object$profile_coefficients)),
-      rep(group_scale, ncol(object$group_coefficients)))
+  transform <- diag(scale, length(theta))
+  coefficient_block <- function(design, n_columns) {
+    basis <- .multilpa_design_basis(design) %||%
+      diag(.multilpa_design_scale(design), ncol(design))
+    kronecker(diag(n_columns), backsolve(basis, diag(ncol(design))))
+  }
+  profile_at <- membership + seq_along(object$profile_coefficients)
+  group_at <- membership + length(object$profile_coefficients) +
+    seq_along(object$group_coefficients)
+  transform[profile_at, profile_at] <- coefficient_block(
+    do.call(rbind, object$profile_design), ncol(object$profile_coefficients))
+  transform[group_at, group_at] <- coefficient_block(
+    object$group_design, ncol(object$group_coefficients))
   ## Coordinates held at their bound (`boundary = "fix"`) are constants of the
   ## conditional likelihood: the information is taken over the rest, and the
-  ## held rows and columns of the covariance stay zero.
+  ## held rows and columns of the covariance stay zero. They are response
+  ## logits, outside the membership blocks, so `transform` keeps them apart.
   estimation_names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
   held <- if (identical(boundary, "fix")) {
     estimation_names %in% .multilpa_response_bound(object)$unconstrained
   } else rep(FALSE, length(theta))
   free <- which(!held)
-  embed <- function(displacement) replace(numeric(length(theta)), free, displacement)
+  moves <- transform[, free, drop = FALSE]
   information <- .multilpa_observed_hessian(
-    function(displacement) objective(theta + embed(displacement) * scale),
+    function(displacement) objective(theta + as.vector(moves %*% displacement)),
     function(displacement) {
-      (gradient(theta + embed(displacement) * scale) * scale)[free]
-    }, scale[free], step)
+      as.vector(crossprod(moves, gradient(theta + as.vector(moves %*% displacement))))
+    }, diag(transform)[free], step)
   free_covariance <- information$inverse
   if (vcov_type %in% c("robust", "opg")) {
-    scores <- sweep(.multilpa_cov_group_scores(theta, x, object, codes), 2L,
-                    scale, "*")[, free, drop = FALSE]
+    scores <- .multilpa_cov_group_scores(theta, x, object, codes) %*% moves
     cross <- .multilpa_cross_product(scores)
     free_covariance <- if (identical(vcov_type, "opg")) {
       .multilpa_opg_inverse(cross)
     } else .inference_sandwich(free_covariance, cross, nrow(scores))
   }
-  covariance <- matrix(0, length(theta), length(theta))
-  covariance[free, free] <- free_covariance
-  covariance <- covariance * tcrossprod(scale)
+  covariance <- moves %*% free_covariance %*% t(moves)
   ## The covariance is of the estimated coordinates, so it is named for them;
   ## vcov() maps it to natural units and renames it there.
   estimation_names <- .multilpa_parameter_names(.multilpa_cov_estimation_labels(object))
@@ -988,15 +1006,21 @@ confint.multilpa_covariates <- function(object, parm, level = 0.95, data = NULL,
   dimnames(intervals) <- list(names_all, paste0(
     format(100 * c((1 - level) / 2, (1 + level) / 2), trim = TRUE), "%"))
   if (missing(parm)) return(intervals)
+  ## The class confint.multilpa() raises for the same mistake.
+  bad_parm <- function() {
+    stop(errorCondition(
+      "`parm` must identify existing parameters by name or index.",
+      class = "latents_bad_argument", call = NULL))
+  }
   if (is.numeric(parm)) {
     if (anyNA(parm) || any(parm < 1) || any(parm > length(names_all)) ||
         any(parm != floor(parm))) {
-      stop("`parm` must identify existing parameters by name or index.")
+      bad_parm()
     }
     parm <- names_all[parm]
   }
   if (!is.character(parm) || anyNA(parm) || !all(parm %in% names_all)) {
-    stop("`parm` must identify existing parameters by name or index.")
+    bad_parm()
   }
   intervals[parm, , drop = FALSE]
 }

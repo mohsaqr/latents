@@ -29,13 +29,17 @@
 #' at small coefficients and differently on each platform.) The search runs on
 #' unit-free coordinates, not on the covariates as supplied: a covariate held
 #' in units a few orders of magnitude away from the rest would otherwise make
-#' the Hessian badly scaled. Because the logit is the same model under any linear
-#' rescaling of a predictor, the entire search is moved onto columns divided by
-#' their root-mean-square (see `.multilpa_design_scale()`) and the coefficients
-#' are divided back afterwards, so the caller receives estimates in the units
-#' the covariates arrived in and the search itself no longer depends on those
-#' units. Convergence is then judged by the score in those unit-free
-#' coordinates rather than by the optimizer's own return code.
+#' the Hessian badly scaled, and so would one held far from zero relative to
+#' its spread, which is nearly collinear with the intercept. Because the logit
+#' is the same model under any invertible linear map of the design, the entire
+#' search is moved onto the orthonormal columns `Q` of `design = Q R` (see
+#' `.multilpa_design_basis()`; columns divided by their root-mean-square,
+#' `.multilpa_design_scale()`, when the design is rank deficient) and the
+#' coefficients are mapped back afterwards, so the caller receives estimates in
+#' the units the covariates arrived in and the search itself depends neither on
+#' those units nor on the covariates' origin. Convergence is then judged by the
+#' score in those unit-free coordinates rather than by the optimizer's own
+#' return code.
 #'
 #' @param design Design matrix.
 #' @param counts Expected category counts in each row.
@@ -85,8 +89,12 @@
   if (ncol(counts) == 1L) {
     return(list(coefficients = initial, converged = TRUE, scaled_score = 0))
   }
-  scale <- .multilpa_design_scale(design)
-  scaled_design <- sweep(design, 2L, scale, "/")
+  ## Orthonormal coordinates where the design allows them, so that a
+  ## covariate held far from zero relative to its spread cannot leave the
+  ## Hessian nearly singular; per-column scaling otherwise.
+  basis <- .multilpa_design_basis(design)
+  if (is.null(basis)) basis <- diag(.multilpa_design_scale(design), ncol(design))
+  scaled_design <- t(backsolve(basis, t(design), transpose = TRUE))
   n_free <- ncol(counts) - 1L
   unpack <- function(values) {
     stopifnot(is.numeric(values))
@@ -102,7 +110,7 @@
       rowSums(counts) - counts
     as.vector(crossprod(scaled_design, residual[, seq_len(n_free), drop = FALSE]))
   }
-  start <- as.vector(sweep(initial, 1L, scale, "*"))
+  start <- as.vector(basis %*% initial)
   baseline <- objective(start)
   ## The score is a sum over the expected counts, so the tolerance it is judged
   ## against scales with them; the `1 +` keeps an empty step well defined.
@@ -159,7 +167,7 @@
       "Multinomial M-step decreased the expected log likelihood.",
       class = "latents_no_converge", call = NULL))
   }
-  list(coefficients = sweep(unpack(current), 1L, scale, "/"),
+  list(coefficients = backsolve(basis, unpack(current)),
        converged = score <= threshold, scaled_score = score)
 }
 
@@ -236,12 +244,32 @@
                                   count = character(), count_model = "poisson",
                                   count_dispersion = "varying",
                                   centering = "none") {
-  stopifnot(is.data.frame(data), is.character(vars), is.character(id),
-            is.character(profile_covariates), is.character(group_covariates),
-            !anyDuplicated(profile_covariates), !anyDuplicated(group_covariates),
-            all(c(profile_covariates, group_covariates) %in% names(data)),
-            is.numeric(n_starts), length(n_starts) == 1L,
-            is.finite(n_starts), n_starts >= 1, n_starts == as.integer(n_starts))
+  stopifnot(
+    "`data` must be a data frame" = is.data.frame(data),
+    "`vars` must be a character vector" = is.character(vars),
+    "`id` must be a single column name" = is.character(id) && length(id) == 1L,
+    "`profile_covariates` and `group_covariates` must be character vectors" =
+      is.character(profile_covariates) && is.character(group_covariates))
+  ## The base fit below is a single start, so it never sees `n_starts`.
+  if (!(is.numeric(n_starts) && length(n_starts) == 1L && is.finite(n_starts) &&
+        n_starts >= 1 && n_starts == as.integer(n_starts))) {
+    stop(errorCondition("`n_starts` must be a single positive whole number.",
+                        class = "latents_bad_argument", call = NULL))
+  }
+  if (anyDuplicated(profile_covariates) || anyDuplicated(group_covariates)) {
+    stop(errorCondition(
+      "`profile_covariates` and `group_covariates` must not name a column twice.",
+      class = "latents_bad_argument", call = NULL))
+  }
+  absent <- setdiff(c(profile_covariates, group_covariates), names(data))
+  if (length(absent) > 0L) {
+    stop(errorCondition(sprintf(
+      "Covariate column%s %s %s not in `data`.",
+      if (length(absent) > 1L) "s" else "",
+      paste(sprintf("`%s`", absent), collapse = ", "),
+      if (length(absent) > 1L) "are" else "is"),
+      class = "latents_bad_data", call = NULL))
+  }
   variance_model <- match.arg(variance_model)
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
@@ -277,10 +305,12 @@
                         class = "latents_bad_data", call = NULL))
   }
   if (n_profiles == 1L && length(profile_covariates)) {
-    stop("Profile covariates require at least two profiles.")
+    stop(errorCondition("Profile covariates require at least two profiles.",
+                        class = "latents_bad_argument", call = NULL))
   }
   if (n_group_classes == 1L && length(group_covariates)) {
-    stop("Group covariates require at least two group classes.")
+    stop(errorCondition("Group covariates require at least two group classes.",
+                        class = "latents_bad_argument", call = NULL))
   }
   designs <- .multilpa_cov_designs(data, vars, profile_covariates,
                                  group_covariates, first_rows, n_group_classes,
@@ -568,22 +598,62 @@ nobs.multilpa_covariates <- function(object, ...) {
       "covariates."), class = "latents_bad_data", call = NULL))
   }
   if (any(predictors %in% c(vars, id))) {
-    stop("Covariates must be distinct from indicators and the group identifier.")
+    ## The same classes r3step() raises for an indicator offered as a
+    ## predictor, so one handler catches the mistake from either route.
+    stop(errorCondition(
+      "Covariates must be distinct from indicators and the group identifier.",
+      class = c(if (any(predictors %in% vars)) "multilpa_indicator_reused",
+                "latents_bad_covariate"), call = NULL))
   }
   invisible(NULL)
 }
 
+#' Coordinates in which a design matrix is orthonormal
+#'
+#' The upper-triangular `R` of `design = Q R`, divided by the square root of the
+#' number of rows and signed so that its diagonal is positive. In the
+#' coordinates `R %*% coefficients` the design is `Q`, whose columns are
+#' orthogonal with root-mean-square one: an intercept stays an intercept,
+#' measured at the covariates' means, and a slope is measured per standard
+#' deviation of what its covariate adds to the columns before it. Those
+#' coordinates do not move when a covariate is shifted or rescaled, which
+#' dividing each column by its root-mean-square alone does not achieve: a
+#' covariate held far from zero relative to its spread then carries a huge
+#' root-mean-square and leaves the intercept a huge value, both looking like
+#' separation.
+#'
+#' @param design A numeric design matrix.
+#' @return The scaled `R` factor, or `NULL` when the design is rank deficient
+#'   (or needed pivoting), in which case callers fall back to the per-column
+#'   root-mean-square scale.
+#' @noRd
+.multilpa_design_basis <- function(design) {
+  stopifnot("`design` must be a finite numeric matrix" =
+              is.matrix(design) && is.numeric(design) && all(is.finite(design)))
+  if (ncol(design) == 0L || nrow(design) < ncol(design)) return(NULL)
+  decomposition <- qr(design)
+  if (decomposition$rank < ncol(design) ||
+      !identical(decomposition$pivot, seq_len(ncol(design)))) {
+    return(NULL)
+  }
+  factor <- qr.R(decomposition) / sqrt(nrow(design))
+  ## Row scaling: flips the sign of a column of Q and the matching row of R.
+  factor * sign(diag(factor))
+}
+
 #' Whether a covariate fit's membership logits are near separation
 #'
-#' Each coefficient is measured per root-mean-square unit of its design
-#' column, the unit-free coordinates the fit is searched in (see
-#' `.multilpa_design_scale()`), so the verdict does not depend on the units a
-#' covariate arrived in. A logit that moves by more than `limit` over one such
-#' unit (an odds ratio above `exp(20)`) is drifting to the boundary of the
+#' Each coefficient is measured in the coordinates in which its design is
+#' orthonormal (see `.multilpa_design_basis()`): an intercept at the
+#' covariates' means and a slope per standard deviation of its covariate, so
+#' the verdict depends neither on the units a covariate arrived in nor on where
+#' its zero lies. A logit that moves by more than `limit` over one such unit
+#' (an odds ratio above `exp(20)`) is drifting to the boundary of the
 #' parameter space: the class is separated by the covariate, or empty. The fit
 #' warns with `latents_extreme_coefficients`, and Wald inference is refused,
 #' because a standard error at a coefficient heading to infinity is
-#' meaningless (Hauck and Donner, 1977).
+#' meaningless (Hauck and Donner, 1977). A rank-deficient design falls back to
+#' the per-column root-mean-square scale (`.multilpa_design_scale()`).
 #'
 #' @param profile_coefficients Profile logit coefficients, one row per column
 #'   of the stacked profile design.
@@ -600,7 +670,10 @@ nobs.multilpa_covariates <- function(object, ...) {
               is.list(profile_design) && length(profile_design) >= 1L,
             "`group_design` must be a matrix" = is.matrix(group_design))
   unit_free <- function(coefficients, design) {
-    as.matrix(coefficients) * .multilpa_design_scale(design)
+    basis <- .multilpa_design_basis(design)
+    if (is.null(basis)) {
+      as.matrix(coefficients) * .multilpa_design_scale(design)
+    } else basis %*% as.matrix(coefficients)
   }
   scaled <- c(unit_free(profile_coefficients, do.call(rbind, profile_design)),
               unit_free(group_coefficients, group_design))
@@ -636,8 +709,13 @@ nobs.multilpa_covariates <- function(object, ...) {
   x <- measurement$x
   if (!identical(centering, "none")) {
     stopifnot(length(group_index) == nrow(x))
-    x <- .multilpa_center_indicators(x, group_index, max(group_index), centering)$x
-    .multilpa_check_centered(x, centering)
+    centred <- .multilpa_center_indicators(x, group_index, max(group_index),
+                                           centering)$x
+    ## Judged on the raw values, as multilpa() does, so the verdict does not
+    ## depend on the units the indicators were recorded in.
+    .multilpa_check_centered(centred, centering, raw = x,
+                             group_index = group_index)
+    x <- centred
   }
   # The centre is only a location shift that is added back to the reported
   # means, so the observed values' mean serves; every indicator has some,
@@ -658,7 +736,9 @@ nobs.multilpa_covariates <- function(object, ...) {
   })
   stacked_design <- do.call(rbind, profile_design)
   if (qr(stacked_design)$rank != ncol(stacked_design) || qr(w)$rank != ncol(w)) {
-    stop("Covariate design is rank deficient; remove constant or collinear predictors.")
+    stop(errorCondition(
+      "Covariate design is rank deficient; remove constant or collinear predictors.",
+      class = "latents_bad_covariate", call = NULL))
   }
   list(x = sweep(x, 2L, center, "-"), center = center, w = w,
        profile_design = profile_design, stacked_design = stacked_design,
@@ -706,12 +786,14 @@ nobs.multilpa_covariates <- function(object, ...) {
     }
     resumed
   } else {
-    # The first start is Ward's hierarchical clustering, as in multilpa().
+    # Later starts are random. The first resumes from the covariate-free base
+    # fit, whose single start was Ward's hierarchical clustering, as in
+    # multilpa(), so no later start repeats it.
     .multilpa_initialize(x, group_index, n_profiles, n_group_classes,
                        control$variance_model, control$min_variance, start_index,
                        control$covariance_model, designs$codes,
                        designs$n_categories, control$min_probability,
-                       hierarchical = start_index == 1L, extra = designs$extra)
+                       hierarchical = FALSE, extra = designs$extra)
   }
   beta <- rbind(
     log(parameters$profile_probabilities[, seq_len(n_profiles - 1L), drop = FALSE] /

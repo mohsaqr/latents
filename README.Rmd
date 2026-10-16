@@ -238,14 +238,11 @@ dependent <- multilpa(
   variance_model = "varying", covariance_model = "full",
   n_starts = 10, seed = 1
 )
-rbind(
-  diagonal = get_results(fit, "information_criteria"),
-  full = get_results(dependent, "information_criteria")
-)
+compare_models(diagonal = fit, full = dependent)
 get_results(dependent, "residuals", by = "overall")
 ```
 
-The information criteria compare improvement in likelihood with the additional parameters required by the full covariance model. The residual table indicates how much of the observed association the revised specification accounts for. Near-zero residuals are expected when those associations are directly fitted and do not independently establish overall model adequacy.
+`compare_models()` places the two fits side by side: the information criteria compare improvement in likelihood with the additional parameters required by the full covariance model. The residual table indicates how much of the observed association the revised specification accounts for. Near-zero residuals are expected when those associations are directly fitted and do not independently establish overall model adequacy.
 
 Covariance specification and class enumeration are related. Additional diagonal profiles can approximate associations that a more flexible covariance structure represents within profiles. Consequently, the number of profiles should be interpreted in the context of the measurement assumptions under which it was selected.
 
@@ -333,7 +330,7 @@ r3step(fit, data = course_engagement, covariates = "previous_grade")
 
 The first call compares previous-grade means between enrolment profiles. The argument name `outcome` identifies the variable whose means are estimated; it does not imply that engagement precedes or causes previous grade. The second call estimates the association of previous grade with profile membership while preserving the original profile definitions.
 
-Differences from the jointly estimated regression are therefore expected: the two procedures use different constraints on the measurement solution. `three_step()` clusters its variance estimates by group by default, while `r3step()` uses the observed information by default and offers clustered sandwich inference through `vcov_type = "robust"`.
+Differences from the jointly estimated regression are therefore expected: the two procedures use different constraints on the measurement solution. `three_step()` clusters its variance estimates by group by default, while `r3step()` uses a sandwich covariance clustered by group by default and offers observed-information inference through `vcov_type = "observed"`.
 
 The supplied data must preserve the original observation order and include the external variables. The package uses shared fitted columns to check alignment between the data and the stored fit.
 
@@ -396,11 +393,11 @@ plot(moves, what = "transitions")
 
 For group class $h$, a transition probability can be expressed as $P(C_{j,t}=l\mid C_{j,t-1}=k,G_j=h)$. Each row of a transition matrix conditions on the preceding profile and sums to one across possible destination profiles. Diagonal entries quantify persistence; off-diagonal entries quantify transitions to other profiles.
 
-The implemented model is first order and time homogeneous: the next profile depends on the preceding profile, with transition probabilities held constant across sequence positions within each group class. Measurement parameters are invariant across occasions, ensuring that a transition refers to movement between profiles with stable definitions.
+By default the model is first order and time homogeneous: the next profile depends on the preceding profile, with transition probabilities held constant across sequence positions within each group class. Measurement parameters are invariant across occasions, ensuring that a transition refers to movement between profiles with stable definitions. Each of these assumptions can be relaxed: `order = 2` gives a second-order chain, `transitions = "occasion"` a separate transition matrix for each move, `measurement = "occasion"` occasion-specific profiles, and `transition_covariates` and `initial_covariates` let covariates shift the transition and starting probabilities.
 
 In this dataset, consecutive observations are successive course enrolments. A transition therefore concerns adjacent observed enrolments, which need not be separated by equal calendar intervals. This distinction is part of the substantive interpretation of the estimated transition probabilities.
 
-The fitted transitions can be exported through `get_tna()` and `get_group_tna()` for further analysis with `tna`. `parameter_inference()` reports standard errors and intervals for every transition-model parameter; likelihood-ratio testing and class enumeration are not available for these models.
+The fitted transitions can be exported through `get_tna()` and `get_group_tna()` for further analysis with `tna`. `parameter_inference()` reports standard errors and intervals for every transition-model parameter. `enumerate_classes()` with `time` compares numbers of profiles and group classes, and `bootstrap_lrt()` with `data` tests a transition model against a nested one.
 
 ## Categorical and mixed measurement models
 
@@ -437,7 +434,7 @@ get_results(mixed)
 
 This specification treats the affect ratings as approximately Gaussian within profiles. The measurement table describes their means and variances, while `get_results(mixed, "responses")` provides the activity-response probabilities. Including affect changes the dimensions represented by the model and can consequently change the substantive meaning of its profiles.
 
-Categorical measurement uses freely estimated category probabilities. Ordered categories do not impose an ordinal regression structure. The choice between continuous and categorical treatment of a rating scale should therefore reflect both its distribution and the measurement assumptions appropriate to the analysis.
+Categorical measurement uses freely estimated category probabilities, so ordered categories given in `categorical` do not impose an ordinal structure. Ordered ratings can instead be named in `ordinal`, an adjacent-category logit with category intercepts shared by every profile and one location per profile, and counts in `count`. The choice between continuous and categorical treatment of a rating scale should therefore reflect both its distribution and the measurement assumptions appropriate to the analysis.
 
 ## Staged estimation
 
@@ -457,7 +454,7 @@ Standard errors and information criteria from the staged fit are conditional on 
 
 ## Mixture regression
 
-`mixture_regression()` fits regressions whose coefficients differ across latent classes, for continuous (`"gaussian"`), binary or binomial (`"binomial"`) and count (`"poisson"`) outcomes. The class can belong to each row, to a whole group (`class_level = "group"`), or to each row with a second-level group class that shifts how often each regression class occurs within a group (`n_group_classes`). Covariates can predict class membership (`membership`, `group_membership`), and terms can share one coefficient across classes (`common`).
+`mixture_regression()` fits regressions whose coefficients differ across latent classes, for continuous (`"gaussian"`), binary or binomial (`"binomial"`), count (`"poisson"`, `"negative_binomial"`) and ordered (`"ordinal"`) outcomes. The class can belong to each row, to a whole group (`class_level = "group"`), or to each row with a second-level group class that shifts how often each regression class occurs within a group (`n_group_classes`). Covariates can predict class membership (`membership`, `group_membership`), and terms can share one coefficient across classes (`common`). Random effects within classes (`random`) give growth mixture models.
 
 ```{r mixture_regression}
 regressions <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
@@ -487,6 +484,7 @@ The package vignettes cover the main model families.
 vignette("lpa", package = "latents")
 vignette("lca", package = "latents")
 vignette("lta", package = "latents")
+vignette("enumeration", package = "latents")
 citation("latents")
 ```
 

@@ -66,16 +66,17 @@ An object of class \code{latents_regression_enumeration}. Its table (from
 \code{\link[=as.data.frame]{as.data.frame()}} or \code{get_results(x, "fit")}) has one row per model:
 \code{n_classes}, \code{n_group_classes}, \code{log_likelihood}, \code{n_parameters},
 \code{aic}, \code{bic}, \code{bic_rows}, \code{sabic}, \code{icl}, \code{entropy}, \code{smallest_share},
-\code{converged}, \code{n_best_replicated}, \code{best_bic} (the minimum-BIC row), and,
+\code{converged}, \code{n_best_replicated}, \code{note} (why a cell could not be
+fitted), \code{best_bic} (the minimum-BIC row), and,
 with \code{bootstrap > 0}, \code{blrt_statistic}, \code{blrt_p_value} and
 \code{blrt_replicates} (the successful replicates) and \code{blrt_flagged} (the
 failed, unconverged, separated or reversed-likelihood replicates). The
 p-value is \code{NA} if any requested replicate fails validation. \code{get_results(x, "model", n_classes = , n_group_classes = )} returns one fitted model.
 }
 \description{
-Fits \code{\link[=mixture_regression]{mixture_regression()}} for every requested number of classes (and of group
-classes, for the two-level model) and returns their fit statistics in one
-table. Optionally adds a parametric bootstrap likelihood-ratio test of
+Fits \code{\link[=mixture_regression]{mixture_regression()}} for every requested number of classes (and of
+group classes, for the two-level model) and returns their fit statistics in
+one table. Optionally adds a parametric bootstrap likelihood-ratio test of
 \code{k - 1} against \code{k} classes (McLachlan 1987; Nylund, Asparouhov and Muthen
 2007): outcomes are simulated from the \code{k - 1} class fit, both models are
 refitted to every replicate, and the p-value is the share of replicate

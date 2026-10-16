@@ -222,7 +222,11 @@ plot_views()
 named fit views and \code{plot_diagnostics()}, an
 enumeration from \code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}} or
 \code{\link[=enumerate_lca]{enumerate_lca()}} for \code{plot_enumeration()} and \code{plot_tree()}, a
-transition fit from \code{\link[=lta]{lta()}} for \code{plot_transitions()}.}
+transition fit from \code{\link[=lta]{lta()}} for \code{plot_transitions()}. A general \code{\link[=lta]{lta()}}
+fit (occasion-varying transitions, covariates, mover-stayer, second
+order, weights, ordinal or count indicators) draws only its transition
+matrix, with \code{plot_transitions()} or \code{plot()}; a transition or
+group-class family grid plots with \code{plot(x, what = )}.}
 
 \item{what}{For \code{plot_diagnostics()}: \code{"all"} (default), \code{"sizes"}
 (effective profile counts), \code{"posteriors"} (posterior probability of each
@@ -290,9 +294,13 @@ deviation.}
 
 \item{intervals}{For profile, bar and response views, \code{TRUE} draws 95\%
 intervals when the fit has standard
-errors; otherwise the subtitle says why there are none.}
+errors; otherwise the subtitle says why there are none. They are the
+\code{conf_low} and \code{conf_high} of \code{\link[=parameter_inference]{parameter_inference()}}: a response
+probability's interval is built on the logit scale.}
 
-\item{labels}{\code{TRUE} labels each series directly; \code{FALSE} uses a legend.}
+\item{labels}{\code{TRUE} labels each series directly; \code{FALSE} uses a legend.
+On sequence views, \code{TRUE} blocks the groups by group class under
+labelled strips.}
 
 \item{data}{Optional. The data the model was fitted to, used only to
 compute intervals from a different frame.}
@@ -359,14 +367,19 @@ use with \code{latents_bad_argument}; methods that ignored it in 0.9.21 instead
 draw with a \code{latents_unused_argument} warning, as listed below.
 \describe{
 \item{Fitted profile and class models}{From \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}},
-\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, covariate models and \code{\link[=lta]{lta()}}: \code{"profiles"}
+\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} and covariate models: \code{"profiles"}
 (default), \code{"bars"}, \code{"heatmap"}, \code{"raincloud"}, \code{"parallel"},
 \code{"pairs"} (each profile's 95\% covariance ellipse), \code{"responses"},
 \code{"probabilities"} (not for covariate models), \code{"sequences"} (fits with
 \code{time}; \code{cell_labels = TRUE} prints the profile in each cell),
-\code{"transitions"} (transition fits), \code{"sizes"}, \code{"entropy"},
-\code{"posteriors"}, \code{"avepp"} and \code{"all"}. Transition fits draw point
-estimates and take no \code{intervals} or \code{statistic}.}
+\code{"sizes"}, \code{"entropy"}, \code{"posteriors"}, \code{"avepp"} and \code{"all"}. The
+profile views name in a caption any ordinal, count or (for the means)
+categorical indicator they leave out.}
+\item{Transition fits}{From \code{\link[=lta]{lta()}}: \code{"transitions"} (default), then
+\code{"profiles"}, \code{"bars"}, \code{"heatmap"}, \code{"responses"}, \code{"sequences"},
+\code{"sizes"}, \code{"entropy"}, \code{"posteriors"}, \code{"avepp"} and \code{"all"}, as point
+estimates without \code{intervals} or \code{statistic}. A general \code{\link[=lta]{lta()}} fit
+takes no \code{what} and draws its transition matrix.}
 \item{Enumerations}{Criterion columns or \code{"all"} (with \code{combine},
 \code{labels} and \code{mark_minimum}), \code{"tree"}, the classification-quality
 views \code{"entropy"}, \code{"avepp"} and \code{"diagnostics"} (with \code{cutoff}), and
@@ -415,13 +428,18 @@ with \code{what} on a pooled fit is an error of the same class.
 \section{Errors}{
  \code{latents_missing_package} without ggplot2;
 \code{latents_bad_argument} for an argument the object's plot does not take;
-the plots of additive, cross-level, transition (\code{lta()}), growth-mixture,
+the plots of additive, cross-level, general transition (\code{lta()}), growth-mixture,
 mixture-regression, pooled, comparison, bootstrap and transition or
 group-class family grids instead warn with class
 \code{latents_unused_argument} and draw, as they ignored such arguments in
 0.9.21 (this includes a bootstrap plot's former \code{style});
+\code{latents_bad_argument} also when a named plot function is given an
+object it does not draw;
 \code{latents_nothing_to_plot} when the fit lacks what a view needs (for
-example posteriors or entropy of a one-profile fit);
+example posteriors or entropy of a one-profile fit, prevalence of a
+covariate model, or the case-level views of a centred fit);
+\code{latents_unknown_category} when \code{category} names no category of an
+indicator;
 \code{latents_no_continuous}, \code{latents_no_categorical} and \code{latents_no_time}
 when a view needs indicators or occasions the fit does not have;
 \code{latents_unknown_criterion} for a criterion not in the grid.

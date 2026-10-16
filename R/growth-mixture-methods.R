@@ -244,6 +244,9 @@
 }
 
 #' Classification entropy of the person posteriors (for ICL)
+#'
+#' Unweighted, also for a sampling-weighted fit, as the profile and class
+#' models compute it; only the log likelihood is the weighted one.
 #' @noRd
 .growth_entropy_sum <- function(x) {
   posterior <- x$expectation$posterior
@@ -739,14 +742,19 @@ vcov.latents_growth_mixture <- function(object, type = NULL, ...) {
 }
 
 #' @noRd
-#' @param parm Unused.
+#' @param parm Parameter names or positions; all by default.
 #' @export
 confint.latents_growth_mixture <- function(object, parm, level = 0.95, ...) {
   inference <- .growth_resolve_inference(object)
   table <- .inference_wald(unname(inference$theta),
                          sqrt(pmax(diag(inference$vcov), 0)), level)
-  data.frame(parameter = names(inference$theta), table[c("estimate", "conf_low", "conf_high")],
-             stringsAsFactors = FALSE)
+  out <- data.frame(parameter = names(inference$theta),
+                    table[c("estimate", "conf_low", "conf_high")],
+                    stringsAsFactors = FALSE)
+  if (missing(parm)) return(out)
+  out <- out[.mixture_confint_rows(parm, names(inference$theta)), , drop = FALSE]
+  rownames(out) <- NULL
+  out
 }
 
 #' @noRd
