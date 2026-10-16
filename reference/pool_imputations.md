@@ -50,11 +50,19 @@ pool_imputations(
 
   Confidence level of the pooled intervals.
 
-- vcov_type, adjust:
+- vcov_type:
 
   As in
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
   applied to every imputation's fit.
+
+- adjust:
+
+  Multiplicity correction, as in
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  applied to the pooled p-values to give `p_adjusted`. Each imputation's
+  own table is computed without one, since only the pooled p-values are
+  reported.
 
 ## Value
 
@@ -143,7 +151,7 @@ section 5.2. Chapman & Hall/CRC.
 set.seed(1)
 # Two stand-in completed data sets. With real missing covariates, pass the
 # `mids` object mice::mice() returns instead.
-completed <- lapply(1:2, function(i) {
+completed <- lapply(seq_len(2), function(i) {
   within(subset(course_engagement, student <= 40),
          previous_grade <- previous_grade + rnorm(length(previous_grade), sd = 0.1))
 })

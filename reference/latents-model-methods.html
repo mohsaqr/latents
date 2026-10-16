@@ -15,7 +15,7 @@ document the same methods with their get_results() page."><meta property="og:ima
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -165,7 +165,9 @@ scale the model is estimated on: log variances (diagonal), log-Cholesky
 coordinates (full covariance), log volumes, shapes and orientations (a
 structure that constrains them across profiles), and baseline-category
 logits for mixing and response probabilities. In a covariate model, means
-and membership coefficients are the same on both scales.</p></dd>
+and membership coefficients are the same on both scales. With
+<code>method = "bootstrap"</code> only the natural scale exists, and
+<code>scale = "unconstrained"</code> raises <code>latents_unsupported_inference</code>.</p></dd>
 
 
 <dt id="arg-boundary">boundary<a class="anchor" aria-label="anchor" href="#arg-boundary"></a></dt>
@@ -184,7 +186,8 @@ otherwise.</p></dd>
 <dt id="arg-parm">parm<a class="anchor" aria-label="anchor" href="#arg-parm"></a></dt>
 <dd><p>Optional coefficient names or indices; defaults to every
 estimated coefficient. Naming a coefficient that <code>fixed</code> held raises
-<code>latents_held_parameter</code>, because a held value has no interval.</p></dd>
+<code>latents_held_parameter</code>, because a held value has no interval; an
+unknown name or an out-of-range index raises <code>latents_bad_argument</code>.</p></dd>
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>

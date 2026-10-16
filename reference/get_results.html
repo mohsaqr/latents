@@ -17,7 +17,7 @@ measurement model, a classification diagnostic and a transition matrix."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -171,17 +171,19 @@ returns its primary table, the same as <code>get_results(x)</code>.</p>
 <p>Every fitted model offers these:</p><dl><dt><code>"profiles"</code></dt>
 <dd><p>The Gaussian measurement model, one row per profile
 and continuous indicator: <code>profile</code>, <code>indicator</code>, <code>mean</code>, <code>variance</code>,
-<code>standard_deviation</code>. Zero rows when every indicator is categorical.
-Takes <code>scale</code>, and <code>data</code>, which adds <code>mean_standard_error</code> and
-<code>variance_standard_error</code>.</p></dd>
+<code>standard_deviation</code>, <code>mean_standard_error</code>, <code>variance_standard_error</code>.
+Zero rows, with the same columns, when every indicator is categorical.
+Takes <code>scale</code> and <code>data</code>.</p></dd>
 
 <dt><code>"responses"</code></dt>
 <dd><p>The categorical measurement model, one row per
 profile, categorical indicator and category: <code>profile</code>, <code>indicator</code>,
-<code>category</code>, <code>probability</code>, <code>threshold</code>. The threshold is
-<code>qlogis(P(y &lt;= category))</code> and is <code>NA_real_</code> for each indicator's final
-category, where the cumulative probability is one. Takes <code>data</code>, which
-adds <code>probability_standard_error</code>.</p></dd>
+<code>category</code>, <code>probability</code>, <code>threshold</code>, <code>probability_standard_error</code>.
+The threshold is <code>qlogis(P(y &lt;= category))</code> and is <code>NA_real_</code> for each
+indicator's final category, where the cumulative probability is one; a
+probability held on its bound has an <code>NA_real_</code> standard error. Zero
+rows, with the same columns, when no indicator is categorical. Takes
+<code>data</code>.</p></dd>
 
 <dt><code>"covariances"</code></dt>
 <dd><p>The within-profile residual covariance matrices,
@@ -215,7 +217,8 @@ does have one column set for every family.</p></dd>
 <dd><p>One row per observation, the columns the fit was
 built from (or those of <code>data</code>) followed by <code>profile</code>, <code>group_class</code>
 where the model has one, <code>uncertainty</code>, and one <code>posterior_profile_*</code>
-column per profile. <code>uncertainty</code> is one minus the posterior of the
+column per profile (and <code>posterior_noise</code> for a fit with a noise
+component, whose cases are profile 0). <code>uncertainty</code> is one minus the posterior of the
 assigned profile, which is what modal assignment discards. Takes <code>data</code>
 and <code>truth</code>; <code>truth</code> returns a recovery cross-tabulation instead,
 described below.</p></dd>
@@ -287,9 +290,11 @@ data it contributes: <code>group_class</code>, <code>groups</code>, <code>observ
 
 <dt><code>"data"</code></dt>
 <dd><p>The columns of the original data the model was fitted to,
-one row per observation in input order: the identifier, the occasion
-where there is one, and the indicators under their original names.
-Columns a model never saw are not here, which is why <code><a href="three_step.html">three_step()</a></code> and
+one row per observation in input order: the identifier (except for a
+single-level fit), the occasion where there is one, the sampling
+weights of a weighted fit (as rescaled for fitting), and the indicators
+under their original names. Columns a model never saw, membership
+covariates included, are not here, which is why <code><a href="three_step.html">three_step()</a></code> and
 <code><a href="r3step.html">r3step()</a></code> still take <code>data</code>.</p></dd>
 
 
@@ -417,7 +422,7 @@ Benjamini-Hochberg over non-intercepts and <code>exp_estimate</code> for the
 binomial, Poisson and ordinal families; ordinal thresholds lead each
 class as terms <code>"threshold:&lt;lower&gt;|&lt;upper&gt;"</code>), <code>"classes"</code>,
 <code>"membership"</code> (multinomial logits and odds ratios), <code>"group_classes"</code>
-(two-level fits), <code>"fit"</code> (<code>bic</code> penalised by independent units,
+(rows for two-level fits only), <code>"fit"</code> (<code>bic</code> penalised by independent units,
 <code>bic_rows</code> by rows as flexmix reports it), <code>"assignments"</code>,
 <code>"groups"</code>, <code>"fitted"</code>, <code>"starts"</code> (<code>stage</code> <code>"screened"</code> or
 <code>"completed"</code>), <code>"classification"</code> and <code>"recovery"</code> (<code>by = "class"</code> or
@@ -457,12 +462,19 @@ likelihood is a working likelihood, comparable only between
 cross-level fits of the same data.</p></dd>
 
 <dt>General transition fits (<code><a href="lta.html">lta()</a></code> with <code>transitions = "occasion"</code>,
-transition or initial covariates, or <code>measurement = "occasion"</code>)</dt>
-<dd><p><code>"transitions"</code> (model-implied, averaged over the groups observed),
+transition or initial covariates, <code>measurement = "occasion"</code>,
+<code>order = 2</code>, <code>mover_stayer = TRUE</code>, <code>weights</code>, or <code>ordinal</code>/<code>count</code>
+indicators)</dt>
+<dd><p><code>"transitions"</code> (model-implied, averaged over the groups observed,
+with their sampling weights in a weighted fit; <code>"initial"</code> and
+<code>"second_order_transitions"</code> likewise),
 <code>"transition_coefficients"</code> (log odds of each move against staying,
 with odds ratios), <code>"second_order_transitions"</code> and
 <code>"second_order_coefficients"</code> (<code>order = 2</code>), <code>"initial"</code> and
-<code>"initial_coefficients"</code>, <code>"profiles"</code>, <code>"group_classes"</code>,
+<code>"initial_coefficients"</code>, <code>"profiles"</code>, <code>"responses"</code> (categorical
+indicators: <code>occasion</code>, <code>profile</code>, <code>indicator</code>, <code>category</code>,
+<code>probability</code>), <code>"ordinal"</code> and
+<code>"count_means"</code> (ordinal and count indicators), <code>"group_classes"</code>,
 <code>"assignments"</code>, <code>"fit"</code> and <code>"starts"</code>.</p></dd>
 
 <dt>Pooled imputations (<code><a href="pool_imputations.html">pool_imputations()</a></code>)</dt>
@@ -503,9 +515,12 @@ else propagates.</p>
 <p>These reach the requested table through <code>...</code>, and each table takes
 only the ones listed for it under <em>Tables</em> above.</p><dl><dt><code>data</code></dt>
 <dd><p>A data frame with one row per observation of the fit, in the
-order it was fitted in. <code>NULL</code> uses the columns the fit carries. For
-<code>"profiles"</code> and <code>"responses"</code> it triggers <code><a href="parameter_inference.html">parameter_inference()</a></code> and
-adds a standard error beside every estimate.</p></dd>
+order it was fitted in. <code>NULL</code> uses the columns the fit carries. The
+standard errors of <code>"profiles"</code> and <code>"responses"</code> come from
+<code><a href="parameter_inference.html">parameter_inference()</a></code> on these data. Without <code>data</code>, a fit that cannot
+supply them (bound-active, unconverged, singular information, a noise
+component) gives <code>NA</code> with a <code>latents_no_standard_errors</code> message; with
+<code>data</code>, it raises the underlying condition, as asked.</p></dd>
 
 <dt><code>scale</code></dt>
 <dd><p>For <code>"profiles"</code>, <code>"raw"</code> reports the estimates in input units

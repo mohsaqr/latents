@@ -150,8 +150,9 @@ classes
 With `bootstrap = B`, each row also gets a parametric bootstrap
 likelihood-ratio test of one class fewer (McLachlan 1987): outcomes are
 simulated from the smaller model, both models are refitted, and the
-p-value is the share of simulated statistics at least as large as the
-observed one. It is slow — `2 B` refits per row — so it is not run here.
+p-value is `(b + 1) / (B + 1)`, where `b` is the number of simulated
+statistics at least as large as the observed one. It is slow — `2 B`
+refits per row — so it is not run here.
 
 ## What predicts the class?
 
@@ -349,16 +350,18 @@ get_results(asked, "coefficients")
 #> All classes  sleep        -0.019  [-0.061,  0.022]   .361        0.98
 ```
 
-`exp_estimate` is the rate ratio of each coefficient.
+The `Rate ratio` column (`exp_estimate` in the data frame) is the
+exponentiated coefficient.
 
 ## Uncertainty
 
 Standard errors come from the observed information by default. Scores
 are analytic (the posterior expectation of the complete-data score), and
 the information is their numerical derivative. `vcov_type = "robust"`
-gives the sandwich estimator, clustered on the independent unit — the
-row, or the group when `id` defines one, including a single-level fit
-given `id`.
+gives the sandwich estimator with the CR1 small-sample factor
+`G / (G - 1)` for `G` independent units, clustered on the independent
+unit — the row, or the group when `id` defines one, including a
+single-level fit given `id`.
 
 ``` r
 

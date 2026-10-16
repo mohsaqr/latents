@@ -108,7 +108,9 @@ coef(object, ...)
   covariance), log volumes, shapes and orientations (a structure that
   constrains them across profiles), and baseline-category logits for
   mixing and response probabilities. In a covariate model, means and
-  membership coefficients are the same on both scales.
+  membership coefficients are the same on both scales. With
+  `method = "bootstrap"` only the natural scale exists, and
+  `scale = "unconstrained"` raises `latents_unsupported_inference`.
 
 - boundary:
 
@@ -131,7 +133,8 @@ coef(object, ...)
 
   Optional coefficient names or indices; defaults to every estimated
   coefficient. Naming a coefficient that `fixed` held raises
-  `latents_held_parameter`, because a held value has no interval.
+  `latents_held_parameter`, because a held value has no interval; an
+  unknown name or an out-of-range index raises `latents_bad_argument`.
 
 - level:
 

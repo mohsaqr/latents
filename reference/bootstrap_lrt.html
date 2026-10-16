@@ -25,7 +25,7 @@ replicate makes the p-value NA, avoiding silent deletion of difficult fits."><me
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -210,7 +210,15 @@ observations, grouping, covariance structure, centering or missing-data
 handling; <code>latents_bad_data</code> when the data have missing indicators and
 the models were not fitted with <code>missing = "fiml"</code>; <code>latents_bad_nesting</code>
 also when two covariate models use different covariates or slope
-specifications (other than a one-group-class null).</p>
+specifications (other than a one-group-class null), and when the models
+do not differ by exactly one class at one level.
+<code>latents_no_converge</code> when either original model has not converged or
+has an active variance bound; <code>latents_reversed_likelihood</code> when the
+alternative's log likelihood is below the null's by more than <code>tol</code> can
+explain; <code>latents_bad_inference_data</code> when <code>data</code> does not reproduce a
+fitted likelihood; <code>latents_unsupported_weights</code> for fits with sampling
+weights; <code>latents_unsupported_noise</code> for fits with a noise component;
+<code>latents_bad_argument</code> for an invalid <code>seed</code>.</p>
     </div>
 
     <div class="section level2">

@@ -71,7 +71,8 @@ An object of class `multilpa_diagnostics`. Read its tables with
 `"classification"`, `"average_posteriors"`, `"residuals"` and `"all"`,
 and never with `$`. A model family that has no bivariate residuals
 leaves that table out of `"all"`, and asking for it by name raises
-`latents_no_group_classes`.
+`latents_no_group_classes`; a fit with a noise component has none
+either, and raises `latents_unsupported_noise`.
 
 [`print()`](https://rdrr.io/r/base/print.html) returns the object
 invisibly, having printed one line per diagnostic: relative entropy,

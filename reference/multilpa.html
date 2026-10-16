@@ -17,7 +17,7 @@ missing indicators are available."><meta property="og:image" content="https://pa
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -131,7 +131,8 @@ missing indicators are available.</p>
 
 
 <dt id="arg-vars">vars<a class="anchor" aria-label="anchor" href="#arg-vars"></a></dt>
-<dd><p>Unique character vector of continuous indicator column names.</p></dd>
+<dd><p>Unique character vector of indicator column names. Columns not
+named in <code>categorical</code>, <code>ordinal</code> or <code>count</code> are continuous indicators.</p></dd>
 
 
 <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
@@ -286,7 +287,10 @@ within its group, such as a wave, occasion or course number. The model does
 not use it; it is stored so that <code>get_results(x, "sequences")</code>,
 <code>get_results(x, "sequence_summary")</code> and
 <code>plot(what = "sequences")</code> can read the assignments back in order. Values
-must be complete and unique within each group.</p></dd>
+must be complete and unique within each group. They are ordered as
+<code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code> orders them; numbers stored as text whose alphabetical order is
+not their numeric order (<code>"2"</code>, <code>"10"</code>) are refused (<code>latents_bad_time</code>),
+while zero-padded numbers and ISO dates are accepted.</p></dd>
 
 
 <dt id="arg-fixed">fixed<a class="anchor" aria-label="anchor" href="#arg-fixed"></a></dt>
@@ -394,7 +398,8 @@ refused for such a fit (<code>latents_unsupported_inference</code>), because the
 likelihood's score is not zero at a posterior mode;
 <code>method = "bootstrap"</code> refits every resample with the same prior. The
 fit records the request as <code>prior</code> and the resolved hyperparameters, in
-the indicators' units, as <code>prior_parameters</code>.</p></dd>
+the indicators' units (centred, under <code>centering</code>), as
+<code>prior_parameters</code>.</p></dd>
 
 
 <dt id="arg-noise">noise<a class="anchor" aria-label="anchor" href="#arg-noise"></a></dt>
@@ -462,8 +467,9 @@ means and between-group variances are shared.</p></li>
 <li><p><code>"additive_dispersion"</code>: group classes differ in means and in
 within-group variances.</p></li>
 </ul><p>These families take only <code>data</code>, <code>vars</code>, <code>id</code>, <code>n_group_classes</code>,
-<code>between_variance</code>, <code>n_starts</code>, <code>max_iter</code>, <code>tol</code>, <code>min_variance</code> and
-<code>seed</code>; any other argument is refused with <code>latents_bad_argument</code>.
+<code>between_variance</code>, <code>n_starts</code>, <code>max_iter</code>, <code>tol</code>, <code>min_variance</code>,
+<code>seed</code> and <code>weights</code>; any other argument is refused with
+<code>latents_bad_argument</code>.
 Indicators must be complete and continuous, and at least one group must
 have more than one row (<code>latents_unidentified</code> otherwise). Between
 variances estimated at zero are reached by a boundary maximization with a
@@ -471,9 +477,13 @@ Karush-Kuhn-Tucker check and flagged (<code>latents_boundary</code>); interior f
 are finished by Newton steps. The result has class <code>multilpa_additive</code>;
 <code>bic</code> uses the number of groups and <code>bic_individual</code> the number of rows.
 Read it with <code><a href="get_results.html">get_results()</a></code>; <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>,
-<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>, <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> and <code><a href="parameter_inference.html">parameter_inference()</a></code> work on it.
-These families are experimental: enumeration over families, bootstrap
-inference, missing data and covariates are not yet available. See the
+<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>, <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> and <code><a href="parameter_inference.html">parameter_inference()</a></code> work on it,
+<code><a href="enumerate_classes.html">enumerate_classes()</a></code> compares families through its <code>family</code> argument,
+and <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code> tests one number of group classes against another.
+These families are experimental: <code>parameter_inference(method = "bootstrap")</code> is refused (<code>latents_unsupported_inference</code>), and missing
+indicators (<code>latents_bad_data</code>), <code>missing</code>, membership covariates and
+ordinal or count indicators (<code>latents_bad_argument</code>) are not yet
+available. See the
 <a href="https://pak.dynasite.org/latents/articles/additive.html">group-class and cross-level models article</a>.</p>
 <p>Two cross-level families estimate individual profiles and group classes
 from the same indicators, following the manifest-aggregation
@@ -486,12 +496,17 @@ the profile composition of each class is reported descriptively.</p></li>
 (as in <code>"profiles"</code>), and the group means also inform the classes.</p></li>
 </ul><p>These take <code>data</code>, <code>vars</code>, <code>id</code>, <code>n_profiles</code>, <code>n_group_classes</code>,
 <code>variance_model</code> (individual profiles), <code>between_variance</code> (group
-classes), <code>n_starts</code>, <code>max_iter</code>, <code>tol</code>, <code>min_variance</code> and <code>seed</code>. The
+classes), <code>n_starts</code>, <code>max_iter</code>, <code>tol</code>, <code>min_variance</code>, <code>seed</code> and
+<code>weights</code>. The
 group means are computed from the same ratings, so the likelihood is the
 specification's working likelihood: comparable between cross-level fits
 of the same data, not with the other families. Standard errors are not
 available (<code>latents_unsupported_inference</code>). The result has class
-<code>multilpa_cross_level</code>, read with <code><a href="get_results.html">get_results()</a></code>.</p></dd>
+<code>multilpa_cross_level</code>, read with <code><a href="get_results.html">get_results()</a></code>. Its
+<code>get_results(fit, "profiles")</code> table ends with a <code>prevalence</code> column:
+each individual profile's prevalence (estimated and shared for the
+restricted family, the class-weighted marginal for the full family) and,
+on the group-class rows, the class weight.</p></dd>
 
 
 <dt id="arg-between-variance">between_variance<a class="anchor" aria-label="anchor" href="#arg-between-variance"></a></dt>
@@ -530,7 +545,9 @@ intercepts shared by every profile and one location per profile,
 profile's location fixed at zero: <code>(K - 1) + (C - 1)</code> parameters per
 indicator against <code>C (K - 1)</code> for a <code>categorical</code> one. This is Latent
 GOLD's default ordinal model, against which it is checked. Read the
-category probabilities and locations with <code>get_results(fit, "ordinal")</code>.</p></dd>
+category probabilities and locations with <code>get_results(fit, "ordinal")</code>.
+A factor level never observed in the data raises the
+<code>latents_unused_category</code> warning; drop it with <code><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels()</a></code>.</p></dd>
 
 
 <dt id="arg-count">count<a class="anchor" aria-label="anchor" href="#arg-count"></a></dt>
@@ -540,8 +557,10 @@ binomial, see <code>count_model</code>); read the means with
 <code>get_results(fit, "count_means")</code>. Ordinal and count indicators take
 <code>missing = "fiml"</code>, <code>weights</code>, two-level fits, membership covariates,
 Wald and bootstrap inference, <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> and
-<code><a href="lta.html">lta()</a></code>; <code>start</code>, <code>fixed</code>, <code>prior</code>, <code>noise</code> and the group-class families
-do not take them yet (<code>latents_unsupported_indicator</code>).</p></dd>
+<code><a href="lta.html">lta()</a></code>; <code>start</code>, <code>fixed</code>, <code>prior</code> and <code>noise</code> do not take them yet
+(<code>latents_unsupported_indicator</code>), and the group-class and cross-level
+families refuse them as arguments they do not take
+(<code>latents_bad_argument</code>).</p></dd>
 
 
 <dt id="arg-count-model">count_model<a class="anchor" aria-label="anchor" href="#arg-count-model"></a></dt>
@@ -560,7 +579,7 @@ profile (<code>"equal"</code>).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An <code>multilpa</code> object containing <code>means</code>, <code>variances</code>, optional
+    <p>A <code>multilpa</code> object containing <code>means</code>, <code>variances</code>, optional
 <code>covariances</code> (indicators by indicators by profiles),
 <code>profile_probabilities</code>, <code>group_probabilities</code>, posterior matrices,
 classifications, log likelihood, information criteria, restart diagnostics,
@@ -569,7 +588,10 @@ retain first-occurrence order. <code>bic</code> and <code>bic_groups</code> use 
 count; <code>bic_individual</code> uses <code>n_informative</code>, the number of rows carrying at
 least one observed indicator. These are alternative
 conventions, not interchangeable criteria. <code>boundary</code> identifies variance
-bounds; <code>small_classes</code> flags effective memberships below one. The fit
+bounds; <code>small_classes</code> flags a profile or group class whose effective
+membership (<code>effective_profile_counts</code>, <code>effective_group_counts</code>, which
+are weighted for a fit with <code>weights</code>) is below one, and the fit then
+warns with <code>latents_small_classes</code>. The fit
 itself carries no standard errors: <code><a href="parameter_inference.html">parameter_inference()</a></code> computes them
 from the fit and the data it was fitted to, and <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code> tests
 nested models. No guarantee of global optimality is
@@ -628,7 +650,7 @@ Classification, 24, 155–181. doi:10.1007/s00357-007-0004-5.</p>
 <span class="r-in"><span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">4</span>,</span></span>
 <span class="r-in"><span>                seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Multilevel LPA: 2 profiles and 2 group classes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Two-level latent profile analysis: 2 profiles, 2 group classes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Log likelihood: -8439.816424; AIC: 16925.633</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> BIC (groups): 16986.892; BIC (individuals): 17046.609</span>

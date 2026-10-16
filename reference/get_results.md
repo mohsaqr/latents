@@ -105,18 +105,20 @@ Every fitted model offers these:
 
   The Gaussian measurement model, one row per profile and continuous
   indicator: `profile`, `indicator`, `mean`, `variance`,
-  `standard_deviation`. Zero rows when every indicator is categorical.
-  Takes `scale`, and `data`, which adds `mean_standard_error` and
-  `variance_standard_error`.
+  `standard_deviation`, `mean_standard_error`,
+  `variance_standard_error`. Zero rows, with the same columns, when
+  every indicator is categorical. Takes `scale` and `data`.
 
 - `"responses"`:
 
   The categorical measurement model, one row per profile, categorical
   indicator and category: `profile`, `indicator`, `category`,
-  `probability`, `threshold`. The threshold is
-  `qlogis(P(y <= category))` and is `NA_real_` for each indicator's
-  final category, where the cumulative probability is one. Takes `data`,
-  which adds `probability_standard_error`.
+  `probability`, `threshold`, `probability_standard_error`. The
+  threshold is `qlogis(P(y <= category))` and is `NA_real_` for each
+  indicator's final category, where the cumulative probability is one; a
+  probability held on its bound has an `NA_real_` standard error. Zero
+  rows, with the same columns, when no indicator is categorical. Takes
+  `data`.
 
 - `"covariances"`:
 
@@ -153,10 +155,12 @@ Every fitted model offers these:
 
   One row per observation, the columns the fit was built from (or those
   of `data`) followed by `profile`, `group_class` where the model has
-  one, `uncertainty`, and one `posterior_profile_*` column per profile.
-  `uncertainty` is one minus the posterior of the assigned profile,
-  which is what modal assignment discards. Takes `data` and `truth`;
-  `truth` returns a recovery cross-tabulation instead, described below.
+  one, `uncertainty`, and one `posterior_profile_*` column per profile
+  (and `posterior_noise` for a fit with a noise component, whose cases
+  are profile 0). `uncertainty` is one minus the posterior of the
+  assigned profile, which is what modal assignment discards. Takes
+  `data` and `truth`; `truth` returns a recovery cross-tabulation
+  instead, described below.
 
 - `"classification"`:
 
@@ -237,9 +241,11 @@ Every fitted model offers these:
 - `"data"`:
 
   The columns of the original data the model was fitted to, one row per
-  observation in input order: the identifier, the occasion where there
-  is one, and the indicators under their original names. Columns a model
-  never saw are not here, which is why
+  observation in input order: the identifier (except for a single-level
+  fit), the occasion where there is one, the sampling weights of a
+  weighted fit (as rescaled for fitting), and the indicators under their
+  original names. Columns a model never saw, membership covariates
+  included, are not here, which is why
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
   and [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
   still take `data`.
@@ -377,9 +383,9 @@ a regression fit). The usual generics answer as well:
   `exp_estimate` for the binomial, Poisson and ordinal families; ordinal
   thresholds lead each class as terms `"threshold:<lower>|<upper>"`),
   `"classes"`, `"membership"` (multinomial logits and odds ratios),
-  `"group_classes"` (two-level fits), `"fit"` (`bic` penalised by
-  independent units, `bic_rows` by rows as flexmix reports it),
-  `"assignments"`, `"groups"`, `"fitted"`, `"starts"` (`stage`
+  `"group_classes"` (rows for two-level fits only), `"fit"` (`bic`
+  penalised by independent units, `bic_rows` by rows as flexmix reports
+  it), `"assignments"`, `"groups"`, `"fitted"`, `"starts"` (`stage`
   `"screened"` or `"completed"`), `"classification"` and `"recovery"`
   (`by = "class"` or `"group_class"`).
 
@@ -418,14 +424,19 @@ a regression fit). The usual generics answer as well:
 
 - General transition fits
   ([`lta()`](https://pak.dynasite.org/latents/reference/lta.md) with
-  `transitions = "occasion"`, transition or initial covariates, or
-  `measurement = "occasion"`):
+  `transitions = "occasion"`, transition or initial covariates,
+  `measurement = "occasion"`, `order = 2`, `mover_stayer = TRUE`,
+  `weights`, or `ordinal`/`count` indicators):
 
-  `"transitions"` (model-implied, averaged over the groups observed),
-  `"transition_coefficients"` (log odds of each move against staying,
-  with odds ratios), `"second_order_transitions"` and
-  `"second_order_coefficients"` (`order = 2`), `"initial"` and
-  `"initial_coefficients"`, `"profiles"`, `"group_classes"`,
+  `"transitions"` (model-implied, averaged over the groups observed,
+  with their sampling weights in a weighted fit; `"initial"` and
+  `"second_order_transitions"` likewise), `"transition_coefficients"`
+  (log odds of each move against staying, with odds ratios),
+  `"second_order_transitions"` and `"second_order_coefficients"`
+  (`order = 2`), `"initial"` and `"initial_coefficients"`, `"profiles"`,
+  `"responses"` (categorical indicators: `occasion`, `profile`,
+  `indicator`, `category`, `probability`), `"ordinal"` and
+  `"count_means"` (ordinal and count indicators), `"group_classes"`,
   `"assignments"`, `"fit"` and `"starts"`.
 
 - Pooled imputations
@@ -468,10 +479,13 @@ the ones listed for it under *Tables* above.
 - `data`:
 
   A data frame with one row per observation of the fit, in the order it
-  was fitted in. `NULL` uses the columns the fit carries. For
-  `"profiles"` and `"responses"` it triggers
+  was fitted in. `NULL` uses the columns the fit carries. The standard
+  errors of `"profiles"` and `"responses"` come from
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-  and adds a standard error beside every estimate.
+  on these data. Without `data`, a fit that cannot supply them
+  (bound-active, unconverged, singular information, a noise component)
+  gives `NA` with a `latents_no_standard_errors` message; with `data`,
+  it raises the underlying condition, as asked.
 
 - `scale`:
 

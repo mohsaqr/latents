@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -284,8 +284,10 @@ to keep the three kinds, the three-class model is read:</p>
 <h2 id="seeing-the-classes">Seeing the classes<a class="anchor" aria-label="anchor" href="#seeing-the-classes"></a>
 </h2>
 <p>Every view of a trajectory fit is one <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> call. Each
-class’s trajectory with its confidence band, the band within which 80%
-of its students’ observations lie, and the observed class means:</p>
+class’s trajectory with its confidence band, the observed class means,
+and a sample of students’ observed trajectories as thin lines (a band
+for the spread of students around their class needs random effects, so
+it appears only in the growth mixture model):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="trajectory-classes_files/figure-html/trajectories-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
@@ -326,7 +328,7 @@ the straight model fitted the same way (without
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model     Classes  Random   k    LogLik       BIC   ΔBIC  Weight  Entropy</span></span>
 <span><span class="co">#&gt; --------  -------  ------  --  --------  --------  -----  ------  -------</span></span>
-<span><span class="co">#&gt; straight        3  none    11  -5889.55  11841.85   0.00   1.000     0.92  &lt;- lowest BIC</span></span>
+<span><span class="co">#&gt; straight        3  none    11  -5889.55  11841.85   0.00   1.000     0.92</span></span>
 <span><span class="co">#&gt; curved          3  none    14  -5888.78  11857.41  15.56   0.000     0.92</span></span></code></pre></div>
 <p>These trajectories were generated straight, so the BIC does not
 reward the curvature.</p>

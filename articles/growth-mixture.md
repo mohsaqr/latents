@@ -91,7 +91,7 @@ comparison
 #> trajectories_4        4  none              15  -5777.54  11640.63   837.04   0.000     0.94
 #> trajectories_5        5  none              19  -5658.21  11424.79   621.20   0.000     0.94
 #> growth_2              2  intercept + wave  10  -5416.53  10890.11    86.51   0.000     0.92
-#> growth_3              3  intercept + wave  14  -5361.87  10803.59     0.00   1.000     0.90  <- lowest BIC
+#> growth_3              3  intercept + wave  14  -5361.87  10803.59     0.00   1.000     0.90
 #> growth_4              4  intercept + wave  18  -5358.94  10820.56    16.96   0.000     0.81
 ```
 
@@ -113,9 +113,10 @@ For a test rather than a criterion,
 fits a range of classes and, with `bootstrap`, adds the bootstrap
 likelihood-ratio test of each number of classes against one fewer
 (McLachlan 1987; Nylund, Asparouhov and Muthén 2007). It refits both
-models on data simulated from the smaller one, so it takes minutes; on
-these data it rejects two classes in favour of three and keeps three
-against four.
+models on data simulated from the smaller one, so it is slow: with 99
+replicates per comparison it took about an hour on these data. It
+rejects two classes in favour of three (p = 0.01) and keeps three
+against four (p = 0.40).
 
 ``` r
 
@@ -365,30 +366,6 @@ errors and the BIC count schools. The group classes’ composition, the
 schools’ classification and the membership logits (the programme makes a
 school less likely to be in the second group class):
 
-The trajectory views read the same as for one level, and the
-classification view shows how confidently each student is classified:
-
-``` r
-
-plot(schools)
-```
-
-![](growth-mixture_files/figure-html/schools-plots-1.png)
-
-``` r
-
-plot(schools, what = "coefficients")
-```
-
-![](growth-mixture_files/figure-html/schools-plots-2.png)
-
-``` r
-
-plot(schools, what = "classification")
-```
-
-![](growth-mixture_files/figure-html/schools-classification-1.png)
-
 ``` r
 
 get_results(schools, "group_classes")
@@ -421,6 +398,30 @@ get_results(schools, "membership")
 #> Class 2        Intercept, group class 1    -1.740  [-2.103, -1.377]  <.001
 #> Class 2        Intercept, group class 2     1.128  [ 0.817,  1.438]  <.001
 ```
+
+The trajectory views read the same as for one level, and the
+classification view shows how confidently each student is classified:
+
+``` r
+
+plot(schools)
+```
+
+![](growth-mixture_files/figure-html/schools-plots-1.png)
+
+``` r
+
+plot(schools, what = "coefficients")
+```
+
+![](growth-mixture_files/figure-html/schools-plots-2.png)
+
+``` r
+
+plot(schools, what = "classification")
+```
+
+![](growth-mixture_files/figure-html/schools-classification-1.png)
 
 The number of group classes is compared like the number of classes, from
 one (the single-level model with schools as the units) upward:

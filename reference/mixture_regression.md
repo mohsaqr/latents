@@ -148,7 +148,9 @@ mixture_regression(
   weight per independent unit: per row without `id`, per `id` group
   otherwise (constant within it). Pseudo maximum likelihood with the
   weights scaled to sum to the number of units; `vcov_type` defaults to
-  `"robust"` and refuses `"observed"` and `"opg"`.
+  `"robust"` and refuses `"observed"` and `"opg"`. The information
+  criteria use the weighted log likelihood; the entropy term of ICL sums
+  the units' own posteriors unweighted, as in the profile models.
 
 - random:
 
@@ -289,7 +291,11 @@ identified by how continuous predictors shift the category
 probabilities: a mixture with no predictors, or with two categories
 (then the logistic mixture of `"binomial"`), is refused with
 `latents_not_identified` unless `class_level = "group"` gives each class
-assignment several outcomes.
+assignment several outcomes. So is a single-level mixture whose
+predictors take too few distinct values: with P distinct covariate
+patterns the data hold at most P (C - 1) free category probabilities,
+and a model with more free parameters than that (for example two classes
+and one binary factor) cannot be identified.
 
 A mixture of Bernoulli regressions with one trial per unit is not
 identified – any mixture of Bernoullis is again a Bernoulli – so a
@@ -304,12 +310,19 @@ request is refused otherwise.
 covariate that varies within a group where it may not;
 `latents_not_identified` for a binary outcome with one trial per class
 assignment, or an ordinal mixture with one outcome per class assignment
-and two categories or no predictors; `latents_missing_data` for missing
+and two categories, no predictors, or fewer distinct covariate patterns
+times C - 1 than free parameters; `latents_missing_data` for missing
 values under `missing = "error"`; `latents_rows_dropped` (warning) under
 `missing = "omit"`; `latents_no_valid_start` when every start
 degenerated; `latents_unconverged` (warning) when the selected start did
 not converge; `latents_degenerate_start` (warning) when some starts
-degenerated; `latents_separation` (warning) when a coefficient diverged.
+degenerated; `latents_separation` (warning) when a coefficient diverged;
+`latents_failed_starts` (warning) when some growth-mixture starts could
+not be built (they are marked `"failed"` in the starts table);
+`latents_boundary` (warning) for a negative-binomial dispersion at the
+Poisson limit; `latents_random_boundary` (warning) for a degenerate
+random-effect covariance; `latents_singular_information` (warning) when
+some standard errors cannot be computed.
 
 ## References
 

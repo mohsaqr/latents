@@ -128,13 +128,13 @@ fit
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
-The three profiles can be characterized as representing higher,
-intermediate, and lower levels of course activity, respectively. This
-ordering is particularly evident in the estimated means for
-`attendance`, which are 1.133 for Profile 1, 0.256 for Profile 2, and
--0.940 for Profile 3. On this basis, Profile 3 is treated as the
-lower-activity reference category when interpreting the
-profile-membership regressions presented below.
+The three profiles can be characterized as representing intermediate,
+lower, and higher levels of course activity, respectively. This ordering
+is particularly evident in the estimated means for `attendance`, which
+are 0.256 for Profile 1, -0.940 for Profile 2, and 1.133 for Profile 3.
+Profile 3, the higher-activity profile, is the last profile and
+therefore the reference category of the profile-membership regressions
+presented below.
 
 These labels describe the current fitted solution; the profile numbers
 themselves carry no fixed meaning. Because latent profile labels are
@@ -196,15 +196,16 @@ get_results(fit, "classification_errors", level = "individuals")
 #> 9 individuals          3              3   8.406e-01
 ```
 
-The estimated probabilities of correct profile assignment are 0.842 for
-Profile 1, 0.854 for Profile 2, and 0.980 for Profile 3. Classification
-is therefore most precise for Profile 3, whereas greater uncertainty
-remains between Profiles 1 and 2.
+The estimated probabilities of correct profile assignment are 0.855 for
+Profile 1, 0.980 for Profile 2, and 0.841 for Profile 3. Classification
+is therefore most precise for the lower-activity Profile 2, whereas
+greater uncertainty remains between the intermediate- and
+higher-activity Profiles 1 and 3.
 
-The main source of ambiguity is the overlap between these first two
-profiles. The estimated probability of assigning an observation from
-Profile 1 to Profile 2 is 0.158, while the probability of assigning an
-observation from Profile 2 to Profile 1 is 0.120. These off-diagonal
+The main source of ambiguity is the overlap between these two more
+active profiles. The estimated probability of assigning an observation
+from Profile 3 to Profile 1 is 0.159, while the probability of assigning
+an observation from Profile 1 to Profile 3 is 0.119. These off-diagonal
 probabilities indicate that a non-negligible proportion of observations
 may be classified into the neighboring profile rather than their
 underlying profile.
@@ -222,8 +223,10 @@ function estimates the association between an external predictor and
 latent profile membership while keeping the profile definitions and
 classification-error matrix fixed. In this example, `previous_grade` is
 used to predict membership in the engagement profiles identified in the
-measurement model. Because Profile 3 represents the lower-activity
-profile, it is used as the reference category.
+measurement model.
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) uses
+the last profile as the reference category; here that is Profile 3, the
+higher-activity profile.
 
 Let $`x`$ denote standardized previous grade. For Profiles 1 and 2, the
 multinomial regression can be written as
@@ -236,13 +239,13 @@ multinomial regression can be written as
 ```
 
 The intercept $`\alpha_k`$ represents the log odds of belonging to
-Profile $`k`$, rather than the lower-activity reference profile, when
+Profile $`k`$, rather than the higher-activity reference profile, when
 $`x=0`$. Because `previous_grade` is standardized, $`x=0`$ corresponds
 to the average previous grade. The slope $`\beta_k`$ represents the
 change in these log odds associated with a one-standard-deviation
-increase in previous grade. A positive slope therefore indicates that
-higher previous grades are associated with greater relative odds of
-belonging to Profile $`k`$ rather than the lower-activity profile.
+increase in previous grade. A negative slope therefore indicates that
+higher previous grades are associated with lower relative odds of
+belonging to Profile $`k`$ rather than the higher-activity profile.
 
 The model assumes that previous grade has a linear effect on the
 log-odds scale. For analyses conducted at the enrolment level,
@@ -274,24 +277,27 @@ r3step(fit, data = course_engagement, covariates = "previous_grade", vcov_type =
 #> 1 individuals profile_1    (Intercept)   0.3065        0.10676     2.871 4.097e-03         NA
 #> 2 individuals profile_1 previous_grade  -0.2085        0.10486    -1.989 4.674e-02  4.674e-02
 #> 3 individuals profile_2    (Intercept)   0.4473        0.13731     3.258 1.123e-03         NA
-#> 4 individuals profile_2 previous_grade  -0.6809        0.08697    -7.830 4.878e-15  9.755e-15
+#> 4 individuals profile_2 previous_grade  -0.6809        0.08697    -7.830 4.876e-15  9.753e-15
 #>   conf_low conf_high
-#> 1  0.09722  0.515708
-#> 2 -0.41407 -0.003008
-#> 3  0.17821  0.716453
-#> 4 -0.85140 -0.510496
+#> 1  0.09722  0.515705
+#> 2 -0.41407 -0.003009
+#> 3  0.17821  0.716447
+#> 4 -0.85140 -0.510498
 ```
 
 In the fitted model, a one-standard-deviation increase in previous grade
-is associated with a 0.677 increase in the log odds of belonging to the
-higher-activity profile rather than the lower-activity profile. The
-corresponding 95% confidence interval ranges from 0.508 to 0.846. For
-the intermediate-activity profile, the estimated increase in log odds is
-0.475, with a 95% confidence interval from 0.340 to 0.611.
+is associated with a 0.681 decrease in the log odds of belonging to the
+lower-activity profile (Profile 2) rather than the higher-activity
+profile. The corresponding 95% confidence interval ranges from -0.851 to
+-0.510. For the intermediate-activity profile (Profile 1), the estimated
+decrease in log odds is 0.209, with a 95% confidence interval from
+-0.414 to -0.003.
 
-Both coefficients are positive: higher previous grades are associated
-with greater relative odds of membership in the higher- or
-intermediate-activity profiles compared with the lower-activity profile.
+Both coefficients are negative: higher previous grades are associated
+with lower relative odds of membership in the intermediate- or
+lower-activity profiles compared with the higher-activity profile. The
+association is strong for the lower-activity profile, whereas the
+interval for the intermediate-activity profile only just excludes zero.
 The results therefore show a consistent association between stronger
 previous academic performance and more active engagement in the
 subsequent course.
@@ -373,19 +379,18 @@ three_step(
 ```
 
 The BCH-adjusted estimates show that previous grades in the
-lower-activity profile are 0.629 standard deviations below those in the
-higher-activity profile and 0.446 standard deviations below those in the
-intermediate-activity profile. These contrasts indicate that students
-who later exhibit lower engagement tend to have had lower grades in the
-preceding course.
+lower-activity profile (Profile 2) are 0.632 standard deviations below
+those in the higher-activity profile (Profile 3) and 0.443 standard
+deviations below those in the intermediate-activity profile (Profile 1).
+These contrasts indicate that students who later exhibit lower
+engagement tend to have had lower grades in the preceding course.
 
 The difference between the intermediate- and higher-activity profiles is
-smaller. The estimated Profile 2 versus Profile 1 contrast is
-$`-0.183`$, with a 95% confidence interval from $`-0.368`$ to $`0.002`$.
-Because this interval extends slightly across zero, the difference in
-previous grades between the two more active profiles is less precisely
-estimated than their respective differences from the lower-activity
-profile.
+smaller. The estimated Profile 3 versus Profile 1 contrast is $`0.189`$,
+with a 95% confidence interval from $`0.003`$ to $`0.375`$. Because this
+interval only just excludes zero, the difference in previous grades
+between the two more active profiles is much less precisely estimated
+than their respective differences from the lower-activity profile.
 
 ### Comparison with modal assignment
 
@@ -419,10 +424,10 @@ therefore do not incorporate uncertainty associated with imperfect
 classification.
 
 The effect of this simplification is particularly visible for Profiles 1
-and 2, which showed the greatest classification overlap. Under modal
-assignment, the estimated Profile 2 versus Profile 1 difference is
-$`-0.143`$, compared with $`-0.183`$ under the BCH correction. The
-corresponding standard error is 0.067 under modal assignment and 0.094
+and 3, which showed the greatest classification overlap. Under modal
+assignment, the estimated Profile 3 versus Profile 1 difference is
+$`0.147`$, compared with $`0.189`$ under the BCH correction. The
+corresponding standard error is 0.068 under modal assignment and 0.095
 under BCH.
 
 Thus, accounting for classification error affects both the estimated
@@ -485,7 +490,7 @@ For these reasons, the magnitude of the one-step coefficients should not
 be expected to match the corresponding three-step estimates exactly.
 Before interpreting the coefficients, the fitted profile means should be
 inspected to determine whether Profiles 1, 2, and 3 still correspond to
-higher-, intermediate-, and lower-activity engagement patterns. Profile
+intermediate-, lower-, and higher-activity engagement patterns. Profile
 numbers are labels generated by the fitted model and do not carry fixed
 substantive meanings across separate model fits.
 
@@ -517,19 +522,16 @@ covariate_fit
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
-This fit reports `converged FALSE`, and
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-warns that the best start had not converged when `max_iter` was reached,
-so the returned estimate is not a maximum. The profile means and
-membership coefficients of a one-step model are meaningful only when the
-fit has converged. They are therefore not interpreted here; a
-substantive analysis would first resolve the convergence problem, for
-example with more starts or iterations.
+The fit converges, and the profiles keep the ordering of the
+measurement-only model: Profile 1 is intermediate, Profile 2 lower and
+Profile 3 higher activity, with `attendance` means of 0.277, -0.938 and
+1.159. The means have moved slightly because previous grade now
+contributes to their estimation, and Profile 3, the higher-activity
+profile, remains the reference category.
 
-The `"coefficients"` table shows the form of the result: one intercept
-for each profile and student class, one `previous_grade` slope for each
-profile relative to the reference profile, and the intercepts of the
-student-class model.
+The `"coefficients"` table holds one intercept for each profile and
+student class, one `previous_grade` slope for each profile relative to
+the reference profile, and the intercepts of the student-class model.
 
 ``` r
 
@@ -547,12 +549,15 @@ get_results(covariate_fit, "coefficients")
 #> 10   group group_class_2    (Intercept)     logit  -0.4600
 ```
 
-In a converged fit, a positive slope $`\beta_k`$ indicates higher odds
-of profile $`k`$ relative to profile 3 for each standard deviation of
-previous grade, conditional on student class. Because these slopes are
-conditional on student class and the profiles are estimated together
-with the covariate, they need not equal the three-step slopes even when
-both fits have converged.
+The `previous_grade` slopes are $`-0.239`$ for the intermediate-activity
+profile and $`-0.533`$ for the lower-activity profile, each relative to
+the higher-activity profile and conditional on student class. Higher
+previous grades therefore go with lower odds of the less active
+profiles, the same direction as the
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+slopes of $`-0.209`$ and $`-0.681`$. The magnitudes differ because these
+slopes are conditional on student class and the profiles are estimated
+together with the covariate.
 
 ## Holding profile definitions fixed across student classes
 
@@ -634,10 +639,11 @@ staged
 In the staged solution, Profile 1 represents intermediate activity,
 Profile 2 represents lower activity, and Profile 3 represents higher
 activity. Their estimated `attendance` means are 0.197, -0.978, and
-1.075, respectively. Although the numerical labels differ from those in
-the earlier joint model, the same broad engagement patterns remain
-recognizable. The estimated means also differ slightly because the
-profiles were obtained under a different estimation procedure.
+1.075, respectively. The numerical labels happen to match those of the
+earlier joint model, which separate fits do not guarantee, and the same
+broad engagement patterns remain recognizable. The estimated means
+differ slightly because the profiles were obtained under a different
+estimation procedure.
 
 The parameters estimated at each stage can be examined through the
 `"stages"` results table:
@@ -662,7 +668,7 @@ making descriptive comparisons with a jointly estimated model because it
 reflects both the newly estimated higher-level parameters and the
 measurement parameters carried forward from the first stage.
 
-The second-stage log likelihood is -8351.808, compared with -8348.429
+The second-stage log likelihood is -8351.801, compared with -8348.429
 for the joint model reported earlier. The lower log likelihood is
 consistent with the additional restriction imposed by staged estimation:
 the second stage cannot adjust the profile means and variances to

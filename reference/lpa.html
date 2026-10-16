@@ -17,7 +17,7 @@ package applies to it."><meta property="og:image" content="https://pak.dynasite.
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -102,15 +102,17 @@ indicators; name categorical ones in <code>categorical</code>.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Further arguments for <code><a href="multilpa.html">multilpa()</a></code>: the covariance structure
-(<code>variance_model</code>, <code>covariance_model</code>, or <code>volume</code>, <code>shape</code>,
-<code>orientation</code>), <code>missing</code>, <code>categorical</code>, <code>n_starts</code>, <code>seed</code>, <code>prior</code>,
-<code>noise</code>, <code>profile_covariates</code> and the others it documents, except <code>id</code>
-and <code>n_group_classes</code>, which a single-level model does not have.</p></dd>
+(<code>model</code>, or <code>variance_model</code> and <code>covariance_model</code>, or <code>volume</code>,
+<code>shape</code> and <code>orientation</code>), <code>missing</code>, <code>categorical</code>, <code>n_starts</code>,
+<code>seed</code>, <code>prior</code>, <code>noise</code>, <code>profile_covariates</code> and the others it
+documents, except <code>id</code> and <code>n_group_classes</code>, which a single-level model
+does not have.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A fitted <code>multilpa</code> object, as <code><a href="multilpa.html">multilpa()</a></code> returns.</p>
+    <p>A fitted <code>multilpa</code> object, as <code><a href="multilpa.html">multilpa()</a></code> returns, recording the
+<code>lpa()</code> call as written.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

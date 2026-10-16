@@ -24,7 +24,7 @@ lta(
   n_group_classes = 1L,
   variance_model = c("varying", "equal"),
   n_starts = 10L,
-  max_iter = 1000L,
+  max_iter = 5000L,
   tol = 1e-10,
   min_variance = 1e-06,
   seed = NULL,
@@ -57,7 +57,8 @@ lta(
 
 - vars:
 
-  Unique character vector of continuous indicator column names.
+  Unique character vector of indicator column names. Columns not named
+  in `categorical`, `ordinal` or `count` are continuous indicators.
 
 - id:
 
@@ -76,7 +77,13 @@ lta(
 
   Name of the column giving each observation's occasion within its
   group. Required: this model is defined by the ordering. Values must be
-  complete and unique within each group.
+  complete and unique within each group. They are ordered as
+  [`sort()`](https://rdrr.io/r/base/sort.html) orders them: numbers
+  numerically, a factor by its levels, and character strings
+  alphabetically. Numbers stored as text whose alphabetical order is not
+  their numeric order (`"2"`, `"10"`) are refused (`latents_bad_time`,
+  also `latents_bad_data`); zero-padded numbers and ISO dates sort
+  correctly and are accepted.
 
 - n_group_classes:
 
@@ -104,14 +111,13 @@ lta(
 
 - max_iter:
 
-  Nonnegative integer maximum number of EM updates per start.
-  `max_iter = 0` performs no update. With `start`, it returns the model
-  evaluated at exactly those values, whatever `n_starts` is, so that
-  [`logLik()`](https://rdrr.io/r/stats/logLik.html) scores a parameter
-  set supplied from elsewhere rather than the best of some random
-  initializations that were never asked for. Without `start` there is
-  nothing to evaluate at, so the random initializations are scored and
-  the highest is returned.
+  Nonnegative integer maximum number of EM updates per start. The
+  default, `5000`, is higher than the `1000` of
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  because the tighter `tol` needs more of them: on `course_engagement`,
+  three- and four-profile models of two indicators take 1,000 to 1,500.
+  A fit that still stops short warns (`latents_unconverged`).
+  `max_iter = 0` updates nothing and evaluates the starting values.
 
 - tol:
 
@@ -176,7 +182,11 @@ lta(
   them on the grid of every position seen in the data, so a group that
   skips a position still consumes a transition across the gap and
   contributes no measurement information at it. The two agree whenever
-  every group is observed at every position.
+  every group is observed at every position. Under either, a group's
+  first observation is its first occasion, so a group that enters late
+  starts the sequence there: occasion-specific transitions and
+  measurement count occasions from each group's own start, not from the
+  first position in the data.
 
 - select_start:
 
@@ -204,7 +214,11 @@ lta(
   through a multinomial logit per origin profile: the log odds of moving
   to each other profile rather than staying. A column may change over
   occasions; the value at the destination occasion is used. Factors are
-  expanded to indicator columns.
+  expanded to indicator columns. With `occasions = "grid"`, a move into
+  a position the group skipped has no row to read the covariates from,
+  and the fit is refused (`latents_bad_data`): use
+  `occasions = "observed"`, or add the skipped rows with their covariate
+  values (their indicators may be missing under `missing = "fiml"`).
 
 - initial_covariates:
 
@@ -250,7 +264,9 @@ lta(
   pseudo maximum likelihood with the weights scaled to sum to the number
   of `id` units, sandwich standard errors by default, and integer
   weights equal to repeating each sequence. A weighted fit uses the
-  general transition engine and returns a `multilpa_lta`.
+  general transition engine and returns a `multilpa_lta`, whose
+  model-implied `"transitions"` and `"initial"` tables average the
+  groups with their weights.
 
 - ordinal, count, count_model, count_dispersion:
 
@@ -271,13 +287,17 @@ indexing the profile moved from), `group_probabilities`, posterior
 matrices, classifications, log likelihood, information criteria, restart
 diagnostics and convergence history. Use
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-for the tidy transition table and for the other tables. No standard
-errors, likelihood-ratio tests or guarantees of global optimality are
-given for this model family.
+for the tidy transition table and for the other tables,
+[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+for Wald or bootstrap standard errors and
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+to compare nested fits. Global optimality is not guaranteed; compare
+several starts.
 
 With `transitions = "occasion"`, `transition_covariates`,
-`initial_covariates`, `measurement = "occasion"` or `order = 2` the
-result is a `multilpa_lta` object instead, read with
+`initial_covariates`, `measurement = "occasion"`, `order = 2`,
+`mover_stayer = TRUE`, `weights`, `ordinal` or `count` the result is a
+`multilpa_lta` object instead, read with
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md):
 transition and initial logit coefficients with Wald standard errors
 (observed, robust or OPG, from analytic scores), model-implied

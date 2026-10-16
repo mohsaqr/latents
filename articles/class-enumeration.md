@@ -958,7 +958,7 @@ compare_models(models, bic_groups_pick, icl_groups_pick, awe_groups_pick)
 #> 
 #> Model              Profiles  Group classes   k    LogLik       BIC   ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----------------  --------  -------------  --  --------  --------  -----  ------  --------  -------  ---------  -----  -------------  ---------------
-#> profiles4_groups3         4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87  <- lowest BIC
+#> profiles4_groups3         4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87
 #> profiles4_groups2         4              2  47  -8326.19  16871.57  19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98
 #> profiles3_groups2         3              2  35  -8364.52  16892.26  40.12   0.000  17640.46     0.79       0.85      0           0.94             0.98
 ```
@@ -972,7 +972,7 @@ compare_models(models, bic = c(4, 3), icl = c(4, 2), awe = c(3, 2))
 #> 
 #> Model  Profiles  Group classes   k    LogLik       BIC   ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----  --------  -------------  --  --------  --------  -----  ------  --------  -------  ---------  -----  -------------  ---------------
-#> bic           4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87  <- lowest BIC
+#> bic           4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87
 #> icl           4              2  47  -8326.19  16871.57  19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98
 #> awe           3              2  35  -8364.52  16892.26  40.12   0.000  17640.46     0.79       0.85      0           0.94             0.98
 ```
@@ -990,7 +990,7 @@ comparison
 #> -----------------  --------  -------------  --  --------  --------  ------  ------  --------  -------  ---------  -----  -------------  ---------------
 #> profiles4_groups1         4              1  43  -8501.00  17202.53  350.38   0.000  18358.86     0.74       0.80      0                                
 #> profiles4_groups2         4              2  47  -8326.19  16871.57   19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98
-#> profiles4_groups3         4              3  51  -8307.15  16852.14    0.00   0.941  18014.13     0.74       0.80      0           0.82             0.87  <- lowest BIC
+#> profiles4_groups3         4              3  51  -8307.15  16852.14    0.00   0.941  18014.13     0.74       0.80      0           0.82             0.87
 #> profiles4_groups4         4              4  55  -8300.60  16857.69    5.54   0.059  18027.32     0.74       0.80      0           0.80             0.87
 plot(comparison)
 ```
@@ -1095,7 +1095,7 @@ returns. Its summary reports the estimates with their standard errors.
 ``` r
 
 summary(chosen)
-#> Multilevel LPA: 4 profiles and 3 group classes
+#> Two-level latent profile analysis: 4 profiles, 3 group classes
 #> Individuals: 1422; groups: 106; parameters: 51; converged: TRUE
 #> Log likelihood: -8307.154320; AIC: 16716.309
 #> BIC (groups): 16852.144; BIC (individuals): 16984.559
@@ -1528,7 +1528,7 @@ compare_models(lca_models, n_profiles = 3)
 #> Model             Classes  Group classes   k    LogLik       BIC    ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> ----------------  -------  -------------  --  --------  --------  ------  ------  --------  -------  ---------  -----  -------------  ---------------
 #> classes3_groups1        3              1  26  -7848.45  15816.64  311.61   0.000  17819.69     0.66       0.70      1                                
-#> classes3_groups2        3              2  29  -7685.74  15505.03    0.00   1.000  18121.50     0.56       0.64      1           0.90             0.96  <- lowest BIC
+#> classes3_groups2        3              2  29  -7685.74  15505.03    0.00   1.000  18121.50     0.56       0.64      1           0.90             0.96
 ```
 
 With two group classes the three-class model has the lower BIC. Its
@@ -1599,7 +1599,7 @@ compare_models(srl_models, "profiles5", "profiles6", "profiles7")
 #> Model      Profiles   k   LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8
 #> ---------  --------  --  -------  -------  -----  ------  -------  -------  ---------  -----
 #> profiles5         5  54  -644.38  1596.76   4.98   0.077  1684.33     0.91       0.92      0
-#> profiles6         6  65  -610.52  1591.78   0.00   0.923  1707.76     0.89       0.89      0  <- lowest BIC
+#> profiles6         6  65  -610.52  1591.78   0.00   0.923  1707.76     0.89       0.89      0
 #> profiles7         7  76  -590.85  1615.18  23.40   0.000  1741.68     0.89       0.89      0
 plot(srl_models, what = "deltas")
 ```
@@ -1608,7 +1608,9 @@ plot(srl_models, what = "deltas")
 
 BIC is lowest for profiles6. The candidate with eight profiles reaches
 the lower bound of a variance and contains a nearly empty profile, which
-marks the end of the range that 300 observations support.
+marks the end of the range that 300 observations support. The two
+warnings printed during the enumeration come from that candidate, and
+the table keeps them in its `warnings` column.
 
 ### Several covariance structures
 
@@ -1660,20 +1662,22 @@ compare_models(crossed_models, "profiles3_VVI", "profiles3_EEE")
 #> Model          Profiles   k   LogLik      BIC    ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8
 #> -------------  --------  --  -------  -------  ------  ------  -------  -------  ---------  -----
 #> profiles3_VVI         3  32  -735.74  1654.00  284.98   0.000  1714.03     0.91       0.94      0
-#> profiles3_EEE         3  32  -593.25  1369.02    0.00   1.000  1595.94     0.66       0.79      1  <- lowest BIC
+#> profiles3_EEE         3  32  -593.25  1369.02    0.00   1.000  1595.94     0.66       0.79      1
 ```
 
 ### Transition models
 
 With `time`, every candidate is a latent transition model across the
 occasions, here the order of each student’s enrolments in `sequence`.
+The six-profile model needs more than the default 1,000 EM iterations to
+meet the convergence tolerance, so `max_iter` is raised.
 
 ``` r
 
 transition_models <- enumerate_classes(course_engagement, activity, "student",
                                        time = "sequence", n_profiles = 2:6,
                                        n_group_classes = 1, n_starts = 3,
-                                       seed = 1)
+                                       max_iter = 2000, seed = 1)
 transition_models
 #> Transition-model enumeration: 5 candidates
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy
@@ -1681,13 +1685,13 @@ transition_models
 #>  profiles3_groups1          3               1  <NA>          -8262           38 16701 16600  0.8006
 #>  profiles4_groups1          4               1  <NA>          -8219           55 16695 16548  0.7352
 #>  profiles5_groups1          5               1  <NA>          -8195           74 16736 16538  0.7793
-#>  profiles6_groups1          6               1  <NA>          -8180           95 16804 16551  0.7006
+#>  profiles6_groups1          6               1  <NA>          -8180           95 16804 16551  0.7017
 #>  converged boundary
 #>       TRUE    FALSE
 #>       TRUE    FALSE
 #>       TRUE    FALSE
 #>       TRUE    FALSE
-#>      FALSE    FALSE
+#>       TRUE    FALSE
 #> Pick one by its name: get_candidate(x, "<candidate>").
 compare_models(transition_models)
 #> Model comparison
@@ -1696,9 +1700,9 @@ compare_models(transition_models)
 #> -----------------  --------  --  --------  --------  ------  ------  --------  -------  ---------  -----
 #> profiles2_groups1         2  23  -8335.29  16777.83   83.11   0.000  16914.15     0.96       0.99      0
 #> profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17422.93     0.80       0.85      0
-#> profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.71     0.74       0.82      0  <- lowest BIC
+#> profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.71     0.74       0.82      0
 #> profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.96     0.78       0.81      0
-#> profiles6_groups1         6  95  -8180.50  16804.02  109.29   0.000  18576.32     0.70       0.69      4
+#> profiles6_groups1         6  95  -8180.49  16804.01  109.28   0.000  18570.64     0.70       0.69      4
 ```
 
 ## Functions

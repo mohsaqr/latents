@@ -13,7 +13,7 @@ stable, the messages are not."><meta property="og:image" content="https://pak.dy
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,10 +89,12 @@ indicator that is constant or wholly unobserved, missing or non-finite
 values under <code>missing = "error"</code>, or a missing group identifier.</p></dd>
 
 <dt><code>latents_bad_argument</code></dt>
-<dd><p>A scalar argument is outside its contract:
-<code>n_profiles</code>, <code>n_group_classes</code>, <code>n_starts</code>, <code>max_iter</code>, <code>tol</code>,
-<code>min_variance</code>, or a <code>seed</code> or <code>seeds</code> that is not a whole number
-<code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> accepts.</p></dd>
+<dd><p>An argument is outside its contract: a
+scalar such as <code>n_profiles</code>, <code>n_group_classes</code>, <code>n_starts</code>, <code>max_iter</code>,
+<code>tol</code>, <code>min_variance</code>, or a <code>seed</code> or <code>seeds</code> that is not a whole number
+<code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> accepts; a <code>what</code> naming a table or view the object does
+not have; or an argument a verb or table does not use, which is named
+back rather than dropped.</p></dd>
 
 <dt><code>latents_bad_time</code></dt>
 <dd><p><code>time</code> is missing, or repeats a position within
@@ -115,7 +117,9 @@ not have, or one that <code>start</code> does not supply, or <code>start</code> 
 <dt><code>latents_bad_stage</code></dt>
 <dd><p>A <code>measurement</code> fit offered to <code><a href="fit_staged.html">fit_staged()</a></code>
 has already estimated multiple group classes, or was fitted to different
-indicators, profiles or measurement options than the stage requested.</p></dd>
+indicators, profiles or measurement options than the stage requested,
+or was fitted with <code>weights</code>, <code>centering</code>, or ordinal or count
+indicators, which the staged likelihood cannot hold faithfully.</p></dd>
 
 <dt><code>latents_bad_transition</code></dt>
 <dd><p>A transition model was asked for with
@@ -234,7 +238,10 @@ that already helped define the classes.</p></dd>
 <dd><p>A predictor given to <code><a href="r3step.html">r3step()</a></code> varies
 within a group when group-level membership is predicted, makes the
 design rank deficient, or is a measurement indicator that already
-helped define the classes. The counterpart of <code>latents_bad_outcome</code>.</p></dd>
+helped define the classes; or, given to
+<code>multilpa(profile_covariates =, group_covariates =)</code>, is an indicator
+or the group identifier, or makes the membership design rank
+deficient. The counterpart of <code>latents_bad_outcome</code>.</p></dd>
 
 <dt><code>multilpa_indicator_reused</code></dt>
 <dd><p>A measurement indicator was offered
@@ -358,6 +365,12 @@ whose plot method names no views to draw.</p></dd>
 <dd><p>A sequence verb was called on a fit made without
 <code>time</code>, so it carries no ordering.</p></dd>
 
+<dt><code>latents_unsupported_prediction</code></dt>
+<dd><p><code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> was called on a
+growth mixture, a membership-covariate fit or a latent transition fit,
+for which prediction on new rows is not implemented; their fitted
+rows' results are tables of <code><a href="get_results.html">get_results()</a></code>.</p></dd>
+
 <dt><code>latents_missing_package</code></dt>
 <dd><p>A verb needs a package listed in
 <code>Suggests</code> that is not installed. Raised by <code><a href="get_tna.html">get_tna()</a></code> and
@@ -387,7 +400,9 @@ numeric column outside <code>id</code> and <code>by</code> to fall back on.</p><
 category or information criterion does not exist in this fit.</p></dd>
 
 <dt><code>latents_bad_scale</code></dt>
-<dd><p>An unrecognised plotting scale was requested.</p></dd>
+<dd><p>An unrecognised plotting scale was requested,
+or <code>scale = "standardized"</code> met an indicator with zero or undefined
+standard deviation, which it cannot be divided by.</p></dd>
 
 
 </dl></div>
@@ -494,6 +509,33 @@ such a row, because it cannot be read as evidence of persistence.</p></dd>
 little fitted information to establish row order, for example only a
 repeated group identifier. The result is returned on the caller's
 assurance that the rows are in fitting order.</p></dd>
+
+<dt><code>latents_random_boundary</code></dt>
+<dd><p>A growth mixture's random-effect
+covariance is degenerate in a class (a variance at its floor, or random
+effects perfectly correlated), so the data cannot separate those random
+effects and their standard errors are not reported.</p></dd>
+
+<dt><code>latents_unused_argument</code></dt>
+<dd><p>A method that ignored unknown arguments
+up to latents 0.9.21 (several <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> methods, and <code><a href="descriptives.html">descriptives()</a></code> of
+a data frame) was given one. It still runs as before and names what it
+did not use.</p></dd>
+
+<dt><code>latents_unused_category</code></dt>
+<dd><p>An ordinal indicator is a factor that
+declares levels never observed in the data. Their intercepts diverge,
+so Wald inference is refused; call <code><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels()</a></code> before fitting. A
+warning rather than an error, because bootstrap refits keep the
+fitted categories on purpose.</p></dd>
+
+<dt><code>latents_no_standard_errors</code></dt>
+<dd><p>A message, not a warning: a table
+that carries standard errors by default could not compute them for this
+fit (a bound-active or unconverged fit, singular information, or a
+family or noise component without inference), so they are <code>NA</code> and the
+message gives the reason. Passing <code>data</code> to <code>get_results(x, "profiles")</code> or <code>"responses"</code> raises the underlying condition
+instead.</p></dd>
 
 
 </dl></div>

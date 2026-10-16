@@ -17,7 +17,7 @@ information is the numerical Jacobian of that analytic score."><meta property="o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,7 +91,7 @@ information is the numerical Jacobian of that analytic score.</p>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
 <span>  iter <span class="op">=</span> <span class="fl">199L</span>,</span>
 <span>  n_starts <span class="op">=</span> <span class="fl">10L</span>,</span>
-<span>  max_iter <span class="op">=</span> <span class="fl">1000L</span>,</span>
+<span>  max_iter <span class="op">=</span> <span class="fl">5000L</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1e-10</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"fix"</span><span class="op">)</span></span>
@@ -174,7 +174,9 @@ under either.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Unused.</p></dd>
+<dd><p>For <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>, further arguments to <code><a href="parameter_inference.html">parameter_inference()</a></code>,
+such as <code>vcov_type</code>. <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> takes none and warns
+(<code>latents_unused_argument</code>) about any it is given.</p></dd>
 
 
 <dt id="arg-parm">parm<a class="anchor" aria-label="anchor" href="#arg-parm"></a></dt>

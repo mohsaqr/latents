@@ -238,7 +238,13 @@ plot(
   [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
   for `plot_enumeration()` and `plot_tree()`, a transition fit from
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) for
-  `plot_transitions()`.
+  `plot_transitions()`. A general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+  (occasion-varying transitions, covariates, mover-stayer, second order,
+  weights, ordinal or count indicators) draws only its transition
+  matrix, with `plot_transitions()` or
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html); a transition
+  or group-class family grid plots with `plot(x, what = )`.
 
 - what:
 
@@ -339,11 +345,14 @@ plot(
 
   For profile, bar and response views, `TRUE` draws 95% intervals when
   the fit has standard errors; otherwise the subtitle says why there are
-  none.
+  none. They are the `conf_low` and `conf_high` of
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md):
+  a response probability's interval is built on the logit scale.
 
 - labels:
 
-  `TRUE` labels each series directly; `FALSE` uses a legend.
+  `TRUE` labels each series directly; `FALSE` uses a legend. On sequence
+  views, `TRUE` blocks the groups by group class under labelled strips.
 
 - data:
 
@@ -411,16 +420,25 @@ instead draw with a `latents_unused_argument` warning, as listed below.
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
   [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
   [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
-  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
-  covariate models and
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md):
-  `"profiles"` (default), `"bars"`, `"heatmap"`, `"raincloud"`,
-  `"parallel"`, `"pairs"` (each profile's 95% covariance ellipse),
-  `"responses"`, `"probabilities"` (not for covariate models),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) and
+  covariate models: `"profiles"` (default), `"bars"`, `"heatmap"`,
+  `"raincloud"`, `"parallel"`, `"pairs"` (each profile's 95% covariance
+  ellipse), `"responses"`, `"probabilities"` (not for covariate models),
   `"sequences"` (fits with `time`; `cell_labels = TRUE` prints the
-  profile in each cell), `"transitions"` (transition fits), `"sizes"`,
-  `"entropy"`, `"posteriors"`, `"avepp"` and `"all"`. Transition fits
-  draw point estimates and take no `intervals` or `statistic`.
+  profile in each cell), `"sizes"`, `"entropy"`, `"posteriors"`,
+  `"avepp"` and `"all"`. The profile views name in a caption any
+  ordinal, count or (for the means) categorical indicator they leave
+  out.
+
+- Transition fits:
+
+  From [`lta()`](https://pak.dynasite.org/latents/reference/lta.md):
+  `"transitions"` (default), then `"profiles"`, `"bars"`, `"heatmap"`,
+  `"responses"`, `"sequences"`, `"sizes"`, `"entropy"`, `"posteriors"`,
+  `"avepp"` and `"all"`, as point estimates without `intervals` or
+  `statistic`. A general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit takes
+  no `what` and draws its transition matrix.
 
 - Enumerations:
 
@@ -486,16 +504,20 @@ the same class.
 
 `latents_missing_package` without ggplot2; `latents_bad_argument` for an
 argument the object's plot does not take; the plots of additive,
-cross-level, transition
+cross-level, general transition
 ([`lta()`](https://pak.dynasite.org/latents/reference/lta.md)),
 growth-mixture, mixture-regression, pooled, comparison, bootstrap and
 transition or group-class family grids instead warn with class
 `latents_unused_argument` and draw, as they ignored such arguments in
 0.9.21 (this includes a bootstrap plot's former `style`);
-`latents_nothing_to_plot` when the fit lacks what a view needs (for
-example posteriors or entropy of a one-profile fit);
-`latents_no_continuous`, `latents_no_categorical` and `latents_no_time`
-when a view needs indicators or occasions the fit does not have;
+`latents_bad_argument` also when a named plot function is given an
+object it does not draw; `latents_nothing_to_plot` when the fit lacks
+what a view needs (for example posteriors or entropy of a one-profile
+fit, prevalence of a covariate model, or the case-level views of a
+centred fit); `latents_unknown_category` when `category` names no
+category of an indicator; `latents_no_continuous`,
+`latents_no_categorical` and `latents_no_time` when a view needs
+indicators or occasions the fit does not have;
 `latents_unknown_criterion` for a criterion not in the grid.
 
 ## References

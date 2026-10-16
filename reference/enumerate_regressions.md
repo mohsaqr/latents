@@ -105,11 +105,12 @@ An object of class `latents_regression_enumeration`. Its table (from
 `get_results(x, "fit")`) has one row per model: `n_classes`,
 `n_group_classes`, `log_likelihood`, `n_parameters`, `aic`, `bic`,
 `bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share`, `converged`,
-`n_best_replicated`, `best_bic` (the minimum-BIC row), and, with
-`bootstrap > 0`, `blrt_statistic`, `blrt_p_value` and `blrt_replicates`
-(the successful replicates) and `blrt_flagged` (the failed, unconverged,
-separated or reversed-likelihood replicates). The p-value is `NA` if any
-requested replicate fails validation.
+`n_best_replicated`, `note` (why a cell could not be fitted), `best_bic`
+(the minimum-BIC row), and, with `bootstrap > 0`, `blrt_statistic`,
+`blrt_p_value` and `blrt_replicates` (the successful replicates) and
+`blrt_flagged` (the failed, unconverged, separated or
+reversed-likelihood replicates). The p-value is `NA` if any requested
+replicate fails validation.
 `get_results(x, "model", n_classes = , n_group_classes = )` returns one
 fitted model.
 

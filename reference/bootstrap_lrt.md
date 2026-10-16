@@ -139,7 +139,15 @@ centering or missing-data handling; `latents_bad_data` when the data
 have missing indicators and the models were not fitted with
 `missing = "fiml"`; `latents_bad_nesting` also when two covariate models
 use different covariates or slope specifications (other than a
-one-group-class null).
+one-group-class null), and when the models do not differ by exactly one
+class at one level. `latents_no_converge` when either original model has
+not converged or has an active variance bound;
+`latents_reversed_likelihood` when the alternative's log likelihood is
+below the null's by more than `tol` can explain;
+`latents_bad_inference_data` when `data` does not reproduce a fitted
+likelihood; `latents_unsupported_weights` for fits with sampling
+weights; `latents_unsupported_noise` for fits with a noise component;
+`latents_bad_argument` for an invalid `seed`.
 
 ## Examples
 

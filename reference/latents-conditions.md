@@ -21,10 +21,12 @@ Nothing; this page documents conditions rather than a function.
 
 - `latents_bad_argument`:
 
-  A scalar argument is outside its contract: `n_profiles`,
+  An argument is outside its contract: a scalar such as `n_profiles`,
   `n_group_classes`, `n_starts`, `max_iter`, `tol`, `min_variance`, or a
   `seed` or `seeds` that is not a whole number
-  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts.
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts; a `what`
+  naming a table or view the object does not have; or an argument a verb
+  or table does not use, which is named back rather than dropped.
 
 - `latents_bad_time`:
 
@@ -53,7 +55,8 @@ Nothing; this page documents conditions rather than a function.
   [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
   has already estimated multiple group classes, or was fitted to
   different indicators, profiles or measurement options than the stage
-  requested.
+  requested, or was fitted with `weights`, `centering`, or ordinal or
+  count indicators, which the staged likelihood cannot hold faithfully.
 
 - `latents_bad_transition`:
 
@@ -188,7 +191,10 @@ Nothing; this page documents conditions rather than a function.
   [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
   varies within a group when group-level membership is predicted, makes
   the design rank deficient, or is a measurement indicator that already
-  helped define the classes. The counterpart of `latents_bad_outcome`.
+  helped define the classes; or, given to
+  `multilpa(profile_covariates =, group_covariates =)`, is an indicator
+  or the group identifier, or makes the membership design rank
+  deficient. The counterpart of `latents_bad_outcome`.
 
 - `multilpa_indicator_reused`:
 
@@ -347,6 +353,14 @@ place of returning a number that would be wrong.
   A sequence verb was called on a fit made without `time`, so it carries
   no ordering.
 
+- `latents_unsupported_prediction`:
+
+  [`predict()`](https://rdrr.io/r/stats/predict.html) was called on a
+  growth mixture, a membership-covariate fit or a latent transition fit,
+  for which prediction on new rows is not implemented; their fitted
+  rows' results are tables of
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
+
 - `latents_missing_package`:
 
   A verb needs a package listed in `Suggests` that is not installed.
@@ -379,7 +393,9 @@ place of returning a number that would be wrong.
 
 - `latents_bad_scale`:
 
-  An unrecognised plotting scale was requested.
+  An unrecognised plotting scale was requested, or
+  `scale = "standardized"` met an indicator with zero or undefined
+  standard deviation, which it cannot be divided by.
 
 ## Warnings
 
@@ -513,6 +529,38 @@ others through.
   A supplied `data` frame has too little fitted information to establish
   row order, for example only a repeated group identifier. The result is
   returned on the caller's assurance that the rows are in fitting order.
+
+- `latents_random_boundary`:
+
+  A growth mixture's random-effect covariance is degenerate in a class
+  (a variance at its floor, or random effects perfectly correlated), so
+  the data cannot separate those random effects and their standard
+  errors are not reported.
+
+- `latents_unused_argument`:
+
+  A method that ignored unknown arguments up to latents 0.9.21 (several
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods, and
+  [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
+  of a data frame) was given one. It still runs as before and names what
+  it did not use.
+
+- `latents_unused_category`:
+
+  An ordinal indicator is a factor that declares levels never observed
+  in the data. Their intercepts diverge, so Wald inference is refused;
+  call [`droplevels()`](https://rdrr.io/r/base/droplevels.html) before
+  fitting. A warning rather than an error, because bootstrap refits keep
+  the fitted categories on purpose.
+
+- `latents_no_standard_errors`:
+
+  A message, not a warning: a table that carries standard errors by
+  default could not compute them for this fit (a bound-active or
+  unconverged fit, singular information, or a family or noise component
+  without inference), so they are `NA` and the message gives the reason.
+  Passing `data` to `get_results(x, "profiles")` or `"responses"` raises
+  the underlying condition instead.
 
 ## Examples
 

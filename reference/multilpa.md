@@ -60,7 +60,8 @@ multilpa(
 
 - vars:
 
-  Unique character vector of continuous indicator column names.
+  Unique character vector of indicator column names. Columns not named
+  in `categorical`, `ordinal` or `count` are continuous indicators.
 
 - id:
 
@@ -225,7 +226,11 @@ multilpa(
   not use it; it is stored so that `get_results(x, "sequences")`,
   `get_results(x, "sequence_summary")` and `plot(what = "sequences")`
   can read the assignments back in order. Values must be complete and
-  unique within each group.
+  unique within each group. They are ordered as
+  [`sort()`](https://rdrr.io/r/base/sort.html) orders them; numbers
+  stored as text whose alphabetical order is not their numeric order
+  (`"2"`, `"10"`) are refused (`latents_bad_time`), while zero-padded
+  numbers and ISO dates are accepted.
 
 - fixed:
 
@@ -358,8 +363,8 @@ multilpa(
   (`latents_unsupported_inference`), because the likelihood's score is
   not zero at a posterior mode; `method = "bootstrap"` refits every
   resample with the same prior. The fit records the request as `prior`
-  and the resolved hyperparameters, in the indicators' units, as
-  `prior_parameters`.
+  and the resolved hyperparameters, in the indicators' units (centred,
+  under `centering`), as `prior_parameters`.
 
 - noise:
 
@@ -439,15 +444,15 @@ multilpa(
     within-group variances.
 
   These families take only `data`, `vars`, `id`, `n_group_classes`,
-  `between_variance`, `n_starts`, `max_iter`, `tol`, `min_variance` and
-  `seed`; any other argument is refused with `latents_bad_argument`.
-  Indicators must be complete and continuous, and at least one group
-  must have more than one row (`latents_unidentified` otherwise).
-  Between variances estimated at zero are reached by a boundary
-  maximization with a Karush-Kuhn-Tucker check and flagged
-  (`latents_boundary`); interior fits are finished by Newton steps. The
-  result has class `multilpa_additive`; `bic` uses the number of groups
-  and `bic_individual` the number of rows. Read it with
+  `between_variance`, `n_starts`, `max_iter`, `tol`, `min_variance`,
+  `seed` and `weights`; any other argument is refused with
+  `latents_bad_argument`. Indicators must be complete and continuous,
+  and at least one group must have more than one row
+  (`latents_unidentified` otherwise). Between variances estimated at
+  zero are reached by a boundary maximization with a Karush-Kuhn-Tucker
+  check and flagged (`latents_boundary`); interior fits are finished by
+  Newton steps. The result has class `multilpa_additive`; `bic` uses the
+  number of groups and `bic_individual` the number of rows. Read it with
   [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md);
   [`summary()`](https://rdrr.io/r/base/summary.html),
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html),
@@ -455,9 +460,16 @@ multilpa(
   [`vcov()`](https://rdrr.io/r/stats/vcov.html),
   [`confint()`](https://rdrr.io/r/stats/confint.html) and
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-  work on it. These families are experimental: enumeration over
-  families, bootstrap inference, missing data and covariates are not yet
-  available. See the [group-class and cross-level models
+  work on it,
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  compares families through its `family` argument, and
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  tests one number of group classes against another. These families are
+  experimental: `parameter_inference(method = "bootstrap")` is refused
+  (`latents_unsupported_inference`), and missing indicators
+  (`latents_bad_data`), `missing`, membership covariates and ordinal or
+  count indicators (`latents_bad_argument`) are not yet available. See
+  the [group-class and cross-level models
   article](https://pak.dynasite.org/latents/articles/additive.html).
 
   Two cross-level families estimate individual profiles and group
@@ -477,13 +489,18 @@ multilpa(
 
   These take `data`, `vars`, `id`, `n_profiles`, `n_group_classes`,
   `variance_model` (individual profiles), `between_variance` (group
-  classes), `n_starts`, `max_iter`, `tol`, `min_variance` and `seed`.
-  The group means are computed from the same ratings, so the likelihood
-  is the specification's working likelihood: comparable between
-  cross-level fits of the same data, not with the other families.
-  Standard errors are not available (`latents_unsupported_inference`).
-  The result has class `multilpa_cross_level`, read with
+  classes), `n_starts`, `max_iter`, `tol`, `min_variance`, `seed` and
+  `weights`. The group means are computed from the same ratings, so the
+  likelihood is the specification's working likelihood: comparable
+  between cross-level fits of the same data, not with the other
+  families. Standard errors are not available
+  (`latents_unsupported_inference`). The result has class
+  `multilpa_cross_level`, read with
   [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
+  Its `get_results(fit, "profiles")` table ends with a `prevalence`
+  column: each individual profile's prevalence (estimated and shared for
+  the restricted family, the class-weighted marginal for the full
+  family) and, on the group-class rows, the class weight.
 
 - between_variance:
 
@@ -527,7 +544,9 @@ multilpa(
   indicator against `C (K - 1)` for a `categorical` one. This is Latent
   GOLD's default ordinal model, against which it is checked. Read the
   category probabilities and locations with
-  `get_results(fit, "ordinal")`.
+  `get_results(fit, "ordinal")`. A factor level never observed in the
+  data raises the `latents_unused_category` warning; drop it with
+  [`droplevels()`](https://rdrr.io/r/base/droplevels.html).
 
 - count:
 
@@ -540,8 +559,10 @@ multilpa(
   [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
   [`predict()`](https://rdrr.io/r/stats/predict.html) and
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md); `start`,
-  `fixed`, `prior`, `noise` and the group-class families do not take
-  them yet (`latents_unsupported_indicator`).
+  `fixed`, `prior` and `noise` do not take them yet
+  (`latents_unsupported_indicator`), and the group-class and cross-level
+  families refuse them as arguments they do not take
+  (`latents_bad_argument`).
 
 - count_model:
 
@@ -558,7 +579,7 @@ multilpa(
 
 ## Value
 
-An `multilpa` object containing `means`, `variances`, optional
+A `multilpa` object containing `means`, `variances`, optional
 `covariances` (indicators by indicators by profiles),
 `profile_probabilities`, `group_probabilities`, posterior matrices,
 classifications, log likelihood, information criteria, restart
@@ -567,8 +588,11 @@ order; groups retain first-occurrence order. `bic` and `bic_groups` use
 the observed group count; `bic_individual` uses `n_informative`, the
 number of rows carrying at least one observed indicator. These are
 alternative conventions, not interchangeable criteria. `boundary`
-identifies variance bounds; `small_classes` flags effective memberships
-below one. The fit itself carries no standard errors:
+identifies variance bounds; `small_classes` flags a profile or group
+class whose effective membership (`effective_profile_counts`,
+`effective_group_counts`, which are weighted for a fit with `weights`)
+is below one, and the fit then warns with `latents_small_classes`. The
+fit itself carries no standard errors:
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
 computes them from the fit and the data it was fitted to, and
 [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
@@ -636,7 +660,7 @@ fit <- multilpa(course_engagement, activity, "student",
                 n_profiles = 2, n_group_classes = 2, n_starts = 4,
                 seed = 42)
 summary(fit)
-#> Multilevel LPA: 2 profiles and 2 group classes
+#> Two-level latent profile analysis: 2 profiles, 2 group classes
 #> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE
 #> Log likelihood: -8439.816424; AIC: 16925.633
 #> BIC (groups): 16986.892; BIC (individuals): 17046.609

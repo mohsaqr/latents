@@ -15,7 +15,7 @@ profiles they are meant to describe."><meta property="og:image" content="https:/
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,7 +107,8 @@ profiles they are meant to describe.</p>
 
 
 <dt id="arg-vars">vars<a class="anchor" aria-label="anchor" href="#arg-vars"></a></dt>
-<dd><p>Unique character vector of continuous indicator column names.</p></dd>
+<dd><p>Unique character vector of indicator column names. Columns not
+named in <code>categorical</code>, <code>ordinal</code> or <code>count</code> are continuous indicators.</p></dd>
 
 
 <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
@@ -132,8 +133,12 @@ stage, so that a measurement solution already chosen and inspected is
 carried forward rather than refitted. Its profiles, indicators and
 measurement options must match the ones requested here, and it must have
 one group class: a multi-class fit already estimates group structure and
-is not a measurement-only first stage. When <code>NULL</code>, the first stage is
-fitted here with one group class.</p></dd>
+is not a measurement-only first stage. A fit made with <code>weights</code>,
+<code>centering</code> or <code>ordinal</code>/<code>count</code> indicators is refused too, since the
+second stage fitted here uses none of them and would hold the measurement
+under a likelihood it was not estimated on. Every refusal raises
+<code>latents_bad_stage</code>. When <code>NULL</code>, the first stage is fitted here with one
+group class.</p></dd>
 
 
 <dt id="arg-variance-model">variance_model<a class="anchor" aria-label="anchor" href="#arg-variance-model"></a></dt>
@@ -207,7 +212,10 @@ within its group, such as a wave, occasion or course number. The model does
 not use it; it is stored so that <code>get_results(x, "sequences")</code>,
 <code>get_results(x, "sequence_summary")</code> and
 <code>plot(what = "sequences")</code> can read the assignments back in order. Values
-must be complete and unique within each group.</p></dd>
+must be complete and unique within each group. They are ordered as
+<code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code> orders them; numbers stored as text whose alphabetical order is
+not their numeric order (<code>"2"</code>, <code>"10"</code>) are refused (<code>latents_bad_time</code>),
+while zero-padded numbers and ISO dates are accepted.</p></dd>
 
 </dl></div>
     <div class="section level2">

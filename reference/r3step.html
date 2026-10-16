@@ -17,7 +17,7 @@ class and the covariate cannot explain why."><meta property="og:image" content="
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -125,7 +125,8 @@ predicts group-class membership.</p></dd>
 
 <dt id="arg-vcov-type">vcov_type<a class="anchor" aria-label="anchor" href="#arg-vcov-type"></a></dt>
 <dd><p><code>"robust"</code>, the default, uses the sandwich clustered on the
-fit's groups, which is the honest choice when the covariates are measured
+fit's groups, with the small-sample (CR1) factor <code>G / (G - 1)</code> for <code>G</code>
+groups, which is the honest choice when the covariates are measured
 on observations nested inside them, and matches the default of
 <code><a href="three_step.html">three_step()</a></code>. <code>"observed"</code> uses the observed information; for the pooled
 regression it treats every observation as independent, and with
@@ -229,12 +230,12 @@ one-step alternative that estimates everything jointly.</p></div>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">example_data</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span>, <span class="st">"g"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span></span>
 <span class="r-in"><span>                n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">4</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">r3step</span><span class="op">(</span><span class="va">fit</span>, <span class="va">example_data</span>, <span class="st">"x"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         level   outcome        term   estimate standard_error statistic</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 individuals profile_1 (Intercept) -0.5701505      0.1191635 -4.784608</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 individuals profile_1           x  1.2187597      0.1268246  9.609807</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         level   outcome        term  estimate standard_error statistic</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 individuals profile_1 (Intercept) -0.570396      0.1191748 -4.786214</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 individuals profile_1           x  1.218866      0.1268352  9.609839</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        p_value   p_adjusted   conf_low  conf_high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.713214e-06           NA -0.8037066 -0.3365944</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 7.268487e-22 7.268487e-22  0.9701881  1.4673313</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.699572e-06           NA -0.8039742 -0.3368177</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 7.266225e-22 7.266225e-22  0.9702734  1.4674582</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

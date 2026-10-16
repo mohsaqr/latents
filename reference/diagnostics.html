@@ -13,7 +13,7 @@ within-profile independence the model assumes survives contact with the data."><
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -136,7 +136,9 @@ to the returned table.</p></dd>
 <code>get_results(result, what = )</code>, which offers <code>"entropy"</code>, <code>"classification"</code>,
 <code>"average_posteriors"</code>, <code>"residuals"</code> and <code>"all"</code>, and never with <code>$</code>. A
 model family that has no bivariate residuals leaves that table out of
-<code>"all"</code>, and asking for it by name raises <code>latents_no_group_classes</code>.</p>
+<code>"all"</code>, and asking for it by name raises <code>latents_no_group_classes</code>; a
+fit with a noise component has none either, and raises
+<code>latents_unsupported_noise</code>.</p>
 <p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> returns the object invisibly, having printed one line per
 diagnostic: relative entropy, smallest class, lowest average posterior and
 largest residual, at each level the fit has. <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> returns every

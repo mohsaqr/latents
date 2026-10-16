@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -203,16 +203,16 @@ treats each case’s most probable profile as known.</p>
 <code><a href="../reference/r3step.html">r3step()</a></code> with <code>data</code> for the data frame and
 <code>covariates</code> for the predictors. It returns multinomial logit
 coefficients, corrected for classification error.
-<code>vcov_type = "robust"</code> clusters the standard errors on
-groups.</p>
+<code>vcov_type = "robust"</code>, the default, clusters the standard
+errors on groups.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>       vcov_type <span class="op">=</span> <span class="st">"robust"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level   outcome           term estimate standard_error statistic  p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.09e-03         NA</span></span>
-<span><span class="co">#&gt; 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.29e-22   5.29e-22</span></span>
+<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.08e-03         NA</span></span>
+<span><span class="co">#&gt; 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.24e-22   5.24e-22</span></span>
 <span><span class="co">#&gt;   conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1    0.119     0.632</span></span>
+<span><span class="co">#&gt; 1    0.119     0.633</span></span>
 <span><span class="co">#&gt; 2    0.458     0.692</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -222,7 +222,8 @@ groups.</p>
 <code><a href="../reference/multilpa.html">multilpa()</a></code> with <code>profile_covariates</code> for
 predictors of profile membership. <code>group_covariates</code> does the
 same for group-class membership and needs a variable that is constant
-within groups. Covariate models require complete data.</p>
+within groups. Covariates must have no missing values; missing
+indicators are integrated out with <code>missing = "fiml"</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">one_step</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                     vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
@@ -356,8 +357,8 @@ parameters. Each comment states what the call returns.</p>
 <span>           method <span class="op">=</span> <span class="st">"proportional"</span><span class="op">)</span>        <span class="co"># weighting by posterior probabilities</span></span>
 <span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>           vcov_type <span class="op">=</span> <span class="st">"independent"</span><span class="op">)</span>      <span class="co"># standard errors without clustering</span></span>
-<span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>,</span>
-<span>       covariates <span class="op">=</span> <span class="st">"previous_grade"</span><span class="op">)</span>      <span class="co"># observed-information standard errors</span></span>
+<span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
+<span>       vcov_type <span class="op">=</span> <span class="st">"observed"</span><span class="op">)</span>             <span class="co"># observed-information standard errors</span></span>
 <span><span class="va">measurement</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                        vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
 <span>                                 <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>

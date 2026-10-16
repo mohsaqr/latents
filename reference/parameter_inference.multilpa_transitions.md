@@ -22,7 +22,7 @@ parameter_inference(
   method = c("wald", "bootstrap"),
   iter = 199L,
   n_starts = 10L,
-  max_iter = 1000L,
+  max_iter = 5000L,
   tol = 1e-10,
   seed = NULL,
   boundary = c("error", "fix")
@@ -105,7 +105,12 @@ confint(object, parm, level = 0.95, data = NULL, ...)
 
 - ...:
 
-  Unused.
+  For [`confint()`](https://rdrr.io/r/stats/confint.html), further
+  arguments to
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  such as `vcov_type`. [`vcov()`](https://rdrr.io/r/stats/vcov.html)
+  takes none and warns (`latents_unused_argument`) about any it is
+  given.
 
 - parm:
 

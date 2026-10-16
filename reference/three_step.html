@@ -15,7 +15,7 @@ instead attenuates every difference. This does neither."><meta property="og:imag
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,26 +95,32 @@ instead attenuates every difference. This does neither.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A covariate-free fitted <code><a href="multilpa.html">multilpa()</a></code> or <code><a href="lta.html">lta()</a></code> model. A fit that
-already uses membership covariates cannot be corrected by the fixed,
-unconditional classification-error matrix used here.</p></dd>
+<dd><p>A covariate-free fitted <code><a href="multilpa.html">multilpa()</a></code> or <code><a href="lta.html">lta()</a></code> model, or a
+trajectory model that classifies persons (<code><a href="mixture_regression.html">mixture_regression()</a></code> with
+<code>class_level = "group"</code>, with or without <code>random</code> effects) fitted without
+<code>membership</code> covariates. A fit that already uses membership covariates
+cannot be corrected by the fixed, unconditional classification-error
+matrix used here.</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>The data frame carrying the outcome, in the fit's row order.
 Shared fit columns are checked row by row; a frame with too little
-identifying information warns that alignment cannot be verified.</p></dd>
+identifying information warns that alignment cannot be verified. For a
+trajectory model it must be the data frame the model was fitted to.</p></dd>
 
 
 <dt id="arg-outcome">outcome<a class="anchor" aria-label="anchor" href="#arg-outcome"></a></dt>
 <dd><p>Name of a numeric outcome column not used as a measurement
 indicator in <code>x</code>. For <code>level = "groups"</code> it must be constant within each
-group.</p></dd>
+group, and for a trajectory model within each person.</p></dd>
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
 <dd><p><code>"individuals"</code> relates the outcome to profiles, <code>"groups"</code> to
-group classes.</p></dd>
+group classes. A trajectory model relates the outcome to its person
+classes, reported with <code>level = "persons"</code>; <code>"groups"</code> is refused there
+with <code>latents_bad_argument</code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -187,7 +193,9 @@ group-clustered variance accounts for repeated occasions within a group.
 This is a marginal profile-outcome analysis; it does not estimate an
 outcome effect on transitions or a sequence-level outcome model.</p>
 <p>A cluster-robust variance is the sum of one outer product per independent
-unit, and those contributions sum to zero at the estimate, so it has rank
+unit, scaled by the small-sample (CR1) factor <code>G / (G - 1)</code> for <code>G</code> units
+(groups, or observations under <code>vcov_type = "independent"</code>). Those
+contributions sum to zero at the estimate, so it has rank
 at most one less than the number of units. With a single group it is
 exactly zero and with as many groups as classes it is singular. Both are
 refused with <code>latents_too_few_groups</code> rather than reported as a very

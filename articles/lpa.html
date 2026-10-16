@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -372,12 +372,14 @@ for a fitted model. Each comment states what the call returns.</p>
 <span><span class="co"># Other functions</span></span>
 <span><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">fit</span>, seeds <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span>       <span class="co"># refits under several seeds</span></span>
 <span><span class="fu"><a href="../reference/starting_values.html">starting_values</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>                 <span class="co"># parameters to start another fit</span></span></code></pre></div>
-<p>The evaluation vignette covers <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code>,
-<code><a href="../reference/get_candidate.html">get_candidate()</a></code> and <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code>; the
-covariates vignette covers <code><a href="../reference/three_step.html">three_step()</a></code>,
-<code><a href="../reference/r3step.html">r3step()</a></code> and <code><a href="../reference/fit_staged.html">fit_staged()</a></code>; the transitions
-vignette covers <code><a href="../reference/lta.html">lta()</a></code>, <code><a href="../reference/get_tna.html">get_tna()</a></code> and
-<code><a href="../reference/get_group_tna.html">get_group_tna()</a></code>.</p>
+<p><code><a href="../articles/enumeration.html">vignette("enumeration", package = "latents")</a></code> covers
+<code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> and <code><a href="../reference/get_candidate.html">get_candidate()</a></code>;
+<code><a href="../articles/lta.html">vignette("lta", package = "latents")</a></code> covers
+<code><a href="../reference/lta.html">lta()</a></code>, <code><a href="../reference/get_tna.html">get_tna()</a></code> and
+<code><a href="../reference/get_group_tna.html">get_group_tna()</a></code>. The evaluation article on the <a href="https://pak.dynasite.org/latents/articles/">package website</a>
+covers <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code>, and the covariates article covers
+<code><a href="../reference/three_step.html">three_step()</a></code>, <code><a href="../reference/r3step.html">r3step()</a></code> and
+<code><a href="../reference/fit_staged.html">fit_staged()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="sampling-weights">Sampling weights<a class="anchor" aria-label="anchor" href="#sampling-weights"></a>
@@ -439,7 +441,7 @@ from the model, not from the sampling design.</p>
 fit, with <code>rows</code> for the number of rows shown per table.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>, rows <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Multilevel LPA: 2 profiles and 2 group classes</span></span>
+<span><span class="co">#&gt; Two-level latent profile analysis: 2 profiles, 2 group classes</span></span>
 <span><span class="co">#&gt; Individuals: 1422; groups: 106; parameters: 23; converged: TRUE</span></span>
 <span><span class="co">#&gt; Log likelihood: -8439.816424; AIC: 16925.633</span></span>
 <span><span class="co">#&gt; BIC (groups): 16986.892; BIC (individuals): 17046.609</span></span>
@@ -597,7 +599,8 @@ are independent of one another.</li>
 <li>Indicators are independent within a profile (the default diagonal
 covariance; <code>covariance_model = "full"</code> relaxes it).</li>
 <li>The numbers of profiles and group classes are chosen by the analyst;
-see the evaluation vignette for comparing them.</li>
+see <code><a href="../articles/enumeration.html">vignette("enumeration", package = "latents")</a></code> for
+comparing them.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -274,12 +274,12 @@ fit. It does not choose a model.</p>
 <p>The criteria disagree, and the diagnostics explain why. BIC with the
 number of students keeps falling up to the largest model in the grid,
 four profiles and three classes. Most of the larger models reach their
-best solution from only one of the five starts, and two of the
-four-profile models do not converge, which the two warnings above
-report, so their low BIC rests on unstable solutions. The criteria that
-also penalize classification uncertainty (ICL, AWE and CLC counted over
-prompts) choose two profiles and two classes, the model whose best
-solution recurs in all five starts.</p>
+best solution from only one of the five starts
+(<code>n_best_replicated</code>), so their low BIC rests on solutions
+that the starts do not replicate. The criteria that also penalize
+classification uncertainty (ICL, AWE and CLC counted over prompts)
+choose two profiles and two classes, a model whose best solution recurs
+in four of the five starts.</p>
 <p>The ICL plot shows the same choice across the grid.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">candidates</span>, what <span class="op">=</span> <span class="st">"icl_individual"</span><span class="op">)</span></span></code></pre></div>
@@ -349,14 +349,14 @@ sum to one.</p>
 <span><span class="co">#&gt; 30       2     part_time_job       no     0.94937     2.931                    0.00532</span></span>
 <span><span class="co">#&gt; 31       1     part_time_job      yes     0.00976        NA                    0.00494</span></span>
 <span><span class="co">#&gt; 32       2     part_time_job      yes     0.05063        NA                    0.00532</span></span></code></pre></div>
-<p>The two profiles differ mainly in media use. At prompts in profile 2,
+<p>The two profiles differ mainly in media use. At prompts in profile 1,
 students used social media with probability 0.765, watched TV or played
 video games with probability 0.396, and listened to music with
-probability 0.364. In profile 1 the same probabilities are 0.119, 0.147
-and 0.075. Profile 1 is slightly more likely to include time with
+probability 0.364. In profile 2 the same probabilities are 0.119, 0.147
+and 0.075. Profile 2 is slightly more likely to include time with
 friends (0.157 against 0.106), walking (0.138 against 0.096) and a
 part-time job (0.051 against 0.010), and both profiles report sports at
-0.07. Profile 2 is therefore a media-heavy pattern, and profile 1 a
+0.07. Profile 1 is therefore a media-heavy pattern, and profile 2 a
 pattern of little media use with the remaining activities at their usual
 low rates.</p>
 <p>The response plot draws the same probabilities, one line per profile
@@ -561,11 +561,11 @@ firmly the profiles are distinguished.</p>
 <span><span class="co">#&gt; 37      NA         NA  0.30488    0.5363</span></span>
 <span><span class="co">#&gt; 38      NA         NA  0.46367    0.6951</span></span></code></pre></div>
 <p>The profiles are clearly separated on the media items: the interval
-for social media is 0.696 to 0.834 in the media-heavy profile and 0.082
-to 0.156 in the low-media profile. On sports the two intervals overlap
+for social media is 0.689 to 0.826 in the media-heavy profile and 0.086
+to 0.162 in the low-media profile. On sports the two intervals overlap
 almost entirely. The part-time-job probability in the media-heavy
-profile has an interval starting at 0.0001, close to the bound, because
-very few of its prompts report a job.</p>
+profile has an interval starting at 0.004, close to zero, because very
+few of its prompts report a job.</p>
 </div>
 <div class="section level2">
 <h2 id="adding-affect">Adding affect<a class="anchor" aria-label="anchor" href="#adding-affect"></a>
@@ -627,14 +627,14 @@ variance to its lower bound.</p>
 <span><span class="co">#&gt; 2           1       2       0.833                   0.631</span></span>
 <span><span class="co">#&gt; 3           2       1       0.874                   0.369</span></span>
 <span><span class="co">#&gt; 4           2       2       0.126                   0.369</span></span></code></pre></div>
-<p>With affect included, the profiles become profiles of mood. Profile 1
+<p>With affect included, the profiles become profiles of mood. Profile 2
 has mean ratings of 5.85 for happy, 5.59 for relaxed and 2.55 for
-exhausted; profile 2 has 3.58, 3.33 and 4.33. The activities now differ
+exhausted; profile 1 has 3.59, 3.33 and 4.33. The activities now differ
 less and in a different way: time with friends is reported at 0.188 of
-profile-1 prompts and 0.084 of profile-2 prompts, social media at 0.269
+profile-2 prompts and 0.084 of profile-1 prompts, social media at 0.269
 and 0.315. Good mood goes with social time more than with media use. The
 student classes remain distinct: 0.833 of the prompts of class 1 fall in
-the good-mood profile, and 0.873 of those of class 2 in the low-mood
+the good-mood profile, and 0.874 of those of class 2 in the low-mood
 profile. The profiles a model finds are set by the indicators it is
 given, so the choice of indicators is part of the question.</p>
 </div>

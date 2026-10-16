@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -256,9 +256,10 @@ model.</p>
 <p>With <code>bootstrap = B</code>, each row also gets a parametric
 bootstrap likelihood-ratio test of one class fewer (McLachlan 1987):
 outcomes are simulated from the smaller model, both models are refitted,
-and the p-value is the share of simulated statistics at least as large
-as the observed one. It is slow — <code>2 B</code> refits per row — so
-it is not run here.</p>
+and the p-value is <code>(b + 1) / (B + 1)</code>, where <code>b</code>
+is the number of simulated statistics at least as large as the observed
+one. It is slow — <code>2 B</code> refits per row — so it is not run
+here.</p>
 </div>
 <div class="section level2">
 <h2 id="what-predicts-the-class">What predicts the class?<a class="anchor" aria-label="anchor" href="#what-predicts-the-class"></a>
@@ -439,7 +440,8 @@ deviation.</p>
 <span><span class="co">#&gt; Class 2      Intercept     1.508  [ 1.020,  1.996]  &lt;.001        4.52</span></span>
 <span><span class="co">#&gt; Class 2      hours        -0.110  [-0.197, -0.022]   .014        0.90</span></span>
 <span><span class="co">#&gt; All classes  sleep        -0.019  [-0.061,  0.022]   .361        0.98</span></span></code></pre></div>
-<p><code>exp_estimate</code> is the rate ratio of each coefficient.</p>
+<p>The <code>Rate ratio</code> column (<code>exp_estimate</code> in the
+data frame) is the exponentiated coefficient.</p>
 </div>
 <div class="section level2">
 <h2 id="uncertainty">Uncertainty<a class="anchor" aria-label="anchor" href="#uncertainty"></a>
@@ -447,10 +449,11 @@ deviation.</p>
 <p>Standard errors come from the observed information by default. Scores
 are analytic (the posterior expectation of the complete-data score), and
 the information is their numerical derivative.
-<code>vcov_type = "robust"</code> gives the sandwich estimator,
-clustered on the independent unit — the row, or the group when
-<code>id</code> defines one, including a single-level fit given
-<code>id</code>.</p>
+<code>vcov_type = "robust"</code> gives the sandwich estimator with the
+CR1 small-sample factor <code>G / (G - 1)</code> for <code>G</code>
+independent units, clustered on the independent unit — the row, or the
+group when <code>id</code> defines one, including a single-level fit
+given <code>id</code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"coefficients"</span>, vcov_type <span class="op">=</span> <span class="st">"robust"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Regression coefficients (95% CI)</span></span>

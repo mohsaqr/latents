@@ -23,7 +23,7 @@ that differ only in where they start."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,7 +98,7 @@ that differ only in where they start.</p>
 <span>  n_group_classes <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  variance_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
 <span>  n_starts <span class="op">=</span> <span class="fl">10L</span>,</span>
-<span>  max_iter <span class="op">=</span> <span class="fl">1000L</span>,</span>
+<span>  max_iter <span class="op">=</span> <span class="fl">5000L</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1e-10</span>,</span>
 <span>  min_variance <span class="op">=</span> <span class="fl">1e-06</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -132,7 +132,8 @@ that differ only in where they start.</p>
 
 
 <dt id="arg-vars">vars<a class="anchor" aria-label="anchor" href="#arg-vars"></a></dt>
-<dd><p>Unique character vector of continuous indicator column names.</p></dd>
+<dd><p>Unique character vector of indicator column names. Columns not
+named in <code>categorical</code>, <code>ordinal</code> or <code>count</code> are continuous indicators.</p></dd>
 
 
 <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
@@ -149,7 +150,12 @@ single-level form and does not take <code><a href="multilpa.html">multilpa()</a>
 <dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
 <dd><p>Name of the column giving each observation's occasion within its
 group. Required: this model is defined by the ordering. Values must be
-complete and unique within each group.</p></dd>
+complete and unique within each group. They are ordered as <code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code>
+orders them: numbers numerically, a factor by its levels, and character
+strings alphabetically. Numbers stored as text whose alphabetical order
+is not their numeric order (<code>"2"</code>, <code>"10"</code>) are refused
+(<code>latents_bad_time</code>, also <code>latents_bad_data</code>); zero-padded numbers and ISO dates sort correctly
+and are accepted.</p></dd>
 
 
 <dt id="arg-n-group-classes">n_group_classes<a class="anchor" aria-label="anchor" href="#arg-n-group-classes"></a></dt>
@@ -178,12 +184,11 @@ run whatever <code>n_starts</code> says.</p></dd>
 
 <dt id="arg-max-iter">max_iter<a class="anchor" aria-label="anchor" href="#arg-max-iter"></a></dt>
 <dd><p>Nonnegative integer maximum number of EM updates per start.
-<code>max_iter = 0</code> performs no update. With <code>start</code>, it returns the model
-evaluated at exactly those values, whatever <code>n_starts</code> is, so that
-<code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code> scores a parameter set supplied from elsewhere rather than the
-best of some random initializations that were never asked for. Without
-<code>start</code> there is nothing to evaluate at, so the random initializations are
-scored and the highest is returned.</p></dd>
+The default, <code>5000</code>, is higher than the <code>1000</code> of <code><a href="multilpa.html">multilpa()</a></code> because
+the tighter <code>tol</code> needs more of them: on <code>course_engagement</code>, three- and
+four-profile models of two indicators take 1,000 to 1,500. A fit that
+still stops short warns (<code>latents_unconverged</code>). <code>max_iter = 0</code> updates
+nothing and evaluates the starting values.</p></dd>
 
 
 <dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
@@ -243,7 +248,10 @@ transition always links two adjacent observations. <code>"grid"</code> places th
 the grid of every position seen in the data, so a group that skips a
 position still consumes a transition across the gap and contributes no
 measurement information at it. The two agree whenever every group is
-observed at every position.</p></dd>
+observed at every position. Under either, a group's first observation is
+its first occasion, so a group that enters late starts the sequence there:
+occasion-specific transitions and measurement count occasions from each
+group's own start, not from the first position in the data.</p></dd>
 
 
 <dt id="arg-select-start">select_start<a class="anchor" aria-label="anchor" href="#arg-select-start"></a></dt>
@@ -270,7 +278,10 @@ for every occasion; <code>"occasion"</code> estimates a separate one for each mo
 transition probabilities through a multinomial logit per origin profile:
 the log odds of moving to each other profile rather than staying. A
 column may change over occasions; the value at the destination occasion
-is used. Factors are expanded to indicator columns.</p></dd>
+is used. Factors are expanded to indicator columns. With <code>occasions = "grid"</code>, a move into a position the group skipped has no row to read the
+covariates from, and the fit is refused (<code>latents_bad_data</code>): use
+<code>occasions = "observed"</code>, or add the skipped rows with their covariate
+values (their indicators may be missing under <code>missing = "fiml"</code>).</p></dd>
 
 
 <dt id="arg-initial-covariates">initial_covariates<a class="anchor" aria-label="anchor" href="#arg-initial-covariates"></a></dt>
@@ -315,7 +326,9 @@ sampling weight per <code>id</code> (constant over its occasions). As in
 <code><a href="multilpa.html">multilpa()</a></code>: pseudo maximum likelihood with the weights scaled to sum to
 the number of <code>id</code> units, sandwich standard errors by default, and
 integer weights equal to repeating each sequence. A weighted fit uses the
-general transition engine and returns a <code>multilpa_lta</code>.</p></dd>
+general transition engine and returns a <code>multilpa_lta</code>, whose
+model-implied <code>"transitions"</code> and <code>"initial"</code> tables average the groups
+with their weights.</p></dd>
 
 
 <dt id="arg-ordinal-count-count-model-count-dispersion">ordinal, count, count_model, count_dispersion<a class="anchor" aria-label="anchor" href="#arg-ordinal-count-count-model-count-dispersion"></a></dt>
@@ -335,12 +348,12 @@ optional <code>covariances</code> and <code>response_probabilities</code>,
 indexing the profile moved from), <code>group_probabilities</code>, posterior
 matrices, classifications, log likelihood, information criteria, restart
 diagnostics and convergence history. Use <code><a href="get_results.html">get_results()</a></code> for the tidy
-transition table and for the other
-tables. No standard
-errors, likelihood-ratio tests or guarantees of global optimality are
-given for this model family.</p>
+transition table and for the other tables, <code><a href="parameter_inference.html">parameter_inference()</a></code> for
+Wald or bootstrap standard errors and <code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code> to compare nested
+fits. Global optimality is not guaranteed; compare several starts.</p>
 <p>With <code>transitions = "occasion"</code>, <code>transition_covariates</code>,
-<code>initial_covariates</code>, <code>measurement = "occasion"</code> or <code>order = 2</code> the
+<code>initial_covariates</code>, <code>measurement = "occasion"</code>, <code>order = 2</code>,
+<code>mover_stayer = TRUE</code>, <code>weights</code>, <code>ordinal</code> or <code>count</code> the
 result is a <code>multilpa_lta</code> object instead, read with
 <code><a href="get_results.html">get_results()</a></code>: transition and initial logit coefficients
 with Wald standard errors (observed, robust or OPG, from analytic

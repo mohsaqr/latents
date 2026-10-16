@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -1038,7 +1038,7 @@ units:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model              Profiles  Group classes   k    LogLik       BIC   ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span></span>
 <span><span class="co">#&gt; -----------------  --------  -------------  --  --------  --------  -----  ------  --------  -------  ---------  -----  -------------  ---------------</span></span>
-<span><span class="co">#&gt; profiles4_groups3         4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87  &lt;- lowest BIC</span></span>
+<span><span class="co">#&gt; profiles4_groups3         4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87</span></span>
 <span><span class="co">#&gt; profiles4_groups2         4              2  47  -8326.19  16871.57  19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98</span></span>
 <span><span class="co">#&gt; profiles3_groups2         3              2  35  -8364.52  16892.26  40.12   0.000  17640.46     0.79       0.85      0           0.94             0.98</span></span></code></pre></div>
 <p>The same candidates given by their numbers of classes, with
@@ -1049,7 +1049,7 @@ labels:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model  Profiles  Group classes   k    LogLik       BIC   ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span></span>
 <span><span class="co">#&gt; -----  --------  -------------  --  --------  --------  -----  ------  --------  -------  ---------  -----  -------------  ---------------</span></span>
-<span><span class="co">#&gt; bic           4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87  &lt;- lowest BIC</span></span>
+<span><span class="co">#&gt; bic           4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87</span></span>
 <span><span class="co">#&gt; icl           4              2  47  -8326.19  16871.57  19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98</span></span>
 <span><span class="co">#&gt; awe           3              2  35  -8364.52  16892.26  40.12   0.000  17640.46     0.79       0.85      0           0.94             0.98</span></span></code></pre></div>
 <p>Every candidate with four profiles, which shows what the group
@@ -1063,7 +1063,7 @@ classes add:</p>
 <span><span class="co">#&gt; -----------------  --------  -------------  --  --------  --------  ------  ------  --------  -------  ---------  -----  -------------  ---------------</span></span>
 <span><span class="co">#&gt; profiles4_groups1         4              1  43  -8501.00  17202.53  350.38   0.000  18358.86     0.74       0.80      0                                </span></span>
 <span><span class="co">#&gt; profiles4_groups2         4              2  47  -8326.19  16871.57   19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98</span></span>
-<span><span class="co">#&gt; profiles4_groups3         4              3  51  -8307.15  16852.14    0.00   0.941  18014.13     0.74       0.80      0           0.82             0.87  &lt;- lowest BIC</span></span>
+<span><span class="co">#&gt; profiles4_groups3         4              3  51  -8307.15  16852.14    0.00   0.941  18014.13     0.74       0.80      0           0.82             0.87</span></span>
 <span><span class="co">#&gt; profiles4_groups4         4              4  55  -8300.60  16857.69    5.54   0.059  18027.32     0.74       0.80      0           0.80             0.87</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/compare-select-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
@@ -1154,7 +1154,7 @@ classes give the same model, as in
 their standard errors.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">chosen</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Multilevel LPA: 4 profiles and 3 group classes</span></span>
+<span><span class="co">#&gt; Two-level latent profile analysis: 4 profiles, 3 group classes</span></span>
 <span><span class="co">#&gt; Individuals: 1422; groups: 106; parameters: 51; converged: TRUE</span></span>
 <span><span class="co">#&gt; Log likelihood: -8307.154320; AIC: 16716.309</span></span>
 <span><span class="co">#&gt; BIC (groups): 16852.144; BIC (individuals): 16984.559</span></span>
@@ -1551,7 +1551,7 @@ place of <code>profiles</code>.</p>
 <span><span class="co">#&gt; Model             Classes  Group classes   k    LogLik       BIC    ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span></span>
 <span><span class="co">#&gt; ----------------  -------  -------------  --  --------  --------  ------  ------  --------  -------  ---------  -----  -------------  ---------------</span></span>
 <span><span class="co">#&gt; classes3_groups1        3              1  26  -7848.45  15816.64  311.61   0.000  17819.69     0.66       0.70      1                                </span></span>
-<span><span class="co">#&gt; classes3_groups2        3              2  29  -7685.74  15505.03    0.00   1.000  18121.50     0.56       0.64      1           0.90             0.96  &lt;- lowest BIC</span></span></code></pre></div>
+<span><span class="co">#&gt; classes3_groups2        3              2  29  -7685.74  15505.03    0.00   1.000  18121.50     0.56       0.64      1           0.90             0.96</span></span></code></pre></div>
 <p>With two group classes the three-class model has the lower BIC. Its
 relative entropy is 0.56, and its least distinct class has an AvePP of
 0.64. The classes of this model overlap strongly, which limits their
@@ -1617,14 +1617,16 @@ named by their numbers of profiles or classes alone.</p>
 <span><span class="co">#&gt; Model      Profiles   k   LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8</span></span>
 <span><span class="co">#&gt; ---------  --------  --  -------  -------  -----  ------  -------  -------  ---------  -----</span></span>
 <span><span class="co">#&gt; profiles5         5  54  -644.38  1596.76   4.98   0.077  1684.33     0.91       0.92      0</span></span>
-<span><span class="co">#&gt; profiles6         6  65  -610.52  1591.78   0.00   0.923  1707.76     0.89       0.89      0  &lt;- lowest BIC</span></span>
+<span><span class="co">#&gt; profiles6         6  65  -610.52  1591.78   0.00   0.923  1707.76     0.89       0.89      0</span></span>
 <span><span class="co">#&gt; profiles7         7  76  -590.85  1615.18  23.40   0.000  1741.68     0.89       0.89      0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">srl_models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/single-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>BIC is lowest for profiles6. The candidate with eight profiles
 reaches the lower bound of a variance and contains a nearly empty
-profile, which marks the end of the range that 300 observations
-support.</p>
+profile, which marks the end of the range that 300 observations support.
+The two warnings printed during the enumeration come from that
+candidate, and the table keeps them in its <code>warnings</code>
+column.</p>
 </div>
 <div class="section level3">
 <h3 id="several-covariance-structures">Several covariance structures<a class="anchor" aria-label="anchor" href="#several-covariance-structures"></a>
@@ -1675,19 +1677,21 @@ several candidates, so a candidate is named in full.</p>
 <span><span class="co">#&gt; Model          Profiles   k   LogLik      BIC    ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8</span></span>
 <span><span class="co">#&gt; -------------  --------  --  -------  -------  ------  ------  -------  -------  ---------  -----</span></span>
 <span><span class="co">#&gt; profiles3_VVI         3  32  -735.74  1654.00  284.98   0.000  1714.03     0.91       0.94      0</span></span>
-<span><span class="co">#&gt; profiles3_EEE         3  32  -593.25  1369.02    0.00   1.000  1595.94     0.66       0.79      1  &lt;- lowest BIC</span></span></code></pre></div>
+<span><span class="co">#&gt; profiles3_EEE         3  32  -593.25  1369.02    0.00   1.000  1595.94     0.66       0.79      1</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="transition-models">Transition models<a class="anchor" aria-label="anchor" href="#transition-models"></a>
 </h3>
 <p>With <code>time</code>, every candidate is a latent transition model
 across the occasions, here the order of each student’s enrolments in
-<code>sequence</code>.</p>
+<code>sequence</code>. The six-profile model needs more than the default
+1,000 EM iterations to meet the convergence tolerance, so
+<code>max_iter</code> is raised.</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">transition_models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
 <span>                                       time <span class="op">=</span> <span class="st">"sequence"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">6</span>,</span>
 <span>                                       n_group_classes <span class="op">=</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                                       seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>                                       max_iter <span class="op">=</span> <span class="fl">2000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">transition_models</span></span>
 <span><span class="co">#&gt; Transition-model enumeration: 5 candidates</span></span>
 <span><span class="co">#&gt;          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy</span></span>
@@ -1695,13 +1699,13 @@ across the occasions, here the order of each student’s enrolments in
 <span><span class="co">#&gt;  profiles3_groups1          3               1  &lt;NA&gt;          -8262           38 16701 16600  0.8006</span></span>
 <span><span class="co">#&gt;  profiles4_groups1          4               1  &lt;NA&gt;          -8219           55 16695 16548  0.7352</span></span>
 <span><span class="co">#&gt;  profiles5_groups1          5               1  &lt;NA&gt;          -8195           74 16736 16538  0.7793</span></span>
-<span><span class="co">#&gt;  profiles6_groups1          6               1  &lt;NA&gt;          -8180           95 16804 16551  0.7006</span></span>
+<span><span class="co">#&gt;  profiles6_groups1          6               1  &lt;NA&gt;          -8180           95 16804 16551  0.7017</span></span>
 <span><span class="co">#&gt;  converged boundary</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
-<span><span class="co">#&gt;      FALSE    FALSE</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt; Pick one by its name: get_candidate(x, "&lt;candidate&gt;").</span></span>
 <span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">transition_models</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model comparison</span></span>
@@ -1710,9 +1714,9 @@ across the occasions, here the order of each student’s enrolments in
 <span><span class="co">#&gt; -----------------  --------  --  --------  --------  ------  ------  --------  -------  ---------  -----</span></span>
 <span><span class="co">#&gt; profiles2_groups1         2  23  -8335.29  16777.83   83.11   0.000  16914.15     0.96       0.99      0</span></span>
 <span><span class="co">#&gt; profiles3_groups1         3  38  -8261.98  16701.16    6.43   0.039  17422.93     0.80       0.85      0</span></span>
-<span><span class="co">#&gt; profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.71     0.74       0.82      0  &lt;- lowest BIC</span></span>
+<span><span class="co">#&gt; profiles4_groups1         4  55  -8219.12  16694.73    0.00   0.961  17881.71     0.74       0.82      0</span></span>
 <span><span class="co">#&gt; profiles5_groups1         5  74  -8195.25  16735.59   40.86   0.000  17937.96     0.78       0.81      0</span></span>
-<span><span class="co">#&gt; profiles6_groups1         6  95  -8180.50  16804.02  109.29   0.000  18576.32     0.70       0.69      4</span></span></code></pre></div>
+<span><span class="co">#&gt; profiles6_groups1         6  95  -8180.49  16804.01  109.28   0.000  18570.64     0.70       0.69      4</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

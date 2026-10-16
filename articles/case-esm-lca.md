@@ -174,12 +174,11 @@ get_results(candidates, "criteria")
 The criteria disagree, and the diagnostics explain why. BIC with the
 number of students keeps falling up to the largest model in the grid,
 four profiles and three classes. Most of the larger models reach their
-best solution from only one of the five starts, and two of the
-four-profile models do not converge, which the two warnings above
-report, so their low BIC rests on unstable solutions. The criteria that
-also penalize classification uncertainty (ICL, AWE and CLC counted over
-prompts) choose two profiles and two classes, the model whose best
-solution recurs in all five starts.
+best solution from only one of the five starts (`n_best_replicated`), so
+their low BIC rests on solutions that the starts do not replicate. The
+criteria that also penalize classification uncertainty (ICL, AWE and CLC
+counted over prompts) choose two profiles and two classes, a model whose
+best solution recurs in four of the five starts.
 
 The ICL plot shows the same choice across the grid.
 
@@ -261,14 +260,14 @@ get_results(lca, "responses")
 #> 32       2     part_time_job      yes     0.05063        NA                    0.00532
 ```
 
-The two profiles differ mainly in media use. At prompts in profile 2,
+The two profiles differ mainly in media use. At prompts in profile 1,
 students used social media with probability 0.765, watched TV or played
 video games with probability 0.396, and listened to music with
-probability 0.364. In profile 1 the same probabilities are 0.119, 0.147
-and 0.075. Profile 1 is slightly more likely to include time with
+probability 0.364. In profile 2 the same probabilities are 0.119, 0.147
+and 0.075. Profile 2 is slightly more likely to include time with
 friends (0.157 against 0.106), walking (0.138 against 0.096) and a
 part-time job (0.051 against 0.010), and both profiles report sports at
-0.07. Profile 2 is therefore a media-heavy pattern, and profile 1 a
+0.07. Profile 1 is therefore a media-heavy pattern, and profile 2 a
 pattern of little media use with the remaining activities at their usual
 low rates.
 
@@ -495,11 +494,11 @@ parameter_inference(lca)
 ```
 
 The profiles are clearly separated on the media items: the interval for
-social media is 0.696 to 0.834 in the media-heavy profile and 0.082 to
-0.156 in the low-media profile. On sports the two intervals overlap
+social media is 0.689 to 0.826 in the media-heavy profile and 0.086 to
+0.162 in the low-media profile. On sports the two intervals overlap
 almost entirely. The part-time-job probability in the media-heavy
-profile has an interval starting at 0.0001, close to the bound, because
-very few of its prompts report a job.
+profile has an interval starting at 0.004, close to zero, because very
+few of its prompts report a job.
 
 ## Adding affect
 
@@ -564,14 +563,14 @@ get_results(mixed, "profile_probabilities")
 #> 4           2       2       0.126                   0.369
 ```
 
-With affect included, the profiles become profiles of mood. Profile 1
+With affect included, the profiles become profiles of mood. Profile 2
 has mean ratings of 5.85 for happy, 5.59 for relaxed and 2.55 for
-exhausted; profile 2 has 3.58, 3.33 and 4.33. The activities now differ
+exhausted; profile 1 has 3.59, 3.33 and 4.33. The activities now differ
 less and in a different way: time with friends is reported at 0.188 of
-profile-1 prompts and 0.084 of profile-2 prompts, social media at 0.269
+profile-2 prompts and 0.084 of profile-1 prompts, social media at 0.269
 and 0.315. Good mood goes with social time more than with media use. The
 student classes remain distinct: 0.833 of the prompts of class 1 fall in
-the good-mood profile, and 0.873 of those of class 2 in the low-mood
+the good-mood profile, and 0.874 of those of class 2 in the low-mood
 profile. The profiles a model finds are set by the indicators it is
 given, so the choice of indicators is part of the question.
 

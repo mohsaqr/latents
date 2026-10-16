@@ -28,11 +28,15 @@ descriptives(x, by = NULL, ...)
 - x:
 
   A data frame, or a fitted model of this package. A fit carries the
-  columns it was built from, so `vars` and `id` are read from it.
+  columns it was built from, so `vars` and `id` are read from it. A
+  single-level fit (`id = NULL`) has no groups, so its table has no
+  `n_groups` or `icc`.
 
 - ...:
 
-  Passed between methods.
+  Nothing further is used. For a data frame, any other argument is
+  reported with a `latents_unused_argument` warning; for a fit, which
+  supplies its own `vars` and `id`, it raises `latents_bad_argument`.
 
 - vars:
 

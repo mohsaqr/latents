@@ -47,7 +47,7 @@ lca(data, vars, n_classes, ...)
 
 A fitted `multilpa` object, as
 [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-returns.
+returns, recording the `lca()` call as written.
 
 ## Details
 
@@ -58,8 +58,8 @@ above the classes of observations.
 
 ## Conditions
 
-`latents_bad_argument` when `id` or `n_group_classes` is passed; the
-conditions
+`latents_bad_argument` when `id`, `n_group_classes` or `n_profiles` is
+passed; the conditions
 [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
 raises otherwise.
 

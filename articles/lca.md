@@ -32,8 +32,9 @@ kinds of indicator.
   [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md).
 - **Model comparison.**
   [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-  and, for complete data,
-  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md).
+  and
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  which keeps each row’s pattern of missing answers in a FIML fit.
 - **External variables.**
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
   and [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)

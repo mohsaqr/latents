@@ -7,7 +7,9 @@ fit's posteriors exactly. In a two-level model the groups in newdata are
 new groups, each classified from its own rows. For mixture_regression()
 fits it returns fitted outcomes or class probabilities. Growth mixtures
 refuse with latents_unsupported_prediction; their fitted curves are the
-&quot;trajectories&quot; and &quot;individual&quot; tables of get_results()."><meta property="og:description" content="predict() evaluates a fit on new rows. For multilpa() and multilca()
+&quot;trajectories&quot; and &quot;individual&quot; tables of get_results(). Membership-
+covariate and latent transition fits refuse with the same class; their
+fitted rows' posteriors are get_results(x, &quot;posteriors&quot;)."><meta property="og:description" content="predict() evaluates a fit on new rows. For multilpa() and multilca()
 fits without membership covariates it is the E-step at the estimates,
 applied through the fit's own preparation (categorical levels, centering,
 missing-data handling), so predicting the training rows reproduces the
@@ -15,7 +17,9 @@ fit's posteriors exactly. In a two-level model the groups in newdata are
 new groups, each classified from its own rows. For mixture_regression()
 fits it returns fitted outcomes or class probabilities. Growth mixtures
 refuse with latents_unsupported_prediction; their fitted curves are the
-&quot;trajectories&quot; and &quot;individual&quot; tables of get_results()."><meta property="og:image" content="https://pak.dynasite.org/latents/logo.png"></head><body>
+&quot;trajectories&quot; and &quot;individual&quot; tables of get_results(). Membership-
+covariate and latent transition fits refuse with the same class; their
+fitted rows' posteriors are get_results(x, &quot;posteriors&quot;)."><meta property="og:image" content="https://pak.dynasite.org/latents/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -23,7 +27,7 @@ refuse with latents_unsupported_prediction; their fitted curves are the
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,7 +88,9 @@ fit's posteriors exactly. In a two-level model the groups in <code>newdata</code
 new groups, each classified from its own rows. For <code><a href="mixture_regression.html">mixture_regression()</a></code>
 fits it returns fitted outcomes or class probabilities. Growth mixtures
 refuse with <code>latents_unsupported_prediction</code>; their fitted curves are the
-<code>"trajectories"</code> and <code>"individual"</code> tables of <code><a href="get_results.html">get_results()</a></code>.</p>
+<code>"trajectories"</code> and <code>"individual"</code> tables of <code><a href="get_results.html">get_results()</a></code>. Membership-
+covariate and latent transition fits refuse with the same class; their
+fitted rows' posteriors are <code>get_results(x, "posteriors")</code>.</p>
     </div>
 
     <div class="section level2">
@@ -108,7 +114,13 @@ refuse with <code>latents_unsupported_prediction</code>; their fitted curves are
 <span><span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">object</span>, nsim <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, newdata <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"class"</span>, <span class="st">"posterior"</span>, <span class="st">"density"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, newdata <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"class"</span>, <span class="st">"posterior"</span>, <span class="st">"density"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'multilpa_covariates'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'multilpa_transitions'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -184,7 +196,8 @@ the fit cannot handle, or a regression design cannot be evaluated.
 Binomial count predictions without trial counts also raise
 <code>latents_bad_data</code>; <code>latents_bad_argument</code> for <code>"probabilities"</code>
 outside the ordinal family; <code>latents_unsupported_prediction</code> for
-<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> on a growth mixture.</p>
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> on a growth mixture, a membership-covariate fit or a latent
+transition fit.</p>
     </div>
 
     <div class="section level2">

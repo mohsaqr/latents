@@ -121,11 +121,11 @@ fit
 
 The fitted model summarizes 1,422 course enrolments contributed by 106
 students. The three estimated profiles show a clear ordering across the
-engagement indicators. Profile 1 has the highest mean on every
-indicator, Profile 2 has intermediate means, and Profile 3 has the
+engagement indicators. Profile 3 has the highest mean on every
+indicator, Profile 1 has intermediate means, and Profile 2 has the
 lowest means. For example, the estimated attendance means are 1.133,
 0.256, and -0.940 standard deviations relative to the corresponding
-course mean for Profiles 1, 2, and 3, respectively.
+course mean for Profiles 3, 1, and 2, respectively.
 
 These differences in indicator means define the substantive
 interpretation of the fitted profiles. In this example, the profiles can
@@ -293,16 +293,17 @@ get_results(fit, "classification")
 ```
 
 The class-specific results show that classification certainty varies
-across profiles and student classes. At the enrolment level, 478
-enrolments are assigned to Profile 2, with an average posterior
-probability of 0.853. By comparison, the 576 enrolments assigned to
-Profile 3 have a much higher average posterior probability of 0.978.
-This indicates that enrolments classified into Profile 2 are, on
-average, more ambiguous than those classified into Profile 3.
+across profiles and student classes. At the enrolment level, 479
+enrolments are assigned to the intermediate-activity Profile 1, with an
+average posterior probability of 0.853. By comparison, the 576
+enrolments assigned to the lower-activity Profile 2 have a much higher
+average posterior probability of 0.978. This indicates that enrolments
+classified into Profile 1 are, on average, more ambiguous than those
+classified into Profile 2.
 
 A similar pattern appears at the student level. Students assigned to
-Class 2 have an average posterior probability of 0.864, whereas those
-assigned to Class 3 have an average posterior probability of 0.977. The
+Class 3 have an average posterior probability of 0.864, whereas those
+assigned to Class 2 have an average posterior probability of 0.977. The
 student-level classifications are therefore not equally certain across
 classes, even though the overall relative entropy is similar across the
 two levels.
@@ -378,12 +379,12 @@ get_results(fit, "residuals") |> head(4)
 ```
 
 The largest residual correlation is 0.211 between forum reading and
-attendance in Profile 3. The next largest is 0.177 between browsing and
-attendance, also in Profile 3. Notably, all four of the largest
-residuals involve the attendance indicator. This pattern suggests that
-the three-profile model does not completely account for the association
-between recorded online activity and the number of days on which
-students are active.
+attendance in the lower-activity Profile 2. The next largest is 0.177
+between browsing and attendance, also in Profile 2. Notably, all four of
+the largest residuals involve the attendance indicator. This pattern
+suggests that the three-profile model does not completely account for
+the association between recorded online activity and the number of days
+on which students are active.
 
 The concentration of the largest residuals around attendance provides a
 specific direction for further model evaluation. The results identify a
@@ -454,29 +455,55 @@ exists.
 ``` r
 
 candidates <- enumerate_classes(course_engagement, vars, id = "student",
-                                time = "sequence", n_profiles = 2:3,
-                                n_group_classes = 2:3,
+                                n_profiles = 2:3, n_group_classes = 2:3,
                                 model = c("VVI", "VVV"), n_starts = 6,
                                 max_iter = 2000, tol = 1e-10, seed = 1)
 get_results(candidates, "candidates")
 #>               candidate n_profiles n_group_classes model log_likelihood n_parameters     aic
-#> 1 profiles2_groups2_VVI          2               2   VVI       -8316.08           27 16686.2
-#> 2 profiles3_groups2_VVI          3               2   VVI       -8242.97           47 16579.9
-#> 3 profiles2_groups3_VVI          2               3   VVI       -8315.22           31 16692.4
-#> 4 profiles3_groups3_VVI          3               3   VVI       -8235.04           56 16582.1
-#> 5 profiles2_groups2_VVV          2               2   VVV       -8188.37           47 16470.7
-#> 6 profiles3_groups2_VVV          3               2   VVV       -8152.59           77 16459.2
-#> 7 profiles2_groups3_VVV          2               3   VVV       -8187.09           51 16476.2
-#> 8 profiles3_groups3_VVV          3               3   VVV       -8150.59           86 16473.2
-#>       bic bic_individual  entropy converged boundary n_best_replicated warnings error
-#> 1 16758.1        16828.2 0.959375      TRUE    FALSE                 6           <NA>
-#> 2 16705.1        16827.1 0.801915      TRUE    FALSE                 6           <NA>
-#> 3 16775.0        16855.5 0.959205      TRUE    FALSE                 1           <NA>
-#> 4 16731.2        16876.6 0.805030      TRUE    FALSE                 5           <NA>
-#> 5 16595.9        16717.9 0.942670      TRUE    FALSE                 6           <NA>
-#> 6 16664.3        16864.2 0.901181      TRUE    FALSE                 1           <NA>
-#> 7 16612.0        16744.4 0.942885      TRUE    FALSE                 6           <NA>
-#> 8 16702.2        16925.5 0.903794      TRUE    FALSE                 1           <NA>
+#> 1 profiles2_groups2_VVI          2               2   VVI       -8439.82           23 16925.6
+#> 2 profiles3_groups2_VVI          3               2   VVI       -8364.52           35 16799.0
+#> 3 profiles2_groups3_VVI          2               3   VVI       -8421.06           25 16892.1
+#> 4 profiles3_groups3_VVI          3               3   VVI       -8348.43           38 16772.9
+#> 5 profiles2_groups2_VVV          2               2   VVV       -8313.11           43 16712.2
+#> 6 profiles3_groups2_VVV          3               2   VVV       -8291.40           65 16712.8
+#> 7 profiles2_groups3_VVV          2               3   VVV       -8295.38           45 16680.8
+#> 8 profiles3_groups3_VVV          3               3   VVV       -8275.08           68 16686.2
+#>       kic bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual
+#> 1 16951.6    16986.9        17046.6      16914.2          16973.5     17009.9         17069.6
+#> 2 16837.0    16892.3        16983.1      16781.7          16872.0     16927.3         17018.1
+#> 3 16920.1    16958.7        17023.6      16879.7          16944.2     16983.7         17048.6
+#> 4 16813.9    16874.1        16972.7      16754.0          16852.0     16912.1         17010.7
+#> 5 16758.2    16826.8        16938.4      16690.9          16801.8     16869.8         16981.4
+#> 6 16780.8    16885.9        17054.7      16680.6          16848.2     16950.9         17119.7
+#> 7 16728.8    16800.6        16917.5      16658.4          16774.5     16845.6         16962.5
+#> 8 16757.2    16867.3        17043.8      16652.4          16827.8     16935.3         17111.8
+#>   awe_groups awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy
+#> 1    17172.0        17404.5    16995.8        17168.5    16888.5        17001.5        0.938173
+#> 2    17168.8        17999.5    16900.6        17640.4    16737.4        17386.4        0.789624
+#> 3    17193.1        17398.0    17001.5        17141.5    16884.9        16960.0        0.940203
+#> 4    17212.5        18011.9    16921.3        17622.1    16744.1        17346.2        0.792180
+#> 5    17164.8        17564.3    16835.3        17123.1    16634.7        16810.9        0.906299
+#> 6    17391.7        18218.6    16893.5        17551.7    16590.4        17079.8        0.840922
+#> 7    17188.3        17558.0    16843.4        17096.3    16633.6        16769.6        0.909291
+#> 8    17429.4        18278.5    16908.3        17580.9    16591.2        17087.2        0.828118
+#>   group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max
+#> 1      0.939643  0.981757  0.984935   0.983346           0        0.968985        0.992014
+#> 2      0.943150  0.848963  0.978772   0.892726           0        0.977176        0.992210
+#> 3      0.816455  0.981777  0.985771   0.983774           0        0.900354        0.962214
+#> 4      0.797319  0.845238  0.977844   0.891985           0        0.864392        0.977332
+#> 5      0.942161  0.973255  0.977752   0.975503           0        0.970873        0.993019
+#> 6      0.948115  0.649364  0.971863   0.844724           1        0.982278        0.990363
+#> 7      0.816138  0.974333  0.977839   0.976086           0        0.903069        0.959803
+#> 8      0.823956  0.649559  0.973628   0.840843           1        0.878069        0.955368
+#>   group_avepp_mean group_avepp_below converged boundary n_best_replicated warnings error
+#> 1         0.980500                 0      TRUE    FALSE                 6           <NA>
+#> 2         0.984693                 0      TRUE    FALSE                 6           <NA>
+#> 3         0.922506                 0      TRUE    FALSE                 6           <NA>
+#> 4         0.913150                 0      TRUE    FALSE                 6           <NA>
+#> 5         0.981946                 0      TRUE    FALSE                 6           <NA>
+#> 6         0.986321                 0      TRUE    FALSE                 3           <NA>
+#> 7         0.922502                 0      TRUE    FALSE                 6           <NA>
+#> 8         0.920425                 0      TRUE    FALSE                 5           <NA>
 ```
 
 Under the diagonal covariance specification, the lowest BIC is obtained
@@ -490,7 +517,7 @@ three-class full-covariance model has a higher BIC of 16867.3.
 
 Most candidate models also show stable likelihood replication across
 starts. The exception is the three-profile, two-class full-covariance
-model, whose best solution is recovered only once across the six
+model, whose best solution is recovered by only three of the six
 initializations. This weaker replication suggests greater numerical
 uncertainty for that candidate and illustrates why class enumeration
 should not be based on information criteria alone.
@@ -517,26 +544,25 @@ within-profile associations observed in the data.
 full <- get_candidate(candidates, n_profiles = 2, n_group_classes = 3,
                       model = "VVV")
 get_results(full, "residuals") |> head(4)
-#>     profile indicator_1 indicator_2     kind  observed  expected    residual effective_n
-#> 1 profile_2    lectures  attendance gaussian 0.1324999 0.1324999 1.35498e-09     585.679
-#> 2 profile_2  forum_post  attendance gaussian 0.1246726 0.1246726 1.32484e-09     585.679
-#> 3 profile_2      browse  attendance gaussian 0.2222775 0.2222775 1.30508e-09     585.679
-#> 4 profile_2  forum_read  forum_post gaussian 0.0777529 0.0777529 1.20333e-09     585.679
-#>     statistic df p_value p_adjusted
-#> 1 3.32919e-08 NA       1          1
-#> 2 3.24849e-08 NA       1          1
-#> 3 3.31405e-08 NA       1          1
-#> 4 2.92236e-08 NA       1          1
+#>     profile indicator_1 indicator_2     kind   observed   expected    residual effective_n
+#> 1 profile_1      browse  forum_read gaussian 0.04220417 0.04220345 7.19972e-07     832.514
+#> 2 profile_1  forum_read  attendance gaussian 0.22563980 0.22563909 7.19552e-07     832.514
+#> 3 profile_1    lectures  forum_read gaussian 0.00953716 0.00953647 6.92761e-07     832.514
+#> 4 profile_1  forum_post  attendance gaussian 0.21625412 0.21625347 6.51244e-07     832.514
+#>     statistic df  p_value p_adjusted
+#> 1 2.07731e-05 NA 0.999983   0.999983
+#> 2 2.18357e-05 NA 0.999983   0.999983
+#> 3 1.99542e-05 NA 0.999984   0.999984
+#> 4 1.96769e-05 NA 0.999984   0.999984
 ```
 
 In the two-profile, three-class full-covariance model, the estimated
-correlation between forum reading and attendance in Profile 2 is
-approximately 0.267, which is nearly identical to the corresponding
-observed within-profile correlation. As a result, the residual
-correlations displayed for the largest indicator pairs are close to
-zero. This is expected because the full-covariance specification
-estimates these within-profile associations directly rather than
-constraining them to zero.
+correlation between forum reading and attendance in Profile 1 is 0.226,
+which matches the corresponding observed within-profile correlation to
+six decimal places. As a result, even the largest residual correlations
+are close to zero. This is expected because the full-covariance
+specification estimates these within-profile associations directly
+rather than constraining them to zero.
 
 The close agreement between the observed and expected correlations
 therefore verifies that the fitted covariance structure is reproducing
@@ -675,10 +701,11 @@ parameter_inference(fit)
 #> 42           NA           NA  0.3100459  0.591372
 ```
 
-For Profile 1, the estimated attendance mean is 1.133 standard
-deviations above the course mean, with a standard error of 0.061 and a
-95% Wald interval from 1.013 to 1.252. Profile 2 has an interval from
-0.155 to 0.357, while Profile 3 has an interval from $`-0.993`$ to
+For the higher-activity Profile 3, the estimated attendance mean is
+1.133 standard deviations above the course mean, with a standard error
+of 0.061 and a 95% Wald interval from 1.013 to 1.252. The
+intermediate-activity Profile 1 has an interval from 0.155 to 0.357,
+while the lower-activity Profile 2 has an interval from $`-0.993`$ to
 $`-0.887`$.
 
 Within the original three-profile, three-class specification, these

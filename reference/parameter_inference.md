@@ -92,7 +92,7 @@ parameter_inference(
   method = c("wald", "bootstrap"),
   iter = 199L,
   n_starts = 10L,
-  max_iter = 1000L,
+  max_iter = 5000L,
   tol = 1e-10,
   seed = NULL,
   boundary = c("error", "fix")
@@ -130,8 +130,10 @@ parameter_inference(
   product of the per-group scores, multiplied by the CR1 small-sample
   factor `G / (G - 1)` for `G` groups (the default of
   `sandwich::vcovCL()`; every robust standard error in the package
-  carries it). Groups are the independent units, so robust errors relax
-  the assumption that the Gaussian within-group model is correctly
+  carries it). Mplus's MLR applies no such factor, so these errors are
+  exactly `sqrt(G / (G - 1))` times Mplus's (0.8% larger with 60
+  groups). Groups are the independent units, so robust errors relax the
+  assumption that the Gaussian within-group model is correctly
   specified. They do not relax the assumption that groups are
   independent. `"opg"` inverts the outer product of the per-group scores
   (the BHHH or outer-product-of-gradients estimate), which estimates the
@@ -140,7 +142,10 @@ parameter_inference(
   reproduces that package's standard errors; the two agree with
   `"observed"` in large samples and can differ noticeably in small ones,
   where `"observed"` is usually the more reliable. `"robust"` and
-  `"opg"` need more groups than parameters.
+  `"opg"` need more groups than parameters. `vcov_type` and `step`
+  belong to the Wald path; `method = "bootstrap"` does not use them,
+  since resampling groups already makes its errors robust in the sense
+  `"robust"` is.
 
 - adjust:
 
@@ -198,9 +203,10 @@ parameter_inference(
 - seed:
 
   Optional seed for the resampling: any whole number
-  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts; a fraction
-  raises `latents_bad_argument`. The stream is restored on exit, so a
-  seeded call leaves the caller's random state exactly as it found it.
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts; anything
+  else raises `latents_bad_argument`, on either path. The Wald path
+  draws nothing, so it uses no seed. The stream is restored on exit, so
+  a seeded call leaves the caller's random state exactly as it found it.
 
 - boundary:
 
@@ -285,22 +291,32 @@ Diagnostics of the fit as a whole travel as attributes rather than as
 columns repeated down every row: `covariance` and
 `covariance_unconstrained` (natural and estimation-scale covariance of
 the estimates), `hessian`, `gradient`, `scaled_score`,
-`condition_ratio`, `level`, `step`, `vcov_type`, `fixed` (the
+`score_displacement` (the largest score times its estimation-scale
+standard error, the quantity the `latents_unconverged` warning reads),
+`condition_ratio`, `level`, `step`, `method`, `vcov_type`, `fixed` (the
 measurement blocks this fit held,
-[`character()`](https://rdrr.io/r/base/character.html) when none) and
-`adjust`. When `vcov_type` is `"robust"`, `group_scores` holds the
-groups-by-parameters score matrix and `scaling_correction` the MLR
-scaling correction factor `tr(A^-1 B) / q`, used for scaled
-likelihood-ratio difference tests.
+[`character()`](https://rdrr.io/r/base/character.html) when none),
+`fixed_at_bound` (the probabilities `boundary = "fix"` held) and
+`adjust`. When `vcov_type` is `"robust"` or `"opg"`, `group_scores`
+holds the groups-by-parameters score matrix and `scaling_correction` the
+MLR scaling correction factor `tr(A^-1 B) / q`, with `B` the
+cross-product of those scores without the CR1 factor, used for scaled
+likelihood-ratio difference tests; it is `NA` otherwise.
 
 ## Details
 
 Class-membership coefficients are on the multinomial logit scale with
 the final profile and the final group class as references, so a
 coefficient is a log odds against that reference. The tests are Wald
-tests and inherit the usual caveat: they are unreliable for a
-coefficient driven to the boundary by separation, which the size of the
-estimate and its standard error together will reveal.
+tests, which are meaningless for a coefficient driven to the boundary by
+separation or an empty class. A fit with a membership logit above 20 in
+coordinates that depend neither on the covariates' units nor on their
+origin (roughly, a slope per standard deviation of its covariate and an
+intercept at the covariates' means) is therefore refused with
+`latents_boundary_fit` rather than given a standard error; the fit
+itself warns with `latents_extreme_coefficients`. Only `method = "wald"`
+is implemented for a covariate fit; `"bootstrap"` is refused with
+`latents_unsupported_inference`.
 
 For a general transition fit (an
 [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit with
@@ -325,10 +341,10 @@ its bound, `latents_singular_information` when the observed information
 cannot be inverted, `latents_no_free_parameters` when `fixed` held every
 parameter, `latents_bad_inference_data` when a supplied `data` does not
 reproduce the fit, and `latents_too_few_groups` for
-`vcov_type = "robust"` with fewer independent groups than reported
-parameters. A fit whose score is still far from zero is reported with a
-`latents_unconverged` warning rather than refused. A fit made with
-`multilpa(prior = )` is refused by the Wald path with
+`vcov_type = "robust"` or `"opg"` when the fit has no more independent
+groups than free parameters. A fit whose score is still far from zero is
+reported with a `latents_unconverged` warning rather than refused. A fit
+made with `multilpa(prior = )` is refused by the Wald path with
 `latents_unsupported_inference` (it sits at a posterior mode, where the
 likelihood's score is not zero), and a fit with a noise component by
 either path with `latents_unsupported_noise`.

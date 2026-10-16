@@ -53,16 +53,16 @@ enrolments each) and 11 columns:
 
 - attendance:
 
-  Numeric, days the student was active in the course as on the
+  Numeric, days the student was active in the course, on the
   `log1p(events)` scale, standardized within course. It is **generated
   from the four click measures** and then blurred, because a student is
   recorded present on a day precisely because they clicked something,
   and a day is a coarse unit – one tick however much happened inside it.
   The indicators are therefore locally dependent on purpose:
   `attendance` correlates 0.51 to 0.67 with the click measures overall
-  and 0.16 to 0.26 within a single profile, which is more association
-  than a shared profile alone would produce. See the note on local
-  dependence below.
+  and 0.10 to 0.23 among the enrolments assigned to one profile of the
+  example fit, which is more association than a shared profile alone
+  would produce. See the note on local dependence below.
 
 - previous_grade:
 
@@ -119,10 +119,12 @@ one cannot.
 A latent profile model with a diagonal residual covariance assumes the
 indicators are independent given the profile. `attendance` is built from
 the click measures, so for these data that assumption is false, and the
-package finds it: `get_results(fit, "residuals")` reports a largest
-residual of 0.21 `p = 1.7e-15`, and `covariance_model = "full"` improves
-the log likelihood from -7618.5 to -7494.7 for twenty more parameters,
-which every information criterion prefers.
+package finds it. For the two-profile, two-group-class fit of the
+example below, `get_results(fit, "residuals")` reports a largest
+residual of 0.23 (`lectures` with `attendance` within the first profile,
+`p = 6.4e-12`), and `covariance_model = "full"` improves the log
+likelihood from -8439.8 to -8313.1 for twenty more parameters, which
+every information criterion except the individual-level AWE prefers.
 
 This is deliberate. A bundled dataset that satisfies local independence
 exactly can only ever show those verbs agreeing that nothing is wrong;

@@ -38,7 +38,8 @@ fit_staged(
 
 - vars:
 
-  Unique character vector of continuous indicator column names.
+  Unique character vector of indicator column names. Columns not named
+  in `categorical`, `ordinal` or `count` are continuous indicators.
 
 - id:
 
@@ -65,8 +66,12 @@ fit_staged(
   rather than refitted. Its profiles, indicators and measurement options
   must match the ones requested here, and it must have one group class:
   a multi-class fit already estimates group structure and is not a
-  measurement-only first stage. When `NULL`, the first stage is fitted
-  here with one group class.
+  measurement-only first stage. A fit made with `weights`, `centering`
+  or `ordinal`/`count` indicators is refused too, since the second stage
+  fitted here uses none of them and would hold the measurement under a
+  likelihood it was not estimated on. Every refusal raises
+  `latents_bad_stage`. When `NULL`, the first stage is fitted here with
+  one group class.
 
 - variance_model:
 
@@ -144,7 +149,11 @@ fit_staged(
   not use it; it is stored so that `get_results(x, "sequences")`,
   `get_results(x, "sequence_summary")` and `plot(what = "sequences")`
   can read the assignments back in order. Values must be complete and
-  unique within each group.
+  unique within each group. They are ordered as
+  [`sort()`](https://rdrr.io/r/base/sort.html) orders them; numbers
+  stored as text whose alphabetical order is not their numeric order
+  (`"2"`, `"10"`) are refused (`latents_bad_time`), while zero-padded
+  numbers and ISO dates are accepted.
 
 ## Value
 

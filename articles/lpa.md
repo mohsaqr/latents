@@ -316,19 +316,22 @@ sensitivity(fit, seeds = 1:10)       # refits under several seeds
 starting_values(fit)                 # parameters to start another fit
 ```
 
-The evaluation vignette covers
-[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
-[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
+[`vignette("enumeration", package = "latents")`](https://pak.dynasite.org/latents/articles/enumeration.md)
+covers
+[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
 and
-[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md);
-the covariates vignette covers
-[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
-[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) and
-[`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md);
-the transitions vignette covers
-[`lta()`](https://pak.dynasite.org/latents/reference/lta.md),
+[`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md);
+[`vignette("lta", package = "latents")`](https://pak.dynasite.org/latents/articles/lta.md)
+covers [`lta()`](https://pak.dynasite.org/latents/reference/lta.md),
 [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md) and
 [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md).
+The evaluation article on the [package
+website](https://pak.dynasite.org/latents/articles/) covers
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+and the covariates article covers
+[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) and
+[`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md).
 
 ## Sampling weights
 
@@ -402,7 +405,7 @@ To see every table at once, we call
 ``` r
 
 print(summary(fit), rows = 3)
-#> Multilevel LPA: 2 profiles and 2 group classes
+#> Two-level latent profile analysis: 2 profiles, 2 group classes
 #> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE
 #> Log likelihood: -8439.816424; AIC: 16925.633
 #> BIC (groups): 16986.892; BIC (individuals): 17046.609
@@ -558,4 +561,6 @@ print(summary(fit), rows = 3)
 - Indicators are independent within a profile (the default diagonal
   covariance; `covariance_model = "full"` relaxes it).
 - The numbers of profiles and group classes are chosen by the analyst;
-  see the evaluation vignette for comparing them.
+  see
+  [`vignette("enumeration", package = "latents")`](https://pak.dynasite.org/latents/articles/enumeration.md)
+  for comparing them.

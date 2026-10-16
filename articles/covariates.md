@@ -126,17 +126,18 @@ To regress profile membership on a covariate, we call
 [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) with
 `data` for the data frame and `covariates` for the predictors. It
 returns multinomial logit coefficients, corrected for classification
-error. `vcov_type = "robust"` clusters the standard errors on groups.
+error. `vcov_type = "robust"`, the default, clusters the standard errors
+on groups.
 
 ``` r
 
 r3step(fit, data = course_engagement, covariates = "previous_grade",
        vcov_type = "robust")
 #>         level   outcome           term estimate standard_error statistic  p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.09e-03         NA
-#> 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.29e-22   5.29e-22
+#> 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.08e-03         NA
+#> 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.24e-22   5.24e-22
 #>   conf_low conf_high
-#> 1    0.119     0.632
+#> 1    0.119     0.633
 #> 2    0.458     0.692
 ```
 
@@ -146,8 +147,8 @@ To estimate the covariate together with the profiles, we call
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 with `profile_covariates` for predictors of profile membership.
 `group_covariates` does the same for group-class membership and needs a
-variable that is constant within groups. Covariate models require
-complete data.
+variable that is constant within groups. Covariates must have no missing
+values; missing indicators are integrated out with `missing = "fiml"`.
 
 ``` r
 
@@ -297,8 +298,8 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
            method = "proportional")        # weighting by posterior probabilities
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            vcov_type = "independent")      # standard errors without clustering
-r3step(fit, data = course_engagement,
-       covariates = "previous_grade")      # observed-information standard errors
+r3step(fit, data = course_engagement, covariates = "previous_grade",
+       vcov_type = "observed")             # observed-information standard errors
 measurement <- multilpa(course_engagement,
                         vars = c("browse", "lectures", "forum_read",
                                  "forum_post", "attendance"),

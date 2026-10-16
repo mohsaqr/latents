@@ -78,7 +78,9 @@ enumerate_classes(
 
 - seed:
 
-  Optional reproducible seed for each fit.
+  Optional reproducible seed for each fit: any whole number
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts. Anything
+  else raises `latents_bad_argument` before any candidate is fitted.
 
 - family:
 
@@ -147,8 +149,9 @@ column of the table (`"profiles3_groups2"`), which these verbs take.
 ## Conditions
 
 `latents_bad_argument` when `model` names an unknown structure, when it
-is given together with another way of setting the structure, or when it
-is given although every indicator is categorical.
+is given together with another way of setting the structure, when it is
+given although every indicator is categorical, or when `seed` is not a
+seed [`set.seed()`](https://rdrr.io/r/base/Random.html) accepts.
 
 ## References
 

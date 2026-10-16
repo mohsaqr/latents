@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -225,7 +225,7 @@ random-effect spread, the usual first choice.</p>
 <span><span class="co">#&gt; trajectories_4        4  none              15  -5777.54  11640.63   837.04   0.000     0.94</span></span>
 <span><span class="co">#&gt; trajectories_5        5  none              19  -5658.21  11424.79   621.20   0.000     0.94</span></span>
 <span><span class="co">#&gt; growth_2              2  intercept + wave  10  -5416.53  10890.11    86.51   0.000     0.92</span></span>
-<span><span class="co">#&gt; growth_3              3  intercept + wave  14  -5361.87  10803.59     0.00   1.000     0.90  &lt;- lowest BIC</span></span>
+<span><span class="co">#&gt; growth_3              3  intercept + wave  14  -5361.87  10803.59     0.00   1.000     0.90</span></span>
 <span><span class="co">#&gt; growth_4              4  intercept + wave  18  -5358.94  10820.56    16.96   0.000     0.81</span></span></code></pre></div>
 <p>The growth mixture model with three classes is preferred, with nearly
 all the BIC weight. The trajectory model without random effects keeps
@@ -240,8 +240,9 @@ described above.</p>
 <code>bootstrap</code>, adds the bootstrap likelihood-ratio test of each
 number of classes against one fewer (McLachlan 1987; Nylund, Asparouhov
 and Muthén 2007). It refits both models on data simulated from the
-smaller one, so it takes minutes; on these data it rejects two classes
-in favour of three and keeps three against four.</p>
+smaller one, so it is slow: with 99 replicates per comparison it took
+about an hour on these data. It rejects two classes in favour of three
+(p = 0.01) and keeps three against four (p = 0.40).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/enumerate_regressions.html">enumerate_regressions</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_scores</span>, n_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,</span>
 <span>                      id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>, random <span class="op">=</span> <span class="st">"wave"</span>,</span>
@@ -444,19 +445,7 @@ improve or few do, and a school support programme:</p>
 errors and the BIC count schools. The group classes’ composition, the
 schools’ classification and the membership logits (the programme makes a
 school less likely to be in the second group class):</p>
-<p>The trajectory views read the same as for one level, and the
-classification view shows how confidently each student is
-classified:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span><span class="op">)</span></span></code></pre></div>
-<p><img src="growth-mixture_files/figure-html/schools-plots-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span>, what <span class="op">=</span> <span class="st">"coefficients"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="growth-mixture_files/figure-html/schools-plots-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span>, what <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="growth-mixture_files/figure-html/schools-classification-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">schools</span>, <span class="st">"group_classes"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Group classes: trajectory classes within each</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -486,6 +475,18 @@ classified:</p>
 <span><span class="co">#&gt; Group class 2  programme                   -2.108  [-3.458, -0.758]   .002</span></span>
 <span><span class="co">#&gt; Class 2        Intercept, group class 1    -1.740  [-2.103, -1.377]  &lt;.001</span></span>
 <span><span class="co">#&gt; Class 2        Intercept, group class 2     1.128  [ 0.817,  1.438]  &lt;.001</span></span></code></pre></div>
+<p>The trajectory views read the same as for one level, and the
+classification view shows how confidently each student is
+classified:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span><span class="op">)</span></span></code></pre></div>
+<p><img src="growth-mixture_files/figure-html/schools-plots-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span>, what <span class="op">=</span> <span class="st">"coefficients"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="growth-mixture_files/figure-html/schools-plots-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">schools</span>, what <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="growth-mixture_files/figure-html/schools-classification-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The number of group classes is compared like the number of classes,
 from one (the single-level model with schools as the units) upward:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">

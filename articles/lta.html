@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -163,11 +163,13 @@ support the solution.</p>
 <div class="section level2">
 <h2 id="profiles">Profiles<a class="anchor" aria-label="anchor" href="#profiles"></a>
 </h2>
-<p>To see the profiles, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> on the fit. Each
-line is a profile’s mean on each indicator, and its label gives the
-profile’s share of the cases.</p>
+<p>To see the profiles, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with
+<code>what = "profiles"</code> (on a transition fit, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>
+alone draws the transition matrices). Each line is a profile’s mean on
+each indicator, and its label gives the profile’s share of the
+cases.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"profiles"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/profiles-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>To compare profiles on a common scale, we call <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>
 with <code>what = "heatmap"</code>, which shows each mean in standard
@@ -332,10 +334,11 @@ changes from course to course:</p>
 <span><span class="co">#&gt; 2   -0.203     0.271      1.034</span></span>
 <span><span class="co">#&gt; 3   -1.718    -1.208      0.231</span></span>
 <span><span class="co">#&gt; 4   -0.211     0.298      1.045</span></span></code></pre></div>
-<p>The grade’s odds ratios are close to one and their intervals include
-one: in these data, the previous grade does not change the chance of
-switching profile. A second-order chain, where the next profile depends
-on the two previous ones, does not earn its extra parameters either:</p>
+<p>The grade’s odds ratios are close to one, and its intervals, on the
+log-odds scale of <code>estimate</code>, include zero: in these data,
+the previous grade does not change the chance of switching profile. A
+second-order chain, where the next profile depends on the two previous
+ones, does not earn its extra parameters either:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">second</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>              time <span class="op">=</span> <span class="st">"sequence"</span>, order <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>

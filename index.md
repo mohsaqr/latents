@@ -581,19 +581,13 @@ dependent <- multilpa(
   variance_model = "varying", covariance_model = "full",
   n_starts = 10, seed = 1
 )
-rbind(
-  diagonal = get_results(fit, "information_criteria"),
-  full = get_results(dependent, "information_criteria")
-)
-#>          log_likelihood n_parameters   aic   kic bic_groups bic_individual sabic_groups
-#> diagonal          -8440           23 16926 16952      16987          17047        16914
-#> full              -8313           43 16712 16758      16827          16938        16691
-#>          sabic_individual caic_groups caic_individual awe_groups awe_individual icl_groups
-#> diagonal            16974       17010           17070      17172          17404      16996
-#> full                16802       16870           16981      17165          17564      16835
-#>          icl_individual clc_groups clc_individual
-#> diagonal          17168      16889          17002
-#> full              17123      16635          16811
+compare_models(diagonal = fit, full = dependent)
+#> Model comparison
+#> 
+#> Model     Profiles  Group classes   k    LogLik       BIC    ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
+#> --------  --------  -------------  --  --------  --------  ------  ------  --------  -------  ---------  -----  -------------  ---------------
+#> diagonal         2              2  23  -8439.82  16986.89  160.14   0.000  17168.49     0.94       0.98      0           0.94             0.97
+#> full             2              2  43  -8313.11  16826.75    0.00   1.000  17123.11     0.91       0.97      0           0.94             0.97
 get_results(dependent, "residuals", by = "overall")
 #>    profile indicator_1 indicator_2     kind observed expected residual effective_n statistic
 #> 1  overall    lectures  attendance gaussian  0.20502  0.20502 1.76e-06        1422  6.94e-05
@@ -619,12 +613,13 @@ get_results(dependent, "residuals", by = "overall")
 #> 10 NA       1          1
 ```
 
-The information criteria compare improvement in likelihood with the
-additional parameters required by the full covariance model. The
-residual table indicates how much of the observed association the
-revised specification accounts for. Near-zero residuals are expected
-when those associations are directly fitted and do not independently
-establish overall model adequacy.
+[`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+places the two fits side by side: the information criteria compare
+improvement in likelihood with the additional parameters required by the
+full covariance model. The residual table indicates how much of the
+observed association the revised specification accounts for. Near-zero
+residuals are expected when those associations are directly fitted and
+do not independently establish overall model adequacy.
 
 Covariance specification and class enumeration are related. Additional
 diagonal profiles can approximate associations that a more flexible
@@ -893,11 +888,11 @@ three_step(fit, data = course_engagement, outcome = "previous_grade")
 #>     2  -0.31  [-0.39, -0.24]  0.036       564.36
 r3step(fit, data = course_engagement, covariates = "previous_grade")
 #>         level   outcome           term estimate standard_error statistic  p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)    0.376         0.1303      2.89 3.91e-03         NA
-#> 2 individuals profile_1 previous_grade    0.575         0.0593      9.69 3.38e-22   3.38e-22
+#> 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.08e-03         NA
+#> 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.24e-22   5.24e-22
 #>   conf_low conf_high
-#> 1    0.121     0.631
-#> 2    0.458     0.691
+#> 1    0.119     0.633
+#> 2    0.458     0.692
 ```
 
 The first call compares previous-grade means between enrolment profiles.
@@ -912,8 +907,8 @@ measurement solution.
 [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
 clusters its variance estimates by group by default, while
 [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) uses
-the observed information by default and offers clustered sandwich
-inference through `vcov_type = "robust"`.
+a sandwich covariance clustered by group by default and offers
+observed-information inference through `vcov_type = "observed"`.
 
 The supplied data must preserve the original observation order and
 include the external variables. The package uses shared fitted columns
@@ -1053,20 +1048,20 @@ moves <- lta(
 )
 get_results(moves, "initial")
 #>   group_class profile probability prevalence group_class_probability
-#> 1           1       1       0.184      0.220                   0.647
-#> 2           1       2       0.816      0.780                   0.647
-#> 3           2       1       0.724      0.769                   0.353
-#> 4           2       2       0.276      0.231                   0.353
+#> 1           1       1       0.816       0.78                   0.648
+#> 2           1       2       0.184       0.22                   0.648
+#> 3           2       1       0.276       0.23                   0.352
+#> 4           2       2       0.724       0.77                   0.352
 get_results(moves, "transitions")
 #>   group_class from to probability expected_count stable estimated group_class_probability
-#> 1           1    1  1      0.5868          108.2   TRUE      TRUE                   0.647
-#> 2           1    1  2      0.4132           76.2  FALSE      TRUE                   0.647
-#> 3           1    2  1      0.1222           81.6  FALSE      TRUE                   0.647
-#> 4           1    2  2      0.8778          586.3   TRUE      TRUE                   0.647
-#> 5           2    1  1      0.9306          330.5   TRUE      TRUE                   0.353
-#> 6           2    1  2      0.0694           24.6  FALSE      TRUE                   0.353
-#> 7           2    2  1      0.2572           27.9  FALSE      TRUE                   0.353
-#> 8           2    2  2      0.7428           80.6   TRUE      TRUE                   0.353
+#> 1           1    1  1      0.8778          586.7   TRUE      TRUE                   0.648
+#> 2           1    1  2      0.1222           81.7  FALSE      TRUE                   0.648
+#> 3           1    2  1      0.4131           76.3  FALSE      TRUE                   0.648
+#> 4           1    2  2      0.5869          108.4   TRUE      TRUE                   0.648
+#> 5           2    1  1      0.7421           80.2   TRUE      TRUE                   0.352
+#> 6           2    1  2      0.2579           27.9  FALSE      TRUE                   0.352
+#> 7           2    2  1      0.0693           24.6  FALSE      TRUE                   0.352
+#> 8           2    2  2      0.9307          330.3   TRUE      TRUE                   0.352
 plot(moves, what = "transitions")
 ```
 
@@ -1080,11 +1075,16 @@ conditions on the preceding profile and sums to one across possible
 destination profiles. Diagonal entries quantify persistence;
 off-diagonal entries quantify transitions to other profiles.
 
-The implemented model is first order and time homogeneous: the next
+By default the model is first order and time homogeneous: the next
 profile depends on the preceding profile, with transition probabilities
 held constant across sequence positions within each group class.
 Measurement parameters are invariant across occasions, ensuring that a
 transition refers to movement between profiles with stable definitions.
+Each of these assumptions can be relaxed: `order = 2` gives a
+second-order chain, `transitions = "occasion"` a separate transition
+matrix for each move, `measurement = "occasion"` occasion-specific
+profiles, and `transition_covariates` and `initial_covariates` let
+covariates shift the transition and starting probabilities.
 
 In this dataset, consecutive observations are successive course
 enrolments. A transition therefore concerns adjacent observed
@@ -1098,8 +1098,11 @@ The fitted transitions can be exported through
 for further analysis with `tna`.
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
 reports standard errors and intervals for every transition-model
-parameter; likelihood-ratio testing and class enumeration are not
-available for these models.
+parameter.
+[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+with `time` compares numbers of profiles and group classes, and
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+with `data` tests a transition model against a nested one.
 
 ## Categorical and mixed measurement models
 
@@ -1208,11 +1211,14 @@ activity-response probabilities. Including affect changes the dimensions
 represented by the model and can consequently change the substantive
 meaning of its profiles.
 
-Categorical measurement uses freely estimated category probabilities.
-Ordered categories do not impose an ordinal regression structure. The
-choice between continuous and categorical treatment of a rating scale
-should therefore reflect both its distribution and the measurement
-assumptions appropriate to the analysis.
+Categorical measurement uses freely estimated category probabilities, so
+ordered categories given in `categorical` do not impose an ordinal
+structure. Ordered ratings can instead be named in `ordinal`, an
+adjacent-category logit with category intercepts shared by every profile
+and one location per profile, and counts in `count`. The choice between
+continuous and categorical treatment of a rating scale should therefore
+reflect both its distribution and the measurement assumptions
+appropriate to the analysis.
 
 ## Staged estimation
 
@@ -1254,13 +1260,15 @@ should be stated when reporting inferential results.
 
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
 fits regressions whose coefficients differ across latent classes, for
-continuous (`"gaussian"`), binary or binomial (`"binomial"`) and count
-(`"poisson"`) outcomes. The class can belong to each row, to a whole
-group (`class_level = "group"`), or to each row with a second-level
-group class that shifts how often each regression class occurs within a
-group (`n_group_classes`). Covariates can predict class membership
+continuous (`"gaussian"`), binary or binomial (`"binomial"`), count
+(`"poisson"`, `"negative_binomial"`) and ordered (`"ordinal"`) outcomes.
+The class can belong to each row, to a whole group
+(`class_level = "group"`), or to each row with a second-level group
+class that shifts how often each regression class occurs within a group
+(`n_group_classes`). Covariates can predict class membership
 (`membership`, `group_membership`), and terms can share one coefficient
-across classes (`common`).
+across classes (`common`). Random effects within classes (`random`) give
+growth mixture models.
 
 ``` r
 
@@ -1333,6 +1341,7 @@ The package vignettes cover the main model families.
 vignette("lpa", package = "latents")
 vignette("lca", package = "latents")
 vignette("lta", package = "latents")
+vignette("enumeration", package = "latents")
 citation("latents")
 ```
 

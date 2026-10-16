@@ -73,13 +73,15 @@ get_results(moves, "starts")
 ## Profiles
 
 To see the profiles, we call
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the fit.
-Each line is a profile’s mean on each indicator, and its label gives the
-profile’s share of the cases.
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) with
+`what = "profiles"` (on a transition fit,
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) alone draws the
+transition matrices). Each line is a profile’s mean on each indicator,
+and its label gives the profile’s share of the cases.
 
 ``` r
 
-plot(moves)
+plot(moves, what = "profiles")
 ```
 
 ![](lta_files/figure-html/profiles-1.png)
@@ -285,10 +287,11 @@ get_results(grade, "transition_coefficients")
 #> 4   -0.211     0.298      1.045
 ```
 
-The grade’s odds ratios are close to one and their intervals include
-one: in these data, the previous grade does not change the chance of
-switching profile. A second-order chain, where the next profile depends
-on the two previous ones, does not earn its extra parameters either:
+The grade’s odds ratios are close to one, and its intervals, on the
+log-odds scale of `estimate`, include zero: in these data, the previous
+grade does not change the chance of switching profile. A second-order
+chain, where the next profile depends on the two previous ones, does not
+earn its extra parameters either:
 
 ``` r
 

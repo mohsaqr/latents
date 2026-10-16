@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,6 +58,66 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.32" id="latents-0932">latents 0.9.32<a class="anchor" aria-label="anchor" href="#latents-0932"></a></h2>
+<p>A function-by-function review of the package and its documentation. The maths it re-derived (analytic scores against numerical gradients for every model family, delta-method Jacobians, information criteria, entropy, AvePP, OCC, the knee) held; the corrections below are to edge cases, input validation, consistency between tables, plots and warnings, and documentation.</p>
+<div class="section level3">
+<h3 id="changed-results-0-9-32">Changed results<a class="anchor" aria-label="anchor" href="#changed-results-0-9-32"></a></h3>
+<ul><li>Group-class families (<code>family = "additive"</code>, <code>"dispersion"</code>, <code>"additive_dispersion"</code>) use SQUAREM-accelerated EM. Converged fits are unchanged to rounding (8 Latent GOLD cases to 7.5e-16 relative); fits that plain EM left crawling now converge within <code>max_iter</code>, so bootstrap replicates that used to be withheld are kept.</li>
+<li>The membership-covariate separation check, the one-step membership regression, <code><a href="../reference/r3step.html">r3step()</a></code> (pooled and <code>by_group_class = TRUE</code>) and covariate-fit <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> now work in orthonormal design coordinates, so results no longer depend on where a covariate’s zero lies: a covariate with mean 100 and sd 1 is no longer mistaken for separation, and a covariate shifted by 1e6 gives the same estimates and standard errors as the centred one. <code><a href="../reference/r3step.html">r3step()</a></code> also converges more tightly (about 1e-4 closer to its maximum).</li>
+<li>With sampling weights, <code>small_classes</code> and the <code>latents_small_classes</code> warning use the weighted effective counts the fit reports; group-class families report weighted class counts and compute effective groups (and plot intervals) from the robust covariance they use for inference.</li>
+<li>In weighted general <code><a href="../reference/lta.html">lta()</a></code> fits, the model-implied <code>"transitions"</code>, <code>"initial"</code> and <code>"second_order_transitions"</code> tables average groups with their sampling weights.</li>
+<li>
+<code><a href="../reference/lta.html">lta()</a></code> and its <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> refits default to <code>max_iter = 5000</code> (was <code>1000</code>). The tighter <code>tol = 1e-10</code> of 0.9.31 needs more updates: three- and four-profile models of two <code>course_engagement</code> indicators took 1,000 to 1,500 and stopped unconverged. Fits that converged before are unchanged.</li>
+<li>Transition and family grids (<code>enumerate_classes(time = )</code>, <code>enumerate_classes(family = )</code>) pass their candidates’ warnings on, as profile grids do; they used to keep them only in the <code>warnings</code> column.</li>
+<li>
+<code>get_results(grid, "best")</code> on transition and family grids considers only converged candidates; when none converged, <code>"best"</code> raises <code>latents_failed_candidate</code>.</li>
+<li>Response-probability whiskers in plots are the logit-scale intervals of <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>, so plot and table agree.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="refusals-instead-of-silent-wrong-answers-0-9-32">Refusals instead of silent wrong answers<a class="anchor" aria-label="anchor" href="#refusals-instead-of-silent-wrong-answers-0-9-32"></a></h3>
+<ul><li>
+<code><a href="../reference/lta.html">lta()</a></code> refuses (<code>latents_bad_data</code>) transition covariates when <code>occasions = "grid"</code> leaves a position skipped inside a group’s span; the covariate used to be taken as 0 there.</li>
+<li>
+<code><a href="../reference/multilpa.html">multilpa()</a></code>, <code><a href="../reference/lta.html">lta()</a></code> and covariate fits refuse (<code>latents_bad_time</code>) a <code>time</code> column of numbers stored as text whose alphabetical order differs from their numeric order (“10” before “2”). Zero-padded numbers and ISO dates are still accepted.</li>
+<li>
+<code>fit_staged(measurement = )</code> refuses (<code>latents_bad_stage</code>) a measurement fitted with weights, centring or ordinal/count indicators instead of holding it under a different likelihood.</li>
+<li>
+<code>mixture_regression(family = "ordinal")</code> refuses (<code>latents_not_identified</code>) a single-level mixture whose predictors take too few distinct values to identify it.</li>
+<li>An ordinal indicator with fewer than two observed categories is refused (<code>latents_bad_data</code>) even when its factor declares more levels; a declared but never-observed level warns (<code>latents_unused_category</code>).</li>
+<li>Categorical columns whose distinct values print alike are refused instead of getting duplicate labels. <code><a href="../reference/prior_control.html">prior_control()</a></code> refuses a <code>scale</code> that is not a square, symmetric, positive-definite matrix.</li>
+<li>
+<code><a href="../reference/three_step.html">three_step()</a></code> refuses <code>level = "groups"</code> for trajectory models instead of ignoring it. <code>vcov(fit, scale = "unconstrained", method = "bootstrap")</code> raises <code>latents_unsupported_inference</code> instead of returning <code>NULL</code>.</li>
+<li>
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> on membership-covariate and latent transition fits raises <code>latents_unsupported_prediction</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="fixes-0-9-32">Fixes<a class="anchor" aria-label="anchor" href="#fixes-0-9-32"></a></h3>
+<ul><li>
+<code><a href="../reference/lpa.html">lpa()</a></code> and <code><a href="../reference/lca.html">lca()</a></code> record the call as written, so <code><a href="https://rdrr.io/r/stats/update.html" class="external-link">update()</a></code> refits from the caller’s data.</li>
+<li>
+<code>centering = "grand"</code> or <code>"person"</code> (with or without covariates) no longer refuses indicators recorded in very small units.</li>
+<li>
+<code><a href="../reference/mixture_regression.html">mixture_regression()</a></code>: factor predictors can be shared across classes through <code>common</code>. Regression and growth fits no longer store their fitting frame, so saved fits are several times smaller; enumerated growth candidates record a call that names the data.</li>
+<li>Growth mixtures: <code>plot(what = "random")</code> draws when a class’s random-effect covariance is degenerate and is identical on every draw; trajectories work for intercept-only class formulas; <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> honours <code>parm</code>; failed starts warn (<code>latents_failed_starts</code>); <code>plot(what = "classification")</code> names each class on the bars instead of relying on colour alone.</li>
+<li>
+<code>get_results(fit, "recovery")</code> reports a missing known class as <code>NA</code>, and on a membership-covariate fit compares group-level truths with group classes.</li>
+<li>
+<code><a href="../reference/diagnostics.html">diagnostics()</a></code> and <code><a href="../reference/report.html">report()</a></code> work on fits with a noise component. <code><a href="../reference/descriptives.html">descriptives()</a></code> of a single-level fit no longer reports <code>n_groups</code>/<code>icc</code> for the internal row numbering.</li>
+<li>
+<code>print(summary())</code> names single-level and latent class fits correctly; <code>rows = 0</code> prints headings only; empty <code>"profiles"</code>/<code>"responses"</code> tables keep their standard-error columns.</li>
+<li>General <code><a href="../reference/lta.html">lta()</a></code> fits gain a <code>"responses"</code> table for categorical indicators, flag an emptied stayer class as a small class, and no longer warn spuriously for a dotted covariate name. Cross-level fits store <code>profile_prevalences</code>, reported as a <code>prevalence</code> column of <code>get_results(fit, "profiles")</code>.</li>
+<li>Plots: <code><a href="../reference/latents-plots.html">plot_profiles()</a></code>, <code><a href="../reference/latents-plots.html">plot_responses()</a></code>, <code><a href="../reference/latents-plots.html">plot_prevalence()</a></code>, <code><a href="../reference/latents-plots.html">plot_diagnostics()</a></code>, <code><a href="../reference/latents-plots.html">plot_enumeration()</a></code> and <code><a href="../reference/latents-plots.html">plot_tree()</a></code> refuse objects they cannot draw with <code>latents_bad_argument</code> and name the right plot; a noise fit’s prevalence plot gives the noise share; profile views name the indicators they leave out; <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> of a general <code><a href="../reference/lta.html">lta()</a></code> fit uses the package’s probability scale; the group-class variances plot is keyed by class, panelled by level.</li>
+<li>Capped VEI covariance M-steps are reported once per fit with a count.</li>
+<li>Methods that ignored extra arguments (<code><a href="../reference/get_results.html">get_results()</a></code> on general transition fits and transition or family grids, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> on transition fits) now warn (<code>latents_unused_argument</code>); <code>vcov(fit, vcov_type = "robust")</code> on a general transition fit used to return the observed covariance silently.</li>
+<li>Classed conditions replace unclassed errors for invalid seeds, controls, <code>parm</code>, <code>start</code>, <code>n_group_classes</code>, <code>lca(n_profiles = )</code> and covariate-model inputs; <code><a href="../reference/sensitivity.html">sensitivity()</a></code> and <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> validate their controls and seed before fitting.</li>
+<li>Robust standard errors (CR1 since 0.9.31) are exactly <code>sqrt(G / (G - 1))</code> times those of Mplus’s MLR, which applies no small-sample factor: 0.8% larger with 60 groups. <code><a href="../reference/parameter_inference.html">?parameter_inference</a></code> says so, and the external Mplus comparison now checks that relationship to 1e-6.</li>
+<li>
+<code><a href="../reference/compare_models.html">compare_models()</a></code> no longer prints “&lt;- lowest BIC” and its plot no longer circles each criterion’s lowest value: <code>delta_bic</code> and <code>bic_weight</code> carry the evidence and the choice stays with the reader.</li>
+<li>Plots keep the Okabe-Ito grey for categories that are not classes (a noise component, terms shared by every class); classes cycle through the other colours, so the two never coincide. Noise tiles were <code>grey75</code>.</li>
+<li>Documentation: <code>?latents-conditions</code> lists every condition the code raises (checked by a test); <code><a href="../reference/lta.html">?lta</a></code>, <code><a href="../reference/multilpa.html">?multilpa</a></code>, <code><a href="../reference/parameter_inference.html">?parameter_inference</a></code>, <code><a href="../reference/bootstrap_lrt.html">?bootstrap_lrt</a></code>, <code><a href="../reference/get_results.html">?get_results</a></code>, <code><a href="../reference/three_step.html">?three_step</a></code>, <code><a href="../reference/fit_staged.html">?fit_staged</a></code>, the plot help and <code>course_engagement</code> are corrected where they disagreed with the code.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.31" id="latents-0931">latents 0.9.31<a class="anchor" aria-label="anchor" href="#latents-0931"></a></h2>
 <ul><li>Cluster-robust standard errors now carry the CR1 small-sample factor <code>G / (G - 1)</code> for <code>G</code> independent units, the default of <code>sandwich::vcovCL()</code>. It applies to every <code>vcov_type = "robust"</code> result (profile, covariate, transition, family, mixture-regression and growth fits) and to <code><a href="../reference/three_step.html">three_step()</a></code> (both <code>vcov_type</code>s, every <code>method</code>) and <code><a href="../reference/r3step.html">r3step()</a></code>. Robust standard errors rise by <code>sqrt(G / (G - 1))</code>: about 2.6% with 20 groups and 0.5% with 100. A one-class robust regression now reproduces <code>sandwich::vcovCL()</code> exactly.</li>

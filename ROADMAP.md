@@ -1,486 +1,464 @@
-# latents development roadmap
+# latents roadmap
 
-**Planning baseline:** repository source inspected on 23 September 2026;
-`DESCRIPTION` reports version 0.7.0.  
-**Status:** proposed development plan. Features listed as planned are
-not commitments or implemented capabilities.  
-**Objective:** provide a coherent R workflow for multilevel latent
-profiles, latent classes, and latent transitions, with flexible
-specification, dependable inference, and independently validated
-results.
+Rewritten 2026-09-28. **Models come first**: new model families and
+extensions of the existing ones, ahead of inference refinements,
+workflow reach and infrastructure. Every item keeps the package rule
+that whatever ships is defensible: an independent likelihood check,
+parameter recovery by simulation, interval coverage where standard
+errors are reported, and classed refusals for what is not supported.
 
-## 1. Direction and scope
+Size is a rough guide: **S** under half a day, **M** one to two days,
+**L** several days or dependent on outside material.
 
-The immediate objective is to complete the analytical workflows already
-supported by the package. The next objective is to support richer
-longitudinal and measurement models. Continuous random effects are a
-subsequent extension that requires substantial statistical development.
+Evidence for existing claims: `validation/MATH_AUDIT.md`,
+`equivalence/houle-2026/REPORT.md`, `validation/*.R` and `equivalence/`.
 
-Success means that a researcher can specify the model required by the
-study, evaluate its assumptions, quantify uncertainty, and reproduce the
-complete analysis through a consistent interface. Each release should
-deliver a usable scientific workflow, including documentation and
-evidence for its inferential claims.
+------------------------------------------------------------------------
 
-Full Mplus equivalence is outside the scope of this roadmap. Growth
-mixtures, general factor mixtures, survival models, and general
-structural equation modeling remain possible later directions. Their
-inclusion should follow an explicit decision to broaden the package’s
-remit and account for existing R implementations.
+## Priority 0 — One engine (plan)
 
-## 2. Existing foundation
+Consolidate the eight estimation engines into measurement blocks ×
+latent structures on one kernel with shared services. Plan, phases,
+acceptance and risks:
+[validation/ENGINE_DESIGN.md](https://pak.dynasite.org/latents/validation/ENGINE_DESIGN.md).
+Public API unchanged; every phase is a release that reproduces golden
+fixtures.
 
-The following capabilities already exist and should be preserved:
+**E0. Golden baseline** of every engine and option. **M** (251 cases,
+bit-identical reruns)
 
-| Area | Current implementation | Important boundary |
+**E1. Shared inference service.** **M**
+
+**E2. Shared alignment and simulation services.** **M**
+
+**E3. Kernel; port mixture regression and growth mixture.** **L**
+
+**E4. Port profile models.** **L**
+
+**E5. Port transition models.** **L**
+
+**E6. Port Houle families.** **M-L** (closed-form additive likelihood
+kept)
+
+\[~\] **E7. New combinations**: multilevel growth and negative-binomial
+regression mixtures done; growth with categorical/ordinal items,
+transitions of regression/growth blocks, ordinal regression mixtures
+open. **M each**
+
+------------------------------------------------------------------------
+
+## Priority 1 — Models
+
+### 1.1 Multilevel model families (Houle et al.)
+
+The core model has the dispersion-heterogeneity structure. The other
+five families need explicit identification constraints, a simulation
+recovery study each, and ideally Mplus runs as the oracle; the published
+supplement is ambiguous on syntax and parameter counts, so it cannot be
+the oracle alone.
+
+**Additive**, **dispersion**, **additive-dispersion** — shipped in 0.9.0
+as `multilpa(family = )` (experimental): exact likelihood, tables,
+inference, weak-class diagnostic, enumeration, bootstrap LRT;
+simulations in `validation/ADDITIVE_SIMULATION.md`, Latent GOLD
+comparison in `equivalence/latentgold-families/`.
+
+**Restricted / full cross-level** — shipped in 0.9.0 (manifest
+group-mean specification); no standard errors.
+
+Group-class follow-ups: Mplus references; REML-type correction of the
+between-variance ML bias; a J = 100 cell for the weak-class threshold.
+**S–M**
+
+Cross-level follow-ups: enumeration over profiles x classes, recovery
+simulation, latent-intercept (doubly latent) variant. **M–L**
+
+Extend fixed-measurement
+([`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md),
+`fixed =`) and the predictor/outcome workflows to the new families; keep
+their likelihoods distinct from BCH and three-step. **M**
+
+Latent aggregation and multilevel factor-score workflows, with the
+measurement-error assumptions stated. **M**
+
+### 1.2 Latent transition models (`lta()`)
+
+Standard errors are done (2026-09-27). The model itself is still
+first-order, homogeneous and measurement-invariant.
+
+**Covariate-dependent transitions** (fixed and time-varying covariates)
+and covariate initial distribution — done 2026-10-01; Mplus ex8.13/8.14
+and depmixS4 agree.
+
+**Occasion-varying transitions** — done; LMest modBasic = 0 agrees.
+
+**Measurement invariance across occasions** (`measurement = "occasion"`)
+— done; Mplus occasion-specific thresholds agree.
+
+**Second-order transitions** (`order = 2`) — done; exact path sum.
+
+The fourteen covariance structures in
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) (`model =`)
+— done for the homogeneous model; SEs only for EEI/VVI/EEE/VVV.
+
+Mover-stayer class; FIML and covariance structures in the general engine
+(2026-10-01).
+
+Gaps vs JStats: random-intercept LTA (needs the exact Mplus RI-LTA
+specification), absorbing profiles (seqHMM-style). Sampling weights done
+(0.9.3). **M-L**
+
+Covariance structures and FIML in the general engine; bootstrap LRT
+between nested transition models; simulation study of the new standard
+errors (all 0.9.2; audited 2026-10-01).
+
+Structure-aware standard errors in the extended
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) beyond the
+diagonal EEI and VVI (refused today). **M**
+
+### 1.3 Membership-covariate models
+
+The fourteen covariance structures in covariate models (today only EEI,
+VVI, EEE, VVV). Until 0.9.6 any other `model =` was silently fitted as
+one of those four; it is now refused (`latents_unsupported_structure`).
+**S–M**
+
+`start` and `fixed` for covariate models (both refused today). **M**
+
+~~Missing covariates beyond multiple imputation by quadrature~~ —
+decided against (2026-10-15);
+[`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
+is the route.
+
+### 1.4 Random effects
+
+`fit_random_intercept()` is parked in `future/`; restoring it is a
+precondition for everything here.
+
+- \[~\] Parked: `fit_random_intercept()` was removed in 0.8.0 and lives
+  in `future/`. Bringing it back needs standard errors (variance
+  boundary, integration accuracy), multiple-profile validation, and then
+  random slopes. Only if the continuous group-effect family is wanted.
+  **M–L**
+
+### 1.5 Mixture regression (`mixture_regression()`)
+
+Multiple imputation for missing predictors: extend
+[`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
+to
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+(it calls
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+only; confirmed 2026-10-01). **S**
+
+Non-canonical links (probit, cloglog, identity-Poisson). **M**
+
+Random effects within classes: planned as growth mixture models, see
+1.6.
+
+### 1.6 Growth models (latent class growth and growth mixture models)
+
+Status (2026-10-02). Latent class growth analysis (group-based
+trajectories, Nagin) already works through
+`mixture_regression(y ~ time, data, n_classes, id = "id", class_level = "group")`
+for Gaussian, binomial and Poisson outcomes. It matches `lcmm::hlme`
+without random effects: log likelihood -2857.281151 vs -2857.281176,
+same estimates up to class order (300 persons x 6 occasions, 3 classes).
+Growth mixture models (random intercepts/slopes *within* classes,
+`hlme(random = ~ time)`) are not supported.
+
+**Interface (decided before coding).** One verb, named arguments: extend
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+rather than add a function. `random = ~ 1 + time` (within-class random
+effects; default `NULL` keeps today’s model),
+`random_covariance = c("varying", "equal", "proportional")`
+(class-specific, common, or common times a class scale, the `lcmm`
+`nwg`), `random_diagonal = FALSE` (`lcmm` `idiag`), and later
+`residual_correlation = c("none", "ar1", "brownian")`. A growth mixture
+model needs `id` and `class_level = "group"`; anything else is refused
+by class.
+
+**References.** `lcmm::hlme` 2.2.1 (installed; exact for Gaussian, no
+integration) and Latent GOLD 6.1 Syntax (installed under Wine; latent
+growth and mixture growth models with CFactors, Syntax Guide sections
+5.3.4-5.3.5 and 5.4.3; quadrature, so evaluate our exact likelihood at
+its estimates before calling a gap a disagreement).
+
+**Phases** (each ships only with its evidence; sizes as at the top):
+
+**G0. Document what exists.** (2026-10-02: vignette `growth-mixture`,
+dataset `growth_scores`, trajectory views for models without random
+effects.) Example and vignette section “trajectory classes” with
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md);
+a tidy `trajectories` table (predicted mean per class and time) from
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md);
+add the `lcmm::hlme` match as an `equivalence/` fixture. **S** (half a
+day)
+
+**G1. Gaussian growth mixture model, core.** (2026-10-02;
+`equivalence/test-growth-mixture-lcmm.R`, six configurations.) Within
+class k, y_i ~ N(X_i b_k, Z_i G_k Z_i’ + s_k^2 I), unbalanced times and
+missing occasions allowed. Closed-form marginal likelihood (Cholesky per
+person); EM over classes with a per-class weighted linear-mixed-model
+M-step (inner EM on the random effects, or Newton on the log-Cholesky of
+G_k); starts from the latent class growth fit plus random starts;
+SQUAREM. `random_covariance` (`varying`/`equal`/`proportional`) and
+`random_diagonal`. Classed refusals for boundary variances. Evidence:
+independent dense-matrix likelihood and analytic score checks; `hlme`
+matches (log likelihood within 1e-6, estimates within 1e-4) for at least
+6 configurations (1-4 classes; random intercept / intercept+slope; each
+covariance option; unbalanced data). **M** (about 1.5 days)
+
+\[~\] **G2. Inference.** (Observed and sandwich errors done and checked
+against a numerical Hessian; bootstrap and the coverage study remain.)
+Observed-information and sandwich (weighted) standard errors on the
+estimation scale, delta method to variances/correlations; boundary
+handling for random-effect variances; person bootstrap via the existing
+machinery. Evidence: numerical-Hessian agreement 1e-6; coverage
+simulation (\>= 200 datasets, gates as in
+`validation/LTA_SIMULATION.md`). **M** (about 1 day)
+
+\[~\] **G3. Integration.** (Tables, print, summary, plots, weights,
+[`simulate()`](https://rdrr.io/r/stats/simulate.html), enumeration with
+the bootstrap LRT and distal outcomes in
+[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+done; [`predict()`](https://rdrr.io/r/stats/predict.html) for new
+persons and
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+remain, both refused with classed conditions.) `print`/`summary`/`plot`
+(class trajectories with individual-curve spread),
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
+[`predict()`](https://rdrr.io/r/stats/predict.html) (marginal and
+conditional on the random effects, i.e. empirical Bayes), posterior
+class table, `enumerate` over classes,
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+(needs simulation from the fitted model), label alignment, sampling
+weights,
+[`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md).
+Evidence: tests per verb; bootstrap LRT size check. **M** (about 1 day)
+
+**G4. Validation report.** Recovery and coverage study (balanced and
+unbalanced designs, weak and strong separation, random-effect variance
+near zero); Latent GOLD cross-check on two Gaussian configurations;
+write-up in `validation/`. **S-M** (half a day, mostly compute)
+
+**G5. Correlated residuals** (`residual_correlation = "ar1"`,
+`"brownian"`). Changes only the residual covariance in G1;
+`hlme(cor = ...)` as reference. **M** (about 1 day)
+
+**G6. Binary and count outcomes with random effects.** Adaptive
+Gauss-Hermite quadrature (Laplace as a fast option) inside the class EM;
+references Latent GOLD (binary, Poisson growth mixtures) and `lme4` /
+`GLMMadaptive` for one class. Accuracy check against increasing nodes.
+**L** (1.5-2 weeks)
+
+**G7. Out of scope unless asked:** latent-process link functions
+(`lcmm::lcmm`), multivariate outcomes (`multlcmm`), joint latent class
+and survival models (`Jointlcmm`). Each is a separate model family
+(weeks).
+
+Order: G0 -\> G1 -\> G2 -\> G3 -\> G4 gives a releasable Gaussian growth
+mixture model in about 4 working days; G5 next; G6 only with a concrete
+need. Risk: convergence with random-effect variances on the boundary or
+weakly separated classes may add a day to G1-G2.
+
+### 1.7 Across all models
+
+**Sampling weights** (2026-10-01, 0.9.3): unit-level pseudo ML in every
+engine, sandwich SEs, integer weights = duplication, Mplus check.
+
+Weights follow-ups: within-unit (level-1) weights with WTSCALE-style
+scaling; stratification/PSU design-based variance; weighted
+[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+and [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md);
+weighted descriptive tables
+([`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
+[`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md),
+classification counts are per-unit and unweighted); a weighted-mixture
+external reference (Mplus `TYPE = MIXTURE COMPLEX` with `WEIGHT`). **M**
+
+[`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
+with a constrained covariance structure (refused today, because a
+structure maximized across profiles cannot be held one profile at a
+time). **M**
+
+------------------------------------------------------------------------
+
+## Priority 2 — Choosing among models
+
+`enumerate_classes(time = )` and
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+for transition models (done 2026-10-01).
+
+(done 0.9.2)
+[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+and
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+for transition models, with profile count and group-class count as a
+joint grid. **M**
+
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+for nested comparisons beyond the one-class increment in
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+(diagonal against full covariance at equal class counts is refused today
+with `latents_incomparable_models`; transition and family fits already
+have a nesting rule). **M**
+
+\[~\] Parked: VLMR/LMR test (`lmr_lrt()` in `future/`) until its
+reference distribution is independently validated; a chi-square
+approximation is not acceptable. **L**
+
+Calibrate the local-dependence diagnostics (bivariate residuals) for
+fitted measurement, classification uncertainty and clustering, for
+example by a parametric bootstrap; current p-values are approximate.
+**M**
+
+`compare_models(a, b, labels = )`, or `information_criteria()` over
+several fits, returning one labelled table. **S**
+
+Document the supported comparison families and failed-replicate
+behaviour; claim Mplus TECH14 equivalence only if separately
+established. **S**
+
+------------------------------------------------------------------------
+
+## Priority 3 — Workflow reach
+
+**Public label alignment** between two fits of any family. Internal
+versions exist (`.multilpa_align_labels()` for `multilpa`,
+`.multilpa_pool_align()`/`.multilpa_cov_permute()` for covariate fits);
+an LTA version must reorder `transition_probabilities`,
+`transition_counts`, `initial_probabilities` and `empty_transition_rows`
+on both margins, and a two-profile test cannot catch a margin error
+because `c(2, 1)` is its own inverse. Prerequisite for the next item.
+**M**
+
+[`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+for [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) and
+covariate fits (refused today with `latents_unsupported_sensitivity`;
+needs refit paths and the alignment above). **M**
+
+Transition-aware
+[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+BCH, [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+and classification errors: they read an LTA fit’s posteriors but treat
+occasions as independent; the covariate model does not accept an LTA
+fit. **M**
+
+Error bars in `plot(what = "bars")` for transition fits (standard errors
+now exist; the plot does not draw them). **S**
+
+`plot(what = "bars")` on an unconverged or bound-active fit now draws
+without whiskers and says why (2026-09-28).
+
+Scalar accessors so prose can quote one number with one verb:
+`entropy(fit, level = )`, `worst_residual(fit)`. **S**
+
+Named plot functions for fitted models (2026-10-07):
+[`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md):
+the `plot(fit, what = )` sweep hides each view’s arguments from editor
+completion.
+[`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+(2026-10-07) is the pattern: the generic delegates to the named
+function, which has no `...`. Owner’s request. **M**
+
+------------------------------------------------------------------------
+
+## Naming consistency
+
+[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+reports a `class` column where every other verb says
+`profile`/`group_class`;
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+uses `class_k` throughout its own family (consistent within it). Decide
+one vocabulary.
+
+## Priority 4 — Decisions for the owner
+
+All four decided 2026-10-15 (0.9.31).
+
+Cluster-robust variance: **CR1** (`G/(G-1)`) everywhere, matching
+`sandwich::vcovCL()`; one helper, `.inference_cluster_factor()`, and a
+required `n_units` on `.inference_sandwich()` so no robust path can skip
+it.
+
+Separated covariate fit: **refuse** Wald inference
+(`latents_boundary_fit`) on a unit-free check (coefficient per RMS unit
+of its covariate \> 20), shared with the `latents_extreme_coefficients`
+warning. The old refusal relied on a singular information and failed on
+some seeds.
+
+Transition `group_probabilities` vs posteriors: **tighter tolerance**,
+`lta(tol = 1e-10)`; gap 2e-4 -\> 2e-5 for ~1.5x iterations.
+
+Missing covariates: **keep refusing** under FIML (`latents_bad_data`),
+pointing to
+[`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md);
+quadrature dropped from 1.3.
+
+------------------------------------------------------------------------
+
+## Priority 5 — Release and infrastructure
+
+Bump `DESCRIPTION` (0.8.4) before any push. **S**
+
+(2026-10-01, 0.9.4: CI repaired) CI has never run: GitHub Actions on
+release, devel and oldrel across Linux, macOS and Windows; only macOS
+with R 4.5.2 so far. **S**
+
+README update: it is now a tutorial (the feature matrix with the
+four-of-fourteen claim is gone) and does not mention sampling weights,
+ordinal/count indicators, the Houle families, the
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) extensions
+or
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md).
+**S**
+
+Vignette coverage: exercised 14 of 28 exports when audited on
+2026-09-20; add the verbs added since
+([`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md),
+[`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md),
+transition inference,
+[`predict()`](https://rdrr.io/r/stats/predict.html)). Re-count against
+`NAMESPACE` before claiming coverage. **M**
+
+Reproduce the Houle et al. fitted analyses once participant data, fitted
+input/output and preprocessing are available. **L**
+
+The six rendered plots in `Tutorial_docs/two-level-lpa-engagement.Rmd`
+have not been looked at by a person.
+
+------------------------------------------------------------------------
+
+## Done
+
+| Date | Item | Evidence |
 |----|----|----|
-| Measurement | Gaussian, categorical, and mixed indicators | Categorical measurement uses unrestricted response probabilities |
-| Multilevel structure | Observation profiles nested within discrete latent group classes | Continuous group random effects are deferred |
-| Gaussian covariance | Fourteen covariance structures; enumeration across covariance models | Wald inference covers EEI, VVI, EEE, and VVV; bootstrap inference covers all fourteen |
-| Missing indicators | Observed-data likelihood in base models and LTA | The one-step membership-covariate path rejects FIML |
-| Covariates | Profile- and group-membership regressions | Complete numeric predictors; restricted combinations with other features |
-| Auxiliary analysis | BCH means/contrasts and R3STEP at observation or group level | First-stage classification-error uncertainty is treated as fixed |
-| Staged estimation | Measurement estimated first, then held fixed | First-stage uncertainty is not propagated |
-| Transitions | Gaussian/categorical/mixed LTA, optional latent group classes, observed/grid occasion handling | Homogeneous first-order transitions, invariant measurement, no transition predictors or parameter inference |
-| Evaluation | Multiple starts, diagnostics, information criteria, sensitivity analysis, parametric bootstrap class comparisons for supported base models | LTA enumeration and likelihood-ratio testing are not implemented |
-| Independent checks | Retained external comparisons and simulation infrastructure | Coverage and difficult-data validation need expansion for new workflows |
-
-Baseline source: [main
-estimator](https://pak.dynasite.org/latents/R/multilpa.R),
-[transitions](https://pak.dynasite.org/latents/R/transitions.R),
-[inference](https://pak.dynasite.org/latents/R/inference.R), [three-step
-analysis](https://pak.dynasite.org/latents/R/three-step.R), [deferred
-features](https://pak.dynasite.org/latents/future/README.md), and
-[equivalence
-infrastructure](https://pak.dynasite.org/latents/equivalence/README.md).
-
-The current enumeration interface uses `model =` for covariance models.
-New examples and tests must follow the current API rather than earlier
-`structure =` examples.
-
-## 3. Phases, effort, and costs
-
-Estimates assume one experienced statistical R developer, with
-statistical review available. They include implementation, tests,
-documentation, and independent validation. A person-week means 40 hours.
-Costs use an **illustrative rate of €100/hour**; this is a budgeting
-assumption, not a market quotation.
-
-| Phase | Deliverable | Dependencies | Effort | Illustrative cost |
-|----|----|----|---:|---:|
-| 0 | Capability contracts and validation design | None | 1–2 person-weeks | €4k–8k |
-| 1 | LTA bootstrap uncertainty; FIML with membership covariates; predictor formulas | Phase 0 | 6–12 person-weeks | €24k–48k |
-| 2 | Initial/transition predictors; time-varying transitions; LTA candidate comparison | Shared design infrastructure and LTA validation from Phase 1 | 8–14 person-weeks | €32k–56k |
-| 3 | Known-group/partial-invariance models; uncertainty-aware auxiliary workflows | Parameter design from Phases 0–2 | 12–22 person-weeks | €48k–88k |
-| 4A, optional | Poisson and negative-binomial measurement | Stable measurement and inference contracts | 4–8 person-weeks | €16k–32k |
-| 4B, optional | Continuous random-intercept mixtures with inference | Integration design and independent reference models | 8–16 person-weeks | €32k–64k |
-| 4C, optional | Random-intercept LTA | Phase 2 plus a validated random-effects design | 12–24 person-weeks | €48k–96k |
-
-**Core programme, Phases 0–3:** approximately **27–50 person-weeks
-(€108k–200k)** before contingency. The first practical milestone, Phases
-0–1, is approximately **7–14 person-weeks (€28k–56k)**.
-
-Phase estimates assume shared infrastructure and are not sums of
-independent feature quotations. Optional phases should be re-estimated
-after design work; overlap with earlier phases is uncertain. Allow a
-separate 25% planning reserve for numerical or statistical redesign.
-Compute, external software licences, procurement, and review waiting
-time are excluded. Person-weeks describe effort, not guaranteed calendar
-completion; parallel staffing will not reduce time proportionally.
-
-## 4. Phase 0 — Establish contracts and validation targets
-
-**Scientific outcome:** a precise statement of which model is estimated
-by each feature combination and what evidence is required for a release.
-
-### Work
-
-Record a capability matrix crossing model family, indicator type,
-covariance model, missingness, covariates, fixed parameters, and
-inference method.
-
-Assign each combination a status: supported, planned, or intentionally
-unsupported. Verify supported combinations from executable examples.
-
-Define parameter storage and naming for initial logits, transition
-logits, predictor terms, and equality constraints.
-
-Specify how model objects retain factor levels, contrasts,
-transformations, reference categories, and fitted row order.
-
-Design bootstrap replicate records, label alignment, failure handling,
-and seed management. Reuse the existing bootstrap infrastructure where
-appropriate.
-
-Choose benchmark models and record their exact parameterization,
-identification constraints, missingness handling, and sample-size
-convention.
-
-Define simulation scenarios and acceptance criteria before examining
-results.
-
-### Acceptance gate
-
-Every Phase 1 task has a written statistical specification, an
-identified source implementation, and at least one independently
-checkable reference case. Existing supported behaviour is captured by
-regression checks. Proposed public arguments remain provisional until
-the design review is complete.
-
-## 5. Phase 1 — Complete current analysis workflows
-
-### 1A. Bootstrap inference for latent transitions
-
-**Question enabled:** how precisely are initial and transition
-probabilities estimated?
-
-Resample complete observed groups or people, retaining their sequences,
-indicator missingness, and occasion grid semantics.
-
-Give duplicated sampled groups distinct bootstrap identifiers.
-
-Refit the same model specification using reproducible multiple starts.
-
-Align both profile and latent group-class labels. Apply profile
-permutations consistently to both axes of each transition matrix.
-
-Return parameter standard errors, percentile intervals, and
-requested/completed/failed replicate counts.
-
-Distinguish nonconvergence, collapsed classes, boundary estimates, and
-ambiguous label matches.
-
-Define an explicit failure policy. Never silently discard failures and
-report unconditional validity for the surviving replicates.
-
-Flag transition rows without estimable outgoing information; do not give
-fallback probabilities ordinary inferential status.
-
-**Acceptance:** recovery and interval coverage are assessed for one and
-multiple group classes, unequal sequence lengths, and each supported
-measurement family. Label permutations leave results unchanged.
-Published limitations specify where reliable intervals could not be
-established.
-
-### 1B. Missing indicators in membership-covariate models
-
-**Question enabled:** how do predictors relate to membership when some
-indicators are missing?
-
-Extend the covariate expectation step to the observed-data measurement
-likelihood.
-
-Use the appropriate conditional moments for partially observed Gaussian
-vectors and omit unobserved categorical responses from their likelihood
-contributions.
-
-Extend parameter inference consistently with the new likelihood; guard
-combinations whose inference remains unsupported.
-
-Preserve the complete-data result as a limiting case.
-
-Specify behaviour for fully missing indicator rows and groups and
-confirm identifiability checks.
-
-**Boundary:** missing predictors require a separate modeling or
-imputation strategy. Indicator FIML does not automatically handle them.
-
-**Acceptance:** estimates and inferential quantities agree with
-independent reference fits within declared numerical tolerances.
-Simulation scenarios include complete data, MCAR, and explicitly
-specified MAR mechanisms; unsupported mechanisms are not described as
-solved.
-
-### 1C. Predictor formulas and design matrices
-
-**Question enabled:** how do categorical predictors, interactions, and
-specified transformations relate to membership?
-
-Add a formula-based interface while retaining existing character-vector
-calls.
-
-Construct and store design matrices using familiar R conventions.
-
-Preserve contrasts and reference levels across refits and bootstrap
-samples.
-
-Detect rank deficiency, missing predictors, and invalid group-level
-variation before estimation.
-
-Test loss of a factor level in a resample without silently changing the
-parameterization.
-
-**Acceptance:** formula and manually constructed numeric-design fits
-agree. Output identifies predictor contrasts and membership reference
-categories. A worked vignette combines factor predictors, missing
-indicators, and interpretable membership effects.
-
-### Phase 1 release gate
-
-The three workflows have documented capability boundaries, successful
-external comparisons, simulation evidence, and executable tutorials. No
-claim of support is based solely on an argument being accepted by a
-function.
-
-## 6. Phase 2 — Model predictors and changes in latent dynamics
-
-**Scientific outcome:** estimate how initial membership and transitions
-depend on covariates and occasion.
-
-### Work
-
-Add separate specifications for initial-profile membership, transitions,
-and, where supported, latent group-class membership.
-
-Define how a time-varying predictor is aligned: origin occasion,
-destination occasion, or an explicitly specified lag. Record that choice
-in output.
-
-Estimate multinomial transition regressions conditional on the origin
-profile.
-
-Begin with shared predictor slopes and clearly identified intercepts;
-add class-specific slopes only with a justified identification and
-validation plan.
-
-Permit transitions to differ across predefined occasions or periods,
-alongside the homogeneous model.
-
-Reuse Phase 1 bootstrap inference for the new parameters after
-validating label alignment and sparse transition behaviour.
-
-Extend candidate enumeration to LTA with common diagnostics, parameter
-counting, information criteria, and restart records.
-
-Report predicted transition probabilities at specified covariate values
-as well as logit coefficients.
-
-### Acceptance gate
-
-The no-predictor model reproduces existing LTA, and equal time-specific
-parameters reproduce homogeneous transitions. Independent fits agree for
-at least one transition-covariate and one time-varying specification.
-Simulations examine rare transitions, sparse covariate patterns, and
-short sequences. Information-criterion conventions are explicit.
-
-LTA likelihood-ratio tests require a separate calibration task.
-Enumeration does not imply that an ordinary chi-square class-count test
-is valid. Analytic and sandwich standard errors can follow once the full
-transition score has been derived and checked; they are not assumed to
-be included in this phase’s bootstrap deliverable.
-
-## 7. Phase 3 — Evaluate measurement and external-variable models
-
-### 3A. Known groups and partial measurement invariance
-
-**Question enabled:** do profiles have comparable meanings across
-populations or occasions?
-
-Introduce observed known groups separately from the nesting identifier
-and from latent group classes.
-
-Implement a parameter map for fixed values, free values, and selected
-equality constraints.
-
-Support fully invariant measurement and selected departures across
-observed groups or occasions.
-
-Require sufficient anchors and document identification and
-label-comparability assumptions.
-
-Add direct covariate effects on selected indicators as a separately
-validated specification.
-
-Provide comparisons for supported nested invariance models with fixed
-class counts and appropriate regularity checks.
-
-**Acceptance:** the fully constrained model reproduces the current
-invariant model. Constraint accounting, free-parameter counts, and
-inference agree with independent references. Simulated noninvariance is
-distinguishable from changes in membership within the tested scenarios.
-
-A model allowing arbitrary differences across every group, class, and
-occasion is not an initial deliverable. Each added dimension needs
-identification and data-support checks.
-
-### 3B. First-stage uncertainty in staged and auxiliary analysis
-
-**Question enabled:** how uncertain are external-variable associations
-when the measurement solution was itself estimated?
-
-Bootstrap the full sequence: measurement fit, label alignment,
-classification-error calculation, and auxiliary model.
-
-Resample at the independent group level and preserve the required
-within-group structure.
-
-Apply the same principle to staged estimation with estimated first-stage
-measurement parameters.
-
-Report conditional and full-pipeline uncertainty as distinct inferential
-options.
-
-Evaluate sensitivity to weak separation and unstable
-classification-error matrices.
-
-**Acceptance:** simulation reports bias, coverage, interval width, and
-failed replications. It compares the current conditional approach with
-the proposed full-pipeline procedure; bootstrap support is released only
-for combinations with defensible evidence.
-
-### 3C. Broader external outcome models
-
-Add covariate-adjusted continuous outcome models.
-
-Add binary/categorical outcome models with an explicitly justified
-classification-error correction.
-
-Specify handling of missing external outcomes separately from missing
-measurement indicators.
-
-Validate each outcome family independently; do not assume that generic
-weighted regression is valid for every BCH weight configuration.
-
-Count distal outcomes and arbitrary secondary SEM are subsequent
-extensions, requiring revised effort estimates.
-
-### Phase 3 release gate
-
-A complete vignette demonstrates an observed-group or longitudinal
-invariance analysis and an external-variable analysis with propagated
-measurement uncertainty. Documentation distinguishes known groups,
-latent group classes, and sampling clusters throughout.
-
-## 8. Phase 4 — Optional expansion of the model family
-
-### 4A. Count measurement
-
-Start with Poisson and negative-binomial indicator likelihoods,
-exposure/offset handling where appropriate, and mixtures of count and
-existing indicator families. Validate overdispersion, zero frequencies,
-boundaries, missing indicators, and parameter inference.
-Zero-inflated/hurdle models are a subsequent decision and are not
-included in the initial estimate.
-
-### 4B. Continuous random-intercept mixtures
-
-Use the deferred code as a prototype to audit. Specify where the random
-effect enters: indicator means, membership logits, or both. These are
-different models and should have separate contracts.
-
-Before release, establish multiple-profile recovery against an
-independent implementation, integration accuracy across quadrature
-settings, identifiable parameterizations, and an explicit
-variance-boundary inference strategy. The 8–16-week estimate concerns a
-bounded random-intercept specification; it does not include general
-random slopes or arbitrary correlated random effects.
-
-### 4C. Random-intercept LTA
-
-Develop a stated model separating persistent person heterogeneity from
-occasion-specific dynamics. The deferred static random-intercept code
-does not by itself provide RI-LTA. Validate the
-measurement/random-effect relationship, transition parameterization,
-numerical integration, predictor effects, and uncertainty against
-matched RI-LTA references.
-
-### Later decisions
-
-Random slopes and general continuous random effects were provisionally
-estimated at 16–32+ person-weeks (€64k–128k+). Growth/factor mixtures
-have a similarly broad preliminary range. Survey weights, strata,
-additional observed nesting levels, and crossed classifications require
-their own design studies. None is included in the core programme budget.
-
-A VLMR test is lower priority than these workflows because a parametric
-bootstrap comparison already exists for supported base models. Restore
-the deferred test only after independently validating its reference
-distribution and p-values; a conventional chi-square substitution is not
-a solution.
-
-## 9. Validation and release policy
-
-Every release should supply four types of evidence:
-
-1.  **Likelihood and implementation checks:** limiting cases, row/order
-    invariance where appropriate, label permutations, parameter counts,
-    and derivatives checked away from an optimum.
-2.  **Independent numerical comparisons:** matched identification and
-    constraints; retained inputs and outputs; justified tolerances for
-    likelihoods, parameters, predictions, and standard errors where
-    available.
-3.  **Monte Carlo evidence:** bias, empirical standard deviation,
-    estimated standard errors, interval coverage and width, convergence,
-    boundaries, and label-alignment failures.
-4.  **User workflow checks:** executable vignettes, stable extraction
-    and plotting interfaces, informative unsupported-combination errors,
-    and package checks on supported platforms.
-
-The simulation design should vary the dimensions relevant to each
-feature: number and size of groups, unequal group sizes, separation,
-rare classes, covariance structure, indicator type, missingness,
-sequence length, and transition sparsity. Use a planned scenario design
-rather than an unnecessarily large full Cartesian grid.
-
-For each coverage estimate, report Monte Carlo uncertainty. With 1,000
-successful replications and coverage near 95%, the approximate Monte
-Carlo standard error is 0.7 percentage points. Pilot runs may use fewer
-replications; final replication counts should follow the desired
-precision and computational burden. Report failed runs separately and
-explain whether coverage is conditional on successful estimation.
-
-Establish acceptable performance and numerical tolerances before
-inspecting final results. Failures must lead to correction, an explicit
-support restriction, or a documented research limitation. Unit-test
-success alone does not establish calibrated inference.
-
-## 10. First development cycle
-
-The first two person-weeks should produce reviewable groundwork:
-
-| Task | Output | Completion condition |
-|----|----|----|
-| Audit current support | Capability matrix | Every claimed combination linked to an executable check |
-| Design LTA resampling | Bootstrap specification | Group resampling, grid semantics, label alignment, and failures defined |
-| Audit covariate likelihood | FIML implementation design | Required expectation, maximization, and inference changes identified |
-| Specify predictor interface | Formula/design-matrix proposal | Backward compatibility and resampling behaviour documented |
-| Define evidence | Reference and simulation plan | Models, scenarios, measures, tolerances, and release decisions stated |
-
-Implementation can then begin with LTA bootstrap inference, followed by
-FIML with covariates and formula support. Independent reference
-preparation can proceed alongside implementation. Statistical
-definitions and parameter contracts should be settled before separate
-contributors build dependent components.
-
-## 11. Positioning and reference material
-
-The package’s contribution is the combination of multilevel measurement,
-dynamics, external variables, and evaluation in a consistent workflow.
-Existing tools already cover parts of this space, so development
-priorities should be reviewed against their capabilities before
-commissioning a new model family.
-
-Reference material used in the preceding capability assessment:
-
-- [Mplus multilevel mixture
-  modeling](https://www.statmodel.com/HTML_UG/chapter10V8.htm).
-- [Mplus latent transition analysis and
-  covariates](https://www.statmodel.com/Webtalk2.shtml).
-- [Mplus random-intercept LTA models and
-  examples](https://www.statmodel.com/RI-LTA.shtml).
-- [Mplus BCH auxiliary-variable technical
-  note](https://www.statmodel.com/examples/webnotes/webnote21.pdf).
-- [glca
-  documentation](https://search.r-project.org/CRAN/refmans/glca/html/glca.html).
-- [multilevLCA
-  documentation](https://search.r-project.org/CRAN/refmans/multilevLCA/html/multiLCA.html).
-- [LMest mixed latent Markov
-  models](https://search.r-project.org/CRAN/refmans/LMest/html/lmestMixed.html).
-- [lcmm documentation](https://cecileproust-lima.github.io/lcmm/).
-- [OpenMx model examples](https://openmx.ssri.psu.edu/node/4480) and
-  [tidySEM](https://cjvanlissa.github.io/tidySEM/).
-
-Reassess estimates and priorities after each phase using actual
-development effort, benchmark results, and researcher needs. Assign
-release versions only after the scope and acceptance evidence are
-established.
+| 2026-10-02 | 0.9.11 (pending push): false non-convergence of transition fits (L-BFGS-B code 52) | 5/120 test datasets flagged at the maximum, 0 after; restart gain \< 1e-12 |
+| 2026-10-02 | 0.9.9: full-covariance transition simulation; transition bootstrap inference | coverage 0.924-0.928, bootstrap LRT size 0.065 (200 datasets) |
+| 2026-10-02 | 0.9.8: review of 0.9.0-0.9.7 plus six follow-up fixes | 5,332 assertions; `validation/review-2026-10-0*` |
+| 2026-09-28 | [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md) for FIML and membership-covariate fits | size 0.040 / 0.053 at 5% (`validation/bootstrap-lrt-size.R`) |
+| 2026-09-27 | Standard errors for [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fits | Richardson Hessian 1e-6, depmixS4; coverage 0.947–0.960 |
+| 2026-09-27 | [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md) for missing covariates | [`mice::pool.scalar`](https://amices.org/mice/reference/pool.scalar.html) to 1e-12; coverage by imputation model |
+| 2026-09-27 | Two-stage bootstrap for [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md) | coverage 0.97 against 0.86–0.89 conditional |
+| 2026-09-27 | Profile slopes by group class (`profile_slopes`) | coverage 0.933–0.970 |
+| 2026-09-27 | FIML in membership-covariate models | likelihood 1e-12; coverage 0.942–0.954 |
+| 2026-09-27 | Standard errors for categorical covariate fits (found already done) | score 4.4e-08 |
+| 2026-09-27 | Faster EVE/VVE, Ward first start, [`predict()`](https://rdrr.io/r/stats/predict.html), single-level enumeration | 13/14 structures faster than mclust |
+| 2026-09-27 | SQUAREM EM acceleration, vectorised E-step | E-step 14× faster, identical output |
+| 2026-09-27 | [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md); mclust prior, noise, SEs for all 14 structures | flexmix 22 checks; coverage 0.915–0.965 |
+| 2026-09-22 | [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md) for [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md); transition-model [`plot()`](https://rdrr.io/r/graphics/plot.default.html) | fixed a permutation defect |
+| 2026-09-21 | Centering (`person`, `grand`); `lmr_lrt()` and random intercept moved to `future/` |  |
+| 2026-09-20 | External review remediated; tutorial rebuilt; feature matrix audited | `NEWS.md` 0.11.0 |
+| 2026-09-19 | `fixed =`, [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md), covariate models with categorical, mixed and full covariance, [`lta()`](https://pak.dynasite.org/latents/reference/lta.md), CLC and KIC, estimates with SEs from one verb | `validation/MATH_AUDIT.md` |
+
+Ordinal (adjacent-category) and Poisson count indicators in the core
+engine (2026-10-01, 0.9.5; Latent GOLD-checked).
+
+Ordinal/count in covariate models and
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md);
+negative-binomial counts (2026-10-02, 0.9.7; Latent GOLD-checked).
+
+Ordinal/count follow-ups: `start`/`fixed`, zero-inflated counts, a
+cumulative-logit ordinal option, ordinal/count in the bivariate-residual
+table and plots. **M**

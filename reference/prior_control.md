@@ -28,8 +28,13 @@ print(x, ...)
 
 - mean:
 
-  Optional prior mean, one value per continuous indicator, in the
-  indicators' own units. Naming one needs a positive `shrinkage`.
+  Optional prior mean, one value per continuous indicator, on the scale
+  the profile means are estimated on: the indicators' own units, or
+  their centred values when
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)'s
+  `centering` centres them (so a mean of the raw data is far from the
+  centred data's and is not the default). Naming one needs a positive
+  `shrinkage`.
 
 - dof:
 
@@ -80,7 +85,9 @@ structures.
 ## Conditions
 
 Raises `latents_bad_argument` for a negative or non-finite `shrinkage`,
-a `mean` with a zero `shrinkage`, or a non-positive `dof` or `scale`.
+a `mean` with a zero `shrinkage`, a non-positive `dof`, or a `scale`
+that is neither a positive number nor a square, symmetric,
+positive-definite matrix.
 
 ## References
 

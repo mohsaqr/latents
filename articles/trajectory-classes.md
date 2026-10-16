@@ -162,8 +162,10 @@ get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
 
 Every view of a trajectory fit is one
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) call. Each
-class’s trajectory with its confidence band, the band within which 80%
-of its students’ observations lie, and the observed class means:
+class’s trajectory with its confidence band, the observed class means,
+and a sample of students’ observed trajectories as thin lines (a band
+for the spread of students around their class needs random effects, so
+it appears only in the growth mixture model):
 
 ``` r
 
@@ -227,7 +229,7 @@ compare_models(straight = straight, curved = curved)
 #> 
 #> Model     Classes  Random   k    LogLik       BIC   ΔBIC  Weight  Entropy
 #> --------  -------  ------  --  --------  --------  -----  ------  -------
-#> straight        3  none    11  -5889.55  11841.85   0.00   1.000     0.92  <- lowest BIC
+#> straight        3  none    11  -5889.55  11841.85   0.00   1.000     0.92
 #> curved          3  none    14  -5888.78  11857.41  15.56   0.000     0.92
 ```
 

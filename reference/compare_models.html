@@ -21,7 +21,7 @@ one of them is true, with equal prior probabilities."><meta property="og:image" 
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -130,9 +130,8 @@ and the same four prefixed <code>group_</code>, <code>smallest_share</code> (the
 share, relative to all observation mass including any noise component), <code>converged</code>, <code>n_best_replicated</code>, and <code>delta_bic</code> and
 <code>bic_weight</code> on <code>bic_groups</code> (the BIC that counts groups as the
 independent units; on a single-level model it is the ordinary BIC). The
-numbers are the ones the grid's candidates table reports. The printout
-marks the row with the lowest BIC; that is a fact about the criterion,
-not a choice. Raises <code>latents_bad_argument</code> for fits it cannot compare,
+numbers are the ones the grid's candidates table reports. No row is
+marked as best: <code>delta_bic</code> and <code>bic_weight</code> carry the evidence. Raises <code>latents_bad_argument</code> for fits it cannot compare,
 for a group-class family grid (compare those in their own table), for
 candidates named together with <code>n_profiles</code> or <code>n_group_classes</code>, and for
 <code>n_profiles</code> or <code>n_group_classes</code> without a grid;
@@ -179,7 +178,7 @@ weights. <em>Psychonomic Bulletin &amp; Review</em>, 11, 192–196.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model         Classes  Random     k    LogLik      BIC    ΔBIC  Weight  Entropy</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ------------  -------  ---------  -  --------  -------  ------  ------  -------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> trajectories        2  none       7  -1277.94  2584.53  196.11   0.000     0.94</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97  &lt;- lowest BIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Candidates of an enumeration grid, by name, by class counts, or selected</span></span></span>
 <span class="r-in"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">40</span><span class="op">)</span>,</span></span>
@@ -191,21 +190,21 @@ weights. <em>Psychonomic Bulletin &amp; Review</em>, 11, 192–196.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  &lt;- lowest BIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97</span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">grid</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  &lt;- lowest BIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97</span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span><span class="va">grid</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model comparison</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  &lt;- lowest BIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97</span>
 </code></pre></div>
     </div>

@@ -27,7 +27,7 @@ boundary solutions and unidentified Hessians do not admit this calculation."><me
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -171,7 +171,7 @@ boundary solutions and unidentified Hessians do not admit this calculation.</p>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
 <span>  iter <span class="op">=</span> <span class="fl">199L</span>,</span>
 <span>  n_starts <span class="op">=</span> <span class="fl">10L</span>,</span>
-<span>  max_iter <span class="op">=</span> <span class="fl">1000L</span>,</span>
+<span>  max_iter <span class="op">=</span> <span class="fl">5000L</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1e-10</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"fix"</span><span class="op">)</span></span>
@@ -210,7 +210,8 @@ provides a weaker consistency check.</p></dd>
 accumulates the outer product of the per-group scores, multiplied by the
 CR1 small-sample factor <code>G / (G - 1)</code> for <code>G</code> groups (the default of
 <code>sandwich::vcovCL()</code>; every robust standard error in the package carries
-it). Groups are the
+it). Mplus's MLR applies no such factor, so these errors are exactly
+<code>sqrt(G / (G - 1))</code> times Mplus's (0.8% larger with 60 groups). Groups are the
 independent units, so robust errors relax the assumption that the Gaussian
 within-group model is correctly specified. They do not relax the assumption
 that groups are independent.
@@ -220,7 +221,10 @@ the variance of the score rather than by the curvature of the likelihood.
 It is the estimator <code>glca</code> reports, so it reproduces that package's
 standard errors; the two agree with <code>"observed"</code> in large samples and can
 differ noticeably in small ones, where <code>"observed"</code> is usually the more
-reliable. <code>"robust"</code> and <code>"opg"</code> need more groups than parameters.</p></dd>
+reliable. <code>"robust"</code> and <code>"opg"</code> need more groups than parameters.
+<code>vcov_type</code> and <code>step</code> belong to the Wald path; <code>method = "bootstrap"</code>
+does not use them, since resampling groups already makes its errors
+robust in the sense <code>"robust"</code> is.</p></dd>
 
 
 <dt id="arg-adjust">adjust<a class="anchor" aria-label="anchor" href="#arg-adjust"></a></dt>
@@ -272,7 +276,8 @@ maximum here as it does in <code><a href="multilpa.html">multilpa()</a></code>, 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>Optional seed for the resampling: any whole number <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code>
-accepts; a fraction raises <code>latents_bad_argument</code>. The stream is restored on exit,
+accepts; anything else raises <code>latents_bad_argument</code>, on either path. The
+Wald path draws nothing, so it uses no seed. The stream is restored on exit,
 so a seeded call leaves the caller's random state exactly as it found it.</p></dd>
 
 
@@ -349,21 +354,31 @@ estimation-scale chart is what this path does without.</p>
 <p>Diagnostics of the fit as a whole travel as attributes rather than as
 columns repeated down every row: <code>covariance</code> and <code>covariance_unconstrained</code>
 (natural and estimation-scale covariance of the estimates), <code>hessian</code>,
-<code>gradient</code>, <code>scaled_score</code>, <code>condition_ratio</code>, <code>level</code>, <code>step</code>, <code>vcov_type</code>,
-<code>fixed</code> (the measurement blocks this fit held, <code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code> when none) and
-<code>adjust</code>. When <code>vcov_type</code> is <code>"robust"</code>, <code>group_scores</code> holds the
-groups-by-parameters score matrix and <code>scaling_correction</code> the MLR scaling
-correction factor <code>tr(A^-1 B) / q</code>, used for scaled likelihood-ratio
-difference tests.</p>
+<code>gradient</code>, <code>scaled_score</code>, <code>score_displacement</code> (the largest score times
+its estimation-scale standard error, the quantity the
+<code>latents_unconverged</code> warning reads), <code>condition_ratio</code>, <code>level</code>, <code>step</code>,
+<code>method</code>, <code>vcov_type</code>, <code>fixed</code> (the measurement blocks this fit held,
+<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code> when none), <code>fixed_at_bound</code> (the probabilities
+<code>boundary = "fix"</code> held) and <code>adjust</code>. When <code>vcov_type</code> is <code>"robust"</code> or
+<code>"opg"</code>, <code>group_scores</code> holds the groups-by-parameters score matrix and
+<code>scaling_correction</code> the MLR scaling correction factor <code>tr(A^-1 B) / q</code>,
+with <code>B</code> the cross-product of those scores without the CR1 factor, used
+for scaled likelihood-ratio difference tests; it is <code>NA</code> otherwise.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Class-membership coefficients are on the multinomial logit scale
 with the final profile and the final group class as references, so a
-coefficient is a log odds against that reference. The tests are Wald tests
-and inherit the usual caveat: they are unreliable for a coefficient driven
-to the boundary by separation, which the size of the estimate and its
-standard error together will reveal.</p>
+coefficient is a log odds against that reference. The tests are Wald tests,
+which are meaningless for a coefficient driven to the boundary by
+separation or an empty class. A fit with a membership logit above 20 in
+coordinates that depend neither on the covariates' units nor on their
+origin (roughly, a slope per standard deviation of its covariate and an
+intercept at the covariates' means) is therefore refused with
+<code>latents_boundary_fit</code> rather than given a standard error; the fit itself
+warns with <code>latents_extreme_coefficients</code>. Only
+<code>method = "wald"</code> is implemented for a covariate fit; <code>"bootstrap"</code> is
+refused with <code>latents_unsupported_inference</code>.</p>
 <p>For a general transition fit (an <code><a href="lta.html">lta()</a></code> fit with covariate,
 occasion-varying or second-order transitions), the table has one row per
 transition, initial and second-order logit: <code>block</code>, <code>group_class</code>,
@@ -388,7 +403,8 @@ bound, <code>latents_singular_information</code> when the observed information c
 be inverted, <code>latents_no_free_parameters</code> when <code>fixed</code> held every
 parameter, <code>latents_bad_inference_data</code> when a supplied <code>data</code> does not
 reproduce the fit, and <code>latents_too_few_groups</code> for <code>vcov_type = "robust"</code>
-with fewer independent groups than reported parameters. A fit whose score
+or <code>"opg"</code> when the fit has no more independent groups than free
+parameters. A fit whose score
 is still far from zero is reported with a <code>latents_unconverged</code> warning
 rather than refused. A fit made with <code>multilpa(prior = )</code> is refused by
 the Wald path with <code>latents_unsupported_inference</code> (it sits at a

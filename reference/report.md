@@ -88,7 +88,7 @@ fit <- multilpa(
   seed = 1
 )
 report(fit, plots = FALSE)
-#> Multilevel LPA: 2 profiles and 2 group classes
+#> Two-level latent profile analysis: 2 profiles, 2 group classes
 #> Individuals: 1422; groups: 106; parameters: 23; converged: TRUE
 #> Log likelihood: -8439.816424; AIC: 16925.633
 #> BIC (groups): 16986.892; BIC (individuals): 17046.609

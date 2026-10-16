@@ -13,7 +13,7 @@ between groups rather than within them."><meta property="og:image" content="http
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,11 +95,15 @@ intraclass correlation, the share of each variable's variance that lies
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>A data frame, or a fitted model of this package. A fit carries the
-columns it was built from, so <code>vars</code> and <code>id</code> are read from it.</p></dd>
+columns it was built from, so <code>vars</code> and <code>id</code> are read from it. A
+single-level fit (<code>id = NULL</code>) has no groups, so its table has no
+<code>n_groups</code> or <code>icc</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Passed between methods.</p></dd>
+<dd><p>Nothing further is used. For a data frame, any other argument is
+reported with a <code>latents_unused_argument</code> warning; for a fit, which
+supplies its own <code>vars</code> and <code>id</code>, it raises <code>latents_bad_argument</code>.</p></dd>
 
 
 <dt id="arg-vars">vars<a class="anchor" aria-label="anchor" href="#arg-vars"></a></dt>

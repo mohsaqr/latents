@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -166,10 +166,11 @@ is replicated within this seed’s starts.</p>
 <div class="section level2">
 <h2 id="the-profiles">The profiles<a class="anchor" aria-label="anchor" href="#the-profiles"></a>
 </h2>
-<p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> draws the profile means across the indicators,
-with point size showing profile prevalence.</p>
+<p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> with <code>what = "profiles"</code> draws the
+profile means across the indicators, and each line’s label gives the
+profile’s share of the enrolments.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"profiles"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/profiles-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span>
@@ -208,7 +209,7 @@ with point size showing profile prevalence.</p>
 <span><span class="co">#&gt; 15                      NA</span></span></code></pre></div>
 <p>Profile 1 is the lowest on every indicator, profile 2 the highest,
 and profile 3 lies between them; their attendance means are -0.929,
-1.122 and 0.252. The profiles are therefore lower, higher and
+1.124 and 0.254. The profiles are therefore lower, higher and
 intermediate activity. The heatmap shows the same means as standard
 deviations from each indicator’s grand mean.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -236,15 +237,15 @@ of students in the class.</p>
 <span><span class="co">#&gt; 4           2       1   7.623e-01    0.81929                  0.3004</span></span>
 <span><span class="co">#&gt; 5           2       2   2.377e-01    0.09657                  0.3004</span></span>
 <span><span class="co">#&gt; 6           2       3   6.814e-07    0.08414                  0.3004</span></span></code></pre></div>
-<p>Student class 1, with 30.1% of students, starts in the lower-activity
+<p>Student class 2, with 30.0% of students, starts in the lower-activity
 profile with probability 0.762 and in the higher-activity profile with
 probability 0.238; its probability of starting in the intermediate
-profile is effectively zero. Class 2, with 69.9% of students, starts
-across all three profiles, with probabilities 0.204, 0.445 and 0.351.
-Starting and overall shares differ: class 1 starts in the lower profile
+profile is effectively zero. Class 1, with 70.0% of students, starts
+across all three profiles, with probabilities 0.204, 0.444 and 0.353.
+Starting and overall shares differ: class 2 starts in the lower profile
 with probability 0.762, but 0.819 of its enrolments are expected there
-over the whole history, while class 2 starts in the higher profile with
-probability 0.445 and spends 0.334 of its enrolments there.</p>
+over the whole history, while class 1 starts in the higher profile with
+probability 0.444 and spends 0.333 of its enrolments there.</p>
 </div>
 <div class="section level2">
 <h2 id="how-engagement-changes">How engagement changes<a class="anchor" aria-label="anchor" href="#how-engagement-changes"></a>
@@ -285,23 +286,23 @@ origin profile in rows and the destination in columns.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"transitions"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/transition-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>In class 1, lower activity persists with probability 0.938, estimated
+<p>In class 2, lower activity persists with probability 0.939, estimated
 from 303 expected transitions. Each of its other transitions rests on
-fewer than 20 expected transitions, because class-1 students rarely
-leave the lower profile. Class 2 moves between profiles. Its students
-remain in the lower profile with probability 0.614, move from higher to
-intermediate activity with probability 0.494, and from intermediate to
-higher with probability 0.362. Class 1 is therefore a persistently
-low-engagement class, and class 2 a class whose engagement changes from
+fewer than 20 expected transitions, because class-2 students rarely
+leave the lower profile. Class 1 moves between profiles. Its students
+remain in the lower profile with probability 0.615, move from higher to
+intermediate activity with probability 0.495, and from intermediate to
+higher with probability 0.360. Class 2 is therefore a persistently
+low-engagement class, and class 1 a class whose engagement changes from
 course to course.</p>
 </div>
 <div class="section level2">
 <h2 id="sparse-and-boundary-estimates">Sparse and boundary estimates<a class="anchor" aria-label="anchor" href="#sparse-and-boundary-estimates"></a>
 </h2>
-<p>Some estimates rest on very little information. Class 1’s probability
+<p>Some estimates rest on very little information. Class 2’s probability
 of starting in the intermediate profile is at its lower bound, because
-no class-1 student is expected to start there. Class 1’s transitions out
-of the higher and intermediate profiles rest on between 4.8 and 19.0
+no class-2 student is expected to start there. Class 2’s transitions out
+of the higher and intermediate profiles rest on between 4.7 and 18.9
 expected transitions each, because its students rarely leave the lower
 profile. A probability near zero shows that the data carry little
 information about that movement, not that the movement is impossible.
@@ -334,7 +335,7 @@ end at different positions.</p>
 <span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
 <span><span class="co">#&gt; 1 individuals         3    1422      309.45           0.8019</span></span>
 <span><span class="co">#&gt; 2      groups         2     106       16.31           0.7781</span></span></code></pre></div>
-<p>Relative entropy is 0.802 for enrolments and 0.777 for students. The
+<p>Relative entropy is 0.802 for enrolments and 0.778 for students. The
 entropy plot shows, within each profile, how the per-case entropy
 contributions are distributed, and the posterior plot shows the
 posterior probability of each case’s assigned profile.</p>
@@ -366,8 +367,8 @@ class.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">per_class</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/group-network-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"><img src="case-engagement-transitions_files/figure-html/group-network-2.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>The class networks show the two patterns of the transition table: a
-dominant self-loop on the lower profile in class 1, and movement among
-all three profiles in class 2.</p>
+dominant self-loop on the lower profile in class 2, and movement among
+all three profiles in class 1.</p>
 </div>
 <div class="section level2">
 <h2 id="limitations">Limitations<a class="anchor" aria-label="anchor" href="#limitations"></a>
@@ -377,15 +378,19 @@ positions, so change specific to one stage of the program is averaged
 over positions. Transitions are between successive observed courses,
 which can differ in duration, content and assessment. Class differences
 describe patterns in engagement histories and do not identify their
-causes. Standard errors, likelihood-ratio tests and class enumeration
-are not available for transition models, so the number of profiles and
-classes here is a working choice. The diagonal covariance ignores the
-association between <code>attendance</code> and the click measures,
-which the evaluation vignette shows is present in these data; unmodelled
-dependence can be absorbed by extra profiles and change the apparent
-transitions. Transitions supported by few expected counts, such as those
-out of the higher and intermediate profiles in class 1, should not be
-interpreted.</p>
+causes. Wald standard errors are withheld for this fit, because class
+2’s probability of starting in the intermediate profile sits at its
+lower bound (the note above the profile table), and the numbers of
+profiles and classes were not compared here;
+<code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> with <code>time</code> compares
+transition models over a grid of profile and class counts. The number of
+profiles and classes here is therefore a working choice. The diagonal
+covariance ignores the association between <code>attendance</code> and
+the click measures, which the evaluation vignette shows is present in
+these data; unmodelled dependence can be absorbed by extra profiles and
+change the apparent transitions. Transitions supported by few expected
+counts, such as those out of the higher and intermediate profiles in
+class 2, should not be interpreted.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

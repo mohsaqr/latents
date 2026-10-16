@@ -83,6 +83,8 @@ models).
   [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
   [`simulate(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
   [`predict(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+  [`predict(`*`<multilpa_covariates>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+  [`predict(`*`<multilpa_transitions>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
   : Predict from and simulate a fitted model
 
 ## External variables

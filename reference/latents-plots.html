@@ -39,7 +39,7 @@ are listed under what below.'><meta property="og:image" content="https://pak.dyn
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -324,7 +324,11 @@ are listed under <code>what</code> below.</p>
 named fit views and <code>plot_diagnostics()</code>, an
 enumeration from <code><a href="enumerate_classes.html">enumerate_classes()</a></code>, <code><a href="enumerate_lpa.html">enumerate_lpa()</a></code> or
 <code><a href="enumerate_lca.html">enumerate_lca()</a></code> for <code>plot_enumeration()</code> and <code>plot_tree()</code>, a
-transition fit from <code><a href="lta.html">lta()</a></code> for <code>plot_transitions()</code>.</p></dd>
+transition fit from <code><a href="lta.html">lta()</a></code> for <code>plot_transitions()</code>. A general <code><a href="lta.html">lta()</a></code>
+fit (occasion-varying transitions, covariates, mover-stayer, second
+order, weights, ordinal or count indicators) draws only its transition
+matrix, with <code>plot_transitions()</code> or <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>; a transition or
+group-class family grid plots with <code>plot(x, what = )</code>.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
@@ -424,11 +428,15 @@ deviation.</p></dd>
 <dt id="arg-intervals">intervals<a class="anchor" aria-label="anchor" href="#arg-intervals"></a></dt>
 <dd><p>For profile, bar and response views, <code>TRUE</code> draws 95%
 intervals when the fit has standard
-errors; otherwise the subtitle says why there are none.</p></dd>
+errors; otherwise the subtitle says why there are none. They are the
+<code>conf_low</code> and <code>conf_high</code> of <code><a href="parameter_inference.html">parameter_inference()</a></code>: a response
+probability's interval is built on the logit scale.</p></dd>
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p><code>TRUE</code> labels each series directly; <code>FALSE</code> uses a legend.</p></dd>
+<dd><p><code>TRUE</code> labels each series directly; <code>FALSE</code> uses a legend.
+On sequence views, <code>TRUE</code> blocks the groups by group class under
+labelled strips.</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
@@ -494,14 +502,21 @@ arguments named here. Profile/class methods refuse an argument they do not
 use with <code>latents_bad_argument</code>; methods that ignored it in 0.9.21 instead
 draw with a <code>latents_unused_argument</code> warning, as listed below.</p><dl><dt>Fitted profile and class models</dt>
 <dd><p>From <code><a href="multilpa.html">multilpa()</a></code>, <code><a href="multilca.html">multilca()</a></code>,
-<code><a href="lpa.html">lpa()</a></code>, <code><a href="lca.html">lca()</a></code>, covariate models and <code><a href="lta.html">lta()</a></code>: <code>"profiles"</code>
+<code><a href="lpa.html">lpa()</a></code>, <code><a href="lca.html">lca()</a></code> and covariate models: <code>"profiles"</code>
 (default), <code>"bars"</code>, <code>"heatmap"</code>, <code>"raincloud"</code>, <code>"parallel"</code>,
 <code>"pairs"</code> (each profile's 95% covariance ellipse), <code>"responses"</code>,
 <code>"probabilities"</code> (not for covariate models), <code>"sequences"</code> (fits with
 <code>time</code>; <code>cell_labels = TRUE</code> prints the profile in each cell),
-<code>"transitions"</code> (transition fits), <code>"sizes"</code>, <code>"entropy"</code>,
-<code>"posteriors"</code>, <code>"avepp"</code> and <code>"all"</code>. Transition fits draw point
-estimates and take no <code>intervals</code> or <code>statistic</code>.</p></dd>
+<code>"sizes"</code>, <code>"entropy"</code>, <code>"posteriors"</code>, <code>"avepp"</code> and <code>"all"</code>. The
+profile views name in a caption any ordinal, count or (for the means)
+categorical indicator they leave out.</p></dd>
+
+<dt>Transition fits</dt>
+<dd><p>From <code><a href="lta.html">lta()</a></code>: <code>"transitions"</code> (default), then
+<code>"profiles"</code>, <code>"bars"</code>, <code>"heatmap"</code>, <code>"responses"</code>, <code>"sequences"</code>,
+<code>"sizes"</code>, <code>"entropy"</code>, <code>"posteriors"</code>, <code>"avepp"</code> and <code>"all"</code>, as point
+estimates without <code>intervals</code> or <code>statistic</code>. A general <code><a href="lta.html">lta()</a></code> fit
+takes no <code>what</code> and draws its transition matrix.</p></dd>
 
 <dt>Enumerations</dt>
 <dd><p>Criterion columns or <code>"all"</code> (with <code>combine</code>,
@@ -565,13 +580,18 @@ with <code>what</code> on a pooled fit is an error of the same class.</p>
     <h2 id="errors">Errors<a class="anchor" aria-label="anchor" href="#errors"></a></h2>
     <p><code>latents_missing_package</code> without ggplot2;
 <code>latents_bad_argument</code> for an argument the object's plot does not take;
-the plots of additive, cross-level, transition (<code><a href="lta.html">lta()</a></code>), growth-mixture,
+the plots of additive, cross-level, general transition (<code><a href="lta.html">lta()</a></code>), growth-mixture,
 mixture-regression, pooled, comparison, bootstrap and transition or
 group-class family grids instead warn with class
 <code>latents_unused_argument</code> and draw, as they ignored such arguments in
 0.9.21 (this includes a bootstrap plot's former <code>style</code>);
+<code>latents_bad_argument</code> also when a named plot function is given an
+object it does not draw;
 <code>latents_nothing_to_plot</code> when the fit lacks what a view needs (for
-example posteriors or entropy of a one-profile fit);
+example posteriors or entropy of a one-profile fit, prevalence of a
+covariate model, or the case-level views of a centred fit);
+<code>latents_unknown_category</code> when <code>category</code> names no category of an
+indicator;
 <code>latents_no_continuous</code>, <code>latents_no_categorical</code> and <code>latents_no_time</code>
 when a view needs indicators or occasions the fit does not have;
 <code>latents_unknown_criterion</code> for a criterion not in the grid.</p>

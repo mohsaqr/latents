@@ -17,7 +17,7 @@ fitted where maximum likelihood degenerates."><meta property="og:image" content=
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,8 +96,11 @@ mclust's default <code>0.01</code>. Zero leaves the means unshrunk.</p></dd>
 
 
 <dt id="arg-mean">mean<a class="anchor" aria-label="anchor" href="#arg-mean"></a></dt>
-<dd><p>Optional prior mean, one value per continuous indicator, in the
-indicators' own units. Naming one needs a positive <code>shrinkage</code>.</p></dd>
+<dd><p>Optional prior mean, one value per continuous indicator, on the
+scale the profile means are estimated on: the indicators' own units, or
+their centred values when <code><a href="multilpa.html">multilpa()</a></code>'s <code>centering</code> centres them (so a
+mean of the raw data is far from the centred data's and is not the
+default). Naming one needs a positive <code>shrinkage</code>.</p></dd>
 
 
 <dt id="arg-dof">dof<a class="anchor" aria-label="anchor" href="#arg-dof"></a></dt>
@@ -147,7 +150,9 @@ have different effects across covariance structures.</p>
 
 
 <p>Raises <code>latents_bad_argument</code> for a negative or non-finite <code>shrinkage</code>, a
-<code>mean</code> with a zero <code>shrinkage</code>, or a non-positive <code>dof</code> or <code>scale</code>.</p>
+<code>mean</code> with a zero <code>shrinkage</code>, a non-positive <code>dof</code>, or a <code>scale</code> that is
+neither a positive number nor a square, symmetric, positive-definite
+matrix.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

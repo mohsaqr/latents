@@ -113,9 +113,10 @@ BIC(fit_one, fit, fit_three)
 Two classes have the lowest BIC. The three-class fit also warns that a
 between-group variance went to zero: with a third class there is no
 between-team spread left for some class to explain. A likelihood-ratio
-test of two against three classes would need a bootstrap reference
-distribution, not the chi-square, and that is not yet available for this
-family.
+test of two against three classes needs a bootstrap reference
+distribution, not the chi-square;
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+provides it, as shown below for one against two classes.
 
 ## Do the classes differ in spread?
 
@@ -158,6 +159,10 @@ grid <- enumerate_classes(ratings, c("climate", "support"), "team",
                           family = c("additive", "dispersion",
                                      "additive_dispersion"),
                           n_group_classes = 1:3, seed = 1)
+#> Warning: A between-group variance is estimated at zero or a within-group variance reached
+#> min_variance; this is a boundary fit and Wald inference does not apply.
+#> Warning: A between-group variance is estimated at zero or a within-group variance reached
+#> min_variance; this is a boundary fit and Wald inference does not apply.
 get_results(grid, "best")
 #>                candidate          model   family between_variance n_group_classes
 #> 7 additive_equal_groups2 additive_equal additive            equal               2

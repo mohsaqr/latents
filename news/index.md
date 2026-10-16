@@ -1,5 +1,190 @@
 # Changelog
 
+## latents 0.9.32
+
+A function-by-function review of the package and its documentation. The
+maths it re-derived (analytic scores against numerical gradients for
+every model family, delta-method Jacobians, information criteria,
+entropy, AvePP, OCC, the knee) held; the corrections below are to edge
+cases, input validation, consistency between tables, plots and warnings,
+and documentation.
+
+### Changed results
+
+- Group-class families (`family = "additive"`, `"dispersion"`,
+  `"additive_dispersion"`) use SQUAREM-accelerated EM. Converged fits
+  are unchanged to rounding (8 Latent GOLD cases to 7.5e-16 relative);
+  fits that plain EM left crawling now converge within `max_iter`, so
+  bootstrap replicates that used to be withheld are kept.
+- The membership-covariate separation check, the one-step membership
+  regression,
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  (pooled and `by_group_class = TRUE`) and covariate-fit
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  now work in orthonormal design coordinates, so results no longer
+  depend on where a covariate’s zero lies: a covariate with mean 100 and
+  sd 1 is no longer mistaken for separation, and a covariate shifted by
+  1e6 gives the same estimates and standard errors as the centred one.
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  also converges more tightly (about 1e-4 closer to its maximum).
+- With sampling weights, `small_classes` and the `latents_small_classes`
+  warning use the weighted effective counts the fit reports; group-class
+  families report weighted class counts and compute effective groups
+  (and plot intervals) from the robust covariance they use for
+  inference.
+- In weighted general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fits, the
+  model-implied `"transitions"`, `"initial"` and
+  `"second_order_transitions"` tables average groups with their sampling
+  weights.
+- [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) and its
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  refits default to `max_iter = 5000` (was `1000`). The tighter
+  `tol = 1e-10` of 0.9.31 needs more updates: three- and four-profile
+  models of two `course_engagement` indicators took 1,000 to 1,500 and
+  stopped unconverged. Fits that converged before are unchanged.
+- Transition and family grids (`enumerate_classes(time = )`,
+  `enumerate_classes(family = )`) pass their candidates’ warnings on, as
+  profile grids do; they used to keep them only in the `warnings`
+  column.
+- `get_results(grid, "best")` on transition and family grids considers
+  only converged candidates; when none converged, `"best"` raises
+  `latents_failed_candidate`.
+- Response-probability whiskers in plots are the logit-scale intervals
+  of
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  so plot and table agree.
+
+### Refusals instead of silent wrong answers
+
+- [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) refuses
+  (`latents_bad_data`) transition covariates when `occasions = "grid"`
+  leaves a position skipped inside a group’s span; the covariate used to
+  be taken as 0 there.
+- [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) and
+  covariate fits refuse (`latents_bad_time`) a `time` column of numbers
+  stored as text whose alphabetical order differs from their numeric
+  order (“10” before “2”). Zero-padded numbers and ISO dates are still
+  accepted.
+- `fit_staged(measurement = )` refuses (`latents_bad_stage`) a
+  measurement fitted with weights, centring or ordinal/count indicators
+  instead of holding it under a different likelihood.
+- `mixture_regression(family = "ordinal")` refuses
+  (`latents_not_identified`) a single-level mixture whose predictors
+  take too few distinct values to identify it.
+- An ordinal indicator with fewer than two observed categories is
+  refused (`latents_bad_data`) even when its factor declares more
+  levels; a declared but never-observed level warns
+  (`latents_unused_category`).
+- Categorical columns whose distinct values print alike are refused
+  instead of getting duplicate labels.
+  [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
+  refuses a `scale` that is not a square, symmetric, positive-definite
+  matrix.
+- [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
+  refuses `level = "groups"` for trajectory models instead of ignoring
+  it. `vcov(fit, scale = "unconstrained", method = "bootstrap")` raises
+  `latents_unsupported_inference` instead of returning `NULL`.
+- [`predict()`](https://rdrr.io/r/stats/predict.html) on
+  membership-covariate and latent transition fits raises
+  `latents_unsupported_prediction`.
+
+### Fixes
+
+- [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) and
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) record
+  the call as written, so
+  [`update()`](https://rdrr.io/r/stats/update.html) refits from the
+  caller’s data.
+- `centering = "grand"` or `"person"` (with or without covariates) no
+  longer refuses indicators recorded in very small units.
+- [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md):
+  factor predictors can be shared across classes through `common`.
+  Regression and growth fits no longer store their fitting frame, so
+  saved fits are several times smaller; enumerated growth candidates
+  record a call that names the data.
+- Growth mixtures: `plot(what = "random")` draws when a class’s
+  random-effect covariance is degenerate and is identical on every draw;
+  trajectories work for intercept-only class formulas;
+  [`confint()`](https://rdrr.io/r/stats/confint.html) honours `parm`;
+  failed starts warn (`latents_failed_starts`);
+  `plot(what = "classification")` names each class on the bars instead
+  of relying on colour alone.
+- `get_results(fit, "recovery")` reports a missing known class as `NA`,
+  and on a membership-covariate fit compares group-level truths with
+  group classes.
+- [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  and [`report()`](https://pak.dynasite.org/latents/reference/report.md)
+  work on fits with a noise component.
+  [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
+  of a single-level fit no longer reports `n_groups`/`icc` for the
+  internal row numbering.
+- `print(summary())` names single-level and latent class fits correctly;
+  `rows = 0` prints headings only; empty `"profiles"`/`"responses"`
+  tables keep their standard-error columns.
+- General [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  fits gain a `"responses"` table for categorical indicators, flag an
+  emptied stayer class as a small class, and no longer warn spuriously
+  for a dotted covariate name. Cross-level fits store
+  `profile_prevalences`, reported as a `prevalence` column of
+  `get_results(fit, "profiles")`.
+- Plots:
+  [`plot_profiles()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_responses()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_prevalence()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md),
+  [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  and
+  [`plot_tree()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+  refuse objects they cannot draw with `latents_bad_argument` and name
+  the right plot; a noise fit’s prevalence plot gives the noise share;
+  profile views name the indicators they leave out;
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of a general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit uses
+  the package’s probability scale; the group-class variances plot is
+  keyed by class, panelled by level.
+- Capped VEI covariance M-steps are reported once per fit with a count.
+- Methods that ignored extra arguments
+  ([`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+  on general transition fits and transition or family grids,
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html) on transition fits) now
+  warn (`latents_unused_argument`); `vcov(fit, vcov_type = "robust")` on
+  a general transition fit used to return the observed covariance
+  silently.
+- Classed conditions replace unclassed errors for invalid seeds,
+  controls, `parm`, `start`, `n_group_classes`, `lca(n_profiles = )` and
+  covariate-model inputs;
+  [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  and
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  validate their controls and seed before fitting.
+- Robust standard errors (CR1 since 0.9.31) are exactly
+  `sqrt(G / (G - 1))` times those of Mplus’s MLR, which applies no
+  small-sample factor: 0.8% larger with 60 groups.
+  [`?parameter_inference`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  says so, and the external Mplus comparison now checks that
+  relationship to 1e-6.
+- [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  no longer prints “\<- lowest BIC” and its plot no longer circles each
+  criterion’s lowest value: `delta_bic` and `bic_weight` carry the
+  evidence and the choice stays with the reader.
+- Plots keep the Okabe-Ito grey for categories that are not classes (a
+  noise component, terms shared by every class); classes cycle through
+  the other colours, so the two never coincide. Noise tiles were
+  `grey75`.
+- Documentation: `?latents-conditions` lists every condition the code
+  raises (checked by a test);
+  [`?lta`](https://pak.dynasite.org/latents/reference/lta.md),
+  [`?multilpa`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`?parameter_inference`](https://pak.dynasite.org/latents/reference/parameter_inference.md),
+  [`?bootstrap_lrt`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md),
+  [`?get_results`](https://pak.dynasite.org/latents/reference/get_results.md),
+  [`?three_step`](https://pak.dynasite.org/latents/reference/three_step.md),
+  [`?fit_staged`](https://pak.dynasite.org/latents/reference/fit_staged.md),
+  the plot help and `course_engagement` are corrected where they
+  disagreed with the code.
+
 ## latents 0.9.31
 
 - Cluster-robust standard errors now carry the CR1 small-sample factor

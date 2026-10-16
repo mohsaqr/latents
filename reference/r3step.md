@@ -55,6 +55,7 @@ r3step(
 - vcov_type:
 
   `"robust"`, the default, uses the sandwich clustered on the fit's
+  groups, with the small-sample (CR1) factor `G / (G - 1)` for `G`
   groups, which is the honest choice when the covariates are measured on
   observations nested inside them, and matches the default of
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md).
@@ -166,10 +167,10 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
 r3step(fit, example_data, "x")
-#>         level   outcome        term   estimate standard_error statistic
-#> 1 individuals profile_1 (Intercept) -0.5701505      0.1191635 -4.784608
-#> 2 individuals profile_1           x  1.2187597      0.1268246  9.609807
+#>         level   outcome        term  estimate standard_error statistic
+#> 1 individuals profile_1 (Intercept) -0.570396      0.1191748 -4.786214
+#> 2 individuals profile_1           x  1.218866      0.1268352  9.609839
 #>        p_value   p_adjusted   conf_low  conf_high
-#> 1 1.713214e-06           NA -0.8037066 -0.3365944
-#> 2 7.268487e-22 7.268487e-22  0.9701881  1.4673313
+#> 1 1.699572e-06           NA -0.8039742 -0.3368177
+#> 2 7.266225e-22 7.266225e-22  0.9702734  1.4674582
 ```

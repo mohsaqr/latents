@@ -64,16 +64,15 @@ relative to all observation mass including any noise component),
 `converged`, `n_best_replicated`, and `delta_bic` and `bic_weight` on
 `bic_groups` (the BIC that counts groups as the independent units; on a
 single-level model it is the ordinary BIC). The numbers are the ones the
-grid's candidates table reports. The printout marks the row with the
-lowest BIC; that is a fact about the criterion, not a choice. Raises
-`latents_bad_argument` for fits it cannot compare, for a group-class
-family grid (compare those in their own table), for candidates named
-together with `n_profiles` or `n_group_classes`, and for `n_profiles` or
-`n_group_classes` without a grid; `latents_unknown_candidate` for a name
-or counts not in the grid; `latents_failed_candidate` for a named
-candidate that could not be fitted; and `latents_incomparable_models`
-for fits to different data. A `cutoff` outside (0, 1\] fails the
-argument checks.
+grid's candidates table reports. No row is marked as best: `delta_bic`
+and `bic_weight` carry the evidence. Raises `latents_bad_argument` for
+fits it cannot compare, for a group-class family grid (compare those in
+their own table), for candidates named together with `n_profiles` or
+`n_group_classes`, and for `n_profiles` or `n_group_classes` without a
+grid; `latents_unknown_candidate` for a name or counts not in the grid;
+`latents_failed_candidate` for a named candidate that could not be
+fitted; and `latents_incomparable_models` for fits to different data. A
+`cutoff` outside (0, 1\] fails the argument checks.
 
 ## Details
 
@@ -120,7 +119,7 @@ compare_models(trajectories = trajectories, growth = growth)
 #> Model         Classes  Random     k    LogLik      BIC    ΔBIC  Weight  Entropy
 #> ------------  -------  ---------  -  --------  -------  ------  ------  -------
 #> trajectories        2  none       7  -1277.94  2584.53  196.11   0.000     0.94
-#> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97  <- lowest BIC
+#> growth              2  intercept  9  -1175.79  2388.43    0.00   1.000     0.97
 
 # Candidates of an enumeration grid, by name, by class counts, or selected
 grid <- enumerate_classes(subset(course_engagement, student <= 40),
@@ -132,20 +131,20 @@ compare_models(grid, "profiles2_groups2", "profiles3_groups2")
 #> 
 #> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------
-#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  <- lowest BIC
+#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98
 #> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97
 compare_models(grid, c(2, 2), c(3, 2))
 #> Model comparison
 #> 
 #> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------
-#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  <- lowest BIC
+#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98
 #> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97
 compare_models(grid, n_group_classes = 2)
 #> Model comparison
 #> 
 #> Model              Profiles  Group classes   k    LogLik      BIC   ΔBIC  Weight      ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
 #> -----------------  --------  -------------  --  --------  -------  -----  ------  -------  -------  ---------  -----  -------------  ---------------
-#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98  <- lowest BIC
+#> profiles2_groups2         2              2  11  -1458.86  2958.29   0.00   0.999  3233.59     0.67       0.90      0           0.96             0.98
 #> profiles3_groups2         3              2  17  -1454.49  2971.70  13.41   0.001  3409.04     0.67       0.72      1           0.96             0.97
 ```

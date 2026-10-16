@@ -29,25 +29,33 @@ three_step(
 
   A covariate-free fitted
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) model.
-  A fit that already uses membership covariates cannot be corrected by
-  the fixed, unconditional classification-error matrix used here.
+  or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) model,
+  or a trajectory model that classifies persons
+  ([`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  with `class_level = "group"`, with or without `random` effects) fitted
+  without `membership` covariates. A fit that already uses membership
+  covariates cannot be corrected by the fixed, unconditional
+  classification-error matrix used here.
 
 - data:
 
   The data frame carrying the outcome, in the fit's row order. Shared
   fit columns are checked row by row; a frame with too little
-  identifying information warns that alignment cannot be verified.
+  identifying information warns that alignment cannot be verified. For a
+  trajectory model it must be the data frame the model was fitted to.
 
 - outcome:
 
   Name of a numeric outcome column not used as a measurement indicator
-  in `x`. For `level = "groups"` it must be constant within each group.
+  in `x`. For `level = "groups"` it must be constant within each group,
+  and for a trajectory model within each person.
 
 - level:
 
   `"individuals"` relates the outcome to profiles, `"groups"` to group
-  classes.
+  classes. A trajectory model relates the outcome to its person classes,
+  reported with `level = "persons"`; `"groups"` is refused there with
+  `latents_bad_argument`.
 
 - method:
 
@@ -128,10 +136,12 @@ marginal profile-outcome analysis; it does not estimate an outcome
 effect on transitions or a sequence-level outcome model.
 
 A cluster-robust variance is the sum of one outer product per
-independent unit, and those contributions sum to zero at the estimate,
-so it has rank at most one less than the number of units. With a single
-group it is exactly zero and with as many groups as classes it is
-singular. Both are refused with `latents_too_few_groups` rather than
+independent unit, scaled by the small-sample (CR1) factor `G / (G - 1)`
+for `G` units (groups, or observations under
+`vcov_type = "independent"`). Those contributions sum to zero at the
+estimate, so it has rank at most one less than the number of units. With
+a single group it is exactly zero and with as many groups as classes it
+is singular. Both are refused with `latents_too_few_groups` rather than
 reported as a very small standard error; `vcov_type = "independent"` is
 the labelled way to ask for the unclustered variance instead.
 

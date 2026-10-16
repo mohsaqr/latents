@@ -15,6 +15,8 @@ fits it returns fitted outcomes or class probabilities. Growth mixtures
 refuse with `latents_unsupported_prediction`; their fitted curves are
 the `"trajectories"` and `"individual"` tables of
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
+Membership- covariate and latent transition fits refuse with the same
+class; their fitted rows' posteriors are `get_results(x, "posteriors")`.
 
 ## Usage
 
@@ -39,6 +41,12 @@ simulate(object, nsim = 1, seed = NULL, ...)
 
 # S3 method for class 'multilpa'
 predict(object, newdata = NULL, type = c("class", "posterior", "density"), ...)
+
+# S3 method for class 'multilpa_covariates'
+predict(object, ...)
+
+# S3 method for class 'multilpa_transitions'
+predict(object, ...)
 ```
 
 ## Arguments
@@ -114,7 +122,8 @@ handle, or a regression design cannot be evaluated. Binomial count
 predictions without trial counts also raise `latents_bad_data`;
 `latents_bad_argument` for `"probabilities"` outside the ordinal family;
 `latents_unsupported_prediction` for
-[`predict()`](https://rdrr.io/r/stats/predict.html) on a growth mixture.
+[`predict()`](https://rdrr.io/r/stats/predict.html) on a growth mixture,
+a membership-covariate fit or a latent transition fit.
 
 ## Examples
 

@@ -33,17 +33,17 @@ lpa(data, vars, n_profiles, ...)
 
   Further arguments for
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md):
-  the covariance structure (`variance_model`, `covariance_model`, or
-  `volume`, `shape`, `orientation`), `missing`, `categorical`,
-  `n_starts`, `seed`, `prior`, `noise`, `profile_covariates` and the
-  others it documents, except `id` and `n_group_classes`, which a
-  single-level model does not have.
+  the covariance structure (`model`, or `variance_model` and
+  `covariance_model`, or `volume`, `shape` and `orientation`),
+  `missing`, `categorical`, `n_starts`, `seed`, `prior`, `noise`,
+  `profile_covariates` and the others it documents, except `id` and
+  `n_group_classes`, which a single-level model does not have.
 
 ## Value
 
 A fitted `multilpa` object, as
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-returns.
+returns, recording the `lpa()` call as written.
 
 ## Details
 

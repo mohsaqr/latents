@@ -13,7 +13,7 @@ boundary, and unreplicated fits are reported, not silently selected."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.31</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.32</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -139,7 +139,9 @@ to cross. A structure set through <code>variance_model</code>, <code>covariance_
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Optional reproducible seed for each fit.</p></dd>
+<dd><p>Optional reproducible seed for each fit: any whole number
+<code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> accepts. Anything else raises <code>latents_bad_argument</code> before
+any candidate is fitted.</p></dd>
 
 
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
@@ -195,8 +197,9 @@ the table (<code>"profiles3_groups2"</code>), which these verbs take.</p>
 
 
 <p><code>latents_bad_argument</code> when <code>model</code> names an unknown structure, when it is
-given together with another way of setting the structure, or when it is
-given although every indicator is categorical.</p>
+given together with another way of setting the structure, when it is
+given although every indicator is categorical, or when <code>seed</code> is not a
+seed <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> accepts.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

@@ -270,19 +270,19 @@ fit
     #> Variances and standard errors: get_results(x, "profiles"). 
     #> Every other table: get_results(x, what = ), or get_results(x, "all").
 
-Profile 1 has the highest estimated mean on all five activity
-indicators, profile 2 has intermediate means, and profile 3 has the
-lowest means. For `attendance`, the profile means are 1.133, 0.256, and
--0.940 standard deviations from the corresponding course mean. For
-`browse`, they are 0.709, 0.387, and -0.777. The profiles therefore
-primarily distinguish different levels of recorded activity, although
-the separation varies across indicators. For example, the difference
-between profiles 1 and 2 is substantially larger for `attendance` than
-for `browse`.
+Profile 3 has the highest estimated mean on all five activity
+indicators, profile 1 has intermediate means, and profile 2 has the
+lowest means. For `attendance`, the means of profiles 3, 1, and 2 are
+1.133, 0.256, and -0.940 standard deviations from the corresponding
+course mean. For `browse`, they are 0.709, 0.387, and -0.777. The
+profiles therefore primarily distinguish different levels of recorded
+activity, although the separation varies across indicators. For example,
+the difference between profiles 3 and 1 is substantially larger for
+`attendance` than for `browse`.
 
 Profile numbers are arbitrary labels assigned during estimation and have
 no inherent substantive meaning. In this fitted model, we refer to
-profiles 1, 2, and 3 as **higher activity**, **intermediate activity**,
+profiles 3, 1, and 2 as **higher activity**, **intermediate activity**,
 and **lower activity**, respectively. The numbering may change when the
 model is fitted again or when a different specification is estimated.
 Profile labels should therefore be based on the estimated indicator
@@ -319,9 +319,9 @@ get_results(fit, "counts")
 
 The **lower-activity** profile has the largest effective membership,
 accounting for 575.0 enrolments, or 40.4% of the total. The
-**higher-activity** profile accounts for 369.2 enrolments, or 26.0%. At
-Level 2, student class 2 is the largest, with an effective membership of
-47.3 students, corresponding to 44.6% of the sample. Classes 1 and 3
+**higher-activity** profile accounts for 369.0 enrolments, or 25.9%. At
+Level 2, student class 3 is the largest, with an effective membership of
+47.3 students, corresponding to 44.6% of the sample. Classes 1 and 2
 have effective memberships of 27.7 and 31.0 students, respectively.
 
 ### How students differ in their profile composition
@@ -352,14 +352,14 @@ get_results(fit, "profile_probabilities")
 
 Student class 1 is characterized mainly by the **higher-activity** and
 **intermediate-activity** profiles. Conditional on membership in class
-1, the probabilities of an enrolment occupying profiles 1, 2, and 3 are
-0.398, 0.547, and 0.055, respectively. Student class 2 has a more
-balanced profile composition, with corresponding probabilities of 0.295,
-0.388, and 0.317. Student class 3 is strongly characterized by the
-**lower-activity** profile: an enrolment from a student in this class
-has a probability of 0.847 of occupying profile 3. The estimated
-prevalences of student classes 1, 2, and 3 are 0.261, 0.446, and 0.293,
-respectively.
+1, the probabilities of an enrolment occupying the higher-,
+intermediate-, and lower-activity profiles are 0.398, 0.547, and 0.055,
+respectively. Student class 3 has a more balanced profile composition,
+with corresponding probabilities of 0.295, 0.388, and 0.317. Student
+class 2 is strongly characterized by the **lower-activity** profile: an
+enrolment from a student in this class has a probability of 0.847 of
+occupying profile 2. The estimated prevalences of student classes 1, 2,
+and 3 are 0.261, 0.293, and 0.446, respectively.
 
 The probability plot provides a visual comparison of these
 class-specific profile compositions on a common scale from zero to one.
@@ -376,8 +376,8 @@ plot(fit, what = "probabilities")
 
 ![](case-engagement-profiles_files/figure-html/probabilities-1.png)
 
-Class 2 has an almost level profile because its probabilities are
-similar across the three engagement profiles. In contrast, class 3 rises
+Class 3 has an almost level profile because its probabilities are
+similar across the three engagement profiles. In contrast, class 2 rises
 sharply to 0.847 for the **lower-activity** profile, whereas class 1
 falls to 0.055 for that same profile. These differences illustrate how
 student classes can have distinct profile compositions even though
@@ -420,8 +420,7 @@ starting values used in this analysis.
 estimated profile means across the five activity indicators. Because the
 indicators were standardized within course, the vertical axis is
 expressed in standard deviations from the corresponding course mean.
-Line types and point symbols distinguish the profiles in addition to
-colour.
+Point symbols distinguish the profiles in addition to colour.
 
 ``` r
 
@@ -431,8 +430,8 @@ plot(fit, subtitle = "Profile means, standard deviations from each course mean")
 ![](case-engagement-profiles_files/figure-html/profiles-1.png)
 
 The three profiles retain the same ordering across all five indicators,
-with profile 1 highest, profile 2 intermediate, and profile 3 lowest.
-The distance between profiles 1 and 2 varies across indicators: they are
+with profile 3 highest, profile 1 intermediate, and profile 2 lowest.
+The distance between profiles 3 and 1 varies across indicators: they are
 relatively close on page browsing but more clearly separated on
 attendance, consistent with the estimated means reported above. Because
 the profiles differ mainly in overall elevation rather than in the shape
@@ -470,7 +469,7 @@ get_results(fit, "sequences", format = "wide") |> head(4)
     #> 3           3        <NA>
     #> 4        <NA>        <NA>
 
-Students 1 and 2 are assigned to student class 3. Student 1 is assigned
+Students 1 and 2 are assigned to student class 2. Student 1 is assigned
 to the **intermediate-activity** profile for the first two observed
 courses and to the **lower-activity** profile for the courses that
 follow, whereas student 2 is assigned to the **lower-activity** profile
@@ -499,8 +498,8 @@ get_results(fit, "sequence_summary")
     #> 2           2     30          403       13.43          13.5       10      15        7    0
     #> 3           3     51          689       13.51          14.0       10      15       13    0
 
-The modal assignments place 25, 51, and 30 students in classes 1, 2, and
-3, respectively. Their mean sequence lengths are 13.20, 13.51, and 13.43
+The modal assignments place 25, 30, and 51 students in classes 1, 2, and
+3, respectively. Their mean sequence lengths are 13.20, 13.43, and 13.51
 observed courses. Thus, the classes have similar amounts of longitudinal
 information, even though their profile compositions differ
 substantially. None of the observed sequences contains an internal gap.
