@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.35</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,6 +58,11 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.36" id="latents-0936">latents 0.9.36<a class="anchor" aria-label="anchor" href="#latents-0936"></a></h2>
+<ul><li>
+<code><a href="../reference/latents-plots.html">plot_enumeration()</a></code> of a grid over group classes at one number of profiles puts the group classes on the x-axis; it used to stack every candidate in a single column with overlapping labels. Grids over profiles plot as before.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.35" id="latents-0935">latents 0.9.35<a class="anchor" aria-label="anchor" href="#latents-0935"></a></h2>
 <ul><li>A posterior probability that rounds a hair past 1 no longer gives a negative <code>uncertainty</code> in <code>get_results(x, "assignments")</code>, and no longer drops that case, with a warning, from the classification-certainty and entropy plots of <code><a href="../reference/diagnostics.html">diagnostics()</a></code> and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>. The estimates are unchanged.</li>
