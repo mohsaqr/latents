@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.34</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.35</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,6 +58,11 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.35" id="latents-0935">latents 0.9.35<a class="anchor" aria-label="anchor" href="#latents-0935"></a></h2>
+<ul><li>A posterior probability that rounds a hair past 1 no longer gives a negative <code>uncertainty</code> in <code>get_results(x, "assignments")</code>, and no longer drops that case, with a warning, from the classification-certainty and entropy plots of <code><a href="../reference/diagnostics.html">diagnostics()</a></code> and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>. The estimates are unchanged.</li>
+<li>Base R’s “empty cluster: try a better set of initial centers” warning from the k-means of a random start is no longer passed on; the fit already reports failed starts in its own warning and in <code>get_results(x, "starts")</code>.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.34" id="latents-0934">latents 0.9.34<a class="anchor" aria-label="anchor" href="#latents-0934"></a></h2>
 <ul><li>latents is on CRAN (0.9.21, published 2026-10-16). The README carries the CRAN badge and opens with a list of every vignette, guide and case study.</li>
@@ -175,7 +180,7 @@
 <ul><li>Numeric categorical models now support <code>plot(what = "profiles")</code>, with <code>statistic = "mean"</code>, <code>"median"</code>, or <code>"mode"</code> on the original category scale. These summaries use fitted probabilities, support FIML and membership covariates, and do not compute standard errors. Mixed-model profile plots continue to show continuous indicators.</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.9.21" id="latents-0921">latents 0.9.21<a class="anchor" aria-label="anchor" href="#latents-0921"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.9.21" id="latents-0921">latents 0.9.21<a class="anchor" aria-label="anchor" href="#latents-0921"></a></h2><p class="text-muted">CRAN release: 2026-10-16</p>
 <ul><li>The version submitted to CRAN; the same code as 0.9.20.</li>
 </ul></div>
     <div class="section level2">
