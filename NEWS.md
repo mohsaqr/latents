@@ -1,3 +1,8 @@
+# latents 0.9.34
+
+* latents is on CRAN (0.9.21, published 2026-10-16). The README carries the CRAN
+  badge and opens with a list of every vignette, guide and case study.
+
 # latents 0.9.33
 
 * `plot()` of an occasion-varying `lta()` fit orders its panels by occasion
