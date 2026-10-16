@@ -1,5 +1,18 @@
 # Changelog
 
+## latents 0.9.33
+
+- [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of an
+  occasion-varying
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+  orders its panels by occasion number (with ten or more occasions,
+  “occasion 10” used to come before “occasion 2”) and puts the occasion
+  on a second line of the panel title, which narrow panels used to cut
+  off.
+- Top legends with more than four keys wrap into rows instead of running
+  off the right edge (for example four group classes and the shared key
+  of a group-class variances plot).
+
 ## latents 0.9.32
 
 A function-by-function review of the package and its documentation. The
