@@ -189,8 +189,7 @@
       }, numeric(ncol(x))))
       centers <- matrix(centers, n_profiles, ncol(x))
     } else {
-      initial_fit <- stats::kmeans(clustering_input, centers = n_profiles,
-                                  iter.max = 100L, algorithm = "Lloyd")
+      initial_fit <- .multilpa_start_kmeans(clustering_input, n_profiles)
       if (!is.null(initial_fit$ifault) && initial_fit$ifault != 0L) {
         stop("Initial k-means did not converge.")
       }
@@ -235,8 +234,7 @@
     profile_probabilities <- matrix(colMeans(indicator), 1L)
   } else if (start_index %% 2L == 1L &&
              nrow(unique(group_composition)) >= n_types) {
-    group_fit <- stats::kmeans(group_composition, centers = n_types,
-                              iter.max = 100L, algorithm = "Lloyd")
+    group_fit <- .multilpa_start_kmeans(group_composition, n_types)
     if (!is.null(group_fit$ifault) && group_fit$ifault != 0L) {
       stop("Initial group k-means did not converge.")
     }
@@ -1866,4 +1864,24 @@ multilpa <- function(data, vars, id, n_profiles,
     weights = weights, ordinal = ordinal, count = count,
     count_model = count_model, count_dispersion = count_dispersion,
     centering = centering)
+}
+
+#' One k-means run for a random start
+#'
+#' Lloyd's algorithm warns "empty cluster" when a start's random centres leave
+#' a cluster without members. That start then fails or converges like any
+#' other, and the fit reports failed starts itself ("k of n starts failed"),
+#' so base R's warning is muffled here rather than repeated to the caller.
+#' @param x Numeric matrix to cluster.
+#' @param centers Number of clusters.
+#' @return The `stats::kmeans()` result.
+#' @noRd
+.multilpa_start_kmeans <- function(x, centers) {
+  withCallingHandlers(
+    stats::kmeans(x, centers = centers, iter.max = 100L, algorithm = "Lloyd"),
+    warning = function(condition) {
+      if (startsWith(conditionMessage(condition), "empty cluster")) {
+        invokeRestart("muffleWarning")
+      }
+    })
 }

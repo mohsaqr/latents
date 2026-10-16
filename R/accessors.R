@@ -40,7 +40,9 @@ as.data.frame.multilpa <- function(x, row.names = NULL, optional = FALSE, ...) {
   # How much of this row's membership the modal profile did not account for.
   # Modal assignment throws it away, so the table that reports the assignment
   # reports what reporting it cost.
-  uncertainty <- 1 - apply(class_posteriors, 1L, max)
+  # A posterior that rounds to 1 + 2e-16 would otherwise report a negative
+  # uncertainty; the estimates themselves are left as computed.
+  uncertainty <- pmax(1 - apply(class_posteriors, 1L, max), 0)
   labels <- data.frame(profile = x$subject_profiles)
   # A single-level fit has one group class that every row belongs to, so the
   # column would say nothing.

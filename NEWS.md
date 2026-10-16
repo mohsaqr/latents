@@ -1,3 +1,13 @@
+# latents 0.9.35
+
+* A posterior probability that rounds a hair past 1 no longer gives a
+  negative `uncertainty` in `get_results(x, "assignments")`, and no longer
+  drops that case, with a warning, from the classification-certainty and
+  entropy plots of `diagnostics()` and `plot()`. The estimates are unchanged.
+* Base R's "empty cluster: try a better set of initial centers" warning from
+  the k-means of a random start is no longer passed on; the fit already
+  reports failed starts in its own warning and in `get_results(x, "starts")`.
+
 # latents 0.9.34
 
 * latents is on CRAN (0.9.21, published 2026-10-16). The README carries the CRAN

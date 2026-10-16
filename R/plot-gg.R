@@ -962,9 +962,11 @@ utils::globalVariables(c(
   # -sum p log p per case, relative to its maximum log(K): 0 is certain,
   # 1 is a flat posterior.
   entropy <- -rowSums(posteriors * log(pmax(posteriors, .Machine$double.xmin)))
+  # Posteriors can round a hair past 1, which would put a case outside the
+  # [0, 1] axis and drop it from the plot with a warning.
   data.frame(profile = assigned,
-             certainty = posteriors[cbind(seq_len(nrow(posteriors)), assigned)],
-             entropy = if (k > 1L) entropy / log(k) else 0)
+             certainty = pmin(posteriors[cbind(seq_len(nrow(posteriors)), assigned)], 1),
+             entropy = if (k > 1L) pmax(entropy / log(k), 0) else 0)
 }
 
 #' Strip plot of one per-case value by profile, with each profile's mean
@@ -1103,8 +1105,8 @@ utils::globalVariables(c(
   kept <- x$subject_profiles >= 1L & x$subject_profiles <= x$n_profiles
   posteriors <- x$subject_posteriors[kept, , drop = FALSE]
   list(values = observed$values, profile = observed$profile,
-       certainty = posteriors[cbind(seq_len(nrow(posteriors)),
-                                    observed$profile)])
+       certainty = pmin(posteriors[cbind(seq_len(nrow(posteriors)),
+                                         observed$profile)], 1))
 }
 
 #' Every case as a line across indicators, one panel per profile
