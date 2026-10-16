@@ -421,8 +421,13 @@ plot.multilpa_lta <- function(x, main = NULL, subtitle = NULL, ...) {
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
   .gg_require()
   frame <- .lta_table(x, "transitions")
-  frame$panel <- if (all(is.na(frame$occasion))) frame$group_class else
-    paste(frame$group_class, "occasion", frame$occasion)
+  # One panel per group class (and occasion), in numeric occasion order --
+  # as plain strings "occasion 10" would sort before "occasion 2" -- with the
+  # occasion on its own line so narrow panels do not cut the label.
+  panels <- if (all(is.na(frame$occasion))) frame$group_class else
+    paste0(frame$group_class, "\noccasion ", frame$occasion)
+  ordering <- order(frame$group_class, as.numeric(frame$occasion))
+  frame$panel <- factor(panels, levels = unique(panels[ordering]))
   # The same white-to-blue probability ramp and legible ink as the profile
   # models' transition view (.gg_view_transitions()).
   frame$text_colour <- .gg_ink(.gg_probability_fill(frame$probability))

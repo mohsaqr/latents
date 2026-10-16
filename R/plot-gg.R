@@ -143,7 +143,11 @@ utils::globalVariables(c(
   at <- match(levels, as.character(key$label))
   colours <- stats::setNames(key$colour[at], levels)
   shapes <- stats::setNames(key$shape[at], levels)
-  guide <- if (isTRUE(legend)) "legend" else "none"
+  # A top legend of more than four keys wraps into rows of four rather than
+  # running off the right edge; one guide object for every aesthetic keeps
+  # them merged into a single legend.
+  guide <- if (!isTRUE(legend)) "none" else if (length(levels) > 4L)
+    ggplot2::guide_legend(nrow = ceiling(length(levels) / 4), byrow = TRUE) else "legend"
   scales <- list(
     colour = ggplot2::scale_colour_manual(values = colours, guide = guide),
     fill = ggplot2::scale_fill_manual(values = colours, guide = guide),

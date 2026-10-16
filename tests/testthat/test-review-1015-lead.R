@@ -66,3 +66,28 @@ test_that("noise and shared categories take the Okabe-Ito grey, which no class r
   plain <- modifyList(noisy, list(noise = FALSE))
   expect_true(.gg_reserved_grey %in% .gg_profile_key(plain)$colour)
 })
+
+test_that("an occasion-varying lta() plot orders panels by occasion number and wraps labels", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  set.seed(4)
+  panel_data <- data.frame(id = rep(seq_len(40), each = 11), time = rep(seq_len(11), 40))
+  panel_data$y <- stats::rnorm(nrow(panel_data), ifelse(stats::runif(nrow(panel_data)) < 0.5, -1.5, 1.5))
+  fit <- quietly(lta(panel_data, "y", "id", n_profiles = 2, time = "time",
+                     transitions = "occasion", n_starts = 1, seed = 1, max_iter = 20),
+                 c("latents_unconverged", "latents_boundary", "latents_small_classes"))
+  panels <- levels(ggplot2::ggplot_build(plot(fit))$plot$data$panel)
+  expect_identical(panels, paste0("group_class_1\noccasion ", 2:11))
+})
+
+test_that("a legend of more than four keys wraps into rows instead of running off the edge", {
+  skip_if_not_installed("ggplot2")
+  key <- data.frame(label = factor(paste("Class", 1:5), levels = paste("Class", 1:5)),
+                    colour = .gg_class_palette[1:5], shape = 15:19)
+  wrapped <- .gg_scales(key, legend = TRUE)
+  expect_identical(wrapped$colour$guide$params$nrow, 2)
+  four <- key[1:4, ]
+  four$label <- droplevels(four$label)
+  expect_identical(.gg_scales(four, legend = TRUE)$colour$guide, "legend")
+  expect_identical(.gg_scales(key, legend = FALSE)$colour$guide, "none")
+})
