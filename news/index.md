@@ -1,5 +1,11 @@
 # Changelog
 
+## latents 0.9.34
+
+- latents is on CRAN (0.9.21, published 2026-10-16). The README carries
+  the CRAN badge and opens with a list of every vignette, guide and case
+  study.
+
 ## latents 0.9.33
 
 - [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of an

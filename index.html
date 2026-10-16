@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.33</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.34</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,7 +86,44 @@
 <img src="logo.png" class="logo" alt=""><h1 id="latents-">latents <a class="anchor" aria-label="anchor" href="#latents-"></a>
 </h1>
 </div>
+<!-- badges: start -->
+
+<div class="section level2">
+<h2 id="vignettes-and-guides">Vignettes and guides<a class="anchor" aria-label="anchor" href="#vignettes-and-guides"></a>
+</h2>
+<p><strong>Vignettes</strong></p>
+<ul>
+<li><a href="https://pak.dynasite.org/latents/articles/lpa.html">Multilevel latent profile analysis</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/lca.html">Two-level latent class analysis</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/lta.html">Latent transition analysis</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/enumeration.html">Class enumeration</a></li>
+</ul>
+<p><strong>Guides</strong></p>
+<ul>
+<li><a href="https://pak.dynasite.org/latents/articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/class-enumeration.html">Class enumeration in mixture models</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/mixture-regression.html">Mixture regression</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/trajectory-classes.html">Latent class growth analysis: classes of trajectories</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/growth-mixture.html">Growth mixture models: classes of trajectories</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/additive.html">Group-class and cross-level models: classes of groups from raw ratings</a></li>
+</ul>
+<p><strong>Case studies</strong></p>
+<ul>
+<li><a href="https://pak.dynasite.org/latents/articles/case-engagement-profiles.html">Multilevel latent profile analysis of course engagement</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/case-engagement-evaluation.html">Evaluating multilevel latent profile models</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/case-engagement-covariates.html">Covariates and staged estimation in multilevel LPA</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/case-engagement-transitions.html">Latent transition analysis of course engagement</a></li>
+<li><a href="https://pak.dynasite.org/latents/articles/case-esm-lca.html">Two-level latent class analysis of leisure activities</a></li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
 <p>The <code>latents</code> R package provides functions for fitting multilevel latent profile analysis, latent class, and latent transition models for continuous, categorical, and mixed-type variables. Models are estimated by expectation-maximization, handle missing data, and provide standard and robust standard errors. Model selection is supported by information criteria, entropy, classification diagnostics, and a parametric bootstrap likelihood ratio test. Covariates can be related to latent class membership using three-step methods with correction for classification error. Latent transition models estimate transitions between latent profiles across ordered occasions and are compatible with the ‘tna’ package for network and sequence analysis. The multilevel mixture formulation follows Vermunt (2003) <a href="https://doi.org/10.1111/j.0081-1750.2003.t01-1-00131.x" class="external-link">doi:10.1111/j.0081-1750.2003.t01-1-00131.x</a>.</p>
+</div>
 <div class="section level2">
 <h2 id="multilevel-latent-profile-analysis-mlpa">Multilevel latent profile analysis (MLPA)<a class="anchor" aria-label="anchor" href="#multilevel-latent-profile-analysis-mlpa"></a>
 </h2>
@@ -928,7 +965,12 @@ plot of chunk categorical
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://CRAN.R-project.org/package=latents" class="external-link"><img src="https://www.r-pkg.org/badges/version/latents" alt="CRAN status"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>

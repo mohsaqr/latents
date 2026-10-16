@@ -1,5 +1,54 @@
 # latents
 
+## Vignettes and guides
+
+**Vignettes**
+
+- [Multilevel latent profile
+  analysis](https://pak.dynasite.org/latents/articles/lpa.html)
+- [Two-level latent class
+  analysis](https://pak.dynasite.org/latents/articles/lca.html)
+- [Latent transition
+  analysis](https://pak.dynasite.org/latents/articles/lta.html)
+- [Class
+  enumeration](https://pak.dynasite.org/latents/articles/enumeration.html)
+
+**Guides**
+
+- [Latent profile analysis: a complete
+  workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.html)
+- [Latent class analysis: a complete
+  workflow](https://pak.dynasite.org/latents/articles/workflow-lca.html)
+- [Class enumeration in mixture
+  models](https://pak.dynasite.org/latents/articles/class-enumeration.html)
+- [Evaluating a multilevel latent profile
+  model](https://pak.dynasite.org/latents/articles/evaluation.html)
+- [Covariates, outcomes and staged
+  estimation](https://pak.dynasite.org/latents/articles/covariates.html)
+- [Mixture
+  regression](https://pak.dynasite.org/latents/articles/mixture-regression.html)
+- [Latent class growth analysis: classes of
+  trajectories](https://pak.dynasite.org/latents/articles/trajectory-classes.html)
+- [Growth mixture models: classes of
+  trajectories](https://pak.dynasite.org/latents/articles/growth-mixture.html)
+- [Group-class and cross-level models: classes of groups from raw
+  ratings](https://pak.dynasite.org/latents/articles/additive.html)
+
+**Case studies**
+
+- [Multilevel latent profile analysis of course
+  engagement](https://pak.dynasite.org/latents/articles/case-engagement-profiles.html)
+- [Evaluating multilevel latent profile
+  models](https://pak.dynasite.org/latents/articles/case-engagement-evaluation.html)
+- [Covariates and staged estimation in multilevel
+  LPA](https://pak.dynasite.org/latents/articles/case-engagement-covariates.html)
+- [Latent transition analysis of course
+  engagement](https://pak.dynasite.org/latents/articles/case-engagement-transitions.html)
+- [Two-level latent class analysis of leisure
+  activities](https://pak.dynasite.org/latents/articles/case-esm-lca.html)
+
+## Overview
+
 The `latents` R package provides functions for fitting multilevel latent
 profile analysis, latent class, and latent transition models for
 continuous, categorical, and mixed-type variables. Models are estimated
