@@ -34,7 +34,9 @@ mixture_regression(
   random = NULL,
   random_covariance = c("varying", "equal", "proportional"),
   random_diagonal = FALSE,
-  cluster = NULL
+  cluster = NULL,
+  residual_correlation = c("none", "ar", "brownian"),
+  residual_time = NULL
 )
 ```
 
@@ -185,6 +187,26 @@ mixture_regression(
   comparable by BIC with more group classes. See the growth mixture
   section.
 
+- residual_correlation:
+
+  `"none"` (default) for independent residuals within a person; with
+  `random`, `"ar"` adds a continuous-time autoregressive process,
+  covariance `sd^2 exp(-rate |t - s|)`, and `"brownian"` Brownian
+  motion, `sd^2 min(t, s)`, to the residual variance, shared by the
+  classes: `lcmm::hlme(cor = AR(time))` and `cor = BM(time)`. The model
+  without the process is fitted first, from every start, and the process
+  is then estimated with everything else. A process the data cannot
+  separate from the residual variance or the random effects is left on
+  its bound and warned about (`latents_random_boundary`); its rows then
+  have no standard error. Refused with `latents_bad_argument` without
+  `random`.
+
+- residual_time:
+
+  The numeric column the process runs over; by default the first numeric
+  variable of `random`, or else of the predictors. Brownian motion needs
+  non-negative times (`latents_bad_data`).
+
 ## Value
 
 An object of class `latents_mixture_regression`, or
@@ -245,6 +267,13 @@ and
 [plot()](https://pak.dynasite.org/latents/reference/latents-plots.md).
 Random effects need the gaussian family, `id` and
 `class_level = "group"`.
+
+With `residual_correlation`, the residuals also carry a process shared
+by the classes, \\e_i \sim N(0, W_i + \sigma_k^2 I)\\: a continuous-time
+autoregressive process (`"ar"`) or Brownian motion (`"brownian"`) over
+`residual_time`, as in `lcmm::hlme(cor = )`. At hlme's own estimates the
+likelihood equals hlme's; the comparison is recorded in
+`equivalence/test-growth-correlated-lcmm.R` of the source repository.
 
 With `cluster`, persons are nested in clusters (students in schools) and
 the multilevel growth mixture model is fitted: each cluster belongs to a

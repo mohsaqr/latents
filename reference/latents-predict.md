@@ -11,21 +11,30 @@ centering, missing-data handling), so predicting the training rows
 reproduces the fit's posteriors exactly. In a two-level model the groups
 in `newdata` are new groups, each classified from its own rows. For
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-fits it returns fitted outcomes or class probabilities. Growth mixtures
-refuse with `latents_unsupported_prediction`; their fitted curves are
-the `"trajectories"` and `"individual"` tables of
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
-Membership- covariate and latent transition fits refuse with the same
-class; their fitted rows' posteriors are `get_results(x, "posteriors")`.
+fits it returns fitted outcomes or class probabilities. For a growth
+mixture (`mixture_regression(random = )`) the persons in `newdata` are
+new persons (and their clusters new clusters): it returns class
+trajectories, which need no outcome, or, given the outcomes, class
+posteriors and each person's own curve with their empirical Bayes random
+effects, the quantities of `lcmm::predictY()`, `predictClass()` and
+`predictRE()`. Membership- covariate and latent transition fits refuse
+with the same class; their fitted rows' posteriors are
+`get_results(x, "posteriors")`.
 
 ## Usage
 
 ``` r
 # S3 method for class 'latents_growth_mixture'
-simulate(object, nsim = 1, seed = NULL, ...)
+predict(
+  object,
+  newdata = NULL,
+  type = c("response", "class_response", "posterior", "conditional", "class_conditional",
+    "random_effects"),
+  ...
+)
 
 # S3 method for class 'latents_growth_mixture'
-predict(object, ...)
+simulate(object, nsim = 1, seed = NULL, ...)
 
 # S3 method for class 'latents_mixture_regression'
 predict(
@@ -55,19 +64,6 @@ predict(object, ...)
 
   A fitted model.
 
-- nsim:
-
-  Number of simulated outcome vectors.
-
-- seed:
-
-  `NULL` uses and advances the caller's random stream. An integer makes
-  simulation reproducible and restores the caller's random state.
-
-- ...:
-
-  Unused.
-
 - newdata:
 
   `NULL` for the fitted rows, or a data frame with the indicator or
@@ -84,7 +80,29 @@ predict(object, ...)
   successes for a binomial count response), `"class_response"` (one row
   per row and class), `"posterior"` (class probabilities given the
   outcome, which `newdata` must contain) or `"probabilities"` (each
-  category under each class; ordinal family only).
+  category under each class; ordinal family only). For a growth mixture:
+  `"response"` (the class trajectories averaged with each person's prior
+  class probabilities), `"class_response"` (one row per row and class,
+  random effects at zero), and, from the outcomes in `newdata`,
+  `"posterior"` (one row per person), `"class_conditional"` (one row per
+  row and class: the class trajectory plus the person's random effects
+  predicted under that class, E(b \| y, class)), `"conditional"` (those
+  averaged with the posterior class probabilities) and
+  `"random_effects"` (one row per person and class with its posterior
+  probability; their posterior-weighted mean is `lcmm::predictRE()`).
+
+- ...:
+
+  Unused.
+
+- nsim:
+
+  Number of simulated outcome vectors.
+
+- seed:
+
+  `NULL` uses and advances the caller's random stream. An integer makes
+  simulation reproducible and restores the caller's random state.
 
 - trials:
 
@@ -101,8 +119,10 @@ predict(object, ...)
 ## Value
 
 A base `data.frame` with one row per row of `newdata` (per row and class
-for `"class_response"`, per row, class and category for
-`"probabilities"`), starting with `row`, its position.
+for `"class_response"` and `"class_conditional"`, per row, class and
+category for `"probabilities"`), starting with `row`, its position;
+`"posterior"` and `"random_effects"` of a growth mixture have one row
+per person (and class), starting with the `id` column.
 [`simulate()`](https://rdrr.io/r/stats/simulate.html) returns one row
 per fitted row and one column per simulation, `sim_1`, `sim_2`, ...
 
@@ -122,8 +142,11 @@ handle, or a regression design cannot be evaluated. Binomial count
 predictions without trial counts also raise `latents_bad_data`;
 `latents_bad_argument` for `"probabilities"` outside the ordinal family;
 `latents_unsupported_prediction` for
-[`predict()`](https://rdrr.io/r/stats/predict.html) on a growth mixture,
-a membership-covariate fit or a latent transition fit.
+[`predict()`](https://rdrr.io/r/stats/predict.html) on a
+membership-covariate fit or a latent transition fit. A growth mixture
+prediction raises `latents_bad_data` when `newdata` lacks `id`, the
+cluster column or (for the outcome-based types) the outcome, and warns
+with `latents_unused_argument` for arguments it ignores.
 
 ## Examples
 
@@ -144,4 +167,15 @@ head(simulate(fit, nsim = 2, seed = 1))
 #> 4 51.20502 72.29366
 #> 5 78.31283 84.47117
 #> 6 59.89099 71.01467
+
+# A growth mixture: one student's own curve, predicted from their scores.
+growth <- mixture_regression(score ~ wave, data = subset(growth_scores, student <= 60),
+                             n_classes = 2, id = "student", class_level = "group",
+                             random = ~ 1, n_starts = 1, seed = 1)
+predict(growth, subset(growth_scores, student == 61), type = "conditional")
+#>   row   fitted
+#> 1   1 58.88460
+#> 2   2 65.58452
+#> 3   3 72.28445
+#> 4   4 75.63441
 ```

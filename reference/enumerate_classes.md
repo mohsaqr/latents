@@ -131,9 +131,9 @@ describe it rather than by reaching into it:
 row per candidate model with every criterion and diagnostic (including
 both entropies and, at each level, the smallest, largest and mean
 average posterior probability and the number of classes below a cutoff),
-`get_results(x, "criteria")` names the candidate each criterion's
-minimum falls on, `get_results(x, "classification")` gives every class's
-average posterior probability and relative entropy for every candidate,
+`get_results(x, "best")` names the candidate each criterion's minimum
+falls on, `get_results(x, "classification")` gives every class's average
+posterior probability and relative entropy for every candidate,
 `get_results(x, "deltas")` and `"knees"` give the model-selection
 evidence, [`summary()`](https://rdrr.io/r/base/summary.html) prints each
 criterion's minimum and every table,
@@ -231,7 +231,7 @@ summary(candidates)
 #>           NA      TRUE    FALSE
 #>            2      TRUE    FALSE
 #> 
-#> -- criteria --------------------------------------------------------
+#> -- best ------------------------------------------------------------
 #>  criterion  convention             candidate n_profiles n_group_classes model
 #>        aic        <NA> profiles1_groups1_EEI          1               1   EEI
 #>        kic        <NA> profiles1_groups1_EEI          1               1   EEI
@@ -254,7 +254,7 @@ summary(candidates)
 #>  272.5
 #>  276.5
 #>  285.7
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#>    ... 4 more rows.  get_results(x, what = "best")
 #> 
 #> -- classification --------------------------------------------------
 #>              candidate n_profiles n_group_classes model       level class
@@ -339,7 +339,7 @@ summary(single)
 #>     FALSE
 #>     FALSE
 #> 
-#> -- criteria --------------------------------------------------------
+#> -- best ------------------------------------------------------------
 #>  criterion  convention     candidate n_profiles n_group_classes model value
 #>        aic        <NA> profiles3_VVV          3               1   VVV 448.4
 #>        kic        <NA> profiles3_VVV          3               1   VVV 495.4
@@ -351,7 +351,7 @@ summary(single)
 #>       caic individuals profiles2_VVV          2               1   VVV 603.0
 #>        awe      groups profiles2_VVV          2               1   VVV 806.3
 #>        awe individuals profiles2_VVV          2               1   VVV 806.3
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#>    ... 4 more rows.  get_results(x, what = "best")
 #> 
 #> -- classification --------------------------------------------------
 #>      candidate n_profiles n_group_classes model       level class n_modal

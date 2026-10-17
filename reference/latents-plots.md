@@ -222,6 +222,7 @@ plot(
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
+  intervals = TRUE,
   ...
 )
 ```
@@ -435,8 +436,10 @@ instead draw with a `latents_unused_argument` warning, as listed below.
   From [`lta()`](https://pak.dynasite.org/latents/reference/lta.md):
   `"transitions"` (default), then `"profiles"`, `"bars"`, `"heatmap"`,
   `"responses"`, `"sequences"`, `"sizes"`, `"entropy"`, `"posteriors"`,
-  `"avepp"` and `"all"`, as point estimates without `intervals` or
-  `statistic`. A general
+  `"avepp"` and `"all"`, without `statistic`; the profile, bar and
+  response views draw the 95% intervals of the transition fit's
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  (`intervals`). A general
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit takes
   no `what` and draws its transition matrix.
 

@@ -431,7 +431,7 @@ The candidate at the minimum of each criterion:
 
 ``` r
 
-get_results(models, "criteria")
+get_results(models, "best")
 #>    criterion  convention         candidate n_profiles n_group_classes model value
 #> 1        aic        <NA> profiles6_groups4          6               4   VVI 16703
 #> 2        kic        <NA> profiles4_groups4          4               4   VVI 16769

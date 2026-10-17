@@ -17,7 +17,7 @@ Cron 1988; Wedel and DeSarbo 1995)."><meta property="og:image" content="https://
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,7 +104,9 @@ Cron 1988; Wedel and DeSarbo 1995).</p>
 <span>  random <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  random_covariance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span>, <span class="st">"proportional"</span><span class="op">)</span>,</span>
 <span>  random_diagonal <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  cluster <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  cluster <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  residual_correlation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"ar"</span>, <span class="st">"brownian"</span><span class="op">)</span>,</span>
+<span>  residual_time <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -255,6 +257,26 @@ standard errors and the BIC; with <code>n_group_classes = 1</code> the model is 
 single-level growth mixture with clusters as those units, comparable by
 BIC with more group classes. See the growth mixture section.</p></dd>
 
+
+<dt id="arg-residual-correlation">residual_correlation<a class="anchor" aria-label="anchor" href="#arg-residual-correlation"></a></dt>
+<dd><p><code>"none"</code> (default) for independent residuals
+within a person; with <code>random</code>, <code>"ar"</code> adds a continuous-time
+autoregressive process, covariance <code>sd^2 exp(-rate |t - s|)</code>, and
+<code>"brownian"</code> Brownian motion, <code>sd^2 min(t, s)</code>, to the residual
+variance, shared by the classes: <code>lcmm::hlme(cor = AR(time))</code> and
+<code>cor = BM(time)</code>. The model without the process is fitted first, from
+every start, and the process is then estimated with everything else. A
+process the data cannot separate from the residual variance or the
+random effects is left on its bound and warned about
+(<code>latents_random_boundary</code>); its rows then have no standard error.
+Refused with <code>latents_bad_argument</code> without <code>random</code>.</p></dd>
+
+
+<dt id="arg-residual-time">residual_time<a class="anchor" aria-label="anchor" href="#arg-residual-time"></a></dt>
+<dd><p>The numeric column the process runs over; by default
+the first numeric variable of <code>random</code>, or else of the predictors.
+Brownian motion needs non-negative times (<code>latents_bad_data</code>).</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -306,6 +328,12 @@ data, finished by quasi-Newton with analytic scores. Such a fit has class
 <code><a href="get_results.html">get_results()</a></code> and
 <a href="latents-plots.html">plot()</a>. Random effects need the gaussian family,
 <code>id</code> and <code>class_level = "group"</code>.</p>
+<p>With <code>residual_correlation</code>, the residuals also carry a process shared by
+the classes, \(e_i \sim N(0, W_i + \sigma_k^2 I)\):
+a continuous-time autoregressive process (<code>"ar"</code>) or Brownian motion
+(<code>"brownian"</code>) over <code>residual_time</code>, as in <code>lcmm::hlme(cor = )</code>. At hlme's
+own estimates the likelihood equals hlme's; the comparison is recorded in
+<code>equivalence/test-growth-correlated-lcmm.R</code> of the source repository.</p>
 <p>With <code>cluster</code>, persons are nested in clusters (students in schools) and
 the multilevel growth mixture model is fitted: each cluster belongs to a
 group class h, and the trajectory-class logits of its persons have a

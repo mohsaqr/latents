@@ -27,7 +27,7 @@ boundary solutions and unidentified Hessians do not admit this calculation."><me
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,7 @@ boundary solutions and unidentified Hessians do not admit this calculation."><me
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Tidy inference for a covariate fit</h1>
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/R/additive-methods.R" class="external-link"><code>R/additive-methods.R</code></a>, <a href="https://github.com/mohsaqr/latents/blob/main/R/covariate-inference.R" class="external-link"><code>R/covariate-inference.R</code></a>, <a href="https://github.com/mohsaqr/latents/blob/main/R/cross-level.R" class="external-link"><code>R/cross-level.R</code></a>, and 2 more</small>
+      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/R/additive-methods.R" class="external-link"><code>R/additive-methods.R</code></a>, <a href="https://github.com/mohsaqr/latents/blob/main/R/covariate-inference.R" class="external-link"><code>R/covariate-inference.R</code></a>, <a href="https://github.com/mohsaqr/latents/blob/main/R/cross-level.R" class="external-link"><code>R/cross-level.R</code></a>, and 3 more</small>
       <div class="d-none name"><code>parameter_inference.Rd</code></div>
     </div>
 
@@ -126,6 +126,23 @@ boundary solutions and unidentified Hessians do not admit this calculation.</p>
 <span></span>
 <span><span class="co"># S3 method for class 'multilpa_cross_level'</span></span>
 <span><span class="fu">parameter_inference</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'latents_growth_mixture'</span></span>
+<span><span class="fu">parameter_inference</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  data <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  step <span class="op">=</span> <span class="fl">1e-04</span>,</span>
+<span>  vcov_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"observed"</span>, <span class="st">"robust"</span>, <span class="st">"opg"</span><span class="op">)</span>,</span>
+<span>  adjust <span class="op">=</span> <span class="va">.multilpa_p_adjust_methods</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wald"</span>, <span class="st">"bootstrap"</span><span class="op">)</span>,</span>
+<span>  iter <span class="op">=</span> <span class="fl">199L</span>,</span>
+<span>  n_starts <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>  max_iter <span class="op">=</span> <span class="fl">1000L</span>,</span>
+<span>  tol <span class="op">=</span> <span class="fl">1e-08</span>,</span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"fix"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">parameter_inference</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
@@ -379,6 +396,30 @@ intercept at the covariates' means) is therefore refused with
 warns with <code>latents_extreme_coefficients</code>. Only
 <code>method = "wald"</code> is implemented for a covariate fit; <code>"bootstrap"</code> is
 refused with <code>latents_unsupported_inference</code>.</p>
+<p>For a growth mixture (<code><a href="mixture_regression.html">mixture_regression()</a></code> with <code>random</code>), the
+table has one row per natural parameter: <code>block</code> (<code>"coefficient"</code>,
+<code>"membership"</code> and, for a multilevel growth mixture,
+<code>"group_membership"</code>, <code>"residual_sd"</code>, <code>"random_variance"</code>,
+<code>"random_sd"</code>, <code>"random_correlation"</code>, <code>"share"</code>), <code>class</code> (<code>"all"</code> for
+a quantity shared by every class), <code>term</code>, <code>estimate</code>, <code>standard_error</code>,
+<code>statistic</code>, <code>p_value</code>, <code>p_adjusted</code>, <code>conf_low</code> and <code>conf_high</code>. Wald
+rows use the fit's covariance (<code>vcov_type</code>) with the delta method;
+intervals of standard deviations and variances are formed on the log
+scale, of correlations on the Fisher scale and of shares on the logit
+scale, and only coefficients and logits are tested against zero.
+<code>method = "bootstrap"</code> resamples persons, refits each resample from
+<code>n_starts</code> starts and matches its classes to the original by their
+posterior memberships of the original persons; it is refused for a
+multilevel growth mixture (<code>latents_unsupported_inference</code>). In a
+simulation of 1000 datasets per design, Wald intervals covered 0.936-0.965
+with separated classes but 0.885-0.943 with weakly separated ones, whose
+standard errors ran 6-30% small (validation/GROWTH_SIMULATION.md in the
+source repository); prefer the bootstrap there. A class
+whose random-effect covariance is degenerate raises
+<code>latents_boundary_fit</code> under <code>boundary = "error"</code>; under <code>"fix"</code> its
+random-effect rows have no standard error or interval. <code>data</code>, when
+given, must be the fitted data; <code>step</code> is not used (the information is
+the derivative of the analytic score).</p>
 <p>For a general transition fit (an <code><a href="lta.html">lta()</a></code> fit with covariate,
 occasion-varying or second-order transitions), the table has one row per
 transition, initial and second-order logit: <code>block</code>, <code>group_class</code>,

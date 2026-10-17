@@ -533,9 +533,17 @@ others through.
 - `latents_random_boundary`:
 
   A growth mixture's random-effect covariance is degenerate in a class
-  (a variance at its floor, or random effects perfectly correlated), so
-  the data cannot separate those random effects and their standard
-  errors are not reported.
+  (a variance at its floor, or random effects perfectly correlated), or,
+  with `residual_correlation`, the residual variance, the process
+  variance or the process rate is on its bound, so the data cannot
+  separate those parts and their standard errors are not reported.
+
+- `latents_singular_covariance`:
+
+  A growth mixture with correlated residuals met a marginal covariance
+  that is singular in floating point (a process variance far beyond the
+  residual variance). The fit treats it as a rejected step; it reaches
+  the caller only from parameter values supplied by hand.
 
 - `latents_unused_argument`:
 

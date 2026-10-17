@@ -130,7 +130,7 @@ summary(models)
 #>     FALSE
 #>    ... 2 more rows.  get_results(x, what = "candidates")
 #> 
-#> -- criteria --------------------------------------------------------
+#> -- best ------------------------------------------------------------
 #>  criterion  convention     candidate n_profiles n_group_classes model value
 #>        aic        <NA> profiles3_VVV          3               1   VVV  1193
 #>        kic        <NA> profiles3_VVV          3               1   VVV  1258
@@ -142,7 +142,7 @@ summary(models)
 #>       caic individuals profiles1_EEE          1               1   EEE  1365
 #>        awe      groups profiles1_EEE          1               1   EEE  1520
 #>        awe individuals profiles1_EEE          1               1   EEE  1520
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#>    ... 4 more rows.  get_results(x, what = "best")
 #> 
 #> -- classification --------------------------------------------------
 #>      candidate n_profiles n_group_classes model       level class n_modal

@@ -17,7 +17,7 @@ measurement model, a classification diagnostic and a transition matrix."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -331,10 +331,10 @@ profile: <code>group_class</code>, <code>profile</code>, <code>probability</code
 <code>group_class_probability</code>. <code>"sequence_lengths"</code> has one row per group:
 <code>group</code>, <code>group_class</code>, <code>occasions</code>, <code>observations</code>, <code>complete</code>.</p></dd>
 
-<dt><code>"candidates"</code>, <code>"criteria"</code>, <code>"classification"</code></dt>
+<dt><code>"candidates"</code>, <code>"best"</code>, <code>"classification"</code></dt>
 <dd><p>An enumeration
-grid. <code>"criteria"</code> has one row per information criterion and
-sample-size convention: <code>criterion</code>, <code>convention</code>, <code>candidate</code> (the
+grid. <code>"best"</code> (formerly <code>"criteria"</code>, which still works) has one row
+per information criterion and sample-size convention: <code>criterion</code>, <code>convention</code>, <code>candidate</code> (the
 candidate its minimum falls on), <code>n_profiles</code>, <code>n_group_classes</code>,
 <code>model</code> and <code>value</code>. <code>"candidates"</code> has one row per candidate model:
 its name (<code>candidate</code>, first), its class counts, its covariance

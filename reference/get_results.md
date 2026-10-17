@@ -290,26 +290,27 @@ And each family adds its own:
   `group_class_probability`. `"sequence_lengths"` has one row per group:
   `group`, `group_class`, `occasions`, `observations`, `complete`.
 
-- `"candidates"`, `"criteria"`, `"classification"`:
+- `"candidates"`, `"best"`, `"classification"`:
 
-  An enumeration grid. `"criteria"` has one row per information
-  criterion and sample-size convention: `criterion`, `convention`,
-  `candidate` (the candidate its minimum falls on), `n_profiles`,
-  `n_group_classes`, `model` and `value`. `"candidates"` has one row per
-  candidate model: its name (`candidate`, first), its class counts, its
-  covariance `model`, log likelihood, parameter count, every criterion
-  under both sample-size conventions, both entropies, the average
-  posterior probability (AvePP) summaries of each level – `avepp_min`,
-  `avepp_max`, `avepp_mean`, `avepp_below` and the same four prefixed
-  `group_` – and the convergence, boundary, replication, warning and
-  error diagnostics. Failed candidates are retained with `NA` estimates
-  and their error text. `"candidates"` takes `cutoff` (default `0.8`):
-  `avepp_below` and `group_avepp_below` count the classes whose AvePP is
-  below it. A class with no modally assigned unit has no AvePP; it is
-  left out of the smallest, largest and mean and counted as below the
-  cutoff. A level with one class has `NA` summaries. `"classification"`
-  has one row per fitted candidate, level and class: `candidate`,
-  `n_profiles`, `n_group_classes`, `model`, then the columns of a fit's
+  An enumeration grid. `"best"` (formerly `"criteria"`, which still
+  works) has one row per information criterion and sample-size
+  convention: `criterion`, `convention`, `candidate` (the candidate its
+  minimum falls on), `n_profiles`, `n_group_classes`, `model` and
+  `value`. `"candidates"` has one row per candidate model: its name
+  (`candidate`, first), its class counts, its covariance `model`, log
+  likelihood, parameter count, every criterion under both sample-size
+  conventions, both entropies, the average posterior probability (AvePP)
+  summaries of each level – `avepp_min`, `avepp_max`, `avepp_mean`,
+  `avepp_below` and the same four prefixed `group_` – and the
+  convergence, boundary, replication, warning and error diagnostics.
+  Failed candidates are retained with `NA` estimates and their error
+  text. `"candidates"` takes `cutoff` (default `0.8`): `avepp_below` and
+  `group_avepp_below` count the classes whose AvePP is below it. A class
+  with no modally assigned unit has no AvePP; it is left out of the
+  smallest, largest and mean and counted as below the cutoff. A level
+  with one class has `NA` summaries. `"classification"` has one row per
+  fitted candidate, level and class: `candidate`, `n_profiles`,
+  `n_group_classes`, `model`, then the columns of a fit's
   `"classification"` table and that level's `relative_entropy`. Failed
   candidates and levels with a single class contribute no rows.
 

@@ -13,12 +13,14 @@ some units are in the wrong class and the covariate cannot explain why.
 r3step(
   x,
   data,
-  covariates,
+  covariates = character(),
   level = c("individuals", "groups"),
   ci_level = 0.95,
   vcov_type = c("robust", "observed"),
   adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
-  by_group_class = FALSE
+  by_group_class = FALSE,
+  initial_covariates = character(),
+  transition_covariates = character()
 )
 ```
 
@@ -28,9 +30,15 @@ r3step(
 
   A covariate-free fitted
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) model.
-  A fit that already uses membership covariates cannot be corrected by
-  the fixed, unconditional classification-error matrix used here.
+  or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) model,
+  or a trajectory model from
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  (persons classified, with or without `random`), whose person classes
+  are then predicted. A fit that already uses membership covariates
+  cannot be corrected by the fixed, unconditional classification-error
+  matrix used here, and a multilevel growth mixture (`cluster`) is
+  refused because its persons are not independent; both raise
+  `latents_unsupported_three_step`.
 
 - data:
 
@@ -41,12 +49,16 @@ r3step(
 - covariates:
 
   Character vector of numeric columns not used as measurement indicators
-  in `x`. For `level = "groups"` each must be constant within a group.
+  in `x`. For `level = "groups"` each must be constant within a group;
+  for a trajectory model each must be constant within a person and not
+  part of the trajectory regression (`latents_bad_covariate`).
 
 - level:
 
   `"individuals"` predicts profile membership, `"groups"` predicts
-  group-class membership.
+  group-class membership. A trajectory model classifies persons: its
+  rows have `level = "persons"` and outcomes `class_1`, `class_2`, ...,
+  and `"groups"` is refused with `latents_bad_argument`.
 
 - ci_level:
 
@@ -93,6 +105,18 @@ r3step(
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
   fit only; refused with `latents_bad_argument` otherwise.
 
+- initial_covariates, transition_covariates:
+
+  For an [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  fit with one group class: covariates of the profile at the first
+  occasion (constant within a person) and of every transition (read at
+  the destination occasion, so they may change over occasions). Either
+  one makes this the three-step latent Markov model described below, in
+  place of the occasion-by-occasion profile regression of `covariates`,
+  which must then be left empty; `level` and `by_group_class` do not
+  apply. Refused with `latents_bad_argument` on a fit that is not a
+  transition model.
+
 ## Value
 
 A base `data.frame` with one row per non-reference class and term, and
@@ -113,6 +137,17 @@ intercept rows are one per group class, named `group_class_1`,
 the result also carries `by_group_class` and the maximised
 `log_likelihood` as attributes.
 
+With `initial_covariates` or `transition_covariates`, one row per
+coefficient of the step-three chain: `block` (`"initial"` or
+`"transition"`), `from` (the origin profile of a transition, `NA` for an
+initial logit), `to`, `term`, `estimate`, `standard_error`, `statistic`,
+`p_value`, `p_adjusted`, `conf_low` and `conf_high`, with the attributes
+`log_likelihood`, `classification_errors` (the step-two error matrix,
+rows the true profile), `vcov_type` and `adjust`. Initial logits are
+against the last profile and transition logits against staying, as in
+`lta(initial_covariates =, transition_covariates =)`; `p_adjusted`
+covers the covariate terms.
+
 ## Details
 
 The error matrix is held fixed rather than estimated jointly, which is
@@ -122,7 +157,26 @@ reshaping the classes. On a
 `level = "individuals"` models the marginal profile at each occasion. It
 does not regress initial-state or transition probabilities on the
 covariates. `vcov_type = "robust"` clusters the occasion scores by
-group; `"observed"` treats them as independent.
+group; `"observed"` treats them as independent. On a trajectory model
+the units are persons, each with one covariate value, and `"robust"` is
+the sandwich over persons.
+
+The three-step latent Markov model (`initial_covariates`,
+`transition_covariates`) classifies each occasion from its own
+indicators, with the transition fit's measurement and its profile shares
+pooled over occasions (the latent class model of the pooled data), and
+assigns it to its modal profile. Step three is a hidden Markov model for
+those assignments, with the classification errors held at their step-two
+values and the initial and transition logits regressed on the covariates
+(Di Mari, Oberski and Vermunt 2016). The transition fit's own posteriors
+are not used for the assignments: they borrow from a person's other
+occasions, so their errors are not independent across occasions as step
+three assumes. The step-one fit must have no covariates of its own and
+one group class (`latents_unsupported_three_step` otherwise). It agrees
+with Latent GOLD 6.1's `step3 modal ml` latent Markov model to its
+printed precision on three designs (equivalence/latentgold-step3-markov
+in the source repository); `"robust"` is the sandwich over persons and
+`"observed"` the information Latent GOLD reports.
 
 Over 60 replications of a two-profile design with a true log-odds slope
 of 1.2 and intercept -0.3, this recovered the slope with a bias of
@@ -144,7 +198,9 @@ Vermunt, J. K. (2010). Latent class modeling with covariates: two
 improved three-step approaches. *Political Analysis*, 18, 450–469.
 Asparouhov, T., & Muthen, B. (2014). Auxiliary variables in mixture
 modeling: three-step approaches using Mplus. *Structural Equation
-Modeling*, 21, 329–341.
+Modeling*, 21, 329–341. Di Mari, R., Oberski, D. L., & Vermunt, J. K.
+(2016). Bias-adjusted three-step latent Markov modeling with covariates.
+*Structural Equation Modeling*, 23, 649–660.
 
 ## See also
 
@@ -173,4 +229,22 @@ r3step(fit, example_data, "x")
 #>        p_value   p_adjusted   conf_low  conf_high
 #> 1 1.699572e-06           NA -0.8039742 -0.3368177
 #> 2 7.266225e-22 7.266225e-22  0.9702734  1.4674582
+
+# Covariates of the moves between profiles, three steps on from lta().
+moves <- lta(course_engagement,
+             vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+             id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
+r3step(moves, course_engagement, transition_covariates = "sequence")
+#>        block      from        to        term     estimate standard_error
+#> 1    initial      <NA> profile_1 (Intercept)  0.547153583     0.20869295
+#> 2 transition profile_1 profile_2 (Intercept) -1.850702888     0.28098436
+#> 3 transition profile_1 profile_2    sequence -0.003170733     0.03170190
+#> 4 transition profile_2 profile_1 (Intercept) -1.630641206     0.30703086
+#> 5 transition profile_2 profile_1    sequence  0.011857195     0.03415177
+#>    statistic      p_value p_adjusted    conf_low   conf_high
+#> 1  2.6218116 8.746377e-03         NA  0.13812293  0.95618424
+#> 2 -6.5864980 4.503217e-11         NA -2.40142210 -1.29998367
+#> 3 -0.1000171 9.203307e-01  0.9203307 -0.06530532  0.05896385
+#> 4 -5.3110010 1.090247e-07         NA -2.23241063 -1.02887178
+#> 5  0.3471912 7.284476e-01  0.9203307 -0.05507904  0.07879343
 ```

@@ -245,9 +245,10 @@ lta(
   A covariance structure as
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
   takes it (`"EEI"`, `"VVI"`, `"VEI"`, ... ; mclust's codes). Standard
-  errors are given for EEI, VVI, EEE and VVV in the homogeneous model
-  and for the diagonal EEI and VVI with the extensions; other structures
-  are refused (`latents_unsupported_inference`).
+  errors are given for every structure with the extensions (covariate,
+  occasion-varying or second-order transitions, occasion-specific
+  measurement), and for EEI, VVI, EEE and VVV in the homogeneous model,
+  which refuses the other ten with `latents_unsupported_inference`.
 
 - mover_stayer:
 

@@ -732,7 +732,7 @@ candidates
 #>       TRUE    FALSE                10
 #>       TRUE    FALSE                10
 #> No candidate is selected automatically. Compare one convention consistently.
-get_results(candidates, "criteria")
+get_results(candidates, "best")
 #>    criterion  convention         candidate n_profiles n_group_classes model value
 #> 1        aic        <NA> profiles4_groups3          4               3   VVI 16716
 #> 2        kic        <NA> profiles4_groups3          4               3   VVI 16770

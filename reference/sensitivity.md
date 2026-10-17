@@ -25,19 +25,37 @@ sensitivity(
 
 - x:
 
-  A fitted `multilpa` model to use as the reference. A
+  The reference fit: a
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  model, an [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  model, or a growth mixture
+  ([`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  with `random`). A
   [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
   result varies the second-stage starts while holding its first-stage
   measurement solution fixed. A directly fitted model with measurement
   blocks held is refused: its original free starting values are not
   retained, so replaying the same seed would not replay the same search.
+  A membership-covariate fit is refused with
+  `latents_unsupported_sensitivity`. For an
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit,
+  `agreement` is the share of occasions given the same profile, after
+  matching the refit's profiles on the measurement; for a growth mixture
+  it is the share of persons given the same class, after matching the
+  refit's classes by their posterior memberships of the fitted persons.
 
 - data:
 
-  Optional. The data the model was fitted to, in its original row order.
-  A fit carries the columns it was built from, so this is only needed to
-  override them. Shared identifier and indicator columns are checked
-  against the fit before assignment agreement is calculated.
+  Optional for a
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  fit or a growth mixture, which carry the columns they were built from,
+  so it is only needed to override them; required for an
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+  (`latents_bad_argument` otherwise), whose refits need the occasions
+  and covariates. It must be the data the model was fitted to, in its
+  original row order; shared identifier and indicator columns are
+  checked against the fit before assignment agreement is calculated
+  (`latents_bad_inference_data`).
 
 - seeds:
 
@@ -54,13 +72,17 @@ sensitivity(
 
 - max_iter, tol:
 
-  Passed to each refit; default to the reference fit's.
+  Passed to each refit; default to the reference fit's (for an
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit, to
+  the defaults of
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)).
 
 - tolerance:
 
   Two log likelihoods within this of each other count as the same
   optimum. Defaults to the reference fit's own replication tolerance,
-  which is what it used to decide whether its starts agreed.
+  which is what it used to decide whether its starts agreed (for a
+  growth mixture `1e-6 * (1 + abs(logLik))`).
 
 ## Value
 
@@ -116,4 +138,13 @@ sensitivity(fit, seeds = 1:3, n_starts = 3)
 #> 1    1      -396.1633      TRUE          9       1 TRUE         1
 #> 2    2      -396.1633      TRUE          9       1 TRUE         1
 #> 3    3      -396.1633      TRUE          9       1 TRUE         1
+
+# Growth mixtures are known for local solutions (Hipp and Bauer 2006).
+growth <- mixture_regression(score ~ wave, data = subset(growth_scores, student <= 60),
+                             n_classes = 2, id = "student", class_level = "group",
+                             random = ~ 1, n_starts = 1, seed = 1)
+sensitivity(growth, seeds = 1:2)
+#>   seed log_likelihood converged iterations optimum best agreement
+#> 1    1      -1175.788      TRUE         70       1 TRUE         1
+#> 2    2      -1175.788      TRUE         70       1 TRUE         1
 ```

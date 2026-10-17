@@ -48,6 +48,23 @@ parameter_inference(
 # S3 method for class 'multilpa_cross_level'
 parameter_inference(x, ...)
 
+# S3 method for class 'latents_growth_mixture'
+parameter_inference(
+  x,
+  data = NULL,
+  level = 0.95,
+  step = 1e-04,
+  vcov_type = c("observed", "robust", "opg"),
+  adjust = .multilpa_p_adjust_methods,
+  method = c("wald", "bootstrap"),
+  iter = 199L,
+  n_starts = 10L,
+  max_iter = 1000L,
+  tol = 1e-08,
+  seed = NULL,
+  boundary = c("error", "fix")
+)
+
 parameter_inference(
   x,
   data = NULL,
@@ -317,6 +334,32 @@ intercept at the covariates' means) is therefore refused with
 itself warns with `latents_extreme_coefficients`. Only `method = "wald"`
 is implemented for a covariate fit; `"bootstrap"` is refused with
 `latents_unsupported_inference`.
+
+For a growth mixture
+([`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+with `random`), the table has one row per natural parameter: `block`
+(`"coefficient"`, `"membership"` and, for a multilevel growth mixture,
+`"group_membership"`, `"residual_sd"`, `"random_variance"`,
+`"random_sd"`, `"random_correlation"`, `"share"`), `class` (`"all"` for
+a quantity shared by every class), `term`, `estimate`, `standard_error`,
+`statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`. Wald
+rows use the fit's covariance (`vcov_type`) with the delta method;
+intervals of standard deviations and variances are formed on the log
+scale, of correlations on the Fisher scale and of shares on the logit
+scale, and only coefficients and logits are tested against zero.
+`method = "bootstrap"` resamples persons, refits each resample from
+`n_starts` starts and matches its classes to the original by their
+posterior memberships of the original persons; it is refused for a
+multilevel growth mixture (`latents_unsupported_inference`). In a
+simulation of 1000 datasets per design, Wald intervals covered
+0.936-0.965 with separated classes but 0.885-0.943 with weakly separated
+ones, whose standard errors ran 6-30% small
+(validation/GROWTH_SIMULATION.md in the source repository); prefer the
+bootstrap there. A class whose random-effect covariance is degenerate
+raises `latents_boundary_fit` under `boundary = "error"`; under `"fix"`
+its random-effect rows have no standard error or interval. `data`, when
+given, must be the fitted data; `step` is not used (the information is
+the derivative of the analytic score).
 
 For a general transition fit (an
 [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit with

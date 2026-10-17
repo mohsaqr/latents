@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,6 +64,50 @@
 <p>Size is a rough guide: <strong>S</strong> under half a day, <strong>M</strong> one to two days, <strong>L</strong> several days or dependent on outside material.</p>
 <p>Evidence for existing claims: <code>validation/MATH_AUDIT.md</code>, <code>equivalence/houle-2026/REPORT.md</code>, <code>validation/*.R</code> and <code>equivalence/</code>.</p>
 <hr><div class="section level2">
+<h2 id="next-set-2026-10-17-after-0937">Next (set 2026-10-17, after 0.9.37)<a class="anchor" aria-label="anchor" href="#next-set-2026-10-17-after-0937"></a></h2>
+<p>Owner priority remains growth, transitions and <code><a href="reference/lta.html">lta()</a></code>. Each item ships with its evidence (an external reference, a simulation, or both).</p>
+<table class="table"><colgroup><col width="20%"><col width="20%"><col width="20%"><col width="20%"><col width="20%"></colgroup><thead><tr><th>#</th>
+<th>Item</th>
+<th>Reference / evidence</th>
+<th>Size</th>
+<th>Target</th>
+</tr></thead><tbody><tr><td>1</td>
+<td>Coverage cell for correlated residuals (<code>residual_correlation</code>), and coverage of the growth bootstrap intervals</td>
+<td>add cells to <code>validation/growth-simulation.R</code> (new registry rows)</td>
+<td>S</td>
+<td>2026-10-19</td>
+</tr><tr><td>2</td>
+<td>Transition-aware <code><a href="reference/three_step.html">three_step()</a></code> (distal outcomes of an <code><a href="reference/lta.html">lta()</a></code> profile sequence) and BCH</td>
+<td>Latent GOLD <code>step3</code> on a dynamic latent variable</td>
+<td>M</td>
+<td>2026-10-21</td>
+</tr><tr><td>3</td>
+<td>Group classes in the three-step latent Markov chain (<code><a href="reference/r3step.html">r3step()</a></code> on <code>lta(n_group_classes &gt; 1)</code>)</td>
+<td>Latent GOLD step3 with a group latent variable</td>
+<td>M</td>
+<td>2026-10-23</td>
+</tr><tr><td>4</td>
+<td>Standard errors for the ten constrained structures in the homogeneous <code><a href="reference/lta.html">lta()</a></code> (delta method from the general engine’s logits)</td>
+<td>numerical Hessian; agreement with the extended engine</td>
+<td>S-M</td>
+<td>2026-10-24</td>
+</tr><tr><td>5</td>
+<td>Multilevel growth bootstrap (match group classes too)</td>
+<td>simulation</td>
+<td>M</td>
+<td>2026-10-27</td>
+</tr><tr><td>6</td>
+<td>Vignette sections: growth <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>/<code><a href="reference/r3step.html">r3step()</a></code>/correlated residuals; three-step latent Markov</td>
+<td>rendered articles, claims tested in tests/equivalence</td>
+<td>M</td>
+<td>2026-10-29</td>
+</tr><tr><td>7</td>
+<td>G6: binary and count growth mixtures (adaptive quadrature)</td>
+<td>Latent GOLD, GLMMadaptive</td>
+<td>L</td>
+<td>November</td>
+</tr></tbody></table></div>
+<div class="section level2">
 <h2 id="priority-0--one-engine-plan">Priority 0 — One engine (plan)<a class="anchor" aria-label="anchor" href="#priority-0--one-engine-plan"></a></h2>
 <p>Consolidate the eight estimation engines into measurement blocks × latent structures on one kernel with shared services. Plan, phases, acceptance and risks: <a href="validation/ENGINE_DESIGN.html">validation/ENGINE_DESIGN.md</a>. Public API unchanged; every phase is a release that reproduces golden fixtures.</p>
 <ul><li><label><input type="checkbox" checked><strong>E0. Golden baseline</strong> of every engine and option. <strong>M</strong> (251 cases, bit-identical reruns)</label></li>
@@ -99,7 +143,8 @@
 <li><label><input type="checkbox" checked>Mover-stayer class; FIML and covariance structures in the general engine (2026-10-01).</label></li>
 <li><label><input type="checkbox">Gaps vs JStats: random-intercept LTA (needs the exact Mplus RI-LTA specification), absorbing profiles (seqHMM-style). Sampling weights done (0.9.3). <strong>M-L</strong></label></li>
 <li><label><input type="checkbox" checked>Covariance structures and FIML in the general engine; bootstrap LRT between nested transition models; simulation study of the new standard errors (all 0.9.2; audited 2026-10-01).</label></li>
-<li><label><input type="checkbox">Structure-aware standard errors in the extended <code><a href="reference/lta.html">lta()</a></code> beyond the diagonal EEI and VVI (refused today). <strong>M</strong></label></li>
+<li><label><input type="checkbox" checked>Structure-aware standard errors in the extended <code><a href="reference/lta.html">lta()</a></code> (2026-10-17, 0.9.37): every structure and <code>covariance_model = "full"</code>, by chart scores (analytic Sigma gradients through the coordinates’ Jacobian); scores equal the likelihood’s numerical gradient to ~2e-7.</label></li>
+<li><label><input type="checkbox">The same for the homogeneous <code><a href="reference/lta.html">lta()</a></code> (multilpa_transitions), which still refuses the ten constrained structures: its table reports natural probabilities, so it needs the delta method from the general engine’s logits. <strong>S-M</strong></label></li>
 </ul></div>
 <div class="section level3">
 <h3 id="id_13-membership-covariate-models">1.3 Membership-covariate models<a class="anchor" aria-label="anchor" href="#id_13-membership-covariate-models"></a></h3>
@@ -125,12 +170,12 @@
 <p><strong>Interface (decided before coding).</strong> One verb, named arguments: extend <code><a href="reference/mixture_regression.html">mixture_regression()</a></code> rather than add a function. <code>random = ~ 1 + time</code> (within-class random effects; default <code>NULL</code> keeps today’s model), <code>random_covariance = c("varying", "equal", "proportional")</code> (class-specific, common, or common times a class scale, the <code>lcmm</code> <code>nwg</code>), <code>random_diagonal = FALSE</code> (<code>lcmm</code> <code>idiag</code>), and later <code>residual_correlation = c("none", "ar1", "brownian")</code>. A growth mixture model needs <code>id</code> and <code>class_level = "group"</code>; anything else is refused by class.</p>
 <p><strong>References.</strong> <code>lcmm::hlme</code> 2.2.1 (installed; exact for Gaussian, no integration) and Latent GOLD 6.1 Syntax (installed under Wine; latent growth and mixture growth models with CFactors, Syntax Guide sections 5.3.4-5.3.5 and 5.4.3; quadrature, so evaluate our exact likelihood at its estimates before calling a gap a disagreement).</p>
 <p><strong>Phases</strong> (each ships only with its evidence; sizes as at the top):</p>
-<ul><li><label><input type="checkbox" checked><strong>G0. Document what exists.</strong> (2026-10-02: vignette <code>growth-mixture</code>, dataset <code>growth_scores</code>, trajectory views for models without random effects.) Example and vignette section “trajectory classes” with <code><a href="reference/mixture_regression.html">mixture_regression()</a></code>; a tidy <code>trajectories</code> table (predicted mean per class and time) from <code><a href="reference/get_results.html">get_results()</a></code>; add the <code>lcmm::hlme</code> match as an <code>equivalence/</code> fixture. <strong>S</strong> (half a day)</label></li>
+<ul class="task-list"><li><label><input type="checkbox" checked><strong>G0. Document what exists.</strong> (2026-10-02: vignette <code>growth-mixture</code>, dataset <code>growth_scores</code>, trajectory views for models without random effects.) Example and vignette section “trajectory classes” with <code><a href="reference/mixture_regression.html">mixture_regression()</a></code>; a tidy <code>trajectories</code> table (predicted mean per class and time) from <code><a href="reference/get_results.html">get_results()</a></code>; add the <code>lcmm::hlme</code> match as an <code>equivalence/</code> fixture. <strong>S</strong> (half a day)</label></li>
 <li><label><input type="checkbox" checked><strong>G1. Gaussian growth mixture model, core.</strong> (2026-10-02; <code>equivalence/test-growth-mixture-lcmm.R</code>, six configurations.) Within class k, y_i ~ N(X_i b_k, Z_i G_k Z_i’ + s_k^2 I), unbalanced times and missing occasions allowed. Closed-form marginal likelihood (Cholesky per person); EM over classes with a per-class weighted linear-mixed-model M-step (inner EM on the random effects, or Newton on the log-Cholesky of G_k); starts from the latent class growth fit plus random starts; SQUAREM. <code>random_covariance</code> (<code>varying</code>/<code>equal</code>/<code>proportional</code>) and <code>random_diagonal</code>. Classed refusals for boundary variances. Evidence: independent dense-matrix likelihood and analytic score checks; <code>hlme</code> matches (log likelihood within 1e-6, estimates within 1e-4) for at least 6 configurations (1-4 classes; random intercept / intercept+slope; each covariance option; unbalanced data). <strong>M</strong> (about 1.5 days)</label></li>
-<li>[~] <strong>G2. Inference.</strong> (Observed and sandwich errors done and checked against a numerical Hessian; bootstrap and the coverage study remain.) Observed-information and sandwich (weighted) standard errors on the estimation scale, delta method to variances/correlations; boundary handling for random-effect variances; person bootstrap via the existing machinery. Evidence: numerical-Hessian agreement 1e-6; coverage simulation (&gt;= 200 datasets, gates as in <code>validation/LTA_SIMULATION.md</code>). <strong>M</strong> (about 1 day)</li>
-<li>[~] <strong>G3. Integration.</strong> (Tables, print, summary, plots, weights, <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code>, enumeration with the bootstrap LRT and distal outcomes in <code><a href="reference/three_step.html">three_step()</a></code> done; <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> for new persons and <code><a href="reference/r3step.html">r3step()</a></code> remain, both refused with classed conditions.) <code>print</code>/<code>summary</code>/<code>plot</code> (class trajectories with individual-curve spread), <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> (marginal and conditional on the random effects, i.e. empirical Bayes), posterior class table, <code>enumerate</code> over classes, <code><a href="reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> (needs simulation from the fitted model), label alignment, sampling weights, <code><a href="reference/sensitivity.html">sensitivity()</a></code>. Evidence: tests per verb; bootstrap LRT size check. <strong>M</strong> (about 1 day)</li>
-<li><label><input type="checkbox"><strong>G4. Validation report.</strong> Recovery and coverage study (balanced and unbalanced designs, weak and strong separation, random-effect variance near zero); Latent GOLD cross-check on two Gaussian configurations; write-up in <code>validation/</code>. <strong>S-M</strong> (half a day, mostly compute)</label></li>
-<li><label><input type="checkbox"><strong>G5. Correlated residuals</strong> (<code>residual_correlation = "ar1"</code>, <code>"brownian"</code>). Changes only the residual covariance in G1; <code>hlme(cor = ...)</code> as reference. <strong>M</strong> (about 1 day)</label></li>
+<li><label><input type="checkbox" checked><strong>G2. Inference.</strong> (2026-10-17, 0.9.37: <code><a href="reference/parameter_inference.html">parameter_inference()</a></code> method, Wald and person bootstrap with replicates matched by posterior membership; coverage in <code>validation/GROWTH_SIMULATION.md</code>.) Observed-information and sandwich (weighted) standard errors on the estimation scale, delta method to variances/correlations; boundary handling for random-effect variances; person bootstrap via the existing machinery. Evidence: numerical-Hessian agreement 1e-6; coverage simulation (&gt;= 200 datasets, gates as in <code>validation/LTA_SIMULATION.md</code>). <strong>M</strong> (about 1 day)</label></li>
+<li><label><input type="checkbox" checked><strong>G3. Integration.</strong> (2026-10-17, 0.9.37: <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> for new persons, matching lcmm’s predictY/predictClass/predictRE at hlme’s estimates; <code><a href="reference/r3step.html">r3step()</a></code> for trajectory models; <code><a href="reference/sensitivity.html">sensitivity()</a></code>.) <code>print</code>/<code>summary</code>/<code>plot</code> (class trajectories with individual-curve spread), <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> (marginal and conditional on the random effects, i.e. empirical Bayes), posterior class table, <code>enumerate</code> over classes, <code><a href="reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> (needs simulation from the fitted model), label alignment, sampling weights, <code><a href="reference/sensitivity.html">sensitivity()</a></code>. Evidence: tests per verb; bootstrap LRT size check. <strong>M</strong> (about 1 day)</label></li>
+<li><label><input type="checkbox" checked><strong>G4. Validation report.</strong> (2026-10-17: <code>validation/GROWTH_SIMULATION.md</code>, 4 cells x 1000; separated designs 48/54 pass, misses bias-only on variance components; weak separation under-covers (0.885-0.943); R3STEP coverage 0.944-0.954. Latent GOLD cross-check not run: lcmm::hlme is exact and already matched.) Recovery and coverage study (balanced and unbalanced designs, weak and strong separation, random-effect variance near zero); Latent GOLD cross-check on two Gaussian configurations; write-up in <code>validation/</code>. <strong>S-M</strong> (half a day, mostly compute)</label></li>
+<li><label><input type="checkbox" checked><strong>G5. Correlated residuals</strong> (2026-10-17, 0.9.37: <code>residual_correlation = "ar"</code>/<code>"brownian"</code>, <code>residual_time</code>; dense per-pattern engine, L-BFGS-B within variance floors, Newton finish; hlme(cor = AR/BM) likelihood equal at its estimates to 1e-8.) Coverage study of the process parameters not done.</label></li>
 <li><label><input type="checkbox"><strong>G6. Binary and count outcomes with random effects.</strong> Adaptive Gauss-Hermite quadrature (Laplace as a fast option) inside the class EM; references Latent GOLD (binary, Poisson growth mixtures) and <code>lme4</code> / <code>GLMMadaptive</code> for one class. Accuracy check against increasing nodes. <strong>L</strong> (1.5-2 weeks)</label></li>
 <li><label><input type="checkbox"><strong>G7. Out of scope unless asked:</strong> latent-process link functions (<code>lcmm::lcmm</code>), multivariate outcomes (<code>multlcmm</code>), joint latent class and survival models (<code>Jointlcmm</code>). Each is a separate model family (weeks).</label></li>
 </ul><p>Order: G0 -&gt; G1 -&gt; G2 -&gt; G3 -&gt; G4 gives a releasable Gaussian growth mixture model in about 4 working days; G5 next; G6 only with a concrete need. Risk: convergence with random-effect variances on the boundary or weakly separated classes may add a day to G1-G2.</p>
@@ -156,9 +201,9 @@
 <div class="section level2">
 <h2 id="priority-3--workflow-reach">Priority 3 — Workflow reach<a class="anchor" aria-label="anchor" href="#priority-3--workflow-reach"></a></h2>
 <ul class="task-list"><li><label><input type="checkbox"><strong>Public label alignment</strong> between two fits of any family. Internal versions exist (<code>.multilpa_align_labels()</code> for <code>multilpa</code>, <code>.multilpa_pool_align()</code>/<code>.multilpa_cov_permute()</code> for covariate fits); an LTA version must reorder <code>transition_probabilities</code>, <code>transition_counts</code>, <code>initial_probabilities</code> and <code>empty_transition_rows</code> on both margins, and a two-profile test cannot catch a margin error because <code>c(2, 1)</code> is its own inverse. Prerequisite for the next item. <strong>M</strong></label></li>
-<li><label><input type="checkbox"><code><a href="reference/sensitivity.html">sensitivity()</a></code> for <code><a href="reference/lta.html">lta()</a></code> and covariate fits (refused today with <code>latents_unsupported_sensitivity</code>; needs refit paths and the alignment above). <strong>M</strong></label></li>
-<li><label><input type="checkbox">Transition-aware <code><a href="reference/three_step.html">three_step()</a></code>, BCH, <code><a href="reference/r3step.html">r3step()</a></code> and classification errors: they read an LTA fit’s posteriors but treat occasions as independent; the covariate model does not accept an LTA fit. <strong>M</strong></label></li>
-<li><label><input type="checkbox">Error bars in <code>plot(what = "bars")</code> for transition fits (standard errors now exist; the plot does not draw them). <strong>S</strong></label></li>
+<li><label><input type="checkbox" checked><code><a href="reference/sensitivity.html">sensitivity()</a></code> for <code><a href="reference/lta.html">lta()</a></code> and growth mixtures (2026-10-17, 0.9.37; profiles matched on the measurement, classes by posterior membership). Covariate fits still refused. <strong>M</strong></label></li>
+<li><label><input type="checkbox" checked>Transition-aware <code><a href="reference/r3step.html">r3step()</a></code> (2026-10-17, 0.9.37): <code>r3step(initial_covariates =, transition_covariates =)</code>, the three-step latent Markov model; Latent GOLD <code>step3 modal ml</code> agrees to its printed precision on three designs. Still open: a transition-aware <code><a href="reference/three_step.html">three_step()</a></code> (distal outcomes) and BCH, and group classes in the step-three chain. <strong>M</strong></label></li>
+<li><label><input type="checkbox" checked>Error bars in <code>plot(what = "bars")</code>, <code>"profiles"</code> and <code>"responses"</code> for transition fits (2026-10-17, 0.9.37; <code>intervals =</code>).</label></li>
 <li><label><input type="checkbox" checked><code>plot(what = "bars")</code> on an unconverged or bound-active fit now draws without whiskers and says why (2026-09-28).</label></li>
 <li><label><input type="checkbox">Scalar accessors so prose can quote one number with one verb: <code>entropy(fit, level = )</code>, <code>worst_residual(fit)</code>. <strong>S</strong></label></li>
 <li><label><input type="checkbox" checked>Named plot functions for fitted models (2026-10-07): <code><a href="reference/latents-plots.html">plot_profiles()</a></code>: the <code>plot(fit, what = )</code> sweep hides each view’s arguments from editor completion. <code><a href="reference/latents-plots.html">plot_enumeration()</a></code> (2026-10-07) is the pattern: the generic delegates to the named function, which has no <code>...</code>. Owner’s request. <strong>M</strong></label></li>

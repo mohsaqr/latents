@@ -17,7 +17,7 @@ class and the covariate cannot explain why."><meta property="og:image" content="
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -83,12 +83,14 @@ class and the covariate cannot explain why.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">r3step</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">covariates</span>,</span>
+<span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  level <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"individuals"</span>, <span class="st">"groups"</span><span class="op">)</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  vcov_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"robust"</span>, <span class="st">"observed"</span><span class="op">)</span>,</span>
 <span>  adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BH"</span>, <span class="st">"holm"</span>, <span class="st">"hochberg"</span>, <span class="st">"hommel"</span>, <span class="st">"bonferroni"</span>, <span class="st">"BY"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
-<span>  by_group_class <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  by_group_class <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  initial_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  transition_covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,9 +99,13 @@ class and the covariate cannot explain why.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A covariate-free fitted <code><a href="multilpa.html">multilpa()</a></code> or <code><a href="lta.html">lta()</a></code> model. A fit that
+<dd><p>A covariate-free fitted <code><a href="multilpa.html">multilpa()</a></code> or <code><a href="lta.html">lta()</a></code> model, or a
+trajectory model from <code><a href="mixture_regression.html">mixture_regression()</a></code> (persons classified, with or
+without <code>random</code>), whose person classes are then predicted. A fit that
 already uses membership covariates cannot be corrected by the fixed,
-unconditional classification-error matrix used here.</p></dd>
+unconditional classification-error matrix used here, and a multilevel
+growth mixture (<code>cluster</code>) is refused because its persons are not
+independent; both raise <code>latents_unsupported_three_step</code>.</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
@@ -111,12 +117,15 @@ identifying information warns that alignment cannot be verified.</p></dd>
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
 <dd><p>Character vector of numeric columns not used as measurement
 indicators in <code>x</code>. For <code>level = "groups"</code> each must be constant within a
-group.</p></dd>
+group; for a trajectory model each must be constant within a person and
+not part of the trajectory regression (<code>latents_bad_covariate</code>).</p></dd>
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
 <dd><p><code>"individuals"</code> predicts profile membership, <code>"groups"</code>
-predicts group-class membership.</p></dd>
+predicts group-class membership. A trajectory model classifies persons:
+its rows have <code>level = "persons"</code> and outcomes <code>class_1</code>, <code>class_2</code>, ...,
+and <code>"groups"</code> is refused with <code>latents_bad_argument</code>.</p></dd>
 
 
 <dt id="arg-ci-level">ci_level<a class="anchor" aria-label="anchor" href="#arg-ci-level"></a></dt>
@@ -159,6 +168,17 @@ where the pooled regression attenuates the slopes and inflates their
 clustered standard errors. For <code>level = "individuals"</code> on a covariate-free
 <code><a href="multilpa.html">multilpa()</a></code> fit only; refused with <code>latents_bad_argument</code> otherwise.</p></dd>
 
+
+<dt id="arg-initial-covariates-transition-covariates">initial_covariates, transition_covariates<a class="anchor" aria-label="anchor" href="#arg-initial-covariates-transition-covariates"></a></dt>
+<dd><p>For an <code><a href="lta.html">lta()</a></code> fit with one
+group class: covariates of the profile at the first occasion (constant
+within a person) and of every transition (read at the destination
+occasion, so they may change over occasions). Either one makes this the
+three-step latent Markov model described below, in place of the
+occasion-by-occasion profile regression of <code>covariates</code>, which must then
+be left empty; <code>level</code> and <code>by_group_class</code> do not apply. Refused with
+<code>latents_bad_argument</code> on a fit that is not a transition model.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -179,6 +199,16 @@ one per group class, named <code>group_class_1</code>, <code>group_class_2</code
 by the shared slopes and, at <code>level = "groups"</code>, the group-class logits
 against the last group class; the result also carries <code>by_group_class</code> and
 the maximised <code>log_likelihood</code> as attributes.</p>
+<p>With <code>initial_covariates</code> or <code>transition_covariates</code>, one row per
+coefficient of the step-three chain: <code>block</code> (<code>"initial"</code> or
+<code>"transition"</code>), <code>from</code> (the origin profile of a transition, <code>NA</code> for an
+initial logit), <code>to</code>, <code>term</code>, <code>estimate</code>, <code>standard_error</code>, <code>statistic</code>,
+<code>p_value</code>, <code>p_adjusted</code>, <code>conf_low</code> and <code>conf_high</code>, with the attributes
+<code>log_likelihood</code>, <code>classification_errors</code> (the step-two error matrix,
+rows the true profile), <code>vcov_type</code> and <code>adjust</code>. Initial logits are
+against the last profile and transition logits against staying, as in
+<code>lta(initial_covariates =, transition_covariates =)</code>; <code>p_adjusted</code> covers
+the covariate terms.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -188,7 +218,25 @@ reshaping the classes.
 On a <code><a href="lta.html">lta()</a></code> fit, <code>level = "individuals"</code> models the marginal profile at
 each occasion. It does not regress initial-state or transition
 probabilities on the covariates. <code>vcov_type = "robust"</code> clusters the
-occasion scores by group; <code>"observed"</code> treats them as independent.</p>
+occasion scores by group; <code>"observed"</code> treats them as independent.
+On a trajectory model the units are persons, each with one covariate
+value, and <code>"robust"</code> is the sandwich over persons.</p>
+<p>The three-step latent Markov model (<code>initial_covariates</code>,
+<code>transition_covariates</code>) classifies each occasion from its own
+indicators, with the transition fit's measurement and its profile shares
+pooled over occasions (the latent class model of the pooled data), and
+assigns it to its modal profile. Step three is a hidden Markov model for
+those assignments, with the classification errors held at their step-two
+values and the initial and transition logits regressed on the
+covariates (Di Mari, Oberski and Vermunt 2016). The transition fit's own
+posteriors are not used for the assignments: they borrow from a person's
+other occasions, so their errors are not independent across occasions as
+step three assumes. The step-one fit must have no covariates of its own
+and one group class (<code>latents_unsupported_three_step</code> otherwise). It
+agrees with Latent GOLD 6.1's <code>step3 modal ml</code> latent Markov model to its
+printed precision on three designs (equivalence/latentgold-step3-markov
+in the source repository); <code>"robust"</code> is the sandwich over persons and
+<code>"observed"</code> the information Latent GOLD reports.</p>
 <p>Over 60 replications of a two-profile design with a true log-odds slope of
 1.2 and intercept -0.3, this recovered the slope with a bias of -0.002 and
 the intercept with a bias of +0.006, where a logistic regression on the
@@ -207,7 +255,10 @@ be expected to run narrow where classification is poorer; check
 improved three-step approaches. <em>Political Analysis</em>, 18, 450–469.
 Asparouhov, T., &amp; Muthen, B. (2014). Auxiliary variables in mixture
 modeling: three-step approaches using Mplus. <em>Structural Equation
-Modeling</em>, 21, 329–341.</p>
+Modeling</em>, 21, 329–341.
+Di Mari, R., Oberski, D. L., &amp; Vermunt, J. K. (2016). Bias-adjusted
+three-step latent Markov modeling with covariates. <em>Structural Equation
+Modeling</em>, 23, 649–660.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -236,6 +287,24 @@ one-step alternative that estimates everything jointly.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        p_value   p_adjusted   conf_low  conf_high</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 1.699572e-06           NA -0.8039742 -0.3368177</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 7.266225e-22 7.266225e-22  0.9702734  1.4674582</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Covariates of the moves between profiles, three steps on from lta().</span></span></span>
+<span class="r-in"><span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu"><a href="lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span></span>
+<span class="r-in"><span>             vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>             id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, time <span class="op">=</span> <span class="st">"sequence"</span>, n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">r3step</span><span class="op">(</span><span class="va">moves</span>, <span class="va">course_engagement</span>, transition_covariates <span class="op">=</span> <span class="st">"sequence"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        block      from        to        term     estimate standard_error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    initial      &lt;NA&gt; profile_1 (Intercept)  0.547153583     0.20869295</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 transition profile_1 profile_2 (Intercept) -1.850702888     0.28098436</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 transition profile_1 profile_2    sequence -0.003170733     0.03170190</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 transition profile_2 profile_1 (Intercept) -1.630641206     0.30703086</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 transition profile_2 profile_1    sequence  0.011857195     0.03415177</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    statistic      p_value p_adjusted    conf_low   conf_high</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  2.6218116 8.746377e-03         NA  0.13812293  0.95618424</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -6.5864980 4.503217e-11         NA -2.40142210 -1.29998367</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.1000171 9.203307e-01  0.9203307 -0.06530532  0.05896385</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -5.3110010 1.090247e-07         NA -2.23241063 -1.02887178</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.3471912 7.284476e-01  0.9203307 -0.05507904  0.07879343</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

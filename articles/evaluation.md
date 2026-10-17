@@ -436,12 +436,12 @@ as.data.frame(candidates)
 
 To find which candidate minimizes each criterion, we call
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"criteria"`. Criteria that depend on a sample size are reported
-with the number of groups and with the number of observations.
+with `"best"`. Criteria that depend on a sample size are reported with
+the number of groups and with the number of observations.
 
 ``` r
 
-get_results(candidates, "criteria")
+get_results(candidates, "best")
 #>    criterion  convention             candidate n_profiles n_group_classes model value
 #> 1        aic        <NA> profiles4_groups3_VVV          4               3   VVV 16658
 #> 2        kic        <NA> profiles2_groups3_VVV          2               3   VVV 16729

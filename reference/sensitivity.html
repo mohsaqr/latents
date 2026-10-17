@@ -17,7 +17,7 @@ reports what changed."><meta property="og:image" content="https://pak.dynasite.o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,19 +96,28 @@ reports what changed.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>A fitted <code>multilpa</code> model to use as the reference.
+<dd><p>The reference fit: a <code><a href="multilpa.html">multilpa()</a></code> model, an <code><a href="lta.html">lta()</a></code> model, or a
+growth mixture (<code><a href="mixture_regression.html">mixture_regression()</a></code> with <code>random</code>).
 A <code><a href="fit_staged.html">fit_staged()</a></code> result varies the second-stage starts while holding its
 first-stage measurement solution fixed. A directly fitted model with
 measurement blocks held is refused: its original free starting
 values are not retained, so replaying the same seed would not replay the
-same search.</p></dd>
+same search. A membership-covariate fit is refused with
+<code>latents_unsupported_sensitivity</code>. For an <code><a href="lta.html">lta()</a></code> fit, <code>agreement</code> is
+the share of occasions given the same profile, after matching the
+refit's profiles on the measurement; for a growth mixture it is the
+share of persons given the same class, after matching the refit's
+classes by their posterior memberships of the fitted persons.</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>Optional. The data the model was fitted to, in its original row
-order. A fit carries the columns it was built from, so this is only needed
-to override them. Shared identifier and indicator columns are checked
-against the fit before assignment agreement is calculated.</p></dd>
+<dd><p>Optional for a <code><a href="multilpa.html">multilpa()</a></code> fit or a growth mixture, which carry
+the columns they were built from, so it is only needed to override them;
+required for an <code><a href="lta.html">lta()</a></code> fit (<code>latents_bad_argument</code> otherwise), whose
+refits need the occasions and covariates. It must be the data the model
+was fitted to, in its original row order; shared identifier and indicator
+columns are checked against the fit before assignment agreement is
+calculated (<code>latents_bad_inference_data</code>).</p></dd>
 
 
 <dt id="arg-seeds">seeds<a class="anchor" aria-label="anchor" href="#arg-seeds"></a></dt>
@@ -125,13 +134,15 @@ used, so each seed gets the same search effort it did.</p></dd>
 
 
 <dt id="arg-max-iter-tol">max_iter, tol<a class="anchor" aria-label="anchor" href="#arg-max-iter-tol"></a></dt>
-<dd><p>Passed to each refit; default to the reference fit's.</p></dd>
+<dd><p>Passed to each refit; default to the reference fit's
+(for an <code><a href="lta.html">lta()</a></code> fit, to the defaults of <code><a href="lta.html">lta()</a></code>).</p></dd>
 
 
 <dt id="arg-tolerance">tolerance<a class="anchor" aria-label="anchor" href="#arg-tolerance"></a></dt>
 <dd><p>Two log likelihoods within this of each other count as the
 same optimum. Defaults to the reference fit's own replication tolerance,
-which is what it used to decide whether its starts agreed.</p></dd>
+which is what it used to decide whether its starts agreed (for a growth
+mixture <code>1e-6 * (1 + abs(logLik))</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -184,6 +195,15 @@ single solution.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1    1      -396.1633      TRUE          9       1 TRUE         1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2    2      -396.1633      TRUE          9       1 TRUE         1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3    3      -396.1633      TRUE          9       1 TRUE         1</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Growth mixtures are known for local solutions (Hipp and Bauer 2006).</span></span></span>
+<span class="r-in"><span><span class="va">growth</span> <span class="op">&lt;-</span> <span class="fu"><a href="mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">growth_scores</span>, <span class="va">student</span> <span class="op">&lt;=</span> <span class="fl">60</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                             n_classes <span class="op">=</span> <span class="fl">2</span>, id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>                             random <span class="op">=</span> <span class="op">~</span> <span class="fl">1</span>, n_starts <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">sensitivity</span><span class="op">(</span><span class="va">growth</span>, seeds <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   seed log_likelihood converged iterations optimum best agreement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    1      -1175.788      TRUE         70       1 TRUE         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    2      -1175.788      TRUE         70       1 TRUE         1</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

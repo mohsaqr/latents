@@ -23,7 +23,7 @@ that differ only in where they start."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -308,9 +308,10 @@ order.</p></dd>
 <dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
 <dd><p>A covariance structure as <code><a href="multilpa.html">multilpa()</a></code> takes it (<code>"EEI"</code>,
 <code>"VVI"</code>, <code>"VEI"</code>, ... ; mclust's codes). Standard errors are given for
-EEI, VVI, EEE and VVV in the homogeneous model and for the diagonal
-EEI and VVI with the extensions; other structures are refused
-(<code>latents_unsupported_inference</code>).</p></dd>
+every structure with the extensions (covariate, occasion-varying or
+second-order transitions, occasion-specific measurement), and for EEI,
+VVI, EEE and VVV in the homogeneous model, which refuses the other ten
+with <code>latents_unsupported_inference</code>.</p></dd>
 
 
 <dt id="arg-mover-stayer">mover_stayer<a class="anchor" aria-label="anchor" href="#arg-mover-stayer"></a></dt>

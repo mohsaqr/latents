@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,6 +58,36 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.37" id="latents-0937">latents 0.9.37<a class="anchor" aria-label="anchor" href="#latents-0937"></a></h2>
+<p>Growth mixtures and latent transition models; nothing in the 0.9.21 interface changes, and every addition is a new argument at the end of a signature, a new <code>type</code>, or a verb that used to refuse.</p>
+<div class="section level4">
+<h4 id="enumeration-grids-0-9-37">Enumeration grids<a class="anchor" aria-label="anchor" href="#enumeration-grids-0-9-37"></a></h4>
+<ul><li>The table of each criterion’s minimum is now <code>get_results(x, "best")</code>, the name the transition and family grids already use. <code>"criteria"</code> read as “every candidate’s criteria”, which is <code>"candidates"</code>. <code>"criteria"</code> still returns the same table, so existing scripts are unaffected.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="growth-mixture-models-mixture_regressionrandom---0-9-37">Growth mixture models (<code>mixture_regression(random = )</code>)<a class="anchor" aria-label="anchor" href="#growth-mixture-models-mixture_regressionrandom---0-9-37"></a></h4>
+<ul><li>
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> works on growth mixtures (it used to refuse). The persons in <code>newdata</code> are new persons: <code>type = "response"</code> and <code>"class_response"</code> give class trajectories, which need no outcome; given the outcomes, <code>"posterior"</code> classifies each person, <code>"class_conditional"</code> and <code>"conditional"</code> give each person’s own curve with their empirical Bayes random effects, and <code>"random_effects"</code> gives those effects by class. At lcmm’s own estimates they equal <code>lcmm::predictY()</code> (marginal and subject-specific), <code>predictClass()</code> and <code>predictRE()</code> (three configurations; <code>equivalence/test-growth-predict-lcmm.R</code>). A multilevel growth mixture classifies the clusters in <code>newdata</code> as new clusters.</li>
+<li>
+<code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> has a growth-mixture method: one row per natural parameter (coefficients, membership logits, residual and random-effect standard deviations, variances and correlations, class shares) by Wald, or by a person bootstrap (<code>method = "bootstrap"</code>) whose replicates are matched to the fitted classes by their posterior memberships of the fitted persons. The Wald rows reproduce the fit’s own tables.</li>
+<li>
+<code><a href="../reference/r3step.html">r3step()</a></code> works on trajectory models (latent class growth and growth mixtures; it used to refuse): person covariates predicting class membership, with the classification errors held fixed.</li>
+<li>
+<code><a href="../reference/sensitivity.html">sensitivity()</a></code> refits a growth mixture under each seed and reports how many persons keep their class.</li>
+<li>Correlated residuals (new arguments <code>residual_correlation = "ar"</code> or <code>"brownian"</code> and <code>residual_time</code>): a continuous-time autoregressive process or Brownian motion, shared by the classes, on top of the random effects and the residual variance, as <code>lcmm::hlme(cor = AR(time))</code> and <code>cor = BM(time)</code>. At hlme’s estimates the likelihood equals hlme’s to 1e-8 (three configurations; <code>equivalence/test-growth-correlated-lcmm.R</code>). A process the data cannot separate from the residual variance or the random effects is left on its bound with a <code>latents_random_boundary</code> warning, and its rows have no standard error; the rest of the fit is inferred with those coordinates held.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="latent-transition-models-lta-0-9-37">Latent transition models (<code>lta()</code>)<a class="anchor" aria-label="anchor" href="#latent-transition-models-lta-0-9-37"></a></h4>
+<ul><li>
+<code>r3step(fit, data, initial_covariates =, transition_covariates =)</code> on an <code><a href="../reference/lta.html">lta()</a></code> fit is the three-step latent Markov model (Di Mari, Oberski and Vermunt 2016): covariates of the first profile and of the transitions, with the classification errors held fixed. It agrees with Latent GOLD 6.1’s <code>step3 modal ml</code> latent Markov model to its printed precision (four decimals) on three designs: log likelihoods, coefficients and standard errors (<code>equivalence/latentgold-step3-markov/</code>).</li>
+<li>Wald standard errors for the extended <code><a href="../reference/lta.html">lta()</a></code> model (covariate, occasion-varying or second-order transitions) cover every covariance structure (<code>model =</code>) and <code>covariance_model = "full"</code>; they were limited to EEI and VVI. The analytic scores agree with numerical gradients of the likelihood to about 2e-7.</li>
+<li>
+<code><a href="../reference/sensitivity.html">sensitivity()</a></code> takes <code><a href="../reference/lta.html">lta()</a></code> fits (with <code>data</code>) and reports how many occasions keep their profile under each seed.</li>
+<li>
+<code>plot(fit, what = "bars")</code>, <code>"profiles"</code> and <code>"responses"</code> of a transition fit draw the 95% intervals of <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> (new argument <code>intervals</code>, default <code>TRUE</code>); they used to draw point estimates only.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.36" id="latents-0936">latents 0.9.36<a class="anchor" aria-label="anchor" href="#latents-0936"></a></h2>
 <ul><li>

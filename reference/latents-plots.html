@@ -39,7 +39,7 @@ are listed under what below.'><meta property="og:image" content="https://pak.dyn
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -311,6 +311,7 @@ are listed under <code>what</code> below.</p>
 <span>  cell_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  intervals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -514,9 +515,10 @@ categorical indicator they leave out.</p></dd>
 <dt>Transition fits</dt>
 <dd><p>From <code><a href="lta.html">lta()</a></code>: <code>"transitions"</code> (default), then
 <code>"profiles"</code>, <code>"bars"</code>, <code>"heatmap"</code>, <code>"responses"</code>, <code>"sequences"</code>,
-<code>"sizes"</code>, <code>"entropy"</code>, <code>"posteriors"</code>, <code>"avepp"</code> and <code>"all"</code>, as point
-estimates without <code>intervals</code> or <code>statistic</code>. A general <code><a href="lta.html">lta()</a></code> fit
-takes no <code>what</code> and draws its transition matrix.</p></dd>
+<code>"sizes"</code>, <code>"entropy"</code>, <code>"posteriors"</code>, <code>"avepp"</code> and <code>"all"</code>, without
+<code>statistic</code>; the profile, bar and response views draw the 95%
+intervals of the transition fit's <code><a href="parameter_inference.html">parameter_inference()</a></code> (<code>intervals</code>).
+A general <code><a href="lta.html">lta()</a></code> fit takes no <code>what</code> and draws its transition matrix.</p></dd>
 
 <dt>Enumerations</dt>
 <dd><p>Criterion columns or <code>"all"</code> (with <code>combine</code>,

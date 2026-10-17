@@ -1,5 +1,85 @@
 # Changelog
 
+## latents 0.9.37
+
+Growth mixtures and latent transition models; nothing in the 0.9.21
+interface changes, and every addition is a new argument at the end of a
+signature, a new `type`, or a verb that used to refuse.
+
+#### Enumeration grids
+
+- The table of each criterion’s minimum is now `get_results(x, "best")`,
+  the name the transition and family grids already use. `"criteria"`
+  read as “every candidate’s criteria”, which is `"candidates"`.
+  `"criteria"` still returns the same table, so existing scripts are
+  unaffected.
+
+#### Growth mixture models (`mixture_regression(random = )`)
+
+- [`predict()`](https://rdrr.io/r/stats/predict.html) works on growth
+  mixtures (it used to refuse). The persons in `newdata` are new
+  persons: `type = "response"` and `"class_response"` give class
+  trajectories, which need no outcome; given the outcomes, `"posterior"`
+  classifies each person, `"class_conditional"` and `"conditional"` give
+  each person’s own curve with their empirical Bayes random effects, and
+  `"random_effects"` gives those effects by class. At lcmm’s own
+  estimates they equal `lcmm::predictY()` (marginal and
+  subject-specific), `predictClass()` and `predictRE()` (three
+  configurations; `equivalence/test-growth-predict-lcmm.R`). A
+  multilevel growth mixture classifies the clusters in `newdata` as new
+  clusters.
+- [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  has a growth-mixture method: one row per natural parameter
+  (coefficients, membership logits, residual and random-effect standard
+  deviations, variances and correlations, class shares) by Wald, or by a
+  person bootstrap (`method = "bootstrap"`) whose replicates are matched
+  to the fitted classes by their posterior memberships of the fitted
+  persons. The Wald rows reproduce the fit’s own tables.
+- [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  works on trajectory models (latent class growth and growth mixtures;
+  it used to refuse): person covariates predicting class membership,
+  with the classification errors held fixed.
+- [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  refits a growth mixture under each seed and reports how many persons
+  keep their class.
+- Correlated residuals (new arguments `residual_correlation = "ar"` or
+  `"brownian"` and `residual_time`): a continuous-time autoregressive
+  process or Brownian motion, shared by the classes, on top of the
+  random effects and the residual variance, as
+  `lcmm::hlme(cor = AR(time))` and `cor = BM(time)`. At hlme’s estimates
+  the likelihood equals hlme’s to 1e-8 (three configurations;
+  `equivalence/test-growth-correlated-lcmm.R`). A process the data
+  cannot separate from the residual variance or the random effects is
+  left on its bound with a `latents_random_boundary` warning, and its
+  rows have no standard error; the rest of the fit is inferred with
+  those coordinates held.
+
+#### Latent transition models (`lta()`)
+
+- `r3step(fit, data, initial_covariates =, transition_covariates =)` on
+  an [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit is
+  the three-step latent Markov model (Di Mari, Oberski and Vermunt
+  2016): covariates of the first profile and of the transitions, with
+  the classification errors held fixed. It agrees with Latent GOLD 6.1’s
+  `step3 modal ml` latent Markov model to its printed precision (four
+  decimals) on three designs: log likelihoods, coefficients and standard
+  errors (`equivalence/latentgold-step3-markov/`).
+- Wald standard errors for the extended
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) model
+  (covariate, occasion-varying or second-order transitions) cover every
+  covariance structure (`model =`) and `covariance_model = "full"`; they
+  were limited to EEI and VVI. The analytic scores agree with numerical
+  gradients of the likelihood to about 2e-7.
+- [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
+  takes [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
+  fits (with `data`) and reports how many occasions keep their profile
+  under each seed.
+- `plot(fit, what = "bars")`, `"profiles"` and `"responses"` of a
+  transition fit draw the 95% intervals of
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  (new argument `intervals`, default `TRUE`); they used to draw point
+  estimates only.
+
 ## latents 0.9.36
 
 - [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/latents-plots.md)

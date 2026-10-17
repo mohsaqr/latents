@@ -153,7 +153,7 @@ as.data.frame(candidates)
 #> 7                 0      TRUE    FALSE                 4           <NA>
 #> 8                 0      TRUE    FALSE                 1           <NA>
 #> 9                 0      TRUE    FALSE                 1           <NA>
-get_results(candidates, "criteria")
+get_results(candidates, "best")
 #>    criterion  convention        candidate n_profiles n_group_classes model value
 #> 1        aic        <NA> classes4_groups3          4               3  <NA> 15183
 #> 2        kic        <NA> classes4_groups3          4               3  <NA> 15229

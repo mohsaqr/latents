@@ -78,8 +78,8 @@ models).
   : Compare mixture regressions with different numbers of classes
 - [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
   : Compare fitted models on the same data
-- [`simulate(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
-  [`predict(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+- [`predict(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
+  [`simulate(`*`<latents_growth_mixture>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
   [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
   [`simulate(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
   [`predict(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)

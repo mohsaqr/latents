@@ -95,7 +95,7 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>           0.7440    0.8046     0.8427           0      TRUE    FALSE
 #>           0.7422    0.7602     0.8214           2      TRUE    FALSE
 #> 
-#> -- criteria --------------------------------------------------------
+#> -- best ------------------------------------------------------------
 #>  criterion  convention candidate n_profiles n_group_classes model value
 #>        aic        <NA> profiles6          6               1   EEE  1226
 #>        kic        <NA> profiles6          6               1   EEE  1279
@@ -107,7 +107,7 @@ summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
 #>       caic individuals profiles1          1               1   EEE  1365
 #>        awe      groups profiles1          1               1   EEE  1520
 #>        awe individuals profiles1          1               1   EEE  1520
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#>    ... 4 more rows.  get_results(x, what = "best")
 #> 
 #> -- classification --------------------------------------------------
 #>  candidate n_profiles n_group_classes model       level class n_modal proportion_modal

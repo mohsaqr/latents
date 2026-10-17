@@ -89,7 +89,7 @@ summary(models)
 #>           0.7594    0.8993     0.8993           1      TRUE    FALSE
 #>           0.9953    0.9983     0.9992           0      TRUE    FALSE
 #> 
-#> -- criteria --------------------------------------------------------
+#> -- best ------------------------------------------------------------
 #>  criterion  convention candidate n_profiles n_group_classes model value
 #>        aic        <NA>  classes2          2               1  <NA>  6552
 #>        kic        <NA>  classes2          2               1  <NA>  6562
@@ -101,7 +101,7 @@ summary(models)
 #>       caic individuals  classes1          1               1  <NA>  6587
 #>        awe      groups  classes1          1               1  <NA>  6616
 #>        awe individuals  classes1          1               1  <NA>  6616
-#>    ... 4 more rows.  get_results(x, what = "criteria")
+#>    ... 4 more rows.  get_results(x, what = "best")
 #> 
 #> -- classification --------------------------------------------------
 #>  candidate n_profiles n_group_classes model       level class n_modal

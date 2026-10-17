@@ -13,7 +13,7 @@ boundary, and unreplicated fits are reported, not silently selected."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.36</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -181,7 +181,7 @@ that describe it rather than by reaching into it: <code><a href="https://rdrr.io
 one row per candidate model with every criterion and diagnostic
 (including both entropies and, at each level, the smallest, largest and
 mean average posterior probability and the number of classes below a
-cutoff), <code>get_results(x, "criteria")</code> names the candidate each
+cutoff), <code>get_results(x, "best")</code> names the candidate each
 criterion's minimum falls on, <code>get_results(x, "classification")</code> gives
 every class's average posterior probability and relative entropy for
 every candidate, <code>get_results(x, "deltas")</code> and <code>"knees"</code> give the
@@ -277,7 +277,7 @@ seed <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">se
 <span class="r-out co"><span class="r-pr">#&gt;</span>           NA      TRUE    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            2      TRUE    FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -- criteria --------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- best ------------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention             candidate n_profiles n_group_classes model</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt; profiles1_groups1_EEI          1               1   EEI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt; profiles1_groups1_EEI          1               1   EEI</span>
@@ -300,7 +300,7 @@ seed <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">se
 <span class="r-out co"><span class="r-pr">#&gt;</span>  272.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  276.5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  285.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "criteria")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "best")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification --------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              candidate n_profiles n_group_classes model       level class</span>
@@ -385,7 +385,7 @@ seed <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">se
 <span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -- criteria --------------------------------------------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -- best ------------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  criterion  convention     candidate n_profiles n_group_classes model value</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        aic        &lt;NA&gt; profiles3_VVV          3               1   VVV 448.4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        kic        &lt;NA&gt; profiles3_VVV          3               1   VVV 495.4</span>
@@ -397,7 +397,7 @@ seed <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">se
 <span class="r-out co"><span class="r-pr">#&gt;</span>       caic individuals profiles2_VVV          2               1   VVV 603.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        awe      groups profiles2_VVV          2               1   VVV 806.3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        awe individuals profiles2_VVV          2               1   VVV 806.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "criteria")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    ... 4 more rows.  get_results(x, what = "best")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- classification --------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      candidate n_profiles n_group_classes model       level class n_modal</span>
