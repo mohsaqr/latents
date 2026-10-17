@@ -462,7 +462,7 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
 .latents_comparison_diagnostic_view <- function(fit) {
   if (!inherits(fit, "multilpa_lta")) return(fit)
   fields <- c("n_parameters", "log_likelihood", "n_groups", "n_observations",
-              "n_informative", "subject_posteriors", "group_posteriors",
+              "n_informative", "informative", "subject_posteriors", "group_posteriors",
               "sampling_weights", "weights", "group_index")
   structure(fit[intersect(fields, names(fit))], class = "multilpa_transitions")
 }

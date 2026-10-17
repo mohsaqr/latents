@@ -104,6 +104,14 @@ latents_classification <- function(fit, which) {
 #' @param order This package's class index for each Mplus class.
 #' @return A named numeric vector: `entropy` and `avepp`.
 classification_discrepancy <- function(theirs, mine, order) {
+  # A value missing on either side must fail, not drop out of the comparison.
+  stopifnot(
+    "each side needs exactly one finite entropy" =
+      length(theirs$entropy) == 1L && length(mine$entropy) == 1L &&
+      is.finite(theirs$entropy) && is.finite(mine$entropy),
+    "each side needs one finite AvePP per class" =
+      length(theirs$avepp) == length(order) && length(mine$avepp) == length(order) &&
+      all(is.finite(theirs$avepp)) && all(is.finite(mine$avepp)))
   c(entropy = abs(theirs$entropy - mine$entropy),
     avepp = max(abs(theirs$avepp - mine$avepp[order])))
 }

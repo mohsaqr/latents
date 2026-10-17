@@ -1,0 +1,41 @@
+TITLE: latents missing-pattern case m5;
+DATA: FILE = m5.dat;
+VARIABLE:
+ NAMES = id g y1 y2 y3;
+ USEVARIABLES = y1 y2 y3;
+ CLUSTER = g;
+ IDVARIABLE = id;
+ MISSING = ALL(-999);
+ WITHIN = y1 y2 y3;
+ CLASSES = cb(2) cw(2);
+ BETWEEN = cb;
+ANALYSIS:
+ TYPE = TWOLEVEL MIXTURE;
+ ESTIMATOR = ML;
+ STARTS = 400 80;
+ STITERATIONS = 50;
+ STSEED = 20261017;
+ MITERATIONS = 10000;
+ LOGCRITERION = 0.00000001;
+ RLOGCRITERION = 0.000000001;
+ MCONVERGENCE = 0.000001;
+MODEL:
+ %WITHIN%
+ %OVERALL%
+ %BETWEEN%
+ %OVERALL%
+ cw#1 ON cb;
+MODEL cw:
+ %WITHIN%
+ %cw#1%
+ [y1 y2 y3];
+ y1 y2 y3;
+ %cw#2%
+ [y1 y2 y3];
+ y1 y2 y3;
+OUTPUT: TECH1;
+SAVEDATA:
+ FILE = m5-posteriors.dat;
+ SAVE = CPROBABILITIES;
+ FORMAT = F20.12;
+ RESULTS = m5-results.dat;

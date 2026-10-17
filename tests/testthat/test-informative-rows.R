@@ -148,3 +148,20 @@ test_that("lta() and covariate fits count informative rows in the individual BIC
                get_results(covariate, "information_criteria",
                            format = "wide")$bic_individual, tolerance = 1e-12)
 })
+
+test_that("a general lta() fit compares on its informative rows", {
+  skip_on_cran()
+  # Regression: the comparison's view of an lta() fit dropped `informative`, so
+  # rows with nothing observed entered the entropy charge of ICL.
+  set.seed(11)
+  data <- data.frame(id = rep(1:20, each = 3), t = rep(1:3, 20), y = stats::rnorm(60))
+  data$y[seq(2, 29, 3)] <- NA
+  fit <- suppressWarnings(lta(data, "y", "id", n_profiles = 2, time = "t",
+                              transitions = "occasion", missing = "fiml",
+                              n_starts = 1, seed = 1))
+  compared <- get_results(compare_models(a = fit, b = fit), "comparison")
+  informative <- fit$subject_posteriors[fit$informative, , drop = FALSE]
+  expect_equal(compared$icl_individual[1L],
+               -2 * fit$log_likelihood + log(fit$n_informative) * fit$n_parameters +
+                 2 * .multilpa_entropy_sum(informative), tolerance = 1e-10)
+})

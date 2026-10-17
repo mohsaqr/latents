@@ -139,6 +139,11 @@ predict.multilpa_transitions <- function(object, ...) {
   scaling <- object$scaling %||% "none"
   # Grand offsets and scales are the fit's own; person ones belong to each
   # unit, so the units in `newdata` are centred and scaled on themselves.
+  # A fit with no continuous indicator was neither centred nor scaled.
+  if (ncol(x) == 0L) {
+    centering <- "none"
+    scaling <- "none"
+  }
   if (identical(centering, "grand")) {
     x <- sweep(x, 2L, object$centering_offsets[1L, continuous], "-")
   } else if (identical(centering, "person")) {

@@ -111,12 +111,17 @@
                                 ifelse(counts > 1,
                                        sqrt(squares / pmax(counts - 1, 1)),
                                        NA_real_))
-  # A column that does not vary is judged relative to its own magnitude, so
-  # the verdict does not depend on the units it was recorded in.
-  magnitude <- matrix(apply(abs(x), 2L, max, na.rm = TRUE), n_units, ncol(x),
-                      byrow = TRUE)
-  degenerate <- is.na(standard) |
-    standard <= sqrt(.Machine$double.eps) * pmax(magnitude, 1e-300)
+  # A unit whose values do not vary is judged relative to its own magnitude
+  # (their root mean square), so the verdict depends neither on the units the
+  # indicator was recorded in nor on how large other units' values are.
+  magnitude <- matrix(NA_real_, n_units, ncol(x))
+  magnitude[present, ] <- sqrt(rowsum(filled^2, units, reorder = TRUE) /
+                                 pmax(counts, 1))
+  degenerate <- matrix(FALSE, n_units, ncol(x))
+  degenerate[present, ] <- counts > 0 &
+    (is.na(standard[present, , drop = FALSE]) |
+       standard[present, , drop = FALSE] <=
+         sqrt(.Machine$double.eps) * pmax(magnitude[present, , drop = FALSE], 1e-300))
   if (any(degenerate)) {
     columns <- colnames(x)[colSums(degenerate) > 0L]
     stop(errorCondition(sprintf(paste(

@@ -149,3 +149,29 @@ test_that("scales do not depend on the order of the rows", {
                .multilpa_indicator_scales(y, index_y, 30L, "person"),
                tolerance = 1e-12)
 })
+
+test_that("a group's spread is judged on its own scale, and an empty group is left alone", {
+  # Regression: the threshold once used the largest value of every group, so a
+  # small but real spread beside a group near 1e9 was refused.
+  x <- matrix(c(0:3, 1e9 + 100 * (0:3)), ncol = 1L, dimnames = list(NULL, "y"))
+  groups <- rep(1:2, each = 4L)
+  expect_equal(.multilpa_indicator_scales(x, groups, 2L, "person")[, "y"],
+               c(stats::sd(0:3), stats::sd(100 * (0:3))), tolerance = 1e-10)
+  x[1:4, 1L] <- NA
+  expect_equal(unname(.multilpa_indicator_scales(x, groups, 2L, "person")[1L, "y"]), 1)
+  flat <- matrix(c(5, 5, 5, 1, 2, 3), ncol = 1L, dimnames = list(NULL, "y"))
+  expect_error(.multilpa_indicator_scales(flat, rep(1:2, each = 3L), 2L, "person"),
+               class = "latents_bad_data")
+})
+
+test_that("a fit with no continuous indicator predicts under any centring and scaling", {
+  # Regression: predict() applied grand offsets and scales the fit never had.
+  set.seed(9)
+  data <- data.frame(g = rep(1:10, each = 5), c = sample(c("a", "b", "c"), 50, TRUE))
+  invisible(lapply(c("none", "grand", "person"), function(level) {
+    fit <- multilpa(data, "c", "g", n_profiles = 2, n_group_classes = 1,
+                    categorical = "c", centering = if (level == "person") "grand" else level,
+                    scaling = level, n_starts = 2, seed = 1)
+    expect_identical(nrow(predict(fit, data)), nrow(data))
+  }))
+})
