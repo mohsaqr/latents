@@ -234,7 +234,7 @@
 #' estimates of the population and keep every row.
 #'
 #' @param x A fitted model of this package.
-#' @return [.multilpa_class_posteriors()] restricted to informative rows.
+#' @return `.multilpa_class_posteriors()` restricted to informative rows.
 #' @noRd
 .multilpa_classified_posteriors <- function(x) {
   posteriors <- .multilpa_class_posteriors(x)

@@ -15,7 +15,8 @@ enumerate_classes(
   family = "profiles",
   between_variance = c("varying", "equal"),
   time = NULL,
-  ...
+  ...,
+  cores = 1L
 )
 }
 \arguments{
@@ -81,6 +82,18 @@ candidate; more starts make a local maximum less likely, and every
 candidate gets the same number), \code{max_iter}, \code{missing}, \code{categorical},
 \code{centering}, \code{scaling} and \code{drop_empty}. For example, \code{enumerate_classes(data, vars, id, n_profiles = 2:6, n_starts = 20, seed = 1)}. Group-class families take
 only \code{n_starts}, \code{max_iter}, \code{tol} and \code{min_variance}.}
+
+\item{cores}{Number of processor cores to fit the candidates on (default
+1). The candidates are independent fits, each of which sets and restores
+its own random seed, so with \code{seed} given the result is identical to
+\code{cores = 1}; only the time differs. Candidates are fitted by forked
+processes on macOS and Linux and by a socket cluster on Windows; their
+warnings and messages are passed on in the order of the grid once all
+have finished. Without \code{seed}, the random starts differ between runs on
+any number of cores. A worker process that fails as a whole (for example,
+out of memory) raises \code{latents_parallel_failure}. \code{parallel::detectCores()}
+gives the number available; each core holds its own copy of the fits it
+computes.}
 }
 \value{
 An object of class \code{multilpa_enumeration}. Read it with the verbs

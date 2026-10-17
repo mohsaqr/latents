@@ -52,6 +52,17 @@ utils::globalVariables("statistic")
 #'   fixed. `model`, when given, crosses those covariance structures. The
 #'   result is a `latents_transition_enumeration`, read with
 #'   [get_results()] and [get_candidate()].
+#' @param cores Number of processor cores to fit the candidates on (default
+#'   1). The candidates are independent fits, each of which sets and restores
+#'   its own random seed, so with `seed` given the result is identical to
+#'   `cores = 1`; only the time differs. Candidates are fitted by forked
+#'   processes on macOS and Linux and by a socket cluster on Windows; their
+#'   warnings and messages are passed on in the order of the grid once all
+#'   have finished. Without `seed`, the random starts differ between runs on
+#'   any number of cores. A worker process that fails as a whole (for example,
+#'   out of memory) raises `latents_parallel_failure`. `parallel::detectCores()`
+#'   gives the number available; each core holds its own copy of the fits it
+#'   computes.
 #' @param ... Further arguments to [multilpa()] (or to [lta()] with `time`),
 #'   applied to every candidate alike, such as `n_starts` (random starts per
 #'   candidate; more starts make a local maximum less likely, and every
@@ -103,8 +114,9 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                               n_group_classes = 1:3, model = "basic",
                               seed = NULL, family = "profiles",
                               between_variance = c("varying", "equal"),
-                              time = NULL, ...) {
+                              time = NULL, ..., cores = 1L) {
   data_expression <- substitute(data)
+  cores <- .latents_check_cores(cores)
   if (missing(id)) {
     .multilpa_missing_id("enumerate_classes",
                          "`enumerate_lpa()` or `enumerate_lca()`")
@@ -125,7 +137,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                           if (missing(n_profiles)) 2:4 else n_profiles,
                           if (missing(n_group_classes)) 1L else n_group_classes,
                           if (missing(model)) NULL else model, seed, list(...),
-                          match.call()))
+                          match.call(), cores = cores))
   }
   if (!identical(family, "profiles")) {
     # Group-class families have no individual profiles and no covariance
@@ -137,7 +149,8 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
         class = "latents_bad_argument", call = NULL))
     }
     return(.additive_enumerate(data, vars, id, family, n_group_classes,
-                               between_variance, seed, list(...), match.call()))
+                               between_variance, seed, list(...), match.call(),
+                               cores = cores))
   }
   if (!missing(between_variance)) {
     stop(errorCondition(
@@ -192,7 +205,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                       model = .multilpa_enumeration_models(
                         model, model_given, vars, extra),
                       stringsAsFactors = FALSE)
-  runs <- lapply(seq_len(nrow(grid)), function(i) {
+  runs <- .latents_map_candidates(seq_len(nrow(grid)), function(i) {
     warnings <- character()
     error_text <- NA_character_
     requested <- .multilpa_structure_arguments(grid$model[i])
@@ -236,7 +249,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
         n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated %||% NA_integer_,
         warnings = paste(unique(warnings), collapse = "; "), error = error_text))
     list(fit = fit, row = row)
-  })
+  }, cores)
   if (single_level) {
     .multilpa_single_level_notice(
       latent_class = all(vars %in% extra$categorical))

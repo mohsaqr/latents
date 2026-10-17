@@ -374,7 +374,7 @@
 #' Enumerate transition models over numbers of profiles and group classes
 #' @noRd
 .lta_enumerate <- function(data, vars, id, time, n_profiles, n_group_classes,
-                           model, seed, extra, call) {
+                           model, seed, extra, call, cores = 1L) {
   unknown <- setdiff(names(extra), setdiff(names(formals(lta)),
                                            c("data", "vars", "id", "time", "n_profiles",
                                              "n_group_classes", "seed", "model")))
@@ -392,7 +392,7 @@
   grid <- expand.grid(n_profiles = unique(n_profiles),
                       n_group_classes = unique(n_group_classes), model = models,
                       stringsAsFactors = FALSE)
-  runs <- lapply(seq_len(nrow(grid)), function(i) {
+  runs <- .latents_map_candidates(seq_len(nrow(grid)), function(i) {
     warnings <- character()
     error_text <- NA_character_
     fit <- tryCatch(withCallingHandlers(do.call(lta, c(
@@ -432,7 +432,7 @@
       warnings = paste(unique(warnings), collapse = "; "), error = error_text,
       stringsAsFactors = FALSE)
     list(fit = fit, row = row)
-  })
+  }, cores)
   table <- do.call(rbind, lapply(runs, `[[`, "row"))
   rownames(table) <- NULL
   result <- structure(list(table = table, fits = lapply(runs, `[[`, "fit"),

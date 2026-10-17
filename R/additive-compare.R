@@ -170,7 +170,7 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
 #' Enumerate group-class families and numbers of group classes
 #' @noRd
 .additive_enumerate <- function(data, vars, id, family, n_group_classes,
-                                between_variance, seed, extra, call) {
+                                between_variance, seed, extra, call, cores = 1L) {
   families <- c("additive", "dispersion", "additive_dispersion")
   if (!is.character(family) || length(family) < 1L || anyNA(family) ||
       !all(family %in% families)) {
@@ -201,7 +201,7 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
   })))
   grid <- grid[order(grid$n_group_classes, match(grid$family, families),
                      grid$between_variance != "varying"), , drop = FALSE]
-  runs <- lapply(seq_len(nrow(grid)), function(i) {
+  runs <- .latents_map_candidates(seq_len(nrow(grid)), function(i) {
     warnings <- character()
     error_text <- NA_character_
     fit <- tryCatch(withCallingHandlers(do.call(multilpa, c(
@@ -240,7 +240,7 @@ utils::globalVariables(c("criterion", "series", "value", "n_group_classes"))
       warnings = paste(unique(warnings), collapse = "; "), error = error_text,
       stringsAsFactors = FALSE)
     list(fit = fit, row = row)
-  })
+  }, cores)
   table <- do.call(rbind, lapply(runs, `[[`, "row"))
   rownames(table) <- NULL
   result <- structure(list(table = table, fits = lapply(runs, `[[`, "fit"),
