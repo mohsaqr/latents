@@ -13,7 +13,7 @@ tables are reachable from those rather than from here."><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.38</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,6 +35,7 @@ tables are reachable from those rather than from here."><meta property="og:image
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
+    <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -349,12 +350,12 @@ rather than from here.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- model -----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n_observations n_informative n_groups n_profiles n_group_classes centering</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            1422          1422      106          2               2      none</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                   VVI           23                            23          -8440</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    aic bic_groups bic_individual converged iterations boundary small_classes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  16926      16987          17047      TRUE          9    FALSE         FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  best_start n_best_replicated weights</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           1                 4    &lt;NA&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  scaling covariance_structure n_parameters n_parameters_with_measurement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     none                  VVI           23                            23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  log_likelihood   aic bic_groups bic_individual converged iterations boundary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           -8440 16926      16987          17047      TRUE          9    FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  small_classes best_start n_best_replicated weights</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          FALSE          1                 4    &lt;NA&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -- stages ----------------------------------------------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  stage group_classes fixed log_likelihood parameters</span>

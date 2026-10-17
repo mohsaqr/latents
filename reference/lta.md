@@ -579,12 +579,12 @@ summary(fit)
 #> -- model -----------------------------------------------------------
 #>  n_observations n_informative n_groups n_profiles n_group_classes centering
 #>            1422          1422      106          2               1      none
-#>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood
-#>                  <NA>           23                            23          -8335
-#>    aic bic_groups bic_individual converged iterations boundary small_classes
-#>  16717      16778          16838      TRUE          6    FALSE         FALSE
-#>  best_start n_best_replicated weights
-#>           1                 2    <NA>
+#>  scaling covariance_structure n_parameters n_parameters_with_measurement
+#>     none                 <NA>           23                            23
+#>  log_likelihood   aic bic_groups bic_individual converged iterations boundary
+#>           -8335 16717      16778          16838      TRUE          6    FALSE
+#>  small_classes best_start n_best_replicated weights
+#>          FALSE          1                 2    <NA>
 #> 
 #> -- sequences -------------------------------------------------------
 #>  group group_class time profile

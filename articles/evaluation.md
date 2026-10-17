@@ -47,12 +47,12 @@ with `"model"`. `converged` reports convergence of the best start,
 ``` r
 
 get_results(fit, "model")
-#>   n_observations n_informative n_groups n_profiles n_group_classes centering covariance_structure
-#> 1           1422          1422      106          2               2      none                  VVI
-#>   n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual
-#> 1           23                            23          -8440 16926      16987          17047
-#>   converged iterations boundary small_classes best_start n_best_replicated weights
-#> 1      TRUE          9    FALSE         FALSE          1                 3    <NA>
+#>   n_observations n_informative n_groups n_profiles n_group_classes centering scaling
+#> 1           1422          1422      106          2               2      none    none
+#>   covariance_structure n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups
+#> 1                  VVI           23                            23          -8440 16926      16987
+#>   bic_individual converged iterations boundary small_classes best_start n_best_replicated weights
+#> 1          17047      TRUE          9    FALSE         FALSE          1                 3    <NA>
 ```
 
 To check the individual starts, we call
@@ -388,7 +388,7 @@ as.data.frame(candidates)
 #> 27     0.653     0.971      0.771           3           0.841           0.971            0.920
 #> 28     0.959     0.971      0.965           0              NA              NA               NA
 #> 29     0.665     0.956      0.833           1              NA              NA               NA
-#> 30     0.630     0.943      0.829           1              NA              NA               NA
+#> 30     0.627     0.943      0.829           1              NA              NA               NA
 #> 31     0.973     0.978      0.976           0           0.971           0.993            0.982
 #> 32     0.649     0.972      0.845           1           0.982           0.990            0.986
 #> 33     0.785     0.973      0.854           1           0.962           0.995            0.979

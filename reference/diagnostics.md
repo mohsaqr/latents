@@ -120,6 +120,10 @@ quality <- diagnostics(fit)
 
 
 
+
+
+
+
 quality
 #> Classification quality: 2 profiles, 2 group classes
 #> 
@@ -142,6 +146,10 @@ get_results(quality, what = "classification")
 #> 3         0.9920142                    59.89166
 #> 4         0.9689851                    64.80071
 get_results(diagnostics(fit, by = "overall"), what = "residuals")
+
+
+
+
 
 
 

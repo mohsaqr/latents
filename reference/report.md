@@ -291,12 +291,12 @@ report(fit, plots = FALSE)
 #> -- model -----------------------------------------------------------
 #>  n_observations n_informative n_groups n_profiles n_group_classes centering
 #>            1422          1422      106          2               2      none
-#>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood
-#>                   VVI           23                            23          -8440
-#>    aic bic_groups bic_individual converged iterations boundary small_classes
-#>  16926      16987          17047      TRUE          9    FALSE         FALSE
-#>  best_start n_best_replicated weights
-#>           1                 4    <NA>
+#>  scaling covariance_structure n_parameters n_parameters_with_measurement
+#>     none                  VVI           23                            23
+#>  log_likelihood   aic bic_groups bic_individual converged iterations boundary
+#>           -8440 16926      16987          17047      TRUE          9    FALSE
+#>  small_classes best_start n_best_replicated weights
+#>          FALSE          1                 4    <NA>
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters

@@ -524,12 +524,12 @@ print(summary(fit), rows = 3)
 #>           17002
 #> 
 #> -- model -----------------------------------------------------------
-#>  n_observations n_informative n_groups n_profiles n_group_classes centering covariance_structure
-#>            1422          1422      106          2               2      none                  VVI
-#>  n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual
-#>            23                            23          -8440 16926      16987          17047
-#>  converged iterations boundary small_classes best_start n_best_replicated weights
-#>       TRUE          9    FALSE         FALSE          1                10    <NA>
+#>  n_observations n_informative n_groups n_profiles n_group_classes centering scaling
+#>            1422          1422      106          2               2      none    none
+#>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups
+#>                   VVI           23                            23          -8440 16926      16987
+#>  bic_individual converged iterations boundary small_classes best_start n_best_replicated weights
+#>           17047      TRUE          9    FALSE         FALSE          1                10    <NA>
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters parameters_with_measurement converged

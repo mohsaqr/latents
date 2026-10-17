@@ -19,6 +19,8 @@
   workflow](https://pak.dynasite.org/latents/articles/workflow-lca.md):
 - [Class enumeration in mixture
   models](https://pak.dynasite.org/latents/articles/class-enumeration.md):
+- [Model selection: the evidence for the number of
+  classes](https://pak.dynasite.org/latents/articles/model-selection.md):
 - [Evaluating a multilevel latent profile
   model](https://pak.dynasite.org/latents/articles/evaluation.md):
 - [Covariates, outcomes and staged

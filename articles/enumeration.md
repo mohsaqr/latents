@@ -1308,12 +1308,12 @@ summary(chosen)
 #>           17644
 #> 
 #> -- model -----------------------------------------------------------
-#>  n_observations n_informative n_groups n_profiles n_group_classes centering covariance_structure
-#>            1422          1422      106          4               3      none                  VVI
-#>  n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual
-#>            51                            51          -8307 16716      16852          16985
-#>  converged iterations boundary small_classes best_start n_best_replicated weights
-#>       TRUE         48    FALSE         FALSE          3                 3    <NA>
+#>  n_observations n_informative n_groups n_profiles n_group_classes centering scaling
+#>            1422          1422      106          4               3      none    none
+#>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups
+#>                   VVI           51                            51          -8307 16716      16852
+#>  bic_individual converged iterations boundary small_classes best_start n_best_replicated weights
+#>           16985      TRUE         48    FALSE         FALSE          3                 3    <NA>
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters parameters_with_measurement converged
@@ -1369,7 +1369,7 @@ The classification diagnostics of the chosen model:
 diagnostics(chosen)
 ```
 
-![](enumeration_files/figure-html/chosen-diagnostics-1.png)![](enumeration_files/figure-html/chosen-diagnostics-2.png)![](enumeration_files/figure-html/chosen-diagnostics-3.png)![](enumeration_files/figure-html/chosen-diagnostics-4.png)
+![](enumeration_files/figure-html/chosen-diagnostics-1.png)![](enumeration_files/figure-html/chosen-diagnostics-2.png)![](enumeration_files/figure-html/chosen-diagnostics-3.png)![](enumeration_files/figure-html/chosen-diagnostics-4.png)![](enumeration_files/figure-html/chosen-diagnostics-5.png)![](enumeration_files/figure-html/chosen-diagnostics-6.png)![](enumeration_files/figure-html/chosen-diagnostics-7.png)![](enumeration_files/figure-html/chosen-diagnostics-8.png)
 
     #> Classification quality: 4 profiles, 3 group classes
     #> 
@@ -1386,7 +1386,7 @@ diagnostics(chosen)
 plot_diagnostics(chosen)
 ```
 
-![](enumeration_files/figure-html/chosen-diagnostic-plots-1.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-2.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-3.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-4.png)
+![](enumeration_files/figure-html/chosen-diagnostic-plots-1.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-2.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-3.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-4.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-5.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-6.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-7.png)![](enumeration_files/figure-html/chosen-diagnostic-plots-8.png)
 
 Each enrolment with its profile, its student’s group class and its
 posterior probabilities:
@@ -1442,7 +1442,7 @@ three_step(chosen, data = course_engagement, outcome = "previous_grade")
 |:---|:---|
 | enumerate_classes(data, vars, id, n_profiles, n_group_classes, model) | The fitted candidate models |
 | as.data.frame(models) | One row per candidate with every column |
-| get_results(models, “criteria”) | The candidate at the minimum of each criterion |
+| get_results(models, “best”) | The candidate at the minimum of each criterion |
 | get_results(models, “classification”) | Size, AvePP and entropy of every class of every candidate |
 | get_results(models, “candidates”, cutoff = 0.9) | The table of candidates with another AvePP cutoff |
 | get_results(models, “deltas”, using = ) | Decrease in a criterion from one profile fewer and one group class fewer |

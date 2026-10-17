@@ -48,7 +48,8 @@ multilpa(
   ordinal = character(),
   count = character(),
   count_model = c("poisson", "negative_binomial"),
-  count_dispersion = c("varying", "equal")
+  count_dispersion = c("varying", "equal"),
+  scaling = c("none", "person", "grand")
 )
 ```
 
@@ -577,6 +578,37 @@ multilpa(
   For `count_model = "negative_binomial"`: one dispersion per profile
   (`"varying"`, the default) or one shared by every profile (`"equal"`).
 
+- scaling:
+
+  How to scale the continuous indicators before fitting, at the same
+  levels as `centering`. `"none"`, the default, fits them as supplied.
+  `"grand"` divides each indicator by its standard deviation over all
+  observations, and `"person"` divides each group's values by that
+  group's own standard deviation, so every unit's spread counts as one.
+  With the matching centring these are the classical z-scores:
+  `centering = "grand", scaling = "grand"` standardizes each indicator
+  over the sample, and `centering = "person", scaling = "person"`
+  standardizes it within each unit (within-person standardization).
+  Standard deviations use the observed values with denominator `n - 1`;
+  the scales are kept on the fit beside the centring offsets, so
+  `get_results(x, "data")` still returns the columns you supplied, and
+  [`predict()`](https://rdrr.io/r/stats/predict.html) scales new units
+  on their own spread under `"person"` and on the fitted spread under
+  `"grand"`. Means, variances and covariances are then reported in
+  standard-deviation units. The log likelihood, and so every information
+  criterion, is that of the scaled values: compare fits made with the
+  same centring and scaling, as an enumeration grid does. A standard
+  deviation that is zero or undefined – under `"person"`, a unit
+  observed once on an indicator or always giving the same value – is
+  refused with `latents_bad_data`. With covariance structures that give
+  every indicator its own variance (`EEI`, `VVI`, `EEE`, `VVV`, `EVI`,
+  `VEI`), grand scaling changes only the units of the estimates; with
+  the spherical `EII` and `VII` it changes the solution, because they
+  force one variance on every indicator. Rank and quantile
+  transformations are not offered: they force each indicator's
+  distribution flat or normal, which removes the multimodality the
+  profiles are estimated from.
+
 ## Value
 
 A `multilpa` object containing `means`, `variances`, optional
@@ -863,12 +895,12 @@ summary(fit)
 #> -- model -----------------------------------------------------------
 #>  n_observations n_informative n_groups n_profiles n_group_classes centering
 #>            1422          1422      106          2               2      none
-#>  covariance_structure n_parameters n_parameters_with_measurement log_likelihood
-#>                   VVI           23                            23          -8440
-#>    aic bic_groups bic_individual converged iterations boundary small_classes
-#>  16926      16987          17047      TRUE          9    FALSE         FALSE
-#>  best_start n_best_replicated weights
-#>           1                 4    <NA>
+#>  scaling covariance_structure n_parameters n_parameters_with_measurement
+#>     none                  VVI           23                            23
+#>  log_likelihood   aic bic_groups bic_individual converged iterations boundary
+#>           -8440 16926      16987          17047      TRUE          9    FALSE
+#>  small_classes best_start n_best_replicated weights
+#>          FALSE          1                 4    <NA>
 #> 
 #> -- stages ----------------------------------------------------------
 #>  stage group_classes fixed log_likelihood parameters

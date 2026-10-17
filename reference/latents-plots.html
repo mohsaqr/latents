@@ -39,7 +39,7 @@ are listed under what below.'><meta property="og:image" content="https://pak.dyn
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.38</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,6 +61,7 @@ are listed under what below.'><meta property="og:image" content="https://pak.dyn
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
+    <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -217,7 +218,8 @@ are listed under <code>what</code> below.</p>
 <span></span>
 <span><span class="fu">plot_diagnostics</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"sizes"</span>, <span class="st">"posteriors"</span>, <span class="st">"entropy"</span>, <span class="st">"avepp"</span><span class="op">)</span>,</span>
+<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"sizes"</span>, <span class="st">"posteriors"</span>, <span class="st">"entropy"</span>, <span class="st">"avepp"</span>, <span class="st">"group_sizes"</span>,</span>
+<span>    <span class="st">"group_posteriors"</span>, <span class="st">"group_entropy"</span>, <span class="st">"group_avepp"</span><span class="op">)</span>,</span>
 <span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subtitle <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
@@ -337,8 +339,13 @@ group-class family grid plots with <code>plot(x, what = )</code>.</p></dd>
 (effective profile counts), <code>"posteriors"</code> (posterior probability of each
 case's assigned profile), <code>"entropy"</code> (each case's entropy relative to a
 flat posterior) or <code>"avepp"</code> (average posterior probability matrix).
-A noise fit supports <code>"sizes"</code> only; <code>"all"</code> returns that view, and the
-other diagnostics refuse with <code>latents_unsupported_noise</code>. For
+<code>"group_sizes"</code>, <code>"group_posteriors"</code>, <code>"group_entropy"</code> and
+<code>"group_avepp"</code> draw the same four views for the groups and their group
+classes, and <code>"all"</code> includes them when the fit has two or more group
+classes; with fewer they refuse with <code>latents_no_group_classes</code>.
+A noise fit supports <code>"sizes"</code> and the group views only; <code>"all"</code> returns
+<code>"sizes"</code>, and the other individual diagnostics refuse with
+<code>latents_unsupported_noise</code>. For
 <code>plot_enumeration()</code>: criterion columns of <code>as.data.frame(x)</code>, such as
 <code>"bic_groups"</code>, or <code>"all"</code>; the default draws AIC, both BICs and ICL
 over individuals. Or classification quality across the candidates, in

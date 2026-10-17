@@ -128,7 +128,8 @@ plot_prevalence(x, labels = TRUE, main = NULL, subtitle = NULL)
 
 plot_diagnostics(
   x,
-  what = c("all", "sizes", "posteriors", "entropy", "avepp"),
+  what = c("all", "sizes", "posteriors", "entropy", "avepp", "group_sizes",
+    "group_posteriors", "group_entropy", "group_avepp"),
   main = NULL,
   subtitle = NULL
 )
@@ -252,22 +253,27 @@ plot(
   For `plot_diagnostics()`: `"all"` (default), `"sizes"` (effective
   profile counts), `"posteriors"` (posterior probability of each case's
   assigned profile), `"entropy"` (each case's entropy relative to a flat
-  posterior) or `"avepp"` (average posterior probability matrix). A
-  noise fit supports `"sizes"` only; `"all"` returns that view, and the
-  other diagnostics refuse with `latents_unsupported_noise`. For
-  `plot_enumeration()`: criterion columns of `as.data.frame(x)`, such as
-  `"bic_groups"`, or `"all"`; the default draws AIC, both BICs and ICL
-  over individuals. Or classification quality across the candidates, in
-  the words of a single model's plot: `"entropy"` (relative entropy),
-  `"avepp"` (the lowest AvePP, with the cutoff dashed) or
-  `"diagnostics"` (both), at each level with two or more classes. Or
-  model-selection evidence, none of which selects a model: `"deltas"`
-  (how much the criterion in `using` fell with each added profile and
-  each added group class; see `get_results(x, "deltas")` and `"knees"`),
-  `"heatmap"` (the criterion over profiles and group classes, above the
-  lowest), `"smallest"` (the smallest class share, 5% dashed) or
-  `"trust"` (convergence, boundary and replication of every candidate);
-  `"selection"` draws all of them and `"diagnostics"`, as a list.
+  posterior) or `"avepp"` (average posterior probability matrix).
+  `"group_sizes"`, `"group_posteriors"`, `"group_entropy"` and
+  `"group_avepp"` draw the same four views for the groups and their
+  group classes, and `"all"` includes them when the fit has two or more
+  group classes; with fewer they refuse with `latents_no_group_classes`.
+  A noise fit supports `"sizes"` and the group views only; `"all"`
+  returns `"sizes"`, and the other individual diagnostics refuse with
+  `latents_unsupported_noise`. For `plot_enumeration()`: criterion
+  columns of `as.data.frame(x)`, such as `"bic_groups"`, or `"all"`; the
+  default draws AIC, both BICs and ICL over individuals. Or
+  classification quality across the candidates, in the words of a single
+  model's plot: `"entropy"` (relative entropy), `"avepp"` (the lowest
+  AvePP, with the cutoff dashed) or `"diagnostics"` (both), at each
+  level with two or more classes. Or model-selection evidence, none of
+  which selects a model: `"deltas"` (how much the criterion in `using`
+  fell with each added profile and each added group class; see
+  `get_results(x, "deltas")` and `"knees"`), `"heatmap"` (the criterion
+  over profiles and group classes, above the lowest), `"smallest"` (the
+  smallest class share, 5% dashed) or `"trust"` (convergence, boundary
+  and replication of every candidate); `"selection"` draws all of them
+  and `"diagnostics"`, as a list.
 
 - main, subtitle:
 

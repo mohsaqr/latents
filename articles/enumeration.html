@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.37</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.38</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,7 @@
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
+    <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
     <li><a class="dropdown-item" href="../articles/covariates.html">Covariates, outcomes and staged estimation</a></li>
     <li><a class="dropdown-item" href="../articles/mixture-regression.html">Mixture regression</a></li>
@@ -1367,12 +1368,12 @@ their standard errors.</p>
 <span><span class="co">#&gt;           17644</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- model -----------------------------------------------------------</span></span>
-<span><span class="co">#&gt;  n_observations n_informative n_groups n_profiles n_group_classes centering covariance_structure</span></span>
-<span><span class="co">#&gt;            1422          1422      106          4               3      none                  VVI</span></span>
-<span><span class="co">#&gt;  n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups bic_individual</span></span>
-<span><span class="co">#&gt;            51                            51          -8307 16716      16852          16985</span></span>
-<span><span class="co">#&gt;  converged iterations boundary small_classes best_start n_best_replicated weights</span></span>
-<span><span class="co">#&gt;       TRUE         48    FALSE         FALSE          3                 3    &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;  n_observations n_informative n_groups n_profiles n_group_classes centering scaling</span></span>
+<span><span class="co">#&gt;            1422          1422      106          4               3      none    none</span></span>
+<span><span class="co">#&gt;  covariance_structure n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups</span></span>
+<span><span class="co">#&gt;                   VVI           51                            51          -8307 16716      16852</span></span>
+<span><span class="co">#&gt;  bic_individual converged iterations boundary small_classes best_start n_best_replicated weights</span></span>
+<span><span class="co">#&gt;           16985      TRUE         48    FALSE         FALSE          3                 3    &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; -- stages ----------------------------------------------------------</span></span>
 <span><span class="co">#&gt;  stage group_classes fixed log_likelihood parameters parameters_with_measurement converged</span></span>
@@ -1412,7 +1413,7 @@ profiles.</p>
 <p>The classification diagnostics of the chosen model:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/diagnostics.html">diagnostics</a></span><span class="op">(</span><span class="va">chosen</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enumeration_files/figure-html/chosen-diagnostics-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<p><img src="enumeration_files/figure-html/chosen-diagnostics-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-5.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-6.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-7.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostics-8.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <pre><code><span><span class="co">#&gt; Classification quality: 4 profiles, 3 group classes</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Relative entropy     individuals 0.739    groups 0.823</span></span>
@@ -1424,7 +1425,7 @@ profiles.</p>
 <span><span class="co">#&gt;         "average_posteriors" | "residuals" | "all"). plot(x) draws them.</span></span></code></pre>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">chosen</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enumeration_files/figure-html/chosen-diagnostic-plots-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<p><img src="enumeration_files/figure-html/chosen-diagnostic-plots-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-5.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-6.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-7.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="enumeration_files/figure-html/chosen-diagnostic-plots-8.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>Each enrolment with its profile, its student’s group class and its
 posterior probabilities:</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
@@ -1488,7 +1489,7 @@ n_group_classes, model)</td>
 <td align="left">One row per candidate with every column</td>
 </tr>
 <tr class="odd">
-<td align="left">get_results(models, “criteria”)</td>
+<td align="left">get_results(models, “best”)</td>
 <td align="left">The candidate at the minimum of each criterion</td>
 </tr>
 <tr class="even">
