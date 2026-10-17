@@ -1576,6 +1576,9 @@ multilpa <- function(data, vars, id, n_profiles,
   # Reported by print() and summary() rather than warned about: resampling verbs
   # refit the same data many times, and a warning would fire once per replicate.
   n_informative <- sum(observed_per_row > 0L)
+  # A group whose every row observes nothing is left out of the group sample
+  # size the same way, as Mplus leaves it out of its clusters.
+  n_informative_groups <- length(unique(group_index[observed_per_row > 0L]))
   boundary <- .multilpa_covariance_boundary(parameters, min_variance)
   # Effective memberships are the counts the fit reports: weighted for a
   # weighted fit, so the flag, its warning and the printed counts agree.
@@ -1607,6 +1610,7 @@ multilpa <- function(data, vars, id, n_profiles,
     group_sizes = setNames(group_sizes, group_ids),
     n_observations = nrow(x), n_informative = n_informative,
     informative = observed_per_row > 0L,
+    n_informative_groups = n_informative_groups,
     n_groups = n_groups, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes), variance_model = variance_model,
     covariance_model = covariance_model, covariance_structure = structure,
@@ -1630,8 +1634,8 @@ multilpa <- function(data, vars, id, n_profiles,
     n_parameters = n_parameters,
     n_parameters_with_measurement = n_parameters_with_measurement,
     aic = -2 * log_likelihood + 2 * n_parameters,
-    bic = -2 * log_likelihood + log(n_groups) * n_parameters,
-    bic_groups = -2 * log_likelihood + log(n_groups) * n_parameters,
+    bic = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
+    bic_groups = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
     bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,
     converged = best$converged, iterations = best$iterations,
     log_likelihood_history = best$history, starts = starts, best_start = best_start,

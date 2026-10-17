@@ -964,7 +964,7 @@ utils::globalVariables(c(
     colour = rep_len(.gg_okabe_ito, n_classes)[rank],
     shape = rep_len(.gg_shapes, n_classes)[rank],
     stringsAsFactors = FALSE)
-  list(posteriors = x$group_posteriors, counts = counts, key = key,
+  list(posteriors = .multilpa_classified_group_posteriors(x), counts = counts, key = key,
        class_word = "group class", unit_word = "group", level = level,
        total = sum(counts), noise = FALSE)
 }

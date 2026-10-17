@@ -335,9 +335,9 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
       .multilpa_enumeration_indices(diagnostic),
       data.frame(profile_entropy = .multilpa_relative_entropy(.multilpa_classified_posteriors(fit)),
                  group_entropy = if (is.null(fit$group_posteriors)) NA_real_ else
-                   .multilpa_relative_entropy(fit$group_posteriors)),
+                   .multilpa_relative_entropy(.multilpa_classified_group_posteriors(fit))),
       level_summary(.multilpa_classified_posteriors(fit), "avepp_"),
-      level_summary(fit$group_posteriors, "group_avepp_"),
+      level_summary(.multilpa_classified_group_posteriors(fit), "group_avepp_"),
       data.frame(smallest_share = if (length(shares) == 0L) NA_real_ else min(shares),
                  converged = isTRUE(fit$converged),
                  n_best_replicated = fit$n_best_replicated %||% NA_integer_))
@@ -462,7 +462,8 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
 .latents_comparison_diagnostic_view <- function(fit) {
   if (!inherits(fit, "multilpa_lta")) return(fit)
   fields <- c("n_parameters", "log_likelihood", "n_groups", "n_observations",
-              "n_informative", "informative", "subject_posteriors", "group_posteriors",
+              "n_informative", "informative", "n_informative_groups",
+              "subject_posteriors", "group_posteriors",
               "sampling_weights", "weights", "group_index")
   structure(fit[intersect(fields, names(fit))], class = "multilpa_transitions")
 }

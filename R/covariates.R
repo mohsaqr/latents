@@ -891,7 +891,8 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$n_parameters <- length(best$beta) + length(best$gamma) +
     measurement_parameters + .latents_extra_n_parameters(designs$extra, n_profiles)
   result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
-  result$bic <- -2 * result$log_likelihood + log(base$n_groups) * result$n_parameters
+  result$bic <- -2 * result$log_likelihood +
+    log(base$n_informative_groups %||% base$n_groups) * result$n_parameters
   # The individual sample size counts rows with an observed indicator, as the
   # base fit and its criteria table do; a row with none adds no information.
   result$bic_individual <- -2 * result$log_likelihood +
@@ -899,6 +900,7 @@ nobs.multilpa_covariates <- function(object, ...) {
   result$n_observations <- nrow(data)
   result$n_informative <- base$n_informative
   result$informative <- base$informative
+  result$n_informative_groups <- base$n_informative_groups
   result$indicator_data <- base$indicator_data
   result$n_groups <- base$n_groups
   result$n_profiles <- as.integer(n_profiles)

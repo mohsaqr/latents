@@ -837,6 +837,7 @@ lta <- function(data, vars, id, n_profiles, time,
   observed_per_row <- rowSums(!is.na(x)) +
     if (is.null(codes)) 0L else rowSums(!is.na(codes))
   n_informative <- sum(observed_per_row > 0L)
+  n_informative_groups <- length(unique(groups$index[observed_per_row > 0L]))
   boundary <- .multilpa_covariance_boundary(parameters, min_variance)
   empty_rows <- any(parameters$empty_transition_rows)
   small_classes <- any(colSums(subject_posteriors) < 1) ||
@@ -855,6 +856,7 @@ lta <- function(data, vars, id, n_profiles, time,
     group_sizes = setNames(groups$sizes, groups$ids),
     n_observations = nrow(x), n_informative = n_informative,
     informative = observed_per_row > 0L,
+    n_informative_groups = n_informative_groups,
     n_groups = groups$n, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes),
     n_occasions = layout$n_occasions, occasions = occasions,
@@ -875,8 +877,8 @@ lta <- function(data, vars, id, n_profiles, time,
     group_log_likelihood = setNames(best$expectation$group_log_likelihood,
                                     groups$ids),
     n_parameters = n_parameters, aic = -2 * log_likelihood + 2 * n_parameters,
-    bic = -2 * log_likelihood + log(groups$n) * n_parameters,
-    bic_groups = -2 * log_likelihood + log(groups$n) * n_parameters,
+    bic = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
+    bic_groups = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
     bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,
     converged = best$converged, iterations = best$iterations,
     log_likelihood_history = best$history, starts = starts,

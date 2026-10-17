@@ -554,7 +554,10 @@ candidates. \code{deviance}, \code{aic} and \code{kic} depend on no sample size 
 \code{convention = NA_character_}. \code{clc} depends on none either, but its
 convention selects which level's classification uncertainty it penalizes,
 so it is reported once per convention. Individual sample sizes exclude
-rows with no observed indicators. Where the group classification entropy
+rows with no observed indicators, and group sample sizes exclude groups
+whose every row has none (\code{n_informative_groups}); the classification
+statistics of each level leave out the same rows and groups, as Mplus
+does. Where the group classification entropy
 is undefined, group-level \code{awe}, \code{icl} and \code{clc} are \code{NA}.
 }
 

@@ -169,6 +169,38 @@
   x$informative %||% rep(TRUE, NROW(x$subject_posteriors))
 }
 
+#' Which groups have at least one row with an observed indicator
+#'
+#' A group whose every row observes nothing is unclassified for the same
+#' reason as such a row: its posterior is the group-class prior. Mplus leaves
+#' such a group out of its clusters; so do the group sample size and the
+#' group-level classification statistics here.
+#'
+#' @param x A fitted model of this package.
+#' @return A logical vector, one per group (row of `group_posteriors`), or
+#'   `NULL` for a fit without group posteriors.
+#' @noRd
+.multilpa_informative_groups <- function(x) {
+  if (is.null(x$group_posteriors)) return(NULL)
+  n_groups <- nrow(x$group_posteriors)
+  informative <- .multilpa_informative_rows(x)
+  if (all(informative) || is.null(x$group_index)) return(rep(TRUE, n_groups))
+  observed <- rowsum(informative * 1, x$group_index, reorder = TRUE)
+  present <- sort(unique(x$group_index))
+  result <- rep(FALSE, n_groups)
+  result[present] <- observed[, 1L] > 0
+  result
+}
+
+#' The group posteriors of the groups that were classified
+#' @param x A fitted model of this package.
+#' @return `group_posteriors` restricted to informative groups, or `NULL`.
+#' @noRd
+.multilpa_classified_group_posteriors <- function(x) {
+  if (is.null(x$group_posteriors)) return(NULL)
+  x$group_posteriors[.multilpa_informative_groups(x), , drop = FALSE]
+}
+
 #' The class posteriors of the observations that were classified
 #'
 #' Entropy, average posterior probability and the entropy charge of ICL, AWE

@@ -165,3 +165,40 @@ test_that("a general lta() fit compares on its informative rows", {
                -2 * fit$log_likelihood + log(fit$n_informative) * fit$n_parameters +
                  2 * .multilpa_entropy_sum(informative), tolerance = 1e-10)
 })
+
+test_that("a group with nothing observed is left out of the group statistics", {
+  skip_on_cran()
+  data <- subset(course_engagement, student <= 30,
+                 c("student", "browse", "lectures", "forum_read"))
+  activity <- c("browse", "lectures", "forum_read")
+  empty_students <- c(4L, 17L)
+  data[data$student %in% empty_students, activity] <- NA
+  data[c(1L, 50L), activity] <- NA  # single empty rows: their students stay
+  fit <- multilpa(data, activity, "student", n_profiles = 2, n_group_classes = 2,
+                  model = "VVI", missing = "fiml", n_starts = 2, seed = 1)
+  kept <- !(fit$group_values %in% empty_students)
+  expect_identical(fit$n_groups, 30L)
+  expect_identical(fit$n_informative_groups, 28L)
+  expect_identical(.multilpa_informative_groups(fit), kept)
+  expect_equal(fit$bic_groups,
+               -2 * fit$log_likelihood + log(28) * fit$n_parameters, tolerance = 1e-12)
+  groups <- subset(get_results(fit, "entropy"), level == "groups")
+  expect_identical(groups$n_units, 28L)
+  expect_equal(groups$relative_entropy,
+               .multilpa_relative_entropy(fit$group_posteriors[kept, , drop = FALSE]),
+               tolerance = 1e-12)
+  classification <- subset(get_results(fit, "classification"), level == "groups")
+  expect_identical(sum(classification$n_modal), 28L)
+  # Group class sizes are estimates and keep every group.
+  expect_equal(sum(fit$effective_group_counts), 30, tolerance = 1e-8)
+})
+
+test_that("in a single-level fit an empty row is an empty group", {
+  skip_on_cran()
+  data <- srl[c("intrinsic_value", "test_anxiety")]
+  data[1:20, ] <- NA
+  fit <- lpa(data, names(data), n_profiles = 2, model = "VVI", missing = "fiml",
+             n_starts = 3, seed = 1)
+  expect_identical(fit$n_informative_groups, fit$n_informative)
+  expect_equal(fit$bic_groups, fit$bic_individual, tolerance = 1e-12)
+})

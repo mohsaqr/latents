@@ -230,7 +230,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
         profile_entropy = if (is.null(fit)) NA_real_ else
           .multilpa_relative_entropy(.multilpa_classified_posteriors(fit)),
         group_entropy = if (is.null(fit)) NA_real_ else
-          .multilpa_relative_entropy(fit$group_posteriors),
+          .multilpa_relative_entropy(.multilpa_classified_group_posteriors(fit)),
         converged = !is.null(fit) && fit$converged,
         boundary = if (is.null(fit)) NA else fit$boundary,
         n_best_replicated = if (is.null(fit)) NA_integer_ else fit$n_best_replicated %||% NA_integer_,
@@ -598,7 +598,7 @@ summary.multilpa_enumeration <- function(object, ...) {
   }
   columns <- cbind(
     level_summary(.multilpa_classified_posteriors, "avepp_"),
-    level_summary(\(fit) fit$group_posteriors, "group_avepp_"))
+    level_summary(.multilpa_classified_group_posteriors, "group_avepp_"))
   at <- match("group_entropy", names(grid))
   .latents_named_table(x, cbind(grid[seq_len(at)], columns,
                                 grid[setdiff(seq_along(grid), seq_len(at))]))

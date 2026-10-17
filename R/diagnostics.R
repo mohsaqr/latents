@@ -69,9 +69,10 @@
   deviance <- -2 * x$log_likelihood
   conventions <- data.frame(
     convention = c("groups", "individuals"),
-    n = c(x$n_groups, x$n_informative %||% x$n_observations))
+    n = c(x$n_informative_groups %||% x$n_groups,
+          x$n_informative %||% x$n_observations))
   entropies <- c(groups = if (is.null(x$group_posteriors)) NA_real_ else
-                   .multilpa_entropy_sum(x$group_posteriors),
+                   .multilpa_entropy_sum(.multilpa_classified_group_posteriors(x)),
                  individuals = .multilpa_entropy_sum(.multilpa_classified_posteriors(x)))
   scale_free <- data.frame(
     criterion = c("deviance", "aic", "kic"),
@@ -156,7 +157,7 @@
 #' @noRd
 .multilpa_posterior_levels <- function(object, level) {
   posteriors <- list(individuals = .multilpa_classified_posteriors(object),
-                     groups = object$group_posteriors)
+                     groups = .multilpa_classified_group_posteriors(object))
   posteriors[.multilpa_classification_levels(object, level)]
 }
 
@@ -219,10 +220,11 @@
   units <- unname(x$sampling_weights)
   weights <- if (identical(level, "groups") || length(units) == n_rows &&
                  is.null(x$group_index)) units else units[x$group_index]
-  # Classification statistics take the informative rows only; their weights
-  # are the same subset of the observations' weights.
-  if (!identical(level, "groups") && length(weights) != n_rows) {
-    weights <- weights[.multilpa_informative_rows(x)]
+  # Classification statistics take the informative rows and groups only;
+  # their weights are the same subset.
+  if (length(weights) != n_rows) {
+    weights <- weights[if (identical(level, "groups"))
+      .multilpa_informative_groups(x) else .multilpa_informative_rows(x)]
   }
   stopifnot("every posterior row must carry its unit's weight" =
               length(weights) == n_rows && !anyNA(weights))
@@ -360,7 +362,7 @@
 .multilpa_entropy_table <- function(x) {
   stopifnot("`object` must be a fitted model of this package" = .multilpa_any_fit(x))
   posteriors <- list(individuals = .multilpa_classified_posteriors(x),
-                     groups = x$group_posteriors)
+                     groups = .multilpa_classified_group_posteriors(x))
   posteriors <- Filter(Negate(is.null), posteriors)
   result <- do.call(rbind, lapply(names(posteriors), function(level) {
     probabilities <- posteriors[[level]]

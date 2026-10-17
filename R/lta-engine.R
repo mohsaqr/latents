@@ -698,11 +698,13 @@
     result$n_parameters <- result$n_parameters + n_measurement *
       .latents_extra_n_parameters(extra, n_profiles)
     result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
-    result$bic <- -2 * result$log_likelihood + log(groups$n) * result$n_parameters
     # Ordinal and count columns can be the only ones a row observes.
     result$informative <- result$informative |
       rowSums(!is.na(.latents_extra_matrix(extra))) > 0L
     result$n_informative <- sum(result$informative)
+    result$n_informative_groups <- length(unique(groups$index[result$informative]))
+    result$bic <- -2 * result$log_likelihood +
+      log(result$n_informative_groups) * result$n_parameters
     result$bic_individual <- -2 * result$log_likelihood +
       log(result$n_informative) * result$n_parameters
     .latents_warn_poisson_limit(do.call(cbind, lapply(result$measurement,
@@ -771,6 +773,7 @@
   observed_per_row <- rowSums(!is.na(x)) +
     if (is.null(codes)) 0L else rowSums(!is.na(codes))
   n_informative <- sum(observed_per_row > 0L)
+  n_informative_groups <- length(unique(groups$index[observed_per_row > 0L]))
   dimnames(subject_posteriors) <- list(NULL, profile_names)
   dimnames(group_posteriors) <- list(groups$ids, class_names)
   names(parameters$group_probabilities) <- class_names
@@ -821,9 +824,10 @@
     expectation = expectation,
     log_likelihood = log_likelihood, n_parameters = n_parameters,
     aic = -2 * log_likelihood + 2 * n_parameters,
-    bic = -2 * log_likelihood + log(groups$n) * n_parameters,
+    bic = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
     bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,
     n_informative = n_informative, informative = observed_per_row > 0L,
+    n_informative_groups = n_informative_groups,
     converged = isTRUE(best$converged), iterations = best$iterations,
     log_likelihood_history = best$history, boundary = boundary,
     probability_boundary = probability_boundary,

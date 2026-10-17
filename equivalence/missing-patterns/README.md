@@ -51,11 +51,13 @@ differs is whether they are counted.
 | Rows with nothing observed, in N and individual BIC | excluded ("These cases were not included in the analysis") | included (N = 600 for m2, 900 for m5) | excluded |
 | The same rows, in entropy and AvePP | excluded | — | excluded |
 | The same rows, in class counts | excluded | included | included |
-| Groups with nothing observed (m5: 7 and 31) | dropped (58 clusters) | kept (60 groups) | kept, in `n_groups`, `bic_groups` and group-level entropy and AvePP |
+| Groups with nothing observed (m5: 7 and 31) | dropped (58 clusters) | kept (60 groups) | dropped from `bic_groups` and group-level entropy and AvePP (`n_informative_groups` = 58); kept in `n_groups`, group class sizes and assignments |
 | Group-level entropy and AvePP | averaged over observed rows, each carrying its group's posterior | — | averaged over groups |
 
-The group-level statistics of m5 are therefore not compared. With the two
-empty groups dropped and the posteriors averaged over observed rows, this
-package's own group posteriors give Mplus's printed values exactly (entropy
-0.5710, AvePP 0.8566 and 0.8923 against 0.571, 0.857 and 0.892); averaged over
-all 60 groups they give 0.552, 0.855 and 0.870.
+This package averages the group-level statistics over groups, each counted
+once; Mplus averages them over observed rows, each carrying its group's
+posterior, so a large group counts more. For m5 the package reports, over its
+58 classified groups, entropy 0.5708 and AvePP 0.855 and 0.893; Mplus's
+averaging applied to the same posteriors gives 0.5710, 0.8566 and 0.8923,
+which are Mplus's printed 0.571, 0.857 and 0.892. The test checks the cluster
+count, the group posteriors, and Mplus's figures through its averaging.

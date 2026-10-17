@@ -145,13 +145,26 @@ test_that("the programs' sample sizes differ only by the rows with nothing obser
   }))
 })
 
-test_that("m5's group posteriors reproduce Mplus and Latent GOLD group by group", {
-  # The two-level group level is compared through its posteriors. Its entropy
-  # and AvePP are not yet: Mplus drops groups with nothing observed and
-  # averages over observed rows, and the package's convention for both is an
-  # open decision recorded in missing-patterns/README.md.
+test_that("m5's group level reproduces Mplus: clusters, posteriors and statistics", {
+  # Groups with nothing observed are left out, as Mplus leaves them out of its
+  # clusters. Mplus then averages the group-level entropy and AvePP over
+  # observed rows, each carrying its group's posterior; this package averages
+  # over groups, each counted once. The Mplus figures are therefore checked by
+  # applying Mplus's averaging to this package's classified group posteriors.
   case <- missing_pattern_cases$m5
   fit <- fit_missing_pattern(case)
+  lines <- read_mplus_lines(file.path(missing_pattern_returned, "m5.out"))
+  expect_identical(fit$n_informative_groups,
+                   as.integer(printed_value(lines, "Number of clusters")))
+  expect_identical(fit$n_groups, 60L)
+  printed <- mplus_classification_twolevel(file.path(missing_pattern_returned, "m5.out"),
+                                           2L, 2L)$groups
+  per_observed_row <- fit$group_posteriors[fit$group_index[fit$informative], , drop = FALSE]
+  expect_lt(abs(.multilpa_relative_entropy(per_observed_row) - printed$entropy),
+            mplus_printed_tolerance)
+  # The package's own group entropy is over the 58 classified groups.
+  groups <- subset(get_results(fit, "entropy"), level == "groups")
+  expect_identical(groups$n_units, 58L)
   observed_rows <- rowSums(!is.na(case$data[missing_pattern_vars])) > 0L
   # Mplus: the cb margin of the saved joints, one row per analysed group.
   saved <- utils::read.table(file.path(missing_pattern_returned, "m5-posteriors.dat"),
@@ -162,7 +175,11 @@ test_that("m5's group posteriors reproduce Mplus and Latent GOLD group by group"
   first <- !duplicated(group_of_row)
   expect_setequal(group_of_row[first], unique(case$data$g[observed_rows]))
   mine <- fit$group_posteriors[match(group_of_row[first], fit$group_values), , drop = FALSE]
-  expect_lt(relabel(mine, per_row[first, , drop = FALSE])$gap, 5e-4)
+  matched <- relabel(mine, per_row[first, , drop = FALSE])
+  expect_lt(matched$gap, 5e-4)
+  # AvePP under Mplus's averaging, classes matched by the group posteriors.
+  avepp <- diag(.multilpa_average_posterior_matrix(per_observed_row))
+  expect_lt(max(abs(avepp[matched$order] - printed$avepp)), mplus_printed_tolerance)
   # Latent GOLD: every group, including the two with nothing observed.
   lg <- utils::read.delim(file.path(missing_pattern_returned, "m5_posteriors.txt"),
                           check.names = FALSE)
