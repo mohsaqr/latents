@@ -147,11 +147,11 @@ as.data.frame(candidates)
 ```
 
 To find which candidate minimizes each criterion, we call `get_results()` with
-`"criteria"`. Criteria that depend on a sample size are reported with the
+`"best"`. Criteria that depend on a sample size are reported with the
 number of groups and with the number of observations.
 
-```{r criteria}
-get_results(candidates, "criteria")
+```{r best}
+get_results(candidates, "best")
 ```
 
 To draw one criterion across the grid, we call `plot()` with its name as

@@ -292,7 +292,7 @@ candidates <- enumerate_classes(
   n_starts = 10, seed = 1
 )
 candidates
-get_results(candidates, "criteria")
+get_results(candidates, "best")
 plot(candidates)
 ```
 

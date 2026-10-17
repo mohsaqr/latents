@@ -40,6 +40,13 @@
 #' [plot()][latents-plots]. Random effects need the gaussian family,
 #' `id` and `class_level = "group"`.
 #'
+#' With `residual_correlation`, the residuals also carry a process shared by
+#' the classes, \eqn{e_i \sim N(0, W_i + \sigma_k^2 I)}{e_i ~ N(0, W_i + sigma_k^2 I)}:
+#' a continuous-time autoregressive process (`"ar"`) or Brownian motion
+#' (`"brownian"`) over `residual_time`, as in `lcmm::hlme(cor = )`. At hlme's
+#' own estimates the likelihood equals hlme's; the comparison is recorded in
+#' `equivalence/test-growth-correlated-lcmm.R` of the source repository.
+#'
 #' With `cluster`, persons are nested in clusters (students in schools) and
 #' the multilevel growth mixture model is fitted: each cluster belongs to a
 #' group class h, and the trajectory-class logits of its persons have a
@@ -166,6 +173,20 @@
 #'   standard errors and the BIC; with `n_group_classes = 1` the model is the
 #'   single-level growth mixture with clusters as those units, comparable by
 #'   BIC with more group classes. See the growth mixture section.
+#' @param residual_correlation `"none"` (default) for independent residuals
+#'   within a person; with `random`, `"ar"` adds a continuous-time
+#'   autoregressive process, covariance `sd^2 exp(-rate |t - s|)`, and
+#'   `"brownian"` Brownian motion, `sd^2 min(t, s)`, to the residual
+#'   variance, shared by the classes: `lcmm::hlme(cor = AR(time))` and
+#'   `cor = BM(time)`. The model without the process is fitted first, from
+#'   every start, and the process is then estimated with everything else. A
+#'   process the data cannot separate from the residual variance or the
+#'   random effects is left on its bound and warned about
+#'   (`latents_random_boundary`); its rows then have no standard error.
+#'   Refused with `latents_bad_argument` without `random`.
+#' @param residual_time The numeric column the process runs over; by default
+#'   the first numeric variable of `random`, or else of the predictors.
+#'   Brownian motion needs non-negative times (`latents_bad_data`).
 #' @return An object of class `latents_mixture_regression`, or
 #'   `latents_growth_mixture` when `random` is given. Read it with
 #'   [as.data.frame()] (the coefficient table) or [get_results()] (every
@@ -269,9 +290,12 @@ mixture_regression <- function(formula, data, n_classes,
                    vcov_type = c("observed", "robust", "opg", "none"),
                    weights = NULL, random = NULL,
                    random_covariance = c("varying", "equal", "proportional"),
-                   random_diagonal = FALSE, cluster = NULL) {
+                   random_diagonal = FALSE, cluster = NULL,
+                   residual_correlation = c("none", "ar", "brownian"),
+                   residual_time = NULL) {
   vcov_defaulted <- missing(vcov_type)
   random_covariance <- match.arg(random_covariance)
+  residual_correlation <- match.arg(residual_correlation)
   # Variable names may stand in for a one-sided formula, so no `~` is needed.
   common <- .mixture_as_formula(common, "common")
   membership <- .mixture_as_formula(membership, "membership")
@@ -323,6 +347,15 @@ mixture_regression <- function(formula, data, n_classes,
     .growth_check_arguments(random, family, id, class_level, n_group_classes,
                             random_diagonal, cluster)
   }
+  if (!identical(residual_correlation, "none")) {
+    residual_time <- .growth_residual_time(residual_correlation, residual_time, random,
+                                          formula, data)
+  } else if (!is.null(residual_time)) {
+    stop(errorCondition(paste(
+      "`residual_time` is the time scale of correlated residuals: give",
+      "`residual_correlation = \"ar\"` or `\"brownian\"` as well."),
+      class = "latents_bad_argument", call = NULL))
+  }
   if (!is.null(cluster) && !is.null(weights)) {
     .latents_refuse_weights("a multilevel growth mixture (`cluster`)")
   }
@@ -340,6 +373,20 @@ mixture_regression <- function(formula, data, n_classes,
     spec$random_diagonal <- random_diagonal
     fit <- .mixture_with_seed(seed, .growth_fit(
       spec, as.integer(n_starts), as.integer(max_iter), tol, select_start))
+    if (!identical(residual_correlation, "none")) {
+      # The model without the process places the classes; the process is then
+      # estimated with everything else (growth-mixture-correlated.R).
+      times <- data[[residual_time]][spec$kept_rows]
+      if (anyNA(times) || any(!is.finite(times))) {
+        stop(errorCondition("`residual_time` must be finite on every fitted row.",
+                            class = "latents_bad_data", call = NULL))
+      }
+      spec$residual_correlation <- residual_correlation
+      spec$residual_time <- residual_time
+      spec$residual_times <- times
+      spec$model_data[[residual_time]] <- times
+      fit <- .growth_correlated_refit(spec, fit, as.integer(max_iter), tol)
+    }
     fit$call <- match.call()
     fit$settings <- list(n_starts = as.integer(n_starts),
                          max_iter = as.integer(max_iter), tol = tol,

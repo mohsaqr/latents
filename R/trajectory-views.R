@@ -106,19 +106,18 @@
     (inherits(x, "latents_mixture_regression") && identical(x$spec$nesting, "group"))
 }
 
-#' Three-step inputs of a trajectory model: person posteriors and one
-#' distal outcome value per person
+#' Check a trajectory fit can take a three-step correction
 #'
-#' The outcome must be constant within persons (it is measured once, or is a
-#' person-level quantity), must not be the trajectory outcome, and `data`
-#' must be the data frame the model was fitted to. A fit with membership
-#' covariates is refused, as for profile models: the correction has no
-#' classification-error adjustment conditional on those covariates.
+#' A multilevel growth mixture is refused (its persons are dependent within
+#' clusters), as is a fit with membership covariates (the correction has no
+#' classification-error adjustment conditional on them), and `data` must be
+#' the data frame the model was fitted to.
 #'
-#' @return A list with `pieces` (as `.multilpa_level_assignments()` builds)
-#'   and `values`.
+#' @param x A trajectory fit.
+#' @param data The data frame passed to the three-step verb.
+#' @return The fit's `.trajectory_view()`.
 #' @noRd
-.trajectory_three_step_inputs <- function(x, data, outcome) {
+.trajectory_check_three_step <- function(x, data) {
   view <- .trajectory_view(x)
   spec <- view$spec
   if (!is.null(spec$cluster)) {
@@ -134,18 +133,61 @@
       "conditional on them. Fit the trajectory model without `membership`."),
       class = "latents_unsupported_three_step", call = NULL))
   }
-  if (identical(outcome, spec$response_name) ||
-      outcome %in% all.vars(stats::delete.response(spec$terms))) {
-    stop(errorCondition(sprintf(
-      "`%s` is part of the trajectory model, so it is not a distal outcome.",
-      outcome), class = c("multilpa_indicator_reused", "latents_bad_outcome"),
-      call = NULL))
-  }
-  if (nrow(data) < max(spec$kept_rows) ||
+  .trajectory_check_data(x, data)
+  view
+}
+
+#' Require the data frame a trajectory model was fitted to
+#' @param x A trajectory fit.
+#' @param data A data frame.
+#' @return `NULL`, invisibly, or `latents_bad_inference_data`.
+#' @noRd
+.trajectory_check_data <- function(x, data) {
+  spec <- x$spec
+  if (!is.data.frame(data) || !spec$id %in% names(data) ||
+      nrow(data) < max(spec$kept_rows) ||
       !.multilpa_same_values(data[[spec$id]][spec$kept_rows], spec$model_data[[spec$id]])) {
     stop(errorCondition(
       "`data` must be the data frame the trajectory model was fitted to.",
       class = "latents_bad_inference_data", call = NULL))
+  }
+  invisible(NULL)
+}
+
+#' The person-level assignments of a trajectory fit, as three-step reads them
+#' @return A list as `.multilpa_level_assignments()` builds.
+#' @noRd
+.trajectory_pieces <- function(view) {
+  list(posteriors = view$posterior, modal = view$modal,
+       units = view$spec$group_levels, group_index = seq_len(view$spec$n_groups),
+       n_classes = view$spec$n_classes)
+}
+
+#' Whether a variable is part of a trajectory model's own regression
+#' @noRd
+.trajectory_uses <- function(spec, variable) {
+  identical(variable, spec$response_name) ||
+    variable %in% all.vars(stats::delete.response(spec$terms))
+}
+
+#' Three-step inputs of a trajectory model: person posteriors and one
+#' distal outcome value per person
+#'
+#' The outcome must be constant within persons (it is measured once, or is a
+#' person-level quantity) and must not be the trajectory outcome; the fit and
+#' `data` are checked by `.trajectory_check_three_step()`.
+#'
+#' @return A list with `pieces` (as `.multilpa_level_assignments()` builds)
+#'   and `values`.
+#' @noRd
+.trajectory_three_step_inputs <- function(x, data, outcome) {
+  view <- .trajectory_check_three_step(x, data)
+  spec <- view$spec
+  if (.trajectory_uses(spec, outcome)) {
+    stop(errorCondition(sprintf(
+      "`%s` is part of the trajectory model, so it is not a distal outcome.",
+      outcome), class = c("multilpa_indicator_reused", "latents_bad_outcome"),
+      call = NULL))
   }
   by_person <- split(data[[outcome]][spec$kept_rows], spec$group_index)
   constant <- vapply(by_person, function(v) length(unique(v)) == 1L, logical(1))
@@ -155,9 +197,39 @@
       "one value per person."), outcome),
       class = "latents_bad_outcome", call = NULL))
   }
-  list(pieces = list(posteriors = view$posterior, modal = view$modal,
-                     units = spec$group_levels,
-                     group_index = seq_len(spec$n_groups),
-                     n_classes = spec$n_classes),
+  list(pieces = .trajectory_pieces(view),
        values = vapply(by_person, function(v) v[[1L]], numeric(1), USE.NAMES = FALSE))
+}
+
+#' R3STEP inputs of a trajectory model: person posteriors and covariates
+#'
+#' Each covariate must be constant within persons, because it predicts a
+#' person's class, and must not be part of the trajectory model.
+#'
+#' @return A list with `pieces` and `design` (persons by intercept and
+#'   covariates).
+#' @noRd
+.trajectory_r3step_inputs <- function(x, data, covariates) {
+  view <- .trajectory_check_three_step(x, data)
+  spec <- view$spec
+  reused <- covariates[vapply(covariates, .trajectory_uses, logical(1), spec = spec)]
+  if (length(reused) > 0L) {
+    stop(errorCondition(sprintf(
+      "%s already part of the trajectory model, so not an external predictor.",
+      paste(sprintf("`%s` is", reused), collapse = ", ")),
+      class = c("multilpa_indicator_reused", "latents_bad_covariate"), call = NULL))
+  }
+  values <- vapply(covariates, function(covariate) {
+    by_person <- split(data[[covariate]][spec$kept_rows], spec$group_index)
+    if (!all(vapply(by_person, function(v) length(unique(v)) == 1L, logical(1)))) {
+      stop(errorCondition(sprintf(paste(
+        "`%s` varies within persons; a covariate of trajectory class",
+        "membership is one value per person."), covariate),
+        class = "latents_bad_covariate", call = NULL))
+    }
+    vapply(by_person, function(v) v[[1L]], numeric(1), USE.NAMES = FALSE)
+  }, numeric(spec$n_groups)) |> matrix(spec$n_groups, length(covariates))
+  colnames(values) <- covariates
+  list(pieces = .trajectory_pieces(view),
+       design = .multilpa_r3step_check_rank(cbind(`(Intercept)` = 1, values)))
 }

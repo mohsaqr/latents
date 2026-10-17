@@ -574,9 +574,10 @@
 #'   fit with them uses the general transition engine.
 #' @param model A covariance structure as `multilpa()` takes it (`"EEI"`,
 #'   `"VVI"`, `"VEI"`, ... ; mclust's codes). Standard errors are given for
-#'   EEI, VVI, EEE and VVV in the homogeneous model and for the diagonal
-#'   EEI and VVI with the extensions; other structures are refused
-#'   (`latents_unsupported_inference`).
+#'   every structure with the extensions (covariate, occasion-varying or
+#'   second-order transitions, occasion-specific measurement), and for EEI,
+#'   VVI, EEE and VVV in the homogeneous model, which refuses the other ten
+#'   with `latents_unsupported_inference`.
 #' @return A `multilpa_transitions` object containing `means`, `variances`,
 #'   optional `covariances` and `response_probabilities`,
 #'   `initial_probabilities` (group classes by profiles),
@@ -1148,10 +1149,10 @@ plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
                                       scale = c("raw", "standardized"),
                                       category = "last", labels = TRUE,
                                       cell_labels = TRUE, main = NULL,
-                                      subtitle = NULL, ...) {
+                                      subtitle = NULL, intervals = TRUE, ...) {
   stopifnot("`x` must be a fitted `multilpa_transitions` model" =
               inherits(x, "multilpa_transitions"))
-  .multilpa_check_plot_arguments(list(...), labels, TRUE, cell_labels,
+  .multilpa_check_plot_arguments(list(...), labels, intervals, cell_labels,
                                  category)
   what <- match.arg(what)
   scale <- match.arg(scale)
@@ -1159,10 +1160,7 @@ plot.multilpa_transitions <- function(x, what = c("transitions", "profiles",
   if (identical(what, "all")) {
     return(.gg_every_view(x, match.call(), parent.frame()))
   }
-  # Standard errors are not yet wired into this family's plots, so its views
-  # draw point estimates; parameter_inference() reports the errors.
   .multilpa_draw_view(x, what, data = data, scale = scale,
-                      category = category, labels = labels, intervals = FALSE,
-                      cell_labels = cell_labels, main = main,
-                      subtitle = subtitle, errors_available = FALSE)
+                      category = category, labels = labels, intervals = intervals,
+                      cell_labels = cell_labels, main = main, subtitle = subtitle)
 }

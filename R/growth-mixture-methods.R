@@ -37,10 +37,18 @@
     .inference_score_information(total, theta, 1e-5, scheme = "central",
                                  h_rule = "plus1")
   dimnames(information) <- list(names(theta), names(theta))
-  inverse <- .mixture_invert(information)
-  vcov <- if (identical(vcov_type, "robust")) {
-    .inference_sandwich(inverse, crossprod(scores * weights), nrow(scores))
-  } else inverse
+  # Coordinates a correlated fit left on a floor, a bound or a flat ridge are
+  # held there: the others' covariance is that of the free block, and the
+  # held ones get zero variance (their own rows are reported without one).
+  free <- !names(theta) %in% (fit$residual_boundary %||% character())
+  inverse <- matrix(0, length(theta), length(theta))
+  inverse[free, free] <- .mixture_invert(information[free, free, drop = FALSE])
+  vcov <- inverse
+  if (identical(vcov_type, "robust")) {
+    vcov[free, free] <- .inference_sandwich(
+      inverse[free, free, drop = FALSE],
+      crossprod(scores[, free, drop = FALSE] * weights), nrow(scores))
+  }
   dimnames(vcov) <- list(names(theta), names(theta))
   list(theta = theta, vcov = vcov, vcov_type = vcov_type, information = information,
        score_norm = max(abs(colSums(scores * weights))))
@@ -110,7 +118,7 @@
   # A covariance shared by every class is one set of parameters: reported once.
   shared <- identical(spec$random_covariance, "equal")
   if (shared) classes <- "all"
-  do.call(rbind, lapply(seq_along(classes), function(k) {
+  covariance_rows <- do.call(rbind, lapply(seq_along(classes), function(k) {
     variances <- lapply(seq_len(n_random), function(j) {
       cbind(data.frame(class = classes[k], parameter = "variance", term = terms[j],
                        stringsAsFactors = FALSE),
@@ -142,6 +150,21 @@
     rows[rows$boundary, c("std_error", "conf_low", "conf_high")] <- NA_real_
     rows
   }))
+  if (!.growth_is_correlated(spec)) return(covariance_rows)
+  # The residual process, shared by the classes: its rate (autoregressive)
+  # and its standard deviation.
+  process_names <- names(x$params$correlation)
+  process_rows <- do.call(rbind, lapply(process_names, function(name) {
+    cbind(data.frame(class = "all", parameter = paste0("process_", name),
+                     term = spec$residual_time, stringsAsFactors = FALSE),
+          .growth_delta_table(inference, function(v) {
+            .growth_unpack(spec, v, template)$correlation[[name]]
+          }, "log", level))
+  }))
+  process_rows$boundary <- sprintf("residual_correlation.log_%s", process_names) %in%
+    (x$residual_boundary %||% character())
+  process_rows[process_rows$boundary, c("std_error", "conf_low", "conf_high")] <- NA_real_
+  rbind(covariance_rows, process_rows)
 }
 
 #' Whether class k's random-effect covariance is degenerate
@@ -691,6 +714,16 @@ print.latents_growth_mixture <- function(x, digits = 4L, ...) {
   cat(sprintf("  %s%s, covariance %s; residual variance %s\n",
               toupper(substr(random, 1L, 1L)), substring(random, 2L), covariance,
               if (identical(fit$residual_variance, "equal")) "shared" else "by class"))
+  if (.growth_is_correlated(x$spec)) {
+    process <- x$params$correlation
+    cat(sprintf("  Correlated residuals: %s over `%s`%s, sd %.*f\n",
+                if (identical(x$spec$residual_correlation, "ar"))
+                  "continuous-time autoregressive" else "Brownian motion",
+                x$spec$residual_time,
+                if (identical(x$spec$residual_correlation, "ar"))
+                  sprintf(", rate %.*f", digits, process[["rate"]]) else "",
+                digits, process[["sd"]]))
+  }
   .latents_print_weights(x)
   cat(sprintf("  Log likelihood %.2f, BIC %.2f, entropy %.2f, %s\n", fit$log_likelihood,
               fit$bic, fit$entropy, if (fit$converged) "converged" else "NOT converged"))
@@ -703,7 +736,8 @@ print.latents_growth_mixture <- function(x, digits = 4L, ...) {
   cat("\n")
   print(get_results(x, "coefficients"))
   if (isTRUE(x$random_boundary)) {
-    cat("\nNote: a random-effect covariance is degenerate (see the warning at fit).\n")
+    cat(paste0("\nNote: a random-effect covariance is degenerate or a residual variance",
+               " is at its floor (see the warning at fit).\n"))
   }
   cat("\nMore: get_results(x, \"random\"), plot(x), summary(x)\n")
   invisible(x)

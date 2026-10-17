@@ -109,6 +109,40 @@ test_that("covariance structures combine with the extensions and nest", {
   expect_lte(fits[[1L]]$log_likelihood, fits[[2L]]$log_likelihood + 1e-6)
   expect_lte(fits[[2L]]$log_likelihood, fits[[3L]]$log_likelihood + 1e-6)
   expect_equal(fits[[2L]]$n_parameters - fits[[1L]]$n_parameters, 1)
-  expect_error(vcov(fits[[1L]]), class = "latents_unsupported_inference")
-  expect_error(vcov(fits[[3L]]), class = "latents_unsupported_inference")
+  # Every structure has Wald inference with the extensions (0.9.37): its
+  # scores vanish at the optimum and its covariance is positive definite.
+  invisible(lapply(fits[c(1L, 3L)], function(fit) {
+    theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
+    covariance <- vcov(fit)
+    # EM stops on the likelihood; the score left is a tiny distance from the
+    # root in standard-error units.
+    expect_lt(max(abs(colSums(.lta_group_scores(theta, fit))) *
+                    sqrt(diag(covariance))), 1e-3)
+    expect_identical(dim(covariance), rep(length(theta), 2L))
+    expect_gt(min(eigen(covariance, symmetric = TRUE, only.values = TRUE)$values), 0)
+  }))
+})
+
+test_that("chart scores of the extended model equal the likelihood's gradient", {
+  skip_on_cran()
+  activity <- c("browse", "lectures")
+  invisible(lapply(c("VEI", "EVE", "VVV"), function(m) {
+    fit <- quietly(lta(course_engagement, activity, "student", n_profiles = 2,
+                       time = "sequence", transition_covariates = "previous_grade",
+                       model = m, n_starts = 1, seed = 1), "latents_boundary")
+    theta <- .lta_pack(.lta_parameters(fit), fit$variance_model, fit$extra_data)
+    # Away from the optimum, where the score is not zero.
+    shifted <- theta + 0.02 * cos(seq_along(theta))
+    log_likelihood <- function(v) {
+      .lta_expectation(fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(v, fit),
+                       fit$occasion_of_row, NULL, fit$extra_data)$log_likelihood
+    }
+    numeric_gradient <- vapply(seq_along(shifted), function(j) {
+      h <- 1e-5 * max(1, abs(shifted[j]))
+      (log_likelihood(replace(shifted, j, shifted[j] + h)) -
+         log_likelihood(replace(shifted, j, shifted[j] - h))) / (2 * h)
+    }, numeric(1))
+    expect_equal(unname(colSums(.lta_group_scores(shifted, fit))), numeric_gradient,
+                 tolerance = 1e-6)
+  }))
 })

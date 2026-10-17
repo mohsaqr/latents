@@ -227,7 +227,7 @@
 
 #' Refit a transition model's specification to (simulated) data
 #' @noRd
-.lta_refit <- function(fit, data, n_starts, max_iter, tol) {
+.lta_refit <- function(fit, data, n_starts, max_iter, tol, seed = NULL) {
   a <- .lta_arguments(fit)
   lta(data, a$vars, a$id, n_profiles = a$n_profiles, time = a$time,
       n_group_classes = a$n_group_classes, variance_model = a$variance_model,
@@ -240,7 +240,8 @@
       count_model = a$count_model %||% "poisson",
       count_dispersion = a$count_dispersion %||% "varying", weights = fit$weights,
       n_starts = n_starts, max_iter = max_iter,
-      tol = tol, min_variance = a$min_variance, min_probability = a$min_probability)
+      tol = tol, min_variance = a$min_variance, min_probability = a$min_probability,
+      seed = seed)
 }
 
 #' Verify original indicators, occasions and covariate designs of an LTA fit

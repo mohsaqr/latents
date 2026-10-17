@@ -182,15 +182,21 @@ test_that("the transition bootstrap is reproducible and leaves the caller's seed
   expect_identical(first, second)
 })
 
-test_that("the bootstrap gives inference where Wald is refused", {
+test_that("a full covariance structure has Wald and bootstrap inference that agree", {
   skip_on_cran()
   data <- boot_lta_data()
   fit <- boot_lta_fit(data, transitions = "occasion", model = "VVV")
-  expect_error(parameter_inference(fit), class = "latents_unsupported_inference")
+  wald <- parameter_inference(fit)
   boot <- parameter_inference(fit, data = data, method = "bootstrap", iter = 30,
                               n_starts = 1, seed = 2)
   expect_true(all(is.finite(boot$standard_error) & boot$standard_error > 0))
   expect_identical(unique(boot$block), c("transition", "initial"))
+  expect_identical(paste(wald$block, wald$from, wald$to, wald$term),
+                   paste(boot$block, boot$from, boot$to, boot$term))
+  # Thirty replicates: the two errors agree in scale, not to the digit.
+  ratio <- boot$standard_error / wald$standard_error
+  expect_gt(stats::median(ratio), 0.6)
+  expect_lt(stats::median(ratio), 1.6)
 })
 
 test_that("weighted transition fits bootstrap with their weights", {

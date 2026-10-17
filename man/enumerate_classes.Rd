@@ -84,7 +84,7 @@ that describe it rather than by reaching into it: \code{\link[=as.data.frame]{as
 one row per candidate model with every criterion and diagnostic
 (including both entropies and, at each level, the smallest, largest and
 mean average posterior probability and the number of classes below a
-cutoff), \code{get_results(x, "criteria")} names the candidate each
+cutoff), \code{get_results(x, "best")} names the candidate each
 criterion's minimum falls on, \code{get_results(x, "classification")} gives
 every class's average posterior probability and relative entropy for
 every candidate, \code{get_results(x, "deltas")} and \code{"knees"} give the

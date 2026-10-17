@@ -130,9 +130,10 @@
 #'     categorical indicator they leave out.}
 #'   \item{Transition fits}{From [lta()]: `"transitions"` (default), then
 #'     `"profiles"`, `"bars"`, `"heatmap"`, `"responses"`, `"sequences"`,
-#'     `"sizes"`, `"entropy"`, `"posteriors"`, `"avepp"` and `"all"`, as point
-#'     estimates without `intervals` or `statistic`. A general [lta()] fit
-#'     takes no `what` and draws its transition matrix.}
+#'     `"sizes"`, `"entropy"`, `"posteriors"`, `"avepp"` and `"all"`, without
+#'     `statistic`; the profile, bar and response views draw the 95%
+#'     intervals of the transition fit's [parameter_inference()] (`intervals`).
+#'     A general [lta()] fit takes no `what` and draws its transition matrix.}
 #'   \item{Enumerations}{Criterion columns or `"all"` (with `combine`,
 #'     `labels` and `mark_minimum`), `"tree"`, the classification-quality
 #'     views `"entropy"`, `"avepp"` and `"diagnostics"` (with `cutoff`), and

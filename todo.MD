@@ -15,6 +15,21 @@ Evidence for existing claims: `validation/MATH_AUDIT.md`,
 
 ---
 
+## Next (set 2026-10-17, after 0.9.37)
+
+Owner priority remains growth, transitions and `lta()`. Each item ships with
+its evidence (an external reference, a simulation, or both).
+
+| # | Item | Reference / evidence | Size | Target |
+|---|---|---|---|---|
+| 1 | Coverage cell for correlated residuals (`residual_correlation`), and coverage of the growth bootstrap intervals | add cells to `validation/growth-simulation.R` (new registry rows) | S | 2026-10-19 |
+| 2 | Transition-aware `three_step()` (distal outcomes of an `lta()` profile sequence) and BCH | Latent GOLD `step3` on a dynamic latent variable | M | 2026-10-21 |
+| 3 | Group classes in the three-step latent Markov chain (`r3step()` on `lta(n_group_classes > 1)`) | Latent GOLD step3 with a group latent variable | M | 2026-10-23 |
+| 4 | Standard errors for the ten constrained structures in the homogeneous `lta()` (delta method from the general engine's logits) | numerical Hessian; agreement with the extended engine | S-M | 2026-10-24 |
+| 5 | Multilevel growth bootstrap (match group classes too) | simulation | M | 2026-10-27 |
+| 6 | Vignette sections: growth `predict()`/`r3step()`/correlated residuals; three-step latent Markov | rendered articles, claims tested in tests/equivalence | M | 2026-10-29 |
+| 7 | G6: binary and count growth mixtures (adaptive quadrature) | Latent GOLD, GLMMadaptive | L | November |
+
 ## Priority 0 — One engine (plan)
 
 Consolidate the eight estimation engines into measurement blocks × latent
@@ -80,8 +95,14 @@ homogeneous and measurement-invariant.
 - [x] Covariance structures and FIML in the general engine; bootstrap LRT
   between nested transition models; simulation study of the new standard
   errors (all 0.9.2; audited 2026-10-01).
-- [ ] Structure-aware standard errors in the extended `lta()` beyond the
-  diagonal EEI and VVI (refused today). **M**
+- [x] Structure-aware standard errors in the extended `lta()` (2026-10-17,
+  0.9.37): every structure and `covariance_model = "full"`, by chart scores
+  (analytic Sigma gradients through the coordinates' Jacobian); scores equal
+  the likelihood's numerical gradient to ~2e-7.
+- [ ] The same for the homogeneous `lta()` (multilpa_transitions), which still
+  refuses the ten constrained structures: its table reports natural
+  probabilities, so it needs the delta method from the general engine's
+  logits. **S-M**
 
 ### 1.3 Membership-covariate models
 
@@ -157,29 +178,35 @@ calling a gap a disagreement).
   `hlme` matches (log likelihood within 1e-6, estimates within 1e-4) for at
   least 6 configurations (1-4 classes; random intercept / intercept+slope;
   each covariance option; unbalanced data). **M** (about 1.5 days)
-- [~] **G2. Inference.** (Observed and sandwich errors done and checked
-  against a numerical Hessian; bootstrap and the coverage study remain.) Observed-information and sandwich (weighted) standard
+- [x] **G2. Inference.** (2026-10-17, 0.9.37: `parameter_inference()` method,
+  Wald and person bootstrap with replicates matched by posterior membership;
+  coverage in `validation/GROWTH_SIMULATION.md`.) Observed-information and sandwich (weighted) standard
   errors on the estimation scale, delta method to variances/correlations;
   boundary handling for random-effect variances; person bootstrap via the
   existing machinery. Evidence: numerical-Hessian agreement 1e-6; coverage
   simulation (>= 200 datasets, gates as in `validation/LTA_SIMULATION.md`).
   **M** (about 1 day)
-- [~] **G3. Integration.** (Tables, print, summary, plots, weights,
-  `simulate()`, enumeration with the bootstrap LRT and distal outcomes in
-  `three_step()` done; `predict()` for new persons and `r3step()` remain,
-  both refused with classed conditions.) `print`/`summary`/`plot` (class trajectories with
+- [x] **G3. Integration.** (2026-10-17, 0.9.37: `predict()` for new persons,
+  matching lcmm's predictY/predictClass/predictRE at hlme's estimates;
+  `r3step()` for trajectory models; `sensitivity()`.) `print`/`summary`/`plot` (class trajectories with
   individual-curve spread), `as.data.frame()`, `predict()` (marginal and
   conditional on the random effects, i.e. empirical Bayes), posterior class
   table, `enumerate` over classes, `bootstrap_lrt()` (needs simulation from
   the fitted model), label alignment, sampling weights, `sensitivity()`.
   Evidence: tests per verb; bootstrap LRT size check. **M** (about 1 day)
-- [ ] **G4. Validation report.** Recovery and coverage study (balanced and
+- [x] **G4. Validation report.** (2026-10-17: `validation/GROWTH_SIMULATION.md`,
+  4 cells x 1000; separated designs 48/54 pass, misses bias-only on
+  variance components; weak separation under-covers (0.885-0.943); R3STEP
+  coverage 0.944-0.954. Latent GOLD cross-check not run: lcmm::hlme is exact
+  and already matched.) Recovery and coverage study (balanced and
   unbalanced designs, weak and strong separation, random-effect variance near
   zero); Latent GOLD cross-check on two Gaussian configurations; write-up in
   `validation/`. **S-M** (half a day, mostly compute)
-- [ ] **G5. Correlated residuals** (`residual_correlation = "ar1"`,
-  `"brownian"`). Changes only the residual covariance in G1; `hlme(cor = ...)`
-  as reference. **M** (about 1 day)
+- [x] **G5. Correlated residuals** (2026-10-17, 0.9.37:
+  `residual_correlation = "ar"`/`"brownian"`, `residual_time`; dense
+  per-pattern engine, L-BFGS-B within variance floors, Newton finish;
+  hlme(cor = AR/BM) likelihood equal at its estimates to 1e-8.) Coverage
+  study of the process parameters not done.
 - [ ] **G6. Binary and count outcomes with random effects.** Adaptive
   Gauss-Hermite quadrature (Laplace as a fast option) inside the class EM;
   references Latent GOLD (binary, Poisson growth mixtures) and `lme4` /
@@ -240,14 +267,16 @@ classes may add a day to G1-G2.
   `initial_probabilities` and `empty_transition_rows` on both margins, and a
   two-profile test cannot catch a margin error because `c(2, 1)` is its own
   inverse. Prerequisite for the next item. **M**
-- [ ] `sensitivity()` for `lta()` and covariate fits (refused today with
-  `latents_unsupported_sensitivity`; needs refit paths and the alignment
-  above). **M**
-- [ ] Transition-aware `three_step()`, BCH, `r3step()` and classification
-  errors: they read an LTA fit's posteriors but treat occasions as
-  independent; the covariate model does not accept an LTA fit. **M**
-- [ ] Error bars in `plot(what = "bars")` for transition fits (standard errors
-  now exist; the plot does not draw them). **S**
+- [x] `sensitivity()` for `lta()` and growth mixtures (2026-10-17, 0.9.37;
+  profiles matched on the measurement, classes by posterior membership).
+  Covariate fits still refused. **M**
+- [x] Transition-aware `r3step()` (2026-10-17, 0.9.37):
+  `r3step(initial_covariates =, transition_covariates =)`, the three-step
+  latent Markov model; Latent GOLD `step3 modal ml` agrees to its printed
+  precision on three designs. Still open: a transition-aware `three_step()`
+  (distal outcomes) and BCH, and group classes in the step-three chain. **M**
+- [x] Error bars in `plot(what = "bars")`, `"profiles"` and `"responses"` for
+  transition fits (2026-10-17, 0.9.37; `intervals =`).
 - [x] `plot(what = "bars")` on an unconverged or bound-active fit now draws
   without whiskers and says why (2026-09-28).
 - [ ] Scalar accessors so prose can quote one number with one verb:

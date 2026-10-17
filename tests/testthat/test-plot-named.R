@@ -77,8 +77,8 @@ test_that("named plots refuse what a fit cannot draw, by condition class", {
   # An argument the fit's own plot() lacks is named, not dropped.
   expect_error(plot_profiles(fits$lta, statistic = "median"),
                class = "latents_bad_argument")
-  expect_error(plot_profiles(fits$lta, intervals = FALSE),
-               class = "latents_bad_argument")
+  # Transition fits draw intervals since 0.9.37, so `intervals` is theirs.
+  expect_true(all(is.na(plot_profiles(fits$lta, intervals = FALSE)$data$upper)))
   expect_error(plot_responses(fits$lpa), class = "latents_no_categorical")
   expect_error(plot_prevalence(fits$lta), class = "latents_nothing_to_plot")
   expect_error(plot_transitions(fits$lpa), class = "latents_bad_argument")

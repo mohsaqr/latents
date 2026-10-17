@@ -15,17 +15,26 @@ sensitivity(
 )
 }
 \arguments{
-\item{x}{A fitted \code{multilpa} model to use as the reference.
+\item{x}{The reference fit: a \code{\link[=multilpa]{multilpa()}} model, an \code{\link[=lta]{lta()}} model, or a
+growth mixture (\code{\link[=mixture_regression]{mixture_regression()}} with \code{random}).
 A \code{\link[=fit_staged]{fit_staged()}} result varies the second-stage starts while holding its
 first-stage measurement solution fixed. A directly fitted model with
 measurement blocks held is refused: its original free starting
 values are not retained, so replaying the same seed would not replay the
-same search.}
+same search. A membership-covariate fit is refused with
+\code{latents_unsupported_sensitivity}. For an \code{\link[=lta]{lta()}} fit, \code{agreement} is
+the share of occasions given the same profile, after matching the
+refit's profiles on the measurement; for a growth mixture it is the
+share of persons given the same class, after matching the refit's
+classes by their posterior memberships of the fitted persons.}
 
-\item{data}{Optional. The data the model was fitted to, in its original row
-order. A fit carries the columns it was built from, so this is only needed
-to override them. Shared identifier and indicator columns are checked
-against the fit before assignment agreement is calculated.}
+\item{data}{Optional for a \code{\link[=multilpa]{multilpa()}} fit or a growth mixture, which carry
+the columns they were built from, so it is only needed to override them;
+required for an \code{\link[=lta]{lta()}} fit (\code{latents_bad_argument} otherwise), whose
+refits need the occasions and covariates. It must be the data the model
+was fitted to, in its original row order; shared identifier and indicator
+columns are checked against the fit before assignment agreement is
+calculated (\code{latents_bad_inference_data}).}
 
 \item{seeds}{Seeds to refit under: at least two distinct whole numbers of
 either sign, as \code{set.seed()} accepts. Anything else raises
@@ -36,11 +45,13 @@ check that the refit is the same model.}
 \item{n_starts}{Starts per refit. Defaults to the number the reference fit
 used, so each seed gets the same search effort it did.}
 
-\item{max_iter, tol}{Passed to each refit; default to the reference fit's.}
+\item{max_iter, tol}{Passed to each refit; default to the reference fit's
+(for an \code{\link[=lta]{lta()}} fit, to the defaults of \code{\link[=lta]{lta()}}).}
 
 \item{tolerance}{Two log likelihoods within this of each other count as the
 same optimum. Defaults to the reference fit's own replication tolerance,
-which is what it used to decide whether its starts agreed.}
+which is what it used to decide whether its starts agreed (for a growth
+mixture \code{1e-6 * (1 + abs(logLik))}).}
 }
 \value{
 A base \code{data.frame}, one row per seed, with columns \code{seed},
@@ -82,6 +93,12 @@ example_data <- data.frame(
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
                 n_profiles = 2, n_group_classes = 1, n_starts = 3, seed = 1)
 sensitivity(fit, seeds = 1:3, n_starts = 3)
+
+# Growth mixtures are known for local solutions (Hipp and Bauer 2006).
+growth <- mixture_regression(score ~ wave, data = subset(growth_scores, student <= 60),
+                             n_classes = 2, id = "student", class_level = "group",
+                             random = ~ 1, n_starts = 1, seed = 1)
+sensitivity(growth, seeds = 1:2)
 }
 \references{
 Hipp, J. R., & Bauer, D. J. (2006). Local solutions in the

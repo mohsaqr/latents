@@ -28,6 +28,7 @@
     unlist(lapply(matrices, cholesky)),
     if (identical(spec$random_covariance, "proportional"))
       sprintf("random.log_scale.%s", classes[-spec$n_classes]),
+    .growth_correlation_names(spec),
     .growth_structure_names(.growth_structure(spec)))
 }
 
@@ -47,6 +48,7 @@
              unlist(lapply(params$random_covariance, chart)),
              if (identical(spec$random_covariance, "proportional"))
                log(params$random_scale[-spec$n_classes]),
+             if (.growth_is_correlated(spec)) log(params$correlation),
              .mixture_structure_pack(.growth_structure(spec), params))
   stats::setNames(theta, .growth_names(spec))
 }
@@ -79,6 +81,9 @@
   })
   params$random_scale <- if (identical(spec$random_covariance, "proportional"))
     c(exp(take(n_classes - 1L)), 1) else rep(1, n_classes)
+  if (.growth_is_correlated(spec)) {
+    params$correlation[] <- exp(take(length(params$correlation)))
+  }
   .mixture_structure_unpack(.growth_structure(spec),
                             theta[position + seq_len(length(theta) - position)], params)
 }
@@ -100,6 +105,9 @@
 #' @noRd
 .growth_scores <- function(spec, stats, params, expectation = NULL) {
   expectation <- expectation %||% .growth_expectation(spec, stats, params)
+  if (.growth_is_correlated(spec)) {
+    return(.growth_dense_scores(spec, stats, params, expectation))
+  }
   n_classes <- spec$n_classes
   n_specific <- ncol(spec$x)
   n_common <- ncol(spec$z)

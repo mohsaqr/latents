@@ -28,7 +28,9 @@ mixture_regression(
   random = NULL,
   random_covariance = c("varying", "equal", "proportional"),
   random_diagonal = FALSE,
-  cluster = NULL
+  cluster = NULL,
+  residual_correlation = c("none", "ar", "brownian"),
+  residual_time = NULL
 )
 }
 \arguments{
@@ -127,6 +129,22 @@ persons. The clusters are the independent units of the likelihood, the
 standard errors and the BIC; with \code{n_group_classes = 1} the model is the
 single-level growth mixture with clusters as those units, comparable by
 BIC with more group classes. See the growth mixture section.}
+
+\item{residual_correlation}{\code{"none"} (default) for independent residuals
+within a person; with \code{random}, \code{"ar"} adds a continuous-time
+autoregressive process, covariance \verb{sd^2 exp(-rate |t - s|)}, and
+\code{"brownian"} Brownian motion, \verb{sd^2 min(t, s)}, to the residual
+variance, shared by the classes: \code{lcmm::hlme(cor = AR(time))} and
+\code{cor = BM(time)}. The model without the process is fitted first, from
+every start, and the process is then estimated with everything else. A
+process the data cannot separate from the residual variance or the
+random effects is left on its bound and warned about
+(\code{latents_random_boundary}); its rows then have no standard error.
+Refused with \code{latents_bad_argument} without \code{random}.}
+
+\item{residual_time}{The numeric column the process runs over; by default
+the first numeric variable of \code{random}, or else of the predictors.
+Brownian motion needs non-negative times (\code{latents_bad_data}).}
 }
 \value{
 An object of class \code{latents_mixture_regression}, or
@@ -179,6 +197,13 @@ data, finished by quasi-Newton with analytic scores. Such a fit has class
 \code{\link[=get_results]{get_results()}} and
 \link[=latents-plots]{plot()}. Random effects need the gaussian family,
 \code{id} and \code{class_level = "group"}.
+
+With \code{residual_correlation}, the residuals also carry a process shared by
+the classes, \eqn{e_i \sim N(0, W_i + \sigma_k^2 I)}{e_i ~ N(0, W_i + sigma_k^2 I)}:
+a continuous-time autoregressive process (\code{"ar"}) or Brownian motion
+(\code{"brownian"}) over \code{residual_time}, as in \code{lcmm::hlme(cor = )}. At hlme's
+own estimates the likelihood equals hlme's; the comparison is recorded in
+\code{equivalence/test-growth-correlated-lcmm.R} of the source repository.
 
 With \code{cluster}, persons are nested in clusters (students in schools) and
 the multilevel growth mixture model is fitted: each cluster belongs to a

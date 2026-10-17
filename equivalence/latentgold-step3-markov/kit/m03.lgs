@@ -1,0 +1,25 @@
+//LG6.1//
+version = 6.1
+infile 'm03.dat'
+
+model
+title 'm03';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261017 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   step3 modal ml;
+   output
+      parameters=last standarderrors estimatedvalues;
+variables
+   caseid id;
+   independent w, z;
+   latent State nominal dynamic coding=last posterior=(post1 post2);
+equations
+   State[=0] <- 1 + w;
+   State <- (~tra) 1 | State[-1] + (~tra) z | State[-1];
+end model

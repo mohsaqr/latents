@@ -91,7 +91,7 @@ candidates <- enumerate_classes(student_esm, vars = activities,
                                 n_profiles = 2:4, n_group_classes = 1:3,
                                 n_starts = 5, seed = 1)
 as.data.frame(candidates)
-get_results(candidates, "criteria")
+get_results(candidates, "best")
 ```
 
 The criteria disagree, and the diagnostics explain why. BIC with the number of

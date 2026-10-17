@@ -153,9 +153,9 @@
 #'     profile: `group_class`, `profile`, `probability`, `prevalence`,
 #'     `group_class_probability`. `"sequence_lengths"` has one row per group:
 #'     `group`, `group_class`, `occasions`, `observations`, `complete`.}
-#'   \item{`"candidates"`, `"criteria"`, `"classification"`}{An enumeration
-#'     grid. `"criteria"` has one row per information criterion and
-#'     sample-size convention: `criterion`, `convention`, `candidate` (the
+#'   \item{`"candidates"`, `"best"`, `"classification"`}{An enumeration
+#'     grid. `"best"` (formerly `"criteria"`, which still works) has one row
+#'     per information criterion and sample-size convention: `criterion`, `convention`, `candidate` (the
 #'     candidate its minimum falls on), `n_profiles`, `n_group_classes`,
 #'     `model` and `value`. `"candidates"` has one row per candidate model:
 #'     its name (`candidate`, first), its class counts, its covariance
@@ -716,6 +716,10 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
   stopifnot("`what` must be a single table name, or NULL for the first one" =
               is.character(what) && length(what) == 1L && !is.na(what))
   if (identical(what, "all") || what %in% choices) return(what)
+  # An earlier name of a table still finds it, so scripts written against a
+  # released version keep working.
+  aliases <- c(criteria = "best")
+  if (what %in% names(aliases) && aliases[[what]] %in% choices) return(aliases[[what]])
   stop(errorCondition(sprintf(
     "`what = \"%s\"` is not a table of this object. It has %s, and \"all\".",
     what, paste(sprintf("\"%s\"", choices), collapse = ", ")),
@@ -813,7 +817,7 @@ get_results.summary_multilpa_bootstrap_lrt <- function(x, what = NULL, ...) {
       candidates = .multilpa_table(
         function(x, cutoff = 0.8) .multilpa_enumeration_grid(x, cutoff),
         "cutoff"),
-      criteria = .multilpa_table(
+      best = .multilpa_table(
         function(x) .multilpa_enumeration_minima(.multilpa_enumeration_grid(x))),
       classification = .multilpa_table(.multilpa_enumeration_classification),
       deltas = .multilpa_table(

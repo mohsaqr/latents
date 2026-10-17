@@ -133,16 +133,16 @@ models
 candidates <- as.data.frame(models)
 n_candidates <- nrow(candidates)
 n_failed <- with(candidates, sum(is.na(log_likelihood)))
-criteria <- get_results(models, "criteria")
+best <- get_results(models, "best")
 pick <- function(name, convention_name) {
-  with(subset(criteria, criterion == name & convention %in% convention_name),
+  with(subset(best, criterion == name & convention %in% convention_name),
        candidate)
 }
 bic_groups_pick <- pick("bic", "groups")
 bic_individual_pick <- pick("bic", "individuals")
 icl_groups_pick <- pick("icl", "groups")
 awe_groups_pick <- pick("awe", "groups")
-aic_pick <- with(subset(criteria, criterion == "aic"), candidate)
+aic_pick <- with(subset(best, criterion == "aic"), candidate)
 # The code below names these candidates; stop if the results ever change.
 stopifnot(bic_groups_pick == "profiles4_groups3",
           icl_groups_pick == "profiles4_groups2",
@@ -192,8 +192,8 @@ the two conventions throughout.
 
 The candidate at the minimum of each criterion:
 
-```{r criteria}
-get_results(models, "criteria")
+```{r best}
+get_results(models, "best")
 ```
 
 The criteria disagree. With students as the units, the Bayesian information

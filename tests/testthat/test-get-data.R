@@ -135,11 +135,20 @@ test_that("the enumeration and bootstrap objects carry their own tables", {
                                   n_profiles = 1:2, n_group_classes = 1,
                                   n_starts = 1, seed = 1)
   expect_identical(as.data.frame(candidates), get_results(candidates, "candidates"))
-  expect_s3_class(get_results(candidates, "criteria"), "data.frame")
+  expect_s3_class(get_results(candidates, "best"), "data.frame")
   expect_named(get_results(candidates, "all"),
-               c("candidates", "criteria", "classification", "deltas", "knees"))
+               c("candidates", "best", "classification", "deltas", "knees"))
+  expect_identical(get_results(summary(candidates), "best"),
+                   get_results(candidates, "best"))
+  # The table's earlier name still finds it, on the grid and on its summary.
+  expect_identical(get_results(candidates, "criteria"),
+                   get_results(candidates, "best"))
   expect_identical(get_results(summary(candidates), "criteria"),
-                   get_results(candidates, "criteria"))
+                   get_results(candidates, "best"))
+  # The alias is scoped to objects that have a `"best"` table.
+  fit <- multilpa(engagement_small, activity, "student", n_profiles = 2,
+                  n_group_classes = 1, n_starts = 1, seed = 1)
+  expect_error(get_results(fit, "criteria"), class = "latents_bad_argument")
 })
 
 test_that("a starting-value set and a diagnostics object have catalogues", {

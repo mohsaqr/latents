@@ -60,13 +60,16 @@
 #'   intercept).
 #' @param row_group_membership The row-level cluster membership design.
 #' @param n_group_classes Number of group classes.
+#' @param check_count Whether to require more clusters than group classes,
+#'   as fitting does; prediction for a few new clusters does not.
 #' @return A list of cluster fields for the specification: `cluster_index`
 #'   (each person's cluster), `cluster_levels`, `n_clusters`,
 #'   `n_cluster_classes`, `cluster_v`, `cluster_w` and
 #'   `cluster_intercept_only`.
 #' @noRd
 .growth_cluster_spec <- function(cluster_values, group_index, row_membership,
-                                 row_group_membership, n_group_classes) {
+                                 row_group_membership, n_group_classes,
+                                 check_count = TRUE) {
   first <- match(seq_len(max(group_index)), group_index)
   person_cluster <- cluster_values[first]
   if (any(cluster_values != person_cluster[group_index])) {
@@ -76,7 +79,7 @@
   }
   cluster_levels <- sort(unique(person_cluster))
   cluster_index <- match(person_cluster, cluster_levels)
-  if (length(cluster_levels) <= n_group_classes) {
+  if (check_count && length(cluster_levels) <= n_group_classes) {
     stop(errorCondition(sprintf("%d clusters cannot support %d group classes.",
                                 length(cluster_levels), n_group_classes),
                         class = "latents_bad_data", call = NULL))
@@ -434,6 +437,7 @@
                    equal = per_matrix,
                    proportional = per_matrix + n_classes - 1L)
   as.integer(n_classes * ncol(spec$x) + ncol(spec$z) + random +
+               length(.growth_correlation_names(spec)) +
                (if (identical(spec$variance, "equal")) 1L else n_classes) +
                length(.growth_structure_names(.growth_structure(spec))))
 }

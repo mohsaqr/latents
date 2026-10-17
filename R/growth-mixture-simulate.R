@@ -1,5 +1,4 @@
-# Simulation from a growth mixture model, and the verbs that refuse growth
-# fits clearly where they are not implemented.
+# Simulation from a growth mixture model.
 
 #' One simulated outcome vector from a growth mixture fit
 #'
@@ -48,7 +47,19 @@
   mean <- vapply(seq_len(spec$n), function(r) {
     sum(design[r, ] * .growth_coefficients(params, row_class[r]))
   }, numeric(1)) + spec$offset + rowSums(spec$random_design * effects[person, , drop = FALSE])
-  stats::rnorm(spec$n, mean, sqrt(params$sigma2[row_class]))
+  if (!.growth_is_correlated(spec)) {
+    return(stats::rnorm(spec$n, mean, sqrt(params$sigma2[row_class])))
+  }
+  # Correlated residuals: each person's errors jointly, process plus noise.
+  residual <- numeric(spec$n)
+  rows <- split(seq_len(spec$n), person)
+  invisible(lapply(seq_along(rows), function(i) {
+    r <- rows[[i]]
+    covariance <- .growth_process_covariance(spec, params$correlation, spec$residual_times[r]) +
+      diag(params$sigma2[classes[i]], length(r))
+    residual[r] <<- as.vector(crossprod(chol(covariance), stats::rnorm(length(r))))
+  }))
+  mean + residual
 }
 
 #' @rdname latents-predict
@@ -59,15 +70,4 @@ simulate.latents_growth_mixture <- function(object, nsim = 1, seed = NULL, ...) 
     draws <- lapply(seq_len(nsim), function(i) .growth_draw(object))
     stats::setNames(as.data.frame(draws), paste0("sim_", seq_len(nsim)))
   })
-}
-
-#' @rdname latents-predict
-#' @export
-predict.latents_growth_mixture <- function(object, ...) {
-  stop(errorCondition(paste(
-    "predict() is not implemented for growth mixture models yet. The class",
-    "trajectories are get_results(x, \"trajectories\"), and each fitted",
-    "person's class trajectory and own predicted curve are",
-    "get_results(x, \"individual\")."),
-    class = "latents_unsupported_prediction", call = NULL))
 }

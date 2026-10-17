@@ -214,6 +214,7 @@ plot_views()
   cell_labels = TRUE,
   main = NULL,
   subtitle = NULL,
+  intervals = TRUE,
   ...
 )
 }
@@ -377,9 +378,10 @@ profile views name in a caption any ordinal, count or (for the means)
 categorical indicator they leave out.}
 \item{Transition fits}{From \code{\link[=lta]{lta()}}: \code{"transitions"} (default), then
 \code{"profiles"}, \code{"bars"}, \code{"heatmap"}, \code{"responses"}, \code{"sequences"},
-\code{"sizes"}, \code{"entropy"}, \code{"posteriors"}, \code{"avepp"} and \code{"all"}, as point
-estimates without \code{intervals} or \code{statistic}. A general \code{\link[=lta]{lta()}} fit
-takes no \code{what} and draws its transition matrix.}
+\code{"sizes"}, \code{"entropy"}, \code{"posteriors"}, \code{"avepp"} and \code{"all"}, without
+\code{statistic}; the profile, bar and response views draw the 95\%
+intervals of the transition fit's \code{\link[=parameter_inference]{parameter_inference()}} (\code{intervals}).
+A general \code{\link[=lta]{lta()}} fit takes no \code{what} and draws its transition matrix.}
 \item{Enumerations}{Criterion columns or \code{"all"} (with \code{combine},
 \code{labels} and \code{mark_minimum}), \code{"tree"}, the classification-quality
 views \code{"entropy"}, \code{"avepp"} and \code{"diagnostics"} (with \code{cutoff}), and

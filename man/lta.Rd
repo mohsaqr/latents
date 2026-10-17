@@ -172,9 +172,10 @@ order.}
 
 \item{model}{A covariance structure as \code{multilpa()} takes it (\code{"EEI"},
 \code{"VVI"}, \code{"VEI"}, ... ; mclust's codes). Standard errors are given for
-EEI, VVI, EEE and VVV in the homogeneous model and for the diagonal
-EEI and VVI with the extensions; other structures are refused
-(\code{latents_unsupported_inference}).}
+every structure with the extensions (covariate, occasion-varying or
+second-order transitions, occasion-specific measurement), and for EEI,
+VVI, EEE and VVV in the homogeneous model, which refuses the other ten
+with \code{latents_unsupported_inference}.}
 
 \item{mover_stayer}{\code{TRUE} adds a class of stayers: groups that never
 change profile (identity transitions) and have their own initial profile

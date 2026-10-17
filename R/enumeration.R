@@ -59,7 +59,7 @@ utils::globalVariables("statistic")
 #'   one row per candidate model with every criterion and diagnostic
 #'   (including both entropies and, at each level, the smallest, largest and
 #'   mean average posterior probability and the number of classes below a
-#'   cutoff), `get_results(x, "criteria")` names the candidate each
+#'   cutoff), `get_results(x, "best")` names the candidate each
 #'   criterion's minimum falls on, `get_results(x, "classification")` gives
 #'   every class's average posterior probability and relative entropy for
 #'   every candidate, `get_results(x, "deltas")` and `"knees"` give the
@@ -511,7 +511,7 @@ summary.multilpa_enumeration <- function(object, ...) {
   stopifnot("`object` must be an `multilpa_enumeration` result" =
               inherits(object, "multilpa_enumeration"))
   grid <- .multilpa_enumeration_grid(object)
-  result <- list(criteria = .multilpa_enumeration_minima(grid),
+  result <- list(best = .multilpa_enumeration_minima(grid),
                  candidates = grid,
                  n_candidates = nrow(grid),
                  n_converged = sum(grid$converged),
@@ -686,7 +686,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   cat(sprintf("Class enumeration: %d candidates, %d converged, %d failed to fit\n",
               x$n_candidates, x$n_converged, x$n_failed))
   identified <- c("n_profiles", "n_group_classes", "model")
-  present <- x$criteria[!is.na(x$criteria$n_profiles), identified, drop = FALSE]
+  present <- x$best[!is.na(x$best$n_profiles), identified, drop = FALSE]
   disagreement <- unique(present)
   cat(sprintf("%d distinct candidate(s) are minimal under some criterion.\n",
               nrow(disagreement)))

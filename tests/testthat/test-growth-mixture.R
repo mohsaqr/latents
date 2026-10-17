@@ -399,8 +399,7 @@ test_that("distal outcomes of trajectory models use the three-step correction", 
                                         n_starts = 1, seed = 1)
   expect_error(three_step(with_membership, data = growth_scores, outcome = "motivation"),
                class = "latents_unsupported_three_step")
-  expect_error(r3step(fit, data = growth_scores, covariates = "motivation"),
-               class = "latents_unsupported_three_step")
+  expect_identical(nrow(r3step(fit, data = growth_scores, covariates = "motivation")), 4L)
   trajectories <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
                                      id = "student", class_level = "group",
                                      n_starts = 1, seed = 1)
@@ -408,8 +407,8 @@ test_that("distal outcomes of trajectory models use the three-step correction", 
                                    outcome = "motivation")), 3L)
 })
 
-test_that("prediction refuses clearly", {
+test_that("prediction is available (tested in test-growth-predict.R)", {
   data <- growth_fixture_data(n = 60L)
   fit <- growth_fit(data, vcov_type = "none")
-  expect_error(predict(fit), class = "latents_unsupported_prediction")
+  expect_identical(nrow(predict(fit)), fit$spec$n)
 })

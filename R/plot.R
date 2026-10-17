@@ -57,17 +57,15 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
 
 #' Draw one view of a fit
 #'
-#' @param errors_available `FALSE` for a family whose standard errors are not
-#'   wired into its plots, which then draws point estimates.
 #' @noRd
 .multilpa_draw_view <- function(x, what, data, scale, category, labels,
                                 intervals, cell_labels, main, subtitle,
-                                errors_available = TRUE, statistic = "mean") {
+                                statistic = "mean") {
   if (what %in% c("entropy", "posteriors", "avepp")) {
     .multilpa_refuse_noise(x, sprintf("plot(what = \"%s\")", what),
                            class = "latents_nothing_to_plot")
   }
-  with_errors <- isTRUE(intervals) && isTRUE(errors_available)
+  with_errors <- isTRUE(intervals)
   switch(what,
     profiles = .gg_view_profiles(
       x, scale, labels,

@@ -46,7 +46,9 @@
                c(n_random, n_random, length(rows))),
     xz = array(vapply(rows, function(i) cross(design, random, i),
                       matrix(0, n_columns, n_random), USE.NAMES = FALSE),
-               c(n_columns, n_random, length(rows)))) |>
+               c(n_columns, n_random, length(rows))),
+    # With correlated residuals, the persons sharing times and random design.
+    dense = if (.growth_is_correlated(spec)) .growth_dense_patterns(spec, unname(rows))) |>
     .growth_patterns()
 }
 
@@ -226,10 +228,11 @@
 #' @noRd
 .growth_expectation <- function(spec, stats, params) {
   covariances <- .growth_covariances(spec, params)
-  terms <- lapply(seq_len(spec$n_classes), function(k) {
-    .growth_class_terms(stats, .growth_coefficients(params, k),
-                        .growth_factor(covariances[[k]]), params$sigma2[k])
-  })
+  terms <- if (.growth_is_correlated(spec)) .growth_dense_terms(spec, stats, params) else
+    lapply(seq_len(spec$n_classes), function(k) {
+      .growth_class_terms(stats, .growth_coefficients(params, k),
+                          .growth_factor(covariances[[k]]), params$sigma2[k])
+    })
   log_density <- vapply(terms, `[[`, numeric(length(stats$n)), "log_density") |>
     matrix(length(stats$n), spec$n_classes)
   structure <- .growth_structure(spec)
@@ -243,7 +246,8 @@
        tau = weighted$tau, posterior = persons$tau, structure = weighted,
        log_density = log_density,
        means = lapply(terms, `[[`, "mean"),
-       covariances = lapply(terms, `[[`, "covariance"))
+       covariances = lapply(terms, `[[`, "covariance"),
+       dense = if (.growth_is_correlated(spec)) terms)
 }
 
 #' M-step of the growth mixture model (one conditional maximization each)

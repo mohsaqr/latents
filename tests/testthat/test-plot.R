@@ -265,6 +265,26 @@ test_that("a transition fit gets bars without whiskers, not an error", {
   expect_true(all(is.na(bars$data$upper)))
 })
 
+test_that("transition bars draw the transition fit's own 95% intervals", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+  moves <- lta(course_engagement, vars = vars, id = "student", n_profiles = 2,
+               time = "sequence", n_starts = 2, seed = 1)
+  inference <- parameter_inference(moves)
+  means <- subset(inference, level == "measurement" & parameter == "mean")
+  bars <- expect_plot(plot(moves, what = "bars"))
+  key <- paste(bars$data$profile, vars[bars$data$position])
+  expected <- means$standard_error[match(key, paste(sub("profile_", "", means$outcome),
+                                                    means$term))]
+  expect_false(anyNA(expected))
+  expect_equal(bars$data$upper - bars$data$mean, stats::qnorm(0.975) * expected,
+               tolerance = 1e-10)
+  plain <- expect_plot(plot(moves, what = "bars", intervals = FALSE))
+  expect_true(all(is.na(plain$data$upper)))
+  expect_error(plot(moves, what = "bars", intervals = NA))
+})
+
 test_that("the avepp view draws the average posterior matrix", {
   skip_on_cran()
   dat <- plot_fixture()

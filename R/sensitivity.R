@@ -20,16 +20,25 @@
 #' being dropped silently, and a `latents_sensitivity_dropped` warning names
 #' how many failed, so the table is never quietly shorter than `seeds`.
 #'
-#' @param x A fitted `multilpa` model to use as the reference.
+#' @param x The reference fit: a [multilpa()] model, an [lta()] model, or a
+#'   growth mixture ([mixture_regression()] with `random`).
 #'   A [fit_staged()] result varies the second-stage starts while holding its
 #'   first-stage measurement solution fixed. A directly fitted model with
 #'   measurement blocks held is refused: its original free starting
 #'   values are not retained, so replaying the same seed would not replay the
-#'   same search.
-#' @param data Optional. The data the model was fitted to, in its original row
-#'   order. A fit carries the columns it was built from, so this is only needed
-#'   to override them. Shared identifier and indicator columns are checked
-#'   against the fit before assignment agreement is calculated.
+#'   same search. A membership-covariate fit is refused with
+#'   `latents_unsupported_sensitivity`. For an [lta()] fit, `agreement` is
+#'   the share of occasions given the same profile, after matching the
+#'   refit's profiles on the measurement; for a growth mixture it is the
+#'   share of persons given the same class, after matching the refit's
+#'   classes by their posterior memberships of the fitted persons.
+#' @param data Optional for a [multilpa()] fit or a growth mixture, which carry
+#'   the columns they were built from, so it is only needed to override them;
+#'   required for an [lta()] fit (`latents_bad_argument` otherwise), whose
+#'   refits need the occasions and covariates. It must be the data the model
+#'   was fitted to, in its original row order; shared identifier and indicator
+#'   columns are checked against the fit before assignment agreement is
+#'   calculated (`latents_bad_inference_data`).
 #' @param seeds Seeds to refit under: at least two distinct whole numbers of
 #'   either sign, as `set.seed()` accepts. Anything else raises
 #'   `latents_bad_argument`. The reference fit's own seed may
@@ -37,10 +46,12 @@
 #'   check that the refit is the same model.
 #' @param n_starts Starts per refit. Defaults to the number the reference fit
 #'   used, so each seed gets the same search effort it did.
-#' @param max_iter,tol Passed to each refit; default to the reference fit's.
+#' @param max_iter,tol Passed to each refit; default to the reference fit's
+#'   (for an [lta()] fit, to the defaults of [lta()]).
 #' @param tolerance Two log likelihoods within this of each other count as the
 #'   same optimum. Defaults to the reference fit's own replication tolerance,
-#'   which is what it used to decide whether its starts agreed.
+#'   which is what it used to decide whether its starts agreed (for a growth
+#'   mixture `1e-6 * (1 + abs(logLik))`).
 #' @return A base `data.frame`, one row per seed, with columns `seed`,
 #'   `log_likelihood`, `converged`, `iterations`, `optimum` (1 for the best
 #'   maximum found across the seeds, 2 for the next distinct one, and so on),
@@ -62,22 +73,27 @@
 #' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
 #'                 n_profiles = 2, n_group_classes = 1, n_starts = 3, seed = 1)
 #' sensitivity(fit, seeds = 1:3, n_starts = 3)
+#'
+#' # Growth mixtures are known for local solutions (Hipp and Bauer 2006).
+#' growth <- mixture_regression(score ~ wave, data = subset(growth_scores, student <= 60),
+#'                              n_classes = 2, id = "student", class_level = "group",
+#'                              random = ~ 1, n_starts = 1, seed = 1)
+#' sensitivity(growth, seeds = 1:2)
 #' @export
 sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
                         max_iter = NULL, tol = NULL, tolerance = NULL) {
-  # Named families first: they are not class `multilpa`, so the general guard
-  # below would reject them with a message about the wrong thing. A caller who
-  # passes a transition fit has made a reasonable request the verb cannot yet
-  # serve, and deserves to be told which of the two reasons applies.
-  if (inherits(x, c("multilpa_transitions", "multilpa_covariates"))) {
+  # Named families first: a covariate fit is class `multilpa`, so the general
+  # path below would accept it and then refit it as the wrong model.
+  if (inherits(x, "multilpa_covariates")) {
     stop(errorCondition(paste(
-      "Seed sensitivity is implemented for `multilpa()` fits only. Refitting",
-      "this family needs arguments the shared refit does not carry, and its",
-      "profile labels cannot yet be aligned between two fits."),
+      "Seed sensitivity is not implemented for membership-covariate fits:",
+      "refitting this family needs arguments the shared refit does not carry."),
       class = "latents_unsupported_sensitivity", call = NULL))
   }
   stopifnot(
-    "`x` must be a fitted `multilpa` model" = inherits(x, "multilpa"),
+    "`x` must be a fitted `multilpa` model, an `lta()` fit or a growth mixture" =
+      inherits(x, c("multilpa", "multilpa_transitions", "multilpa_lta",
+                    "latents_growth_mixture")),
     "`n_starts` must be a single positive whole number, or NULL" =
       is.null(n_starts) || (is.numeric(n_starts) && length(n_starts) == 1L &&
         is.finite(n_starts) && n_starts >= 1 &&
@@ -103,6 +119,53 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
       .Machine$integer.max, .Machine$integer.max),
       class = "latents_bad_argument", call = NULL))
   }
+  family <- if (inherits(x, "latents_growth_mixture")) {
+    .sensitivity_growth(x, data, n_starts, max_iter, tol)
+  } else if (inherits(x, c("multilpa_transitions", "multilpa_lta"))) {
+    .sensitivity_transitions(x, data, n_starts, max_iter, tol)
+  } else {
+    .sensitivity_profiles(x, data, n_starts, max_iter, tol)
+  }
+
+  refits <- lapply(seeds, function(seed) {
+    tryCatch(family$refit(seed), error = function(condition) condition)
+  })
+  failed <- vapply(refits, inherits, logical(1), "condition")
+  if (any(failed)) {
+    warning(warningCondition(
+      sprintf("%d of %d seeds did not produce a fit; their rows are NA. First reason: %s",
+              sum(failed), length(seeds),
+              conditionMessage(refits[[which(failed)[1L]]])),
+      class = "latents_sensitivity_dropped", call = NULL))
+  }
+  likelihood <- vapply(refits, function(fit)
+    if (inherits(fit, "condition")) NA_real_ else fit$log_likelihood, numeric(1))
+  converged <- vapply(refits, function(fit)
+    if (inherits(fit, "condition")) NA else isTRUE(fit$converged), logical(1))
+  iterations <- vapply(refits, function(fit)
+    if (inherits(fit, "condition")) NA_integer_ else as.integer(fit$iterations),
+    integer(1))
+  agreement <- vapply(refits, function(fit) {
+    if (inherits(fit, "condition")) NA_real_ else family$agreement(fit)
+  }, numeric(1))
+  optimum <- .multilpa_optimum_index(likelihood, tolerance %||% family$tolerance)
+
+  data.frame(
+    seed = as.integer(seeds),
+    log_likelihood = likelihood,
+    converged = converged,
+    iterations = iterations,
+    optimum = optimum,
+    best = optimum == 1L,
+    agreement = agreement,
+    row.names = NULL, stringsAsFactors = FALSE)
+}
+
+#' How sensitivity() refits a profile model and compares its assignments
+#' @return A list with `refit` (a function of a seed), `agreement` (a
+#'   function of a refit) and `tolerance`.
+#' @noRd
+.sensitivity_profiles <- function(x, data, n_starts, max_iter, tol) {
   if (length(x$fixed %||% character()) > 0L && !isTRUE(x$staged)) {
     stop(errorCondition(paste(
       "Seed sensitivity for a directly fixed fit cannot replay its original",
@@ -121,45 +184,75 @@ sensitivity <- function(x, data = NULL, seeds = 1:10, n_starts = NULL,
   shared$n_starts <- as.integer(n_starts %||% max(nrow(x$starts), 1L))
   shared$max_iter <- max_iter %||% x$max_iter %||% 1000L
   shared$tol <- tol %||% x$tol %||% 1e-8
-  reference_profiles <- x$subject_profiles
+  list(
+    refit = function(seed) do.call(multilpa, c(list(data = frame), shared,
+                                               list(seed = seed))),
+    agreement = function(fit) {
+      mean(.multilpa_align_labels(fit, x)$subject_profiles == x$subject_profiles)
+    },
+    tolerance = x$replication_tolerance %||% 1e-4)
+}
 
-  refits <- lapply(seeds, function(seed) {
-    tryCatch(
-      do.call(multilpa, c(list(data = frame), shared, list(seed = seed))),
-      error = function(condition) condition)
-  })
-  failed <- vapply(refits, inherits, logical(1), "condition")
-  if (any(failed)) {
-    warning(warningCondition(
-      sprintf("%d of %d seeds did not produce a fit; their rows are NA. First reason: %s",
-              sum(failed), length(seeds),
-              conditionMessage(refits[[which(failed)[1L]]])),
-      class = "latents_sensitivity_dropped", call = NULL))
+#' How sensitivity() refits a transition model and compares its assignments
+#'
+#' Each occasion's modal profile is compared, after the refit's profiles are
+#' matched to the reference's on the measurement (`.lta_profile_signature()`).
+#' @noRd
+.sensitivity_transitions <- function(x, data, n_starts, max_iter, tol) {
+  if (is.null(data)) {
+    stop(errorCondition(paste(
+      "Seed sensitivity for a transition model needs `data`, the frame it was",
+      "fitted to: each refit keeps the persons' occasions and covariates."),
+      class = "latents_bad_argument", call = NULL))
   }
-  likelihood <- vapply(refits, function(fit)
-    if (inherits(fit, "condition")) NA_real_ else fit$log_likelihood, numeric(1))
-  converged <- vapply(refits, function(fit)
-    if (inherits(fit, "condition")) NA else isTRUE(fit$converged), logical(1))
-  iterations <- vapply(refits, function(fit)
-    if (inherits(fit, "condition")) NA_integer_ else as.integer(fit$iterations),
-    integer(1))
-  agreement <- vapply(refits, function(fit) {
-    if (inherits(fit, "condition")) return(NA_real_)
-    aligned <- .multilpa_align_labels(fit, x)
-    mean(aligned$subject_profiles == reference_profiles)
-  }, numeric(1))
+  .lta_check_data(x, data)
+  modal <- function(fit) {
+    if (inherits(fit, "multilpa_lta")) {
+      max.col(fit$expectation$subject_posteriors, ties.method = "first")
+    } else fit$subject_profiles
+  }
+  reference <- modal(x)
+  starts <- as.integer(n_starts %||% max(nrow(x$starts), 1L))
+  list(
+    refit = function(seed) {
+      .lta_refit(x, data, starts, max_iter %||% 5000L, tol %||% 1e-10, seed = seed)
+    },
+    agreement = function(fit) {
+      order <- .multilpa_match_order(.lta_profile_signature(x, x),
+                                     .lta_profile_signature(fit, x))
+      mean(match(modal(fit), order) == reference)
+    },
+    tolerance = x$replication_tolerance %||% 1e-4)
+}
 
-  data.frame(
-    seed = as.integer(seeds),
-    log_likelihood = likelihood,
-    converged = converged,
-    iterations = iterations,
-    optimum = .multilpa_optimum_index(
-      likelihood, tolerance %||% x$replication_tolerance %||% 1e-4),
-    best = .multilpa_optimum_index(
-      likelihood, tolerance %||% x$replication_tolerance %||% 1e-4) == 1L,
-    agreement = agreement,
-    row.names = NULL, stringsAsFactors = FALSE)
+#' How sensitivity() refits a growth mixture and compares its assignments
+#'
+#' Persons' modal classes are compared after the refit's classes are matched
+#' to the reference's by their posterior memberships of the fitted persons.
+#' @noRd
+.sensitivity_growth <- function(x, data, n_starts, max_iter, tol) {
+  if (!is.null(data)) .trajectory_check_data(x, data)
+  spec <- x$spec
+  frame <- spec$model_data
+  weight_column <- NULL
+  if (.latents_is_weighted(x)) {
+    weight_column <- ".latents_sensitivity_weight"
+    frame[[weight_column]] <- spec$sampling_weights[spec$group_index]
+  }
+  arguments <- c(.growth_refit_arguments(x, weight_column),
+                 list(n_starts = as.integer(n_starts %||% x$settings$n_starts),
+                      max_iter = max_iter %||% x$settings$max_iter,
+                      tol = tol %||% x$settings$tol))
+  reference <- max.col(x$expectation$posterior, ties.method = "first")
+  list(
+    refit = function(seed) do.call(mixture_regression,
+                                   c(list(data = frame), arguments, list(seed = seed))),
+    agreement = function(fit) {
+      matched <- .growth_match_classes(x, fit)
+      mean(match(max.col(matched$posterior, ties.method = "first"), matched$order) ==
+             reference)
+    },
+    tolerance = 1e-6 * (1 + abs(x$log_likelihood)))
 }
 
 #' Number the distinct maxima a set of log likelihoods reached

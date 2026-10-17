@@ -197,7 +197,7 @@ test_that("covariance models are named with `model`, and a stray argument is ref
   expect_identical(sort(table$model), c("EEI", "VVI"))
   expect_s3_class(get_candidate(grid, n_profiles = 2, n_group_classes = 1,
                                 model = "EEI"), "multilpa")
-  expect_true("model" %in% names(get_results(grid, "criteria")))
+  expect_true("model" %in% names(get_results(grid, "best")))
   # The old name would otherwise fail inside every candidate.
   expect_error(enumerate_classes(engagement_small, "browse", "student",
                                  n_profiles = 2, n_group_classes = 1,
@@ -618,7 +618,7 @@ test_that("one name reaches a candidate everywhere", {
                    c("profiles2_groups1", "profiles2_groups2"))
   expect_true(all(c("table", "fits", "call") %in% utils::.DollarNames(grid, "")))
   # The criteria and classification tables name their candidates.
-  picks <- get_results(grid, "criteria")
+  picks <- get_results(grid, "best")
   expect_true(all(picks$candidate %in% names))
   classification <- get_results(grid, "classification")
   expect_identical(names(classification)[1L], "candidate")
@@ -789,7 +789,7 @@ test_that("deltas and knees read the candidates table in both directions", {
   expect_true(all(knees$knee_candidate %in% c(candidates$candidate, NA)))
   expect_true(all(knees$n_points >= 1L))
   expect_named(get_results(grid, "all"),
-               c("candidates", "criteria", "classification", "deltas", "knees"))
+               c("candidates", "best", "classification", "deltas", "knees"))
 
   skip_if_not_installed("ggplot2")
   views <- c("deltas", "heatmap", "smallest", "trust")
@@ -804,7 +804,7 @@ test_that("deltas and knees read the candidates table in both directions", {
                sort(deltas$delta_profile[is.finite(deltas$delta_profile)]))
   heatmap <- plot(grid, what = "heatmap")
   expect_identical(subset(heatmap$data, tile_label == "lowest")$candidate,
-                   subset(get_results(grid, "criteria"),
+                   subset(get_results(grid, "best"),
                           criterion == "bic" & convention == "groups")$candidate)
   expect_false(any(heatmap$data$tile_label == "best"))
   trust <- plot(grid, what = "trust")

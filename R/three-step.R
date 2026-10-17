@@ -478,17 +478,24 @@ three_step <- function(x, data, outcome,
 #' instead attenuates every coefficient, because some units are in the wrong
 #' class and the covariate cannot explain why.
 #'
-#' @param x A covariate-free fitted [multilpa()] or [lta()] model. A fit that
+#' @param x A covariate-free fitted [multilpa()] or [lta()] model, or a
+#'   trajectory model from [mixture_regression()] (persons classified, with or
+#'   without `random`), whose person classes are then predicted. A fit that
 #'   already uses membership covariates cannot be corrected by the fixed,
-#'   unconditional classification-error matrix used here.
+#'   unconditional classification-error matrix used here, and a multilevel
+#'   growth mixture (`cluster`) is refused because its persons are not
+#'   independent; both raise `latents_unsupported_three_step`.
 #' @param data The data frame carrying the covariates, in the fit's row order.
 #'   Shared fit columns are checked row by row; a frame with too little
 #'   identifying information warns that alignment cannot be verified.
 #' @param covariates Character vector of numeric columns not used as measurement
 #'   indicators in `x`. For `level = "groups"` each must be constant within a
-#'   group.
+#'   group; for a trajectory model each must be constant within a person and
+#'   not part of the trajectory regression (`latents_bad_covariate`).
 #' @param level `"individuals"` predicts profile membership, `"groups"`
-#'   predicts group-class membership.
+#'   predicts group-class membership. A trajectory model classifies persons:
+#'   its rows have `level = "persons"` and outcomes `class_1`, `class_2`, ...,
+#'   and `"groups"` is refused with `latents_bad_argument`.
 #' @param ci_level Confidence level for the intervals.
 #' @param vcov_type `"robust"`, the default, uses the sandwich clustered on the
 #'   fit's groups, with the small-sample (CR1) factor `G / (G - 1)` for `G`
@@ -518,6 +525,14 @@ three_step <- function(x, data, outcome,
 #'   where the pooled regression attenuates the slopes and inflates their
 #'   clustered standard errors. For `level = "individuals"` on a covariate-free
 #'   [multilpa()] fit only; refused with `latents_bad_argument` otherwise.
+#' @param initial_covariates,transition_covariates For an [lta()] fit with one
+#'   group class: covariates of the profile at the first occasion (constant
+#'   within a person) and of every transition (read at the destination
+#'   occasion, so they may change over occasions). Either one makes this the
+#'   three-step latent Markov model described below, in place of the
+#'   occasion-by-occasion profile regression of `covariates`, which must then
+#'   be left empty; `level` and `by_group_class` do not apply. Refused with
+#'   `latents_bad_argument` on a fit that is not a transition model.
 #' @return A base `data.frame` with one row per non-reference class and term,
 #'   and the columns `level`, `outcome`, `term`, `estimate`, `standard_error`,
 #'   `statistic`, `p_value`, `p_adjusted`, `conf_low` and `conf_high`.
@@ -535,6 +550,17 @@ three_step <- function(x, data, outcome,
 #'   by the shared slopes and, at `level = "groups"`, the group-class logits
 #'   against the last group class; the result also carries `by_group_class` and
 #'   the maximised `log_likelihood` as attributes.
+#'
+#'   With `initial_covariates` or `transition_covariates`, one row per
+#'   coefficient of the step-three chain: `block` (`"initial"` or
+#'   `"transition"`), `from` (the origin profile of a transition, `NA` for an
+#'   initial logit), `to`, `term`, `estimate`, `standard_error`, `statistic`,
+#'   `p_value`, `p_adjusted`, `conf_low` and `conf_high`, with the attributes
+#'   `log_likelihood`, `classification_errors` (the step-two error matrix,
+#'   rows the true profile), `vcov_type` and `adjust`. Initial logits are
+#'   against the last profile and transition logits against staying, as in
+#'   `lta(initial_covariates =, transition_covariates =)`; `p_adjusted` covers
+#'   the covariate terms.
 #' @details The error matrix is held fixed rather than estimated jointly, which
 #'   is what makes this a three-step method and what keeps the covariates from
 #'   reshaping the classes.
@@ -542,6 +568,25 @@ three_step <- function(x, data, outcome,
 #'   each occasion. It does not regress initial-state or transition
 #'   probabilities on the covariates. `vcov_type = "robust"` clusters the
 #'   occasion scores by group; `"observed"` treats them as independent.
+#'   On a trajectory model the units are persons, each with one covariate
+#'   value, and `"robust"` is the sandwich over persons.
+#'
+#'   The three-step latent Markov model (`initial_covariates`,
+#'   `transition_covariates`) classifies each occasion from its own
+#'   indicators, with the transition fit's measurement and its profile shares
+#'   pooled over occasions (the latent class model of the pooled data), and
+#'   assigns it to its modal profile. Step three is a hidden Markov model for
+#'   those assignments, with the classification errors held at their step-two
+#'   values and the initial and transition logits regressed on the
+#'   covariates (Di Mari, Oberski and Vermunt 2016). The transition fit's own
+#'   posteriors are not used for the assignments: they borrow from a person's
+#'   other occasions, so their errors are not independent across occasions as
+#'   step three assumes. The step-one fit must have no covariates of its own
+#'   and one group class (`latents_unsupported_three_step` otherwise). It
+#'   agrees with Latent GOLD 6.1's `step3 modal ml` latent Markov model to its
+#'   printed precision on three designs (equivalence/latentgold-step3-markov
+#'   in the source repository); `"robust"` is the sandwich over persons and
+#'   `"observed"` the information Latent GOLD reports.
 #'
 #'   Over 60 replications of a two-profile design with a true log-odds slope of
 #'   1.2 and intercept -0.3, this recovered the slope with a bias of -0.002 and
@@ -560,6 +605,9 @@ three_step <- function(x, data, outcome,
 #'   Asparouhov, T., & Muthen, B. (2014). Auxiliary variables in mixture
 #'   modeling: three-step approaches using Mplus. *Structural Equation
 #'   Modeling*, 21, 329--341.
+#'   Di Mari, R., Oberski, D. L., & Vermunt, J. K. (2016). Bias-adjusted
+#'   three-step latent Markov modeling with covariates. *Structural Equation
+#'   Modeling*, 23, 649--660.
 #' @seealso [three_step()] for a distal outcome, and
 #'   `multilpa(profile_covariates = )` for the
 #'   one-step alternative that estimates everything jointly.
@@ -576,24 +624,30 @@ three_step <- function(x, data, outcome,
 #' fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
 #'                 n_group_classes = 1, n_starts = 4, seed = 1)
 #' r3step(fit, example_data, "x")
+#'
+#' # Covariates of the moves between profiles, three steps on from lta().
+#' moves <- lta(course_engagement,
+#'              vars = c("browse", "lectures", "forum_read", "forum_post", "attendance"),
+#'              id = "student", n_profiles = 2, time = "sequence", n_starts = 2, seed = 1)
+#' r3step(moves, course_engagement, transition_covariates = "sequence")
 #' @export
-r3step <- function(x, data, covariates,
+r3step <- function(x, data, covariates = character(),
                    level = c("individuals", "groups"), ci_level = 0.95,
                    vcov_type = c("robust", "observed"),
                    adjust = c("BH", "holm", "hochberg", "hommel",
                                 "bonferroni", "BY", "none"),
-                   by_group_class = FALSE) {
+                   by_group_class = FALSE, initial_covariates = character(),
+                   transition_covariates = character()) {
   level <- match.arg(level)
   vcov_type <- match.arg(vcov_type)
   adjust <- match.arg(adjust)
-  if (.trajectory_is_fit(x)) {
-    stop(errorCondition(paste(
-      "r3step() is not implemented for trajectory models yet. Covariates that",
-      "predict class membership can be estimated in one step with",
-      "`membership =` in mixture_regression()."),
-      class = "latents_unsupported_three_step", call = NULL))
+  if (length(initial_covariates) > 0L || length(transition_covariates) > 0L) {
+    return(.r3step_transitions(x, data, covariates, level, ci_level, vcov_type,
+                               adjust, by_group_class, initial_covariates,
+                               transition_covariates))
   }
-  .multilpa_refuse_noise(x, "r3step()")
+  trajectory <- .trajectory_is_fit(x)
+  if (!trajectory) .multilpa_refuse_noise(x, "r3step()")
   if (.latents_is_weighted(x)) .latents_refuse_weights("`r3step()` yet")
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
@@ -611,36 +665,47 @@ r3step <- function(x, data, covariates,
       is.logical(by_group_class) && length(by_group_class) == 1L &&
       !is.na(by_group_class)
   )
-  .multilpa_check_three_step_fit(x)
-  if (by_group_class && !identical(level, "individuals")) {
-    stop(errorCondition(paste(
-      "`by_group_class = TRUE` gives each group class its own profile",
-      "intercepts, so it applies to `level = \"individuals\"` only."),
-      class = "latents_bad_argument", call = NULL))
+  if (trajectory) {
+    # Trajectory models classify persons: one covariate value per person.
+    if (identical(level, "groups") || by_group_class) {
+      stop(errorCondition(paste(
+        "A trajectory model classifies persons and has no group classes, so",
+        "`level = \"groups\"` and `by_group_class = TRUE` do not apply."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    prepared <- .trajectory_r3step_inputs(x, data, covariates)
+    pieces <- prepared$pieces
+    design <- prepared$design
+    level <- "persons"
+  } else {
+    .multilpa_check_three_step_fit(x)
+    if (by_group_class && !identical(level, "individuals")) {
+      stop(errorCondition(paste(
+        "`by_group_class = TRUE` gives each group class its own profile",
+        "intercepts, so it applies to `level = \"individuals\"` only."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    if (by_group_class && inherits(x, "multilpa_transitions")) {
+      stop(errorCondition(paste(
+        "`by_group_class = TRUE` is not available for a transition fit, whose",
+        "group classes govern transitions rather than a profile mix."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    reused <- intersect(covariates, x$vars)
+    if (length(reused) > 0L) {
+      stop(errorCondition(sprintf(
+        "Measurement indicator(s) %s already helped define the fitted classes and cannot be used as external predictors.",
+        paste(sprintf("`%s`", reused), collapse = ", ")),
+        class = c("multilpa_indicator_reused", "latents_bad_covariate"),
+        call = NULL))
+    }
+    pieces <- .multilpa_level_assignments(x, level)
+    .multilpa_check_row_count(x, data)
+    .multilpa_check_alignment(x, data)
+    .r3step_require_classes(pieces)
+    design <- .multilpa_r3step_design(x, data, covariates, level)
   }
-  if (by_group_class && inherits(x, "multilpa_transitions")) {
-    stop(errorCondition(paste(
-      "`by_group_class = TRUE` is not available for a transition fit, whose",
-      "group classes govern transitions rather than a profile mix."),
-      class = "latents_bad_argument", call = NULL))
-  }
-  reused <- intersect(covariates, x$vars)
-  if (length(reused) > 0L) {
-    stop(errorCondition(sprintf(
-      "Measurement indicator(s) %s already helped define the fitted classes and cannot be used as external predictors.",
-      paste(sprintf("`%s`", reused), collapse = ", ")),
-      class = c("multilpa_indicator_reused", "latents_bad_covariate"),
-      call = NULL))
-  }
-  pieces <- .multilpa_level_assignments(x, level)
-  .multilpa_check_row_count(x, data)
-  .multilpa_check_alignment(x, data)
-  if (pieces$n_classes < 2L) {
-    stop(errorCondition(
-      "A single class has no membership to predict.",
-      class = "latents_inseparable_classes", call = NULL))
-  }
-  design <- .multilpa_r3step_design(x, data, covariates, level)
+  .r3step_require_classes(pieces)
   errors <- .multilpa_error_matrix(pieces)
   if (by_group_class) {
     if (identical(vcov_type, "robust")) {
@@ -718,6 +783,53 @@ r3step <- function(x, data, covariates,
                          pieces$n_classes, level, ci_level, vcov_type, adjust)
 }
 
+#' Refuse a membership regression on a single class
+#' @param pieces The level's assignments.
+#' @return `NULL`, invisibly, or `latents_inseparable_classes`.
+#' @noRd
+.r3step_require_classes <- function(pieces) {
+  if (pieces$n_classes < 2L) {
+    stop(errorCondition(
+      "A single class has no membership to predict.",
+      class = "latents_inseparable_classes", call = NULL))
+  }
+  invisible(NULL)
+}
+
+#' r3step() with covariates of the initial profile and of the transitions
+#' @return The table of `.lta_three_step()`.
+#' @noRd
+.r3step_transitions <- function(x, data, covariates, level, ci_level, vcov_type,
+                                adjust, by_group_class, initial_covariates,
+                                transition_covariates) {
+  bad_argument <- function(message) {
+    stop(errorCondition(message, class = "latents_bad_argument", call = NULL))
+  }
+  if (!inherits(x, c("multilpa_transitions", "multilpa_lta"))) {
+    bad_argument(paste(
+      "`initial_covariates` and `transition_covariates` apply to a transition",
+      "model fitted by lta(); for profile membership use `covariates`."))
+  }
+  if (length(covariates) > 0L || !identical(level, "individuals") || by_group_class) {
+    bad_argument(paste(
+      "A three-step transition model takes `initial_covariates` and",
+      "`transition_covariates` only: not `covariates`, `level` or",
+      "`by_group_class`."))
+  }
+  if (.latents_is_weighted(x)) .latents_refuse_weights("`r3step()` yet")
+  named <- function(value) is.character(value) && !anyNA(value) && !anyDuplicated(value)
+  stopifnot(
+    "`data` must be a data frame" = is.data.frame(data),
+    "`initial_covariates` must be distinct column names of `data`" =
+      named(initial_covariates) && all(initial_covariates %in% names(data)),
+    "`transition_covariates` must be distinct column names of `data`" =
+      named(transition_covariates) && all(transition_covariates %in% names(data)),
+    "`ci_level` must be a single number in (0, 1)" =
+      is.numeric(ci_level) && length(ci_level) == 1L && ci_level > 0 && ci_level < 1)
+  .lta_three_step(x, data, initial_covariates, transition_covariates, ci_level,
+                  vcov_type, adjust)
+}
+
 #' The covariate design at the level being analysed
 #' @return A model matrix with an intercept.
 #' @noRd
@@ -736,7 +848,14 @@ r3step <- function(x, data, covariates,
     }
     values <- values[!duplicated(object$group_index), , drop = FALSE]
   }
-  design <- cbind(`(Intercept)` = 1, as.matrix(values))
+  .multilpa_r3step_check_rank(cbind(`(Intercept)` = 1, as.matrix(values)))
+}
+
+#' Refuse a rank-deficient R3STEP design
+#' @param design A model matrix with an intercept.
+#' @return `design`, or `latents_bad_covariate`.
+#' @noRd
+.multilpa_r3step_check_rank <- function(design) {
   if (qr(sweep(design, 2L, .multilpa_design_scale(design), "/"))$rank < ncol(design)) {
     stop(errorCondition(
       "The covariate design is rank deficient; remove constant or collinear predictors.",
@@ -757,7 +876,7 @@ r3step <- function(x, data, covariates,
   statistic[valid] <- estimates[valid] / errors[valid]
   quantile <- .inference_critical(ci_level, "one_minus")
   # Named as parameter_inference() names the same classes.
-  prefix <- if (identical(level, "groups")) "group_class_" else "profile_"
+  prefix <- switch(level, groups = "group_class_", persons = "class_", "profile_")
   labels <- expand.grid(term = terms, outcome = paste0(prefix, seq_len(n_free)),
                         stringsAsFactors = FALSE)
   raw <- rep(NA_real_, length(errors))

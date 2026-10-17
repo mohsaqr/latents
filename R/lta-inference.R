@@ -199,6 +199,9 @@
     position <<- position + n
     values
   }
+  # The chart coordinates of each block are kept, so its scores can be taken
+  # with respect to exactly these coordinates (.lta_chart_scores()).
+  chart_coordinates <- vector("list", length(fit$measurement))
   measurement <- lapply(seq_along(fit$measurement), function(b) {
     block <- list()
     if (d > 0L) {
@@ -206,7 +209,9 @@
       if (.lta_uses_covariance_chart(fit)) {
         view <- .lta_covariance_view(fit$measurement[[b]], fit)
         width <- .multilpa_coordinate_widths(view, "unconstrained")[["variances"]]
-        decoded <- .multilpa_decode(c(as.vector(t(block$means)), take(width),
+        coordinates <- take(width)
+        chart_coordinates[[b]] <<- coordinates
+        decoded <- .multilpa_decode(c(as.vector(t(block$means)), coordinates,
                                       numeric(n_states - 1L)), view)
         block$variances <- decoded$variances
         if (!is.null(decoded$covariances)) block$covariances <- decoded$covariances
@@ -261,7 +266,8 @@
            sum(exp(logits - max(logits))), stayer = unname(stayer),
          continuous = fit$continuous, variance_model = fit$variance_model,
          covariance_model = fit$covariance_model,
-         covariance_structure = fit$covariance_structure))
+         covariance_structure = fit$covariance_structure,
+         chart_coordinates = chart_coordinates))
 }
 
 #' Per-group scores of the general transition model on the estimation scale
@@ -300,6 +306,12 @@
       out
     }
     if (ncol(x) == 0L) return(cbind(response, extra))
+    if (.lta_uses_covariance_chart(fit)) {
+      return(cbind(.lta_chart_scores(fit, b, block, parameters$chart_coordinates[[b]],
+                                     x[rows, , drop = FALSE], e, rows, group_index,
+                                     n_units),
+                   response, extra))
+    }
     pieces <- lapply(seq_len(n_states), function(k) {
       residuals <- sweep(x[rows, , drop = FALSE], 2L, block$means[k, ], "-")
       # A missing indicator contributes no score (it is integrated out).
@@ -371,6 +383,57 @@
   scores
 }
 
+#' Per-group scores of one measurement block in its covariance chart
+#'
+#' The gradient of the log likelihood with respect to each profile's mean and
+#' unconstrained covariance (`.multilpa_profile_gradients()`, which also
+#' handles indicators missing at random) is carried to the block's chart
+#' coordinates by the chain rule, with the Jacobian of the coordinates-to-
+#' covariance map. That map involves no data, so its Jacobian is taken by
+#' central differences of the same decoding the parameters came from; every
+#' structure, separable or constrained, is scored the same way.
+#'
+#' @param fit The transition fit (its blocks anchor the chart).
+#' @param b The block's index.
+#' @param block The block's decoded parameters.
+#' @param phi Its chart coordinates.
+#' @param x The block's rows of the indicator matrix.
+#' @param e The expectation at these parameters.
+#' @param rows The block's rows.
+#' @param group_index,n_units Each row's group and the number of groups.
+#' @return A groups-by-coordinates matrix: means, then the chart.
+#' @noRd
+.lta_chart_scores <- function(fit, b, block, phi, x, e, rows, group_index, n_units) {
+  view <- .lta_covariance_view(fit$measurement[[b]], fit)
+  k <- nrow(block$means)
+  d <- ncol(x)
+  covariance_of <- function(coordinates) {
+    decoded <- .multilpa_decode(c(as.vector(t(block$means)), coordinates,
+                                  numeric(k - 1L)), view)
+    vapply(seq_len(k), function(profile) {
+      as.vector(if (is.null(decoded$covariances)) diag(decoded$variances[profile, ], d) else
+        decoded$covariances[, , profile])
+    }, numeric(d * d))
+  }
+  columns <- lapply(seq_along(phi), function(j) {
+    h <- 1e-6 * max(1, abs(phi[j]))
+    (covariance_of(replace(phi, j, phi[j] + h)) -
+       covariance_of(replace(phi, j, phi[j] - h))) / (2 * h)
+  })
+  jacobian <- lapply(seq_len(k), function(profile) {
+    matrix(vapply(columns, function(column) column[, profile], numeric(d * d)),
+           d * d, length(phi))
+  })
+  expectation <- list(subject_posteriors = e$subject_posteriors[rows, , drop = FALSE],
+                      gaussian_moments = e$gaussian_moments[[b]])
+  gradients <- .multilpa_profile_gradients(block, expectation, x, group_index[rows])
+  by_group <- cbind(gradients$means,
+                    Reduce(`+`, Map(`%*%`, gradients$covariance, jacobian)))
+  out <- matrix(0, n_units, ncol(by_group))
+  out[unique(group_index[rows]), ] <- by_group
+  out
+}
+
 #' rowsum() into a fixed J rows (groups with no rows get zeros)
 #' @noRd
 .lta_rowsum <- function(values, groups, n_groups) {
@@ -406,15 +469,6 @@
   if (!isTRUE(fit$converged)) {
     stop(errorCondition("Inference requires a converged fit.",
                         class = "latents_no_converge", call = NULL))
-  }
-  if (!identical(fit$covariance_model %||% "diagonal", "diagonal") ||
-      !is.null(fit$covariance_structure) &&
-      !fit$covariance_structure %in% c("EEI", "VVI")) {
-    stop(errorCondition(paste(
-      "Wald standard errors for the extended transition model are available for",
-      "diagonal covariances (EEI, VVI); use parameter_inference(method =",
-      "\"bootstrap\", data = ...) for this structure."),
-      class = "latents_unsupported_inference", call = NULL))
   }
   if (isTRUE(fit$boundary)) {
     stop(errorCondition(paste(

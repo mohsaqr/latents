@@ -151,14 +151,52 @@ test_that("optimum counts basins, not distinct doubles", {
                    c(NA_integer_, NA_integer_))
 })
 
-test_that("a family that cannot be refit is refused by class, not attempted", {
+test_that("a transition fit is refitted per seed and its occasions compared", {
   skip_on_cran()
   activity <- c("browse", "lectures")
   transitions <- quietly(lta(engagement_small, vars = activity, id = "student",
                              time = "sequence", n_profiles = 2L,
                              n_starts = 1, max_iter = 300L, seed = 1L))
-  expect_error(sensitivity(transitions, seeds = 1:3),
-               class = "latents_unsupported_sensitivity")
+  expect_error(sensitivity(transitions, seeds = 1:3), class = "latents_bad_argument")
+  result <- quietly(sensitivity(transitions, data = engagement_small, seeds = 1:3,
+                                max_iter = 300L))
+  reference <- subset(result, seed == 1L)
+  expect_equal(reference$log_likelihood, transitions$log_likelihood, tolerance = 1e-10)
+  expect_equal(reference$agreement, 1)
+  expect_true(all(is.finite(result$agreement)))
+  # A relabelled copy of the same solution agrees completely.
+  family <- latents:::.sensitivity_transitions(transitions, engagement_small, 1L,
+                                               300L, NULL)
+  swapped <- latents:::.lta_permute_transitions(transitions, c(2L, 1L), 1L)
+  swapped$subject_profiles <- 3L - transitions$subject_profiles
+  expect_equal(family$agreement(swapped), 1)
+  general <- quietly(lta(engagement_small, vars = activity, id = "student",
+                         time = "sequence", n_profiles = 2L, transitions = "occasion",
+                         n_starts = 1, max_iter = 300L, seed = 1L))
+  general_result <- quietly(sensitivity(general, data = engagement_small, seeds = 1:2,
+                                        max_iter = 300L))
+  expect_equal(subset(general_result, seed == 1L)$log_likelihood,
+               general$log_likelihood, tolerance = 1e-10)
+  expect_equal(subset(general_result, seed == 1L)$agreement, 1)
+})
+
+test_that("a growth mixture is refitted per seed and its persons compared", {
+  skip_on_cran()
+  growth <- mixture_regression(score ~ wave, subset(growth_scores, student <= 80),
+                               n_classes = 2, id = "student", class_level = "group",
+                               random = ~ 1, n_starts = 2, seed = 4, vcov_type = "none")
+  result <- sensitivity(growth, seeds = c(4L, 9L))
+  expect_named(result, c("seed", "log_likelihood", "converged", "iterations",
+                         "optimum", "best", "agreement"))
+  expect_equal(subset(result, seed == 4L)$log_likelihood, growth$log_likelihood,
+               tolerance = 1e-10)
+  expect_equal(subset(result, seed == 4L)$agreement, 1)
+  family <- latents:::.sensitivity_growth(growth, NULL, NULL, NULL, NULL)
+  swapped <- growth
+  swapped$params <- latents:::.growth_permute_params(growth$spec, growth$params, 2:1)
+  expect_equal(family$agreement(swapped), 1)
+  expect_error(sensitivity(growth, data = subset(growth_scores, student > 3), seeds = 1:2),
+               class = "latents_bad_inference_data")
 })
 
 test_that("the argument contract is enforced before anything is refitted", {

@@ -301,9 +301,9 @@ profiles, with \code{group_class}, \code{from}, \code{to}, \code{probability},
 profile: \code{group_class}, \code{profile}, \code{probability}, \code{prevalence},
 \code{group_class_probability}. \code{"sequence_lengths"} has one row per group:
 \code{group}, \code{group_class}, \code{occasions}, \code{observations}, \code{complete}.}
-\item{\code{"candidates"}, \code{"criteria"}, \code{"classification"}}{An enumeration
-grid. \code{"criteria"} has one row per information criterion and
-sample-size convention: \code{criterion}, \code{convention}, \code{candidate} (the
+\item{\code{"candidates"}, \code{"best"}, \code{"classification"}}{An enumeration
+grid. \code{"best"} (formerly \code{"criteria"}, which still works) has one row
+per information criterion and sample-size convention: \code{criterion}, \code{convention}, \code{candidate} (the
 candidate its minimum falls on), \code{n_profiles}, \code{n_group_classes},
 \code{model} and \code{value}. \code{"candidates"} has one row per candidate model:
 its name (\code{candidate}, first), its class counts, its covariance

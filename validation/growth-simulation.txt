@@ -1,0 +1,267 @@
+Growth mixture simulation: 1000 datasets per cell, 1.2 hours elapsed
+
+           cell              block   class             term  truth availability
+       balanced        coefficient class_1      (Intercept)  2.000        1.000
+       balanced        coefficient class_1             time  0.600        1.000
+       balanced        residual_sd class_1         residual  0.700        1.000
+       balanced    random_variance class_1      (Intercept)  1.000        1.000
+       balanced    random_variance class_1             time  0.090        1.000
+       balanced          random_sd class_1      (Intercept)  1.000        1.000
+       balanced          random_sd class_1             time  0.300        1.000
+       balanced random_correlation class_1 (Intercept):time  0.300        1.000
+       balanced              share class_1            share  0.456        1.000
+       balanced        coefficient class_2      (Intercept)  5.000        1.000
+       balanced        coefficient class_2             time -0.400        1.000
+       balanced        residual_sd class_2         residual  0.800        1.000
+       balanced    random_variance class_2      (Intercept)  0.600        1.000
+       balanced    random_variance class_2             time  0.050        1.000
+       balanced          random_sd class_2      (Intercept)  0.775        1.000
+       balanced          random_sd class_2             time  0.224        1.000
+       balanced random_correlation class_2 (Intercept):time -0.200        1.000
+       balanced              share class_2            share  0.544        1.000
+     unbalanced        coefficient class_1      (Intercept)  2.000        0.998
+     unbalanced        coefficient class_1             time  0.600        0.998
+     unbalanced        residual_sd class_1         residual  0.700        0.998
+     unbalanced    random_variance class_1      (Intercept)  1.000        0.998
+     unbalanced    random_variance class_1             time  0.090        0.998
+     unbalanced          random_sd class_1      (Intercept)  1.000        0.998
+     unbalanced          random_sd class_1             time  0.300        0.998
+     unbalanced random_correlation class_1 (Intercept):time  0.300        0.998
+     unbalanced              share class_1            share  0.456        0.998
+     unbalanced        coefficient class_2      (Intercept)  5.000        0.998
+     unbalanced        coefficient class_2             time -0.400        0.998
+     unbalanced        residual_sd class_2         residual  0.800        0.998
+     unbalanced    random_variance class_2      (Intercept)  0.600        0.998
+     unbalanced    random_variance class_2             time  0.050        0.998
+     unbalanced          random_sd class_2      (Intercept)  0.775        0.998
+     unbalanced          random_sd class_2             time  0.224        0.998
+     unbalanced random_correlation class_2 (Intercept):time -0.200        0.998
+     unbalanced              share class_2            share  0.544        0.998
+           weak        coefficient class_1      (Intercept)  2.000        0.995
+           weak        coefficient class_1             time  0.600        0.995
+           weak        residual_sd class_1         residual  0.700        0.995
+           weak    random_variance class_1      (Intercept)  1.000        0.995
+           weak    random_variance class_1             time  0.090        0.995
+           weak          random_sd class_1      (Intercept)  1.000        0.995
+           weak          random_sd class_1             time  0.300        0.995
+           weak random_correlation class_1 (Intercept):time  0.300        0.995
+           weak              share class_1            share  0.456        0.995
+           weak        coefficient class_2      (Intercept)  3.200        0.995
+           weak        coefficient class_2             time  0.100        0.995
+           weak        residual_sd class_2         residual  0.800        0.995
+           weak    random_variance class_2      (Intercept)  0.600        0.995
+           weak    random_variance class_2             time  0.050        0.995
+           weak          random_sd class_2      (Intercept)  0.775        0.995
+           weak          random_sd class_2             time  0.224        0.995
+           weak random_correlation class_2 (Intercept):time -0.200        0.995
+           weak              share class_2            share  0.544        0.995
+ small_variance        coefficient class_1      (Intercept)  2.000        1.000
+ small_variance        coefficient class_1             time  0.600        1.000
+ small_variance        residual_sd class_1         residual  0.700        1.000
+ small_variance    random_variance class_1      (Intercept)  1.000        1.000
+ small_variance    random_variance class_1             time  0.090        1.000
+ small_variance          random_sd class_1      (Intercept)  1.000        1.000
+ small_variance          random_sd class_1             time  0.300        1.000
+ small_variance random_correlation class_1 (Intercept):time  0.300        1.000
+ small_variance              share class_1            share  0.456        1.000
+ small_variance        coefficient class_2      (Intercept)  5.000        1.000
+ small_variance        coefficient class_2             time -0.400        1.000
+ small_variance        residual_sd class_2         residual  0.800        1.000
+ small_variance    random_variance class_2      (Intercept)  0.600        1.000
+ small_variance    random_variance class_2             time  0.050        1.000
+ small_variance          random_sd class_2      (Intercept)  0.775        1.000
+ small_variance          random_sd class_2             time  0.224        1.000
+ small_variance random_correlation class_2 (Intercept):time -0.200        1.000
+ small_variance              share class_2            share  0.544        1.000
+      bias  bias_sd empirical_sd se_ratio_observed se_ratio_robust
+  0.000860  0.00823       0.1045             1.010           1.027
+ -0.001274 -0.03745       0.0340             0.978           0.996
+ -0.000841 -0.03858       0.0218             0.999           1.002
+ -0.009230 -0.05721       0.1613             1.015           1.013
+ -0.000206 -0.01287       0.0160             1.002           1.007
+ -0.007959 -0.09773       0.0814             1.010           1.008
+ -0.001546 -0.05761       0.0268             0.997           1.001
+  0.009666  0.06777       0.1426             0.997           1.013
+  0.000418  0.01302       0.0321             0.999           1.011
+ -0.002582 -0.02860       0.0903             0.973           0.995
+  0.000372  0.01373       0.0271             0.989           1.012
+ -0.000373 -0.01701       0.0219             1.028           1.025
+  0.006425  0.04825       0.1332             0.972           0.977
+ -0.000286 -0.02337       0.0122             0.986           0.995
+ -0.000606 -0.00706       0.0859             0.970           0.974
+ -0.002384 -0.08563       0.0278             0.979           0.988
+  0.016241  0.10134       0.1603             0.980           0.986
+ -0.000418 -0.01302       0.0321             0.999           1.011
+  0.001011  0.00934       0.1083             1.013           1.035
+  0.000728  0.02069       0.0352             0.993           1.018
+ -0.002194 -0.08585       0.0256             0.985           0.985
+ -0.010084 -0.06057       0.1665             1.023           1.021
+ -0.000941 -0.05325       0.0177             0.969           0.973
+ -0.008635 -0.10234       0.0844             1.016           1.014
+ -0.003063 -0.10275       0.0298             0.963           0.966
+  0.008352  0.05339       0.1565             0.987           1.009
+ -0.001814 -0.05790       0.0313             1.053           1.071
+ -0.000157 -0.00174       0.0905             0.999           1.027
+ -0.000968 -0.03376       0.0287             1.005           1.035
+  0.000385  0.01517       0.0254             1.020           1.017
+ -0.005149 -0.03815       0.1350             0.992           1.001
+ -0.000155 -0.01149       0.0135             0.998           1.012
+ -0.008278 -0.09487       0.0873             0.998           1.007
+ -0.002420 -0.07971       0.0304             1.005           1.018
+  0.024506  0.14546       0.1685             1.028           1.037
+  0.001814  0.05790       0.0313             1.053           1.071
+  0.005323  0.03309       0.1609             0.840           0.946
+  0.006348  0.08696       0.0730             0.755           0.871
+ -0.003830 -0.13917       0.0275             0.888           0.968
+ -0.000464 -0.00271       0.1713             0.931           0.992
+ -0.000511 -0.02562       0.0199             0.851           0.918
+ -0.003848 -0.04527       0.0850             0.936           0.998
+ -0.002871 -0.08272       0.0347             0.828           0.897
+  0.024568  0.12960       0.1896             0.869           0.959
+ -0.008068 -0.07611       0.1060             0.804           0.938
+ -0.015710 -0.09149       0.1717             0.818           0.934
+  0.006359  0.09607       0.0662             0.697           0.798
+  0.000478  0.02061       0.0232             0.938           0.993
+  0.002828  0.01576       0.1794             0.828           0.909
+  0.000164  0.00922       0.0177             0.839           0.930
+ -0.006522 -0.05742       0.1136             0.862           0.946
+ -0.003154 -0.07971       0.0396             0.867           0.959
+  0.022601  0.10780       0.2097             0.908           0.993
+  0.008068  0.07611       0.1060             0.804           0.938
+ -0.002932 -0.02687       0.1091             0.969           0.988
+ -0.000657 -0.01956       0.0336             0.994           1.017
+ -0.001716 -0.07942       0.0216             1.009           1.009
+ -0.013842 -0.08391       0.1650             0.992           0.989
+ -0.000413 -0.02621       0.0158             1.019           1.013
+ -0.010448 -0.12531       0.0834             0.988           0.985
+ -0.001853 -0.07024       0.0264             1.017           1.012
+  0.009157  0.06236       0.1468             0.972           0.987
+ -0.001275 -0.03919       0.0325             0.986           1.001
+ -0.004588 -0.05258       0.0873             1.006           1.034
+  0.000557  0.02111       0.0264             1.016           1.044
+  0.000579  0.02516       0.0230             0.979           0.974
+  0.001907  0.01458       0.1308             0.989           1.004
+ -0.000205 -0.01694       0.0121             1.002           1.015
+ -0.003337 -0.03968       0.0841             0.993           1.008
+ -0.002157 -0.07845       0.0275             0.992           1.004
+  0.022378  0.12928       0.1731             0.915           0.924
+  0.001275  0.03919       0.0325             0.986           1.001
+ coverage_observed coverage_robust  pass
+             0.944           0.946  TRUE
+             0.945           0.949  TRUE
+             0.951           0.946  TRUE
+             0.945           0.948  TRUE
+             0.946           0.939  TRUE
+             0.945           0.948  TRUE
+             0.946           0.939  TRUE
+             0.962           0.965  TRUE
+             0.953           0.955  TRUE
+             0.940           0.945  TRUE
+             0.947           0.952  TRUE
+             0.956           0.952  TRUE
+             0.951           0.952  TRUE
+             0.959           0.961  TRUE
+             0.951           0.952  TRUE
+             0.959           0.961  TRUE
+             0.963           0.959 FALSE
+             0.953           0.955  TRUE
+             0.951           0.952  TRUE
+             0.945           0.953  TRUE
+             0.939           0.939  TRUE
+             0.949           0.944  TRUE
+             0.955           0.941  TRUE
+             0.949           0.944 FALSE
+             0.955           0.941 FALSE
+             0.961           0.958  TRUE
+             0.956           0.958  TRUE
+             0.948           0.957  TRUE
+             0.949           0.948  TRUE
+             0.954           0.954  TRUE
+             0.957           0.945  TRUE
+             0.963           0.959  TRUE
+             0.957           0.945  TRUE
+             0.963           0.959  TRUE
+             0.965           0.965 FALSE
+             0.956           0.958  TRUE
+             0.921           0.936 FALSE
+             0.891           0.903 FALSE
+             0.933           0.940 FALSE
+             0.938           0.933  TRUE
+             0.939           0.938 FALSE
+             0.938           0.933  TRUE
+             0.939           0.938 FALSE
+             0.940           0.940 FALSE
+             0.897           0.910 FALSE
+             0.885           0.905 FALSE
+             0.893           0.915 FALSE
+             0.943           0.946  TRUE
+             0.929           0.928 FALSE
+             0.937           0.937 FALSE
+             0.929           0.928 FALSE
+             0.937           0.937 FALSE
+             0.930           0.931 FALSE
+             0.897           0.910 FALSE
+             0.938           0.939  TRUE
+             0.946           0.947  TRUE
+             0.954           0.949  TRUE
+             0.957           0.949  TRUE
+             0.954           0.946  TRUE
+             0.957           0.949 FALSE
+             0.954           0.946  TRUE
+             0.959           0.959  TRUE
+             0.936           0.940  TRUE
+             0.958           0.962  TRUE
+             0.944           0.947  TRUE
+             0.941           0.936  TRUE
+             0.959           0.957  TRUE
+             0.964           0.959  TRUE
+             0.959           0.957  TRUE
+             0.964           0.959  TRUE
+             0.957           0.956 FALSE
+             0.936           0.940  TRUE
+
+R3STEP slope on x (true |slope| 0.8, robust intervals)
+           cell available bias_sd se_ratio coverage
+       balanced     1.000  0.0878    0.963    0.944
+     unbalanced     0.998  0.1037    0.947    0.946
+           weak     0.984  0.0142    0.206    0.920
+ small_variance     1.000  0.0931    0.980    0.954
+
+Unavailable replicates by reason
+
+degenerate covariance 
+                    7 
+
+R version 4.5.2 (2025-10-31)
+Platform: aarch64-apple-darwin20
+Running under: macOS Tahoe 26.3.1
+
+Matrix products: default
+BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+Random number generation:
+ RNG:     L'Ecuyer-CMRG 
+ Normal:  Inversion 
+ Sample:  Rejection 
+ 
+locale:
+[1] C.UTF-8/UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8
+
+time zone: Europe/Helsinki
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] latents_0.9.37 testthat_3.3.2
+
+loaded via a namespace (and not attached):
+ [1] desc_1.4.3        R6_2.6.1          devtools_2.4.6    fastmap_1.2.0    
+ [5] magrittr_2.0.4    cachem_1.1.0      remotes_2.5.0     glue_1.8.1       
+ [9] parallel_4.5.2    memoise_2.0.1     lifecycle_1.0.5   cli_3.6.6        
+[13] sessioninfo_1.2.3 vctrs_0.7.3       withr_3.0.3       pkgload_1.4.1    
+[17] compiler_4.5.2    rprojroot_2.1.1   rstudioapi_0.18.0 purrr_1.2.2      
+[21] tools_4.5.2       pkgbuild_1.4.8    brio_1.1.5        ellipsis_0.3.2   
+[25] otel_0.2.0        rlang_1.3.0       fs_2.0.1          usethis_3.2.1    
