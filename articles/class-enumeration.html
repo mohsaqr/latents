@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.38</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.39</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -209,9 +209,13 @@ combination.</p>
 <p>The likelihood of a mixture model has several local maxima, so each
 model is estimated from several random starts and the solution with the
 highest likelihood is kept. The argument <code>n_starts</code> sets the
-number of starts. The example uses three starts per model to keep the
-computation short. Applied analyses use ten or more. The argument
-<code>seed</code> makes the starts reproducible.</p>
+number of starts, and, like every other argument of the fitting function
+given here, it applies to every candidate alike. The example uses three
+starts per model to keep the computation short. Applied analyses use ten
+or more, and a grid is refitted as a whole when more starts are needed,
+so that every candidate has the same chance of reaching its best
+solution. The argument <code>seed</code> makes the starts
+reproducible.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">activity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span>
 <span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
@@ -1428,6 +1432,12 @@ profiles.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">chosen</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-5.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-6.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-7.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-8.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<p>With two or more group classes, the same four views are drawn for the
+students in their group classes after those for the enrolments in their
+profiles. A student is classified from all of their enrolments together,
+so the group classes are usually much sharper than the profiles; one
+view is drawn with <code>what</code>, for example
+<code>plot_diagnostics(chosen, what = "group_posteriors")</code>.</p>
 <p>Each enrolment with its profile, its student’s group class and its
 posterior probabilities:</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
@@ -1632,6 +1642,22 @@ candidate, and the table keeps them in its <code>warnings</code>
 column.</p>
 </div>
 <div class="section level3">
+<h3 id="missing-values-and-scaled-indicators">Missing values and scaled indicators<a class="anchor" aria-label="anchor" href="#missing-values-and-scaled-indicators"></a>
+</h3>
+<p>Two settings change what the candidates are fitted to, and like
+<code>n_starts</code> they apply to every candidate. With
+<code>missing = "fiml"</code>, rows with some indicators missing are
+fitted from the indicators they have; rows with every indicator missing
+are left out of the individual sample size, entropy and AvePP, because
+they were never classified. <code>centering</code> and
+<code>scaling</code> subtract a mean and divide by a standard deviation
+over the sample (<code>"grand"</code>) or within each group
+(<code>"person"</code>); both together give grand or within-person
+z-scores. Criteria compare only candidates fitted with the same
+settings. <a href="model-selection.html">Model selection</a> describes
+both with examples.</p>
+</div>
+<div class="section level3">
 <h3 id="several-covariance-structures">Several covariance structures<a class="anchor" aria-label="anchor" href="#several-covariance-structures"></a>
 </h3>
 <p>Several structures in <code>model</code> multiply the candidates, and
@@ -1727,8 +1753,8 @@ across the occasions, here the order of each student’s enrolments in
 </h2>
 <table class="table">
 <colgroup>
-<col width="47%">
-<col width="52%">
+<col width="49%">
+<col width="50%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Call</th>
@@ -1741,80 +1767,86 @@ n_group_classes, model)</td>
 <td align="left">The fitted candidate models</td>
 </tr>
 <tr class="even">
+<td align="left">enumerate_classes(…, n_starts = , missing = “fiml”,
+centering = , scaling = )</td>
+<td align="left">The same starts, missing-data handling, centring and
+scaling for every candidate</td>
+</tr>
+<tr class="odd">
 <td align="left">as.data.frame(models)</td>
 <td align="left">One row per candidate with every column</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_results(models, “best”)</td>
 <td align="left">The candidate at the minimum of each criterion</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(models, “classification”)</td>
 <td align="left">Size, AvePP and entropy of every class of every
 candidate</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_results(models, “candidates”, cutoff = 0.9)</td>
 <td align="left">The table of candidates with another AvePP cutoff</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(models, “deltas”, using = )</td>
 <td align="left">Decrease in a criterion from one profile fewer and one
 group class fewer</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_results(models, “knees”, using = )</td>
 <td align="left">Maximum chord-distance knee of each line, its range and
 its stability</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models), plot(models, what = “bic_groups”), what =
 “all”</td>
 <td align="left">Information criteria across the candidates</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models, what = “tree”)</td>
 <td align="left">Division of profiles as more are added</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “entropy”, “avepp” or
 “diagnostics”, cutoff = )</td>
 <td align="left">Entropy and lowest AvePP across the candidates</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models, what = “deltas”, “heatmap”, “smallest” or
 “trust”, using = )</td>
 <td align="left">Decreases, distance from the lowest criterion, smallest
 class, estimation checks</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “selection”)</td>
 <td align="left">All of the plots for choosing the number of
 classes</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_candidate(models, “profiles4_groups3”),
 get_candidate(models, 4, 3)</td>
 <td align="left">One fitted candidate</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">compare_models(models, “name”, c(4, 2), …)</td>
 <td align="left">Named candidates side by side</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">compare_models(models, n_profiles = , n_group_classes =
 )</td>
 <td align="left">All candidates with the given numbers of classes</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">compare_models(name = fit, name = fit)</td>
 <td align="left">Fitted models side by side, on the same data</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_candidate(comparison, “name”)</td>
 <td align="left">The model behind a row of a comparison</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(comparison, “classification”)</td>
 <td align="left">Every class of every compared model</td>
 </tr>

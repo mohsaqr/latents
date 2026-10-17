@@ -123,9 +123,12 @@ profile its own variances and fixes the covariances at zero. Without
 The likelihood of a mixture model has several local maxima, so each
 model is estimated from several random starts and the solution with the
 highest likelihood is kept. The argument `n_starts` sets the number of
-starts. The example uses three starts per model to keep the computation
-short. Applied analyses use ten or more. The argument `seed` makes the
-starts reproducible.
+starts, and, like every other argument of the fitting function given
+here, it applies to every candidate alike. The example uses three starts
+per model to keep the computation short. Applied analyses use ten or
+more, and a grid is refitted as a whole when more starts are needed, so
+that every candidate has the same chance of reaching its best solution.
+The argument `seed` makes the starts reproducible.
 
 ``` r
 
@@ -1391,6 +1394,13 @@ plot_diagnostics(chosen)
 
 ![](class-enumeration_files/figure-html/chosen-diagnostic-plots-1.png)![](class-enumeration_files/figure-html/chosen-diagnostic-plots-2.png)![](class-enumeration_files/figure-html/chosen-diagnostic-plots-3.png)![](class-enumeration_files/figure-html/chosen-diagnostic-plots-4.png)![](class-enumeration_files/figure-html/chosen-diagnostic-plots-5.png)![](class-enumeration_files/figure-html/chosen-diagnostic-plots-6.png)![](class-enumeration_files/figure-html/chosen-diagnostic-plots-7.png)![](class-enumeration_files/figure-html/chosen-diagnostic-plots-8.png)
 
+With two or more group classes, the same four views are drawn for the
+students in their group classes after those for the enrolments in their
+profiles. A student is classified from all of their enrolments together,
+so the group classes are usually much sharper than the profiles; one
+view is drawn with `what`, for example
+`plot_diagnostics(chosen, what = "group_posteriors")`.
+
 Each enrolment with its profile, its student’s group class and its
 posterior probabilities:
 
@@ -1615,6 +1625,20 @@ marks the end of the range that 300 observations support. The two
 warnings printed during the enumeration come from that candidate, and
 the table keeps them in its `warnings` column.
 
+### Missing values and scaled indicators
+
+Two settings change what the candidates are fitted to, and like
+`n_starts` they apply to every candidate. With `missing = "fiml"`, rows
+with some indicators missing are fitted from the indicators they have;
+rows with every indicator missing are left out of the individual sample
+size, entropy and AvePP, because they were never classified. `centering`
+and `scaling` subtract a mean and divide by a standard deviation over
+the sample (`"grand"`) or within each group (`"person"`); both together
+give grand or within-person z-scores. Criteria compare only candidates
+fitted with the same settings. [Model
+selection](https://pak.dynasite.org/latents/articles/model-selection.md)
+describes both with examples.
+
 ### Several covariance structures
 
 Several structures in `model` multiply the candidates, and the structure
@@ -1713,6 +1737,7 @@ compare_models(transition_models)
 | Call | Result |
 |:---|:---|
 | enumerate_classes(data, vars, id, n_profiles, n_group_classes, model) | The fitted candidate models |
+| enumerate_classes(…, n_starts = , missing = “fiml”, centering = , scaling = ) | The same starts, missing-data handling, centring and scaling for every candidate |
 | as.data.frame(models) | One row per candidate with every column |
 | get_results(models, “best”) | The candidate at the minimum of each criterion |
 | get_results(models, “classification”) | Size, AvePP and entropy of every class of every candidate |

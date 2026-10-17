@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.38</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.39</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,27 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.39" id="latents-0939">latents 0.9.39<a class="anchor" aria-label="anchor" href="#latents-0939"></a></h2>
+<p>Fixes found by an independent review of 0.9.38, and new references for missing indicators.</p>
+<div class="section level4">
+<h4 id="bug-fixes-0-9-39">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-9-39"></a></h4>
+<ul><li>
+<code><a href="../reference/compare_models.html">compare_models()</a></code> on a general <code><a href="../reference/lta.html">lta()</a></code> fit kept rows with nothing observed in the entropy charge of ICL, AWE and CLC; it now uses the rows the fit classified, as every other fit does.</li>
+<li>
+<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> failed on a fit with no continuous indicator when it was fitted with <code>scaling</code>, or with <code>centering = "grand"</code>; such a fit is neither centred nor scaled, and now predicts.</li>
+<li>
+<code>scaling = "person"</code> judged whether a unit’s standard deviation was zero against the largest value of every unit, so a real but small spread beside much larger values was refused, as was a unit with no observed value of an indicator. Each unit is now judged on its own values, and a unit with nothing observed is left unscaled.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="equivalence-0-9-39">Equivalence<a class="anchor" aria-label="anchor" href="#equivalence-0-9-39"></a></h4>
+<ul><li>Five datasets with different missing-value patterns (missing completely at random, rows with nothing observed, missing at random on an observed indicator, one indicator mostly missing, and a two-level set with empty groups), fitted by genuine Mplus 9 and Latent GOLD 6.1. Log likelihood, sample size, BIC, entropy, AvePP and posteriors agree; the programs’ differing treatment of rows and groups with nothing observed is recorded.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="documentation-0-9-39">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-9-39"></a></h4>
+<ul><li>The model-selection guide describes the choices made before fitting (random starts, centring and scaling, missing values), why entropy and AvePP can disagree, the two levels of classification, and refitting with more starts. The class-enumeration guide points to them.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.38" id="latents-0938">latents 0.9.38<a class="anchor" aria-label="anchor" href="#latents-0938"></a></h2>
 <p>Scaling of the indicators, group-level diagnostic plots, and classification statistics that leave out rows with nothing observed. Every addition is a new argument at the end of a signature or a new value of <code>what</code>.</p>

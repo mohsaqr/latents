@@ -1,5 +1,44 @@
 # Changelog
 
+## latents 0.9.39
+
+Fixes found by an independent review of 0.9.38, and new references for
+missing indicators.
+
+#### Bug fixes
+
+- [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  on a general
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit kept
+  rows with nothing observed in the entropy charge of ICL, AWE and CLC;
+  it now uses the rows the fit classified, as every other fit does.
+- [`predict()`](https://rdrr.io/r/stats/predict.html) failed on a fit
+  with no continuous indicator when it was fitted with `scaling`, or
+  with `centering = "grand"`; such a fit is neither centred nor scaled,
+  and now predicts.
+- `scaling = "person"` judged whether a unit’s standard deviation was
+  zero against the largest value of every unit, so a real but small
+  spread beside much larger values was refused, as was a unit with no
+  observed value of an indicator. Each unit is now judged on its own
+  values, and a unit with nothing observed is left unscaled.
+
+#### Equivalence
+
+- Five datasets with different missing-value patterns (missing
+  completely at random, rows with nothing observed, missing at random on
+  an observed indicator, one indicator mostly missing, and a two-level
+  set with empty groups), fitted by genuine Mplus 9 and Latent GOLD 6.1.
+  Log likelihood, sample size, BIC, entropy, AvePP and posteriors agree;
+  the programs’ differing treatment of rows and groups with nothing
+  observed is recorded.
+
+#### Documentation
+
+- The model-selection guide describes the choices made before fitting
+  (random starts, centring and scaling, missing values), why entropy and
+  AvePP can disagree, the two levels of classification, and refitting
+  with more starts. The class-enumeration guide points to them.
+
 ## latents 0.9.38
 
 Scaling of the indicators, group-level diagnostic plots, and

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.38</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.39</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,15 +95,20 @@
 
     
     
-<p>A mixture model does not estimate its own number of classes. The
-analyst fits a range of candidates and chooses among them, and that
-choice is argued from evidence rather than computed. latents reports the
-evidence in full and selects nothing. This guide describes every piece
-of that evidence: what each table and plot computes, how it is read,
-where it misleads, and how the pieces are combined into a choice that
-can be stated and defended. The worked example in <a href="class-enumeration.html">Class enumeration in mixture models</a>
-applies the same tools to one analysis from start to finish; this guide
-is the reference behind it.</p>
+<p>In finite mixture modelling, the number of latent classes is not
+known a priori and is not a parameter of the model; it must be
+determined by comparing models fitted with different numbers of classes.
+No single statistic identifies the correct number: information criteria,
+likelihood-based tests and indices of classification quality each have
+known limitations, and they frequently disagree (Nylund, Asparouhov and
+Muthén, 2007). Class enumeration is therefore an inferential judgement
+that integrates several sources of evidence and is reported
+transparently. This guide describes each source of evidence that latents
+computes for a set of candidate models: its definition, its
+interpretation, and the conditions under which it is unreliable. It then
+outlines how these sources are combined into a defensible and
+reproducible decision. A complete applied example is given in <a href="class-enumeration.html">Class enumeration in mixture
+models</a>.</p>
 <p>The evidence falls into five kinds, each answering a different
 question.</p>
 <table class="table">
@@ -295,6 +300,113 @@ and left unfitted. Every candidate is named by its numbers of classes,
 classes, and the verbs below accept that name.</p>
 </div>
 <div class="section level2">
+<h2 id="before-fitting-starts-scaling-and-missing-values">Before fitting: starts, scaling and missing values<a class="anchor" aria-label="anchor" href="#before-fitting-starts-scaling-and-missing-values"></a>
+</h2>
+<p>Three choices are made before any candidate is fitted. Each is passed
+through the <code>...</code> of <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code>,
+<code><a href="../reference/enumerate_lpa.html">enumerate_lpa()</a></code> and <code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code>, so every
+candidate receives the same setting, and each is reported with the
+choice of the number of classes.</p>
+<div class="section level3">
+<h3 id="random-starts">Random starts<a class="anchor" aria-label="anchor" href="#random-starts"></a>
+</h3>
+<p><code>n_starts</code> sets the number of random starts per candidate.
+More starts make it less likely that a candidate is reported at a local
+maximum of its likelihood, and a candidate stuck at a local maximum
+usually separates its classes worse than it would at the global one:
+refitting with more starts often raises its entropy and AvePP. The whole
+grid is refitted with the same, larger number of starts, not only the
+candidates of interest; otherwise the refitted candidates gain
+likelihood and separation that the others were not given the chance to
+reach.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
+<span>                            n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,</span>
+<span>                            model <span class="op">=</span> <span class="st">"VVI"</span>, n_starts <span class="op">=</span> <span class="fl">20</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="centring-and-scaling">Centring and scaling<a class="anchor" aria-label="anchor" href="#centring-and-scaling"></a>
+</h3>
+<p><code>centering</code> subtracts a mean and <code>scaling</code>
+divides by a standard deviation, each at one of two levels:
+<code>"grand"</code> uses one value per indicator over all observations,
+and <code>"person"</code> one per group. Together they give the
+classical z-scores: <code>centering = "grand", scaling = "grand"</code>
+standardizes each indicator over the sample, and
+<code>centering = "person", scaling = "person"</code> standardizes it
+within each group, so the profiles describe how an observation departs
+from its own group’s usual level and spread.</p>
+<p>For the covariance structures that give every indicator its own
+variance (<code>EEI</code>, <code>VVI</code>, <code>EEE</code>,
+<code>VVV</code>, <code>EVI</code>, <code>VEI</code>), grand scaling
+changes only the units of the estimates: memberships, entropy and AvePP
+are unchanged. The spherical <code>EII</code> and <code>VII</code> force
+one variance on every indicator, so an unscaled indicator with a wide
+range would dominate the classes; with them, the indicators are scaled
+first.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">srl_indicators</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cognitive_strategies"</span>, <span class="st">"intrinsic_value"</span>,</span>
+<span>                    <span class="st">"self_efficacy"</span>, <span class="st">"self_regulation"</span>, <span class="st">"test_anxiety"</span><span class="op">)</span></span>
+<span><span class="va">spherical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">srl</span>, <span class="va">srl_indicators</span>, n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">4</span>,</span>
+<span>                           model <span class="op">=</span> <span class="st">"EII"</span>, centering <span class="op">=</span> <span class="st">"grand"</span>,</span>
+<span>                           scaling <span class="op">=</span> <span class="st">"grand"</span>, n_starts <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">spherical</span>, <span class="st">"best"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    criterion  convention candidate n_profiles n_group_classes model value</span></span>
+<span><span class="co">#&gt; 1        aic        &lt;NA&gt; profiles4          4               1   EII  3372</span></span>
+<span><span class="co">#&gt; 2        kic        &lt;NA&gt; profiles4          4               1   EII  3399</span></span>
+<span><span class="co">#&gt; 3        bic      groups profiles4          4               1   EII  3461</span></span>
+<span><span class="co">#&gt; 4        bic individuals profiles4          4               1   EII  3461</span></span>
+<span><span class="co">#&gt; 5      sabic      groups profiles4          4               1   EII  3385</span></span>
+<span><span class="co">#&gt; 6      sabic individuals profiles4          4               1   EII  3385</span></span>
+<span><span class="co">#&gt; 7       caic      groups profiles4          4               1   EII  3485</span></span>
+<span><span class="co">#&gt; 8       caic individuals profiles4          4               1   EII  3485</span></span>
+<span><span class="co">#&gt; 9        awe      groups profiles4          4               1   EII  3670</span></span>
+<span><span class="co">#&gt; 10       awe individuals profiles4          4               1   EII  3779</span></span>
+<span><span class="co">#&gt; 11       icl      groups profiles4          4               1   EII  3461</span></span>
+<span><span class="co">#&gt; 12       icl individuals profiles4          4               1   EII  3570</span></span>
+<span><span class="co">#&gt; 13       clc      groups profiles4          4               1   EII  3324</span></span>
+<span><span class="co">#&gt; 14       clc individuals profiles4          4               1   EII  3433</span></span></code></pre></div>
+<p>Scaling moves the log likelihood, so information criteria compare
+only candidates fitted with the same centring and scaling, as the
+candidates of one grid are.</p>
+</div>
+<div class="section level3">
+<h3 id="missing-values">Missing values<a class="anchor" aria-label="anchor" href="#missing-values"></a>
+</h3>
+<p>With <code>missing = "fiml"</code>, a row with some indicators
+missing is fitted from the indicators it has, and nothing is imputed. A
+row with every indicator missing adds nothing to the likelihood, and its
+posterior is only the prior its group implies: it was never classified.
+Such rows are left out of the sample size of the individual-level
+criteria and out of entropy, AvePP and the classification tables, as
+Mplus leaves them out of its analysis; the fit’s
+<code>n_informative</code> counts the rows that remain, and its print
+reports how many were left out. Rows with some values missing stay in
+every statistic: they are classified, less certainly, from fewer
+indicators.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">incomplete</span> <span class="op">&lt;-</span> <span class="va">course_engagement</span></span>
+<span><span class="va">empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">incomplete</span><span class="op">)</span>, <span class="fl">150</span><span class="op">)</span></span>
+<span><span class="va">incomplete</span><span class="op">[</span><span class="va">empty</span>, <span class="va">activity</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">partial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">incomplete</span><span class="op">)</span>, <span class="fl">150</span><span class="op">)</span>, <span class="va">empty</span><span class="op">)</span></span>
+<span><span class="va">incomplete</span><span class="op">[</span><span class="va">partial</span>, <span class="st">"attendance"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">incomplete_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">incomplete</span>, <span class="va">activity</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                           n_group_classes <span class="op">=</span> <span class="fl">2</span>, model <span class="op">=</span> <span class="st">"VVI"</span>,</span>
+<span>                           missing <span class="op">=</span> <span class="st">"fiml"</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">incomplete_fit</span>, <span class="st">"entropy"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
+<span><span class="co">#&gt; 1 individuals         3    1272      321.52            0.770</span></span>
+<span><span class="co">#&gt; 2      groups         2     106        5.42            0.926</span></span></code></pre></div>
+<p>The entropy of the individuals is taken over 1272 rows: the 1,422
+enrolments less the 150 with nothing observed. Dropping those rows from
+the data by hand gives the same estimates, likelihood and classification
+statistics; dropping rows with only some values missing would change the
+sample and, if their missingness depends on what was observed, bias the
+profiles.</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="information-criteria">Information criteria<a class="anchor" aria-label="anchor" href="#information-criteria"></a>
 </h2>
 <div class="section level3">
@@ -411,7 +523,7 @@ AWE and CLC.</p>
 <p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> returns one row per candidate with every
 criterion under both conventions, beside its log likelihood, number of
 parameters, classification summaries and estimation checks.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic</span></span>
 <span><span class="co">#&gt; 1  profiles1_groups1          1               1   VVI         -10007           10 20035 20048</span></span>
@@ -571,7 +683,7 @@ parameters, classification summaries and estimation checks.</p>
 criterion and convention: the candidate at the criterion’s minimum, its
 numbers of classes and the minimum value. It answers “which candidate
 does each criterion favour?” and nothing more.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"best"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    criterion  convention         candidate n_profiles n_group_classes model value</span></span>
 <span><span class="co">#&gt; 1        aic        &lt;NA&gt; profiles6_groups4          6               4   VVI 16703</span></span>
@@ -610,10 +722,10 @@ becomes the evidence, as in the next section.</p>
 profiles, one line per number of group classes, and rings the lowest
 value of each. <code>what</code> names criteria by their columns, and
 <code>what = "all"</code> draws every one.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/plot-criteria-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"bic_groups"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/plot-bic-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -635,7 +747,7 @@ positive delta means the added class lowered the criterion; a negative
 delta means it raised it. A candidate with no such neighbour in the grid
 has <code>NA</code>. The criterion is BIC with groups as the units
 unless <code>using</code> names another column.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"deltas"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            candidate n_profiles n_group_classes model  criterion value delta_profile</span></span>
 <span><span class="co">#&gt; 1  profiles1_groups1          1               1   VVI bic_groups 20062            NA</span></span>
@@ -696,11 +808,11 @@ further profiles add detail rather than structure, and the first
 negative delta marks where they stop improving the criterion at all. The
 deltas are plotted for both directions, along the number of profiles on
 the left and along the number of group classes on the right.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/plot-deltas-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>Any criterion can be read this way:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"deltas"</span>, using <span class="op">=</span> <span class="st">"icl_individual"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/plot-deltas-icl-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -733,7 +845,7 @@ all candidates ordered by their number of parameters
 (<code>"parameters"</code>). The columns <code>from</code> and
 <code>to</code> give the ends of the line and <code>n_points</code> its
 length.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"knees"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        direction            line  criterion              from                to n_points</span></span>
 <span><span class="co">#&gt; 1       profiles   1 group class bic_groups profiles1_groups1 profiles6_groups1        6</span></span>
@@ -821,7 +933,7 @@ less ambiguity, which is why the two are read together.</p>
 <p>The heatmap shows every candidate at once, coloured by how far its
 criterion lies above the lowest value in the grid. It reads the same
 criterion as the deltas and takes the same <code>using</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -860,7 +972,7 @@ cutoff of 0.8, set with <code>cutoff</code>.
 <code>get_results(x, "classification")</code> gives every class of every
 candidate: its size by modal assignment and by estimate, its AvePP, its
 OCC and the relative entropy of its level.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"classification"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             candidate n_profiles n_group_classes model       level class n_modal proportion_modal</span></span>
 <span><span class="co">#&gt; 1   profiles2_groups1          2               1   VVI individuals     1     833          0.58579</span></span>
@@ -1124,9 +1236,35 @@ and, when there are two or more group classes, for the group classes
 (<code>what = "group_posteriors"</code> and the like). The two levels
 often differ sharply: a group is classified from all of its observations
 together, and an observation from its own responses alone.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"diagnostics"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/diagnostics-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<p>Entropy and AvePP can disagree, and the difference is informative.
+AvePP reads only the posterior of each unit’s assigned class; entropy
+reads the whole row of posteriors. A unit at 0.70 for its class and 0.10
+for each of three others, and a unit at 0.70 and 0.30, give the same
+AvePP, but the first, spread over every class, lowers entropy much more.
+Entropy also falls faster for a few very uncertain units than it rises
+for many certain ones. A level with most units near certainty and a tail
+of uncertain ones therefore shows a moderate AvePP beside a low
+entropy.</p>
+<p>The two levels of a two-level model are classified from different
+amounts of information. A group class is assigned from all of a group’s
+observations together, an observation’s profile from its own responses
+alone, so group classes are usually much sharper. For one candidate,
+<code><a href="../reference/latents-plots.html">plot_diagnostics()</a></code> draws both levels:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles4_groups3"</span><span class="op">)</span>,</span>
+<span>                 what <span class="op">=</span> <span class="st">"group_posteriors"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="model-selection_files/figure-html/group-certainty-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
+<p>When every candidate separates its profiles poorly, so that no number
+of classes brings entropy or the smallest AvePP up, the indicators do
+not separate single observations well, and the number of classes is
+chosen from the criteria and the interpretation, with the separation
+reported as a limitation. Modal assignments are then a poor substitute
+for the classes in a later analysis, and the bias-corrected three-step
+estimates (<code><a href="../reference/r3step.html">r3step()</a></code>, <code><a href="../reference/three_step.html">three_step()</a></code>) are used
+instead.</p>
 <p>Classification quality is not a criterion for the number of classes
 in itself: a model with fewer classes is usually better separated, so
 choosing by entropy alone favours too few classes. It decides between
@@ -1180,13 +1318,19 @@ more than one start</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"trust"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/trust-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>A candidate found once is refitted with more starts before it is
-chosen. The columns <code>converged</code>, <code>boundary</code>,
-<code>n_best_replicated</code>, <code>warnings</code> and
-<code>error</code> of the table of candidates hold the same checks.</p>
+chosen, and so is the rest of the grid (see <em>Random starts</em>
+above). If the refit raises its likelihood, the earlier solution was a
+local maximum and the new one replaces it; its entropy and AvePP often
+rise with it. A higher AvePP is never a reason to prefer one solution
+over another of the same candidate: the solution with the higher
+likelihood is the estimate. The columns <code>converged</code>,
+<code>boundary</code>, <code>n_best_replicated</code>,
+<code>warnings</code> and <code>error</code> of the table of candidates
+hold the same checks.</p>
 </div>
 <div class="section level3">
 <h3 id="the-smallest-class">The smallest class<a class="anchor" aria-label="anchor" href="#the-smallest-class"></a>
@@ -1195,7 +1339,7 @@ chosen. The columns <code>converged</code>, <code>boundary</code>,
 and estimated from little data. <code>plot(x, what = "smallest")</code>
 draws the estimated share of the smallest class of every candidate, with
 a dashed line at 5%, a common floor rather than a rule.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"smallest"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/smallest-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -1208,7 +1352,7 @@ heatmap, the smallest class, the estimation checks and the
 classification diagnostics as one list of plots, drawn in turn.
 <code>using</code> sets the criterion of the first two and
 <code>cutoff</code> the AvePP line of the last.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"selection"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/selection-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="model-selection_files/figure-html/selection-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="model-selection_files/figure-html/selection-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="model-selection_files/figure-html/selection-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="model-selection_files/figure-html/selection-5.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -1220,7 +1364,7 @@ the next: each profile is linked to the profiles of the model with one
 more that receive its observations (Zappia and Oshlack, 2018). A profile
 that splits cleanly in two suggests a real distinction; one that draws
 from several profiles of the smaller model suggests a reshuffling.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"tree"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/tree-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -1236,7 +1380,7 @@ candidate’s BIC from the lowest among those compared,
 candidates: the approximate posterior probability of each if one of them
 is true and all were equally likely beforehand (Wagenmakers and Farrell,
 2004). The weights depend on which candidates are compared.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles3_groups3"</span>, <span class="st">"profiles4_groups3"</span>,</span>
 <span>                             <span class="st">"profiles4_groups2"</span><span class="op">)</span></span>
 <span><span class="va">comparison</span></span>
@@ -1251,7 +1395,7 @@ is true and all were equally likely beforehand (Wagenmakers and Farrell,
 <p><img src="model-selection_files/figure-html/compare-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The model behind a row is taken out with
 <code><a href="../reference/get_candidate.html">get_candidate()</a></code>, by name or by numbers of classes.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chosen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles4_groups3"</span><span class="op">)</span></span>
 <span><span class="va">chosen</span></span>
 <span><span class="co">#&gt; Two-level latent profile analysis: 4 profiles, 3 group classes</span></span>
@@ -1285,7 +1429,7 @@ cannot fall below <code>1 / (B + 1)</code>. A replicate that fails a
 fitting check withholds the p-value rather than drop silently. The
 example uses 19 data sets, whose smallest attainable p-value is 0.05;
 applied analyses use 99 or more.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">smaller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles3_groups3"</span><span class="op">)</span></span>
 <span><span class="va">larger</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles4_groups3"</span><span class="op">)</span></span>
 <span><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">smaller</span>, <span class="va">larger</span>, data <span class="op">=</span> <span class="va">course_engagement</span>,</span>
@@ -1304,7 +1448,11 @@ applied analyses use 99 or more.</p>
 <p>No rule turns this evidence into a number of classes, and latents
 does not apply one. A choice is made by reading the evidence in a fixed
 order and reporting every step:</p>
-<ol style="list-style-type: decimal">
+<ol start="0" style="list-style-type: decimal">
+<li>
+<strong>State the preparation</strong>: the number of starts, any
+centring and scaling, and how missing values were handled, with how many
+rows had nothing observed.</li>
 <li>
 <strong>State the convention</strong> for the sample size before
 reading any criterion, and keep it.</li>
@@ -1342,8 +1490,8 @@ reported choice can be reproduced from the reported evidence.</p>
 </h2>
 <table class="table">
 <colgroup>
-<col width="47%">
-<col width="52%">
+<col width="49%">
+<col width="50%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Call</th>
@@ -1351,82 +1499,99 @@ reported choice can be reproduced from the reported evidence.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
+<td align="left">enumerate_classes(…, n_starts = , centering = , scaling
+= , missing = “fiml”)</td>
+<td align="left">The same starts, centring, scaling and missing-data
+handling for every candidate</td>
+</tr>
+<tr class="even">
 <td align="left">as.data.frame(models)</td>
 <td align="left">One row per candidate: every criterion, classification
 summaries and checks</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(models, “best”)</td>
 <td align="left">The candidate at the minimum of each criterion and
 convention</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models), plot(models, what = “bic_groups”), what =
 “all”</td>
 <td align="left">Criteria across the candidates, lowest ringed</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(models, “deltas”, using = )</td>
 <td align="left">Decrease in a criterion from one profile fewer and one
 group class fewer</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models, what = “deltas”, using = )</td>
 <td align="left">The decreases along profiles and along group
 classes</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(models, “knees”, using = )</td>
 <td align="left">Chord-distance knee of each line, with its
 stability</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models, what = “heatmap”, using = )</td>
 <td align="left">Distance of every candidate from the lowest
 criterion</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(models, “classification”)</td>
 <td align="left">Size, AvePP, OCC and entropy of every class of every
 candidate</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_results(models, “candidates”, cutoff = )</td>
 <td align="left">The table of candidates with another AvePP cutoff</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “diagnostics”, “entropy” or
 “avepp”, cutoff = )</td>
 <td align="left">Relative entropy and lowest AvePP across the
 candidates</td>
 </tr>
+<tr class="even">
+<td align="left">get_results(fit, “entropy”)</td>
+<td align="left">Relative entropy of one fit at each level, over the
+classified units</td>
+</tr>
 <tr class="odd">
+<td align="left">plot_diagnostics(fit), what = “group_posteriors” and
+the like</td>
+<td align="left">Certainty, uncertainty, sizes and AvePP of one fit,
+profiles and group classes</td>
+</tr>
+<tr class="even">
 <td align="left">plot(models, what = “trust”)</td>
 <td align="left">Convergence, boundary and replication of every
 candidate</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “smallest”)</td>
 <td align="left">Share of the smallest class of every candidate</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models, what = “selection”)</td>
 <td align="left">Deltas, heatmap, smallest class, trust and diagnostics
 together</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “tree”)</td>
 <td align="left">How the profiles divide as more are added</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">compare_models(models, “name”, …)</td>
 <td align="left">Chosen candidates side by side, with BIC weights</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_candidate(models, “name”)</td>
 <td align="left">One fitted candidate</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">bootstrap_lrt(smaller, larger, data, iter)</td>
 <td align="left">Bootstrap likelihood ratio test of k against k + 1
 classes</td>

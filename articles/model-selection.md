@@ -1,15 +1,20 @@
 # Model selection: the evidence for the number of classes
 
-A mixture model does not estimate its own number of classes. The analyst
-fits a range of candidates and chooses among them, and that choice is
-argued from evidence rather than computed. latents reports the evidence
-in full and selects nothing. This guide describes every piece of that
-evidence: what each table and plot computes, how it is read, where it
-misleads, and how the pieces are combined into a choice that can be
-stated and defended. The worked example in [Class enumeration in mixture
-models](https://pak.dynasite.org/latents/articles/class-enumeration.md)
-applies the same tools to one analysis from start to finish; this guide
-is the reference behind it.
+In finite mixture modelling, the number of latent classes is not known a
+priori and is not a parameter of the model; it must be determined by
+comparing models fitted with different numbers of classes. No single
+statistic identifies the correct number: information criteria,
+likelihood-based tests and indices of classification quality each have
+known limitations, and they frequently disagree (Nylund, Asparouhov and
+Muthén, 2007). Class enumeration is therefore an inferential judgement
+that integrates several sources of evidence and is reported
+transparently. This guide describes each source of evidence that latents
+computes for a set of candidate models: its definition, its
+interpretation, and the conditions under which it is unreliable. It then
+outlines how these sources are combined into a defensible and
+reproducible decision. A complete applied example is given in [Class
+enumeration in mixture
+models](https://pak.dynasite.org/latents/articles/class-enumeration.md).
 
 The evidence falls into five kinds, each answering a different question.
 
@@ -159,6 +164,119 @@ classes that share a single profile cannot differ, so it is listed and
 left unfitted. Every candidate is named by its numbers of classes,
 `profiles4_groups3` for four profiles and three group classes, and the
 verbs below accept that name.
+
+## Before fitting: starts, scaling and missing values
+
+Three choices are made before any candidate is fitted. Each is passed
+through the `...` of
+[`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+[`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+and
+[`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md),
+so every candidate receives the same setting, and each is reported with
+the choice of the number of classes.
+
+### Random starts
+
+`n_starts` sets the number of random starts per candidate. More starts
+make it less likely that a candidate is reported at a local maximum of
+its likelihood, and a candidate stuck at a local maximum usually
+separates its classes worse than it would at the global one: refitting
+with more starts often raises its entropy and AvePP. The whole grid is
+refitted with the same, larger number of starts, not only the candidates
+of interest; otherwise the refitted candidates gain likelihood and
+separation that the others were not given the chance to reach.
+
+``` r
+
+models <- enumerate_classes(course_engagement, activity, "student",
+                            n_profiles = 1:6, n_group_classes = 1:4,
+                            model = "VVI", n_starts = 20, seed = 1)
+```
+
+### Centring and scaling
+
+`centering` subtracts a mean and `scaling` divides by a standard
+deviation, each at one of two levels: `"grand"` uses one value per
+indicator over all observations, and `"person"` one per group. Together
+they give the classical z-scores:
+`centering = "grand", scaling = "grand"` standardizes each indicator
+over the sample, and `centering = "person", scaling = "person"`
+standardizes it within each group, so the profiles describe how an
+observation departs from its own group’s usual level and spread.
+
+For the covariance structures that give every indicator its own variance
+(`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand scaling changes only
+the units of the estimates: memberships, entropy and AvePP are
+unchanged. The spherical `EII` and `VII` force one variance on every
+indicator, so an unscaled indicator with a wide range would dominate the
+classes; with them, the indicators are scaled first.
+
+``` r
+
+srl_indicators <- c("cognitive_strategies", "intrinsic_value",
+                    "self_efficacy", "self_regulation", "test_anxiety")
+spherical <- enumerate_lpa(srl, srl_indicators, n_profiles = 2:4,
+                           model = "EII", centering = "grand",
+                           scaling = "grand", n_starts = 5, seed = 1)
+get_results(spherical, "best")
+#>    criterion  convention candidate n_profiles n_group_classes model value
+#> 1        aic        <NA> profiles4          4               1   EII  3372
+#> 2        kic        <NA> profiles4          4               1   EII  3399
+#> 3        bic      groups profiles4          4               1   EII  3461
+#> 4        bic individuals profiles4          4               1   EII  3461
+#> 5      sabic      groups profiles4          4               1   EII  3385
+#> 6      sabic individuals profiles4          4               1   EII  3385
+#> 7       caic      groups profiles4          4               1   EII  3485
+#> 8       caic individuals profiles4          4               1   EII  3485
+#> 9        awe      groups profiles4          4               1   EII  3670
+#> 10       awe individuals profiles4          4               1   EII  3779
+#> 11       icl      groups profiles4          4               1   EII  3461
+#> 12       icl individuals profiles4          4               1   EII  3570
+#> 13       clc      groups profiles4          4               1   EII  3324
+#> 14       clc individuals profiles4          4               1   EII  3433
+```
+
+Scaling moves the log likelihood, so information criteria compare only
+candidates fitted with the same centring and scaling, as the candidates
+of one grid are.
+
+### Missing values
+
+With `missing = "fiml"`, a row with some indicators missing is fitted
+from the indicators it has, and nothing is imputed. A row with every
+indicator missing adds nothing to the likelihood, and its posterior is
+only the prior its group implies: it was never classified. Such rows are
+left out of the sample size of the individual-level criteria and out of
+entropy, AvePP and the classification tables, as Mplus leaves them out
+of its analysis; the fit’s `n_informative` counts the rows that remain,
+and its print reports how many were left out. Rows with some values
+missing stay in every statistic: they are classified, less certainly,
+from fewer indicators.
+
+``` r
+
+set.seed(3)
+incomplete <- course_engagement
+empty <- sample(nrow(incomplete), 150)
+incomplete[empty, activity] <- NA
+partial <- setdiff(sample(nrow(incomplete), 150), empty)
+incomplete[partial, "attendance"] <- NA
+incomplete_fit <- multilpa(incomplete, activity, "student", n_profiles = 3,
+                           n_group_classes = 2, model = "VVI",
+                           missing = "fiml", n_starts = 3, seed = 1)
+get_results(incomplete_fit, "entropy")
+#>         level n_classes n_units entropy_sum relative_entropy
+#> 1 individuals         3    1272      321.52            0.770
+#> 2      groups         2     106        5.42            0.926
+```
+
+The entropy of the individuals is taken over 1272 rows: the 1,422
+enrolments less the 150 with nothing observed. Dropping those rows from
+the data by hand gives the same estimates, likelihood and classification
+statistics; dropping rows with only some values missing would change the
+sample and, if their missingness depends on what was observed, bias the
+profiles.
 
 ## Information criteria
 
@@ -932,6 +1050,40 @@ plot(models, what = "diagnostics")
 
 ![](model-selection_files/figure-html/diagnostics-1.png)
 
+Entropy and AvePP can disagree, and the difference is informative. AvePP
+reads only the posterior of each unit’s assigned class; entropy reads
+the whole row of posteriors. A unit at 0.70 for its class and 0.10 for
+each of three others, and a unit at 0.70 and 0.30, give the same AvePP,
+but the first, spread over every class, lowers entropy much more.
+Entropy also falls faster for a few very uncertain units than it rises
+for many certain ones. A level with most units near certainty and a tail
+of uncertain ones therefore shows a moderate AvePP beside a low entropy.
+
+The two levels of a two-level model are classified from different
+amounts of information. A group class is assigned from all of a group’s
+observations together, an observation’s profile from its own responses
+alone, so group classes are usually much sharper. For one candidate,
+[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/latents-plots.md)
+draws both levels:
+
+``` r
+
+plot_diagnostics(get_candidate(models, "profiles4_groups3"),
+                 what = "group_posteriors")
+```
+
+![](model-selection_files/figure-html/group-certainty-1.png)
+
+When every candidate separates its profiles poorly, so that no number of
+classes brings entropy or the smallest AvePP up, the indicators do not
+separate single observations well, and the number of classes is chosen
+from the criteria and the interpretation, with the separation reported
+as a limitation. Modal assignments are then a poor substitute for the
+classes in a later analysis, and the bias-corrected three-step estimates
+([`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md),
+[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md))
+are used instead.
+
 Classification quality is not a criterion for the number of classes in
 itself: a model with fewer classes is usually better separated, so
 choosing by entropy alone favours too few classes. It decides between
@@ -966,8 +1118,13 @@ plot(models, what = "trust")
 
 ![](model-selection_files/figure-html/trust-1.png)
 
-A candidate found once is refitted with more starts before it is chosen.
-The columns `converged`, `boundary`, `n_best_replicated`, `warnings` and
+A candidate found once is refitted with more starts before it is chosen,
+and so is the rest of the grid (see *Random starts* above). If the refit
+raises its likelihood, the earlier solution was a local maximum and the
+new one replaces it; its entropy and AvePP often rise with it. A higher
+AvePP is never a reason to prefer one solution over another of the same
+candidate: the solution with the higher likelihood is the estimate. The
+columns `converged`, `boundary`, `n_best_replicated`, `warnings` and
 `error` of the table of candidates hold the same checks.
 
 ### The smallest class
@@ -1103,6 +1260,9 @@ No rule turns this evidence into a number of classes, and latents does
 not apply one. A choice is made by reading the evidence in a fixed order
 and reporting every step:
 
+0.  **State the preparation**: the number of starts, any centring and
+    scaling, and how missing values were handled, with how many rows had
+    nothing observed.
 1.  **State the convention** for the sample size before reading any
     criterion, and keep it.
 2.  **Read the minima** of the criteria under that convention. Note
@@ -1128,6 +1288,7 @@ reported choice can be reproduced from the reported evidence.
 
 | Call | Result |
 |:---|:---|
+| enumerate_classes(…, n_starts = , centering = , scaling = , missing = “fiml”) | The same starts, centring, scaling and missing-data handling for every candidate |
 | as.data.frame(models) | One row per candidate: every criterion, classification summaries and checks |
 | get_results(models, “best”) | The candidate at the minimum of each criterion and convention |
 | plot(models), plot(models, what = “bic_groups”), what = “all” | Criteria across the candidates, lowest ringed |
@@ -1138,6 +1299,8 @@ reported choice can be reproduced from the reported evidence.
 | get_results(models, “classification”) | Size, AvePP, OCC and entropy of every class of every candidate |
 | get_results(models, “candidates”, cutoff = ) | The table of candidates with another AvePP cutoff |
 | plot(models, what = “diagnostics”, “entropy” or “avepp”, cutoff = ) | Relative entropy and lowest AvePP across the candidates |
+| get_results(fit, “entropy”) | Relative entropy of one fit at each level, over the classified units |
+| plot_diagnostics(fit), what = “group_posteriors” and the like | Certainty, uncertainty, sizes and AvePP of one fit, profiles and group classes |
 | plot(models, what = “trust”) | Convergence, boundary and replication of every candidate |
 | plot(models, what = “smallest”) | Share of the smallest class of every candidate |
 | plot(models, what = “selection”) | Deltas, heatmap, smallest class, trust and diagnostics together |
