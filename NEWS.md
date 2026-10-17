@@ -1,3 +1,75 @@
+# latents 0.9.38
+
+Scaling of the indicators, group-level diagnostic plots, and classification
+statistics that leave out rows with nothing observed. Every addition is a new
+argument at the end of a signature or a new value of `what`.
+
+### Classification quality with missing indicators (bug fix)
+
+* Under `missing = "fiml"`, a row with every indicator missing was counted in
+  relative entropy, AvePP, the classification and entropy tables, the
+  entropy charge of ICL, AWE and CLC, and the case-level diagnostic plots.
+  Such a row contributes nothing to the likelihood, so its posterior is the
+  prior its group gives it, not a classification; counting it pulled every
+  one of those statistics down (in one example relative entropy from 0.78 to
+  0.63). They are now taken over the rows with at least one observed
+  indicator, the same rows the individual-level BIC already counted
+  (`n_informative`). Estimates, log likelihoods and class sizes are
+  unchanged; fits without such rows report exactly what they did. The rows
+  used are kept on the fit as `informative`.
+* The same rows are now left out of the individual-level BIC of `lta()` and
+  of covariate fits, which counted every row; `multilpa()` already did. A
+  covariate fit's `bic_individual` therefore agrees with its own
+  `get_results(x, "information_criteria")`, which it did not when rows were
+  empty. The additive and cross-level families require complete data and
+  are unaffected.
+* The classification-quality and criteria plots of an enumeration labelled
+  each line at its end in every panel, which ran off the edge beside a
+  second panel and overlapped where values were close. With several panels
+  they now share one legend, keyed by colour and shape; a single panel keeps
+  its direct labels, spaced further apart.
+
+### Scaling the indicators (`scaling`)
+
+* `multilpa()` gains `scaling = c("none", "person", "grand")`, at the end of
+  its signature, beside `centering`. `"grand"` divides each continuous
+  indicator by its overall standard deviation and `"person"` by each unit's
+  own, so `centering = "grand", scaling = "grand"` fits grand z-scores and
+  `centering = "person", scaling = "person"` within-person z-scores. It
+  reaches `lpa()`, the covariate fits and every enumeration through `...`.
+  The scales are kept on the fit: `get_results(x, "data")` returns the
+  columns supplied, `predict()` scales new data the same way, and the
+  bootstrap and staged fits treat a scaled fit as they treat a centred one.
+  With structures that give every indicator its own variance, grand scaling
+  changes only the units (the log likelihood moves by `n * sum(log(sd))`,
+  memberships are identical); with `EII` and `VII` it changes the solution.
+  An undefined or zero standard deviation is refused with `latents_bad_data`.
+* The print of a grand-centred fit no longer calls its profiles "profiles of
+  change"; that describes person centring only.
+
+### Group-level classification plots
+
+* `plot_diagnostics()` draws the group classes as well as the profiles. The
+  new views `"group_sizes"`, `"group_posteriors"`, `"group_entropy"` and
+  `"group_avepp"` are the four individual views drawn for the groups, and
+  `what = "all"` includes them when a fit has two or more group classes. The
+  individual views are unchanged. A fit with one group class refuses the
+  group views with `latents_no_group_classes`.
+
+
+### Documentation
+
+* A new guide, *Model selection: the evidence for the number of classes*
+  (`vignettes/articles/model-selection.Rmd`), describes every piece of the
+  enumeration evidence: the criteria and their definitions, the two
+  sample-size conventions, deltas, the knee rule and its stability notes,
+  classification quality, the estimation checks, comparisons and the
+  bootstrap test.
+* `enumerate_classes()` documents the arguments its `...` passes to every
+  candidate, leading with `n_starts`.
+* The function tables of the enumeration vignette and guide name the minima
+  table `"best"`.
+
 # latents 0.9.37
 
 Growth mixtures and latent transition models; nothing in the 0.9.21 interface

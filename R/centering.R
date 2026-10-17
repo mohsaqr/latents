@@ -16,6 +16,16 @@
 #' @noRd
 .multilpa_centering_schemes <- function() c("none", "person", "grand")
 
+#' The scaling schemes `multilpa()` accepts
+#'
+#' The same levels as centring: `"person"` divides each group's values by that
+#' group's own standard deviation, `"grand"` by one standard deviation per
+#' indicator. With the matching centring they give the classical within-person
+#' and grand-mean z-scores.
+#' @return A character vector, the first being the default.
+#' @noRd
+.multilpa_scaling_schemes <- function() c("none", "person", "grand")
+
 #' Centre the continuous indicators
 #'
 #' `"person"` subtracts each group's own mean from its rows, so a value reads
@@ -32,22 +42,101 @@
 #' @param group_index One group index per row.
 #' @param n_groups How many groups there are.
 #' @param centering One of `.multilpa_centering_schemes()`.
-#' @return A list with the centred matrix `x`, and `offsets`, the matrix that
-#'   was subtracted: one row per group under `"person"`, one row overall under
-#'   `"grand"`, and `NULL` under `"none"`.
+#' @param scaling One of `.multilpa_scaling_schemes()`.
+#' @return A list with the transformed matrix `x`, `offsets`, the matrix that
+#'   was subtracted, and `scales`, the matrix that the result was divided by:
+#'   each one row per group under `"person"`, one row overall under `"grand"`,
+#'   and `NULL` under `"none"`.
 #' @noRd
-.multilpa_center_indicators <- function(x, group_index, n_groups, centering) {
+.multilpa_center_indicators <- function(x, group_index, n_groups, centering,
+                                        scaling = "none") {
   stopifnot(
     "`x` must be a matrix" = is.matrix(x),
     "`centering` must be one scheme" =
-      length(centering) == 1L && centering %in% .multilpa_centering_schemes())
+      length(centering) == 1L && centering %in% .multilpa_centering_schemes(),
+    "`scaling` must be one scheme" =
+      length(scaling) == 1L && scaling %in% .multilpa_scaling_schemes())
   # An all-categorical fit has no Gaussian block to centre, and `as.matrix()`
   # of a zero-column frame is logical rather than numeric, so the width is
   # checked before the storage mode.
-  if (ncol(x) == 0L || identical(centering, "none")) {
-    return(list(x = x, offsets = NULL))
+  if (ncol(x) == 0L ||
+      (identical(centering, "none") && identical(scaling, "none"))) {
+    return(list(x = x, offsets = NULL, scales = NULL))
   }
   stopifnot("`x` must be numeric to be centred" = is.numeric(x))
+  # A standard deviation does not move with a shift, so the scales are read
+  # off the raw values whatever the centring.
+  scales <- .multilpa_indicator_scales(x, group_index, n_groups, scaling)
+  centred <- .multilpa_center_only(x, group_index, n_groups, centering)
+  scaled <- if (is.null(scales)) centred$x else if (nrow(scales) == 1L)
+    sweep(centred$x, 2L, scales[1L, ], "/") else
+      centred$x / scales[group_index, , drop = FALSE]
+  list(x = scaled, offsets = centred$offsets, scales = scales)
+}
+
+#' The standard deviation each indicator is divided by
+#'
+#' The sample standard deviation (denominator `n - 1`) of the observed values:
+#' one per indicator under `"grand"`, one per group and indicator under
+#' `"person"`. A scale that is missing or zero -- a group observed once on an
+#' indicator, or always giving the same value -- cannot be divided by, and a
+#' stand-in would put that group on a different scale from the rest, so it is
+#' refused with `latents_bad_data` naming the indicators and how many groups.
+#'
+#' @param x The numeric indicator matrix, possibly containing `NA`.
+#' @param group_index,n_groups The group of each row, and how many there are.
+#' @param scaling One of `.multilpa_scaling_schemes()`.
+#' @return A matrix of standard deviations, or `NULL` under `"none"`.
+#' @noRd
+.multilpa_indicator_scales <- function(x, group_index, n_groups, scaling) {
+  if (identical(scaling, "none")) return(NULL)
+  observed <- !is.na(x)
+  units <- if (identical(scaling, "person")) group_index else rep(1L, nrow(x))
+  n_units <- if (identical(scaling, "person")) n_groups else 1L
+  # Sums of values and of squares by unit give every standard deviation in
+  # one pass; `reorder = TRUE` sorts them by unit index.
+  filled <- ifelse(observed, x, 0)
+  counts <- rowsum(observed * 1, units, reorder = TRUE)
+  totals <- rowsum(filled, units, reorder = TRUE)
+  present <- sort(unique(units))
+  means <- totals / pmax(counts, 1)
+  deviations <- (filled - means[match(units, present), , drop = FALSE]) * observed
+  squares <- rowsum(deviations^2, units, reorder = TRUE)
+  standard <- matrix(NA_real_, n_units, ncol(x),
+                     dimnames = list(NULL, colnames(x)))
+  # A unit with no observed value of an indicator has nothing to divide, so
+  # its scale is one and touches nothing; only a unit with values whose
+  # standard deviation is missing or zero is a problem.
+  standard[present, ] <- ifelse(counts == 0, 1,
+                                ifelse(counts > 1,
+                                       sqrt(squares / pmax(counts - 1, 1)),
+                                       NA_real_))
+  # A column that does not vary is judged relative to its own magnitude, so
+  # the verdict does not depend on the units it was recorded in.
+  magnitude <- matrix(apply(abs(x), 2L, max, na.rm = TRUE), n_units, ncol(x),
+                      byrow = TRUE)
+  degenerate <- is.na(standard) |
+    standard <= sqrt(.Machine$double.eps) * pmax(magnitude, 1e-300)
+  if (any(degenerate)) {
+    columns <- colnames(x)[colSums(degenerate) > 0L]
+    stop(errorCondition(sprintf(paste(
+      "`scaling = \"%s\"` divides by a standard deviation that is zero or",
+      "undefined for %s%s. %s"),
+      scaling, paste(sprintf("`%s`", columns), collapse = ", "),
+      if (identical(scaling, "person"))
+        sprintf(" in %d group(s)", sum(rowSums(degenerate) > 0L)) else "",
+      if (identical(scaling, "person"))
+        "Every group needs two or more different values of each indicator; drop the groups that do not have them, or scale with `scaling = \"grand\"`." else
+        "A constant indicator identifies no profile; drop it."),
+      class = "latents_bad_data", call = NULL))
+  }
+  standard
+}
+
+#' Subtract the centring offsets, without scaling
+#' @noRd
+.multilpa_center_only <- function(x, group_index, n_groups, centering) {
+  if (identical(centering, "none")) return(list(x = x, offsets = NULL))
   if (identical(centering, "grand")) {
     offsets <- matrix(colMeans(x, na.rm = TRUE), nrow = 1L, ncol = ncol(x),
                       dimnames = list(NULL, colnames(x)))
@@ -83,6 +172,12 @@
 .multilpa_uncentered_indicators <- function(x) {
   stored <- x$indicator_data
   if (is.null(stored)) return(NULL)
+  # Undo in the reverse order of the transform: multiply back, then add back.
+  scales <- x$scaling_factors
+  if (!is.null(scales)) {
+    stored <- if (nrow(scales) == 1L) sweep(stored, 2L, scales[1L, ], "*") else
+      stored * scales[x$group_index, , drop = FALSE]
+  }
   offsets <- x$centering_offsets
   if (is.null(offsets)) return(stored)
   if (nrow(offsets) == 1L) return(sweep(stored, 2L, offsets[1L, ], "+"))
@@ -100,11 +195,30 @@
 #' @return The same matrix, centred as the fit centred its own.
 #' @noRd
 .multilpa_center_like <- function(x, observed) {
+  if (ncol(observed) == 0L) return(observed)
   offsets <- x$centering_offsets
-  if (is.null(offsets) || ncol(observed) == 0L) return(observed)
-  aligned <- offsets[, colnames(observed), drop = FALSE]
-  if (nrow(aligned) == 1L) return(sweep(observed, 2L, aligned[1L, ], "-"))
-  observed - aligned[x$group_index, , drop = FALSE]
+  if (!is.null(offsets)) {
+    aligned <- offsets[, colnames(observed), drop = FALSE]
+    observed <- if (nrow(aligned) == 1L) sweep(observed, 2L, aligned[1L, ], "-") else
+      observed - aligned[x$group_index, , drop = FALSE]
+  }
+  scales <- x$scaling_factors
+  if (is.null(scales)) return(observed)
+  aligned <- scales[, colnames(observed), drop = FALSE]
+  if (nrow(aligned) == 1L) return(sweep(observed, 2L, aligned[1L, ], "/"))
+  observed / aligned[x$group_index, , drop = FALSE]
+}
+
+#' Was a fit made on transformed indicators?
+#'
+#' A centred or scaled fit reports its means on the transformed scale, so the
+#' views and stages that put estimates beside raw values refuse it alike.
+#' @param x A fitted model.
+#' @return A single logical.
+#' @noRd
+.multilpa_is_transformed <- function(x) {
+  !identical(x$centering %||% "none", "none") ||
+    !identical(x$scaling %||% "none", "none")
 }
 
 #' Refuse a centring that leaves an indicator with nothing to model

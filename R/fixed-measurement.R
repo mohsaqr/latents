@@ -293,8 +293,7 @@ fit_staged <- function(data, vars, id, n_profiles,
     ## centred means applied to raw scores describe no profile at all.
     options_used <- c(
       "sampling weights" = .latents_is_weighted(measurement),
-      "centred indicators" =
-        !identical(measurement$centering %||% "none", "none"),
+      "centred or scaled indicators" = .multilpa_is_transformed(measurement),
       "ordinal or count indicators" =
         length(c(measurement$ordinal, measurement$count)) > 0L)
     if (any(options_used)) {

@@ -35,8 +35,13 @@
 #'   (effective profile counts), `"posteriors"` (posterior probability of each
 #'   case's assigned profile), `"entropy"` (each case's entropy relative to a
 #'   flat posterior) or `"avepp"` (average posterior probability matrix).
-#'   A noise fit supports `"sizes"` only; `"all"` returns that view, and the
-#'   other diagnostics refuse with `latents_unsupported_noise`. For
+#'   `"group_sizes"`, `"group_posteriors"`, `"group_entropy"` and
+#'   `"group_avepp"` draw the same four views for the groups and their group
+#'   classes, and `"all"` includes them when the fit has two or more group
+#'   classes; with fewer they refuse with `latents_no_group_classes`.
+#'   A noise fit supports `"sizes"` and the group views only; `"all"` returns
+#'   `"sizes"`, and the other individual diagnostics refuse with
+#'   `latents_unsupported_noise`. For
 #'   `plot_enumeration()`: criterion columns of `as.data.frame(x)`, such as
 #'   `"bic_groups"`, or `"all"`; the default draws AIC, both BICs and ICL
 #'   over individuals. Or classification quality across the candidates, in

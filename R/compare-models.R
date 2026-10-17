@@ -333,10 +333,10 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
                  n_parameters = as.integer(fit$n_parameters),
                  log_likelihood = fit$log_likelihood, stringsAsFactors = FALSE),
       .multilpa_enumeration_indices(diagnostic),
-      data.frame(profile_entropy = .multilpa_relative_entropy(.multilpa_class_posteriors(fit)),
+      data.frame(profile_entropy = .multilpa_relative_entropy(.multilpa_classified_posteriors(fit)),
                  group_entropy = if (is.null(fit$group_posteriors)) NA_real_ else
                    .multilpa_relative_entropy(fit$group_posteriors)),
-      level_summary(.multilpa_class_posteriors(fit), "avepp_"),
+      level_summary(.multilpa_classified_posteriors(fit), "avepp_"),
       level_summary(fit$group_posteriors, "group_avepp_"),
       data.frame(smallest_share = if (length(shares) == 0L) NA_real_ else min(shares),
                  converged = isTRUE(fit$converged),
@@ -489,5 +489,6 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
        categorical_levels = fit$categorical_levels,
        extra = .latents_draw_extra_columns(fit$extra_data),
        weights = unname(fit$sampling_weights), time = fit$time_values,
-       centering = fit$centering %||% "none")
+       centering = fit$centering %||% "none",
+       scaling = fit$scaling %||% "none")
 }

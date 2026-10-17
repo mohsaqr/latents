@@ -38,6 +38,7 @@
                  missing = x$missing %||% "error",
                  time = x$time,
                  centering = x$centering %||% "none",
+                 scaling = x$scaling %||% "none",
                  prior = x$prior,
                  noise = isTRUE(x$noise),
                  acceleration = x$acceleration %||% "none",

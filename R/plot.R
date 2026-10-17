@@ -144,7 +144,15 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
 #' @param what The view that was asked for, for the message.
 #' @return `NULL`, invisibly, when the view can be drawn.
 #' @noRd
-.multilpa_require_case_posteriors <- function(x, what) {
+.multilpa_require_case_posteriors <- function(x, what, level = "individuals") {
+  if (identical(level, "groups")) {
+    if (!.gg_has_group_classes(x)) {
+      stop(errorCondition(sprintf(
+        "This fit has fewer than two group classes, so `what = \"%s\"` has nothing to separate.",
+        what), class = "latents_no_group_classes", call = NULL))
+    }
+    return(invisible(NULL))
+  }
   posteriors <- x$subject_posteriors
   if (is.null(posteriors) || !is.matrix(posteriors)) {
     stop(errorCondition(sprintf(
@@ -172,10 +180,10 @@ plot.multilpa <- function(x, what = c("profiles", "bars", "heatmap", "raincloud"
 #' @return A list with `values` (cases by indicators) and `profile`.
 #' @noRd
 .multilpa_plot_observations <- function(x, vars) {
-  if (!identical(x$centering %||% "none", "none")) {
+  if (.multilpa_is_transformed(x)) {
     stop(errorCondition(paste(
       "This view draws the indicators as supplied, and this fit was",
-      "centred, so its means are on a different scale."),
+      "centred or scaled, so its means are on a different scale."),
       class = c("latents_nothing_to_plot", "latents_bad_argument"),
       call = NULL))
   }

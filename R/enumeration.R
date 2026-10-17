@@ -52,8 +52,13 @@ utils::globalVariables("statistic")
 #'   fixed. `model`, when given, crosses those covariance structures. The
 #'   result is a `latents_transition_enumeration`, read with
 #'   [get_results()] and [get_candidate()].
-#' @param ... Further arguments to [multilpa()] (or to [lta()] with `time`); for group-class families only
-#'   `n_starts`, `max_iter`, `tol` and `min_variance`.
+#' @param ... Further arguments to [multilpa()] (or to [lta()] with `time`),
+#'   applied to every candidate alike, such as `n_starts` (random starts per
+#'   candidate; more starts make a local maximum less likely, and every
+#'   candidate gets the same number), `max_iter`, `missing`, `categorical`,
+#'   `centering` and `scaling`. For example, `enumerate_classes(data, vars, id,
+#'   n_profiles = 2:6, n_starts = 20, seed = 1)`. Group-class families take
+#'   only `n_starts`, `max_iter`, `tol` and `min_variance`.
 #' @return An object of class `multilpa_enumeration`. Read it with the verbs
 #'   that describe it rather than by reaching into it: [as.data.frame()] gives
 #'   one row per candidate model with every criterion and diagnostic
@@ -223,7 +228,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
       .multilpa_enumeration_indices(fit),
       data.frame(
         profile_entropy = if (is.null(fit)) NA_real_ else
-          .multilpa_relative_entropy(.multilpa_class_posteriors(fit)),
+          .multilpa_relative_entropy(.multilpa_classified_posteriors(fit)),
         group_entropy = if (is.null(fit)) NA_real_ else
           .multilpa_relative_entropy(fit$group_posteriors),
         converged = !is.null(fit) && fit$converged,
@@ -592,7 +597,7 @@ summary.multilpa_enumeration <- function(object, ...) {
     columns
   }
   columns <- cbind(
-    level_summary(.multilpa_class_posteriors, "avepp_"),
+    level_summary(.multilpa_classified_posteriors, "avepp_"),
     level_summary(\(fit) fit$group_posteriors, "group_avepp_"))
   at <- match("group_entropy", names(grid))
   .latents_named_table(x, cbind(grid[seq_len(at)], columns,
@@ -1207,23 +1212,26 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
     .multilpa_resolve_structure(model$variance_model,
                                 model$covariance_model %||% "diagonal")
   centering_for <- function(model) model$centering %||% "none"
+  scaling_for <- function(model) model$scaling %||% "none"
   same_fields <- all(vapply(fields, function(field)
     identical(null_model[[field]], alternative_model[[field]]), logical(1)))
   if (!same_fields || !identical(extra_spec(null_model), extra_spec(alternative_model)) ||
       !identical(structure_for(null_model), structure_for(alternative_model)) ||
       !identical(centering_for(null_model), centering_for(alternative_model)) ||
+      !identical(scaling_for(null_model), scaling_for(alternative_model)) ||
       !identical(missing_for(null_model), missing_for(alternative_model))) {
     stop(errorCondition(paste(
       "Models must use the same observations, group layout, covariance",
-      "structure, centering mode and missing-data handling."),
+      "structure, centering and scaling mode and missing-data handling."),
         class = "latents_incomparable_models", call = NULL))
   }
   if (covariate_family) .multilpa_check_covariate_nesting(null_model, alternative_model)
-  if (identical(centering_for(null_model), "person")) {
+  if (identical(centering_for(null_model), "person") ||
+      identical(scaling_for(null_model), "person")) {
     stop(errorCondition(paste(
-      "A person-centred fit removes each group's baseline, but this bootstrap",
-      "does not model those baselines for simulation. Compare fits without",
-      "person centering."),
+      "A person-centred or person-scaled fit removes each group's baseline or",
+      "spread, but this bootstrap does not model those for simulation. Compare",
+      "fits without person centering or scaling."),
       class = "latents_unsupported_bootstrap", call = NULL))
   }
   delta <- c(alternative_model$n_profiles - null_model$n_profiles,
@@ -1349,6 +1357,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
         list(n_starts = n_starts, max_iter = max_iter, tol = tol,
              min_variance = model$min_variance,
              centering = model$centering %||% "none",
+             scaling = model$scaling %||% "none",
              categorical = model$categorical %||% character(),
              ordinal = model$ordinal %||% character(),
              count = model$count %||% character(),

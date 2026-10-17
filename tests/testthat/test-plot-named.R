@@ -57,7 +57,10 @@ test_that("plot_diagnostics() returns every supported view, as diagnostics does"
   fits <- named_plot_fits()
   every <- plot_diagnostics(fits$lpa)
   expect_s3_class(every, "latents_plots")
-  expect_named(every, c("sizes", "posteriors", "entropy", "avepp"))
+  # Two group classes add the same four views for the groups.
+  expect_named(every, c("sizes", "posteriors", "entropy", "avepp",
+                        "group_sizes", "group_posteriors", "group_entropy",
+                        "group_avepp"))
   # plot() on a diagnostics object delegates here, so the two cannot differ.
   through_tables <- plot(diagnostics(fits$lpa, plots = FALSE))
   expect_equal(lapply(every, `[[`, "data"), lapply(through_tables, `[[`, "data"))
@@ -68,6 +71,42 @@ test_that("plot_diagnostics() returns every supported view, as diagnostics does"
   expect_named(plot_diagnostics(one), c("sizes", "avepp"))
   expect_error(plot_diagnostics(one, what = "entropy"),
                class = "latents_nothing_to_plot")
+})
+
+test_that("the group views report the group classification table", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  fit <- named_plot_fits()$lpa
+  table <- subset(get_results(fit, "classification"), level == "groups")
+  certainty <- plot_diagnostics(fit, what = "group_posteriors")
+  # One point per group, and each group class's mean certainty is its AvePP.
+  expect_identical(nrow(certainty$data), as.integer(fit$n_groups))
+  means <- stats::aggregate(value ~ profile, certainty$data, mean)
+  expect_equal(means$value, table$average_posterior, tolerance = 1e-12)
+  sizes <- plot_diagnostics(fit, what = "group_sizes")
+  expect_equal(unname(sizes$data$count), table$estimated_n, tolerance = 1e-12)
+  avepp <- plot_diagnostics(fit, what = "group_avepp")
+  diagonal <- subset(avepp$data, row == column)
+  expect_equal(diagonal$average_posterior, table$average_posterior,
+               tolerance = 1e-12)
+  # Relative entropy in the subtitle is the one the fit reports.
+  entropy <- plot_diagnostics(fit, what = "group_entropy")
+  expect_match(entropy$labels$subtitle,
+               sprintf("%.3f", .multilpa_relative_entropy(fit$group_posteriors)),
+               fixed = TRUE)
+  # Certainty lies between chance and one at the group level as well.
+  expect_true(all(certainty$data$value >= 1 / ncol(fit$group_posteriors) - 1e-12 &
+                    certainty$data$value <= 1))
+})
+
+test_that("a fit with one group class has no group views", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  fit <- named_plot_fits()$lca
+  expect_named(plot_diagnostics(fit), c("sizes", "posteriors", "entropy", "avepp"))
+  lapply(c("group_sizes", "group_posteriors", "group_entropy", "group_avepp"),
+         \(view) expect_error(plot_diagnostics(fit, what = view),
+                              class = "latents_no_group_classes"))
 })
 
 test_that("named plots refuse what a fit cannot draw, by condition class", {

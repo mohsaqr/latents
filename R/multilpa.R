@@ -912,6 +912,32 @@
 #'   `latents_bad_data` when it leaves an indicator constant --- which is what
 #'   happens when a unit has one observation of it. With `"person"` the group
 #'   classes become types of *change pattern*, not types of unit.
+#' @param scaling How to scale the continuous indicators before fitting, at
+#'   the same levels as `centering`. `"none"`, the default, fits them as
+#'   supplied. `"grand"` divides each indicator by its standard deviation over
+#'   all observations, and `"person"` divides each group's values by that
+#'   group's own standard deviation, so every unit's spread counts as one.
+#'   With the matching centring these are the classical z-scores:
+#'   `centering = "grand", scaling = "grand"` standardizes each indicator over
+#'   the sample, and `centering = "person", scaling = "person"` standardizes it
+#'   within each unit (within-person standardization). Standard deviations
+#'   use the observed values with denominator `n - 1`; the scales are kept on
+#'   the fit beside the centring offsets, so `get_results(x, "data")` still
+#'   returns the columns you supplied, and `predict()` scales new units on
+#'   their own spread under `"person"` and on the fitted spread under
+#'   `"grand"`. Means, variances and covariances are then reported in
+#'   standard-deviation units. The log likelihood, and so every information
+#'   criterion, is that of the scaled values: compare fits made with the same
+#'   centring and scaling, as an enumeration grid does. A standard deviation
+#'   that is zero or undefined -- under `"person"`, a unit observed once on an
+#'   indicator or always giving the same value -- is refused with
+#'   `latents_bad_data`. With covariance structures that give every indicator
+#'   its own variance (`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand scaling
+#'   changes only the units of the estimates; with the spherical `EII` and
+#'   `VII` it changes the solution, because they force one variance on every
+#'   indicator. Rank and quantile transformations are not offered: they
+#'   force each indicator's distribution flat or normal, which removes the
+#'   multimodality the profiles are estimated from.
 #' @param time Optional name of a column giving each observation's position
 #'   within its group, such as a wave, occasion or course number. The model does
 #'   not use it; it is stored so that `get_results(x, "sequences")`,
@@ -1145,7 +1171,8 @@ multilpa <- function(data, vars, id, n_profiles,
                        weights = NULL, ordinal = character(),
                        count = character(),
                        count_model = c("poisson", "negative_binomial"),
-                       count_dispersion = c("varying", "equal")) {
+                       count_dispersion = c("varying", "equal"),
+                       scaling = c("none", "person", "grand")) {
   family <- match.arg(family)
   count_model <- match.arg(count_model)
   count_dispersion <- match.arg(count_dispersion)
@@ -1258,6 +1285,7 @@ multilpa <- function(data, vars, id, n_profiles,
   covariance_model <- match.arg(covariance_model)
   missing <- match.arg(missing)
   centering <- match.arg(centering)
+  scaling <- match.arg(scaling)
   profile_slopes <- match.arg(profile_slopes)
   if (identical(profile_slopes, "group_class") && length(profile_covariates) == 0L) {
     stop(errorCondition(paste(
@@ -1325,7 +1353,7 @@ multilpa <- function(data, vars, id, n_profiles,
       time = time, fixed = fixed, select_start = select_start, call = call,
       weights = weights, ordinal = ordinal, count = count,
       count_model = count_model, count_dispersion = count_dispersion,
-      centering = centering)
+      centering = centering, scaling = scaling)
     result$single_level <- single_level
     return(result)
   }
@@ -1356,8 +1384,10 @@ multilpa <- function(data, vars, id, n_profiles,
   # Centring happens here, between validating the indicators and fitting them,
   # so the measurement model sees deviations and every verb downstream can put
   # a supplied frame on the same scale from the offsets kept on the fit.
-  centred <- .multilpa_center_indicators(x, group_index, n_groups, centering)
-  if (!identical(centering, "none") && ncol(x) > 0L) {
+  centred <- .multilpa_center_indicators(x, group_index, n_groups, centering,
+                                         scaling)
+  if ((!identical(centering, "none") || !identical(scaling, "none")) &&
+      ncol(x) > 0L) {
     .multilpa_check_centered(centred$x, centering, raw = x,
                              group_index = group_index)
     x <- centred$x
@@ -1566,6 +1596,7 @@ multilpa <- function(data, vars, id, n_profiles,
     categorical_values = .multilpa_categorical_values(data, categorical, encoded),
     indicator_data = as.matrix(indicator_frame),
     centering = centering, centering_offsets = centred$offsets,
+    scaling = scaling, scaling_factors = centred$scales,
     categorical_data = codes,
     id = id, group_ids = group_ids, single_level = single_level,
     weights = weights,
@@ -1575,6 +1606,7 @@ multilpa <- function(data, vars, id, n_profiles,
     group_values = group_values, group_index = group_index,
     group_sizes = setNames(group_sizes, group_ids),
     n_observations = nrow(x), n_informative = n_informative,
+    informative = observed_per_row > 0L,
     n_groups = n_groups, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes), variance_model = variance_model,
     covariance_model = covariance_model, covariance_structure = structure,
@@ -1838,7 +1870,7 @@ multilpa <- function(data, vars, id, n_profiles,
                                       call, weights = NULL, ordinal = character(),
                                       count = character(), count_model = "poisson",
                                       count_dispersion = "varying",
-                                      centering = "none") {
+                                      centering = "none", scaling = "none") {
   unsupported <- c(
     start = !is.null(start),
     fixed = length(fixed) > 0L)
@@ -1863,7 +1895,7 @@ multilpa <- function(data, vars, id, n_profiles,
     profile_slopes = profile_slopes, select_start = select_start, call = call,
     weights = weights, ordinal = ordinal, count = count,
     count_model = count_model, count_dispersion = count_dispersion,
-    centering = centering)
+    centering = centering, scaling = scaling)
 }
 
 #' One k-means run for a random start

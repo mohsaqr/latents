@@ -482,7 +482,8 @@ parameter_inference.multilpa_covariates <- function(x, data = NULL, level = 0.95
     missing = object$missing %||% "error",
     profile_slopes = object$profile_slopes %||% "shared",
     ordinal = object$ordinal %||% character(), count = object$count %||% character(),
-    centering = object$centering %||% "none", group_index = object$group_index)
+    centering = object$centering %||% "none", group_index = object$group_index,
+    scaling = object$scaling %||% "none")
   codes <- designs$codes
   if (!identical(designs$extra$ordinal_levels, object$extra_data$ordinal_levels) ||
       !identical(unname(designs$extra$ordinal), unname(object$extra_data$ordinal)) ||

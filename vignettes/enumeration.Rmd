@@ -459,7 +459,7 @@ knitr::kable(data.frame(
   Call = c(
     "enumerate_classes(data, vars, id, n_profiles, n_group_classes, model)",
     "as.data.frame(models)",
-    "get_results(models, \"criteria\")",
+    "get_results(models, \"best\")",
     "get_results(models, \"classification\")",
     "get_results(models, \"candidates\", cutoff = 0.9)",
     "get_results(models, \"deltas\", using = )",

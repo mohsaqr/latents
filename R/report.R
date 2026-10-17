@@ -362,7 +362,7 @@ report <- function(x, data = NULL, plots = TRUE,
       enough <- if (identical(view, "raincloud")) 1L else 2L
       return(!is.null(x$indicator_data) &&
                length(.multilpa_continuous_names(x)) >= enough &&
-               identical(x$centering %||% "none", "none"))
+               !.multilpa_is_transformed(x))
     }
     if (identical(view, "probabilities")) return(!is.null(x$profile_probabilities))
     # The two case-level diagnostics separate cases by profile, so a

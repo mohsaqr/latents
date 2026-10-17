@@ -920,62 +920,126 @@ utils::globalVariables(c(
 
 # -- classification -----------------------------------------------------------
 
-#' Effective profile sizes, largest first, labelled with count and share
+#' The posteriors, counts and words of one level of classification
+#'
+#' The diagnostic views draw the same things at both levels of a two-level
+#' fit: the individuals (cases) in their profiles, and the groups in their
+#' group classes. This is the one place that says what each level is, so a
+#' view is written once and drawn at either.
+#'
+#' @param x A fitted model.
+#' @param level `"individuals"` or `"groups"`.
+#' @return A list: `posteriors` (units by classes, or `NULL`), `key` (as
+#'   `.gg_profile_key()`, one row per class), `class_word` and `unit_word`
+#'   (singular, lower case), `total` (units the sizes are shares of) and
+#'   `noise` (whether a noise component is excluded).
 #' @noRd
-.gg_view_sizes <- function(x, main, subtitle) {
-  if (is.null(x$effective_profile_counts) ||
-      length(x$effective_profile_counts) == 0L) {
-    stop(errorCondition(
-      "This model carries no effective profile counts to draw.",
+.gg_level <- function(x, level = c("individuals", "groups")) {
+  level <- match.arg(level)
+  if (identical(level, "individuals")) {
+    noise <- isTRUE(x$noise)
+    return(list(
+      # Rows with no observed indicator were not classified; the certainty,
+      # entropy and AvePP views describe the rows that were.
+      posteriors = if (is.null(x$subject_posteriors)) NULL else
+        x$subject_posteriors[.multilpa_informative_rows(x), , drop = FALSE],
+      counts = x$effective_profile_counts,
+      key = if (length(x$effective_profile_counts)) .gg_profile_key(x),
+      class_word = "profile", unit_word = "case", level = level,
+      total = sum(x$effective_profile_counts) +
+        if (noise) sum(x$noise_posteriors) else 0,
+      noise = noise))
+  }
+  counts <- x$effective_group_counts
+  n_classes <- length(counts)
+  share <- counts / sum(counts)
+  ordering <- order(-share, seq_len(n_classes))
+  rank <- integer(n_classes)
+  rank[ordering] <- seq_len(n_classes)
+  label <- sprintf("Group class %d (%s)", seq_len(n_classes), .gg_percent(share))
+  key <- if (n_classes) data.frame(
+    profile = seq_len(n_classes), rank = rank, share = share,
+    count = unname(counts),
+    label = factor(label, levels = label[ordering]),
+    colour = rep_len(.gg_okabe_ito, n_classes)[rank],
+    shape = rep_len(.gg_shapes, n_classes)[rank],
+    stringsAsFactors = FALSE)
+  list(posteriors = x$group_posteriors, counts = counts, key = key,
+       class_word = "group class", unit_word = "group", level = level,
+       total = sum(counts), noise = FALSE)
+}
+
+#' Does a fit classify its groups into two or more group classes?
+#' @param x A fitted model.
+#' @return A single logical.
+#' @noRd
+.gg_has_group_classes <- function(x) {
+  is.matrix(x$group_posteriors) && ncol(x$group_posteriors) >= 2L
+}
+
+#' Effective class sizes, largest first, labelled with count and share
+#' @noRd
+.gg_view_sizes <- function(x, main, subtitle, level = "individuals") {
+  unit <- .gg_level(x, level)
+  if (is.null(unit$counts) || length(unit$counts) == 0L) {
+    stop(errorCondition(sprintf(
+      "This model carries no effective %s counts to draw.", unit$class_word),
       class = "latents_nothing_to_plot", call = NULL))
   }
-  key <- .gg_profile_key(x)
+  key <- unit$key
   key$profile_label <- factor(as.character(key$label),
                               levels = rev(levels(key$label)))
   key$bar_label <- sprintf("%.1f  (%.1f%%)", key$count, 100 * key$share)
-  total <- sum(x$effective_profile_counts) +
-    if (isTRUE(x$noise)) sum(x$noise_posteriors) else 0
   ggplot2::ggplot(key, ggplot2::aes(count, profile_label, fill = label)) +
     ggplot2::geom_col(width = 0.62) +
     ggplot2::geom_text(ggplot2::aes(label = bar_label), hjust = -0.08,
                        size = 3.4, colour = "grey20") +
     ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0.24))) +
     .gg_scales(key, "fill") +
-    .gg_titles(main, subtitle, "Profile sizes",
-               sprintf(paste("Effective number of cases (sum of posterior",
+    .gg_titles(main, subtitle,
+               sprintf("%s sizes", .gg_capitalize(unit$class_word)),
+               sprintf(paste("Effective number of %ss (sum of posterior",
                              "probabilities); %s in total"),
-                       format(round(total), big.mark = ",")),
-               caption = if (isTRUE(x$noise)) "Noise cases are excluded from the bars.") +
-    ggplot2::labs(x = "Effective cases", y = NULL) +
+                       unit$unit_word, format(round(unit$total), big.mark = ",")),
+               caption = if (unit$noise) "Noise cases are excluded from the bars.") +
+    ggplot2::labs(x = sprintf("Effective %ss", unit$unit_word), y = NULL) +
     .gg_theme() +
     ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
                    panel.grid.major.x = ggplot2::element_line(colour = "grey90",
                                                               linewidth = 0.35))
 }
 
-#' Per-case certainty and relative entropy from the fit's own posteriors
+#' The first letter of a phrase in upper case
 #' @noRd
-.gg_case_values <- function(x) {
-  posteriors <- x$subject_posteriors
+.gg_capitalize <- function(text) {
+  paste0(toupper(substr(text, 1L, 1L)), substr(text, 2L, nchar(text)))
+}
+
+#' Per-unit certainty and relative entropy from the fit's own posteriors
+#' @param x A fitted model.
+#' @param level `"individuals"` or `"groups"`.
+#' @noRd
+.gg_case_values <- function(x, level = "individuals") {
+  posteriors <- .gg_level(x, level)$posteriors
   k <- ncol(posteriors)
   assigned <- max.col(posteriors, ties.method = "first")
-  # -sum p log p per case, relative to its maximum log(K): 0 is certain,
+  # -sum p log p per unit, relative to its maximum log(K): 0 is certain,
   # 1 is a flat posterior.
   entropy <- -rowSums(posteriors * log(pmax(posteriors, .Machine$double.xmin)))
-  # Posteriors can round a hair past 1, which would put a case outside the
+  # Posteriors can round a hair past 1, which would put a unit outside the
   # [0, 1] axis and drop it from the plot with a warning.
   data.frame(profile = assigned,
              certainty = pmin(posteriors[cbind(seq_len(nrow(posteriors)), assigned)], 1),
              entropy = if (k > 1L) pmax(entropy / log(k), 0) else 0)
 }
 
-#' Strip plot of one per-case value by profile, with each profile's mean
+#' Strip plot of one per-unit value by class, with each class's mean
 #' @noRd
 .gg_case_strip <- function(x, value, limits, reference, reference_label,
                            default_main, default_subtitle, x_label, main,
-                           subtitle) {
-  key <- .gg_profile_key(x)
-  cases <- .gg_case_values(x)
+                           subtitle, level = "individuals") {
+  key <- .gg_level(x, level)$key
+  cases <- .gg_case_values(x, level)
   k <- nrow(key)
   y0 <- k + 1L - key$rank
   cases$value <- cases[[value]]
@@ -1022,45 +1086,57 @@ utils::globalVariables(c(
 }
 
 #' @noRd
-.gg_view_posteriors <- function(x, main, subtitle) {
-  .multilpa_require_case_posteriors(x, "posteriors")
-  k <- ncol(x$subject_posteriors)
+.gg_view_posteriors <- function(x, main, subtitle, level = "individuals") {
+  unit <- .gg_level(x, level)
+  view <- if (identical(level, "groups")) "group_posteriors" else "posteriors"
+  .multilpa_require_case_posteriors(x, view, level)
+  k <- ncol(unit$posteriors)
   .gg_case_strip(
     x, value = "certainty", limits = c(1 / k, 1),
     reference = 1 / k, reference_label = "chance",
-    default_main = "Classification certainty",
-    default_subtitle = paste("Posterior probability of each case's assigned",
-                             "profile; the profile mean is its average",
-                             "posterior probability"),
-    x_label = "Posterior probability of the assigned profile",
-    main = main, subtitle = subtitle)
+    default_main = if (identical(level, "groups"))
+      "Group classification certainty" else "Classification certainty",
+    default_subtitle = sprintf(paste(
+      "Posterior probability of each %s's assigned %s; the %s mean is its",
+      "average posterior probability"),
+      unit$unit_word, unit$class_word, unit$class_word),
+    x_label = sprintf("Posterior probability of the assigned %s",
+                      unit$class_word),
+    main = main, subtitle = subtitle, level = level)
 }
 
 #' @noRd
-.gg_view_entropy <- function(x, main, subtitle) {
-  .multilpa_require_case_posteriors(x, "entropy")
-  cases <- .gg_case_values(x)
+.gg_view_entropy <- function(x, main, subtitle, level = "individuals") {
+  unit <- .gg_level(x, level)
+  view <- if (identical(level, "groups")) "group_entropy" else "entropy"
+  .multilpa_require_case_posteriors(x, view, level)
+  cases <- .gg_case_values(x, level)
   .gg_case_strip(
     x, value = "entropy", limits = c(0, 1),
     reference = 1, reference_label = "flat",
-    default_main = "Classification uncertainty",
+    default_main = if (identical(level, "groups"))
+      "Group classification uncertainty" else "Classification uncertainty",
     default_subtitle = sprintf(paste(
-      "Each case's entropy relative to a flat posterior (0 = certain,",
+      "Each %s's entropy relative to a flat posterior (0 = certain,",
       "1 = flat); relative entropy = 1 - mean = %.3f"),
-      1 - mean(cases$entropy)),
-    x_label = "Relative case entropy", main = main, subtitle = subtitle)
+      unit$unit_word, 1 - mean(cases$entropy)),
+    x_label = sprintf("Relative %s entropy", unit$unit_word),
+    main = main, subtitle = subtitle, level = level)
 }
 
-#' Average posterior probability matrix, assigned by posterior profile
+#' Average posterior probability matrix, assigned by posterior class
 #' @noRd
-.gg_view_avepp <- function(x, main, subtitle) {
-  posteriors <- x$subject_posteriors
+.gg_view_avepp <- function(x, main, subtitle, level = "individuals") {
+  unit <- .gg_level(x, level)
+  posteriors <- unit$posteriors
   if (is.null(posteriors) || ncol(posteriors) < 1L) {
-    stop(errorCondition(
-      "This model carries no individual posteriors to average.",
+    stop(errorCondition(sprintf(
+      "This model carries no %s posteriors to average.",
+      if (identical(level, "groups")) "group" else "individual"),
       class = "latents_nothing_to_plot", call = NULL))
   }
-  key <- .gg_profile_key(x)
+  key <- unit$key
+  class_title <- .gg_capitalize(unit$class_word)
   averages <- .multilpa_average_posterior_matrix(posteriors)
   k <- ncol(averages)
   assigned <- tabulate(max.col(posteriors, ties.method = "first"), k)
@@ -1070,8 +1146,8 @@ utils::globalVariables(c(
   assigned_levels <- sprintf("Assigned %d (n = %d)", seq_len(k), assigned)
   cells$assigned_label <- factor(assigned_levels[cells$row],
                                  levels = rev(assigned_levels[display]))
-  cells$posterior_label <- factor(sprintf("Profile %d", cells$column),
-                                  levels = sprintf("Profile %d", display))
+  cells$posterior_label <- factor(sprintf("%s %d", class_title, cells$column),
+                                  levels = sprintf("%s %d", class_title, display))
   cells$text_colour <- .gg_ink(.gg_probability_fill(cells$average_posterior))
   cells$label <- ifelse(is.na(cells$average_posterior), "",
                         sprintf("%.2f", cells$average_posterior))
@@ -1087,10 +1163,17 @@ utils::globalVariables(c(
     .gg_probability_scale("Average\nposterior") +
     ggplot2::scale_x_discrete(position = "top", expand = c(0, 0)) +
     ggplot2::scale_y_discrete(expand = c(0, 0)) +
-    .gg_titles(main, subtitle, "Average posterior probability",
-               paste("Mean posterior each assigned group places on each",
-                     "profile; the outlined diagonal is classification",
-                     "accuracy")) +
+    .gg_titles(main, subtitle,
+               if (identical(level, "groups"))
+                 "Average posterior probability of the group classes" else
+                 "Average posterior probability",
+               if (identical(level, "groups"))
+                 paste("Mean posterior the groups assigned to each group class",
+                       "place on each group class; the outlined diagonal is",
+                       "classification accuracy") else
+                 paste("Mean posterior each assigned group places on each",
+                       "profile; the outlined diagonal is classification",
+                       "accuracy")) +
     ggplot2::labs(x = NULL, y = NULL) +
     .gg_theme() +
     .gg_tile_theme()
@@ -1364,7 +1447,7 @@ utils::globalVariables(c(
                                 \(s) s[which.max(s$n_profiles), ]))
   ends <- do.call(rbind, lapply(split(ends, ends$title, drop = TRUE), \(p) {
     span <- diff(range(ok$value[ok$title == p$title[1L]]))
-    p$y <- .gg_spread(p$value, gap = 0.07 * max(span, 1e-8))
+    p$y <- .gg_spread(p$value, gap = 0.1 * max(span, 1e-8))
     p
   }))
   ends$x <- max(ok$n_profiles) + 0.28
@@ -1372,8 +1455,12 @@ utils::globalVariables(c(
   colours <- stats::setNames(rep_len(.gg_okabe_ito, n_series), series_levels)
   shapes <- stats::setNames(rep_len(.gg_shapes, n_series), series_levels)
   # Direct labels while they fit beside the lines; past five series they
-  # collide, and a legend keeps every series identifiable.
-  labelled <- isTRUE(labels) && n_series > 1L && n_series <= 5L
+  # collide, and a legend keeps every series identifiable. They sit past the
+  # end of each line, which only a single panel has room for: beside a second
+  # panel they run off the edge and repeat in every panel, so several panels
+  # share one legend, keyed by colour and shape.
+  labelled <- isTRUE(labels) && n_series > 1L && n_series <= 5L &&
+    length(criteria) == 1L
   legend <- n_series > 1L && !labelled
   guide <- if (legend) "legend" else "none"
   failures <- sum(!grid$converged)
@@ -1681,7 +1768,9 @@ print.latents_plots <- function(x, ...) {
   n_series <- nlevels(long$series)
   colours <- stats::setNames(rep_len(.gg_okabe_ito, n_series), series_levels)
   shapes <- stats::setNames(rep_len(.gg_shapes, n_series), series_levels)
-  labelled <- isTRUE(labels) && n_series > 1L && n_series <= 5L
+  # As in the criteria view: direct labels fit beside a single panel only.
+  labelled <- isTRUE(labels) && n_series > 1L && n_series <= 5L &&
+    length(present) == 1L
   legend <- n_series > 1L && !labelled
   guide <- if (legend) "legend" else "none"
   avepp_panels <- grep("AvePP", names(present), value = TRUE)
@@ -1703,7 +1792,7 @@ print.latents_plots <- function(x, ...) {
                                   \(s) s[which.max(s$n_profiles), ]))
     ends <- do.call(rbind, lapply(split(ends, ends$title, drop = TRUE), \(p) {
       span <- diff(range(ok$value[ok$title == p$title[1L]], cutoff))
-      p$y <- .gg_spread(p$value, gap = 0.07 * max(span, 1e-8))
+      p$y <- .gg_spread(p$value, gap = 0.1 * max(span, 1e-8))
       p
     }))
     ends$x <- max(ok$n_profiles) + 0.28

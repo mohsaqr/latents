@@ -133,15 +133,26 @@ plot_prevalence <- function(x, labels = TRUE, main = NULL, subtitle = NULL) {
 #' @rdname latents-plots
 #' @export
 plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
-                                         "entropy", "avepp"),
+                                         "entropy", "avepp", "group_sizes",
+                                         "group_posteriors", "group_entropy",
+                                         "group_avepp"),
                              main = NULL, subtitle = NULL) {
   .gg_require_fit(x, "plot_diagnostics")
   what <- match.arg(what)
   .gg_require()
-  # Profile, class and transition fits carry posteriors and effective counts.
+  # Profile, class and transition fits carry posteriors and effective counts;
+  # a fit with two or more group classes carries them for its groups too, and
+  # each view draws either level from the same code.
   views <- list(sizes = .gg_view_sizes, posteriors = .gg_view_posteriors,
                 entropy = .gg_view_entropy, avepp = .gg_view_avepp)
+  group_views <- lapply(views, \(view) \(x, main, subtitle)
+                        view(x, main, subtitle, level = "groups"))
+  names(group_views) <- paste0("group_", names(views))
   if (!identical(what, "all")) {
+    if (what %in% names(group_views)) {
+      .multilpa_require_case_posteriors(x, what, level = "groups")
+      return(group_views[[what]](x, main, subtitle))
+    }
     if (!identical(what, "sizes")) {
       .multilpa_refuse_noise(x, sprintf("plot_diagnostics(what = \"%s\")", what))
     }
@@ -149,6 +160,9 @@ plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
   }
   if (isTRUE(x$noise)) views <- views["sizes"] else
     if (ncol(x$subject_posteriors) < 2L) views <- views[c("sizes", "avepp")]
+  if (.gg_has_group_classes(x) && !isTRUE(x$noise)) {
+    views <- c(views, group_views)
+  }
   .gg_plots(lapply(views, \(view) view(x, main, subtitle)))
 }
 

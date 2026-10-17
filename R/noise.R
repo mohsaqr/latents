@@ -153,6 +153,38 @@
   cbind(x$subject_posteriors, noise = x$noise_posteriors)
 }
 
+#' Which observations have at least one observed indicator
+#'
+#' A row with every indicator missing contributes nothing to the likelihood,
+#' so its posterior is not a classification of that row but the prior its
+#' group gives it. The sample size of the individual-level criteria already
+#' leaves such rows out; this is the same set of rows for every statistic of
+#' classification quality.
+#'
+#' @param x A fitted model of this package.
+#' @return A logical vector, one per observation; all `TRUE` for a fit that
+#'   did not record it.
+#' @noRd
+.multilpa_informative_rows <- function(x) {
+  x$informative %||% rep(TRUE, NROW(x$subject_posteriors))
+}
+
+#' The class posteriors of the observations that were classified
+#'
+#' Entropy, average posterior probability and the entropy charge of ICL, AWE
+#' and CLC describe how well observed values separate the classes, so they are
+#' taken over the rows with at least one observed indicator. Class sizes are
+#' estimates of the population and keep every row.
+#'
+#' @param x A fitted model of this package.
+#' @return [.multilpa_class_posteriors()] restricted to informative rows.
+#' @noRd
+.multilpa_classified_posteriors <- function(x) {
+  posteriors <- .multilpa_class_posteriors(x)
+  if (is.null(posteriors)) return(NULL)
+  posteriors[.multilpa_informative_rows(x), , drop = FALSE]
+}
+
 #' Refuse a verb that does not yet account for a noise component
 #' @param x A fitted model of this package.
 #' @param verb What was asked for, for the message.

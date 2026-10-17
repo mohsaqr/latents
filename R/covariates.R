@@ -243,7 +243,7 @@
                                   weights = NULL, ordinal = character(),
                                   count = character(), count_model = "poisson",
                                   count_dispersion = "varying",
-                                  centering = "none") {
+                                  centering = "none", scaling = "none") {
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`vars` must be a character vector" = is.character(vars),
@@ -294,7 +294,7 @@
                      min_probability = min_probability, missing = missing,
                      weights = weights, ordinal = ordinal, count = count,
                      count_model = count_model, count_dispersion = count_dispersion,
-                     centering = centering)
+                     centering = centering, scaling = scaling)
   group_index <- base$group_index
   sampling_weights <- unname(base$sampling_weights)
   first_rows <- match(seq_len(base$n_groups), group_index)
@@ -317,7 +317,7 @@
                                  categorical, min_probability, missing,
                                  profile_slopes, ordinal, count, count_model,
                                  count_dispersion, centering = centering,
-                                 group_index = group_index)
+                                 group_index = group_index, scaling = scaling)
   x <- designs$x
   center <- designs$center
   control <- list(variance_model = variance_model, min_variance = min_variance,
@@ -392,6 +392,8 @@
   result$missing <- missing
   result$centering <- centering
   result$centering_offsets <- base$centering_offsets
+  result$scaling <- scaling
+  result$scaling_factors <- base$scaling_factors
   ## Read by inference to rebuild the same design.
   result$profile_slopes <- profile_slopes
   ## The same effective counts the Gaussian fit carries, so the shared
@@ -702,15 +704,16 @@ nobs.multilpa_covariates <- function(object, ...) {
                                 profile_slopes = "shared", ordinal = character(),
                                 count = character(), count_model = "poisson",
                                 count_dispersion = "varying",
-                                centering = "none", group_index = NULL) {
+                                centering = "none", group_index = NULL,
+                                scaling = "none") {
   measurement <- .multilpa_prepare_indicators(data, vars, categorical,
                                               missing, min_probability,
                                               other = c(ordinal, count))
   x <- measurement$x
-  if (!identical(centering, "none")) {
+  if (!identical(centering, "none") || !identical(scaling, "none")) {
     stopifnot(length(group_index) == nrow(x))
     centred <- .multilpa_center_indicators(x, group_index, max(group_index),
-                                           centering)$x
+                                           centering, scaling)$x
     ## Judged on the raw values, as multilpa() does, so the verdict does not
     ## depend on the units the indicators were recorded in.
     .multilpa_check_centered(centred, centering, raw = x,
@@ -889,10 +892,13 @@ nobs.multilpa_covariates <- function(object, ...) {
     measurement_parameters + .latents_extra_n_parameters(designs$extra, n_profiles)
   result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
   result$bic <- -2 * result$log_likelihood + log(base$n_groups) * result$n_parameters
+  # The individual sample size counts rows with an observed indicator, as the
+  # base fit and its criteria table do; a row with none adds no information.
   result$bic_individual <- -2 * result$log_likelihood +
-    log(nrow(data)) * result$n_parameters
+    log(base$n_informative %||% nrow(data)) * result$n_parameters
   result$n_observations <- nrow(data)
   result$n_informative <- base$n_informative
+  result$informative <- base$informative
   result$indicator_data <- base$indicator_data
   result$n_groups <- base$n_groups
   result$n_profiles <- as.integer(n_profiles)

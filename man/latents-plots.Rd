@@ -125,7 +125,8 @@ plot_prevalence(x, labels = TRUE, main = NULL, subtitle = NULL)
 
 plot_diagnostics(
   x,
-  what = c("all", "sizes", "posteriors", "entropy", "avepp"),
+  what = c("all", "sizes", "posteriors", "entropy", "avepp", "group_sizes",
+    "group_posteriors", "group_entropy", "group_avepp"),
   main = NULL,
   subtitle = NULL
 )
@@ -233,8 +234,13 @@ group-class family grid plots with \code{plot(x, what = )}.}
 (effective profile counts), \code{"posteriors"} (posterior probability of each
 case's assigned profile), \code{"entropy"} (each case's entropy relative to a
 flat posterior) or \code{"avepp"} (average posterior probability matrix).
-A noise fit supports \code{"sizes"} only; \code{"all"} returns that view, and the
-other diagnostics refuse with \code{latents_unsupported_noise}. For
+\code{"group_sizes"}, \code{"group_posteriors"}, \code{"group_entropy"} and
+\code{"group_avepp"} draw the same four views for the groups and their group
+classes, and \code{"all"} includes them when the fit has two or more group
+classes; with fewer they refuse with \code{latents_no_group_classes}.
+A noise fit supports \code{"sizes"} and the group views only; \code{"all"} returns
+\code{"sizes"}, and the other individual diagnostics refuse with
+\code{latents_unsupported_noise}. For
 \code{plot_enumeration()}: criterion columns of \code{as.data.frame(x)}, such as
 \code{"bic_groups"}, or \code{"all"}; the default draws AIC, both BICs and ICL
 over individuals. Or classification quality across the candidates, in

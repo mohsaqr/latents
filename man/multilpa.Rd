@@ -42,7 +42,8 @@ multilpa(
   ordinal = character(),
   count = character(),
   count_model = c("poisson", "negative_binomial"),
-  count_dispersion = c("varying", "equal")
+  count_dispersion = c("varying", "equal"),
+  scaling = c("none", "person", "grand")
 )
 }
 \arguments{
@@ -450,6 +451,33 @@ A dispersion estimated at zero is the Poisson limit, a boundary fit
 \item{count_dispersion}{For \code{count_model = "negative_binomial"}: one
 dispersion per profile (\code{"varying"}, the default) or one shared by every
 profile (\code{"equal"}).}
+
+\item{scaling}{How to scale the continuous indicators before fitting, at
+the same levels as \code{centering}. \code{"none"}, the default, fits them as
+supplied. \code{"grand"} divides each indicator by its standard deviation over
+all observations, and \code{"person"} divides each group's values by that
+group's own standard deviation, so every unit's spread counts as one.
+With the matching centring these are the classical z-scores:
+\verb{centering = "grand", scaling = "grand"} standardizes each indicator over
+the sample, and \verb{centering = "person", scaling = "person"} standardizes it
+within each unit (within-person standardization). Standard deviations
+use the observed values with denominator \code{n - 1}; the scales are kept on
+the fit beside the centring offsets, so \code{get_results(x, "data")} still
+returns the columns you supplied, and \code{predict()} scales new units on
+their own spread under \code{"person"} and on the fitted spread under
+\code{"grand"}. Means, variances and covariances are then reported in
+standard-deviation units. The log likelihood, and so every information
+criterion, is that of the scaled values: compare fits made with the same
+centring and scaling, as an enumeration grid does. A standard deviation
+that is zero or undefined -- under \code{"person"}, a unit observed once on an
+indicator or always giving the same value -- is refused with
+\code{latents_bad_data}. With covariance structures that give every indicator
+its own variance (\code{EEI}, \code{VVI}, \code{EEE}, \code{VVV}, \code{EVI}, \code{VEI}), grand scaling
+changes only the units of the estimates; with the spherical \code{EII} and
+\code{VII} it changes the solution, because they force one variance on every
+indicator. Rank and quantile transformations are not offered: they
+force each indicator's distribution flat or normal, which removes the
+multimodality the profiles are estimated from.}
 }
 \value{
 A \code{multilpa} object containing \code{means}, \code{variances}, optional

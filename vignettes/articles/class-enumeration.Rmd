@@ -74,7 +74,9 @@ The evidence is reported in full because no single statistic determines the
 number of classes. The criteria, the changes between candidates and the
 classification quality together show where additional classes stop improving
 the model. A choice made from this evidence can be stated, justified and
-reproduced from the reported tables.
+reproduced from the reported tables. [Model selection](model-selection.html)
+describes each piece of the evidence in detail: its definition, how it is
+read and where it misleads.
 
 ```{r setup}
 library(latents)
@@ -594,7 +596,7 @@ knitr::kable(data.frame(
   Call = c(
     "enumerate_classes(data, vars, id, n_profiles, n_group_classes, model)",
     "as.data.frame(models)",
-    "get_results(models, \"criteria\")",
+    "get_results(models, \"best\")",
     "get_results(models, \"classification\")",
     "get_results(models, \"candidates\", cutoff = 0.9)",
     "get_results(models, \"deltas\", using = )",

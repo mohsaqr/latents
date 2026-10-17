@@ -415,7 +415,7 @@
         extra))
     }
     entropy <- if (is.null(fit)) NA_real_ else
-      .multilpa_relative_entropy(fit$subject_posteriors)
+      .multilpa_relative_entropy(.multilpa_classified_posteriors(fit))
     row <- data.frame(
       n_profiles = grid$n_profiles[i], n_group_classes = grid$n_group_classes[i],
       model = grid$model[i],

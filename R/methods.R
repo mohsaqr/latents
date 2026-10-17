@@ -40,9 +40,15 @@ print.multilpa <- function(x, rows = 20L, ...) {
   if (class_model) {
     cat("Classes are labelled profile_1, profile_2, ... in every table.\n")
   }
-  if (!identical(x$centering %||% "none", "none")) {
-    cat(sprintf("Indicators %s-centred, so the profiles are profiles of change\n",
-                x$centering))
+  if (identical(x$centering %||% "none", "person")) {
+    cat("Indicators person-centred, so the profiles are profiles of change\n")
+  } else if (identical(x$centering %||% "none", "grand")) {
+    cat("Indicators grand-centred, so the means are deviations from the overall mean\n")
+  }
+  if (!identical(x$scaling %||% "none", "none")) {
+    cat(sprintf(paste("Indicators divided by their %s standard deviation, so",
+                      "the means are in standard-deviation units\n"),
+                if (identical(x$scaling, "person")) "within-person" else "overall"))
   }
   if (isTRUE(x$noise)) {
     cat(sprintf(paste("Noise component: proportion %.4f, %d observation%s",
@@ -242,6 +248,7 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
              n_profiles = .multilpa_one(x$n_profiles, NA_integer_),
              n_group_classes = .multilpa_one(x$n_group_classes, NA_integer_),
              centering = .multilpa_one(x$centering %||% "none", NA_character_),
+             scaling = .multilpa_one(x$scaling %||% "none", NA_character_),
              covariance_structure = .multilpa_one(x$covariance_structure,
                                                   NA_character_),
              n_parameters = .multilpa_one(x$n_parameters, NA_integer_),
@@ -301,6 +308,7 @@ as.data.frame.summary_multilpa <- function(x, row.names = NULL, optional = FALSE
     n_starts = nrow(x$starts),
     weights = .multilpa_one(x$weights, NA_character_),
     centering = x$centering %||% "none",
+    scaling = x$scaling %||% "none",
     row.names = NULL, stringsAsFactors = FALSE)
 }
 

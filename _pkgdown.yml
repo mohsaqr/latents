@@ -99,6 +99,7 @@ articles:
   - articles/workflow-lpa
   - articles/workflow-lca
   - articles/class-enumeration
+  - articles/model-selection
   - articles/evaluation
   - articles/covariates
   - articles/mixture-regression

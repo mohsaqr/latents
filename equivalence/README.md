@@ -45,6 +45,8 @@ non-zero exit status if any test fails.
 | `test-mclust.R` | mclust: the M-steps, parameter counts and likelihood for all 14 covariance structures, and the VVV/EEE limits of the full-covariance model |
 | `test-mixture-regression-flexmix.R` | flexmix: `mixture_regression()`'s likelihood at flexmix's estimates, its optimum, binomial and Poisson estimates, shared coefficients and parameter counts, for row-level and group-level classes with and without a concomitant model |
 | `test-tidysem-bch.R` | tidySEM's classification error matrix and BCH estimate |
+| `test-mplus-classification.R` (`helper-mplus-classification.R`) | The package's own entropy and AvePP tables (`get_results(fit, "entropy")`, `"classification"`) against the values Mplus prints, to its three decimals: User's Guide examples 7.9 and 7.10, and both levels (`CW`, `CB`) of the two-level FIML runs. Classes are matched by Mplus's posterior-based counts |
+| `test-tidylpa-classification.R` | Relative entropy and AvePP against tidyLPA's formulas on the same posteriors (`srl`, VVI, 3 to 5 profiles). An independent tidyLPA fit is not compared, because mclust can stop at a different maximum |
 | `test-numerical-equivalence.R` | The in-house exhaustive-enumeration likelihood (`tests/testthat/helper-independent-likelihood.R`) |
 | `test-jstats-lta.R` | Latent transition references pinned by JStats: depmixS4 (Gaussian and binary), two Mplus LTA runs, and Table 5 of Muthen & Asparouhov (2022) |
 

@@ -136,11 +136,21 @@ predict.multilpa_transitions <- function(object, ...) {
   group_levels <- unique(groups)
   group_index <- match(groups, group_levels)
   centering <- object$centering %||% "none"
+  scaling <- object$scaling %||% "none"
+  # Grand offsets and scales are the fit's own; person ones belong to each
+  # unit, so the units in `newdata` are centred and scaled on themselves.
   if (identical(centering, "grand")) {
     x <- sweep(x, 2L, object$centering_offsets[1L, continuous], "-")
   } else if (identical(centering, "person")) {
     x <- .multilpa_center_indicators(x, group_index, length(group_levels),
                                      "person")$x
+  }
+  if (identical(scaling, "grand")) {
+    x <- sweep(x, 2L, object$scaling_factors[1L, continuous], "/")
+  } else if (identical(scaling, "person")) {
+    scales <- .multilpa_indicator_scales(x, group_index, length(group_levels),
+                                         "person")
+    x <- x / scales[group_index, , drop = FALSE]
   }
   list(x = x, codes = codes, extra = extra, group_index = group_index,
        groups = groups, rows = seq_len(n), two_level = two_level)

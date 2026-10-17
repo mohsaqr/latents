@@ -75,8 +75,12 @@ fixed. \code{model}, when given, crosses those covariance structures. The
 result is a \code{latents_transition_enumeration}, read with
 \code{\link[=get_results]{get_results()}} and \code{\link[=get_candidate]{get_candidate()}}.}
 
-\item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}} (or to \code{\link[=lta]{lta()}} with \code{time}); for group-class families only
-\code{n_starts}, \code{max_iter}, \code{tol} and \code{min_variance}.}
+\item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}} (or to \code{\link[=lta]{lta()}} with \code{time}),
+applied to every candidate alike, such as \code{n_starts} (random starts per
+candidate; more starts make a local maximum less likely, and every
+candidate gets the same number), \code{max_iter}, \code{missing}, \code{categorical},
+\code{centering} and \code{scaling}. For example, \code{enumerate_classes(data, vars, id, n_profiles = 2:6, n_starts = 20, seed = 1)}. Group-class families take
+only \code{n_starts}, \code{max_iter}, \code{tol} and \code{min_variance}.}
 }
 \value{
 An object of class \code{multilpa_enumeration}. Read it with the verbs
