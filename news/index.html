@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.41</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,14 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.0" id="latents-0950">latents 0.95.0<a class="anchor" aria-label="anchor" href="#latents-0950"></a></h2>
+<div class="section level4">
+<h4 id="parallel-enumeration-0-95-0">Parallel enumeration<a class="anchor" aria-label="anchor" href="#parallel-enumeration-0-95-0"></a></h4>
+<ul><li>
+<code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code>, and through it <code><a href="../reference/enumerate_lpa.html">enumerate_lpa()</a></code> and <code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code>, gain <code>cores = 1L</code>, which fits the candidates on several processor cores: forked processes on macOS and Linux, a socket cluster on Windows. Every candidate sets and restores its own seed, so with <code>seed</code> given the result is identical to <code>cores = 1</code> for profile, transition (<code>time</code>) and group-class family grids; only the time differs (a 24-candidate grid of <code>course_engagement</code> took 11.7 s on one core, 4.2 s on four and 3.3 s on eight). Candidates’ warnings and messages are passed on in grid order, with their condition classes. <code>cores = 1</code>, the default, runs as before. <code>parallel</code>, part of R, is now in Imports.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.41" id="latents-0941">latents 0.9.41<a class="anchor" aria-label="anchor" href="#latents-0941"></a></h2>
 <div class="section level4">

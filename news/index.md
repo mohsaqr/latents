@@ -1,5 +1,25 @@
 # Changelog
 
+## latents 0.95.0
+
+#### Parallel enumeration
+
+- [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+  and through it
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  and
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md),
+  gain `cores = 1L`, which fits the candidates on several processor
+  cores: forked processes on macOS and Linux, a socket cluster on
+  Windows. Every candidate sets and restores its own seed, so with
+  `seed` given the result is identical to `cores = 1` for profile,
+  transition (`time`) and group-class family grids; only the time
+  differs (a 24-candidate grid of `course_engagement` took 11.7 s on one
+  core, 4.2 s on four and 3.3 s on eight). Candidates’ warnings and
+  messages are passed on in grid order, with their condition classes.
+  `cores = 1`, the default, runs as before. `parallel`, part of R, is
+  now in Imports.
+
 ## latents 0.9.41
 
 #### `drop_empty`

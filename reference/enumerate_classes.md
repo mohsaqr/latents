@@ -20,7 +20,8 @@ enumerate_classes(
   family = "profiles",
   between_variance = c("varying", "equal"),
   time = NULL,
-  ...
+  ...,
+  cores = 1L
 )
 ```
 
@@ -128,6 +129,21 @@ enumerate_classes(
   `enumerate_classes(data, vars, id, n_profiles = 2:6, n_starts = 20, seed = 1)`.
   Group-class families take only `n_starts`, `max_iter`, `tol` and
   `min_variance`.
+
+- cores:
+
+  Number of processor cores to fit the candidates on (default 1). The
+  candidates are independent fits, each of which sets and restores its
+  own random seed, so with `seed` given the result is identical to
+  `cores = 1`; only the time differs. Candidates are fitted by forked
+  processes on macOS and Linux and by a socket cluster on Windows; their
+  warnings and messages are passed on in the order of the grid once all
+  have finished. Without `seed`, the random starts differ between runs
+  on any number of cores. A worker process that fails as a whole (for
+  example, out of memory) raises `latents_parallel_failure`.
+  [`parallel::detectCores()`](https://rdrr.io/r/parallel/detectCores.html)
+  gives the number available; each core holds its own copy of the fits
+  it computes.
 
 ## Value
 

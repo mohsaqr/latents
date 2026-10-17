@@ -13,7 +13,7 @@ boundary, and unreplicated fits are reported, not silently selected."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.41</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,7 +86,8 @@ boundary, and unreplicated fits are reported, not silently selected.</p>
 <span>  family <span class="op">=</span> <span class="st">"profiles"</span>,</span>
 <span>  between_variance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
 <span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">...</span></span>
+<span>  <span class="va">...</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">1L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -177,6 +178,20 @@ candidate; more starts make a local maximum less likely, and every
 candidate gets the same number), <code>max_iter</code>, <code>missing</code>, <code>categorical</code>,
 <code>centering</code>, <code>scaling</code> and <code>drop_empty</code>. For example, <code>enumerate_classes(data, vars, id, n_profiles = 2:6, n_starts = 20, seed = 1)</code>. Group-class families take
 only <code>n_starts</code>, <code>max_iter</code>, <code>tol</code> and <code>min_variance</code>.</p></dd>
+
+
+<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
+<dd><p>Number of processor cores to fit the candidates on (default
+1). The candidates are independent fits, each of which sets and restores
+its own random seed, so with <code>seed</code> given the result is identical to
+<code>cores = 1</code>; only the time differs. Candidates are fitted by forked
+processes on macOS and Linux and by a socket cluster on Windows; their
+warnings and messages are passed on in the order of the grid once all
+have finished. Without <code>seed</code>, the random starts differ between runs on
+any number of cores. A worker process that fails as a whole (for example,
+out of memory) raises <code>latents_parallel_failure</code>. <code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">parallel::detectCores()</a></code>
+gives the number available; each core holds its own copy of the fits it
+computes.</p></dd>
 
 </dl></div>
     <div class="section level2">
