@@ -335,12 +335,14 @@ utils::globalVariables(c("delta", "status", "tile_label", "smallest_share",
   frame <- .latents_selection_frame(x, "bic_groups")
   fits <- .subset2(x, "fits")
   share <- function(fit, level) {
+    # The rows and groups the fit counts (see `drop_empty`).
     posteriors <- if (identical(level, "individuals"))
-      .multilpa_class_posteriors(fit) else fit$group_posteriors
+      .multilpa_classified_posteriors(fit) else .multilpa_classified_group_posteriors(fit)
     if (is.null(posteriors)) return(NA_real_)
     weights <- .multilpa_level_weights(fit, level, nrow(posteriors)) %||% 1
     counts <- fit[[levels_wanted[[level]]]] %||%
-      colSums((if (identical(level, "individuals")) fit$subject_posteriors else posteriors) * weights)
+      colSums(posteriors[, seq_len(if (identical(level, "individuals"))
+        ncol(fit$subject_posteriors) else ncol(posteriors)), drop = FALSE] * weights)
     if (length(counts) < 2L) return(NA_real_)
     min(counts) / sum(posteriors * weights)
   }

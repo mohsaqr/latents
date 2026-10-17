@@ -938,6 +938,21 @@
 #'   indicator. Rank and quantile transformations are not offered: they
 #'   force each indicator's distribution flat or normal, which removes the
 #'   multimodality the profiles are estimated from.
+#' @param drop_empty `TRUE` (the default) or `FALSE`: what the reported
+#'   statistics do with rows whose every indicator is missing, and with groups
+#'   whose every row is such a row. These add nothing to the likelihood, so the
+#'   estimates are the same either way; their posterior is the prior, not a
+#'   classification. With `TRUE` they are left out of the individual and group
+#'   sample sizes of the information criteria, of relative entropy, AvePP and
+#'   the entropy charge of ICL, AWE and CLC, of the classification tables and
+#'   diagnostic plots, and of the effective class counts, as Mplus leaves them
+#'   out of its analysis. `FALSE` reports what latents 0.9.37 and earlier
+#'   reported, so their results can be reproduced: every row and group is
+#'   counted in those statistics, except the individual sample size of a
+#'   `multilpa()` fit, which already left such rows out. Fits made with
+#'   different `drop_empty` are not compared by [compare_models()] or
+#'   [bootstrap_lrt()]. The setting is kept on the fit and passed on by
+#'   enumerations and refits; it has no effect on data without such rows.
 #' @param time Optional name of a column giving each observation's position
 #'   within its group, such as a wave, occasion or course number. The model does
 #'   not use it; it is stored so that `get_results(x, "sequences")`,
@@ -1172,7 +1187,8 @@ multilpa <- function(data, vars, id, n_profiles,
                        count = character(),
                        count_model = c("poisson", "negative_binomial"),
                        count_dispersion = c("varying", "equal"),
-                       scaling = c("none", "person", "grand")) {
+                       scaling = c("none", "person", "grand"),
+                       drop_empty = TRUE) {
   family <- match.arg(family)
   count_model <- match.arg(count_model)
   count_dispersion <- match.arg(count_dispersion)
@@ -1286,6 +1302,7 @@ multilpa <- function(data, vars, id, n_profiles,
   missing <- match.arg(missing)
   centering <- match.arg(centering)
   scaling <- match.arg(scaling)
+  .multilpa_check_drop_empty(drop_empty)
   profile_slopes <- match.arg(profile_slopes)
   if (identical(profile_slopes, "group_class") && length(profile_covariates) == 0L) {
     stop(errorCondition(paste(
@@ -1353,7 +1370,7 @@ multilpa <- function(data, vars, id, n_profiles,
       time = time, fixed = fixed, select_start = select_start, call = call,
       weights = weights, ordinal = ordinal, count = count,
       count_model = count_model, count_dispersion = count_dispersion,
-      centering = centering, scaling = scaling)
+      centering = centering, scaling = scaling, drop_empty = drop_empty)
     result$single_level <- single_level
     return(result)
   }
@@ -1582,12 +1599,21 @@ multilpa <- function(data, vars, id, n_profiles,
   boundary <- .multilpa_covariance_boundary(parameters, min_variance)
   # Effective memberships are the counts the fit reports: weighted for a
   # weighted fit, so the flag, its warning and the printed counts agree.
+  # Under `drop_empty`, the counts are of the rows and groups that were
+  # classified, as Mplus counts them; otherwise of every row and group.
+  counted_rows <- if (isTRUE(drop_empty)) observed_per_row > 0L else
+    rep(TRUE, nrow(x))
+  counted_groups <- if (isTRUE(drop_empty))
+    seq_len(n_groups) %in% group_index[observed_per_row > 0L] else rep(TRUE, n_groups)
   effective_profile_counts <- if (is.null(sampling_weights))
-    colSums(subject_posteriors) else
-      setNames(colSums(weighted_expectation$subject_posteriors), profile_names)
+    colSums(subject_posteriors[counted_rows, , drop = FALSE]) else
+      setNames(colSums(weighted_expectation$subject_posteriors[counted_rows, , drop = FALSE]),
+               profile_names)
   effective_group_counts <- if (is.null(sampling_weights))
-    colSums(group_posteriors) else
-      setNames(colSums(weighted_expectation$group_posteriors), type_names)
+    colSums(group_posteriors[counted_groups, , drop = FALSE]) else
+      setNames(colSums(weighted_expectation$group_posteriors[counted_groups, , drop = FALSE]),
+               type_names)
+  group_sample_size <- if (isTRUE(drop_empty)) n_informative_groups else n_groups
   small_classes <- any(effective_profile_counts < 1) ||
     any(effective_group_counts < 1)
   result <- c(parameters, list(
@@ -1610,7 +1636,7 @@ multilpa <- function(data, vars, id, n_profiles,
     group_sizes = setNames(group_sizes, group_ids),
     n_observations = nrow(x), n_informative = n_informative,
     informative = observed_per_row > 0L,
-    n_informative_groups = n_informative_groups,
+    n_informative_groups = n_informative_groups, drop_empty = drop_empty,
     n_groups = n_groups, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes), variance_model = variance_model,
     covariance_model = covariance_model, covariance_structure = structure,
@@ -1634,8 +1660,8 @@ multilpa <- function(data, vars, id, n_profiles,
     n_parameters = n_parameters,
     n_parameters_with_measurement = n_parameters_with_measurement,
     aic = -2 * log_likelihood + 2 * n_parameters,
-    bic = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
-    bic_groups = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
+    bic = -2 * log_likelihood + log(group_sample_size) * n_parameters,
+    bic_groups = -2 * log_likelihood + log(group_sample_size) * n_parameters,
     bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,
     converged = best$converged, iterations = best$iterations,
     log_likelihood_history = best$history, starts = starts, best_start = best_start,
@@ -1874,7 +1900,8 @@ multilpa <- function(data, vars, id, n_profiles,
                                       call, weights = NULL, ordinal = character(),
                                       count = character(), count_model = "poisson",
                                       count_dispersion = "varying",
-                                      centering = "none", scaling = "none") {
+                                      centering = "none", scaling = "none",
+                                      drop_empty = TRUE) {
   unsupported <- c(
     start = !is.null(start),
     fixed = length(fixed) > 0L)
@@ -1899,7 +1926,7 @@ multilpa <- function(data, vars, id, n_profiles,
     profile_slopes = profile_slopes, select_start = select_start, call = call,
     weights = weights, ordinal = ordinal, count = count,
     count_model = count_model, count_dispersion = count_dispersion,
-    centering = centering, scaling = scaling)
+    centering = centering, scaling = scaling, drop_empty = drop_empty)
 }
 
 #' One k-means run for a random start

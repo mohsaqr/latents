@@ -224,8 +224,10 @@ utils::globalVariables(c("from", "to", "probability", "occasion"))
     count_means = .lta_extra_table(fit, "count_means"),
     group_classes = data.frame(group_class = classes,
                                weight = unname(fit$group_probabilities),
-                                count = unname(colSums(fit$group_posteriors *
-                                                         (fit$sampling_weights %||% 1))),
+                                count = unname(colSums(
+                                  .multilpa_classified_group_posteriors(fit) *
+                                    ((fit$sampling_weights %||% rep(1, nrow(fit$group_posteriors)))[
+                                      .multilpa_informative_groups(fit)]))),
                                stringsAsFactors = FALSE),
     assignments = {
       profile <- max.col(fit$subject_posteriors, ties.method = "first")

@@ -166,7 +166,31 @@
 #'   did not record it.
 #' @noRd
 .multilpa_informative_rows <- function(x) {
-  x$informative %||% rep(TRUE, NROW(x$subject_posteriors))
+  n_rows <- NROW(x$subject_posteriors)
+  # `drop_empty = FALSE` keeps the convention of 0.9.37 and earlier, in which
+  # every row was counted.
+  if (isFALSE(x$drop_empty)) return(rep(TRUE, n_rows))
+  x$informative %||% rep(TRUE, n_rows)
+}
+
+#' The group sample size of the group-convention criteria
+#' @param x A fitted model of this package.
+#' @return The number of groups with an observed row, or every group under
+#'   `drop_empty = FALSE` and for fits that did not record it.
+#' @noRd
+.multilpa_group_sample_size <- function(x) {
+  if (isFALSE(x$drop_empty)) return(x$n_groups)
+  x$n_informative_groups %||% x$n_groups
+}
+
+#' Validate the `drop_empty` switch
+#' @noRd
+.multilpa_check_drop_empty <- function(drop_empty) {
+  if (!(isTRUE(drop_empty) || isFALSE(drop_empty))) {
+    stop(errorCondition("`drop_empty` must be TRUE or FALSE.",
+                        class = "latents_bad_argument", call = NULL))
+  }
+  invisible(NULL)
 }
 
 #' Which groups have at least one row with an observed indicator
@@ -183,6 +207,7 @@
 .multilpa_informative_groups <- function(x) {
   if (is.null(x$group_posteriors)) return(NULL)
   n_groups <- nrow(x$group_posteriors)
+  if (isFALSE(x$drop_empty)) return(rep(TRUE, n_groups))
   informative <- .multilpa_informative_rows(x)
   if (all(informative) || is.null(x$group_index)) return(rep(TRUE, n_groups))
   observed <- rowsum(informative * 1, x$group_index, reorder = TRUE)

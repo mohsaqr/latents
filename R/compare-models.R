@@ -316,14 +316,16 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
       columns
     }
     diagnostic <- .latents_comparison_diagnostic_view(fit)
+    # Shares are of the rows the fit counts (see `drop_empty`), with the
+    # weights of those rows.
+    counted <- .multilpa_classified_posteriors(diagnostic)
+    weights <- .multilpa_level_weights(diagnostic, "individuals", nrow(counted)) %||% 1
     counts <- fit$effective_profile_counts %||%
-      colSums(fit$subject_posteriors *
-        (.multilpa_level_weights(diagnostic, "individuals", nrow(fit$subject_posteriors)) %||% 1))
+      colSums(counted[, seq_len(ncol(fit$subject_posteriors)), drop = FALSE] * weights)
     # Noise is outside the Gaussian profiles, but still occupies sample mass.
     # Profile shares are relative to all classified observations, not to the
     # Gaussian portion alone.
-    total <- sum(.multilpa_class_posteriors(fit) *
-      (.multilpa_level_weights(diagnostic, "individuals", nrow(fit$subject_posteriors)) %||% 1))
+    total <- sum(counted * weights)
     shares <- counts / total
     cbind(
       data.frame(model = labels[i], n_profiles = as.integer(fit$n_profiles),
@@ -462,7 +464,7 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
 .latents_comparison_diagnostic_view <- function(fit) {
   if (!inherits(fit, "multilpa_lta")) return(fit)
   fields <- c("n_parameters", "log_likelihood", "n_groups", "n_observations",
-              "n_informative", "informative", "n_informative_groups",
+              "n_informative", "informative", "n_informative_groups", "drop_empty",
               "subject_posteriors", "group_posteriors",
               "sampling_weights", "weights", "group_index")
   structure(fit[intersect(fields, names(fit))], class = "multilpa_transitions")
@@ -491,5 +493,6 @@ plot.latents_comparison <- function(x, main = NULL, subtitle = NULL, ...) {
        extra = .latents_draw_extra_columns(fit$extra_data),
        weights = unname(fit$sampling_weights), time = fit$time_values,
        centering = fit$centering %||% "none",
-       scaling = fit$scaling %||% "none")
+       scaling = fit$scaling %||% "none",
+       drop_empty = fit$drop_empty %||% TRUE)
 }

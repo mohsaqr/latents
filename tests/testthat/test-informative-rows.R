@@ -40,8 +40,8 @@ test_that("classification quality is taken over rows with an observed indicator"
     log(sum(setup$observed)) * fit$n_parameters +
     2 * .multilpa_entropy_sum(informative)
   expect_equal(criteria$icl_individual, expected_icl, tolerance = 1e-10)
-  # Class sizes are estimates of the population and keep every row.
-  expect_equal(sum(fit$effective_profile_counts), nrow(setup$data),
+  # Class counts are of the classified rows (drop_empty = TRUE, as Mplus).
+  expect_equal(sum(fit$effective_profile_counts), sum(setup$observed),
                tolerance = 1e-8)
   expect_identical(nrow(plot_diagnostics(fit, what = "posteriors")$data),
                    sum(setup$observed))
@@ -189,8 +189,8 @@ test_that("a group with nothing observed is left out of the group statistics", {
                tolerance = 1e-12)
   classification <- subset(get_results(fit, "classification"), level == "groups")
   expect_identical(sum(classification$n_modal), 28L)
-  # Group class sizes are estimates and keep every group.
-  expect_equal(sum(fit$effective_group_counts), 30, tolerance = 1e-8)
+  # Group class counts are of the classified groups (drop_empty = TRUE).
+  expect_equal(sum(fit$effective_group_counts), 28, tolerance = 1e-8)
 })
 
 test_that("in a single-level fit an empty row is an empty group", {
@@ -201,4 +201,71 @@ test_that("in a single-level fit an empty row is an empty group", {
              n_starts = 3, seed = 1)
   expect_identical(fit$n_informative_groups, fit$n_informative)
   expect_equal(fit$bic_groups, fit$bic_individual, tolerance = 1e-12)
+})
+
+drop_empty_data <- function() {
+  activity <- c("browse", "lectures", "forum_read")
+  data <- subset(course_engagement, student <= 30, c("student", activity))
+  set.seed(8)
+  data[sample(nrow(data), 25), activity] <- NA
+  data[data$student %in% c(4L, 17L), activity] <- NA
+  list(data = data, activity = activity,
+       observed = rowSums(!is.na(data[activity])) > 0)
+}
+
+test_that("drop_empty = TRUE counts only what was observed, FALSE counts everything", {
+  skip_on_cran()
+  setup <- drop_empty_data()
+  fit <- function(drop) multilpa(setup$data, setup$activity, "student",
+                                 n_profiles = 2, n_group_classes = 2, model = "VVI",
+                                 missing = "fiml", n_starts = 2, seed = 1,
+                                 drop_empty = drop)
+  dropped <- fit(TRUE)
+  kept <- fit(FALSE)
+  # The estimates do not depend on the switch.
+  expect_equal(dropped$log_likelihood, kept$log_likelihood, tolerance = 1e-12)
+  expect_equal(dropped$means, kept$means, tolerance = 1e-12)
+  expect_true(dropped$drop_empty)
+  expect_false(kept$drop_empty)
+  # Counts: the classified rows and groups, or every row and group.
+  expect_equal(sum(dropped$effective_profile_counts), sum(setup$observed),
+               tolerance = 1e-8)
+  expect_equal(sum(dropped$effective_group_counts), 28, tolerance = 1e-8)
+  expect_equal(sum(kept$effective_profile_counts), nrow(setup$data), tolerance = 1e-8)
+  expect_equal(sum(kept$effective_group_counts), 30, tolerance = 1e-8)
+  # Group sample size and classification statistics follow the switch.
+  expect_equal(kept$bic_groups, -2 * kept$log_likelihood + log(30) * kept$n_parameters,
+               tolerance = 1e-12)
+  expect_equal(subset(get_results(kept, "entropy"), level == "individuals")$relative_entropy,
+               .multilpa_relative_entropy(kept$subject_posteriors), tolerance = 1e-12)
+  expect_identical(subset(get_results(kept, "entropy"), level == "groups")$n_units, 30L)
+  # The individual sample size left empty rows out before 0.9.38 as well.
+  expect_equal(kept$bic_individual, dropped$bic_individual, tolerance = 1e-12)
+})
+
+test_that("drop_empty reaches every candidate and refuses a wrong value by class", {
+  skip_on_cran()
+  setup <- drop_empty_data()
+  grid <- enumerate_classes(setup$data, setup$activity, "student", n_profiles = 2,
+                            n_group_classes = 2, model = "VVI", missing = "fiml",
+                            n_starts = 2, seed = 1, drop_empty = FALSE)
+  expect_false(get_candidate(grid, "profiles2_groups2")$drop_empty)
+  expect_error(multilpa(setup$data, setup$activity, "student", 2, 2, missing = "fiml",
+                        drop_empty = NA), class = "latents_bad_argument")
+  expect_error(lta(subset(course_engagement, student <= 20), "browse", "student",
+                   n_profiles = 2, time = "sequence", drop_empty = "no"),
+               class = "latents_bad_argument")
+})
+
+test_that("fits with different drop_empty are not compared", {
+  skip_on_cran()
+  setup <- drop_empty_data()
+  fit <- function(drop, k) multilpa(setup$data, setup$activity, "student",
+                                    n_profiles = k, n_group_classes = 1, model = "VVI",
+                                    missing = "fiml", n_starts = 2, seed = 1,
+                                    drop_empty = drop)
+  expect_error(compare_models(a = fit(TRUE, 2), b = fit(FALSE, 2)),
+               class = "latents_incomparable_models")
+  expect_error(bootstrap_lrt(fit(TRUE, 1), fit(FALSE, 2), data = setup$data, iter = 2),
+               class = "latents_incomparable_models")
 })

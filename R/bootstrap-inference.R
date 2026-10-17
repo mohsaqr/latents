@@ -39,6 +39,7 @@
                  time = x$time,
                  centering = x$centering %||% "none",
                  scaling = x$scaling %||% "none",
+                 drop_empty = x$drop_empty %||% TRUE,
                  prior = x$prior,
                  noise = isTRUE(x$noise),
                  acceleration = x$acceleration %||% "none",

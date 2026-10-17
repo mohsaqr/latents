@@ -15,7 +15,8 @@
        measurement = "invariant", order = 1L, mover_stayer = FALSE,
        missing = fit$missing, covariance_model = fit$covariance_model,
        model = fit$covariance_structure,
-       min_variance = fit$min_variance, min_probability = fit$min_probability)
+       min_variance = fit$min_variance, min_probability = fit$min_probability,
+       drop_empty = fit$drop_empty %||% TRUE)
 }
 
 #' A transition fit in the general engine's parameterization
@@ -241,7 +242,7 @@
       count_dispersion = a$count_dispersion %||% "varying", weights = fit$weights,
       n_starts = n_starts, max_iter = max_iter,
       tol = tol, min_variance = a$min_variance, min_probability = a$min_probability,
-      seed = seed)
+      seed = seed, drop_empty = a$drop_empty %||% TRUE)
 }
 
 #' Verify original indicators, occasions and covariate designs of an LTA fit

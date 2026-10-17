@@ -657,9 +657,11 @@ lta <- function(data, vars, id, n_profiles, time,
                             weights = NULL, ordinal = character(),
                             count = character(),
                             count_model = c("poisson", "negative_binomial"),
-                            count_dispersion = c("varying", "equal")) {
+                            count_dispersion = c("varying", "equal"),
+                            drop_empty = TRUE) {
   count_model <- match.arg(count_model)
   count_dispersion <- match.arg(count_dispersion)
+  .multilpa_check_drop_empty(drop_empty)
   select_start <- match.arg(select_start)
   transitions <- match.arg(transitions)
   measurement_model <- match.arg(measurement)
@@ -729,7 +731,8 @@ lta <- function(data, vars, id, n_profiles, time,
                             transitions, transition_covariates, initial_covariates,
                             measurement_model, select_start, call, as.integer(order),
                             mover_stayer, missing, covariance_model, structure,
-                            weights, ordinal, count, count_model, count_dispersion))
+                            weights, ordinal, count, count_model, count_dispersion,
+                            drop_empty = drop_empty))
   }
   if (n_profiles < 2L) {
     stop(errorCondition(
@@ -838,6 +841,12 @@ lta <- function(data, vars, id, n_profiles, time,
     if (is.null(codes)) 0L else rowSums(!is.na(codes))
   n_informative <- sum(observed_per_row > 0L)
   n_informative_groups <- length(unique(groups$index[observed_per_row > 0L]))
+  # Under `drop_empty`, sizes and counts are of the classified rows and
+  # groups, as Mplus counts them; otherwise of every row and group (0.9.37).
+  counted_rows <- if (isTRUE(drop_empty)) observed_per_row > 0L else rep(TRUE, nrow(x))
+  counted_groups <- if (isTRUE(drop_empty))
+    seq_len(groups$n) %in% groups$index[observed_per_row > 0L] else rep(TRUE, groups$n)
+  group_sample_size <- if (isTRUE(drop_empty)) n_informative_groups else groups$n
   boundary <- .multilpa_covariance_boundary(parameters, min_variance)
   empty_rows <- any(parameters$empty_transition_rows)
   small_classes <- any(colSums(subject_posteriors) < 1) ||
@@ -856,7 +865,7 @@ lta <- function(data, vars, id, n_profiles, time,
     group_sizes = setNames(groups$sizes, groups$ids),
     n_observations = nrow(x), n_informative = n_informative,
     informative = observed_per_row > 0L,
-    n_informative_groups = n_informative_groups,
+    n_informative_groups = n_informative_groups, drop_empty = drop_empty,
     n_groups = groups$n, n_profiles = as.integer(n_profiles),
     n_group_classes = as.integer(n_group_classes),
     n_occasions = layout$n_occasions, occasions = occasions,
@@ -877,15 +886,15 @@ lta <- function(data, vars, id, n_profiles, time,
     group_log_likelihood = setNames(best$expectation$group_log_likelihood,
                                     groups$ids),
     n_parameters = n_parameters, aic = -2 * log_likelihood + 2 * n_parameters,
-    bic = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
-    bic_groups = -2 * log_likelihood + log(n_informative_groups) * n_parameters,
+    bic = -2 * log_likelihood + log(group_sample_size) * n_parameters,
+    bic_groups = -2 * log_likelihood + log(group_sample_size) * n_parameters,
     bic_individual = -2 * log_likelihood + log(n_informative) * n_parameters,
     converged = best$converged, iterations = best$iterations,
     log_likelihood_history = best$history, starts = starts,
     best_start = best_start, n_failed_starts = sum(!valid), boundary = boundary,
     small_classes = small_classes,
-    effective_profile_counts = colSums(subject_posteriors),
-    effective_group_counts = colSums(group_posteriors),
+    effective_profile_counts = colSums(subject_posteriors[counted_rows, , drop = FALSE]),
+    effective_group_counts = colSums(group_posteriors[counted_groups, , drop = FALSE]),
     n_best_replicated = sum(valid & abs(scores - log_likelihood) <=
                               1e-6 * (1 + abs(log_likelihood))),
     replication_tolerance = 1e-6 * (1 + abs(log_likelihood))))

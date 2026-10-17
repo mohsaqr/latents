@@ -69,7 +69,7 @@
   deviance <- -2 * x$log_likelihood
   conventions <- data.frame(
     convention = c("groups", "individuals"),
-    n = c(x$n_informative_groups %||% x$n_groups,
+    n = c(.multilpa_group_sample_size(x),
           x$n_informative %||% x$n_observations))
   entropies <- c(groups = if (is.null(x$group_posteriors)) NA_real_ else
                    .multilpa_entropy_sum(.multilpa_classified_group_posteriors(x)),

@@ -56,7 +56,7 @@ utils::globalVariables("statistic")
 #'   applied to every candidate alike, such as `n_starts` (random starts per
 #'   candidate; more starts make a local maximum less likely, and every
 #'   candidate gets the same number), `max_iter`, `missing`, `categorical`,
-#'   `centering` and `scaling`. For example, `enumerate_classes(data, vars, id,
+#'   `centering`, `scaling` and `drop_empty`. For example, `enumerate_classes(data, vars, id,
 #'   n_profiles = 2:6, n_starts = 20, seed = 1)`. Group-class families take
 #'   only `n_starts`, `max_iter`, `tol` and `min_variance`.
 #' @return An object of class `multilpa_enumeration`. Read it with the verbs
@@ -1213,16 +1213,19 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                 model$covariance_model %||% "diagonal")
   centering_for <- function(model) model$centering %||% "none"
   scaling_for <- function(model) model$scaling %||% "none"
+  drop_empty_for <- function(model) model$drop_empty %||% TRUE
   same_fields <- all(vapply(fields, function(field)
     identical(null_model[[field]], alternative_model[[field]]), logical(1)))
   if (!same_fields || !identical(extra_spec(null_model), extra_spec(alternative_model)) ||
       !identical(structure_for(null_model), structure_for(alternative_model)) ||
       !identical(centering_for(null_model), centering_for(alternative_model)) ||
       !identical(scaling_for(null_model), scaling_for(alternative_model)) ||
+      !identical(drop_empty_for(null_model), drop_empty_for(alternative_model)) ||
       !identical(missing_for(null_model), missing_for(alternative_model))) {
     stop(errorCondition(paste(
       "Models must use the same observations, group layout, covariance",
-      "structure, centering and scaling mode and missing-data handling."),
+      "structure, centering and scaling mode, missing-data handling and",
+      "`drop_empty`."),
         class = "latents_incomparable_models", call = NULL))
   }
   if (covariate_family) .multilpa_check_covariate_nesting(null_model, alternative_model)
@@ -1358,6 +1361,7 @@ bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
              min_variance = model$min_variance,
              centering = model$centering %||% "none",
              scaling = model$scaling %||% "none",
+             drop_empty = model$drop_empty %||% TRUE,
              categorical = model$categorical %||% character(),
              ordinal = model$ordinal %||% character(),
              count = model$count %||% character(),

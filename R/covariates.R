@@ -243,7 +243,8 @@
                                   weights = NULL, ordinal = character(),
                                   count = character(), count_model = "poisson",
                                   count_dispersion = "varying",
-                                  centering = "none", scaling = "none") {
+                                  centering = "none", scaling = "none",
+                                  drop_empty = TRUE) {
   stopifnot(
     "`data` must be a data frame" = is.data.frame(data),
     "`vars` must be a character vector" = is.character(vars),
@@ -294,7 +295,8 @@
                      min_probability = min_probability, missing = missing,
                      weights = weights, ordinal = ordinal, count = count,
                      count_model = count_model, count_dispersion = count_dispersion,
-                     centering = centering, scaling = scaling)
+                     centering = centering, scaling = scaling,
+                     drop_empty = drop_empty)
   group_index <- base$group_index
   sampling_weights <- unname(base$sampling_weights)
   first_rows <- match(seq_len(base$n_groups), group_index)
@@ -398,18 +400,24 @@
   result$profile_slopes <- profile_slopes
   ## The same effective counts the Gaussian fit carries, so the shared
   ## diagnostics and plot panels need no special case for this class.
-  result$effective_profile_counts <- colSums(result$subject_posteriors)
+  # Counted over the rows and groups the base fit counts (see `drop_empty`).
+  counted_rows <- .multilpa_informative_rows(base)
+  counted_groups <- .multilpa_informative_groups(base) %||%
+    rep(TRUE, nrow(result$group_posteriors))
+  result$effective_profile_counts <-
+    colSums(result$subject_posteriors[counted_rows, , drop = FALSE])
   result$weights <- weights
   if (!is.null(sampling_weights)) {
     result$sampling_weights <- stats::setNames(sampling_weights, base$group_ids)
     result$effective_profile_counts <- stats::setNames(
-      colSums(weighted_expectation$subject_posteriors),
+      colSums(weighted_expectation$subject_posteriors[counted_rows, , drop = FALSE]),
       names(result$effective_profile_counts))
   }
-  result$effective_group_counts <- colSums(result$group_posteriors)
+  result$effective_group_counts <-
+    colSums(result$group_posteriors[counted_groups, , drop = FALSE])
   if (!is.null(sampling_weights)) {
     result$effective_group_counts <- stats::setNames(
-      colSums(weighted_expectation$group_posteriors),
+      colSums(weighted_expectation$group_posteriors[counted_groups, , drop = FALSE]),
       names(result$effective_group_counts))
   }
   if (any(!is.finite(starts$log_likelihood))) {
@@ -892,15 +900,18 @@ nobs.multilpa_covariates <- function(object, ...) {
     measurement_parameters + .latents_extra_n_parameters(designs$extra, n_profiles)
   result$aic <- -2 * result$log_likelihood + 2 * result$n_parameters
   result$bic <- -2 * result$log_likelihood +
-    log(base$n_informative_groups %||% base$n_groups) * result$n_parameters
+    log(.multilpa_group_sample_size(base)) * result$n_parameters
   # The individual sample size counts rows with an observed indicator, as the
   # base fit and its criteria table do; a row with none adds no information.
+  # `drop_empty = FALSE` keeps the count of 0.9.37, every row of `data`.
   result$bic_individual <- -2 * result$log_likelihood +
-    log(base$n_informative %||% nrow(data)) * result$n_parameters
+    log(if (isFALSE(base$drop_empty)) nrow(data) else base$n_informative %||% nrow(data)) *
+      result$n_parameters
   result$n_observations <- nrow(data)
   result$n_informative <- base$n_informative
   result$informative <- base$informative
   result$n_informative_groups <- base$n_informative_groups
+  result$drop_empty <- base$drop_empty %||% TRUE
   result$indicator_data <- base$indicator_data
   result$n_groups <- base$n_groups
   result$n_profiles <- as.integer(n_profiles)

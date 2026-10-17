@@ -115,7 +115,8 @@ utils::globalVariables(c(
 .gg_profile_key <- function(x) {
   n_profiles <- x$n_profiles
   counts <- x$effective_profile_counts
-  total <- sum(counts) + if (isTRUE(x$noise)) sum(x$noise_posteriors) else 0
+  total <- sum(counts) + if (isTRUE(x$noise))
+    sum(x$noise_posteriors[.multilpa_informative_rows(x)]) else 0
   share <- (counts / total)[seq_len(n_profiles)]
   ordering <- order(-share, seq_len(n_profiles))
   rank <- integer(n_profiles)
@@ -815,8 +816,10 @@ utils::globalVariables(c(
     levels <- c(levels(key$label), "Noise")
     key$label <- as.character(key$label)
     key <- rbind(key, data.frame(profile = 0L, rank = nrow(key) + 1L,
-                                 share = sum(x$noise_posteriors) / x$n_observations,
-                                 count = sum(x$noise_posteriors), label = "Noise",
+                                 share = sum(x$noise_posteriors[.multilpa_informative_rows(x)]) /
+                                   sum(.multilpa_informative_rows(x)),
+                                 count = sum(x$noise_posteriors[.multilpa_informative_rows(x)]),
+                                 label = "Noise",
                                  colour = .gg_reserved_grey, shape = 4L))
     key$label <- factor(key$label, levels = levels)
   }
@@ -947,7 +950,7 @@ utils::globalVariables(c(
       key = if (length(x$effective_profile_counts)) .gg_profile_key(x),
       class_word = "profile", unit_word = "case", level = level,
       total = sum(x$effective_profile_counts) +
-        if (noise) sum(x$noise_posteriors) else 0,
+        if (noise) sum(x$noise_posteriors[.multilpa_informative_rows(x)]) else 0,
       noise = noise))
   }
   counts <- x$effective_group_counts

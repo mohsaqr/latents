@@ -50,8 +50,9 @@ differs is whether they are counted.
 |---|---|---|---|
 | Rows with nothing observed, in N and individual BIC | excluded ("These cases were not included in the analysis") | included (N = 600 for m2, 900 for m5) | excluded |
 | The same rows, in entropy and AvePP | excluded | — | excluded |
-| The same rows, in class counts | excluded | included | included |
-| Groups with nothing observed (m5: 7 and 31) | dropped (58 clusters) | kept (60 groups) | dropped from `bic_groups` and group-level entropy and AvePP (`n_informative_groups` = 58); kept in `n_groups`, group class sizes and assignments |
+| The same rows, in class counts | excluded | included | excluded (`drop_empty = TRUE`) |
+| Groups with nothing observed (m5: 7 and 31) | dropped (58 clusters) | kept (60 groups) | dropped from `bic_groups`, group-level entropy, AvePP and class counts (`n_informative_groups` = 58); kept in `n_groups` and assignments |
+| Group class counts | over observed rows (m5: 374.2 and 415.8, summing to 790) | — | over groups (summing to 58); weighted by observed rows they give Mplus's figures |
 | Group-level entropy and AvePP | averaged over observed rows, each carrying its group's posterior | — | averaged over groups |
 
 This package averages the group-level statistics over groups, each counted

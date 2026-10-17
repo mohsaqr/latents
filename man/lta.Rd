@@ -34,7 +34,8 @@ lta(
   ordinal = character(),
   count = character(),
   count_model = c("poisson", "negative_binomial"),
-  count_dispersion = c("varying", "equal")
+  count_dispersion = c("varying", "equal"),
+  drop_empty = TRUE
 )
 }
 \arguments{
@@ -196,6 +197,22 @@ indicators, as in \code{\link[=multilpa]{multilpa()}}; with \code{measurement = 
 parameters are estimated per occasion. Read them with
 \code{get_results(fit, "ordinal")} and \code{get_results(fit, "count_means")}. A
 fit with them uses the general transition engine.}
+
+\item{drop_empty}{\code{TRUE} (the default) or \code{FALSE}: what the reported
+statistics do with rows whose every indicator is missing, and with groups
+whose every row is such a row. These add nothing to the likelihood, so the
+estimates are the same either way; their posterior is the prior, not a
+classification. With \code{TRUE} they are left out of the individual and group
+sample sizes of the information criteria, of relative entropy, AvePP and
+the entropy charge of ICL, AWE and CLC, of the classification tables and
+diagnostic plots, and of the effective class counts, as Mplus leaves them
+out of its analysis. \code{FALSE} reports what latents 0.9.37 and earlier
+reported, so their results can be reproduced: every row and group is
+counted in those statistics, except the individual sample size of a
+\code{multilpa()} fit, which already left such rows out. Fits made with
+different \code{drop_empty} are not compared by \code{\link[=compare_models]{compare_models()}} or
+\code{\link[=bootstrap_lrt]{bootstrap_lrt()}}. The setting is kept on the fit and passed on by
+enumerations and refits; it has no effect on data without such rows.}
 }
 \value{
 A \code{multilpa_transitions} object containing \code{means}, \code{variances},

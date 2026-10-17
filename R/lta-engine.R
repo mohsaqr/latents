@@ -569,7 +569,7 @@
                              covariance_model = "diagonal", structure = NULL,
                              weights = NULL, ordinal = character(),
                              count = character(), count_model = "poisson",
-                             count_dispersion = "varying") {
+                             count_dispersion = "varying", drop_empty = TRUE) {
   n_movers <- as.integer(n_group_classes)
   # A stayer class is one more group class, whose transitions are fixed.
   n_group_classes <- n_movers + as.integer(mover_stayer)
@@ -709,6 +709,15 @@
       log(result$n_informative) * result$n_parameters
     .latents_warn_poisson_limit(do.call(cbind, lapply(result$measurement,
                                                       `[[`, "count_dispersion")))
+  }
+  result$drop_empty <- drop_empty
+  result$arguments$drop_empty <- drop_empty
+  if (isFALSE(drop_empty)) {
+    # The sample sizes of 0.9.37 and earlier: every row and every group.
+    result$n_informative <- result$n_observations
+    result$bic <- -2 * result$log_likelihood + log(groups$n) * result$n_parameters
+    result$bic_individual <- -2 * result$log_likelihood +
+      log(result$n_observations) * result$n_parameters
   }
   result
 }

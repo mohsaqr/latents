@@ -59,6 +59,28 @@ mplus_posterior_counts <- function(lines, k) {
          numeric(1), USE.NAMES = FALSE)
 }
 
+#' Class counts of one latent class variable of a two-level Mplus output
+#'
+#' A two-level output first prints the counts of the joint CB x CW patterns,
+#' then one block per variable; this reads the variable's own rows. Mplus
+#' counts both variables over observations, so the CB counts are row-weighted.
+#' @param lines Output lines.
+#' @param variable `"CW"` (profiles) or `"CB"` (group classes).
+#' @param k Number of classes of that variable.
+#' @return A numeric vector of length `k`, in Mplus's labels.
+mplus_variable_counts <- function(lines, variable, k) {
+  header <- grep("FOR EACH LATENT CLASS VARIABLE", lines)[1L]
+  stopifnot("no per-variable count block" = !is.na(header))
+  first <- grep(sprintf("^\\s+%s\\s+1\\s+[0-9.]+", variable), lines)
+  first <- first[first > header][1L]
+  stopifnot("no counts for this variable" = !is.na(first))
+  rows <- lines[first + seq_len(k) - 1L]
+  vapply(rows, \(line) {
+    fields <- strsplit(trimws(line), "\\s+")[[1L]]
+    as.numeric(fields[length(fields) - 1L])
+  }, numeric(1), USE.NAMES = FALSE)
+}
+
 #' Classification quality of a single-level Mplus output
 #' @param path The output.
 #' @param k Number of classes.

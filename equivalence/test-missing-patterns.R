@@ -131,6 +131,24 @@ test_that("likelihood and every row's posteriors reproduce Latent GOLD", {
   }))
 })
 
+test_that("class counts reproduce Mplus's counts based on posterior probabilities", {
+  # Mplus counts the classified rows only; so does drop_empty = TRUE.
+  invisible(lapply(names(missing_pattern_cases), function(name) {
+    case <- missing_pattern_cases[[name]]
+    fit <- fit_missing_pattern(case)
+    lines <- read_mplus_lines(file.path(missing_pattern_returned, paste0(name, ".out")))
+    counts <- if (identical(case$level, "single"))
+      mplus_posterior_counts(lines, case$n_profiles) else
+        mplus_variable_counts(lines, "CW", case$n_profiles)
+    saved <- mplus_saved_posteriors(name, case)
+    rows <- match(saved$id, case$data$id)
+    matched <- relabel(fit$subject_posteriors[rows, , drop = FALSE], saved$posteriors)
+    # Mplus prints the counts to five decimals.
+    expect_lt(max(abs(fit$effective_profile_counts[matched$order] - counts)), 0.05,
+              label = name)
+  }))
+})
+
 test_that("the programs' sample sizes differ only by the rows with nothing observed", {
   invisible(lapply(c("m2", "m5"), function(name) {
     case <- missing_pattern_cases[[name]]
@@ -177,6 +195,12 @@ test_that("m5's group level reproduces Mplus: clusters, posteriors and statistic
   mine <- fit$group_posteriors[match(group_of_row[first], fit$group_values), , drop = FALSE]
   matched <- relabel(mine, per_row[first, , drop = FALSE])
   expect_lt(matched$gap, 5e-4)
+  # Mplus counts the group classes over observed rows; the package counts
+  # groups. Weighting the package's group posteriors by each group's observed
+  # rows gives Mplus's figures.
+  row_counts <- colSums(per_observed_row)
+  expect_lt(max(abs(row_counts[matched$order] - mplus_variable_counts(lines, "CB", 2L))), 0.05)
+  expect_equal(sum(fit$effective_group_counts), 58, tolerance = 1e-8)
   # AvePP under Mplus's averaging, classes matched by the group posteriors.
   avepp <- diag(.multilpa_average_posterior_matrix(per_observed_row))
   expect_lt(max(abs(avepp[matched$order] - printed$avepp)), mplus_printed_tolerance)
