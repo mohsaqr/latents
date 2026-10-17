@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.39</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.40</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,13 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.40" id="latents-0940">latents 0.9.40<a class="anchor" aria-label="anchor" href="#latents-0940"></a></h2>
+<div class="section level4">
+<h4 id="groups-with-nothing-observed-0-9-40">Groups with nothing observed<a class="anchor" aria-label="anchor" href="#groups-with-nothing-observed-0-9-40"></a></h4>
+<ul><li>A group whose every row has every indicator missing is now left out of the group sample size (<code>bic_groups</code> and the other group-convention criteria) and of group-level entropy, AvePP, the classification and entropy tables and the group diagnostic plots, as Mplus leaves it out of its clusters. Its posterior is the group-class prior, not a classification. A group with at least one observed row is unaffected; group class sizes and assignments keep every group. Fits record <code>n_informative_groups</code>. In a single-level fit each row is its own group, so <code>bic_groups</code> now equals <code>bic_individual</code> when rows are empty. Fits without such groups report exactly what they did.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.39" id="latents-0939">latents 0.9.39<a class="anchor" aria-label="anchor" href="#latents-0939"></a></h2>
 <p>Fixes found by an independent review of 0.9.38, and new references for missing indicators.</p>

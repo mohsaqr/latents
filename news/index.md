@@ -1,5 +1,20 @@
 # Changelog
 
+## latents 0.9.40
+
+#### Groups with nothing observed
+
+- A group whose every row has every indicator missing is now left out of
+  the group sample size (`bic_groups` and the other group-convention
+  criteria) and of group-level entropy, AvePP, the classification and
+  entropy tables and the group diagnostic plots, as Mplus leaves it out
+  of its clusters. Its posterior is the group-class prior, not a
+  classification. A group with at least one observed row is unaffected;
+  group class sizes and assignments keep every group. Fits record
+  `n_informative_groups`. In a single-level fit each row is its own
+  group, so `bic_groups` now equals `bic_individual` when rows are
+  empty. Fits without such groups report exactly what they did.
+
 ## latents 0.9.39
 
 Fixes found by an independent review of 0.9.38, and new references for

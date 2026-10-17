@@ -586,9 +586,11 @@ candidates. `deviance`, `aic` and `kic` depend on no sample size and
 carry `convention = NA_character_`. `clc` depends on none either, but
 its convention selects which level's classification uncertainty it
 penalizes, so it is reported once per convention. Individual sample
-sizes exclude rows with no observed indicators. Where the group
-classification entropy is undefined, group-level `awe`, `icl` and `clc`
-are `NA`.
+sizes exclude rows with no observed indicators, and group sample sizes
+exclude groups whose every row has none (`n_informative_groups`); the
+classification statistics of each level leave out the same rows and
+groups, as Mplus does. Where the group classification entropy is
+undefined, group-level `awe`, `icl` and `clc` are `NA`.
 
 ## Classification quality
 
