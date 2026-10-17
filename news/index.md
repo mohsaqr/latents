@@ -1,5 +1,36 @@
 # Changelog
 
+## latents 0.9.41
+
+#### `drop_empty`
+
+- [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  and [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) gain
+  `drop_empty = TRUE`, at the end of their signatures; enumerations,
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) and
+  covariate fits pass it on through `...`. It governs what the reported
+  statistics do with rows whose every indicator is missing and groups
+  whose every row is such a row. The estimates and log likelihood are
+  the same either way.
+  - `TRUE` (default): such rows and groups are left out of the sample
+    sizes of the information criteria, of entropy, AvePP and the entropy
+    charge of ICL, AWE and CLC, of the classification tables and plots,
+    and now also of the effective class counts, as Mplus leaves them
+    out. Class counts now agree with Mplus’s counts based on posterior
+    probabilities.
+  - `FALSE`: every number is what latents 0.9.37 reported, so results
+    published with earlier versions can be reproduced (checked against
+    0.9.37 for enumeration grids, covariate fits, both
+    [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) engines
+    and
+    [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)).
+- Fits with different `drop_empty` are refused by
+  [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  and
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  with `latents_incomparable_models`.
+
 ## latents 0.9.40
 
 #### Groups with nothing observed

@@ -49,7 +49,8 @@ multilpa(
   count = character(),
   count_model = c("poisson", "negative_binomial"),
   count_dispersion = c("varying", "equal"),
-  scaling = c("none", "person", "grand")
+  scaling = c("none", "person", "grand"),
+  drop_empty = TRUE
 )
 ```
 
@@ -608,6 +609,28 @@ multilpa(
   transformations are not offered: they force each indicator's
   distribution flat or normal, which removes the multimodality the
   profiles are estimated from.
+
+- drop_empty:
+
+  `TRUE` (the default) or `FALSE`: what the reported statistics do with
+  rows whose every indicator is missing, and with groups whose every row
+  is such a row. These add nothing to the likelihood, so the estimates
+  are the same either way; their posterior is the prior, not a
+  classification. With `TRUE` they are left out of the individual and
+  group sample sizes of the information criteria, of relative entropy,
+  AvePP and the entropy charge of ICL, AWE and CLC, of the
+  classification tables and diagnostic plots, and of the effective class
+  counts, as Mplus leaves them out of its analysis. `FALSE` reports what
+  latents 0.9.37 and earlier reported, so their results can be
+  reproduced: every row and group is counted in those statistics, except
+  the individual sample size of a `multilpa()` fit, which already left
+  such rows out. Fits made with different `drop_empty` are not compared
+  by
+  [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
+  or
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md).
+  The setting is kept on the fit and passed on by enumerations and
+  refits; it has no effect on data without such rows.
 
 ## Value
 

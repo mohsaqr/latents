@@ -253,9 +253,12 @@ of its analysis; the fit’s `n_informative` counts the rows that remain,
 and its print reports how many were left out. A group whose every row
 has nothing observed is left out of the group sample size and the
 group-level statistics in the same way (`n_informative_groups`); a group
-with at least one observed row stays. Rows with some values missing stay
-in every statistic: they are classified, less certainly, from fewer
-indicators.
+with at least one observed row stays, and the effective class counts are
+of the classified rows and groups. Rows with some values missing stay in
+every statistic: they are classified, less certainly, from fewer
+indicators. `drop_empty = FALSE` restores the counting of latents 0.9.37
+and earlier, so that results reported with those versions can be
+reproduced.
 
 ``` r
 

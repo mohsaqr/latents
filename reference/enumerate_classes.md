@@ -123,7 +123,8 @@ enumerate_classes(
   with `time`), applied to every candidate alike, such as `n_starts`
   (random starts per candidate; more starts make a local maximum less
   likely, and every candidate gets the same number), `max_iter`,
-  `missing`, `categorical`, `centering` and `scaling`. For example,
+  `missing`, `categorical`, `centering`, `scaling` and `drop_empty`. For
+  example,
   `enumerate_classes(data, vars, id, n_profiles = 2:6, n_starts = 20, seed = 1)`.
   Group-class families take only `n_starts`, `max_iter`, `tol` and
   `min_variance`.

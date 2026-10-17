@@ -23,7 +23,7 @@ that differ only in where they start."><meta property="og:image" content="https:
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.40</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.41</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,7 +120,8 @@ that differ only in where they start.</p>
 <span>  ordinal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  count_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"poisson"</span>, <span class="st">"negative_binomial"</span><span class="op">)</span>,</span>
-<span>  count_dispersion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span></span>
+<span>  count_dispersion <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"varying"</span>, <span class="st">"equal"</span><span class="op">)</span>,</span>
+<span>  drop_empty <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -339,6 +340,24 @@ indicators, as in <code><a href="multilpa.html">multilpa()</a></code>; with <cod
 parameters are estimated per occasion. Read them with
 <code>get_results(fit, "ordinal")</code> and <code>get_results(fit, "count_means")</code>. A
 fit with them uses the general transition engine.</p></dd>
+
+
+<dt id="arg-drop-empty">drop_empty<a class="anchor" aria-label="anchor" href="#arg-drop-empty"></a></dt>
+<dd><p><code>TRUE</code> (the default) or <code>FALSE</code>: what the reported
+statistics do with rows whose every indicator is missing, and with groups
+whose every row is such a row. These add nothing to the likelihood, so the
+estimates are the same either way; their posterior is the prior, not a
+classification. With <code>TRUE</code> they are left out of the individual and group
+sample sizes of the information criteria, of relative entropy, AvePP and
+the entropy charge of ICL, AWE and CLC, of the classification tables and
+diagnostic plots, and of the effective class counts, as Mplus leaves them
+out of its analysis. <code>FALSE</code> reports what latents 0.9.37 and earlier
+reported, so their results can be reproduced: every row and group is
+counted in those statistics, except the individual sample size of a
+<code><a href="multilpa.html">multilpa()</a></code> fit, which already left such rows out. Fits made with
+different <code>drop_empty</code> are not compared by <code><a href="compare_models.html">compare_models()</a></code> or
+<code><a href="bootstrap_lrt.html">bootstrap_lrt()</a></code>. The setting is kept on the fit and passed on by
+enumerations and refits; it has no effect on data without such rows.</p></dd>
 
 </dl></div>
     <div class="section level2">

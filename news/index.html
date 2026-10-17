@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.40</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.41</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,20 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.41" id="latents-0941">latents 0.9.41<a class="anchor" aria-label="anchor" href="#latents-0941"></a></h2>
+<div class="section level4">
+<h4 id="drop_empty-0-9-41"><code>drop_empty</code><a class="anchor" aria-label="anchor" href="#drop_empty-0-9-41"></a></h4>
+<ul><li>
+<code><a href="../reference/multilpa.html">multilpa()</a></code> and <code><a href="../reference/lta.html">lta()</a></code> gain <code>drop_empty = TRUE</code>, at the end of their signatures; enumerations, <code><a href="../reference/lpa.html">lpa()</a></code>, <code><a href="../reference/lca.html">lca()</a></code> and covariate fits pass it on through <code>...</code>. It governs what the reported statistics do with rows whose every indicator is missing and groups whose every row is such a row. The estimates and log likelihood are the same either way.
+<ul><li>
+<code>TRUE</code> (default): such rows and groups are left out of the sample sizes of the information criteria, of entropy, AvePP and the entropy charge of ICL, AWE and CLC, of the classification tables and plots, and now also of the effective class counts, as Mplus leaves them out. Class counts now agree with Mplus’s counts based on posterior probabilities.</li>
+<li>
+<code>FALSE</code>: every number is what latents 0.9.37 reported, so results published with earlier versions can be reproduced (checked against 0.9.37 for enumeration grids, covariate fits, both <code><a href="../reference/lta.html">lta()</a></code> engines and <code><a href="../reference/compare_models.html">compare_models()</a></code>).</li>
+</ul></li>
+<li>Fits with different <code>drop_empty</code> are refused by <code><a href="../reference/compare_models.html">compare_models()</a></code> and <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> with <code>latents_incomparable_models</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.40" id="latents-0940">latents 0.9.40<a class="anchor" aria-label="anchor" href="#latents-0940"></a></h2>
 <div class="section level4">
