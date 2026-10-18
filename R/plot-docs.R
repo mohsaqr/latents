@@ -6,10 +6,15 @@
 #' regressions, pooled imputations and bootstrap tests draw when called,
 #' including inside loops, and return their ggplot invisibly to avoid drawing
 #' twice at the console. The main views also have functions of their own,
-#' whose arguments an editor completes: `plot_profiles()` (profile means, or
-#' categorical means, medians and modes), `plot_responses()` (categorical
-#' response probabilities), `plot_prevalence()` (profile shares within each
-#' group class), `plot_diagnostics()` (classification quality),
+#' whose arguments an editor completes, and each groups related views under
+#' `what`, with `"all"` drawing every one: `plot_profiles()` (profile means as
+#' lines, bars, a heatmap, rainclouds, parallel lines or pairs, or
+#' categorical means, medians and modes),
+#' `plot_responses()` (categorical response probabilities),
+#' `plot_sequences()` (each group's profile at each
+#' occasion), `plot_prevalence()` (profile shares within each group class),
+#' `plot_diagnostics()` (classification quality), `plot_selection()` (the
+#' model-selection evidence of a grid),
 #' `plot_transitions()` (transition matrix), `plot_enumeration()`
 #' (information criteria, classification quality and model-selection evidence
 #' across a grid) and `plot_tree()` (how profiles split as more are added).
@@ -31,7 +36,18 @@
 #'   order, weights, ordinal or count indicators) draws only its transition
 #'   matrix, with `plot_transitions()` or `plot()`; a transition or
 #'   group-class family grid plots with `plot(x, what = )`.
-#' @param what For `plot_diagnostics()`: `"all"` (default), `"sizes"`
+#' @param what Which view to draw; `"all"` draws every view of that function
+#'   the model has, as a list, and names any it cannot draw. For
+#'   `plot_profiles()`: `"lines"` (default), `"bars"` (means from zero with
+#'   95% intervals), `"heatmap"` (means in observed standard deviations, or
+#'   the response probabilities of categorical indicators), `"raincloud"`
+#'   (each indicator's distribution by assigned profile), `"parallel"` (every
+#'   case as a line) or `"pairs"` (scatter-plot matrix with each profile's 95%
+#'   covariance ellipse). For
+#'   `plot_selection()`: `"all"` (default), `"deltas"`, `"heatmap"`,
+#'   `"smallest"`, `"trust"` or `"diagnostics"`, as described for
+#'   `plot_enumeration()` below. For `plot_diagnostics()`: `"all"`
+#'   (default), `"sizes"`
 #'   (effective profile counts), `"posteriors"` (posterior probability of each
 #'   case's assigned profile), `"entropy"` (each case's entropy relative to a
 #'   flat posterior) or `"avepp"` (average posterior probability matrix).

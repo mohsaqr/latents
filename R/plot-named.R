@@ -95,18 +95,82 @@
     verb, class(x)[1L], advice), class = "latents_bad_argument", call = NULL))
 }
 
+#' Draw several views of a fit, naming the views that do not apply
+#'
+#' A grouped plot function's `what = "all"` draws each of its views with the
+#' arguments that view takes. A view the fit has no ingredients for
+#' (`.multilpa_supported_views()`), or that refuses with a classed condition,
+#' is left out and named in one message, as `plot(x, what = "all")` does.
+#' @param x A fitted model.
+#' @param views Named list: the plot() view for each name, and in `uses` the
+#'   arguments that view takes.
+#' @param arguments Named list of the arguments the caller supplied.
+#' @param verb The calling function's name, for messages.
+#' @return A `latents_plots` list named by view, or one ggplot.
+#' @noRd
+.multilpa_plot_named_views <- function(x, views, arguments, verb) {
+  refused <- \(condition) NULL
+  supported <- .multilpa_supported_views(x)
+  plots <- lapply(views, \(view) {
+    if (!view$what %in% supported) return(NULL)
+    tryCatch(.multilpa_plot_named_view(
+      x, view$what, arguments[intersect(names(arguments), view$uses)], verb),
+      latents_no_plot = refused, latents_nothing_to_plot = refused,
+      latents_no_time = refused, latents_no_categorical = refused,
+      latents_no_continuous = refused, latents_no_indicator_data = refused)
+  })
+  drawn <- !vapply(plots, is.null, logical(1))
+  if (!any(drawn)) {
+    stop(errorCondition(sprintf("%s() has no view this model can draw.", verb),
+                        class = "latents_nothing_to_plot", call = NULL))
+  }
+  if (!all(drawn)) {
+    message(sprintf("Not drawn for this model: %s.",
+                    paste(names(views)[!drawn], collapse = ", ")))
+  }
+  .gg_plots(plots[drawn])
+}
+
+#' Draw one view of a grouped plot function, or all of them
+#' @param x A fitted model.
+#' @param what The caller's `what`, already matched.
+#' @param views As in `.multilpa_plot_named_views()`.
+#' @param arguments Named list of the arguments the caller supplied.
+#' @param verb The calling function's name, for messages.
+#' @return A ggplot object, or a `latents_plots` list for `"all"`.
+#' @noRd
+.multilpa_plot_grouped <- function(x, what, views, arguments, verb) {
+  arguments$what <- NULL
+  if (identical(what, "all")) {
+    return(.multilpa_plot_named_views(x, views, arguments, verb))
+  }
+  view <- views[[what]]
+  .multilpa_plot_named_view(
+    x, view$what, arguments[intersect(names(arguments), view$uses)], verb)
+}
+
 #' @rdname latents-plots
 #' @export
 plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
                           scale = c("raw", "standardized"), intervals = TRUE,
                           labels = TRUE, data = NULL, main = NULL,
-                          subtitle = NULL) {
+                          subtitle = NULL,
+                          what = c("lines", "bars", "heatmap", "raincloud",
+                                   "parallel", "pairs", "all")) {
   .gg_require_fit(x, "plot_profiles")
+  what <- match.arg(what)
   statistic <- match.arg(statistic)
   scale <- match.arg(scale)
-  .multilpa_plot_named_view(
-    x, "profiles", .multilpa_supplied_arguments(match.call(), environment()),
-    "plot_profiles")
+  titles <- c("main", "subtitle")
+  .multilpa_plot_grouped(x, what, list(
+    lines = list(what = "profiles", uses = c("statistic", "scale", "intervals",
+                                             "labels", "data", titles)),
+    bars = list(what = "bars", uses = c("scale", "intervals", "data", titles)),
+    heatmap = list(what = "heatmap", uses = titles),
+    raincloud = list(what = "raincloud", uses = c("scale", titles)),
+    parallel = list(what = "parallel", uses = titles),
+    pairs = list(what = "pairs", uses = titles)),
+    .multilpa_supplied_arguments(match.call(), environment()), "plot_profiles")
 }
 
 #' @rdname latents-plots
@@ -118,6 +182,16 @@ plot_responses <- function(x, category = "last", intervals = TRUE,
   .multilpa_plot_named_view(
     x, "responses", .multilpa_supplied_arguments(match.call(), environment()),
     "plot_responses")
+}
+
+#' @rdname latents-plots
+#' @export
+plot_sequences <- function(x, labels = TRUE, cell_labels = TRUE, main = NULL,
+                           subtitle = NULL) {
+  .gg_require_fit(x, "plot_sequences")
+  .multilpa_plot_named_view(
+    x, "sequences", .multilpa_supplied_arguments(match.call(), environment()),
+    "plot_sequences")
 }
 
 #' @rdname latents-plots
@@ -186,4 +260,17 @@ plot_tree <- function(x, main = NULL, subtitle = NULL) {
   .gg_require_enumeration(x, "plot_tree")
   .gg_require()
   .gg_view_tree(x, main, subtitle)
+}
+
+#' @rdname latents-plots
+#' @export
+plot_selection <- function(x, what = c("all", "deltas", "heatmap", "smallest",
+                                       "trust", "diagnostics"),
+                           using = "bic_groups", cutoff = 0.8, main = NULL,
+                           subtitle = NULL) {
+  .gg_require_enumeration(x, "plot_selection")
+  what <- match.arg(what)
+  plot_enumeration(x, what = if (identical(what, "all")) "selection" else what,
+                   using = using, cutoff = cutoff, main = main,
+                   subtitle = subtitle)
 }

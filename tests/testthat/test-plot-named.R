@@ -41,6 +41,23 @@ test_that("each named plot draws what plot(what = ) draws", {
                plot(fits$lpa, what = "avepp"))
   same_drawing(expect_plot(plot_transitions(fits$lta)),
                plot(fits$lta, what = "transitions"))
+  same_drawing(expect_plot(plot_profiles(fits$lpa, what = "bars",
+                                         scale = "standardized")),
+               plot(fits$lpa, what = "bars", scale = "standardized"))
+  same_drawing(expect_plot(plot_profiles(fits$lpa, what = "heatmap")),
+               plot(fits$lpa, what = "heatmap"))
+  same_drawing(expect_plot(plot_profiles(fits$lca, what = "heatmap")),
+               plot(fits$lca, what = "heatmap"))
+  same_drawing(expect_plot(plot_profiles(fits$lpa, what = "raincloud")),
+               plot(fits$lpa, what = "raincloud"))
+  same_drawing(expect_plot(plot_profiles(fits$lpa, what = "parallel")),
+               plot(fits$lpa, what = "parallel"))
+  same_drawing(expect_plot(plot_profiles(fits$lpa, what = "pairs")),
+               plot(fits$lpa, what = "pairs"))
+  same_drawing(expect_plot(plot_sequences(fits$lta, cell_labels = FALSE)),
+               plot(fits$lta, what = "sequences", cell_labels = FALSE))
+  same_drawing(expect_plot(plot_selection(fits$grid, what = "deltas")),
+               plot_enumeration(fits$grid, what = "deltas"))
   # A transition fit takes the measurement views too, without intervals.
   same_drawing(plot_profiles(fits$lta), plot(fits$lta, what = "profiles"))
   same_drawing(expect_plot(plot_tree(fits$grid)),
@@ -178,4 +195,33 @@ test_that("enumeration plots choose criteria with `what`, and 0.9.21's `criterio
     expect_warning(plot(other, colour = "red"),
                    class = "latents_unused_argument")
   }))
+})
+
+test_that("a grouped plot function's \"all\" draws each of its views", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+  fits <- named_plot_fits()
+  profiles <- plot_profiles(fits$lpa, what = "all", scale = "standardized")
+  expect_s3_class(profiles, "latents_plots")
+  expect_identical(names(profiles), c("lines", "bars", "heatmap", "raincloud",
+                                      "parallel", "pairs"))
+  # Arguments reach only the views that take them.
+  same_drawing(profiles$bars, plot(fits$lpa, what = "bars",
+                                   scale = "standardized"))
+  same_drawing(profiles$heatmap, plot(fits$lpa, what = "heatmap"))
+  same_drawing(profiles$raincloud, plot(fits$lpa, what = "raincloud",
+                                        scale = "standardized"))
+  # A categorical fit has no observed distributions to draw as bars; the
+  # view is left out and named.
+  expect_message(categorical <- plot_profiles(fits$lca, what = "all"),
+                 "Not drawn for this model")
+  expect_true("heatmap" %in% names(categorical))
+  selection <- plot_selection(fits$grid)
+  expect_s3_class(selection, "latents_plots")
+  expect_identical(names(selection),
+                   names(plot_enumeration(fits$grid, what = "selection")))
+  expect_error(plot_selection(fits$lpa), class = "latents_bad_argument")
+  # Profile summaries keep their position: `statistic` is still second.
+  same_drawing(plot_profiles(fits$lpa, "median"),
+               plot(fits$lpa, statistic = "median"))
 })

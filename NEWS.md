@@ -1,3 +1,25 @@
+# latents 0.95.6
+
+### New features
+
+* The named plot functions now cover every view of a fit, grouped by
+  subject so that typing `plot_` lists them all, and each group's `what`
+  takes `"all"` to draw every view it has:
+  * `plot_profiles(x, what = )` adds `"bars"`, `"heatmap"`, `"raincloud"`,
+    `"parallel"` and `"pairs"` to the lines (`what` is its last argument, so
+    existing calls are unchanged);
+  * new `plot_sequences(x)`;
+  * new `plot_selection(x, what = )` for an enumeration: `"deltas"`,
+    `"heatmap"`, `"smallest"`, `"trust"`, `"diagnostics"`, or `"all"`
+    (default), the same as `plot_enumeration(x, what = "selection")`.
+
+  Each draws exactly what `plot(x, what = )` draws.
+
+### Bug fixes
+
+* `plot(x, what = "all")` and `report()` left out the heatmap of a model
+  with only categorical indicators, which draws its response probabilities.
+
 # latents 0.95.3
 
 ### New features

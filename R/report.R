@@ -353,6 +353,10 @@ report <- function(x, data = NULL, plots = TRUE,
       return(tryCatch({ .gg_category_scores(x$response_probabilities); TRUE },
                       latents_bad_argument = function(e) FALSE))
     }
+    # The heatmap draws the response probabilities when there are no means.
+    if (identical(view, "heatmap") && length(x$response_probabilities) > 0L) {
+      return(TRUE)
+    }
     if (view %in% c("profiles", "bars", "heatmap")) {
       return(!is.null(x$means) && ncol(x$means) > 0L)
     }

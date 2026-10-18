@@ -22,10 +22,12 @@
 \alias{plot.latents_pooled}
 \alias{plot_profiles}
 \alias{plot_responses}
+\alias{plot_sequences}
 \alias{plot_prevalence}
 \alias{plot_diagnostics}
 \alias{plot_transitions}
 \alias{plot_tree}
+\alias{plot_selection}
 \alias{plot_enumeration}
 \alias{plot_views}
 \title{Plot latents results}
@@ -108,7 +110,8 @@ plot_profiles(
   labels = TRUE,
   data = NULL,
   main = NULL,
-  subtitle = NULL
+  subtitle = NULL,
+  what = c("lines", "bars", "heatmap", "raincloud", "parallel", "pairs", "all")
 )
 
 plot_responses(
@@ -117,6 +120,14 @@ plot_responses(
   intervals = TRUE,
   labels = TRUE,
   data = NULL,
+  main = NULL,
+  subtitle = NULL
+)
+
+plot_sequences(
+  x,
+  labels = TRUE,
+  cell_labels = TRUE,
   main = NULL,
   subtitle = NULL
 )
@@ -134,6 +145,15 @@ plot_diagnostics(
 plot_transitions(x, main = NULL, subtitle = NULL)
 
 plot_tree(x, main = NULL, subtitle = NULL)
+
+plot_selection(
+  x,
+  what = c("all", "deltas", "heatmap", "smallest", "trust", "diagnostics"),
+  using = "bic_groups",
+  cutoff = 0.8,
+  main = NULL,
+  subtitle = NULL
+)
 
 \method{plot}{multilpa}(
   x,
@@ -230,7 +250,18 @@ order, weights, ordinal or count indicators) draws only its transition
 matrix, with \code{plot_transitions()} or \code{plot()}; a transition or
 group-class family grid plots with \code{plot(x, what = )}.}
 
-\item{what}{For \code{plot_diagnostics()}: \code{"all"} (default), \code{"sizes"}
+\item{what}{Which view to draw; \code{"all"} draws every view of that function
+the model has, as a list, and names any it cannot draw. For
+\code{plot_profiles()}: \code{"lines"} (default), \code{"bars"} (means from zero with
+95\% intervals), \code{"heatmap"} (means in observed standard deviations, or
+the response probabilities of categorical indicators), \code{"raincloud"}
+(each indicator's distribution by assigned profile), \code{"parallel"} (every
+case as a line) or \code{"pairs"} (scatter-plot matrix with each profile's 95\%
+covariance ellipse). For
+\code{plot_selection()}: \code{"all"} (default), \code{"deltas"}, \code{"heatmap"},
+\code{"smallest"}, \code{"trust"} or \code{"diagnostics"}, as described for
+\code{plot_enumeration()} below. For \code{plot_diagnostics()}: \code{"all"}
+(default), \code{"sizes"}
 (effective profile counts), \code{"posteriors"} (posterior probability of each
 case's assigned profile), \code{"entropy"} (each case's entropy relative to a
 flat posterior) or \code{"avepp"} (average posterior probability matrix).
@@ -318,19 +349,19 @@ compute intervals from a different frame.}
 \item{cell_labels}{For sequence views, \code{TRUE} prints each assigned profile
 in its cell while the display is sparse enough to hold the text.}
 
+\item{using}{For \code{plot_enumeration(what = "deltas")}, \code{"heatmap"} or
+\code{"selection"}, the information criterion they read (default
+\code{"bic_groups"}); \code{"smallest"} and \code{"trust"} do not use one.}
+
+\item{cutoff}{For \code{plot_enumeration(what = "avepp")}, \code{"diagnostics"} or
+\code{"selection"}, the AvePP cutoff drawn as a dashed line.}
+
 \item{combine}{\code{TRUE} draws several criteria as panels of one plot; \code{FALSE}
 returns one plot per criterion.}
 
 \item{mark_minimum}{\code{TRUE} rings each criterion's lowest value among
 converged candidates. It marks an extremum; it does not select a model.
 Information criteria only.}
-
-\item{cutoff}{For \code{plot_enumeration(what = "avepp")}, \code{"diagnostics"} or
-\code{"selection"}, the AvePP cutoff drawn as a dashed line.}
-
-\item{using}{For \code{plot_enumeration(what = "deltas")}, \code{"heatmap"} or
-\code{"selection"}, the information criterion they read (default
-\code{"bic_groups"}); \code{"smallest"} and \code{"trust"} do not use one.}
 }
 \value{
 A ggplot object. \code{plot_diagnostics(what = "all")},
@@ -349,10 +380,15 @@ object to print, save with \code{ggplot2::ggsave()} or restyle with
 regressions, pooled imputations and bootstrap tests draw when called,
 including inside loops, and return their ggplot invisibly to avoid drawing
 twice at the console. The main views also have functions of their own,
-whose arguments an editor completes: \code{plot_profiles()} (profile means, or
-categorical means, medians and modes), \code{plot_responses()} (categorical
-response probabilities), \code{plot_prevalence()} (profile shares within each
-group class), \code{plot_diagnostics()} (classification quality),
+whose arguments an editor completes, and each groups related views under
+\code{what}, with \code{"all"} drawing every one: \code{plot_profiles()} (profile means as
+lines, bars, a heatmap, rainclouds, parallel lines or pairs, or
+categorical means, medians and modes),
+\code{plot_responses()} (categorical response probabilities),
+\code{plot_sequences()} (each group's profile at each
+occasion), \code{plot_prevalence()} (profile shares within each group class),
+\code{plot_diagnostics()} (classification quality), \code{plot_selection()} (the
+model-selection evidence of a grid),
 \code{plot_transitions()} (transition matrix), \code{plot_enumeration()}
 (information criteria, classification quality and model-selection evidence
 across a grid) and \code{plot_tree()} (how profiles split as more are added).
