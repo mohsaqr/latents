@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,82 +95,84 @@
 
     
     
-<p>Mixture models explain heterogeneity in a population by assuming that
-it consists of a small number of unobserved subpopulations, the latent
-classes, each with its own pattern of responses. In latent profile
-analysis the pattern is a set of means of continuous indicators, and in
-latent class analysis it is a set of response probabilities of
-categorical indicators. When observations are nested in groups, the
-groups themselves can differ. Course enrolments, for example, are nested
-within students, and one student may be engaged in most of their courses
-while another is engaged in few. A two-level model captures such
-differences with a second set of latent classes, the group classes. Each
-group class is a type of student, defined by the proportions of the
-student’s enrolments that fall in each profile. For a given number of
-classes, the model estimates how large each class is and what its
-response pattern looks like. The number of classes itself is an input to
-the estimation, and the model returns no estimate of it. The analyst
-fixes the number of profiles, and in a two-level model the number of
-group classes, before estimation, and every substantive conclusion of
-the analysis depends on that choice.</p>
-<p>Choosing the number of classes is difficult because the usual tools
-for comparing models each fall short in a specific way. Fit alone always
-favours more classes, since a model with one more class can reproduce
-the smaller model and improve on it. The likelihood ratio test, which
-compares nested models in most settings, gives invalid p-values here. A
-model with k classes is a model with k + 1 classes in which one class
-has size zero, and at that edge of the parameter space the test
-statistic loses its usual reference distribution. Valid p-values then
-require simulating many data sets from the smaller model and refitting
-both models to each, which is slow when many candidates are compared.
-Information criteria avoid testing altogether and instead balance fit
-against a charge for every estimated parameter. The criteria differ in
-that charge, so the Akaike information criterion, with a light charge,
-tends to favour more classes than the Bayesian information criterion,
-with a heavier one.</p>
-<p>Applied data raise further problems. In large samples even the
-Bayesian information criterion often keeps decreasing as classes are
-added, because small departures from the model become detectable and
-each new class absorbs some of them. The lowest value then falls on the
-largest model that was fitted, and the size of each improvement says
-more than the position of the minimum. In a two-level model the number
-of profiles and the number of group classes are chosen together, and the
-charge of the Bayesian information criterion depends on whether the
-sample size counts the students or their enrolments. Finally, a model
-can fit the data well and still separate its classes poorly, so that
-many enrolments or students sit between classes, and its estimate can be
-a local maximum of the likelihood that a different starting point would
-improve.</p>
-<p>This document applies class enumeration to a two-level latent profile
-model. Every combination of the requested numbers of profiles and group
-classes is fitted with <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code>, and every
-fitted model is kept. Each candidate is described by its information
-criteria under both definitions of the sample size, by the decrease of a
-criterion with each added profile and each added group class, by the
-knee of each of these curves, by the certainty of its classification and
-by checks of its estimation. Selected candidates are then compared side
-by side. The chosen candidate is taken from the fitted candidates for
-further analysis.</p>
-<p>The evidence is reported in full because no single statistic
-determines the number of classes. The criteria, the changes between
-candidates and the classification quality together show where additional
-classes stop improving the model. A choice made from this evidence can
-be stated, justified and reproduced from the reported tables. <a href="model-selection.html">Model selection</a> describes each piece of
-the evidence in detail: its definition, how it is read and where it
-misleads.</p>
+<p>Finite mixture models represent population heterogeneity as a small
+number of unobserved subpopulations, the latent classes, each
+characterized by its own distribution of the observed indicators
+(McLachlan and Peel, 2000). In latent profile analysis the
+class-specific parameters are the means and variances of continuous
+indicators; in latent class analysis they are the response probabilities
+of categorical indicators. When observations are nested within
+higher-level units, the units may themselves differ in the distribution
+of classes. In the data used here, course enrolments are nested within
+students, and students differ in the proportion of their enrolments that
+show a given pattern of engagement. The two-level mixture model of
+Vermunt (2003) represents this variation with a second, higher-level
+latent variable whose categories, the group classes, are defined by
+their distributions over the lower-level profiles. For a fixed number of
+classes, estimation yields the class sizes and the class-specific
+parameters. The number of classes, however, is not a parameter of the
+model: it is specified before estimation, at both levels in a two-level
+model, and every subsequent inference is conditional on that
+specification.</p>
+<p>Determining the number of classes is difficult because each
+conventional criterion for model comparison is deficient in a specific
+respect. The maximized likelihood is non-decreasing in the number of
+classes, since a model with k + 1 classes contains the model with k
+classes as a special case. The likelihood ratio test of k against k + 1
+classes does not have its usual chi-square reference distribution,
+because the null hypothesis places a mixing proportion on the boundary
+of the parameter space and leaves the parameters of the omitted class
+unidentified (McLachlan and Peel, 2000). Valid p-values can be obtained
+by parametric bootstrap (McLachlan, 1987), at the cost of refitting both
+models to many simulated data sets. Information criteria avoid
+hypothesis testing by penalizing the deviance for the number of
+estimated parameters; criteria with a weaker penalty, such as the Akaike
+information criterion, select more classes than criteria with a stronger
+penalty, such as the Bayesian information criterion (Nylund, Asparouhov
+and Muthén, 2007).</p>
+<p>Applied data introduce further complications. In large samples the
+Bayesian information criterion frequently continues to decrease as
+classes are added, because minor misspecifications become detectable and
+each additional class absorbs part of them. The minimum then falls at
+the largest model fitted, and the magnitude of successive improvements
+is more informative than the location of the minimum. In a two-level
+model the numbers of lower- and higher-level classes must be determined
+jointly, and the penalty of the Bayesian information criterion depends
+on whether the sample size is taken as the number of higher-level units
+or of lower-level observations (Lukočienė, Varriale and Vermunt, 2010).
+Moreover, a model may fit well yet separate its classes poorly, and the
+reported solution may be a local rather than the global maximum of the
+likelihood.</p>
+<p>This article applies class enumeration to a two-level latent profile
+model. All combinations of the specified numbers of profiles and group
+classes are estimated with <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code>, and every
+fitted model is retained. Each candidate is characterized by its
+information criteria under both definitions of the sample size, by the
+change in a criterion with each additional profile and group class, by
+the knee of each resulting curve, by the certainty of its classification
+and by diagnostics of its estimation. Selected candidates are then
+compared directly, and the chosen candidate is extracted for substantive
+analysis.</p>
+<p>The full evidence is reported because no single statistic determines
+the number of classes. Considered jointly, the criteria, the changes
+between neighbouring candidates and the indices of classification
+quality indicate where additional classes cease to improve the model,
+and a decision based on them can be stated, justified and reproduced
+from the reported tables. <a href="model-selection.html">Model
+selection</a> defines each source of evidence and discusses its
+interpretation and limitations.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
-<p>The examples use <code>course_engagement</code>, a data frame in long
-format with one row per course enrolment. It contains 1,422 enrolments
-of 106 students. Five measures of activity in each course serve as
-indicators: browsing of the course site, lecture viewing, reading of the
-forum, posting to the forum and attendance. Each measure is standardized
-within its course, so a value of zero is the course average. The column
-<code>student</code> identifies the student to whom each enrolment
-belongs.</p>
+<p>The examples use <code>course_engagement</code>, a long-format data
+frame with one row per course enrolment, comprising 1,422 enrolments of
+106 students. Five measures of course activity serve as indicators:
+browsing of the course site, lecture viewing, forum reading, forum
+posting and attendance. Each measure is standardized within its course,
+so that zero denotes the course mean. The column <code>student</code>
+identifies the student to whom each enrolment belongs.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">course_engagement</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   student course sequence browse lectures forum_read forum_post attendance previous_grade</span></span>
@@ -187,35 +189,33 @@ belongs.</p>
 <span><span class="co">#&gt; 4 disengaged     wavering</span></span>
 <span><span class="co">#&gt; 5 disengaged     wavering</span></span>
 <span><span class="co">#&gt; 6 disengaged     wavering</span></span></code></pre></div>
-<p>Enrolments are nested in students. The profiles therefore describe
-patterns of activity in a single course, and the group classes describe
-students by how their enrolments are distributed across those
+<p>Because enrolments are nested within students, the profiles describe
+patterns of activity within a single course, and the group classes
+describe students by the distribution of their enrolments over those
 patterns.</p>
 </div>
 <div class="section level2">
 <h2 id="fitting-the-candidate-models">Fitting the candidate models<a class="anchor" aria-label="anchor" href="#fitting-the-candidate-models"></a>
 </h2>
-<p>The candidates are fitted with <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> from
-the data, the indicators in <code>vars</code> and the group identifier
-in <code>id</code>. The arguments <code>n_profiles</code> and
-<code>n_group_classes</code> give the numbers of classes to try, and one
-model is fitted for every combination of them. Here the numbers of
-profiles run from one to six and the numbers of group classes from one
-to four. The argument <code>model</code> sets the covariance structure
-of the profiles. The value <code>"VVI"</code> gives every profile its
-own variances and fixes the covariances at zero. Without
-<code>model</code>, the four basic structures are fitted for every
-combination.</p>
-<p>The likelihood of a mixture model has several local maxima, so each
-model is estimated from several random starts and the solution with the
-highest likelihood is kept. The argument <code>n_starts</code> sets the
-number of starts, and, like every other argument of the fitting function
-given here, it applies to every candidate alike. The example uses three
-starts per model to keep the computation short. Applied analyses use ten
-or more, and a grid is refitted as a whole when more starts are needed,
-so that every candidate has the same chance of reaching its best
-solution. The argument <code>seed</code> makes the starts
-reproducible.</p>
+<p><code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> takes the data, the indicators
+(<code>vars</code>) and the group identifier (<code>id</code>). The
+arguments <code>n_profiles</code> and <code>n_group_classes</code>
+specify the numbers of classes to be considered, and one model is
+estimated for each combination; here the number of profiles ranges from
+one to six and the number of group classes from one to four. The
+argument <code>model</code> specifies the within-profile covariance
+structure. <code>"VVI"</code> assigns each profile its own variances and
+constrains the covariances to zero; when <code>model</code> is omitted,
+the four basic structures are estimated for every combination.</p>
+<p>The likelihood of a mixture model is multimodal, so each model is
+estimated from several random starts and the solution with the highest
+likelihood is retained. The number of starts is set by
+<code>n_starts</code>, which, like every other estimation argument,
+applies identically to all candidates. Three starts per model are used
+here to limit computation; applied analyses should use at least ten, and
+a grid is re-estimated in its entirety when more starts are required, so
+that every candidate has the same opportunity to reach its maximum. The
+argument <code>seed</code> makes the starts reproducible.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">activity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span>
 <span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
@@ -325,21 +325,20 @@ reproducible.</p>
 <span><span class="co">#&gt;                  1</span></span>
 <span><span class="co">#&gt; 3 candidate(s) did not converge; see as.data.frame(x).</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Compare one convention consistently.</span></span></code></pre></div>
-<p>The result holds 24 fitted candidates. Each candidate is named by its
-numbers of profiles and group classes, so that
-<code>profiles4_groups3</code> has four profiles and three group
-classes, and the name identifies the candidate in every function that
-follows. The 3 candidates with one profile and several group classes
-could not be estimated. Group classes are defined by differences in the
-distribution of profiles, and a model with a single profile has no such
-differences. These candidates remain in the table with the error that
-stopped them.</p>
+<p>The result contains 24 candidates. Each is named by its numbers of
+profiles and group classes (<code>profiles4_groups3</code> denotes four
+profiles and three group classes), and this name identifies the
+candidate in all subsequent functions. The 3 candidates with a single
+profile and more than one group class are not identified: group classes
+are defined by differences in the distribution of profiles, and with a
+single profile no such differences exist. These candidates are retained
+in the table together with the error that terminated their
+estimation.</p>
 </div>
 <div class="section level2">
 <h2 id="the-table-of-candidates">The table of candidates<a class="anchor" aria-label="anchor" href="#the-table-of-candidates"></a>
 </h2>
-<p>The table of candidates has one row per candidate and is returned by
-<code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>.</p>
+<p><code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code> returns one row per candidate.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic</span></span>
@@ -492,7 +491,7 @@ stopped them.</p>
 <span><span class="co">#&gt; 22                                                                                   &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 23                                                                                   &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 24                                                                                   &lt;NA&gt;</span></span></code></pre></div>
-<p>The columns fall into groups.</p>
+<p>The columns form the following groups.</p>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -550,7 +549,7 @@ stopped them.</p>
 <code>n_best_replicated</code>, <code>warnings</code>,
 <code>error</code>
 </td>
-<td>Checks of the estimation</td>
+<td>Diagnostics of the estimation</td>
 </tr>
 </tbody>
 </table>
@@ -559,14 +558,15 @@ stopped them.</p>
 <h2 id="information-criteria">Information criteria<a class="anchor" aria-label="anchor" href="#information-criteria"></a>
 </h2>
 <p>An information criterion is the deviance, minus twice the maximized
-log-likelihood, plus a charge for every estimated parameter. Lower
-values indicate a better balance of fit and complexity. In a two-level
-model the charge of several criteria depends on the sample size.
-Criteria ending in <code>_groups</code> count the 106 students as the
-independent units, and criteria ending in <code>_individual</code> count
-the 1,422 enrolments. An analysis uses one of the two conventions
-throughout.</p>
-<p>The candidate at the minimum of each criterion:</p>
+log-likelihood, plus a penalty for the estimated parameters; lower
+values indicate a more favourable balance of fit and complexity. In a
+two-level model the penalty of several criteria depends on the sample
+size. Criteria with the suffix <code>_groups</code> treat the 106
+students as the independent units, and criteria with the suffix
+<code>_individual</code> the 1,422 enrolments (Lukočienė, Varriale and
+Vermunt, 2010). A single convention should be used throughout an
+analysis.</p>
+<p>The candidate that minimizes each criterion:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"best"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    criterion  convention         candidate n_profiles n_group_classes model value</span></span>
@@ -584,45 +584,48 @@ throughout.</p>
 <span><span class="co">#&gt; 12       icl individuals profiles2_groups4          2               4   VVI 17140</span></span>
 <span><span class="co">#&gt; 13       clc      groups profiles6_groups4          6               4   VVI 16580</span></span>
 <span><span class="co">#&gt; 14       clc individuals profiles2_groups4          2               4   VVI 16944</span></span></code></pre></div>
-<p>The criteria disagree. With students as the units, the Bayesian
-information criterion (BIC) is lowest for profiles4_groups3, the
-integrated completed likelihood (ICL) for profiles4_groups2 and the
-approximate weight of evidence (AWE) for profiles3_groups2. With
-enrolments as the units, BIC is lowest for profiles3_groups3. The Akaike
-information criterion (AIC) is lowest for profiles6_groups4, the largest
-candidate fitted, because its light charge per parameter keeps it
-decreasing across the whole range.</p>
-<p>The criteria are plotted against the number of profiles, one line per
-number of group classes, with the lowest value of each criterion
-ringed.</p>
+<p>The criteria do not agree. With students as the units, the Bayesian
+information criterion (BIC; Schwarz, 1978) is minimized by
+profiles4_groups3, the integrated completed likelihood (ICL; Biernacki,
+Celeux and Govaert, 2000) by profiles4_groups2 and the approximate
+weight of evidence (AWE; Banfield and Raftery, 1993) by
+profiles3_groups2. With enrolments as the units, BIC is minimized by
+profiles3_groups3. The Akaike information criterion (AIC; Akaike, 1974)
+is minimized by profiles6_groups4, the largest candidate, because its
+weak penalty leaves it decreasing over the entire range. ICL and AWE
+penalize classification uncertainty in addition to the number of
+parameters and therefore favour fewer, better separated classes.</p>
+<p>The criteria are plotted against the number of profiles, with one
+line per number of group classes and the minimum of each criterion
+circled.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/plot-criteria-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>A minimum at the largest number of profiles or group classes fitted
-shows that the criterion is still decreasing there. The range of the
-candidates is then widened until the minimum lies inside it. Any
-criterion can be plotted by name, and <code>what = "all"</code> plots
-every criterion.</p>
+<p>A minimum at the largest number of profiles or group classes
+considered indicates that the criterion is still decreasing at the
+boundary of the grid, which should then be extended until the minimum is
+interior. Any criterion can be plotted by name, and
+<code>what = "all"</code> plots all of them.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"bic_groups"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/plot-bic-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>The tree plots how the profiles divide as more are added. Each
-profile of a model is linked to the profiles of the next model that
-receive its observations.</p>
+<p>The clustering tree (Zappia and Oshlack, 2018) shows how the profiles
+divide as their number increases: each profile of a model is linked to
+the profiles of the next larger model that receive its observations.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"tree"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/plot-tree-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
-<h2 id="change-with-each-added-class">Change with each added class<a class="anchor" aria-label="anchor" href="#change-with-each-added-class"></a>
+<h2 id="change-with-each-additional-class">Change with each additional class<a class="anchor" aria-label="anchor" href="#change-with-each-additional-class"></a>
 </h2>
-<p>When a criterion decreases across the whole range, the size of each
-decrease becomes the evidence. For every candidate, the table reports
-the decrease in BIC from the candidate with one profile fewer and the
-same number of group classes, and the decrease from the candidate with
-one group class fewer and the same number of profiles. A positive value
-means that the added class lowered the criterion. The argument
-<code>using</code> selects another criterion.</p>
+<p>When a criterion decreases over the entire range, the magnitude of
+each decrease constitutes the evidence. For each candidate, the table
+reports the decrease in BIC relative to the candidate with one profile
+fewer and the same number of group classes, and relative to the
+candidate with one group class fewer and the same number of profiles. A
+positive value indicates that the additional class lowered the
+criterion. Another criterion is selected with <code>using</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"deltas"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            candidate n_profiles n_group_classes model  criterion value delta_profile</span></span>
@@ -675,24 +678,24 @@ means that the added class lowered the criterion. The argument
 <span><span class="co">#&gt; 22 profiles3_groups4             -5.54 profiles4_groups3</span></span>
 <span><span class="co">#&gt; 23 profiles4_groups4             -7.79 profiles5_groups3</span></span>
 <span><span class="co">#&gt; 24 profiles5_groups4             -6.62 profiles6_groups3</span></span></code></pre></div>
-<p>With three group classes, adding a third profile lowers BIC by 85 and
-adding a fourth lowers it by 22. Adding a fifth profile raises BIC by
-27, which appears in the table as a negative decrease. The decreases are
-plotted for both directions, along the number of profiles on the left
-and along the number of group classes on the right.</p>
+<p>With three group classes, a third profile lowers BIC by 85 and a
+fourth by 22, whereas a fifth raises it by 27, which the table reports
+as a negative decrease. The decreases are plotted in both directions,
+along the number of profiles (left) and along the number of group
+classes (right).</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/plot-deltas-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>The knee summary scales both axes of a curve to the unit interval and
-finds the candidate with the largest perpendicular distance below the
-straight line from the first point to the last. This chord-distance rule
-is inspired by Kneedle, without its smoothing or sensitivity thresholds.
-A nearly linear curve can have a very small maximum distance, so the
-reported distance describes the strength of the bend as well as its
-location. The knee is computed along the number of profiles for each
-number of group classes, along the number of group classes for each
-number of profiles, and across all candidates ordered by their number of
-parameters.</p>
+<p>The knee summary rescales both axes of a curve to the unit interval
+and identifies the candidate at the greatest perpendicular distance
+below the chord joining the first and last points. The rule follows the
+geometric definition of Kneedle (Satopää et al., 2011) without its
+smoothing and sensitivity threshold. A nearly linear curve yields a
+small maximum distance, so the reported distance indicates the strength
+of the bend as well as its location. Knees are computed along the number
+of profiles for each number of group classes, along the number of group
+classes for each number of profiles, and across all candidates ordered
+by their number of parameters.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"knees"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        direction            line  criterion              from                to n_points</span></span>
@@ -720,13 +723,13 @@ parameters.</p>
 <span><span class="co">#&gt; 10 profiles6_groups2    0.463    profiles6_groups2   TRUE                                   </span></span>
 <span><span class="co">#&gt; 11 profiles2_groups2    0.561    profiles2_groups2   TRUE</span></span></code></pre></div>
 <p>With three group classes, the knee along the number of profiles is
-profiles4_groups3. The straight line ends at the largest candidate, so
-the knee depends on the range fitted. Without the largest candidate the
-knee is profiles3_groups3, which the table records in
+profiles4_groups3. Because the chord terminates at the largest
+candidate, the knee depends on the range of the grid; with the largest
+candidate omitted it is profiles3_groups3, as recorded in the columns
 <code>stable</code> and <code>note</code>. Along the number of group
 classes with four profiles, the knee is profiles4_groups2.</p>
-<p>The criterion over all candidates at once, as the distance of each
-from the lowest value:</p>
+<p>The criterion across all candidates simultaneously, expressed as the
+distance of each from the minimum:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
@@ -734,21 +737,22 @@ from the lowest value:</p>
 <div class="section level2">
 <h2 id="classification-quality">Classification quality<a class="anchor" aria-label="anchor" href="#classification-quality"></a>
 </h2>
-<p>Every observation has a posterior probability of membership in each
-class. Relative entropy summarizes these probabilities over all
-observations, from 0 when every observation is equally likely to belong
-to every class, to 1 when every observation belongs to one class with
-certainty. The average posterior probability (AvePP) of a class is the
-mean posterior probability of that class among the observations assigned
-to it. An AvePP of 0.7 or 0.8 and above is commonly taken to indicate
-adequate separation. The table of candidates reports the lowest, highest
-and mean AvePP at each level and the number of classes below a cutoff,
-which is 0.8 by default and is set with <code>cutoff</code>.</p>
+<p>Each observation has a posterior probability of membership in each
+class. Relative entropy (Ramaswamy et al., 1993) summarizes these
+probabilities over all observations; it equals 0 when every observation
+is equally likely to belong to every class and 1 when every observation
+is assigned to one class with certainty. The average posterior
+probability (AvePP) of a class is the mean posterior probability of that
+class among the observations modally assigned to it (Nagin, 2005).
+Values of at least 0.7 to 0.8 are conventionally regarded as indicating
+adequate separation. The table of candidates reports the minimum,
+maximum and mean AvePP at each level and the number of classes below a
+cutoff, 0.8 by default, which is set with <code>cutoff</code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"diagnostics"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/quality-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>The AvePP of every class of every candidate, with its size and the
-relative entropy of its level:</p>
+<p>The AvePP of every class of every candidate, together with its size
+and the relative entropy of its level:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"classification"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             candidate n_profiles n_group_classes model       level class n_modal proportion_modal</span></span>
@@ -1004,39 +1008,38 @@ relative entropy of its level:</p>
 <span><span class="co">#&gt; 124       23.33              0.22010             0.919                       40.18            0.851</span></span>
 <span><span class="co">#&gt; 125       44.38              0.41872             0.940                       21.71            0.851</span></span></code></pre></div>
 <p>For profiles4_groups3, the relative entropy is 0.74 for the profiles
-and 0.82 for the group classes. The lowest AvePP is 0.8 among the
+and 0.82 for the group classes; the minimum AvePP is 0.8 among the
 profiles and 0.87 among the group classes.</p>
 </div>
 <div class="section level2">
-<h2 id="checks-of-the-estimation">Checks of the estimation<a class="anchor" aria-label="anchor" href="#checks-of-the-estimation"></a>
+<h2 id="diagnostics-of-the-estimation">Diagnostics of the estimation<a class="anchor" aria-label="anchor" href="#diagnostics-of-the-estimation"></a>
 </h2>
-<p>A solution reached from several random starts is more credible than a
-solution reached once, because a single start may have stopped at a
-local maximum. An estimate on the boundary of the parameter space, such
-as a variance at its lower bound, indicates a model too complex for the
-data. A class that holds a very small share of the observations is also
-hard to interpret. The following plots report these checks for every
-candidate.</p>
+<p>A maximum reached from several random starts is more credible than
+one reached once, since a single start may terminate at a local maximum.
+An estimate on the boundary of the parameter space, such as a variance
+at its lower bound, indicates a model too complex for the data, and a
+class containing a very small proportion of the observations is
+difficult to interpret and to replicate. The following plots report
+these diagnostics for every candidate.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"trust"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/trust-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"smallest"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/smallest-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>All of the plots for choosing the number of classes are produced
-together with <code>plot(models, what = "selection")</code>.</p>
+<p><code>plot(models, what = "selection")</code> displays all plots
+relevant to the choice of the number of classes jointly.</p>
 </div>
 <div class="section level2">
 <h2 id="comparing-candidates">Comparing candidates<a class="anchor" aria-label="anchor" href="#comparing-candidates"></a>
 </h2>
-<p>Selected candidates are placed side by side with
-<code><a href="../reference/compare_models.html">compare_models()</a></code>. Candidates are named as in the table,
-given by their numbers of classes, or selected by a number of profiles
-or group classes. The comparison adds the difference in BIC from the
-lowest of the candidates compared and the BIC weight. The weight is
-<code>exp(-delta_bic / 2)</code> normalized to sum to one, the
-approximate posterior probability of each candidate when all have equal
-prior probability.</p>
+<p><code><a href="../reference/compare_models.html">compare_models()</a></code> tabulates selected candidates side by
+side. Candidates are specified by name, by their numbers of classes, or
+by a number of profiles or group classes. The comparison adds the
+difference in BIC from the minimum among the compared candidates and the
+BIC weight, <code>exp(-delta_bic / 2)</code> normalized to sum to one,
+which approximates the posterior probability of each candidate under
+equal prior probabilities (Wagenmakers and Farrell, 2004).</p>
 <p>The candidates preferred by BIC, ICL and AWE with students as the
 units:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
@@ -1048,7 +1051,7 @@ units:</p>
 <span><span class="co">#&gt; profiles4_groups3         4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87</span></span>
 <span><span class="co">#&gt; profiles4_groups2         4              2  47  -8326.19  16871.57  19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98</span></span>
 <span><span class="co">#&gt; profiles3_groups2         3              2  35  -8364.52  16892.26  40.12   0.000  17640.46     0.79       0.85      0           0.94             0.98</span></span></code></pre></div>
-<p>The same candidates given by their numbers of classes, with
+<p>The same candidates specified by their numbers of classes, with
 labels:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">models</span>, bic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">)</span>, icl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">2</span><span class="op">)</span>, awe <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
@@ -1059,8 +1062,8 @@ labels:</p>
 <span><span class="co">#&gt; bic           4              3  51  -8307.15  16852.14   0.00   1.000  18014.13     0.74       0.80      0           0.82             0.87</span></span>
 <span><span class="co">#&gt; icl           4              2  47  -8326.19  16871.57  19.43   0.000  18021.23     0.74       0.79      1           0.94             0.98</span></span>
 <span><span class="co">#&gt; awe           3              2  35  -8364.52  16892.26  40.12   0.000  17640.46     0.79       0.85      0           0.94             0.98</span></span></code></pre></div>
-<p>Every candidate with four profiles, which shows what the group
-classes add:</p>
+<p>All candidates with four profiles, which isolates the contribution of
+the group classes:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">models</span>, n_profiles <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="va">comparison</span></span>
@@ -1074,9 +1077,9 @@ classes add:</p>
 <span><span class="co">#&gt; profiles4_groups4         4              4  55  -8300.60  16857.69    5.54   0.059  18027.32     0.74       0.80      0           0.80             0.87</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/compare-select-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>The comparison keeps the fitted models. The AvePP of every class of
-every compared model is returned by <code><a href="../reference/get_results.html">get_results()</a></code>, and the
-model behind a row by <code><a href="../reference/get_candidate.html">get_candidate()</a></code>.</p>
+<p>The comparison retains the fitted models. <code><a href="../reference/get_results.html">get_results()</a></code>
+returns the AvePP of every class of every compared model, and
+<code><a href="../reference/get_candidate.html">get_candidate()</a></code> the model underlying a row.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">comparison</span>, <span class="st">"classification"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                model       level class n_modal proportion_modal estimated_n estimated_proportion</span></span>
@@ -1135,11 +1138,10 @@ model behind a row by <code><a href="../reference/get_candidate.html">get_candid
 <div class="section level2">
 <h2 id="analysis-of-the-chosen-candidate">Analysis of the chosen candidate<a class="anchor" aria-label="anchor" href="#analysis-of-the-chosen-candidate"></a>
 </h2>
-<p>The example continues with profiles4_groups3, the candidate with the
-lowest BIC with students as the units. It is taken from the fitted
-candidates by name with <code><a href="../reference/get_candidate.html">get_candidate()</a></code>. The numbers of
-classes give the same model, as in
-<code>get_candidate(models, 4, 3)</code>.</p>
+<p>The analysis proceeds with profiles4_groups3, the candidate that
+minimizes BIC with students as the units. It is extracted by name with
+<code><a href="../reference/get_candidate.html">get_candidate()</a></code>; specifying the numbers of classes, as in
+<code>get_candidate(models, 4, 3)</code>, returns the same model.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chosen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles4_groups3"</span><span class="op">)</span></span>
 <span><span class="va">chosen</span></span>
@@ -1156,9 +1158,9 @@ classes give the same model, as in
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles"). </span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
-<p><code>chosen</code> is the same kind of object that
-<code><a href="../reference/multilpa.html">multilpa()</a></code> returns. Its summary reports the estimates with
-their standard errors.</p>
+<p><code>chosen</code> is an object of the class returned by
+<code><a href="../reference/multilpa.html">multilpa()</a></code>. Its summary reports the estimates with their
+standard errors.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">chosen</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Two-level latent profile analysis: 4 profiles, 3 group classes</span></span>
@@ -1407,12 +1409,11 @@ their standard errors.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; 19 tables above, truncated to fit. get_results(x, what = ) returns any</span></span>
 <span><span class="co">#&gt; of them whole, and get_results(x, what = "all") returns every one.</span></span></code></pre></div>
-<p>The profiles are plotted as their means on the five indicators.</p>
+<p>The profiles are displayed as their means on the five indicators.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_profiles</a></span><span class="op">(</span><span class="va">chosen</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/chosen-profiles-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>Each group class of students has its own distribution of the four
-profiles.</p>
+<p>Each group class has its own distribution over the four profiles.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_prevalence</a></span><span class="op">(</span><span class="va">chosen</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/chosen-prevalence-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
@@ -1432,14 +1433,15 @@ profiles.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">chosen</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-5.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-6.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-7.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="class-enumeration_files/figure-html/chosen-diagnostic-plots-8.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>With two or more group classes, the same four views are drawn for the
-students in their group classes after those for the enrolments in their
-profiles. A student is classified from all of their enrolments together,
-so the group classes are usually much sharper than the profiles; one
-view is drawn with <code>what</code>, for example
+<p>With two or more group classes, the four views for the enrolments in
+their profiles are followed by the same views for the students in their
+group classes. Because a student is classified from all of their
+enrolments jointly, the group classes are typically far better separated
+than the profiles. A single view is selected with <code>what</code>, for
+example
 <code>plot_diagnostics(chosen, what = "group_posteriors")</code>.</p>
-<p>Each enrolment with its profile, its student’s group class and its
-posterior probabilities:</p>
+<p>Each enrolment with its modal profile, the group class of its student
+and its posterior probabilities:</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">chosen</span>, <span class="st">"assignments"</span>, data <span class="op">=</span> <span class="va">course_engagement</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   student course sequence browse lectures forum_read forum_post attendance previous_grade</span></span>
@@ -1463,10 +1465,10 @@ posterior probabilities:</p>
 <span><span class="co">#&gt; 4            2.99e-01            5.71e-12</span></span>
 <span><span class="co">#&gt; 5            6.23e-01            1.13e-12</span></span>
 <span><span class="co">#&gt; 6            3.61e-01            2.75e-11</span></span></code></pre></div>
-<p>The profiles can be related to an outcome. The mean of
+<p>The profiles can be related to external variables. The mean of
 <code>previous_grade</code> in each profile is estimated with
-<code><a href="../reference/three_step.html">three_step()</a></code>, which corrects for the uncertainty of the
-classification with the BCH method.</p>
+<code><a href="../reference/three_step.html">three_step()</a></code>, which corrects for classification error by
+the BCH method (Bolck, Croon and Hagenaars, 2004; Vermunt, 2010).</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">chosen</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Distal outcome by class (bch, 95% CI)</span></span>
@@ -1479,19 +1481,20 @@ classification with the BCH method.</p>
 <span><span class="co">#&gt;     4   0.32  [ 0.18,  0.45]  0.069       210.39</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="testing-two-neighbouring-candidates">Testing two neighbouring candidates<a class="anchor" aria-label="anchor" href="#testing-two-neighbouring-candidates"></a>
+<h2 id="testing-neighbouring-candidates">Testing neighbouring candidates<a class="anchor" aria-label="anchor" href="#testing-neighbouring-candidates"></a>
 </h2>
-<p>The bootstrap likelihood ratio test compares two candidates that
-differ by one class. Data sets are simulated from the smaller candidate,
-both candidates are refitted to each. With <code>B</code> simulated data
-sets and <code>b</code> likelihood ratios at least as large as the
-observed one, the p-value is <code>(b + 1) / (B + 1)</code>. The extra
-count includes the observed statistic and prevents a zero p-value from a
-finite simulation. Every replicate must pass the fitting checks;
-otherwise the p-value is withheld. The test below compares three and
-four profiles with three group classes. Nineteen simulated data sets
-keep the example short. With 19 simulations the smallest attainable
-p-value is 1/20 = 0.05, and applied analyses use 99 or more.</p>
+<p>The bootstrap likelihood ratio test (McLachlan, 1987) compares two
+candidates that differ by one class. Data sets are simulated from the
+smaller candidate and both candidates are re-estimated on each. With
+<code>B</code> simulated data sets, of which <code>b</code> yield a
+likelihood ratio at least as large as the observed one, the p-value is
+<code>(b + 1) / (B + 1)</code> (Davison and Hinkley, 1997); the
+additional count includes the observed statistic and precludes a p-value
+of zero from a finite simulation. The p-value is withheld unless every
+replicate satisfies the estimation checks. The test below compares three
+and four profiles with three group classes. Nineteen simulated data sets
+keep the example brief; the smallest attainable p-value is then 1/20 =
+0.05, and applied analyses should use at least 99.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">smaller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles3_groups3"</span><span class="op">)</span></span>
 <span><span class="va">larger</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles4_groups3"</span><span class="op">)</span></span>
@@ -1506,16 +1509,16 @@ p-value is 1/20 = 0.05, and applied analyses use 99 or more.</p>
 <p><img src="class-enumeration_files/figure-html/blrt-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
-<h2 id="other-kinds-of-model">Other kinds of model<a class="anchor" aria-label="anchor" href="#other-kinds-of-model"></a>
+<h2 id="other-model-types">Other model types<a class="anchor" aria-label="anchor" href="#other-model-types"></a>
 </h2>
 <div class="section level3">
 <h3 id="latent-class-models">Latent class models<a class="anchor" aria-label="anchor" href="#latent-class-models"></a>
 </h3>
-<p><code>student_esm</code> contains 2,582 momentary reports of
-students, with eight activities recorded as yes or no. Naming the
-indicators in <code>categorical</code> makes every candidate a latent
-class model, and the candidates are named with <code>classes</code> in
-place of <code>profiles</code>.</p>
+<p><code>student_esm</code> contains 2,582 momentary reports from
+students, with eight activities recorded as present or absent. Declaring
+the indicators in <code>categorical</code> makes every candidate a
+latent class model, and the candidates are named with
+<code>classes</code> in place of <code>profiles</code>.</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time_with_friends"</span>, <span class="st">"on_social_media"</span>, <span class="st">"tv_video_games"</span>,</span>
 <span>                <span class="st">"listened_music"</span>, <span class="st">"sports"</span>, <span class="st">"walking"</span>, <span class="st">"reading"</span>,</span>
@@ -1565,18 +1568,18 @@ place of <code>profiles</code>.</p>
 <span><span class="co">#&gt; ----------------  -------  -------------  --  --------  --------  ------  ------  --------  -------  ---------  -----  -------------  ---------------</span></span>
 <span><span class="co">#&gt; classes3_groups1        3              1  26  -7848.45  15816.64  311.61   0.000  17819.69     0.66       0.70      1                                </span></span>
 <span><span class="co">#&gt; classes3_groups2        3              2  29  -7685.74  15505.03    0.00   1.000  18121.50     0.56       0.64      1           0.90             0.96</span></span></code></pre></div>
-<p>With two group classes the three-class model has the lower BIC. Its
-relative entropy is 0.56, and its least distinct class has an AvePP of
-0.64. The classes of this model overlap strongly, which limits their
-interpretation.</p>
+<p>Among the three-class models, the model with two group classes has
+the lower BIC. Its relative entropy is 0.56, and its least distinct
+class has an AvePP of 0.64. The classes of this model overlap
+substantially, which limits their substantive interpretation.</p>
 </div>
 <div class="section level3">
 <h3 id="single-level-models">Single-level models<a class="anchor" aria-label="anchor" href="#single-level-models"></a>
 </h3>
-<p>Observations without groups are modelled with
+<p>Observations without a grouping structure are modelled with
 <code><a href="../reference/enumerate_lpa.html">enumerate_lpa()</a></code> for continuous indicators and
-<code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code> for categorical ones. The candidates are
-named by their numbers of profiles or classes alone.</p>
+<code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code> for categorical indicators. The candidates
+are named by their numbers of profiles or classes alone.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">srl_models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">srl</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cognitive_strategies"</span>, <span class="st">"intrinsic_value"</span>,</span>
 <span>                                   <span class="st">"self_efficacy"</span>, <span class="st">"self_regulation"</span>,</span>
@@ -1634,35 +1637,36 @@ named by their numbers of profiles or classes alone.</p>
 <span><span class="co">#&gt; profiles7         7  76  -590.85  1615.18  23.40   0.000  1741.68     0.89       0.89      0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">srl_models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="class-enumeration_files/figure-html/single-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<p>BIC is lowest for profiles6. The candidate with eight profiles
-reaches the lower bound of a variance and contains a nearly empty
-profile, which marks the end of the range that 300 observations support.
-The two warnings printed during the enumeration come from that
-candidate, and the table keeps them in its <code>warnings</code>
-column.</p>
+<p>BIC is minimized by profiles6. The eight-profile candidate has a
+variance at its lower bound and a nearly empty profile, which marks the
+limit of what 300 observations can support. The two warnings issued
+during the enumeration originate from this candidate and are retained in
+the <code>warnings</code> column of the table.</p>
 </div>
 <div class="section level3">
 <h3 id="missing-values-and-scaled-indicators">Missing values and scaled indicators<a class="anchor" aria-label="anchor" href="#missing-values-and-scaled-indicators"></a>
 </h3>
-<p>Two settings change what the candidates are fitted to, and like
-<code>n_starts</code> they apply to every candidate. With
-<code>missing = "fiml"</code>, rows with some indicators missing are
-fitted from the indicators they have; rows with every indicator missing
-are left out of the individual sample size, entropy and AvePP, because
-they were never classified. <code>centering</code> and
-<code>scaling</code> subtract a mean and divide by a standard deviation
+<p>Two arguments alter the data to which the candidates are fitted and,
+like <code>n_starts</code>, apply to all candidates. With
+<code>missing = "fiml"</code>, rows with some indicators missing
+contribute through the indicators observed (full information maximum
+likelihood); rows with every indicator missing are excluded from the
+individual sample size, entropy and AvePP, since they carry no
+information on class membership. <code>centering</code> subtracts and
+<code>scaling</code> divides by a mean or standard deviation computed
 over the sample (<code>"grand"</code>) or within each group
-(<code>"person"</code>); both together give grand or within-person
-z-scores. Criteria compare only candidates fitted with the same
-settings. <a href="model-selection.html">Model selection</a> describes
-both with examples.</p>
+(<code>"person"</code>); combined, they yield grand or within-person
+z-scores. Information criteria are comparable only among candidates
+fitted under the same settings. <a href="model-selection.html">Model
+selection</a> describes both with examples.</p>
 </div>
 <div class="section level3">
-<h3 id="several-covariance-structures">Several covariance structures<a class="anchor" aria-label="anchor" href="#several-covariance-structures"></a>
+<h3 id="multiple-covariance-structures">Multiple covariance structures<a class="anchor" aria-label="anchor" href="#multiple-covariance-structures"></a>
 </h3>
-<p>Several structures in <code>model</code> multiply the candidates, and
-the structure joins the name. The numbers of classes alone then match
-several candidates, so a candidate is named in full.</p>
+<p>Specifying several structures in <code>model</code> multiplies the
+candidates, and the structure is appended to each name. Because the
+numbers of classes then match several candidates, a candidate must be
+specified by its full name.</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">crossed_models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">srl</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cognitive_strategies"</span>,</span>
 <span>                                       <span class="st">"intrinsic_value"</span>, <span class="st">"self_efficacy"</span>,</span>
@@ -1709,13 +1713,13 @@ several candidates, so a candidate is named in full.</p>
 <span><span class="co">#&gt; profiles3_EEE         3  32  -593.25  1369.02    0.00   1.000  1595.94     0.66       0.79      1</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="transition-models">Transition models<a class="anchor" aria-label="anchor" href="#transition-models"></a>
+<h3 id="latent-transition-models">Latent transition models<a class="anchor" aria-label="anchor" href="#latent-transition-models"></a>
 </h3>
 <p>With <code>time</code>, every candidate is a latent transition model
-across the occasions, here the order of each student’s enrolments in
-<code>sequence</code>. The six-profile model needs more than the default
-1,000 EM iterations to meet the convergence tolerance, so
-<code>max_iter</code> is raised.</p>
+over the occasions, here the order of each student’s enrolments in
+<code>sequence</code>. The six-profile model requires more than the
+default 1,000 EM iterations to meet the convergence tolerance, so
+<code>max_iter</code> is increased.</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">transition_models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
 <span>                                       time <span class="op">=</span> <span class="st">"sequence"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">6</span>,</span>
@@ -1852,6 +1856,60 @@ get_candidate(models, 4, 3)</td>
 </tr>
 </tbody>
 </table>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Akaike, H. (1974). A new look at the statistical model
+identification. <em>IEEE Transactions on Automatic Control</em>, 19,
+716–723.</p>
+<p>Banfield, J. D., &amp; Raftery, A. E. (1993). Model-based Gaussian
+and non-Gaussian clustering. <em>Biometrics</em>, 49, 803–821.</p>
+<p>Biernacki, C., Celeux, G., &amp; Govaert, G. (2000). Assessing a
+mixture model for clustering with the integrated completed likelihood.
+<em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>,
+22, 719–725.</p>
+<p>Bolck, A., Croon, M., &amp; Hagenaars, J. (2004). Estimating latent
+structure models with categorical variables: One-step versus three-step
+estimators. <em>Political Analysis</em>, 12, 3–27.</p>
+<p>Davison, A. C., &amp; Hinkley, D. V. (1997). <em>Bootstrap methods
+and their application</em>. Cambridge University Press.</p>
+<p>Lukočienė, O., Varriale, R., &amp; Vermunt, J. K. (2010). The
+simultaneous decision(s) about the number of lower- and higher-level
+classes in multilevel latent class analysis. <em>Sociological
+Methodology</em>, 40, 247–283.</p>
+<p>McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
+statistic for the number of components in a normal mixture. <em>Applied
+Statistics</em>, 36, 318–324.</p>
+<p>McLachlan, G. J., &amp; Peel, D. (2000). <em>Finite mixture
+models</em>. Wiley.</p>
+<p>Nagin, D. S. (2005). <em>Group-based modeling of development</em>.
+Harvard University Press.</p>
+<p>Nylund, K. L., Asparouhov, T., &amp; Muthén, B. O. (2007). Deciding
+on the number of classes in latent class analysis and growth mixture
+modeling: A Monte Carlo simulation study. <em>Structural Equation
+Modeling</em>, 14, 535–569.</p>
+<p>Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., &amp; Robinson, W.
+T. (1993). An empirical pooling approach for estimating marketing mix
+elasticities with PIMS data. <em>Marketing Science</em>, 12,
+103–124.</p>
+<p>Satopää, V., Albrecht, J., Irwin, D., &amp; Raghavan, B. (2011).
+Finding a “kneedle” in a haystack: Detecting knee points in system
+behavior. In <em>31st International Conference on Distributed Computing
+Systems Workshops</em> (pp. 166–171). IEEE.</p>
+<p>Schwarz, G. (1978). Estimating the dimension of a model. <em>The
+Annals of Statistics</em>, 6, 461–464.</p>
+<p>Vermunt, J. K. (2003). Multilevel latent class models.
+<em>Sociological Methodology</em>, 33, 213–239.</p>
+<p>Vermunt, J. K. (2010). Latent class modeling with covariates: Two
+improved three-step approaches. <em>Political Analysis</em>, 18,
+450–469.</p>
+<p>Wagenmakers, E.-J., &amp; Farrell, S. (2004). AIC model selection
+using Akaike weights. <em>Psychonomic Bulletin &amp; Review</em>, 11,
+192–196.</p>
+<p>Zappia, L., &amp; Oshlack, A. (2018). Clustering trees: A
+visualization for evaluating clusterings at multiple resolutions.
+<em>GigaScience</em>, 7(7), giy083.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -38,6 +38,7 @@ multilpa(
   orientation = NULL,
   model = NULL,
   select_start = c("likelihood", "converged"),
+  boundary = c("allow", "exclude"),
   prior = NULL,
   noise = FALSE,
   acceleration = c("squarem", "none"),
@@ -341,6 +342,21 @@ multilpa(
   [`summary()`](https://rdrr.io/r/base/summary.html) and
   `get_results(fit, "starts")` show every start either way.
 
+- boundary:
+
+  Whether a start with a variance at `min_variance` (a covariance
+  eigenvalue, for full covariances) may be reported. `"allow"`, the
+  default, lets it, as Mplus does, with a `latents_boundary` warning.
+  `"exclude"` sets such starts aside and applies `select_start` to the
+  rest; the `boundary` column of the starts table shows which they are,
+  for models without covariates. A Gaussian profile can raise the
+  likelihood without limit by shrinking around one observation, so the
+  size of that gain is set by `min_variance` rather than by the data,
+  and the more starts are run the likelier one finds it. When every
+  start is at the bound, the best is reported with a
+  `latents_all_starts_boundary` warning. Categorical indicators alone
+  have no variances and are unaffected.
+
 - prior:
 
   `NULL`, the default, for maximum likelihood, or
@@ -416,15 +432,15 @@ multilpa(
   stays monotone and converges to the same kind of maximum. The
   convergence test is read over a whole cycle, so it is never looser
   than plain EM's. `"none"` runs plain EM, which follows the same path
-  as other EM implementations from the same start (mclust, Mplus) and is
-  the choice for step-by-step reproduction. `iterations` and `max_iter`
-  count EM steps either way. Fits with `prior`, and models with
-  membership covariates, always use plain EM. For EVE and VVE, whose
-  shared orientation has no closed form, each EM iteration takes a fixed
-  number of warm-started orientation steps rather than solving it (a
-  generalized EM step), under either setting; this keeps every iteration
-  monotone and makes the EM map a fixed function, which SQUAREM
-  requires.
+  as other EM implementations from the same start (mclust's `me()`) and
+  is the choice for step-by-step reproduction. `iterations` and
+  `max_iter` count EM steps either way. Fits with `prior`, and models
+  with membership covariates, always use plain EM. For EVE and VVE,
+  whose shared orientation has no closed form, each EM iteration takes a
+  fixed number of warm-started orientation steps rather than solving it
+  (a generalized EM step), under either setting; this keeps every
+  iteration monotone and makes the EM map a fixed function, which
+  SQUAREM requires.
 
 - family:
 

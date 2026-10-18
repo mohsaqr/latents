@@ -169,8 +169,15 @@ Nothing; this page documents conditions rather than a function.
 - `latents_incomparable_models`:
 
   Two models were fitted to different data, or differ in covariance
-  structure or centering mode where the comparison requires them to
-  match.
+  structure, centering or scaling mode, or `drop_empty` where the
+  comparison requires them to match.
+
+- `latents_parallel_failure`:
+
+  With `cores` above one, a worker process failed as a whole (for
+  example, it ran out of memory), so some candidates of an enumeration
+  were lost. A candidate's own estimation error is recorded in the grid
+  instead.
 
 - `latents_reversed_likelihood`:
 
@@ -468,6 +475,12 @@ others through.
 
   A profile or group class has effective membership below one, so it is
   supported by less than one observation.
+
+- `latents_all_starts_boundary`:
+
+  `boundary = "exclude"` found every start with a variance at
+  `min_variance`, so none could be set aside and the best start across
+  all of them is reported.
 
 - `latents_weak_class`:
 

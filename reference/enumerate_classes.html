@@ -13,7 +13,7 @@ boundary, and unreplicated fits are reported, not silently selected."><meta prop
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -185,7 +185,9 @@ only <code>n_starts</code>, <code>max_iter</code>, <code>tol</code> and <code>mi
 1). The candidates are independent fits, each of which sets and restores
 its own random seed, so with <code>seed</code> given the result is identical to
 <code>cores = 1</code>; only the time differs. Candidates are fitted by forked
-processes on macOS and Linux and by a socket cluster on Windows; their
+processes on macOS and Linux and by a socket cluster on Windows, and on
+macOS when R uses Apple's Accelerate BLAS, which forked processes cannot
+use (socket workers load the installed package); their
 warnings and messages are passed on in the order of the grid once all
 have finished. Without <code>seed</code>, the random starts differ between runs on
 any number of cores. A worker process that fails as a whole (for example,

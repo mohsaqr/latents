@@ -1,5 +1,93 @@
 # Changelog
 
+## latents 0.95.2
+
+Fixes found by Equivalence 2.0, the strengthened external validation.
+
+#### New features
+
+- New argument `boundary = c("allow", "exclude")` in
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  and the covariate models. `"exclude"` sets aside starts with a
+  variance at `min_variance`: solutions in which a Gaussian profile
+  shrinks around one observation, whose likelihood gain is set by
+  `min_variance` rather than by the data. The more starts are run, the
+  likelier one finds such a solution: in a simulation study (29
+  datasets), a 4-profile dataset fitted with 500 starts gave a 5-profile
+  solution with a one-observation profile that made BIC choose 5; with
+  `boundary = "exclude"` BIC chose 4, as Mplus did. Opt-in: the default
+  (`"allow"`) and every existing result are unchanged. When every start
+  is at the bound, the best is reported with a
+  `latents_all_starts_boundary` warning. Categorical indicators alone
+  are unaffected.
+
+#### Bug fixes
+
+- [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) beyond
+  homogeneous transitions (`transitions = "occasion"`, covariates,
+  second order, mover-stayer) stopped its quasi-Newton finish early near
+  a transition estimated at zero: since 0.9.13 the finish’s stopping
+  rule was tied to `tol`, and at the default `tol = 1e-10` an
+  occasion-specific model of LMest’s reference was left 2.8e-6 below its
+  maximum with transitions 1e-4 off. The finish again runs to L-BFGS-B’s
+  tight rule, as in 0.9.1, and agrees with LMest to 1.7e-6 or better.
+  Fits move closer to their maximum; nothing else changes.
+- [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+  could stop with `latents_no_converge` when a covariate nearly
+  separates the classes: the likelihood with the classification error
+  held fixed is not concave, and BFGS from zero settled on a separation
+  ridge (Mplus UG example 7.3: -log L 81.7 on the ridge, 62.6 at the
+  maximum). The search now also starts from the proportional-assignment
+  estimate, which is concave and lies in the maximum’s basin, and keeps
+  the better converged end; it reproduces Mplus’s R3STEP estimates.
+- `enumerate_classes(cores = )` on macOS with R switched to Apple’s
+  Accelerate (vecLib) BLAS: forked workers died with a segmentation
+  fault once the session had used linear algebra, and the enumeration
+  then stopped with an internal error at printing. Accelerate is not
+  safe in a forked process, so there the candidates are now fitted by a
+  socket cluster, as on Windows; results are identical to `cores = 1`,
+  as before. Elsewhere the fork is kept.
+- A worker killed by a signal (a crash, out of memory) returned an empty
+  candidate that was not recognized as lost; it now raises
+  `latents_parallel_failure`, as a worker that fails with an error does,
+  and so does a socket worker that dies.
+- The condition catalogue lists `latents_parallel_failure`, raised by
+  `enumerate_classes(cores = )` when a worker process fails.
+
+#### Equivalence
+
+- The external validation now includes 160 simulated datasets with known
+  parameters fitted by Mplus and Latent GOLD (likelihood, parameters,
+  criteria, posteriors, entropy, AvePP, OCC, class counts, group level,
+  [`predict()`](https://rdrr.io/r/stats/predict.html), enumeration
+  grids,
+  [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md),
+  `cores`), 42 genuine Mplus runs kept in JStats, `scaling` against
+  Mplus, sampling weights in a mixture against Mplus WEIGHT with robust
+  standard errors,
+  [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+  against TECH14, and the group-class families at Latent GOLD’s finest
+  quadrature. Comparisons that were scripts now run as tests, and the
+  Latent GOLD kit is compared with the current package rather than with
+  targets saved when it was built. See `equivalence/README.md`.
+- Every documented claim of agreement with another program or a
+  published result is registered in `equivalence/CLAIMS.csv` with the
+  test that backs it, and a test fails when a claim or its test changes.
+  Two claims gained tests (`bic_rows` equals flexmix’s BIC; a noise
+  observation is profile 0, as in mclust’s classification); one was
+  narrowed to what is tested (plain EM follows mclust’s path from the
+  same start).
+- A sabotage battery (`equivalence/sabotage/run.R`) injects realistic
+  defects into the loaded package and confirms that the tests detect
+  them.
+
+#### Documentation
+
+- The class-enumeration guide is rewritten in scientific register, with
+  the methods cited.
+
 ## latents 0.95.0
 
 #### Parallel enumeration

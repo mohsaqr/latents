@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,35 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.2" id="latents-0952">latents 0.95.2<a class="anchor" aria-label="anchor" href="#latents-0952"></a></h2>
+<p>Fixes found by Equivalence 2.0, the strengthened external validation.</p>
+<div class="section level4">
+<h4 id="new-features-0-95-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-95-2"></a></h4>
+<ul><li>New argument <code>boundary = c("allow", "exclude")</code> in <code><a href="../reference/lpa.html">lpa()</a></code>, <code><a href="../reference/multilpa.html">multilpa()</a></code>, <code><a href="../reference/enumerate_lpa.html">enumerate_lpa()</a></code> and the covariate models. <code>"exclude"</code> sets aside starts with a variance at <code>min_variance</code>: solutions in which a Gaussian profile shrinks around one observation, whose likelihood gain is set by <code>min_variance</code> rather than by the data. The more starts are run, the likelier one finds such a solution: in a simulation study (29 datasets), a 4-profile dataset fitted with 500 starts gave a 5-profile solution with a one-observation profile that made BIC choose 5; with <code>boundary = "exclude"</code> BIC chose 4, as Mplus did. Opt-in: the default (<code>"allow"</code>) and every existing result are unchanged. When every start is at the bound, the best is reported with a <code>latents_all_starts_boundary</code> warning. Categorical indicators alone are unaffected.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes-0-95-2">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-95-2"></a></h4>
+<ul><li>
+<code><a href="../reference/lta.html">lta()</a></code> beyond homogeneous transitions (<code>transitions = "occasion"</code>, covariates, second order, mover-stayer) stopped its quasi-Newton finish early near a transition estimated at zero: since 0.9.13 the finish’s stopping rule was tied to <code>tol</code>, and at the default <code>tol = 1e-10</code> an occasion-specific model of LMest’s reference was left 2.8e-6 below its maximum with transitions 1e-4 off. The finish again runs to L-BFGS-B’s tight rule, as in 0.9.1, and agrees with LMest to 1.7e-6 or better. Fits move closer to their maximum; nothing else changes.</li>
+<li>
+<code><a href="../reference/r3step.html">r3step()</a></code> could stop with <code>latents_no_converge</code> when a covariate nearly separates the classes: the likelihood with the classification error held fixed is not concave, and BFGS from zero settled on a separation ridge (Mplus UG example 7.3: -log L 81.7 on the ridge, 62.6 at the maximum). The search now also starts from the proportional-assignment estimate, which is concave and lies in the maximum’s basin, and keeps the better converged end; it reproduces Mplus’s R3STEP estimates.</li>
+<li>
+<code>enumerate_classes(cores = )</code> on macOS with R switched to Apple’s Accelerate (vecLib) BLAS: forked workers died with a segmentation fault once the session had used linear algebra, and the enumeration then stopped with an internal error at printing. Accelerate is not safe in a forked process, so there the candidates are now fitted by a socket cluster, as on Windows; results are identical to <code>cores = 1</code>, as before. Elsewhere the fork is kept.</li>
+<li>A worker killed by a signal (a crash, out of memory) returned an empty candidate that was not recognized as lost; it now raises <code>latents_parallel_failure</code>, as a worker that fails with an error does, and so does a socket worker that dies.</li>
+<li>The condition catalogue lists <code>latents_parallel_failure</code>, raised by <code>enumerate_classes(cores = )</code> when a worker process fails.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="equivalence-0-95-2">Equivalence<a class="anchor" aria-label="anchor" href="#equivalence-0-95-2"></a></h4>
+<ul><li>The external validation now includes 160 simulated datasets with known parameters fitted by Mplus and Latent GOLD (likelihood, parameters, criteria, posteriors, entropy, AvePP, OCC, class counts, group level, <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>, enumeration grids, <code><a href="../reference/compare_models.html">compare_models()</a></code>, <code>cores</code>), 42 genuine Mplus runs kept in JStats, <code>scaling</code> against Mplus, sampling weights in a mixture against Mplus WEIGHT with robust standard errors, <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> against TECH14, and the group-class families at Latent GOLD’s finest quadrature. Comparisons that were scripts now run as tests, and the Latent GOLD kit is compared with the current package rather than with targets saved when it was built. See <code>equivalence/README.md</code>.</li>
+<li>Every documented claim of agreement with another program or a published result is registered in <code>equivalence/CLAIMS.csv</code> with the test that backs it, and a test fails when a claim or its test changes. Two claims gained tests (<code>bic_rows</code> equals flexmix’s BIC; a noise observation is profile 0, as in mclust’s classification); one was narrowed to what is tested (plain EM follows mclust’s path from the same start).</li>
+<li>A sabotage battery (<code>equivalence/sabotage/run.R</code>) injects realistic defects into the loaded package and confirms that the tests detect them.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="documentation-0-95-2">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-95-2"></a></h4>
+<ul><li>The class-enumeration guide is rewritten in scientific register, with the methods cited.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.95.0" id="latents-0950">latents 0.95.0<a class="anchor" aria-label="anchor" href="#latents-0950"></a></h2>
 <div class="section level4">

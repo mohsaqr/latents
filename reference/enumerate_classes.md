@@ -136,11 +136,13 @@ enumerate_classes(
   candidates are independent fits, each of which sets and restores its
   own random seed, so with `seed` given the result is identical to
   `cores = 1`; only the time differs. Candidates are fitted by forked
-  processes on macOS and Linux and by a socket cluster on Windows; their
-  warnings and messages are passed on in the order of the grid once all
-  have finished. Without `seed`, the random starts differ between runs
-  on any number of cores. A worker process that fails as a whole (for
-  example, out of memory) raises `latents_parallel_failure`.
+  processes on macOS and Linux and by a socket cluster on Windows, and
+  on macOS when R uses Apple's Accelerate BLAS, which forked processes
+  cannot use (socket workers load the installed package); their warnings
+  and messages are passed on in the order of the grid once all have
+  finished. Without `seed`, the random starts differ between runs on any
+  number of cores. A worker process that fails as a whole (for example,
+  out of memory) raises `latents_parallel_failure`.
   [`parallel::detectCores()`](https://rdrr.io/r/parallel/detectCores.html)
   gives the number available; each core holds its own copy of the fits
   it computes.

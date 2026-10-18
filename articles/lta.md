@@ -276,13 +276,13 @@ grade <- lta(course_engagement, activity, "student", n_profiles = 2,
              seed = 1)
 get_results(grade, "transition_coefficients")
 #>     group_class      from        to           term estimate standard_error statistic  p_value
-#> 1 group_class_1 profile_1 profile_2    (Intercept)  -1.8399          0.118   -15.565 1.25e-54
-#> 2 group_class_1 profile_1 profile_2 previous_grade   0.0339          0.121     0.281 7.79e-01
+#> 1 group_class_1 profile_1 profile_2    (Intercept)  -1.8398          0.118   -15.566 1.25e-54
+#> 2 group_class_1 profile_1 profile_2 previous_grade   0.0338          0.121     0.280 7.79e-01
 #> 3 group_class_1 profile_2 profile_1    (Intercept)  -1.4632          0.130   -11.256 2.17e-29
-#> 4 group_class_1 profile_2 profile_1 previous_grade   0.0437          0.130     0.336 7.37e-01
+#> 4 group_class_1 profile_2 profile_1 previous_grade   0.0438          0.130     0.337 7.36e-01
 #>   conf_low conf_high odds_ratio
-#> 1   -2.072    -1.608      0.159
-#> 2   -0.203     0.271      1.034
+#> 1   -2.071    -1.608      0.159
+#> 2   -0.203     0.270      1.034
 #> 3   -1.718    -1.208      0.231
 #> 4   -0.211     0.298      1.045
 ```

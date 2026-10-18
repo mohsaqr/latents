@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -108,6 +108,101 @@
 <td>L</td>
 <td>November</td>
 </tr></tbody></table></div>
+<div class="section level2">
+<h2 id="priority-e--equivalence-20-plan-set-2026-10-17">Priority E — Equivalence 2.0 (plan, set 2026-10-17)<a class="anchor" aria-label="anchor" href="#priority-e--equivalence-20-plan-set-2026-10-17"></a></h2>
+<p>Owner priority: equivalence is to be very strong. The suite has breadth (Mplus, Latent GOLD, mclust, lcmm, flexmix, depmixS4, tidySEM, tidyLPA; 700 expectations at 0.95.0) but the work of 2026-10-17 exposed three weaknesses:</p>
+<ul><li>
+<strong>Tests that could not fail.</strong> Every group-level statistic replaced by a perfect 1 still passed 26 of 26 expectations, because the two-level references are so well separated that everything prints as 1.000.</li>
+<li>
+<strong>Tests that passed for the wrong reason.</strong> AvePP matched by sorting apart from the class alignment; reference ids unchecked; <code>run.sh</code> reusing stale outputs; a two-level count parser reading the joint-pattern table.</li>
+<li>
+<strong>Gaps no test covered.</strong> Rows with nothing observed were counted in entropy for several releases: no reference dataset had such a row, and the Mplus helper computed entropy itself instead of reading the package’s value.</li>
+</ul><p>Resources on this machine: genuine <strong>Mplus 9 Demo</strong> (<code>/Applications/MplusDemo/mpdemo</code>) and <strong>Latent GOLD 6.1</strong> under Wine (<code>~/.wine-latentgold</code>), both run in batch; <strong>simulab</strong> 0.4.10 (<code>../simulab</code>), whose generators store the true parameters with every dataset (<code>simulate_lpa()</code>, <code>simulate_ml_lpa()</code>, <code>simulate_lca()</code>, <code>simulate_hmm()</code>, <code>simulate_markov()</code>, <code>simulate_growth()</code>, <code>inject_missingness()</code> with MCAR/MAR/MNAR, <code>apply_batch()</code>); and <strong>JStats</strong> (<code>../JStats/validation/r-reference/</code>), 95 genuine Mplus mixture outputs, 62 with their data file, of which 4 transition fixtures are used so far.</p>
+<p>Constraint to verify first: the Mplus <strong>Demo</strong> limits model size (number of dependent variables and covariates); configurations beyond it need a full licence or Latent GOLD alone.</p>
+<table class="table"><colgroup><col width="20%"><col width="20%"><col width="20%"><col width="20%"><col width="20%"></colgroup><thead><tr><th>#</th>
+<th>Component</th>
+<th>Deliverable</th>
+<th>Acceptance</th>
+<th>Size</th>
+</tr></thead><tbody><tr><td>E2.1</td>
+<td><strong>Coverage audit</strong></td>
+<td>
+<code>equivalence/COVERAGE.md</code>: every exported verb and every option of the fitting functions against the external reference that checks it (program, file, tolerance) or “none”</td>
+<td>Every row filled; every “none” either gets an item below or a stated reason</td>
+<td>S</td>
+</tr><tr><td>E2.2</td>
+<td><strong>Moderately separated references</strong></td>
+<td>Two-level LPA and LCA cases with entropy 0.5–0.8 at both levels, through Mplus and Latent GOLD</td>
+<td>A deliberately perfect group-level statistic fails the suite (the regression the 2026-10-17 review found)</td>
+<td>S</td>
+</tr><tr><td>E2.3</td>
+<td><strong>Monte Carlo equivalence</strong></td>
+<td>
+<code>equivalence/montecarlo/</code>: simulab generates N datasets per configuration (single and two level; LPA over the structures Mplus parameterizes; LCA binary, polytomous, nominal; missing values MCAR/MAR; covariates); batch Mplus and Latent GOLD runs; a test compares log likelihood, parameters, posteriors (row by row, one relabelling), N, criteria, entropy, AvePP, class counts and standard errors</td>
+<td>Per configuration, agreement within printed precision on every dataset; results and the generating seeds retained so the test runs offline</td>
+<td>M–L</td>
+</tr><tr><td>E2.4</td>
+<td><strong>Global-maximum audit</strong></td>
+<td>Across many seeds per dataset, the package’s log likelihood is never below the reference’s beyond tolerance</td>
+<td>No dataset where a reference program finds a higher maximum; any exception investigated, not tolerated</td>
+<td>S</td>
+</tr><tr><td>E2.5</td>
+<td><strong>Recovery against the truth</strong></td>
+<td>On the simulab datasets, estimates and classifications against the generating parameters (bias, RMSE, coverage where standard errors are reported)</td>
+<td>Catches errors shared by every program (parameterization, conventions); reported per configuration in <code>validation/</code>
+</td>
+<td>M</td>
+</tr><tr><td>E2.6</td>
+<td><strong>JStats Mplus runs</strong></td>
+<td>Refit the in-scope runs of the 62 (LPA EEI/VVI, LCA binary, polytomous, nominal, count, covariates, R3STEP/DU3STEP/DE3STEP, TECH14 statistics) with model sections parsed, not names</td>
+<td>Each in-scope run compared, or its exclusion stated (factor and censored mixtures are out of scope)</td>
+<td>M</td>
+</tr><tr><td>E2.7</td>
+<td><strong>Sabotage battery</strong></td>
+<td>
+<code>equivalence/sabotage/</code>: a catalogue of deliberate defects (wrong denominator, swapped labels, wrong rows or groups counted, dropped weights, shifted entropy, wrong parameter count), each injected in turn; the suite must fail on every one</td>
+<td>100% of the catalogue detected; a defect that survives is a missing test</td>
+<td>M</td>
+</tr><tr><td>E2.8</td>
+<td><strong>Claims registry</strong></td>
+<td>Every statement of agreement in README, NEWS, vignettes and equivalence READMEs mapped to the test that establishes it; a check fails on a claim without one</td>
+<td>No unbacked claim (the 2026-10-17 README overclaim is the case it prevents)</td>
+<td>S–M</td>
+</tr><tr><td>E2.9</td>
+<td><strong>Known gaps with genuine runs</strong></td>
+<td>Houle families against Mplus; sampling weights against <code>TYPE = MIXTURE COMPLEX</code> with <code>WEIGHT</code>; the bootstrap LRT statistic against TECH14; ordinal and count items against Latent GOLD; <code>scaling</code> against Mplus on standardized data</td>
+<td>Each gap closed or its limit documented</td>
+<td>M each</td>
+</tr></tbody></table><p>Order: E2.1 (where to aim), then E2.2 and E2.7 (tests that can fail), then E2.3 with E2.4 and E2.5 (the main body), then E2.6, E2.8 and E2.9.</p>
+<div class="section level3">
+<h3 id="status-2026-10-18">Status (2026-10-18)<a class="anchor" aria-label="anchor" href="#status-2026-10-18"></a></h3>
+<ul><li><label><input type="checkbox" checked><strong>E2.1</strong> <code>equivalence/COVERAGE.md</code>: 82 rows covered, 37 partial, 40 none at the audit; its gap list drives E2.9.</label></li>
+<li><label><input type="checkbox" checked><strong>E2.2</strong> Two-level LPA and LCA at entropy 0.55 to 0.87 (main kit) and two-level EEE/VVV (extended kit), group level included.</label></li>
+<li><label><input type="checkbox" checked><strong>E2.3</strong> <code>equivalence/montecarlo/</code>: 160 simulated datasets through Mplus and Latent GOLD; 3,461 + 403 + 49 expectations.</label></li>
+<li><label><input type="checkbox" checked><strong>E2.4</strong> 1,200 of 1,200 fits reach the reference maximum at the true number of classes (retained <code>audit-maxima.csv</code>).</label></li>
+<li><label><input type="checkbox" checked><strong>E2.5</strong> <code>validation/MONTECARLO_RECOVERY.md</code>: mean bias at most 0.015, item probability bias 0.003, logits within one Monte Carlo SE.</label></li>
+<li><label><input type="checkbox" checked><strong>E2.6</strong> <code>test-jstats-mplus.R</code>: 42 genuine Mplus runs, 450 expectations; 19 runs out of scope (factor, censored, growth with occasion variances, constraints, KNOWNCLASS, TRAINING, direct effects).</label></li>
+<li><label><input type="checkbox" checked><strong>E2.7</strong> <code>equivalence/sabotage/run.R</code>: 11 injected defects, all detected, with an identity control that must stay undetected.</label></li>
+<li><label><input type="checkbox" checked><strong>E2.8</strong> <code>equivalence/CLAIMS.csv</code> with a test that every claim names a passing test or is marked unbacked.</label></li>
+<li>[~] <strong>E2.9</strong> Closed: <code>scaling</code> (grand and person) against Mplus, weights in a mixture against Mplus WEIGHT with robust SEs, <code><a href="reference/bootstrap_lrt.html">bootstrap_lrt()</a></code> against TECH14, families at Latent GOLD’s finest quadrature, ordinal and count against Latent GOLD (now a test), <code>drop_empty = FALSE</code> against Latent GOLD, criteria/AvePP matrix/OCC/<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>, <code><a href="reference/lta.html">lta()</a></code> with missing values and with shared variances. Open (each M): Houle families against Mplus; <code><a href="reference/lta.html">lta()</a></code> order 2, mover-stayer, <code>occasions = "grid"</code>, full covariance, ordinal and count; <code><a href="reference/mixture_regression.html">mixture_regression()</a></code> negative binomial, ordinal and two-level beyond one class; <code><a href="reference/three_step.html">three_step()</a></code> and <code><a href="reference/r3step.html">r3step()</a></code> robust SEs and group level; <code>parameter_inference(method = "bootstrap")</code>; <code><a href="reference/pool_imputations.html">pool_imputations()</a></code>; <code><a href="reference/fit_staged.html">fit_staged()</a></code>; <code><a href="reference/sensitivity.html">sensitivity()</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="found-and-fixed-by-equivalence-20">Found and fixed by Equivalence 2.0<a class="anchor" aria-label="anchor" href="#found-and-fixed-by-equivalence-20"></a></h3>
+<ul><li>
+<code><a href="reference/lta.html">lta()</a></code> general engine: the quasi-Newton finish stopped early near a boundary (factr tied to <code>tol</code> since 0.9.13); LMest occasion model off by 1e-4 in transitions. Fixed (factr = 10, as in 0.9.1).</li>
+<li>
+<code><a href="reference/r3step.html">r3step()</a></code>: BFGS from zero settled on a separation ridge (Mplus ex7.3); <code>latents_no_converge</code>. Fixed (second start from the proportional estimate).</li>
+<li>Comparisons kept as scripts could not fail the suite; the Latent GOLD kit compared against saved targets. Fixed (tests, live targets).</li>
+<li>
+<code>enumerate_classes(cores = )</code> on macOS with Accelerate BLAS: forked workers segfaulted once the session had used BLAS, and a worker killed by a signal came back as an empty candidate. Fixed (socket cluster where forking is unsafe; lost workers raise <code>latents_parallel_failure</code>).</li>
+<li>The documentation claimed plain EM follows Mplus’s path from the same start; untested, so narrowed to mclust’s, which is tested.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-item-from-equivalence-20">New item from Equivalence 2.0<a class="anchor" aria-label="anchor" href="#new-item-from-equivalence-20"></a></h3>
+<ul class="task-list"><li><label><input type="checkbox"><strong>Screened random starts.</strong> On over-extracted models (4 profiles fitted to 3-profile data) the random starts, converged k-means partitions, explore the likelihood less widely than Mplus’s screened random starts: Mplus reaches -3106.613 (twice) and a degenerate -3105.390, this package -3108.709 from 30 to 300 starts and -3106.051 from 1000. A two-stage search (many short starts, the best run to convergence, as Mplus’s STARTS = n m) would close it. Changes results for existing seeds, so it needs an opt-in or a deliberate release. <strong>M</strong></label></li>
+</ul><p>Rules for every item: the reference output is genuine and retained with its inputs and version; the comparison reads the package’s reported values, never a formula written in the test; class alignment uses one relabelling chosen from the posteriors and reused for every class-level quantity; ids are checked unique and complete; and each new test is shown to fail on a deliberate defect before it is accepted.</p>
+</div>
+</div>
 <div class="section level2">
 <h2 id="priority-0--one-engine-plan">Priority 0 — One engine (plan)<a class="anchor" aria-label="anchor" href="#priority-0--one-engine-plan"></a></h2>
 <p>Consolidate the eight estimation engines into measurement blocks × latent structures on one kernel with shared services. Plan, phases, acceptance and risks: <a href="validation/ENGINE_DESIGN.html">validation/ENGINE_DESIGN.md</a>. Public API unchanged; every phase is a release that reproduces golden fixtures.</p>

@@ -13,7 +13,7 @@ stable, the messages are not."><meta property="og:image" content="https://pak.dy
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -221,8 +221,14 @@ only one of the two models.</p></dd>
 
 <dt><code>latents_incomparable_models</code></dt>
 <dd><p>Two models were fitted to different
-data, or differ in covariance structure or centering mode where the
-comparison requires them to match.</p></dd>
+data, or differ in covariance structure, centering or scaling mode, or
+<code>drop_empty</code> where the comparison requires them to match.</p></dd>
+
+<dt><code>latents_parallel_failure</code></dt>
+<dd><p>With <code>cores</code> above one, a worker
+process failed as a whole (for example, it ran out of memory), so some
+candidates of an enumeration were lost. A candidate's own estimation
+error is recorded in the grid instead.</p></dd>
 
 <dt><code>latents_reversed_likelihood</code></dt>
 <dd><p>The model with more parameters has
@@ -460,6 +466,11 @@ not valid at that parameter.</p></dd>
 <dt><code>latents_small_classes</code></dt>
 <dd><p>A profile or group class has effective
 membership below one, so it is supported by less than one observation.</p></dd>
+
+<dt><code>latents_all_starts_boundary</code></dt>
+<dd><p><code>boundary = "exclude"</code> found every
+start with a variance at <code>min_variance</code>, so none could be set aside and
+the best start across all of them is reported.</p></dd>
 
 <dt><code>latents_weak_class</code></dt>
 <dd><p><code>multilpa(family = "additive")</code> only: a

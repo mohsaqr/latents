@@ -277,12 +277,12 @@ r3step(fit, data = course_engagement, covariates = "previous_grade", vcov_type =
 #> 1 individuals profile_1    (Intercept)   0.3065        0.10676     2.871 4.097e-03         NA
 #> 2 individuals profile_1 previous_grade  -0.2085        0.10486    -1.989 4.674e-02  4.674e-02
 #> 3 individuals profile_2    (Intercept)   0.4473        0.13731     3.258 1.123e-03         NA
-#> 4 individuals profile_2 previous_grade  -0.6809        0.08697    -7.830 4.876e-15  9.753e-15
+#> 4 individuals profile_2 previous_grade  -0.6809        0.08697    -7.830 4.876e-15  9.752e-15
 #>   conf_low conf_high
-#> 1  0.09722  0.515705
-#> 2 -0.41407 -0.003009
-#> 3  0.17821  0.716447
-#> 4 -0.85140 -0.510498
+#> 1  0.09721  0.515703
+#> 2 -0.41407 -0.003008
+#> 3  0.17821  0.716446
+#> 4 -0.85140 -0.510499
 ```
 
 In the fitted model, a one-standard-deviation increase in previous grade
