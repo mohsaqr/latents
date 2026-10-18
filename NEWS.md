@@ -1,4 +1,4 @@
-# latents 0.95.1
+# latents 0.95.2
 
 Fixes found by Equivalence 2.0, the strengthened external validation.
 
