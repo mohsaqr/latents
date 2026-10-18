@@ -122,7 +122,11 @@ model is estimated from several random starts and the solution with the
 highest likelihood is kept. The argument `n_starts` sets the number of
 starts. The example uses three starts per model to keep the computation
 short. Applied analyses use ten or more. The argument `seed` makes the
-starts reproducible.
+starts reproducible. With many starts, a candidate with too many
+profiles can reach a solution in which one profile sits on a single
+observation with every variance at its lower bound; its likelihood is
+then set by `min_variance`, not by the data. `boundary = "exclude"` sets
+such starts aside (see *Checks of the estimation*).
 
 ``` r
 
@@ -918,8 +922,11 @@ solution reached once, because a single start may have stopped at a
 local maximum. An estimate on the boundary of the parameter space, such
 as a variance at its lower bound, indicates a model too complex for the
 data. A class that holds a very small share of the observations is also
-hard to interpret. The following plots report these checks for every
-candidate.
+hard to interpret. A candidate on the boundary whose smallest profile
+holds about one observation is not a profile but a degenerate solution;
+refitting with `boundary = "exclude"` keeps, for every candidate, the
+best start without a variance at its lower bound. The following plots
+report these checks for every candidate.
 
 ``` r
 

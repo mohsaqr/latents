@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -410,8 +410,11 @@ and the classification uncertainty, in the row order of the data.</p>
 <p>The likelihood of a mixture model can have several local maxima.
 <code><a href="../reference/sensitivity.html">sensitivity()</a></code> re-estimates the model with different random
 seeds and reports the maximum reached by each run and the proportion of
-respondents assigned to the same profile as in the reported
-solution.</p>
+respondents assigned to the same profile as in the reported solution. A
+solution in which a profile holds about one respondent with its
+variances at the lower bound is degenerate;
+<code>boundary = "exclude"</code> in <code><a href="../reference/lpa.html">lpa()</a></code> keeps the best
+start without such a variance.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/sensitivity.html">sensitivity</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    seed log_likelihood converged iterations optimum best agreement</span></span>

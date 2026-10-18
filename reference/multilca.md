@@ -50,8 +50,8 @@ multilca(data, vars, id, n_profiles, n_group_classes = 2L, ...)
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
   such as `n_starts`, `seed`, `missing`, `tol` or `profile_covariates`.
   `ordinal` and `count` can name structured discrete indicators; the
-  remaining indicators are categorical. `categorical` cannot be
-  supplied.
+  remaining indicators are categorical. `categorical` may be given but
+  changes nothing.
 
 ## Value
 
@@ -64,8 +64,8 @@ per profile, item and category.
 
 ## Conditions
 
-`latents_bad_argument` when `categorical` is supplied, since its columns
-are derived from `vars`, `ordinal` and `count` here. Every condition of
+`latents_bad_categorical` when `categorical` names a column not in
+`vars`. Every condition of
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
 can also be raised.
 

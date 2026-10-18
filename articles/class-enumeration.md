@@ -132,7 +132,12 @@ candidates. Three starts per model are used here to limit computation;
 applied analyses should use at least ten, and a grid is re-estimated in
 its entirety when more starts are required, so that every candidate has
 the same opportunity to reach its maximum. The argument `seed` makes the
-starts reproducible.
+starts reproducible. When many starts are used, a candidate with more
+profiles than the data support can reach a degenerate solution in which
+one profile collapses on a single observation with every variance at its
+lower bound; its likelihood, and hence its criteria, then depend on
+`min_variance` rather than on the data. `boundary = "exclude"` sets such
+starts aside for every candidate (see *Diagnostics of the estimation*).
 
 ``` r
 
@@ -952,6 +957,24 @@ plot(models, what = "smallest")
 `plot(models, what = "selection")` displays all plots relevant to the
 choice of the number of classes jointly.
 
+A candidate on a boundary whose smallest profile holds about one
+observation is a degenerate solution, not a profile: a Gaussian profile
+centred on one observation raises the likelihood without limit as its
+variances shrink, so the reported likelihood is fixed by `min_variance`.
+The default, `boundary = "allow"`, reports it, as Mplus does, with a
+warning. `boundary = "exclude"` retains for each candidate the best
+start with no variance at its lower bound, and is advisable when many
+starts are used, since each additional start increases the chance of
+reaching such a solution. Categorical indicators are unaffected.
+
+``` r
+
+models <- enumerate_classes(course_engagement, activity, "student",
+                            n_profiles = 1:5, n_group_classes = 1:3,
+                            model = "VVI", n_starts = 200,
+                            boundary = "exclude", seed = 1)
+```
+
 ## Comparing candidates
 
 [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
@@ -1747,6 +1770,7 @@ compare_models(transition_models)
 |:---|:---|
 | enumerate_classes(data, vars, id, n_profiles, n_group_classes, model) | The fitted candidate models |
 | enumerate_classes(…, n_starts = , missing = “fiml”, centering = , scaling = ) | The same starts, missing-data handling, centring and scaling for every candidate |
+| enumerate_classes(…, boundary = “exclude”) | Starts with a variance at its lower bound set aside for every candidate |
 | as.data.frame(models) | One row per candidate with every column |
 | get_results(models, “best”) | The candidate at the minimum of each criterion |
 | get_results(models, “classification”) | Size, AvePP and entropy of every class of every candidate |

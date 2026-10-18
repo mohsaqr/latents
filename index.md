@@ -359,7 +359,10 @@ repeated from multiple starting values. Here, `n_starts = 10` specifies
 ten starts and `seed = 1` makes the starting procedure reproducible for
 the same input and row order. Convergence and replication across starts
 are inspected below; a converged fit alone does not establish that the
-best attainable likelihood has been found.
+best attainable likelihood has been found. With many starts, a profile
+can collapse on a single observation with its variances at the lower
+bound, a degenerate solution whose likelihood is set by `min_variance`;
+`boundary = "exclude"` sets such starts aside.
 
 ## Inspecting and interpreting the estimated structure
 

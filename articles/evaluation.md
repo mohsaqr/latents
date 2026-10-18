@@ -42,7 +42,10 @@ To check convergence, we call
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
 with `"model"`. `converged` reports convergence of the best start,
 `boundary` whether a variance reached its lower bound, and
-`n_best_replicated` how many starts reached the best log likelihood.
+`n_best_replicated` how many starts reached the best log likelihood. A
+variance at its lower bound in a profile of about one observation is a
+degenerate solution; fitting with `boundary = "exclude"` keeps the best
+start without one.
 
 ``` r
 

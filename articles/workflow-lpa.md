@@ -363,7 +363,11 @@ The likelihood of a mixture model can have several local maxima.
 [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
 re-estimates the model with different random seeds and reports the
 maximum reached by each run and the proportion of respondents assigned
-to the same profile as in the reported solution.
+to the same profile as in the reported solution. A solution in which a
+profile holds about one respondent with its variances at the lower bound
+is degenerate; `boundary = "exclude"` in
+[`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) keeps the
+best start without such a variance.
 
 ``` r
 

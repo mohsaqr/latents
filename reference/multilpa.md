@@ -51,7 +51,8 @@ multilpa(
   count_model = c("poisson", "negative_binomial"),
   count_dispersion = c("varying", "equal"),
   scaling = c("none", "person", "grand"),
-  drop_empty = TRUE
+  drop_empty = TRUE,
+  cores = 1L
 )
 ```
 
@@ -647,6 +648,18 @@ multilpa(
   [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md).
   The setting is kept on the fit and passed on by enumerations and
   refits; it has no effect on data without such rows.
+
+- cores:
+
+  Number of processor cores to run the random starts on (default 1). The
+  starting values are drawn first, in order, on this process, and only
+  the iterations from them are spread over the cores, so the result is
+  identical to `cores = 1`; only the time differs. Workers are forked
+  processes on macOS and Linux and a socket cluster on Windows and on
+  macOS with Apple's Accelerate BLAS, as in
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md);
+  a worker that fails as a whole raises `latents_parallel_failure`.
+  Models with membership covariates run their starts on one core.
 
 ## Value
 

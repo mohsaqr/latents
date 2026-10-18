@@ -34,7 +34,9 @@ enumerate_lca(data, vars, n_classes = 1:4, ...)
   Further arguments for
   [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
   such as `missing`, `n_starts`, `seed` and `min_probability`, except
-  `id`, `n_group_classes` and `categorical`.
+  `id` and `n_group_classes`. Every indicator is categorical unless
+  named in `ordinal` or `count`; `categorical` may be given but changes
+  nothing.
 
 ## Value
 

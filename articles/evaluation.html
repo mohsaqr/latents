@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,7 +135,9 @@ course.</p>
 <code>"model"</code>. <code>converged</code> reports convergence of the
 best start, <code>boundary</code> whether a variance reached its lower
 bound, and <code>n_best_replicated</code> how many starts reached the
-best log likelihood.</p>
+best log likelihood. A variance at its lower bound in a profile of about
+one observation is a degenerate solution; fitting with
+<code>boundary = "exclude"</code> keeps the best start without one.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"model"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   n_observations n_informative n_groups n_profiles n_group_classes centering scaling</span></span>

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,41 @@
       <small>Source: <a href="https://github.com/mohsaqr/latents/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.6" id="latents-0956">latents 0.95.6<a class="anchor" aria-label="anchor" href="#latents-0956"></a></h2>
+<div class="section level4">
+<h4 id="new-features-0-95-6">New features<a class="anchor" aria-label="anchor" href="#new-features-0-95-6"></a></h4>
+<ul><li>The named plot functions now cover every view of a fit, grouped by subject so that typing <code>plot_</code> lists them all, and each group’s <code>what</code> takes <code>"all"</code> to draw every view it has:
+<ul><li>
+<code>plot_profiles(x, what = )</code> adds <code>"bars"</code>, <code>"heatmap"</code>, <code>"raincloud"</code>, <code>"parallel"</code> and <code>"pairs"</code> to the lines (<code>what</code> is its last argument, so existing calls are unchanged);</li>
+<li>new <code>plot_sequences(x)</code>;</li>
+<li>new <code>plot_selection(x, what = )</code> for an enumeration: <code>"deltas"</code>, <code>"heatmap"</code>, <code>"smallest"</code>, <code>"trust"</code>, <code>"diagnostics"</code>, or <code>"all"</code> (default), the same as <code>plot_enumeration(x, what = "selection")</code>.</li>
+</ul>
+Each draws exactly what <code>plot(x, what = )</code> draws.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes-0-95-6">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-95-6"></a></h4>
+<ul><li>
+<code>plot(x, what = "all")</code> and <code><a href="../reference/report.html">report()</a></code> left out the heatmap of a model with only categorical indicators, which draws its response probabilities.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.95.3" id="latents-0953">latents 0.95.3<a class="anchor" aria-label="anchor" href="#latents-0953"></a></h2>
+<div class="section level4">
+<h4 id="new-features-0-95-3">New features<a class="anchor" aria-label="anchor" href="#new-features-0-95-3"></a></h4>
+<ul><li>
+<code><a href="../reference/multilpa.html">multilpa()</a></code>, and so <code><a href="../reference/multilca.html">multilca()</a></code>, <code><a href="../reference/lpa.html">lpa()</a></code> and <code><a href="../reference/lca.html">lca()</a></code>, take <code>cores</code> to run the random starts of one fit in parallel. The starting values are drawn first, in order, so the fit is identical to <code>cores = 1</code>. Models with membership covariates still run their starts on one core.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes-0-95-3">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-95-3"></a></h4>
+<ul><li><p><code><a href="../reference/multilca.html">multilca()</a></code> and <code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code> no longer refuse <code>categorical</code>, so a call written for <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> or <code><a href="../reference/multilpa.html">multilpa()</a></code> (<code>categorical = vars</code>) works as is. Every indicator in <code>vars</code> stays categorical whatever <code>categorical</code> names; a name that is not in <code>vars</code> is still refused.</p></li>
+<li><p><code>plot(what = "heatmap")</code> on polytomous categorical indicators now draws one panel per profile, with indicators as rows and response categories as columns. The former layout, a block of columns per indicator, ran to indicators x categories columns, so with many indicators the numbers overlapped and the indicator names were cut off. Binary indicators keep their one-column-per-indicator layout.</p></li>
+</ul></div>
+<div class="section level4">
+<h4 id="documentation-0-95-3">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-95-3"></a></h4>
+<ul><li>The model-selection and class-enumeration guides, the enumeration and evaluation vignettes, the LPA workflow, the README and the help pages of <code><a href="../reference/lpa.html">lpa()</a></code>, <code><a href="../reference/enumerate_lpa.html">enumerate_lpa()</a></code> and <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> describe the degenerate one-observation solution and <code>boundary = "exclude"</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.95.2" id="latents-0952">latents 0.95.2<a class="anchor" aria-label="anchor" href="#latents-0952"></a></h2>
 <p>Fixes found by Equivalence 2.0, the strengthened external validation.</p>

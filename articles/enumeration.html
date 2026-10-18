@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -209,7 +209,12 @@ model is estimated from several random starts and the solution with the
 highest likelihood is kept. The argument <code>n_starts</code> sets the
 number of starts. The example uses three starts per model to keep the
 computation short. Applied analyses use ten or more. The argument
-<code>seed</code> makes the starts reproducible.</p>
+<code>seed</code> makes the starts reproducible. With many starts, a
+candidate with too many profiles can reach a solution in which one
+profile sits on a single observation with every variance at its lower
+bound; its likelihood is then set by <code>min_variance</code>, not by
+the data. <code>boundary = "exclude"</code> sets such starts aside (see
+<em>Checks of the estimation</em>).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">activity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span>
 <span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
@@ -1009,8 +1014,11 @@ solution reached once, because a single start may have stopped at a
 local maximum. An estimate on the boundary of the parameter space, such
 as a variance at its lower bound, indicates a model too complex for the
 data. A class that holds a very small share of the observations is also
-hard to interpret. The following plots report these checks for every
-candidate.</p>
+hard to interpret. A candidate on the boundary whose smallest profile
+holds about one observation is not a profile but a degenerate solution;
+refitting with <code>boundary = "exclude"</code> keeps, for every
+candidate, the best start without a variance at its lower bound. The
+following plots report these checks for every candidate.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"trust"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="enumeration_files/figure-html/trust-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>

@@ -8,18 +8,22 @@ or restyle with `+ ggplot2::theme()`. The formerly base-graphics plots
 of mixture regressions, pooled imputations and bootstrap tests draw when
 called, including inside loops, and return their ggplot invisibly to
 avoid drawing twice at the console. The main views also have functions
-of their own, whose arguments an editor completes: `plot_profiles()`
-(profile means, or categorical means, medians and modes),
+of their own, whose arguments an editor completes, and each groups
+related views under `what`, with `"all"` drawing every one:
+`plot_profiles()` (profile means as lines, bars, a heatmap, rainclouds,
+parallel lines or pairs, or categorical means, medians and modes),
 `plot_responses()` (categorical response probabilities),
+`plot_sequences()` (each group's profile at each occasion),
 `plot_prevalence()` (profile shares within each group class),
-`plot_diagnostics()` (classification quality), `plot_transitions()`
-(transition matrix), `plot_enumeration()` (information criteria,
-classification quality and model-selection evidence across a grid) and
-`plot_tree()` (how profiles split as more are added). Each draws exactly
-what the matching `plot(x, what = )` draws. `plot_views()` lists the
-views of a fitted model, and `"enumeration"` and `"tree"` for a grid,
-each with a one-line description; the other grid views are listed under
-`what` below.
+`plot_diagnostics()` (classification quality), `plot_selection()` (the
+model-selection evidence of a grid), `plot_transitions()` (transition
+matrix), `plot_enumeration()` (information criteria, classification
+quality and model-selection evidence across a grid) and `plot_tree()`
+(how profiles split as more are added). Each draws exactly what the
+matching `plot(x, what = )` draws. `plot_views()` lists the views of a
+fitted model, and `"enumeration"` and `"tree"` for a grid, each with a
+one-line description; the other grid views are listed under `what`
+below.
 
 ## Usage
 
@@ -111,7 +115,8 @@ plot_profiles(
   labels = TRUE,
   data = NULL,
   main = NULL,
-  subtitle = NULL
+  subtitle = NULL,
+  what = c("lines", "bars", "heatmap", "raincloud", "parallel", "pairs", "all")
 )
 
 plot_responses(
@@ -120,6 +125,14 @@ plot_responses(
   intervals = TRUE,
   labels = TRUE,
   data = NULL,
+  main = NULL,
+  subtitle = NULL
+)
+
+plot_sequences(
+  x,
+  labels = TRUE,
+  cell_labels = TRUE,
   main = NULL,
   subtitle = NULL
 )
@@ -137,6 +150,15 @@ plot_diagnostics(
 plot_transitions(x, main = NULL, subtitle = NULL)
 
 plot_tree(x, main = NULL, subtitle = NULL)
+
+plot_selection(
+  x,
+  what = c("all", "deltas", "heatmap", "smallest", "trust", "diagnostics"),
+  using = "bic_groups",
+  cutoff = 0.8,
+  main = NULL,
+  subtitle = NULL
+)
 
 # S3 method for class 'multilpa'
 plot(
@@ -250,9 +272,19 @@ plot(
 
 - what:
 
-  For `plot_diagnostics()`: `"all"` (default), `"sizes"` (effective
-  profile counts), `"posteriors"` (posterior probability of each case's
-  assigned profile), `"entropy"` (each case's entropy relative to a flat
+  Which view to draw; `"all"` draws every view of that function the
+  model has, as a list, and names any it cannot draw. For
+  `plot_profiles()`: `"lines"` (default), `"bars"` (means from zero with
+  95% intervals), `"heatmap"` (means in observed standard deviations, or
+  the response probabilities of categorical indicators), `"raincloud"`
+  (each indicator's distribution by assigned profile), `"parallel"`
+  (every case as a line) or `"pairs"` (scatter-plot matrix with each
+  profile's 95% covariance ellipse). For `plot_selection()`: `"all"`
+  (default), `"deltas"`, `"heatmap"`, `"smallest"`, `"trust"` or
+  `"diagnostics"`, as described for `plot_enumeration()` below. For
+  `plot_diagnostics()`: `"all"` (default), `"sizes"` (effective profile
+  counts), `"posteriors"` (posterior probability of each case's assigned
+  profile), `"entropy"` (each case's entropy relative to a flat
   posterior) or `"avepp"` (average posterior probability matrix).
   `"group_sizes"`, `"group_posteriors"`, `"group_entropy"` and
   `"group_avepp"` draw the same four views for the groups and their
@@ -376,6 +408,17 @@ plot(
   For sequence views, `TRUE` prints each assigned profile in its cell
   while the display is sparse enough to hold the text.
 
+- using:
+
+  For `plot_enumeration(what = "deltas")`, `"heatmap"` or `"selection"`,
+  the information criterion they read (default `"bic_groups"`);
+  `"smallest"` and `"trust"` do not use one.
+
+- cutoff:
+
+  For `plot_enumeration(what = "avepp")`, `"diagnostics"` or
+  `"selection"`, the AvePP cutoff drawn as a dashed line.
+
 - combine:
 
   `TRUE` draws several criteria as panels of one plot; `FALSE` returns
@@ -386,17 +429,6 @@ plot(
   `TRUE` rings each criterion's lowest value among converged candidates.
   It marks an extremum; it does not select a model. Information criteria
   only.
-
-- cutoff:
-
-  For `plot_enumeration(what = "avepp")`, `"diagnostics"` or
-  `"selection"`, the AvePP cutoff drawn as a dashed line.
-
-- using:
-
-  For `plot_enumeration(what = "deltas")`, `"heatmap"` or `"selection"`,
-  the information criterion they read (default `"bic_groups"`);
-  `"smallest"` and `"trust"` do not use one.
 
 ## Value
 

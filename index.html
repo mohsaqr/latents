@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -268,7 +268,7 @@ L_j = \sum_{h=1}^{H}\eta_h
 <p>The arguments <code>n_profiles</code> and <code>n_group_classes</code> specify <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math> and <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>H</mi><annotation encoding="application/x-tex">H</annotation></semantics></math>, respectively. Setting <code>n_group_classes = 1</code> reduces the model to a single-level profile analysis: there is then one common distribution over profiles, and no latent group-class heterogeneity.</p>
 <p>With <code>variance_model = "varying"</code>, each profile has its own indicator variances. With <code>variance_model = "equal"</code>, the variance of a given indicator is constrained to be equal across profiles, while different indicators can retain different variances. In the default diagonal model, both specifications set within-profile covariances to zero.</p>
 <p>Estimation uses the expectation-maximization algorithm. Its expectation step evaluates latent membership probabilities under the current parameters, and its maximization step updates parameters using those probabilities. Iteration continues until the convergence criterion is met or the iteration limit is reached.</p>
-<p>Because mixture likelihoods can have local maxima, estimation is repeated from multiple starting values. Here, <code>n_starts = 10</code> specifies ten starts and <code>seed = 1</code> makes the starting procedure reproducible for the same input and row order. Convergence and replication across starts are inspected below; a converged fit alone does not establish that the best attainable likelihood has been found.</p>
+<p>Because mixture likelihoods can have local maxima, estimation is repeated from multiple starting values. Here, <code>n_starts = 10</code> specifies ten starts and <code>seed = 1</code> makes the starting procedure reproducible for the same input and row order. Convergence and replication across starts are inspected below; a converged fit alone does not establish that the best attainable likelihood has been found. With many starts, a profile can collapse on a single observation with its variances at the lower bound, a degenerate solution whose likelihood is set by <code>min_variance</code>; <code>boundary = "exclude"</code> sets such starts aside.</p>
 </div>
 <div class="section level2">
 <h2 id="inspecting-and-interpreting-the-estimated-structure">Inspecting and interpreting the estimated structure<a class="anchor" aria-label="anchor" href="#inspecting-and-interpreting-the-estimated-structure"></a>

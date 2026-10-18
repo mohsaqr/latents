@@ -23,7 +23,7 @@ categorical argument."><meta property="og:image" content="https://pak.dynasite.o
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -125,7 +125,8 @@ or to 1 when <code>id = NULL</code> (a single-level model has no second level).<
 <dd><p>Further arguments to <code><a href="multilpa.html">multilpa()</a></code>, such as <code>n_starts</code>, <code>seed</code>,
 <code>missing</code>, <code>tol</code> or <code>profile_covariates</code>. <code>ordinal</code> and <code>count</code> can name
 structured discrete indicators; the
-remaining indicators are categorical. <code>categorical</code> cannot be supplied.</p></dd>
+remaining indicators are categorical. <code>categorical</code> may be given but
+changes nothing.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -140,9 +141,8 @@ probabilities are in
     <h2 id="conditions">Conditions<a class="anchor" aria-label="anchor" href="#conditions"></a></h2>
 
 
-<p><code>latents_bad_argument</code> when <code>categorical</code> is supplied, since its
-columns are derived from <code>vars</code>, <code>ordinal</code> and <code>count</code> here. Every condition of
-<code><a href="multilpa.html">multilpa()</a></code> can also be raised.</p>
+<p><code>latents_bad_categorical</code> when <code>categorical</code> names a column not in
+<code>vars</code>. Every condition of <code><a href="multilpa.html">multilpa()</a></code> can also be raised.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -1,5 +1,74 @@
 # Changelog
 
+## latents 0.95.6
+
+#### New features
+
+- The named plot functions now cover every view of a fit, grouped by
+  subject so that typing `plot_` lists them all, and each group’s `what`
+  takes `"all"` to draw every view it has:
+  - `plot_profiles(x, what = )` adds `"bars"`, `"heatmap"`,
+    `"raincloud"`, `"parallel"` and `"pairs"` to the lines (`what` is
+    its last argument, so existing calls are unchanged);
+  - new `plot_sequences(x)`;
+  - new `plot_selection(x, what = )` for an enumeration: `"deltas"`,
+    `"heatmap"`, `"smallest"`, `"trust"`, `"diagnostics"`, or `"all"`
+    (default), the same as `plot_enumeration(x, what = "selection")`.
+
+  Each draws exactly what `plot(x, what = )` draws.
+
+#### Bug fixes
+
+- `plot(x, what = "all")` and
+  [`report()`](https://pak.dynasite.org/latents/reference/report.md)
+  left out the heatmap of a model with only categorical indicators,
+  which draws its response probabilities.
+
+## latents 0.95.3
+
+#### New features
+
+- [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  and so
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) and
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md), take
+  `cores` to run the random starts of one fit in parallel. The starting
+  values are drawn first, in order, so the fit is identical to
+  `cores = 1`. Models with membership covariates still run their starts
+  on one core.
+
+#### Bug fixes
+
+- [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  and
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
+  no longer refuse `categorical`, so a call written for
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  or
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  (`categorical = vars`) works as is. Every indicator in `vars` stays
+  categorical whatever `categorical` names; a name that is not in `vars`
+  is still refused.
+
+- `plot(what = "heatmap")` on polytomous categorical indicators now
+  draws one panel per profile, with indicators as rows and response
+  categories as columns. The former layout, a block of columns per
+  indicator, ran to indicators x categories columns, so with many
+  indicators the numbers overlapped and the indicator names were cut
+  off. Binary indicators keep their one-column-per-indicator layout.
+
+#### Documentation
+
+- The model-selection and class-enumeration guides, the enumeration and
+  evaluation vignettes, the LPA workflow, the README and the help pages
+  of [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  and
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+  describe the degenerate one-observation solution and
+  `boundary = "exclude"`.
+
 ## latents 0.95.2
 
 Fixes found by Equivalence 2.0, the strengthened external validation.

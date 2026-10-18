@@ -39,8 +39,8 @@ enumerate_lpa(data, vars, n_profiles = 1:4, model = "basic", ...)
 
   Further arguments for
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
-  such as `missing`, `n_starts`, `seed` and `categorical`, except `id`
-  and `n_group_classes`.
+  such as `missing`, `n_starts`, `seed`, `boundary` and `categorical`,
+  except `id` and `n_group_classes`.
 
 ## Value
 

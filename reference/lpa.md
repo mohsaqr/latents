@@ -35,9 +35,9 @@ lpa(data, vars, n_profiles, ...)
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md):
   the covariance structure (`model`, or `variance_model` and
   `covariance_model`, or `volume`, `shape` and `orientation`),
-  `missing`, `categorical`, `n_starts`, `seed`, `prior`, `noise`,
-  `profile_covariates` and the others it documents, except `id` and
-  `n_group_classes`, which a single-level model does not have.
+  `missing`, `categorical`, `n_starts`, `seed`, `boundary`, `prior`,
+  `noise`, `profile_covariates` and the others it documents, except `id`
+  and `n_group_classes`, which a single-level model does not have.
 
 ## Value
 

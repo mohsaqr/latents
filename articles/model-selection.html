@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -326,6 +326,27 @@ candidates were not given.</p>
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
 <span>                            n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,</span>
 <span>                            model <span class="op">=</span> <span class="st">"VVI"</span>, n_starts <span class="op">=</span> <span class="fl">20</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<p>Additional starts also make a degenerate solution more likely to be
+found when a candidate has more profiles than the data support: one
+profile collapses on a single observation, with every variance at its
+lower bound (<code>min_variance</code>). The Gaussian likelihood of such
+a profile increases without limit as its variances shrink, so its value,
+and every criterion computed from it, is determined by
+<code>min_variance</code> rather than by the data, and BIC can favour
+one profile too many as a result. In a simulation with 500 starts per
+candidate, this occurred in two of 29 datasets; with ten or twenty
+starts it was rare. Such candidates carry <code>boundary = TRUE</code>
+in the table of candidates. <code>boundary = "exclude"</code> sets aside
+every start with a variance at its lower bound and retains the best of
+the remaining starts; the default, <code>"allow"</code>, retains the
+highest likelihood, as Mplus does. The option is advisable when many
+starts are used, and it has no effect on categorical indicators, which
+have no variances.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>,</span>
+<span>                            n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,</span>
+<span>                            model <span class="op">=</span> <span class="st">"VVI"</span>, n_starts <span class="op">=</span> <span class="fl">200</span>,</span>
+<span>                            boundary <span class="op">=</span> <span class="st">"exclude"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="centring-and-scaling">Centring and scaling<a class="anchor" aria-label="anchor" href="#centring-and-scaling"></a>
@@ -350,7 +371,7 @@ structures <code>EII</code> and <code>VII</code> constrain all
 indicators to a common variance, so that an unscaled indicator with a
 large range would dominate the classification; under these structures
 the indicators should be standardized beforehand.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">srl_indicators</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cognitive_strategies"</span>, <span class="st">"intrinsic_value"</span>,</span>
 <span>                    <span class="st">"self_efficacy"</span>, <span class="st">"self_regulation"</span>, <span class="st">"test_anxiety"</span><span class="op">)</span></span>
 <span><span class="va">spherical</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">srl</span>, <span class="va">srl_indicators</span>, n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">4</span>,</span>
@@ -398,7 +419,7 @@ correspondingly greater uncertainty, from the indicators available.
 Setting <code>drop_empty = FALSE</code> restores the counting rules of
 latents 0.9.37 and earlier, so that previously reported results can be
 reproduced.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">incomplete</span> <span class="op">&lt;-</span> <span class="va">course_engagement</span></span>
 <span><span class="va">empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">incomplete</span><span class="op">)</span>, <span class="fl">150</span><span class="op">)</span></span>
@@ -539,7 +560,7 @@ ICL, AWE and CLC should therefore be used.</p>
 containing every criterion under both conventions together with the log
 likelihood, the number of parameters, summaries of classification
 quality and diagnostics of estimation.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic</span></span>
 <span><span class="co">#&gt; 1  profiles1_groups1          1               1   VVI         -10007           10 20035 20048</span></span>
@@ -700,7 +721,7 @@ criterion and convention, giving the candidate at which the criterion
 attains its minimum, its numbers of classes and the minimum value. It
 identifies the candidate favoured by each criterion and makes no further
 inference.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"best"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    criterion  convention         candidate n_profiles n_group_classes model value</span></span>
 <span><span class="co">#&gt; 1        aic        &lt;NA&gt; profiles6_groups4          6               4   VVI 16703</span></span>
@@ -740,10 +761,10 @@ becomes the relevant evidence (see below).</p>
 profiles, with one line per number of group classes and the minimum of
 each criterion marked. <code>what</code> selects criteria by column
 name, and <code>what = "all"</code> displays all of them.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/plot-criteria-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"bic_groups"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/plot-bic-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -765,7 +786,7 @@ positive value indicates that the additional class reduced the
 criterion, and a negative value that it increased it; candidates without
 such a neighbour in the grid have <code>NA</code>. BIC with groups as
 units is used unless <code>using</code> specifies another criterion.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"deltas"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            candidate n_profiles n_group_classes model  criterion value delta_profile</span></span>
 <span><span class="co">#&gt; 1  profiles1_groups1          1               1   VVI bic_groups 20062            NA</span></span>
@@ -826,11 +847,11 @@ additional profiles capture detail rather than structure, and the first
 negative value marks where they cease to improve the criterion. The
 deltas are displayed for both directions: along the number of profiles
 (left) and along the number of group classes (right).</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"deltas"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/plot-deltas-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The same display is available for any criterion:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"deltas"</span>, using <span class="op">=</span> <span class="st">"icl_individual"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/plot-deltas-icl-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -862,7 +883,7 @@ at each number of profiles (<code>"group_classes"</code>), and over all
 candidates ordered by number of parameters (<code>"parameters"</code>).
 The columns <code>from</code> and <code>to</code> identify the endpoints
 of each curve and <code>n_points</code> its length.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"knees"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        direction            line  criterion              from                to n_points</span></span>
 <span><span class="co">#&gt; 1       profiles   1 group class bic_groups profiles1_groups1 profiles6_groups1        6</span></span>
@@ -952,7 +973,7 @@ with less ambiguity, which is why the two are interpreted jointly.</p>
 difference between each candidate’s criterion and the minimum in the
 grid. It uses the same criterion as the deltas and accepts the same
 <code>using</code> argument.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -992,7 +1013,7 @@ cutoff (0.8 by default, set with <code>cutoff</code>).
 <code>get_results(x, "classification")</code> reports, for every class
 of every candidate, its size by modal assignment and by estimate, its
 AvePP, its OCC and the relative entropy of its level.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"classification"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             candidate n_profiles n_group_classes model       level class n_modal proportion_modal</span></span>
 <span><span class="co">#&gt; 1   profiles2_groups1          2               1   VVI individuals     1     833          0.58579</span></span>
@@ -1255,7 +1276,7 @@ each unit’s assigned class, each unit’s relative entropy, the class
 sizes and the matrix of average posterior probabilities, for the
 profiles and, when there are two or more group classes, for the group
 classes (<code>what = "group_posteriors"</code>, etc.).</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"diagnostics"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/diagnostics-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>Entropy and AvePP may diverge, and the divergence is informative.
@@ -1275,7 +1296,7 @@ of its observations jointly, whereas an observation’s profile is
 inferred from its own responses alone; group classes are consequently
 classified with considerably greater certainty. For a single candidate,
 <code><a href="../reference/latents-plots.html">plot_diagnostics()</a></code> displays both levels:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/latents-plots.html">plot_diagnostics</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles4_groups3"</span><span class="op">)</span>,</span>
 <span>                 what <span class="op">=</span> <span class="st">"group_posteriors"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/group-certainty-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
@@ -1346,7 +1367,7 @@ table)</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"trust"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/trust-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>A candidate whose maximum was found only once should be re-estimated
@@ -1359,7 +1380,11 @@ the maximum likelihood solution is the estimate. The columns
 <code>converged</code>, <code>boundary</code>,
 <code>n_best_replicated</code>, <code>warnings</code> and
 <code>error</code> of the table of candidates report the same
-diagnostics.</p>
+diagnostics. A candidate on a boundary whose smallest class holds about
+one observation is a degenerate solution rather than a class;
+re-estimating the grid with <code>boundary = "exclude"</code> replaces
+it with the best solution in the interior of the parameter space (see
+<em>Random starts</em>).</p>
 </div>
 <div class="section level3">
 <h3 id="the-smallest-class">The smallest class<a class="anchor" aria-label="anchor" href="#the-smallest-class"></a>
@@ -1369,7 +1394,7 @@ interpret and is estimated from little data.
 <code>plot(x, what = "smallest")</code> displays the estimated
 proportion of the smallest class of every candidate, with a reference
 line at 5%, a conventional threshold rather than a rule.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"smallest"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/smallest-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -1382,7 +1407,7 @@ heatmap, the smallest class, the estimation diagnostics and the
 classification diagnostics as a list of plots displayed in sequence.
 <code>using</code> sets the criterion for the first two and
 <code>cutoff</code> the AvePP threshold for the last.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"selection"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/selection-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="model-selection_files/figure-html/selection-2.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="model-selection_files/figure-html/selection-3.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="model-selection_files/figure-html/selection-4.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"><img src="model-selection_files/figure-html/selection-5.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -1396,7 +1421,7 @@ linked to the profiles of the larger model that receive its observations
 suggests a substantive distinction, whereas a profile formed from
 several profiles of the smaller model suggests a reallocation of
 observations rather than a refinement.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">models</span>, what <span class="op">=</span> <span class="st">"tree"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="model-selection_files/figure-html/tree-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 </div>
@@ -1413,7 +1438,7 @@ candidates, which approximates the posterior probability of each model
 under equal prior probabilities, assuming one of them is correct
 (Wagenmakers and Farrell, 2004). The weights are conditional on the set
 of candidates compared.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles3_groups3"</span>, <span class="st">"profiles4_groups3"</span>,</span>
 <span>                             <span class="st">"profiles4_groups2"</span><span class="op">)</span></span>
 <span><span class="va">comparison</span></span>
@@ -1428,7 +1453,7 @@ of candidates compared.</p>
 <p><img src="model-selection_files/figure-html/compare-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The fitted model corresponding to a row is extracted with
 <code><a href="../reference/get_candidate.html">get_candidate()</a></code>, by label or by numbers of classes.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chosen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles4_groups3"</span><span class="op">)</span></span>
 <span><span class="va">chosen</span></span>
 <span><span class="co">#&gt; Two-level latent profile analysis: 4 profiles, 3 group classes</span></span>
@@ -1464,7 +1489,7 @@ as large as the observed one, the p-value is
 the p-value is withheld rather than computed from the remaining
 replicates. The example uses 19 replicates, for which the smallest
 attainable p-value is 0.05; applied analyses should use 99 or more.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">smaller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles3_groups3"</span><span class="op">)</span></span>
 <span><span class="va">larger</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_candidate.html">get_candidate</a></span><span class="op">(</span><span class="va">models</span>, <span class="st">"profiles4_groups3"</span><span class="op">)</span></span>
 <span><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bootstrap_lrt.html">bootstrap_lrt</a></span><span class="op">(</span><span class="va">smaller</span>, <span class="va">larger</span>, data <span class="op">=</span> <span class="va">course_engagement</span>,</span>
@@ -1486,8 +1511,10 @@ evidence in a fixed sequence and reporting each step:</p>
 <ol start="0" style="list-style-type: decimal">
 <li>
 <strong>Analytic decisions</strong>: report the number of random
-starts, any centring or scaling, the treatment of missing values, and
-the number of observations with no observed indicator.</li>
+starts, whether starts at a variance bound were excluded
+(<code>boundary</code>), any centring or scaling, the treatment of
+missing values, and the number of observations with no observed
+indicator.</li>
 <li>
 <strong>Sample-size convention</strong>: specify the convention
 before examining any criterion and apply it consistently.</li>
@@ -1543,93 +1570,98 @@ evidence.</p>
 handling for every candidate</td>
 </tr>
 <tr class="even">
+<td align="left">enumerate_classes(…, boundary = “exclude”)</td>
+<td align="left">Starts with a variance at its lower bound set aside for
+every candidate</td>
+</tr>
+<tr class="odd">
 <td align="left">as.data.frame(models)</td>
 <td align="left">One row per candidate: every criterion, classification
 summaries and checks</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_results(models, “best”)</td>
 <td align="left">The candidate at the minimum of each criterion and
 convention</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models), plot(models, what = “bic_groups”), what =
 “all”</td>
 <td align="left">Criteria across the candidates, lowest ringed</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_results(models, “deltas”, using = )</td>
 <td align="left">Decrease in a criterion from one profile fewer and one
 group class fewer</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “deltas”, using = )</td>
 <td align="left">The decreases along profiles and along group
 classes</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_results(models, “knees”, using = )</td>
 <td align="left">Chord-distance knee of each line, with its
 stability</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “heatmap”, using = )</td>
 <td align="left">Distance of every candidate from the lowest
 criterion</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_results(models, “classification”)</td>
 <td align="left">Size, AvePP, OCC and entropy of every class of every
 candidate</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(models, “candidates”, cutoff = )</td>
 <td align="left">The table of candidates with another AvePP cutoff</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models, what = “diagnostics”, “entropy” or
 “avepp”, cutoff = )</td>
 <td align="left">Relative entropy and lowest AvePP across the
 candidates</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">get_results(fit, “entropy”)</td>
 <td align="left">Relative entropy of one fit at each level, over the
 classified units</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot_diagnostics(fit), what = “group_posteriors” and
 the like</td>
 <td align="left">Certainty, uncertainty, sizes and AvePP of one fit,
 profiles and group classes</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “trust”)</td>
 <td align="left">Convergence, boundary and replication of every
 candidate</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models, what = “smallest”)</td>
 <td align="left">Share of the smallest class of every candidate</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">plot(models, what = “selection”)</td>
 <td align="left">Deltas, heatmap, smallest class, trust and diagnostics
 together</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">plot(models, what = “tree”)</td>
 <td align="left">How the profiles divide as more are added</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">compare_models(models, “name”, …)</td>
 <td align="left">Chosen candidates side by side, with BIC weights</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">get_candidate(models, “name”)</td>
 <td align="left">One fitted candidate</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">bootstrap_lrt(smaller, larger, data, iter)</td>
 <td align="left">Bootstrap likelihood ratio test of k against k + 1
 classes</td>
