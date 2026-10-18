@@ -1,3 +1,14 @@
+# latents 0.95.7
+
+### Bug fixes
+
+* Line plots of profiles and response probabilities (`plot_profiles()`,
+  `plot_responses()`) no longer run long indicator names together: names
+  that cannot sit side by side are turned. The profile labels at the right
+  end get a margin sized to the longest label, so they are no longer cut off
+  when there are many indicators, and they are spaced on the axis as drawn,
+  so lines that end close together keep their labels apart.
+
 # latents 0.95.6
 
 ### New features

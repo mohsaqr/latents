@@ -286,7 +286,10 @@ utils::globalVariables(c(
   width <- if (has_errors) min(0.3, 0.08 * k) else 0
   frame$x <- frame$position +
     (frame$rank - (k + 1) / 2) * width / max(k - 1, 1)
-  span <- range(c(frame$mean, frame$lower, frame$upper), na.rm = TRUE)
+  # Labels are kept apart on the axis as drawn: a fixed `ylim` (0 to 1 for
+  # probabilities) is wider than the data, and a gap read off the data alone
+  # let labels of lines ending close together overlap.
+  span <- range(c(frame$mean, frame$lower, frame$upper, ylim), na.rm = TRUE)
   last <- frame[frame$position == n_x, , drop = FALSE]
   last$y <- .gg_spread(last$mean, gap = 0.075 * max(diff(span), 1e-8))
   last$x <- n_x + 0.2 + width / 2
@@ -312,15 +315,28 @@ utils::globalVariables(c(
       data = last, ggplot2::aes(x = x, y = y, label = profile_label),
       hjust = 0, size = 3.5, fontface = "bold")
   }
+  # The profile labels are drawn past the last indicator, outside the panel
+  # (clip = "off"), so the right margin is sized to the longest label rather
+  # than reserving axis units, which shrink as indicators are added.
+  label_margin <- if (isTRUE(labels_on)) {
+    5.5 + 7 * max(nchar(as.character(last$profile_label)))
+  } else 5.5
+  # Indicator names that cannot sit side by side are turned, so they never
+  # run together.
+  crowded <- n_x * max(nchar(x_labels)) > 70
   plot +
     ggplot2::scale_x_continuous(
       breaks = seq_len(n_x), labels = x_labels,
-      limits = c(0.7, n_x + if (isTRUE(labels_on)) 1.35 else 0.3),
+      limits = c(0.7, n_x + 0.3 + width / 2),
       expand = ggplot2::expansion(0)) +
     .gg_scales(key, legend = !isTRUE(labels_on)) +
     ggplot2::coord_cartesian(ylim = ylim, clip = "off") +
     ggplot2::labs(x = NULL, y = y_label) +
     .gg_theme() +
+    ggplot2::theme(plot.margin = ggplot2::margin(5.5, label_margin, 5.5, 5.5),
+                   axis.text.x = if (crowded) {
+                     ggplot2::element_text(angle = 35, hjust = 1, vjust = 1)
+                   } else ggplot2::element_text()) +
     (if (!isTRUE(labels_on)) .gg_top_legend())
 }
 

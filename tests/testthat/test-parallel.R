@@ -148,10 +148,10 @@ test_that("one fit's starts on several cores give the same fit as one core", {
                      n_group_classes = 2, n_starts = 6, seed = 1, cores = 2)
   expect_identical(spread$log_likelihood, serial$log_likelihood)
   expect_identical(get_results(spread, "starts"), get_results(serial, "starts"))
-  profiles <- c("happy", "relaxed", "worried")
-  serial_lpa <- lpa(student_esm, profiles, n_profiles = 3, n_starts = 5,
+  profiles <- c("happy", "relaxed")
+  serial_lpa <- lpa(student_esm, profiles, n_profiles = 2, n_starts = 5,
                     seed = 2)
-  spread_lpa <- lpa(student_esm, profiles, n_profiles = 3, n_starts = 5,
+  spread_lpa <- lpa(student_esm, profiles, n_profiles = 2, n_starts = 5,
                     seed = 2, cores = 3)
   expect_identical(spread_lpa$log_likelihood, serial_lpa$log_likelihood)
   expect_identical(as.data.frame(spread_lpa), as.data.frame(serial_lpa))

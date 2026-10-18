@@ -220,3 +220,26 @@ test_that("diagnostics() draws its plots by default", {
   expect_false(identical(grDevices::recordPlot(), before))
   expect_s3_class(diagnostics(fit, plots = FALSE), "multilpa_diagnostics")
 })
+
+test_that("a line plot turns crowded indicator names and fits its labels", {
+  skip_if_not_installed("ggplot2")
+  set.seed(5)
+  items <- c("Joy", "Frustration", "Boredom", "Control", "Expectations",
+             "Value", "Attainment", "Usefulness", "Opportunity", "Effort",
+             "Invested")
+  responses <- as.data.frame(lapply(stats::setNames(items, items), \(item) {
+    factor(sample(1:5, 200, replace = TRUE), levels = 1:5)
+  }))
+  many <- quietly(lca(responses, items, n_classes = 3, n_starts = 1, seed = 1))
+  crowded <- expect_plot(plot_responses(many, intervals = FALSE))
+  expect_identical(crowded$theme$axis.text.x$angle, 35)
+  # The right margin holds the longest direct label, whatever the number of
+  # indicators.
+  longest <- max(nchar(as.character(crowded$data$profile_label)))
+  expect_gte(as.numeric(crowded$theme$plot.margin[2]), 7 * longest)
+  few <- quietly(lca(student_esm, c("time_with_friends", "on_social_media",
+                                    "sports"),
+                     n_classes = 2, n_starts = 1, seed = 1))
+  spacious <- expect_plot(plot_responses(few, intervals = FALSE))
+  expect_null(spacious$theme$axis.text.x$angle)
+})
